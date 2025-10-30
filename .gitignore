@@ -143,3 +143,6 @@ dist
 # aws-cdk
 .cdk.staging
 cdk.out
+
+# Mac OS
+.DS_Store
