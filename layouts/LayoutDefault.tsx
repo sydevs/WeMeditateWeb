@@ -3,15 +3,29 @@ import "./style.css";
 import "./tailwind.css";
 import logoUrl from "../assets/logo.svg";
 import { Link } from "../components/Link.js";
+import { useData } from "vike-react/useData";
+import { WeMeditateWebSettings } from "../server/graphql-types";
 
 export default function LayoutDefault({ children }: { children: React.ReactNode }) {
+  const data = useData<{ settings?: WeMeditateWebSettings }>()
+  const settings = data?.settings
+
+  const navigationPages = [
+    settings?.homePage,
+    settings?.techniquesPage,
+    settings?.musicPage,
+    settings?.inspirationPage,
+    settings?.classesPage,
+  ].filter(Boolean)
+
   return (
     <div className={"flex max-w-5xl m-auto"}>
       <Sidebar>
         <Logo />
-        <Link href="/">Welcome</Link>
-        <Link href="/todo">Todo</Link>
-        <Link href="/star-wars">Data Fetching</Link>
+        {navigationPages.map(page => {
+          if (!page) return null
+          return <Link key={page.id} href={'/' + page.slug}>{page.title}</Link>
+        })}
       </Sidebar>
       <Content>{children}</Content>
     </div>

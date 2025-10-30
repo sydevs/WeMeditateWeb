@@ -3,13 +3,14 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { Page } from '../../server/graphql-types'
-import { getPageById } from '../../server/graphql-client'
+import { Page, WeMeditateWebSettings } from '../../server/graphql-types'
+import { getPageById, getWeMeditateWebSettings } from '../../server/graphql-client'
 import { render } from 'vike/abort'
 
 export interface PreviewPageData {
   initialData: Page
   locale: string
+  settings: WeMeditateWebSettings
 }
 
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
@@ -25,6 +26,13 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   if (!id) {
     throw new Error('Preview error: Missing "id" parameter')
   }
+
+  // Fetch WeMeditateWebSettings
+  const settings = await getWeMeditateWebSettings({
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
+    endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    kv: cloudflare?.env?.WEMEDITATE_CACHE,
+  })
 
   // Let errors throw - they'll be caught by ErrorBoundary
   const page = await getPageById({
@@ -42,5 +50,6 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   return {
     initialData: page,
     locale,
+    settings,
   }
 }

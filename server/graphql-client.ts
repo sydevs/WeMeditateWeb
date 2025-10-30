@@ -225,7 +225,9 @@ export async function getWeMeditateWebSettings(options: {
               ...PageReferenceFragment
             }
             musicPageTags {
-              ...PageReferenceFragment
+              id
+              name
+              title
             }
             subtleSystemPage {
               ...PageReferenceFragment
@@ -276,7 +278,7 @@ export async function getWeMeditateWebSettings(options: {
               ...PageReferenceFragment
             }
             inspirationPageTags {
-              ...PageReferenceFragment
+              ...TagFragment
             }
             classesPage {
               ...PageReferenceFragment

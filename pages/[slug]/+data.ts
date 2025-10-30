@@ -3,12 +3,13 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { Page } from '../../server/graphql-types'
-import { getPageBySlug } from '../../server/graphql-client'
+import { Page, WeMeditateWebSettings } from '../../server/graphql-types'
+import { getPageBySlug, getWeMeditateWebSettings } from '../../server/graphql-client'
 import { render } from 'vike/abort'
 
 export interface PageData {
   page: Page
+  settings: WeMeditateWebSettings
   locale: string
   slug: string
 }
@@ -22,6 +23,13 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
 
   // Access Cloudflare KV namespace for caching
   const kv = cloudflare?.env?.WEMEDITATE_CACHE
+
+  // Fetch WeMeditateWebSettings
+  const settings = await getWeMeditateWebSettings({
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
+    endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    kv,
+  })
 
   // Let errors throw - they'll be caught by ErrorBoundary
   const page = await getPageBySlug({
@@ -41,5 +49,6 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     page,
     locale,
     slug,
+    settings,
   }
 }
