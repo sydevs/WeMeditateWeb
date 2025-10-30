@@ -13,12 +13,12 @@ declare global {
       locale: Locale
 
       /** Cloudflare Workers runtime context */
-      // cloudflare?: {
-      //   env?: {
-      //     /** Cloudflare KV namespace for caching */
-      //     WEMEDITATE_CACHE?: KVNamespace
-      //   }
-      // }
+      cloudflare?: {
+        env?: {
+          /** Cloudflare KV namespace for caching GraphQL responses */
+          WEMEDITATE_CACHE?: KVNamespace
+        }
+      }
     }
   }
 }

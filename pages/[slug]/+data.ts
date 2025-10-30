@@ -15,13 +15,13 @@ export interface PageData {
 
 export async function data(pageContext: PageContextServer): Promise<PageData> {
   const {
-    // cloudflare,
+    cloudflare,
     locale,
     routeParams: { slug },
   } = pageContext
 
-  // Access Cloudflare KV namespace
-  // const kv = cloudflare?.env?.WEMEDITATE_CACHE
+  // Access Cloudflare KV namespace for caching
+  const kv = cloudflare?.env?.WEMEDITATE_CACHE
 
   // Let errors throw - they'll be caught by ErrorBoundary
   const page = await getPageBySlug({
@@ -29,6 +29,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     locale,
     apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    kv,
   })
 
   if (!page) {

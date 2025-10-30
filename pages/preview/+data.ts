@@ -15,7 +15,7 @@ export interface PreviewPageData {
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
   // Extract URL parameters
   const { search: { collection, id } } = pageContext.urlParsed
-  const { locale } = pageContext
+  const { cloudflare, locale } = pageContext
 
   // Validate required parameters
   if (!collection) {

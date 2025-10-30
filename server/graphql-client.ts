@@ -11,6 +11,12 @@ import type {
 import {
   buildQueryWithFragments,
 } from './graphql-fragments'
+import {
+  generateCacheKey,
+  withCache,
+  CacheTTL,
+} from './kv-cache'
+import type { KVNamespace } from '@cloudflare/workers-types'
 
 /**
  * Creates a new GraphQL client instance for PayloadCMS.
@@ -87,6 +93,7 @@ export type GraphQLClientType = ReturnType<typeof createGraphQLClient>
  * @param options.slug - The page slug to search for
  * @param options.locale - The locale to retrieve the page in
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns The page data or null if not found
  *
  * @example
@@ -96,6 +103,7 @@ export type GraphQLClientType = ReturnType<typeof createGraphQLClient>
  *     apiKey: process.env.PAYLOAD_API_KEY!,
  *     slug: 'home',
  *     locale: 'en',
+ *     kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
  *   })
  *
  *   if (!page) {
@@ -111,33 +119,46 @@ export async function getPageBySlug(options: {
   slug: string
   locale: Locale
   endpoint?: string
+  kv?: KVNamespace
 }): Promise<Page | null> {
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
-
-  const fragments = buildQueryWithFragments(['fullPage'])
-
-  const query = `
-    ${fragments}
-
-    query GetPageBySlug($slug: String!, $locale: LocaleInputType) {
-      Pages(where: { slug: { equals: $slug } }, locale: $locale, limit: 1) {
-        docs {
-          ...FullPageFragment
-        }
-      }
-    }
-  `
-
-  const variables = {
+  const cacheKey = generateCacheKey('page', {
     slug: options.slug,
     locale: options.locale,
-  }
+  })
 
-  const result = await client.request<{ Pages: { docs: Page[] } }>(query, variables)
-  return result.Pages?.docs?.[0] ?? null
+  return withCache(
+    options.kv,
+    cacheKey,
+    CacheTTL.PAGE,
+    async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
+
+      const fragments = buildQueryWithFragments(['fullPage'])
+
+      const query = `
+        ${fragments}
+
+        query GetPageBySlug($slug: String!, $locale: LocaleInputType) {
+          Pages(where: { slug: { equals: $slug } }, locale: $locale, limit: 1) {
+            docs {
+              ...FullPageFragment
+            }
+          }
+        }
+      `
+
+      const variables = {
+        slug: options.slug,
+        locale: options.locale,
+      }
+
+      const result = await client.request<{ Pages: { docs: Page[] } }>(query, variables)
+      return result.Pages?.docs?.[0] ?? null
+    }
+  )
 }
 
 /**
@@ -149,13 +170,15 @@ export async function getPageBySlug(options: {
  * @param options - Query options
  * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns The web settings configuration
  *
  * @example
  * ```typescript
- * export async function data() {
+ * export async function data(pageContext) {
  *   const settings = await getWeMeditateWebSettings({
  *     apiKey: process.env.PAYLOAD_API_KEY!,
+ *     kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
  *   })
  *
  *   return {
@@ -168,106 +191,119 @@ export async function getPageBySlug(options: {
 export async function getWeMeditateWebSettings(options: {
   apiKey: string
   endpoint?: string
+  kv?: KVNamespace
 }): Promise<WeMeditateWebSettings> {
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
+  const cacheKey = generateCacheKey('settings', {})
 
-  const fragments = buildQueryWithFragments(['pageReference', 'tag'])
+  return withCache(
+    options.kv,
+    cacheKey,
+    CacheTTL.SETTINGS,
+    async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
 
-  const query = `
-    ${fragments}
+      const fragments = buildQueryWithFragments(['pageReference', 'tag'])
 
-    query GetWeMeditateWebSettings {
-      WeMeditateWebSetting {
-        homePage {
-          ...PageReferenceFragment
+      const query = `
+        ${fragments}
+
+        query GetWeMeditateWebSettings {
+          WeMeditateWebSetting {
+            homePage {
+              ...PageReferenceFragment
+            }
+            featuredPages {
+              ...PageReferenceFragment
+            }
+            footerPages {
+              ...PageReferenceFragment
+            }
+            musicPage {
+              ...PageReferenceFragment
+            }
+            musicPageTags {
+              ...PageReferenceFragment
+            }
+            subtleSystemPage {
+              ...PageReferenceFragment
+            }
+            left {
+              ...PageReferenceFragment
+            }
+            right {
+              ...PageReferenceFragment
+            }
+            center {
+              ...PageReferenceFragment
+            }
+            mooladhara {
+              ...PageReferenceFragment
+            }
+            kundalini {
+              ...PageReferenceFragment
+            }
+            swadhistan {
+              ...PageReferenceFragment
+            }
+            nabhi {
+              ...PageReferenceFragment
+            }
+            void {
+              ...PageReferenceFragment
+            }
+            anahat {
+              ...PageReferenceFragment
+            }
+            vishuddhi {
+              ...PageReferenceFragment
+            }
+            agnya {
+              ...PageReferenceFragment
+            }
+            sahasrara {
+              ...PageReferenceFragment
+            }
+            techniquesPage {
+              ...PageReferenceFragment
+            }
+            techniquePageTag {
+              ...TagFragment
+            }
+            inspirationPage {
+              ...PageReferenceFragment
+            }
+            inspirationPageTags {
+              ...PageReferenceFragment
+            }
+            classesPage {
+              ...PageReferenceFragment
+            }
+            liveMeditationsPage {
+              ...PageReferenceFragment
+            }
+          }
         }
-        featuredPages {
-          ...PageReferenceFragment
-        }
-        footerPages {
-          ...PageReferenceFragment
-        }
-        musicPage {
-          ...PageReferenceFragment
-        }
-        musicPageTags {
-          ...PageReferenceFragment
-        }
-        subtleSystemPage {
-          ...PageReferenceFragment
-        }
-        left {
-          ...PageReferenceFragment
-        }
-        right {
-          ...PageReferenceFragment
-        }
-        center {
-          ...PageReferenceFragment
-        }
-        mooladhara {
-          ...PageReferenceFragment
-        }
-        kundalini {
-          ...PageReferenceFragment
-        }
-        swadhistan {
-          ...PageReferenceFragment
-        }
-        nabhi {
-          ...PageReferenceFragment
-        }
-        void {
-          ...PageReferenceFragment
-        }
-        anahat {
-          ...PageReferenceFragment
-        }
-        vishuddhi {
-          ...PageReferenceFragment
-        }
-        agnya {
-          ...PageReferenceFragment
-        }
-        sahasrara {
-          ...PageReferenceFragment
-        }
-        techniquesPage {
-          ...PageReferenceFragment
-        }
-        techniquePageTag {
-          ...TagFragment
-        }
-        inspirationPage {
-          ...PageReferenceFragment
-        }
-        inspirationPageTags {
-          ...PageReferenceFragment
-        }
-        classesPage {
-          ...PageReferenceFragment
-        }
-        liveMeditationsPage {
-          ...PageReferenceFragment
-        }
+      `
+
+      const result = await client.request<{ WeMeditateWebSetting: WeMeditateWebSettings }>(query)
+
+      if (!result.WeMeditateWebSetting) {
+        throw new Error('WeMeditateWebSettings not found')
       }
+
+      return result.WeMeditateWebSetting
     }
-  `
-
-  const result = await client.request<{ WeMeditateWebSetting: WeMeditateWebSettings }>(query)
-
-  if (!result.WeMeditateWebSetting) {
-    throw new Error('WeMeditateWebSettings not found')
-  }
-
-  return result.WeMeditateWebSetting
+  )
 }
 
 /**
  * Retrieves a specific page by ID.
+ *
+ * Note: Preview pages (fetched by ID) are NOT cached to ensure fresh data
+ * during content editing in the PayloadCMS admin panel.
  *
  * @param options - Query options
  * @param options.apiKey - PayloadCMS API key for authentication
@@ -291,6 +327,7 @@ export async function getPageById(options: {
   locale: Locale
   endpoint?: string
 }): Promise<Page | null> {
+  // No caching for preview pages to ensure fresh data
   const client = createGraphQLClient({
     apiKey: options.apiKey,
     endpoint: options.endpoint,
@@ -330,6 +367,7 @@ export async function getPageById(options: {
  * @param options.id - The meditation ID to retrieve
  * @param options.locale - The locale to retrieve the meditation in
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns The meditation data or null if not found
  *
  * @example
@@ -338,6 +376,7 @@ export async function getPageById(options: {
  *   apiKey: process.env.PAYLOAD_API_KEY!,
  *   id: '68fe4aba450d28b73070d8e5',
  *   locale: 'en',
+ *   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
  * })
  * ```
  */
@@ -346,36 +385,49 @@ export async function getMeditationById(options: {
   id: string
   locale: Locale
   endpoint?: string
+  kv?: KVNamespace
 }): Promise<Meditation | null> {
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
-
-  const fragments = buildQueryWithFragments(['fullMeditation'])
-
-  const query = `
-    ${fragments}
-
-    query GetMeditationById($id: String!, $locale: LocaleInputType) {
-      Meditation(id: $id, locale: $locale) {
-        ...FullMeditationFragment
-      }
-    }
-  `
-
-  const variables = {
+  const cacheKey = generateCacheKey('meditation', {
     id: options.id,
     locale: options.locale,
-  }
+  })
 
-  try {
-    const result = await client.request<{ Meditation: Meditation }>(query, variables)
-    return result.Meditation ?? null
-  } catch (error) {
-    // Meditation not found or other error
-    return null
-  }
+  return withCache(
+    options.kv,
+    cacheKey,
+    CacheTTL.MEDITATION,
+    async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
+
+      const fragments = buildQueryWithFragments(['fullMeditation'])
+
+      const query = `
+        ${fragments}
+
+        query GetMeditationById($id: String!, $locale: LocaleInputType) {
+          Meditation(id: $id, locale: $locale) {
+            ...FullMeditationFragment
+          }
+        }
+      `
+
+      const variables = {
+        id: options.id,
+        locale: options.locale,
+      }
+
+      try {
+        const result = await client.request<{ Meditation: Meditation }>(query, variables)
+        return result.Meditation ?? null
+      } catch (error) {
+        // Meditation not found or other error
+        return null
+      }
+    }
+  )
 }
 
 /**
@@ -387,6 +439,7 @@ export async function getMeditationById(options: {
  * @param options.locale - The locale to retrieve pages in
  * @param options.limit - Maximum number of pages to return (default: 100)
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns Array of page list items
  *
  * @example
@@ -396,6 +449,7 @@ export async function getMeditationById(options: {
  *   tagIds: ['tag1', 'tag2'],
  *   locale: 'en',
  *   limit: 20,
+ *   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
  * })
  * ```
  */
@@ -405,34 +459,48 @@ export async function getPagesByTags(options: {
   locale: Locale
   limit?: number
   endpoint?: string
+  kv?: KVNamespace
 }): Promise<PageListItem[]> {
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
-
-  const fragments = buildQueryWithFragments(['pageListItem'])
-
-  const query = `
-    ${fragments}
-
-    query GetPagesByTags($tagIds: [String!]!, $locale: LocaleInputType, $limit: Int) {
-      Pages(where: { tags: { in: $tagIds } }, locale: $locale, limit: $limit) {
-        docs {
-          ...PageListItemFragment
-        }
-      }
-    }
-  `
-
-  const variables = {
+  const cacheKey = generateCacheKey('pages-by-tags', {
     tagIds: options.tagIds,
     locale: options.locale,
     limit: options.limit || 100,
-  }
+  })
 
-  const result = await client.request<{ Pages: { docs: PageListItem[] } }>(query, variables)
-  return result.Pages?.docs ?? []
+  return withCache(
+    options.kv,
+    cacheKey,
+    CacheTTL.LIST,
+    async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
+
+      const fragments = buildQueryWithFragments(['pageListItem'])
+
+      const query = `
+        ${fragments}
+
+        query GetPagesByTags($tagIds: [String!]!, $locale: LocaleInputType, $limit: Int) {
+          Pages(where: { tags: { in: $tagIds } }, locale: $locale, limit: $limit) {
+            docs {
+              ...PageListItemFragment
+            }
+          }
+        }
+      `
+
+      const variables = {
+        tagIds: options.tagIds,
+        locale: options.locale,
+        limit: options.limit || 100,
+      }
+
+      const result = await client.request<{ Pages: { docs: PageListItem[] } }>(query, variables)
+      return result.Pages?.docs ?? []
+    }
+  )
 }
 
 /**
@@ -444,6 +512,7 @@ export async function getPagesByTags(options: {
  * @param options.locale - The locale to retrieve meditations in
  * @param options.limit - Maximum number of meditations to return (default: 100)
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns Array of meditation list items
  *
  * @example
@@ -453,6 +522,7 @@ export async function getPagesByTags(options: {
  *   tagIds: ['tag1', 'tag2'],
  *   locale: 'en',
  *   limit: 20,
+ *   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
  * })
  * ```
  */
@@ -462,34 +532,48 @@ export async function getMeditationsByTags(options: {
   locale: Locale
   limit?: number
   endpoint?: string
+  kv?: KVNamespace
 }): Promise<MeditationListItem[]> {
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
-
-  const fragments = buildQueryWithFragments(['meditationListItem'])
-
-  const query = `
-    ${fragments}
-
-    query GetMeditationsByTags($tagIds: [String!]!, $locale: LocaleInputType, $limit: Int) {
-      Meditations(where: { tags: { in: $tagIds } }, locale: $locale, limit: $limit) {
-        docs {
-          ...MeditationListItemFragment
-        }
-      }
-    }
-  `
-
-  const variables = {
+  const cacheKey = generateCacheKey('meditations-by-tags', {
     tagIds: options.tagIds,
     locale: options.locale,
     limit: options.limit || 100,
-  }
+  })
 
-  const result = await client.request<{ Meditations: { docs: MeditationListItem[] } }>(query, variables)
-  return result.Meditations?.docs ?? []
+  return withCache(
+    options.kv,
+    cacheKey,
+    CacheTTL.LIST,
+    async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
+
+      const fragments = buildQueryWithFragments(['meditationListItem'])
+
+      const query = `
+        ${fragments}
+
+        query GetMeditationsByTags($tagIds: [String!]!, $locale: LocaleInputType, $limit: Int) {
+          Meditations(where: { tags: { in: $tagIds } }, locale: $locale, limit: $limit) {
+            docs {
+              ...MeditationListItemFragment
+            }
+          }
+        }
+      `
+
+      const variables = {
+        tagIds: options.tagIds,
+        locale: options.locale,
+        limit: options.limit || 100,
+      }
+
+      const result = await client.request<{ Meditations: { docs: MeditationListItem[] } }>(query, variables)
+      return result.Meditations?.docs ?? []
+    }
+  )
 }
 
 /**
@@ -501,6 +585,7 @@ export async function getMeditationsByTags(options: {
  * @param options.locale - The locale to retrieve music in
  * @param options.limit - Maximum number of music items to return (default: 100)
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns Array of music items
  *
  * @example
@@ -510,6 +595,7 @@ export async function getMeditationsByTags(options: {
  *   tagIds: ['tag1', 'tag2'],
  *   locale: 'en',
  *   limit: 20,
+ *   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
  * })
  * ```
  */
@@ -519,32 +605,46 @@ export async function getMusicByTags(options: {
   locale: Locale
   limit?: number
   endpoint?: string
+  kv?: KVNamespace
 }): Promise<Music[]> {
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
-
-  const fragments = buildQueryWithFragments(['fullMusic'])
-
-  const query = `
-    ${fragments}
-
-    query GetMusicByTags($tagIds: [String!]!, $locale: LocaleInputType, $limit: Int) {
-      allMusic(where: { tags: { in: $tagIds } }, locale: $locale, limit: $limit) {
-        docs {
-          ...FullMusicFragment
-        }
-      }
-    }
-  `
-
-  const variables = {
+  const cacheKey = generateCacheKey('music-by-tags', {
     tagIds: options.tagIds,
     locale: options.locale,
     limit: options.limit || 100,
-  }
+  })
 
-  const result = await client.request<{ allMusic: { docs: Music[] } }>(query, variables)
-  return result.allMusic?.docs ?? []
+  return withCache(
+    options.kv,
+    cacheKey,
+    CacheTTL.MUSIC,
+    async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
+
+      const fragments = buildQueryWithFragments(['fullMusic'])
+
+      const query = `
+        ${fragments}
+
+        query GetMusicByTags($tagIds: [String!]!, $locale: LocaleInputType, $limit: Int) {
+          allMusic(where: { tags: { in: $tagIds } }, locale: $locale, limit: $limit) {
+            docs {
+              ...FullMusicFragment
+            }
+          }
+        }
+      `
+
+      const variables = {
+        tagIds: options.tagIds,
+        locale: options.locale,
+        limit: options.limit || 100,
+      }
+
+      const result = await client.request<{ allMusic: { docs: Music[] } }>(query, variables)
+      return result.allMusic?.docs ?? []
+    }
+  )
 }

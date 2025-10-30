@@ -1,9 +1,10 @@
+import { ReactNode } from "hono/jsx";
 import { usePageContext } from "vike-react/usePageContext";
 
 export type LinkProps = {
   href: string,
-  locale: string,
-  children: string,
+  locale?: string,
+  children: ReactNode,
 }
 
 export function Link({ href, locale, ...props }: LinkProps) {
