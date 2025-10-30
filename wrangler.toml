@@ -1,3 +1,12 @@
 name = "wemeditate-web"
 compatibility_date = "2025-09-06"
+compatibility_flags = ["nodejs_compat"]
 main = "virtual:photon:cloudflare:server-entry"
+
+# KV namespace for caching PayloadCMS data
+# To create: pnpm wrangler kv namespace create "WEMEDITATE_CACHE"
+# For preview: pnpm wrangler kv namespace create "WEMEDITATE_CACHE" --preview
+[[kv_namespaces]]
+binding = "WEMEDITATE_CACHE"
+id = "5c38f43ed50440a3bc7e06c8e9483856"
+preview_id = "cf4eaa694eed4a7aa7f0482905e496a1"

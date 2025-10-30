@@ -15,6 +15,7 @@ export default {
   description: "Demo showcasing Vike",
 
   extends: [vikeReact, vikePhoton],
+  port: 5173,
 
   // https://vike.dev/vike-photon
   photon: {

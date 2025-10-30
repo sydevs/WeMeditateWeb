@@ -8,7 +8,7 @@ export type LinkProps = {
 
 export function Link({ href, locale, ...props }: LinkProps) {
   const pageContext = usePageContext()
-  locale = locale ?? pageContext.locale
+  locale = (locale ?? pageContext.locale) || 'en'
 
   if (locale !== 'en') {
     href = '/' + locale + href

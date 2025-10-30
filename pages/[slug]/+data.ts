@@ -3,52 +3,42 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-// import { getPageBySlug } from '@/lib/queries/pages'
-// import type { PageData as PageType } from '@/lib/queries/pages'
+import { Page } from '../../server/graphql-types'
+import { getPageBySlug } from '../../server/graphql-client'
+import { render } from 'vike/abort'
 
 export interface PageData {
-  // page: PageType | null
+  page: Page
   locale: string
   slug: string
 }
 
 export async function data(pageContext: PageContextServer) {
   const {
+    // cloudflare,
     locale,
     routeParams: { slug },
   } = pageContext
 
+  // Access Cloudflare KV namespace
+  // const kv = cloudflare?.env?.WEMEDITATE_CACHE
+
+  // Let errors throw - they'll be caught by ErrorBoundary
+  const page = await getPageBySlug({
+    slug,
+    locale,
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
+    endpoint: import.meta.env.PAYLOAD_URL + '/api/graphql',
+  })
+
+  if (!page) {
+    // Page not found - this is a valid 404 state, not an error
+    throw render(404, "Page not found.")
+  }
+
   return {
+    page,
     locale,
     slug,
   }
 }
-
-// export async function data(pageContext: PageContextServer) {
-//   const {
-//     cloudflare,
-//     locale,
-//     routeParams: { slug },
-//   } = pageContext
-
-//   // Access Cloudflare KV namespace
-//   const kv = cloudflare?.env?.WEMEDITATE_CACHE
-
-//   // Let errors throw - they'll be caught by ErrorBoundary
-//   const page = await getPageBySlug(slug, locale, { kv })
-
-//   if (!page) {
-//     // Page not found - this is a valid 404 state, not an error
-//     return {
-//       page: null,
-//       locale,
-//       slug,
-//     }
-//   }
-
-//   return {
-//     page,
-//     locale,
-//     slug,
-//   }
-// }
