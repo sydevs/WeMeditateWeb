@@ -17,11 +17,11 @@ export function onBeforeRoute(pageContext: PageContext) {
 }
 
 function extractLocale(url: PageContext['urlParsed']) {
-  const { href, pathname } = url
+  const { href, pathname, searchOriginal } = url
 
   // Match locale pattern at the start of the path (e.g., /en/, /fr/, /es-MX/)
   const match = pathname.match(/^\/([a-z]{2}(?:-[A-Z]{2})?)(?:\/(.*))?$/);
-  
+
   let locale = 'en'; // Default locale
   let pathWithoutLocale = pathname === '/' ? '/index' : pathname;
 
@@ -30,7 +30,9 @@ function extractLocale(url: PageContext['urlParsed']) {
     pathWithoutLocale = match[2] ? `/${match[2]}` : '/index';
 
     if (locale == 'en') {
-      throw redirect(pathWithoutLocale, 301)
+      // Preserve query parameters when redirecting
+      const redirectUrl = modifyUrl(href, { pathname: pathWithoutLocale })
+      throw redirect(redirectUrl, 301)
     }
   }
 

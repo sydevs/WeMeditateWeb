@@ -4,28 +4,31 @@
 
 import type { PageContextServer } from 'vike/types'
 import { Page } from '../../server/graphql-types'
-import { getPageBySlug } from '../../server/graphql-client'
+import { getPageById } from '../../server/graphql-client'
 import { render } from 'vike/abort'
 
-export interface PageData {
-  page: Page
+export interface PreviewPageData {
+  initialData: Page
   locale: string
-  slug: string
 }
 
-export async function data(pageContext: PageContextServer): Promise<PageData> {
-  const {
-    // cloudflare,
-    locale,
-    routeParams: { slug },
-  } = pageContext
+export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
+  // Extract URL parameters
+  const { search: { collection, id } } = pageContext.urlParsed
+  const { locale } = pageContext
 
-  // Access Cloudflare KV namespace
-  // const kv = cloudflare?.env?.WEMEDITATE_CACHE
+  // Validate required parameters
+  if (!collection) {
+    throw new Error('Preview error: Missing "collection" parameter')
+  }
+
+  if (!id) {
+    throw new Error('Preview error: Missing "id" parameter')
+  }
 
   // Let errors throw - they'll be caught by ErrorBoundary
-  const page = await getPageBySlug({
-    slug,
+  const page = await getPageById({
+    id,
     locale,
     apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
@@ -37,8 +40,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   }
 
   return {
-    page,
+    initialData: page,
     locale,
-    slug,
   }
 }

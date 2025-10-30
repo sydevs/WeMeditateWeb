@@ -8,6 +8,7 @@
     "deploy": "vike build && wrangler deploy"
   },
   "dependencies": {
+    "@payloadcms/live-preview-react": "^3.61.1",
     "@photonjs/cloudflare": "^0.1.4",
     "@photonjs/hono": "^0.1.4",
     "@sentry/react": "^10.22.0",
