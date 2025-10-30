@@ -1,0 +1,34 @@
+import { redirect } from 'vike/abort';
+import { modifyUrl } from 'vike/modifyUrl'
+import { PageContext } from 'vike/types'
+
+export function onBeforeRoute(pageContext: PageContext) {
+  const { href, pathname } = pageContext.urlParsed
+
+  // Match locale pattern at the start of the path (e.g., /en/, /fr/, /es-MX/)
+  const match = pathname.match(/^\/([a-z]{2}(?:-[A-Z]{2})?)(?:\/(.*))?$/);
+  
+  let locale = 'en'; // Default locale
+  let pathWithoutLocale = pathname === '/' ? '/index' : pathname;
+
+  if (match) {
+    locale = match[1];
+    pathWithoutLocale = match[2] ? `/${match[2]}` : '/index';
+
+    if (locale == 'en') {
+      throw redirect(pathWithoutLocale, 301)
+    }
+  }
+
+  const urlWithoutLocale = modifyUrl(href, { pathname: pathWithoutLocale })
+
+  return {
+    pageContext: {
+      // Make locale available as pageContext.locale
+      locale,
+      // Vike's router will use pageContext.urlLogical instead of pageContext.urlOriginal and
+      // the locale is removed from pageContext.urlParsed
+      urlLogical: urlWithoutLocale,
+    },
+  }
+}
