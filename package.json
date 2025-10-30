@@ -1,0 +1,44 @@
+{
+  "scripts": {
+    "dev": "vike dev",
+    "build": "vike build",
+    "preview": "vike preview",
+    "lint": "eslint .",
+    "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
+    "deploy": "vike build && wrangler deploy"
+  },
+  "dependencies": {
+    "vike": "^0.4.244",
+    "@photonjs/hono": "^0.1.4",
+    "hono": "^4.10.3",
+    "vike-photon": "^0.1.12",
+    "@vitejs/plugin-react": "^5.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vike-react": "^0.6.10",
+    "@sentry/react": "^10.22.0",
+    "@universal-middleware/core": "^0.4.12",
+    "@photonjs/cloudflare": "^0.1.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "eslint": "^9.38.0",
+    "@eslint/js": "^9.38.0",
+    "typescript-eslint": "^8.46.2",
+    "globals": "^16.4.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "@types/node": "^20.19.21",
+    "prettier": "^3.6.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@sentry/vite-plugin": "^4.5.0",
+    "tailwindcss": "^4.1.16",
+    "@tailwindcss/vite": "^4.1.16",
+    "@cloudflare/workers-types": "^4.20251014.0",
+    "wrangler": "^4.45.0"
+  },
+  "type": "module"
+}
