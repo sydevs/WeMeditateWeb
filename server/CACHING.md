@@ -84,7 +84,27 @@ The following GraphQL query functions support caching:
 - ✅ `getPagesByTags()` - Cached (30 minutes)
 - ✅ `getMeditationsByTags()` - Cached (30 minutes)
 - ✅ `getMusicByTags()` - Cached (1 hour)
-- ❌ `getPageById()` - **NOT cached** (used for preview mode)
+- ✅ `getPageById()` - **Cached (1 hour)** - supports `bypassCache` flag for preview mode
+
+### Cache Bypass for Preview Mode
+
+Some query functions support a `bypassCache` flag to skip caching for specific requests:
+
+```typescript
+// Preview mode - always fetch fresh data
+const previewPage = await getPageById({
+  id: '68fe4aba450d28b73070d8e5',
+  locale: 'en',
+  apiKey: process.env.PAYLOAD_API_KEY!,
+  kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
+  bypassCache: true,  // Skip cache entirely
+})
+```
+
+This is particularly useful for:
+- PayloadCMS live preview (ensures editors see latest changes)
+- Admin interfaces requiring real-time data
+- Testing and debugging cache behavior
 
 ### Graceful Degradation
 
@@ -93,7 +113,7 @@ The caching layer is designed to **never fail requests**:
 - If KV is unavailable, queries execute normally without caching
 - If cache read fails, the query executes and attempts to cache the result
 - If cache write fails, the query result is still returned successfully
-- All cache errors are logged but not thrown
+- All cache errors are logged to both console and Sentry but not thrown
 
 ## Cache Management
 
@@ -189,15 +209,15 @@ pnpm wrangler kv namespace create "WEMEDITATE_CACHE" --preview
 
 ### Adjusting TTLs
 
-To modify cache durations, edit the `CacheTTL` constants in [kv-cache.ts](./kv-cache.ts:12-20):
+To modify cache durations, edit the `CacheTTL` constants in [kv-cache.ts](./kv-cache.ts):
 
 ```typescript
 export const CacheTTL = {
-  PAGE: 3600,        // Change to desired seconds
-  SETTINGS: 86400,
-  LIST: 1800,
-  MEDITATION: 3600,
-  MUSIC: 3600,
+  PAGE: 3600,        // 1 hour
+  SETTINGS: 86400,   // 24 hours
+  LIST: 1800,        // 30 minutes
+  MEDITATION: 3600,  // 1 hour
+  MUSIC: 3600,       // 1 hour
 } as const
 ```
 

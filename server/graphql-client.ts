@@ -126,11 +126,11 @@ export async function getPageBySlug(options: {
     locale: options.locale,
   })
 
-  return withCache(
-    options.kv,
+  return withCache({
+    kv: options.kv,
     cacheKey,
-    CacheTTL.PAGE,
-    async () => {
+    ttl: CacheTTL.PAGE,
+    fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
         endpoint: options.endpoint,
@@ -158,7 +158,7 @@ export async function getPageBySlug(options: {
       const result = await client.request<{ Pages: { docs: Page[] } }>(query, variables)
       return result.Pages?.docs?.[0] ?? null
     }
-  )
+  })
 }
 
 /**
@@ -195,11 +195,11 @@ export async function getWeMeditateWebSettings(options: {
 }): Promise<WeMeditateWebSettings> {
   const cacheKey = generateCacheKey('settings', {})
 
-  return withCache(
-    options.kv,
+  return withCache({
+    kv: options.kv,
     cacheKey,
-    CacheTTL.SETTINGS,
-    async () => {
+    ttl: CacheTTL.SETTINGS,
+    fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
         endpoint: options.endpoint,
@@ -298,28 +298,41 @@ export async function getWeMeditateWebSettings(options: {
 
       return result.WeMeditateWebSetting
     }
-  )
+  })
 }
 
 /**
  * Retrieves a specific page by ID.
  *
- * Note: Preview pages (fetched by ID) are NOT cached to ensure fresh data
- * during content editing in the PayloadCMS admin panel.
+ * This function supports caching with an optional bypass flag for preview mode.
+ * When used in preview mode, set bypassCache to true to ensure fresh data.
  *
  * @param options - Query options
  * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.id - The page ID to retrieve
  * @param options.locale - The locale to retrieve the page in
  * @param options.endpoint - Optional GraphQL endpoint URL
+ * @param options.kv - Optional Cloudflare KV namespace for caching
+ * @param options.bypassCache - If true, bypass cache (useful for preview mode)
  * @returns The page data or null if not found
  *
  * @example
  * ```typescript
+ * // Normal mode (cached):
  * const page = await getPageById({
  *   apiKey: process.env.PAYLOAD_API_KEY!,
  *   id: '68fe4aba450d28b73070d8e5',
  *   locale: 'en',
+ *   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
+ * })
+ *
+ * // Preview mode (bypass cache):
+ * const previewPage = await getPageById({
+ *   apiKey: process.env.PAYLOAD_API_KEY!,
+ *   id: '68fe4aba450d28b73070d8e5',
+ *   locale: 'en',
+ *   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
+ *   bypassCache: true,
  * })
  * ```
  */
@@ -328,37 +341,51 @@ export async function getPageById(options: {
   id: string
   locale: Locale
   endpoint?: string
+  kv?: KVNamespace
+  bypassCache?: boolean
 }): Promise<Page | null> {
-  // No caching for preview pages to ensure fresh data
-  const client = createGraphQLClient({
-    apiKey: options.apiKey,
-    endpoint: options.endpoint,
-  })
-
-  const fragments = buildQueryWithFragments(['fullPage'])
-
-  const query = `
-    ${fragments}
-
-    query GetPageById($id: String!, $locale: LocaleInputType) {
-      Page(id: $id, locale: $locale) {
-        ...FullPageFragment
-      }
-    }
-  `
-
-  const variables = {
+  const cacheKey = generateCacheKey('page', {
     id: options.id,
     locale: options.locale,
-  }
+  })
 
-  try {
-    const result = await client.request<{ Page: Page }>(query, variables)
-    return result.Page ?? null
-  } catch (error) {
-    // Page not found or other error
-    return null
-  }
+  return withCache({
+    kv: options.kv,
+    cacheKey,
+    ttl: CacheTTL.PAGE,
+    bypassCache: options.bypassCache,
+    fetchFn: async () => {
+      const client = createGraphQLClient({
+        apiKey: options.apiKey,
+        endpoint: options.endpoint,
+      })
+
+      const fragments = buildQueryWithFragments(['fullPage'])
+
+      const query = `
+        ${fragments}
+
+        query GetPageById($id: String!, $locale: LocaleInputType) {
+          Page(id: $id, locale: $locale) {
+            ...FullPageFragment
+          }
+        }
+      `
+
+      const variables = {
+        id: options.id,
+        locale: options.locale,
+      }
+
+      try {
+        const result = await client.request<{ Page: Page }>(query, variables)
+        return result.Page ?? null
+      } catch (error) {
+        // Page not found or other error
+        return null
+      }
+    }
+  })
 }
 
 /**
@@ -394,11 +421,11 @@ export async function getMeditationById(options: {
     locale: options.locale,
   })
 
-  return withCache(
-    options.kv,
+  return withCache({
+    kv: options.kv,
     cacheKey,
-    CacheTTL.MEDITATION,
-    async () => {
+    ttl: CacheTTL.MEDITATION,
+    fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
         endpoint: options.endpoint,
@@ -429,7 +456,7 @@ export async function getMeditationById(options: {
         return null
       }
     }
-  )
+  })
 }
 
 /**
@@ -469,11 +496,11 @@ export async function getPagesByTags(options: {
     limit: options.limit || 100,
   })
 
-  return withCache(
-    options.kv,
+  return withCache({
+    kv: options.kv,
     cacheKey,
-    CacheTTL.LIST,
-    async () => {
+    ttl: CacheTTL.LIST,
+    fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
         endpoint: options.endpoint,
@@ -502,7 +529,7 @@ export async function getPagesByTags(options: {
       const result = await client.request<{ Pages: { docs: PageListItem[] } }>(query, variables)
       return result.Pages?.docs ?? []
     }
-  )
+  })
 }
 
 /**
@@ -542,11 +569,11 @@ export async function getMeditationsByTags(options: {
     limit: options.limit || 100,
   })
 
-  return withCache(
-    options.kv,
+  return withCache({
+    kv: options.kv,
     cacheKey,
-    CacheTTL.LIST,
-    async () => {
+    ttl: CacheTTL.LIST,
+    fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
         endpoint: options.endpoint,
@@ -575,7 +602,7 @@ export async function getMeditationsByTags(options: {
       const result = await client.request<{ Meditations: { docs: MeditationListItem[] } }>(query, variables)
       return result.Meditations?.docs ?? []
     }
-  )
+  })
 }
 
 /**
@@ -615,11 +642,11 @@ export async function getMusicByTags(options: {
     limit: options.limit || 100,
   })
 
-  return withCache(
-    options.kv,
+  return withCache({
+    kv: options.kv,
     cacheKey,
-    CacheTTL.MUSIC,
-    async () => {
+    ttl: CacheTTL.MUSIC,
+    fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
         endpoint: options.endpoint,
@@ -648,5 +675,5 @@ export async function getMusicByTags(options: {
       const result = await client.request<{ allMusic: { docs: Music[] } }>(query, variables)
       return result.allMusic?.docs ?? []
     }
-  )
+  })
 }

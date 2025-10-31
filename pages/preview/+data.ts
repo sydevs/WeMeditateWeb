@@ -35,11 +35,14 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   })
 
   // Let errors throw - they'll be caught by ErrorBoundary
+  // Use bypassCache: true for preview mode to ensure fresh data
   const page = await getPageById({
     id,
     locale,
     apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    kv: cloudflare?.env?.WEMEDITATE_CACHE,
+    bypassCache: true,  // Always fetch fresh data in preview mode
   })
 
   if (!page) {

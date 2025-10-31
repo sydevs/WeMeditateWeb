@@ -8,10 +8,11 @@
  * - Pages: 1 hour TTL (frequently updated content)
  * - Settings: 24 hours TTL (rarely updated global config)
  * - Lists: 30 minutes TTL (dynamic content like tags)
- * - Preview mode: No caching (always fetch fresh data)
+ * - Preview mode: Cache bypass flag available (always fetch fresh data when enabled)
  */
 
 import { KVNamespace } from "@cloudflare/workers-types"
+import * as Sentry from "@sentry/react"
 
 /**
  * Default TTL values in seconds
@@ -72,16 +73,8 @@ export function generateCacheKey(
  * @param kv - Cloudflare KV namespace (optional, returns null if not provided)
  * @param key - Cache key to retrieve
  * @returns Parsed cached data or null if not found/expired/unavailable
- *
- * @example
- * ```typescript
- * const cached = await getCachedResponse<Page>(kv, 'page:slug=home:locale=en')
- * if (cached) {
- *   return cached
- * }
- * ```
  */
-export async function getCachedResponse<T>(
+async function getCachedResponse<T>(
   kv: KVNamespace | undefined,
   key: string
 ): Promise<T | null> {
@@ -94,8 +87,12 @@ export async function getCachedResponse<T>(
     const cached = await kv.get(key, 'json')
     return cached as T | null
   } catch (error) {
-    // Log error but don't throw - graceful degradation
+    // Log error to Sentry and console but don't throw - graceful degradation
     console.error('KV cache read error:', error)
+    Sentry.captureException(error, {
+      tags: { cache_operation: 'read' },
+      extra: { cacheKey: key }
+    })
     return null
   }
 }
@@ -107,13 +104,8 @@ export async function getCachedResponse<T>(
  * @param key - Cache key to store under
  * @param data - Data to cache (must be JSON-serializable)
  * @param ttl - Time to live in seconds
- *
- * @example
- * ```typescript
- * await setCachedResponse(kv, 'page:slug=home:locale=en', pageData, CacheTTL.PAGE)
- * ```
  */
-export async function setCachedResponse<T>(
+async function setCachedResponse<T>(
   kv: KVNamespace | undefined,
   key: string,
   data: T,
@@ -129,8 +121,12 @@ export async function setCachedResponse<T>(
       expirationTtl: ttl,
     })
   } catch (error) {
-    // Log error but don't throw - caching is not critical
+    // Log error to Sentry and console but don't throw - caching is not critical
     console.error('KV cache write error:', error)
+    Sentry.captureException(error, {
+      tags: { cache_operation: 'write' },
+      extra: { cacheKey: key, ttl }
+    })
   }
 }
 
@@ -138,33 +134,55 @@ export async function setCachedResponse<T>(
  * Wrapper for caching GraphQL query results.
  *
  * This function implements a read-through cache pattern:
- * 1. Check cache first
+ * 1. Check cache first (unless bypassCache is true)
  * 2. If cache miss, execute the query function
- * 3. Store result in cache before returning
+ * 3. Store result in cache before returning (unless bypassCache is true)
  * 4. Return the result
  *
- * @param kv - Cloudflare KV namespace (optional)
- * @param cacheKey - Cache key to use
- * @param ttl - Time to live in seconds
- * @param queryFn - Async function that executes the GraphQL query
+ * Errors during cache operations are logged to Sentry but do not interrupt the request.
+ * If caching fails, the query function is executed and the result is returned without caching.
+ *
+ * @param options - Cache configuration options
+ * @param options.kv - Cloudflare KV namespace (optional, bypasses caching if not provided)
+ * @param options.cacheKey - Cache key to use
+ * @param options.ttl - Time to live in seconds
+ * @param options.fetchFn - Async function that executes the GraphQL query
+ * @param options.bypassCache - If true, skip cache read/write (useful for preview mode)
  * @returns The query result (either from cache or fresh)
  *
  * @example
  * ```typescript
- * const page = await withCache(
+ * const page = await withCache({
  *   kv,
- *   'page:slug=home:locale=en',
- *   CacheTTL.PAGE,
- *   async () => await client.request(query, variables)
- * )
+ *   cacheKey: generateCacheKey('page', { slug: 'home', locale: 'en' }),
+ *   ttl: CacheTTL.PAGE,
+ *   fetchFn: async () => await client.request(query, variables)
+ * })
+ *
+ * // For preview mode:
+ * const previewPage = await withCache({
+ *   kv,
+ *   cacheKey: generateCacheKey('page', { id: '123', locale: 'en' }),
+ *   ttl: CacheTTL.PAGE,
+ *   fetchFn: async () => await client.request(query, variables),
+ *   bypassCache: true  // Always fetch fresh data
+ * })
  * ```
  */
-export async function withCache<T>(
-  kv: KVNamespace | undefined,
-  cacheKey: string,
-  ttl: number,
-  queryFn: () => Promise<T>
-): Promise<T> {
+export async function withCache<T>(options: {
+  kv: KVNamespace | undefined
+  cacheKey: string
+  ttl: number
+  fetchFn: () => Promise<T>
+  bypassCache?: boolean
+}): Promise<T> {
+  const { kv, cacheKey, ttl, fetchFn, bypassCache = false } = options
+
+  // If bypass flag is set, skip cache entirely
+  if (bypassCache) {
+    return await fetchFn()
+  }
+
   // Try to get from cache first
   const cached = await getCachedResponse<T>(kv, cacheKey)
   if (cached !== null) {
@@ -172,7 +190,7 @@ export async function withCache<T>(
   }
 
   // Cache miss - execute the query
-  const result = await queryFn()
+  const result = await fetchFn()
 
   // Store in cache for next time (fire and forget)
   void setCachedResponse(kv, cacheKey, result, ttl)
