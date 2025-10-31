@@ -28,6 +28,12 @@ pnpm deploy
 
 # Linting
 pnpm lint
+
+# Component development with Ladle (port 61000)
+pnpm ladle
+
+# Build static component library
+pnpm ladle:build
 ```
 
 ## Environment Setup
@@ -299,12 +305,16 @@ All GraphQL requests require authentication via `Authorization: clients API-Key 
 
 ## Tailwind CSS
 
-Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin. CSS is automatically processed during build.
+Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin using the **CSS-first configuration approach**.
 
-**Configuration**: [tailwind.config.ts](tailwind.config.ts) - Minimal configuration extending only:
+**Theme Configuration**: [layouts/tailwind.css](layouts/tailwind.css) - Uses `@theme` directive for customization:
 - Brand colors (teal, coral, gray palettes with semantic colors)
 - Typography (Raleway and Futura Book fonts with weights 200-700)
+- Custom font weights (200-700)
+- Semantic colors (error, success, info)
 - Uses Tailwind CSS defaults for spacing, font sizes, shadows, and animations
+
+**Important**: In Tailwind v4, theme customization is done via the `@theme` directive in CSS, NOT in `tailwind.config.ts`. The config file only specifies content paths for class detection.
 
 **Fonts**: Web fonts are loaded via [layouts/fonts.css](layouts/fonts.css):
 - Raleway (weights: 200, 300, 400, 500, 600, 700) - Primary font family
@@ -341,3 +351,24 @@ This project uses the **Atomic Design Methodology** to build a consistent, scala
 - Document components with JSDoc and usage examples
 
 When implementing new UI components, always reference [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for detailed guidance on component structure, naming conventions, styling patterns, and accessibility requirements.
+
+## Component Development with Ladle
+
+This project uses **[Ladle](https://ladle.dev/)** for component development and documentation. Ladle is a lightweight, Vite-powered alternative to Storybook.
+
+**Quick Start**:
+- Run component library: `pnpm ladle` (opens at [http://localhost:61000/](http://localhost:61000/))
+- Build static library: `pnpm ladle:build`
+
+**Writing Stories**:
+- Create `ComponentName.stories.tsx` alongside your component
+- Export named story functions using `Story` type from `@ladle/react`
+- Stories automatically appear in Ladle UI with hot module replacement
+
+**See [STORYBOOK.md](STORYBOOK.md)** for complete documentation on:
+- Writing stories with Component Story Format (CSF)
+- Best practices for documenting component variants
+- Configuration and customization options
+- Deployment of static component library
+
+**Existing Stories**: Button, Text, Heading, and Input atoms have example stories to reference.

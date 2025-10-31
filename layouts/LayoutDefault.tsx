@@ -5,6 +5,7 @@ import logoUrl from "../assets/logo.svg";
 import { Link } from "../components/Link.js";
 import { useData } from "vike-react/useData";
 import { WeMeditateWebSettings } from "../server/graphql-types";
+import { Button } from "../components/atoms";
 
 export default function LayoutDefault({ children }: { children: React.ReactNode }) {
   const data = useData<{ settings?: WeMeditateWebSettings }>()
@@ -27,7 +28,10 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
           return <Link key={page.id} href={'/' + page.slug}>{page.title}</Link>
         })}
       </Sidebar>
-      <Content>{children}</Content>
+      <Content>
+        <Button>Test</Button>
+        {children}
+      </Content>
     </div>
   );
 }

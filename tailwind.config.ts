@@ -1,5 +1,18 @@
 import type { Config } from 'tailwindcss'
 
+/**
+ * Tailwind CSS v4 Configuration
+ *
+ * NOTE: In Tailwind v4, theme customization (colors, fonts, etc.) is done
+ * via the @theme directive in CSS files (see layouts/tailwind.css).
+ *
+ * This config file is kept for:
+ * - Content paths (which files to scan for classes)
+ * - Future plugin configurations if needed
+ *
+ * The theme.extend configuration below is IGNORED in v4 and kept for
+ * reference only. All actual theme customization is in layouts/tailwind.css.
+ */
 export default {
   content: [
     './pages/**/*.{js,ts,jsx,tsx}',

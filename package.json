@@ -5,7 +5,9 @@
     "preview": "vike preview",
     "lint": "eslint .",
     "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
-    "deploy": "vike build && wrangler deploy"
+    "deploy": "vike build && wrangler deploy",
+    "ladle": "ladle serve",
+    "ladle:build": "ladle build"
   },
   "dependencies": {
     "@payloadcms/live-preview-react": "^3.61.1",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251014.0",
     "@eslint/js": "^9.38.0",
+    "@ladle/react": "^5.1.0",
     "@sentry/vite-plugin": "^4.5.0",
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^20.19.21",

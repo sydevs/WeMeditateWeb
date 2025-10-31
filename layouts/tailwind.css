@@ -1,1 +1,78 @@
+/**
+ * Tailwind CSS v4 - CSS-First Configuration
+ *
+ * In Tailwind v4, theme customization is done using the @theme directive
+ * instead of tailwind.config.ts. This file defines all custom design tokens
+ * for the WeMeditate design system.
+ *
+ * @see https://tailwindcss.com/docs/theme
+ */
+
 @import "tailwindcss";
+
+/* Tell Tailwind where to find classes for scanning */
+@source "../components";
+@source "../pages";
+@source "../layouts";
+
+@theme {
+  /* Primary brand colors (Teal) */
+  --color-teal-50: #ebf4f3;
+  --color-teal-100: #c5e0dc;
+  --color-teal-200: #a3cec9;
+  --color-teal-300: #83bcb4;
+  --color-teal-400: #72b3a9;
+  --color-teal-500: #61aaa0;
+  --color-teal-600: #4c8d84;
+  --color-teal-700: #3d726b;
+  --color-teal-800: #2e5652;
+  --color-teal-900: #1f3a38;
+
+  /* Secondary/Accent colors (Coral/Salmon) */
+  --color-coral-50: #fef5f3;
+  --color-coral-100: #fce4df;
+  --color-coral-200: #fad2c9;
+  --color-coral-300: #f8c0b3;
+  --color-coral-400: #f4a796;
+  --color-coral-500: #e08e79;
+  --color-coral-600: #c54d2e;
+  --color-coral-700: #b44528;
+  --color-coral-800: #8b3420;
+  --color-coral-900: #5f2318;
+
+  /* Accent color */
+  --color-accent: #ff856f;
+
+  /* Neutral grays */
+  --color-gray-50: #f7fbfa;
+  --color-gray-100: #f6f6f6;
+  --color-gray-200: #ebebeb;
+  --color-gray-300: #d7d7d6;
+  --color-gray-400: #c6c6c6;
+  --color-gray-500: #aaaaa9;
+  --color-gray-600: #9d9d9c;
+  --color-gray-700: #7b7b7b;
+  --color-gray-800: #5e6063;
+  --color-gray-900: #555555;
+
+  /* Semantic colors */
+  --color-error: #cc5e5e;
+  --color-error-dark: #8b0000;
+  --color-success: #4c8d84;
+  --color-info: #61aaa0;
+
+  /* Background colors */
+  --color-bg-warm: #faf0e3;
+
+  /* Font families */
+  --font-sans: 'Raleway', sans-serif;
+  --font-secondary: 'Futura Book', sans-serif;
+
+  /* Font weights */
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+}
