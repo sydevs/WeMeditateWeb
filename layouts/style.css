@@ -1,7 +1,4 @@
-/* Links */
-a {
-  text-decoration: none;
-}
+/* Sidebar Links */
 #sidebar a {
   padding: 2px 10px;
   margin-left: -10px;
@@ -13,7 +10,6 @@ a {
 /* Reset */
 body {
   margin: 0;
-  font-family: sans-serif;
 }
 * {
   box-sizing: border-box;

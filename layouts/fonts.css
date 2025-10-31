@@ -1,0 +1,158 @@
+/**
+ * Web Font Declarations
+ *
+ * Custom fonts for the WeMeditate project.
+ * - Raleway: Primary sans-serif font family (weights: 200, 300, 400, 500, 600, 700)
+ * - Futura Book: Secondary font family for special headings
+ * - WeMeditate Icons: Custom icon font
+ */
+
+/* Raleway Extra Light - 200 */
+@font-face {
+  font-family: 'Raleway';
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/raleway/RalewayExtraLight.woff2') format('woff2'),
+       url('/fonts/raleway/RalewayExtraLight.woff') format('woff');
+}
+
+/* Raleway Light - 300 */
+@font-face {
+  font-family: 'Raleway';
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/raleway/RalewayLight.woff2') format('woff2'),
+       url('/fonts/raleway/RalewayLight.woff') format('woff');
+}
+
+/* Raleway Regular - 400 */
+@font-face {
+  font-family: 'Raleway';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/raleway/RalewayRegular.woff2') format('woff2'),
+       url('/fonts/raleway/RalewayRegular.woff') format('woff');
+}
+
+/* Raleway Medium - 500 */
+@font-face {
+  font-family: 'Raleway';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/raleway/RalewayMedium.woff2') format('woff2'),
+       url('/fonts/raleway/RalewayMedium.woff') format('woff');
+}
+
+/* Raleway Semi Bold - 600 */
+@font-face {
+  font-family: 'Raleway';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/raleway/RalewaySemiBold.woff2') format('woff2'),
+       url('/fonts/raleway/RalewaySemiBold.woff') format('woff');
+}
+
+/* Raleway Bold - 700 */
+@font-face {
+  font-family: 'Raleway';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/raleway/RalewayBold.woff2') format('woff2'),
+       url('/fonts/raleway/RalewayBold.woff') format('woff');
+}
+
+/* Futura Book - 400 */
+@font-face {
+  font-family: 'Futura Book';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/futura-book/FuturaBook.woff2') format('woff2'),
+       url('/fonts/futura-book/FuturaBook.woff') format('woff');
+}
+
+/* WeMeditate Icons */
+@font-face {
+  font-family: 'WeMeditate Icons';
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+  src: url('/fonts/icons/icomoon.woff') format('woff');
+}
+
+/**
+ * Base Typography Styles
+ *
+ * Set default font properties for the entire application.
+ */
+html {
+  font-size: 62.5%; /* 1rem = 10px, makes rem calculations easier */
+  font-family: 'Raleway', sans-serif;
+  font-weight: 300; /* Light weight as default per brand guidelines */
+  color: #7b7b7b; /* Gray-700 - default text color */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-size: 1.6rem; /* 16px */
+  line-height: 1.5;
+}
+
+/**
+ * Headings
+ *
+ * Default styling for heading elements.
+ */
+h1, h2, h3, h4, h5, h6 {
+  color: #7b7b7b;
+  font-weight: 500; /* Medium weight for headings */
+  margin: 0.83em 0;
+}
+
+h1 {
+  font-weight: 600; /* Semi-bold for h1 */
+}
+
+/**
+ * Strong/Bold elements
+ */
+b, strong {
+  font-weight: 500;
+}
+
+/**
+ * Links
+ */
+a {
+  color: #61aaa0; /* Teal-500 - primary brand color */
+  text-decoration: none;
+  transition: opacity 200ms ease;
+}
+
+a:hover {
+  opacity: 0.5;
+}
+
+/**
+ * Icon Font Helper Class
+ *
+ * Use this class to apply the icon font to elements.
+ * Example: <i class="icon">icon_name</i>
+ */
+.icon {
+  font-family: 'WeMeditate Icons';
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

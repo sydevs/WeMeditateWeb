@@ -198,7 +198,11 @@ pages/                    # Vike file-based routing
 layouts/                 # Layout components
 └── LayoutDefault.tsx    # Global layout with sidebar/nav
 
-components/              # Reusable UI components
+components/              # Reusable UI components (Atomic Design structure)
+├── atoms/              # Basic building blocks (Button, Input, Link, etc.)
+├── molecules/          # Simple component groups (FormField, SearchBar, etc.)
+├── organisms/          # Complex sections (Header, Footer, MeditationGrid, etc.)
+├── templates/          # Page layout structures
 └── Link.tsx            # Locale-aware link component
 
 server/                  # Server-side utilities
@@ -296,6 +300,18 @@ All GraphQL requests require authentication via `Authorization: clients API-Key 
 
 Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin. CSS is automatically processed during build.
 
+**Configuration**: [tailwind.config.ts](tailwind.config.ts) - Minimal configuration extending only:
+- Brand colors (teal, coral, gray palettes with semantic colors)
+- Typography (Raleway and Futura Book fonts with weights 200-700)
+- Uses Tailwind CSS defaults for spacing, font sizes, shadows, and animations
+
+**Fonts**: Web fonts are loaded via [layouts/fonts.css](layouts/fonts.css):
+- Raleway (weights: 200, 300, 400, 500, 600, 700) - Primary font family
+- Futura Book (weight: 400) - Secondary font family
+- WeMeditate Icons - Custom icon font
+- Font files located in [public/fonts/](public/fonts/) (WOFF2 + WOFF formats)
+- Uses `font-display: swap` for optimal performance
+
 ## TypeScript Configuration
 
 [tsconfig.json](tsconfig.json) is configured for:
@@ -303,3 +319,23 @@ Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin. CSS is automatica
 - Vite environment types
 - Cloudflare Workers types (`@cloudflare/workers-types`)
 - Strict type checking
+
+## Design System
+
+This project uses the **Atomic Design Methodology** to build a consistent, scalable component library. See [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for comprehensive guidelines on:
+
+- **Design Principles**: Mobile-first, performance-focused, accessible development
+- **Design Tokens**: Colors, typography, spacing scales from wemeditate.com brand
+- **Component Architecture**: Atoms, molecules, organisms, templates, and pages structure
+- **Implementation Guidelines**: Best practices for building components with React + Tailwind CSS
+- **Accessibility Standards**: WCAG 2.1 Level AA compliance requirements
+- **File Organization**: How to structure component directories and exports
+
+**Quick Reference**:
+- All UI components live in `components/` organized by atomic level (atoms/, molecules/, organisms/, templates/)
+- Use design tokens consistently - avoid one-off custom values
+- Follow mobile-first responsive design patterns
+- Maintain WCAG 2.1 AA accessibility standards
+- Document components with JSDoc and usage examples
+
+When implementing new UI components, always reference [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for detailed guidance on component structure, naming conventions, styling patterns, and accessibility requirements.
