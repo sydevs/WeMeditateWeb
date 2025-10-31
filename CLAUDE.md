@@ -200,10 +200,11 @@ layouts/                 # Layout components
 
 components/              # Reusable UI components (Atomic Design structure)
 ├── atoms/              # Basic building blocks (Button, Input, Link, etc.)
+│   └── README.md       # Complete atoms documentation
 ├── molecules/          # Simple component groups (FormField, SearchBar, etc.)
 ├── organisms/          # Complex sections (Header, Footer, MeditationGrid, etc.)
 ├── templates/          # Page layout structures
-└── Link.tsx            # Locale-aware link component
+└── Link.tsx            # Locale-aware link component (now in atoms/)
 
 server/                  # Server-side utilities
 ├── entry.ts            # Cloudflare Workers server setup
@@ -333,6 +334,7 @@ This project uses the **Atomic Design Methodology** to build a consistent, scala
 
 **Quick Reference**:
 - All UI components live in `components/` organized by atomic level (atoms/, molecules/, organisms/, templates/)
+- See [components/atoms/README.md](components/atoms/README.md) for complete atoms documentation and usage examples
 - Use design tokens consistently - avoid one-off custom values
 - Follow mobile-first responsive design patterns
 - Maintain WCAG 2.1 AA accessibility standards
