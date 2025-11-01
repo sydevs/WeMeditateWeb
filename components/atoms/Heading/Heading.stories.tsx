@@ -1,6 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Heading } from "./Heading";
-import { StorySection, StoryWrapper } from '../../ladle';
+import { StorySection,
+  StoryExampleSection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Typography"
@@ -22,7 +23,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <article className="max-w-2xl">
         <Heading level="h1" className="mb-4">
           Guide to Meditation
@@ -58,7 +59,7 @@ export const Default: Story = () => (
           practice.
         </p>
       </article>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />

@@ -1,6 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Image } from "./Image";
-import { StorySection, StorySubsection, StoryWrapper } from '../../ladle';
+import { StorySection,
+  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Media"
@@ -137,7 +138,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <div className="grid grid-cols-2 gap-3 max-w-2xl">
         <Image
           src="https://picsum.photos/id/50/600/800"
@@ -160,7 +161,7 @@ export const Default: Story = () => (
           />
         </div>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />

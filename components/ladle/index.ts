@@ -8,6 +8,9 @@ export type { StoryWrapperProps } from './StoryWrapper';
 export { StorySection } from './StorySection';
 export type { StorySectionProps } from './StorySection';
 
+export { StoryExampleSection } from './StoryExampleSection';
+export type { StoryExampleSectionProps } from './StoryExampleSection';
+
 export { StorySubsection } from './StorySubsection';
 export type { StorySubsectionProps } from './StorySubsection';
 

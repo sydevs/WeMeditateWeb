@@ -17,6 +17,7 @@ import {
 import {
   StoryWrapper,
   StorySection,
+  StoryExampleSection,
   StorySubsection,
   StoryGrid,
   StoryGridHeader,
@@ -221,7 +222,7 @@ export const Default: Story = () => (
       </p>
     </StorySection>
 
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <div className="flex flex-col gap-6">
         <StorySubsection label="Form Actions">
           <div className="flex gap-3 flex-wrap">
@@ -264,7 +265,7 @@ export const Default: Story = () => (
           </div>
         </StorySubsection>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove the trailing divider from the last section */}
     <div />

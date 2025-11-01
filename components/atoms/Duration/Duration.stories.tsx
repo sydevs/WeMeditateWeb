@@ -1,6 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Duration } from "./Duration";
-import { StorySection, StorySubsection, StoryWrapper } from '../../ladle';
+import { StorySection,
+  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Specialty"
@@ -11,7 +12,7 @@ export default {
  */
 export const Default: Story = () => (
   <StoryWrapper>
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <div className="flex flex-col gap-6">
         <StorySubsection label="Common Durations">
           <div className="flex flex-wrap gap-4">
@@ -82,7 +83,7 @@ export const Default: Story = () => (
           </div>
         </StorySubsection>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />

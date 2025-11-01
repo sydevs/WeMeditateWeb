@@ -30,6 +30,7 @@ import {
 } from '@heroicons/react/24/solid'
 import {
   StorySection,
+  StoryExampleSection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -241,7 +242,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples - Button with Icons">
+    <StoryExampleSection subtitle="Button with Icons">
       <div className="flex flex-wrap gap-3">
         <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
           <Icon icon={PlayIcon} size="sm" />
@@ -256,9 +257,9 @@ export const Default: Story = () => (
           <Icon icon={ChevronRightIcon} size="sm" />
         </button>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
-    <StorySection title="Examples - List Items with Icons">
+    <StoryExampleSection subtitle="List Items with Icons">
       <ul className="space-y-3">
         <li className="flex items-center gap-3">
           <Icon icon={CheckIcon} size="md" color="primary" />
@@ -277,9 +278,9 @@ export const Default: Story = () => (
           <span className="text-gray-700">Better sleep quality</span>
         </li>
       </ul>
-    </StorySection>
+    </StoryExampleSection>
 
-    <StorySection title="Examples - Information Cards">
+    <StoryExampleSection subtitle="Information Cards">
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
           <Icon icon={InformationCircleIcon} size="lg" color="primary" />
@@ -288,7 +289,7 @@ export const Default: Story = () => (
             <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
           </div>
         </div>
-        <div className="border border-coral-200 bg-coral-50 rounded-lg p-4 flex gap-3">
+        <div className="border border-teal-200 bg-coral-50 rounded-lg p-4 flex gap-3">
           <Icon icon={ClockIcon} size="lg" color="secondary" />
           <div>
             <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
@@ -296,7 +297,7 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />

@@ -9,7 +9,8 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
+  StoryGridCell,
+  StoryExampleSection
 } from '../../ladle';
 
 export default {
@@ -74,7 +75,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <div className="space-y-4">
         <div>
           <p className="text-sm font-medium mb-2 text-gray-900">Select your experience level:</p>
@@ -101,7 +102,7 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />

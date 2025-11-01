@@ -75,9 +75,38 @@ import { StorySection } from '../../ladle';
 - `description` (string, optional) - Description text below the title
 - `children` (ReactNode, required) - Section content
 
+### StoryExampleSection
+
+Special wrapper for "Examples" sections that adds visual distinction with a teal top border. The title is automatically set to "Examples" or can include a subtitle for multiple example sections.
+
+```tsx
+import { StoryExampleSection } from '../../ladle';
+
+// Single Examples section
+<StoryExampleSection>
+  {/* Example content */}
+</StoryExampleSection>
+
+// Multiple Examples sections with subtitles
+<StoryExampleSection subtitle="Button with Icons">
+  {/* Example content */}
+</StoryExampleSection>
+
+<StoryExampleSection subtitle="Form Layout">
+  {/* Example content */}
+</StoryExampleSection>
+```
+
+**Props**:
+- `subtitle` (string, optional) - Appended as "Examples - {subtitle}"
+- `description` (string, optional) - Description text below the title
+- `children` (ReactNode, required) - Section content
+
+**Visual Styling**: Includes a 4px teal top border (`border-t-4 border-teal-500`) to visually distinguish example sections from regular sections.
+
 ### StorySubsection
 
-Provides consistent labeling for subsections within a StorySection.
+Provides consistent labeling for subsections within a StorySection or StoryExampleSection.
 
 ```tsx
 import { StorySubsection } from '../../ladle';
@@ -304,28 +333,24 @@ export const Default: Story = () => (
 
 ### Example: Examples Sections
 
-"Examples" can appear as multiple separate sections with descriptive titles, or as a single section with subsections:
+Use `StoryExampleSection` for all example sections. It automatically sets the title to "Examples" and adds visual distinction with a teal top border.
 
-**Multiple Example Sections**:
+**Single Examples Section**:
 ```tsx
-<StorySection title="Examples - Article Layout">
-  <article className="max-w-2xl">
-    <Heading level="h1">Article Title</Heading>
-    <p>Article content...</p>
-  </article>
-</StorySection>
-
-<StorySection title="Examples - Card Layout">
-  <div className="grid grid-cols-2 gap-4">
-    <Box>Card 1</Box>
-    <Box>Card 2</Box>
+<StoryExampleSection>
+  <div>
+    <p className="text-sm font-medium mb-2">Select your interests:</p>
+    <div className="flex flex-col gap-2">
+      <Checkbox label="Meditation Techniques" defaultChecked />
+      <Checkbox label="Guided Meditations" defaultChecked />
+    </div>
   </div>
-</StorySection>
+</StoryExampleSection>
 ```
 
 **Single Section with Subsections**:
 ```tsx
-<StorySection title="Examples">
+<StoryExampleSection>
   <div className="flex flex-col gap-6">
     <StorySubsection label="Form Actions">
       <div className="flex gap-3">
@@ -341,7 +366,24 @@ export const Default: Story = () => (
       </div>
     </StorySubsection>
   </div>
-</StorySection>
+</StoryExampleSection>
+```
+
+**Multiple Example Sections with Subtitles**:
+```tsx
+<StoryExampleSection subtitle="Article Layout">
+  <article className="max-w-2xl">
+    <Heading level="h1">Article Title</Heading>
+    <p>Article content...</p>
+  </article>
+</StoryExampleSection>
+
+<StoryExampleSection subtitle="Card Layout">
+  <div className="grid grid-cols-2 gap-4">
+    <Box>Card 1</Box>
+    <Box>Card 2</Box>
+  </div>
+</StoryExampleSection>
 ```
 
 ## Component Story Examples
@@ -387,12 +429,13 @@ The [Button story](components/atoms/Button/Button.stories.tsx) demonstrates all 
 ### DO ✅
 
 - **Use StoryWrapper** as the outermost wrapper for all stories
-- **Use utility components** for all stories (StorySection, StorySubsection, StoryGrid)
+- **Use utility components** for all stories (StorySection, StoryExampleSection, StorySubsection, StoryGrid)
 - **Follow standard section order** consistently
 - **Use standard section names** from the naming conventions
 - **Combine related states** into single sections (e.g., loading + disabled = "States")
 - **Use grids** for multi-dimensional variations (variant × shape, color × state)
-- **Show realistic usage** in "Examples" sections (can use subsections or multiple sections)
+- **Use StoryExampleSection** for all "Examples" sections (not StorySection)
+- **Show realistic usage** in example sections (can use subsections or multiple sections with subtitles)
 - **Remove trailing dividers** with `<div />` at the end
 - **Document with JSDoc** what the story showcases
 
@@ -403,9 +446,10 @@ The [Button story](components/atoms/Button/Button.stories.tsx) demonstrates all 
 - **Don't use inconsistent naming** - stick to the standard section names
 - **Don't separate related states** - combine loading/disabled/error into "States"
 - **Don't omit the trailing divider removal** - always add `<div />` at the end
-- **Don't use manual dividers** - StorySection handles dividers automatically
-- **Don't use raw HTML headings** - use StorySection titles instead
-- **Don't use old naming** like "Common Use Cases" or "In Context" - use "Examples" instead
+- **Don't use manual dividers** - StorySection/StoryExampleSection handle dividers automatically
+- **Don't use raw HTML headings** - use StorySection/StoryExampleSection instead
+- **Don't use old naming** like "Common Use Cases" or "In Context" - use StoryExampleSection instead
+- **Don't use StorySection for Examples** - use StoryExampleSection for visual distinction
 
 ## Configuration
 

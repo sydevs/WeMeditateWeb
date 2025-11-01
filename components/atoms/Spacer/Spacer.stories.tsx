@@ -1,6 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Spacer } from "./Spacer";
-import { StorySection, StorySubsection, StoryWrapper } from '../../ladle';
+import { StorySection,
+  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Layout"
@@ -80,7 +81,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <div className="flex flex-col gap-8 max-w-2xl">
         <StorySubsection label="Article Layout">
           <article className="border border-gray-200 rounded-lg p-6">
@@ -168,7 +169,7 @@ export const Default: Story = () => (
           </form>
         </StorySubsection>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />

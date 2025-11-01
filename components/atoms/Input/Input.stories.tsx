@@ -1,6 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Input } from "./Input";
-import { StorySection, StorySubsection, StoryWrapper } from '../../ladle';
+import { StorySection,
+  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Form"
@@ -65,7 +66,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples">
+    <StoryExampleSection>
       <div className="space-y-4">
         <StorySubsection label="Login Form">
           <div className="space-y-3">
@@ -80,7 +81,7 @@ export const Default: Story = () => (
           </div>
         </StorySubsection>
       </div>
-    </StorySection>
+    </StoryExampleSection>
 
     {/* Remove trailing divider */}
     <div />
