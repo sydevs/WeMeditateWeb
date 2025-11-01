@@ -1,6 +1,16 @@
 import { ComponentProps } from 'react'
+import { Icon, HeroIcon } from '../Icon/Icon'
 
 export interface IconButtonProps extends ComponentProps<'button'> {
+  /**
+   * Heroicons icon component (import from @heroicons/react)
+   *
+   * @example
+   * import { XMarkIcon } from '@heroicons/react/24/outline'
+   * <IconButton icon={XMarkIcon} aria-label="Close" />
+   */
+  icon: HeroIcon
+
   /**
    * Visual style variant
    * @default 'default'
@@ -32,24 +42,20 @@ export interface IconButtonProps extends ComponentProps<'button'> {
  * Always requires an aria-label for accessibility.
  *
  * @example
- * <IconButton aria-label="Close dialog">
- *   <CloseIcon />
- * </IconButton>
+ * import { XMarkIcon, PlayIcon, Bars3Icon } from '@heroicons/react/24/outline'
  *
- * <IconButton variant="primary" size="lg" aria-label="Play meditation">
- *   <PlayIcon />
- * </IconButton>
+ * <IconButton icon={XMarkIcon} aria-label="Close dialog" />
  *
- * <IconButton shape="square" aria-label="More options">
- *   <MenuIcon />
- * </IconButton>
+ * <IconButton icon={PlayIcon} variant="primary" size="lg" aria-label="Play meditation" />
+ *
+ * <IconButton icon={Bars3Icon} shape="square" aria-label="More options" />
  */
 export function IconButton({
+  icon,
   variant = 'default',
   size = 'md',
   shape = 'circle',
   className = '',
-  children,
   disabled,
   type = 'button',
   ...props
@@ -69,9 +75,15 @@ export function IconButton({
   }
 
   const sizeStyles = {
-    sm: 'w-8 h-8 text-sm',
-    md: 'w-10 h-10 text-base',
-    lg: 'w-12 h-12 text-lg',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
+  }
+
+  const iconSizeMap = {
+    sm: 'sm' as const,
+    md: 'md' as const,
+    lg: 'lg' as const,
   }
 
   const shapeStyles = {
@@ -86,7 +98,7 @@ export function IconButton({
       disabled={disabled}
       {...props}
     >
-      {children}
+      <Icon icon={icon} size={iconSizeMap[size]} />
     </button>
   )
 }

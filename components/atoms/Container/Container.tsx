@@ -14,10 +14,10 @@ export interface ContainerProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default'
 
   /**
-   * Horizontal padding
-   * @default true
+   * Horizontal padding size
+   * @default 'md'
    */
-  padding?: boolean
+  padding?: 'sm' | 'md' | 'lg'
 
   /**
    * Center the container
@@ -45,13 +45,13 @@ export interface ContainerProps {
  * @example
  * <Container>Content here</Container>
  * <Container maxWidth="lg">Narrower content</Container>
- * <Container maxWidth="full" padding={false}>Full width, no padding</Container>
- * <Container as="section">Semantic section container</Container>
+ * <Container maxWidth="full" padding="lg">Full width with large padding</Container>
+ * <Container as="section" padding="sm">Semantic section with small padding</Container>
  */
 export function Container({
   as = 'div',
   maxWidth = 'default',
-  padding = true,
+  padding = 'md',
   center = true,
   className = '',
   children,
@@ -69,12 +69,17 @@ export function Container({
     default: 'max-w-7xl', // Default max width (1280px)
   }
 
-  const paddingStyles = padding ? 'px-4 sm:px-6 lg:px-8' : ''
+  const paddingStyles = {
+    sm: 'px-4 sm:px-6 lg:px-8',      // Smaller padding
+    md: 'px-8 sm:px-12 lg:px-16',    // Medium padding (doubled from original)
+    lg: 'px-12 sm:px-16 lg:px-24',   // Large padding
+  }
+
   const centerStyles = center ? 'mx-auto' : ''
 
   return (
     <Component
-      className={`${maxWidthStyles[maxWidth]} ${paddingStyles} ${centerStyles} ${className}`}
+      className={`${maxWidthStyles[maxWidth]} ${paddingStyles[padding]} ${centerStyles} ${className}`}
       {...props}
     >
       {children}

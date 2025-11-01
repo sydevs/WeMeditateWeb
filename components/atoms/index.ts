@@ -16,9 +16,7 @@ export type { LabelProps } from './Label'
 
 // Interactive
 export { Button } from './Button'
-export { IconButton } from './IconButton'
 export type { ButtonProps } from './Button'
-export type { IconButtonProps } from './IconButton'
 
 // Form Inputs
 export { Input } from './Input'
@@ -36,8 +34,7 @@ export type { SelectProps } from './Select'
 export { Image } from './Image'
 export { Icon } from './Icon'
 export { Avatar } from './Avatar'
-export type { ImageProps } from './Image'
-export type { IconProps } from './Icon'
+export type { ImageProps, IconProps, HeroIcon } from './Icon'
 export type { AvatarProps } from './Avatar'
 
 // Feedback

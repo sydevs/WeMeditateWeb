@@ -1,10 +1,22 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react'
+
+// Heroicons icon type
+export type HeroIcon = ForwardRefExoticComponent<
+  Omit<SVGProps<SVGSVGElement>, 'ref'> & {
+    title?: string
+    titleId?: string
+  } & RefAttributes<SVGSVGElement>
+>
 
 export interface IconProps extends Omit<ComponentProps<'span'>, 'children'> {
   /**
-   * Icon name (maps to custom icon font classes or children)
+   * Heroicons icon component (import from @heroicons/react)
+   *
+   * @example
+   * import { HeartIcon } from '@heroicons/react/24/outline'
+   * <Icon icon={HeartIcon} />
    */
-  name?: string
+  icon: HeroIcon
 
   /**
    * Icon size
@@ -19,39 +31,40 @@ export interface IconProps extends Omit<ComponentProps<'span'>, 'children'> {
   color?: 'primary' | 'secondary' | 'tertiary' | 'currentColor'
 
   /**
-   * Custom icon content (for SVG or other elements)
+   * Accessible label for the icon (important for screen readers when icon has semantic meaning)
    */
-  children?: React.ReactNode
+  'aria-label'?: string
 }
 
 /**
- * Icon component for displaying icons from custom icon font or SVG.
+ * Icon component for displaying Heroicons.
  *
  * Supports size variants and color options.
- * Can use icon name from WeMeditate icon font or render custom children.
+ * Uses Heroicons (https://heroicons.com/) - a set of beautiful hand-crafted SVG icons.
  *
  * @example
- * <Icon name="play" size="lg" />
- * <Icon name="heart" color="primary" />
- * <Icon size="xl">
- *   <svg>...</svg>
- * </Icon>
+ * import { HeartIcon } from '@heroicons/react/24/outline'
+ * import { StarIcon } from '@heroicons/react/24/solid'
+ *
+ * <Icon icon={HeartIcon} size="lg" />
+ * <Icon icon={StarIcon} color="primary" />
+ * <Icon icon={HeartIcon} aria-label="Favorite" />
  */
 export function Icon({
-  name,
+  icon: IconComponent,
   size = 'md',
   color = 'currentColor',
   className = '',
-  children,
+  'aria-label': ariaLabel,
   ...props
 }: IconProps) {
   const sizeStyles = {
-    xs: 'text-xs w-3 h-3',
-    sm: 'text-sm w-4 h-4',
-    md: 'text-base w-5 h-5',
-    lg: 'text-lg w-6 h-6',
-    xl: 'text-xl w-8 h-8',
-    '2xl': 'text-2xl w-10 h-10',
+    xs: 'w-3 h-3',
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6',
+    xl: 'w-8 h-8',
+    '2xl': 'w-10 h-10',
   }
 
   const colorStyles = {
@@ -63,16 +76,14 @@ export function Icon({
 
   const baseStyles = 'inline-flex items-center justify-center flex-shrink-0'
 
-  // If using custom icon font, apply the name as a class
-  const iconFontClass = name ? `wm-icon-${name}` : ''
-
   return (
     <span
-      className={`${baseStyles} ${sizeStyles[size]} ${colorStyles[color]} ${iconFontClass} ${className}`}
-      aria-hidden="true"
+      className={`${baseStyles} ${sizeStyles[size]} ${colorStyles[color]} ${className}`}
+      aria-hidden={ariaLabel ? undefined : 'true'}
+      aria-label={ariaLabel}
       {...props}
     >
-      {children}
+      <IconComponent className="w-full h-full" />
     </span>
   )
 }

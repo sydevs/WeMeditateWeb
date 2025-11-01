@@ -35,15 +35,11 @@ export const Default: Story = () => (
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner color="primary" />
-          <p className="text-sm text-gray-600">Primary</p>
+          <p className="text-sm text-gray-600">Primary (Teal)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Spinner color="teal" />
-          <p className="text-sm text-gray-600">Teal</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Spinner color="coral" />
-          <p className="text-sm text-gray-600">Coral</p>
+          <Spinner color="secondary" />
+          <p className="text-sm text-gray-600">Secondary (Coral)</p>
         </div>
         <div className="bg-gray-900 p-4 rounded flex flex-col items-center gap-2">
           <Spinner color="white" />
@@ -57,8 +53,8 @@ export const Default: Story = () => (
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Size × Color Combinations</h3>
       <div className="flex gap-8 items-center">
-        <Spinner size="sm" color="teal" />
-        <Spinner size="md" color="coral" />
+        <Spinner size="sm" color="primary" />
+        <Spinner size="md" color="secondary" />
         <Spinner size="lg" color="primary" />
       </div>
     </div>
@@ -89,7 +85,7 @@ export const Default: Story = () => (
       <div>
       <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-4">
-          <Spinner size="lg" color="teal" />
+          <Spinner size="lg" color="primary" />
           <p className="text-lg text-gray-700">Loading your meditation session</p>
           <p className="text-sm text-gray-500">Please wait...</p>
         </div>

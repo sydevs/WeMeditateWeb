@@ -20,6 +20,9 @@ export const Default: Story = () => (
         <Duration minutes={30} />
         <Duration minutes={45} />
         <Duration minutes={60} />
+        <Duration minutes={90} />
+        <Duration minutes={120} />
+        <Duration minutes={150} />
       </div>
     </div>
 
@@ -36,34 +39,6 @@ export const Default: Story = () => (
           <span className="text-sm text-gray-600 w-32">Long format:</span>
           <Duration minutes={10} format="long" />
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600 w-32">Abbreviated:</span>
-          <Duration minutes={10} format="abbreviated" />
-        </div>
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Hour+ Durations</h3>
-      <div className="flex flex-wrap gap-4">
-        <Duration minutes={60} />
-        <Duration minutes={90} />
-        <Duration minutes={120} />
-        <Duration minutes={150} />
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Different Time Values</h3>
-      <div className="flex flex-wrap gap-4">
-        <Duration minutes={5} />
-        <Duration minutes={15} />
-        <Duration minutes={30} />
-        <Duration minutes={60} />
       </div>
     </div>
 
@@ -77,22 +52,22 @@ export const Default: Story = () => (
         <div className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors">
           <h4 className="font-medium text-gray-900 mb-2">Morning Meditation</h4>
           <p className="text-sm text-gray-600 mb-3">Start your day with clarity and peace</p>
-          <Duration minutes={10} showIcon />
+          <Duration minutes={10} />
         </div>
         <div className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors">
           <h4 className="font-medium text-gray-900 mb-2">Deep Relaxation</h4>
           <p className="text-sm text-gray-600 mb-3">Release tension and find inner calm</p>
-          <Duration minutes={20} showIcon />
+          <Duration minutes={20} />
         </div>
         <div className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors">
           <h4 className="font-medium text-gray-900 mb-2">Chakra Meditation</h4>
           <p className="text-sm text-gray-600 mb-3">Balance your energy centers</p>
-          <Duration minutes={30} showIcon />
+          <Duration minutes={30} />
         </div>
         <div className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors">
           <h4 className="font-medium text-gray-900 mb-2">Extended Practice</h4>
           <p className="text-sm text-gray-600 mb-3">Deep dive into meditation</p>
-          <Duration minutes={60} showIcon />
+          <Duration minutes={60} />
         </div>
       </div>
     </div>

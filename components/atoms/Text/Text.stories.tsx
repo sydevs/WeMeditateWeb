@@ -44,8 +44,8 @@ export const Default: Story = () => (
         <Text color="primary">Primary color (gray-900)</Text>
         <Text color="secondary">Secondary color (gray-700)</Text>
         <Text color="tertiary">Tertiary color (gray-600)</Text>
-        <div className="bg-teal-500 p-3 rounded">
-          <Text color="inherit" className="text-white">
+        <div className="bg-teal-500 p-3 rounded text-white">
+          <Text color="inherit">
             Inherit color (from parent)
           </Text>
         </div>

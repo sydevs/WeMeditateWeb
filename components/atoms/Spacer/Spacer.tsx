@@ -2,10 +2,10 @@ import { ComponentProps } from 'react'
 
 export interface SpacerProps extends ComponentProps<'div'> {
   /**
-   * Spacing size (uses Tailwind spacing scale)
-   * @default 4
+   * Spacing size
+   * @default 'md'
    */
-  size?: 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16 | 20 | 24 | 32
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
 
   /**
    * Direction of spacing
@@ -17,21 +17,32 @@ export interface SpacerProps extends ComponentProps<'div'> {
 /**
  * Spacer component for consistent spacing between elements.
  *
- * Provides vertical or horizontal spacing using Tailwind's spacing scale.
+ * Provides vertical or horizontal spacing using named size variants.
  * Use for adding breathing room between sections or components.
  *
  * @example
- * <Spacer size={8} />
- * <Spacer size={12} direction="horizontal" />
- * <Spacer size={4} />
+ * <Spacer size="lg" />
+ * <Spacer size="xl" direction="horizontal" />
+ * <Spacer size="md" />
  */
 export function Spacer({
-  size = 4,
+  size = 'md',
   direction = 'vertical',
   className = '',
   ...props
 }: SpacerProps) {
-  const spacingClass = direction === 'vertical' ? `h-${size}` : `w-${size}`
+  const sizeMap = {
+    xs: '2',
+    sm: '4',
+    md: '6',
+    lg: '8',
+    xl: '12',
+    '2xl': '16',
+    '3xl': '24',
+  }
+
+  const spacingValue = sizeMap[size]
+  const spacingClass = direction === 'vertical' ? `h-${spacingValue}` : `w-${spacingValue}`
 
   return (
     <div

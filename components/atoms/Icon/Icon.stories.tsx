@@ -1,5 +1,24 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Icon } from "./Icon";
+import {
+  HeartIcon,
+  StarIcon,
+  MagnifyingGlassIcon,
+  Bars3Icon,
+  XMarkIcon,
+  PlayIcon,
+  PauseIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CheckIcon,
+  InformationCircleIcon,
+  ClockIcon,
+} from '@heroicons/react/24/outline'
+import {
+  HeartIcon as HeartIconSolid,
+  StarIcon as StarIconSolid,
+  CheckCircleIcon,
+} from '@heroicons/react/24/solid'
 
 export default {
   title: "Atoms / Media"
@@ -14,20 +33,28 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
-          <Icon name="heart" size="sm" />
-          <p className="text-sm text-gray-600">Small</p>
+          <Icon icon={HeartIcon} size="xs" />
+          <p className="text-sm text-gray-600">XS (3×3)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="heart" size="md" />
-          <p className="text-sm text-gray-600">Medium</p>
+          <Icon icon={HeartIcon} size="sm" />
+          <p className="text-sm text-gray-600">Small (4×4)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="heart" size="lg" />
-          <p className="text-sm text-gray-600">Large</p>
+          <Icon icon={HeartIcon} size="md" />
+          <p className="text-sm text-gray-600">Medium (5×5)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="heart" size="xl" />
-          <p className="text-sm text-gray-600">Extra Large</p>
+          <Icon icon={HeartIcon} size="lg" />
+          <p className="text-sm text-gray-600">Large (6×6)</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={HeartIcon} size="xl" />
+          <p className="text-sm text-gray-600">XL (8×8)</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={HeartIcon} size="2xl" />
+          <p className="text-sm text-gray-600">2XL (10×10)</p>
         </div>
       </div>
     </div>
@@ -38,20 +65,22 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Colors</h3>
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
-          <Icon name="star" size="lg" color="primary" />
+          <Icon icon={StarIcon} size="lg" color="primary" />
           <p className="text-sm text-gray-600">Primary</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="star" size="lg" color="teal" />
-          <p className="text-sm text-gray-600">Teal</p>
+          <Icon icon={StarIcon} size="lg" color="secondary" />
+          <p className="text-sm text-gray-600">Secondary</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="star" size="lg" color="coral" />
-          <p className="text-sm text-gray-600">Coral</p>
+          <Icon icon={StarIcon} size="lg" color="tertiary" />
+          <p className="text-sm text-gray-600">Tertiary</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="star" size="lg" color="gray" />
-          <p className="text-sm text-gray-600">Gray</p>
+          <div className="text-blue-600">
+            <Icon icon={StarIcon} size="lg" color="currentColor" />
+          </div>
+          <p className="text-sm text-gray-600">Current Color</p>
         </div>
       </div>
     </div>
@@ -59,55 +88,75 @@ export const Default: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Common Icons</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Outline Style (24×24)</h3>
       <div className="grid grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
-          <Icon name="search" size="lg" />
-          <p className="text-xs text-gray-600">search</p>
+          <Icon icon={MagnifyingGlassIcon} size="lg" />
+          <p className="text-xs text-gray-600">Search</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="menu" size="lg" />
-          <p className="text-xs text-gray-600">menu</p>
+          <Icon icon={Bars3Icon} size="lg" />
+          <p className="text-xs text-gray-600">Menu</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="close" size="lg" />
-          <p className="text-xs text-gray-600">close</p>
+          <Icon icon={XMarkIcon} size="lg" />
+          <p className="text-xs text-gray-600">Close</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="heart" size="lg" />
-          <p className="text-xs text-gray-600">heart</p>
+          <Icon icon={HeartIcon} size="lg" />
+          <p className="text-xs text-gray-600">Heart</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="star" size="lg" />
-          <p className="text-xs text-gray-600">star</p>
+          <Icon icon={StarIcon} size="lg" />
+          <p className="text-xs text-gray-600">Star</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="play" size="lg" />
-          <p className="text-xs text-gray-600">play</p>
+          <Icon icon={PlayIcon} size="lg" />
+          <p className="text-xs text-gray-600">Play</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="pause" size="lg" />
-          <p className="text-xs text-gray-600">pause</p>
+          <Icon icon={PauseIcon} size="lg" />
+          <p className="text-xs text-gray-600">Pause</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="chevron-left" size="lg" />
-          <p className="text-xs text-gray-600">chevron-left</p>
+          <Icon icon={ChevronLeftIcon} size="lg" />
+          <p className="text-xs text-gray-600">Chevron Left</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="chevron-right" size="lg" />
-          <p className="text-xs text-gray-600">chevron-right</p>
+          <Icon icon={ChevronRightIcon} size="lg" />
+          <p className="text-xs text-gray-600">Chevron Right</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="check" size="lg" />
-          <p className="text-xs text-gray-600">check</p>
+          <Icon icon={CheckIcon} size="lg" />
+          <p className="text-xs text-gray-600">Check</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="info" size="lg" />
-          <p className="text-xs text-gray-600">info</p>
+          <Icon icon={InformationCircleIcon} size="lg" />
+          <p className="text-xs text-gray-600">Info</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon name="clock" size="lg" />
-          <p className="text-xs text-gray-600">clock</p>
+          <Icon icon={ClockIcon} size="lg" />
+          <p className="text-xs text-gray-600">Clock</p>
+        </div>
+      </div>
+    </div>
+
+    <hr className="border-gray-200" />
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Solid Style (24×24)</h3>
+      <div className="flex gap-6 items-center">
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={HeartIconSolid} size="lg" color="secondary" />
+          <p className="text-xs text-gray-600">Heart Solid</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={StarIconSolid} size="lg" color="primary" />
+          <p className="text-xs text-gray-600">Star Solid</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={CheckCircleIcon} size="lg" color="primary" />
+          <p className="text-xs text-gray-600">Check Circle</p>
         </div>
       </div>
     </div>
@@ -118,16 +167,16 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Button with Icons</h3>
       <div className="flex flex-wrap gap-3">
         <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
-          <Icon name="play" size="sm" color="inherit" />
+          <Icon icon={PlayIcon} size="sm" />
           <span>Play</span>
         </button>
         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
-          <Icon name="heart" size="sm" />
+          <Icon icon={HeartIcon} size="sm" />
           <span>Like</span>
         </button>
         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
           <span>Next</span>
-          <Icon name="chevron-right" size="sm" />
+          <Icon icon={ChevronRightIcon} size="sm" />
         </button>
       </div>
     </div>
@@ -138,19 +187,19 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - List Items with Icons</h3>
       <ul className="space-y-3">
         <li className="flex items-center gap-3">
-          <Icon name="check" size="md" color="teal" />
+          <Icon icon={CheckIcon} size="md" color="primary" />
           <span className="text-gray-700">Reduce stress and anxiety</span>
         </li>
         <li className="flex items-center gap-3">
-          <Icon name="check" size="md" color="teal" />
+          <Icon icon={CheckIcon} size="md" color="primary" />
           <span className="text-gray-700">Improve focus and concentration</span>
         </li>
         <li className="flex items-center gap-3">
-          <Icon name="check" size="md" color="teal" />
+          <Icon icon={CheckIcon} size="md" color="primary" />
           <span className="text-gray-700">Enhance emotional well-being</span>
         </li>
         <li className="flex items-center gap-3">
-          <Icon name="check" size="md" color="teal" />
+          <Icon icon={CheckIcon} size="md" color="primary" />
           <span className="text-gray-700">Better sleep quality</span>
         </li>
       </ul>
@@ -162,20 +211,33 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Information Cards</h3>
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
-          <Icon name="info" size="lg" color="teal" />
+          <Icon icon={InformationCircleIcon} size="lg" color="primary" />
           <div>
             <h4 className="font-medium text-gray-900 mb-1">Beginner Friendly</h4>
             <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
           </div>
         </div>
         <div className="border border-coral-200 bg-coral-50 rounded-lg p-4 flex gap-3">
-          <Icon name="clock" size="lg" color="coral" />
+          <Icon icon={ClockIcon} size="lg" color="secondary" />
           <div>
             <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
             <p className="text-sm text-gray-700">Just 10 minutes a day</p>
           </div>
         </div>
       </div>
+    </div>
+
+    <hr className="border-gray-200" />
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Accessibility Example</h3>
+      <p className="text-sm text-gray-600 mb-4">
+        Icons with semantic meaning should include aria-label:
+      </p>
+      <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
+        <Icon icon={HeartIcon} aria-label="Add to favorites" />
+        <span>Favorite</span>
+      </button>
     </div>
   </div>
 );

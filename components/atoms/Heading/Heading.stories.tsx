@@ -25,23 +25,6 @@ export const Default: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Custom Colors</h3>
-      <div className="flex flex-col gap-4">
-        <Heading level="h2" className="text-teal-600">
-          Teal Colored Heading
-        </Heading>
-        <Heading level="h2" className="text-coral-500">
-          Coral Colored Heading
-        </Heading>
-        <Heading level="h2" className="text-gray-700">
-          Gray Colored Heading
-        </Heading>
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context</h3>
       <article className="max-w-2xl">
         <Heading level="h1" className="mb-4">

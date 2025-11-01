@@ -19,11 +19,9 @@ fonts/
 │   ├── RalewaySemiBold.woff
 │   ├── RalewayBold.woff2          # Weight: 700 (emphasis)
 │   └── RalewayBold.woff
-├── futura-book/       # Secondary font family
-│   ├── FuturaBook.woff2
-│   └── FuturaBook.woff
-└── icons/             # Custom icon font
-    └── icomoon.woff
+└── futura-book/       # Secondary font family
+    ├── FuturaBook.woff2
+    └── FuturaBook.woff
 ```
 
 ## Font Formats
@@ -75,9 +73,19 @@ Use Tailwind utility classes:
 
 <!-- Secondary font -->
 <p class="font-secondary">Special text in Futura Book</p>
+```
 
-<!-- Icon font -->
-<i class="icon">icon_name</i>
+## Icons
+
+For icons, this project uses **Heroicons** (https://heroicons.com/), a set of beautiful hand-crafted SVG icons by the makers of Tailwind CSS.
+
+See the [Icon component documentation](../../components/atoms/Icon/) for usage examples.
+
+```tsx
+import { HeartIcon } from '@heroicons/react/24/outline'
+import { Icon } from '@/components/atoms'
+
+<Icon icon={HeartIcon} size="lg" />
 ```
 
 ## Performance Considerations

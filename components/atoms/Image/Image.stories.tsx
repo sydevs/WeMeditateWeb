@@ -16,7 +16,7 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-600 mb-2">Square (1:1)</p>
           <Image
-            src="https://placehold.co/400x400/61aaa0/white?text=Square"
+            src="https://picsum.photos/id/10/400/400"
             alt="Square image"
             aspectRatio="square"
           />
@@ -24,7 +24,7 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-600 mb-2">Video (16:9)</p>
           <Image
-            src="https://placehold.co/1600x900/e08e79/white?text=Video"
+            src="https://picsum.photos/id/10/1600/900"
             alt="Video aspect ratio"
             aspectRatio="video"
           />
@@ -32,7 +32,7 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-600 mb-2">4:3</p>
           <Image
-            src="https://placehold.co/800x600/4a5568/white?text=4:3"
+            src="https://picsum.photos/id/10/800/600"
             alt="4:3 aspect ratio"
             aspectRatio="4/3"
           />
@@ -48,7 +48,7 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-600 mb-2">Cover (default)</p>
           <Image
-            src="https://placehold.co/800x400/61aaa0/white?text=Cover"
+            src="https://picsum.photos/id/20/800/400"
             alt="Object fit cover"
             aspectRatio="square"
             objectFit="cover"
@@ -57,7 +57,7 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-600 mb-2">Contain</p>
           <Image
-            src="https://placehold.co/800x400/e08e79/white?text=Contain"
+            src="https://picsum.photos/id/20/800/400"
             alt="Object fit contain"
             aspectRatio="square"
             objectFit="contain"
@@ -66,7 +66,7 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-600 mb-2">Fill</p>
           <Image
-            src="https://placehold.co/800x400/4a5568/white?text=Fill"
+            src="https://picsum.photos/id/20/800/400"
             alt="Object fit fill"
             aspectRatio="square"
             objectFit="fill"
@@ -81,19 +81,19 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">With Loading State</h3>
       <div className="grid grid-cols-3 gap-4 max-w-4xl">
         <Image
-          src="https://placehold.co/600x400/61aaa0/white?text=Loading"
+          src="https://picsum.photos/id/30/600/400"
           alt="Image with loading"
           aspectRatio="4/3"
           showLoading
         />
         <Image
-          src="https://placehold.co/600x400/e08e79/white?text=Loading"
+          src="https://picsum.photos/id/30/600/400"
           alt="Image with loading"
           aspectRatio="4/3"
           showLoading
         />
         <Image
-          src="https://placehold.co/600x400/4a5568/white?text=Loading"
+          src="https://picsum.photos/id/30/600/400"
           alt="Image with loading"
           aspectRatio="4/3"
           showLoading
@@ -106,67 +106,33 @@ export const Default: Story = () => (
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Rounded Corners</h3>
       <div className="grid grid-cols-3 gap-4 max-w-4xl">
-        <Image
-          src="https://placehold.co/600x600/61aaa0/white?text=Rounded"
-          alt="Rounded image"
-          aspectRatio="square"
-          className="rounded-lg"
-        />
-        <Image
-          src="https://placehold.co/600x600/e08e79/white?text=Rounded-xl"
-          alt="Extra rounded image"
-          aspectRatio="square"
-          className="rounded-xl"
-        />
-        <Image
-          src="https://placehold.co/600x600/4a5568/white?text=Rounded-full"
-          alt="Circle image"
-          aspectRatio="square"
-          className="rounded-full"
-        />
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Article Header</h3>
-      <article className="max-w-3xl">
-        <Image
-          src="https://placehold.co/1200x675/61aaa0/white?text=Meditation+Garden"
-          alt="Peaceful meditation garden"
-          aspectRatio="16/9"
-          className="rounded-lg mb-4"
-        />
-        <h2 className="text-2xl font-semibold mb-2 text-gray-900">Finding Peace in Nature</h2>
-        <p className="text-gray-700">
-          Discover how connecting with nature can deepen your meditation practice
-          and bring a sense of calm to your daily life.
-        </p>
-      </article>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Meditation Card Grid</h3>
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { title: "Morning Meditation", color: "61aaa0" },
-          { title: "Evening Practice", color: "e08e79" },
-          { title: "Chakra Balance", color: "4a5568" },
-        ].map((item) => (
-          <div key={item.title} className="border border-gray-200 rounded-lg overflow-hidden hover:border-teal-500 transition-colors">
-            <Image
-              src={`https://placehold.co/400x300/${item.color}/white?text=${item.title.replace(" ", "+")}`}
-              alt={item.title}
-              aspectRatio="4/3"
-            />
-            <div className="p-3">
-              <h4 className="font-medium text-gray-900">{item.title}</h4>
-            </div>
-          </div>
-        ))}
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Square (no rounding)</p>
+          <Image
+            src="https://picsum.photos/id/40/600/600"
+            alt="Square image"
+            aspectRatio="square"
+            rounded="square"
+          />
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Rounded (rounded-lg)</p>
+          <Image
+            src="https://picsum.photos/id/40/600/600"
+            alt="Rounded image"
+            aspectRatio="square"
+            rounded="rounded"
+          />
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Circle (rounded-full)</p>
+          <Image
+            src="https://picsum.photos/id/40/600/600"
+            alt="Circle image"
+            aspectRatio="square"
+            rounded="circle"
+          />
+        </div>
       </div>
     </div>
 
@@ -176,23 +142,23 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Gallery Layout</h3>
       <div className="grid grid-cols-2 gap-3">
         <Image
-          src="https://placehold.co/600x800/61aaa0/white?text=Portrait"
+          src="https://picsum.photos/id/50/600/800"
           alt="Portrait meditation"
           aspectRatio="3/4"
-          className="rounded"
+          rounded="rounded"
         />
         <div className="flex flex-col gap-3">
           <Image
-            src="https://placehold.co/600x400/e08e79/white?text=Landscape"
+            src="https://picsum.photos/id/51/600/400"
             alt="Landscape meditation"
             aspectRatio="3/2"
-            className="rounded"
+            rounded="rounded"
           />
           <Image
-            src="https://placehold.co/600x400/4a5568/white?text=Landscape"
+            src="https://picsum.photos/id/52/600/400"
             alt="Another landscape"
             aspectRatio="3/2"
-            className="rounded"
+            rounded="rounded"
           />
         </div>
       </div>

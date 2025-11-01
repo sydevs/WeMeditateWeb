@@ -24,6 +24,12 @@ export interface ImageProps extends ComponentProps<'img'> {
   objectFit?: 'cover' | 'contain' | 'fill' | 'none'
 
   /**
+   * Border radius style
+   * @default 'square'
+   */
+  rounded?: 'square' | 'rounded' | 'circle'
+
+  /**
    * Show loading state
    * @default true
    */
@@ -39,13 +45,14 @@ export interface ImageProps extends ComponentProps<'img'> {
  * @example
  * <Image src="/path/to/image.jpg" alt="Description" />
  * <Image src="/banner.jpg" alt="Banner" aspectRatio="16/9" />
- * <Image src="/profile.jpg" alt="Profile" aspectRatio="square" objectFit="contain" />
+ * <Image src="/profile.jpg" alt="Profile" aspectRatio="square" rounded="circle" />
  */
 export function Image({
   src,
   alt,
   aspectRatio,
   objectFit = 'cover',
+  rounded = 'square',
   showLoading = true,
   className = '',
   onLoad,
@@ -73,6 +80,12 @@ export function Image({
     none: 'object-none',
   }[objectFit]
 
+  const roundedStyles = {
+    square: '',
+    rounded: 'rounded-lg',
+    circle: 'rounded-full',
+  }[rounded]
+
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setIsLoading(false)
     onLoad?.(e)
@@ -85,8 +98,8 @@ export function Image({
   }
 
   const containerClasses = aspectRatio
-    ? `relative ${aspectRatioStyles} overflow-hidden`
-    : 'relative'
+    ? `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
+    : `relative ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
     aspectRatio ? 'absolute inset-0 w-full h-full' : ''

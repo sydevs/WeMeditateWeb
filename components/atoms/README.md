@@ -4,16 +4,15 @@ Foundational UI elements that form the basic building blocks of the WeMeditate d
 
 ## Overview
 
-This directory contains 20 atomic components organized into 7 categories:
+This directory contains 19 atomic components organized into 7 categories:
 
 ### Typography (3)
 - **Heading** - Semantic headings (h1-h6) with consistent visual hierarchy
 - **Text** - Body text and inline text with size/weight/color variants
 - **Label** - Form labels with required field indicators
 
-### Interactive (2)
-- **Button** - Action buttons with multiple variants (primary, secondary, outline, text)
-- **IconButton** - Icon-only buttons for compact actions
+### Interactive (1)
+- **Button** - Unified button component supporting text, icon-only, and icon+text combinations with multiple variants (primary, secondary, outline, ghost)
 
 ### Form Inputs (5)
 - **Input** - Text inputs with validation states
@@ -24,7 +23,7 @@ This directory contains 20 atomic components organized into 7 categories:
 
 ### Media (3)
 - **Image** - Responsive images with aspect ratios and loading states
-- **Icon** - Icon wrapper supporting custom font and SVG
+- **Icon** - Icon wrapper for Heroicons SVG icons with size/color variants
 - **Avatar** - Circular/rounded profile images with fallback initials
 
 ### Feedback (2)
@@ -100,17 +99,27 @@ All atoms follow these principles:
 
 ### Button
 ```tsx
+import { PlayIcon, CheckIcon } from '@heroicons/react/24/outline'
+
+// Text button
 <Button variant="primary" size="lg" onClick={handleClick}>
   Click me
 </Button>
 
-<Button variant="outline" isLoading>
-  Loading...
-</Button>
+// Icon-only button (circular - default)
+<Button icon={PlayIcon} aria-label="Play" />
 
-<Button variant="text" size="sm">
-  Cancel
-</Button>
+// Icon-only button (square)
+<Button icon={PlayIcon} shape="square" aria-label="Play" />
+
+// Icon + text button
+<Button icon={CheckIcon} variant="primary">Save</Button>
+
+// Loading state
+<Button isLoading>Saving...</Button>
+
+// Ghost variant (replaces text variant)
+<Button variant="ghost" size="sm">Cancel</Button>
 ```
 
 ### Heading
@@ -154,6 +163,16 @@ All atoms follow these principles:
 <Duration minutes={10} />
 <Duration seconds={900} format="long" />
 <Duration minutes={15} variant="badge" />
+```
+
+### Icon
+```tsx
+import { HeartIcon, StarIcon } from '@heroicons/react/24/outline'
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
+
+<Icon icon={HeartIcon} size="lg" />
+<Icon icon={StarIcon} color="primary" />
+<Icon icon={HeartIconSolid} color="secondary" />
 ```
 
 ### SocialIcon

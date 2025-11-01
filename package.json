@@ -10,6 +10,7 @@
     "ladle:build": "ladle build"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@payloadcms/live-preview-react": "^3.61.1",
     "@photonjs/cloudflare": "^0.1.4",
     "@photonjs/hono": "^0.1.4",

@@ -173,7 +173,7 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 - `Heading` - h1-h6 with consistent styling
 - `Text` - Paragraph, span with size variants
 - `Link` - Internal/external links with locale handling
-- `Icon` - Icon wrapper with size variants
+- `Icon` - Heroicons wrapper with size/color variants
 - `Image` - Responsive image with loading states
 - `Divider` - Horizontal rules, leaf decorations
 
@@ -649,19 +649,19 @@ Default.storyName = "Button"
 This creates organized navigation in Ladle:
 ```
 📁 Atoms
-  📁 Interactive
-    📄 Button
-    📄 Icon Button
   📁 Form
+    📄 Button
     📄 Input
     📄 Select
     📄 Checkbox
+  📁 Media
+    📄 Icon
 ```
 
 **Key Pattern:**
 - Remove the component name from the `title` path
 - Add `Default.storyName = "Component Name"` after the story export
-- Use proper title case with spaces for multi-word components (e.g., "Icon Button", "Social Icon")
+- Use proper title case with spaces for multi-word components (e.g., "Social Icon")
 
 **Why this works for atoms/molecules:** These simpler components typically need only one comprehensive story, making the flatter hierarchy cleaner and easier to navigate.
 
@@ -701,11 +701,8 @@ export const MobileMenu: Story = () => (/* ... */);
 **Atoms / Typography**
 - Heading, Text, Label
 
-**Atoms / Interactive**
-- Button, IconButton, Link (enhanced component)
-
 **Atoms / Form**
-- Input, Textarea, Select, Checkbox, Radio
+- Button (unified text, icon-only, and icon+text), Input, Textarea, Select, Checkbox, Radio
 
 **Atoms / Media**
 - Image, Icon, Avatar
@@ -899,7 +896,7 @@ components/
 - ✅ **Atoms & Molecules**: Use two-level hierarchy with `storyName` property
 - ✅ **Organisms & Templates**: Use three-level hierarchy when multiple stories are needed
 - ✅ Add `Default.storyName = "Component Name"` for two-level hierarchies
-- ✅ Use proper title case with spaces for multi-word names (e.g., "Icon Button")
+- ✅ Use proper title case with spaces for multi-word names (e.g., "Social Icon")
 - ✅ Consolidate simple components (atoms/molecules) into one comprehensive story
 - ✅ Consider interactive stories (Ladle args) for complex organisms instead of multiple stories
 - ✅ Separate sections with `<hr className="border-gray-200" />`
@@ -917,7 +914,7 @@ components/
 - ❌ Skip the `satisfies StoryDefault` check
 - ❌ Create separate InContext stories for atoms (include in Default)
 - ❌ Use generic placeholder text without context
-- ❌ Forget to use spaces in multi-word component names ("IconButton" → "Icon Button")
+- ❌ Forget to use spaces in multi-word component names ("SocialIcon" → "Social Icon")
 
 ### Benefits of This Approach
 
@@ -1036,7 +1033,6 @@ Fonts are loaded via `@font-face` declarations in [layouts/fonts.css](./layouts/
 
 - **Raleway**: 6 weights (200, 300, 400, 500, 600, 700)
 - **Futura Book**: Regular weight (400)
-- **WeMeditate Icons**: Custom icon font
 
 All fonts use:
 - WOFF2 format (primary) for modern browsers
@@ -1047,8 +1043,24 @@ Font files are organized in `public/fonts/`:
 ```
 public/fonts/
 ├── raleway/        # All Raleway weights
-├── futura-book/    # Futura Book font
-└── icons/          # Custom icon font
+└── futura-book/    # Futura Book font
+```
+
+### Icons
+
+This project uses **Heroicons** (https://heroicons.com/) by the makers of Tailwind CSS.
+
+- Over 200+ beautiful hand-crafted SVG icons
+- Two styles: outline (24x24) and solid (24x24, 20x20)
+- MIT licensed, tree-shakeable
+- Import directly from `@heroicons/react/24/outline` or `@heroicons/react/24/solid`
+
+Use via the `Icon` component wrapper:
+```tsx
+import { HeartIcon } from '@heroicons/react/24/outline'
+import { Icon } from '@/components/atoms'
+
+<Icon icon={HeartIcon} size="lg" color="primary" />
 ```
 
 See [public/fonts/README.md](./public/fonts/README.md) for detailed font documentation.

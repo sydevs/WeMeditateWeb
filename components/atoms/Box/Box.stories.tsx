@@ -38,15 +38,18 @@ export const Default: Story = () => (
 
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Background Colors</h3>
-      <div className="grid grid-cols-3 gap-4">
-        <Box padding="md" background="white" className="border border-gray-200">
-          <p className="text-gray-700">White background</p>
+      <div className="grid grid-cols-4 gap-4">
+        <Box padding="md" background="white" border>
+          <p className="text-gray-700">White</p>
         </Box>
-        <Box padding="md" background="gray">
-          <p className="text-gray-700">Gray background</p>
+        <Box padding="md" background="light">
+          <p className="text-gray-700">Light (gray-100)</p>
         </Box>
-        <Box padding="md" background="teal">
-          <p className="text-white">Teal background</p>
+        <Box padding="md" background="primary">
+          <p className="text-teal-900">Primary (teal-50)</p>
+        </Box>
+        <Box padding="md" background="secondary">
+          <p className="text-coral-900">Secondary (coral-50)</p>
         </Box>
       </div>
     </div>
@@ -56,14 +59,14 @@ export const Default: Story = () => (
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Borders</h3>
       <div className="grid grid-cols-3 gap-4">
-        <Box padding="md" border="none">
+        <Box padding="md" background="light">
           <p className="text-gray-700">No border</p>
         </Box>
-        <Box padding="md" border="default">
-          <p className="text-gray-700">Default border</p>
+        <Box padding="md" background="light" border="light">
+          <p className="text-gray-700">Light border (gray-300)</p>
         </Box>
-        <Box padding="md" border="teal">
-          <p className="text-gray-700">Teal border</p>
+        <Box padding="md" background="light" border>
+          <p className="text-gray-700">Default border (gray-400)</p>
         </Box>
       </div>
     </div>
@@ -98,14 +101,14 @@ export const Default: Story = () => (
 
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Rounded Corners</h3>
-      <div className="grid grid-cols-3 gap-4">
-        <Box padding="md" background="gray" className="rounded">
+      <div className="grid grid-cols-3 gap-4 bg-gray-200 p-4 rounded">
+        <Box padding="md" background="light" rounded="sm">
           <p className="text-gray-700">Rounded (sm)</p>
         </Box>
-        <Box padding="md" background="gray" className="rounded-lg">
+        <Box padding="md" background="light" rounded="lg">
           <p className="text-gray-700">Rounded (lg)</p>
         </Box>
-        <Box padding="md" background="gray" className="rounded-xl">
+        <Box padding="md" background="light" rounded="xl">
           <p className="text-gray-700">Rounded (xl)</p>
         </Box>
       </div>
@@ -117,12 +120,12 @@ export const Default: Story = () => (
       <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Card Layouts and Sections</h3>
       <div className="flex flex-col gap-8 max-w-3xl">
         <div className="grid grid-cols-2 gap-4">
-          <Box padding="lg" shadow="md" background="white" className="rounded-lg">
+          <Box padding="lg" shadow="md" background="white" rounded="lg">
             <h4 className="font-semibold text-gray-900 mb-2">Morning Meditation</h4>
             <p className="text-gray-700 mb-3">Start your day with peace and clarity</p>
             <p className="text-sm text-teal-600">10 minutes</p>
           </Box>
-          <Box padding="lg" shadow="md" background="white" className="rounded-lg">
+          <Box padding="lg" shadow="md" background="white" rounded="lg">
             <h4 className="font-semibold text-gray-900 mb-2">Evening Practice</h4>
             <p className="text-gray-700 mb-3">Wind down and release the day's stress</p>
             <p className="text-sm text-teal-600">15 minutes</p>
@@ -130,19 +133,19 @@ export const Default: Story = () => (
         </div>
 
         <div className="space-y-3">
-          <Box padding="md" background="teal" border="teal" className="rounded">
-            <p className="text-white">
+          <Box padding="md" background="primary" border rounded="md">
+            <p className="text-teal-900">
               <strong>Tip:</strong> For best results, practice meditation at the same time each day.
             </p>
           </Box>
-          <Box padding="md" background="gray" border="default" className="rounded">
+          <Box padding="md" background="light" border rounded="md">
             <p className="text-gray-700">
               <strong>Note:</strong> This meditation is suitable for beginners and experienced practitioners.
             </p>
           </Box>
         </div>
 
-        <Box padding="lg" border="default" className="rounded-lg max-w-xs">
+        <Box padding="lg" border rounded="lg" className="max-w-xs">
           <h4 className="font-semibold text-gray-900 mb-3">Popular Meditations</h4>
           <div className="space-y-3">
             <div>
@@ -161,17 +164,17 @@ export const Default: Story = () => (
         </Box>
 
         <div className="grid grid-cols-3 gap-4">
-          <Box padding="md" border="default" className="rounded text-center">
+          <Box padding="md" border rounded="md" className="text-center">
             <div className="text-3xl mb-2">🧘</div>
             <h5 className="font-medium text-gray-900 mb-1">Guided</h5>
             <p className="text-sm text-gray-600">Step-by-step guidance</p>
           </Box>
-          <Box padding="md" border="default" className="rounded text-center">
+          <Box padding="md" border rounded="md" className="text-center">
             <div className="text-3xl mb-2">⏱️</div>
             <h5 className="font-medium text-gray-900 mb-1">Flexible</h5>
             <p className="text-sm text-gray-600">5-60 minute sessions</p>
           </Box>
-          <Box padding="md" border="default" className="rounded text-center">
+          <Box padding="md" border rounded="md" className="text-center">
             <div className="text-3xl mb-2">🌟</div>
             <h5 className="font-medium text-gray-900 mb-1">Free</h5>
             <p className="text-sm text-gray-600">Always 100% free</p>

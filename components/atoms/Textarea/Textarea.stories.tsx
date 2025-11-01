@@ -64,46 +64,6 @@ export const Default: Story = () => (
         </div>
       </div>
     </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Contact Form</h3>
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium mb-1 text-gray-900">
-            Message
-          </label>
-          <Textarea
-            id="message"
-            placeholder="Tell us about your meditation experience..."
-            rows={4}
-            fullWidth
-          />
-          <p className="text-sm text-gray-600 mt-1">Maximum 500 characters</p>
-        </div>
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - With Validation</h3>
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="feedback" className="block text-sm font-medium mb-1 text-gray-900">
-            Feedback
-          </label>
-          <Textarea
-            id="feedback"
-            state="error"
-            defaultValue="Too short"
-            fullWidth
-          />
-          <p className="text-sm text-error mt-1">Please provide at least 20 characters</p>
-        </div>
-      </div>
-    </div>
   </div>
 );
 Default.storyName = "Textarea"
