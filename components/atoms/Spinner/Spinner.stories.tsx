@@ -1,7 +1,9 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Spinner } from "./Spinner";
 import { StorySection,
-  StoryExampleSection, StoryWrapper } from '../../ladle';
+  StoryExampleSection,
+  StorySubsection,
+  StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Specialty"
@@ -46,28 +48,30 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection subtitle="Centered Loading">
-      <div className="border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-[200px]">
-        <Spinner size="lg" />
-        <p className="text-gray-600">Loading meditation...</p>
-      </div>
-    </StoryExampleSection>
-
-    <StoryExampleSection subtitle="Inline Loading">
-      <div className="flex items-center gap-2">
-        <Spinner size="sm" />
-        <p className="text-gray-700">Processing your request...</p>
-      </div>
-    </StoryExampleSection>
-
-    <StoryExampleSection subtitle="Full Page Loading">
-      <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner size="lg" color="primary" />
-          <p className="text-lg text-gray-700">Loading your meditation session</p>
-          <p className="text-sm text-gray-500">Please wait...</p>
+    <StoryExampleSection>
+      <StorySubsection label="Inline Loading">
+        <div className="flex items-center gap-2">
+          <Spinner size="sm" />
+          <p className="text-gray-700">Processing your request...</p>
         </div>
-      </div>
+      </StorySubsection>
+
+      <StorySubsection label="Centered Loading">
+        <div className="border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-[200px]">
+          <Spinner size="lg" />
+          <p className="text-gray-600">Loading meditation...</p>
+        </div>
+      </StorySubsection>
+
+      <StorySubsection label="Full Page Loading">
+        <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
+          <div className="flex flex-col items-center gap-4">
+            <Spinner size="lg" color="primary" />
+            <p className="text-lg text-gray-700">Loading your meditation session</p>
+            <p className="text-sm text-gray-500">Please wait...</p>
+          </div>
+        </div>
+      </StorySubsection>
     </StoryExampleSection>
 
     {/* Remove trailing divider */}

@@ -31,6 +31,7 @@ import {
 import {
   StorySection,
   StoryExampleSection,
+  StorySubsection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -84,47 +85,41 @@ export const Default: Story = () => (
         <StoryGridHeader>
           <StoryGridHeaderRow>
             <StoryGridHeaderCell />
-            <StoryGridHeaderCell>Outline</StoryGridHeaderCell>
-            <StoryGridHeaderCell>Solid</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Primary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Secondary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Tertiary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Current Color</StoryGridHeaderCell>
           </StoryGridHeaderRow>
         </StoryGridHeader>
         <StoryGridBody>
           <StoryGridRow>
-            <StoryGridCell isLabel>Primary</StoryGridCell>
+            <StoryGridCell isLabel>Outline</StoryGridCell>
             <StoryGridCell>
               <Icon icon={StarIcon} size="lg" color="primary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="primary" />
-            </StoryGridCell>
-          </StoryGridRow>
-
-          <StoryGridRow>
-            <StoryGridCell isLabel>Secondary</StoryGridCell>
-            <StoryGridCell>
               <Icon icon={StarIcon} size="lg" color="secondary" />
             </StoryGridCell>
-            <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="secondary" />
-            </StoryGridCell>
-          </StoryGridRow>
-
-          <StoryGridRow>
-            <StoryGridCell isLabel>Tertiary</StoryGridCell>
             <StoryGridCell>
               <Icon icon={StarIcon} size="lg" color="tertiary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="tertiary" />
+              <div className="text-blue-600">
+                <Icon icon={StarIcon} size="lg" color="currentColor" />
+              </div>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
-            <StoryGridCell isLabel>Current Color</StoryGridCell>
+            <StoryGridCell isLabel>Solid</StoryGridCell>
             <StoryGridCell>
-              <div className="text-blue-600">
-                <Icon icon={StarIcon} size="lg" color="currentColor" />
-              </div>
+              <Icon icon={StarIconSolid} size="lg" color="primary" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="secondary" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="tertiary" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
@@ -242,61 +237,63 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection subtitle="Button with Icons">
-      <div className="flex flex-wrap gap-3">
-        <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
-          <Icon icon={PlayIcon} size="sm" />
-          <span>Play</span>
-        </button>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
-          <Icon icon={HeartIcon} size="sm" />
-          <span>Like</span>
-        </button>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
-          <span>Next</span>
-          <Icon icon={ChevronRightIcon} size="sm" />
-        </button>
-      </div>
-    </StoryExampleSection>
+    <StoryExampleSection>
+      <StorySubsection label="Button with Icons">
+        <div className="flex flex-wrap gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
+            <Icon icon={PlayIcon} size="sm" />
+            <span>Play</span>
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+            <Icon icon={HeartIcon} size="sm" />
+            <span>Like</span>
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+            <span>Next</span>
+            <Icon icon={ChevronRightIcon} size="sm" />
+          </button>
+        </div>
+      </StorySubsection>
 
-    <StoryExampleSection subtitle="List Items with Icons">
-      <ul className="space-y-3">
-        <li className="flex items-center gap-3">
-          <Icon icon={CheckIcon} size="md" color="primary" />
-          <span className="text-gray-700">Reduce stress and anxiety</span>
-        </li>
-        <li className="flex items-center gap-3">
-          <Icon icon={CheckIcon} size="md" color="primary" />
-          <span className="text-gray-700">Improve focus and concentration</span>
-        </li>
-        <li className="flex items-center gap-3">
-          <Icon icon={CheckIcon} size="md" color="primary" />
-          <span className="text-gray-700">Enhance emotional well-being</span>
-        </li>
-        <li className="flex items-center gap-3">
-          <Icon icon={CheckIcon} size="md" color="primary" />
-          <span className="text-gray-700">Better sleep quality</span>
-        </li>
-      </ul>
-    </StoryExampleSection>
+      <StorySubsection label="List Items with Icons">
+        <ul className="space-y-3">
+          <li className="flex items-center gap-3">
+            <Icon icon={CheckIcon} size="md" color="primary" />
+            <span className="text-gray-700">Reduce stress and anxiety</span>
+          </li>
+          <li className="flex items-center gap-3">
+            <Icon icon={CheckIcon} size="md" color="primary" />
+            <span className="text-gray-700">Improve focus and concentration</span>
+          </li>
+          <li className="flex items-center gap-3">
+            <Icon icon={CheckIcon} size="md" color="primary" />
+            <span className="text-gray-700">Enhance emotional well-being</span>
+          </li>
+          <li className="flex items-center gap-3">
+            <Icon icon={CheckIcon} size="md" color="primary" />
+            <span className="text-gray-700">Better sleep quality</span>
+          </li>
+        </ul>
+      </StorySubsection>
 
-    <StoryExampleSection subtitle="Information Cards">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
-          <Icon icon={InformationCircleIcon} size="lg" color="primary" />
-          <div>
-            <h4 className="font-medium text-gray-900 mb-1">Beginner Friendly</h4>
-            <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
+      <StorySubsection label="Information Cards">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
+            <Icon icon={InformationCircleIcon} size="lg" color="primary" />
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">Beginner Friendly</h4>
+              <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
+            </div>
+          </div>
+          <div className="border border-coral-200 bg-coral-50 rounded-lg p-4 flex gap-3">
+            <Icon icon={ClockIcon} size="lg" color="secondary" />
+            <div>
+              <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
+              <p className="text-sm text-gray-700">Just 10 minutes a day</p>
+            </div>
           </div>
         </div>
-        <div className="border border-teal-200 bg-coral-50 rounded-lg p-4 flex gap-3">
-          <Icon icon={ClockIcon} size="lg" color="secondary" />
-          <div>
-            <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
-            <p className="text-sm text-gray-700">Just 10 minutes a day</p>
-          </div>
-        </div>
-      </div>
+      </StorySubsection>
     </StoryExampleSection>
 
     {/* Remove trailing divider */}

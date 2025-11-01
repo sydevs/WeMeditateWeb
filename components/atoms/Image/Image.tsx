@@ -103,7 +103,7 @@ export function Image({
 
   const imageClasses = `${objectFitStyles} ${
     aspectRatio ? 'absolute inset-0 w-full h-full' : ''
-  } ${className}`
+  } transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} ${className}`
 
   return (
     <div className={containerClasses}>

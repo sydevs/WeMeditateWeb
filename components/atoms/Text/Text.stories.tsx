@@ -25,9 +25,10 @@ export const Default: Story = () => (
 
     <StorySection title="Colors">
       <div className="flex flex-col gap-3">
-        <Text color="primary">Primary color (gray-900)</Text>
-        <Text color="secondary">Secondary color (gray-700)</Text>
-        <Text color="tertiary">Tertiary color (gray-600)</Text>
+        <Text color="default">Default color (gray-900)</Text>
+        <Text color="primary">Primary color (teal-700)</Text>
+        <Text color="secondary">Secondary color (coral-700)</Text>
+        <Text color="tertiary">Tertiary color (gray-700)</Text>
         <div className="bg-teal-500 p-3 rounded text-white">
           <Text color="inherit">
             Inherit color (from parent)

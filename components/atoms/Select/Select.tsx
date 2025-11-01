@@ -50,15 +50,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     const baseStyles =
-      'px-4 py-2.5 pr-10 border rounded-lg font-sans text-base text-gray-900 bg-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 appearance-none cursor-pointer'
+      'px-0 py-3 pr-8 bg-transparent border-0 border-b-2 font-sans text-base transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed appearance-none cursor-pointer'
 
     const stateStyles = {
       default:
-        'border-gray-300 hover:border-gray-400 focus:border-teal-500 focus:ring-teal-500',
+        'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
       error:
-        'border-error hover:border-error-dark focus:border-error focus:ring-error',
+        'text-error border-error hover:border-error-dark focus:border-error',
       success:
-        'border-success hover:border-success focus:border-success focus:ring-success',
+        'text-gray-900 border-success hover:border-success focus:border-success',
     }
 
     const wrapperWidthStyles = fullWidth ? 'w-full' : 'inline-block'
@@ -80,7 +80,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {/* Dropdown arrow icon */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-700">
           <svg
             className="h-4 w-4"
             fill="none"

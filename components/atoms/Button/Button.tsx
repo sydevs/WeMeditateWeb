@@ -5,9 +5,10 @@ import { Spinner } from '../Spinner/Spinner'
 export interface ButtonProps extends ComponentProps<'button'> {
   /**
    * Visual style variant
+   * - outline-light: White border/text for dark backgrounds (with animated hover)
    * @default 'primary'
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'outline' | 'outline-light' | 'ghost'
 
   /**
    * Button size
@@ -98,18 +99,42 @@ export function Button({
   // Determine if this is an icon-only button
   const isIconOnly = icon && !children
 
-  const baseStyles =
-    'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  // Styles for animated hover effect (wemeditate.com center-to-edges animation)
+  // Uses ::after pseudo-element that scales from center on hover
+  // Only applied to text buttons, not icon-only buttons
+  const animatedHoverEffect =
+    'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10 after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100'
 
-  const variantStyles = {
+  const baseStyles =
+    'inline-flex items-center justify-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
+
+  // Only add animation if button is interactive (not disabled or loading)
+  const isInteractive = !disabled && !isLoading
+  const animatedStyles = isIconOnly || !isInteractive ? '' : animatedHoverEffect
+
+  // Variant styles - use after: pseudo-element for text buttons, direct hover for icon-only
+  const variantStyles = isIconOnly ? {
     primary:
       'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
     secondary:
       'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
     outline:
-      'bg-transparent border-2 border-teal-500 text-teal-600 hover:bg-teal-50 focus:ring-teal-500 active:bg-teal-100',
+      'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 hover:bg-teal-100 hover:border-gray-500',
+    'outline-light':
+      'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
     ghost:
-      'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-400 active:bg-gray-200',
+      'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
+  } : {
+    primary:
+      'bg-teal-500 after:bg-teal-600 text-white focus:ring-teal-500 active:after:bg-teal-700',
+    secondary:
+      'bg-coral-500 after:bg-coral-600 text-white focus:ring-coral-500 active:after:bg-coral-700',
+    outline:
+      'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 after:bg-teal-100 hover:border-gray-500',
+    'outline-light':
+      'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
+    ghost:
+      'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
   }
 
   // Size styles for icon-only buttons
@@ -120,11 +145,11 @@ export function Button({
   }
 
   // Size styles for text buttons (with or without icon)
-  // Includes minimum width to ensure proper button proportions
+  // Inspired by wemeditate.com: generous padding, no rounding
   const textButtonSizeStyles = {
-    sm: 'px-4 py-1.5 text-sm gap-1.5 min-w-20',
-    md: 'px-6 py-2.5 text-base gap-2 min-w-24',
-    lg: 'px-8 py-3.5 text-lg gap-2.5 min-w-28',
+    sm: 'px-6 py-2 text-sm gap-2',
+    md: 'px-8 py-3 text-base gap-2',
+    lg: 'px-8 py-5 text-base gap-2',
   }
 
   // Shape styles for icon-only buttons
@@ -157,6 +182,7 @@ export function Button({
     primary: 'white' as const,
     secondary: 'white' as const,
     outline: 'primary' as const,
+    'outline-light': 'white' as const,
     ghost: 'currentColor' as const,
   }
 
@@ -177,7 +203,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`}
+      className={`${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`}
       disabled={disabled || isLoading}
       aria-busy={isLoading}
       aria-label={isIconOnly ? ariaLabel : undefined}

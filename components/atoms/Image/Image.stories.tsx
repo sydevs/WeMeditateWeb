@@ -13,101 +13,62 @@ export default {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Shapes">
-      <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-3 gap-4 max-w-4xl">
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-3">Aspect Ratios</p>
-          <div className="grid grid-cols-3 gap-4 max-w-4xl">
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Square (1:1)</p>
-              <Image
-                src="https://picsum.photos/id/10/400/400"
-                alt="Square image"
-                aspectRatio="square"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Video (16:9)</p>
-              <Image
-                src="https://picsum.photos/id/10/1600/900"
-                alt="Video aspect ratio"
-                aspectRatio="video"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">4:3</p>
-              <Image
-                src="https://picsum.photos/id/10/800/600"
-                alt="4:3 aspect ratio"
-                aspectRatio="4/3"
-              />
-            </div>
-          </div>
+          <p className="text-sm text-gray-600 mb-2">Square (no rounding)</p>
+          <Image
+            src="https://picsum.photos/id/40/600/600"
+            alt="Square image"
+            aspectRatio="square"
+            rounded="square"
+          />
         </div>
-
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-3">Object Fit Options</p>
-          <div className="grid grid-cols-3 gap-4 max-w-4xl">
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Cover (default)</p>
-              <Image
-                src="https://picsum.photos/id/20/800/400"
-                alt="Object fit cover"
-                aspectRatio="square"
-                objectFit="cover"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Contain</p>
-              <Image
-                src="https://picsum.photos/id/20/800/400"
-                alt="Object fit contain"
-                aspectRatio="square"
-                objectFit="contain"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Fill</p>
-              <Image
-                src="https://picsum.photos/id/20/800/400"
-                alt="Object fit fill"
-                aspectRatio="square"
-                objectFit="fill"
-              />
-            </div>
-          </div>
+          <p className="text-sm text-gray-600 mb-2">Rounded (rounded-lg)</p>
+          <Image
+            src="https://picsum.photos/id/40/600/600"
+            alt="Rounded image"
+            aspectRatio="square"
+            rounded="rounded"
+          />
         </div>
-
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-3">Rounded Corners</p>
-          <div className="grid grid-cols-3 gap-4 max-w-4xl">
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Square (no rounding)</p>
-              <Image
-                src="https://picsum.photos/id/40/600/600"
-                alt="Square image"
-                aspectRatio="square"
-                rounded="square"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Rounded (rounded-lg)</p>
-              <Image
-                src="https://picsum.photos/id/40/600/600"
-                alt="Rounded image"
-                aspectRatio="square"
-                rounded="rounded"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Circle (rounded-full)</p>
-              <Image
-                src="https://picsum.photos/id/40/600/600"
-                alt="Circle image"
-                aspectRatio="square"
-                rounded="circle"
-              />
-            </div>
-          </div>
+          <p className="text-sm text-gray-600 mb-2">Circle (rounded-full)</p>
+          <Image
+            src="https://picsum.photos/id/40/600/600"
+            alt="Circle image"
+            aspectRatio="square"
+            rounded="circle"
+          />
+        </div>
+      </div>
+    </StorySection>
+
+    <StorySection title="Aspect Ratios">
+      <div className="grid grid-cols-3 gap-4 max-w-4xl">
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Square (1:1)</p>
+          <Image
+            src="https://picsum.photos/id/10/400/400"
+            alt="Square image"
+            aspectRatio="square"
+          />
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Video (16:9)</p>
+          <Image
+            src="https://picsum.photos/id/10/1600/900"
+            alt="Video aspect ratio"
+            aspectRatio="video"
+          />
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-2">4:3</p>
+          <Image
+            src="https://picsum.photos/id/10/800/600"
+            alt="4:3 aspect ratio"
+            aspectRatio="4/3"
+          />
         </div>
       </div>
     </StorySection>

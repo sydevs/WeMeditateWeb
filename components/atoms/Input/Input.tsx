@@ -28,15 +28,15 @@ export interface InputProps extends ComponentProps<'input'> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ state = 'default', fullWidth = false, className = '', ...props }, ref) => {
     const baseStyles =
-      'px-4 py-2.5 border rounded-lg font-sans text-base text-gray-900 placeholder:text-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60'
+      'px-0 py-3 bg-transparent border-0 border-b-2 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
 
     const stateStyles = {
       default:
-        'border-gray-300 hover:border-gray-400 focus:border-teal-500 focus:ring-teal-500',
+        'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
       error:
-        'border-error hover:border-error-dark focus:border-error focus:ring-error',
+        'text-error border-error hover:border-error-dark focus:border-error',
       success:
-        'border-success hover:border-success focus:border-success focus:ring-success',
+        'text-gray-900 border-success hover:border-success focus:border-success',
     }
 
     const widthStyles = fullWidth ? 'w-full' : 'w-64'

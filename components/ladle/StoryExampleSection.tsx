@@ -23,8 +23,8 @@ export const StoryExampleSection = ({ subtitle, description, children }: StoryEx
 
   return (
     <>
-      <div className="border-t-4 border-teal-500 pt-8">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">{title}</h3>
+      <div className="pt-8">
+        <h3 className="border-t-2 border-grey-500 text-lg font-semibold mb-4 text-gray-900">{title}</h3>
         {description && (
           <p className="text-sm text-gray-600 mb-4">{description}</p>
         )}

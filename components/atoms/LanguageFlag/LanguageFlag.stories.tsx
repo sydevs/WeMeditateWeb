@@ -3,7 +3,7 @@ import { LanguageFlag } from "./LanguageFlag";
 import { StorySection, StoryWrapper } from '../../ladle';
 
 export default {
-  title: "Atoms / Specialty"
+  title: "Atoms / Media"
 } satisfies StoryDefault;
 
 /**

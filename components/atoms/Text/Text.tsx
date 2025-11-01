@@ -23,7 +23,7 @@ export interface TextProps {
    * Text color variant
    * @default 'primary'
    */
-  color?: 'primary' | 'secondary' | 'tertiary' | 'inherit'
+  color?: 'default' | 'primary' | 'secondary' | 'tertiary' | 'inherit'
 
   /**
    * Additional CSS classes
@@ -51,7 +51,7 @@ export function Text({
   as = 'p',
   size = 'base',
   weight = 'light',
-  color = 'primary',
+  color = 'inherit',
   className = '',
   children,
   ...props
@@ -77,10 +77,11 @@ export function Text({
   }
 
   const colorStyles = {
-    primary: 'text-gray-900',
-    secondary: 'text-gray-700',
-    tertiary: 'text-gray-600',
-    inherit: 'text-inherit',
+    default: 'text-gray-900',
+    primary: 'text-teal-700',
+    secondary: 'text-coral-700',
+    tertiary: 'text-gray-700',
+    inherit: '',
   }
 
   return (

@@ -14,14 +14,15 @@ import {
 } from '../../ladle';
 
 export default {
-  title: "Atoms / Specialty"
+  title: "Atoms / Media"
 } satisfies StoryDefault;
 
 /**
  * SocialIcon component showcasing all platforms, variants, sizes, and usage in context.
  */
 export const Default: Story = () => {
-  const platforms = ['facebook', 'twitter', 'instagram', 'youtube', 'linkedin', 'whatsapp', 'pinterest'] as const
+  const platforms = ['facebook', 'instagram', 'bluesky', 'youtube', 'linkedin', 'whatsapp', 'pinterest', 'yandex', 'telegram', 'wechat'] as const
+  const colors = ['gray', 'brand', 'primary', 'secondary'] as const
 
   return (
   <StoryWrapper>
@@ -30,49 +31,26 @@ export const Default: Story = () => {
         <StoryGridHeader>
           <StoryGridHeaderRow>
             <StoryGridHeaderCell />
-            {platforms.map(platform => (
-              <StoryGridHeaderCell key={platform}>
-                <span className="capitalize">{platform}</span>
+            {colors.map(color => (
+              <StoryGridHeaderCell key={color}>
+                <span className="capitalize">{color}</span>
               </StoryGridHeaderCell>
             ))}
           </StoryGridHeaderRow>
         </StoryGridHeader>
         <StoryGridBody>
-          <StoryGridRow>
-            <StoryGridCell isLabel>Gray</StoryGridCell>
-            {platforms.map(platform => (
-              <StoryGridCell key={platform}>
-                <SocialIcon platform={platform} color="gray" aria-label={platform} />
+          {platforms.map(platform => (
+            <StoryGridRow key={platform}>
+              <StoryGridCell isLabel>
+                <span className="capitalize">{platform}</span>
               </StoryGridCell>
-            ))}
-          </StoryGridRow>
-
-          <StoryGridRow>
-            <StoryGridCell isLabel>Brand Colors</StoryGridCell>
-            {platforms.map(platform => (
-              <StoryGridCell key={platform}>
-                <SocialIcon platform={platform} color="brand" aria-label={platform} />
-              </StoryGridCell>
-            ))}
-          </StoryGridRow>
-
-          <StoryGridRow>
-            <StoryGridCell isLabel>Primary</StoryGridCell>
-            {platforms.map(platform => (
-              <StoryGridCell key={platform}>
-                <SocialIcon platform={platform} color="primary" aria-label={platform} />
-              </StoryGridCell>
-            ))}
-          </StoryGridRow>
-
-          <StoryGridRow>
-            <StoryGridCell isLabel>Secondary</StoryGridCell>
-            {platforms.map(platform => (
-              <StoryGridCell key={platform}>
-                <SocialIcon platform={platform} color="secondary" aria-label={platform} />
-              </StoryGridCell>
-            ))}
-          </StoryGridRow>
+              {colors.map(color => (
+                <StoryGridCell key={color}>
+                  <SocialIcon platform={platform} color={color} aria-label={`${platform} ${color}`} />
+                </StoryGridCell>
+              ))}
+            </StoryGridRow>
+          ))}
         </StoryGridBody>
       </StoryGrid>
     </StorySection>
@@ -102,7 +80,7 @@ export const Default: Story = () => {
             <SocialIcon platform="facebook" color="brand" size="lg" aria-label="Share on Facebook" />
           </button>
           <button className="hover:scale-110 transition-transform">
-            <SocialIcon platform="twitter" color="brand" size="lg" aria-label="Share on Twitter" />
+            <SocialIcon platform="bluesky" color="brand" size="lg" aria-label="Share on BlueSky" />
           </button>
           <button className="hover:scale-110 transition-transform">
             <SocialIcon platform="whatsapp" color="brand" size="lg" aria-label="Share on WhatsApp" />

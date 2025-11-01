@@ -216,11 +216,18 @@ Organize story sections in this order (skip sections that don't apply):
 2. **Variants** - Visual style variations (primary, secondary, outline, ghost)
 3. **Colors** - Color variations
 4. **Shapes** - Shape variations (square, rounded, circular)
-5. **States** - Interactive states (default, loading, disabled, success, error)
-6. **Sizes** - Size variations (xs, sm, md, lg, xl, 2xl)
-7. **Widths** - Width options (default, full-width)
-8. **Padding** - Padding variations
-9. **Examples** - Real-world usage scenarios and practical examples (can be multiple sections with descriptive titles like "Examples - Button with Icons")
+5. **Component-Specific Sections** - Sections unique to the component (e.g., "Aspect Ratios" for Image, "Common Durations" and "Format Variants" for Duration)
+6. **States** - Interactive states (default, loading, disabled, success, error)
+7. **Sizes** - Size variations (xs, sm, md, lg, xl, 2xl)
+8. **Widths** - Width options (default, full-width)
+9. **Padding** - Padding variations
+10. **Examples** - Real-world usage scenarios and practical examples
+
+**Note on Component-Specific Sections**: Some components have unique properties that don't fit into the standard categories. These sections should appear after "Shapes" and before "States". Examples include:
+- **Image component**: "Aspect Ratios" section for different image aspect ratios (square, video, 4:3)
+- **Duration component**: "Common Durations" and "Format Variants" sections for time display options
+
+These sections are specific to individual components and should use clear, descriptive titles that reflect what they demonstrate.
 
 ### Section Naming Conventions
 

@@ -24,6 +24,12 @@ export interface AvatarProps extends Omit<ComponentProps<'div'>, 'children'> {
   shape?: 'circle' | 'rounded' | 'square'
 
   /**
+   * Avatar color scheme
+   * @default 'primary'
+   */
+  color?: 'primary' | 'secondary' | 'neutral'
+
+  /**
    * Fallback initials when image is not available
    */
   initials?: string
@@ -33,12 +39,12 @@ export interface AvatarProps extends Omit<ComponentProps<'div'>, 'children'> {
  * Avatar component for user/author profile images.
  *
  * Displays circular or rounded images with fallback to initials.
- * Supports various sizes and automatic fallback handling.
+ * Supports various sizes, colors, and automatic fallback handling.
  *
  * @example
  * <Avatar src="/user.jpg" alt="John Doe" />
- * <Avatar src="/author.jpg" alt="Jane Smith" size="lg" />
- * <Avatar alt="John Doe" initials="JD" />
+ * <Avatar src="/author.jpg" alt="Jane Smith" size="lg" color="secondary" />
+ * <Avatar alt="John Doe" initials="JD" color="neutral" />
  * <Avatar src="/profile.jpg" alt="User" shape="rounded" size="xl" />
  */
 export function Avatar({
@@ -46,6 +52,7 @@ export function Avatar({
   alt,
   size = 'md',
   shape = 'circle',
+  color = 'primary',
   initials,
   className = '',
   ...props
@@ -68,8 +75,13 @@ export function Avatar({
     square: 'rounded-none',
   }
 
-  const baseStyles =
-    'relative inline-flex items-center justify-center overflow-hidden bg-gray-200 text-gray-700 font-medium flex-shrink-0'
+  const colorStyles = {
+    primary: 'bg-teal-500 text-white',
+    secondary: 'bg-coral-500 text-white',
+    neutral: 'bg-gray-200 text-gray-700',
+  }
+
+  const baseStyles = 'relative inline-flex items-center justify-center overflow-hidden font-medium flex-shrink-0'
 
   const showImage = src && !hasError
 
@@ -96,22 +108,21 @@ export function Avatar({
 
   return (
     <div
-      className={`${baseStyles} ${sizeStyles[size]} ${shapeStyles[shape]} ${className}`}
+      className={`${baseStyles} ${colorStyles[color]} ${sizeStyles[size]} ${shapeStyles[shape]} ${className}`}
       {...props}
     >
-      {isLoading && (
-        <div className="absolute inset-0 bg-gray-300 animate-pulse" />
-      )}
-      {showImage ? (
+      {/* Always render initials underneath */}
+      <span aria-label={alt} className={showImage ? 'absolute' : ''}>
+        {displayInitials}
+      </span>
+      {showImage && (
         <img
           src={src}
           alt={alt}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover absolute inset-0 ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
           onLoad={handleLoad}
           onError={handleError}
         />
-      ) : (
-        <span aria-label={alt}>{displayInitials}</span>
       )}
     </div>
   )

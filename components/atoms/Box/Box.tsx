@@ -11,25 +11,25 @@ export interface BoxProps {
    * Padding size
    * @default undefined
    */
-  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+  padding?: 'sm' | 'md' | 'lg'
 
   /**
-   * Background color
+   * Color variant (affects background, text, and border colors)
    * @default undefined
    */
-  background?: 'white' | 'subtle' | 'light' | 'warm' | 'primary' | 'secondary'
+  color?: 'white' | 'gray' | 'primary' | 'secondary'
 
   /**
-   * Border style
-   * @default undefined
+   * Show border
+   * @default false
    */
-  border?: boolean | 'light'
+  border?: boolean
 
   /**
-   * Border radius
-   * @default undefined
+   * Apply rounded corners
+   * @default false
    */
-  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  rounded?: boolean
 
   /**
    * Shadow depth
@@ -51,28 +51,28 @@ export interface BoxProps {
 /**
  * Box component for generic containers with styling utilities.
  *
- * Provides a flexible container with padding, background, border, and shadow options.
+ * Provides a flexible container with padding, color, border, and shadow options.
  * Use as a building block for cards, panels, and other contained content.
  *
  * @example
- * <Box padding="md" background="white" rounded="lg" shadow="md">
+ * <Box padding="md" color="white" rounded border shadow="md">
  *   Card content
  * </Box>
  *
- * <Box as="article" padding="lg" border>
+ * <Box as="article" padding="lg" color="primary" border>
  *   Article content
  * </Box>
  *
- * <Box background="primary" padding="xl" rounded="xl">
+ * <Box color="secondary" padding="lg" rounded>
  *   Colored box
  * </Box>
  */
 export function Box({
   as = 'div',
   padding,
-  background,
-  border,
-  rounded,
+  color,
+  border = false,
+  rounded = false,
   shadow,
   className = '',
   children,
@@ -82,41 +82,31 @@ export function Box({
 
   const paddingStyles = padding
     ? {
-        none: 'p-0',
-        sm: 'p-2',
-        md: 'p-4',
-        lg: 'p-6',
-        xl: 'p-8',
+        sm: 'p-5',
+        md: 'py-8 px-12',
+        lg: 'py-12 px-18',
       }[padding]
     : ''
 
-  const backgroundStyles = background
+  const colorStyles = color
     ? {
-        white: 'bg-white',
-        subtle: 'bg-gray-50',
-        light: 'bg-gray-100',
-        warm: 'bg-bg-warm',
-        primary: 'bg-teal-50',
-        secondary: 'bg-coral-50',
-      }[background]
+        white: 'bg-white text-gray-900',
+        gray: 'bg-gray-100 text-gray-900',
+        primary: 'bg-teal-50 text-teal-900',
+        secondary: 'bg-coral-50 text-coral-900',
+      }[color]
     : ''
 
-  const borderStyles = border
-    ? border === 'light'
-      ? 'border border-gray-300'
-      : 'border border-gray-400'
+  const borderStyles = border && color
+    ? {
+        white: 'border border-gray-300',
+        gray: 'border border-gray-400',
+        primary: 'border border-teal-400',
+        secondary: 'border border-coral-400',
+      }[color]
     : ''
 
-  const roundedStyles = rounded
-    ? {
-        none: 'rounded-none',
-        sm: 'rounded-sm',
-        md: 'rounded-md',
-        lg: 'rounded-lg',
-        xl: 'rounded-xl',
-        full: 'rounded-full',
-      }[rounded]
-    : ''
+  const roundedStyles = rounded ? 'rounded-lg' : ''
 
   const shadowStyles = shadow
     ? {
@@ -130,7 +120,7 @@ export function Box({
 
   return (
     <Component
-      className={`${paddingStyles} ${backgroundStyles} ${borderStyles} ${roundedStyles} ${shadowStyles} ${className}`}
+      className={`${paddingStyles} ${colorStyles} ${borderStyles} ${roundedStyles} ${shadowStyles} ${className}`}
       {...props}
     >
       {children}

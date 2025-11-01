@@ -103,6 +103,30 @@ export const Default: Story = () => (
           </StoryGridRow>
 
           <StoryGridRow>
+            <StoryGridCell isLabel>Outline Light</StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={StarIcon} variant="outline-light" shape="square" aria-label="Favorite" />
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={StarIcon} variant="outline-light" shape="circular" aria-label="Favorite" />
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={StarIcon} variant="outline-light" shape="square">Button</Button>
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={StarIcon} variant="outline-light" shape="circular">Button</Button>
+              </div>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
             <StoryGridCell isLabel>Ghost</StoryGridCell>
             <StoryGridCell>
               <Button icon={XMarkIcon} variant="ghost" shape="square" aria-label="Close" />
@@ -224,6 +248,30 @@ export const Default: Story = () => (
 
     <StoryExampleSection>
       <div className="flex flex-col gap-6">
+        <StorySubsection label="Call-to-Action on Light Background (wemeditate.com style)">
+          <div className="flex gap-4 flex-wrap">
+            <Button variant="outline" size="lg">Meditate Now</Button>
+            <Button variant="outline" size="lg">Learn More</Button>
+            <Button variant="outline" size="lg">Discover My Sound</Button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Hover to see the animated background fill from center to edges
+          </p>
+        </StorySubsection>
+
+        <StorySubsection label="Call-to-Action on Dark Background (wemeditate.com style)">
+          <div className="bg-gray-900 p-6 rounded">
+            <div className="flex gap-4 flex-wrap">
+              <Button variant="outline-light" size="lg">Get Inspired</Button>
+              <Button variant="outline-light" size="lg">Start Today</Button>
+              <Button variant="outline-light" size="lg">Join Now</Button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            White variant with animated hover effect for dark backgrounds
+          </p>
+        </StorySubsection>
+
         <StorySubsection label="Form Actions">
           <div className="flex gap-3 flex-wrap">
             <Button variant="primary">Submit</Button>
