@@ -1,9 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Text } from "./Text";
 
+export default {
+  title: "Atoms / Typography"
+} satisfies StoryDefault;
+
 /**
- * Text component showcasing sizes, weights, colors, and combinations.
- * Use for body copy, captions, and inline text.
+ * Text component showcasing all sizes, weights, colors, and combinations.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -82,3 +85,5 @@ export const Default: Story = () => (
     </div>
   </div>
 );
+
+Default.storyName = "Text"

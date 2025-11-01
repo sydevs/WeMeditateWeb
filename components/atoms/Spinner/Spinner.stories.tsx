@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Spinner } from "./Spinner";
 
+export default {
+  title: "Atoms / Specialty"
+} satisfies StoryDefault;
+
 /**
- * Spinner component showcasing sizes and colors.
+ * Spinner component showcasing all sizes, colors, and usage in context with loading states.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -58,36 +62,31 @@ export const Default: Story = () => (
         <Spinner size="lg" color="primary" />
       </div>
     </div>
-  </div>
-);
 
-/**
- * Spinner in context with loading states.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-md">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Loading Content</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Loading States</h3>
+      <div className="flex flex-col gap-8 max-w-md">
+      <div>
       <div className="border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-[200px]">
         <Spinner size="lg" />
         <p className="text-gray-600">Loading meditation...</p>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Inline with Text</h3>
+      <div>
       <div className="flex items-center gap-2">
         <Spinner size="sm" />
         <p className="text-gray-700">Processing your request...</p>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Full-Page Loading</h3>
+      <div>
       <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-4">
           <Spinner size="lg" color="teal" />
@@ -95,6 +94,9 @@ export const InContext: Story = () => (
           <p className="text-sm text-gray-500">Please wait...</p>
         </div>
       </div>
+      </div>
+      </div>
     </div>
   </div>
 );
+Default.storyName = "Spinner"

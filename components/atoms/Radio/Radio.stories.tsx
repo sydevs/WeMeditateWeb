@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Radio } from "./Radio";
 
+export default {
+  title: "Atoms / Form"
+} satisfies StoryDefault;
+
 /**
- * Radio component showcasing groups and labels.
+ * Radio component showcasing all variants, states, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -55,22 +59,18 @@ export const Default: Story = () => (
         </div>
       </div>
     </div>
-  </div>
-);
 
-/**
- * Radio states including disabled.
- */
-export const States: Story = () => (
-  <div className="flex flex-col gap-8">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Disabled State</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
       <div>
         <p className="text-sm font-medium mb-2 text-gray-900">Options:</p>
         <div className="flex flex-col gap-2">
+          <Radio name="states" value="unchecked" label="Unchecked" />
+          <Radio name="states" value="checked" label="Checked" defaultChecked />
           <Radio name="disabled" value="1" label="Disabled unchecked" disabled />
           <Radio name="disabled" value="2" label="Disabled checked" disabled defaultChecked />
-          <Radio name="disabled" value="3" label="Active option" />
         </div>
       </div>
     </div>
@@ -78,26 +78,8 @@ export const States: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
-      <div>
-        <p className="text-sm font-medium mb-2 text-gray-900">Current state:</p>
-        <div className="flex flex-col gap-2">
-          <Radio name="states" value="unchecked" label="Unchecked" />
-          <Radio name="states" value="checked" label="Checked" defaultChecked />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-/**
- * Radio in form context.
- */
-export const InContext: Story = () => (
-  <div className="max-w-md flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Survey Form</h3>
-      <div className="space-y-6">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Survey Form</h3>
+      <div className="max-w-md space-y-6">
         <div>
           <label className="block text-sm font-medium mb-3 text-gray-900">
             How often do you meditate?
@@ -127,3 +109,4 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+Default.storyName = "Radio"

@@ -612,187 +612,323 @@ All images must have meaningful alt text:
 
 ---
 
-## Writing Component Stories
+## Story Organization with Atomic Design
 
 Component stories provide visual documentation and enable isolated component development. We use [Ladle](https://ladle.dev/) for our component library (see [STORYBOOK.md](STORYBOOK.md) for setup).
 
-### Story Structure Guidelines
+Our story organization follows the **Atomic Design** methodology, creating a hierarchical navigation structure that helps teams understand component relationships and complexity levels.
 
-**Number of Stories by Component Type:**
+### Hierarchical Title Structure
 
-- **Atoms**: 1-3 stories maximum
-  - `Default` - Comprehensive showcase of all variants
-  - `States` - Optional, for interactive states (loading, disabled, error)
-  - `InContext` - Optional, for realistic usage examples
+Story organization varies by component complexity level:
 
-- **Molecules**: 2-4 stories
-  - `Default` - Main variants and configurations
-  - `States` - Interactive and validation states
-  - `InContext` - Usage within typical layouts
-  - `Playground` - Optional, for complex interactive demos
+#### Atoms & Molecules: Two-Level Hierarchy
 
-- **Organisms**: 3-5 stories
-  - `Default` - Primary use case
-  - Individual stories for distinct variants
-  - `InContext` - Real-world page integration examples
+For **atoms and molecules**, use a **two-level hierarchy** with the component name specified via the `storyName` property:
 
-### Atom Story Pattern
+```
+[Atomic Level] / [Functional Category]
+```
 
-For atoms, consolidate variants into organized sections within a single `Default` story:
-
+**Example:**
 ```tsx
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Button } from "./Button";
 
+export default {
+  title: "Atoms / Interactive"
+} satisfies StoryDefault;
+
+export const Default: Story = () => (
+  // Story implementation
+);
+
+Default.storyName = "Button"
+```
+
+This creates organized navigation in Ladle:
+```
+📁 Atoms
+  📁 Interactive
+    📄 Button
+    📄 Icon Button
+  📁 Form
+    📄 Input
+    📄 Select
+    📄 Checkbox
+```
+
+**Key Pattern:**
+- Remove the component name from the `title` path
+- Add `Default.storyName = "Component Name"` after the story export
+- Use proper title case with spaces for multi-word components (e.g., "Icon Button", "Social Icon")
+
+**Why this works for atoms/molecules:** These simpler components typically need only one comprehensive story, making the flatter hierarchy cleaner and easier to navigate.
+
+#### Organisms & Templates: Three-Level Hierarchy (Optional)
+
+For **organisms and templates**, you may use a **three-level hierarchy** when components need multiple distinct stories:
+
+```
+[Atomic Level] / [Functional Category] / [Component Name]
+```
+
+**Example:**
+```tsx
+export default {
+  title: "Organisms / Navigation / Header"
+} satisfies StoryDefault;
+
+export const LoggedOut: Story = () => (/* ... */);
+export const LoggedIn: Story = () => (/* ... */);
+export const MobileMenu: Story = () => (/* ... */);
+```
+
+**Alternatively**, use an **interactive story** with Ladle's args/controls for complex organisms instead of multiple stories.
+
+**When to use 3-level hierarchy:**
+- Component has multiple distinct use cases that can't easily fit in one story
+- Different stories showcase fundamentally different states or configurations
+- You need to demonstrate the component in various complex contexts
+
+**When to use interactive stories instead:**
+- Component has many prop combinations
+- You want to provide a "playground" for testing different configurations
+- Users benefit from real-time prop manipulation
+
+### Atom Categories
+
+**Atoms / Typography**
+- Heading, Text, Label
+
+**Atoms / Interactive**
+- Button, IconButton, Link (enhanced component)
+
+**Atoms / Form**
+- Input, Textarea, Select, Checkbox, Radio
+
+**Atoms / Media**
+- Image, Icon, Avatar
+
+**Atoms / Layout**
+- Container, Box, Spacer
+
+**Atoms / Specialty**
+- LanguageFlag, SocialIcon, Spinner, Duration
+
+### Future Hierarchy (Proposed)
+
+**Molecules** (Proposed - not yet implemented)
+- `Molecules / Forms` - FormField, SearchBar, LoginForm
+- `Molecules / Cards` - MediaCard, ArticleCard, ProfileCard
+- `Molecules / Navigation` - NavLink, Breadcrumb, Pagination
+- `Molecules / Content` - Alert, Toast, Stat
+
+**Organisms** (Proposed - not yet implemented)
+- `Organisms / Navigation` - Header, Footer, Sidebar
+- `Organisms / Content` - MeditationGrid, ArticleList, Hero
+- `Organisms / Forms` - ContactForm, RegistrationForm, FilterPanel
+
+**Templates** (Proposed - not yet implemented)
+- `Templates / Page Layouts` - ArticleLayout, DashboardLayout, LandingLayout
+
+**Pages** (Proposed - not yet implemented)
+- `Pages / Home`, `Pages / Meditation Detail`, `Pages / Article`, etc.
+
+### Story Structure Guidelines
+
+**Atoms: One Story Per Component**
+
+Each atom has a single comprehensive `Default` story that includes:
+- All variants and sizes
+- All states (loading, disabled, validation)
+- Important combinations
+- Usage examples in context
+
+**Why one story?** Atoms are simple enough that all variants fit in one view. Context will be shown when atoms are composed into molecules and organisms.
+
+**Example Atom Story:**
+
+```tsx
+import type { Story, StoryDefault } from "@ladle/react";
+import { Button } from "./Button";
+
+export default {
+  title: "Atoms / Interactive"
+} satisfies StoryDefault;
+
 /**
- * Button component showcasing all variants and sizes.
- * Buttons are used for user actions and come in multiple visual styles.
+ * Button component showcasing all variants, sizes, and states.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Variants</h3>
-      <div className="flex gap-4 flex-wrap items-center">
-        <Button variant="primary">Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
-        <Button variant="text">Text</Button>
-      </div>
+      {/* Show all variant options */}
     </div>
+
+    <hr className="border-gray-200" />
 
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
-      <div className="flex gap-4 flex-wrap items-center">
-        <Button size="sm">Small</Button>
-        <Button size="md">Medium</Button>
-        <Button size="lg">Large</Button>
-      </div>
+      {/* Show all size options */}
     </div>
 
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variant × Size Combinations</h3>
-      <div className="flex flex-col gap-6">
-        <div>
-          <p className="text-sm text-gray-600 mb-3">Primary</p>
-          <div className="flex gap-3 items-center">
-            <Button variant="primary" size="sm">Small</Button>
-            <Button variant="primary" size="md">Medium</Button>
-            <Button variant="primary" size="lg">Large</Button>
-          </div>
-        </div>
-        {/* More combinations */}
-      </div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
+      {/* Show loading, disabled, etc. */}
+    </div>
+
+    <hr className="border-gray-200" />
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context</h3>
+      {/* Show realistic usage examples */}
     </div>
   </div>
 );
 
-/**
- * Button states including loading, disabled, and full-width variants.
- */
-export const States: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Loading State</h3>
-      <div className="flex gap-4 flex-wrap">
-        <Button variant="primary" isLoading>Loading</Button>
-        <Button variant="secondary" isLoading>Loading</Button>
-      </div>
-    </div>
-    {/* More states */}
-  </div>
-);
+Default.storyName = "Button"
 ```
 
-### Story Naming Conventions
+### Molecules & Organisms (Future)
 
-Use clear, consistent names:
-- `Default` - Main comprehensive showcase
-- `States` - Interactive/validation states
-- `InContext` - Real usage examples
-- Avoid redundant names like `AllVariants`, `Combinations`, `Demo`
+When implementing molecules and organisms, follow these patterns:
 
-### Story Documentation
+**Molecules: 1 Story (Two-Level Hierarchy)**
+- Follow the same pattern as atoms: use two-level hierarchy with `storyName`
+- `Default` - Single comprehensive story showing all variants and configurations
+- Use interactive controls (Ladle args) if you need a "playground" for complex props
 
-Always include JSDoc comments above story exports:
-
+**Example:**
 ```tsx
-/**
- * Button component showcasing all variants and sizes.
- * Buttons are used for user actions and come in multiple visual styles.
- */
-export const Default: Story = () => (
-  // ...
-);
+export default {
+  title: "Molecules / Forms"
+} satisfies StoryDefault;
+
+export const Default: Story = () => (/* comprehensive story */);
+
+Default.storyName = "Form Field"
 ```
 
-### Organizing Story Content
+**Organisms: 1-4 Stories (Three-Level Hierarchy if Multiple Stories)**
+- **Option 1**: Single comprehensive story with two-level hierarchy + `storyName` (preferred)
+- **Option 2**: Multiple stories using three-level hierarchy (when needed for distinct use cases)
+- Show integration with templates/pages in context sections
 
-Within each story, use semantic HTML headings and clear labels:
+**Example with multiple stories:**
+```tsx
+export default {
+  title: "Organisms / Navigation / Header"
+} satisfies StoryDefault;
+
+export const LoggedOut: Story = () => (/* ... */);
+export const LoggedIn: Story = () => (/* ... */);
+export const Mobile: Story = () => (/* ... */);
+```
+
+**Templates: 1-3 Stories (Three-Level Hierarchy)**
+- Use three-level hierarchy as templates often need multiple stories
+- Show different page states and content variations
+
+### Story Content Organization
+
+Use semantic HTML with clear visual sections:
 
 ```tsx
 <div className="flex flex-col gap-8">
-  {/* Section with heading */}
+  {/* Major section */}
   <div>
     <h3 className="text-lg font-semibold mb-4 text-gray-900">Section Title</h3>
     {/* Content */}
   </div>
 
-  {/* Sub-section with label */}
+  {/* Visual separator */}
+  <hr className="border-gray-200" />
+
+  {/* Next section */}
   <div>
-    <p className="text-sm text-gray-600 mb-1">Descriptive label</p>
-    {/* Component */}
+    <h3 className="text-lg font-semibold mb-4 text-gray-900">Another Section</h3>
+    {/* Content */}
   </div>
 </div>
+```
+
+### Story Documentation
+
+Include comprehensive JSDoc comments:
+
+```tsx
+/**
+ * [ComponentName] component showcasing all [variants/sizes/states/usage patterns].
+ */
+export const Default: Story = () => (
+  // Implementation
+);
+```
+
+### File Structure
+
+Stories remain co-located with their components:
+
+```
+components/
+├── atoms/
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.stories.tsx  ← Includes title metadata
+│   │   └── index.ts
+│   └── ...
+├── molecules/           ← Future
+│   └── FormField/
+│       ├── FormField.tsx
+│       ├── FormField.stories.tsx
+│       └── index.ts
+└── organisms/           ← Future
+    └── Header/
+        ├── Header.tsx
+        ├── Header.stories.tsx
+        └── index.ts
 ```
 
 ### Best Practices
 
 **DO:**
-- ✅ Consolidate related variants in one story for atoms
-- ✅ Group variants logically (by prop type, use case, etc.)
-- ✅ Show combinations that matter (variant × size, state × variant)
-- ✅ Use semantic, accessible markup
+- ✅ **Atoms & Molecules**: Use two-level hierarchy with `storyName` property
+- ✅ **Organisms & Templates**: Use three-level hierarchy when multiple stories are needed
+- ✅ Add `Default.storyName = "Component Name"` for two-level hierarchies
+- ✅ Use proper title case with spaces for multi-word names (e.g., "Icon Button")
+- ✅ Consolidate simple components (atoms/molecules) into one comprehensive story
+- ✅ Consider interactive stories (Ladle args) for complex organisms instead of multiple stories
+- ✅ Separate sections with `<hr className="border-gray-200" />`
+- ✅ Use clear, descriptive section headings
+- ✅ Show variants, states, and context together
+- ✅ Use semantic HTML and proper accessibility attributes
 - ✅ Include realistic content and labels
-- ✅ Add helpful descriptions in comments
 
 **DON'T:**
-- ❌ Create separate stories for each minor variant
-- ❌ Repeat the same content multiple times
-- ❌ Use generic placeholder text excessively
-- ❌ Include states that don't need separate stories (combine in `States`)
-- ❌ Create `Responsive` stories (components should be responsive by default)
-- ❌ Create `Accessibility` stories (components should be accessible by default)
+- ❌ Use two-level hierarchy for organisms that need multiple distinct stories
+- ❌ Include component name in title path when using two-level hierarchy
+- ❌ Create multiple stories for simple atoms/molecules (consolidate instead)
+- ❌ Omit the title metadata or storyName (breaks navigation)
+- ❌ Use string concatenation for titles (must be literals)
+- ❌ Skip the `satisfies StoryDefault` check
+- ❌ Create separate InContext stories for atoms (include in Default)
+- ❌ Use generic placeholder text without context
+- ❌ Forget to use spaces in multi-word component names ("IconButton" → "Icon Button")
 
-### Interactive vs. Static Stories
+### Benefits of This Approach
 
-- **Atoms**: Static showcases (current approach)
-- **Molecules**: Static showcases, optional interactive playground
-- **Organisms**: May include interactive stories with controls
-
-For interactive stories (future), use Ladle's control system:
-
-```tsx
-export const Playground: Story<ButtonProps> = (props) => (
-  <Button {...props}>Configurable Button</Button>
-);
-
-Playground.args = {
-  variant: 'primary',
-  size: 'md',
-  children: 'Click me',
-};
-```
-
-### File Structure
-
-Stories are co-located with components:
-
-```
-components/atoms/Button/
-├── Button.tsx
-├── Button.stories.tsx  ← Stories file
-└── index.ts
-```
+1. **Mental Model Alignment**: Matches Atomic Design philosophy
+2. **Clean Navigation**: Two-level hierarchy with `storyName` avoids deep folder nesting
+3. **Scalability**: Easy to add components at the right complexity level
+4. **Discoverability**: Developers know exactly where to find components
+5. **Complexity Chunking**: Components grouped by increasing complexity
+6. **Functional Grouping**: Related components are near each other in the same category
+7. **No File Restructuring**: Stories stay co-located with source code
+8. **Future-Proof**: Ready for molecules, organisms, templates, and pages
 
 ---
 

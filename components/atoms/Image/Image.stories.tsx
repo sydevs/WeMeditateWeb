@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Image } from "./Image";
 
+export default {
+  title: "Atoms / Media"
+} satisfies StoryDefault;
+
 /**
- * Image component showcasing aspect ratios and object fit options.
+ * Image component showcasing all aspect ratios, object fit options, loading states, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -122,17 +126,12 @@ export const Default: Story = () => (
         />
       </div>
     </div>
-  </div>
-);
 
-/**
- * Image in context within content layouts.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-3xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Article Header</h3>
-      <article>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Article Header</h3>
+      <article className="max-w-3xl">
         <Image
           src="https://placehold.co/1200x675/61aaa0/white?text=Meditation+Garden"
           alt="Peaceful meditation garden"
@@ -150,7 +149,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Meditation Card Grid</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Meditation Card Grid</h3>
       <div className="grid grid-cols-3 gap-4">
         {[
           { title: "Morning Meditation", color: "61aaa0" },
@@ -174,7 +173,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Gallery Layout</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Gallery Layout</h3>
       <div className="grid grid-cols-2 gap-3">
         <Image
           src="https://placehold.co/600x800/61aaa0/white?text=Portrait"
@@ -200,3 +199,4 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+Default.storyName = "Image"

@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Duration } from "./Duration";
 
+export default {
+  title: "Atoms / Specialty"
+} satisfies StoryDefault;
+
 /**
- * Duration component showcasing different time values and formats.
+ * Duration component showcasing all time values, formats, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -54,24 +58,21 @@ export const Default: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">With Icons</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Different Time Values</h3>
       <div className="flex flex-wrap gap-4">
-        <Duration minutes={5} showIcon />
-        <Duration minutes={15} showIcon />
-        <Duration minutes={30} showIcon />
-        <Duration minutes={60} showIcon />
+        <Duration minutes={5} />
+        <Duration minutes={15} />
+        <Duration minutes={30} />
+        <Duration minutes={60} />
       </div>
     </div>
-  </div>
-);
 
-/**
- * Duration in context within meditation cards.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-2xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Meditation Cards</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Meditation Cards and Track Lists</h3>
+      <div className="flex flex-col gap-8 max-w-2xl">
+      <div>
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors">
           <h4 className="font-medium text-gray-900 mb-2">Morning Meditation</h4>
@@ -113,6 +114,9 @@ export const InContext: Story = () => (
           </div>
         ))}
       </div>
+      </div>
+      </div>
     </div>
   </div>
 );
+Default.storyName = "Duration"

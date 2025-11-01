@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Icon } from "./Icon";
 
+export default {
+  title: "Atoms / Media"
+} satisfies StoryDefault;
+
 /**
- * Icon component showcasing sizes and colors.
+ * Icon component showcasing all sizes, colors, common icons, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -107,16 +111,11 @@ export const Default: Story = () => (
         </div>
       </div>
     </div>
-  </div>
-);
 
-/**
- * Icon in context within UI elements.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-2xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Button with Icons</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Button with Icons</h3>
       <div className="flex flex-wrap gap-3">
         <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
           <Icon name="play" size="sm" color="inherit" />
@@ -136,7 +135,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">List Items with Icons</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - List Items with Icons</h3>
       <ul className="space-y-3">
         <li className="flex items-center gap-3">
           <Icon name="check" size="md" color="teal" />
@@ -160,7 +159,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Information Cards</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Information Cards</h3>
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
           <Icon name="info" size="lg" color="teal" />
@@ -180,3 +179,4 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+Default.storyName = "Icon"

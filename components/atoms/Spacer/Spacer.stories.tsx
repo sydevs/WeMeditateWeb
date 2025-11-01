@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Spacer } from "./Spacer";
 
+export default {
+  title: "Atoms / Layout"
+} satisfies StoryDefault;
+
 /**
- * Spacer component showcasing vertical and horizontal spacing options.
+ * Spacer component showcasing all vertical and horizontal spacing options, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -77,16 +81,13 @@ export const Default: Story = () => (
         </div>
       </div>
     </div>
-  </div>
-);
 
-/**
- * Spacer in context creating rhythm in layouts.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-2xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Article Layout</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Creating Rhythm in Layouts</h3>
+      <div className="flex flex-col gap-8 max-w-2xl">
+      <div>
       <article className="border border-gray-200 rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900">Guide to Meditation</h2>
         <Spacer size="md" />
@@ -110,12 +111,11 @@ export const InContext: Story = () => (
           anywhere you feel at ease.
         </p>
       </article>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Card with Sections</h3>
+      <div>
       <div className="border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Morning Meditation</h3>
@@ -135,12 +135,11 @@ export const InContext: Story = () => (
           </button>
         </div>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Form Layout</h3>
+      <div>
       <form className="border border-gray-200 rounded-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900">Create Account</h3>
         <Spacer size="lg" />
@@ -176,6 +175,9 @@ export const InContext: Story = () => (
           Sign Up
         </button>
       </form>
+      </div>
+      </div>
     </div>
   </div>
 );
+Default.storyName = "Spacer"

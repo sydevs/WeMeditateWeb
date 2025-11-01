@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Textarea } from "./Textarea";
 
+export default {
+  title: "Atoms / Form"
+} satisfies StoryDefault;
+
 /**
- * Textarea component showcasing sizes and auto-resize functionality.
+ * Textarea component showcasing all sizes, auto-resize, validation states, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8 max-w-md">
@@ -30,16 +34,11 @@ export const Default: Story = () => (
         rows={8}
       />
     </div>
-  </div>
-);
 
-/**
- * Textarea states including validation and disabled.
- */
-export const States: Story = () => (
-  <div className="flex flex-col gap-8 max-w-md">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Validation States</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm text-gray-600 mb-1">Default</p>
@@ -59,25 +58,17 @@ export const States: Story = () => (
             defaultValue="Too short"
           />
         </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Disabled</p>
+          <Textarea placeholder="Disabled textarea" disabled />
+        </div>
       </div>
     </div>
 
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Disabled State</h3>
-      <Textarea placeholder="Disabled textarea" disabled />
-    </div>
-  </div>
-);
-
-/**
- * Textarea in form context with label and character count.
- */
-export const InContext: Story = () => (
-  <div className="max-w-md flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Contact Form</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Contact Form</h3>
       <div className="space-y-4">
         <div>
           <label htmlFor="message" className="block text-sm font-medium mb-1 text-gray-900">
@@ -97,7 +88,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">With Validation Feedback</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - With Validation</h3>
       <div className="space-y-4">
         <div>
           <label htmlFor="feedback" className="block text-sm font-medium mb-1 text-gray-900">
@@ -115,3 +106,4 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+Default.storyName = "Textarea"

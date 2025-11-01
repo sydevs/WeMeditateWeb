@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Avatar } from "./Avatar";
 
+export default {
+  title: "Atoms / Media"
+} satisfies StoryDefault;
+
 /**
- * Avatar component showcasing sizes and shapes.
+ * Avatar component showcasing all sizes, shapes, images, fallback initials, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -87,16 +91,11 @@ export const Default: Story = () => (
         <Avatar size="md" alt="A" />
       </div>
     </div>
-  </div>
-);
 
-/**
- * Avatar in context with author attribution and user profiles.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-2xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Article Author</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Article Author</h3>
       <div className="flex items-center gap-3">
         <Avatar
           size="md"
@@ -113,7 +112,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Comment Thread</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Comment Thread</h3>
       <div className="space-y-4">
         {[
           { name: "John Doe", comment: "This meditation really helped me find peace." },
@@ -134,7 +133,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">User Profile Card</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - User Profile Card</h3>
       <div className="border border-gray-200 rounded-lg p-6">
         <div className="flex items-start gap-4">
           <Avatar
@@ -155,3 +154,4 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+Default.storyName = "Avatar"

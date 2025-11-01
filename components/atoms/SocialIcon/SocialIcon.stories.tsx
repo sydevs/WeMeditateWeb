@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { SocialIcon } from "./SocialIcon";
 
+export default {
+  title: "Atoms / Specialty"
+} satisfies StoryDefault;
+
 /**
- * SocialIcon component showcasing all platforms and variants.
+ * SocialIcon component showcasing all platforms, variants, sizes, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -26,8 +30,8 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600">YouTube</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <SocialIcon platform="linkedin" aria-label="LinkedIn" />
-          <p className="text-sm text-gray-600">LinkedIn</p>
+          <SocialIcon platform="whatsapp" aria-label="WhatsApp" />
+          <p className="text-sm text-gray-600">WhatsApp</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <SocialIcon platform="pinterest" aria-label="Pinterest" />
@@ -58,8 +62,8 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600">YouTube</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <SocialIcon platform="linkedin" colored aria-label="LinkedIn" />
-          <p className="text-sm text-gray-600">LinkedIn</p>
+          <SocialIcon platform="whatsapp" colored aria-label="WhatsApp" />
+          <p className="text-sm text-gray-600">WhatsApp</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <SocialIcon platform="pinterest" colored aria-label="Pinterest" />
@@ -87,16 +91,13 @@ export const Default: Story = () => (
         </div>
       </div>
     </div>
-  </div>
-);
 
-/**
- * SocialIcon in context as links and share buttons.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-2xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Footer Social Links</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Social Links and Share Buttons</h3>
+      <div className="flex flex-col gap-8 max-w-2xl">
+      <div>
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="flex flex-col items-center gap-4">
           <p className="text-white font-medium">Follow Us</p>
@@ -116,12 +117,11 @@ export const InContext: Story = () => (
           </div>
         </div>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Share Buttons (Colored)</h3>
+      <div>
       <div className="border border-gray-200 rounded-lg p-6">
         <p className="font-medium text-gray-900 mb-3">Share this meditation</p>
         <div className="flex gap-3">
@@ -132,19 +132,18 @@ export const InContext: Story = () => (
             <SocialIcon platform="twitter" colored size="lg" aria-label="Share on Twitter" />
           </button>
           <button className="hover:scale-110 transition-transform">
-            <SocialIcon platform="linkedin" colored size="lg" aria-label="Share on LinkedIn" />
+            <SocialIcon platform="whatsapp" colored size="lg" aria-label="Share on WhatsApp" />
           </button>
           <button className="hover:scale-110 transition-transform">
             <SocialIcon platform="pinterest" colored size="lg" aria-label="Pin on Pinterest" />
           </button>
         </div>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sidebar Social Links</h3>
+      <div>
       <div className="border border-gray-200 rounded-lg p-4 max-w-xs">
         <h4 className="font-medium text-gray-900 mb-3">Connect With Us</h4>
         <div className="space-y-2">
@@ -166,6 +165,9 @@ export const InContext: Story = () => (
           </a>
         </div>
       </div>
+      </div>
+      </div>
     </div>
   </div>
 );
+Default.storyName = "Social Icon"

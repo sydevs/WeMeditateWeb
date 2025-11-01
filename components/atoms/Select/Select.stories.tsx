@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Select } from "./Select";
 
+export default {
+  title: "Atoms / Form"
+} satisfies StoryDefault;
+
 /**
- * Select component showcasing options and sizes.
+ * Select component showcasing all options, optgroups, validation states, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8 max-w-md">
@@ -44,16 +48,11 @@ export const Default: Story = () => (
         <option value="articles">Articles</option>
       </Select>
     </div>
-  </div>
-);
 
-/**
- * Select states including disabled.
- */
-export const States: Story = () => (
-  <div className="flex flex-col gap-8 max-w-md">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Validation States</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm text-gray-600 mb-1">Default</p>
@@ -77,28 +76,20 @@ export const States: Story = () => (
             <option value="1">Option 1</option>
           </Select>
         </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Disabled</p>
+          <Select disabled>
+            <option value="">Disabled select</option>
+            <option value="1">Option 1</option>
+          </Select>
+        </div>
       </div>
     </div>
 
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Disabled State</h3>
-      <Select disabled>
-        <option value="">Disabled select</option>
-        <option value="1">Option 1</option>
-      </Select>
-    </div>
-  </div>
-);
-
-/**
- * Select in form context with label.
- */
-export const InContext: Story = () => (
-  <div className="max-w-md flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Profile Form</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Profile Form</h3>
       <div className="space-y-4">
         <div>
           <label htmlFor="country" className="block text-sm font-medium mb-1 text-gray-900">
@@ -129,3 +120,4 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+Default.storyName = "Select"

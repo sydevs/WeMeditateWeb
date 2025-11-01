@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { LanguageFlag } from "./LanguageFlag";
 
+export default {
+  title: "Atoms / Specialty"
+} satisfies StoryDefault;
+
 /**
- * LanguageFlag component showcasing all supported languages.
+ * LanguageFlag component showcasing all supported languages, labels, sizes, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -46,8 +50,8 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600">Українська</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <LanguageFlag language="pt" />
-          <p className="text-sm text-gray-600">Português</p>
+          <LanguageFlag language="bg" />
+          <p className="text-sm text-gray-600">Български</p>
         </div>
       </div>
     </div>
@@ -84,16 +88,13 @@ export const Default: Story = () => (
         </div>
       </div>
     </div>
-  </div>
-);
 
-/**
- * LanguageFlag in context as language selector.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-2xl">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Language Selector Dropdown</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Language Selector</h3>
+      <div className="flex flex-col gap-8 max-w-2xl">
+      <div>
       <div className="border border-gray-200 rounded-lg p-4 max-w-xs">
         <h4 className="text-sm font-medium text-gray-900 mb-3">Select Language</h4>
         <div className="space-y-1">
@@ -107,12 +108,11 @@ export const InContext: Story = () => (
           ))}
         </div>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Header Language Switcher</h3>
+      <div>
       <div className="bg-gray-900 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <h4 className="text-white font-medium">We Meditate</h4>
@@ -132,12 +132,11 @@ export const InContext: Story = () => (
           </div>
         </div>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Available Translations</h3>
+      <div>
       <div className="border border-gray-200 rounded-lg p-6">
         <h4 className="font-medium text-gray-900 mb-3">This content is available in:</h4>
         <div className="flex flex-wrap gap-2">
@@ -158,14 +157,13 @@ export const InContext: Story = () => (
           </button>
         </div>
       </div>
-    </div>
+      </div>
 
-    <hr className="border-gray-200" />
+      <hr className="border-gray-200" />
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Compact Language Grid</h3>
+      <div>
       <div className="grid grid-cols-5 gap-3 max-w-md">
-        {["en", "es", "de", "it", "fr", "ru", "ro", "cs", "uk", "pt"].map((lang) => (
+        {["en", "es", "de", "it", "fr", "ru", "ro", "cs", "uk", "bg"].map((lang) => (
           <button
             key={lang}
             className="flex flex-col items-center gap-1 p-3 border border-gray-200 rounded hover:border-teal-500 hover:bg-teal-50 transition-colors"
@@ -174,6 +172,9 @@ export const InContext: Story = () => (
           </button>
         ))}
       </div>
+      </div>
+      </div>
     </div>
   </div>
 );
+Default.storyName = "Language Flag"

@@ -1,8 +1,12 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { IconButton } from "./IconButton";
 
+export default {
+  title: "Atoms / Interactive"
+} satisfies StoryDefault;
+
 /**
- * IconButton component showcasing sizes, shapes, and variants.
+ * IconButton component showcasing all sizes, shapes, variants, states, and usage in context.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8">
@@ -80,44 +84,36 @@ export const Default: Story = () => (
         <IconButton icon="chevron-right" variant="ghost" aria-label="Next" />
       </div>
     </div>
-  </div>
-);
 
-/**
- * IconButton states including disabled.
- */
-export const States: Story = () => (
-  <div className="flex flex-col gap-8">
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Disabled State</h3>
-      <div className="flex gap-4">
-        <IconButton icon="play" variant="primary" disabled aria-label="Play (disabled)" />
-        <IconButton icon="pause" variant="secondary" disabled aria-label="Pause (disabled)" />
-        <IconButton icon="heart" variant="outline" disabled aria-label="Like (disabled)" />
-        <IconButton icon="star" variant="ghost" disabled aria-label="Favorite (disabled)" />
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Disabled</p>
+          <div className="flex gap-4">
+            <IconButton icon="play" variant="primary" disabled aria-label="Play (disabled)" />
+            <IconButton icon="pause" variant="secondary" disabled aria-label="Pause (disabled)" />
+            <IconButton icon="heart" variant="outline" disabled aria-label="Like (disabled)" />
+            <IconButton icon="star" variant="ghost" disabled aria-label="Favorite (disabled)" />
+          </div>
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Active/Hover</p>
+          <div className="flex gap-4">
+            <IconButton icon="heart" variant="primary" aria-label="Liked" />
+            <IconButton icon="star" variant="secondary" aria-label="Favorited" />
+            <IconButton icon="check" variant="outline" aria-label="Checked" />
+          </div>
+        </div>
       </div>
     </div>
 
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Active/Hover States</h3>
-      <div className="flex gap-4">
-        <IconButton icon="heart" variant="primary" aria-label="Liked" />
-        <IconButton icon="star" variant="secondary" aria-label="Favorited" />
-        <IconButton icon="check" variant="outline" aria-label="Checked" />
-      </div>
-    </div>
-  </div>
-);
-
-/**
- * IconButton in context within UI layouts.
- */
-export const InContext: Story = () => (
-  <div className="flex flex-col gap-8 max-w-3xl">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Media Player Controls</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Media Player Controls</h3>
       <div className="border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -137,8 +133,8 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Card Actions</h3>
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Card Actions</h3>
+      <div className="border border-gray-200 rounded-lg overflow-hidden max-w-md">
         <div className="h-40 bg-teal-100 flex items-center justify-center">
           <p className="text-teal-700">Image placeholder</p>
         </div>
@@ -160,7 +156,7 @@ export const InContext: Story = () => (
     <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Navigation</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Navigation</h3>
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <IconButton icon="menu" variant="ghost" aria-label="Open menu" />
         <h2 className="text-xl font-semibold text-gray-900">We Meditate</h2>
@@ -169,3 +165,5 @@ export const InContext: Story = () => (
     </div>
   </div>
 );
+
+Default.storyName = "Icon Button"

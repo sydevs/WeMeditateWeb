@@ -1,9 +1,13 @@
-import type { Story } from "@ladle/react";
+import type { Story, StoryDefault } from "@ladle/react";
 import { Label } from "./Label";
 import { Input } from "../Input/Input";
 
+export default {
+  title: "Atoms / Typography"
+} satisfies StoryDefault;
+
 /**
- * Label component showcasing with and without required indicator.
+ * Label component showcasing all variants including required indicator and helper text.
  */
 export const Default: Story = () => (
   <div className="flex flex-col gap-8 max-w-md">
@@ -60,3 +64,5 @@ export const Default: Story = () => (
     </div>
   </div>
 );
+
+Default.storyName = "Label"
