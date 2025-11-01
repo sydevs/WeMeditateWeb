@@ -362,13 +362,23 @@ This project uses **[Ladle](https://ladle.dev/)** for component development and 
 
 **Writing Stories**:
 - Create `ComponentName.stories.tsx` alongside your component
+- Use story utility components from [components/ladle/](components/ladle/) for consistency
+  - `StorySection` - Wrap major sections with automatic dividers
+  - `StoryGrid` - Create table layouts for multi-dimensional component matrices
+  - `StorySubsection` - Label subsections within a section
+- Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Padding → Examples
+- Use "Examples" section for practical usage scenarios (can be multiple sections with descriptive titles or a single section with subsections)
 - Export named story functions using `Story` type from `@ladle/react`
-- Stories automatically appear in Ladle UI with hot module replacement
 
 **See [STORYBOOK.md](STORYBOOK.md)** for complete documentation on:
+- Story utility components API reference
+- Standard section order and naming conventions
 - Writing stories with Component Story Format (CSF)
-- Best practices for documenting component variants
+- Grid layouts for comprehensive variant matrices
+- Best practices for consistent story organization
 - Configuration and customization options
-- Deployment of static component library
 
-**Existing Stories**: Button, Text, Heading, and Input atoms have example stories to reference.
+**Gold Standard Examples**:
+- [Button](components/atoms/Button/Button.stories.tsx) - Comprehensive grid layout with subsections
+- [Checkbox](components/atoms/Checkbox/Checkbox.stories.tsx) - Grid combining color × state
+- [Text](components/atoms/Text/Text.stories.tsx) - Simple vertical stacking with sections

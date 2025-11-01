@@ -33,13 +33,112 @@ pnpm ladle:build
 
 This generates a static site in the `build/` directory.
 
+## Story Utility Components
+
+To ensure consistency across all stories, we provide a set of reusable utility components in [components/ladle/](components/ladle/):
+
+### StoryWrapper
+
+Standard wrapper for all story components that provides consistent spacing and layout structure with standardized `flex flex-col gap-8` classes.
+
+```tsx
+import { StoryWrapper } from '../../ladle';
+
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="Basic Examples">
+      {/* Content */}
+    </StorySection>
+  </StoryWrapper>
+);
+```
+
+**Props**:
+- `children` (ReactNode, required) - Story content to wrap
+
+**Note**: All stories must use `StoryWrapper` as the outermost wrapper element. Do not use custom wrapper divs.
+
+### StorySection
+
+Wraps each major section of a story with a title, optional description, and automatic horizontal divider.
+
+```tsx
+import { StorySection } from '../../ladle';
+
+<StorySection title="Variants" description="Optional description">
+  {/* Content */}
+</StorySection>
+```
+
+**Props**:
+- `title` (string, required) - Section heading
+- `description` (string, optional) - Description text below the title
+- `children` (ReactNode, required) - Section content
+
+### StorySubsection
+
+Provides consistent labeling for subsections within a StorySection.
+
+```tsx
+import { StorySubsection } from '../../ladle';
+
+<StorySubsection label="Text Buttons">
+  {/* Content */}
+</StorySubsection>
+```
+
+**Props**:
+- `label` (string, required) - Subsection label
+- `children` (ReactNode, required) - Subsection content
+
+### StoryGrid Components
+
+Create consistent table/grid layouts for showing multi-dimensional component matrices.
+
+```tsx
+import {
+  StoryGrid,
+  StoryGridHeader,
+  StoryGridHeaderRow,
+  StoryGridHeaderCell,
+  StoryGridBody,
+  StoryGridRow,
+  StoryGridCell
+} from '../../ladle';
+
+<StoryGrid>
+  <StoryGridHeader>
+    <StoryGridHeaderRow>
+      <StoryGridHeaderCell />
+      <StoryGridHeaderCell colSpan={2}>Group Header</StoryGridHeaderCell>
+    </StoryGridHeaderRow>
+    <StoryGridHeaderRow>
+      <StoryGridHeaderCell size="secondary" />
+      <StoryGridHeaderCell size="secondary">Column 1</StoryGridHeaderCell>
+      <StoryGridHeaderCell size="secondary">Column 2</StoryGridHeaderCell>
+    </StoryGridHeaderRow>
+  </StoryGridHeader>
+  <StoryGridBody>
+    <StoryGridRow>
+      <StoryGridCell isLabel>Row Label</StoryGridCell>
+      <StoryGridCell>{/* Component */}</StoryGridCell>
+      <StoryGridCell>{/* Component */}</StoryGridCell>
+    </StoryGridRow>
+  </StoryGridBody>
+</StoryGrid>
+```
+
+**Grid Component Props**:
+- `StoryGridHeaderCell`: `children?`, `colSpan?`, `size?: 'primary' | 'secondary'`
+- `StoryGridCell`: `children?`, `isLabel?: boolean`
+
 ## Writing Stories
 
-Stories are written using the Component Story Format (CSF) and placed alongside your components.
+Stories use Component Story Format (CSF) and are placed alongside components.
 
 ### File Naming Convention
 
-Story files should be named `ComponentName.stories.tsx` and placed in the same directory as the component:
+Story files should be named `ComponentName.stories.tsx`:
 
 ```
 components/atoms/Button/
@@ -48,44 +147,265 @@ components/atoms/Button/
 └── index.ts           # Exports
 ```
 
-### Basic Story Example
+### Story Structure Standards
+
+All stories should follow this consistent pattern:
 
 ```tsx
-import type { Story } from "@ladle/react";
-import { Button, ButtonProps } from "./Button";
+import type { Story, StoryDefault } from "@ladle/react";
+import { ComponentName } from "./ComponentName";
+import { StoryWrapper, StorySection, StorySubsection } from '../../ladle';
 
-// Simple story - default export name becomes the story name
-export const Primary: Story<ButtonProps> = () => (
-  <Button variant="primary">Primary Button</Button>
+export default {
+  title: "Atoms / Category"  // e.g., "Atoms / Form", "Atoms / Typography"
+} satisfies StoryDefault;
+
+/**
+ * Brief description of what the component does and what the story showcases.
+ */
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="Section Name">
+      {/* Content */}
+    </StorySection>
+
+    {/* More sections... */}
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 
-export const Secondary: Story<ButtonProps> = () => (
-  <Button variant="secondary">Secondary Button</Button>
+Default.storyName = "Component Name"
+```
+
+### Standard Section Order
+
+Organize story sections in this order (skip sections that don't apply):
+
+1. **Basic Examples** / **Input Types** - Simple default usage
+2. **Variants** - Visual style variations (primary, secondary, outline, ghost)
+3. **Colors** - Color variations
+4. **Shapes** - Shape variations (square, rounded, circular)
+5. **States** - Interactive states (default, loading, disabled, success, error)
+6. **Sizes** - Size variations (xs, sm, md, lg, xl, 2xl)
+7. **Widths** - Width options (default, full-width)
+8. **Padding** - Padding variations
+9. **Examples** - Real-world usage scenarios and practical examples (can be multiple sections with descriptive titles like "Examples - Button with Icons")
+
+### Section Naming Conventions
+
+Use these standardized section names:
+
+- ✅ "Variants" (not "All Variants", "Styles", "Types")
+- ✅ "Colors" (not "Color Options", "Palettes")
+- ✅ "Shapes" (not "Border Radius", "Rounded Corners")
+- ✅ "States" (not "Loading States", "Disabled States" - combine them)
+- ✅ "Sizes" (not "Size Options", "Dimensions")
+- ✅ "Widths" (not "Width Options", "Full Width")
+- ✅ "Padding" (not "Padding Options")
+- ✅ "Examples" (not "Common Use Cases", "In Context", "Use Cases", "Usage")
+  - For multiple example sections, use descriptive titles: "Examples - Button with Icons", "Examples - Form Layout", etc.
+
+### Example: Simple Story
+
+For components with simple variations (Text, Heading, Label):
+
+```tsx
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="Sizes">
+      <div className="flex flex-col gap-3">
+        <Text size="xs">Extra small text</Text>
+        <Text size="sm">Small text</Text>
+        <Text size="base">Base text</Text>
+      </div>
+    </StorySection>
+
+    <StorySection title="Colors">
+      <div className="flex flex-col gap-3">
+        <Text color="primary">Primary color</Text>
+        <Text color="secondary">Secondary color</Text>
+      </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 ```
 
-### Story with Multiple Examples
+### Example: Grid Layout Story
+
+For components with multi-dimensional variations (Button, Checkbox, Radio):
 
 ```tsx
-export const AllSizes: Story = () => (
-  <div className="flex flex-col gap-4">
-    <Button size="sm">Small</Button>
-    <Button size="md">Medium</Button>
-    <Button size="lg">Large</Button>
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="Variants">
+      <StoryGrid>
+        <StoryGridHeader>
+          <StoryGridHeaderRow>
+            <StoryGridHeaderCell />
+            <StoryGridHeaderCell>Primary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Secondary</StoryGridHeaderCell>
+          </StoryGridHeaderRow>
+        </StoryGridHeader>
+        <StoryGridBody>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Checked</StoryGridCell>
+            <StoryGridCell>
+              <Checkbox defaultChecked aria-label="Primary checked" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Checkbox color="secondary" defaultChecked aria-label="Secondary checked" />
+            </StoryGridCell>
+          </StoryGridRow>
+        </StoryGridBody>
+      </StoryGrid>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
+);
+```
+
+### Example: Story with Subsections
+
+For components with grouped variations (Button states, Input types):
+
+```tsx
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="States">
+      <div className="flex flex-col gap-6">
+        <StorySubsection label="Loading">
+          <div className="flex gap-3">
+            <Button variant="primary" isLoading>Primary</Button>
+            <Button variant="secondary" isLoading>Secondary</Button>
+          </div>
+        </StorySubsection>
+
+        <StorySubsection label="Disabled">
+          <div className="flex gap-3">
+            <Button variant="primary" disabled>Primary</Button>
+            <Button variant="secondary" disabled>Secondary</Button>
+          </div>
+        </StorySubsection>
+      </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
+);
+```
+
+### Example: Examples Sections
+
+"Examples" can appear as multiple separate sections with descriptive titles, or as a single section with subsections:
+
+**Multiple Example Sections**:
+```tsx
+<StorySection title="Examples - Article Layout">
+  <article className="max-w-2xl">
+    <Heading level="h1">Article Title</Heading>
+    <p>Article content...</p>
+  </article>
+</StorySection>
+
+<StorySection title="Examples - Card Layout">
+  <div className="grid grid-cols-2 gap-4">
+    <Box>Card 1</Box>
+    <Box>Card 2</Box>
   </div>
-);
+</StorySection>
 ```
 
-### Story Naming
+**Single Section with Subsections**:
+```tsx
+<StorySection title="Examples">
+  <div className="flex flex-col gap-6">
+    <StorySubsection label="Form Actions">
+      <div className="flex gap-3">
+        <Button variant="primary">Submit</Button>
+        <Button variant="outline">Cancel</Button>
+      </div>
+    </StorySubsection>
 
-- Export names are converted to story titles (e.g., `AllSizes` becomes "All Sizes")
-- Use descriptive names that explain what the story demonstrates
-- Common patterns:
-  - `Default` - The default/most common usage
-  - `Variants` - Show all visual variants
-  - `States` - Show different states (loading, disabled, etc.)
-  - `Sizes` - Show different size options
-  - `InContext` - Show component in a realistic context
+    <StorySubsection label="Media Controls">
+      <div className="flex gap-3">
+        <Button icon={PlayIcon} variant="primary" aria-label="Play" />
+        <Button icon={PauseIcon} variant="primary" aria-label="Pause" />
+      </div>
+    </StorySubsection>
+  </div>
+</StorySection>
+```
+
+## Component Story Examples
+
+### Gold Standard: Button Story
+
+The [Button story](components/atoms/Button/Button.stories.tsx) demonstrates all best practices:
+
+- Uses StoryGrid for comprehensive variant × shape × content matrix
+- Groups states (loading + disabled) into single "States" section
+- Uses StorySubsection for subsections within groups
+- Follows standard section order
+- Removes trailing divider
+
+**Section Order**:
+1. Variants (grid)
+2. Sizes (with subsections)
+3. States (loading + disabled)
+4. Widths
+5. Examples (with subsections)
+
+### Form Components: Checkbox & Radio
+
+[Checkbox](components/atoms/Checkbox/Checkbox.stories.tsx) and [Radio](components/atoms/Radio/Radio.stories.tsx) stories show:
+
+- Grid layout combining color × state without text labels
+- Simple "Examples" section with practical usage scenarios
+
+**Section Order**:
+1. Variants (grid: state × color)
+2. Examples
+
+### Typography: Text & Heading
+
+[Text](components/atoms/Text/Text.stories.tsx) and [Heading](components/atoms/Heading/Heading.stories.tsx) stories demonstrate:
+
+- Simple vertical stacking for single-dimension variations
+- Combining related properties (weights) within "Examples"
+- Semantic usage examples showing components in realistic contexts
+
+## Best Practices
+
+### DO ✅
+
+- **Use StoryWrapper** as the outermost wrapper for all stories
+- **Use utility components** for all stories (StorySection, StorySubsection, StoryGrid)
+- **Follow standard section order** consistently
+- **Use standard section names** from the naming conventions
+- **Combine related states** into single sections (e.g., loading + disabled = "States")
+- **Use grids** for multi-dimensional variations (variant × shape, color × state)
+- **Show realistic usage** in "Examples" sections (can use subsections or multiple sections)
+- **Remove trailing dividers** with `<div />` at the end
+- **Document with JSDoc** what the story showcases
+
+### DON'T ❌
+
+- **Don't use custom wrapper divs** - always use StoryWrapper as the outermost element
+- **Don't create separate stories** for each variant - consolidate into one comprehensive story
+- **Don't use inconsistent naming** - stick to the standard section names
+- **Don't separate related states** - combine loading/disabled/error into "States"
+- **Don't omit the trailing divider removal** - always add `<div />` at the end
+- **Don't use manual dividers** - StorySection handles dividers automatically
+- **Don't use raw HTML headings** - use StorySection titles instead
+- **Don't use old naming** like "Common Use Cases" or "In Context" - use "Examples" instead
 
 ## Configuration
 
@@ -93,23 +413,16 @@ Ladle configuration is in [.ladle/config.mjs](.ladle/config.mjs):
 
 ```js
 export default {
-  // Where to find stories
   stories: "components/**/*.stories.{js,jsx,ts,tsx}",
-
-  // Dev server port
   port: 61000,
-
-  // Component library title
   title: "WeMeditate Component Library",
-
-  // Custom Vite config
   viteConfig: ".ladle/vite.config.ts",
 };
 ```
 
 ### Tailwind CSS Support
 
-Ladle is configured to use Tailwind CSS via a custom Vite config at [.ladle/vite.config.ts](.ladle/vite.config.ts):
+Ladle uses a custom Vite config at [.ladle/vite.config.ts](.ladle/vite.config.ts):
 
 ```ts
 import tailwindcss from "@tailwindcss/vite";
@@ -120,248 +433,56 @@ export default defineConfig({
 });
 ```
 
-This ensures all your Tailwind classes work correctly in stories.
-
-## Existing Stories
-
-The following components already have stories:
-
-- **[Button](components/atoms/Button/Button.stories.tsx)** - All variants, sizes, states
-- **[Text](components/atoms/Text/Text.stories.tsx)** - Sizes, weights, colors, elements
-- **[Heading](components/atoms/Heading/Heading.stories.tsx)** - All heading levels, semantic vs visual
-- **[Input](components/atoms/Input/Input.stories.tsx)** - Types, states, validation
-
-## Best Practices
-
-### Story Organization by Component Type
-
-**See [DESIGN_SYSTEM.md - Writing Component Stories](DESIGN_SYSTEM.md#writing-component-stories) for comprehensive guidelines.**
-
-Quick reference:
-
-- **Atoms**: 1-3 stories (Default, States, InContext)
-- **Molecules**: 2-4 stories (Default, States, InContext, Playground)
-- **Organisms**: 3-5 stories (Default, variants, InContext)
-
-### 1. Consolidate Atom Variants
-
-For atoms, combine related variants into organized sections within a single story:
-
-```tsx
-/**
- * Button component showcasing all variants and sizes.
- */
-export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variants</h3>
-      <div className="flex gap-4 flex-wrap items-center">
-        <Button variant="primary">Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
-        <Button variant="text">Text</Button>
-      </div>
-    </div>
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
-      <div className="flex gap-4 flex-wrap items-center">
-        <Button size="sm">Small</Button>
-        <Button size="md">Medium</Button>
-        <Button size="lg">Large</Button>
-      </div>
-    </div>
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variant × Size</h3>
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-sm text-gray-600 mb-2">Primary</p>
-          <div className="flex gap-3 items-center">
-            <Button variant="primary" size="sm">Small</Button>
-            <Button variant="primary" size="md">Medium</Button>
-            <Button variant="primary" size="lg">Large</Button>
-          </div>
-        </div>
-        {/* More combinations... */}
-      </div>
-    </div>
-  </div>
-);
-```
-
-### 2. Separate States Story (Optional)
-
-Create a dedicated `States` story for interactive/validation states:
-
-```tsx
-/**
- * Button states including loading, disabled, and full-width variants.
- */
-export const States: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Loading State</h3>
-      <div className="flex gap-4 flex-wrap">
-        <Button variant="primary" isLoading>Loading</Button>
-        <Button variant="secondary" isLoading>Loading</Button>
-      </div>
-    </div>
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Disabled State</h3>
-      <div className="flex gap-4 flex-wrap">
-        <Button variant="primary" disabled>Disabled</Button>
-        <Button variant="secondary" disabled>Disabled</Button>
-      </div>
-    </div>
-  </div>
-);
-```
-
-### 3. InContext Stories for Realistic Usage
-
-Show components in real-world scenarios:
-
-```tsx
-/**
- * Heading component shown in realistic article context.
- */
-export const InContext: Story = () => (
-  <article className="max-w-2xl">
-    <Heading level="h1" className="mb-4">Guide to Meditation</Heading>
-    <p className="text-gray-700 mb-6">
-      Meditation is a practice of focused attention...
-    </p>
-
-    <Heading level="h2" className="mb-3">Getting Started</Heading>
-    <p className="text-gray-700 mb-6">
-      Begin with just a few minutes each day...
-    </p>
-
-    <Heading level="h3" className="mb-2">Finding a Quiet Space</Heading>
-    <p className="text-gray-700 mb-6">
-      Choose a comfortable location...
-    </p>
-  </article>
-);
-```
-
-### 4. Use TypeScript and JSDoc
-
-Always include types and documentation:
-
-```tsx
-import type { Story } from "@ladle/react";
-import { Button } from "./Button";
-
-/**
- * Button component showcasing all variants and sizes.
- * Buttons are used for user actions and come in multiple visual styles.
- */
-export const Default: Story = () => (
-  // ...
-);
-```
-
-### 5. Organize with Semantic HTML
-
-Use headings, labels, and clear structure:
-
-```tsx
-<div className="flex flex-col gap-8">
-  {/* Use h3 for section titles */}
-  <div>
-    <h3 className="text-lg font-semibold mb-4 text-gray-900">Section Title</h3>
-    {/* Content */}
-  </div>
-
-  {/* Use descriptive labels for subsections */}
-  <div>
-    <p className="text-sm text-gray-600 mb-1">Descriptive label</p>
-    {/* Component */}
-  </div>
-</div>
-```
-
-### What NOT to Do
-
-- ❌ Don't create separate stories for each minor variant
-- ❌ Don't duplicate content across multiple stories
-- ❌ Don't create `Responsive` stories (components should be responsive by default)
-- ❌ Don't create `Accessibility` stories (components should be accessible by default)
-- ❌ Don't use names like `AllVariants`, `Demo`, `Example` (use `Default`, `States`, `InContext`)
-
 ## Component Development Workflow
 
-1. **Create Component**: Write your component in TypeScript with proper types
-2. **Write Stories**: Create a `.stories.tsx` file with examples of all variants
-3. **Start Ladle**: Run `pnpm ladle` to see your component in isolation
-4. **Iterate**: Make changes and see instant updates via HMR
-5. **Document**: Use stories as living documentation for other developers
+1. **Create Component**: Write component with TypeScript and proper props
+2. **Write Story**: Create `.stories.tsx` using utility components
+3. **Start Ladle**: Run `pnpm ladle` to view in isolation
+4. **Iterate**: Make changes with instant HMR feedback
+5. **Document**: Stories serve as living documentation
 
 ## Ladle Features
 
 ### Hot Module Replacement
 
-Ladle supports instant HMR - changes to components or stories update immediately without page reload.
+Changes to components or stories update instantly without page reload.
 
 ### Dark Mode Toggle
 
-Ladle includes a built-in dark mode toggle in the toolbar (top-right).
+Built-in dark mode toggle in the toolbar (top-right).
 
 ### Mobile View
 
-Use the mobile view toggle to see how components look on smaller screens.
+Toggle to see components on smaller screens.
 
 ### Width Control
 
-Adjust the viewport width using the width slider in the toolbar.
+Adjust viewport width using the toolbar slider.
 
 ### Story Source
 
-View the source code of any story by clicking the code icon.
-
-## Differences from Storybook
-
-If you're familiar with Storybook:
-
-- **No addons ecosystem** - Ladle is intentionally minimal
-- **No docs addon** - Stories ARE the documentation
-- **Simpler configuration** - Just one config file
-- **Faster builds** - Vite-powered, no webpack
-- **Smaller bundle** - Significantly lighter than Storybook
-
-## Deployment (Optional)
-
-While Ladle is primarily a development tool, you can deploy the static build:
-
-1. Build static Ladle: `pnpm ladle:build`
-2. Deploy the `build/` directory to any static host (Cloudflare Pages, Netlify, Vercel, etc.)
-
-This creates a browsable component library for designers, stakeholders, and other teams.
+View source code by clicking the code icon.
 
 ## Troubleshooting
 
 ### Stories not appearing
 
-- Check that your story file matches the pattern: `*.stories.{ts,tsx}`
-- Ensure stories are exported as named exports
-- Verify the file is in the `components/` directory
+- Check file pattern: `*.stories.{ts,tsx}`
+- Ensure named exports
+- Verify file is in `components/` directory
 
 ### Tailwind classes not working
 
-- Ensure [.ladle/vite.config.ts](.ladle/vite.config.ts) includes the Tailwind plugin
-- Check that your component uses standard Tailwind classes
+- Check [.ladle/vite.config.ts](.ladle/vite.config.ts) includes Tailwind plugin
+- Verify standard Tailwind classes are used
 
 ### Port already in use
 
-Change the port in [.ladle/config.mjs](.ladle/config.mjs):
+Change port in [.ladle/config.mjs](.ladle/config.mjs):
 
 ```js
 export default {
-  port: 62000, // Use a different port
-  // ...
+  port: 62000, // Different port
 };
 ```
 
@@ -370,26 +491,4 @@ export default {
 - [Ladle Documentation](https://ladle.dev/docs)
 - [Component Story Format (CSF)](https://ladle.dev/docs/stories)
 - [Ladle Configuration](https://ladle.dev/docs/config)
-
-## Next Steps
-
-Continue building out stories for the remaining atoms:
-
-- [ ] Avatar
-- [ ] Box
-- [ ] Checkbox
-- [ ] Container
-- [ ] Duration
-- [ ] Icon
-- [ ] IconButton
-- [ ] Image
-- [ ] Label
-- [ ] LanguageFlag
-- [ ] Radio
-- [ ] Select
-- [ ] SocialIcon
-- [ ] Spacer
-- [ ] Spinner
-- [ ] Textarea
-
-Then move on to molecules and organisms as they're developed!
+- [Design System Guide](DESIGN_SYSTEM.md)

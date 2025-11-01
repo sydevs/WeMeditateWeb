@@ -39,7 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         'border-success hover:border-success focus:border-success focus:ring-success',
     }
 
-    const widthStyles = fullWidth ? 'w-full' : ''
+    const widthStyles = fullWidth ? 'w-full' : 'w-64'
 
     return (
       <input

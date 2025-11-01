@@ -1,5 +1,16 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Radio } from "./Radio";
+import {
+  StoryWrapper,
+  StorySection,
+  StoryGrid,
+  StoryGridHeader,
+  StoryGridHeaderRow,
+  StoryGridHeaderCell,
+  StoryGridBody,
+  StoryGridRow,
+  StoryGridCell
+} from '../../ladle';
 
 export default {
   title: "Atoms / Form"
@@ -9,60 +20,61 @@ export default {
  * Radio component showcasing all variants and states.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Colors</h3>
-      <div className="space-y-4">
-        <div>
-          <p className="text-sm font-medium mb-2 text-gray-900">Primary (default):</p>
-          <div className="flex flex-col gap-2">
-            <Radio name="primary" value="1" label="Option 1" defaultChecked />
-            <Radio name="primary" value="2" label="Option 2" />
-          </div>
-        </div>
-        <div>
-          <p className="text-sm font-medium mb-2 text-gray-900">Secondary:</p>
-          <div className="flex flex-col gap-2">
-            <Radio name="secondary" value="1" label="Option 1" color="secondary" defaultChecked />
-            <Radio name="secondary" value="2" label="Option 2" color="secondary" />
-          </div>
-        </div>
-      </div>
-    </div>
+  <StoryWrapper>
+    <StorySection title="Variants">
+      <StoryGrid>
+        <StoryGridHeader>
+          <StoryGridHeaderRow>
+            <StoryGridHeaderCell />
+            <StoryGridHeaderCell>Primary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Secondary</StoryGridHeaderCell>
+          </StoryGridHeaderRow>
+        </StoryGridHeader>
+        <StoryGridBody>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Unchecked</StoryGridCell>
+            <StoryGridCell>
+              <Radio name="primary-unchecked" value="1" aria-label="Primary unchecked" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Radio name="secondary-unchecked" value="1" color="secondary" aria-label="Secondary unchecked" />
+            </StoryGridCell>
+          </StoryGridRow>
 
-    <hr className="border-gray-200" />
+          <StoryGridRow>
+            <StoryGridCell isLabel>Checked</StoryGridCell>
+            <StoryGridCell>
+              <Radio name="primary-checked" value="1" defaultChecked aria-label="Primary checked" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Radio name="secondary-checked" value="1" color="secondary" defaultChecked aria-label="Secondary checked" />
+            </StoryGridCell>
+          </StoryGridRow>
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
-      <div>
-        <p className="text-sm font-medium mb-2 text-gray-900">Options:</p>
-        <div className="flex flex-col gap-2">
-          <Radio name="states" value="unchecked" label="Unchecked" />
-          <Radio name="states" value="checked" label="Checked" defaultChecked />
-          <Radio name="disabled" value="1" label="Disabled unchecked" disabled />
-          <Radio name="disabled" value="2" label="Disabled checked" disabled defaultChecked />
-        </div>
-      </div>
-    </div>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Disabled Unchecked</StoryGridCell>
+            <StoryGridCell>
+              <Radio name="primary-disabled-unchecked" value="1" disabled aria-label="Primary disabled unchecked" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Radio name="secondary-disabled-unchecked" value="1" color="secondary" disabled aria-label="Secondary disabled unchecked" />
+            </StoryGridCell>
+          </StoryGridRow>
 
-    <hr className="border-gray-200" />
+          <StoryGridRow>
+            <StoryGridCell isLabel>Disabled Checked</StoryGridCell>
+            <StoryGridCell>
+              <Radio name="primary-disabled-checked" value="1" disabled defaultChecked aria-label="Primary disabled checked" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Radio name="secondary-disabled-checked" value="1" color="secondary" disabled defaultChecked aria-label="Secondary disabled checked" />
+            </StoryGridCell>
+          </StoryGridRow>
+        </StoryGridBody>
+      </StoryGrid>
+    </StorySection>
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Without Labels</h3>
-      <div>
-        <p className="text-sm font-medium mb-2 text-gray-900">Choose an option:</p>
-        <div className="flex gap-3">
-          <Radio name="options" value="1" aria-label="Option 1" defaultChecked />
-          <Radio name="options" value="2" aria-label="Option 2" />
-          <Radio name="options" value="3" aria-label="Option 3" />
-        </div>
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Multiple Radio Groups</h3>
+    <StorySection title="Examples">
       <div className="space-y-4">
         <div>
           <p className="text-sm font-medium mb-2 text-gray-900">Select your experience level:</p>
@@ -89,7 +101,10 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 Default.storyName = "Radio"

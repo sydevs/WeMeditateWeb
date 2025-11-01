@@ -17,8 +17,28 @@ import {
 import {
   HeartIcon as HeartIconSolid,
   StarIcon as StarIconSolid,
-  CheckCircleIcon,
+  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
+  Bars3Icon as Bars3IconSolid,
+  XMarkIcon as XMarkIconSolid,
+  PlayIcon as PlayIconSolid,
+  PauseIcon as PauseIconSolid,
+  ChevronLeftIcon as ChevronLeftIconSolid,
+  ChevronRightIcon as ChevronRightIconSolid,
+  CheckIcon as CheckIconSolid,
+  InformationCircleIcon as InformationCircleIconSolid,
+  ClockIcon as ClockIconSolid,
 } from '@heroicons/react/24/solid'
+import {
+  StorySection,
+  StoryGrid,
+  StoryGridHeader,
+  StoryGridHeaderRow,
+  StoryGridHeaderCell,
+  StoryGridBody,
+  StoryGridRow,
+  StoryGridCell,
+  StoryWrapper
+} from '../../ladle';
 
 export default {
   title: "Atoms / Media"
@@ -28,9 +48,8 @@ export default {
  * Icon component showcasing all sizes, colors, common icons, and usage in context.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+  <StoryWrapper>
+    <StorySection title="Sizes">
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="xs" />
@@ -57,38 +76,66 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600">2XL (10×10)</p>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
+    <StorySection title="Colors">
+      <StoryGrid>
+        <StoryGridHeader>
+          <StoryGridHeaderRow>
+            <StoryGridHeaderCell />
+            <StoryGridHeaderCell>Outline</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Solid</StoryGridHeaderCell>
+          </StoryGridHeaderRow>
+        </StoryGridHeader>
+        <StoryGridBody>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Primary</StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIcon} size="lg" color="primary" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="primary" />
+            </StoryGridCell>
+          </StoryGridRow>
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Colors</h3>
-      <div className="flex gap-6 items-center">
-        <div className="flex flex-col items-center gap-2">
-          <Icon icon={StarIcon} size="lg" color="primary" />
-          <p className="text-sm text-gray-600">Primary</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Icon icon={StarIcon} size="lg" color="secondary" />
-          <p className="text-sm text-gray-600">Secondary</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Icon icon={StarIcon} size="lg" color="tertiary" />
-          <p className="text-sm text-gray-600">Tertiary</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <div className="text-blue-600">
-            <Icon icon={StarIcon} size="lg" color="currentColor" />
-          </div>
-          <p className="text-sm text-gray-600">Current Color</p>
-        </div>
-      </div>
-    </div>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Secondary</StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIcon} size="lg" color="secondary" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="secondary" />
+            </StoryGridCell>
+          </StoryGridRow>
 
-    <hr className="border-gray-200" />
+          <StoryGridRow>
+            <StoryGridCell isLabel>Tertiary</StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIcon} size="lg" color="tertiary" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="tertiary" />
+            </StoryGridCell>
+          </StoryGridRow>
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Outline Style (24×24)</h3>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Current Color</StoryGridCell>
+            <StoryGridCell>
+              <div className="text-blue-600">
+                <Icon icon={StarIcon} size="lg" color="currentColor" />
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="text-blue-600">
+                <Icon icon={StarIconSolid} size="lg" color="currentColor" />
+              </div>
+            </StoryGridCell>
+          </StoryGridRow>
+        </StoryGridBody>
+      </StoryGrid>
+    </StorySection>
+
+    <StorySection title="Outline Style">
       <div className="grid grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={MagnifyingGlassIcon} size="lg" />
@@ -139,32 +186,62 @@ export const Default: Story = () => (
           <p className="text-xs text-gray-600">Clock</p>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Solid Style (24×24)</h3>
-      <div className="flex gap-6 items-center">
+    <StorySection title="Solid Style">
+      <div className="grid grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
-          <Icon icon={HeartIconSolid} size="lg" color="secondary" />
-          <p className="text-xs text-gray-600">Heart Solid</p>
+          <Icon icon={MagnifyingGlassIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Search</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon icon={StarIconSolid} size="lg" color="primary" />
-          <p className="text-xs text-gray-600">Star Solid</p>
+          <Icon icon={Bars3IconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Menu</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Icon icon={CheckCircleIcon} size="lg" color="primary" />
-          <p className="text-xs text-gray-600">Check Circle</p>
+          <Icon icon={XMarkIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Close</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={HeartIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Heart</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={StarIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Star</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={PlayIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Play</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={PauseIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Pause</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={ChevronLeftIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Chevron Left</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={ChevronRightIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Chevron Right</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={CheckIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Check</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={InformationCircleIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Info</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Icon icon={ClockIconSolid} size="lg" />
+          <p className="text-xs text-gray-600">Clock</p>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Button with Icons</h3>
+    <StorySection title="Examples - Button with Icons">
       <div className="flex flex-wrap gap-3">
         <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
           <Icon icon={PlayIcon} size="sm" />
@@ -179,12 +256,9 @@ export const Default: Story = () => (
           <Icon icon={ChevronRightIcon} size="sm" />
         </button>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - List Items with Icons</h3>
+    <StorySection title="Examples - List Items with Icons">
       <ul className="space-y-3">
         <li className="flex items-center gap-3">
           <Icon icon={CheckIcon} size="md" color="primary" />
@@ -203,12 +277,9 @@ export const Default: Story = () => (
           <span className="text-gray-700">Better sleep quality</span>
         </li>
       </ul>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Information Cards</h3>
+    <StorySection title="Examples - Information Cards">
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
           <Icon icon={InformationCircleIcon} size="lg" color="primary" />
@@ -225,20 +296,10 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Accessibility Example</h3>
-      <p className="text-sm text-gray-600 mb-4">
-        Icons with semantic meaning should include aria-label:
-      </p>
-      <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
-        <Icon icon={HeartIcon} aria-label="Add to favorites" />
-        <span>Favorite</span>
-      </button>
-    </div>
-  </div>
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 Default.storyName = "Icon"

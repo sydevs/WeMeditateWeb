@@ -1,4 +1,4 @@
-import { ComponentProps, forwardRef } from 'react'
+import { ComponentProps, forwardRef, useId } from 'react'
 
 export interface RadioProps extends Omit<ComponentProps<'input'>, 'type'> {
   /**
@@ -32,9 +32,12 @@ export interface RadioProps extends Omit<ComponentProps<'input'>, 'type'> {
  */
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(
   ({ label, hasError = false, color = 'primary', className = '', id, ...props }, ref) => {
+    const generatedId = useId()
+    const inputId = id || generatedId
+
     const colorStyles = {
       primary: 'accent-teal-600 focus:ring-teal-500',
-      secondary: 'appearance-none checked:bg-coral-500 checked:border-coral-500 focus:ring-coral-500 rounded-full [&:checked]:bg-[url("data:image/svg+xml,%3csvg%20viewBox%3D%270%200%2016%2016%27%20fill%3D%27white%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%3e%3ccircle%20cx%3D%278%27%20cy%3D%278%27%20r%3D%273%27%2F%3e%3c%2Fsvg%3e")]',
+      secondary: 'accent-coral-600 focus:ring-coral-500',
     }
 
     const inputStyles =
@@ -49,7 +52,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
       <input
         ref={ref}
         type="radio"
-        id={id}
+        id={inputId}
         className={`${inputStyles} ${errorStyles} ${className}`}
         aria-invalid={hasError}
         {...props}
@@ -60,7 +63,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
       return (
         <div className="flex items-center">
           {radioElement}
-          <label htmlFor={id} className={labelStyles}>
+          <label htmlFor={inputId} className={labelStyles}>
             {label}
           </label>
         </div>

@@ -1,5 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Spinner } from "./Spinner";
+import { StorySection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Specialty"
@@ -9,9 +10,8 @@ export default {
  * Spinner component showcasing all sizes, colors, and usage in context with loading states.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+  <StoryWrapper>
+    <StorySection title="Sizes">
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner size="sm" />
@@ -26,12 +26,9 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600">Large</p>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Colors</h3>
+    <StorySection title="Colors">
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner color="primary" />
@@ -46,43 +43,23 @@ export const Default: Story = () => (
           <p className="text-sm text-white">White</p>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Size × Color Combinations</h3>
-      <div className="flex gap-8 items-center">
-        <Spinner size="sm" color="primary" />
-        <Spinner size="md" color="secondary" />
-        <Spinner size="lg" color="primary" />
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Loading States</h3>
-      <div className="flex flex-col gap-8 max-w-md">
-      <div>
+    <StorySection title="Examples - Centered Loading">
       <div className="border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-[200px]">
         <Spinner size="lg" />
         <p className="text-gray-600">Loading meditation...</p>
       </div>
-      </div>
+    </StorySection>
 
-      <hr className="border-gray-200" />
-
-      <div>
+    <StorySection title="Examples - Inline Loading">
       <div className="flex items-center gap-2">
         <Spinner size="sm" />
         <p className="text-gray-700">Processing your request...</p>
       </div>
-      </div>
+    </StorySection>
 
-      <hr className="border-gray-200" />
-
-      <div>
+    <StorySection title="Examples - Full Page Loading">
       <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-4">
           <Spinner size="lg" color="primary" />
@@ -90,9 +67,10 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-500">Please wait...</p>
         </div>
       </div>
-      </div>
-      </div>
-    </div>
-  </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 Default.storyName = "Spinner"

@@ -1,5 +1,16 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { SocialIcon } from "./SocialIcon";
+import {
+  StorySection,
+  StoryGrid,
+  StoryGridHeader,
+  StoryGridHeaderRow,
+  StoryGridHeaderCell,
+  StoryGridBody,
+  StoryGridRow,
+  StoryGridCell,
+  StoryWrapper
+} from '../../ladle';
 
 export default {
   title: "Atoms / Specialty"
@@ -12,56 +23,60 @@ export const Default: Story = () => {
   const platforms = ['facebook', 'twitter', 'instagram', 'youtube', 'linkedin', 'whatsapp', 'pinterest'] as const
 
   return (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Platforms & Colors</h3>
-      <div className="inline-grid" style={{ gridTemplateColumns: 'auto repeat(7, 1fr)', gap: '1.5rem' }}>
-        {/* Header row */}
-        <div></div>
-        {platforms.map(platform => (
-          <div key={platform} className="text-center text-sm font-medium text-gray-600 capitalize">
-            {platform}
-          </div>
-        ))}
+  <StoryWrapper>
+    <StorySection title="Colors">
+      <StoryGrid>
+        <StoryGridHeader>
+          <StoryGridHeaderRow>
+            <StoryGridHeaderCell />
+            {platforms.map(platform => (
+              <StoryGridHeaderCell key={platform}>
+                <span className="capitalize">{platform}</span>
+              </StoryGridHeaderCell>
+            ))}
+          </StoryGridHeaderRow>
+        </StoryGridHeader>
+        <StoryGridBody>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Gray</StoryGridCell>
+            {platforms.map(platform => (
+              <StoryGridCell key={platform}>
+                <SocialIcon platform={platform} color="gray" aria-label={platform} />
+              </StoryGridCell>
+            ))}
+          </StoryGridRow>
 
-        {/* Gray row */}
-        <div className="text-sm font-medium text-gray-600 flex items-center">Gray</div>
-        {platforms.map(platform => (
-          <div key={platform} className="flex justify-center">
-            <SocialIcon platform={platform} color="gray" aria-label={platform} />
-          </div>
-        ))}
+          <StoryGridRow>
+            <StoryGridCell isLabel>Brand Colors</StoryGridCell>
+            {platforms.map(platform => (
+              <StoryGridCell key={platform}>
+                <SocialIcon platform={platform} color="brand" aria-label={platform} />
+              </StoryGridCell>
+            ))}
+          </StoryGridRow>
 
-        {/* Brand Colors row */}
-        <div className="text-sm font-medium text-gray-600 flex items-center">Brand Colors</div>
-        {platforms.map(platform => (
-          <div key={platform} className="flex justify-center">
-            <SocialIcon platform={platform} color="brand" aria-label={platform} />
-          </div>
-        ))}
+          <StoryGridRow>
+            <StoryGridCell isLabel>Primary</StoryGridCell>
+            {platforms.map(platform => (
+              <StoryGridCell key={platform}>
+                <SocialIcon platform={platform} color="primary" aria-label={platform} />
+              </StoryGridCell>
+            ))}
+          </StoryGridRow>
 
-        {/* Primary row */}
-        <div className="text-sm font-medium text-gray-600 flex items-center">Primary</div>
-        {platforms.map(platform => (
-          <div key={platform} className="flex justify-center">
-            <SocialIcon platform={platform} color="primary" aria-label={platform} />
-          </div>
-        ))}
+          <StoryGridRow>
+            <StoryGridCell isLabel>Secondary</StoryGridCell>
+            {platforms.map(platform => (
+              <StoryGridCell key={platform}>
+                <SocialIcon platform={platform} color="secondary" aria-label={platform} />
+              </StoryGridCell>
+            ))}
+          </StoryGridRow>
+        </StoryGridBody>
+      </StoryGrid>
+    </StorySection>
 
-        {/* Secondary row */}
-        <div className="text-sm font-medium text-gray-600 flex items-center">Secondary</div>
-        {platforms.map(platform => (
-          <div key={platform} className="flex justify-center">
-            <SocialIcon platform={platform} color="secondary" aria-label={platform} />
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+    <StorySection title="Sizes">
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <SocialIcon platform="facebook" size="sm" aria-label="Facebook (small)" />
@@ -76,12 +91,9 @@ export const Default: Story = () => {
           <p className="text-sm text-gray-600">Large</p>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context</h3>
+    <StorySection title="Examples">
       <div>
         <p className="font-medium text-gray-900 mb-3">Share this meditation</p>
         <div className="flex gap-3">
@@ -99,8 +111,11 @@ export const Default: Story = () => {
           </button>
         </div>
       </div>
-    </div>
-  </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
   )
 };
 Default.storyName = "Social Icon"

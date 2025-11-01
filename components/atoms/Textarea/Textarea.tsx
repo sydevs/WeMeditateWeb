@@ -55,7 +55,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         'border-success hover:border-success focus:border-success focus:ring-success',
     }
 
-    const widthStyles = fullWidth ? 'w-full' : ''
+    const widthStyles = fullWidth ? 'w-full' : 'w-64'
     const resizeStyles = autoResize ? 'resize-none overflow-hidden' : 'resize-y'
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

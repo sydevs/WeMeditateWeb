@@ -1,4 +1,4 @@
-import { ComponentProps, forwardRef } from 'react'
+import { ComponentProps, forwardRef, useId } from 'react'
 
 export interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
   /**
@@ -32,9 +32,12 @@ export interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
  */
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, hasError = false, color = 'primary', className = '', id, ...props }, ref) => {
+    const generatedId = useId()
+    const inputId = id || generatedId
+
     const colorStyles = {
       primary: 'accent-teal-600 focus:ring-teal-500',
-      secondary: 'appearance-none checked:bg-coral-500 checked:border-coral-500 focus:ring-coral-500 [&:checked]:bg-[url("data:image/svg+xml,%3csvg%20viewBox%3D%270%200%2016%2016%27%20fill%3D%27white%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%3e%3cpath%20d%3D%27M12.207%205.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%2010.086l4.293-4.293a1%201%200%20011.414%200z%27%2F%3e%3c%2Fsvg%3e")]',
+      secondary: 'accent-coral-600 focus:ring-coral-500',
     }
 
     const inputStyles =
@@ -49,7 +52,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       <input
         ref={ref}
         type="checkbox"
-        id={id}
+        id={inputId}
         className={`${inputStyles} ${errorStyles} ${className}`}
         aria-invalid={hasError}
         {...props}
@@ -60,7 +63,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       return (
         <div className="flex items-center">
           {checkboxElement}
-          <label htmlFor={id} className={labelStyles}>
+          <label htmlFor={inputId} className={labelStyles}>
             {label}
           </label>
         </div>

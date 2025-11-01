@@ -1,5 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Textarea } from "./Textarea";
+import { StorySection, StorySubsection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Form"
@@ -9,36 +10,30 @@ export default {
  * Textarea component showcasing all sizes, auto-resize, validation states, and usage in context.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8 max-w-md">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Default Textarea</h3>
-      <Textarea placeholder="Enter your message..." />
-    </div>
+  <StoryWrapper>
+    <StorySection title="Basic Examples">
+      <div className="flex flex-col gap-6">
+        <StorySubsection label="Default">
+          <Textarea placeholder="Enter your message..." />
+        </StorySubsection>
 
-    <hr className="border-gray-200" />
+        <StorySubsection label="With Auto-resize">
+          <Textarea
+            placeholder="Start typing to see auto-resize..."
+            autoResize
+          />
+        </StorySubsection>
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">With Auto-resize</h3>
-      <Textarea
-        placeholder="Start typing to see auto-resize..."
-        autoResize
-      />
-    </div>
+        <StorySubsection label="Custom Rows">
+          <Textarea
+            placeholder="Tall textarea with 8 rows"
+            rows={8}
+          />
+        </StorySubsection>
+      </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Custom Rows</h3>
-      <Textarea
-        placeholder="Tall textarea with 8 rows"
-        rows={8}
-      />
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
+    <StorySection title="States">
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm text-gray-600 mb-1">Default</p>
@@ -63,7 +58,10 @@ export const Default: Story = () => (
           <Textarea placeholder="Disabled textarea" disabled />
         </div>
       </div>
-    </div>
-  </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 Default.storyName = "Textarea"

@@ -1,5 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Box } from "./Box";
+import { StorySection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Layout"
@@ -9,9 +10,8 @@ export default {
  * Box component showcasing all padding, backgrounds, borders, shadows, and usage in context.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Padding Options</h3>
+  <StoryWrapper>
+    <StorySection title="Padding">
       <div className="grid grid-cols-3 gap-4">
         <div>
           <p className="text-sm text-gray-600 mb-2">Small</p>
@@ -32,12 +32,9 @@ export const Default: Story = () => (
           </Box>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Background Colors</h3>
+    <StorySection title="Colors">
       <div className="grid grid-cols-4 gap-4">
         <Box padding="md" background="white" border>
           <p className="text-gray-700">White</p>
@@ -52,72 +49,67 @@ export const Default: Story = () => (
           <p className="text-coral-900">Secondary (coral-50)</p>
         </Box>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Borders</h3>
-      <div className="grid grid-cols-3 gap-4">
-        <Box padding="md" background="light">
-          <p className="text-gray-700">No border</p>
-        </Box>
-        <Box padding="md" background="light" border="light">
-          <p className="text-gray-700">Light border (gray-300)</p>
-        </Box>
-        <Box padding="md" background="light" border>
-          <p className="text-gray-700">Default border (gray-400)</p>
-        </Box>
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Shadows</h3>
-      <div className="grid grid-cols-3 gap-6">
+    <StorySection title="Shapes">
+      <div className="flex flex-col gap-6">
         <div>
-          <p className="text-sm text-gray-600 mb-2">Small</p>
-          <Box padding="md" shadow="sm" background="white">
-            <p className="text-gray-700">Small shadow</p>
-          </Box>
+          <p className="text-sm font-medium text-gray-700 mb-3">Borders</p>
+          <div className="grid grid-cols-3 gap-4">
+            <Box padding="md" background="light">
+              <p className="text-gray-700">No border</p>
+            </Box>
+            <Box padding="md" background="light" border="light">
+              <p className="text-gray-700">Light border (gray-300)</p>
+            </Box>
+            <Box padding="md" background="light" border>
+              <p className="text-gray-700">Default border (gray-400)</p>
+            </Box>
+          </div>
         </div>
+
         <div>
-          <p className="text-sm text-gray-600 mb-2">Medium</p>
-          <Box padding="md" shadow="md" background="white">
-            <p className="text-gray-700">Medium shadow</p>
-          </Box>
+          <p className="text-sm font-medium text-gray-700 mb-3">Rounded Corners</p>
+          <div className="grid grid-cols-3 gap-4 bg-gray-200 p-4 rounded">
+            <Box padding="md" background="light" rounded="sm">
+              <p className="text-gray-700">Rounded (sm)</p>
+            </Box>
+            <Box padding="md" background="light" rounded="lg">
+              <p className="text-gray-700">Rounded (lg)</p>
+            </Box>
+            <Box padding="md" background="light" rounded="xl">
+              <p className="text-gray-700">Rounded (xl)</p>
+            </Box>
+          </div>
         </div>
+
         <div>
-          <p className="text-sm text-gray-600 mb-2">Large</p>
-          <Box padding="md" shadow="lg" background="white">
-            <p className="text-gray-700">Large shadow</p>
-          </Box>
+          <p className="text-sm font-medium text-gray-700 mb-3">Shadows</p>
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Small</p>
+              <Box padding="md" shadow="sm" background="white">
+                <p className="text-gray-700">Small shadow</p>
+              </Box>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Medium</p>
+              <Box padding="md" shadow="md" background="white">
+                <p className="text-gray-700">Medium shadow</p>
+              </Box>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Large</p>
+              <Box padding="md" shadow="lg" background="white">
+                <p className="text-gray-700">Large shadow</p>
+              </Box>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Rounded Corners</h3>
-      <div className="grid grid-cols-3 gap-4 bg-gray-200 p-4 rounded">
-        <Box padding="md" background="light" rounded="sm">
-          <p className="text-gray-700">Rounded (sm)</p>
-        </Box>
-        <Box padding="md" background="light" rounded="lg">
-          <p className="text-gray-700">Rounded (lg)</p>
-        </Box>
-        <Box padding="md" background="light" rounded="xl">
-          <p className="text-gray-700">Rounded (xl)</p>
-        </Box>
-      </div>
-    </div>
-
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context - Card Layouts and Sections</h3>
+    <StorySection title="Examples">
       <div className="flex flex-col gap-8 max-w-3xl">
         <div className="grid grid-cols-2 gap-4">
           <Box padding="lg" shadow="md" background="white" rounded="lg">
@@ -145,24 +137,6 @@ export const Default: Story = () => (
           </Box>
         </div>
 
-        <Box padding="lg" border rounded="lg" className="max-w-xs">
-          <h4 className="font-semibold text-gray-900 mb-3">Popular Meditations</h4>
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Stress Relief</p>
-              <p className="text-xs text-gray-600">1,234 sessions</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">Better Sleep</p>
-              <p className="text-xs text-gray-600">987 sessions</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">Focus & Clarity</p>
-              <p className="text-xs text-gray-600">756 sessions</p>
-            </div>
-          </div>
-        </Box>
-
         <div className="grid grid-cols-3 gap-4">
           <Box padding="md" border rounded="md" className="text-center">
             <div className="text-3xl mb-2">🧘</div>
@@ -181,7 +155,10 @@ export const Default: Story = () => (
           </Box>
         </div>
       </div>
-    </div>
-  </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 Default.storyName = "Box"

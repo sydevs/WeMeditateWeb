@@ -975,6 +975,16 @@ Displays meditation or music content with thumbnail, title, and duration.
 - `href` - Link destination
 ```
 
+### Component Stories with Ladle
+
+All components should have accompanying Ladle stories for visual documentation and development. **See [STORYBOOK.md](STORYBOOK.md) for comprehensive guidelines** on writing consistent, well-organized stories.
+
+**Quick Reference**:
+- Stories are created in `ComponentName.stories.tsx` files alongside components
+- Use story utility components (`StorySection`, `StoryGrid`, `StorySubsection`) for consistency
+- Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Common Use Cases → In Context
+- Run `pnpm ladle` to view all component stories at [http://localhost:61000/](http://localhost:61000/)
+
 ### Manual Testing Checklist
 
 Before marking a component as complete:

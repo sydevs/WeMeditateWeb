@@ -61,13 +61,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         'border-success hover:border-success focus:border-success focus:ring-success',
     }
 
-    const widthStyles = fullWidth ? 'w-full' : ''
+    const wrapperWidthStyles = fullWidth ? 'w-full' : 'inline-block'
+    const selectWidthStyles = fullWidth ? 'w-full' : 'w-64'
 
     return (
-      <div className={`relative ${widthStyles}`}>
+      <div className={`relative ${wrapperWidthStyles}`}>
         <select
           ref={ref}
-          className={`${baseStyles} ${stateStyles[state]} ${widthStyles} ${className}`}
+          className={`${baseStyles} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
           aria-invalid={state === 'error'}
           {...props}
         >

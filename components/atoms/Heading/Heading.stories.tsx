@@ -1,5 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Heading } from "./Heading";
+import { StorySection, StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Typography"
@@ -9,9 +10,8 @@ export default {
  * Heading component showcasing all semantic levels, styling options, and usage in context.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">All Heading Levels</h3>
+  <StoryWrapper>
+    <StorySection title="Sizes">
       <div className="flex flex-col gap-4">
         <Heading level="h1">Heading 1 - Main Page Title</Heading>
         <Heading level="h2">Heading 2 - Section Title</Heading>
@@ -20,12 +20,9 @@ export const Default: Story = () => (
         <Heading level="h5">Heading 5 - Small Title</Heading>
         <Heading level="h6">Heading 6 - Smallest Title</Heading>
       </div>
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context</h3>
+    <StorySection title="Examples">
       <article className="max-w-2xl">
         <Heading level="h1" className="mb-4">
           Guide to Meditation
@@ -61,8 +58,11 @@ export const Default: Story = () => (
           practice.
         </p>
       </article>
-    </div>
-  </div>
+    </StorySection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
 );
 
 Default.storyName = "Heading"
