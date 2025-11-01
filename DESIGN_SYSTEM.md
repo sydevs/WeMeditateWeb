@@ -612,6 +612,190 @@ All images must have meaningful alt text:
 
 ---
 
+## Writing Component Stories
+
+Component stories provide visual documentation and enable isolated component development. We use [Ladle](https://ladle.dev/) for our component library (see [STORYBOOK.md](STORYBOOK.md) for setup).
+
+### Story Structure Guidelines
+
+**Number of Stories by Component Type:**
+
+- **Atoms**: 1-3 stories maximum
+  - `Default` - Comprehensive showcase of all variants
+  - `States` - Optional, for interactive states (loading, disabled, error)
+  - `InContext` - Optional, for realistic usage examples
+
+- **Molecules**: 2-4 stories
+  - `Default` - Main variants and configurations
+  - `States` - Interactive and validation states
+  - `InContext` - Usage within typical layouts
+  - `Playground` - Optional, for complex interactive demos
+
+- **Organisms**: 3-5 stories
+  - `Default` - Primary use case
+  - Individual stories for distinct variants
+  - `InContext` - Real-world page integration examples
+
+### Atom Story Pattern
+
+For atoms, consolidate variants into organized sections within a single `Default` story:
+
+```tsx
+import type { Story } from "@ladle/react";
+import { Button } from "./Button";
+
+/**
+ * Button component showcasing all variants and sizes.
+ * Buttons are used for user actions and come in multiple visual styles.
+ */
+export const Default: Story = () => (
+  <div className="flex flex-col gap-8">
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variants</h3>
+      <div className="flex gap-4 flex-wrap items-center">
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="text">Text</Button>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+      <div className="flex gap-4 flex-wrap items-center">
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">Large</Button>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variant × Size Combinations</h3>
+      <div className="flex flex-col gap-6">
+        <div>
+          <p className="text-sm text-gray-600 mb-3">Primary</p>
+          <div className="flex gap-3 items-center">
+            <Button variant="primary" size="sm">Small</Button>
+            <Button variant="primary" size="md">Medium</Button>
+            <Button variant="primary" size="lg">Large</Button>
+          </div>
+        </div>
+        {/* More combinations */}
+      </div>
+    </div>
+  </div>
+);
+
+/**
+ * Button states including loading, disabled, and full-width variants.
+ */
+export const States: Story = () => (
+  <div className="flex flex-col gap-8">
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Loading State</h3>
+      <div className="flex gap-4 flex-wrap">
+        <Button variant="primary" isLoading>Loading</Button>
+        <Button variant="secondary" isLoading>Loading</Button>
+      </div>
+    </div>
+    {/* More states */}
+  </div>
+);
+```
+
+### Story Naming Conventions
+
+Use clear, consistent names:
+- `Default` - Main comprehensive showcase
+- `States` - Interactive/validation states
+- `InContext` - Real usage examples
+- Avoid redundant names like `AllVariants`, `Combinations`, `Demo`
+
+### Story Documentation
+
+Always include JSDoc comments above story exports:
+
+```tsx
+/**
+ * Button component showcasing all variants and sizes.
+ * Buttons are used for user actions and come in multiple visual styles.
+ */
+export const Default: Story = () => (
+  // ...
+);
+```
+
+### Organizing Story Content
+
+Within each story, use semantic HTML headings and clear labels:
+
+```tsx
+<div className="flex flex-col gap-8">
+  {/* Section with heading */}
+  <div>
+    <h3 className="text-lg font-semibold mb-4 text-gray-900">Section Title</h3>
+    {/* Content */}
+  </div>
+
+  {/* Sub-section with label */}
+  <div>
+    <p className="text-sm text-gray-600 mb-1">Descriptive label</p>
+    {/* Component */}
+  </div>
+</div>
+```
+
+### Best Practices
+
+**DO:**
+- ✅ Consolidate related variants in one story for atoms
+- ✅ Group variants logically (by prop type, use case, etc.)
+- ✅ Show combinations that matter (variant × size, state × variant)
+- ✅ Use semantic, accessible markup
+- ✅ Include realistic content and labels
+- ✅ Add helpful descriptions in comments
+
+**DON'T:**
+- ❌ Create separate stories for each minor variant
+- ❌ Repeat the same content multiple times
+- ❌ Use generic placeholder text excessively
+- ❌ Include states that don't need separate stories (combine in `States`)
+- ❌ Create `Responsive` stories (components should be responsive by default)
+- ❌ Create `Accessibility` stories (components should be accessible by default)
+
+### Interactive vs. Static Stories
+
+- **Atoms**: Static showcases (current approach)
+- **Molecules**: Static showcases, optional interactive playground
+- **Organisms**: May include interactive stories with controls
+
+For interactive stories (future), use Ladle's control system:
+
+```tsx
+export const Playground: Story<ButtonProps> = (props) => (
+  <Button {...props}>Configurable Button</Button>
+);
+
+Playground.args = {
+  variant: 'primary',
+  size: 'md',
+  children: 'Click me',
+};
+```
+
+### File Structure
+
+Stories are co-located with components:
+
+```
+components/atoms/Button/
+├── Button.tsx
+├── Button.stories.tsx  ← Stories file
+└── index.ts
+```
+
+---
+
 ## Testing & Documentation
 
 ### Component Documentation

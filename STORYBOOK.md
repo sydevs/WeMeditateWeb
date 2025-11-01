@@ -133,77 +133,164 @@ The following components already have stories:
 
 ## Best Practices
 
-### 1. Create Stories for All Component Variants
+### Story Organization by Component Type
 
-Show every possible variant/combination of props:
+**See [DESIGN_SYSTEM.md - Writing Component Stories](DESIGN_SYSTEM.md#writing-component-stories) for comprehensive guidelines.**
+
+Quick reference:
+
+- **Atoms**: 1-3 stories (Default, States, InContext)
+- **Molecules**: 2-4 stories (Default, States, InContext, Playground)
+- **Organisms**: 3-5 stories (Default, variants, InContext)
+
+### 1. Consolidate Atom Variants
+
+For atoms, combine related variants into organized sections within a single story:
 
 ```tsx
-export const AllVariants: Story = () => (
-  <div className="flex flex-col gap-4">
-    <Button variant="primary">Primary</Button>
-    <Button variant="secondary">Secondary</Button>
-    <Button variant="outline">Outline</Button>
-    <Button variant="text">Text</Button>
+/**
+ * Button component showcasing all variants and sizes.
+ */
+export const Default: Story = () => (
+  <div className="flex flex-col gap-8">
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variants</h3>
+      <div className="flex gap-4 flex-wrap items-center">
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="text">Text</Button>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+      <div className="flex gap-4 flex-wrap items-center">
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">Large</Button>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variant × Size</h3>
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-sm text-gray-600 mb-2">Primary</p>
+          <div className="flex gap-3 items-center">
+            <Button variant="primary" size="sm">Small</Button>
+            <Button variant="primary" size="md">Medium</Button>
+            <Button variant="primary" size="lg">Large</Button>
+          </div>
+        </div>
+        {/* More combinations... */}
+      </div>
+    </div>
   </div>
 );
 ```
 
-### 2. Show Component States
+### 2. Separate States Story (Optional)
 
-Demonstrate loading, disabled, error states:
+Create a dedicated `States` story for interactive/validation states:
 
 ```tsx
+/**
+ * Button states including loading, disabled, and full-width variants.
+ */
 export const States: Story = () => (
-  <div className="flex flex-col gap-4">
-    <Input state="default" placeholder="Default" />
-    <Input state="error" placeholder="Error" />
-    <Input state="success" placeholder="Success" />
+  <div className="flex flex-col gap-8">
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Loading State</h3>
+      <div className="flex gap-4 flex-wrap">
+        <Button variant="primary" isLoading>Loading</Button>
+        <Button variant="secondary" isLoading>Loading</Button>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Disabled State</h3>
+      <div className="flex gap-4 flex-wrap">
+        <Button variant="primary" disabled>Disabled</Button>
+        <Button variant="secondary" disabled>Disabled</Button>
+      </div>
+    </div>
   </div>
 );
 ```
 
-### 3. Include Realistic Context
+### 3. InContext Stories for Realistic Usage
 
-Show how components work together:
+Show components in real-world scenarios:
 
 ```tsx
+/**
+ * Heading component shown in realistic article context.
+ */
 export const InContext: Story = () => (
-  <form className="max-w-md">
-    <Heading level="h2" className="mb-4">Login</Heading>
-    <Input type="email" placeholder="Email" fullWidth className="mb-4" />
-    <Input type="password" placeholder="Password" fullWidth className="mb-4" />
-    <Button variant="primary" fullWidth>Sign In</Button>
-  </form>
+  <article className="max-w-2xl">
+    <Heading level="h1" className="mb-4">Guide to Meditation</Heading>
+    <p className="text-gray-700 mb-6">
+      Meditation is a practice of focused attention...
+    </p>
+
+    <Heading level="h2" className="mb-3">Getting Started</Heading>
+    <p className="text-gray-700 mb-6">
+      Begin with just a few minutes each day...
+    </p>
+
+    <Heading level="h3" className="mb-2">Finding a Quiet Space</Heading>
+    <p className="text-gray-700 mb-6">
+      Choose a comfortable location...
+    </p>
+  </article>
 );
 ```
 
-### 4. Use TypeScript
+### 4. Use TypeScript and JSDoc
 
-Leverage TypeScript for type-safe stories:
+Always include types and documentation:
 
 ```tsx
 import type { Story } from "@ladle/react";
-import { Button, ButtonProps } from "./Button";
+import { Button } from "./Button";
 
-export const Primary: Story<ButtonProps> = () => (
-  <Button variant="primary">Primary</Button>
+/**
+ * Button component showcasing all variants and sizes.
+ * Buttons are used for user actions and come in multiple visual styles.
+ */
+export const Default: Story = () => (
+  // ...
 );
 ```
 
-### 5. Add Explanatory Text
+### 5. Organize with Semantic HTML
 
-Help developers understand what they're seeing:
+Use headings, labels, and clear structure:
 
 ```tsx
-export const ResponsiveDemo: Story = () => (
+<div className="flex flex-col gap-8">
+  {/* Use h3 for section titles */}
   <div>
-    <p className="text-sm text-gray-600 mb-4">
-      Resize browser window to see responsive text sizing
-    </p>
-    <Heading level="h1">This heading scales with screen size</Heading>
+    <h3 className="text-lg font-semibold mb-4 text-gray-900">Section Title</h3>
+    {/* Content */}
   </div>
-);
+
+  {/* Use descriptive labels for subsections */}
+  <div>
+    <p className="text-sm text-gray-600 mb-1">Descriptive label</p>
+    {/* Component */}
+  </div>
+</div>
 ```
+
+### What NOT to Do
+
+- ❌ Don't create separate stories for each minor variant
+- ❌ Don't duplicate content across multiple stories
+- ❌ Don't create `Responsive` stories (components should be responsive by default)
+- ❌ Don't create `Accessibility` stories (components should be accessible by default)
+- ❌ Don't use names like `AllVariants`, `Demo`, `Example` (use `Default`, `States`, `InContext`)
 
 ## Component Development Workflow
 

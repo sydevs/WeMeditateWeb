@@ -85,13 +85,14 @@ export function Avatar({
   // Generate initials from alt text if not provided
   const displayInitials =
     initials ||
-    alt
+    (alt || '')
       .split(' ')
       .map((word) => word[0])
       .filter(Boolean)
       .slice(0, 2)
       .join('')
-      .toUpperCase()
+      .toUpperCase() ||
+    '?'
 
   return (
     <div

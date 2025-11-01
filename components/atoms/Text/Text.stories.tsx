@@ -1,92 +1,84 @@
 import type { Story } from "@ladle/react";
-import { Text, TextProps } from "./Text";
+import { Text } from "./Text";
 
-export const Default: Story<TextProps> = () => (
-  <Text>This is default paragraph text with light weight</Text>
-);
-
-export const Sizes: Story = () => (
-  <div className="flex flex-col gap-4">
-    <Text size="xs">Extra small text (xs)</Text>
-    <Text size="sm">Small text (sm)</Text>
-    <Text size="base">Base text (base) - default</Text>
-    <Text size="lg">Large text (lg)</Text>
-    <Text size="xl">Extra large text (xl)</Text>
-    <Text size="2xl">2X large text (2xl)</Text>
-  </div>
-);
-
-export const Weights: Story = () => (
-  <div className="flex flex-col gap-4">
-    <Text weight="extralight">Extra light weight text</Text>
-    <Text weight="light">Light weight text (default)</Text>
-    <Text weight="normal">Normal weight text</Text>
-    <Text weight="medium">Medium weight text</Text>
-    <Text weight="semibold">Semibold weight text</Text>
-    <Text weight="bold">Bold weight text</Text>
-  </div>
-);
-
-export const Colors: Story = () => (
-  <div className="flex flex-col gap-4">
-    <Text color="primary">Primary color (gray-900) - default</Text>
-    <Text color="secondary">Secondary color (gray-700)</Text>
-    <Text color="tertiary">Tertiary color (gray-600)</Text>
-    <div className="bg-teal-500 p-4 rounded">
-      <Text color="inherit" className="text-white">
-        Inherit color (from parent)
-      </Text>
-    </div>
-  </div>
-);
-
-export const AsSpan: Story<TextProps> = () => (
-  <div>
-    <Text as="p">
-      This is a paragraph with{" "}
-      <Text as="span" weight="bold" color="secondary">
-        inline span text
-      </Text>{" "}
-      inside of it.
-    </Text>
-  </div>
-);
-
-export const AsDiv: Story<TextProps> = () => (
-  <Text as="div" size="lg" weight="medium">
-    This is rendered as a div element
-  </Text>
-);
-
-export const Combinations: Story = () => (
-  <div className="flex flex-col gap-6">
+/**
+ * Text component showcasing sizes, weights, colors, and combinations.
+ * Use for body copy, captions, and inline text.
+ */
+export const Default: Story = () => (
+  <div className="flex flex-col gap-8">
     <div>
-      <h3 className="text-lg font-semibold mb-4">Heading-like Text</h3>
-      <Text size="2xl" weight="bold" color="primary">
-        Large Bold Primary Text
-      </Text>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+      <div className="flex flex-col gap-3">
+        <Text size="xs">Extra small text (xs)</Text>
+        <Text size="sm">Small text (sm)</Text>
+        <Text size="base">Base text (base) - default</Text>
+        <Text size="lg">Large text (lg)</Text>
+        <Text size="xl">Extra large text (xl)</Text>
+        <Text size="2xl">2X large text (2xl)</Text>
+      </div>
     </div>
 
-    <div>
-      <h3 className="text-lg font-semibold mb-4">Subtitle</h3>
-      <Text size="lg" weight="medium" color="secondary">
-        Medium weight secondary text for subtitles
-      </Text>
-    </div>
+    <hr className="border-gray-200" />
 
     <div>
-      <h3 className="text-lg font-semibold mb-4">Body Copy</h3>
-      <Text size="base" weight="light" color="primary">
-        Default body text with light weight. This is the most common text style
-        used throughout the application for paragraph content.
-      </Text>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Weights</h3>
+      <div className="flex flex-col gap-3">
+        <Text weight="extralight">Extra light weight (200)</Text>
+        <Text weight="light">Light weight (300) - default</Text>
+        <Text weight="normal">Normal weight (400)</Text>
+        <Text weight="medium">Medium weight (500)</Text>
+        <Text weight="semibold">Semibold weight (600)</Text>
+        <Text weight="bold">Bold weight (700)</Text>
+      </div>
     </div>
 
+    <hr className="border-gray-200" />
+
     <div>
-      <h3 className="text-lg font-semibold mb-4">Caption</h3>
-      <Text size="sm" weight="light" color="tertiary">
-        Small tertiary text for captions and metadata
-      </Text>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Colors</h3>
+      <div className="flex flex-col gap-3">
+        <Text color="primary">Primary color (gray-900)</Text>
+        <Text color="secondary">Secondary color (gray-700)</Text>
+        <Text color="tertiary">Tertiary color (gray-600)</Text>
+        <div className="bg-teal-500 p-3 rounded">
+          <Text color="inherit" className="text-white">
+            Inherit color (from parent)
+          </Text>
+        </div>
+      </div>
+    </div>
+
+    <hr className="border-gray-200" />
+
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Common Combinations</h3>
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Heading-style</p>
+          <Text size="2xl" weight="bold" color="primary">
+            Large Bold Primary
+          </Text>
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Subtitle</p>
+          <Text size="lg" weight="medium" color="secondary">
+            Medium Secondary
+          </Text>
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Body</p>
+          <Text size="base" weight="light" color="primary">
+            Default body text with light weight for comfortable reading
+          </Text>
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Caption</p>
+          <Text size="sm" weight="light" color="tertiary">
+            Small tertiary for captions
+          </Text>
+        </div>
+      </div>
     </div>
   </div>
 );

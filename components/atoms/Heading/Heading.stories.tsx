@@ -1,104 +1,80 @@
 import type { Story } from "@ladle/react";
-import { Heading, HeadingProps } from "./Heading";
+import { Heading } from "./Heading";
 
-export const AllLevels: Story = () => (
-  <div className="flex flex-col gap-6">
-    <Heading level="h1">Heading 1 - Main Page Title</Heading>
-    <Heading level="h2">Heading 2 - Section Title</Heading>
-    <Heading level="h3">Heading 3 - Subsection Title</Heading>
-    <Heading level="h4">Heading 4 - Component Title</Heading>
-    <Heading level="h5">Heading 5 - Small Title</Heading>
-    <Heading level="h6">Heading 6 - Smallest Title</Heading>
-  </div>
-);
-
-export const H1: Story<HeadingProps> = () => (
-  <Heading level="h1">Main Page Title</Heading>
-);
-
-export const H2: Story<HeadingProps> = () => (
-  <Heading level="h2">Section Title</Heading>
-);
-
-export const H3: Story<HeadingProps> = () => (
-  <Heading level="h3">Subsection Title</Heading>
-);
-
-export const SemanticVsVisual: Story = () => (
-  <div className="flex flex-col gap-6">
+/**
+ * Heading component showcasing all semantic levels and styling options.
+ * Headings provide hierarchical structure to content.
+ */
+export const Default: Story = () => (
+  <div className="flex flex-col gap-8">
     <div>
-      <p className="text-sm text-gray-600 mb-2">
-        Semantic h3, styled as h1 (styleAs prop)
-      </p>
-      <Heading level="h3" styleAs="h1">
-        Large visual style, but h3 in HTML
-      </Heading>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">All Heading Levels</h3>
+      <div className="flex flex-col gap-4">
+        <Heading level="h1">Heading 1 - Main Page Title</Heading>
+        <Heading level="h2">Heading 2 - Section Title</Heading>
+        <Heading level="h3">Heading 3 - Subsection Title</Heading>
+        <Heading level="h4">Heading 4 - Component Title</Heading>
+        <Heading level="h5">Heading 5 - Small Title</Heading>
+        <Heading level="h6">Heading 6 - Smallest Title</Heading>
+      </div>
     </div>
 
+    <hr className="border-gray-200" />
+
     <div>
-      <p className="text-sm text-gray-600 mb-2">
-        Semantic h1, styled as h3 (styleAs prop)
-      </p>
-      <Heading level="h1" styleAs="h3">
-        Small visual style, but h1 in HTML
-      </Heading>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Custom Colors</h3>
+      <div className="flex flex-col gap-4">
+        <Heading level="h2" className="text-teal-600">
+          Teal Colored Heading
+        </Heading>
+        <Heading level="h2" className="text-coral-500">
+          Coral Colored Heading
+        </Heading>
+        <Heading level="h2" className="text-gray-700">
+          Gray Colored Heading
+        </Heading>
+      </div>
     </div>
   </div>
 );
 
-export const CustomColors: Story = () => (
-  <div className="flex flex-col gap-6">
-    <Heading level="h2" className="text-teal-600">
-      Teal Colored Heading
-    </Heading>
-    <Heading level="h2" className="text-coral-500">
-      Coral Colored Heading
-    </Heading>
-    <Heading level="h2" className="text-gray-700">
-      Gray Colored Heading
-    </Heading>
-  </div>
-);
-
-export const ResponsiveDemo: Story = () => (
-  <div className="border-2 border-gray-300 rounded-lg p-6">
-    <p className="text-sm text-gray-600 mb-4">
-      Resize browser window to see responsive text sizing
-    </p>
-    <Heading level="h1">
-      This heading gets larger on bigger screens
-    </Heading>
-  </div>
-);
-
+/**
+ * Heading component shown in realistic article context with hierarchy.
+ */
 export const InContext: Story = () => (
   <article className="max-w-2xl">
     <Heading level="h1" className="mb-4">
       Guide to Meditation
     </Heading>
     <p className="text-gray-700 mb-6">
-      Meditation is a practice of focused attention and awareness.
+      Meditation is a practice of focused attention and awareness that has been
+      practiced for thousands of years in various cultures around the world.
     </p>
 
     <Heading level="h2" className="mb-3">
       Getting Started
     </Heading>
     <p className="text-gray-700 mb-6">
-      Begin with just a few minutes each day.
+      Begin with just a few minutes each day in a quiet, comfortable space.
+      Consistency is more important than duration when starting out.
     </p>
 
     <Heading level="h3" className="mb-2">
       Finding a Quiet Space
     </Heading>
     <p className="text-gray-700 mb-6">
-      Choose a comfortable, quiet location where you won't be disturbed.
+      Choose a comfortable, quiet location where you won't be disturbed. This
+      could be a corner of your bedroom, a peaceful spot in your garden, or
+      anywhere you feel at ease.
     </p>
 
     <Heading level="h3" className="mb-2">
       Setting a Timer
     </Heading>
     <p className="text-gray-700 mb-6">
-      Use a gentle timer to track your meditation sessions.
+      Use a gentle timer to track your meditation sessions. Start with 5-10
+      minutes and gradually increase as you become more comfortable with the
+      practice.
     </p>
   </article>
 );
