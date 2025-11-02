@@ -10,7 +10,7 @@ export interface StoryGridProps {
 
 export const StoryGrid = ({ children }: StoryGridProps) => (
   <div className="overflow-x-auto">
-    <table>
+    <table className="min-w-full sm:table">
       {children}
     </table>
   </div>
@@ -24,7 +24,7 @@ export interface StoryGridHeaderProps {
 }
 
 export const StoryGridHeader = ({ children }: StoryGridHeaderProps) => (
-  <thead>
+  <thead className="hidden sm:table-header-group">
     {children}
   </thead>
 );
@@ -58,8 +58,8 @@ export const StoryGridHeaderCell = ({
   size = 'primary'
 }: StoryGridHeaderCellProps) => {
   const className = size === 'primary'
-    ? "px-3 py-2 text-center font-semibold text-gray-700"
-    : "px-3 py-2 text-center text-sm font-medium text-gray-600";
+    ? "px-2 sm:px-3 py-1.5 sm:py-2 text-center text-sm sm:text-base font-semibold text-gray-700"
+    : "px-2 sm:px-3 py-1.5 sm:py-2 text-center text-xs sm:text-sm font-medium text-gray-600";
 
   return (
     <th colSpan={colSpan} className={className}>
@@ -76,7 +76,7 @@ export interface StoryGridBodyProps {
 }
 
 export const StoryGridBody = ({ children }: StoryGridBodyProps) => (
-  <tbody>
+  <tbody className="block sm:table-row-group">
     {children}
   </tbody>
 );
@@ -89,7 +89,7 @@ export interface StoryGridRowProps {
 }
 
 export const StoryGridRow = ({ children }: StoryGridRowProps) => (
-  <tr>
+  <tr className="block sm:table-row mb-4 sm:mb-0 border-b sm:border-b-0 pb-4 sm:pb-0">
     {children}
   </tr>
 );
@@ -105,8 +105,8 @@ export interface StoryGridCellProps {
 
 export const StoryGridCell = ({ children, isLabel = false }: StoryGridCellProps) => {
   const className = isLabel
-    ? "px-3 py-2 text-sm font-medium text-gray-700"
-    : "px-3 py-2 text-center";
+    ? "block sm:table-cell px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold sm:font-medium text-gray-700"
+    : "block sm:table-cell px-2 sm:px-3 py-1.5 sm:py-2 text-left sm:text-center";
 
   return (
     <td className={className}>

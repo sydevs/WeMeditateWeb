@@ -8,7 +8,8 @@ export default {
 } satisfies StoryDefault;
 
 /**
- * Container component showcasing all max widths, padding options, and usage in context.
+ * Container component showcasing all max widths and usage in context.
+ * Padding is automatically responsive (small on mobile, medium on tablet, large on desktop).
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -43,43 +44,6 @@ export const Default: Story = () => (
           <Container maxWidth="full">
             <div className="bg-gray-100 p-4 rounded">
               <p className="text-gray-700">Full width container - spans the entire viewport</p>
-            </div>
-          </Container>
-        </div>
-      </div>
-    </StorySection>
-
-    <StorySection title="Padding">
-      <div className="space-y-6">
-        <div>
-          <p className="text-sm text-gray-600 mb-2">Small padding</p>
-          <Container padding="sm">
-            <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-700">Container with small horizontal padding</p>
-            </div>
-          </Container>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600 mb-2">Medium padding (default)</p>
-          <Container padding="md">
-            <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-700">Container with medium horizontal padding</p>
-            </div>
-          </Container>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600 mb-2">Large padding</p>
-          <Container padding="lg">
-            <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-700">Container with large horizontal padding</p>
-            </div>
-          </Container>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600 mb-2">No padding</p>
-          <Container padding="none">
-            <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-700">Container with no horizontal padding</p>
             </div>
           </Container>
         </div>
@@ -151,7 +115,7 @@ export const Default: Story = () => (
         <div className="bg-gray-50 py-8">
           <Container maxWidth="lg">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Meditation Journey</h2>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
                 { title: "Sessions", value: "127", subtitle: "Total meditations" },
                 { title: "Streak", value: "15", subtitle: "Days in a row" },

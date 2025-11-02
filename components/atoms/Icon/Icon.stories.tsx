@@ -132,7 +132,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Outline Style">
-      <div className="grid grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={MagnifyingGlassIcon} size="lg" />
           <p className="text-xs text-gray-600">Search</p>
@@ -185,7 +185,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Solid Style">
-      <div className="grid grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={MagnifyingGlassIconSolid} size="lg" />
           <p className="text-xs text-gray-600">Search</p>
@@ -277,7 +277,7 @@ export const Default: Story = () => (
       </StorySubsection>
 
       <StorySubsection label="Information Cards">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
             <Icon icon={InformationCircleIcon} size="lg" color="primary" />
             <div>

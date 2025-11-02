@@ -24,7 +24,7 @@ export interface StoryWrapperProps {
  */
 export function StoryWrapper({ children }: StoryWrapperProps) {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 p-2">
       {children}
     </div>
   );

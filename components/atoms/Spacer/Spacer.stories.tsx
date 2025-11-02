@@ -51,7 +51,7 @@ export const Default: Story = () => (
         </StorySubsection>
 
         <StorySubsection label="All Sizes Comparison">
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="border border-gray-200 rounded p-3">
               <p className="text-sm font-medium text-gray-900 mb-2">Small</p>
               <div className="bg-gray-100 p-2 rounded text-xs">Top</div>

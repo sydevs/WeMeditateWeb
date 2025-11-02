@@ -25,3 +25,9 @@ export type { FormFieldProps } from './FormField'
 // Social
 export { SocialShare } from './SocialShare'
 export type { SocialShareProps } from './SocialShare'
+
+// Footer
+export { FooterLinkList } from './FooterLinkList'
+export { LanguageDropdown } from './LanguageDropdown'
+export type { FooterLinkListProps, FooterLink } from './FooterLinkList'
+export type { LanguageDropdownProps, LanguageOption } from './LanguageDropdown'

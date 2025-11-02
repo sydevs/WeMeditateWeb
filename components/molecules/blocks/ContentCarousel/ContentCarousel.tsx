@@ -96,7 +96,7 @@ export function ContentCarousel({
         <Button
           icon={ChevronLeftIcon}
           variant="primary"
-          size="lg"
+          size="md"
           shape="square"
           onClick={scrollPrev}
           aria-label="Previous slide"
@@ -105,7 +105,7 @@ export function ContentCarousel({
         <Button
           icon={ChevronRightIcon}
           variant="primary"
-          size="lg"
+          size="md"
           shape="square"
           onClick={scrollNext}
           aria-label="Next slide"
@@ -115,7 +115,7 @@ export function ContentCarousel({
 
       {/* Carousel viewport */}
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-6">
+        <div className="flex gap-4 sm:gap-6">
           {items.map((item, index) => {
             const isFocused = index === selectedIndex
             return (
@@ -126,7 +126,7 @@ export function ContentCarousel({
                   isFocused ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'
                 }`}
               >
-                <div className="pointer-events-none">
+                <div className={isFocused ? '' : 'pointer-events-none'}>
                   <ContentCard
                     {...item}
                     variant="hero"

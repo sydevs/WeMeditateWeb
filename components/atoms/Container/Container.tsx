@@ -14,12 +14,6 @@ export interface ContainerProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default'
 
   /**
-   * Horizontal padding size
-   * @default 'md'
-   */
-  padding?: 'sm' | 'md' | 'lg'
-
-  /**
    * Center the container
    * @default true
    */
@@ -40,18 +34,18 @@ export interface ContainerProps {
  * Container component for consistent content width and spacing.
  *
  * Provides responsive container with max-width constraints and horizontal padding.
+ * Padding is automatically responsive: small on mobile, medium on tablet, large on desktop.
  * Centers content by default for standard page layouts.
  *
  * @example
  * <Container>Content here</Container>
  * <Container maxWidth="lg">Narrower content</Container>
- * <Container maxWidth="full" padding="lg">Full width with large padding</Container>
- * <Container as="section" padding="sm">Semantic section with small padding</Container>
+ * <Container maxWidth="full">Full width container</Container>
+ * <Container as="section">Semantic section container</Container>
  */
 export function Container({
   as = 'div',
   maxWidth = 'default',
-  padding = 'md',
   center = true,
   className = '',
   children,
@@ -69,17 +63,14 @@ export function Container({
     default: 'max-w-7xl', // Default max width (1280px)
   }
 
-  const paddingStyles = {
-    sm: 'px-4 sm:px-6 lg:px-8',      // Smaller padding
-    md: 'px-8 sm:px-12 lg:px-16',    // Medium padding (doubled from original)
-    lg: 'px-12 sm:px-16 lg:px-24',   // Large padding
-  }
+  // Responsive padding: small (mobile), medium (tablet), large (desktop)
+  const paddingStyles = 'px-4 sm:px-8 lg:px-16'
 
   const centerStyles = center ? 'mx-auto' : ''
 
   return (
     <Component
-      className={`${maxWidthStyles[maxWidth]} ${paddingStyles[padding]} ${centerStyles} ${className}`}
+      className={`${maxWidthStyles[maxWidth]} ${paddingStyles} ${centerStyles} ${className}`}
       {...props}
     >
       {children}

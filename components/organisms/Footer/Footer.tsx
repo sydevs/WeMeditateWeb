@@ -1,0 +1,193 @@
+import { FooterLinkList, FooterLink } from '../../molecules/FooterLinkList'
+import { LanguageDropdown, LanguageOption } from '../../molecules/LanguageDropdown'
+import { SocialIcon } from '../../atoms/SocialIcon'
+
+/**
+ * A footer section with title and links
+ */
+export interface FooterSection {
+  /** Section title */
+  title: string
+  /** Array of links in this section */
+  links: FooterLink[]
+}
+
+/**
+ * A social media link
+ */
+export interface SocialLink {
+  /** Social media platform */
+  platform: 'facebook' | 'instagram' | 'bluesky' | 'youtube' | 'pinterest' | 'whatsapp' | 'linkedin' | 'yandex' | 'telegram' | 'wechat'
+  /** URL to the social media profile */
+  href: string
+}
+
+/**
+ * Props for the Footer component
+ */
+export interface FooterProps {
+  /** Hero links (larger, no title) for primary navigation */
+  heroLinks: FooterLink[]
+  /** Footer sections with titles and links */
+  sections: FooterSection[]
+  /** Social media links */
+  socialLinks: SocialLink[]
+  /** Current language code */
+  currentLanguage: 'en' | 'es' | 'de' | 'it' | 'fr' | 'ru' | 'ro' | 'cs' | 'uk' | 'bg'
+  /** Available language options */
+  languages: LanguageOption[]
+  /** Copyright text */
+  copyrightText: string
+  /** Current locale for locale-aware links */
+  locale?: string
+}
+
+/**
+ * Decorative floral divider component
+ */
+function FloralDivider({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 204 53"
+      className={`w-52 h-auto ${className}`}
+      fill="none"
+      aria-hidden="true"
+    >
+      <g stroke="currentColor" strokeWidth="0.75" fill="none" transform="translate(0 1)">
+        <circle cx="102.03" cy="49.1" r="1.66" />
+        <path d="m93.62 29.53 8.41 14.12 8.41-14.12zm8.42-16.49h-.11c-2.3853837-.0252528-4.6792895-.9214765-6.45-2.52-1.6777393-1.66383698-2.6240788-3.92713574-2.63-6.29v-.37h.34c2.1465873.01076909 4.2327356.7119954 5.95 2" />
+        <path d="m104.85 5.86c1.730962-1.29822128 3.836298-2 6-2h.34v.33c-.004368 2.36611027-.950742 4.6330898-2.63 6.3-1.771203 1.5977258-4.064795 2.4938267-6.45 2.52h-.45" />
+        <path
+          d="m102.54839 36.223066c-.498764.2232515-1.083126.1212792-1.476798-.2577039-.393673-.3789832-.517782-.9590472-.31365-1.4659358.204133-.5068887.695609-.8390458 1.242058-.8394263.34916-.0080375.687074.1236832.938683.3659033.251608.24222.396077.5748834.401317.9240967.02039.5460682-.292847 1.0498145-.79161 1.273066z"
+          fill="currentColor"
+        />
+        <path d="m102.03 12.94-.25-.23c-1.739378-1.608838-2.7283105-3.87065507-2.7283105-6.24s.9889325-4.63116197 2.7283105-6.24l.25-.23.25.23c1.739378 1.60883803 2.72831 3.87065507 2.72831 6.24s-.988932 4.631162-2.72831 6.24z" />
+        <path d="m101.96 34.87v-21.83" />
+        <path d="m102.03 34.81v-22.33" fill="#cdcccc" />
+        <g>
+          <path d="m5.06 25.54c-1.88340498.0872697-3.71767875-.6159894-5.06-1.94 2.87767009-2.5861457 7.24232991-2.5861457 10.12 0-1.3429951 1.3229643-3.17679338 2.0260411-5.06 1.94z" />
+          <path d="m45.78 26.48-1.17 6.73 6.34-1.09m-21.69-8.53-9.29 9.29m34.17-9.3h-44.17" />
+          <path d="m49.6 33.75c-3.14 3.14-7 4.74-10.16 4.52-.22-3.15 1.38-7 4.52-10.16s7-4.74 10.16-4.52c.22 3.15-1.38 7.02-4.52 10.16zm-23.2-3.74c-1.6515368 1.8071604-3.9819116 2.843688-6.43 2.86.2596966-5.0192226 4.2707774-9.0303034 9.29-9.29-.0175253 2.4478263-1.0538467 4.7777376-2.86 6.43z" />
+          <path d="m50.95 15.03-6.34-1.09 1.17 6.73m-25.81-6.4 9.29 9.29" />
+          <path d="m54.12 23.55c-3.15.22-7-1.39-10.16-4.52s-4.74-7-4.52-10.16c3.15-.22 7 1.38 10.16 4.52s4.74 7.01 4.52 10.16zm-24.86.01c-5.0192226-.2596966-9.0303034-4.2707774-9.29-9.29 5.0192226.2596966 9.0303034 4.2707774 9.29 9.29z" />
+          <path d="m67.43 24.71c.9618572.0412492 1.8971983-.3212861 2.58-1-1.4637433-1.3277975-3.6962567-1.3277975-5.16 0 .6821192.6797638 1.6179394 1.0424848 2.58 1z" />
+          <path d="m198.61 25.54c1.883207.0860411 3.717005-.6170357 5.06-1.94-2.87767-2.5861457-7.24233-2.5861457-10.12 0 1.342995 1.3229643 3.176793 2.0260411 5.06 1.94z" />
+          <path d="m157.88 26.48 1.17 6.73-6.34-1.09m21.7-8.53 9.29 9.29m-34.17-9.3h44.16" />
+          <path d="m154.07 33.75c3.14 3.14 7 4.74 10.16 4.52.22-3.15-1.39-7-4.52-10.16s-7-4.74-10.16-4.52c-.21 3.15 1.39 7.02 4.52 10.16zm23.2-3.74c1.651537 1.8071604 3.981912 2.843688 6.43 2.86-.26421-5.0172137-4.272786-9.0257902-9.29-9.29.017525 2.4478263 1.053847 4.7777376 2.86 6.43z" />
+          <path d="m152.71 15.03 6.34-1.09-1.17 6.73m25.82-6.4-9.29 9.29" />
+          <path d="m149.55 23.55c3.15.22 7-1.39 10.16-4.52s4.74-7 4.52-10.16c-3.15-.22-7 1.38-10.16 4.52s-4.73 7.01-4.52 10.16zm24.86.01c5.017214-.2642098 9.02579-4.2727863 9.29-9.29-5.019223.2596966-9.030303 4.2707774-9.29 9.29z" />
+          <path d="m133.67 23.71c1.463743-1.3277975 3.696257-1.3277975 5.16 0-.682802.6787139-1.618143 1.0412492-2.58 1-.961857.0412492-1.897198-.3212861-2.58-1z" />
+        </g>
+      </g>
+    </svg>
+  )
+}
+
+/**
+ * Footer organism component with responsive grid layout.
+ *
+ * Features:
+ * - Decorative floral divider at top
+ * - 4-column grid on desktop (hero links, 2 link sections, social + language)
+ * - 2x2 grid on tablet
+ * - Stacked vertically on mobile
+ * - Copyright bar at bottom
+ *
+ * @example
+ * ```tsx
+ * <Footer
+ *   heroLinks={[
+ *     { text: 'Meditate Now', href: '/meditate' },
+ *     { text: 'Music for meditation', href: '/music' }
+ *   ]}
+ *   sections={[
+ *     {
+ *       title: 'Learn more',
+ *       links: [
+ *         { text: 'About Us', href: '/about' },
+ *         { text: 'Contact', href: '/contact' }
+ *       ]
+ *     }
+ *   ]}
+ *   socialLinks={[
+ *     { platform: 'instagram', href: 'https://instagram.com/wemeditate' },
+ *     { platform: 'facebook', href: 'https://facebook.com/wemeditate' }
+ *   ]}
+ *   currentLanguage="en"
+ *   languages={[...]}
+ *   copyrightText="© WeMeditate, 2025"
+ * />
+ * ```
+ */
+export function Footer({
+  heroLinks,
+  sections,
+  socialLinks,
+  currentLanguage,
+  languages,
+  copyrightText,
+  locale,
+}: FooterProps) {
+  return (
+    <footer className="w-full bg-white">
+      {/* Decorative Divider */}
+      <div className="relative w-full text-center pt-[53px]" role="separator" aria-hidden="true">
+        {/* The horizontal line */}
+        <div className="w-full border-t border-gray-200 absolute bottom-0" />
+
+        {/* Floral design centered over the line */}
+        <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2 bottom-0 bg-white px-4 text-gray-500">
+          <FloralDivider />
+        </div>
+      </div>
+
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+          {/* Hero Links Section */}
+          <div>
+            <FooterLinkList variant="hero" links={heroLinks} locale={locale} />
+          </div>
+
+          {/* Regular Link Sections */}
+          {sections.map((section, index) => (
+            <div key={index}>
+              <FooterLinkList title={section.title} links={section.links} locale={locale} />
+            </div>
+          ))}
+
+          {/* Social + Language Section */}
+          <div className="flex flex-col gap-6">
+            {/* Social Icons */}
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social, index) => (
+                <SocialIcon
+                  key={index}
+                  platform={social.platform}
+                  href={social.href}
+                  size="lg"
+                  color="brand"
+                />
+              ))}
+            </div>
+
+            {/* Language Dropdown */}
+            <LanguageDropdown
+              currentLanguage={currentLanguage}
+              languages={languages}
+              align="left"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Copyright Bar */}
+      <div className="border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <p className="text-center text-sm text-gray-600">{copyrightText}</p>
+        </div>
+      </div>
+    </footer>
+  )
+}

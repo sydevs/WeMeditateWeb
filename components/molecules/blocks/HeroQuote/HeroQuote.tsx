@@ -60,10 +60,12 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
   const isMd = size === 'md'
   const dividerMaxWidth = isMd ? '' : 'max-w-sm' // lg: ~400px = max-w-sm (384px)
   const blockquoteMaxWidth = isMd ? 'max-w-sm' : 'max-w-2xl' // md: 384px, lg: 672px
-  const textSize = isMd ? 'text-lg' : 'text-2xl' // md: 18px, lg: 24px (closest to 23px)
+  const textSize = isMd ? 'text-base sm:text-lg' : 'text-xl sm:text-2xl' // md: responsive 16-18px, lg: responsive 20-24px
+  const titleSize = isMd ? 'text-base sm:text-lg' : 'text-base sm:text-lg' // responsive title
+  const creditSize = isMd ? 'text-sm sm:text-base' : 'text-base sm:text-lg' // responsive credit
   const lineHeight = isMd ? 'leading-relaxed' : 'leading-relaxed' // both 1.625
   const verticalSpacing = isMd ? 'my-12' : 'my-18 md:my-20'
-  const horizontalMargin = isMd ? 'mx-0' : 'mx-16'
+  const horizontalMargin = isMd ? 'mx-0' : 'mx-4 sm:mx-8 md:mx-16'
   const dividerSpacing = isMd ? 'mb-8' : 'mb-10.5'
   const dividerSpacingBottom = isMd ? 'mt-8' : 'mt-10.5'
 
@@ -80,7 +82,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
 
       {/* Optional title */}
       {title && (
-        <h5 className="text-lg font-semibold leading-relaxed mb-4">
+        <h5 className={`${titleSize} font-semibold leading-relaxed mb-4`}>
           {title}
         </h5>
       )}
@@ -92,7 +94,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
 
       {/* Optional credit */}
       {credit && (
-        <cite className="text-lg leading-relaxed not-italic block">
+        <cite className={`${creditSize} leading-relaxed not-italic block`}>
           {credit}
         </cite>
       )}

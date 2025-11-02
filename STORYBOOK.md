@@ -161,6 +161,25 @@ import {
 - `StoryGridHeaderCell`: `children?`, `colSpan?`, `size?: 'primary' | 'secondary'`
 - `StoryGridCell`: `children?`, `isLabel?: boolean`
 
+**Mobile-First Responsive Behavior**:
+
+StoryGrid automatically adapts to mobile viewports using a vertical stacking layout:
+
+- **Mobile (< 640px)**:
+  - Table header is hidden (table data is self-explanatory when stacked)
+  - Each row becomes a stacked vertical block with spacing
+  - Cells display vertically within each row
+  - Label cells are bold for prominence
+  - Bottom border separates each row
+
+- **Desktop (≥ 640px)**:
+  - Normal horizontal table layout with headers
+  - Standard grid display
+  - Center-aligned cells
+  - Regular table spacing
+
+This ensures story grids remain readable on mobile devices without horizontal scrolling.
+
 ## Writing Stories
 
 Stories use Component Story Format (CSF) and are placed alongside components.

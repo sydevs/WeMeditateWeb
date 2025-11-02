@@ -8,7 +8,7 @@ import {
 } from '../../ladle'
 
 export default {
-  title: 'Molecules / Author',
+  title: 'Molecules / Display',
 } satisfies StoryDefault
 
 // Sample author image URL (same as Avatar stories)

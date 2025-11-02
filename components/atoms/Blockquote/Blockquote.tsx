@@ -37,7 +37,7 @@ export function Blockquote({
   return (
     <div
       className={`
-        relative max-w-md
+        relative max-w-sm sm:max-w-md lg:max-w-lg
         ${isLeft ? 'float-left' : 'float-right'}
         ${className}
       `.trim()}
@@ -45,8 +45,8 @@ export function Blockquote({
       <blockquote
         className={`
           relative
-          py-8
-          ${isLeft ? 'pl-6 text-left' : 'pr-6 text-right'}
+          py-4 sm:py-8
+          ${isLeft ? 'pl-4 sm:pl-6 text-left' : 'pr-4 sm:pr-6 text-right'}
           before:content-[''] before:absolute before:inset-0 before:-z-10
           ${isLeft
             ? 'before:left-0 before:right-[20%] before:bg-gradient-to-r'

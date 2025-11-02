@@ -20,7 +20,9 @@ export type { BlockquoteProps } from './Blockquote'
 
 // Interactive
 export { Button } from './Button'
+export { Dropdown } from './Dropdown'
 export type { ButtonProps } from './Button'
+export type { DropdownProps } from './Dropdown'
 
 // Form Inputs
 export { Input } from './Input'

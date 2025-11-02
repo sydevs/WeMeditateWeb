@@ -15,7 +15,7 @@ import {
 } from '../../ladle';
 
 export default {
-  title: "Molecules / Content"
+  title: "Molecules / Display"
 } satisfies StoryDefault;
 
 // Sample data for stories using picsum.photos
@@ -45,7 +45,7 @@ const sampleShortData = {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">
-      <div className="flex flex-row gap-8">
+      <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
         <div>
           <StorySubsection label="Default Variant - With Description">
             <ContentCard

@@ -134,7 +134,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Padding">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <p className="text-sm text-gray-600 mb-2">Small</p>
           <Box padding="sm" color="gray">
@@ -157,7 +157,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Shadows">
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div>
           <p className="text-sm text-gray-600 mb-2">Small</p>
           <Box padding="md" shadow="sm" color="white" border>
@@ -181,7 +181,7 @@ export const Default: Story = () => (
 
     <StoryExampleSection>
       <div className="flex flex-col gap-8 max-w-3xl">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Box padding="lg" shadow="md" color="white" rounded>
             <h4 className="font-semibold text-gray-900 mb-2">Morning Meditation</h4>
             <p className="text-gray-700 mb-3">Start your day with peace and clarity</p>
@@ -207,7 +207,7 @@ export const Default: Story = () => (
           </Box>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">🧘</div>
             <h5 className="font-medium text-gray-900 mb-1">Guided</h5>

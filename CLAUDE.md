@@ -351,6 +351,8 @@ See [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for comprehensive guidelines on:
 
 ### Atomic Design Classification Guide
 
+**IMPORTANT**: Before classifying any component, read @DESIGN_SYSTEM.md for complete component architecture and implementation guidelines.
+
 Use this decision tree to classify components correctly:
 
 - **Atom**: Single, indivisible UI element that cannot be broken down further
@@ -468,6 +470,66 @@ Before marking a component as complete, verify:
 - [ ] Text is readable at all sizes
 - [ ] No horizontal scrolling on any breakpoint
 
+### Common Components Reference
+
+This project has specific patterns for frequently-used components. Always use these correctly:
+
+#### Icon Component
+
+The `Icon` component wraps Heroicons and uses the **`icon` prop** (not `name`):
+
+```tsx
+import { Icon } from '../atoms/Icon'
+import { HeartIcon, CheckIcon } from '@heroicons/react/24/outline'
+
+// ✅ Correct
+<Icon icon={HeartIcon} size="md" />
+<Icon icon={CheckIcon} size="sm" color="primary" />
+
+// ❌ Wrong - don't use name prop
+<Icon name="heart" size="md" />
+```
+
+**Heroicons Version**: This project uses **Heroicons v2**. Some icons were renamed:
+- `ArrowRightOnRectangleIcon` → Use `ArrowRightStartOnRectangleIcon` (for logout/sign-out)
+- Check [Heroicons v2 migration guide](https://github.com/tailwindlabs/heroicons/releases/tag/v2.0.0) for other changes
+
+#### Link Component
+
+The `Link` component is locale-aware and located at **`components/Link.tsx`** (not in atoms/):
+
+```tsx
+import { Link } from '../../Link'  // ✅ Correct path from molecules/
+import { Link } from '../Link'     // ✅ Correct path from atoms/
+
+// ❌ Wrong - Link is not in atoms/
+import { Link } from '../../atoms/Link'
+```
+
+**Usage**:
+```tsx
+<Link href="/about" locale="es">About Us</Link>
+<Link href="/contact" className="text-teal-600">Contact</Link>
+```
+
+#### Divider Patterns
+
+When creating decorative dividers (like LeafDivider or Footer divider), use this pattern:
+
+```tsx
+<div className="relative w-full text-center pt-[height]">
+  {/* Full-width horizontal line */}
+  <div className="w-full border-t border-gray-200 absolute bottom-0" />
+
+  {/* Decorative element centered over the line */}
+  <div className="absolute left-1/2 -translate-x-1/2 bottom-0 bg-white px-4">
+    <DecorativeElement />
+  </div>
+</div>
+```
+
+This creates the effect where the decorative element sits in the middle of the line with a white background "breaking" the line.
+
 ## Component Development with Ladle
 
 This project uses **[Ladle](https://ladle.dev/)** for component development and documentation. Ladle is a lightweight, Vite-powered alternative to Storybook.
@@ -477,16 +539,22 @@ This project uses **[Ladle](https://ladle.dev/)** for component development and 
 - Build static library: `pnpm ladle:build`
 
 **Writing Stories**:
+
+**IMPORTANT**: Before writing any component story, read @STORYBOOK.md for the complete story structure and patterns.
+
+Key requirements:
 - Create `ComponentName.stories.tsx` alongside your component
+- **Always use a single `Default` export** - never create multiple story exports
+- Use proper `title` categorization (e.g., `"Atoms / Form"`, `"Molecules / Layout"`, `"Organisms"`)
+- Add `storyName` attribute to the `Default` export for human-readable names
 - Use story utility components from [components/ladle/](components/ladle/) for consistency
   - `StorySection` - Wrap major sections with automatic dividers
   - `StoryGrid` - Create table layouts for multi-dimensional component matrices
   - `StorySubsection` - Label subsections within a section
 - Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Padding → Examples
 - Use "Examples" section for practical usage scenarios (can be multiple sections with descriptive titles or a single section with subsections)
-- Export named story functions using `Story` type from `@ladle/react`
 
-**See [STORYBOOK.md](STORYBOOK.md)** for complete documentation on:
+**See @STORYBOOK.md** for complete documentation on:
 - Story utility components API reference
 - Standard section order and naming conventions
 - Writing stories with Component Story Format (CSF)
@@ -564,6 +632,8 @@ const styles = window.getComputedStyle(element)
 - When the user has already provided a screenshot
 
 ### Step 2: Translate Design to Tailwind Tokens
+
+**IMPORTANT**: Before implementing, read @DESIGN_SYSTEM.md for design tokens, Tailwind usage guidelines, and mobile-first requirements.
 
 **Always use Tailwind's built-in tokens** - never create custom CSS or arbitrary values unless explicitly required:
 
@@ -712,6 +782,11 @@ Follow this checklist when creating new components from scratch:
 
 ### 1. Planning Phase
 
+**IMPORTANT**: Before starting, read:
+- [ ] @DESIGN_SYSTEM.md for component architecture and design patterns
+- [ ] @STORYBOOK.md for story structure and conventions
+
+Then proceed with planning:
 - [ ] Examine design (URL, images, or description)
 - [ ] Identify atomic level (atom/molecule/organism)
 - [ ] Determine required and optional props

@@ -50,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         'text-gray-900 border-success hover:border-success focus:border-success',
     }
 
-    const widthStyles = fullWidth ? 'w-full' : 'w-64'
+    const widthStyles = fullWidth ? 'w-full' : 'w-full sm:w-64'
 
     return (
       <input

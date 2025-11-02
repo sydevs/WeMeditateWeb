@@ -13,7 +13,7 @@ export default {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Shapes">
-      <div className="grid grid-cols-3 gap-4 max-w-4xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
         <div>
           <p className="text-sm text-gray-600 mb-2">Square (no rounding)</p>
           <Image
@@ -45,7 +45,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Aspect Ratios">
-      <div className="grid grid-cols-3 gap-4 max-w-4xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
         <div>
           <p className="text-sm text-gray-600 mb-2">Square (1:1)</p>
           <Image
@@ -76,7 +76,7 @@ export const Default: Story = () => (
     <StorySection title="States">
       <div>
         <p className="text-sm text-gray-600 mb-2">With Loading State</p>
-        <div className="grid grid-cols-3 gap-4 max-w-4xl">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
           <Image
             src="https://picsum.photos/id/30/600/400"
             alt="Image with loading"
@@ -100,7 +100,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StoryExampleSection>
-      <div className="grid grid-cols-2 gap-3 max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
         <Image
           src="https://picsum.photos/id/50/600/800"
           alt="Portrait meditation"

@@ -101,7 +101,7 @@ export function Accordion({
   }
 
   return (
-    <div className={`max-w-3xl ${className}`} role="region">
+    <div className={`max-w-full sm:max-w-3xl ${className}`} role="region">
       {items.map((item, index) => {
         const isOpen = openItems.has(item.id)
         const isLastItem = index === items.length - 1
@@ -118,7 +118,7 @@ export function Accordion({
                 onKeyDown={(e) => handleKeyDown(e, item.id)}
                 aria-expanded={isOpen}
                 aria-controls={`accordion-content-${item.id}`}
-                className="relative w-full text-left py-4 pr-8 cursor-pointer group flex items-center justify-between"
+                className="relative w-full text-left py-3 sm:py-4 pr-6 sm:pr-8 cursor-pointer group flex items-center justify-between"
               >
                 <span className={`text-xl font-medium transition-colors ${
                   isOpen ? 'text-gray-800' : 'text-gray-600 group-hover:text-gray-800'
@@ -145,7 +145,7 @@ export function Accordion({
                 isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
               }`}
             >
-              <div className="pb-6 pr-8 text-base leading-relaxed text-gray-600">
+              <div className="pb-4 sm:pb-6 pr-6 sm:pr-8 text-base leading-relaxed text-gray-600">
                 {item.content}
               </div>
             </div>

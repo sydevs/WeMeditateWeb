@@ -144,39 +144,39 @@ export function ContentCard({
   const playButtonSize = isHeroVariant ? 'lg' : 'md'
 
   // Determine default size based on variant
-  // Hero variant uses aspect-ratio-aware width sizing to maintain constant ~384px height
-  // Default variant uses fixed width: w-64 (16rem/256px)
-  const getHeroWidth = () => {
-    if (!isHeroVariant) return 'w-64'
+  // All variants use max-w-full on mobile, then aspect-ratio-aware sizing on larger screens
+  // Default variant uses responsive width: full on mobile, fixed on desktop
+  const getCardWidth = () => {
+    if (!isHeroVariant) return 'max-w-full sm:w-64'
 
-    // Calculate width to achieve ~384px height for each aspect ratio
+    // Responsive width: full width on mobile, aspect-ratio-aware on desktop
     const aspectRatioWidths = {
-      'square': 'w-96',      // 1:1 → 384px
-      'video': 'w-[682px]',  // 16:9 → 682px
-      '16/9': 'w-[682px]',   // 16:9 → 682px
-      '4/3': 'w-128',        // 4:3 → 512px
-      '3/2': 'w-144',        // 3:2 → 576px
-      '21/9': 'w-[896px]',   // 21:9 → 896px
+      'square': 'max-w-full md:w-96',           // 1:1 → full mobile, 384px desktop
+      'video': 'max-w-full md:w-[682px]',       // 16:9 → full mobile, 682px desktop
+      '16/9': 'max-w-full md:w-[682px]',        // 16:9 → full mobile, 682px desktop
+      '4/3': 'max-w-full md:w-128',             // 4:3 → full mobile, 512px desktop
+      '3/2': 'max-w-full md:w-144',             // 3:2 → full mobile, 576px desktop
+      '21/9': 'max-w-full md:w-[896px]',        // 21:9 → full mobile, 896px desktop
     }
 
-    return aspectRatioWidths[aspectRatio] || 'w-96' // default to square
+    return aspectRatioWidths[aspectRatio] || 'max-w-full md:w-96' // default to square
   }
 
-  const cardSize = getHeroWidth()
+  const cardSize = getCardWidth()
 
   // Determine title styling based on variant
-  // Hero variant matches carousel__name: 24px (text-2xl), 600 weight (font-semibold)
+  // Hero variant matches carousel__name with responsive sizing
   // Default variant uses normal styling
   const titleClasses = isHeroVariant
-    ? 'text-2xl font-semibold'
+    ? 'text-xl sm:text-2xl font-semibold'
     : 'text-base sm:text-lg font-normal'
 
-  // Hero variant has larger gap between thumbnail and title (36px = gap-9)
-  const contentGap = isHeroVariant ? 'gap-9' : 'gap-2'
+  // Hero variant has larger gap between thumbnail and title (responsive)
+  const contentGap = isHeroVariant ? 'gap-6 sm:gap-9' : 'gap-2'
 
   return (
     <article
-      className={`group flex flex-col gap-3 ${cardSize} text-left ${className}`}
+      className={`group flex flex-col gap-2 sm:gap-3 ${cardSize} text-left ${className}`}
       {...props}
     >
       {/* Thumbnail with optional play button overlay */}
