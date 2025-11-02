@@ -236,6 +236,14 @@ The section order varies by component category, but generally follows these patt
 **Layout Components** (Box, Container, Spacer):
 - Variants/Sizes → Padding → Shadows → Examples
 
+**Molecule Components** (Author, FormField, SocialShare, etc.):
+- Each major variant gets its own section → Examples
+- Within each variant section, use subsections for "Minimal" and "Maximal" configurations
+- Minimal = component with only required props
+- Maximal = component with all optional props populated
+- Don't use grids for molecules - use simple vertical layouts with subsections
+- Typically 2-3 variant sections, each with Minimal/Maximal subsections
+
 **Component-Specific Sections**: Some components have unique properties that don't fit standard categories. These typically appear after basic variants/sizes and before States. Examples:
 - **Image**: "Aspect Ratios" for image dimensions (square 1:1, video 16:9, 4:3)
 - **Duration**: "Common Durations" and "Format Variants" for time display
@@ -469,6 +477,16 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 
 **Structure**: Sizes (subsections) → Examples (subsections)
 
+#### Author - Molecule with Variant Sections
+[Author.stories.tsx](components/molecules/Author/Author.stories.tsx):
+- Each major variant (Mini, Hero) gets its own section
+- Within each variant section, subsections for "Minimal" and "Maximal" configurations
+- Minimal shows required props only, Maximal shows all optional props
+- No grids - simple vertical layout with subsections
+- Single Examples section showing realistic usage
+
+**Structure**: Mini Variant (subsections) → Hero Variant (subsections) → Examples
+
 ## Best Practices
 
 ### DO ✅
@@ -478,7 +496,8 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 - **Follow standard section order** consistently
 - **Use standard section names** from the naming conventions
 - **Combine related states** into single sections (e.g., loading + disabled = "States")
-- **Use grids** for multi-dimensional variations (variant × shape, color × state)
+- **Use grids** for multi-dimensional variations in atoms (variant × shape, color × state)
+- **For molecules**, use separate sections per variant with Minimal/Maximal subsections (no grids)
 - **Use StoryExampleSection** for all "Examples" sections (not StorySection)
 - **Show realistic usage** in example sections (can use subsections or multiple sections with subtitles)
 - **Remove trailing dividers** with `<div />` at the end

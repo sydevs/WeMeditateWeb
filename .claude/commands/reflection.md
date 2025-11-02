@@ -7,6 +7,8 @@ Review the chat history in your context window.
 Then, examine the current Claude instructions, commands and config
 <claude_instructions>
 /CLAUDE.md
+/STORYBOOK.md
+/DESIGN_SYSTEM.md
 /.claude/commands/*
 **/CLAUDE.md
 .claude/settings.json

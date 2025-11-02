@@ -6,6 +6,10 @@
  * functional units.
  */
 
+// Author
+export { Author } from './Author'
+export type { AuthorProps } from './Author'
+
 // Content
 export { ContentCard } from './ContentCard/ContentCard'
 export type { ContentCardProps } from './ContentCard/ContentCard'

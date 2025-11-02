@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__puppeteer__*",
+      "mcp__serena__*"
+    ]
+  },
   "hooks": {
     "Stop": [
       {

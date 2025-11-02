@@ -350,7 +350,132 @@ Before implementing a component, ask:
 - [ ] What are the different states it can be in?
 - [ ] How will it be used in different contexts?
 
-### 2. Props API Design
+### 2. Extracting Designs from Existing Websites
+
+When creating components based on existing web designs (e.g., from wemeditate.com), follow this systematic approach:
+
+#### Step 1: Visual Inspection & Documentation
+1. **Take screenshots** of the design element in different states (hover, active, responsive breakpoints)
+2. **Identify the component level**: Is this an atom, molecule, or organism?
+3. **Note contextual usage**: Where and how is this element used on the site?
+
+#### Step 2: Extract Design Properties
+
+Use browser DevTools to systematically extract:
+
+**Layout & Spacing:**
+- Padding: `padding`, `paddingTop`, `paddingBottom`, `paddingLeft`, `paddingRight`
+- Margin: `margin`, `marginTop`, `marginBottom`
+- Width/Height: Note if fixed or responsive
+- Display properties: `display`, `position`
+
+**Typography:**
+- Font family: `fontFamily`
+- Font size: `fontSize`
+- Font weight: `fontWeight`
+- Line height: `lineHeight`
+- Letter spacing: `letterSpacing`
+- Text transform: `textTransform`
+
+**Colors:**
+- Text color: `color`
+- Background: `background`, `backgroundColor`
+- Borders: `borderColor`
+- Opacity values for semi-transparent colors
+
+**Visual Effects:**
+- Gradients: `background`, `backgroundImage` (note direction, color stops, positions)
+- Shadows: `boxShadow`, `textShadow`
+- Borders: `border`, `borderRadius`
+
+**Pseudo-elements:**
+- Check `::before` and `::after` for decorative elements
+- Note their `content`, `position`, dimensions, and styling
+
+#### Step 3: Map to Tailwind Tokens
+
+For each extracted CSS value, find the **closest Tailwind token**:
+
+**Spacing** (px → Tailwind):
+- 8px → `2` (0.5rem)
+- 16px → `4` (1rem)
+- 24px → `6` (1.5rem)
+- 32px → `8` (2rem)
+- 320px → `w-80` (20rem)
+
+**Colors** (hex → Tailwind):
+- \#7b7b7b → `text-gray` (custom token) or `text-gray-500`
+- \#61aaa0 → `text-teal` or `bg-teal-500`
+- \#c5e0dc → `bg-teal-200`
+
+**Font Sizes** (px → Tailwind):
+- 14px → `text-sm`
+- 16px → `text-base`
+- 18px → `text-lg`
+- 32px → `text-4xl`
+
+**Opacity** (decimal → Tailwind):
+- 0.01 → `/[0.01]` (arbitrary value)
+- 0.18 → `/[0.18]` (arbitrary value)
+- 0.3 → `/30` (30%)
+
+#### Step 4: Implement Responsively
+
+Always implement with mobile-first approach:
+
+1. **Start with mobile styles** (no prefix)
+2. **Add responsive overrides** using `sm:`, `md:`, `lg:` prefixes
+3. **Test at different breakpoints** to ensure proper behavior
+
+**Common Responsive Patterns:**
+```tsx
+// Text alignment: center on mobile, left on desktop
+className="text-center sm:text-left"
+
+// Width: full on mobile, fixed on desktop
+className="w-full sm:w-80"
+
+// Gradient position: centered on mobile, left/right on desktop
+className="before:left-0 before:w-1/2 sm:before:w-80"
+```
+
+#### Step 5: Handle Edge Cases
+
+Consider how the component behaves with:
+- **Long text** that wraps to multiple lines
+- **Missing optional content** (e.g., subtitle)
+- **Different content lengths** across instances
+- **Various viewport sizes**
+
+#### Step 6: Iterative Refinement
+
+After initial implementation:
+1. **Compare side-by-side** with original design
+2. **Adjust values** to match visual appearance
+3. **Test responsive behavior** at all breakpoints
+4. **Verify accessibility** (color contrast, semantic HTML, ARIA attributes)
+
+**Example: PageTitle Component**
+
+Original design analysis revealed:
+- Font: Raleway, 32px, weight 600
+- Color: \#7b7b7b
+- Letter spacing: 1.5px
+- Padding: 32px all around
+- Gradient: Transparent to teal, 320px wide, full height
+- Alignment-dependent gradient positioning
+
+Mapped to Tailwind:
+```tsx
+className="
+  font-raleway text-4xl font-semibold text-gray-700
+  tracking-wider p-8
+  before:w-80 before:h-full
+  before:from-transparent before:to-teal-200/30
+"
+```
+
+### 3. Props API Design
 
 **Good Props Design:**
 - Intuitive and predictable names

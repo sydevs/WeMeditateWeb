@@ -333,7 +333,14 @@ Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin using the **CSS-fi
 
 ## Design System
 
-This project uses the **Atomic Design Methodology** to build a consistent, scalable component library. See [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for comprehensive guidelines on:
+This project uses the **Atomic Design Methodology** to build a consistent, scalable component library.
+
+**IMPORTANT**: Before creating any UI component, you MUST:
+1. Read [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for component architecture, implementation guidelines, and accessibility standards
+2. Read [STORYBOOK.md](STORYBOOK.md) before writing component stories
+3. Follow these documents as the source of truth for all component development
+
+See [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for comprehensive guidelines on:
 
 - **Design Principles**: Mobile-first, performance-focused, accessible development
 - **Design Tokens**: Colors, typography, spacing scales from wemeditate.com brand
@@ -342,15 +349,124 @@ This project uses the **Atomic Design Methodology** to build a consistent, scala
 - **Accessibility Standards**: WCAG 2.1 Level AA compliance requirements
 - **File Organization**: How to structure component directories and exports
 
+### Atomic Design Classification Guide
+
+Use this decision tree to classify components correctly:
+
+- **Atom**: Single, indivisible UI element that cannot be broken down further
+  - Examples: Button, Input, Icon, Label, Text, Checkbox
+  - Test: Can this be divided into smaller functional pieces? If no → Atom
+
+- **Molecule**: 2-3 atoms combined into a simple functional group
+  - Examples: FormField (Label + Input + Error), SearchBar (Input + Button), Author (Avatar + Text)
+  - Test: Does this combine multiple atoms into a single purpose? If yes → Molecule
+
+- **Organism**: Complex section with multiple molecules and/or atoms
+  - Examples: Header (Logo + Navigation + Search), Footer, Card Grid, Form
+  - Test: Is this a complete section of a page? If yes → Organism
+
+- **Template**: Page layout structure without real content
+  - Examples: Article Layout, Dashboard Layout, Landing Page Template
+  - Test: Does this define page-level structure? If yes → Template
+
+**When in doubt**: Start with the smallest classification and move up if needed. It's easier to promote an atom to a molecule than demote a molecule to an atom.
+
 **Quick Reference**:
 - All UI components live in `components/` organized by atomic level (atoms/, molecules/, organisms/, templates/)
 - See [components/atoms/README.md](components/atoms/README.md) for complete atoms documentation and usage examples
 - Use design tokens consistently - avoid one-off custom values
-- Follow mobile-first responsive design patterns
+- **ALWAYS implement mobile-first responsive design** - see responsive requirements below
 - Maintain WCAG 2.1 AA accessibility standards
 - Document components with JSDoc and usage examples
 
-When implementing new UI components, always reference [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for detailed guidance on component structure, naming conventions, styling patterns, and accessibility requirements.
+### Mobile-First Responsive Design Requirements
+
+**CRITICAL**: All UI components MUST be implemented with mobile-first responsive design. This is not optional.
+
+**Core Principles**:
+1. **Start with mobile styles** (no breakpoint prefix) - design for the smallest screen first
+2. **Progressively enhance** for larger screens using Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`, `2xl:`)
+3. **Test at all breakpoints** before considering a component complete
+4. **Consider touch targets** on mobile (minimum 44×44px for interactive elements)
+
+**Tailwind Breakpoints**:
+```css
+/* Default (mobile): 0px and up */
+sm:   /* 640px and up (small tablets) */
+md:   /* 768px and up (tablets) */
+lg:   /* 1024px and up (laptops) */
+xl:   /* 1280px and up (desktops) */
+2xl:  /* 1536px and up (large desktops) */
+```
+
+**Common Responsive Patterns**:
+
+**Text Alignment**:
+```tsx
+// Center on mobile, left-aligned on desktop
+className="text-center sm:text-left"
+
+// Center on mobile, right-aligned on desktop
+className="text-center sm:text-right"
+```
+
+**Layout**:
+```tsx
+// Stack vertically on mobile, horizontal on desktop
+className="flex flex-col sm:flex-row"
+
+// Full width on mobile, fixed width on desktop
+className="w-full sm:w-auto"
+
+// Hide on mobile, show on desktop
+className="hidden sm:block"
+
+// Show on mobile, hide on desktop
+className="block sm:hidden"
+```
+
+**Spacing**:
+```tsx
+// Smaller padding on mobile, larger on desktop
+className="px-4 py-2 sm:px-6 sm:py-4"
+
+// Tighter spacing on mobile, more breathing room on desktop
+className="gap-2 sm:gap-4 lg:gap-6"
+```
+
+**Typography**:
+```tsx
+// Smaller text on mobile, larger on desktop
+className="text-2xl sm:text-4xl"
+
+// Adjust line height responsively
+className="leading-tight sm:leading-normal"
+```
+
+**Gradients and Visual Effects**:
+```tsx
+// Simpler effect on mobile, enhanced on desktop
+className="before:w-1/2 sm:before:w-80"
+
+// Centered gradient on mobile, positioned on desktop
+className="before:left-0 sm:before:right-0 sm:before:left-auto"
+```
+
+**When to Apply Responsive Design**:
+- ✅ **Always** for molecules and organisms (they must adapt to different contexts)
+- ✅ **Frequently** for atoms when they have layout implications (containers, spacers, complex buttons)
+- ⚠️ **Sometimes** for simple atoms (basic text, icons) - use judgment based on usage
+- ❌ **Never skip** for page-level components (templates, organisms in layouts)
+
+**Testing Checklist**:
+Before marking a component as complete, verify:
+- [ ] Renders correctly on mobile (< 640px)
+- [ ] Transitions properly at `sm` breakpoint (640px)
+- [ ] Looks good on tablets (`md`: 768px)
+- [ ] Works well on desktop (`lg`: 1024px+)
+- [ ] Touch targets are adequate on mobile (44×44px minimum)
+- [ ] Text is readable at all sizes
+- [ ] No horizontal scrolling on any breakpoint
 
 ## Component Development with Ladle
 
@@ -382,3 +498,315 @@ This project uses **[Ladle](https://ladle.dev/)** for component development and 
 - [Button](components/atoms/Button/Button.stories.tsx) - Comprehensive grid layout with subsections
 - [Checkbox](components/atoms/Checkbox/Checkbox.stories.tsx) - Grid combining color × state
 - [Text](components/atoms/Text/Text.stories.tsx) - Simple vertical stacking with sections
+
+### Development Server Troubleshooting
+
+**Hot Module Replacement (HMR) Behavior**:
+- HMR typically works well for **file updates** (editing existing components)
+- HMR often **fails for new files** (newly created components, stories, or routes)
+- When creating new components/stories, expect to restart Ladle to see them appear
+
+**When to Restart Servers**:
+
+Restart Ladle (`pnpm ladle`) when:
+- Creating new `.stories.tsx` files (HMR won't detect them)
+- Adding new components to the component library
+- Stories appear as "Story not found" after creation
+- Component changes aren't reflecting in Ladle
+
+Restart Dev Server (`pnpm dev`) when:
+- Adding new pages or routes
+- Modifying Vike configuration files (`+config.ts`, `+route.ts`)
+- Changes to environment variables in `.env`
+- Cloudflare Workers bindings aren't working
+
+**How to Restart Gracefully**:
+```bash
+# Find and kill the process on Ladle port
+lsof -ti:61000 | xargs kill
+pnpm ladle
+
+# Or for dev server (port 5173)
+lsof -ti:5173 | xargs kill
+pnpm dev
+```
+
+**Browser Hard Refresh**:
+- Use when CSS/style changes aren't applying: `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows/Linux)
+- Clears browser cache for the current page
+- Usually not needed for component logic changes (HMR handles those)
+
+**Port Conflicts**:
+- If you see "Port already in use" errors, use `lsof -ti:<port>` to find the process
+- Kill the process with the command above
+- Check if you have multiple terminal sessions running the same command
+
+## Design Extraction Workflow
+
+When creating components based on existing designs from live websites (e.g., using `/extract-design` command):
+
+### Step 1: Analyze the Existing Design
+
+**Using Puppeteer** (preferred for live sites):
+```javascript
+// Navigate to the page
+await puppeteer.navigate(url)
+
+// Extract HTML structure and computed styles
+const element = document.querySelector('.target-class')
+const styles = window.getComputedStyle(element)
+```
+
+**When to ask for screenshots instead**:
+- The website requires authentication
+- The design is from a design file (Figma, Sketch)
+- JavaScript-heavy sites where Puppeteer struggles
+- When the user has already provided a screenshot
+
+### Step 2: Translate Design to Tailwind Tokens
+
+**Always use Tailwind's built-in tokens** - never create custom CSS or arbitrary values unless explicitly required:
+
+- **Spacing**: Use `px-4`, `py-8`, `gap-6` (not `px-[17px]` or custom values)
+- **Colors**: Use `text-gray-600`, `bg-teal-500` (not `text-[#7b7b7b]`)
+- **Typography**: Use `text-base`, `font-medium` (not `text-[16px]` or `font-[500]`)
+- **Sizing**: Use `max-w-md`, `w-full` (not `max-w-[400px]`)
+
+**If custom CSS is unavoidable**, consult the user first and explain:
+1. What you need the custom value for
+2. Why existing Tailwind tokens don't work
+3. What the closest Tailwind token would be
+
+### Step 3: Classify the Component
+
+Use the Atomic Design Classification Guide above to determine if the component should be:
+- An **atom** (single indivisible element)
+- A **molecule** (2-3 atoms combined)
+- An **organism** (complex section with multiple molecules)
+- A **template** (page layout structure)
+
+**Ask the user if uncertain** - don't guess at classification.
+
+### Step 4: Extract Requirements Proactively
+
+Before implementing, ask the user about:
+
+**Dimensions**:
+- Exact max-width (or closest Tailwind token)
+- Spacing around and within the component
+- Responsive behavior (mobile, tablet, desktop)
+
+**Colors and Styling**:
+- Which gray shade to use (400, 500, 600?)
+- Opacity values for gradients or overlays
+- Border styles and shadows
+
+**Alignment and Layout**:
+- Text alignment in different states
+- Flex/grid layout behavior
+- How component should float or position itself
+
+**States and Variants**:
+- What states does it need (hover, active, disabled)?
+- What variants exist (sizes, colors, styles)?
+- Edge cases (empty state, long content, loading)?
+
+**Accessibility**:
+- Semantic HTML requirements
+- ARIA labels needed
+- Keyboard navigation behavior
+
+### Step 5: Implementation
+
+1. **Create component file**: `components/{level}/{ComponentName}/{ComponentName}.tsx`
+2. **Write TypeScript interfaces**: Clear prop types with JSDoc comments
+3. **Implement with Tailwind only**: No custom CSS unless approved
+4. **Add accessibility**: ARIA attributes, semantic HTML, keyboard support
+5. **Create stories**: Follow [STORYBOOK.md](STORYBOOK.md) guidelines
+6. **Export from index**: Add to `components/{level}/index.ts`
+
+### Step 6: Verification
+
+After creating the component:
+- Restart Ladle to see new stories
+- Check all variants in the story
+- Test responsive behavior
+- Verify accessibility with semantic HTML
+- Confirm it matches the original design
+
+**Example Workflow**:
+```
+User: Create a Blockquote component based on .cb-text-textbox on https://example.com
+
+1. Navigate to URL with Puppeteer
+2. Extract HTML structure and computed styles
+3. Analyze: This is a molecule (combines text + credit + gradient background)
+4. Ask about: max-width, gradient coverage, alignment behavior, margins
+5. Implement using only Tailwind tokens
+6. Create comprehensive stories with variants and examples
+7. Restart Ladle to verify
+```
+
+## Background Process Management
+
+When working with background processes (especially Ladle), follow these guidelines:
+
+### Starting Background Processes
+
+- **Check before starting**: Use `BashOutput` to check if a process is already running
+- **Use descriptive names**: When calling Bash tool, provide clear description
+- **Avoid duplicates**: Don't start multiple instances of the same dev server
+- **Track process IDs**: Keep note of shell IDs returned by Bash tool
+
+### Managing Ladle Processes
+
+```bash
+# Check existing processes before starting
+# Use: BashOutput tool with existing shell_id
+
+# Start Ladle (only if not already running)
+pnpm ladle
+
+# Monitor output
+# Use: BashOutput tool with shell_id
+
+# Kill when done
+# Use: KillShell tool with shell_id
+```
+
+### Process Cleanup
+
+**When to kill processes**:
+- ✅ Kill Ladle/dev server processes you started when done
+- ✅ Kill processes that are no longer needed
+- ✅ Kill duplicate processes of the same type
+
+**What NOT to kill**:
+- ❌ NEVER kill Chrome debugging processes (port 9222)
+- ❌ NEVER kill processes you didn't start
+- ❌ Chrome debugging may be shared across Claude instances
+
+### Best Practices
+
+1. **One dev server at a time**: Only run one Ladle instance
+2. **Clean up after yourself**: Kill processes before starting new ones
+3. **Monitor output**: Use BashOutput to check status and errors
+4. **Descriptive descriptions**: Always provide context when starting processes
+
+Example:
+```typescript
+// ✅ Good
+Bash({
+  command: "pnpm ladle",
+  description: "Start Ladle component library",
+  run_in_background: true
+})
+
+// ❌ Bad - no description, might be duplicate
+Bash({ command: "pnpm ladle", run_in_background: true })
+```
+
+## Component Development Workflow
+
+Follow this checklist when creating new components from scratch:
+
+### 1. Planning Phase
+
+- [ ] Examine design (URL, images, or description)
+- [ ] Identify atomic level (atom/molecule/organism)
+- [ ] Determine required and optional props
+- [ ] Plan variants and configurations
+- [ ] Identify responsive behavior needs
+
+### 2. Implementation Phase
+
+- [ ] Create component file: `components/[level]/ComponentName/ComponentName.tsx`
+  - Define TypeScript interface with JSDoc
+  - Implement component with mobile-first approach
+  - Add responsive breakpoints (md:, lg:)
+  - Use only Tailwind tokens (no custom CSS)
+
+- [ ] Create barrel export: `components/[level]/ComponentName/index.ts`
+  ```typescript
+  export { ComponentName, type ComponentNameProps } from './ComponentName'
+  ```
+
+- [ ] Update parent index: `components/[level]/index.ts`
+  ```typescript
+  export { ComponentName } from './ComponentName'
+  export type { ComponentNameProps } from './ComponentName'
+  ```
+
+### 3. Stories Phase
+
+- [ ] Create story file: `components/[level]/ComponentName/ComponentName.stories.tsx`
+  - Import from '@ladle/react' and component
+  - Import story utilities from '../../ladle'
+  - Follow STORYBOOK.md section patterns
+  - For **atoms**: Use grids for multi-dimensional variations
+  - For **molecules**: Use sections with Minimal/Maximal subsections
+  - Add Examples section with realistic usage
+  - End with `<div />` to remove trailing divider
+
+### 4. Testing Phase
+
+- [ ] Start/restart Ladle if not running
+  ```bash
+  pnpm ladle  # Opens at http://localhost:61000
+  ```
+
+- [ ] Verify in browser:
+  - All variants render correctly
+  - Responsive behavior at different breakpoints
+  - Interactive states work (hover, focus, active)
+  - Matches original design
+
+- [ ] Check TypeScript:
+  ```bash
+  pnpm exec tsc --noEmit
+  ```
+
+### 5. Completion Checklist
+
+- [ ] Component follows DESIGN_SYSTEM.md guidelines
+- [ ] Story follows STORYBOOK.md patterns
+- [ ] All exports updated (component and parent index)
+- [ ] No TypeScript errors
+- [ ] Tested in Ladle
+- [ ] Responsive behavior verified
+- [ ] Accessibility considered (ARIA, semantic HTML)
+
+### Quick Reference
+
+**File Structure**:
+```
+components/
+└── [atoms|molecules|organisms]/
+    └── ComponentName/
+        ├── ComponentName.tsx       # Component implementation
+        ├── ComponentName.stories.tsx  # Ladle stories
+        └── index.ts                # Barrel export
+```
+
+**Story Pattern for Molecules**:
+```typescript
+<StoryWrapper>
+  <StorySection title="Variant Name">
+    <div className="flex flex-col gap-8">
+      <StorySubsection label="Minimal">
+        {/* Only required props */}
+      </StorySubsection>
+
+      <StorySubsection label="Maximal">
+        {/* All optional props */}
+      </StorySubsection>
+    </div>
+  </StorySection>
+
+  <StoryExampleSection>
+    {/* Realistic usage examples */}
+  </StoryExampleSection>
+
+  <div />
+</StoryWrapper>
+```
