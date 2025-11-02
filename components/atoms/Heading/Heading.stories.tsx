@@ -61,7 +61,6 @@ export const Default: Story = () => (
       </article>
     </StoryExampleSection>
 
-    {/* Remove trailing divider */}
     <div />
   </StoryWrapper>
 );

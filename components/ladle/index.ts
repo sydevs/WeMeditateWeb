@@ -32,3 +32,5 @@ export type {
   StoryGridRowProps,
   StoryGridCellProps
 } from './StoryGrid';
+
+export { MockPageContext } from './MockPageContext';

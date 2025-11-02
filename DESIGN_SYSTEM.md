@@ -698,20 +698,24 @@ export const MobileMenu: Story = () => (/* ... */);
 
 ### Atom Categories
 
-**Atoms / Typography**
+Our atom components are organized into five functional categories in Ladle:
+
+**Atoms / Typography** (3 components)
 - Heading, Text, Label
 
-**Atoms / Form**
-- Button (unified text, icon-only, and icon+text), Input, Textarea, Select, Checkbox, Radio
+**Atoms / Form** (6 components)
+- Button, Checkbox, Radio, Input, Textarea, Select
 
-**Atoms / Media**
-- Image, Icon, Avatar
+**Atoms / Media** (5 components)
+- Avatar, Icon, Image, LanguageFlag, SocialIcon
 
-**Atoms / Layout**
-- Container, Box, Spacer
+**Atoms / Layout** (4 components)
+- Box, Container, LeafDivider, Spacer
 
-**Atoms / Specialty**
-- LanguageFlag, SocialIcon, Spinner, Duration
+**Atoms / Specialty** (2 components)
+- Duration, Spinner
+
+**Total**: 20 atom components across 5 categories
 
 ### Future Hierarchy (Proposed)
 
@@ -749,45 +753,36 @@ Each atom has a single comprehensive `Default` story that includes:
 ```tsx
 import type { Story, StoryDefault } from "@ladle/react";
 import { Button } from "./Button";
+import { StoryWrapper, StorySection, StoryExampleSection } from '../../ladle';
 
 export default {
-  title: "Atoms / Interactive"
+  title: "Atoms / Form"  // Category, not including component name
 } satisfies StoryDefault;
 
 /**
  * Button component showcasing all variants, sizes, and states.
  */
 export const Default: Story = () => (
-  <div className="flex flex-col gap-8">
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Variants</h3>
+  <StoryWrapper>
+    <StorySection title="Variants">
       {/* Show all variant options */}
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Sizes</h3>
+    <StorySection title="Sizes">
       {/* Show all size options */}
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">States</h3>
+    <StorySection title="States">
       {/* Show loading, disabled, etc. */}
-    </div>
+    </StorySection>
 
-    <hr className="border-gray-200" />
-
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">In Context</h3>
+    <StoryExampleSection>
       {/* Show realistic usage examples */}
-    </div>
-  </div>
+    </StoryExampleSection>
+  </StoryWrapper>
 );
 
-Default.storyName = "Button"
+Default.storyName = "Button"  // Component name set here
 ```
 
 ### Molecules & Organisms (Future)
@@ -832,26 +827,39 @@ export const Mobile: Story = () => (/* ... */);
 
 ### Story Content Organization
 
-Use semantic HTML with clear visual sections:
+**Always use story utility components** from `components/ladle/` for consistent structure:
 
 ```tsx
-<div className="flex flex-col gap-8">
-  {/* Major section */}
-  <div>
-    <h3 className="text-lg font-semibold mb-4 text-gray-900">Section Title</h3>
-    {/* Content */}
-  </div>
+import { StoryWrapper, StorySection, StoryExampleSection } from '../../ladle';
 
-  {/* Visual separator */}
-  <hr className="border-gray-200" />
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="Section Title">
+      {/* Content */}
+    </StorySection>
 
-  {/* Next section */}
-  <div>
-    <h3 className="text-lg font-semibold mb-4 text-gray-900">Another Section</h3>
-    {/* Content */}
-  </div>
-</div>
+    <StorySection title="Another Section">
+      {/* Content */}
+    </StorySection>
+
+    <StoryExampleSection>
+      {/* Real-world usage examples */}
+    </StoryExampleSection>
+
+    {/* Remove trailing divider */}
+    <div />
+  </StoryWrapper>
+);
 ```
+
+**Key components:**
+- `StoryWrapper` - Required outermost wrapper for all stories
+- `StorySection` - Standard sections with title and automatic dividers
+- `StoryExampleSection` - Examples sections with teal top border
+- `StorySubsection` - Organize subsections within major sections
+- `StoryGrid` family - Create multi-dimensional component matrices
+
+See [STORYBOOK.md](STORYBOOK.md) for complete utility component documentation.
 
 ### Story Documentation
 
@@ -981,9 +989,11 @@ All components should have accompanying Ladle stories for visual documentation a
 
 **Quick Reference**:
 - Stories are created in `ComponentName.stories.tsx` files alongside components
-- Use story utility components (`StorySection`, `StoryGrid`, `StorySubsection`) for consistency
-- Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Common Use Cases → In Context
+- **Always use** story utility components (`StoryWrapper`, `StorySection`, `StoryExampleSection`, `StoryGrid`, `StorySubsection`)
+- Section order varies by category (see [STORYBOOK.md](STORYBOOK.md) for patterns)
 - Run `pnpm ladle` to view all component stories at [http://localhost:61000/](http://localhost:61000/)
+
+**Current Status**: 20 atom components with comprehensive stories across 5 categories
 
 ### Manual Testing Checklist
 

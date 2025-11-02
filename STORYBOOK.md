@@ -200,7 +200,6 @@ export const Default: Story = () => (
 
     {/* More sections... */}
 
-    {/* Remove trailing divider */}
     <div />
   </StoryWrapper>
 );
@@ -210,38 +209,65 @@ Default.storyName = "Component Name"
 
 ### Standard Section Order
 
-Organize story sections in this order (skip sections that don't apply):
+The section order varies by component category, but generally follows these patterns:
 
-1. **Basic Examples** / **Input Types** - Simple default usage
-2. **Variants** - Visual style variations (primary, secondary, outline, ghost)
+#### General Pattern (Most Components)
+1. **Basic Examples** / **Variants** / **Input Types** - Initial demonstration of core functionality
+2. **Sizes** - Size variations (xs, sm, md, lg, xl, 2xl)
 3. **Colors** - Color variations
 4. **Shapes** - Shape variations (square, rounded, circular)
-5. **Component-Specific Sections** - Sections unique to the component (e.g., "Aspect Ratios" for Image, "Common Durations" and "Format Variants" for Duration)
+5. **Component-Specific Sections** - Unique properties (see examples below)
 6. **States** - Interactive states (default, loading, disabled, success, error)
-7. **Sizes** - Size variations (xs, sm, md, lg, xl, 2xl)
-8. **Widths** - Width options (default, full-width)
-9. **Padding** - Padding variations
-10. **Examples** - Real-world usage scenarios and practical examples
+7. **Widths** - Width options (default, full-width)
+8. **Padding** - Padding variations
+9. **Examples** - Real-world usage scenarios
 
-**Note on Component-Specific Sections**: Some components have unique properties that don't fit into the standard categories. These sections should appear after "Shapes" and before "States". Examples include:
-- **Image component**: "Aspect Ratios" section for different image aspect ratios (square, video, 4:3)
-- **Duration component**: "Common Durations" and "Format Variants" sections for time display options
+#### Category-Specific Patterns
 
-These sections are specific to individual components and should use clear, descriptive titles that reflect what they demonstrate.
+**Form Components** (Button, Checkbox, Radio, Input, Select, Textarea):
+- Variants/Input Types → Sizes → Colors → States → Widths → Examples
+
+**Media Components** (Avatar, Image, Icon, SocialIcon):
+- Sizes → Colors → Shapes → States → Examples
+
+**Typography Components** (Text, Heading, Label):
+- Sizes → Weights → Colors → Examples
+
+**Layout Components** (Box, Container, Spacer):
+- Variants/Sizes → Padding → Shadows → Examples
+
+**Component-Specific Sections**: Some components have unique properties that don't fit standard categories. These typically appear after basic variants/sizes and before States. Examples:
+- **Image**: "Aspect Ratios" for image dimensions (square 1:1, video 16:9, 4:3)
+- **Duration**: "Common Durations" and "Format Variants" for time display
+- **Icon**: "Outline Style" and "Solid Style" for icon collections
+- **LeafDivider**: "With Line" and "Without Line" for decoration options
+
+**Note**: Not all components need all sections. Skip sections that don't apply to your component.
 
 ### Section Naming Conventions
 
 Use these standardized section names:
 
-- ✅ "Variants" (not "All Variants", "Styles", "Types")
-- ✅ "Colors" (not "Color Options", "Palettes")
-- ✅ "Shapes" (not "Border Radius", "Rounded Corners")
-- ✅ "States" (not "Loading States", "Disabled States" - combine them)
-- ✅ "Sizes" (not "Size Options", "Dimensions")
-- ✅ "Widths" (not "Width Options", "Full Width")
-- ✅ "Padding" (not "Padding Options")
-- ✅ "Examples" (not "Common Use Cases", "In Context", "Use Cases", "Usage")
-  - For multiple example sections, use descriptive titles: "Examples - Button with Icons", "Examples - Form Layout", etc.
+- ✅ **"Variants"** - Visual style variations (primary, secondary, outline, etc.)
+- ✅ **"Basic Examples"** - Initial feature demonstrations (use for components with multiple basic features)
+- ✅ **"Input Types"** - HTML input type variations (text, email, password, etc.)
+- ✅ **"Colors"** - Color variations across the palette
+- ✅ **"Shapes"** - Geometric variations (square, rounded, circular)
+- ✅ **"States"** - Interactive states (combine loading, disabled, error, success into one section)
+- ✅ **"Sizes"** - Size scale variations (xs, sm, md, lg, xl, 2xl)
+- ✅ **"Weights"** - Font weight variations (extralight through bold)
+- ✅ **"Widths"** - Width options (default, full-width)
+- ✅ **"Padding"** - Spacing variations
+- ✅ **"Shadows"** - Shadow depth variations
+- ✅ **"Examples"** - Real-world usage scenarios (via StoryExampleSection)
+
+**Don't use these alternatives:**
+- ❌ "All Variants", "Styles", "Types" → Use "Variants"
+- ❌ "Color Options", "Palettes" → Use "Colors"
+- ❌ "Border Radius", "Rounded Corners" → Use "Shapes"
+- ❌ "Loading States", "Disabled States" (separate sections) → Combine into "States"
+- ❌ "Size Options", "Dimensions" → Use "Sizes"
+- ❌ "Common Use Cases", "In Context", "Use Cases" → Use "Examples" with StoryExampleSection
 
 ### Example: Simple Story
 
@@ -265,7 +291,6 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    {/* Remove trailing divider */}
     <div />
   </StoryWrapper>
 );
@@ -301,7 +326,6 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    {/* Remove trailing divider */}
     <div />
   </StoryWrapper>
 );
@@ -332,7 +356,6 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    {/* Remove trailing divider */}
     <div />
   </StoryWrapper>
 );
@@ -395,41 +418,56 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 
 ## Component Story Examples
 
-### Gold Standard: Button Story
+### Gold Standard Examples
 
-The [Button story](components/atoms/Button/Button.stories.tsx) demonstrates all best practices:
+#### Button - Complex Grid Story
+[Button.stories.tsx](components/atoms/Button/Button.stories.tsx) demonstrates advanced grid usage:
+- Multi-dimensional grid with two-level headers (variant × content × shape)
+- Extensive use of subsections to organize content within major sections
+- States section combines loading and disabled states
+- Examples section with 7 practical subsections
 
-- Uses StoryGrid for comprehensive variant × shape × content matrix
-- Groups states (loading + disabled) into single "States" section
-- Uses StorySubsection for subsections within groups
-- Follows standard section order
-- Removes trailing divider
+**Structure**: Variants (grid) → Sizes (subsections) → States (subsections) → Widths → Examples (subsections)
 
-**Section Order**:
-1. Variants (grid)
-2. Sizes (with subsections)
-3. States (loading + disabled)
-4. Widths
-5. Examples (with subsections)
+#### Checkbox & Radio - Simple Grid Stories
+[Checkbox.stories.tsx](components/atoms/Checkbox/Checkbox.stories.tsx) and [Radio.stories.tsx](components/atoms/Radio/Radio.stories.tsx):
+- Clean color × state matrix grids
+- Minimal text, focus on visual comparison
+- Single comprehensive Examples section
 
-### Form Components: Checkbox & Radio
+**Structure**: Variants (grid) → Examples
 
-[Checkbox](components/atoms/Checkbox/Checkbox.stories.tsx) and [Radio](components/atoms/Radio/Radio.stories.tsx) stories show:
+#### Box - Multi-Purpose Grid
+[Box.stories.tsx](components/atoms/Box/Box.stories.tsx):
+- Grid showing color × decoration combinations
+- Separate sections for functional variations (Padding, Shadows)
+- Rich examples with real use cases (cards, tips, feature grids)
 
-- Grid layout combining color × state without text labels
-- Simple "Examples" section with practical usage scenarios
+**Structure**: Variants (grid) → Padding → Shadows → Examples
 
-**Section Order**:
-1. Variants (grid: state × color)
-2. Examples
+#### SocialIcon - Large Matrix Grid
+[SocialIcon.stories.tsx](components/atoms/SocialIcon/SocialIcon.stories.tsx):
+- Programmatically generated 10×4 grid (platform × color)
+- Demonstrates efficient grid generation with map
+- Interactive examples with hover states
 
-### Typography: Text & Heading
+**Structure**: Colors (grid) → Sizes → Examples
 
-[Text](components/atoms/Text/Text.stories.tsx) and [Heading](components/atoms/Heading/Heading.stories.tsx) stories demonstrate:
+#### Text - Simple Vertical Layout
+[Text.stories.tsx](components/atoms/Text/Text.stories.tsx):
+- Straightforward vertical stacking for single-dimension variants
+- Three focused sections without subsections
+- No examples section (feature demonstration is sufficient)
 
-- Simple vertical stacking for single-dimension variations
-- Combining related properties (weights) within "Examples"
-- Semantic usage examples showing components in realistic contexts
+**Structure**: Sizes → Colors → Weights
+
+#### Spacer - Extensive Subsection Usage
+[Spacer.stories.tsx](components/atoms/Spacer/Spacer.stories.tsx):
+- Demonstrates heavy subsection usage (6 total subsections)
+- Sizes section split into 3 subsections (Vertical, Horizontal, All Sizes)
+- Examples section split into 3 subsections (Article, Card, Form layouts)
+
+**Structure**: Sizes (subsections) → Examples (subsections)
 
 ## Best Practices
 

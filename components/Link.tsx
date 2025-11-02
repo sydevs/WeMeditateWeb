@@ -46,12 +46,21 @@ export function Link({
   children,
   ...props
 }: LinkProps) {
-  const pageContext = usePageContext()
-  locale = (locale ?? pageContext.locale) || 'en'
+  // Safely access pageContext - it may not exist in isolated environments like Ladle
+  let pageContext
+  try {
+    pageContext = usePageContext()
+  } catch (e) {
+    // PageContext not available (e.g., in Ladle/Storybook)
+    pageContext = null
+  }
+
+  locale = (locale ?? pageContext?.locale) || 'en'
 
   // Add locale prefix for non-English locales
+  // Skip for external URLs (http/https) and anchor links (#)
   let finalHref = href
-  if (locale !== 'en' && !href.startsWith('http')) {
+  if (locale !== 'en' && !href.startsWith('http') && !href.startsWith('#')) {
     finalHref = '/' + locale + href
   }
 

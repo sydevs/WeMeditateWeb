@@ -23,7 +23,7 @@ export interface TextProps {
    * Text color variant
    * @default 'primary'
    */
-  color?: 'default' | 'primary' | 'secondary' | 'tertiary' | 'inherit'
+  color?: 'default' | 'primary' | 'secondary' | 'faded' | 'inherit'
 
   /**
    * Additional CSS classes
@@ -80,7 +80,7 @@ export function Text({
     default: 'text-gray-900',
     primary: 'text-teal-700',
     secondary: 'text-coral-700',
-    tertiary: 'text-gray-700',
+    faded: 'text-gray-700',
     inherit: '',
   }
 

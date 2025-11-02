@@ -1,8 +1,9 @@
 import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
+import { Link } from '../../Link'
 
-export interface ButtonProps extends ComponentProps<'button'> {
+export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   /**
    * Visual style variant
    * - outline-light: White border/text for dark backgrounds (with animated hover)
@@ -49,6 +50,23 @@ export interface ButtonProps extends ComponentProps<'button'> {
   fullWidth?: boolean
 
   /**
+   * Optional href to render as a link (using Link component)
+   * When provided, button renders as a link instead of a button element
+   */
+  href?: string
+
+  /**
+   * Locale for the link (only used when href is provided)
+   */
+  locale?: string
+
+  /**
+   * Button type (only used when href is not provided)
+   * @default 'button'
+   */
+  type?: 'button' | 'submit' | 'reset'
+
+  /**
    * Accessible label (required for icon-only buttons without text)
    */
   'aria-label'?: string
@@ -89,6 +107,8 @@ export function Button({
   icon,
   isLoading = false,
   fullWidth = false,
+  href,
+  locale,
   className = '',
   children,
   disabled,
@@ -200,23 +220,44 @@ export function Button({
 
   const widthStyles = fullWidth && !isIconOnly ? 'w-full' : ''
 
+  const commonClassNames = `${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
+
+  const content = isLoading ? (
+    <Spinner size={spinnerSizeMap[size]} color={spinnerColorMap[variant]} />
+  ) : (
+    <>
+      {icon && <Icon icon={icon} size={iconSizeMap[size]} />}
+      {children}
+    </>
+  )
+
+  // Render as Link if href is provided
+  if (href) {
+    return (
+      <Link
+        href={href}
+        locale={locale}
+        variant="unstyled"
+        className={commonClassNames}
+        aria-label={isIconOnly ? ariaLabel : undefined}
+        {...(props as any)}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  // Render as button
   return (
     <button
       type={type}
-      className={`${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`}
+      className={commonClassNames}
       disabled={disabled || isLoading}
       aria-busy={isLoading}
       aria-label={isIconOnly ? ariaLabel : undefined}
       {...props}
     >
-      {isLoading ? (
-        <Spinner size={spinnerSizeMap[size]} color={spinnerColorMap[variant]} />
-      ) : (
-        <>
-          {icon && <Icon icon={icon} size={iconSizeMap[size]} />}
-          {children}
-        </>
-      )}
+      {content}
     </button>
   )
 }

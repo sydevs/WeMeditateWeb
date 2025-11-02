@@ -4,7 +4,7 @@ Foundational UI elements that form the basic building blocks of the WeMeditate d
 
 ## Overview
 
-This directory contains 19 atomic components organized into 7 categories:
+This directory contains 20 atomic components organized into 7 categories:
 
 ### Typography (3)
 - **Heading** - Semantic headings (h1-h6) with consistent visual hierarchy
@@ -26,9 +26,10 @@ This directory contains 19 atomic components organized into 7 categories:
 - **Icon** - Icon wrapper for Heroicons SVG icons with size/color variants
 - **Avatar** - Circular/rounded profile images with fallback initials
 
-### Feedback (2)
+### Feedback (3)
 - **Spinner** - Loading indicator
 - **Duration** - Time display (e.g., "10 min")
+- **Badge** - Labels, counts, and status indicators with color and shape variants
 
 ### Layout (3)
 - **Container** - Content width containers with responsive padding

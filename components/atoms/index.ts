@@ -40,16 +40,20 @@ export type { AvatarProps } from './Avatar'
 // Feedback
 export { Spinner } from './Spinner'
 export { Duration } from './Duration'
+export { Badge } from './Badge'
 export type { SpinnerProps } from './Spinner'
 export type { DurationProps } from './Duration'
+export type { BadgeProps } from './Badge'
 
 // Layout
 export { Container } from './Container'
 export { Spacer } from './Spacer'
 export { Box } from './Box'
+export { LeafDivider } from './LeafDivider/LeafDivider'
 export type { ContainerProps } from './Container'
 export type { SpacerProps } from './Spacer'
 export type { BoxProps } from './Box'
+export type { LeafDividerProps } from './LeafDivider/LeafDivider'
 
 // Specialty
 export { LanguageFlag } from './LanguageFlag'
