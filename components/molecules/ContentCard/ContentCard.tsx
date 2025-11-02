@@ -3,6 +3,7 @@ import { PlayIcon } from '@heroicons/react/24/solid'
 import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../Link'
 import { Button } from '../../atoms/Button/Button'
+import { Duration } from '../../atoms/Duration/Duration'
 import { Badge } from '../../atoms/Badge/Badge'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
@@ -55,6 +56,16 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
    * Optional duration in minutes (displays in bottom left corner of thumbnail)
    */
   durationMinutes?: number
+
+  /**
+   * Optional badge text (e.g., category name, displayed next to duration badge)
+   */
+  badge?: string
+
+  /**
+   * Optional URL for the badge link
+   */
+  badgeUrl?: string
 
   /**
    * Locale for the link (defaults to current page locale from context)
@@ -120,6 +131,8 @@ export function ContentCard({
   variant = 'default',
   playButton = false,
   durationMinutes,
+  badge,
+  badgeUrl,
   locale,
   className = '',
   ...props
@@ -192,15 +205,26 @@ export function ContentCard({
           </div>
         )}
 
-        {/* Duration badge (bottom left corner) */}
-        {durationMinutes !== undefined && (
-          <div className="absolute bottom-2 left-2">
-            <Badge
-              color="primary"
-              shape="circular"
-            >
-              {durationMinutes} min
-            </Badge>
+        {/* Badges (bottom left corner) */}
+        {(durationMinutes !== undefined || badge) && (
+          <div className="absolute bottom-2 left-2 flex gap-2">
+            {durationMinutes !== undefined && (
+              <Badge
+                color="primary"
+                shape="circular"
+              >
+                {durationMinutes} min
+              </Badge>
+            )}
+            {badge && (
+              <Badge
+                color="secondary"
+                shape="circular"
+                href={badgeUrl}
+              >
+                {badge}
+              </Badge>
+            )}
           </div>
         )}
       </div>

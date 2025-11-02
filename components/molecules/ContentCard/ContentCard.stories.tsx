@@ -79,6 +79,22 @@ export const Default: Story = () => (
               variant="hero"
               playButton={true}
               durationMinutes={15}
+              badge="Mindfulness"
+              badgeUrl="#"
+            />
+          </StorySubsection>
+        </div>
+
+        <div>
+          <StorySubsection label="With Category Badge Only">
+            <ContentCard
+              title="What is Meditation?"
+              href="#"
+              thumbnailSrc="https://picsum.photos/seed/article/800/800"
+              description="Learn about the ancient practice of meditation."
+              variant="default"
+              badge="Philosophy"
+              badgeUrl="#"
             />
           </StorySubsection>
         </div>

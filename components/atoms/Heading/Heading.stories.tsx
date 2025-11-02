@@ -60,8 +60,6 @@ export const Default: Story = () => (
         </p>
       </article>
     </StoryExampleSection>
-
-    <div />
   </StoryWrapper>
 );
 

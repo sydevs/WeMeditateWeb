@@ -1,7 +1,18 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Select } from "./Select";
-import { StorySection,
-  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
+import {
+  StorySection,
+  StoryExampleSection,
+  StorySubsection,
+  StoryWrapper,
+  StoryGrid,
+  StoryGridHeader,
+  StoryGridHeaderRow,
+  StoryGridHeaderCell,
+  StoryGridBody,
+  StoryGridRow,
+  StoryGridCell
+} from '../../ladle';
 
 export default {
   title: "Atoms / Form"
@@ -48,38 +59,83 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="States">
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Default</p>
-          <Select>
-            <option value="">Choose...</option>
-            <option value="1">Option 1</option>
-            <option value="2">Option 2</option>
-          </Select>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Success</p>
-          <Select state="success" defaultValue="1">
-            <option value="1">Valid Selection</option>
-            <option value="2">Option 2</option>
-          </Select>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Error</p>
-          <Select state="error">
-            <option value="">Please select an option</option>
-            <option value="1">Option 1</option>
-          </Select>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Disabled</p>
-          <Select disabled>
-            <option value="">Disabled select</option>
-            <option value="1">Option 1</option>
-          </Select>
-        </div>
-      </div>
+    <StorySection title="States × Variants">
+      <StoryGrid>
+        <StoryGridHeader>
+          <StoryGridHeaderRow>
+            <StoryGridHeaderCell />
+            <StoryGridHeaderCell>Default</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Minimal</StoryGridHeaderCell>
+          </StoryGridHeaderRow>
+        </StoryGridHeader>
+        <StoryGridBody>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Default</StoryGridCell>
+            <StoryGridCell>
+              <Select>
+                <option value="">Choose...</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+              </Select>
+            </StoryGridCell>
+            <StoryGridCell>
+              <Select variant="minimal">
+                <option value="">Choose...</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+              </Select>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
+            <StoryGridCell isLabel>Success</StoryGridCell>
+            <StoryGridCell>
+              <Select state="success" defaultValue="1">
+                <option value="1">Valid Selection</option>
+                <option value="2">Option 2</option>
+              </Select>
+            </StoryGridCell>
+            <StoryGridCell>
+              <Select state="success" defaultValue="1" variant="minimal">
+                <option value="1">Valid Selection</option>
+                <option value="2">Option 2</option>
+              </Select>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
+            <StoryGridCell isLabel>Error</StoryGridCell>
+            <StoryGridCell>
+              <Select state="error">
+                <option value="">Please select an option</option>
+                <option value="1">Option 1</option>
+              </Select>
+            </StoryGridCell>
+            <StoryGridCell>
+              <Select state="error" variant="minimal">
+                <option value="">Please select an option</option>
+                <option value="1">Option 1</option>
+              </Select>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
+            <StoryGridCell isLabel>Disabled</StoryGridCell>
+            <StoryGridCell>
+              <Select disabled>
+                <option value="">Disabled select</option>
+                <option value="1">Option 1</option>
+              </Select>
+            </StoryGridCell>
+            <StoryGridCell>
+              <Select disabled variant="minimal">
+                <option value="">Disabled select</option>
+                <option value="1">Option 1</option>
+              </Select>
+            </StoryGridCell>
+          </StoryGridRow>
+        </StoryGridBody>
+      </StoryGrid>
     </StorySection>
 
     <StorySection title="Widths">
@@ -132,8 +188,6 @@ export const Default: Story = () => (
         </div>
       </div>
     </StoryExampleSection>
-
-    <div />
   </StoryWrapper>
 );
 Default.storyName = "Select"

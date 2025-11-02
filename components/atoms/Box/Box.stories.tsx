@@ -226,8 +226,6 @@ export const Default: Story = () => (
         </div>
       </div>
     </StoryExampleSection>
-
-    <div />
   </StoryWrapper>
 );
 Default.storyName = "Box"

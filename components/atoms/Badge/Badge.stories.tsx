@@ -135,8 +135,6 @@ export const Default: Story = () => (
         </StorySubsection>
       </div>
     </StoryExampleSection>
-
-    <div />
   </StoryWrapper>
 );
 

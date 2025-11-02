@@ -17,6 +17,7 @@
     "@sentry/react": "^10.22.0",
     "@universal-middleware/core": "^0.4.12",
     "@vitejs/plugin-react": "^5.1.0",
+    "embla-carousel-react": "^8.6.0",
     "graphql": "^16.11.0",
     "graphql-request": "^7.3.1",
     "hono": "^4.10.3",

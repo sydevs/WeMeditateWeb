@@ -13,3 +13,11 @@ export type { ContentCardProps } from './ContentCard/ContentCard'
 // Blocks
 export { HeroQuote } from './blocks/HeroQuote/HeroQuote'
 export type { HeroQuoteProps } from './blocks/HeroQuote/HeroQuote'
+
+// Forms
+export { FormField } from './FormField'
+export type { FormFieldProps } from './FormField'
+
+// Social
+export { SocialShare } from './SocialShare'
+export type { SocialShareProps } from './SocialShare'

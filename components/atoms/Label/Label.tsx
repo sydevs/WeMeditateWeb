@@ -20,10 +20,15 @@ export interface LabelProps extends ComponentProps<'label'> {
  * Provides consistent styling for form labels with required indicator.
  * Should be associated with form inputs via htmlFor prop.
  *
+ * For complete form field layouts with label, error messages, and descriptions,
+ * use the FormField organism component instead.
+ *
  * @example
  * <Label htmlFor="email">Email address</Label>
  * <Label htmlFor="name" required>Full name</Label>
  * <Label htmlFor="comment" disabled>Comment (unavailable)</Label>
+ *
+ * @see FormField - For complete form field layouts
  */
 export function Label({
   required = false,

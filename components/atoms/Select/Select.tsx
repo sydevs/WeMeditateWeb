@@ -8,6 +8,12 @@ export interface SelectProps extends ComponentProps<'select'> {
   state?: 'default' | 'error' | 'success'
 
   /**
+   * Visual variant
+   * @default 'default'
+   */
+  variant?: 'default' | 'minimal'
+
+  /**
    * Full width select
    * @default false
    */
@@ -41,6 +47,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
       state = 'default',
+      variant = 'default',
       fullWidth = false,
       placeholder,
       className = '',
@@ -50,7 +57,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     const baseStyles =
-      'px-0 py-3 pr-8 bg-transparent border-0 border-b-2 font-sans text-base transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed appearance-none cursor-pointer'
+      'py-3 bg-transparent font-sans text-base transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed appearance-none cursor-pointer'
+
+    const variantStyles = {
+      default: 'px-3 pr-10 border',
+      minimal: 'px-0 pr-8 border-0 border-b-2',
+    }
 
     const stateStyles = {
       default:
@@ -64,11 +76,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const wrapperWidthStyles = fullWidth ? 'w-full' : 'inline-block'
     const selectWidthStyles = fullWidth ? 'w-full' : 'w-64'
 
+    // Adjust chevron position based on variant
+    const chevronRightPosition = variant === 'default' ? 'right-3' : 'right-0'
+
     return (
       <div className={`relative ${wrapperWidthStyles}`}>
         <select
           ref={ref}
-          className={`${baseStyles} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
+          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
           aria-invalid={state === 'error'}
           {...props}
         >
@@ -80,7 +95,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {/* Dropdown arrow icon */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-700">
+        <div className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-700`}>
           <svg
             className="h-4 w-4"
             fill="none"

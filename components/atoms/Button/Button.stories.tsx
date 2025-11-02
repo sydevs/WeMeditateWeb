@@ -314,9 +314,6 @@ export const Default: Story = () => (
         </StorySubsection>
       </div>
     </StoryExampleSection>
-
-    {/* Remove the trailing divider from the last section */}
-    <div />
   </StoryWrapper>
 );
 

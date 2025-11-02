@@ -12,6 +12,8 @@ export interface HeroQuoteProps {
   caption?: string
   /** Text alignment - left or center */
   align?: 'left' | 'center'
+  /** Size variant - md or lg */
+  size?: 'md' | 'lg'
   /** Additional CSS classes */
   className?: string
 }
@@ -49,54 +51,64 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
   credit,
   caption,
   align = 'center',
+  size = 'lg',
   className = '',
 }) => {
   const alignmentClass = align === 'center' ? 'text-center' : 'text-left'
 
+  // Size-specific styling
+  const isMd = size === 'md'
+  const dividerMaxWidth = isMd ? '' : 'max-w-sm' // lg: ~400px = max-w-sm (384px)
+  const blockquoteMaxWidth = isMd ? 'max-w-sm' : 'max-w-2xl' // md: 384px, lg: 672px
+  const textSize = isMd ? 'text-lg' : 'text-2xl' // md: 18px, lg: 24px (closest to 23px)
+  const lineHeight = isMd ? 'leading-relaxed' : 'leading-relaxed' // both 1.625
+  const verticalSpacing = isMd ? 'my-12' : 'my-18 md:my-20'
+  const horizontalMargin = isMd ? 'mx-0' : 'mx-16'
+  const dividerSpacing = isMd ? 'mb-8' : 'mb-10.5'
+  const dividerSpacingBottom = isMd ? 'mt-8' : 'mt-10.5'
+
   return (
-    <div
-      className={`px-6 md:px-24 lg:px-[313px] ${className}`}
+    <blockquote
+      className={`${blockquoteMaxWidth} ${verticalSpacing} ${horizontalMargin} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
       role="region"
       aria-label={title || 'Quote'}
     >
-      <blockquote className={`my-18 md:my-20 mx-16 ${alignmentClass} font-raleway text-gray-dark`}>
-        {/* Top leaf divider */}
-        <div className="relative mb-10.5">
-          <LeafDivider showLine direction="up" />
-        </div>
+      {/* Top leaf divider */}
+      <div className={`relative ${dividerSpacing} ${dividerMaxWidth} mx-auto`}>
+        <LeafDivider showLine direction="up" />
+      </div>
 
-        {/* Optional title */}
-        {title && (
-          <h5 className="text-lg font-semibold leading-relaxed mb-4">
-            {title}
-          </h5>
-        )}
+      {/* Optional title */}
+      {title && (
+        <h5 className="text-lg font-semibold leading-relaxed mb-4">
+          {title}
+        </h5>
+      )}
 
-        {/* Main quote text */}
-        <div className="text-[23px] leading-[36.8px] mb-4">
-          <p>{text}</p>
-        </div>
+      {/* Main quote text */}
+      <div className={`${textSize} ${lineHeight} mb-4`}>
+        <p>{text}</p>
+      </div>
 
-        {/* Optional credit */}
-        {credit && (
-          <cite className="text-lg leading-relaxed not-italic block">
-            {credit}
-          </cite>
-        )}
+      {/* Optional credit */}
+      {credit && (
+        <cite className="text-lg leading-relaxed not-italic block">
+          {credit}
+        </cite>
+      )}
 
-        {/* Optional caption */}
-        {caption && (
-          <p className="text-base leading-normal mt-2">
-            {caption}
-          </p>
-        )}
+      {/* Optional caption */}
+      {caption && (
+        <p className="text-sm leading-normal mt-2 italic text-gray-500">
+          {caption}
+        </p>
+      )}
 
-        {/* Bottom leaf divider */}
-        <div className="relative mt-10.5">
-          <LeafDivider showLine direction="down" />
-        </div>
-      </blockquote>
-    </div>
+      {/* Bottom leaf divider */}
+      <div className={`relative ${dividerSpacingBottom} ${dividerMaxWidth} mx-auto`}>
+        <LeafDivider showLine direction="down" />
+      </div>
+    </blockquote>
   )
 }
 

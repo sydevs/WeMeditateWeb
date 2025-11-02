@@ -170,8 +170,6 @@ export const Default: Story = () => (
         </StorySubsection>
       </div>
     </StoryExampleSection>
-
-    <div />
   </StoryWrapper>
 );
 Default.storyName = "Spacer"

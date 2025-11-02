@@ -20,6 +20,11 @@ export interface BadgeProps extends ComponentProps<'span'> {
   size?: 'sm' | 'md' | 'lg'
 
   /**
+   * Optional href to render badge as a link
+   */
+  href?: string
+
+  /**
    * Badge content (text or number)
    */
   children: React.ReactNode
@@ -53,6 +58,7 @@ export function Badge({
   color = 'neutral',
   shape = 'square',
   size = 'md',
+  href,
   className = '',
   children,
   ...props
@@ -63,6 +69,16 @@ export function Badge({
     primary: 'bg-teal-100 text-teal-800',
     secondary: 'bg-coral-100 text-coral-800',
     neutral: 'bg-gray-100 text-gray-800',
+  }
+
+  const hoverStyles = href ? {
+    primary: 'hover:bg-teal-200 transition-colors',
+    secondary: 'hover:bg-coral-200 transition-colors',
+    neutral: 'hover:bg-gray-200 transition-colors',
+  } : {
+    primary: '',
+    secondary: '',
+    neutral: '',
   }
 
   const shapeStyles = {
@@ -76,9 +92,23 @@ export function Badge({
     lg: 'px-2.5 py-1 text-sm',
   }
 
+  const classNames = `${baseStyles} ${colorStyles[color]} ${hoverStyles[color]} ${shapeStyles[shape]} ${sizeStyles[size]} ${className}`
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={classNames}
+        {...(props as ComponentProps<'a'>)}
+      >
+        {children}
+      </a>
+    )
+  }
+
   return (
     <span
-      className={`${baseStyles} ${colorStyles[color]} ${shapeStyles[shape]} ${sizeStyles[size]} ${className}`}
+      className={classNames}
       {...props}
     >
       {children}

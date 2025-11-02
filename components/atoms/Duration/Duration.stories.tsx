@@ -82,8 +82,6 @@ export const Default: Story = () => (
         </div>
       </StorySubsection>
     </StoryExampleSection>
-
-    <div />
   </StoryWrapper>
 );
 Default.storyName = "Duration"

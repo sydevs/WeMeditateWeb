@@ -8,6 +8,12 @@ export interface TextareaProps extends ComponentProps<'textarea'> {
   state?: 'default' | 'error' | 'success'
 
   /**
+   * Visual variant
+   * @default 'default'
+   */
+  variant?: 'default' | 'minimal'
+
+  /**
    * Full width textarea
    * @default true
    */
@@ -35,6 +41,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
     {
       state = 'default',
+      variant = 'default',
       fullWidth = true,
       autoResize = false,
       className = '',
@@ -44,7 +51,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     ref
   ) => {
     const baseStyles =
-      'px-0 py-3 bg-transparent border-0 border-b-2 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+      'py-3 bg-transparent font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+
+    const variantStyles = {
+      default: 'px-3 border',
+      minimal: 'px-0 border-0 border-b-2',
+    }
 
     const stateStyles = {
       default:
@@ -69,7 +81,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <textarea
         ref={ref}
-        className={`${baseStyles} ${stateStyles[state]} ${widthStyles} ${resizeStyles} ${className}`}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${widthStyles} ${resizeStyles} ${className}`}
         aria-invalid={state === 'error'}
         onChange={handleChange}
         {...props}

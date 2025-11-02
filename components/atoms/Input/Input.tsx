@@ -8,6 +8,12 @@ export interface InputProps extends ComponentProps<'input'> {
   state?: 'default' | 'error' | 'success'
 
   /**
+   * Visual variant
+   * @default 'default'
+   */
+  variant?: 'default' | 'minimal'
+
+  /**
    * Full width input
    * @default false
    */
@@ -26,9 +32,14 @@ export interface InputProps extends ComponentProps<'input'> {
  * <Input type="password" state="success" fullWidth />
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ state = 'default', fullWidth = false, className = '', ...props }, ref) => {
+  ({ state = 'default', variant = 'default', fullWidth = false, className = '', ...props }, ref) => {
     const baseStyles =
-      'px-0 py-3 bg-transparent border-0 border-b-2 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+      'px-3 py-3 bg-transparent font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+
+    const variantStyles = {
+      default: 'border',
+      minimal: 'border-0 border-b-2',
+    }
 
     const stateStyles = {
       default:
@@ -44,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         ref={ref}
-        className={`${baseStyles} ${stateStyles[state]} ${widthStyles} ${className}`}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${widthStyles} ${className}`}
         aria-invalid={state === 'error'}
         {...props}
       />
