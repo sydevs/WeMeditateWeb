@@ -7,9 +7,10 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   /**
    * Visual style variant
    * - outline-light: White border/text for dark backgrounds (with animated hover)
+   * - ghost-light: White text for dark backgrounds without border
    * @default 'primary'
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'outline-light' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'outline' | 'outline-light' | 'ghost' | 'ghost-light'
 
   /**
    * Button size
@@ -144,6 +145,8 @@ export function Button({
       'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
     ghost:
       'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
+    'ghost-light':
+      'bg-transparent text-white focus:ring-white hover:bg-white/20 hover:text-white',
   } : {
     primary:
       'bg-teal-500 after:bg-teal-600 text-white focus:ring-teal-500 active:after:bg-teal-700',
@@ -155,6 +158,8 @@ export function Button({
       'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
     ghost:
       'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
+    'ghost-light':
+      'bg-transparent text-white focus:ring-white after:bg-white/20 hover:text-white',
   }
 
   // Size styles for icon-only buttons
@@ -204,6 +209,7 @@ export function Button({
     outline: 'primary' as const,
     'outline-light': 'white' as const,
     ghost: 'currentColor' as const,
+    'ghost-light': 'white' as const,
   }
 
   const sizeClass = isIconOnly

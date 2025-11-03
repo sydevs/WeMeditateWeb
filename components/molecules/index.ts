@@ -35,3 +35,7 @@ export { FooterLinkList } from './FooterLinkList'
 export { LanguageDropdown } from './LanguageDropdown'
 export type { FooterLinkListProps, FooterLink } from './FooterLinkList'
 export type { LanguageDropdownProps, LanguageOption } from './LanguageDropdown'
+
+// Sections
+export { MasonryGrid } from './MasonryGrid'
+export type { MasonryGridProps, MasonryGridItem } from './MasonryGrid'

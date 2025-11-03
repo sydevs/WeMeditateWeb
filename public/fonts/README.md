@@ -72,7 +72,7 @@ Use Tailwind utility classes:
 <h1 class="text-4xl font-semibold">Main Heading</h1>
 
 <!-- Secondary font -->
-<p class="font-secondary">Special text in Futura Book</p>
+<p class="font-number">Special text in Futura Book</p>
 ```
 
 ## Icons

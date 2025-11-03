@@ -121,7 +121,7 @@ Based on wemeditate.com brand analysis:
 #### Font Families
 ```css
 --font-primary: 'Raleway', sans-serif    /* Main text, UI elements */
---font-secondary: 'Futura Book', sans-serif /* Headings, special text */
+--font-number: 'Futura Book', sans-serif /* Headings, special text */
 ```
 
 #### Font Weights
@@ -1310,7 +1310,7 @@ This approach minimizes custom configuration while ensuring brand consistency. F
 
 // Typography - Font Families
 <h1 className="font-sans">              // Raleway (default)
-<span className="font-secondary">       // Futura Book
+<span className="font-number">       // Futura Book
 
 // Typography - Font Weights
 <p className="font-light">               // Raleway Light 300 (default body)

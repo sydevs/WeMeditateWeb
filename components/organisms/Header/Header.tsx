@@ -14,6 +14,8 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   navItems?: Array<{ label: string; href: string }>
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
+  /** Color variant - light for dark backgrounds, dark for light backgrounds */
+  variant?: 'light' | 'dark'
 }
 
 /**
@@ -29,6 +31,7 @@ export function Header({
   actionLinkHref,
   navItems = [],
   breadcrumbs,
+  variant = 'dark',
   className = '',
   ...props
 }: HeaderProps) {
@@ -52,14 +55,20 @@ export function Header({
     return () => observer.disconnect()
   }, [])
 
+  // Text color based on variant and sticky state
+  const textColorClass = variant === 'light' ? 'text-white' : 'text-gray-700'
+
+  // Border color should match text color (except when sticky)
+  const borderColorClass = variant === 'light' ? 'border-white' : 'border-gray-200'
+
   return (
     <>
       <header
-        className={`bg-white ${className}`}
+        className={className}
         {...props}
       >
         {/* Top banner with logo, illustration, and action link */}
-        <div className="flex items-center justify-between gap-8 py-4">
+        <div className={`flex items-center justify-between gap-8 py-4 ${textColorClass}`}>
         {/* Logo - responsive: lg inline-text on mobile, sm inline-text on desktop */}
         <div className="shrink-0">
           <Logo
@@ -81,9 +90,9 @@ export function Header({
           <div className="shrink-0 max-w-20 text-right">
             <Link
               href={actionLinkHref}
-              variant="neutral"
+              variant="unstyled"
               size="sm"
-              className="no-underline leading-none"
+              className="no-underline leading-none hover:opacity-75 transition-opacity"
             >
               {actionLinkText}
             </Link>
@@ -98,9 +107,19 @@ export function Header({
       {/* Main navigation menu - sticky on scroll (outside header so it can stick globally) */}
       {navItems.length > 0 && (
         <nav
-          className="sticky top-0 z-50 bg-white border-t border-b border-gray-200 transition-shadow duration-200"
+          className={`sticky top-0 z-50 border-t border-b transition-colors duration-200 ${
+            isSticky
+              ? 'bg-white border-gray-200 text-gray-700'
+              : `${textColorClass} ${borderColorClass}`
+          }`}
+          style={{
+            width: isSticky ? '100vw' : 'auto',
+            marginLeft: isSticky ? 'calc(-50vw + 50%)' : '0',
+            marginRight: isSticky ? 'calc(-50vw + 50%)' : '0',
+          }}
         >
-          <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto">
+          {/* Centered content container */}
+          <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">
             {/* Logo - only visible when sticky */}
             <Logo
               variant="icon"
@@ -116,7 +135,7 @@ export function Header({
               {navItems.map((item, index) => (
                 <Button
                   key={index}
-                  variant="ghost"
+                  variant={isSticky ? 'ghost' : variant === 'light' ? 'ghost-light' : 'ghost'}
                   size="sm"
                   href={item.href}
                   className="px-0 basis-1/4"
@@ -133,7 +152,7 @@ export function Header({
                   isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
-                <Link href={actionLinkHref} variant="neutral" className="flex items-center gap-1 no-underline">
+                <Link href={actionLinkHref} variant="unstyled" className="flex items-center gap-1 no-underline hover:opacity-75 transition-opacity">
                   <Icon icon={MapPinIcon} size="sm" />
                 </Link>
               </div>
@@ -144,8 +163,8 @@ export function Header({
 
       {/* Breadcrumbs - below nav to preserve correct ordering */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <div className="bg-white py-3">
-          <Breadcrumbs items={breadcrumbs} />
+        <div className={`py-3 ${textColorClass}`}>
+          <Breadcrumbs items={breadcrumbs} variant={variant} />
         </div>
       )}
     </>

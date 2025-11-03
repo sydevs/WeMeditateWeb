@@ -88,5 +88,7 @@ export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 // Specialty
 export { LanguageFlag } from './LanguageFlag'
 export { SocialIcon } from './SocialIcon'
+export { Countdown } from './Countdown'
 export type { LanguageFlagProps } from './LanguageFlag'
 export type { SocialIconProps } from './SocialIcon'
+export type { CountdownProps } from './Countdown'

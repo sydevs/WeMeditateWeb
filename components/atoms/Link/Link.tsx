@@ -18,10 +18,11 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
    * - primary: Teal, medium weight, no underline
    * - secondary: Coral, medium weight
    * - neutral: Gray tones
+   * - light: White text for dark backgrounds
    * - unstyled: No styling (useful for custom styling)
    * @default 'default'
    */
-  variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'unstyled'
+  variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'light' | 'unstyled'
 
   /**
    * Size variant (affects font size)
@@ -87,6 +88,7 @@ export function Link({
     primary: 'text-teal-600 font-medium hover:text-teal-700 focus:ring-teal-500',
     secondary: 'text-coral-600 font-medium hover:text-coral-700 focus:ring-coral-500',
     neutral: 'text-gray-700 hover:text-gray-900 focus:ring-gray-400',
+    light: 'text-white hover:text-white focus:ring-white',
     unstyled: '',
   }
 
@@ -109,9 +111,6 @@ export function Link({
       {...props}
     >
       {children}
-      {external && (
-        <span className="sr-only"> (opens in new tab)</span>
-      )}
     </a>
   )
 }

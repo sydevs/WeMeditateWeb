@@ -141,6 +141,30 @@ export const Default: Story = () => (
               <Button icon={XMarkIcon} variant="ghost" shape="circular">Button</Button>
             </StoryGridCell>
           </StoryGridRow>
+
+          <StoryGridRow>
+            <StoryGridCell isLabel>Ghost Light</StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={XMarkIcon} variant="ghost-light" shape="square" aria-label="Close" />
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={XMarkIcon} variant="ghost-light" shape="circular" aria-label="Close" />
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={XMarkIcon} variant="ghost-light" shape="square">Button</Button>
+              </div>
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="bg-gray-800 p-2 inline-block">
+                <Button icon={XMarkIcon} variant="ghost-light" shape="circular">Button</Button>
+              </div>
+            </StoryGridCell>
+          </StoryGridRow>
         </StoryGridBody>
       </StoryGrid>
     </StorySection>

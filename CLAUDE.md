@@ -721,17 +721,23 @@ Key requirements:
 ### Development Server Troubleshooting
 
 **Hot Module Replacement (HMR) Behavior**:
-- HMR typically works well for **file updates** (editing existing components)
-- HMR often **fails for new files** (newly created components, stories, or routes)
-- When creating new components/stories, expect to restart Ladle to see them appear
+- HMR works reliably for **file updates** (editing existing components)
+- HMR **DOES NOT detect new files** (newly created components, stories, or routes)
+- **ALWAYS restart Ladle** after creating new files - this is expected behavior, not a bug
 
 **When to Restart Servers**:
 
-Restart Ladle (`pnpm ladle`) when:
-- Creating new `.stories.tsx` files (HMR won't detect them)
-- Adding new components to the component library
+**ALWAYS restart Ladle** (`pnpm ladle`) when:
+- Creating new `.stories.tsx` files (HMR cannot detect new files)
+- Creating new component directories
+- Changing story title metadata (e.g., "Atoms / Form" → "Molecules / Sections")
 - Stories appear as "Story not found" after creation
-- Component changes aren't reflecting in Ladle
+- New components don't appear in Ladle navigation
+
+**Usually works without restart** (HMR handles these):
+- Editing existing component code
+- Editing existing story content
+- CSS/styling changes in existing files
 
 Restart Dev Server (`pnpm dev`) when:
 - Adding new pages or routes
@@ -739,15 +745,16 @@ Restart Dev Server (`pnpm dev`) when:
 - Changes to environment variables in `.env`
 - Cloudflare Workers bindings aren't working
 
-**How to Restart Gracefully**:
+**Fast Restart Pattern**:
 ```bash
-# Find and kill the process on Ladle port
-lsof -ti:61000 | xargs kill
-pnpm ladle
+# Stop existing process and restart in one command (Ladle)
+lsof -ti:61000 | xargs kill && pnpm ladle
 
-# Or for dev server (port 5173)
-lsof -ti:5173 | xargs kill
-pnpm dev
+# Or use force kill if standard kill fails
+lsof -ti:61000 | xargs kill -9 && pnpm ladle
+
+# For dev server (port 5173)
+lsof -ti:5173 | xargs kill && pnpm dev
 ```
 
 **Browser Hard Refresh**:

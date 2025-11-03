@@ -66,7 +66,7 @@
 
   /* Font families */
   --font-sans: 'Raleway', sans-serif;
-  --font-secondary: 'Futura Book', sans-serif;
+  --font-number: 'Futura Book', sans-serif;
 
   /* Font weights */
   --font-weight-extralight: 200;
@@ -75,4 +75,16 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+
+  /* Custom animations */
+  @keyframes pulse-scale {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
 }

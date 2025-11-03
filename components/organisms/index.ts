@@ -21,3 +21,7 @@ export type { TechniqueCardProps } from './TechniqueCard'
 // DiscoverMeditation
 export { DiscoverMeditation } from './DiscoverMeditation'
 export type { DiscoverMeditationProps } from './DiscoverMeditation'
+
+// Splash
+export { Splash } from './Splash'
+export type { SplashProps } from './Splash'
