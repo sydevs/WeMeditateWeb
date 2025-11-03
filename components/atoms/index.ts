@@ -12,11 +12,13 @@ export { Text } from './Text'
 export { Label } from './Label'
 export { PageTitle } from './PageTitle/PageTitle'
 export { Blockquote } from './Blockquote'
+export { Link } from './Link'
 export type { HeadingProps } from './Heading'
 export type { TextProps } from './Text'
 export type { LabelProps } from './Label'
 export type { PageTitleProps } from './PageTitle/PageTitle'
 export type { BlockquoteProps } from './Blockquote'
+export type { LinkProps } from './Link'
 
 // Interactive
 export { Button } from './Button'
@@ -40,8 +42,28 @@ export type { SelectProps } from './Select'
 export { Image } from './Image'
 export { Icon } from './Icon'
 export { Avatar } from './Avatar'
+export { Logo } from './Logo'
 export type { ImageProps, IconProps, HeroIcon } from './Icon'
 export type { AvatarProps } from './Avatar'
+export type { LogoProps } from './Logo'
+
+// SVG Components
+export {
+  LogoSvg,
+  LeafSvg,
+  MeditationSvg,
+  LocationSvg,
+  FloralDividerSvg,
+  HeaderIllustrationSvg
+} from './svgs'
+export type {
+  LogoSvgProps,
+  LeafSvgProps,
+  MeditationSvgProps,
+  LocationSvgProps,
+  FloralDividerSvgProps,
+  HeaderIllustrationSvgProps
+} from './svgs'
 
 // Feedback
 export { Spinner } from './Spinner'
@@ -56,10 +78,12 @@ export { Container } from './Container'
 export { Spacer } from './Spacer'
 export { Box } from './Box'
 export { LeafDivider } from './LeafDivider/LeafDivider'
+export { Breadcrumbs } from './Breadcrumbs'
 export type { ContainerProps } from './Container'
 export type { SpacerProps } from './Spacer'
 export type { BoxProps } from './Box'
 export type { LeafDividerProps } from './LeafDivider/LeafDivider'
+export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 
 // Specialty
 export { LanguageFlag } from './LanguageFlag'

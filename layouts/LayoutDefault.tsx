@@ -2,10 +2,9 @@ import "./fonts.css";
 import "./style.css";
 import "./tailwind.css";
 import logoUrl from "../assets/logo.svg";
-import { Link } from "../components/Link.js";
+import { Link, Button } from "../components/atoms";
 import { useData } from "vike-react/useData";
 import { WeMeditateWebSettings } from "../server/graphql-types";
-import { Button } from "../components/atoms";
 
 export default function LayoutDefault({ children }: { children: React.ReactNode }) {
   const data = useData<{ settings?: WeMeditateWebSettings }>()

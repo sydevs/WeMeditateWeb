@@ -14,12 +14,27 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
 
   /**
    * Visual style variant
+   * - default: Teal with underline on hover (standard link)
+   * - primary: Teal, medium weight, no underline
+   * - secondary: Coral, medium weight
+   * - neutral: Gray tones
+   * - unstyled: No styling (useful for custom styling)
    * @default 'default'
    */
-  variant?: 'default' | 'primary' | 'secondary' | 'unstyled'
+  variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'unstyled'
 
   /**
-   * Whether the link is external (opens in new tab)
+   * Size variant (affects font size)
+   * - sm: Small text (text-sm)
+   * - base: Base text size (text-base)
+   * - lg: Large text (text-lg)
+   * - inherit: Inherits parent font size (no text-* class)
+   * @default 'inherit'
+   */
+  size?: 'sm' | 'base' | 'lg' | 'inherit'
+
+  /**
+   * Whether the link is external (opens in new tab with security attributes)
    * @default false
    */
   external?: boolean
@@ -41,6 +56,7 @@ export function Link({
   href,
   locale,
   variant = 'default',
+  size = 'inherit',
   external = false,
   className = '',
   children,
@@ -64,13 +80,21 @@ export function Link({
     finalHref = '/' + locale + href
   }
 
-  const baseStyles = 'transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2'
+  const baseStyles = 'transition-colors duration-200'
 
   const variantStyles = {
     default: 'text-teal-600 hover:text-teal-700 hover:underline focus:ring-teal-500',
     primary: 'text-teal-600 font-medium hover:text-teal-700 focus:ring-teal-500',
-    secondary: 'text-gray-700 hover:text-gray-900 focus:ring-gray-400',
+    secondary: 'text-coral-600 font-medium hover:text-coral-700 focus:ring-coral-500',
+    neutral: 'text-gray-700 hover:text-gray-900 focus:ring-gray-400',
     unstyled: '',
+  }
+
+  const sizeStyles = {
+    sm: 'text-sm',
+    base: 'text-base',
+    lg: 'text-lg',
+    inherit: '',
   }
 
   const externalProps = external
@@ -80,7 +104,7 @@ export function Link({
   return (
     <a
       href={finalHref}
-      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...externalProps}
       {...props}
     >

@@ -148,7 +148,7 @@ The [pages/preview/](pages/preview/) route enables real-time content preview fro
 
 ### Locale-Aware Components
 
-**[components/Link.tsx](components/Link.tsx)**: Smart link component that auto-prefixes non-English locales:
+**[components/atoms/Link/Link.tsx](components/atoms/Link/Link.tsx)**: Smart link component that auto-prefixes non-English locales:
 ```tsx
 <Link href="/about" locale="es" />  // Renders: /es/about
 <Link href="/about" locale="en" />  // Renders: /about (no prefix)
@@ -206,11 +206,12 @@ layouts/                 # Layout components
 
 components/              # Reusable UI components (Atomic Design structure)
 ├── atoms/              # Basic building blocks (Button, Input, Link, etc.)
-│   └── README.md       # Complete atoms documentation
+│   ├── Link/          # Locale-aware link component
+│   ├── svgs/          # Standalone SVG components (LogoSvg, LeafSvg, etc.)
+│   └── README.md      # Complete atoms documentation
 ├── molecules/          # Simple component groups (FormField, SearchBar, etc.)
 ├── organisms/          # Complex sections (Header, Footer, MeditationGrid, etc.)
-├── templates/          # Page layout structures
-└── Link.tsx            # Locale-aware link component (now in atoms/)
+└── templates/          # Page layout structures
 
 server/                  # Server-side utilities
 ├── entry.ts            # Cloudflare Workers server setup
@@ -494,23 +495,98 @@ import { HeartIcon, CheckIcon } from '@heroicons/react/24/outline'
 - `ArrowRightOnRectangleIcon` → Use `ArrowRightStartOnRectangleIcon` (for logout/sign-out)
 - Check [Heroicons v2 migration guide](https://github.com/tailwindlabs/heroicons/releases/tag/v2.0.0) for other changes
 
-#### Link Component
+#### Button Component
 
-The `Link` component is locale-aware and located at **`components/Link.tsx`** (not in atoms/):
+The `Button` component can render as either a button or a link using the **`href` prop**:
 
 ```tsx
-import { Link } from '../../Link'  // ✅ Correct path from molecules/
-import { Link } from '../Link'     // ✅ Correct path from atoms/
+import { Button } from '../atoms/Button'
+import { PlayIcon } from '@heroicons/react/24/outline'
 
-// ❌ Wrong - Link is not in atoms/
-import { Link } from '../../atoms/Link'
+// ✅ Correct - Button as link (renders as Link component)
+<Button href="/meditations" variant="primary">View Meditations</Button>
+
+// ✅ Correct - Button with action
+<Button onClick={handleClick} variant="primary">Submit</Button>
+
+// ✅ Correct - Button with icon
+<Button icon={PlayIcon} variant="primary" aria-label="Play" />
+
+// ❌ Wrong - Don't nest Link inside Button
+<Button variant="primary">
+  <Link href="/meditations">View Meditations</Link>
+</Button>
+```
+
+**Props**:
+```tsx
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline' | 'text'
+  size?: 'sm' | 'md' | 'lg'
+  href?: string           // When provided, renders as Link
+  locale?: string         // For locale-aware navigation
+  icon?: HeroIcon         // Heroicon component
+  isLoading?: boolean
+  disabled?: boolean
+}
+```
+
+**Key Features**:
+- **Link rendering**: When `href` is provided, Button automatically renders as a Link component internally
+- **Locale-aware navigation**: Supports `locale` prop for non-English routes
+- **Icon support**: Can render icon-only buttons with proper accessibility
+- **Loading states**: Built-in loading state with `isLoading` prop
+- **No nested interactive elements**: Using `href` prop avoids semantic HTML issues with nested buttons/links
+
+**When to use href prop**:
+- ✅ Navigation to other pages or routes
+- ✅ Downloading files or external resources
+- ❌ Triggering JavaScript actions (use `onClick` instead)
+
+#### Link Component
+
+The `Link` component is locale-aware and located at **`components/atoms/Link/`**:
+
+```tsx
+import { Link } from '../../atoms'         // ✅ Preferred: from barrel export
+import { Link } from '../../atoms/Link'    // ✅ Alternative: direct import
+import { Link } from '../Link'             // ✅ Correct from atoms/
+
+// ❌ Wrong - outdated path
+import { Link } from '../../Link'
+```
+
+**Props**:
+```tsx
+interface LinkProps {
+  href: string
+  locale?: string
+  variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'unstyled'
+  size?: 'sm' | 'base' | 'lg' | 'inherit'  // Default: 'inherit'
+  external?: boolean
+}
 ```
 
 **Usage**:
 ```tsx
+// Basic usage (inherits parent size)
 <Link href="/about" locale="es">About Us</Link>
-<Link href="/contact" className="text-teal-600">Contact</Link>
+
+// With explicit size
+<Link href="/contact" size="sm">Contact</Link>
+
+// With variant (avoids custom className)
+<Link href="/home" variant="primary">Home</Link>
+
+// External link (opens in new tab)
+<Link href="https://example.com" external>External Site</Link>
 ```
+
+**Key Features**:
+- **Locale-aware**: Automatically prefixes non-English locales (`/es/about`, `/fr/contact`)
+- **Size inheritance**: Default `size="inherit"` makes links inherit parent font size
+- **Variants**: Use built-in variants (`primary`, `secondary`, `neutral`) instead of custom className where possible
+- **Accessibility**: External links include screen reader text "(opens in new tab)"
 
 #### Divider Patterns
 
@@ -529,6 +605,81 @@ When creating decorative dividers (like LeafDivider or Footer divider), use this
 ```
 
 This creates the effect where the decorative element sits in the middle of the line with a white background "breaking" the line.
+
+### Refactoring to Use Component Variants
+
+When refactoring existing components, look for opportunities to replace custom `className` styling with built-in component variants for better consistency and maintainability.
+
+**When to Use Variants**:
+- ✅ When the styling matches (or is close to) an existing variant
+- ✅ When minor color/weight differences are acceptable for consistency
+- ✅ When it reduces custom className complexity
+- ❌ When the component needs very specific custom styling
+- ❌ When the variant doesn't have the required properties
+
+**Refactoring Pattern**:
+
+1. **Identify candidates**: Look for components using Link (or other atoms) with custom className
+2. **Match to variant**: Find the closest built-in variant
+3. **Extract size to prop**: Use `size` prop instead of `text-*` className
+4. **Keep necessary custom styles**: Retain className only for styles not covered by variant
+5. **Test visual differences**: Verify minor changes are acceptable
+
+**Example: Breadcrumbs Link**
+
+Before:
+```tsx
+<Link
+  href={item.href}
+  className="text-teal-500 hover:text-teal-600 transition-colors no-underline"
+>
+  {item.label}
+</Link>
+```
+
+After:
+```tsx
+<Link
+  href={item.href}
+  variant="primary"
+  size="inherit"
+  className="no-underline"
+>
+  {item.label}
+</Link>
+```
+
+**Changes**: Slightly darker teal color (500→600) and medium font weight from primary variant. Custom `no-underline` retained.
+
+**Example: Footer Links**
+
+Before:
+```tsx
+<Link
+  className={`text-gray-600 hover:text-teal-600 transition-colors ${
+    isHero ? 'text-lg font-normal' : 'text-sm font-light'
+  }`}
+>
+```
+
+After:
+```tsx
+<Link
+  variant="neutral"
+  size={isHero ? 'lg' : 'sm'}
+  className={`hover:text-teal-600 ${
+    isHero ? 'font-normal' : 'font-light'
+  }`}
+>
+```
+
+**Changes**: Base color slightly darker (gray-600→gray-700), size controlled by prop. Custom hover color and font weights retained.
+
+**Benefits**:
+- More semantic (intent is clear from props)
+- Easier to maintain (fewer inline styles)
+- Better consistency across codebase
+- Leverages design system tokens
 
 ## Component Development with Ladle
 
@@ -800,6 +951,7 @@ Then proceed with planning:
   - Implement component with mobile-first approach
   - Add responsive breakpoints (md:, lg:)
   - Use only Tailwind tokens (no custom CSS)
+  - **Extract any inline SVGs to `components/atoms/svgs/` and import them**
 
 - [ ] Create barrel export: `components/[level]/ComponentName/index.ts`
   ```typescript
@@ -811,6 +963,11 @@ Then proceed with planning:
   export { ComponentName } from './ComponentName'
   export type { ComponentNameProps } from './ComponentName'
   ```
+
+**Import Pattern**: When importing atoms in other components:
+- ✅ Preferred: `import { ComponentName } from '../../atoms'` (barrel export)
+- ✅ Alternative: `import { ComponentName } from '../../atoms/ComponentName'` (direct import)
+- Use the barrel export for cleaner imports when importing multiple atoms
 
 ### 3. Stories Phase
 

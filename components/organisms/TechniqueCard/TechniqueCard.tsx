@@ -1,127 +1,134 @@
-import React from 'react'
-import { Button, Image } from '../../atoms'
+import { ComponentProps } from 'react'
+import { Button, Heading, Image, Text } from '../../atoms'
 
-export interface TechniqueCardProps {
-  /** Technique number badge (e.g., "02", "03") */
+export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
+  /**
+   * Card number displayed above the content (e.g., "01", "02", "03")
+   */
   number: string
-  /** Technique title */
+
+  /**
+   * Main heading/title of the technique
+   */
   title: string
-  /** Technique description */
+
+  /**
+   * Description text explaining the technique
+   */
   description: string
-  /** Button text (default: "Learn more") */
-  buttonText?: string
-  /** Button click handler */
-  onButtonClick?: () => void
-  /** Image source URL */
+
+  /**
+   * URL for the technique image
+   */
   imageSrc: string
-  /** Image alt text */
+
+  /**
+   * Alt text for the image
+   */
   imageAlt: string
-  /** Card alignment - controls image and content positioning */
+
+  /**
+   * Link destination for "Learn more" button
+   */
+  href: string
+
+  /**
+   * Button text
+   */
+  buttonText: string
+
+  /**
+   * Layout alignment - determines image position
+   * @default 'left'
+   */
   align?: 'left' | 'right'
 }
 
 /**
- * TechniqueCard component displays a technique with image, title, description, and call-to-action.
- * Based on the `.excerpt` elements from wemeditate.com/techniques.
+ * TechniqueCard displays meditation technique information
+ * with an image, title, description, and call-to-action button.
  *
- * Features:
- * - Left or right alignment with image/content swap
- * - Numbered badge with large gradient background
- * - Responsive: stacks vertically on mobile, horizontal on desktop
- * - All text is left-aligned (no center alignment on mobile)
- * - Square aspect ratio images
- *
- * @example
- * ```tsx
- * <TechniqueCard
- *   number="02"
- *   title="Foot Soak"
- *   description="Simple and inexpensive, soaking your feet in saltwater..."
- *   imageSrc="/images/foot-soak.jpg"
- *   imageAlt="Person soaking feet"
- *   align="left"
- *   onButtonClick={() => console.log('Learn more clicked')}
- * />
- * ```
+ * Features alternating left/right image layouts for visual variety.
  */
-export const TechniqueCard = ({
+export function TechniqueCard({
   number,
   title,
   description,
-  buttonText = 'Learn more',
-  onButtonClick,
   imageSrc,
   imageAlt,
+  href,
+  buttonText = 'Learn more',
   align = 'left',
-}: TechniqueCardProps) => {
-  // Gradient positioning based on alignment - extends across large portion of card
-  const gradientClasses = {
-    left: 'before:top-0 before:right-0 before:h-64 before:w-80 before:bg-gradient-to-l md:before:h-96 md:before:w-[500px]',
-    right: 'before:top-0 before:left-0 before:h-64 before:w-80 before:bg-gradient-to-r md:before:h-96 md:before:w-[500px]',
-  }
-
-  // Number positioning based on alignment - outside the content flow
-  const numberPositionClasses = {
-    left: 'top-0 right-0 text-right pr-6 md:pr-12',
-    right: 'top-0 left-0 text-left pl-6 md:pl-12',
-  }
-
-  // Content order: image first on mobile, then swap based on alignment on desktop
-  const contentOrderClasses = {
-    left: 'flex-col md:flex-row',
-    right: 'flex-col md:flex-row-reverse',
-  }
-
+  className = '',
+  ...props
+}: TechniqueCardProps) {
   return (
-    <div className="relative mx-auto max-w-7xl">
-      {/* Large gradient background layer */}
-      <div
-        className={`
-          pointer-events-none absolute
-          before:absolute before:from-transparent before:to-teal-200/30
-          before:content-['']
-          ${gradientClasses[align]}
-        `}
-      />
-
-      {/* Number badge - positioned outside content flow */}
-      <div className={`absolute ${numberPositionClasses[align]} z-10 pt-2`}>
-        <span className="font-raleway text-7xl font-extralight text-gray-300 md:text-8xl">
-          {number}
-        </span>
-      </div>
-
-      {/* Main content container */}
-      <div className={`flex ${contentOrderClasses[align]} items-center gap-12 md:gap-16`}>
-        {/* Image section - square aspect ratio */}
-        <div className="w-full md:w-1/2">
-          <div className="aspect-square w-full overflow-hidden">
-            <Image
-              src={imageSrc}
-              alt={imageAlt}
-              className="h-full w-full object-cover"
-            />
+    <div
+      className={`
+        relative flex flex-col items-center gap-8
+        md:flex-row md:items-center md:gap-7 xl:gap-14
+        ${align === 'right' ? 'md:flex-row-reverse' : ''}
+        ${className}
+      `}
+      {...props}
+    >
+      {/* Image with gradient overlay and number */}
+      <div className="relative w-full max-w-md shrink-0 md:w-84 lg:w-96">
+        {/* Gradient overlay - positioned above image */}
+        <div
+          className={`
+            absolute bottom-full hidden h-28 w-56
+            from-transparent to-teal-200/30
+            md:flex md:items-center
+            px-4
+            ${align === 'right' ? '-right-4 bg-linear-to-l md:justify-end' : '-left-4 bg-linear-to-r md:justify-start'}
+          `}
+          aria-hidden="true"
+        >
+          {/* Number Badge - centered within gradient */}
+          <div className="text-4xl font-light text-gray-400">
+            {number}
           </div>
         </div>
 
-        {/* Content section - always left-aligned */}
-        <div className="w-full space-y-6 md:w-1/2">
-          <h2 className="font-raleway text-3xl font-normal text-gray-600 md:text-4xl">
-            {title}
-          </h2>
+        {/* Mobile Number Badge - shown on mobile only */}
+        <div className="mb-4 text-4xl font-light text-gray-400 md:hidden" aria-hidden="true">
+          {number}
+        </div>
 
-          <p className="text-base leading-relaxed text-gray-600">
-            {description}
-          </p>
+        {/* Image */}
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          aspectRatio="square"
+          className="h-full w-full object-cover"
+        />
+      </div>
 
-          <div>
-            <Button
-              variant="outline"
-              onClick={onButtonClick}
-            >
-              {buttonText}
-            </Button>
-          </div>
+      {/* Content */}
+      <div
+        className={`
+          flex max-w-lg flex-col text-left
+          md:px-10 lg:px-12
+        `}
+      >
+        <Heading level="h3" styleAs="h5" className="mb-4 text-gray-700">
+          {title}
+        </Heading>
+
+        <p className="mb-10 text-gray-700 text-lg md:text-base">
+          {description}
+        </p>
+
+        <div>
+          <Button
+            variant="outline"
+            size="md"
+            href={href}
+            className="min-w-[140px]"
+          >
+            {buttonText}
+          </Button>
         </div>
       </div>
     </div>

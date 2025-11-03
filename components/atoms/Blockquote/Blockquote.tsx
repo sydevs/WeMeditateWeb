@@ -49,10 +49,10 @@ export function Blockquote({
           ${isLeft ? 'pl-4 sm:pl-6 text-left' : 'pr-4 sm:pr-6 text-right'}
           before:content-[''] before:absolute before:inset-0 before:-z-10
           ${isLeft
-            ? 'before:left-0 before:right-[20%] before:bg-gradient-to-r'
-            : 'before:left-[20%] before:right-0 before:bg-gradient-to-l'
+            ? 'before:left-0 before:right-[20%] before:bg-linear-to-r'
+            : 'before:left-[20%] before:right-0 before:bg-linear-to-l'
           }
-          before:from-white/[0.01] before:via-white/[0.18] before:to-teal-200/30
+          before:from-transparent before:to-teal-200/30
         `.trim()}
       >
         <div className={`text-base font-medium leading-relaxed text-gray-600 ${isLeft ? 'text-left' : 'text-left'}`}>

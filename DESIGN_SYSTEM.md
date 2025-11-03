@@ -172,10 +172,17 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 - `Label` - Form labels with required indicators
 - `Heading` - h1-h6 with consistent styling
 - `Text` - Paragraph, span with size variants
-- `Link` - Internal/external links with locale handling
+- `Link` - Locale-aware links with variants (primary, secondary, neutral) and size options (inherits by default)
 - `Icon` - Heroicons wrapper with size/color variants
 - `Image` - Responsive image with loading states
 - `Divider` - Horizontal rules, leaf decorations
+
+**SVG Components (components/atoms/svgs/)**
+- Standalone SVG graphics extracted into reusable components
+- Brand icons (LogoSvg, LeafSvg)
+- Illustrations (MeditationSvg, LocationSvg, HeaderIllustrationSvg)
+- Decorative elements (FloralDividerSvg)
+- See "SVG Components" section below for implementation details
 
 **Form Elements**
 - `Checkbox` - Styled checkbox input
@@ -228,6 +235,7 @@ Organisms are complex, distinct interface sections. Examples:
 
 **Content Sections**
 - `Hero` - Full-width hero section with background image + text + CTA
+- `TechniqueCard` - Meditation technique card with gradient overlay, number badge, and alternating left/right layout
 - `MeditationGrid` - Grid of meditation cards with filters
 - `ArticleList` - List of article previews with pagination
 - `TestimonialCarousel` - Carousel of user testimonials
@@ -273,6 +281,54 @@ components/atoms/Button/
 ├── Button.types.ts      # TypeScript interfaces
 ├── index.ts            # Public exports
 └── README.md           # Component documentation (optional)
+```
+
+### SVG Components
+
+All standalone SVG graphics should be extracted into reusable components in the `components/atoms/svgs/` directory:
+
+**Naming Convention**: Suffix with "Svg" (e.g., `LogoSvg`, `LeafSvg`, `MeditationSvg`)
+  - Remove "Icon" suffix if present (e.g., `LocationIcon` → `LocationSvg`)
+
+**Props Pattern**:
+  - Accept `className` prop for flexible sizing and styling
+  - No custom size props (xs/sm/md/lg) - use Tailwind classes directly
+  - Extend `ComponentProps<'svg'>` for full SVG attributes
+
+**Color Handling**: Always use `currentColor` for fills and strokes to inherit text color
+
+**Default Sizing**: Preserve original default `className` from the inline version
+
+**When to Extract SVGs**:
+- Extract inline SVGs found in components during refactoring
+- Create new SVG components for brand icons, illustrations, or decorative elements
+- Keep inline SVGs only for one-off, component-specific graphics
+
+**When NOT to Use SVG Components**:
+- For standard UI icons, use Heroicons via the `Icon` component instead
+- For simple geometric shapes that can be achieved with CSS
+
+**Example**:
+```tsx
+import { ComponentProps } from 'react'
+
+export interface LogoSvgProps extends ComponentProps<'svg'> {}
+
+export function LogoSvg({ className = 'w-5 h-5', ...props }: LogoSvgProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 18 14"
+      className={className}
+      fill="none"
+      {...props}
+    >
+      <g fill="none" fillRule="evenodd" stroke="currentColor" strokeWidth=".75">
+        {/* SVG paths */}
+      </g>
+    </svg>
+  )
+}
 ```
 
 ### Component Template
@@ -500,7 +556,97 @@ interface ButtonProps {
 }
 ```
 
-### 3. Styling with Tailwind CSS
+### 4. Subcomponent Extraction Pattern
+
+When building complex components, you may encounter repeated UI patterns within a single component file. Use this pattern to decide when to extract subcomponents:
+
+#### When to Extract Subcomponents
+
+**Extract as a subcomponent in the same file when:**
+- The repeated code is used **2-3 times within the same parent component**
+- The pattern is **specific to this component's context** and unlikely to be reused elsewhere
+- The subcomponent is **simple and tightly coupled** to the parent's logic
+- Extracting it reduces duplicate code by **30+ lines**
+
+**Example: CarouselNavButton within ColumnCarousel**
+```tsx
+// Subcomponent: only used by ColumnCarousel, appears twice (prev/next)
+interface CarouselNavButtonProps {
+  direction: 'prev' | 'next'
+  column: ColumnProps | null
+  onClick: () => void
+  disabled: boolean
+}
+
+function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
+  // Implementation specific to carousel navigation
+  return <button>...</button>
+}
+
+// Parent component uses it
+export function ColumnCarousel({ columns }: ColumnCarouselProps) {
+  return (
+    <>
+      <CarouselNavButton direction="prev" {...} />
+      <CarouselNavButton direction="next" {...} />
+    </>
+  )
+}
+```
+
+#### When to Create a Separate Atom Component
+
+**Create a new atom component when:**
+- The pattern is used in **multiple different parent components**
+- The component has **generic utility** beyond the current use case
+- You anticipate it will be used in **3+ different contexts**
+- It represents a **fundamental UI building block**
+
+**Example: Button atom used across multiple components**
+```tsx
+// components/atoms/Button/Button.tsx - separate file
+export function Button({ variant, size, children }: ButtonProps) {
+  return <button>...</button>
+}
+
+// Used everywhere
+import { Button } from '@/components/atoms/Button'
+```
+
+#### Implementation Guidelines
+
+**Placement**: Define subcomponents **above** the main component export in the same file:
+
+```tsx
+// 1. Imports
+import { useState } from 'react'
+
+// 2. Interfaces for subcomponents
+interface SubComponentProps { ... }
+
+// 3. Subcomponent definitions
+function SubComponent({ ... }: SubComponentProps) { ... }
+
+// 4. Main component interface
+export interface MainComponentProps { ... }
+
+// 5. Main component export
+export function MainComponent({ ... }: MainComponentProps) { ... }
+```
+
+**Naming**: Use descriptive PascalCase names that indicate their specific purpose (e.g., `CarouselNavButton`, not just `NavButton`)
+
+**TypeScript**: Always define interfaces for subcomponent props, even if they're not exported
+
+**Documentation**: Add a brief JSDoc comment for complex subcomponents:
+```tsx
+/**
+ * Navigation button for carousel - displays chevron and adjacent column title
+ */
+function CarouselNavButton({ ... }) { ... }
+```
+
+### 5. Styling with Tailwind CSS
 
 **Preferences:**
 1. Use Tailwind utility classes directly in JSX
@@ -524,21 +670,28 @@ import { cn } from '@/lib/utils'
 )}>
 ```
 
-### 4. Responsive Design
+### 6. Responsive Design
 
 Use mobile-first approach with Tailwind's responsive prefixes:
 
 ```tsx
 <div className="
-  px-4 py-2          /* Mobile default */
-  sm:px-6 sm:py-3    /* Small screens (640px+) */
-  md:px-8 md:py-4    /* Medium screens (768px+) */
-  lg:px-10 lg:py-5   /* Large screens (1024px+) */
-  xl:px-12 xl:py-6   /* Extra large (1280px+) */
+  px-4 py-2          /* Mobile default (0px+) */
+  sm:px-6 sm:py-3    /* Small tablets, portrait (640px+) */
+  md:px-8 md:py-4    /* Tablets, landscape (768px+) */
+  lg:px-10 lg:py-5   /* Laptops, desktops (1024px+) */
+  xl:px-12 xl:py-6   /* Large desktops (1280px+) */
 ">
 ```
 
-### 5. State Management
+**Device Type Reference**:
+- **Mobile**: Default styles (no prefix) - 0px and up
+- **Small tablets**: `sm:` prefix - 640px and up (portrait orientation)
+- **Tablets**: `md:` prefix - 768px and up (landscape orientation)
+- **Laptops/Desktops**: `lg:` prefix - 1024px and up
+- **Large desktops**: `xl:` and `2xl:` prefixes - 1280px and 1536px and up
+
+### 7. State Management
 
 **Local State**: Use `useState` for component-specific state
 
@@ -548,7 +701,7 @@ Use mobile-first approach with Tailwind's responsive prefixes:
 
 **Shared State**: Use React Context sparingly, prefer composition
 
-### 6. Rich Text Content Rendering
+### 8. Rich Text Content Rendering
 
 PayloadCMS content is structured as a rich text AST. Create renderer components:
 
@@ -582,7 +735,7 @@ export function RichTextRenderer({ content }: { content: RichTextContent }) {
 }
 ```
 
-### 7. Locale-Aware Components
+### 9. Locale-Aware Components
 
 Always use the `Link` component from `components/Link.tsx` for internal navigation. It automatically handles locale prefixing.
 
@@ -604,7 +757,7 @@ export function LocaleAwareComponent() {
 }
 ```
 
-### 8. Performance Patterns
+### 10. Performance Patterns
 
 **Image Optimization:**
 ```tsx

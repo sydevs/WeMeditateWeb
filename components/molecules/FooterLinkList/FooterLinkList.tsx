@@ -1,4 +1,4 @@
-import { Link } from '../../Link'
+import { Link } from '../../atoms'
 
 /**
  * A single link item
@@ -68,8 +68,10 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
             key={index}
             href={link.href}
             locale={locale}
-            className={`text-gray-600 hover:text-teal-600 transition-colors ${
-              isHero ? 'text-lg font-normal' : 'text-sm font-light'
+            variant="neutral"
+            size={isHero ? 'lg' : 'sm'}
+            className={`hover:text-teal-600 ${
+              isHero ? 'font-normal' : 'font-light'
             }`}
           >
             {link.text}

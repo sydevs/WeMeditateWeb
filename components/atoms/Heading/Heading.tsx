@@ -35,7 +35,7 @@ export function Heading({
   const Component = level as ElementType
   const visualLevel = styleAs || level
 
-  const baseStyles = 'font-sans text-gray-900'
+  const baseStyles = 'font-sans'
 
   const levelStyles = {
     h1: 'text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight',

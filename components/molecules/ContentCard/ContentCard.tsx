@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { PlayIcon } from '@heroicons/react/24/solid'
 import { Image } from '../../atoms/Image/Image'
-import { Link } from '../../Link'
+import { Link } from '../../atoms/Link'
 import { Button } from '../../atoms/Button/Button'
 import { Duration } from '../../atoms/Duration/Duration'
 import { Badge } from '../../atoms/Badge/Badge'
@@ -237,6 +237,7 @@ export function ContentCard({
             href={href}
             locale={locale}
             variant="unstyled"
+            size="inherit"
             className={
               isHeroVariant
                 ? 'text-gray-500 hover:text-teal-600 transition-colors duration-200'

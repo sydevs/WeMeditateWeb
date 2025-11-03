@@ -11,6 +11,10 @@ export { Author } from './Author'
 export type { AuthorProps } from './Author'
 
 // Content
+export { Column } from './Column'
+export type { ColumnProps } from './Column'
+export { ColumnCarousel } from './ColumnCarousel'
+export type { ColumnCarouselProps } from './ColumnCarousel'
 export { ContentCard } from './ContentCard/ContentCard'
 export type { ContentCardProps } from './ContentCard/ContentCard'
 
