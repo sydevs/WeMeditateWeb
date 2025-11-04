@@ -2,8 +2,6 @@ import type { Story, StoryDefault } from "@ladle/react";
 import { Select } from "./Select";
 import {
   StorySection,
-  StoryExampleSection,
-  StorySubsection,
   StoryWrapper,
   StoryGrid,
   StoryGridHeader,
@@ -25,7 +23,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Default">
+        <StorySection title="Default" variant="subsection">
           <Select>
             <option value="">Choose an option...</option>
             <option value="meditation">Meditation</option>
@@ -33,9 +31,9 @@ export const Default: Story = () => (
             <option value="articles">Articles</option>
             <option value="videos">Videos</option>
           </Select>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="With Optgroups">
+        <StorySection title="With Optgroups" variant="subsection">
           <Select>
             <option value="">Select a technique...</option>
             <optgroup label="Beginner">
@@ -47,15 +45,15 @@ export const Default: Story = () => (
               <option value="kundalini">Kundalini</option>
             </optgroup>
           </Select>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="With Default Value">
+        <StorySection title="With Default Value" variant="subsection">
           <Select defaultValue="music">
             <option value="meditation">Meditation</option>
             <option value="music">Music</option>
             <option value="articles">Articles</option>
           </Select>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
@@ -159,7 +157,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="space-y-4">
         <div>
           <label htmlFor="country" className="block text-sm font-medium mb-1 text-gray-900">
@@ -187,7 +185,7 @@ export const Default: Story = () => (
           </Select>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Select"

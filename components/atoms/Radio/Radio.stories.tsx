@@ -10,7 +10,6 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-  StoryExampleSection
 } from '../../ladle';
 
 export default {
@@ -75,7 +74,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="space-y-4">
         <div>
           <p className="text-sm font-medium mb-2 text-gray-900">Select your experience level:</p>
@@ -102,7 +101,7 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Radio"

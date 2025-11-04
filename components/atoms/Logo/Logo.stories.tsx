@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Logo } from "./Logo";
-import { StoryWrapper, StorySection, StoryExampleSection, StorySubsection, StoryGrid, StoryGridHeader, StoryGridHeaderRow, StoryGridHeaderCell, StoryGridBody, StoryGridRow, StoryGridCell } from '../../ladle';
+import { StoryWrapper, StorySection, StoryGrid, StoryGridHeader, StoryGridHeaderRow, StoryGridHeaderCell, StoryGridBody, StoryGridRow, StoryGridCell } from '../../ladle';
 
 export default {
   title: "Atoms / Media"
@@ -34,41 +34,41 @@ export const Default: Story = () => (
 
     <StorySection title="Sizes">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Icon">
+        <StorySection title="Icon" variant="subsection">
           <div className="flex items-end gap-4">
             <Logo variant="icon" size="sm" />
             <Logo variant="icon" size="md" />
             <Logo variant="icon" size="lg" />
             <Logo variant="icon" size="xl" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Text">
+        <StorySection title="Text" variant="subsection">
           <div className="flex items-end gap-8">
             <Logo variant="text" size="sm" />
             <Logo variant="text" size="md" />
             <Logo variant="text" size="lg" />
             <Logo variant="text" size="xl" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Square">
+        <StorySection title="Square" variant="subsection">
           <div className="flex items-end gap-4">
             <Logo variant="square" size="sm" />
             <Logo variant="square" size="md" />
             <Logo variant="square" size="lg" />
             <Logo variant="square" size="xl" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Circle">
+        <StorySection title="Circle" variant="subsection">
           <div className="flex items-end gap-4">
             <Logo variant="circle" size="sm" />
             <Logo variant="circle" size="md" />
             <Logo variant="circle" size="lg" />
             <Logo variant="circle" size="xl" />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
@@ -91,58 +91,58 @@ export const Default: Story = () => (
 
     <StorySection title="States">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="With href (hover enabled)">
+        <StorySection title="With href (hover enabled)" variant="subsection">
           <div className="flex flex-wrap items-center gap-6">
             <Logo variant="icon" href="/" />
             <Logo variant="text" href="/" />
             <Logo variant="square" href="/" />
             <Logo variant="circle" href="/" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Without href (no hover)">
+        <StorySection title="Without href (no hover)" variant="subsection">
           <div className="flex flex-wrap items-center gap-6">
             <Logo variant="icon" />
             <Logo variant="text" />
             <Logo variant="square" />
             <Logo variant="circle" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Color Inheritance (Gray Context)">
+        <StorySection title="Color Inheritance (Gray Context)" variant="subsection">
           <div className="flex flex-wrap items-center gap-6 text-gray-600">
             <Logo variant="icon" href="/" />
             <Logo variant="text" href="/" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Color Inheritance (Teal Context)">
+        <StorySection title="Color Inheritance (Teal Context)" variant="subsection">
           <div className="flex flex-wrap items-center gap-6 text-teal-600">
             <Logo variant="icon" href="/" />
             <Logo variant="text" href="/" />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Header Branding">
+        <StorySection title="Header Branding" variant="subsection">
           <div className="bg-white p-4 border border-gray-200 flex items-center gap-4 text-gray-600">
             <Logo variant="icon" href="/" size="md" />
             <div className="flex-1 text-center text-sm">
               Navigation menu items...
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Footer Branding">
+        <StorySection title="Footer Branding" variant="subsection">
           <div className="bg-gray-800 p-6 flex justify-center text-white">
             <Logo variant="text" href="/" size="md" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Sidebar Navigation">
+        <StorySection title="Sidebar Navigation" variant="subsection">
           <div className="bg-white p-6 border-r border-gray-200 w-48 flex flex-col gap-4">
             <Logo variant="text" href="/" size="sm" align="left" className="text-gray-600" />
             <div className="flex flex-col gap-2 text-sm text-gray-600">
@@ -151,29 +151,29 @@ export const Default: Story = () => (
               <a href="#" className="hover:text-teal-600">Menu Item 3</a>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Social Media Profile">
+        <StorySection title="Social Media Profile" variant="subsection">
           <div className="bg-gray-100 p-6 flex justify-center">
             <Logo variant="circle" size="xl" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="App Icons">
+        <StorySection title="App Icons" variant="subsection">
           <div className="flex gap-4">
             <Logo variant="square" size="lg" />
             <Logo variant="circle" size="lg" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Compact Header">
+        <StorySection title="Compact Header" variant="subsection">
           <div className="bg-white p-3 border border-gray-200 flex items-center justify-between">
             <Logo variant="icon" href="/" size="sm" className="text-gray-600" />
             <span className="text-sm text-gray-600">Menu</span>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

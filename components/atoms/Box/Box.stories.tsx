@@ -2,7 +2,6 @@ import type { Story, StoryDefault } from "@ladle/react";
 import { Box } from "./Box";
 import {
   StorySection,
-  StoryExampleSection,
   StoryWrapper,
   StoryGrid,
   StoryGridHeader,
@@ -179,7 +178,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8 max-w-3xl">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Box padding="lg" shadow="md" color="white" rounded>
@@ -225,7 +224,7 @@ export const Default: Story = () => (
           </Box>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Box"

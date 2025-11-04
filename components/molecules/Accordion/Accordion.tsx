@@ -128,7 +128,7 @@ export function Accordion({
                 <Icon
                   icon={ChevronDownIcon}
                   size="md"
-                  color="tertiary"
+                  color="neutral"
                   className={`transition-transform duration-300 shrink-0 ${
                     isOpen ? 'rotate-180' : 'rotate-0'
                   }`}

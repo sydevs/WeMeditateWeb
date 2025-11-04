@@ -3,7 +3,6 @@ import { SocialShare } from "./SocialShare";
 import {
   StoryWrapper,
   StorySection,
-  StorySubsection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -11,7 +10,6 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-  StoryExampleSection
 } from '../../ladle';
 
 export default {
@@ -117,7 +115,7 @@ export const Default: Story = () => {
         </StoryGrid>
       </StorySection>
 
-      <StoryExampleSection>
+      <StorySection title="Examples" inContext={true}>
         <div className="space-y-8">
           <div>
             <p className="text-sm font-semibold text-gray-700 mb-3">Page Footer</p>
@@ -179,7 +177,7 @@ export const Default: Story = () => {
             </div>
           </div>
         </div>
-      </StoryExampleSection>
+      </StorySection>
     </StoryWrapper>
   )
 };

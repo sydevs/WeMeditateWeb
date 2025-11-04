@@ -3,8 +3,6 @@ import { ContentCard } from "./ContentCard";
 import {
   StoryWrapper,
   StorySection,
-  StoryExampleSection,
-  StorySubsection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -47,7 +45,7 @@ export const Default: Story = () => (
     <StorySection title="Basic Examples">
       <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
         <div>
-          <StorySubsection label="Default Variant - With Description">
+          <StorySection title="Default Variant - With Description" variant="subsection">
             <ContentCard
               title={sampleMeditationData.title}
               href={sampleMeditationData.href}
@@ -55,22 +53,22 @@ export const Default: Story = () => (
               description={sampleMeditationData.description}
               variant="default"
             />
-          </StorySubsection>
+          </StorySection>
         </div>
 
         <div>
-          <StorySubsection label="Default Variant - Without Description">
+          <StorySection title="Default Variant - Without Description" variant="subsection">
             <ContentCard
               title={sampleShortData.title}
               href={sampleShortData.href}
               thumbnailSrc={sampleShortData.thumbnailSrc}
               variant="default"
             />
-          </StorySubsection>
+          </StorySection>
         </div>
 
         <div>
-          <StorySubsection label="Hero Variant">
+          <StorySection title="Hero Variant" variant="subsection">
             <ContentCard
               title="Featured Meditation"
               href="#"
@@ -82,11 +80,11 @@ export const Default: Story = () => (
               badge="Mindfulness"
               badgeUrl="#"
             />
-          </StorySubsection>
+          </StorySection>
         </div>
 
         <div>
-          <StorySubsection label="With Category Badge Only">
+          <StorySection title="With Category Badge Only" variant="subsection">
             <ContentCard
               title="What is Meditation?"
               href="#"
@@ -96,7 +94,7 @@ export const Default: Story = () => (
               badge="Philosophy"
               badgeUrl="#"
             />
-          </StorySubsection>
+          </StorySection>
         </div>
       </div>
     </StorySection>
@@ -259,7 +257,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StoryExampleSection subtitle="Meditation Grid (Default Variant)">
+    <StorySection title="Meditation Grid (Default Variant)" inContext={true}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         <ContentCard
           title="Feel Love"
@@ -294,9 +292,9 @@ export const Default: Story = () => (
           playButton={true}
         />
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
-    <StoryExampleSection subtitle="Mixed Content Grid">
+    <StorySection title="Mixed Content Grid" inContext={true}>
       <p className="text-sm text-gray-600 mb-4">
         Responsive grid with mixed meditations (default variant with play button) and articles (variety of aspect ratios).
         Resize the browser window to see adaptive layout (1 column on mobile, 2 on tablet, 3 on desktop, 4 on large screens).
@@ -362,7 +360,7 @@ export const Default: Story = () => (
           aspectRatio="video"
         />
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 

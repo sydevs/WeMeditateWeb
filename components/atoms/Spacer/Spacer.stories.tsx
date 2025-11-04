@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Spacer } from "./Spacer";
 import { StorySection,
-  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
+   StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Layout"
@@ -14,7 +14,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Sizes">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Vertical Spacing">
+        <StorySection title="Vertical Spacing" variant="subsection">
           <div className="border border-gray-200 rounded p-4">
             <p className="text-gray-700">First element</p>
             <Spacer size="sm" />
@@ -32,9 +32,9 @@ export const Default: Story = () => (
             <Spacer size="xl" />
             <p className="bg-gray-100 p-2 rounded text-gray-700">After extra large spacer (2rem)</p>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Horizontal Spacing">
+        <StorySection title="Horizontal Spacing" variant="subsection">
           <div className="border border-gray-200 rounded p-4">
             <div className="flex items-center">
               <p className="text-gray-700">First</p>
@@ -48,9 +48,9 @@ export const Default: Story = () => (
               <p className="bg-gray-100 p-2 rounded text-gray-700">XL</p>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="All Sizes Comparison">
+        <StorySection title="All Sizes Comparison" variant="subsection">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="border border-gray-200 rounded p-3">
               <p className="text-sm font-medium text-gray-900 mb-2">Small</p>
@@ -77,13 +77,13 @@ export const Default: Story = () => (
               <div className="bg-gray-100 p-2 rounded text-xs">Bottom</div>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8 max-w-2xl">
-        <StorySubsection label="Article Layout">
+        <StorySection title="Article Layout" variant="subsection">
           <article className="border border-gray-200 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900">Guide to Meditation</h2>
             <Spacer size="md" />
@@ -107,9 +107,9 @@ export const Default: Story = () => (
               anywhere you feel at ease.
             </p>
           </article>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Card Layout">
+        <StorySection title="Card Layout" variant="subsection">
           <div className="border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Morning Meditation</h3>
@@ -129,9 +129,9 @@ export const Default: Story = () => (
               </button>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Form Layout">
+        <StorySection title="Form Layout" variant="subsection">
           <form className="border border-gray-200 rounded-lg p-6">
             <h3 className="text-xl font-semibold text-gray-900">Create Account</h3>
             <Spacer size="lg" />
@@ -167,9 +167,9 @@ export const Default: Story = () => (
               Sign Up
             </button>
           </form>
-        </StorySubsection>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Spacer"

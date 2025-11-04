@@ -6,11 +6,17 @@ import { Link } from '../Link'
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   /**
    * Visual style variant
-   * - outline-light: White border/text for dark backgrounds (with animated hover)
-   * - ghost-light: White text for dark backgrounds without border
    * @default 'primary'
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'outline-light' | 'ghost' | 'ghost-light'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+
+  /**
+   * Theme based on background context
+   * - light: Standard colors for light backgrounds (default)
+   * - dark: White colors for dark backgrounds
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark'
 
   /**
    * Button size
@@ -103,6 +109,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  */
 export function Button({
   variant = 'primary',
+  theme = 'light',
   size = 'md',
   shape,
   icon,
@@ -133,34 +140,57 @@ export function Button({
   const isInteractive = !disabled && !isLoading
   const animatedStyles = isIconOnly || !isInteractive ? '' : animatedHoverEffect
 
-  // Variant styles - use after: pseudo-element for text buttons, direct hover for icon-only
-  const variantStyles = isIconOnly ? {
+  // Variant styles for light theme (icon-only buttons)
+  const iconOnlyLightThemeStyles = {
     primary:
       'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
     secondary:
       'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
     outline:
       'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 hover:bg-teal-100 hover:border-gray-500',
-    'outline-light':
-      'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
     ghost:
       'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
-    'ghost-light':
+  }
+
+  // Variant styles for dark theme (icon-only buttons)
+  const iconOnlyDarkThemeStyles = {
+    primary:
+      'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
+    secondary:
+      'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
+    outline:
+      'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
+    ghost:
       'bg-transparent text-white focus:ring-white hover:bg-white/20 hover:text-white',
-  } : {
+  }
+
+  // Variant styles for light theme (text buttons with animation)
+  const textButtonLightThemeStyles = {
     primary:
       'bg-teal-500 after:bg-teal-600 text-white focus:ring-teal-500 active:after:bg-teal-700',
     secondary:
       'bg-coral-500 after:bg-coral-600 text-white focus:ring-coral-500 active:after:bg-coral-700',
     outline:
       'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 after:bg-teal-100 hover:border-gray-500',
-    'outline-light':
-      'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
     ghost:
       'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
-    'ghost-light':
+  }
+
+  // Variant styles for dark theme (text buttons with animation)
+  const textButtonDarkThemeStyles = {
+    primary:
+      'bg-teal-500 after:bg-teal-600 text-white focus:ring-teal-500 active:after:bg-teal-700',
+    secondary:
+      'bg-coral-500 after:bg-coral-600 text-white focus:ring-coral-500 active:after:bg-coral-700',
+    outline:
+      'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
+    ghost:
       'bg-transparent text-white focus:ring-white after:bg-white/20 hover:text-white',
   }
+
+  const variantStyles = isIconOnly
+    ? (theme === 'dark' ? iconOnlyDarkThemeStyles : iconOnlyLightThemeStyles)
+    : (theme === 'dark' ? textButtonDarkThemeStyles : textButtonLightThemeStyles)
 
   // Size styles for icon-only buttons
   const iconOnlySizeStyles = {
@@ -203,13 +233,21 @@ export function Button({
     lg: 'lg' as const,
   }
 
-  const spinnerColorMap = {
-    primary: 'white' as const,
-    secondary: 'white' as const,
-    outline: 'primary' as const,
-    'outline-light': 'white' as const,
-    ghost: 'currentColor' as const,
-    'ghost-light': 'white' as const,
+  // Spinner colors and theme based on button variant and theme
+  const getSpinnerColor = () => {
+    if (variant === 'primary' || variant === 'secondary') return 'neutral' as const
+    if (variant === 'outline') return theme === 'dark' ? 'neutral' as const : 'primary' as const
+    if (variant === 'ghost') return theme === 'dark' ? 'neutral' as const : 'currentColor' as const
+    return 'currentColor' as const
+  }
+
+  const getSpinnerTheme = (): 'light' | 'dark' => {
+    // Primary and secondary buttons have dark backgrounds, so spinners need dark theme (white)
+    if (variant === 'primary' || variant === 'secondary') return 'dark'
+    // Outline and ghost with dark theme also need white spinners
+    if (theme === 'dark') return 'dark'
+    // Otherwise use light theme
+    return 'light'
   }
 
   const sizeClass = isIconOnly
@@ -229,7 +267,7 @@ export function Button({
   const commonClassNames = `${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
 
   const content = isLoading ? (
-    <Spinner size={spinnerSizeMap[size]} color={spinnerColorMap[variant]} />
+    <Spinner size={spinnerSizeMap[size]} color={getSpinnerColor()} theme={getSpinnerTheme()} />
   ) : (
     <>
       {icon && <Icon icon={icon} size={iconSizeMap[size]} />}

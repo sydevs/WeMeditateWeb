@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react"
 import { Column } from "./Column"
-import { StoryWrapper, StorySection, StorySubsection, StoryExampleSection } from '../../ladle'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
   title: "Molecules / Content"
@@ -14,7 +14,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="With Image">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal">
+        <StorySection title="Minimal" variant="subsection">
           <div className="max-w-sm">
             <Column
               title="Left Aspect"
@@ -23,9 +23,9 @@ export const Default: Story = () => (
               imageAlt="Decorative icon"
             />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal">
+        <StorySection title="Maximal" variant="subsection">
           <div className="max-w-sm">
             <Column
               title="Central Aspect"
@@ -47,22 +47,22 @@ export const Default: Story = () => (
               href="/subtle-system/vishuddhi-chakra"
             />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="Without Image">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal">
+        <StorySection title="Minimal" variant="subsection">
           <div className="max-w-sm">
             <Column
               title="Right Aspect"
               description="The right Vishuddhi chakra is responsible for how we communicate with others."
             />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal">
+        <StorySection title="Maximal" variant="subsection">
           <div className="max-w-sm">
             <Column
               title="Diplomacy"
@@ -79,13 +79,13 @@ export const Default: Story = () => (
               href="/techniques/diplomacy"
             />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-12">
-        <StorySubsection label="Three Column Layout">
+        <StorySection title="Three Column Layout" variant="subsection">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Column
               title="Left Aspect"
@@ -107,9 +107,9 @@ export const Default: Story = () => (
               imageAlt="Right aspect icon"
             />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Two Column Layout">
+        <StorySection title="Two Column Layout" variant="subsection">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Column
               title="Meditation Benefits"
@@ -144,9 +144,9 @@ export const Default: Story = () => (
               href="/getting-started"
             />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Text-Only Columns">
+        <StorySection title="Text-Only Columns" variant="subsection">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Column
               title="Simple"
@@ -168,9 +168,9 @@ export const Default: Story = () => (
               }
             />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

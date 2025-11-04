@@ -3,7 +3,6 @@ import { Accordion, AccordionItemData } from './Accordion'
 import {
   StoryWrapper,
   StorySection,
-  StoryExampleSection,
 } from '../../ladle'
 
 export default {
@@ -49,7 +48,7 @@ export const Default: Story = () => (
       <Accordion items={faqItems} allowMultiple defaultOpenItems={['1', '2']} />
     </StorySection>
 
-    <StoryExampleSection subtitle="Rich HTML Content">
+    <StorySection title="Rich HTML Content" inContext={true}>
       <Accordion
         items={[
           {
@@ -125,7 +124,7 @@ export const Default: Story = () => (
         allowMultiple
         defaultOpenItems={['1']}
       />
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

@@ -12,12 +12,12 @@ export interface BreadcrumbsProps extends Omit<ComponentProps<'nav'>, 'children'
   /** Array of breadcrumb items */
   items: BreadcrumbItem[]
   /**
-   * Color variant for breadcrumbs
-   * - dark: Standard gray/teal colors for light backgrounds
-   * - light: White colors for dark backgrounds
-   * @default 'dark'
+   * Theme based on background context
+   * - light: Dark colors for light backgrounds (default)
+   * - dark: White colors for dark backgrounds
+   * @default 'light'
    */
-  variant?: 'dark' | 'light'
+  theme?: 'light' | 'dark'
 }
 
 /**
@@ -26,7 +26,7 @@ export interface BreadcrumbsProps extends Omit<ComponentProps<'nav'>, 'children'
  */
 export function Breadcrumbs({
   items,
-  variant = 'dark',
+  theme = 'light',
   className = '',
   ...props
 }: BreadcrumbsProps) {
@@ -34,9 +34,8 @@ export function Breadcrumbs({
     return null
   }
 
-  const linkVariant = variant === 'light' ? 'light' : 'primary'
-  const currentPageColor = variant === 'light' ? 'text-white' : 'text-gray-900'
-  const separatorColor = variant === 'light' ? 'text-white' : 'text-gray-400'
+  const currentPageColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
+  const separatorColor = theme === 'dark' ? 'text-white' : 'text-gray-400'
 
   return (
     <nav
@@ -53,7 +52,8 @@ export function Breadcrumbs({
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  variant={linkVariant}
+                  variant="primary"
+                  theme={theme}
                   size="inherit"
                   className="no-underline"
                 >

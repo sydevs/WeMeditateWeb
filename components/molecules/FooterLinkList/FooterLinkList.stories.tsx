@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { FooterLinkList } from './FooterLinkList'
-import { StorySection, StorySubsection, StoryExampleSection, StoryWrapper } from '../../ladle'
+import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
   title: 'Molecules / Display',
@@ -26,7 +26,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Default Variant">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal">
+        <StorySection title="Minimal" variant="subsection">
           <FooterLinkList
             title="Learn more"
             links={[
@@ -34,17 +34,17 @@ export const Default: Story = () => (
               { text: 'Contact', href: '/contact' },
             ]}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal">
+        <StorySection title="Maximal" variant="subsection">
           <FooterLinkList title="Learn more" links={sampleLinks} locale="en" />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="Hero Variant">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal">
+        <StorySection title="Minimal" variant="subsection">
           <FooterLinkList
             variant="hero"
             links={[
@@ -52,15 +52,15 @@ export const Default: Story = () => (
               { text: 'Music for meditation', href: '/music' },
             ]}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal">
+        <StorySection title="Maximal" variant="subsection">
           <FooterLinkList variant="hero" links={heroLinks} locale="en" />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-12 md:flex-row md:gap-16">
         {/* Hero Links Section */}
         <div className="flex-1">
@@ -89,7 +89,7 @@ export const Default: Story = () => (
           />
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

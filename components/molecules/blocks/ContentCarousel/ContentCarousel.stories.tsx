@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { ContentCarousel } from "./ContentCarousel";
-import { StoryWrapper, StorySection, StoryExampleSection } from '../../../ladle';
+import { StoryWrapper, StorySection } from '../../../ladle';
 
 export default {
   title: "Molecules / Sections"
@@ -129,7 +129,7 @@ const mixedItems = [
 
 export const ContentCarouselStory: Story = () => (
   <StoryWrapper>
-    <StoryExampleSection subtitle="Meditations">
+    <StorySection title="Meditations" inContext={true}>
       <p className="text-sm text-gray-600 mb-4">
         Meditation carousel with play buttons, duration badges, and titles (no descriptions).
       </p>
@@ -137,9 +137,9 @@ export const ContentCarouselStory: Story = () => (
         title="Featured Meditations"
         items={meditationItems}
       />
-    </StoryExampleSection>
+    </StorySection>
 
-    <StoryExampleSection subtitle="Articles">
+    <StorySection title="Articles" inContext={true}>
       <p className="text-sm text-gray-600 mb-4">
         Article carousel with titles, descriptions, and varied aspect ratios (no play buttons or duration).
       </p>
@@ -147,9 +147,9 @@ export const ContentCarouselStory: Story = () => (
         title="Latest Articles"
         items={articleItems}
       />
-    </StoryExampleSection>
+    </StorySection>
 
-    <StoryExampleSection subtitle="Mixed Content">
+    <StorySection title="Mixed Content" inContext={true}>
       <p className="text-sm text-gray-600 mb-4">
         Combination of meditations and articles with varied aspect ratios and features.
       </p>
@@ -157,7 +157,7 @@ export const ContentCarouselStory: Story = () => (
         title="Explore Content"
         items={mixedItems}
       />
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 

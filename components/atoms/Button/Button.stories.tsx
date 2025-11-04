@@ -17,8 +17,6 @@ import {
 import {
   StoryWrapper,
   StorySection,
-  StoryExampleSection,
-  StorySubsection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -103,30 +101,6 @@ export const Default: Story = () => (
           </StoryGridRow>
 
           <StoryGridRow>
-            <StoryGridCell isLabel>Outline Light</StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={StarIcon} variant="outline-light" shape="square" aria-label="Favorite" />
-              </div>
-            </StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={StarIcon} variant="outline-light" shape="circular" aria-label="Favorite" />
-              </div>
-            </StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={StarIcon} variant="outline-light" shape="square">Button</Button>
-              </div>
-            </StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={StarIcon} variant="outline-light" shape="circular">Button</Button>
-              </div>
-            </StoryGridCell>
-          </StoryGridRow>
-
-          <StoryGridRow>
             <StoryGridCell isLabel>Ghost</StoryGridCell>
             <StoryGridCell>
               <Button icon={XMarkIcon} variant="ghost" shape="square" aria-label="Close" />
@@ -141,63 +115,57 @@ export const Default: Story = () => (
               <Button icon={XMarkIcon} variant="ghost" shape="circular">Button</Button>
             </StoryGridCell>
           </StoryGridRow>
-
-          <StoryGridRow>
-            <StoryGridCell isLabel>Ghost Light</StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={XMarkIcon} variant="ghost-light" shape="square" aria-label="Close" />
-              </div>
-            </StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={XMarkIcon} variant="ghost-light" shape="circular" aria-label="Close" />
-              </div>
-            </StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={XMarkIcon} variant="ghost-light" shape="square">Button</Button>
-              </div>
-            </StoryGridCell>
-            <StoryGridCell>
-              <div className="bg-gray-800 p-2 inline-block">
-                <Button icon={XMarkIcon} variant="ghost-light" shape="circular">Button</Button>
-              </div>
-            </StoryGridCell>
-          </StoryGridRow>
         </StoryGridBody>
       </StoryGrid>
     </StorySection>
 
+    <StorySection
+      title="Dark Theme"
+      theme="dark"
+      background="neutral"
+      description="All button variants on dark backgrounds - outline and ghost use white, primary and secondary remain vibrant"
+    >
+      <div className="flex gap-4 items-center flex-wrap">
+        <Button variant="primary" theme="dark" icon={PlayIcon} aria-label="Play" />
+        <Button variant="primary" theme="dark">Primary</Button>
+        <Button variant="secondary" theme="dark" icon={HeartIcon} aria-label="Like" />
+        <Button variant="secondary" theme="dark">Secondary</Button>
+        <Button variant="outline" theme="dark" icon={StarIcon} aria-label="Favorite" />
+        <Button variant="outline" theme="dark">Outline</Button>
+        <Button variant="ghost" theme="dark" icon={XMarkIcon} aria-label="Close" />
+        <Button variant="ghost" theme="dark">Ghost</Button>
+      </div>
+    </StorySection>
+
     <StorySection title="Sizes">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Text Buttons">
+        <StorySection title="Text Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
             <Button size="sm">Small</Button>
             <Button size="md">Medium</Button>
             <Button size="lg">Large</Button>
           </div>
-        </StorySubsection>
-        <StorySubsection label="Icon-only Buttons">
+        </StorySection>
+        <StorySection title="Icon-only Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
             <Button icon={HeartIcon} size="sm" aria-label="Like (small)" />
             <Button icon={HeartIcon} size="md" aria-label="Like (medium)" />
             <Button icon={HeartIcon} size="lg" aria-label="Like (large)" />
           </div>
-        </StorySubsection>
-        <StorySubsection label="Icon + Text Buttons">
+        </StorySection>
+        <StorySection title="Icon + Text Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
             <Button icon={CheckIcon} size="sm">Small</Button>
             <Button icon={CheckIcon} size="md">Medium</Button>
             <Button icon={CheckIcon} size="lg">Large</Button>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="States">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Loading">
+        <StorySection title="Loading" variant="subsection">
           <div className="flex flex-col gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-2">Text Buttons</p>
@@ -225,9 +193,9 @@ export const Default: Story = () => (
               </div>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Disabled">
+        <StorySection title="Disabled" variant="subsection">
           <div className="flex flex-col gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-2">Text Buttons</p>
@@ -255,7 +223,7 @@ export const Default: Story = () => (
               </div>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
@@ -270,9 +238,9 @@ export const Default: Story = () => (
       </p>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Call-to-Action on Light Background (wemeditate.com style)">
+        <StorySection title="Call-to-Action on Light Background (wemeditate.com style)" variant="subsection">
           <div className="flex gap-4 flex-wrap">
             <Button variant="outline" size="lg">Meditate Now</Button>
             <Button variant="outline" size="lg">Learn More</Button>
@@ -281,63 +249,65 @@ export const Default: Story = () => (
           <p className="text-xs text-gray-500 mt-2">
             Hover to see the animated background fill from center to edges
           </p>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Call-to-Action on Dark Background (wemeditate.com style)">
+        <StorySection title="Call-to-Action on Dark Background (wemeditate.com style)" variant="subsection">
           <div className="bg-gray-900 p-6 rounded">
             <div className="flex gap-4 flex-wrap">
-              <Button variant="outline-light" size="lg">Get Inspired</Button>
-              <Button variant="outline-light" size="lg">Start Today</Button>
-              <Button variant="outline-light" size="lg">Join Now</Button>
+              <Button variant="outline" theme="dark" size="lg">Get Inspired</Button>
+              <Button variant="outline" theme="dark" size="lg">Start Today</Button>
+              <Button variant="outline" theme="dark" size="lg">Join Now</Button>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
             White variant with animated hover effect for dark backgrounds
           </p>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Form Actions">
+        <StorySection title="Form Actions" variant="subsection">
           <div className="flex gap-3 flex-wrap">
             <Button variant="primary">Submit</Button>
             <Button variant="outline">Cancel</Button>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Media Controls">
+        <StorySection title="Media Controls" variant="subsection">
           <div className="flex gap-3 flex-wrap">
             <Button icon={PlayIcon} variant="primary" aria-label="Play" />
             <Button icon={PauseIcon} variant="primary" aria-label="Pause" />
             <Button icon={ChevronLeftIcon} variant="ghost" aria-label="Previous" />
             <Button icon={ChevronRightIcon} variant="ghost" aria-label="Next" />
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Dialog Actions">
+        <StorySection title="Dialog Actions" variant="subsection">
           <div className="flex gap-3 flex-wrap">
             <Button icon={XMarkIcon} variant="ghost" shape="square" aria-label="Close dialog" />
             <div className="flex-1" />
             <Button variant="ghost">Cancel</Button>
             <Button variant="primary">Confirm</Button>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Navigation">
+        <StorySection title="Navigation" variant="subsection">
           <div className="flex gap-3 flex-wrap">
             <Button icon={ChevronLeftIcon} variant="outline">Back</Button>
             <Button icon={ArrowRightIcon} variant="primary">Continue</Button>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Toolbar">
+        <StorySection title="Toolbar" variant="subsection">
           <div className="flex gap-2">
             <Button icon={Bars3Icon} variant="ghost" aria-label="Menu" />
             <Button icon={MagnifyingGlassIcon} variant="ghost" aria-label="Search" />
             <Button icon={HeartIcon} variant="ghost" aria-label="Favorites" />
             <Button icon={StarIcon} variant="ghost" aria-label="Rate" />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
+
+    <div />
   </StoryWrapper>
 );
 

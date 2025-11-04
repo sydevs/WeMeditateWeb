@@ -14,8 +14,13 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   navItems?: Array<{ label: string; href: string }>
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
-  /** Color variant - light for dark backgrounds, dark for light backgrounds */
-  variant?: 'light' | 'dark'
+  /**
+   * Theme based on background context
+   * - light: Dark colors for light backgrounds (default)
+   * - dark: White colors for dark backgrounds
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark'
 }
 
 /**
@@ -31,7 +36,7 @@ export function Header({
   actionLinkHref,
   navItems = [],
   breadcrumbs,
-  variant = 'dark',
+  theme = 'light',
   className = '',
   ...props
 }: HeaderProps) {
@@ -55,11 +60,11 @@ export function Header({
     return () => observer.disconnect()
   }, [])
 
-  // Text color based on variant and sticky state
-  const textColorClass = variant === 'light' ? 'text-white' : 'text-gray-700'
+  // Text color based on theme and sticky state
+  const textColorClass = theme === 'dark' ? 'text-white' : 'text-gray-700'
 
   // Border color should match text color (except when sticky)
-  const borderColorClass = variant === 'light' ? 'border-white' : 'border-gray-200'
+  const borderColorClass = theme === 'dark' ? 'border-white' : 'border-gray-200'
 
   return (
     <>
@@ -135,7 +140,8 @@ export function Header({
               {navItems.map((item, index) => (
                 <Button
                   key={index}
-                  variant={isSticky ? 'ghost' : variant === 'light' ? 'ghost-light' : 'ghost'}
+                  variant="ghost"
+                  theme={isSticky ? 'light' : theme}
                   size="sm"
                   href={item.href}
                   className="px-0 basis-1/4"
@@ -164,7 +170,7 @@ export function Header({
       {/* Breadcrumbs - below nav to preserve correct ordering */}
       {breadcrumbs && breadcrumbs.length > 0 && (
         <div className={`py-3 ${textColorClass}`}>
-          <Breadcrumbs items={breadcrumbs} variant={variant} />
+          <Breadcrumbs items={breadcrumbs} theme={theme} />
         </div>
       )}
     </>

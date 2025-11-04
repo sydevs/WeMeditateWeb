@@ -2,7 +2,7 @@ import type { Story, StoryDefault } from "@ladle/react";
 import { Splash } from "./Splash";
 import { Header } from "../Header";
 import { Countdown, Button } from "../../atoms";
-import { StoryWrapper, StoryExampleSection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
   title: "Organisms"
@@ -28,38 +28,9 @@ export const Default: Story = () => {
           subtitle="Making a start is easier than you think."
           ctaText="Try it now"
           ctaHref="/start"
-          theme="light"
+          theme="dark"
           pulsate
         />
-      </div>
-
-      {/* Splash with Header Overlay (Light Theme) */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-semibold mb-4 px-4">With Header Overlay (Light Theme)</h2>
-        <div className="relative">
-          <Splash
-            backgroundImage="https://picsum.photos/id/1018/1920/1080"
-            heading="Meditate for Better Mental Health"
-            subtitle="Making a start is easier than you think."
-            ctaText="Try it now"
-            ctaHref="/start"
-            theme="light"
-            pulsate
-          />
-          <div className="absolute top-0 left-0 right-0 z-20 p-4">
-            <Header
-              logoHref="/"
-              actionLinkText="Classes near me"
-              actionLinkHref="/classes"
-              navItems={[
-                { label: "Meditate Now", href: "/meditate" },
-                { label: "Music for Meditation", href: "/music" },
-                { label: "Inspiration", href: "/inspiration" },
-                { label: "About Meditation", href: "/about" }
-              ]}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Splash with Header Overlay (Dark Theme) */}
@@ -67,10 +38,10 @@ export const Default: Story = () => {
         <h2 className="text-2xl font-semibold mb-4 px-4">With Header Overlay (Dark Theme)</h2>
         <div className="relative">
           <Splash
-            backgroundImage="https://picsum.photos/id/1015/1920/1080"
-            heading="Discover Inner Peace"
-            subtitle="Your journey to mindfulness starts here."
-            ctaText="Begin now"
+            backgroundImage="https://picsum.photos/id/1018/1920/1080"
+            heading="Meditate for Better Mental Health"
+            subtitle="Making a start is easier than you think."
+            ctaText="Try it now"
             ctaHref="/start"
             theme="dark"
             pulsate
@@ -91,7 +62,36 @@ export const Default: Story = () => {
         </div>
       </div>
 
-      <StoryExampleSection subtitle="Countdown Timer">
+      {/* Splash with Header Overlay (Light Theme Background) */}
+      <div className="mb-16">
+        <h2 className="text-2xl font-semibold mb-4 px-4">With Header Overlay (Light Theme Background)</h2>
+        <div className="relative">
+          <Splash
+            backgroundImage="https://picsum.photos/id/1015/1920/1080"
+            heading="Discover Inner Peace"
+            subtitle="Your journey to mindfulness starts here."
+            ctaText="Begin now"
+            ctaHref="/start"
+            theme="light"
+            pulsate
+          />
+          <div className="absolute top-0 left-0 right-0 z-20 p-4">
+            <Header
+              logoHref="/"
+              actionLinkText="Classes near me"
+              actionLinkHref="/classes"
+              navItems={[
+                { label: "Meditate Now", href: "/meditate" },
+                { label: "Music for Meditation", href: "/music" },
+                { label: "Inspiration", href: "/inspiration" },
+                { label: "About Meditation", href: "/about" }
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+
+      <StorySection title="Countdown Timer" inContext={true}>
         <div className="relative">
           <Splash
             backgroundImage="https://picsum.photos/id/1015/1920/1080"
@@ -99,15 +99,15 @@ export const Default: Story = () => {
             subtitle="Every Tuesday and Thursday at 7 pm London / 8 pm CET"
             ctaText="Sign up"
             ctaHref="/live"
-            theme="light"
+            theme="dark"
             pulsate
           >
-            <Countdown targetDate={tomorrow} color="light" />
+            <Countdown targetDate={tomorrow} theme="dark" />
           </Splash>
         </div>
-      </StoryExampleSection>
+      </StorySection>
 
-      <StoryExampleSection subtitle="App Download Buttons">
+      <StorySection title="App Download Buttons" inContext={true}>
         <div className="relative">
           <Splash
             backgroundImage="https://picsum.photos/id/1018/1920/1080"
@@ -115,7 +115,7 @@ export const Default: Story = () => {
             subtitle="Meditate anytime, anywhere."
             ctaText="Learn more"
             ctaHref="/app"
-            theme="light"
+            theme="dark"
             pulsate
           >
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
@@ -136,7 +136,7 @@ export const Default: Story = () => {
             </div>
           </Splash>
         </div>
-      </StoryExampleSection>
+      </StorySection>
 
       <div />
     </StoryWrapper>

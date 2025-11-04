@@ -3,8 +3,6 @@ import { Author } from './Author'
 import {
   StoryWrapper,
   StorySection,
-  StorySubsection,
-  StoryExampleSection,
 } from '../../ladle'
 
 export default {
@@ -21,15 +19,15 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Mini Variant">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal">
+        <StorySection title="Minimal" variant="subsection">
           <Author
             variant="mini"
             name="Sarah Johnson"
             imageUrl={authorImage}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal">
+        <StorySection title="Maximal" variant="subsection">
           <Author
             variant="mini"
             name="Gabriel Kolanen"
@@ -39,9 +37,9 @@ export const Default: Story = () => (
             readingTime={8}
             href="#author"
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal (Right Aligned)">
+        <StorySection title="Maximal (Right Aligned)" variant="subsection">
           <Author
             variant="mini"
             name="Gabriel Kolanen"
@@ -52,13 +50,13 @@ export const Default: Story = () => (
             href="#author"
             align="right"
           />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="Hero Variant">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal">
+        <StorySection title="Minimal" variant="subsection">
           <Author
             variant="hero"
             name="Emma Wilson"
@@ -66,9 +64,9 @@ export const Default: Story = () => (
             imageUrl={authorImage}
             meditationYears={3}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal">
+        <StorySection title="Maximal" variant="subsection">
           <Author
             variant="hero"
             name="Gabriel Kolanen"
@@ -92,9 +90,9 @@ export const Default: Story = () => (
               </>
             }
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal (Right Aligned)">
+        <StorySection title="Maximal (Right Aligned)" variant="subsection">
           <Author
             variant="hero"
             name="Gabriel Kolanen"
@@ -119,11 +117,11 @@ export const Default: Story = () => (
               </>
             }
           />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       {/* Article with Mini Byline */}
       <div>
         <h3 className="text-base font-semibold text-gray-900 mb-4">Article Header</h3>
@@ -182,7 +180,7 @@ export const Default: Story = () => (
           />
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

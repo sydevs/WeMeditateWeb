@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Heading } from "./Heading";
 import { StorySection,
-  StoryExampleSection, StoryWrapper } from '../../ladle';
+   StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Typography"
@@ -23,7 +23,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <article className="max-w-2xl">
         <Heading level="h1" className="mb-4">
           Guide to Meditation
@@ -59,7 +59,7 @@ export const Default: Story = () => (
           practice.
         </p>
       </article>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 

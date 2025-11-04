@@ -15,3 +15,6 @@ export type { FloralDividerSvgProps } from './FloralDividerSvg'
 
 export { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 export type { HeaderIllustrationSvgProps } from './HeaderIllustrationSvg'
+
+export { LotusDotsSvg } from './LotusDotsSvg'
+export type { LotusDotsSvgProps } from './LotusDotsSvg'

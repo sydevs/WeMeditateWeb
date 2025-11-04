@@ -60,65 +60,131 @@ export const Default: Story = () => (
 
 ### StorySection
 
-Wraps each major section of a story with a title, optional description, and automatic horizontal divider.
+**Unified component** that replaces StorySection, StoryDarkSection, StorySubsection, and StoryExampleSection with a single flexible component.
+
+Wraps sections of a story with a title, optional description, and automatic horizontal divider. Supports light/dark themes, different background styles, and special "In Context" sections.
 
 ```tsx
 import { StorySection } from '../../ladle';
 
+// Regular section (renders as h2)
 <StorySection title="Variants" description="Optional description">
   {/* Content */}
+</StorySection>
+
+// Subsection (renders as p tag)
+<StorySection title="Explicit Sizes" variant="subsection">
+  {/* Content */}
+</StorySection>
+
+// Dark theme section with neutral background
+<StorySection
+  title="Dark Theme"
+  theme="dark"
+  background="neutral"
+  description="Lightened colors for contrast on dark backgrounds"
+>
+  {/* Content - text-white is applied automatically */}
+</StorySection>
+
+// "In Context" section with bold top border
+<StorySection title="Examples" inContext={true}>
+  {/* Real-world usage examples */}
+</StorySection>
+
+// Scrollable section
+<StorySection title="Light Theme (Default)" variant="scrollable">
+  {/* Content with 600px height and overflow */}
 </StorySection>
 ```
 
 **Props**:
-- `title` (string, required) - Section heading
+- `title` (string, required) - Section title (renders as h2 for sections, p for subsections)
 - `description` (string, optional) - Description text below the title
 - `children` (ReactNode, required) - Section content
+- `theme` ('light' | 'dark', default: 'light') - Text color theme
+  - `light`: Dark text (gray-900) - for light backgrounds
+  - `dark`: White text - for dark backgrounds (applied to children)
+- `background` ('none' | 'neutral' | 'gradient', default: 'none') - Background style
+  - `none`: No background
+  - `neutral`: Light gray (light theme) or dark gray (dark theme)
+  - `gradient`: Light teal gradient (light theme) or dark teal gradient (dark theme)
+- `variant` ('section' | 'subsection' | 'scrollable', default: 'section')
+  - `section`: Regular section with h2 title
+  - `subsection`: Nested section with p tag title (smaller font, no divider)
+  - `scrollable`: Fixed 600px height with overflow-y-auto
+- `inContext` (boolean, default: false) - Adds "In Context - " prefix to title and bold top border for visual separation
 
-### StoryExampleSection
+**Important Notes**:
+- **Title/Description Colors**: Always use light theme colors (gray-900, gray-600) for non-subsection titles/descriptions, even when `theme="dark"`, because they appear on the light wrapper background
+- **Children Text Color**: The `text-white` class is applied to children when `theme="dark"` so content inherits the correct color
+- **Subsections**: Use within regular sections for nested organization - they don't show dividers
+- **In Context Sections**: Use `inContext={true}` for example/usage sections - adds bold border and "In Context - " prefix
 
-Special wrapper for "Examples" sections that adds visual distinction with a teal top border. The title is automatically set to "Examples" or can include a subtitle for multiple example sections.
+#### When to Use Subsections
 
+Use `variant="subsection"` when you need to organize content within a major section:
+
+**✅ DO use subsections for:**
+- **Grouped variations within a section** - e.g., "Minimal" and "Maximal" configurations within a "Default Variant" section
+- **Categorizing examples** - e.g., "Button with Icons" and "List Items with Icons" within an "Examples" section
+- **Organizing complex state matrices** - e.g., "Loading States" and "Disabled States" within a "States" section
+- **Multiple related demonstrations** - e.g., "Vertical Spacing" and "Horizontal Spacing" within a "Sizes" section
+
+**❌ DON'T use subsections for:**
+- **Top-level sections** - Always use regular sections (default variant) for major divisions
+- **Single items** - If there's only one thing to show, don't wrap it in a subsection
+- **Flat hierarchies** - Don't nest subsections within subsections (only one level of nesting)
+
+**Visual Hierarchy**:
+- **Section** (h2, large font, shows divider) → Major topic division
+- **Subsection** (p, medium font, no divider) → Sub-topic within major section
+- **Content** → The actual component demonstrations
+
+**Example Pattern for Molecules**:
 ```tsx
-import { StoryExampleSection } from '../../ladle';
+<StorySection title="Default Variant">
+  <div className="flex flex-col gap-8">
+    <StorySection title="Minimal" variant="subsection">
+      {/* Only required props */}
+    </StorySection>
 
-// Single Examples section
-<StoryExampleSection>
-  {/* Example content */}
-</StoryExampleSection>
-
-// Multiple Examples sections with subtitles
-<StoryExampleSection subtitle="Button with Icons">
-  {/* Example content */}
-</StoryExampleSection>
-
-<StoryExampleSection subtitle="Form Layout">
-  {/* Example content */}
-</StoryExampleSection>
+    <StorySection title="Maximal" variant="subsection">
+      {/* All optional props */}
+    </StorySection>
+  </div>
+</StorySection>
 ```
 
-**Props**:
+**Example Pattern for Complex States**:
+```tsx
+<StorySection title="States">
+  <div className="flex flex-col gap-6">
+    <StorySection title="Loading" variant="subsection">
+      {/* Loading state demonstrations */}
+    </StorySection>
+
+    <StorySection title="Disabled" variant="subsection">
+      {/* Disabled state demonstrations */}
+    </StorySection>
+  </div>
+</StorySection>
+```
+
+### StorySubsection (Deprecated)
+
+**DEPRECATED**: Use `<StorySection variant="subsection">` instead.
+
+### StoryExampleSection (Deprecated)
+
+**DEPRECATED**: Use `<StorySection inContext={true}>` instead.
+
+**Old Props (Removed)**:
 - `subtitle` (string, optional) - Appended as "Examples - {subtitle}"
 - `description` (string, optional) - Description text below the title
 - `children` (ReactNode, required) - Section content
 
-**Visual Styling**: Includes a 4px teal top border (`border-t-4 border-teal-500`) to visually distinguish example sections from regular sections.
-
-### StorySubsection
-
-Provides consistent labeling for subsections within a StorySection or StoryExampleSection.
-
-```tsx
-import { StorySubsection } from '../../ladle';
-
-<StorySubsection label="Text Buttons">
-  {/* Content */}
-</StorySubsection>
-```
-
-**Props**:
-- `label` (string, required) - Subsection label
-- `children` (ReactNode, required) - Subsection content
+**Migration**: Replace `<StoryExampleSection>` with `<StorySection title="Examples" inContext={true}>`. The new component uses a bold dark border (`border-t-4 border-gray-900`) instead of the teal border.
 
 ### StoryGrid Components
 
@@ -224,6 +290,98 @@ export const Default: Story = () => (
 );
 
 Default.storyName = "Component Name"
+```
+
+### Placeholder Content Best Practices
+
+When creating stories, use consistent, high-quality placeholder content:
+
+#### Placeholder Images
+
+Use **[picsum.photos](https://picsum.photos)** for placeholder images with seeded URLs for consistency:
+
+```tsx
+// ✅ Good - Seeded URLs provide consistent images across reloads
+thumbnailSrc: "https://picsum.photos/seed/meditation1/400/400"
+thumbnailSrc: "https://picsum.photos/seed/article2/640/360"
+
+// ❌ Bad - Random images change on every reload
+thumbnailSrc: "https://picsum.photos/400/400"
+
+// ❌ Bad - Generic placeholder services with text
+thumbnailSrc: "https://placehold.co/400x400/e08e79/ffffff?text=Image"
+```
+
+**Pattern**: `https://picsum.photos/seed/{descriptive-name}/{width}/{height}`
+- Use descriptive seed names: `meditation1`, `article2`, `hero-banner`, etc.
+- Match dimensions to aspect ratio needs
+- Different seeds provide variety while staying consistent
+
+**Examples:**
+```tsx
+const storyItems = [
+  {
+    id: 1,
+    thumbnailSrc: "https://picsum.photos/seed/meditation1/400/400", // Square 1:1
+    title: "Morning Meditation"
+  },
+  {
+    id: 2,
+    thumbnailSrc: "https://picsum.photos/seed/article1/640/360", // Video 16:9
+    title: "What is Meditation?"
+  },
+  {
+    id: 3,
+    thumbnailSrc: "https://picsum.photos/seed/nature1/400/300", // 4:3 ratio
+    title: "Nature Walk"
+  }
+]
+```
+
+#### Interactive Elements
+
+For links, buttons, and other interactive elements in stories, use **hash hrefs** to prevent navigation:
+
+```tsx
+// ✅ Good - Prevents navigation in Ladle
+<ContentCard
+  href="#"
+  title="Example Card"
+/>
+
+<Button href="#">Click Me</Button>
+
+<Link href="#">About Us</Link>
+
+// ❌ Bad - Causes unwanted navigation
+<ContentCard
+  href="/meditations/morning"
+  title="Example Card"
+/>
+```
+
+**Why hash hrefs?**
+- Prevents accidental navigation when clicking around in Ladle
+- Keeps you in the story view for faster development
+- Still demonstrates interactive behavior (hover states, etc.)
+
+**When to use real URLs:**
+- Never in Ladle stories (always use `#`)
+- Use real URLs only in actual application pages
+
+#### Text Content
+
+Use realistic, contextually appropriate text:
+
+```tsx
+// ✅ Good - Realistic content
+description: "Start your day with clarity and peace through this guided morning practice."
+
+// ❌ Bad - Lorem ipsum or generic placeholder
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+
+// ❌ Bad - Too generic
+description: "This is a description."
 ```
 
 ### Standard Section Order

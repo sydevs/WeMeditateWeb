@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Breadcrumbs } from "./Breadcrumbs";
-import { StoryWrapper, StorySection, StoryExampleSection, StorySubsection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
   title: "Atoms / Navigation"
@@ -13,16 +13,16 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Two Levels">
+        <StorySection title="Two Levels" variant="subsection">
           <Breadcrumbs
             items={[
               { label: 'Home', href: '/' },
               { label: 'Current Page' }
             ]}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Three Levels">
+        <StorySection title="Three Levels" variant="subsection">
           <Breadcrumbs
             items={[
               { label: 'Home Page', href: '/' },
@@ -30,9 +30,9 @@ export const Default: Story = () => (
               { label: 'Improving Your Meditation' }
             ]}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Four Levels">
+        <StorySection title="Four Levels" variant="subsection">
           <Breadcrumbs
             items={[
               { label: 'Home', href: '/' },
@@ -41,13 +41,24 @@ export const Default: Story = () => (
               { label: 'Current Article' }
             ]}
           />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Dark Theme" theme="dark" background="neutral">
+      <Breadcrumbs
+        theme="dark"
+        items={[
+          { label: 'Home Page', href: '/' },
+          { label: 'About Meditation', href: '/about' },
+          { label: 'Current Page' }
+        ]}
+      />
+    </StorySection>
+
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Page Header Context">
+        <StorySection title="Page Header Context" variant="subsection">
           <div className="bg-white p-6 border border-gray-200">
             <Breadcrumbs
               items={[
@@ -60,9 +71,9 @@ export const Default: Story = () => (
               Improving Your Meditation
             </h1>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="With Long Labels">
+        <StorySection title="With Long Labels" variant="subsection">
           <Breadcrumbs
             items={[
               { label: 'Home', href: '/' },
@@ -71,9 +82,9 @@ export const Default: Story = () => (
               { label: 'A Comprehensive Guide to Mindfulness Practice' }
             ]}
           />
-        </StorySubsection>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

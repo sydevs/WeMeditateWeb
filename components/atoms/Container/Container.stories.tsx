@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Container } from "./Container";
 import { StoryWrapper, StorySection,
-  StoryExampleSection, StorySubsection } from '../../ladle';
+   } from '../../ladle';
 
 export default {
   title: "Atoms / Layout"
@@ -50,8 +50,8 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
-      <StorySubsection label="Article">
+    <StorySection title="Examples" inContext={true}>
+      <StorySection title="Article" variant="subsection">
         <div className="bg-gray-50 py-8">
           <Container maxWidth="md">
             <article>
@@ -76,9 +76,9 @@ export const Default: Story = () => (
             </article>
           </Container>
         </div>
-      </StorySubsection>
+      </StorySection>
 
-      <StorySubsection label="Form">
+      <StorySection title="Form" variant="subsection">
         <div className="bg-gray-50 py-8">
           <Container maxWidth="sm">
             <div className="bg-white rounded-lg shadow-md p-8">
@@ -109,9 +109,9 @@ export const Default: Story = () => (
             </div>
           </Container>
         </div>
-      </StorySubsection>
+      </StorySection>
 
-      <StorySubsection label="Dashboard">
+      <StorySection title="Dashboard" variant="subsection">
         <div className="bg-gray-50 py-8">
           <Container maxWidth="lg">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Meditation Journey</h2>
@@ -130,8 +130,8 @@ export const Default: Story = () => (
             </div>
           </Container>
         </div>
-      </StorySubsection>
-    </StoryExampleSection>
+      </StorySection>
+    </StorySection>
   </StoryWrapper>
 );
 

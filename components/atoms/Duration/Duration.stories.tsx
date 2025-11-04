@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Duration } from "./Duration";
 import { StorySection,
-  StoryExampleSection, StorySubsection, StoryWrapper } from '../../ladle';
+   StoryWrapper } from '../../ladle';
 
 export default {
   title: "Atoms / Specialty"
@@ -40,8 +40,8 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
-      <StorySubsection label="Meditation Cards">
+    <StorySection title="Examples" inContext={true}>
+      <StorySection title="Meditation Cards" variant="subsection">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
           <div className="border border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors">
             <h4 className="font-medium text-gray-900 mb-2">Morning Meditation</h4>
@@ -64,9 +64,9 @@ export const Default: Story = () => (
             <Duration minutes={60} />
           </div>
         </div>
-      </StorySubsection>
+      </StorySection>
 
-      <StorySubsection label="Track List">
+      <StorySection title="Track List" variant="subsection">
         <div className="space-y-2 max-w-md">
           {[
             { title: "Peaceful Piano", duration: 5 },
@@ -80,8 +80,8 @@ export const Default: Story = () => (
             </div>
           ))}
         </div>
-      </StorySubsection>
-    </StoryExampleSection>
+      </StorySection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Duration"

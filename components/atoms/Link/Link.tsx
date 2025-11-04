@@ -18,11 +18,18 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
    * - primary: Teal, medium weight, no underline
    * - secondary: Coral, medium weight
    * - neutral: Gray tones
-   * - light: White text for dark backgrounds
    * - unstyled: No styling (useful for custom styling)
    * @default 'default'
    */
-  variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'light' | 'unstyled'
+  variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'unstyled'
+
+  /**
+   * Theme based on background context
+   * - light: Dark colors for light backgrounds (default)
+   * - dark: Lightened colors for dark backgrounds (white/teal-300/coral-300)
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark'
 
   /**
    * Size variant (affects font size)
@@ -57,6 +64,7 @@ export function Link({
   href,
   locale,
   variant = 'default',
+  theme = 'light',
   size = 'inherit',
   external = false,
   className = '',
@@ -83,14 +91,25 @@ export function Link({
 
   const baseStyles = 'transition-colors duration-200'
 
-  const variantStyles = {
+  // Variant styles for light theme (dark colors on light backgrounds)
+  const lightThemeVariants = {
     default: 'text-teal-600 hover:text-teal-700 hover:underline focus:ring-teal-500',
     primary: 'text-teal-600 font-medium hover:text-teal-700 focus:ring-teal-500',
     secondary: 'text-coral-600 font-medium hover:text-coral-700 focus:ring-coral-500',
     neutral: 'text-gray-700 hover:text-gray-900 focus:ring-gray-400',
-    light: 'text-white hover:text-white focus:ring-white',
     unstyled: '',
   }
+
+  // Variant styles for dark theme (lightened colors on dark backgrounds)
+  const darkThemeVariants = {
+    default: 'text-teal-300 hover:text-teal-200 hover:underline focus:ring-teal-300',
+    primary: 'text-teal-300 font-medium hover:text-teal-200 focus:ring-teal-300',
+    secondary: 'text-coral-300 font-medium hover:text-coral-200 focus:ring-coral-300',
+    neutral: 'text-gray-300 hover:text-gray-100 focus:ring-gray-300',
+    unstyled: '',
+  }
+
+  const variantStyles = theme === 'dark' ? darkThemeVariants : lightThemeVariants
 
   const sizeStyles = {
     sm: 'text-sm',

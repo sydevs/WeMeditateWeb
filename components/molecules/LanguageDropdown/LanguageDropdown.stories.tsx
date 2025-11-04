@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { LanguageDropdown } from './LanguageDropdown'
-import { StorySection, StorySubsection, StoryExampleSection, StoryWrapper } from '../../ladle'
+import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
   title: 'Molecules / Interactive',
@@ -34,7 +34,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Usage">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Minimal (Few Languages)">
+        <StorySection title="Minimal (Few Languages)" variant="subsection">
           <LanguageDropdown
             currentLanguage="en"
             languages={[
@@ -42,45 +42,45 @@ export const Default: Story = () => (
               { code: 'es', label: 'Español', href: '/es/about' },
             ]}
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Maximal (All Languages)">
+        <StorySection title="Maximal (All Languages)" variant="subsection">
           <LanguageDropdown currentLanguage="en" languages={allLanguages} />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="Different Current Languages">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="English Selected">
+        <StorySection title="English Selected" variant="subsection">
           <LanguageDropdown currentLanguage="en" languages={sampleLanguages} />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Spanish Selected">
+        <StorySection title="Spanish Selected" variant="subsection">
           <LanguageDropdown currentLanguage="es" languages={sampleLanguages} />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="French Selected">
+        <StorySection title="French Selected" variant="subsection">
           <LanguageDropdown currentLanguage="fr" languages={sampleLanguages} />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="Alignment Options">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Left Aligned (Default)">
+        <StorySection title="Left Aligned (Default)" variant="subsection">
           <LanguageDropdown currentLanguage="en" languages={sampleLanguages} align="left" />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Right Aligned">
+        <StorySection title="Right Aligned" variant="subsection">
           <div className="flex justify-end">
             <LanguageDropdown currentLanguage="en" languages={sampleLanguages} align="right" />
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-12">
         <div>
           <h3 className="text-sm font-semibold mb-4 text-gray-700">Footer Language Selector</h3>
@@ -108,7 +108,7 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { MasonryGrid, MasonryGridItem } from "./MasonryGrid";
-import { StoryWrapper, StorySection, StoryExampleSection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
   title: "Molecules / Sections"
@@ -131,7 +131,7 @@ export const Default: Story = () => (
       />
     </StorySection>
 
-    <StoryExampleSection subtitle="Compact Layout">
+    <StorySection title="Compact Layout" inContext={true}>
       <div className="max-w-4xl mx-auto">
         <MasonryGrid
           items={sampleItems.slice(0, 6)}
@@ -142,7 +142,7 @@ export const Default: Story = () => (
           }}
         />
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

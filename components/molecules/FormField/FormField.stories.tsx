@@ -8,7 +8,6 @@ import { Radio } from "../../atoms/Radio/Radio";
 import {
   StoryWrapper,
   StorySection,
-  StoryExampleSection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -181,7 +180,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8 max-w-2xl">
         {/* Input Example */}
         <div>
@@ -333,7 +332,7 @@ export const Default: Story = () => (
           </div>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

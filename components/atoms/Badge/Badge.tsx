@@ -63,7 +63,7 @@ export function Badge({
   children,
   ...props
 }: BadgeProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium font-sans'
+  const baseStyles = 'inline-flex items-center justify-center font-medium font-sans whitespace-nowrap'
 
   const colorStyles = {
     primary: 'bg-teal-100 text-teal-800',

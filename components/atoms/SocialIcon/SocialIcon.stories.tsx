@@ -10,7 +10,6 @@ import {
   StoryGridRow,
   StoryGridCell,
   StoryWrapper,
-  StoryExampleSection
 } from '../../ladle';
 
 export default {
@@ -72,7 +71,7 @@ export const Default: Story = () => {
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <>
       <div>
         <p className="font-medium text-gray-900 mb-3">Share this meditation</p>
         <div className="flex gap-3">
@@ -90,7 +89,7 @@ export const Default: Story = () => {
           </button>
         </div>
       </div>
-    </StoryExampleSection>
+    </>
   </StoryWrapper>
   )
 };

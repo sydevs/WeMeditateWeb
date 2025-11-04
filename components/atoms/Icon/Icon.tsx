@@ -28,7 +28,15 @@ export interface IconProps extends Omit<ComponentProps<'span'>, 'children'> {
    * Icon color
    * @default 'currentColor'
    */
-  color?: 'primary' | 'secondary' | 'tertiary' | 'currentColor'
+  color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
+
+  /**
+   * Theme based on background context
+   * - light: Standard colors for light backgrounds (default)
+   * - dark: Lightened colors for dark backgrounds
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark'
 
   /**
    * Accessible label for the icon (important for screen readers when icon has semantic meaning)
@@ -54,6 +62,7 @@ export function Icon({
   icon: IconComponent,
   size = 'md',
   color = 'currentColor',
+  theme = 'light',
   className = '',
   'aria-label': ariaLabel,
   ...props
@@ -67,12 +76,23 @@ export function Icon({
     '2xl': 'w-10 h-10',
   }
 
-  const colorStyles = {
+  // Light theme colors (standard colors for light backgrounds)
+  const lightThemeColors = {
     primary: 'text-teal-600',
     secondary: 'text-coral-500',
-    tertiary: 'text-gray-600',
+    neutral: 'text-gray-600',
     currentColor: 'text-current',
   }
+
+  // Dark theme colors (lightened colors for dark backgrounds)
+  const darkThemeColors = {
+    primary: 'text-teal-300',
+    secondary: 'text-coral-300',
+    neutral: 'text-white',
+    currentColor: 'text-current',
+  }
+
+  const colorStyles = theme === 'dark' ? darkThemeColors : lightThemeColors
 
   const baseStyles = 'inline-flex items-center justify-center flex-shrink-0'
 

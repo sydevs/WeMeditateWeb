@@ -9,8 +9,7 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell,
-  StoryExampleSection
+  StoryGridCell
 } from '../../ladle';
 
 export default {
@@ -75,7 +74,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div>
         <p className="text-sm font-medium mb-2 text-gray-900">Select your interests:</p>
         <div className="flex flex-col gap-2">
@@ -86,7 +85,9 @@ export const Default: Story = () => (
           <Checkbox label="Events & Workshops" />
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
+
+    <div />
   </StoryWrapper>
 );
 Default.storyName = "Checkbox"

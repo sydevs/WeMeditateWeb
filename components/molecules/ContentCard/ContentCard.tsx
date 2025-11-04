@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, useState } from 'react'
 import { PlayIcon } from '@heroicons/react/24/solid'
 import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../atoms/Link'
@@ -73,6 +73,12 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
   locale?: string
 
   /**
+   * Enable fade-in animation when image loads
+   * @default false
+   */
+  fadeInOnLoad?: boolean
+
+  /**
    * Custom class name for the card container
    */
   className?: string
@@ -134,35 +140,19 @@ export function ContentCard({
   badge,
   badgeUrl,
   locale,
+  fadeInOnLoad = false,
   className = '',
   ...props
 }: ContentCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false)
   const showPlayButton = playButton
   const isHeroVariant = variant === 'hero'
 
   // Determine play button size based on variant
   const playButtonSize = isHeroVariant ? 'lg' : 'md'
 
-  // Determine default size based on variant
-  // All variants use max-w-full on mobile, then aspect-ratio-aware sizing on larger screens
-  // Default variant uses responsive width: full on mobile, fixed on desktop
-  const getCardWidth = () => {
-    if (!isHeroVariant) return 'max-w-full sm:w-64'
-
-    // Responsive width: full width on mobile, aspect-ratio-aware on desktop
-    const aspectRatioWidths = {
-      'square': 'max-w-full md:w-96',           // 1:1 → full mobile, 384px desktop
-      'video': 'max-w-full md:w-[682px]',       // 16:9 → full mobile, 682px desktop
-      '16/9': 'max-w-full md:w-[682px]',        // 16:9 → full mobile, 682px desktop
-      '4/3': 'max-w-full md:w-128',             // 4:3 → full mobile, 512px desktop
-      '3/2': 'max-w-full md:w-144',             // 3:2 → full mobile, 576px desktop
-      '21/9': 'max-w-full md:w-[896px]',        // 21:9 → full mobile, 896px desktop
-    }
-
-    return aspectRatioWidths[aspectRatio] || 'max-w-full md:w-96' // default to square
-  }
-
-  const cardSize = getCardWidth()
+  // Cards always fill their column width
+  const cardSize = 'w-full'
 
   // Determine title styling based on variant
   // Hero variant matches carousel__name with responsive sizing
@@ -174,9 +164,14 @@ export function ContentCard({
   // Hero variant has larger gap between thumbnail and title (responsive)
   const contentGap = isHeroVariant ? 'gap-6 sm:gap-9' : 'gap-2'
 
+  // Build opacity classes based on fadeInOnLoad prop
+  const opacityClasses = fadeInOnLoad
+    ? `transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`
+    : ''
+
   return (
     <article
-      className={`group flex flex-col gap-2 sm:gap-3 ${cardSize} text-left ${className}`}
+      className={`group flex flex-col gap-2 sm:gap-3 ${cardSize} text-left ${opacityClasses} ${className}`}
       {...props}
     >
       {/* Thumbnail with optional play button overlay */}
@@ -187,6 +182,7 @@ export function ContentCard({
           aspectRatio={aspectRatio}
           objectFit="cover"
           className="transition-opacity duration-200 group-hover:opacity-90"
+          onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
         />
 
         {/* Play button overlay */}

@@ -3,7 +3,6 @@ import { Blockquote } from './Blockquote'
 import {
   StoryWrapper,
   StorySection,
-  StoryExampleSection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -88,7 +87,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <article className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">
           Understanding the Subtle System
@@ -135,7 +134,7 @@ export const Default: Story = () => (
           finding that it becomes a refuge we can return to whenever we need clarity or peace.
         </p>
       </article>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>

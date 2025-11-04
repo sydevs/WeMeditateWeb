@@ -58,8 +58,8 @@ export const StoryGridHeaderCell = ({
   size = 'primary'
 }: StoryGridHeaderCellProps) => {
   const className = size === 'primary'
-    ? "px-2 sm:px-3 py-1.5 sm:py-2 text-center text-sm sm:text-base font-semibold text-gray-700"
-    : "px-2 sm:px-3 py-1.5 sm:py-2 text-center text-xs sm:text-sm font-medium text-gray-600";
+    ? "px-2 sm:px-3 py-1.5 sm:py-2 text-center text-sm sm:text-base font-semibold opacity-60"
+    : "px-2 sm:px-3 py-1.5 sm:py-2 text-center text-xs sm:text-sm font-medium opacity-40";
 
   return (
     <th colSpan={colSpan} className={className}>
@@ -105,7 +105,7 @@ export interface StoryGridCellProps {
 
 export const StoryGridCell = ({ children, isLabel = false }: StoryGridCellProps) => {
   const className = isLabel
-    ? "block sm:table-cell px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold sm:font-medium text-gray-700"
+    ? "block sm:table-cell px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold sm:font-medium opacity-60"
     : "block sm:table-cell px-2 sm:px-3 py-1.5 sm:py-2 text-left sm:text-center";
 
   return (

@@ -699,9 +699,8 @@ Key requirements:
 - Use proper `title` categorization (e.g., `"Atoms / Form"`, `"Molecules / Layout"`, `"Organisms"`)
 - Add `storyName` attribute to the `Default` export for human-readable names
 - Use story utility components from [components/ladle/](components/ladle/) for consistency
-  - `StorySection` - Wrap major sections with automatic dividers
+  - `StorySection` - Unified component for all section types (regular sections, subsections, dark themes, examples)
   - `StoryGrid` - Create table layouts for multi-dimensional component matrices
-  - `StorySubsection` - Label subsections within a section
 - Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Padding → Examples
 - Use "Examples" section for practical usage scenarios (can be multiple sections with descriptive titles or a single section with subsections)
 
@@ -1032,20 +1031,161 @@ components/
 <StoryWrapper>
   <StorySection title="Variant Name">
     <div className="flex flex-col gap-8">
-      <StorySubsection label="Minimal">
+      <StorySection title="Minimal" variant="subsection">
         {/* Only required props */}
-      </StorySubsection>
+      </StorySection>
 
-      <StorySubsection label="Maximal">
+      <StorySection title="Maximal" variant="subsection">
         {/* All optional props */}
-      </StorySubsection>
+      </StorySection>
     </div>
   </StorySection>
 
-  <StoryExampleSection>
+  <StorySection title="Examples" inContext={true}>
     {/* Realistic usage examples */}
-  </StoryExampleSection>
+  </StorySection>
 
   <div />
 </StoryWrapper>
 ```
+
+## Batch Refactoring Patterns
+
+When making widespread changes to component stories or other files, use these proven patterns for safe, efficient batch operations.
+
+### Find and Replace in Story Files
+
+**Pattern**: Use `perl` one-liners with `find` for precise text replacement across multiple files.
+
+**Basic syntax**:
+```bash
+find components -name "*.stories.tsx" -type f -print0 | xargs -0 perl -i -pe 's/OLD_PATTERN/NEW_PATTERN/g'
+```
+
+**Examples**:
+
+Replace deprecated prop usage:
+```bash
+# Replace variant="example" with inContext={true}
+find components -name "*.stories.tsx" -type f -print0 | xargs -0 perl -i -pe 's/ variant="example"/ inContext={true}/g'
+
+# Replace StorySubsection with StorySection variant="subsection"
+find components -name "*.stories.tsx" -type f -print0 | xargs -0 perl -i -pe 's/StorySubsection label=/StorySection title=/g'
+```
+
+**Important flags**:
+- `-print0` and `-0`: Handle filenames with spaces correctly
+- `-i`: Edit files in-place
+- `-pe`: Perl one-liner mode with automatic line processing
+- `s/OLD/NEW/g`: Substitute globally (all occurrences per line)
+
+### Verify Changes Before Committing
+
+After batch replacements, always verify:
+
+```bash
+# Count remaining old patterns (should be 0)
+grep -r 'variant="example"' components/**/*.stories.tsx | wc -l
+
+# Show files that still have the old pattern
+grep -l 'variant="example"' components/**/*.stories.tsx
+
+# Show context around matches (if any)
+grep -n -B2 -A2 'variant="example"' components/**/*.stories.tsx
+```
+
+### Safe Backup Pattern
+
+For major refactoring, create backups first:
+
+```bash
+# Create timestamped backup
+tar -czf "components-backup-$(date +%Y%m%d-%H%M%S).tar.gz" components/
+
+# Or use git to create a safety branch
+git checkout -b refactor/component-api-update
+git add -A
+git commit -m "Checkpoint before batch refactoring"
+
+# After refactoring, verify changes
+git diff HEAD~1 --stat
+```
+
+### Complex Multi-Step Refactoring
+
+For changes requiring multiple steps:
+
+```bash
+# Step 1: Update imports
+find components -name "*.stories.tsx" -print0 | xargs -0 perl -i -pe 's/StoryExampleSection/StorySection/g'
+
+# Step 2: Update props
+find components -name "*.stories.tsx" -print0 | xargs -0 perl -i -pe 's/<StorySection>/<StorySection title="Examples" inContext={true}>/g'
+
+# Step 3: Verify each step
+grep -l "StoryExampleSection" components/**/*.stories.tsx  # Should be empty
+```
+
+### Selective File Refactoring
+
+Target specific directories or file patterns:
+
+```bash
+# Only atoms
+find components/atoms -name "*.stories.tsx" -type f -print0 | xargs -0 perl -i -pe 's/OLD/NEW/g'
+
+# Multiple directories
+find components/atoms components/molecules -name "*.stories.tsx" -type f -print0 | xargs -0 perl -i -pe 's/OLD/NEW/g'
+
+# Specific files matching pattern
+find components -name "*Button*.tsx" -type f -print0 | xargs -0 perl -i -pe 's/OLD/NEW/g'
+```
+
+### TypeScript Verification After Refactoring
+
+Always run TypeScript checks after batch changes:
+
+```bash
+# Check for TypeScript errors
+pnpm exec tsc --noEmit
+
+# If there are many errors, pipe to file for review
+pnpm exec tsc --noEmit 2>&1 | tee typescript-errors.log
+
+# Count errors by type
+pnpm exec tsc --noEmit 2>&1 | grep "error TS" | cut -d: -f4 | sort | uniq -c
+```
+
+### Rollback Pattern
+
+If something goes wrong:
+
+```bash
+# Quick rollback with git (if changes are uncommitted)
+git checkout -- components/
+
+# Restore from backup
+tar -xzf components-backup-YYYYMMDD-HHMMSS.tar.gz
+
+# Selective rollback of specific files
+git checkout -- components/atoms/Button/Button.stories.tsx
+```
+
+### Best Practices
+
+**Before Refactoring**:
+- [ ] Create a git checkpoint or backup
+- [ ] Test the perl command on a single file first
+- [ ] Verify the pattern matches exactly what you want to change
+
+**During Refactoring**:
+- [ ] Use specific patterns (avoid overly broad regex)
+- [ ] Process one type of change at a time
+- [ ] Verify after each major step
+
+**After Refactoring**:
+- [ ] Run `pnpm exec tsc --noEmit` to check for TypeScript errors
+- [ ] Use `grep` to verify old patterns are gone
+- [ ] Start Ladle to visually verify story changes
+- [ ] Review `git diff` before committing
+

@@ -25,3 +25,7 @@ export type { DiscoverMeditationProps } from './DiscoverMeditation'
 // Splash
 export { Splash } from './Splash'
 export type { SplashProps } from './Splash'
+
+// HeaderDropdown
+export { HeaderDropdown } from './HeaderDropdown'
+export type { HeaderDropdownProps, HeaderDropdownLink, HeaderDropdownArticle } from './HeaderDropdown'

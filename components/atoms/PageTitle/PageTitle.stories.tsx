@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { PageTitle } from './PageTitle'
-import { StoryWrapper, StorySection, StorySubsection, StoryExampleSection } from '../../ladle'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
   title: 'Atoms / Typography',
@@ -15,11 +15,11 @@ export const Default: Story = () => (
     <StorySection title="Basic Examples">
       <div className="flex flex-col gap-8">
         <div>
-          <StorySubsection label="Title Only" />
+          <p className="text-sm font-medium mb-3 text-gray-700">Title Only</p>
           <PageTitle title="Meditate Now" />
         </div>
         <div>
-          <StorySubsection label="With Subtitle" />
+          <p className="text-sm font-medium mb-3 text-gray-700">With Subtitle</p>
           <PageTitle
             title="Music for Meditation"
             subtitle="Calming tracks to enhance your practice"
@@ -31,11 +31,11 @@ export const Default: Story = () => (
     <StorySection title="Alignment">
       <div className="flex flex-col gap-8">
         <div>
-          <StorySubsection label="Left Aligned" />
+          <p className="text-sm font-medium mb-3 text-gray-700">Left Aligned</p>
           <PageTitle title="Music for Meditation" subtitle="Calming tracks to enhance your practice" align="left" />
         </div>
         <div>
-          <StorySubsection label="Center Aligned (Default)" />
+          <p className="text-sm font-medium mb-3 text-gray-700">Center Aligned (Default)</p>
           <PageTitle
             title="Meditate Now"
             subtitle="Find your inner peace through guided meditation"
@@ -43,7 +43,7 @@ export const Default: Story = () => (
           />
         </div>
         <div>
-          <StorySubsection label="Right Aligned" />
+          <p className="text-sm font-medium mb-3 text-gray-700">Right Aligned</p>
           <PageTitle title="Contact" subtitle="Get in touch with us" align="right" />
         </div>
       </div>

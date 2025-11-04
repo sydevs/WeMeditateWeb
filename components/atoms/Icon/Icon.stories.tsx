@@ -30,8 +30,6 @@ import {
 } from '@heroicons/react/24/solid'
 import {
   StorySection,
-  StoryExampleSection,
-  StorySubsection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -87,7 +85,7 @@ export const Default: Story = () => (
             <StoryGridHeaderCell />
             <StoryGridHeaderCell>Primary</StoryGridHeaderCell>
             <StoryGridHeaderCell>Secondary</StoryGridHeaderCell>
-            <StoryGridHeaderCell>Tertiary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Neutral</StoryGridHeaderCell>
             <StoryGridHeaderCell>Current Color</StoryGridHeaderCell>
           </StoryGridHeaderRow>
         </StoryGridHeader>
@@ -101,7 +99,7 @@ export const Default: Story = () => (
               <Icon icon={StarIcon} size="lg" color="secondary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="tertiary" />
+              <Icon icon={StarIcon} size="lg" color="neutral" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
@@ -119,11 +117,67 @@ export const Default: Story = () => (
               <Icon icon={StarIconSolid} size="lg" color="secondary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="tertiary" />
+              <Icon icon={StarIconSolid} size="lg" color="neutral" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
                 <Icon icon={StarIconSolid} size="lg" color="currentColor" />
+              </div>
+            </StoryGridCell>
+          </StoryGridRow>
+        </StoryGridBody>
+      </StoryGrid>
+    </StorySection>
+
+    <StorySection
+      title="Dark Theme"
+      theme="dark"
+      background="neutral"
+      description="Lightened colors (teal-300, coral-300, white) for contrast on dark backgrounds"
+    >
+      <StoryGrid>
+        <StoryGridHeader>
+          <StoryGridHeaderRow>
+            <StoryGridHeaderCell />
+            <StoryGridHeaderCell>Primary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Secondary</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Neutral</StoryGridHeaderCell>
+            <StoryGridHeaderCell>Current Color</StoryGridHeaderCell>
+          </StoryGridHeaderRow>
+        </StoryGridHeader>
+        <StoryGridBody>
+          <StoryGridRow>
+            <StoryGridCell isLabel>Outline</StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIcon} size="lg" color="primary" theme="dark" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIcon} size="lg" color="secondary" theme="dark" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIcon} size="lg" color="neutral" theme="dark" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="text-blue-600">
+                <Icon icon={StarIcon} size="lg" color="currentColor" theme="dark" />
+              </div>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
+            <StoryGridCell isLabel>Solid</StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="primary" theme="dark" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="secondary" theme="dark" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Icon icon={StarIconSolid} size="lg" color="neutral" theme="dark" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <div className="text-blue-600">
+                <Icon icon={StarIconSolid} size="lg" color="currentColor" theme="dark" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -237,64 +291,85 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
-      <StorySubsection label="Button with Icons">
-        <div className="flex flex-wrap gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
-            <Icon icon={PlayIcon} size="sm" />
-            <span>Play</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
-            <Icon icon={HeartIcon} size="sm" />
-            <span>Like</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
-            <span>Next</span>
-            <Icon icon={ChevronRightIcon} size="sm" />
-          </button>
-        </div>
-      </StorySubsection>
+    <StorySection title="Examples" inContext={true}>
+      <div className="flex flex-col gap-6">
+        <StorySection title="Button with Icons" variant="subsection">
+          <div className="flex flex-wrap gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
+              <Icon icon={PlayIcon} size="sm" />
+              <span>Play</span>
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+              <Icon icon={HeartIcon} size="sm" />
+              <span>Like</span>
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+              <span>Next</span>
+              <Icon icon={ChevronRightIcon} size="sm" />
+            </button>
+          </div>
+        </StorySection>
 
-      <StorySubsection label="List Items with Icons">
-        <ul className="space-y-3">
-          <li className="flex items-center gap-3">
-            <Icon icon={CheckIcon} size="md" color="primary" />
-            <span className="text-gray-700">Reduce stress and anxiety</span>
-          </li>
-          <li className="flex items-center gap-3">
-            <Icon icon={CheckIcon} size="md" color="primary" />
-            <span className="text-gray-700">Improve focus and concentration</span>
-          </li>
-          <li className="flex items-center gap-3">
-            <Icon icon={CheckIcon} size="md" color="primary" />
-            <span className="text-gray-700">Enhance emotional well-being</span>
-          </li>
-          <li className="flex items-center gap-3">
-            <Icon icon={CheckIcon} size="md" color="primary" />
-            <span className="text-gray-700">Better sleep quality</span>
-          </li>
-        </ul>
-      </StorySubsection>
+        <StorySection title="List Items with Icons" variant="subsection">
+          <ul className="space-y-3">
+            <li className="flex items-center gap-3">
+              <Icon icon={CheckIcon} size="md" color="primary" />
+              <span className="text-gray-700">Reduce stress and anxiety</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <Icon icon={CheckIcon} size="md" color="primary" />
+              <span className="text-gray-700">Improve focus and concentration</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <Icon icon={CheckIcon} size="md" color="primary" />
+              <span className="text-gray-700">Enhance emotional well-being</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <Icon icon={CheckIcon} size="md" color="primary" />
+              <span className="text-gray-700">Better sleep quality</span>
+            </li>
+          </ul>
+        </StorySection>
 
-      <StorySubsection label="Information Cards">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
-            <Icon icon={InformationCircleIcon} size="lg" color="primary" />
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1">Beginner Friendly</h4>
-              <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
+        <StorySection title="Information Cards" variant="subsection">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
+              <Icon icon={InformationCircleIcon} size="lg" color="primary" />
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Beginner Friendly</h4>
+                <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
+              </div>
+            </div>
+            <div className="border border-coral-200 bg-coral-50 rounded-lg p-4 flex gap-3">
+              <Icon icon={ClockIcon} size="lg" color="secondary" />
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
+                <p className="text-sm text-gray-700">Just 10 minutes a day</p>
+              </div>
             </div>
           </div>
-          <div className="border border-coral-200 bg-coral-50 rounded-lg p-4 flex gap-3">
-            <Icon icon={ClockIcon} size="lg" color="secondary" />
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
-              <p className="text-sm text-gray-700">Just 10 minutes a day</p>
+        </StorySection>
+
+        <StorySection title="Current Color on Dark Background" variant="subsection">
+          <div className="bg-gray-800 rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3 text-white">
+              <Icon icon={HeartIcon} size="lg" color="currentColor" />
+              <span>White icon inherits from parent text color</span>
+            </div>
+            <div className="flex items-center gap-3 text-teal-300">
+              <Icon icon={StarIcon} size="lg" color="currentColor" />
+              <span>Teal icon inherits custom color</span>
+            </div>
+            <div className="flex items-center gap-3 text-coral-300">
+              <Icon icon={PlayIcon} size="lg" color="currentColor" />
+              <span>Coral icon inherits custom color</span>
             </div>
           </div>
-        </div>
-      </StorySubsection>
-    </StoryExampleSection>
+        </StorySection>
+      </div>
+    </StorySection>
+
+    <div />
   </StoryWrapper>
 );
 Default.storyName = "Icon"

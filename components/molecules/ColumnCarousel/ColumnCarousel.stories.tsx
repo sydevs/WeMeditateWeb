@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react"
 import { ColumnCarousel } from "./ColumnCarousel"
-import { StoryWrapper, StorySection, StoryExampleSection } from '../../ladle'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
   title: "Molecules / Sections"
@@ -182,7 +182,7 @@ export const Default: Story = () => {
         <ColumnCarousel columns={oneColumn} />
       </StorySection>
 
-      <StoryExampleSection subtitle="With Linked Titles">
+      <StorySection title="With Linked Titles" inContext={true}>
         <p className="text-sm text-gray-600 mb-4">
           Columns can have clickable titles that link to other pages.
         </p>
@@ -211,9 +211,9 @@ export const Default: Story = () => {
             },
           ]}
         />
-      </StoryExampleSection>
+      </StorySection>
 
-      <StoryExampleSection subtitle="Without Images">
+      <StorySection title="Without Images" inContext={true}>
         <ColumnCarousel
           columns={[
             {
@@ -230,9 +230,9 @@ export const Default: Story = () => {
             },
           ]}
         />
-      </StoryExampleSection>
+      </StorySection>
 
-      <StoryExampleSection subtitle="With Long Titles">
+      <StorySection title="With Long Titles" inContext={true}>
         <ColumnCarousel
           columns={[
             {
@@ -255,7 +255,7 @@ export const Default: Story = () => {
             },
           ]}
         />
-      </StoryExampleSection>
+      </StorySection>
 
       <div />
     </StoryWrapper>

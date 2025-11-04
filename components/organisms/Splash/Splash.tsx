@@ -14,7 +14,12 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   ctaHref: string
   /** Locale for navigation (optional) */
   locale?: string
-  /** Text color theme - light for dark backgrounds, dark for light backgrounds */
+  /**
+   * Theme based on background context
+   * - light: Dark text for light backgrounds (default)
+   * - dark: White text for dark backgrounds
+   * @default 'light'
+   */
   theme?: 'light' | 'dark'
   /** Whether the CTA should pulsate */
   pulsate?: boolean
@@ -33,7 +38,7 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
  *   subtitle="Making a start is easier than you think."
  *   ctaText="Try it now"
  *   ctaHref="/start"
- *   theme="light"
+ *   theme="dark"
  *   pulsate
  * />
  */
@@ -50,7 +55,7 @@ export function Splash({
   className = '',
   ...props
 }: SplashProps) {
-  const textColor = theme === 'light' ? 'text-white' : 'text-gray-900'
+  const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
 
   return (
     <div

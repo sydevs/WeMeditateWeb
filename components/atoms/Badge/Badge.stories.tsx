@@ -4,8 +4,6 @@ import { HeartIcon, BellIcon, StarIcon } from '@heroicons/react/24/solid';
 import {
   StoryWrapper,
   StorySection,
-  StoryExampleSection,
-  StorySubsection,
   StoryGrid,
   StoryGridHeader,
   StoryGridHeaderRow,
@@ -73,34 +71,34 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Duration labels">
+        <StorySection title="Duration labels" variant="subsection">
           <div className="flex gap-2">
             <Badge color="neutral" shape="circular">5 min</Badge>
             <Badge color="neutral" shape="circular">10 min</Badge>
             <Badge color="neutral" shape="circular">15 min</Badge>
             <Badge color="neutral" shape="circular">20 min</Badge>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Notification counts">
+        <StorySection title="Notification counts" variant="subsection">
           <div className="flex gap-2">
             <Badge color="primary" shape="circular">3</Badge>
             <Badge color="primary" shape="circular">12</Badge>
             <Badge color="secondary" shape="circular">99+</Badge>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Status indicators">
+        <StorySection title="Status indicators" variant="subsection">
           <div className="flex gap-2">
             <Badge color="secondary" shape="square">New</Badge>
             <Badge color="primary" shape="square">Featured</Badge>
             <Badge color="neutral" shape="square">Popular</Badge>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Icons">
+        <StorySection title="Icons" variant="subsection">
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
               <Badge color="primary" shape="circular">
@@ -121,9 +119,9 @@ export const Default: Story = () => (
               </Badge>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="On a card with thumbnail">
+        <StorySection title="On a card with thumbnail" variant="subsection">
           <div className="relative w-64 h-40 bg-gray-200 rounded flex items-center justify-center">
             <span className="text-gray-500">Thumbnail Image</span>
             <div className="absolute bottom-2 left-2">
@@ -132,9 +130,29 @@ export const Default: Story = () => (
               </Badge>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
+
+        <StorySection title="On dark backgrounds" variant="subsection">
+          <div className="bg-gray-800 p-6 rounded-lg space-y-4">
+            <div className="flex gap-2">
+              <Badge color="primary" shape="circular">5 min</Badge>
+              <Badge color="secondary" shape="circular">New</Badge>
+              <Badge color="neutral" shape="square">Popular</Badge>
+            </div>
+            <div className="relative w-64 h-40 bg-gray-900 rounded flex items-center justify-center">
+              <span className="text-gray-400">Dark Thumbnail</span>
+              <div className="absolute bottom-2 left-2">
+                <Badge color="primary" shape="circular">
+                  15 min
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
+
+    <div />
   </StoryWrapper>
 );
 

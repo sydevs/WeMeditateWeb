@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Link } from "./Link";
-import { StoryWrapper, StorySection, StorySubsection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
   title: "Atoms / Typography"
@@ -43,7 +43,7 @@ export const Default: Story = () => (
 
     <StorySection title="Sizes">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Explicit Sizes">
+        <StorySection title="Explicit Sizes" variant="subsection">
           <div className="flex flex-col gap-3">
             <div>
               <Link href="/small" size="sm">
@@ -61,9 +61,9 @@ export const Default: Story = () => (
               </Link>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Inherit Size">
+        <StorySection title="Inherit Size" variant="subsection">
           <div className="flex flex-col gap-3">
             <div className="text-sm">
               <span>Parent is text-sm: </span>
@@ -84,7 +84,37 @@ export const Default: Story = () => (
               </Link>
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
+      </div>
+    </StorySection>
+
+    <StorySection
+      title="Dark Theme"
+      theme="dark"
+      background="neutral"
+      description="Lightened colors (teal-300, coral-300, gray-300) for contrast on dark backgrounds"
+    >
+      <div className="flex flex-col gap-4">
+        <div>
+          <Link href="/meditations" variant="default" theme="dark">
+            Default link on dark background
+          </Link>
+        </div>
+        <div>
+          <Link href="/about" variant="primary" theme="dark">
+            Primary link on dark background
+          </Link>
+        </div>
+        <div>
+          <Link href="/contact" variant="secondary" theme="dark">
+            Secondary link on dark background
+          </Link>
+        </div>
+        <div>
+          <Link href="/help" variant="neutral" theme="dark">
+            Neutral link on dark background
+          </Link>
+        </div>
       </div>
     </StorySection>
 

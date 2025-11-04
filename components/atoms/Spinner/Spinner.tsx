@@ -11,7 +11,15 @@ export interface SpinnerProps extends ComponentProps<'div'> {
    * Spinner color
    * @default 'primary'
    */
-  color?: 'primary' | 'secondary' | 'white' | 'currentColor'
+  color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
+
+  /**
+   * Theme based on background context
+   * - light: Standard colors for light backgrounds (default)
+   * - dark: Lightened colors for dark backgrounds
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark'
 
   /**
    * Accessible label for the loading state
@@ -28,12 +36,13 @@ export interface SpinnerProps extends ComponentProps<'div'> {
  *
  * @example
  * <Spinner />
- * <Spinner size="lg" color="white" />
+ * <Spinner size="lg" color="neutral" theme="dark" />
  * <Spinner size="sm" label="Loading content..." />
  */
 export function Spinner({
   size = 'md',
   color = 'primary',
+  theme = 'light',
   label = 'Loading...',
   className = '',
   ...props
@@ -46,12 +55,23 @@ export function Spinner({
     xl: 'w-12 h-12 border-4',
   }
 
-  const colorStyles = {
+  // Light theme colors (standard colors for light backgrounds)
+  const lightThemeColors = {
     primary: 'border-teal-600 border-t-transparent',
     secondary: 'border-coral-500 border-t-transparent',
-    white: 'border-white border-t-transparent',
+    neutral: 'border-gray-600 border-t-transparent',
     currentColor: 'border-current border-t-transparent',
   }
+
+  // Dark theme colors (lightened colors for dark backgrounds)
+  const darkThemeColors = {
+    primary: 'border-teal-300 border-t-transparent',
+    secondary: 'border-coral-300 border-t-transparent',
+    neutral: 'border-white border-t-transparent',
+    currentColor: 'border-current border-t-transparent',
+  }
+
+  const colorStyles = theme === 'dark' ? darkThemeColors : lightThemeColors
 
   return (
     <div

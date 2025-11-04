@@ -84,14 +84,20 @@ Based on wemeditate.com brand analysis:
 --color-primary-light: #83bcb4  /* Light teal - hover states, backgrounds */
 --color-primary-lighter: #c5e0dc /* Very light teal - subtle backgrounds */
 --color-primary-bg: #ebf4f3     /* Teal background tint */
+--color-primary-300: #5dd4bd    /* Light teal - dark theme contrast (teal-300) */
 ```
+
+**Dark Theme Usage**: For dark backgrounds, use `teal-300` (#5dd4bd) which provides sufficient contrast while maintaining brand recognition.
 
 #### Secondary Colors
 ```css
 --color-secondary: #e08e79      /* Coral/salmon - accents, highlights */
 --color-secondary-dark: #c54d2e /* Dark coral - emphasis */
 --color-accent: #ff856f         /* Bright coral - strong CTAs */
+--color-secondary-300: #f0a898  /* Light coral - dark theme contrast (coral-300) */
 ```
+
+**Dark Theme Usage**: For dark backgrounds, use `coral-300` (#f0a898) which provides sufficient contrast while maintaining the warm accent color.
 
 #### Neutral Colors
 ```css
@@ -120,9 +126,13 @@ Based on wemeditate.com brand analysis:
 
 #### Font Families
 ```css
---font-primary: 'Raleway', sans-serif    /* Main text, UI elements */
---font-number: 'Futura Book', sans-serif /* Headings, special text */
+--font-sans: 'Raleway', sans-serif       /* Main text, UI elements (default) */
+--font-number: 'Futura Book', sans-serif /* Numeric displays, countdowns, special text */
 ```
+
+**Tailwind Usage**:
+- `font-sans` (or `font-raleway`) - Raleway font (default for all text)
+- `font-number` - Futura Book font (use for countdowns, large numbers, special headings)
 
 #### Font Weights
 ```css
@@ -212,10 +222,15 @@ Molecules combine atoms into functional units. Examples:
 - `LanguageSelector` - Language dropdown with flags
 
 **Content Display**
+- `ContentCard` - Content preview with thumbnail, title, and optional description (supports default and hero variants)
 - `MediaCard` - Image + title (for meditation/music listings)
 - `Stat` - Icon + number + label
 - `Quote` - Blockquote with citation
 - `Alert` - Icon + message + dismiss button
+
+**Layout**
+- `ContentGrid` - Responsive masonry grid for ContentCard components with fade-in loading
+- `MasonryGrid` - Responsive masonry grid for text content with "Show More" functionality
 
 **Interactive**
 - `AudioPlayer` - Play button + progress bar + time
@@ -757,7 +772,82 @@ export function LocaleAwareComponent() {
 }
 ```
 
-### 10. Performance Patterns
+### 10. ContentGrid Layout Component
+
+**ContentGrid** is a molecule that displays ContentCard components in a responsive masonry layout. It's designed for content-heavy pages like meditation libraries, article grids, and mixed content sections.
+
+**Key Features:**
+- **Fade-in on load**: Cards fade in after their images load for smooth progressive loading
+- **Unified variant control**: `cardVariant` prop applies to all cards (default or hero)
+- **Responsive gaps**: Column spacing adapts to viewport size and variant
+- **Centered layout**: Grid centers itself with fixed-width columns (no stretching)
+- **Always displays all items**: No pagination (unlike MasonryGrid)
+
+**When to use:**
+- Content library pages (meditations, articles, music)
+- Mixed content grids with varying aspect ratios
+- Anywhere ContentCard components need masonry layout
+
+**Usage:**
+```tsx
+import { ContentGrid } from '@/components/molecules'
+
+// Basic usage - default variant
+<ContentGrid
+  items={[
+    {
+      id: 1,
+      title: "Morning Meditation",
+      href: "/meditations/morning",
+      thumbnailSrc: "/images/morning.jpg",
+      playButton: true,
+      durationMinutes: 10,
+      aspectRatio: "square"
+    }
+  ]}
+/>
+
+// Hero variant - larger cards with increased spacing
+<ContentGrid
+  items={contentItems}
+  cardVariant="hero"
+/>
+
+// Custom column breakpoints
+<ContentGrid
+  items={contentItems}
+  breakpointCols={{
+    default: 4,  // 4 columns desktop
+    1280: 3,     // 3 columns large tablets
+    768: 2,      // 2 columns tablets
+    640: 1       // 1 column mobile
+  }}
+/>
+```
+
+**Column Gaps:**
+- **Default variant**: 16px mobile, 20px tablet, 24px desktop
+- **Hero variant**: 24px mobile, 30px tablet, 36px desktop (50% larger)
+
+**Item Structure:**
+Each item extends `ContentCardProps` (without `className` and `variant`):
+- `id` (required): Unique identifier
+- `title` (required): Card title
+- `href` (required): Link URL
+- `thumbnailSrc` (required): Image URL
+- `thumbnailAlt`: Image alt text (defaults to title)
+- `description`: Optional description text
+- `aspectRatio`: Image aspect ratio (square, video, 4/3, 3/2, 16/9, 21/9)
+- `playButton`: Show play button overlay
+- `durationMinutes`: Duration badge (e.g., "10 min")
+- `badge`: Category/difficulty badge
+- `badgeUrl`: Optional link for badge
+
+**vs MasonryGrid:**
+- **ContentGrid**: For ContentCard components, always shows all items, supports card variants
+- **MasonryGrid**: For text content items, has "Show More" pagination
+
+### 11. Performance Patterns
 
 **Image Optimization:**
 ```tsx
@@ -1031,7 +1121,7 @@ Each atom has a single comprehensive `Default` story that includes:
 ```tsx
 import type { Story, StoryDefault } from "@ladle/react";
 import { Button } from "./Button";
-import { StoryWrapper, StorySection, StoryExampleSection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
   title: "Atoms / Form"  // Category, not including component name
@@ -1054,9 +1144,11 @@ export const Default: Story = () => (
       {/* Show loading, disabled, etc. */}
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       {/* Show realistic usage examples */}
-    </StoryExampleSection>
+    </StorySection>
+
+    <div />
   </StoryWrapper>
 );
 
@@ -1108,7 +1200,7 @@ export const Mobile: Story = () => (/* ... */);
 **Always use story utility components** from `components/ladle/` for consistent structure:
 
 ```tsx
-import { StoryWrapper, StorySection, StoryExampleSection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../ladle';
 
 export const Default: Story = () => (
   <StoryWrapper>
@@ -1120,9 +1212,9 @@ export const Default: Story = () => (
       {/* Content */}
     </StorySection>
 
-    <StoryExampleSection>
-      {/* Real-world usage examples */}
-    </StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
+      {/* Real-world usage examples with bold top border */}
+    </StorySection>
 
     {/* Remove trailing divider */}
     <div />
@@ -1132,12 +1224,14 @@ export const Default: Story = () => (
 
 **Key components:**
 - `StoryWrapper` - Required outermost wrapper for all stories
-- `StorySection` - Standard sections with title and automatic dividers
-- `StoryExampleSection` - Examples sections with teal top border
-- `StorySubsection` - Organize subsections within major sections
+- `StorySection` - Unified component for all section types with props:
+  - `variant` - 'section' (default), 'subsection', or 'scrollable'
+  - `theme` - 'light' (default) or 'dark' for dark content backgrounds
+  - `background` - 'none' (default), 'neutral', or 'gradient'
+  - `inContext` - When true, adds "In Context - " prefix and bold top border
 - `StoryGrid` family - Create multi-dimensional component matrices
 
-See [STORYBOOK.md](STORYBOOK.md) for complete utility component documentation.
+See [STORYBOOK.md](STORYBOOK.md) for complete utility component documentation and API reference.
 
 ### Story Documentation
 
@@ -1185,11 +1279,15 @@ components/
 - ✅ Use proper title case with spaces for multi-word names (e.g., "Social Icon")
 - ✅ Consolidate simple components (atoms/molecules) into one comprehensive story
 - ✅ Consider interactive stories (Ladle args) for complex organisms instead of multiple stories
-- ✅ Separate sections with `<hr className="border-gray-200" />`
+- ✅ Use the unified `StorySection` component with appropriate props for all sections
+- ✅ Use `inContext={true}` for example sections (adds bold border and "In Context - " prefix)
+- ✅ Use `variant="subsection"` for nested sections within major sections
+- ✅ Use `theme="dark"` with `background="neutral"` for dark theme showcases
 - ✅ Use clear, descriptive section headings
 - ✅ Show variants, states, and context together
 - ✅ Use semantic HTML and proper accessibility attributes
 - ✅ Include realistic content and labels
+- ✅ End stories with `<div />` to remove trailing dividers
 
 **DON'T:**
 - ❌ Use two-level hierarchy for organisms that need multiple distinct stories
@@ -1198,7 +1296,8 @@ components/
 - ❌ Omit the title metadata or storyName (breaks navigation)
 - ❌ Use string concatenation for titles (must be literals)
 - ❌ Skip the `satisfies StoryDefault` check
-- ❌ Create separate InContext stories for atoms (include in Default)
+- ❌ Use deprecated components (StoryExampleSection, StorySubsection, StoryDarkSection)
+- ❌ Use manual dividers (`<hr />`) - StorySection handles dividers automatically
 - ❌ Use generic placeholder text without context
 - ❌ Forget to use spaces in multi-word component names ("SocialIcon" → "Social Icon")
 

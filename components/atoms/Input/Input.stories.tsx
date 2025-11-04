@@ -2,8 +2,6 @@ import type { Story, StoryDefault } from "@ladle/react";
 import { Input } from "./Input";
 import {
   StorySection,
-  StoryExampleSection,
-  StorySubsection,
   StoryWrapper,
   StoryGrid,
   StoryGridHeader,
@@ -101,9 +99,9 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="space-y-4">
-        <StorySubsection label="Login Form">
+        <StorySection title="Login Form" variant="subsection">
           <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Email</label>
@@ -114,9 +112,9 @@ export const Default: Story = () => (
               <Input type="password" placeholder="••••••••" fullWidth />
             </div>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Input"

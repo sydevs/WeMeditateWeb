@@ -2,7 +2,6 @@ import type { Story, StoryDefault } from "@ladle/react";
 import { Textarea } from "./Textarea";
 import {
   StorySection,
-  StorySubsection,
   StoryWrapper,
   StoryGrid,
   StoryGridHeader,
@@ -24,23 +23,23 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">
       <div className="flex flex-col gap-6 max-w-md">
-        <StorySubsection label="Default">
+        <StorySection title="Default" variant="subsection">
           <Textarea placeholder="Enter your message..." />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="With Auto-resize">
+        <StorySection title="With Auto-resize" variant="subsection">
           <Textarea
             placeholder="Start typing to see auto-resize..."
             autoResize
           />
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Custom Rows">
+        <StorySection title="Custom Rows" variant="subsection">
           <Textarea
             placeholder="Tall textarea with 8 rows"
             rows={8}
           />
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 

@@ -10,7 +10,6 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-  StoryExampleSection
 } from '../../ladle';
 
 export default {
@@ -102,7 +101,7 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex items-center gap-3">
         <Avatar
           size="md"
@@ -114,7 +113,7 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600">Founder of Sahaja Yoga</p>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
   </StoryWrapper>
 );
 Default.storyName = "Avatar"

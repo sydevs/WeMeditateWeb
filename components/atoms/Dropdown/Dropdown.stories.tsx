@@ -2,7 +2,7 @@ import type { Story, StoryDefault } from '@ladle/react'
 import { Dropdown } from './Dropdown'
 import { Button } from '../Button'
 import { Icon } from '../Icon'
-import { StorySection, StorySubsection, StoryExampleSection, StoryWrapper } from '../../ladle'
+import { StorySection, StoryWrapper } from '../../ladle'
 import {
   GlobeAltIcon,
   ChevronDownIcon,
@@ -23,7 +23,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Dropdown">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="With Button Trigger">
+        <StorySection title="With Button Trigger" variant="subsection">
           <Dropdown trigger={<Button variant="secondary">Open Menu</Button>}>
             <div className="flex flex-col">
               <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
@@ -37,9 +37,9 @@ export const Default: Story = () => (
               </a>
             </div>
           </Dropdown>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="With Icon Trigger">
+        <StorySection title="With Icon Trigger" variant="subsection">
           <Dropdown
             trigger={
               <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
@@ -57,9 +57,9 @@ export const Default: Story = () => (
               </a>
             </div>
           </Dropdown>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="With Text Trigger">
+        <StorySection title="With Text Trigger" variant="subsection">
           <Dropdown
             trigger={
               <span className="text-gray-600 hover:text-gray-900 cursor-pointer text-sm">
@@ -79,13 +79,13 @@ export const Default: Story = () => (
               </a>
             </div>
           </Dropdown>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
     <StorySection title="Alignment">
       <div className="flex flex-col gap-8">
-        <StorySubsection label="Left Aligned (Default)">
+        <StorySection title="Left Aligned (Default)" variant="subsection">
           <Dropdown trigger={<Button variant="secondary">Left Aligned</Button>} align="left">
             <div className="flex flex-col py-2">
               <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
@@ -96,9 +96,9 @@ export const Default: Story = () => (
               </a>
             </div>
           </Dropdown>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Right Aligned">
+        <StorySection title="Right Aligned" variant="subsection">
           <div className="flex justify-end">
             <Dropdown trigger={<Button variant="secondary">Right Aligned</Button>} align="right">
               <div className="flex flex-col py-2">
@@ -111,11 +111,11 @@ export const Default: Story = () => (
               </div>
             </Dropdown>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
-    <StoryExampleSection>
+    <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8">
         <div>
           <h3 className="text-sm font-semibold mb-4 text-gray-700">User Menu</h3>
@@ -166,7 +166,7 @@ export const Default: Story = () => (
           </Dropdown>
         </div>
       </div>
-    </StoryExampleSection>
+    </StorySection>
 
     <div />
   </StoryWrapper>
