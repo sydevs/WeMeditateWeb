@@ -1,10 +1,10 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { LogoSvg } from './LogoSvg'
 import { LeafSvg } from './LeafSvg'
-import { MeditationSvg } from './MeditationSvg'
-import { LocationSvg } from './LocationSvg'
+import { LotusDotsSvg } from './LotusDotsSvg'
 import { FloralDividerSvg } from './FloralDividerSvg'
 import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
+import { TriangleDecorationSvg } from './TriangleDecorationSvg'
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
@@ -33,24 +33,12 @@ export const Default: Story = () => (
             <p className="text-sm text-gray-600">Decorative leaf ornament (default: w-[29px] h-8)</p>
           </div>
         </div>
-      </div>
-    </StorySection>
-
-    <StorySection title="Illustration Icons" description="Illustrative icons for user actions">
-      <div className="flex flex-col gap-8">
-        <div className="flex items-center gap-4">
-          <MeditationSvg className="w-24 h-24 text-gray-700" />
-          <div>
-            <p className="font-medium text-gray-700">MeditationSvg</p>
-            <p className="text-sm text-gray-600">Person in meditation pose (default: w-24 h-24)</p>
-          </div>
-        </div>
 
         <div className="flex items-center gap-4">
-          <LocationSvg className="w-24 h-24 text-gray-700" />
+          <LotusDotsSvg className="w-11 h-11 text-gray-700" />
           <div>
-            <p className="font-medium text-gray-700">LocationSvg</p>
-            <p className="text-sm text-gray-600">Location pin icon (default: w-24 h-24)</p>
+            <p className="font-medium text-gray-700">LotusDotsSvg</p>
+            <p className="text-sm text-gray-600">Lotus flower with dots pattern (default: w-11 h-11)</p>
           </div>
         </div>
       </div>
@@ -71,6 +59,15 @@ export const Default: Story = () => (
           <div>
             <p className="font-medium text-gray-700">HeaderIllustrationSvg</p>
             <p className="text-sm text-gray-600">Header banner illustration (default: w-full h-auto max-h-24)</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <TriangleDecorationSvg className="w-80 h-auto" />
+          <div>
+            <p className="font-medium text-gray-700">TriangleDecorationSvg</p>
+            <p className="text-sm text-gray-600">Geometric triangle decoration with built-in coral and teal colors (default: w-80 h-auto)</p>
+            <p className="text-xs text-coral-500 mt-1">Note: Colors are fixed and cannot be changed via currentColor</p>
           </div>
         </div>
       </div>
@@ -95,19 +92,11 @@ export const Default: Story = () => (
         </div>
 
         <div className="flex items-center gap-4">
-          <MeditationSvg className="w-16 h-16 text-teal-600" />
-          <MeditationSvg className="w-16 h-16 text-coral-500" />
-          <MeditationSvg className="w-16 h-16 text-gray-700" />
-          <MeditationSvg className="w-16 h-16 text-gray-400" />
-          <span className="text-sm text-gray-600">MeditationSvg in different colors</span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <LocationSvg className="w-16 h-16 text-teal-600" />
-          <LocationSvg className="w-16 h-16 text-coral-500" />
-          <LocationSvg className="w-16 h-16 text-gray-700" />
-          <LocationSvg className="w-16 h-16 text-gray-400" />
-          <span className="text-sm text-gray-600">LocationSvg in different colors</span>
+          <LotusDotsSvg className="w-11 h-11 text-teal-600" />
+          <LotusDotsSvg className="w-11 h-11 text-coral-500" />
+          <LotusDotsSvg className="w-11 h-11 text-gray-700" />
+          <LotusDotsSvg className="w-11 h-11 text-gray-400" />
+          <span className="text-sm text-gray-600">LotusDotsSvg in different colors</span>
         </div>
       </div>
     </StorySection>
@@ -123,11 +112,19 @@ export const Default: Story = () => (
         </div>
 
         <div className="flex items-center gap-4">
-          <MeditationSvg className="w-12 h-12 text-gray-700" />
-          <MeditationSvg className="w-16 h-16 text-gray-700" />
-          <MeditationSvg className="w-24 h-24 text-gray-700" />
-          <MeditationSvg className="w-32 h-32 text-gray-700" />
-          <span className="text-sm text-gray-600">MeditationSvg (w-12, w-16, w-24, w-32)</span>
+          <LeafSvg className="w-6 h-6 text-gray-700" />
+          <LeafSvg className="w-[29px] h-8 text-gray-700" />
+          <LeafSvg className="w-12 h-12 text-gray-700" />
+          <LeafSvg className="w-16 h-16 text-gray-700" />
+          <span className="text-sm text-gray-600">LeafSvg (w-6, default, w-12, w-16)</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <LotusDotsSvg className="w-8 h-8 text-gray-700" />
+          <LotusDotsSvg className="w-11 h-11 text-gray-700" />
+          <LotusDotsSvg className="w-16 h-16 text-gray-700" />
+          <LotusDotsSvg className="w-24 h-24 text-gray-700" />
+          <span className="text-sm text-gray-600">LotusDotsSvg (w-8, default, w-16, w-24)</span>
         </div>
       </div>
     </StorySection>

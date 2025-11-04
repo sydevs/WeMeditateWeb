@@ -4,12 +4,13 @@ Foundational UI elements that form the basic building blocks of the WeMeditate d
 
 ## Overview
 
-This directory contains 20 atomic components organized into 7 categories:
+This directory contains 19 atomic components organized into 7 categories:
 
-### Typography (3)
+### Typography (2)
 - **Heading** - Semantic headings (h1-h6) with consistent visual hierarchy
-- **Text** - Body text and inline text with size/weight/color variants
 - **Label** - Form labels with required field indicators
+
+> **Note**: Typography patterns (text sizing, weights, colors) are documented in [Typography.stories.tsx](./Typography.stories.tsx). Use Tailwind utilities directly rather than wrapping text in a component.
 
 ### Interactive (1)
 - **Button** - Unified button component supporting text, icon-only, and icon+text combinations with multiple variants (primary, secondary, outline, ghost)

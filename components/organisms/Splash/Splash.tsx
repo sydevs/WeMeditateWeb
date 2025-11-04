@@ -4,16 +4,14 @@ import { LeafSvg } from '../../atoms/svgs'
 export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** URL of the background image */
   backgroundImage: string
-  /** Main heading text */
-  heading: string
-  /** Subtitle text below the heading */
-  subtitle: string
+  /** Main title text */
+  title?: string
+  /** Subtitle text below the title */
+  subtitle?: string
   /** Call-to-action text */
-  ctaText: string
+  ctaText?: string
   /** Call-to-action link destination */
-  ctaHref: string
-  /** Locale for navigation (optional) */
-  locale?: string
+  ctaHref?: string
   /**
    * Theme based on background context
    * - light: Dark text for light backgrounds (default)
@@ -23,7 +21,7 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   theme?: 'light' | 'dark'
   /** Whether the CTA should pulsate */
   pulsate?: boolean
-  /** Optional content to display between subtitle and CTA (e.g., countdown timer) */
+  /** Optional content to display between subtitle and CTA (e.g., countdown timer, search input) */
   children?: ReactNode
 }
 
@@ -34,7 +32,7 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
  * @example
  * <Splash
  *   backgroundImage="/images/sunset.jpg"
- *   heading="Meditate for Better Mental Health"
+ *   title="Meditate for Better Mental Health"
  *   subtitle="Making a start is easier than you think."
  *   ctaText="Try it now"
  *   ctaHref="/start"
@@ -44,11 +42,10 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
  */
 export function Splash({
   backgroundImage,
-  heading,
+  title,
   subtitle,
   ctaText,
   ctaHref,
-  locale,
   theme = 'light',
   pulsate = false,
   children,
@@ -72,43 +69,49 @@ export function Splash({
       {/* Content Container */}
       <div className="relative z-10 w-full px-4 pt-60 pb-12 md:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Heading */}
-          <h1
-            className={`font-raleway text-2xl md:text-4xl font-light leading-tight mb-6 ${textColor}`}
-          >
-            {heading}
-          </h1>
+          {/* Title */}
+          {title && (
+            <h1
+              className={`font-raleway text-2xl md:text-4xl font-light leading-tight mb-6 ${textColor}`}
+            >
+              {title}
+            </h1>
+          )}
 
           {/* Subtitle */}
-          <p className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} ${textColor}`}>
-            {subtitle}
-          </p>
+          {subtitle && (
+            <p className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} ${textColor}`}>
+              {subtitle}
+            </p>
+          )}
 
-          {/* Optional content (e.g., countdown, buttons) */}
+          {/* Optional content (e.g., countdown, buttons, search input) */}
           {children && <div className="mb-20">{children}</div>}
 
           {/* Call-to-Action with Decorative Leaves */}
-          <a
-            href={locale && locale !== 'en' ? `/${locale}${ctaHref}` : ctaHref}
-            className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light ${textColor} transition-transform hover:scale-105 ${
-              pulsate ? 'animate-pulse-scale' : ''
-            }`}
-          >
-            {/* Left Leaf (rotated outward) */}
-            <LeafSvg
-              className="w-16 h-16 -rotate-90"
-              aria-hidden="true"
-            />
+          {ctaText && ctaHref && (
+            <a
+              href={ctaHref}
+              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light ${textColor} transition-transform hover:scale-105 ${
+                pulsate ? 'animate-pulse-scale' : ''
+              }`}
+            >
+              {/* Left Leaf (rotated outward) */}
+              <LeafSvg
+                className="w-16 h-16 -rotate-90"
+                aria-hidden="true"
+              />
 
-            {/* CTA Text */}
-            <span>{ctaText}</span>
+              {/* CTA Text */}
+              <span>{ctaText}</span>
 
-            {/* Right Leaf (rotated outward) */}
-            <LeafSvg
-              className="w-16 h-16 rotate-90"
-              aria-hidden="true"
-            />
-          </a>
+              {/* Right Leaf (rotated outward) */}
+              <LeafSvg
+                className="w-16 h-16 rotate-90"
+                aria-hidden="true"
+              />
+            </a>
+          )}
         </div>
       </div>
     </div>

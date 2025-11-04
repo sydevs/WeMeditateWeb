@@ -638,13 +638,16 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 
 **Structure**: Colors (grid) → Sizes → Examples
 
-#### Text - Simple Vertical Layout
-[Text.stories.tsx](components/atoms/Text/Text.stories.tsx):
-- Straightforward vertical stacking for single-dimension variants
-- Three focused sections without subsections
-- No examples section (feature demonstration is sufficient)
+#### Typography - Documentation-Only Story
+[Typography.stories.tsx](components/atoms/Typography.stories.tsx):
+- Pure documentation story with no component (demonstrates using Tailwind directly)
+- Shows typography patterns: sizes, weights, colors
+- Includes practical examples section with real-world usage patterns
+- Demonstrates when NOT to create component wrappers
 
-**Structure**: Sizes → Colors → Weights
+**Structure**: Sizes → Weights → Colors → Examples
+
+**Note**: This story documents typography options without requiring a component wrapper, demonstrating the principle that simple styling doesn't need abstraction.
 
 #### Spacer - Extensive Subsection Usage
 [Spacer.stories.tsx](components/atoms/Spacer/Spacer.stories.tsx):

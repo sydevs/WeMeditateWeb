@@ -11,6 +11,7 @@ import {
   StoryGridRow,
   StoryGridCell
 } from '../../ladle';
+import { HeartIcon } from '@heroicons/react/24/outline';
 
 export default {
   title: "Atoms / Form"
@@ -22,7 +23,7 @@ export default {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Input Types">
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 max-w-xs">
         <Input type="text" placeholder="Text input" />
         <Input type="email" placeholder="Email input" />
         <Input type="number" placeholder="Number input" />
@@ -30,6 +31,19 @@ export const Default: Story = () => (
         <Input type="url" placeholder="Website URL" />
         <Input type="search" placeholder="Search..." />
         <Input type="date" />
+      </div>
+    </StorySection>
+
+    <StorySection title="Icon Customization">
+      <div className="flex flex-col gap-3 max-w-xs">
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Custom icon</p>
+          <Input type="search" placeholder="Search..." icon={HeartIcon} />
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Icon disabled</p>
+          <Input type="search" placeholder="Search..." icon={null} />
+        </div>
       </div>
     </StorySection>
 
@@ -89,27 +103,50 @@ export const Default: Story = () => (
     <StorySection title="Widths">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="text-sm text-gray-600 mb-1">Default (256px / w-64)</p>
+          <p className="text-sm text-gray-600 mb-1">Default (full width)</p>
           <Input type="text" placeholder="Default width" />
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-1">Full Width</p>
-          <Input type="text" placeholder="Full width" fullWidth />
+          <p className="text-sm text-gray-600 mb-1">Custom Width (max-w-64)</p>
+          <Input type="text" placeholder="Custom width" className="max-w-64" />
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">Custom Width (max-w-sm)</p>
+          <Input type="text" placeholder="Custom width" className="max-w-sm" />
         </div>
       </div>
     </StorySection>
 
     <StorySection title="Examples" inContext={true}>
-      <div className="space-y-4">
+      <div className="space-y-6">
+        <StorySection title="Search Bar" variant="subsection">
+          <div className="max-w-md">
+            <Input type="search" placeholder="Search meditations..." className="w-full" />
+          </div>
+        </StorySection>
+
         <StorySection title="Login Form" variant="subsection">
-          <div className="space-y-3">
+          <div className="space-y-3 max-w-md">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Email</label>
-              <Input type="email" placeholder="you@example.com" fullWidth />
+              <Input type="email" placeholder="you@example.com" className="w-full" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Password</label>
-              <Input type="password" placeholder="••••••••" fullWidth />
+              <Input type="password" placeholder="••••••••" className="w-full" />
+            </div>
+          </div>
+        </StorySection>
+
+        <StorySection title="Contact Form" variant="subsection">
+          <div className="space-y-3 max-w-md">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Phone</label>
+              <Input type="tel" placeholder="+1 (555) 123-4567" className="w-full" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Website</label>
+              <Input type="url" placeholder="https://example.com" className="w-full" />
             </div>
           </div>
         </StorySection>

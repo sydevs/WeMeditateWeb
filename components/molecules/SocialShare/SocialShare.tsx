@@ -1,6 +1,5 @@
 import { ComponentProps } from 'react'
 import { SocialIcon } from '../../atoms/SocialIcon'
-import { Text } from '../../atoms/Text'
 
 export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**
@@ -96,14 +95,9 @@ export function SocialShare({
       {...props}
     >
       {label && (
-        <Text
-          as="span"
-          size="lg"
-          weight="normal"
-          className="mr-1"
-        >
+        <span className="text-base sm:text-lg font-normal mr-1">
           {label}
-        </Text>
+        </span>
       )}
       <div className="flex items-center gap-2" role="group" aria-label="Share on social media">
         {platforms.sort().map((platform) => (

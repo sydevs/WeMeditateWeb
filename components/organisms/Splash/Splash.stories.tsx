@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Splash } from "./Splash";
 import { Header } from "../Header";
-import { Countdown, Button } from "../../atoms";
+import { Countdown, Button, Input } from "../../atoms";
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
@@ -24,7 +24,7 @@ export const Default: Story = () => {
         <h2 className="text-2xl font-semibold mb-4 px-4">Basic Splash</h2>
         <Splash
           backgroundImage="https://picsum.photos/id/1018/1920/1080"
-          heading="Meditate for Better Mental Health"
+          title="Meditate for Better Mental Health"
           subtitle="Making a start is easier than you think."
           ctaText="Try it now"
           ctaHref="/start"
@@ -39,7 +39,7 @@ export const Default: Story = () => {
         <div className="relative">
           <Splash
             backgroundImage="https://picsum.photos/id/1018/1920/1080"
-            heading="Meditate for Better Mental Health"
+            title="Meditate for Better Mental Health"
             subtitle="Making a start is easier than you think."
             ctaText="Try it now"
             ctaHref="/start"
@@ -68,7 +68,7 @@ export const Default: Story = () => {
         <div className="relative">
           <Splash
             backgroundImage="https://picsum.photos/id/1015/1920/1080"
-            heading="Discover Inner Peace"
+            title="Discover Inner Peace"
             subtitle="Your journey to mindfulness starts here."
             ctaText="Begin now"
             ctaHref="/start"
@@ -95,7 +95,7 @@ export const Default: Story = () => {
         <div className="relative">
           <Splash
             backgroundImage="https://picsum.photos/id/1015/1920/1080"
-            heading="Join Free Zoom Meditations!"
+            title="Join Free Zoom Meditations!"
             subtitle="Every Tuesday and Thursday at 7 pm London / 8 pm CET"
             ctaText="Sign up"
             ctaHref="/live"
@@ -111,7 +111,7 @@ export const Default: Story = () => {
         <div className="relative">
           <Splash
             backgroundImage="https://picsum.photos/id/1018/1920/1080"
-            heading="Download Our App"
+            title="Download Our App"
             subtitle="Meditate anytime, anywhere."
             ctaText="Learn more"
             ctaHref="/app"
@@ -135,6 +135,37 @@ export const Default: Story = () => {
               </Button>
             </div>
           </Splash>
+        </div>
+      </StorySection>
+
+      <StorySection title="Search Input with Header Overlay" inContext={true}>
+        <div className="relative max-h-96 md:max-h-160 overflow-hidden">
+          <Splash
+            backgroundImage="https://picsum.photos/id/1019/1920/1080"
+            theme="dark"
+          >
+            <div className="max-w-md mx-auto shadow-md">
+              <Input
+                type="search"
+                placeholder="Search meditations, articles, music..."
+                className="text-lg py-4 w-full"
+              />
+            </div>
+          </Splash>
+          <div className="absolute top-0 left-0 right-0 z-20 p-4">
+            <Header
+              logoHref="/"
+              actionLinkText="Classes near me"
+              actionLinkHref="/classes"
+              theme="dark"
+              navItems={[
+                { label: "Meditate Now", href: "/meditate" },
+                { label: "Music for Meditation", href: "/music" },
+                { label: "Inspiration", href: "/inspiration" },
+                { label: "About Meditation", href: "/about" }
+              ]}
+            />
+          </div>
         </div>
       </StorySection>
 

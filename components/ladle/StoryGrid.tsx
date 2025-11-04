@@ -110,7 +110,9 @@ export const StoryGridCell = ({ children, isLabel = false }: StoryGridCellProps)
 
   return (
     <td className={className}>
-      {children}
+      <div className="sm:flex sm:justify-center">
+        {children}
+      </div>
     </td>
   );
 };

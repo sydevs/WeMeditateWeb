@@ -734,9 +734,11 @@ Key requirements:
 - New components don't appear in Ladle navigation
 
 **Usually works without restart** (HMR handles these):
-- Editing existing component code
+- Editing existing component code (component logic, styling, props)
 - Editing existing story content
 - CSS/styling changes in existing files
+- TypeScript type changes in existing files
+- Adding/removing/modifying component props
 
 Restart Dev Server (`pnpm dev`) when:
 - Adding new pages or routes

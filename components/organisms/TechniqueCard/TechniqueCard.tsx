@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, Heading, Image, Text } from '../../atoms'
+import { Button, Heading, Image } from '../../atoms'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**

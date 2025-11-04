@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
 import { Avatar } from '../../atoms/Avatar/Avatar'
-import { Text } from '../../atoms/Text/Text'
 
 export interface AuthorProps {
   /**
@@ -135,19 +134,19 @@ export function Author({
             avatarElement
           )}
         </div>
-        <Text as="div" size="base" weight="light" className="leading-tight">
+        <div className="text-sm sm:text-base font-light leading-tight">
           Written by <em className="not-italic font-normal">{name}</em>
           {countryCode && `, ${countryCode}`}
-        </Text>
+        </div>
         {meditationText && (
-          <Text as="div" size="sm" weight="light" className="leading-tight">
+          <div className="text-sm font-light leading-tight">
             {meditationText}
-          </Text>
+          </div>
         )}
         {readingTimeText && (
-          <Text as="div" size="sm" weight="light" className="mt-1.5 leading-tight">
+          <div className="text-sm font-light mt-1.5 leading-tight">
             {readingTimeText}
-          </Text>
+          </div>
         )}
       </div>
     )
@@ -166,25 +165,25 @@ export function Author({
         <div className={`flex flex-col ${orderClasses} gap-8`}>
           <div className={`flex flex-col items-center ${metaAlign} text-center w-full md:w-48 shrink-0`}>
             <div className="mb-8">{avatarElement}</div>
-            <Text as="div" size="base" weight="light" className="leading-relaxed">
+            <div className="text-sm sm:text-base font-light leading-relaxed">
               {nameWithCountry}
-            </Text>
+            </div>
             {title && (
-              <Text as="div" size="sm" weight="light" className="leading-relaxed">
+              <div className="text-sm font-light leading-relaxed">
                 {title}
-              </Text>
+              </div>
             )}
             {meditationText && (
-              <Text as="div" size="sm" weight="light" className="leading-relaxed">
+              <div className="text-sm font-light leading-relaxed">
                 {meditationText}
-              </Text>
+              </div>
             )}
           </div>
           {description && (
             <div className="flex-1 mt-10 md:mt-0">
-              <Text as="div" size="base" weight="light" className="leading-relaxed text-left">
+              <div className="text-sm sm:text-base font-light leading-relaxed text-left">
                 {description}
-              </Text>
+              </div>
             </div>
           )}
         </div>

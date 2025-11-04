@@ -1,0 +1,59 @@
+import { ComponentProps } from 'react'
+
+export interface TriangleDecorationSvgProps extends ComponentProps<'svg'> {}
+
+/**
+ * Triangle decoration SVG with built-in coral (#e08e79) and teal (#c5e0dc) colors.
+ * Colors are fixed and cannot be changed via currentColor.
+ */
+export function TriangleDecorationSvg({ className = 'w-80 h-auto', ...props }: TriangleDecorationSvgProps) {
+  return (
+    <svg
+      viewBox="0 0 354.48 314.26"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
+    >
+      <path
+        d="m131.27 106.44 135 226.62 135-226.62z"
+        fill="none"
+        stroke="#e08e79"
+        strokeMiterlimit="10"
+        strokeWidth=".75"
+        transform="translate(-47.45 -19.53)"
+      />
+      <path
+        d="m286.67 193.49c0 11.41-9.62 20.66-21.46 20.66s-21.5-9.26-21.5-20.66 9.62-20.66 21.5-20.66 21.46 9.24 21.46 20.66"
+        fill="#e08e79"
+        transform="translate(-47.45 -19.53)"
+      />
+      <path
+        d="m217.74 172.51v-85.6"
+        fill="none"
+        stroke="#e08e79"
+        strokeMiterlimit="10"
+        strokeWidth=".75"
+      />
+      <path
+        d="m213.11 158.75-82.49-138.49-82.51 138.49z"
+        fill="none"
+        stroke="#c5e0dc"
+        strokeMiterlimit="10"
+        strokeWidth=".75"
+        transform="translate(-47.45 -19.53)"
+      />
+      <path
+        d="m118.15 105.56a13.14 13.14 0 1 1 13.11 12.63 12.88 12.88 0 0 1 -13.11-12.63"
+        fill="#c5e0dc"
+        transform="translate(-47.45 -19.53)"
+      />
+      <path
+        d="m83.82 86.91v52.31"
+        fill="none"
+        stroke="#c5e0dc"
+        strokeMiterlimit="10"
+        strokeWidth=".75"
+      />
+    </svg>
+  )
+}

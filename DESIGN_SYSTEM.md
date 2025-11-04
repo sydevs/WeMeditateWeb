@@ -190,8 +190,8 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 **SVG Components (components/atoms/svgs/)**
 - Standalone SVG graphics extracted into reusable components
 - Brand icons (LogoSvg, LeafSvg)
-- Illustrations (MeditationSvg, LocationSvg, HeaderIllustrationSvg)
-- Decorative elements (FloralDividerSvg)
+- Illustrations (HeaderIllustrationSvg)
+- Decorative elements (FloralDividerSvg, LotusDotsSvg, TriangleDecorationSvg)
 - See "SVG Components" section below for implementation details
 
 **Form Elements**
@@ -302,8 +302,7 @@ components/atoms/Button/
 
 All standalone SVG graphics should be extracted into reusable components in the `components/atoms/svgs/` directory:
 
-**Naming Convention**: Suffix with "Svg" (e.g., `LogoSvg`, `LeafSvg`, `MeditationSvg`)
-  - Remove "Icon" suffix if present (e.g., `LocationIcon` → `LocationSvg`)
+**Naming Convention**: Suffix with "Svg" (e.g., `LogoSvg`, `LeafSvg`, `TriangleDecorationSvg`)
 
 **Props Pattern**:
   - Accept `className` prop for flexible sizing and styling
@@ -421,7 +420,117 @@ Before implementing a component, ask:
 - [ ] What are the different states it can be in?
 - [ ] How will it be used in different contexts?
 
-### 2. Extracting Designs from Existing Websites
+### 2. When to Create Component Wrappers vs. Using Tailwind Directly
+
+One of the most important design decisions is determining when to create a component abstraction versus using Tailwind utilities directly. Component wrappers add abstraction layers that can improve consistency but also increase complexity and bundle size.
+
+#### Use Direct Tailwind Classes When:
+
+✅ **Simple, single-purpose styling** - Basic text, divs, or spans with straightforward styling
+```tsx
+// Good: Direct Tailwind for simple text
+<div className="text-sm sm:text-base font-light text-gray-700">
+  Author bio text
+</div>
+```
+
+✅ **Context-specific styling** - Styling that's unique to one component or page
+```tsx
+// Good: Inline styles for one-off layouts
+<div className="flex flex-col md:flex-row gap-8 p-6 bg-teal-50 rounded-lg">
+  {/* Content */}
+</div>
+```
+
+✅ **Minimal repetition** - Used in 1-2 places only
+```tsx
+// Good: Not worth abstracting if only used twice
+<span className="text-base sm:text-lg font-normal text-gray-700">
+  Share:
+</span>
+```
+
+✅ **No behavioral logic** - Pure styling without state, effects, or complex interactions
+
+**Example - Text Styling (No Component Needed)**:
+The removed `Text` component demonstrated this principle. It only wrapped Tailwind classes without adding meaningful abstraction:
+```tsx
+// ❌ Overengineered - component wrapper adds no value
+<Text as="div" size="base" weight="light">Content</Text>
+
+// ✅ Better - direct and explicit
+<div className="text-sm sm:text-base font-light">Content</div>
+```
+
+#### Extract to Component When:
+
+✅ **Complex interactive behavior** - Components with state, effects, or event handling
+```tsx
+// Good: Accordion has complex open/close logic
+<Accordion title="Section 1">Content</Accordion>
+```
+
+✅ **Extensive reuse (3+ locations)** - Pattern used across multiple files
+```tsx
+// Good: Button used throughout the app
+<Button variant="primary" onClick={handleSubmit}>Submit</Button>
+```
+
+✅ **Stateful or dynamic behavior** - Loading states, validation, animations
+```tsx
+// Good: Spinner manages loading animation
+<Spinner size="lg" />
+```
+
+✅ **Composition of multiple atoms** - Molecules combining several atoms
+```tsx
+// Good: FormField composes Label + Input + Error
+<FormField
+  label="Email"
+  type="email"
+  error={errors.email}
+/>
+```
+
+✅ **Complex prop-based variations** - Many conditional styles or behaviors
+```tsx
+// Good: Icon with size/color variants and accessibility
+<Icon icon={HeartIcon} size="md" color="primary" aria-label="Favorite" />
+```
+
+✅ **Polymorphic rendering needs** - Components that render as different HTML elements
+```tsx
+// Good: Heading can render as h1-h6
+<Heading level="h2">Section Title</Heading>
+```
+
+#### Evaluation Checklist
+
+Before creating a component wrapper, ask:
+
+- [ ] Does this add meaningful abstraction beyond Tailwind utilities?
+- [ ] Is there complex logic, state, or behavior to encapsulate?
+- [ ] Will this be used in 3+ different locations?
+- [ ] Does it compose multiple smaller components?
+- [ ] Does it provide a clearer API than raw HTML + Tailwind?
+- [ ] Does it encapsulate domain knowledge or business logic?
+
+**If you answer "no" to all questions above, use Tailwind directly.**
+
+#### Migration Pattern: Removing Overengineered Components
+
+If you identify an overengineered component:
+
+1. **Analyze usage** - Find all import locations (`grep -r "from '.*ComponentName'"`)
+2. **Verify simplicity** - Confirm component only wraps styling without logic
+3. **Refactor usages** - Replace with direct HTML + Tailwind classes
+4. **Remove exports** - Delete from barrel exports (`components/atoms/index.ts`)
+5. **Delete files** - Remove component files but consider keeping documentation stories
+6. **Update docs** - Update README and design system documentation
+
+**Example**: The `Text` component removal (2024) demonstrated this pattern - used in only 2 locations with no behavioral logic, it was successfully replaced with direct Tailwind usage.
+
+### 3. Extracting Designs from Existing Websites
 
 When creating components based on existing web designs (e.g., from wemeditate.com), follow this systematic approach:
 
@@ -684,6 +793,69 @@ import { cn } from '@/lib/utils'
   !isPrimary && 'bg-coral-600 hover:bg-coral-700'
 )}>
 ```
+
+#### Width Control Patterns
+
+When building components that default to full width, you cannot reliably override `w-full` with another `w-*` class due to CSS specificity. Both `w-full` and `w-64` have the same specificity, and whichever appears **last in the generated CSS file** wins (not necessarily the order in the HTML/className string).
+
+**The Problem:**
+```tsx
+// ❌ Doesn't work reliably - both have same specificity
+<Input className="w-64" />  // Component has w-full internally
+// Result: May still be full width depending on CSS generation order
+```
+
+**Solution 1: Use `max-w-*` Classes (Recommended)**
+
+The `max-w-*` utility sets `max-width` which works alongside `width: 100%` from `w-full`:
+
+```tsx
+// ✅ Works - constrains the full-width element
+<Input className="max-w-xs" />   // max 20rem (320px)
+<Input className="max-w-sm" />   // max 24rem (384px)
+<Input className="max-w-md" />   // max 28rem (448px)
+<Input className="max-w-lg" />   // max 32rem (512px)
+<Input className="max-w-64" />   // max 16rem (256px)
+```
+
+**Solution 2: Container Wrapper (Alternative)**
+
+Wrap the component in a container with the desired width:
+
+```tsx
+// ✅ Works - parent constrains child width
+<div className="w-64">
+  <Input />
+</div>
+
+<div className="max-w-md mx-auto">
+  <Input />
+</div>
+```
+
+**When to Use Each Approach:**
+
+- **Use `max-w-*`** when you want quick, inline width control without extra markup
+- **Use container wrapper** when you need centering (`mx-auto`), consistent form layouts, or multiple inputs with the same width constraint
+
+**Component Implementation Pattern:**
+
+When building full-width-by-default components:
+
+```tsx
+// For inputs without wrapper divs
+<input className={`w-full ${className}`} />
+
+// For inputs with wrapper divs (e.g., with icons)
+<div className={`relative w-full ${className}`}>
+  <input className="w-full" />
+</div>
+```
+
+This pattern ensures:
+- Components default to full width (common form behavior)
+- Users can constrain width with `max-w-*` or containers
+- No specificity conflicts with width utilities
 
 ### 6. Responsive Design
 
@@ -1068,8 +1240,10 @@ export const MobileMenu: Story = () => (/* ... */);
 
 Our atom components are organized into five functional categories in Ladle:
 
-**Atoms / Typography** (3 components)
-- Heading, Text, Label
+**Atoms / Typography** (2 components)
+- Heading, Label
+
+> **Note**: Typography patterns (text sizing, weights, colors) are documented in `Typography.stories.tsx` but do not require a component wrapper. Use Tailwind utilities directly for text styling.
 
 **Atoms / Form** (6 components)
 - Button, Checkbox, Radio, Input, Textarea, Select
@@ -1083,7 +1257,7 @@ Our atom components are organized into five functional categories in Ladle:
 **Atoms / Specialty** (2 components)
 - Duration, Spinner
 
-**Total**: 20 atom components across 5 categories
+**Total**: 19 atom components across 5 categories
 
 ### Future Hierarchy (Proposed)
 

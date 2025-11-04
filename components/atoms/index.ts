@@ -8,12 +8,10 @@
 
 // Typography
 export { Heading } from './Heading'
-export { Text } from './Text'
 export { PageTitle } from './PageTitle/PageTitle'
 export { Blockquote } from './Blockquote'
 export { Link } from './Link'
 export type { HeadingProps } from './Heading'
-export type { TextProps } from './Text'
 export type { PageTitleProps } from './PageTitle/PageTitle'
 export type { BlockquoteProps } from './Blockquote'
 export type { LinkProps } from './Link'
@@ -49,18 +47,18 @@ export type { LogoProps } from './Logo'
 export {
   LogoSvg,
   LeafSvg,
-  MeditationSvg,
-  LocationSvg,
   FloralDividerSvg,
-  HeaderIllustrationSvg
+  HeaderIllustrationSvg,
+  LotusDotsSvg,
+  TriangleDecorationSvg
 } from './svgs'
 export type {
   LogoSvgProps,
   LeafSvgProps,
-  MeditationSvgProps,
-  LocationSvgProps,
   FloralDividerSvgProps,
-  HeaderIllustrationSvgProps
+  HeaderIllustrationSvgProps,
+  LotusDotsSvgProps,
+  TriangleDecorationSvgProps
 } from './svgs'
 
 // Feedback

@@ -4,12 +4,6 @@ export type { LogoSvgProps } from './LogoSvg'
 export { LeafSvg } from './LeafSvg'
 export type { LeafSvgProps } from './LeafSvg'
 
-export { MeditationSvg } from './MeditationSvg'
-export type { MeditationSvgProps } from './MeditationSvg'
-
-export { LocationSvg } from './LocationSvg'
-export type { LocationSvgProps } from './LocationSvg'
-
 export { FloralDividerSvg } from './FloralDividerSvg'
 export type { FloralDividerSvgProps } from './FloralDividerSvg'
 
@@ -18,3 +12,6 @@ export type { HeaderIllustrationSvgProps } from './HeaderIllustrationSvg'
 
 export { LotusDotsSvg } from './LotusDotsSvg'
 export type { LotusDotsSvgProps } from './LotusDotsSvg'
+
+export { TriangleDecorationSvg } from './TriangleDecorationSvg'
+export type { TriangleDecorationSvgProps } from './TriangleDecorationSvg'
