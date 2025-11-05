@@ -18,9 +18,9 @@ export type { LinkProps } from './Link'
 
 // Interactive
 export { Button } from './Button'
-export { Dropdown } from './Dropdown'
+export { Dropdown, DropdownItem } from './Dropdown'
 export type { ButtonProps } from './Button'
-export type { DropdownProps } from './Dropdown'
+export type { DropdownProps, DropdownItemProps } from './Dropdown'
 
 // Form Inputs
 export { Input } from './Input'
@@ -63,9 +63,11 @@ export type {
 
 // Feedback
 export { Spinner } from './Spinner'
+export { SplashLoader } from './SplashLoader'
 export { Duration } from './Duration'
 export { Badge } from './Badge'
 export type { SpinnerProps } from './Spinner'
+export type { SplashLoaderProps } from './SplashLoader'
 export type { DurationProps } from './Duration'
 export type { BadgeProps } from './Badge'
 

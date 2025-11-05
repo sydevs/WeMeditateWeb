@@ -26,7 +26,7 @@ function Page() {
   // and updates the data in real-time as editors make changes
   const { data } = useLivePreview<PageData>({
     initialData,
-    serverURL: import.meta.env.PUBLIC_ENV__PAYLOAD_URL,
+    serverURL: import.meta.env.PUBLIC__PAYLOAD_URL,
     depth: 2, // Populate relationships and uploads to 2 levels deep
   })
 

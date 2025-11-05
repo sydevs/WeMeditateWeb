@@ -30,7 +30,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   // Fetch WeMeditateWebSettings
   const settings = await getWeMeditateWebSettings({
     apiKey: import.meta.env.PAYLOAD_API_KEY,
-    endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    endpoint: import.meta.env.PUBLIC__PAYLOAD_URL + '/api/graphql',
     kv: cloudflare?.env?.WEMEDITATE_CACHE,
   })
 
@@ -40,7 +40,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     id,
     locale,
     apiKey: import.meta.env.PAYLOAD_API_KEY,
-    endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    endpoint: import.meta.env.PUBLIC__PAYLOAD_URL + '/api/graphql',
     kv: cloudflare?.env?.WEMEDITATE_CACHE,
     bypassCache: true,  // Always fetch fresh data in preview mode
   })

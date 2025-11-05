@@ -5,6 +5,7 @@ import { LotusDotsSvg } from './LotusDotsSvg'
 import { FloralDividerSvg } from './FloralDividerSvg'
 import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 import { TriangleDecorationSvg } from './TriangleDecorationSvg'
+import { AnimatedLogoSvg } from './AnimatedLogoSvg'
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
@@ -39,6 +40,19 @@ export const Default: Story = () => (
           <div>
             <p className="font-medium text-gray-700">LotusDotsSvg</p>
             <p className="text-sm text-gray-600">Lotus flower with dots pattern (default: w-11 h-11)</p>
+          </div>
+        </div>
+      </div>
+    </StorySection>
+
+    <StorySection title="Animated Icons" description="Animated SVG graphics with looping animations">
+      <div className="flex flex-col gap-8">
+        <div className="flex items-center gap-4">
+          <AnimatedLogoSvg className="w-12 h-12 text-teal-600" />
+          <div>
+            <p className="font-medium text-gray-700">AnimatedLogoSvg</p>
+            <p className="text-sm text-gray-600">Animated WeMeditate logo with drawing effect (default: w-12 h-12)</p>
+            <p className="text-xs text-teal-600 mt-1">Used for loading states and preloaders</p>
           </div>
         </div>
       </div>
@@ -98,6 +112,14 @@ export const Default: Story = () => (
           <LotusDotsSvg className="w-11 h-11 text-gray-400" />
           <span className="text-sm text-gray-600">LotusDotsSvg in different colors</span>
         </div>
+
+        <div className="flex items-center gap-4">
+          <AnimatedLogoSvg className="w-12 h-12 text-teal-600" />
+          <AnimatedLogoSvg className="w-12 h-12 text-coral-500" />
+          <AnimatedLogoSvg className="w-12 h-12 text-gray-700" />
+          <AnimatedLogoSvg className="w-12 h-12 text-white" style={{ backgroundColor: '#333' }} />
+          <span className="text-sm text-gray-600">AnimatedLogoSvg in different colors</span>
+        </div>
       </div>
     </StorySection>
 
@@ -125,6 +147,14 @@ export const Default: Story = () => (
           <LotusDotsSvg className="w-16 h-16 text-gray-700" />
           <LotusDotsSvg className="w-24 h-24 text-gray-700" />
           <span className="text-sm text-gray-600">LotusDotsSvg (w-8, default, w-16, w-24)</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <AnimatedLogoSvg className="w-8 h-8 text-gray-700" />
+          <AnimatedLogoSvg className="w-12 h-12 text-gray-700" />
+          <AnimatedLogoSvg className="w-16 h-16 text-gray-700" />
+          <AnimatedLogoSvg className="w-24 h-24 text-gray-700" />
+          <span className="text-sm text-gray-600">AnimatedLogoSvg (w-8, default, w-16, w-24)</span>
         </div>
       </div>
     </StorySection>

@@ -104,7 +104,7 @@ export const Default: Story = () => (
         <Image
           src="https://picsum.photos/id/50/600/800"
           alt="Portrait meditation"
-          aspectRatio="3/4"
+          aspectRatio="3/2"
           rounded="rounded"
         />
         <div className="flex flex-col gap-3">

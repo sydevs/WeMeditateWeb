@@ -10,24 +10,74 @@ export default {
 } satisfies StoryDefault;
 
 /**
- * Spinner component showcasing all sizes, colors, and usage in context with loading states.
+ * Spinner component showcasing variants, sizes, colors, and usage in context with loading states.
  */
 export const Default: Story = () => (
   <StoryWrapper>
+    <StorySection title="Variants" description="Two spinner variants: default circular spinner and animated logo">
+      <div className="flex gap-8 items-center">
+        <div className="flex flex-col items-center gap-2">
+          <Spinner variant="default" />
+          <p className="text-sm text-gray-600">Default</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Spinner variant="logo" />
+          <p className="text-sm text-gray-600">Logo</p>
+        </div>
+      </div>
+    </StorySection>
+
     <StorySection title="Sizes">
-      <div className="flex gap-6 items-center">
-        <div className="flex flex-col items-center gap-2">
-          <Spinner size="sm" />
-          <p className="text-sm text-gray-600">Small</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Spinner size="md" />
-          <p className="text-sm text-gray-600">Medium</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Spinner size="lg" />
-          <p className="text-sm text-gray-600">Large</p>
-        </div>
+      <div className="flex flex-col gap-8">
+        <StorySection title="Default Variant Sizes" variant="subsection">
+          <div className="flex gap-6 items-center">
+            <div className="flex flex-col items-center gap-2">
+              <Spinner size="xs" />
+              <p className="text-sm text-gray-600">XS</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner size="sm" />
+              <p className="text-sm text-gray-600">Small</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner size="md" />
+              <p className="text-sm text-gray-600">Medium</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner size="lg" />
+              <p className="text-sm text-gray-600">Large</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner size="xl" />
+              <p className="text-sm text-gray-600">XL</p>
+            </div>
+          </div>
+        </StorySection>
+
+        <StorySection title="Logo Variant Sizes" variant="subsection">
+          <div className="flex gap-6 items-center">
+            <div className="flex flex-col items-center gap-2">
+              <Spinner variant="logo" size="xs" />
+              <p className="text-sm text-gray-600">XS</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner variant="logo" size="sm" />
+              <p className="text-sm text-gray-600">Small</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner variant="logo" size="md" />
+              <p className="text-sm text-gray-600">Medium</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner variant="logo" size="lg" />
+              <p className="text-sm text-gray-600">Large</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Spinner variant="logo" size="xl" />
+              <p className="text-sm text-gray-600">XL</p>
+            </div>
+          </div>
+        </StorySection>
       </div>
     </StorySection>
 
@@ -52,20 +102,28 @@ export const Default: Story = () => (
       title="Dark Theme"
       theme="dark"
       background="neutral"
-      description="Lightened colors (teal-300, coral-300, white) for contrast on dark backgrounds"
+      description="Lightened colors for contrast on dark backgrounds"
     >
-      <div className="flex gap-6 items-center">
-        <div className="flex flex-col items-center gap-2">
-          <Spinner color="primary" theme="dark" />
-          <p className="text-sm text-white">Primary (Light Teal)</p>
+      <div className="flex flex-col gap-6">
+        <div className="flex gap-6 items-center">
+          <div className="flex flex-col items-center gap-2">
+            <Spinner color="primary" theme="dark" />
+            <p className="text-sm text-white">Primary (Light Teal)</p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Spinner color="secondary" theme="dark" />
+            <p className="text-sm text-white">Secondary (Light Coral)</p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Spinner color="neutral" theme="dark" />
+            <p className="text-sm text-white">Neutral (White)</p>
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <Spinner color="secondary" theme="dark" />
-          <p className="text-sm text-white">Secondary (Light Coral)</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Spinner color="neutral" theme="dark" />
-          <p className="text-sm text-white">Neutral (White)</p>
+        <div className="flex gap-6 items-center">
+          <div className="flex flex-col items-center gap-2">
+            <Spinner variant="logo" theme="dark" />
+            <p className="text-sm text-white">Logo (White)</p>
+          </div>
         </div>
       </div>
     </StorySection>
@@ -92,6 +150,24 @@ export const Default: Story = () => (
               <Spinner size="lg" color="primary" />
               <p className="text-lg text-gray-700">Loading your meditation session</p>
               <p className="text-sm text-gray-500">Please wait...</p>
+            </div>
+          </div>
+        </StorySection>
+
+        <StorySection title="Logo Variant - Splash Screen" variant="subsection">
+          <div className="bg-teal-600 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
+            <div className="flex flex-col items-center gap-4">
+              <Spinner variant="logo" size="xl" theme="dark" />
+              <p className="text-lg text-white">WeMeditate</p>
+            </div>
+          </div>
+        </StorySection>
+
+        <StorySection title="Logo Variant - Content Loading" variant="subsection">
+          <div className="bg-white border border-gray-200 rounded-lg p-8 flex items-center justify-center min-h-[200px]">
+            <div className="flex flex-col items-center gap-3">
+              <Spinner variant="logo" size="lg" />
+              <p className="text-gray-600">Loading meditation...</p>
             </div>
           </div>
         </StorySection>

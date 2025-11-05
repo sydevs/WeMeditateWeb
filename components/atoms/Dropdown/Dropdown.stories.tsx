@@ -1,5 +1,5 @@
 import type { Story, StoryDefault } from '@ladle/react'
-import { Dropdown } from './Dropdown'
+import { Dropdown, DropdownItem } from './Dropdown'
 import { Button } from '../Button'
 import { Icon } from '../Icon'
 import { StorySection, StoryWrapper } from '../../ladle'
@@ -21,21 +21,59 @@ export default {
  */
 export const Default: Story = () => (
   <StoryWrapper>
+    <StorySection title="Sizes">
+      <div className="flex flex-col gap-8">
+        <StorySection title="Small" variant="subsection">
+          <Dropdown trigger={<Button variant="secondary">Small Dropdown</Button>} size="sm">
+            <DropdownItem href="#" size="sm">
+              Menu Item 1
+            </DropdownItem>
+            <DropdownItem href="#" size="sm">
+              Menu Item 2
+            </DropdownItem>
+            <DropdownItem href="#" size="sm">
+              Menu Item 3
+            </DropdownItem>
+          </Dropdown>
+        </StorySection>
+
+        <StorySection title="Medium (Default)" variant="subsection">
+          <Dropdown trigger={<Button variant="secondary">Medium Dropdown</Button>} size="md">
+            <DropdownItem href="#" size="md">
+              Menu Item 1
+            </DropdownItem>
+            <DropdownItem href="#" size="md">
+              Menu Item 2
+            </DropdownItem>
+            <DropdownItem href="#" size="md">
+              Menu Item 3
+            </DropdownItem>
+          </Dropdown>
+        </StorySection>
+
+        <StorySection title="Large" variant="subsection">
+          <Dropdown trigger={<Button variant="secondary">Large Dropdown</Button>} size="lg">
+            <DropdownItem href="#" size="lg">
+              Menu Item 1
+            </DropdownItem>
+            <DropdownItem href="#" size="lg">
+              Menu Item 2
+            </DropdownItem>
+            <DropdownItem href="#" size="lg">
+              Menu Item 3
+            </DropdownItem>
+          </Dropdown>
+        </StorySection>
+      </div>
+    </StorySection>
+
     <StorySection title="Basic Dropdown">
       <div className="flex flex-col gap-8">
         <StorySection title="With Button Trigger" variant="subsection">
           <Dropdown trigger={<Button variant="secondary">Open Menu</Button>}>
-            <div className="flex flex-col">
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Menu Item 1
-              </a>
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Menu Item 2
-              </a>
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Menu Item 3
-              </a>
-            </div>
+            <DropdownItem href="#">Menu Item 1</DropdownItem>
+            <DropdownItem href="#">Menu Item 2</DropdownItem>
+            <DropdownItem href="#">Menu Item 3</DropdownItem>
           </Dropdown>
         </StorySection>
 
@@ -48,14 +86,8 @@ export const Default: Story = () => (
               </button>
             }
           >
-            <div className="flex flex-col">
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Option 1
-              </a>
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Option 2
-              </a>
-            </div>
+            <DropdownItem href="#">Option 1</DropdownItem>
+            <DropdownItem href="#">Option 2</DropdownItem>
           </Dropdown>
         </StorySection>
 
@@ -67,17 +99,9 @@ export const Default: Story = () => (
               </span>
             }
           >
-            <div className="flex flex-col py-2">
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Item A
-              </a>
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Item B
-              </a>
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Item C
-              </a>
-            </div>
+            <DropdownItem href="#">Item A</DropdownItem>
+            <DropdownItem href="#">Item B</DropdownItem>
+            <DropdownItem href="#">Item C</DropdownItem>
           </Dropdown>
         </StorySection>
       </div>
@@ -87,28 +111,16 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-8">
         <StorySection title="Left Aligned (Default)" variant="subsection">
           <Dropdown trigger={<Button variant="secondary">Left Aligned</Button>} align="left">
-            <div className="flex flex-col py-2">
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                This dropdown opens to the left
-              </a>
-              <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                Perfect for left-side triggers
-              </a>
-            </div>
+            <DropdownItem href="#">This dropdown opens to the left</DropdownItem>
+            <DropdownItem href="#">Perfect for left-side triggers</DropdownItem>
           </Dropdown>
         </StorySection>
 
         <StorySection title="Right Aligned" variant="subsection">
           <div className="flex justify-end">
             <Dropdown trigger={<Button variant="secondary">Right Aligned</Button>} align="right">
-              <div className="flex flex-col py-2">
-                <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                  This dropdown opens to the right
-                </a>
-                <a href="#" className="px-4 py-2 hover:bg-gray-100 text-sm">
-                  Perfect for right-side triggers
-                </a>
-              </div>
+              <DropdownItem href="#">This dropdown opens to the right</DropdownItem>
+              <DropdownItem href="#">Perfect for right-side triggers</DropdownItem>
             </Dropdown>
           </div>
         </StorySection>
@@ -129,21 +141,19 @@ export const Default: Story = () => (
             }
             align="right"
           >
-            <div className="flex flex-col py-2">
-              <a href="#" className="px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-2">
-                <Icon icon={UserIcon} size="sm" />
-                Profile
-              </a>
-              <a href="#" className="px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-2">
-                <Icon icon={Cog6ToothIcon} size="sm" />
-                Settings
-              </a>
-              <hr className="my-2" />
-              <a href="#" className="px-4 py-3 hover:bg-gray-100 text-sm text-error flex items-center gap-2">
-                <Icon icon={ArrowRightStartOnRectangleIcon} size="sm" />
-                Logout
-              </a>
-            </div>
+            <DropdownItem href="#" className="flex items-center gap-2">
+              <Icon icon={UserIcon} size="sm" />
+              Profile
+            </DropdownItem>
+            <DropdownItem href="#" className="flex items-center gap-2">
+              <Icon icon={Cog6ToothIcon} size="sm" />
+              Settings
+            </DropdownItem>
+            <hr className="my-2" />
+            <DropdownItem href="#" className="flex items-center gap-2 text-error">
+              <Icon icon={ArrowRightStartOnRectangleIcon} size="sm" />
+              Logout
+            </DropdownItem>
           </Dropdown>
         </div>
 
@@ -156,13 +166,13 @@ export const Default: Story = () => (
               </button>
             }
           >
-            <div className="flex flex-col py-2">
-              <button className="px-4 py-2 hover:bg-gray-100 text-sm text-left">Edit</button>
-              <button className="px-4 py-2 hover:bg-gray-100 text-sm text-left">Duplicate</button>
-              <button className="px-4 py-2 hover:bg-gray-100 text-sm text-left">Archive</button>
-              <hr className="my-2" />
-              <button className="px-4 py-2 hover:bg-gray-100 text-sm text-error text-left">Delete</button>
-            </div>
+            <DropdownItem href="#">Edit</DropdownItem>
+            <DropdownItem href="#">Duplicate</DropdownItem>
+            <DropdownItem href="#">Archive</DropdownItem>
+            <hr className="my-2" />
+            <DropdownItem href="#" className="text-error">
+              Delete
+            </DropdownItem>
           </Dropdown>
         </div>
       </div>

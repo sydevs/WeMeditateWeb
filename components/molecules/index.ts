@@ -25,6 +25,8 @@ export type { HeroQuoteProps } from './blocks/HeroQuote/HeroQuote'
 // Forms
 export { FormField } from './FormField'
 export type { FormFieldProps } from './FormField'
+export { LocationSearch } from './LocationSearch'
+export type { LocationSearchProps, SelectedLocation } from './LocationSearch'
 
 // Social
 export { SocialShare } from './SocialShare'

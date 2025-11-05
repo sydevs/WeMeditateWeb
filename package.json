@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@mapbox/search-js-core": "^1.5.0",
+    "@mapbox/search-js-react": "^1.5.0",
+    "@mapbox/search-js-web": "^1.5.0",
     "@payloadcms/live-preview-react": "^3.61.1",
     "@photonjs/cloudflare": "^0.1.4",
     "@photonjs/hono": "^0.1.4",

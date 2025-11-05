@@ -19,4 +19,6 @@ export default defineConfig({
     target: "es2022",
     sourcemap: true,
   },
+  // Make PUBLIC__ prefixed environment variables available
+  envPrefix: 'PUBLIC__',
 });

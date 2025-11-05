@@ -27,7 +27,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   // Fetch WeMeditateWebSettings
   const settings = await getWeMeditateWebSettings({
     apiKey: import.meta.env.PAYLOAD_API_KEY,
-    endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    endpoint: import.meta.env.PUBLIC__PAYLOAD_URL + '/api/graphql',
     kv,
   })
 
@@ -36,7 +36,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     slug,
     locale,
     apiKey: import.meta.env.PAYLOAD_API_KEY,
-    endpoint: import.meta.env.PUBLIC_ENV__PAYLOAD_URL + '/api/graphql',
+    endpoint: import.meta.env.PUBLIC__PAYLOAD_URL + '/api/graphql',
     kv,
   })
 

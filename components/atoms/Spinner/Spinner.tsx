@@ -1,6 +1,15 @@
 import { ComponentProps } from 'react'
+import { AnimatedLogoSvg } from '../svgs'
 
 export interface SpinnerProps extends ComponentProps<'div'> {
+  /**
+   * Spinner variant
+   * - default: Circular spinner animation
+   * - logo: Animated WeMeditate logo
+   * @default 'default'
+   */
+  variant?: 'default' | 'logo'
+
   /**
    * Spinner size
    * @default 'md'
@@ -8,7 +17,7 @@ export interface SpinnerProps extends ComponentProps<'div'> {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
   /**
-   * Spinner color
+   * Spinner color (only applies to default variant)
    * @default 'primary'
    */
   color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
@@ -31,15 +40,20 @@ export interface SpinnerProps extends ComponentProps<'div'> {
 /**
  * Spinner component for loading states.
  *
- * Displays an animated circular spinner with customizable size and color.
+ * Displays an animated spinner with two variants:
+ * - default: Circular spinner animation
+ * - logo: Animated WeMeditate logo
+ *
  * Includes accessible label for screen readers.
  *
  * @example
  * <Spinner />
+ * <Spinner variant="logo" size="lg" />
  * <Spinner size="lg" color="neutral" theme="dark" />
  * <Spinner size="sm" label="Loading content..." />
  */
 export function Spinner({
+  variant = 'default',
   size = 'md',
   color = 'primary',
   theme = 'light',
@@ -47,7 +61,17 @@ export function Spinner({
   className = '',
   ...props
 }: SpinnerProps) {
-  const sizeStyles = {
+  // Logo variant sizes
+  const logoSizeStyles = {
+    xs: 'w-6 h-6',
+    sm: 'w-8 h-8',
+    md: 'w-12 h-12',
+    lg: 'w-16 h-16',
+    xl: 'w-24 h-24',
+  }
+
+  // Default variant sizes
+  const defaultSizeStyles = {
     xs: 'w-3 h-3 border',
     sm: 'w-4 h-4 border-2',
     md: 'w-6 h-6 border-2',
@@ -73,6 +97,24 @@ export function Spinner({
 
   const colorStyles = theme === 'dark' ? darkThemeColors : lightThemeColors
 
+  // Logo variant uses text color based on theme
+  const logoColorClass = theme === 'dark' ? 'text-white' : 'text-teal-600'
+
+  if (variant === 'logo') {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label={label}
+        className={`inline-block ${className}`}
+        {...props}
+      >
+        <AnimatedLogoSvg className={`${logoSizeStyles[size]} ${logoColorClass}`} />
+        <span className="sr-only">{label}</span>
+      </div>
+    )
+  }
+
   return (
     <div
       role="status"
@@ -82,7 +124,7 @@ export function Spinner({
       {...props}
     >
       <div
-        className={`animate-spin rounded-full ${sizeStyles[size]} ${colorStyles[color]}`}
+        className={`animate-spin rounded-full ${defaultSizeStyles[size]} ${colorStyles[color]}`}
       />
       <span className="sr-only">{label}</span>
     </div>

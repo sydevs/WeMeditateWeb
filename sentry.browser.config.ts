@@ -4,7 +4,7 @@ export const sentryBrowserConfig = () => {
   // eslint-disable-next-line
   import.meta.env.PROD === true &&
     Sentry.init({
-      dsn: import.meta.env.PUBLIC_ENV__SENTRY_DSN,
+      dsn: import.meta.env.PUBLIC__SENTRY_DSN,
       environment: "production-frontend",
       //enabled: import.meta.env.DEV ? false : true,
       integrations: [Sentry.replayIntegration()],

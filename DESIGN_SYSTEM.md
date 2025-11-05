@@ -189,7 +189,7 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 
 **SVG Components (components/atoms/svgs/)**
 - Standalone SVG graphics extracted into reusable components
-- Brand icons (LogoSvg, LeafSvg)
+- Brand icons (LogoSvg, LeafSvg, AnimatedLogoSvg)
 - Illustrations (HeaderIllustrationSvg)
 - Decorative elements (FloralDividerSvg, LotusDotsSvg, TriangleDecorationSvg)
 - See "SVG Components" section below for implementation details
@@ -202,8 +202,25 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 
 **Feedback**
 - `Spinner` - Loading indicator
+- `SplashLoader` - Full-screen/overlay loading with animated logo and optional text (supports sm/md/lg sizes)
+- `Duration` - Time duration display (e.g., "10 min")
 - `Badge` - Count/status badge
 - `Tag` - Keyword/category tag
+
+**Layout**
+- `Container` - Content width container with responsive padding
+- `Spacer` - Vertical or horizontal spacing component
+- `Box` - Flexible container with variants, padding, and shadow options
+- `LeafDivider` - Decorative divider with leaf SVG
+- `Breadcrumbs` - Breadcrumb navigation component
+
+**Specialty**
+- `Countdown` - Countdown timer display
+- `LanguageFlag` - Country flag icons for language selection
+- `SocialIcon` - Social media platform icons
+- `Logo` - Brand logo component
+- `Avatar` - User avatar with size variants
+- `PageTitle` - Page title with gradient decoration
 
 ### Molecules (components/molecules/)
 
@@ -214,11 +231,12 @@ Molecules combine atoms into functional units. Examples:
 - `SearchBar` - Input + search Icon + Button
 - `FormGroup` - Multiple related form fields
 - `InputWithIcon` - Input with prefix/suffix icon
+- `LocationSearch` - Mapbox-powered location autocomplete with geolocation (always uses lg size)
 
 **Navigation**
 - `NavItem` - Link with active state indicator
 - `Breadcrumb` - Breadcrumb navigation item
-- `Dropdown` - Dropdown menu trigger + menu
+- `Dropdown` - Dropdown menu trigger + menu (supports both uncontrolled and controlled state for autocomplete use cases)
 - `LanguageSelector` - Language dropdown with flags
 
 **Content Display**
@@ -770,7 +788,140 @@ export function MainComponent({ ... }: MainComponentProps) { ... }
 function CarouselNavButton({ ... }) { ... }
 ```
 
-### 5. Styling with Tailwind CSS
+### 5. Size Variant Implementation Pattern
+
+When components need size variations, follow this standardized pattern for consistency across the design system.
+
+#### Standard Size Scale
+
+Use a three-tier size system: **small (`sm`)**, **medium (`md`)**, and **large (`lg`)**
+
+- **Small**: Compact UI elements, cards, thumbnails, inline components
+- **Medium**: Default for most use cases, standard content areas
+- **Large**: Hero sections, full-page elements, prominent features
+
+#### Responsive Size Implementation
+
+Implement sizes with **mobile-first responsive breakpoints** that scale appropriately:
+
+```tsx
+const sizeClasses = {
+  sm: {
+    // Component-specific classes for small size
+    // Example: Logo/icon sizes, text sizes, spacing
+    element: 'w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24',
+    text: 'text-sm sm:text-base md:text-lg',
+    gap: 'gap-3 sm:gap-4',
+  },
+  md: {
+    // Medium size (default) - balanced for most contexts
+    element: 'w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28',
+    text: 'text-base sm:text-lg md:text-xl',
+    gap: 'gap-4 sm:gap-5',
+  },
+  lg: {
+    // Large size - prominent, high-visibility elements
+    element: 'w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40',
+    text: 'text-lg sm:text-xl md:text-2xl',
+    gap: 'gap-4 sm:gap-6',
+  },
+}
+```
+
+#### Size Prop Pattern
+
+**Interface Definition:**
+```tsx
+export interface ComponentProps {
+  /**
+   * Size variant for the component.
+   * - `sm`: Small - compact for cards/inline use
+   * - `md`: Medium (default) - standard size
+   * - `lg`: Large - prominent display
+   */
+  size?: 'sm' | 'md' | 'lg'
+  // ... other props
+}
+```
+
+**Default Value:**
+```tsx
+export function Component({
+  size = 'md',  // Medium as default
+  // ... other props
+}: ComponentProps) {
+  // Implementation
+}
+```
+
+**Usage in Component:**
+```tsx
+<div className={sizeClasses[size].element}>
+  <Icon className={sizeClasses[size].icon} />
+  {text && (
+    <p className={sizeClasses[size].text}>
+      {text}
+    </p>
+  )}
+</div>
+```
+
+#### Size Scaling Guidelines
+
+**Maintain Proportional Relationships:**
+- Small → Medium: ~20-25% increase
+- Medium → Large: ~20-30% increase
+- Gap spacing should scale proportionally with element sizes
+
+**Responsive Breakpoints:**
+- Base (mobile): Starting point, smallest size
+- `sm:` (640px): Slight increase for small tablets
+- `md:` (768px): Full size for tablets/desktop
+
+**Example: SplashLoader Size Implementation**
+```tsx
+// Real-world example from the codebase
+const sizeClasses = {
+  sm: {
+    logo: 'w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24',  // 64-96px range
+    text: 'text-sm sm:text-base md:text-lg',            // 14-18px range
+    gap: 'gap-3 sm:gap-4',                              // 12-16px range
+  },
+  md: {
+    logo: 'w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28',  // 80-112px range
+    text: 'text-base sm:text-lg md:text-xl',            // 16-20px range
+    gap: 'gap-4 sm:gap-5',                              // 16-20px range
+  },
+  lg: {
+    logo: 'w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40',  // 96-160px range
+    text: 'text-lg sm:text-xl md:text-2xl',             // 18-24px range
+    gap: 'gap-4 sm:gap-6',                              // 16-24px range
+  },
+}
+```
+
+#### When to Use Each Size
+
+Provide usage guidance in component documentation:
+
+```tsx
+/**
+ * Size recommendations:
+ * - `sm`: Cards, thumbnails, small modals (< 400px height)
+ * - `md`: Default for most use cases, medium content areas (400-600px)
+ * - `lg`: Full-page splashes, hero sections, large modals (> 600px)
+ */
+```
+
+#### Consistency Rules
+
+- **Always include all three sizes** when implementing size variants
+- **Make `md` the default** unless there's a specific reason otherwise
+- **Scale all child elements proportionally** (icons, text, spacing)
+- **Test at all responsive breakpoints** (mobile, tablet, desktop)
+- **Document size recommendations** in component README
+
+### 6. Styling with Tailwind CSS
 
 **Preferences:**
 1. Use Tailwind utility classes directly in JSX
@@ -857,7 +1008,7 @@ This pattern ensures:
 - Users can constrain width with `max-w-*` or containers
 - No specificity conflicts with width utilities
 
-### 6. Responsive Design
+### 7. Responsive Design
 
 Use mobile-first approach with Tailwind's responsive prefixes:
 
@@ -878,7 +1029,7 @@ Use mobile-first approach with Tailwind's responsive prefixes:
 - **Laptops/Desktops**: `lg:` prefix - 1024px and up
 - **Large desktops**: `xl:` and `2xl:` prefixes - 1280px and 1536px and up
 
-### 7. State Management
+### 8. State Management
 
 **Local State**: Use `useState` for component-specific state
 
@@ -888,7 +1039,7 @@ Use mobile-first approach with Tailwind's responsive prefixes:
 
 **Shared State**: Use React Context sparingly, prefer composition
 
-### 8. Rich Text Content Rendering
+### 9. Rich Text Content Rendering
 
 PayloadCMS content is structured as a rich text AST. Create renderer components:
 
@@ -922,7 +1073,7 @@ export function RichTextRenderer({ content }: { content: RichTextContent }) {
 }
 ```
 
-### 9. Locale-Aware Components
+### 10. Locale-Aware Components
 
 Always use the `Link` component from `components/Link.tsx` for internal navigation. It automatically handles locale prefixing.
 
@@ -944,7 +1095,7 @@ export function LocaleAwareComponent() {
 }
 ```
 
-### 10. ContentGrid Layout Component
+### 11. ContentGrid Layout Component
 
 **ContentGrid** is a molecule that displays ContentCard components in a responsive masonry layout. It's designed for content-heavy pages like meditation libraries, article grids, and mixed content sections.
 
@@ -1019,7 +1170,7 @@ Each item extends `ContentCardProps` (without `className` and `variant`):
 - **ContentGrid**: For ContentCard components, always shows all items, supports card variants
 - **MasonryGrid**: For text content items, has "Show More" pagination
 
-### 11. Performance Patterns
+### 12. Performance Patterns
 
 **Image Optimization:**
 ```tsx

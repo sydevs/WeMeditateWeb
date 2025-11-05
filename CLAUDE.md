@@ -36,18 +36,50 @@ pnpm ladle
 pnpm ladle:build
 ```
 
+## Service Dependencies
+
+This project integrates with the following external services:
+
+### PayloadCMS (Required)
+- **Purpose**: Headless CMS providing content via GraphQL API
+- **Used for**: Pages, articles, meditations, site settings, and all dynamic content
+- **Configuration**: `PAYLOAD_API_KEY` and `PUBLIC__PAYLOAD_URL` in `.env`
+- **Documentation**: GraphQL queries in [server/graphql-client.ts](server/graphql-client.ts)
+
+### Cloudflare Workers & KV (Required for Production)
+- **Purpose**: Edge computing platform and key-value storage for caching
+- **Used for**: Server-side rendering at the edge, caching API responses
+- **Configuration**: `WEMEDITATE_CACHE` KV namespace in [wrangler.toml](wrangler.toml)
+- **Documentation**: [server/CACHING.md](server/CACHING.md)
+
+### Mapbox (Required for Location Features)
+- **Purpose**: Mapping and location search services
+- **Used for**: LocationSearch component (address/city autocomplete with geolocation)
+- **Configuration**: `PUBLIC__MAPBOX_ACCESS_TOKEN` in `.env`
+- **API**: Uses Mapbox Search Box API with session-based pricing
+- **Preferred Provider**: Mapbox is the preferred provider for all mapping-related services in this project
+
+### Sentry (Optional)
+- **Purpose**: Error tracking and performance monitoring
+- **Used for**: Browser and server-side error reporting in production
+- **Configuration**: `SENTRY_DSN` (server) and `PUBLIC__SENTRY_DSN` (browser) in `.env`
+- **Note**: Only activates in production builds (`import.meta.env.PROD === true`)
+
 ## Environment Setup
 
 Create a `.env` file with these variables (see [.env.example](.env.example)):
 
 ```bash
 PAYLOAD_API_KEY=<your-api-key>           # PayloadCMS API authentication
-PUBLIC_ENV__PAYLOAD_URL=<cms-url>        # GraphQL endpoint URL
+PUBLIC__PAYLOAD_URL=<cms-url>            # GraphQL endpoint URL
 SENTRY_DSN=<dsn>                         # Server-side error tracking
-PUBLIC_ENV__SENTRY_DSN=<dsn>             # Browser-side error tracking
+PUBLIC__SENTRY_DSN=<dsn>                 # Browser-side error tracking
+PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch component
 ```
 
-Variables prefixed with `PUBLIC_ENV__` are exposed to the browser.
+Variables prefixed with `PUBLIC__` are exposed to the browser.
+
+**Note**: This project uses `PUBLIC__` as the standard prefix for browser-accessible environment variables. This replaces older conventions (`VITE_`, `PUBLIC_ENV__`) used in some Vite projects. The `envPrefix: 'PUBLIC__'` configuration in both `vite.config.ts` and `.ladle/vite.config.ts` enables this automatic exposure.
 
 ## Architecture
 
