@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Reference Documentation
+
+**IMPORTANT**: Before working with components, design, or stories, read these comprehensive guides:
+
+- **@DESIGN_SYSTEM.md** - Component architecture, atomic design methodology, design tokens, accessibility standards, and implementation guidelines
+- **@STORYBOOK.md** - Component story writing patterns, utility components, section organization, and Ladle configuration
+- **@MCP_USAGE.md** - MCP server best practices for Puppeteer, Serena, and Cloudflare Docs
+
 ## Project Overview
 
 WeMeditateWeb is a server-side rendered web application built with **Vike** (full-stack meta-framework), **React 19**, and **TypeScript**, deployed to **Cloudflare Workers**. It fetches content from a PayloadCMS backend via GraphQL and implements sophisticated edge caching using Cloudflare KV.
@@ -64,6 +72,20 @@ This project integrates with the following external services:
 - **Used for**: Browser and server-side error reporting in production
 - **Configuration**: `SENTRY_DSN` (server) and `PUBLIC__SENTRY_DSN` (browser) in `.env`
 - **Note**: Only activates in production builds (`import.meta.env.PROD === true`)
+
+## MCP Servers
+
+This project uses Model Context Protocol (MCP) servers to enhance Claude Code's capabilities. See @MCP_USAGE.md for comprehensive documentation.
+
+**Installed Servers**:
+- **Puppeteer** (`@modelcontextprotocol/server-puppeteer`) - Browser automation for design extraction and testing
+- **Serena** (`mcp__serena`) - Semantic codebase navigation and intelligent code operations
+- **Cloudflare Docs** (`mcp__cloudflare-docs`) - Search Cloudflare product documentation
+
+**Quick Tips**:
+- Use Puppeteer's `evaluate` tool with explicit `return` statements (see @MCP_USAGE.md)
+- Use Serena for token-efficient code reading (avoid reading entire files)
+- Prefer MCP tools over direct bash commands for code search and navigation
 
 ## Environment Setup
 
@@ -369,11 +391,11 @@ Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin using the **CSS-fi
 This project uses the **Atomic Design Methodology** to build a consistent, scalable component library.
 
 **IMPORTANT**: Before creating any UI component, you MUST:
-1. Read [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for component architecture, implementation guidelines, and accessibility standards
-2. Read [STORYBOOK.md](STORYBOOK.md) before writing component stories
+1. Read @DESIGN_SYSTEM.md for component architecture, implementation guidelines, and accessibility standards
+2. Read @STORYBOOK.md before writing component stories
 3. Follow these documents as the source of truth for all component development
 
-See [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for comprehensive guidelines on:
+See @DESIGN_SYSTEM.md for comprehensive guidelines on:
 
 - **Design Principles**: Mobile-first, performance-focused, accessible development
 - **Design Tokens**: Colors, typography, spacing scales from wemeditate.com brand
@@ -736,7 +758,7 @@ Key requirements:
 - Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Padding → Examples
 - Use "Examples" section for practical usage scenarios (can be multiple sections with descriptive titles or a single section with subsections)
 
-**See @STORYBOOK.md** for complete documentation on:
+**See STORYBOOK.md** for complete documentation on:
 - Story utility components API reference
 - Standard section order and naming conventions
 - Writing stories with Component Story Format (CSF)
@@ -802,7 +824,7 @@ lsof -ti:5173 | xargs kill && pnpm dev
 
 ## Design Extraction Workflow
 
-When creating components based on existing designs from live websites (e.g., using `/extract-design` command):
+When creating components based on existing designs from live websites (e.g., using `/code/clone-design` command):
 
 ### Step 1: Analyze the Existing Design
 
@@ -883,7 +905,7 @@ Before implementing, ask the user about:
 2. **Write TypeScript interfaces**: Clear prop types with JSDoc comments
 3. **Implement with Tailwind only**: No custom CSS unless approved
 4. **Add accessibility**: ARIA attributes, semantic HTML, keyboard support
-5. **Create stories**: Follow [STORYBOOK.md](STORYBOOK.md) guidelines
+5. **Create stories**: Follow @STORYBOOK.md guidelines
 6. **Export from index**: Add to `components/{level}/index.ts`
 
 ### Step 6: Verification
@@ -1014,7 +1036,7 @@ Then proceed with planning:
 - [ ] Create story file: `components/[level]/ComponentName/ComponentName.stories.tsx`
   - Import from '@ladle/react' and component
   - Import story utilities from '../../ladle'
-  - Follow STORYBOOK.md section patterns
+  - Follow @STORYBOOK.md section patterns
   - For **atoms**: Use grids for multi-dimensional variations
   - For **molecules**: Use sections with Minimal/Maximal subsections
   - Add Examples section with realistic usage
@@ -1040,8 +1062,8 @@ Then proceed with planning:
 
 ### 5. Completion Checklist
 
-- [ ] Component follows DESIGN_SYSTEM.md guidelines
-- [ ] Story follows STORYBOOK.md patterns
+- [ ] Component follows @DESIGN_SYSTEM.md guidelines
+- [ ] Story follows @STORYBOOK.md patterns
 - [ ] All exports updated (component and parent index)
 - [ ] No TypeScript errors
 - [ ] Tested in Ladle

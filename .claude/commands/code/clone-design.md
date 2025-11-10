@@ -1,15 +1,32 @@
+---
+description: Extract design from URL and create component (provide: component description, URL, and CSS selector)
+argument-hint: [description]
+allowed-tools: mcp__puppeteer__*, mcp__serena__*, Read, Write, Edit, Glob, Grep, Bash(lsof:*), Bash(find:*), Bash(ls:*)
+---
+
+## Environment Check
+
+- Chrome debugging: !`lsof -ti:9222`
+- Ladle status: !`lsof -ti:61000`
+- Component count: !`find components -name "*.tsx" -not -name "*.stories.tsx" | wc -l`
+
+## Your Task
+
 $ARGUMENTS
 
 ## Design Extraction Workflow
 
-Follow this procedure to extract and implement design components from live websites:
+Follow this procedure to extract and implement design components from live websites.
+
+**MCP Tools**: This workflow uses Puppeteer MCP tools. See @MCP_USAGE.md for detailed usage patterns.
 
 ### 1. Examine Design
 
 **Visit URL and Inspect**:
 - Use Puppeteer to connect to Chrome debugging instance (if available)
 - Navigate to the URL and examine HTML structure
-- Use `puppeteer_evaluate` to extract computed styles, not screenshots
+- Use `puppeteer_evaluate` to extract computed styles (see @MCP_USAGE.md)
+- **IMPORTANT**: Always use explicit `return` statements in `puppeteer_evaluate` (see @MCP_USAGE.md)
 - Identify CSS classes, layout patterns, spacing, and typography
 - Note: Don't take screenshots with Puppeteer unless explicitly needed - ask the user for screenshots if required
 
@@ -39,7 +56,7 @@ Determine the atomic design level:
 - **If you need custom CSS/tokens, STOP and ask the user first**
 
 **Component Best Practices**:
-- Follow instructions in DESIGN_SYSTEM.md strictly
+- Follow instructions in @DESIGN_SYSTEM.md strictly
 - Use semantic HTML with proper ARIA attributes
 - Components should NOT include float/positioning classes
 - Keep components flexible - layout is handled by parent wrappers
@@ -63,7 +80,7 @@ export function Component({ ...props }: ComponentProps) {
 
 ### 4. Create Stories
 
-Follow STORYBOOK.md guidelines:
+Follow @STORYBOOK.md guidelines:
 
 **For Atoms**:
 - Use grids for multi-dimensional variations (variant × state, color × size)
@@ -86,7 +103,7 @@ Follow STORYBOOK.md guidelines:
 
 1. Create component file with TypeScript types
 2. Create index.ts barrel export
-3. Create .stories.tsx following STORYBOOK.md
+3. Create .stories.tsx following @STORYBOOK.md
 4. Update parent index.ts (atoms/molecules/organisms/index.ts)
 5. Start/restart Ladle to view stories
 6. Verify all variants render correctly

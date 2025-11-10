@@ -1,4 +1,17 @@
-# Task: Comprehensive Code Review of WeMeditate Web
+---
+description: Comprehensive code quality audit of entire project
+allowed-tools: Bash(find:*), Bash(wc:*), Bash(du:*), Bash(git log:*), Bash(git diff:*), Bash(cat:*), Bash(grep:*), mcp__serena__*, Read, Glob, Grep
+model: claude-sonnet-4-5-20250929
+---
+
+## Project Health Metrics
+
+- Lines of code: !`find . -name "*.ts" -o -name "*.tsx" | xargs wc -l | tail -1`
+- Git contributors: !`git log --since="1 month ago" --format="%an" | sort | uniq -c | sort -rn | head -10`
+- Build size: !`du -sh dist/ 2>/dev/null`
+- Recent commits: !`git log --oneline --since="2 weeks ago" | wc -l`
+
+## Your Task
 
 You are performing a thorough code review of the WeMeditate Web project. Your goal is to identify concrete, actionable improvements in code quality, performance, security, and maintainability.
 
@@ -6,7 +19,7 @@ You are performing a thorough code review of the WeMeditate Web project. Your go
 
 When this command is invoked:
 
-1. **Start with automated checks** - Run `pnpm lint` and `pnpm build` to catch immediate issues
+1. **Review project metrics** - Analyze the health metrics provided above
 2. **Review recent changes** - Use `git log --oneline -10` and `git diff` to understand recent work
 3. **Check critical files** - Read key files in `src/pages/`, `src/lib/queries/`, `src/components/`, and `src/server/`
 4. **Apply the checklist below** - Use as a guide, not a rigid script
