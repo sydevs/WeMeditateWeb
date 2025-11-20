@@ -179,9 +179,9 @@ export function Button({
   // Variant styles for dark theme (text buttons with animation)
   const textButtonDarkThemeStyles = {
     primary:
-      'bg-teal-500 after:bg-teal-600 text-white focus:ring-teal-500 active:after:bg-teal-700',
+      'bg-teal-600 after:bg-teal-500 text-white focus:ring-teal-500 active:after:bg-teal-700',
     secondary:
-      'bg-coral-500 after:bg-coral-600 text-white focus:ring-coral-500 active:after:bg-coral-700',
+      'bg-coral-600 after:bg-coral-500 text-white focus:ring-coral-500 active:after:bg-coral-700',
     outline:
       'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
     ghost:

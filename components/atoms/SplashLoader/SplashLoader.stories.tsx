@@ -64,7 +64,7 @@ export const Default: Story = () => (
 
         <div>
           <p className="text-sm font-medium mb-2 text-gray-700">None (Transparent)</p>
-          <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-gradient-to-br from-teal-100 to-coral-100">
+          <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-linear-to-br from-teal-100 to-coral-100">
             <SplashLoader color="none" />
           </div>
         </div>
@@ -194,7 +194,7 @@ function InteractiveSplashLoader() {
         </span>
       </div>
 
-      <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-gradient-to-br from-teal-50 to-coral-50">
+      <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-linear-to-br from-teal-50 to-coral-50">
         <SplashLoader
           color="primary"
           backgroundImage="https://picsum.photos/seed/interactive/800/600"

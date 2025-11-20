@@ -29,3 +29,11 @@ export type { SplashProps } from './Splash'
 // HeaderDropdown
 export { HeaderDropdown } from './HeaderDropdown'
 export type { HeaderDropdownProps, HeaderDropdownLink, HeaderDropdownArticle } from './HeaderDropdown'
+
+// ContentTextBox
+export { ContentTextBox } from './ContentTextBox'
+export type { ContentTextBoxProps } from './ContentTextBox'
+
+// ContentOverlay
+export { ContentOverlay } from './ContentOverlay'
+export type { ContentOverlayProps } from './ContentOverlay'
