@@ -64,10 +64,12 @@ export type {
 // Feedback
 export { Spinner } from './Spinner'
 export { SplashLoader } from './SplashLoader'
+export { Placeholder } from './Placeholder'
 export { Duration } from './Duration'
 export { Badge } from './Badge'
 export type { SpinnerProps } from './Spinner'
 export type { SplashLoaderProps } from './SplashLoader'
+export type { PlaceholderProps } from './Placeholder'
 export type { DurationProps } from './Duration'
 export type { BadgeProps } from './Badge'
 

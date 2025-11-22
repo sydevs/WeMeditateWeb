@@ -1,4 +1,7 @@
 import { ComponentProps, useState } from 'react'
+import { Placeholder } from '../Placeholder'
+import { Icon } from '../Icon'
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
 
 export interface ImageProps extends ComponentProps<'img'> {
   /**
@@ -10,6 +13,18 @@ export interface ImageProps extends ComponentProps<'img'> {
    * Alternative text for accessibility
    */
   alt: string
+
+  /**
+   * Width of the image in pixels
+   * When provided with height, prevents layout shift during loading
+   */
+  width?: number
+
+  /**
+   * Height of the image in pixels
+   * When provided with width, prevents layout shift during loading
+   */
+  height?: number
 
   /**
    * Aspect ratio for the image container
@@ -34,6 +49,13 @@ export interface ImageProps extends ComponentProps<'img'> {
    * @default true
    */
   showLoading?: boolean
+
+  /**
+   * Color variant for the loading placeholder
+   * Only used when width and height are provided
+   * @default 'neutral'
+   */
+  placeholderVariant?: 'primary' | 'secondary' | 'neutral'
 }
 
 /**
@@ -42,18 +64,25 @@ export interface ImageProps extends ComponentProps<'img'> {
  * Provides consistent image rendering with aspect ratio control.
  * Supports loading states and various object-fit options.
  *
+ * When width and height are provided, uses a blurred gradient placeholder
+ * with shimmer animation to prevent layout shift during loading.
+ *
  * @example
  * <Image src="/path/to/image.jpg" alt="Description" />
  * <Image src="/banner.jpg" alt="Banner" aspectRatio="16/9" />
  * <Image src="/profile.jpg" alt="Profile" aspectRatio="square" rounded="circle" />
+ * <Image src="/hero.jpg" alt="Hero" width={1200} height={600} placeholderVariant="primary" />
  */
 export function Image({
   src,
   alt,
+  width,
+  height,
   aspectRatio,
   objectFit = 'cover',
   rounded = 'square',
   showLoading = true,
+  placeholderVariant = 'neutral',
   className = '',
   onLoad,
   onError,
@@ -107,17 +136,26 @@ export function Image({
 
   return (
     <div className={containerClasses}>
-      {showLoading && isLoading && !hasError && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      {/* Always show Placeholder when loading or error */}
+      {showLoading && (isLoading || hasError) && (
+        <Placeholder
+          width={width}
+          height={height}
+          variant={placeholderVariant}
+          animate={!hasError}
+          className="absolute inset-0"
+        >
+          {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
+        </Placeholder>
       )}
-      {hasError ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
-          Failed to load image
-        </div>
-      ) : (
+
+      {/* Image element (hidden until loaded, not rendered on error) */}
+      {!hasError && (
         <img
           src={src}
           alt={alt}
+          width={width}
+          height={height}
           className={imageClasses}
           onLoad={handleLoad}
           onError={handleError}

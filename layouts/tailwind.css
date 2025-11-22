@@ -86,5 +86,24 @@
     }
   }
 
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s ease-in-out infinite;
+}
+
+/* Custom text glow utilities for content overlays */
+@utility text-glow-light {
+  text-shadow: 0 0 8px rgb(255 255 255 / 60%), 0 0 16px rgb(255 255 255 / 40%), 0 0 24px rgb(255 255 255 / 20%);
+}
+
+@utility text-glow-dark {
+  text-shadow: 0 0 8px rgb(0 0 0 / 80%), 0 0 16px rgb(0 0 0 / 60%), 0 0 24px rgb(0 0 0 / 40%);
 }

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "mcp__puppeteer__*",
-      "mcp__serena__*"
+      "mcp__serena__*",
+      "mcp__cloudflare-docs__*"
     ]
   },
   "hooks": {

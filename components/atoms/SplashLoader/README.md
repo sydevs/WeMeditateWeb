@@ -54,7 +54,7 @@ import { SplashLoader } from '@/components/atoms'
 </div>
 
 // Transparent overlay on custom background
-<div className="relative h-96 bg-gradient-to-br from-teal-100 to-coral-100">
+<div className="relative h-96 bg-linear-to-br from-teal-100 to-coral-100">
   <SplashLoader size="sm" color="none" text="Loading..." isLoading={isLoading} />
 </div>
 ```
