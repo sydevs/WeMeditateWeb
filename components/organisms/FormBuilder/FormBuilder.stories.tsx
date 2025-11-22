@@ -9,7 +9,7 @@ export default {
 /**
  * FormBuilder component showcasing dynamic form rendering from PayloadCMS form builder plugin.
  *
- * Demonstrates all supported field types, validation, submission handling, and confirmation messages.
+ * Demonstrates all supported field types, variants, alignment options, validation, submission handling, and confirmation messages.
  */
 export const Default: Story = () => {
   // Mock submission handler that simulates API call
@@ -41,6 +41,36 @@ export const Default: Story = () => {
         ],
       },
     }
+  }
+
+  // Simple contact form for variant demonstration
+  const variantDemoForm: FormBuilderConfig = {
+    id: 'variant-demo-form',
+    title: 'Get in Touch',
+    fields: [
+      {
+        name: 'name',
+        blockType: 'text',
+        label: 'Your Name',
+        required: true,
+        placeholder: 'John Doe',
+      },
+      {
+        name: 'email',
+        blockType: 'email',
+        label: 'Email Address',
+        required: true,
+        placeholder: 'your@email.com',
+      },
+      {
+        name: 'message',
+        blockType: 'textarea',
+        label: 'Message',
+        required: true,
+        placeholder: 'How can we help you?',
+      },
+    ],
+    submitButtonLabel: 'Send',
   }
 
   // Contact form configuration
@@ -82,7 +112,7 @@ export const Default: Story = () => {
         placeholder: 'Tell us how we can help...',
       },
       {
-        name: 'newsletter',
+        name: 'contactNewsletter',
         blockType: 'checkbox',
         label: 'Subscribe to our newsletter',
       },
@@ -111,7 +141,7 @@ export const Default: Story = () => {
         placeholder: 'Enter your full name',
       },
       {
-        name: 'email',
+        name: 'regEmail',
         blockType: 'email',
         label: 'Email',
         required: true,
@@ -150,7 +180,7 @@ export const Default: Story = () => {
         required: true,
       },
       {
-        name: 'newsletter',
+        name: 'regNewsletter',
         blockType: 'checkbox',
         label: 'Send me weekly meditation tips',
       },
@@ -164,7 +194,7 @@ export const Default: Story = () => {
     id: 'newsletter-form',
     fields: [
       {
-        name: 'email',
+        name: 'newsletterEmail',
         blockType: 'email',
         label: 'Email Address',
         required: true,
@@ -181,14 +211,14 @@ export const Default: Story = () => {
     title: 'Form with Validation Errors',
     fields: [
       {
-        name: 'email',
+        name: 'errorEmail',
         blockType: 'email',
         label: 'Email',
         required: true,
         placeholder: 'Try submitting to see server-side errors',
       },
       {
-        name: 'message',
+        name: 'errorMessage',
         blockType: 'textarea',
         label: 'Message',
         required: true,
@@ -200,99 +230,104 @@ export const Default: Story = () => {
 
   return (
     <StoryWrapper>
-      <StorySection title="Contact Form">
-        <div className="max-w-2xl">
-          <FormBuilder form={contactForm} onSubmit={handleSubmit} />
+      <StorySection title="Variants">
+        <div className="flex flex-wrap gap-8">
+          <div className="min-w-2/5">
+            <StorySection title="Default Variant" variant="subsection">
+              <p className="text-sm text-gray-600 mb-4">
+                Uses default input variants with labels above fields and primary button
+              </p>
+              <div className="max-w-md">
+                <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} variant="default" />
+              </div>
+            </StorySection>
+          </div>
+
+          <div className="min-w-2/5">
+            <StorySection title="Minimal Variant" variant="subsection">
+              <p className="text-sm text-gray-600 mb-4">
+                Uses minimal input variants with placeholders instead of labels and outline button
+              </p>
+              <div className="max-w-md">
+                <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} variant="minimal" />
+              </div>
+            </StorySection>
+          </div>
         </div>
       </StorySection>
 
-      <StorySection title="Registration Form (All Field Types)">
-        <div className="max-w-2xl">
-          <FormBuilder form={registrationForm} onSubmit={handleSubmit} />
-        </div>
-      </StorySection>
-
-      <StorySection title="Simple Newsletter Form">
-        <div className="max-w-md">
-          <FormBuilder form={newsletterForm} onSubmit={handleSubmit} />
-        </div>
-      </StorySection>
-
-      <StorySection title="Form with Server-Side Validation Errors">
-        <div className="max-w-2xl">
-          <p className="text-sm text-gray-600 mb-4">
-            This form simulates server-side validation errors. Try submitting the form to see
-            how field-level errors are displayed.
-          </p>
-          <FormBuilder form={errorForm} onSubmit={handleSubmitWithErrors} />
-        </div>
-      </StorySection>
-
-      <StorySection
-        title="Examples"
-        inContext={true}
-      >
+      <StorySection title="Alignments">
         <div className="flex flex-col gap-8">
+          <StorySection title="Left Aligned (Default)" variant="subsection">
+            <div className="max-w-md">
+              <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} align="left" />
+            </div>
+          </StorySection>
+
+          <StorySection title="Center Aligned" variant="subsection">
+            <div className="max-w-md mx-auto">
+              <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} align="center" />
+            </div>
+          </StorySection>
+        </div>
+      </StorySection>
+
+      <StorySection title="Contact Form" inContext={true}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="max-w-2xl">
+            <FormBuilder form={contactForm} onSubmit={handleSubmit} />
+          </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Integration Example
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              In a real application, you would fetch the form configuration from PayloadCMS
-              and handle the submission to your API:
-            </p>
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto">
-              {`// In your page component
-import { FormBuilder } from '@/components/organisms'
-
-export function ContactPage({ formConfig }) {
-  const handleSubmit = async (data) => {
-    const response = await fetch('/api/form-submissions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-
-    if (response.ok) {
-      return { success: true }
-    } else {
-      const error = await response.json()
-      return { success: false, error }
-    }
-  }
-
-  return <FormBuilder form={formConfig} onSubmit={handleSubmit} />
-}`}
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
+            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
+              {JSON.stringify(contactForm, null, 2)}
             </pre>
           </div>
+        </div>
+      </StorySection>
 
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Accessibility Features
-            </h3>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li>Native HTML5 validation with required fields</li>
-              <li>ARIA invalid states for fields with errors</li>
-              <li>ARIA live regions for form submission status</li>
-              <li>Screen reader announcements for loading states</li>
-              <li>Proper form semantics with labels and fieldsets</li>
-              <li>Keyboard navigation support</li>
-            </ul>
+      <StorySection title="Registration Form (All Field Types)" inContext={true}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="max-w-2xl">
+            <FormBuilder form={registrationForm} onSubmit={handleSubmit} />
           </div>
-
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Supported Field Types
-            </h3>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li><strong>text</strong> - Single-line text input</li>
-              <li><strong>email</strong> - Email input with validation</li>
-              <li><strong>number</strong> - Numeric input</li>
-              <li><strong>textarea</strong> - Multi-line text input</li>
-              <li><strong>select</strong> - Dropdown selection</li>
-              <li><strong>checkbox</strong> - Boolean checkbox</li>
-              <li><strong>message</strong> - Display-only informational text</li>
-            </ul>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
+            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
+              {JSON.stringify(registrationForm, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </StorySection>
+
+      <StorySection title="Simple Newsletter Form" inContext={true}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="max-w-md">
+            <FormBuilder form={newsletterForm} onSubmit={handleSubmit} />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
+            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
+              {JSON.stringify(newsletterForm, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </StorySection>
+
+      <StorySection title="Form with Server-Side Validation Errors" inContext={true}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="max-w-2xl">
+            <p className="text-sm text-gray-600 mb-4">
+              This form simulates server-side validation errors. Try submitting the form to see
+              how field-level errors are displayed.
+            </p>
+            <FormBuilder form={errorForm} onSubmit={handleSubmitWithErrors} />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
+            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
+              {JSON.stringify(errorForm, null, 2)}
+            </pre>
           </div>
         </div>
       </StorySection>

@@ -129,6 +129,36 @@ Callback function that handles form submission. Must return a promise with succe
 }
 ```
 
+### `variant?: 'default' | 'minimal'` (optional)
+
+Visual variant for the form.
+
+- **default** (default): Standard form with labels and borders, uses default input variants and primary button
+- **minimal**: Minimal form with placeholders instead of labels, uses minimal input variants and outline button
+
+```tsx
+// Default variant
+<FormBuilder form={formConfig} onSubmit={handleSubmit} variant="default" />
+
+// Minimal variant
+<FormBuilder form={formConfig} onSubmit={handleSubmit} variant="minimal" />
+```
+
+### `align?: 'left' | 'center'` (optional)
+
+Form alignment.
+
+- **left** (default): Left-aligned title and button (fields always left-aligned)
+- **center**: Centered title and button (fields always left-aligned)
+
+```tsx
+// Left aligned
+<FormBuilder form={formConfig} onSubmit={handleSubmit} align="left" />
+
+// Center aligned
+<FormBuilder form={formConfig} onSubmit={handleSubmit} align="center" />
+```
+
 ### `className?: string` (optional)
 
 Additional CSS classes for the form wrapper.

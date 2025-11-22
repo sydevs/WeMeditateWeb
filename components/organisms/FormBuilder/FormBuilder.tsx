@@ -109,6 +109,22 @@ export interface FormBuilderProps {
   }>
 
   /**
+   * Visual variant for the form
+   * - default: Standard form with labels and borders
+   * - minimal: Minimal form with placeholders and minimal styling
+   * @default 'default'
+   */
+  variant?: 'default' | 'minimal'
+
+  /**
+   * Form alignment
+   * - left: Left-aligned title and button (fields always left-aligned)
+   * - center: Centered title and button (fields always left-aligned)
+   * @default 'left'
+   */
+  align?: 'left' | 'center'
+
+  /**
    * Additional CSS classes for the form wrapper
    */
   className?: string
@@ -120,6 +136,7 @@ export interface FormBuilderProps {
 function renderField(
   field: FormBuilderField,
   register: UseFormRegister<any>,
+  variant: 'default' | 'minimal',
   fieldError?: string
 ) {
   // Filter defaultValue to only allow string/number for non-checkbox fields
@@ -129,10 +146,15 @@ function renderField(
     return field.defaultValue
   }
 
+  // Determine state based on error
+  const state = fieldError ? 'error' : 'default'
+
   const commonProps = {
     id: field.name,
-    placeholder: field.placeholder,
+    placeholder: variant === 'minimal' ? field.label : field.placeholder,
     defaultValue: getDefaultValue(),
+    variant: variant,
+    state: state as 'default' | 'error',
     'aria-invalid': !!fieldError,
     ...register(field.name, {
       required: field.required ? `${field.label} is required` : false,
@@ -160,7 +182,11 @@ function renderField(
 
     case 'select':
       return (
-        <Select {...commonProps} placeholder={field.placeholder || 'Select an option'}>
+        <Select
+          {...commonProps}
+          placeholder={variant === 'minimal' ? field.label : (field.placeholder || 'Select an option')}
+          fullWidth
+        >
           {field.options?.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -176,6 +202,7 @@ function renderField(
           id={field.name}
           label={field.label}
           defaultChecked={field.defaultValue === true}
+          hasError={!!fieldError}
           aria-invalid={!!fieldError}
         />
       )
@@ -210,7 +237,7 @@ function renderField(
  *   }}
  * />
  */
-export function FormBuilder({ form, onSubmit, className = '' }: FormBuilderProps) {
+export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left', className = '' }: FormBuilderProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string>('')
@@ -297,7 +324,7 @@ export function FormBuilder({ form, onSubmit, className = '' }: FormBuilderProps
   return (
     <div className={className}>
       {form.title && (
-        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-6 sm:mb-8">
+        <h2 className={`text-xl sm:text-2xl font-semibold text-gray-900 mb-6 sm:mb-8 ${align === 'center' ? 'text-center' : 'text-left'}`}>
           {form.title}
         </h2>
       )}
@@ -325,7 +352,7 @@ export function FormBuilder({ form, onSubmit, className = '' }: FormBuilderProps
             if (field.blockType === 'checkbox') {
               return (
                 <div key={field.name} className={field.width || 'w-full'}>
-                  {renderField(field, register, fieldError)}
+                  {renderField(field, register, variant, fieldError)}
                   {fieldError && (
                     <p className="mt-1 text-sm text-error" role="alert">
                       {fieldError}
@@ -339,12 +366,26 @@ export function FormBuilder({ form, onSubmit, className = '' }: FormBuilderProps
             if (field.blockType === 'message') {
               return (
                 <div key={field.name} className={field.width || 'w-full'}>
-                  {renderField(field, register)}
+                  {renderField(field, register, variant)}
                 </div>
               )
             }
 
-            // For all other fields, wrap in FormField
+            // For minimal variant, render without FormField wrapper (uses placeholders instead)
+            if (variant === 'minimal') {
+              return (
+                <div key={field.name} className={field.width || 'w-full'}>
+                  {renderField(field, register, variant, fieldError)}
+                  {fieldError && (
+                    <p className="mt-1 text-sm text-error" role="alert">
+                      {fieldError}
+                    </p>
+                  )}
+                </div>
+              )
+            }
+
+            // For default variant, wrap in FormField
             return (
               <div key={field.name} className={field.width || 'w-full'}>
                 <FormField
@@ -354,7 +395,7 @@ export function FormBuilder({ form, onSubmit, className = '' }: FormBuilderProps
                   error={fieldError}
                   disabled={isSubmitting}
                 >
-                  {renderField(field, register, fieldError)}
+                  {renderField(field, register, variant, fieldError)}
                 </FormField>
               </div>
             )
@@ -362,14 +403,13 @@ export function FormBuilder({ form, onSubmit, className = '' }: FormBuilderProps
         </div>
 
         {/* Submit button */}
-        <div className="mt-8">
+        <div className={`mt-8 ${align === 'center' ? 'flex justify-center' : ''}`}>
           <Button
             type="submit"
-            variant="primary"
-            size="lg"
+            variant={variant === 'minimal' ? 'outline' : 'primary'}
             isLoading={isSubmitting}
             disabled={isSubmitting}
-            fullWidth
+            className="min-w-32"
           >
             {form.submitButtonLabel || 'Submit'}
           </Button>
