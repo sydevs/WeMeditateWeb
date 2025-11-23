@@ -74,6 +74,30 @@ export const Default: Story = () => {
           />
         </div>
       </StorySection>
+
+      <StorySection title="Web Upsell">
+        <div className="w-full">
+          <MeditationPlayer
+            track={sampleTrack}
+            title="Delving Deeper"
+            subtitle="All pervading power"
+            frames={sampleFrames}
+            upsell="web"
+          />
+        </div>
+      </StorySection>
+
+      <StorySection title="App Upsell">
+        <div className="w-full">
+          <MeditationPlayer
+            track={sampleTrack}
+            title="Delving Deeper"
+            subtitle="All pervading power"
+            frames={sampleFrames}
+            upsell="app"
+          />
+        </div>
+      </StorySection>
     </StoryWrapper>
   )
 }

@@ -1,6 +1,6 @@
 import { ComponentProps, useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
-import { Avatar, Button } from '../../atoms'
+import { Avatar, Button, Link } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
 import { useAudioPlayer, Track } from '../../molecules/AudioPlayer/useAudioPlayer'
 import founderImage from '../../../assets/smnd.webp'
@@ -39,6 +39,13 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
    */
   frames: MeditationFrame[]
   /**
+   * Optional upsell message variant
+   * - 'web': Link to more meditations on wemeditate.com
+   * - 'app': Link to interactive meditations in the free app
+   * - undefined: No upsell shown
+   */
+  upsell?: 'web' | 'app'
+  /**
    * Callback when playback starts
    */
   onPlay?: () => void
@@ -61,6 +68,7 @@ export function MeditationPlayer({
   title,
   subtitle,
   frames,
+  upsell,
   onPlay,
   onPause,
   className = '',
@@ -401,6 +409,29 @@ export function MeditationPlayer({
           </div>
 
         </div>
+
+        {/* Upsell Message */}
+        {upsell && (
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              {upsell === 'web' ? (
+                <>
+                  Find more meditations on{' '}
+                  <Link href="https://wemeditate.com/meditations" variant="primary" external>
+                    wemeditate.com
+                  </Link>
+                </>
+              ) : (
+                <>
+                  Find interactive meditations with meditation music in our{' '}
+                  <Link href="https://wemeditate.com/app" variant="primary" external>
+                    free app
+                  </Link>
+                </>
+              )}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
