@@ -18,3 +18,6 @@ export type { TriangleDecorationSvgProps } from './TriangleDecorationSvg'
 
 export { AnimatedLogoSvg } from './AnimatedLogoSvg'
 export type { AnimatedLogoSvgProps } from './AnimatedLogoSvg'
+
+export { SimpleLeafSvg } from './SimpleLeafSvg'
+export type { SimpleLeafSvgProps } from './SimpleLeafSvg'

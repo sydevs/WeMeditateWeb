@@ -8,7 +8,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    * Visual style variant
    * @default 'primary'
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
 
   /**
    * Theme based on background context
@@ -150,6 +150,8 @@ export function Button({
       'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 hover:bg-teal-100 hover:border-gray-500',
     ghost:
       'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
+    neutral:
+      'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
   }
 
   // Variant styles for dark theme (icon-only buttons)
@@ -162,6 +164,8 @@ export function Button({
       'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
     ghost:
       'bg-transparent text-white focus:ring-white hover:bg-white/20 hover:text-white',
+    neutral:
+      'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
   }
 
   // Variant styles for light theme (text buttons with animation)
@@ -174,6 +178,8 @@ export function Button({
       'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 after:bg-teal-100 hover:border-gray-500',
     ghost:
       'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
+    neutral:
+      'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
   }
 
   // Variant styles for dark theme (text buttons with animation)
@@ -186,6 +192,8 @@ export function Button({
       'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
     ghost:
       'bg-transparent text-white focus:ring-white after:bg-white/20 hover:text-white',
+    neutral:
+      'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
   }
 
   const variantStyles = isIconOnly

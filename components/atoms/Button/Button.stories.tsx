@@ -85,6 +85,22 @@ export const Default: Story = () => (
           </StoryGridRow>
 
           <StoryGridRow>
+            <StoryGridCell isLabel>Neutral</StoryGridCell>
+            <StoryGridCell>
+              <Button icon={CheckIcon} variant="neutral" shape="square" aria-label="Confirm" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Button icon={CheckIcon} variant="neutral" shape="circular" aria-label="Confirm" />
+            </StoryGridCell>
+            <StoryGridCell>
+              <Button icon={CheckIcon} variant="neutral" shape="square">Button</Button>
+            </StoryGridCell>
+            <StoryGridCell>
+              <Button icon={CheckIcon} variant="neutral" shape="circular">Button</Button>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
             <StoryGridCell isLabel>Outline</StoryGridCell>
             <StoryGridCell>
               <Button icon={StarIcon} variant="outline" shape="square" aria-label="Favorite" />
@@ -130,6 +146,8 @@ export const Default: Story = () => (
         <Button variant="primary" theme="dark">Primary</Button>
         <Button variant="secondary" theme="dark" icon={HeartIcon} aria-label="Like" />
         <Button variant="secondary" theme="dark">Secondary</Button>
+        <Button variant="neutral" theme="dark" icon={CheckIcon} aria-label="Confirm" />
+        <Button variant="neutral" theme="dark">Neutral</Button>
         <Button variant="outline" theme="dark" icon={StarIcon} aria-label="Favorite" />
         <Button variant="outline" theme="dark">Outline</Button>
         <Button variant="ghost" theme="dark" icon={XMarkIcon} aria-label="Close" />

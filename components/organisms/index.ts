@@ -55,3 +55,7 @@ export type { SubtleSystemProps, SubtleSystemItem } from './SubtleSystem'
 // MusicLibrary
 export { MusicLibrary } from './MusicLibrary'
 export type { MusicLibraryProps, MusicFilter } from './MusicLibrary'
+
+// MeditationPlayer
+export { MeditationPlayer } from './MeditationPlayer'
+export type { MeditationPlayerProps, Track, MeditationFrame } from './MeditationPlayer'
