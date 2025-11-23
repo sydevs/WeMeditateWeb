@@ -22,7 +22,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    * Button size
    * @default 'md'
    */
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 
   /**
    * Button shape
@@ -134,7 +134,7 @@ export function Button({
     'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10 after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100'
 
   const baseStyles =
-    'inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
+    'inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
 
   // Only add animation if button is interactive (not disabled or loading)
   const isInteractive = !disabled && !isLoading
@@ -194,6 +194,7 @@ export function Button({
 
   // Size styles for icon-only buttons
   const iconOnlySizeStyles = {
+    xs: 'w-6 h-6',
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
     lg: 'w-12 h-12',
@@ -202,6 +203,7 @@ export function Button({
   // Size styles for text buttons (with or without icon)
   // Inspired by wemeditate.com: generous padding, no rounding
   const textButtonSizeStyles = {
+    xs: 'px-3 py-1.5 text-sm gap-1.5',
     sm: 'px-6 py-2 text-sm gap-2',
     md: 'px-8 py-3 text-base gap-2',
     lg: 'px-8 py-5 text-base gap-2',
@@ -221,6 +223,7 @@ export function Button({
 
   // Icon sizes for different button sizes
   const iconSizeMap = {
+    xs: 'xs' as const,
     sm: 'sm' as const,
     md: 'md' as const,
     lg: 'lg' as const,
@@ -228,6 +231,7 @@ export function Button({
 
   // Spinner sizes and colors for different variants
   const spinnerSizeMap = {
+    xs: 'sm' as const,
     sm: 'sm' as const,
     md: 'md' as const,
     lg: 'lg' as const,

@@ -516,7 +516,7 @@ export const Default: Story = () => (
 );
 ```
 
-### Example: Story with Subsections
+### Example: Story with Subsections (Vertical Layout)
 
 For components with grouped variations (Button states, Input types):
 
@@ -525,19 +525,19 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="States">
       <div className="flex flex-col gap-6">
-        <StorySubsection label="Loading">
+        <StorySection title="Loading" variant="subsection">
           <div className="flex gap-3">
             <Button variant="primary" isLoading>Primary</Button>
             <Button variant="secondary" isLoading>Secondary</Button>
           </div>
-        </StorySubsection>
+        </StorySection>
 
-        <StorySubsection label="Disabled">
+        <StorySection title="Disabled" variant="subsection">
           <div className="flex gap-3">
             <Button variant="primary" disabled>Primary</Button>
             <Button variant="secondary" disabled>Secondary</Button>
           </div>
-        </StorySubsection>
+        </StorySection>
       </div>
     </StorySection>
 
@@ -545,6 +545,40 @@ export const Default: Story = () => (
   </StoryWrapper>
 );
 ```
+
+### Example: Story with Subsections (Horizontal Layout)
+
+For side-by-side comparisons (default vs minimal variants, alignment options):
+
+```tsx
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection title="Variants">
+      <div className="flex flex-wrap gap-8">
+        <div className="min-w-2/5">
+          <StorySection title="Default Variant" variant="subsection">
+            <FormBuilder variant="default" {...props} />
+          </StorySection>
+        </div>
+
+        <div className="min-w-2/5">
+          <StorySection title="Minimal Variant" variant="subsection">
+            <FormBuilder variant="minimal" {...props} />
+          </StorySection>
+        </div>
+      </div>
+    </StorySection>
+
+    <div />
+  </StoryWrapper>
+);
+```
+
+**Key Pattern for Horizontal Subsections**:
+- Use `flex flex-wrap gap-8` on the container div
+- Wrap each subsection in a div with `min-w-2/5` (allows responsive wrapping)
+- Each subsection uses `<StorySection variant="subsection">`
+- Works for 2-3 side-by-side items; wraps to vertical on smaller screens
 
 ### Example: Examples Sections
 
@@ -672,13 +706,15 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 ### DO ✅
 
 - **Use StoryWrapper** as the outermost wrapper for all stories
-- **Use utility components** for all stories (StorySection, StoryExampleSection, StorySubsection, StoryGrid)
+- **Use utility components** for all stories (StorySection, StoryExampleSection, StoryGrid)
+- **ALWAYS use `<StorySection variant="subsection">`** for subsections - never use raw HTML headings or deprecated components
 - **Follow standard section order** consistently
 - **Use standard section names** from the naming conventions
 - **Combine related states** into single sections (e.g., loading + disabled = "States")
 - **Use grids** for multi-dimensional variations in atoms (variant × shape, color × state)
-- **For molecules**, use separate sections per variant with Minimal/Maximal subsections (no grids)
-- **Use StoryExampleSection** for all "Examples" sections (not StorySection)
+- **For molecules/organisms**, use separate sections per variant with Minimal/Maximal subsections (no grids)
+- **Use horizontal subsection layout** (`flex flex-wrap gap-8`) for side-by-side comparisons
+- **Use `<StorySection inContext={true}>`** for all "Examples" sections (not regular StorySection)
 - **Show realistic usage** in example sections (can use subsections or multiple sections with subtitles)
 - **Remove trailing dividers** with `<div />` at the end
 - **Document with JSDoc** what the story showcases
@@ -690,10 +726,11 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 - **Don't use inconsistent naming** - stick to the standard section names
 - **Don't separate related states** - combine loading/disabled/error into "States"
 - **Don't omit the trailing divider removal** - always add `<div />` at the end
-- **Don't use manual dividers** - StorySection/StoryExampleSection handle dividers automatically
-- **Don't use raw HTML headings** - use StorySection/StoryExampleSection instead
-- **Don't use old naming** like "Common Use Cases" or "In Context" - use StoryExampleSection instead
-- **Don't use StorySection for Examples** - use StoryExampleSection for visual distinction
+- **Don't use manual dividers** - StorySection handles dividers automatically
+- **Don't use raw HTML headings** (`<h2>`, `<h3>`, `<p>`) - ALWAYS use `<StorySection>` or `<StorySection variant="subsection">`
+- **Don't use deprecated components** - no StorySubsection or StoryExampleSection (they're now unified in StorySection)
+- **Don't use old naming** like "Common Use Cases" or "In Context" - use `<StorySection inContext={true}>` instead
+- **Don't use regular StorySection for Examples** - use `inContext={true}` prop for visual distinction
 
 ## Configuration
 

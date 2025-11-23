@@ -1,0 +1,385 @@
+/* SubtleSystem Component Styles */
+
+/* CSS Variables for chakra coordinates */
+:root {
+  --kundalini-x: 220.9px;
+  --kundalini-y: 469.5px;
+  --chakra-1-x: 220.9px;
+  --chakra-1-y: 508.9px;
+  --chakra-2-x: 220.9px;
+  --chakra-2-y: 426.9px;
+  --chakra-3-x: 220.9px;
+  --chakra-3-y: 357.1px;
+  --chakra-4-x: 220.9px;
+  --chakra-4-y: 254.0px;
+  --chakra-5-x: 220.9px;
+  --chakra-5-y: 183.6px;
+  --chakra-6-x: 220.9px;
+  --chakra-6-y: 94.0px;
+  --chakra-7-x: 220.9px;
+  --chakra-7-y: 37.4px;
+}
+
+/* SVG height constraint - maintain aspect ratio within container */
+.subtle-system-chart svg {
+  max-height: 550px;
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* View-specific visibility */
+[data-view="chakras"] #chart_channels,
+[data-view="chakras"] #hover_channels {
+  display: none;
+}
+
+[data-view="channels"] #chart_chakras,
+[data-view="channels"] #hot_spots_glow {
+  display: none;
+}
+
+/* Hide chakra elements in channel view, but keep kundalini and chakra_7 */
+[data-view="channels"] #hover_chakras > :not(#kundalini):not(#chakra_7) {
+  display: none;
+}
+
+/* Hover element base styles */
+#hover_channels > *,
+#hover_chakras > * {
+  opacity: 0;
+  transition: opacity 0.5s;
+  cursor: pointer;
+}
+
+#hover_channels > .active {
+  opacity: 0.8;
+}
+
+#hover_chakras > .active {
+  opacity: 1;
+}
+
+/* Hide core hotspots */
+#hot_spots_core {
+  display: none;
+}
+
+/* Chakra pulse animations using CSS variables */
+/* Base transforms using CSS variables */
+#kundalini_glow circle {
+  transform: translate(var(--kundalini-x), var(--kundalini-y)) scale(0.2) translate(calc(-1 * var(--kundalini-x)), calc(-1 * var(--kundalini-y)));
+}
+
+#chakra_1_glow circle {
+  transform: translate(var(--chakra-1-x), var(--chakra-1-y)) scale(0.2) translate(calc(-1 * var(--chakra-1-x)), calc(-1 * var(--chakra-1-y)));
+}
+
+#chakra_2_glow circle {
+  transform: translate(var(--chakra-2-x), var(--chakra-2-y)) scale(0.2) translate(calc(-1 * var(--chakra-2-x)), calc(-1 * var(--chakra-2-y)));
+}
+
+#chakra_3_glow circle {
+  transform: translate(var(--chakra-3-x), var(--chakra-3-y)) scale(0.2) translate(calc(-1 * var(--chakra-3-x)), calc(-1 * var(--chakra-3-y)));
+}
+
+#chakra_4_glow circle {
+  transform: translate(var(--chakra-4-x), var(--chakra-4-y)) scale(0.2) translate(calc(-1 * var(--chakra-4-x)), calc(-1 * var(--chakra-4-y)));
+}
+
+#chakra_5_glow circle {
+  transform: translate(var(--chakra-5-x), var(--chakra-5-y)) scale(0.2) translate(calc(-1 * var(--chakra-5-x)), calc(-1 * var(--chakra-5-y)));
+}
+
+#chakra_6_glow circle {
+  transform: translate(var(--chakra-6-x), var(--chakra-6-y)) scale(0.2) translate(calc(-1 * var(--chakra-6-x)), calc(-1 * var(--chakra-6-y)));
+}
+
+#chakra_7_glow circle {
+  transform: translate(var(--chakra-7-x), var(--chakra-7-y)) scale(0.2) translate(calc(-1 * var(--chakra-7-x)), calc(-1 * var(--chakra-7-y)));
+}
+
+/* Apply animations when animated */
+[data-animated="true"] #kundalini_glow circle {
+  animation: kundalini-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_1_glow circle {
+  animation: chakra-1-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_2_glow circle {
+  animation: chakra-2-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_3_glow circle {
+  animation: chakra-3-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_4_glow circle {
+  animation: chakra-4-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_5_glow circle {
+  animation: chakra-5-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_6_glow circle {
+  animation: chakra-6-pulse 6s infinite;
+}
+
+[data-animated="true"] #chakra_7_glow circle {
+  animation: chakra-7-pulse 6s infinite;
+}
+
+/* Kundalini keyframes - starts at 5%, peaks at 15% */
+@keyframes kundalini-pulse {
+  from {
+    transform: translate(var(--kundalini-x), var(--kundalini-y)) scale(0.2) translate(calc(-1 * var(--kundalini-x)), calc(-1 * var(--kundalini-y)));
+  }
+  5% {
+    transform: translate(var(--kundalini-x), var(--kundalini-y)) scale(0.2) translate(calc(-1 * var(--kundalini-x)), calc(-1 * var(--kundalini-y)));
+  }
+  15% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--kundalini-x), var(--kundalini-y)) scale(0.2) translate(calc(-1 * var(--kundalini-x)), calc(-1 * var(--kundalini-y)));
+  }
+}
+
+/* Chakra 1 keyframes - starts at 10%, peaks at 20% */
+@keyframes chakra-1-pulse {
+  from {
+    transform: translate(var(--chakra-1-x), var(--chakra-1-y)) scale(0.2) translate(calc(-1 * var(--chakra-1-x)), calc(-1 * var(--chakra-1-y)));
+  }
+  10% {
+    transform: translate(var(--chakra-1-x), var(--chakra-1-y)) scale(0.2) translate(calc(-1 * var(--chakra-1-x)), calc(-1 * var(--chakra-1-y)));
+  }
+  20% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-1-x), var(--chakra-1-y)) scale(0.2) translate(calc(-1 * var(--chakra-1-x)), calc(-1 * var(--chakra-1-y)));
+  }
+}
+
+/* Chakra 2 keyframes - starts at 15%, peaks at 25% */
+@keyframes chakra-2-pulse {
+  from {
+    transform: translate(var(--chakra-2-x), var(--chakra-2-y)) scale(0.2) translate(calc(-1 * var(--chakra-2-x)), calc(-1 * var(--chakra-2-y)));
+  }
+  15% {
+    transform: translate(var(--chakra-2-x), var(--chakra-2-y)) scale(0.2) translate(calc(-1 * var(--chakra-2-x)), calc(-1 * var(--chakra-2-y)));
+  }
+  25% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-2-x), var(--chakra-2-y)) scale(0.2) translate(calc(-1 * var(--chakra-2-x)), calc(-1 * var(--chakra-2-y)));
+  }
+}
+
+/* Chakra 3 keyframes - starts at 20%, peaks at 30% */
+@keyframes chakra-3-pulse {
+  from {
+    transform: translate(var(--chakra-3-x), var(--chakra-3-y)) scale(0.2) translate(calc(-1 * var(--chakra-3-x)), calc(-1 * var(--chakra-3-y)));
+  }
+  20% {
+    transform: translate(var(--chakra-3-x), var(--chakra-3-y)) scale(0.2) translate(calc(-1 * var(--chakra-3-x)), calc(-1 * var(--chakra-3-y)));
+  }
+  30% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-3-x), var(--chakra-3-y)) scale(0.2) translate(calc(-1 * var(--chakra-3-x)), calc(-1 * var(--chakra-3-y)));
+  }
+}
+
+/* Chakra 4 keyframes - starts at 25%, peaks at 35% */
+@keyframes chakra-4-pulse {
+  from {
+    transform: translate(var(--chakra-4-x), var(--chakra-4-y)) scale(0.2) translate(calc(-1 * var(--chakra-4-x)), calc(-1 * var(--chakra-4-y)));
+  }
+  25% {
+    transform: translate(var(--chakra-4-x), var(--chakra-4-y)) scale(0.2) translate(calc(-1 * var(--chakra-4-x)), calc(-1 * var(--chakra-4-y)));
+  }
+  35% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-4-x), var(--chakra-4-y)) scale(0.2) translate(calc(-1 * var(--chakra-4-x)), calc(-1 * var(--chakra-4-y)));
+  }
+}
+
+/* Chakra 5 keyframes - starts at 30%, peaks at 40% */
+@keyframes chakra-5-pulse {
+  from {
+    transform: translate(var(--chakra-5-x), var(--chakra-5-y)) scale(0.2) translate(calc(-1 * var(--chakra-5-x)), calc(-1 * var(--chakra-5-y)));
+  }
+  30% {
+    transform: translate(var(--chakra-5-x), var(--chakra-5-y)) scale(0.2) translate(calc(-1 * var(--chakra-5-x)), calc(-1 * var(--chakra-5-y)));
+  }
+  40% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-5-x), var(--chakra-5-y)) scale(0.2) translate(calc(-1 * var(--chakra-5-x)), calc(-1 * var(--chakra-5-y)));
+  }
+}
+
+/* Chakra 6 keyframes - starts at 35%, peaks at 45% */
+@keyframes chakra-6-pulse {
+  from {
+    transform: translate(var(--chakra-6-x), var(--chakra-6-y)) scale(0.2) translate(calc(-1 * var(--chakra-6-x)), calc(-1 * var(--chakra-6-y)));
+  }
+  35% {
+    transform: translate(var(--chakra-6-x), var(--chakra-6-y)) scale(0.2) translate(calc(-1 * var(--chakra-6-x)), calc(-1 * var(--chakra-6-y)));
+  }
+  45% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-6-x), var(--chakra-6-y)) scale(0.2) translate(calc(-1 * var(--chakra-6-x)), calc(-1 * var(--chakra-6-y)));
+  }
+}
+
+/* Chakra 7 keyframes - starts at 40%, peaks at 50% */
+@keyframes chakra-7-pulse {
+  from {
+    transform: translate(var(--chakra-7-x), var(--chakra-7-y)) scale(0.2) translate(calc(-1 * var(--chakra-7-x)), calc(-1 * var(--chakra-7-y)));
+  }
+  40% {
+    transform: translate(var(--chakra-7-x), var(--chakra-7-y)) scale(0.2) translate(calc(-1 * var(--chakra-7-x)), calc(-1 * var(--chakra-7-y)));
+  }
+  50% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translate(var(--chakra-7-x), var(--chakra-7-y)) scale(0.2) translate(calc(-1 * var(--chakra-7-x)), calc(-1 * var(--chakra-7-y)));
+  }
+}
+
+/* Channel pulse animations */
+#channel_left,
+#channel_right,
+#kundalini,
+#channel_center,
+#chakra_7 {
+  opacity: 0;
+}
+
+[data-animated="true"] #channel_left {
+  animation: channel-fill 8s infinite;
+  animation-delay: 0s;
+  --channel-opacity-peak: 0.7;
+}
+
+[data-animated="true"] #channel_right {
+  animation: channel-fill 8s infinite;
+  animation-delay: 1s;
+  --channel-opacity-peak: 1;
+}
+
+[data-animated="true"] #kundalini {
+  animation: fade-pulse 8s infinite;
+  animation-delay: 1.75s;
+  --channel-opacity-peak: 1;
+}
+
+[data-animated="true"] #channel_center {
+  animation: channel-fill 8s infinite;
+  animation-delay: 2.5s;
+  --channel-opacity-peak: 1;
+}
+
+[data-animated="true"] #chakra_7 {
+  animation: channel-fill 8s infinite;
+  animation-delay: 3.25s;
+  --channel-opacity-peak: 1;
+}
+
+@keyframes channel-fill {
+  0% {
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+  }
+  25% {
+    clip-path: inset(0% 0 0 0);
+    opacity: var(--channel-opacity-peak);
+  }
+  60% {
+    clip-path: inset(0% 0 0 0);
+    opacity: var(--channel-opacity-peak);
+  }
+  100% {
+    clip-path: inset(0% 0 0 0);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-pulse {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: var(--channel-opacity-peak);
+  }
+  60% {
+    opacity: var(--channel-opacity-peak);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Stacking order - ensure proper layering */
+#channel_left,
+#channel_right {
+  position: relative;
+  z-index: 1;
+}
+
+#channel_center {
+  position: relative;
+  z-index: 2;
+}
+
+#kundalini {
+  position: relative;
+  z-index: 3;
+}
+
+/* All chakras appear above channels */
+#chart_chakras,
+#hover_chakras,
+#hot_spots_glow {
+  position: relative;
+  z-index: 4;
+}

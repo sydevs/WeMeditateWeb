@@ -745,18 +745,27 @@ This project uses **[Ladle](https://ladle.dev/)** for component development and 
 
 **Writing Stories**:
 
-**IMPORTANT**: Before writing any component story, read @STORYBOOK.md for the complete story structure and patterns.
+**⚠️ CRITICAL**: Before writing ANY component story, you MUST read @STORYBOOK.md first. This is not optional.
+
+Common mistakes when not following @STORYBOOK.md:
+- ❌ Using raw HTML headings (`<h2>`, `<h3>`) instead of `<StorySection variant="subsection">`
+- ❌ Using deprecated `StorySubsection` or `StoryExampleSection` components
+- ❌ Not using `inContext={true}` prop for Examples sections
+- ❌ Creating manual dividers instead of letting StorySection handle them
 
 Key requirements:
+- **First step**: Read @STORYBOOK.md to understand story structure and utility components
 - Create `ComponentName.stories.tsx` alongside your component
 - **Always use a single `Default` export** - never create multiple story exports
 - Use proper `title` categorization (e.g., `"Atoms / Form"`, `"Molecules / Layout"`, `"Organisms"`)
 - Add `storyName` attribute to the `Default` export for human-readable names
-- Use story utility components from [components/ladle/](components/ladle/) for consistency
-  - `StorySection` - Unified component for all section types (regular sections, subsections, dark themes, examples)
+- **ALWAYS use story utility components** - never use raw HTML for structure:
+  - `<StorySection>` - For all major sections
+  - `<StorySection variant="subsection">` - For nested subsections (NOT raw `<h3>` tags)
+  - `<StorySection inContext={true}>` - For all Examples sections
   - `StoryGrid` - Create table layouts for multi-dimensional component matrices
 - Follow standard section order: Basic Examples → Variants → Colors → Shapes → States → Sizes → Widths → Padding → Examples
-- Use "Examples" section for practical usage scenarios (can be multiple sections with descriptive titles or a single section with subsections)
+- Use horizontal subsection layout (`flex flex-wrap gap-8`) for side-by-side comparisons
 
 **See STORYBOOK.md** for complete documentation on:
 - Story utility components API reference

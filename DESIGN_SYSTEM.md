@@ -1500,12 +1500,69 @@ export const Default: Story = () => (/* comprehensive story */);
 Default.storyName = "Form Field"
 ```
 
-**Organisms: 1-4 Stories (Three-Level Hierarchy if Multiple Stories)**
-- **Option 1**: Single comprehensive story with two-level hierarchy + `storyName` (preferred)
-- **Option 2**: Multiple stories using three-level hierarchy (when needed for distinct use cases)
-- Show integration with templates/pages in context sections
+**Organisms: 1 Story (Two-Level Hierarchy Preferred)**
+- Follow same pattern as molecules: use two-level hierarchy with `storyName`
+- Create separate sections for each major variant or configuration option
+- Within each section, use subsections for "Minimal" and "Maximal" configurations
+- Use horizontal subsection layouts (`flex flex-wrap gap-8`) for side-by-side comparisons
+- Show integration with templates/pages in "In Context" sections
 
-**Example with multiple stories:**
+**Story Structure Pattern:**
+```tsx
+export default {
+  title: "Organisms / Forms"
+} satisfies StoryDefault;
+
+export const Default: Story = () => (
+  <StoryWrapper>
+    {/* Section for each major variant */}
+    <StorySection title="Variants">
+      <div className="flex flex-wrap gap-8">
+        <div className="min-w-2/5">
+          <StorySection title="Default Variant" variant="subsection">
+            {/* Show default configuration */}
+          </StorySection>
+        </div>
+
+        <div className="min-w-2/5">
+          <StorySection title="Minimal Variant" variant="subsection">
+            {/* Show minimal configuration */}
+          </StorySection>
+        </div>
+      </div>
+    </StorySection>
+
+    {/* Section for configuration options */}
+    <StorySection title="Alignments">
+      <div className="flex flex-col gap-8">
+        <StorySection title="Left Aligned" variant="subsection">
+          {/* Show left alignment */}
+        </StorySection>
+
+        <StorySection title="Center Aligned" variant="subsection">
+          {/* Show center alignment */}
+        </StorySection>
+      </div>
+    </StorySection>
+
+    {/* Real-world examples */}
+    <StorySection title="Contact Form" inContext={true}>
+      {/* Practical usage example */}
+    </StorySection>
+
+    <div />
+  </StoryWrapper>
+);
+
+Default.storyName = "Form Builder"
+```
+
+**When to use multiple stories (rare):**
+- Complex organisms with fundamentally different states (LoggedOut vs LoggedIn)
+- Use three-level hierarchy: `title: "Organisms / Navigation / Header"`
+- Generally prefer single comprehensive story with sections/subsections instead
+
+**Example with multiple stories (use sparingly):**
 ```tsx
 export default {
   title: "Organisms / Navigation / Header"
@@ -1723,6 +1780,65 @@ The project uses a minimal Tailwind configuration that extends only what's neede
 - **Everything else**: Uses Tailwind CSS defaults
 
 This approach minimizes custom configuration while ensuring brand consistency. For spacing, font sizes, shadows, and animations, use Tailwind's excellent default scales.
+
+### Tailwind CSS v4 Syntax
+
+**This project uses Tailwind CSS v4**, which introduced syntax changes from v3. The most notable change affects gradient utilities.
+
+#### Gradient Syntax Change
+
+In Tailwind v4, gradient direction utilities have been renamed for consistency:
+
+**❌ Tailwind v3 Syntax (Incorrect)**:
+```tsx
+// Old syntax - will cause IDE warnings
+className="bg-gradient-to-b from-white to-transparent"
+className="bg-gradient-to-t from-white to-transparent"
+className="bg-gradient-to-r from-teal-100 to-transparent"
+```
+
+**✅ Tailwind v4 Syntax (Correct)**:
+```tsx
+// New syntax - use bg-linear-to-* instead
+className="bg-linear-to-b from-white to-transparent"
+className="bg-linear-to-t from-white to-transparent"
+className="bg-linear-to-r from-teal-100 to-transparent"
+```
+
+**Real-World Example** from [Playlist.tsx](components/molecules/Playlist/Playlist.tsx):
+```tsx
+{/* Top fade - appears when scrolled down */}
+<div
+  className={`absolute top-0 left-0 right-0 h-12 bg-linear-to-b from-white to-transparent pointer-events-none z-10 transition-opacity duration-300 ${
+    showTopFade ? 'opacity-100' : 'opacity-0'
+  }`}
+/>
+
+{/* Bottom fade - appears when more content below */}
+<div
+  className={`absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-white to-transparent pointer-events-none z-10 transition-opacity duration-300 ${
+    showBottomFade ? 'opacity-100' : 'opacity-0'
+  }`}
+/>
+```
+
+#### Other Gradient Directions
+
+The naming pattern applies to all gradient directions:
+- `bg-linear-to-b` - Top to bottom
+- `bg-linear-to-t` - Bottom to top
+- `bg-linear-to-r` - Left to right
+- `bg-linear-to-l` - Right to left
+- `bg-linear-to-br` - Top-left to bottom-right
+- `bg-linear-to-bl` - Top-right to bottom-left
+- `bg-linear-to-tr` - Bottom-left to top-right
+- `bg-linear-to-tl` - Bottom-right to top-left
+
+#### Why the Change?
+
+Tailwind v4 renamed these utilities to be more consistent with CSS gradient syntax. The `linear` prefix clarifies that these are linear gradients, distinguishing them from potential future gradient types (radial, conic, etc.).
+
+**Key Takeaway**: Always use `bg-linear-to-*` for gradients in this project, not `bg-gradient-to-*`.
 
 ### Using Design Tokens
 

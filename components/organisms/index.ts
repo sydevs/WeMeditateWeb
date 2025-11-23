@@ -47,3 +47,11 @@ export type {
   FormBuilderSubmission,
   FormBuilderApiError,
 } from './FormBuilder'
+
+// SubtleSystem
+export { SubtleSystem } from './SubtleSystem'
+export type { SubtleSystemProps, SubtleSystemItem } from './SubtleSystem'
+
+// MusicLibrary
+export { MusicLibrary } from './MusicLibrary'
+export type { MusicLibraryProps, MusicFilter } from './MusicLibrary'

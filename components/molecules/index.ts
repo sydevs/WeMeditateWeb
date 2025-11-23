@@ -28,6 +28,12 @@ export type { FormFieldProps } from './FormField'
 export { LocationSearch } from './LocationSearch'
 export type { LocationSearchProps, SelectedLocation } from './LocationSearch'
 
+// Audio
+export { AudioPlayer } from './AudioPlayer'
+export type { AudioPlayerProps, Track } from './AudioPlayer'
+export { Playlist } from './Playlist'
+export type { PlaylistProps, MusicFilter } from './Playlist'
+
 // Social
 export { SocialShare } from './SocialShare'
 export type { SocialShareProps } from './SocialShare'
