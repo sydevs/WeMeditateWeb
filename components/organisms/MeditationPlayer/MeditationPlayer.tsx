@@ -7,6 +7,20 @@ import founderImage from '../../../assets/smnd.webp'
 
 export type { Track } from '../../molecules/AudioPlayer/useAudioPlayer'
 
+// Progress circle geometry constants
+const PROGRESS_RADIUS = 48
+const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
+
+/**
+ * Format time in seconds to MM:SS format
+ */
+function formatTime(seconds: number): string {
+  if (!isFinite(seconds)) return '0:00'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
 export interface MeditationFrame {
   /**
    * Timestamp in seconds when this frame should be displayed
@@ -79,10 +93,6 @@ export function MeditationPlayer({
     initialTrackIndex: 0,
   })
 
-  // Progress circle geometry constants
-  const PROGRESS_RADIUS = 48
-  const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
-
   // Get current media frame based on playback time (memoized to avoid re-sorting on every render)
   const currentMedia = useMemo(() => {
     // Sort frames by timestamp and find the current one
@@ -101,16 +111,8 @@ export function MeditationPlayer({
     return currentFrame.media
   }, [frames, state.currentTime])
 
-  // Memoized time formatter to avoid recreating function on every render
-  const formatTime = useCallback((seconds: number) => {
-    if (!isFinite(seconds)) return '0:00'
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }, [])
-
-  // Memoized play/pause handler to avoid recreating function on every render
-  const handlePlayPause = useCallback(() => {
+  // Play/pause handler
+  const handlePlayPause = () => {
     if (state.isPlaying) {
       controls.pause()
       onPause?.()
@@ -118,22 +120,19 @@ export function MeditationPlayer({
       controls.play()
       onPlay?.()
     }
-  }, [state.isPlaying, controls, onPlay, onPause])
+  }
 
-  // Memoized progress calculations to avoid recalculating on every render
-  const progressPercent = useMemo(
-    () => (state.duration > 0 ? (state.currentTime / state.duration) * 100 : 0),
-    [state.currentTime, state.duration]
-  )
+  // Progress calculations
+  const progressPercent = state.duration > 0 ? (state.currentTime / state.duration) * 100 : 0
+  const progressAngle = (progressPercent / 100) * 360
 
-  const progressAngle = useMemo(
-    () => (progressPercent / 100) * 360,
-    [progressPercent]
-  )
+  // Draggable handle position (subtract 90 degrees to account for SVG rotation)
+  const angle = ((progressAngle - 90) * Math.PI) / 180
+  const handleX = 50 + PROGRESS_RADIUS * Math.cos(angle)
+  const handleY = 50 + PROGRESS_RADIUS * Math.sin(angle)
 
-  // State for dragging and hover
+  // State for dragging
   const [isDragging, setIsDragging] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
   const progressRef = useRef<SVGSVGElement>(null)
   const previousAngleRef = useRef<number>(0)
 
@@ -201,9 +200,7 @@ export function MeditationPlayer({
     handleProgressSeek(touch.clientX, touch.clientY)
   }, [isDragging, handleProgressSeek])
 
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-  }, [])
+  const handleMouseUp = () => setIsDragging(false)
 
   // Add/remove event listeners for dragging
   useEffect(() => {
@@ -267,10 +264,8 @@ export function MeditationPlayer({
               <div className="w-full max-w-sm @4xl:max-w-lg mx-auto aspect-square rounded-full relative">
                 {/* Image/Video container - clickable circular area */}
                 <div
-                  className="absolute inset-2 rounded-full bg-white overflow-hidden z-0 cursor-pointer border-4 border-white"
+                  className="group absolute inset-2 rounded-full bg-white overflow-hidden z-0 cursor-pointer border-4 border-white select-none"
                   onClick={handlePlayPause}
-                  onMouseEnter={() => setIsHovering(true)}
-                  onMouseLeave={() => setIsHovering(false)}
                 >
                   {currentMedia.type === 'video' ? (
                     <video
@@ -279,29 +274,32 @@ export function MeditationPlayer({
                       loop
                       muted
                       playsInline
+                      draggable={false}
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <img
                       src={currentMedia.src}
                       alt={title}
+                      draggable={false}
                       className="w-full h-full object-cover"
                     />
                   )}
 
-                  {/* Teal overlay when paused */}
-                  {!state.isPlaying && (
+                  {/* Teal overlay when paused or loading */}
+                  {(!state.isPlaying || state.isLoading) && (
                     <div className="absolute inset-0 bg-teal-700/20" />
                   )}
 
                   {/* Play/Pause Button - Fades in/out when paused or hovering */}
-                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || isHovering ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}>
                     <Button
                       icon={state.isPlaying ? PauseIcon : PlayIcon}
                       variant="neutral"
                       shape="circular"
                       size="lg"
                       onClick={handlePlayPause}
+                      isLoading={state.isLoading}
                       aria-label={state.isPlaying ? 'Pause' : 'Play'}
                       className="border-0 shadow-2xl"
                     />
@@ -331,31 +329,27 @@ export function MeditationPlayer({
                   <SimpleLeafSvg className="w-6 h-6" />
                 </div>
 
-                {/* Draggable handle at end of progress */}
-                {(() => {
-                  // Subtract 90 degrees to account for SVG rotation
-                  const angle = ((progressAngle - 90) * Math.PI) / 180
-                  const handleX = 50 + PROGRESS_RADIUS * Math.cos(angle)
-                  const handleY = 50 + PROGRESS_RADIUS * Math.sin(angle)
-                  return (
-                    <div
-                      className="absolute w-3 h-3 rounded-full bg-teal-700 border border-white cursor-grab active:cursor-grabbing shadow-lg z-15"
-                      style={{
-                        left: `${handleX}%`,
-                        top: `${handleY}%`,
-                        transform: 'translate(-50%, -50%)'
-                      }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation()
-                        handleMouseDown()
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation()
-                        handleMouseDown()
-                      }}
-                    />
-                  )
-                })()}
+                {/* Draggable handle at end of progress - larger click area for better touch/mouse interaction */}
+                <div
+                  className="absolute w-11 h-11 cursor-grab active:cursor-grabbing -translate-1/2 z-15"
+                  style={{
+                    left: `${handleX}%`,
+                    top: `${handleY}%`,
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation()
+                    handleMouseDown()
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation()
+                    handleMouseDown()
+                  }}
+                >
+                  {/* Visual handle - smaller than clickable area */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-3 h-3 rounded-full bg-teal-700 border border-white shadow-lg" />
+                  </div>
+                </div>
               </div>
 
               {/* Remaining Time */}

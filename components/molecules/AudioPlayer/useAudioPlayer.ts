@@ -26,6 +26,8 @@ export interface AudioPlayerState {
   isMuted: boolean
   isShuffleOn: boolean
   currentTrack: Track
+  isLoading: boolean
+  hasEnded: boolean
 }
 
 export interface AudioPlayerControls {
@@ -60,6 +62,8 @@ export function useAudioPlayer({
   const [isMuted, setIsMuted] = useState(false)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   const [playOrder, setPlayOrder] = useState<number[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasEnded, setHasEnded] = useState(false)
 
   const currentTrack = tracks[currentTrackIndex]
 
@@ -67,22 +71,42 @@ export function useAudioPlayer({
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio()
+      audioRef.current.preload = 'auto' // Enable preloading
     }
 
     const audio = audioRef.current
 
     const updateTime = () => setCurrentTime(audio.currentTime)
     const updateDuration = () => setDuration(audio.duration)
-    const handleEnded = () => next()
+    const handleEnded = () => {
+      setIsPlaying(false)
+      setHasEnded(true)
+      next()
+    }
+    const handleLoadStart = () => setIsLoading(true)
+    const handleCanPlay = () => setIsLoading(false)
+    const handleWaiting = () => setIsLoading(true)
+    const handlePlaying = () => setIsLoading(false)
+    const handleStalled = () => setIsLoading(true)
 
     audio.addEventListener('timeupdate', updateTime)
     audio.addEventListener('loadedmetadata', updateDuration)
     audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('loadstart', handleLoadStart)
+    audio.addEventListener('canplay', handleCanPlay)
+    audio.addEventListener('waiting', handleWaiting)
+    audio.addEventListener('playing', handlePlaying)
+    audio.addEventListener('stalled', handleStalled)
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime)
       audio.removeEventListener('loadedmetadata', updateDuration)
       audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('loadstart', handleLoadStart)
+      audio.removeEventListener('canplay', handleCanPlay)
+      audio.removeEventListener('waiting', handleWaiting)
+      audio.removeEventListener('playing', handlePlaying)
+      audio.removeEventListener('stalled', handleStalled)
     }
   }, [])
 
@@ -117,6 +141,7 @@ export function useAudioPlayer({
   const play = useCallback(() => {
     audioRef.current?.play()
     setIsPlaying(true)
+    setHasEnded(false)
   }, [])
 
   const pause = useCallback(() => {
@@ -179,6 +204,8 @@ export function useAudioPlayer({
     isMuted,
     isShuffleOn,
     currentTrack,
+    isLoading,
+    hasEnded,
   }
 
   const controls: AudioPlayerControls = {
