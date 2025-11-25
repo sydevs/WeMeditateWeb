@@ -4,8 +4,10 @@
  * This page displays live preview of draft content from PayloadCMS.
  * It uses window.postMessage to receive real-time updates as editors make changes.
  *
+ * Supports multiple content types: pages, meditations, etc.
+ *
  * URL Parameters from PayloadCMS:
- * - collection: The collection name (e.g., "pages")
+ * - collection: The collection name (e.g., "pages", "meditations")
  * - id: Document ID
  * - locale: Content locale (optional, defaults to 'en')
  */
@@ -15,31 +17,16 @@
 import { useData } from 'vike-react/useData'
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import { PreviewPageData } from './+data'
-import { Page as PageData } from '../../server/graphql-types'
+import { Page as PageData, Meditation as MeditationData } from '../../server/graphql-types'
+import { PageTemplate, MeditationTemplate } from '../../components/templates'
 
 export { Page }
 
 function Page() {
-  const { initialData, locale } = useData<PreviewPageData>()
+  const previewData = useData<PreviewPageData>()
+  const { collection, locale } = previewData
 
-  // useLivePreview listens for postMessage events from PayloadCMS admin
-  // and updates the data in real-time as editors make changes
-  const { data } = useLivePreview<PageData>({
-    initialData,
-    serverURL: import.meta.env.PUBLIC__PAYLOAD_URL,
-    depth: 2, // Populate relationships and uploads to 2 levels deep
-  })
-
-  if (!data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500">Loading preview...</p>
-        </div>
-      </div>
-    )
-  }
-
+  // Render appropriate preview based on collection type
   return (
     <>
       {/* Preview Banner */}
@@ -49,42 +36,68 @@ function Page() {
           <div>
             <p className="font-bold text-sm">Live Preview Mode</p>
             <p className="text-xs opacity-75">
-              Viewing draft content in {locale.toUpperCase()} • Changes update in real-time
+              Viewing draft {collection} in {locale.toUpperCase()} • Changes update in real-time
             </p>
           </div>
         </div>
       </div>
 
       {/* Content with top padding to account for fixed banner */}
-      <div className="pt-20 min-h-screen py-12 px-4">
-        <article className="max-w-4xl mx-auto">
-          <header className="mb-8">
-            <h1 className="text-5xl font-bold mb-4">{data.title}</h1>
-            {data.publishAt && (
-              <time className="text-sm text-gray-500">
-                Published: {new Date(data.publishAt).toLocaleDateString()}
-              </time>
-            )}
-          </header>
-
-          {/* Render page content */}
-          {data.content ? (
-            <div className="prose prose-lg max-w-none">
-              {/* TODO: Implement rich text renderer for PayloadCMS content */}
-              <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm">
-                {String(JSON.stringify(data.content, null, 2))}
-              </pre>
-            </div>
-          ) : null}
-
-          {/* Debug info */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-xs text-gray-400">
-              Preview ID: {data.id} | Locale: {locale}
-            </p>
-          </div>
-        </article>
+      <div className="pt-20 min-h-screen">
+        {collection === 'pages' && <PagePreview data={previewData} />}
+        {collection === 'meditations' && <MeditationPreview data={previewData} />}
       </div>
     </>
+  )
+}
+
+/**
+ * Preview component for Page content type
+ */
+function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'pages' }> }) {
+  const { initialData, locale } = data
+
+  // useLivePreview listens for postMessage events from PayloadCMS admin
+  // and updates the data in real-time as editors make changes
+  const { data: liveData } = useLivePreview<PageData>({
+    initialData,
+    serverURL: import.meta.env.PUBLIC__PAYLOAD_URL,
+    depth: 2, // Populate relationships and uploads to 2 levels deep
+  })
+
+  const pageData = liveData || initialData
+
+  // TODO: Remove debug logging before production
+  console.log('[PagePreview Debug]', { id: pageData.id, locale })
+
+  return (
+    <div className="py-12 px-4">
+      <PageTemplate page={pageData} />
+    </div>
+  )
+}
+
+/**
+ * Preview component for Meditation content type
+ */
+function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collection: 'meditations' }> }) {
+  const { initialData, locale } = data
+
+  // useLivePreview listens for postMessage events from PayloadCMS admin
+  const { data: liveData } = useLivePreview<MeditationData>({
+    initialData,
+    serverURL: import.meta.env.PUBLIC__PAYLOAD_URL,
+    depth: 2,
+  })
+
+  const meditation = liveData || initialData
+
+  // TODO: Remove debug logging before production
+  console.log('[MeditationPreview Debug]', { id: meditation.id, locale })
+
+  return (
+    <div className="py-12 px-4">
+      <MeditationTemplate meditation={meditation} />
+    </div>
   )
 }

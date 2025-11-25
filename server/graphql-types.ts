@@ -106,8 +106,8 @@ export interface Page {
  */
 export interface PageReference {
   id: string
-  title: string | null
-  slug: string | null
+  title: string
+  slug: string
 }
 
 /**

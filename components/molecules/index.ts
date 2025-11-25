@@ -28,6 +28,10 @@ export type { FormFieldProps } from './FormField'
 export { LocationSearch } from './LocationSearch'
 export type { LocationSearchProps, SelectedLocation } from './LocationSearch'
 
+// Feedback
+export { ErrorFallback } from './ErrorFallback'
+export type { ErrorFallbackProps } from './ErrorFallback'
+
 // Audio
 export { AudioPlayer } from './AudioPlayer'
 export type { AudioPlayerProps, Track } from './AudioPlayer'

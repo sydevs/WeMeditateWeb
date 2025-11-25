@@ -415,6 +415,7 @@ export async function getMeditationById(options: {
   locale: Locale
   endpoint?: string
   kv?: KVNamespace
+  bypassCache?: boolean
 }): Promise<Meditation | null> {
   const cacheKey = generateCacheKey('meditation', {
     id: options.id,
@@ -425,6 +426,7 @@ export async function getMeditationById(options: {
     kv: options.kv,
     cacheKey,
     ttl: CacheTTL.MEDITATION,
+    bypassCache: options.bypassCache,
     fetchFn: async () => {
       const client = createGraphQLClient({
         apiKey: options.apiKey,
