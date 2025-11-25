@@ -63,10 +63,10 @@ export function ErrorFallback({
       {/* Technical Details (collapsible, optional) */}
       {showDetails && (
         <details className="mb-6 max-w-md text-left w-full">
-          <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900 mb-2">
+          <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900 mb-2 text-center">
             Technical Details
           </summary>
-          <div className="mt-2 p-4 bg-gray-100 rounded text-xs font-mono break-words">
+          <div className="mt-2 p-4 bg-gray-100 rounded text-xs font-mono wrap-break-word">
             <p>
               <strong>Error:</strong> {error.message}
             </p>
@@ -76,7 +76,7 @@ export function ErrorFallback({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button onClick={resetError} variant="primary" size="md">
+        <Button onClick={resetError} variant="secondary" size="md">
           Try Again
         </Button>
         <Button href="/" variant="outline" size="md">
