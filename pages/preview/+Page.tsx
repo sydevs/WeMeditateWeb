@@ -61,7 +61,7 @@ function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'p
   // and updates the data in real-time as editors make changes
   const { data: liveData } = useLivePreview<PageData>({
     initialData,
-    serverURL: import.meta.env.PUBLIC__PAYLOAD_URL,
+    serverURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
     depth: 2, // Populate relationships and uploads to 2 levels deep
   })
 
@@ -86,7 +86,7 @@ function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collecti
   // useLivePreview listens for postMessage events from PayloadCMS admin
   const { data: liveData } = useLivePreview<MeditationData>({
     initialData,
-    serverURL: import.meta.env.PUBLIC__PAYLOAD_URL,
+    serverURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
     depth: 2,
   })
 

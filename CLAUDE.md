@@ -51,7 +51,7 @@ This project integrates with the following external services:
 ### PayloadCMS (Required)
 - **Purpose**: Headless CMS providing content via GraphQL API
 - **Used for**: Pages, articles, meditations, site settings, and all dynamic content
-- **Configuration**: `PAYLOAD_API_KEY` and `PUBLIC__PAYLOAD_URL` in `.env`
+- **Configuration**: `PAYLOAD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env`
 - **Documentation**: GraphQL queries in [server/graphql-client.ts](server/graphql-client.ts)
 
 ### Cloudflare Workers & KV (Required for Production)
@@ -93,7 +93,7 @@ Create a `.env` file with these variables (see [.env.example](.env.example)):
 
 ```bash
 PAYLOAD_API_KEY=<your-api-key>           # PayloadCMS API authentication
-PUBLIC__PAYLOAD_URL=<cms-url>            # GraphQL endpoint URL
+PUBLIC__SAHAJCLOUD_URL=<cms-url>            # GraphQL endpoint URL
 SENTRY_DSN=<dsn>                         # Server-side error tracking
 PUBLIC__SENTRY_DSN=<dsn>                 # Browser-side error tracking
 PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch component

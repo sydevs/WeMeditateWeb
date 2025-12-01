@@ -24,7 +24,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationPa
   const kv = cloudflare?.env?.WEMEDITATE_CACHE
 
   const apiKey = import.meta.env.PAYLOAD_API_KEY
-  const endpoint = import.meta.env.PUBLIC__PAYLOAD_URL + '/api/graphql'
+  const endpoint = import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql'
 
   // Fetch global settings (cached 24 hours)
   const settings = await getWeMeditateWebSettings({

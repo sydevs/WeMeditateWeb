@@ -634,7 +634,7 @@ Some projects may need additional extensions:
 
 ```bash
 # API Configuration
-PUBLIC__PAYLOAD_URL=https://cms.example.com
+PUBLIC__SAHAJCLOUD_URL=https://cms.example.com
 PAYLOAD_API_KEY=your_api_key_here
 
 # Sentry Error Tracking
@@ -706,7 +706,7 @@ cp .env.example .env
 
 ### Required Variables
 
-- `PUBLIC__PAYLOAD_URL` - PayloadCMS GraphQL API URL
+- `PUBLIC__SAHAJCLOUD_URL` - PayloadCMS GraphQL API URL
 - `PAYLOAD_API_KEY` - PayloadCMS API authentication key
 - `PUBLIC__SENTRY_DSN` - Sentry DSN for browser error tracking
 
