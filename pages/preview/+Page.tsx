@@ -1,12 +1,12 @@
 /**
- * Live Preview Page for PayloadCMS
+ * Live Preview Page for SahajCloud
  *
- * This page displays live preview of draft content from PayloadCMS.
+ * This page displays live preview of draft content from SahajCloud (PayloadCMS).
  * It uses window.postMessage to receive real-time updates as editors make changes.
  *
  * Supports multiple content types: pages, meditations, etc.
  *
- * URL Parameters from PayloadCMS:
+ * URL Parameters from SahajCloud:
  * - collection: The collection name (e.g., "pages", "meditations")
  * - id: Document ID
  * - locale: Content locale (optional, defaults to 'en')
@@ -58,7 +58,7 @@ function Page() {
 function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'pages' }> }) {
   const { initialData, locale } = data
 
-  // useLivePreview listens for postMessage events from PayloadCMS admin
+  // useLivePreview listens for postMessage events from SahajCloud admin
   // and updates the data in real-time as editors make changes
   const { data: liveData } = useLivePreview<PageData>({
     initialData,
@@ -84,7 +84,7 @@ function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'p
 function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collection: 'meditations' }> }) {
   const { initialData, locale } = data
 
-  // useLivePreview listens for postMessage events from PayloadCMS admin
+  // useLivePreview listens for postMessage events from SahajCloud admin
   const { data: liveData } = useLivePreview<MeditationData>({
     initialData,
     serverURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
@@ -96,7 +96,7 @@ function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collecti
   // TODO: Remove debug logging before production
   console.log('[MeditationPreview Debug]', { id: meditation.id, locale })
 
-  // Send playback time updates to PayloadCMS admin for frame highlighting
+  // Send playback time updates to SahajCloud admin for frame highlighting
   const handlePlaybackTimeUpdate = useCallback((currentTime: number) => {
     window.parent.postMessage({
       type: 'PLAYBACK_TIME_UPDATE',

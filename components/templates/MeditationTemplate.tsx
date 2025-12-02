@@ -19,7 +19,7 @@ import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationP
 
 export interface MeditationTemplateProps {
   /**
-   * Meditation data from PayloadCMS
+   * Meditation data from SahajCloud (PayloadCMS)
    */
   meditation: Meditation
   /**
