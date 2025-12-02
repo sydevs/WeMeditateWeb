@@ -15,6 +15,7 @@ export interface UseAudioPlayerOptions {
   shuffle?: boolean
   initialTrackIndex?: number
   onTrackChange?: (trackIndex: number) => void
+  onTimeUpdate?: (currentTime: number) => void
 }
 
 export interface AudioPlayerState {
@@ -52,6 +53,7 @@ export function useAudioPlayer({
   shuffle = false,
   initialTrackIndex = 0,
   onTrackChange,
+  onTimeUpdate,
 }: UseAudioPlayerOptions): [AudioPlayerState, AudioPlayerControls] {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
@@ -138,6 +140,23 @@ export function useAudioPlayer({
     }
   }, [volume, isMuted])
 
+  // Call onTimeUpdate callback every 100ms while playing
+  useEffect(() => {
+    if (isPlaying && onTimeUpdate) {
+      // Call immediately on play
+      onTimeUpdate(currentTime)
+
+      // Set up interval for periodic updates
+      const interval = setInterval(() => {
+        if (audioRef.current) {
+          onTimeUpdate(audioRef.current.currentTime)
+        }
+      }, 100)
+
+      return () => clearInterval(interval)
+    }
+  }, [isPlaying, onTimeUpdate])
+
   const play = useCallback(() => {
     audioRef.current?.play()
     setIsPlaying(true)
@@ -147,7 +166,11 @@ export function useAudioPlayer({
   const pause = useCallback(() => {
     audioRef.current?.pause()
     setIsPlaying(false)
-  }, [])
+    // Call onTimeUpdate on pause event
+    if (onTimeUpdate && audioRef.current) {
+      onTimeUpdate(audioRef.current.currentTime)
+    }
+  }, [onTimeUpdate])
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -173,8 +196,12 @@ export function useAudioPlayer({
     if (audioRef.current) {
       audioRef.current.currentTime = time
       setCurrentTime(time)
+      // Call onTimeUpdate on seek completion
+      if (onTimeUpdate) {
+        onTimeUpdate(time)
+      }
     }
-  }, [])
+  }, [onTimeUpdate])
 
   const setVolume = useCallback((newVolume: number) => {
     setVolumeState(newVolume)
