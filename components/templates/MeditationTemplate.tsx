@@ -26,10 +26,10 @@ export interface MeditationTemplateProps {
    * Optional callback fired every 100ms during playback with current time in seconds
    * Also fired on play, pause, and seek events
    */
-  onTimeUpdate?: (currentTime: number) => void
+  onPlaybackTimeUpdate?: (currentTime: number) => void
 }
 
-export function MeditationTemplate({ meditation, onTimeUpdate }: MeditationTemplateProps) {
+export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: MeditationTemplateProps) {
   // Parse frames JSON with error handling
   let frames: MeditationFrame[] = []
   if (meditation.frames) {
@@ -93,7 +93,7 @@ export function MeditationTemplate({ meditation, onTimeUpdate }: MeditationTempl
         title={meditation.title || 'Untitled Meditation'}
         subtitle={meditation.label || undefined}
         frames={frames}
-        onTimeUpdate={onTimeUpdate}
+        onPlaybackTimeUpdate={onPlaybackTimeUpdate}
       />
     </div>
   )

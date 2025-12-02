@@ -97,7 +97,7 @@ function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collecti
   console.log('[MeditationPreview Debug]', { id: meditation.id, locale })
 
   // Send playback time updates to PayloadCMS admin for frame highlighting
-  const handleTimeUpdate = useCallback((currentTime: number) => {
+  const handlePlaybackTimeUpdate = useCallback((currentTime: number) => {
     window.parent.postMessage({
       type: 'PLAYBACK_TIME_UPDATE',
       currentTime: Math.floor(currentTime),
@@ -106,7 +106,7 @@ function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collecti
 
   return (
     <div className="py-12 px-4">
-      <MeditationTemplate meditation={meditation} onTimeUpdate={handleTimeUpdate} />
+      <MeditationTemplate meditation={meditation} onPlaybackTimeUpdate={handlePlaybackTimeUpdate} />
     </div>
   )
 }

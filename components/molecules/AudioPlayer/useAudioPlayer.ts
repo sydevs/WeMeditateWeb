@@ -15,7 +15,7 @@ export interface UseAudioPlayerOptions {
   shuffle?: boolean
   initialTrackIndex?: number
   onTrackChange?: (trackIndex: number) => void
-  onTimeUpdate?: (currentTime: number) => void
+  onPlaybackTimeUpdate?: (currentTime: number) => void
 }
 
 export interface AudioPlayerState {
@@ -53,7 +53,7 @@ export function useAudioPlayer({
   shuffle = false,
   initialTrackIndex = 0,
   onTrackChange,
-  onTimeUpdate,
+  onPlaybackTimeUpdate,
 }: UseAudioPlayerOptions): [AudioPlayerState, AudioPlayerControls] {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
@@ -140,22 +140,22 @@ export function useAudioPlayer({
     }
   }, [volume, isMuted])
 
-  // Call onTimeUpdate callback every 100ms while playing
+  // Call onPlaybackTimeUpdate callback every 100ms while playing
   useEffect(() => {
-    if (isPlaying && onTimeUpdate) {
+    if (isPlaying && onPlaybackTimeUpdate) {
       // Call immediately on play
-      onTimeUpdate(currentTime)
+      onPlaybackTimeUpdate(currentTime)
 
       // Set up interval for periodic updates
       const interval = setInterval(() => {
         if (audioRef.current) {
-          onTimeUpdate(audioRef.current.currentTime)
+          onPlaybackTimeUpdate(audioRef.current.currentTime)
         }
       }, 100)
 
       return () => clearInterval(interval)
     }
-  }, [isPlaying, onTimeUpdate])
+  }, [isPlaying, onPlaybackTimeUpdate])
 
   const play = useCallback(() => {
     audioRef.current?.play()
@@ -166,11 +166,11 @@ export function useAudioPlayer({
   const pause = useCallback(() => {
     audioRef.current?.pause()
     setIsPlaying(false)
-    // Call onTimeUpdate on pause event
-    if (onTimeUpdate && audioRef.current) {
-      onTimeUpdate(audioRef.current.currentTime)
+    // Call onPlaybackTimeUpdate on pause event
+    if (onPlaybackTimeUpdate && audioRef.current) {
+      onPlaybackTimeUpdate(audioRef.current.currentTime)
     }
-  }, [onTimeUpdate])
+  }, [onPlaybackTimeUpdate])
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -196,12 +196,12 @@ export function useAudioPlayer({
     if (audioRef.current) {
       audioRef.current.currentTime = time
       setCurrentTime(time)
-      // Call onTimeUpdate on seek completion
-      if (onTimeUpdate) {
-        onTimeUpdate(time)
+      // Call onPlaybackTimeUpdate on seek completion
+      if (onPlaybackTimeUpdate) {
+        onPlaybackTimeUpdate(time)
       }
     }
-  }, [onTimeUpdate])
+  }, [onPlaybackTimeUpdate])
 
   const setVolume = useCallback((newVolume: number) => {
     setVolumeState(newVolume)
