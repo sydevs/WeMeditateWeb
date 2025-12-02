@@ -14,6 +14,7 @@
 
 'use client'
 
+import { useCallback } from 'react'
 import { useData } from 'vike-react/useData'
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import { PreviewPageData } from './+data'
@@ -95,9 +96,17 @@ function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collecti
   // TODO: Remove debug logging before production
   console.log('[MeditationPreview Debug]', { id: meditation.id, locale })
 
+  // Send playback time updates to PayloadCMS admin for frame highlighting
+  const handleTimeUpdate = useCallback((currentTime: number) => {
+    window.parent.postMessage({
+      type: 'PLAYBACK_TIME_UPDATE',
+      currentTime: Math.floor(currentTime),
+    }, '*')
+  }, [])
+
   return (
     <div className="py-12 px-4">
-      <MeditationTemplate meditation={meditation} />
+      <MeditationTemplate meditation={meditation} onTimeUpdate={handleTimeUpdate} />
     </div>
   )
 }
