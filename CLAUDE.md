@@ -241,7 +241,46 @@ Falls back to `pageContext.locale` if locale prop is not specified.
 
 ### Error Handling
 
-**[pages/_error/+Page.tsx](pages/_error/+Page.tsx)**: Unified error page for 404 and 500 errors. Uses `pageContext.is404` to differentiate.
+The app implements graceful error handling with automatic retry and user-friendly error messages.
+
+**Error Detection and Retry** ([server/error-utils.ts](server/error-utils.ts)):
+- Automatically detects error types (network, server, client)
+- Retries network and server errors with exponential backoff
+- Configurable via `RETRY_MAX_ATTEMPTS` (default: 3) and `RETRY_BASE_DELAY_MS` (default: 1000ms)
+- Logs all retry attempts to Sentry for monitoring
+- Does NOT retry client errors (400, 401, 403, 404)
+
+**Retry Behavior**:
+- **Attempt 1**: Immediate request
+- **Attempt 2**: Wait ~1 second, retry
+- **Attempt 3**: Wait ~2 seconds, retry
+- **Attempt 4** (if max=4): Wait ~4 seconds, retry
+- Jitter added to prevent thundering herd
+
+**Error Pages and Components**:
+- **[pages/_error/+Page.tsx](pages/_error/+Page.tsx)**: Enhanced error page for 404 and 500 errors
+  - 404: "Page Not Found" with home link
+  - 500: "Service Temporarily Unavailable" with retry button
+  - Optional status page link via `PUBLIC__STATUS_PAGE_URL`
+
+- **[components/molecules/ErrorFallback](components/molecules/ErrorFallback/ErrorFallback.tsx)**: React Error Boundary fallback
+  - Detects error type and shows contextual icon (WiFi, Server, Exclamation)
+  - User-friendly messages based on error type
+  - "Try Again" button (reloads page) and "Back to Home" link
+  - Technical details in dev mode
+
+**User-Friendly Error Messages**:
+- **Network errors**: "Unable to connect to our content servers. Please check your internet connection."
+- **Server errors**: "Our content servers are experiencing issues. We're working to resolve this."
+- **Client errors**: "This content is not available. It may have been moved or deleted."
+
+**Configuration**:
+```bash
+# .env or Cloudflare dashboard
+RETRY_MAX_ATTEMPTS=3              # Number of retry attempts
+RETRY_BASE_DELAY_MS=1000          # Base delay for exponential backoff
+PUBLIC__STATUS_PAGE_URL=<url>     # Optional external status page
+```
 
 ## Cloudflare Workers Deployment
 
