@@ -1792,9 +1792,9 @@ In Tailwind v4, gradient direction utilities have been renamed for consistency:
 **❌ Tailwind v3 Syntax (Incorrect)**:
 ```tsx
 // Old syntax - will cause IDE warnings
-className="bg-gradient-to-b from-white to-transparent"
-className="bg-gradient-to-t from-white to-transparent"
-className="bg-gradient-to-r from-teal-100 to-transparent"
+className="bg-linear-to-b from-white to-transparent"
+className="bg-linear-to-t from-white to-transparent"
+className="bg-linear-to-r from-teal-100 to-transparent"
 ```
 
 **✅ Tailwind v4 Syntax (Correct)**:

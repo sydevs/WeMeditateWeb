@@ -1,9 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "mcp__puppeteer__*",
-      "mcp__serena__*",
-      "mcp__cloudflare-docs__*"
+      "mcp__plugin_sydevs-web_*",
+      "mcp__plugin_sydevs_*",
+      "Bash(pnpm exec playwright test --list)",
+      "Bash(pnpm vitest list:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm audit:*)"
     ]
   },
   "hooks": {
