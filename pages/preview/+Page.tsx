@@ -56,7 +56,7 @@ function Page() {
  * Preview component for Page content type
  */
 function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'pages' }> }) {
-  const { initialData, locale } = data
+  const { initialData } = data
 
   // useLivePreview listens for postMessage events from SahajCloud admin
   // and updates the data in real-time as editors make changes
@@ -67,9 +67,6 @@ function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'p
   })
 
   const pageData = liveData || initialData
-
-  // TODO: Remove debug logging before production
-  console.log('[PagePreview Debug]', { id: pageData.id, locale })
 
   return (
     <div className="py-12 px-4">
@@ -82,7 +79,7 @@ function PagePreview({ data }: { data: Extract<PreviewPageData, { collection: 'p
  * Preview component for Meditation content type
  */
 function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collection: 'meditations' }> }) {
-  const { initialData, locale } = data
+  const { initialData } = data
 
   // useLivePreview listens for postMessage events from SahajCloud admin
   const { data: liveData } = useLivePreview<MeditationData>({
@@ -93,15 +90,21 @@ function MeditationPreview({ data }: { data: Extract<PreviewPageData, { collecti
 
   const meditation = liveData || initialData
 
-  // TODO: Remove debug logging before production
-  console.log('[MeditationPreview Debug]', { id: meditation.id, locale })
-
   // Send playback time updates to SahajCloud admin for frame highlighting
   const handlePlaybackTimeUpdate = useCallback((currentTime: number) => {
-    window.parent.postMessage({
-      type: 'PLAYBACK_TIME_UPDATE',
-      currentTime: Math.floor(currentTime),
-    }, '*')
+    // Only send messages if we're in an iframe (window.parent exists and differs from window)
+    if (window.parent && window.parent !== window) {
+      try {
+        // Use SahajCloud URL as target origin for security
+        const targetOrigin = new URL(import.meta.env.PUBLIC__SAHAJCLOUD_URL).origin
+        window.parent.postMessage({
+          type: 'PLAYBACK_TIME_UPDATE',
+          currentTime: Math.floor(currentTime),
+        }, targetOrigin)
+      } catch (error) {
+        console.error('[MeditationPreview] Failed to send playback update:', error)
+      }
+    }
   }, [])
 
   return (

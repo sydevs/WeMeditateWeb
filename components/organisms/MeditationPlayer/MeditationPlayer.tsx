@@ -81,6 +81,43 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  * Supports responsive layouts:
  * - Narrow: Vertical stacked layout
  * - Wide: Three-column horizontal layout with centered player
+ *
+ * @example
+ * // Basic usage
+ * <MeditationPlayer
+ *   track={{
+ *     url: '/audio/meditation.mp3',
+ *     title: 'Morning Meditation',
+ *     credit: 'Shri Mataji',
+ *     creditURL: '',
+ *     thumbnailURL: '/images/thumb.jpg',
+ *     duration: 0
+ *   }}
+ *   title="Morning Meditation"
+ *   subtitle="Start your day with clarity"
+ *   frames={[
+ *     { timestamp: 0, media: { type: 'image', src: '/frame1.jpg' } },
+ *     { timestamp: 30, media: { type: 'video', src: '/frame2.mp4' } }
+ *   ]}
+ * />
+ *
+ * @example
+ * // With playback time tracking for live preview
+ * const handlePlaybackUpdate = (currentTime: number) => {
+ *   console.log(`Currently at ${currentTime} seconds`)
+ *   // Send to parent window for frame highlighting
+ *   window.parent.postMessage({
+ *     type: 'PLAYBACK_TIME_UPDATE',
+ *     currentTime: Math.floor(currentTime)
+ *   }, targetOrigin)
+ * }
+ *
+ * <MeditationPlayer
+ *   track={track}
+ *   title="Meditation"
+ *   frames={frames}
+ *   onPlaybackTimeUpdate={handlePlaybackUpdate}
+ * />
  */
 export function MeditationPlayer({
   track,

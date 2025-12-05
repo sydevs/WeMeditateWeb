@@ -47,6 +47,23 @@ export interface AudioPlayerControls {
 /**
  * Custom hook for managing audio playback state and controls
  * Encapsulates all audio player logic using HTML5 Audio API
+ *
+ * @example
+ * // Basic usage
+ * const [state, controls] = useAudioPlayer({
+ *   tracks: [{ url: '/audio.mp3', title: 'Track 1', ... }],
+ *   shuffle: false
+ * })
+ *
+ * @example
+ * // With playback time tracking (fires every 100ms while playing)
+ * const [state, controls] = useAudioPlayer({
+ *   tracks: myTracks,
+ *   onPlaybackTimeUpdate: (currentTime) => {
+ *     console.log(`Playback at ${currentTime}s`)
+ *     // Also fires on play, pause, and seek events
+ *   }
+ * })
  */
 export function useAudioPlayer({
   tracks,
@@ -143,10 +160,12 @@ export function useAudioPlayer({
   // Call onPlaybackTimeUpdate callback every 100ms while playing
   useEffect(() => {
     if (isPlaying && onPlaybackTimeUpdate) {
-      // Call immediately on play
-      onPlaybackTimeUpdate(currentTime)
+      // Call immediately on play with current audio time
+      if (audioRef.current) {
+        onPlaybackTimeUpdate(audioRef.current.currentTime)
+      }
 
-      // Set up interval for periodic updates
+      // Set up interval for periodic updates (100ms = 10 updates/second)
       const interval = setInterval(() => {
         if (audioRef.current) {
           onPlaybackTimeUpdate(audioRef.current.currentTime)
