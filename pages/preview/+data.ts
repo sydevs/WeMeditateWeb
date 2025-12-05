@@ -1,7 +1,7 @@
 /**
  * Data fetching for preview mode - supports multiple content types (pages, meditations, etc.)
  *
- * This endpoint handles SahajCloud live preview for any collection type.
+ * This endpoint handles PayloadCMS live preview for any collection type.
  *
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
@@ -73,7 +73,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
 
   // Fetch WeMeditateWebSettings (shared across all content types)
   const settings = await getWeMeditateWebSettings({
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
     kv: cloudflare?.env?.WEMEDITATE_CACHE,
   })
@@ -83,7 +83,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   const data = await fetchById({
     id,
     locale,
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
     kv: cloudflare?.env?.WEMEDITATE_CACHE,
     bypassCache: true,  // Always fetch fresh data in preview mode

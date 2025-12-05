@@ -48,10 +48,10 @@ pnpm ladle:build
 
 This project integrates with the following external services:
 
-### SahajCloud (Required)
-- **Purpose**: Headless CMS (PayloadCMS) providing content via GraphQL API
+### PayloadCMS (Required)
+- **Purpose**: Headless CMS providing content via GraphQL API
 - **Used for**: Pages, articles, meditations, site settings, and all dynamic content
-- **Configuration**: `SAHAJCLOUD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env` or `.dev.vars`
+- **Configuration**: `PAYLOAD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env`
 - **Documentation**: GraphQL queries in [server/graphql-client.ts](server/graphql-client.ts)
 
 ### Cloudflare Workers & KV (Required for Production)
@@ -89,41 +89,19 @@ This project uses Model Context Protocol (MCP) servers to enhance Claude Code's 
 
 ## Environment Setup
 
-The `.dev.vars` symlink (committed to the repo) points to `.env.local`, ensuring both development modes use the same configuration:
+Create a `.env` file with these variables (see [.env.example](.env.example)):
 
 ```bash
-# Setup (one command)
-cp .env.example .env.local
-
-# Then edit .env.local with your actual values
-```
-
-Both development modes automatically read from `.env.local`:
-- **Vite development** (`pnpm dev`) - reads `.env.local` directly
-- **Cloudflare Workers** (`pnpm prod`) - reads `.dev.vars` → `.env.local` (via symlink)
-
-**Required variables** (see [.env.example](.env.example)):
-
-```bash
-# Server-side only (never exposed to browser)
-SAHAJCLOUD_API_KEY=<your-api-key>       # SahajCloud API authentication
+PAYLOAD_API_KEY=<your-api-key>           # PayloadCMS API authentication
+PUBLIC__SAHAJCLOUD_URL=<cms-url>            # GraphQL endpoint URL
 SENTRY_DSN=<dsn>                         # Server-side error tracking
-
-# Browser-accessible (embedded in bundles at build time)
-PUBLIC__SAHAJCLOUD_URL=<cms-url>        # GraphQL endpoint URL
 PUBLIC__SENTRY_DSN=<dsn>                 # Browser-side error tracking
 PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch component
 ```
 
-**Variable Prefixes:**
-- `PUBLIC__` - Exposed to browser, embedded at build time via `envPrefix: 'PUBLIC__'` in `vite.config.ts`
-- No prefix - Server-side only, accessed at runtime via `import.meta.env` or `context.cloudflare.env`
+Variables prefixed with `PUBLIC__` are exposed to the browser.
 
-**Production Deployment:**
-- Set secrets as encrypted variables in Cloudflare dashboard
-- Navigate to: Workers & Pages → wemeditate-web → Settings → Environment variables
-
-**Note**: `PUBLIC__` means "browser-accessible," not "public knowledge." Variables like `PUBLIC__MAPBOX_ACCESS_TOKEN` are still YOUR secret tokens (restrict by domain).
+**Note**: This project uses `PUBLIC__` as the standard prefix for browser-accessible environment variables. This replaces older conventions (`VITE_`, `PUBLIC_ENV__`) used in some Vite projects. The `envPrefix: 'PUBLIC__'` configuration in both `vite.config.ts` and `.ladle/vite.config.ts` enables this automatic exposure.
 
 ## Architecture
 

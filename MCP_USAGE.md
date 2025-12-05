@@ -285,16 +285,6 @@ lsof -ti:9222  # Should return process ID(s)
 
 ## Serena MCP Server
 
-### Before Using Serena
-
-**IMPORTANT**: Always activate the project before using Serena tools:
-
-```javascript
-mcp__serena__activate_project({ project: 'WeMeditateWeb' })
-```
-
-If you see "No active project" errors, this step was missed.
-
 ### Token-Efficient Code Reading
 
 **Problem**: Reading entire files wastes tokens and slows down responses.
@@ -549,10 +539,6 @@ See [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for complete token mapping guidelines.
 - Use optional chaining: `document.querySelector('.el')?.textContent`
 
 ### Serena Issues
-
-**"No active project"**
-- Activate the project first: `mcp__serena__activate_project({ project: 'WeMeditateWeb' })`
-- This must be done at the start of each session before using any Serena tools
 
 **"Symbol not found"**
 - Verify file path is correct (relative to project root)

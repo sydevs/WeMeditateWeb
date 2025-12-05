@@ -19,17 +19,12 @@ import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationP
 
 export interface MeditationTemplateProps {
   /**
-   * Meditation data from SahajCloud (PayloadCMS)
+   * Meditation data from PayloadCMS
    */
   meditation: Meditation
-  /**
-   * Optional callback fired every 100ms during playback with current time in seconds
-   * Also fired on play, pause, and seek events
-   */
-  onPlaybackTimeUpdate?: (currentTime: number) => void
 }
 
-export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: MeditationTemplateProps) {
+export function MeditationTemplate({ meditation }: MeditationTemplateProps) {
   // Parse frames JSON with error handling
   let frames: MeditationFrame[] = []
   if (meditation.frames) {
@@ -93,7 +88,6 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: Meditat
         title={meditation.title || 'Untitled Meditation'}
         subtitle={meditation.label || undefined}
         frames={frames}
-        onPlaybackTimeUpdate={onPlaybackTimeUpdate}
       />
     </div>
   )

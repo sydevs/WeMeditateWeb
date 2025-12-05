@@ -26,7 +26,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
 
   // Fetch WeMeditateWebSettings
   const settings = await getWeMeditateWebSettings({
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
     kv,
   })
@@ -35,7 +35,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   const page = await getPageBySlug({
     slug,
     locale,
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
     endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
     kv,
   })

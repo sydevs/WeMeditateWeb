@@ -66,7 +66,7 @@ export async function data(pageContext: PageContextServer) {
   const page = await getPageBySlug({
     slug: 'home',
     locale: 'en',
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
+    apiKey: import.meta.env.PAYLOAD_API_KEY,
     kv,  // Pass KV namespace for caching
   })
 
@@ -95,7 +95,7 @@ Some query functions support a `bypassCache` flag to skip caching for specific r
 const previewPage = await getPageById({
   id: '68fe4aba450d28b73070d8e5',
   locale: 'en',
-  apiKey: process.env.SAHAJCLOUD_API_KEY!,
+  apiKey: process.env.PAYLOAD_API_KEY!,
   kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
   bypassCache: true,  // Skip cache entirely
 })

@@ -7,8 +7,7 @@
     "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
     "deploy": "vike build && wrangler deploy",
     "ladle": "ladle serve",
-    "ladle:build": "ladle build",
-    "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'"
+    "ladle:build": "ladle build"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

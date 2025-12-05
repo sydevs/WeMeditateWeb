@@ -1,94 +1,82 @@
-# WeMeditateWeb
+Generated with [vike.dev/new](https://vike.dev/new) ([version 485](https://www.npmjs.com/package/create-vike/v/0.0.485)) using this command:
 
-A modern meditation website delivering content at lightning speed from the edge.
-
-## What is this?
-
-WeMeditateWeb serves meditation content through a fast, accessible interface. Content comes from our headless CMS and is delivered globally through Cloudflare's edge network.
-
-**Built with:** React, TypeScript, Tailwind CSS, and Cloudflare Workers
-
-## Getting Started
-
-### You'll need:
-- Node.js 18+
-- pnpm (`npm install -g pnpm`)
-
-### Setup
-
-1. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
-
-2. **Configure environment**
-   ```bash
-   pnpm env:setup
-   ```
-
-   Then edit `.env.local` with your API keys (see `.env.example` for what you need).
-
-3. **Start developing**
-   ```bash
-   pnpm dev
-   ```
-
-   Visit [http://localhost:5173](http://localhost:5173)
-
-## Common Commands
-
-```bash
-pnpm dev              # Start development server
-pnpm build            # Build for production
-pnpm deploy           # Deploy to Cloudflare
-
-pnpm ladle            # Open component library
-pnpm lint             # Check code quality
+```sh
+pnpm create vike@latest --react --tailwindcss --hono --plausible.io --cloudflare --eslint --prettier --sentry
 ```
 
-## Project Structure
+## Contents
 
-```
-pages/          # App pages and routes
-components/     # Reusable UI components
-  atoms/        # Basic elements (buttons, inputs)
-  molecules/    # Simple groups (form fields, cards)
-  organisms/    # Complex sections (header, footer)
-layouts/        # Page layouts
-server/         # Backend logic and caching
-```
+* [Photon](#photon)
 
-## Key Features
+* [React](#react)
 
-- **Fast Global Delivery** - Runs on Cloudflare's edge network
-- **Smart Caching** - Intelligent content caching reduces load times
-- **Multi-Language** - Automatic locale handling for international content
-- **Live Preview** - See content changes in real-time from the CMS
-- **Component Library** - Isolated component development with Ladle
+  * [`/pages/+config.ts`](#pagesconfigts)
+  * [Routing](#routing)
+  * [`/pages/_error/+Page.jsx`](#pages_errorpagejsx)
+  * [`/pages/+onPageTransitionStart.ts` and `/pages/+onPageTransitionEnd.ts`](#pagesonpagetransitionstartts-and-pagesonpagetransitionendts)
+  * [SSR](#ssr)
+  * [HTML Streaming](#html-streaming)
 
-## Documentation
+* [Sentry Browser / Error Tracking & Performance Monitoring](#sentry-browser--error-tracking--performance-monitoring)
 
-- **[CLAUDE.md](CLAUDE.md)** - Complete project guide
-- **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** - Design patterns and components
-- **[STORYBOOK.md](STORYBOOK.md)** - Component documentation guide
+## Photon
 
-## Deployment
+[Photon](https://photonjs.dev) is a next-generation server and deployment toolkit.
+It supports popular deployments ([self-hosted](https://photonjs.dev/self-hosted), [Cloudflare](https://photonjs.dev/cloudflare), [Vercel](https://photonjs.dev/vercel), and [more](https://photonjs.dev/deploy))
+and popular servers ([Hono](https://photonjs.dev/hono), [Express](https://photonjs.dev/express), [Fastify](https://photonjs.dev/fastify), and [more](https://photonjs.dev/server)).
 
-Deploy to Cloudflare Workers:
+## React
 
-```bash
-pnpm deploy
-```
+This app is ready to start. It's powered by [Vike](https://vike.dev) and [React](https://react.dev/learn).
 
-Make sure to configure environment variables in the Cloudflare dashboard first.
+### `/pages/+config.ts`
 
-## Need Help?
+Such `+` files are [the interface](https://vike.dev/config) between Vike and your code. It defines:
 
-- **Type errors?** Run `pnpm typecheck`
-- **Port in use?** Run `lsof -ti:5173 | xargs kill`
-- **Cache issues?** See [server/CACHING.md](server/CACHING.md)
+* A default [`<Layout>` component](https://vike.dev/Layout) (that wraps your [`<Page>` components](https://vike.dev/Page)).
+* A default [`title`](https://vike.dev/title).
+* Global [`<head>` tags](https://vike.dev/head-tags).
 
-## Contributing
+### Routing
 
-We follow the Atomic Design methodology and maintain strict accessibility standards. Read [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) before creating components.
+[Vike's built-in router](https://vike.dev/routing) lets you choose between:
+
+* [Filesystem Routing](https://vike.dev/filesystem-routing) (the URL of a page is determined based on where its `+Page.jsx` file is located on the filesystem)
+* [Route Strings](https://vike.dev/route-string)
+* [Route Functions](https://vike.dev/route-function)
+
+### `/pages/_error/+Page.jsx`
+
+The [error page](https://vike.dev/error-page) which is rendered when errors occur.
+
+### `/pages/+onPageTransitionStart.ts` and `/pages/+onPageTransitionEnd.ts`
+
+The [`onPageTransitionStart()` hook](https://vike.dev/onPageTransitionStart), together with [`onPageTransitionEnd()`](https://vike.dev/onPageTransitionEnd), enables you to implement page transition animations.
+
+### SSR
+
+SSR is enabled by default. You can [disable it](https://vike.dev/ssr) for all your pages or only for some pages.
+
+### HTML Streaming
+
+You can enable/disable [HTML streaming](https://vike.dev/stream) for all your pages, or only for some pages while still using it for others.
+
+## Sentry Browser / Error Tracking & Performance Monitoring
+
+This app is integrated with [Sentry](https://sentry.io) for error tracking.
+
+Add your Sentry DSN to `.env` file.
+You can configure [Sentry for the browser](https://docs.sentry.io/platforms/javascript/guides/react/) in `sentry.browser.config.ts`.
+
+Upload of source maps to Sentry is handled by the [`sentryVitePlugin`](https://docs.sentry.io/platforms/javascript/sourcemaps/uploading/vite/) in `vite.config.ts`.
+You have to configure `SENTRY_ORG`, `SENTRY_PROJECT` and `SENTRY_AUTH_TOKEN` in the `.env.sentry-build-plugin` file with the values from your Sentry account.
+
+> \[!NOTE]
+> Sentry Error Tracking is **only activated in production** (`import.meta.env.PROD === true`)!
+
+**Testing Sentry** receiving Errors:
+
+1. Build & Start the app `pnpm build && pnpm preview`.
+2. open Testpage in browser: http://localhost:3000/sentry.
+3. check your [Sentry Dashboard](https://sentry.io) for new Errors.
 

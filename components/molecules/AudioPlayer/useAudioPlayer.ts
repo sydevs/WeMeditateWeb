@@ -15,7 +15,6 @@ export interface UseAudioPlayerOptions {
   shuffle?: boolean
   initialTrackIndex?: number
   onTrackChange?: (trackIndex: number) => void
-  onPlaybackTimeUpdate?: (currentTime: number) => void
 }
 
 export interface AudioPlayerState {
@@ -53,7 +52,6 @@ export function useAudioPlayer({
   shuffle = false,
   initialTrackIndex = 0,
   onTrackChange,
-  onPlaybackTimeUpdate,
 }: UseAudioPlayerOptions): [AudioPlayerState, AudioPlayerControls] {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
@@ -140,23 +138,6 @@ export function useAudioPlayer({
     }
   }, [volume, isMuted])
 
-  // Call onPlaybackTimeUpdate callback every 100ms while playing
-  useEffect(() => {
-    if (isPlaying && onPlaybackTimeUpdate) {
-      // Call immediately on play
-      onPlaybackTimeUpdate(currentTime)
-
-      // Set up interval for periodic updates
-      const interval = setInterval(() => {
-        if (audioRef.current) {
-          onPlaybackTimeUpdate(audioRef.current.currentTime)
-        }
-      }, 100)
-
-      return () => clearInterval(interval)
-    }
-  }, [isPlaying, onPlaybackTimeUpdate])
-
   const play = useCallback(() => {
     audioRef.current?.play()
     setIsPlaying(true)
@@ -166,11 +147,7 @@ export function useAudioPlayer({
   const pause = useCallback(() => {
     audioRef.current?.pause()
     setIsPlaying(false)
-    // Call onPlaybackTimeUpdate on pause event
-    if (onPlaybackTimeUpdate && audioRef.current) {
-      onPlaybackTimeUpdate(audioRef.current.currentTime)
-    }
-  }, [onPlaybackTimeUpdate])
+  }, [])
 
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -196,12 +173,8 @@ export function useAudioPlayer({
     if (audioRef.current) {
       audioRef.current.currentTime = time
       setCurrentTime(time)
-      // Call onPlaybackTimeUpdate on seek completion
-      if (onPlaybackTimeUpdate) {
-        onPlaybackTimeUpdate(time)
-      }
     }
-  }, [onPlaybackTimeUpdate])
+  }, [])
 
   const setVolume = useCallback((newVolume: number) => {
     setVolumeState(newVolume)
