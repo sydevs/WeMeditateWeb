@@ -67,6 +67,11 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
    * Callback when playback pauses
    */
   onPause?: () => void
+  /**
+   * Callback fired every 100ms during playback with current time in seconds
+   * Also fired on play, pause, and seek events
+   */
+  onPlaybackTimeUpdate?: (currentTime: number) => void
 }
 
 /**
@@ -85,12 +90,14 @@ export function MeditationPlayer({
   upsell,
   onPlay,
   onPause,
+  onPlaybackTimeUpdate,
   className = '',
   ...props
 }: MeditationPlayerProps) {
   const [state, controls] = useAudioPlayer({
     tracks: [track],
     initialTrackIndex: 0,
+    onPlaybackTimeUpdate,
   })
 
   // Get current media frame based on playback time (memoized to avoid re-sorting on every render)
