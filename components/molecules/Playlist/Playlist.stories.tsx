@@ -149,7 +149,7 @@ export const Default: Story = () => {
       </StorySection>
 
       <StorySection title="Music Library" inContext={true}>
-        <div className="bg-gradient-to-br from-teal-50 to-blue-50 p-8">
+        <div className="bg-linear-to-br from-teal-50 to-blue-50 p-8">
           <div className="max-w-lg mx-auto">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               Guided Meditation Sessions

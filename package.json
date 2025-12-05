@@ -4,6 +4,9 @@
     "build": "vike build",
     "preview": "vike preview",
     "lint": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
     "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
     "deploy": "vike build && wrangler deploy",
     "ladle": "ladle serve",
@@ -42,6 +45,7 @@
     "@types/node": "^20.19.21",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@vitest/ui": "^4.0.15",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -52,6 +56,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
+    "vitest": "^4.0.15",
     "wrangler": "^4.45.0"
   },
   "type": "module"

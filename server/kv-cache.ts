@@ -9,10 +9,12 @@
  * - Settings: 24 hours TTL (rarely updated global config)
  * - Lists: 30 minutes TTL (dynamic content like tags)
  * - Preview mode: Cache bypass flag available (always fetch fresh data when enabled)
+ * - Retry: Automatic retry with exponential backoff for network/server errors
  */
 
 import { KVNamespace } from "@cloudflare/workers-types"
 import * as Sentry from "@sentry/react"
+import { withRetry, type RetryConfig } from './error-utils'
 
 /**
  * Default TTL values in seconds
@@ -131,13 +133,36 @@ async function setCachedResponse<T>(
 }
 
 /**
- * Wrapper for caching GraphQL query results.
+ * Gets retry configuration from environment variables with sensible defaults.
+ */
+function getRetryConfig(): RetryConfig {
+  const maxAttempts = import.meta.env.RETRY_MAX_ATTEMPTS
+    ? parseInt(import.meta.env.RETRY_MAX_ATTEMPTS, 10)
+    : 3
+
+  const baseDelayMs = import.meta.env.RETRY_BASE_DELAY_MS
+    ? parseInt(import.meta.env.RETRY_BASE_DELAY_MS, 10)
+    : 1000
+
+  return {
+    maxAttempts: isNaN(maxAttempts) ? 3 : maxAttempts,
+    baseDelayMs: isNaN(baseDelayMs) ? 1000 : baseDelayMs,
+  }
+}
+
+/**
+ * Wrapper for caching GraphQL query results with automatic retry.
  *
- * This function implements a read-through cache pattern:
+ * This function implements a read-through cache pattern with retry logic:
  * 1. Check cache first (unless bypassCache is true)
- * 2. If cache miss, execute the query function
+ * 2. If cache miss, execute the query function with automatic retry
  * 3. Store result in cache before returning (unless bypassCache is true)
  * 4. Return the result
+ *
+ * Retry behavior:
+ * - Automatically retries network and server errors (not client errors like 404)
+ * - Uses exponential backoff with jitter (1s, 2s, 4s by default)
+ * - Configurable via RETRY_MAX_ATTEMPTS and RETRY_BASE_DELAY_MS env vars
  *
  * Errors during cache operations are logged to Sentry but do not interrupt the request.
  * If caching fails, the query function is executed and the result is returned without caching.
@@ -148,6 +173,7 @@ async function setCachedResponse<T>(
  * @param options.ttl - Time to live in seconds
  * @param options.fetchFn - Async function that executes the GraphQL query
  * @param options.bypassCache - If true, skip cache read/write (useful for preview mode)
+ * @param options.retryConfig - Optional retry configuration (overrides env defaults)
  * @returns The query result (either from cache or fresh)
  *
  * @example
@@ -159,13 +185,22 @@ async function setCachedResponse<T>(
  *   fetchFn: async () => await client.request(query, variables)
  * })
  *
- * // For preview mode:
+ * // For preview mode (bypass cache, still retries):
  * const previewPage = await withCache({
  *   kv,
  *   cacheKey: generateCacheKey('page', { id: '123', locale: 'en' }),
  *   ttl: CacheTTL.PAGE,
  *   fetchFn: async () => await client.request(query, variables),
- *   bypassCache: true  // Always fetch fresh data
+ *   bypassCache: true
+ * })
+ *
+ * // Custom retry configuration:
+ * const page = await withCache({
+ *   kv,
+ *   cacheKey: generateCacheKey('page', { slug: 'home', locale: 'en' }),
+ *   ttl: CacheTTL.PAGE,
+ *   fetchFn: async () => await client.request(query, variables),
+ *   retryConfig: { maxAttempts: 5, baseDelayMs: 500 }
  * })
  * ```
  */
@@ -175,12 +210,16 @@ export async function withCache<T>(options: {
   ttl: number
   fetchFn: () => Promise<T>
   bypassCache?: boolean
+  retryConfig?: RetryConfig
 }): Promise<T> {
-  const { kv, cacheKey, ttl, fetchFn, bypassCache = false } = options
+  const { kv, cacheKey, ttl, fetchFn, bypassCache = false, retryConfig } = options
 
-  // If bypass flag is set, skip cache entirely
+  // Get retry configuration (use provided config or env defaults)
+  const finalRetryConfig = retryConfig || getRetryConfig()
+
+  // If bypass flag is set, skip cache but still use retry
   if (bypassCache) {
-    return await fetchFn()
+    return await withRetry(fetchFn, finalRetryConfig)
   }
 
   // Try to get from cache first
@@ -189,8 +228,8 @@ export async function withCache<T>(options: {
     return cached
   }
 
-  // Cache miss - execute the query
-  const result = await fetchFn()
+  // Cache miss - execute the query with retry logic
+  const result = await withRetry(fetchFn, finalRetryConfig)
 
   // Store in cache for next time (fire and forget)
   void setCachedResponse(kv, cacheKey, result, ttl)
