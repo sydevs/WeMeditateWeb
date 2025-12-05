@@ -31,7 +31,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     kv,
   })
 
-  // Let errors throw - they'll be caught by ErrorBoundary
+  // Fetch page by slug
   const page = await getPageBySlug({
     slug,
     locale,
@@ -42,7 +42,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
 
   if (!page) {
     // Page not found - this is a valid 404 state, not an error
-    throw render(404, "Page not found.")
+    throw render(404, 'Page not found.')
   }
 
   return {

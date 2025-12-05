@@ -51,7 +51,7 @@ This project integrates with the following external services:
 ### SahajCloud (Required)
 - **Purpose**: Headless CMS (PayloadCMS) providing content via GraphQL API
 - **Used for**: Pages, articles, meditations, site settings, and all dynamic content
-- **Configuration**: `SAHAJCLOUD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env` or `.dev.vars`
+- **Configuration**: `SAHAJCLOUD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env.local`
 - **Documentation**: GraphQL queries in [server/graphql-client.ts](server/graphql-client.ts)
 
 ### Cloudflare Workers & KV (Required for Production)
@@ -89,8 +89,6 @@ This project uses Model Context Protocol (MCP) servers to enhance Claude Code's 
 
 ## Environment Setup
 
-The `.dev.vars` symlink (committed to the repo) points to `.env.local`, ensuring both development modes use the same configuration:
-
 ```bash
 # Setup (one command)
 cp .env.example .env.local
@@ -100,7 +98,7 @@ cp .env.example .env.local
 
 Both development modes automatically read from `.env.local`:
 - **Vite development** (`pnpm dev`) - reads `.env.local` directly
-- **Cloudflare Workers** (`pnpm prod`) - reads `.dev.vars` → `.env.local` (via symlink)
+- **Cloudflare Workers** (`pnpm prod`) - falls back to `.env.local` when `.dev.vars` is not present
 
 **Required variables** (see [.env.example](.env.example)):
 

@@ -78,8 +78,7 @@ web_modules/
 # dotenv environment variable files
 .env
 .env*.local
-!.dev.vars         # Track the symlink to .env.local (committed to repo)
-.dev.vars.local    # Ignore local overrides if created
+.dev.vars
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

@@ -46,6 +46,12 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
   const { locale } = usePageContext()
   const settings = data?.settings
 
+  // If settings unavailable (e.g., during error page rendering when CMS is down),
+  // render minimal layout without header/footer
+  if (!settings) {
+    return <>{children}</>
+  }
+
   // Assert that all required settings are configured
   assertSettingsConfigured(settings)
 
