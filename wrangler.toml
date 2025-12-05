@@ -3,10 +3,29 @@ compatibility_date = "2025-09-06"
 compatibility_flags = ["nodejs_compat"]
 main = "virtual:photon:cloudflare:server-entry"
 
-# KV namespace for caching PayloadCMS data
+# KV namespace for caching SahajCloud data
 # To create: pnpm wrangler kv namespace create "WEMEDITATE_CACHE"
 # For preview: pnpm wrangler kv namespace create "WEMEDITATE_CACHE" --preview
 [[kv_namespaces]]
 binding = "WEMEDITATE_CACHE"
 id = "5c38f43ed50440a3bc7e06c8e9483856"
 preview_id = "cf4eaa694eed4a7aa7f0482905e496a1"
+
+# Environment Variables
+#
+# SECURITY: Only put NON-SENSITIVE values here (this file is in git)
+#
+# For secrets, use Cloudflare dashboard encrypted secrets:
+# Workers & Pages → wemeditate-web → Settings → Environment variables
+#
+# Secrets to set in Cloudflare dashboard:
+# - SAHAJCLOUD_API_KEY (server-side only)
+# - PUBLIC__MAPBOX_ACCESS_TOKEN (browser-accessible, but still secret)
+# - PUBLIC__SENTRY_DSN (browser-accessible, but still secret)
+# - SENTRY_DSN (server-side only)
+#
+[vars]
+PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"
+
+# Note: PUBLIC__* variables here are available at runtime via context.cloudflare.env
+# They are ALSO embedded into client bundles at build time by Vite

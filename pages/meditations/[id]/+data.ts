@@ -23,7 +23,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationPa
   // Access Cloudflare KV namespace for caching
   const kv = cloudflare?.env?.WEMEDITATE_CACHE
 
-  const apiKey = import.meta.env.PAYLOAD_API_KEY
+  const apiKey = import.meta.env.SAHAJCLOUD_API_KEY
   const endpoint = import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql'
 
   // Fetch global settings (cached 24 hours)
