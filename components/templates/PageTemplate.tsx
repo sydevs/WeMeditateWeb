@@ -9,7 +9,7 @@
  * <PageTemplate page={pageData} />
  */
 
-import { Page } from '../../server/graphql-types'
+import type { Page } from '../../server/cms-types'
 
 export interface PageTemplateProps {
   /**
@@ -23,9 +23,9 @@ export function PageTemplate({ page }: PageTemplateProps) {
     <article className="max-w-4xl mx-auto">
       <header className="mb-8">
         <h1 className="text-5xl font-bold mb-4">{page.title}</h1>
-        {page.publishAt && (
+        {page.createdAt && (
           <time className="text-sm text-gray-500">
-            Published: {new Date(page.publishAt).toLocaleDateString()}
+            Published: {new Date(page.createdAt).toLocaleDateString()}
           </time>
         )}
       </header>

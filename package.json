@@ -4,11 +4,15 @@
     "build": "vike build",
     "preview": "vike preview",
     "lint": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
     "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
     "deploy": "vike build && wrangler deploy",
     "ladle": "ladle serve",
     "ladle:build": "ladle build",
-    "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'"
+    "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
+    "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -16,14 +20,13 @@
     "@mapbox/search-js-react": "^1.5.0",
     "@mapbox/search-js-web": "^1.5.0",
     "@payloadcms/live-preview-react": "^3.61.1",
+    "@payloadcms/sdk": "^3.69.0",
     "@photonjs/cloudflare": "^0.1.4",
     "@photonjs/hono": "^0.1.4",
     "@sentry/react": "^10.22.0",
     "@universal-middleware/core": "^0.4.12",
     "@vitejs/plugin-react": "^5.1.0",
     "embla-carousel-react": "^8.6.0",
-    "graphql": "^16.11.0",
-    "graphql-request": "^7.3.1",
     "hono": "^4.10.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -42,6 +45,7 @@
     "@types/node": "^20.19.21",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@vitest/ui": "^4.0.15",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -52,6 +56,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
+    "vitest": "^4.0.15",
     "wrangler": "^4.45.0"
   },
   "type": "module"

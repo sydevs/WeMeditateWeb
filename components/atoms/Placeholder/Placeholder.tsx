@@ -91,7 +91,7 @@ export function Placeholder({
     >
       {/* Shimmer overlay (only when animating) */}
       {animate && (
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
       )}
 
       {/* Centered children content */}

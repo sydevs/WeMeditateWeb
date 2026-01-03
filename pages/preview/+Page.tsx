@@ -18,7 +18,7 @@ import { useCallback } from 'react'
 import { useData } from 'vike-react/useData'
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import { PreviewPageData } from './+data'
-import { Page as PageData, Meditation as MeditationData } from '../../server/graphql-types'
+import type { Page as PageData, Meditation as MeditationData } from '../../server/cms-types'
 import { PageTemplate, MeditationTemplate } from '../../components/templates'
 
 export { Page }

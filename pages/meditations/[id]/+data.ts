@@ -1,7 +1,7 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Meditation, WeMeditateWebSettings } from '../../../server/graphql-types'
-import { getMeditationById, getWeMeditateWebSettings } from '../../../server/graphql-client'
+import type { Meditation, WeMeditateWebSettings } from '../../../server/cms-types'
+import { getMeditationById, getWeMeditateWebSettings } from '../../../server/cms-client'
 
 export interface MeditationPageData {
   meditation: Meditation
@@ -24,12 +24,12 @@ export async function data(pageContext: PageContextServer): Promise<MeditationPa
   const kv = cloudflare?.env?.WEMEDITATE_CACHE
 
   const apiKey = import.meta.env.SAHAJCLOUD_API_KEY
-  const endpoint = import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql'
+  const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL
 
   // Fetch global settings (cached 24 hours)
   const settings = await getWeMeditateWebSettings({
     apiKey,
-    endpoint,
+    baseURL,
     kv,
   })
 
@@ -38,7 +38,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationPa
     id,
     locale,
     apiKey,
-    endpoint,
+    baseURL,
     kv,
   })
 

@@ -6,7 +6,7 @@ import { Header } from "../components/organisms/Header";
 import { Footer } from "../components/organisms/Footer";
 import { useData } from "vike-react/useData";
 import { usePageContext } from "vike-react/usePageContext";
-import { WeMeditateWebSettings } from "../server/graphql-types";
+import type { WeMeditateWebSettings } from "../server/cms-types";
 import * as Sentry from "@sentry/react";
 
 /**
@@ -45,6 +45,12 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
   const data = useData<{ settings?: WeMeditateWebSettings }>()
   const { locale } = usePageContext()
   const settings = data?.settings
+
+  // If settings unavailable (e.g., during error page rendering when CMS is down),
+  // render minimal layout without header/footer
+  if (!settings) {
+    return <>{children}</>
+  }
 
   // Assert that all required settings are configured
   assertSettingsConfigured(settings)

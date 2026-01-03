@@ -12,9 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-WeMeditateWeb is a server-side rendered web application built with **Vike** (full-stack meta-framework), **React 19**, and **TypeScript**, deployed to **Cloudflare Workers**. It fetches content from a PayloadCMS backend via GraphQL and implements sophisticated edge caching using Cloudflare KV.
+WeMeditateWeb is a server-side rendered web application built with **Vike** (full-stack meta-framework), **React 19**, and **TypeScript**, deployed to **Cloudflare Workers**. It fetches content from a PayloadCMS backend via REST API and implements sophisticated edge caching using Cloudflare KV.
 
-**Stack**: Vike + React + TypeScript + Hono + Tailwind CSS + Cloudflare Workers + PayloadCMS GraphQL
+**Stack**: Vike + React + TypeScript + Hono + Tailwind CSS + Cloudflare Workers + PayloadCMS REST API
 
 ## Common Development Commands
 
@@ -49,10 +49,10 @@ pnpm ladle:build
 This project integrates with the following external services:
 
 ### SahajCloud (Required)
-- **Purpose**: Headless CMS (PayloadCMS) providing content via GraphQL API
+- **Purpose**: Headless CMS (PayloadCMS) providing content via REST API
 - **Used for**: Pages, articles, meditations, site settings, and all dynamic content
-- **Configuration**: `SAHAJCLOUD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env` or `.dev.vars`
-- **Documentation**: GraphQL queries in [server/graphql-client.ts](server/graphql-client.ts)
+- **Configuration**: `SAHAJCLOUD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env.local`
+- **Documentation**: REST API client in [server/cms-client.ts](server/cms-client.ts)
 
 ### Cloudflare Workers & KV (Required for Production)
 - **Purpose**: Edge computing platform and key-value storage for caching
@@ -89,8 +89,6 @@ This project uses Model Context Protocol (MCP) servers to enhance Claude Code's 
 
 ## Environment Setup
 
-The `.dev.vars` symlink (committed to the repo) points to `.env.local`, ensuring both development modes use the same configuration:
-
 ```bash
 # Setup (one command)
 cp .env.example .env.local
@@ -100,7 +98,7 @@ cp .env.example .env.local
 
 Both development modes automatically read from `.env.local`:
 - **Vite development** (`pnpm dev`) - reads `.env.local` directly
-- **Cloudflare Workers** (`pnpm prod`) - reads `.dev.vars` → `.env.local` (via symlink)
+- **Cloudflare Workers** (`pnpm prod`) - falls back to `.env.local` when `.dev.vars` is not present
 
 **Required variables** (see [.env.example](.env.example)):
 
@@ -110,7 +108,7 @@ SAHAJCLOUD_API_KEY=<your-api-key>       # SahajCloud API authentication
 SENTRY_DSN=<dsn>                         # Server-side error tracking
 
 # Browser-accessible (embedded in bundles at build time)
-PUBLIC__SAHAJCLOUD_URL=<cms-url>        # GraphQL endpoint URL
+PUBLIC__SAHAJCLOUD_URL=<cms-url>        # PayloadCMS base URL
 PUBLIC__SENTRY_DSN=<dsn>                 # Browser-side error tracking
 PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch component
 ```
@@ -144,7 +142,7 @@ GET /es/about
   → onBeforeRoute extracts locale='es'
   → Route matcher extracts slug='about'
   → +data.ts runs with { locale: 'es', slug: 'about' }
-  → GraphQL fetches page from PayloadCMS
+  → REST API fetches page from PayloadCMS
   → +Page.tsx renders with fetched data
 ```
 
@@ -160,9 +158,9 @@ Data functions receive `pageContext` with:
 - `routeParams`: Dynamic route parameters (e.g., `{ slug: 'about' }`)
 - `cloudflare.env`: Cloudflare Workers bindings (KV, environment variables)
 
-### GraphQL Integration
+### REST API Integration
 
-GraphQL client is located in [server/graphql-client.ts](server/graphql-client.ts):
+The PayloadCMS REST API client is located in [server/cms-client.ts](server/cms-client.ts):
 
 **Key Functions**:
 - `getPageBySlug({ slug, locale, apiKey, kv? })` - Fetch page by slug (cached 1 hour)
@@ -170,13 +168,12 @@ GraphQL client is located in [server/graphql-client.ts](server/graphql-client.ts
 - `getWeMeditateWebSettings({ apiKey, kv? })` - Fetch global settings (cached 24 hours)
 - `getMeditationById()`, `getPagesByTags()`, etc. - Other content fetchers
 
-**Query Fragments**: Reusable GraphQL fragments are defined in [server/graphql-fragments.ts](server/graphql-fragments.ts):
-- `fullPageFragment` - Complete page with author, tags, SEO metadata
-- `mediaImageFragment` - Responsive image data
-- `authorFragment`, `pageMetaFragment` - Reusable data structures
-- `buildQueryWithFragments()` - Automatically resolves fragment dependencies
+**SDK Client Factory**: [server/payload-client.ts](server/payload-client.ts) provides:
+- `createPayloadClient()` - Creates configured PayloadCMS SDK instance
+- `PayloadAPIError` - Error class compatible with retry logic in error-utils.ts
+- `validateSDKResponse()` - Handles SDK bug where errors return undefined instead of throwing
 
-**Type Definitions**: All PayloadCMS schema types are in [server/graphql-types.ts](server/graphql-types.ts) (`Page`, `MediaImage`, `Author`, `WeMeditateWebSettings`, etc.)
+**Type Definitions**: PayloadCMS schema types are in [server/payload-types.ts](server/payload-types.ts), with app-specific types in [server/cms-types.ts](server/cms-types.ts)
 
 ### Caching Strategy (Cloudflare KV)
 
@@ -241,7 +238,46 @@ Falls back to `pageContext.locale` if locale prop is not specified.
 
 ### Error Handling
 
-**[pages/_error/+Page.tsx](pages/_error/+Page.tsx)**: Unified error page for 404 and 500 errors. Uses `pageContext.is404` to differentiate.
+The app implements graceful error handling with automatic retry and user-friendly error messages.
+
+**Error Detection and Retry** ([server/error-utils.ts](server/error-utils.ts)):
+- Automatically detects error types (network, server, client)
+- Retries network and server errors with exponential backoff
+- Configurable via `RETRY_MAX_ATTEMPTS` (default: 3) and `RETRY_BASE_DELAY_MS` (default: 1000ms)
+- Logs all retry attempts to Sentry for monitoring
+- Does NOT retry client errors (400, 401, 403, 404)
+
+**Retry Behavior**:
+- **Attempt 1**: Immediate request
+- **Attempt 2**: Wait ~1 second, retry
+- **Attempt 3**: Wait ~2 seconds, retry
+- **Attempt 4** (if max=4): Wait ~4 seconds, retry
+- Jitter added to prevent thundering herd
+
+**Error Pages and Components**:
+- **[pages/_error/+Page.tsx](pages/_error/+Page.tsx)**: Enhanced error page for 404 and 500 errors
+  - 404: "Page Not Found" with home link
+  - 500: "Service Temporarily Unavailable" with retry button
+  - Optional status page link via `PUBLIC__STATUS_PAGE_URL`
+
+- **[components/molecules/ErrorFallback](components/molecules/ErrorFallback/ErrorFallback.tsx)**: React Error Boundary fallback
+  - Detects error type and shows contextual icon (WiFi, Server, Exclamation)
+  - User-friendly messages based on error type
+  - "Try Again" button (reloads page) and "Back to Home" link
+  - Technical details in dev mode
+
+**User-Friendly Error Messages**:
+- **Network errors**: "Unable to connect to our content servers. Please check your internet connection."
+- **Server errors**: "Our content servers are experiencing issues. We're working to resolve this."
+- **Client errors**: "This content is not available. It may have been moved or deleted."
+
+**Configuration**:
+```bash
+# .env or Cloudflare dashboard
+RETRY_MAX_ATTEMPTS=3              # Number of retry attempts
+RETRY_BASE_DELAY_MS=1000          # Base delay for exponential backoff
+PUBLIC__STATUS_PAGE_URL=<url>     # Optional external status page
+```
 
 ## Cloudflare Workers Deployment
 
@@ -291,9 +327,10 @@ components/              # Reusable UI components (Atomic Design structure)
 
 server/                  # Server-side utilities
 ├── entry.ts            # Cloudflare Workers server setup
-├── graphql-client.ts   # GraphQL query functions with caching
-├── graphql-fragments.ts # Reusable GraphQL fragments
-├── graphql-types.ts    # PayloadCMS TypeScript types
+├── cms-client.ts       # REST API query functions with caching
+├── payload-client.ts   # PayloadCMS SDK factory and utilities
+├── payload-types.ts    # PayloadCMS TypeScript types (auto-generated)
+├── cms-types.ts        # App-specific types (Locale, populated relationships)
 ├── kv-cache.ts         # Cloudflare KV caching layer
 └── CACHING.md          # Caching documentation
 
@@ -338,39 +375,51 @@ These enable page transition animations (currently minimal implementation).
 **Source Maps**: Uploaded via `@sentry/vite-plugin` in [vite.config.ts](vite.config.ts)
 - Requires `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` in `.env.sentry-build-plugin`
 
-## Working with GraphQL
+## Working with REST API
 
 ### Adding New Query Functions
 
-1. Define TypeScript types in [server/graphql-types.ts](server/graphql-types.ts)
-2. Create reusable fragments in [server/graphql-fragments.ts](server/graphql-fragments.ts) if needed
-3. Add query function in [server/graphql-client.ts](server/graphql-client.ts):
+1. Define or import TypeScript types from [server/payload-types.ts](server/payload-types.ts)
+2. Add app-specific types to [server/cms-types.ts](server/cms-types.ts) if needed
+3. Add query function in [server/cms-client.ts](server/cms-client.ts):
    ```typescript
-   export async function getNewContent({ slug, locale, apiKey, kv }: QueryParams) {
-     const query = buildQueryWithFragments(`
-       query GetNewContent($slug: String!, $locale: Locale!) {
-         newContent(where: { slug: { equals: $slug } }, locale: $locale) {
-           ...fullPageFragment
-         }
-       }
-     `, ['fullPageFragment'])
-
+   export async function getNewContent(options: QueryOptions & { slug: string }) {
      return withCache({
-       cacheKey: generateCacheKey('new-content', { slug, locale }),
+       cacheKey: generateCacheKey('new-content', { slug: options.slug, locale: options.locale }),
        ttl: CacheTTL.PAGE,
-       kv,
+       kv: options.kv,
+       bypassCache: options.bypassCache,
        fetchFn: async () => {
-         const client = createGraphQLClient(apiKey)
-         const response = await client.request(query, { slug, locale })
-         return response.newContent
-       }
+         const client = createPayloadClient({
+           apiKey: options.apiKey,
+           baseURL: options.baseURL,
+         })
+
+         const result = await client.find({
+           collection: 'content',
+           where: { slug: { equals: options.slug } },
+           locale: options.locale,
+           depth: 2,
+         })
+
+         return validateSDKResponse(result.docs[0], `getNewContent(${options.slug})`)
+       },
      })
    }
    ```
 
-### Query Authentication
+### Updating PayloadCMS Types
 
-All GraphQL requests require authentication via `Authorization: clients API-Key {apiKey}` header. The API key is passed from environment variables through data functions.
+When the CMS schema changes, regenerate types:
+```bash
+pnpm types:cms
+```
+
+This downloads the latest `payload-types.ts` from SahajCloud.
+
+### API Authentication
+
+All REST API requests require authentication via `Authorization: clients API-Key {apiKey}` header. The SDK client factory handles this automatically.
 
 ## Build Configuration
 
