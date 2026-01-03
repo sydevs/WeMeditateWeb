@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { validateSDKResponse } from './payload-client'
+import { validateSDKResponse, validatePayloadConfig, PayloadConfigError } from './payload-client'
 
 describe('validateSDKResponse', () => {
   describe('throws on invalid responses', () => {
@@ -73,5 +73,39 @@ describe('validateSDKResponse', () => {
       const result = validateSDKResponse([], 'getPages')
       expect(result).toEqual([])
     })
+  })
+})
+
+describe('validatePayloadConfig', () => {
+  it('should throw with 401 status when API key is missing or empty', () => {
+    const testCases = [undefined, '', '   ']
+    for (const apiKey of testCases) {
+      try {
+        validatePayloadConfig({ apiKey })
+        expect.fail('Should have thrown')
+      } catch (error) {
+        expect(error).toBeInstanceOf(PayloadConfigError)
+        expect((error as PayloadConfigError).response.status).toBe(401)
+        expect((error as Error).message).toContain('API key')
+      }
+    }
+  })
+
+  it('should throw with 400 status for invalid URL format', () => {
+    try {
+      validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'cms.example.com' })
+      expect.fail('Should have thrown')
+    } catch (error) {
+      expect(error).toBeInstanceOf(PayloadConfigError)
+      expect((error as PayloadConfigError).response.status).toBe(400)
+      expect((error as Error).message).toContain('URL must include protocol')
+    }
+  })
+
+  it('should accept valid configuration', () => {
+    expect(() => validatePayloadConfig({
+      apiKey: 'valid-key',
+      baseURL: 'https://cms.example.com'
+    })).not.toThrow()
   })
 })

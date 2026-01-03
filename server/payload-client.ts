@@ -22,6 +22,53 @@ export interface PayloadClientConfig {
 }
 
 /**
+ * Error thrown when PayloadCMS configuration is invalid.
+ * Has a `response.status` property for compatibility with detectErrorType().
+ */
+export class PayloadConfigError extends Error {
+  public readonly response: { status: number }
+
+  constructor(message: string, status: number = 400) {
+    super(message)
+    this.name = 'PayloadConfigError'
+    this.response = { status }
+  }
+}
+
+/**
+ * Validates PayloadCMS configuration before making API requests.
+ * Provides clear error messages for common configuration issues.
+ *
+ * @param config - Configuration to validate
+ * @throws PayloadConfigError with descriptive message if configuration is invalid
+ */
+export function validatePayloadConfig(config: {
+  apiKey?: string
+  baseURL?: string
+}): void {
+  // Check API key is provided and not empty
+  if (!config.apiKey || config.apiKey.trim() === '') {
+    throw new PayloadConfigError(
+      'PayloadCMS API key is not configured. Set the SAHAJCLOUD_API_KEY environment variable.',
+      401
+    )
+  }
+
+  // Validate URL format if provided
+  const baseURL = config.baseURL || import.meta.env.PUBLIC__SAHAJCLOUD_URL
+  if (baseURL) {
+    try {
+      new URL(baseURL)
+    } catch {
+      throw new PayloadConfigError(
+        `Invalid PayloadCMS URL: "${baseURL}". URL must include protocol (e.g., https://cms.example.com).`,
+        400
+      )
+    }
+  }
+}
+
+/**
  * Creates a new PayloadCMS SDK client instance.
  *
  * IMPORTANT: Always create a new client instance per request when using
@@ -29,8 +76,13 @@ export interface PayloadClientConfig {
  *
  * @param config - Client configuration with API key and optional base URL
  * @returns Configured PayloadSDK instance
+ * @throws PayloadConfigError if configuration is invalid (missing API key, malformed URL)
  */
 export function createPayloadClient(config: PayloadClientConfig) {
+  // Validate configuration before creating client
+  // This provides clear error messages for common misconfiguration issues
+  validatePayloadConfig(config)
+
   const baseURL =
     config.baseURL ||
     import.meta.env.PUBLIC__SAHAJCLOUD_URL ||
