@@ -11,7 +11,8 @@
     "deploy": "vike build && wrangler deploy",
     "ladle": "ladle serve",
     "ladle:build": "ladle build",
-    "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'"
+    "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
+    "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -19,6 +20,7 @@
     "@mapbox/search-js-react": "^1.5.0",
     "@mapbox/search-js-web": "^1.5.0",
     "@payloadcms/live-preview-react": "^3.61.1",
+    "@payloadcms/sdk": "^3.69.0",
     "@photonjs/cloudflare": "^0.1.4",
     "@photonjs/hono": "^0.1.4",
     "@sentry/react": "^10.22.0",
