@@ -12,20 +12,6 @@ import { PayloadSDK } from '@payloadcms/sdk'
 import type { Config } from './payload-types'
 
 /**
- * Error thrown when SDK returns undefined (indicating an API error).
- * Compatible with detectErrorType() from error-utils.ts via response.status.
- */
-export class PayloadAPIError extends Error {
-  public readonly response: { status: number }
-
-  constructor(message: string, status: number = 500) {
-    super(message)
-    this.name = 'PayloadAPIError'
-    this.response = { status }
-  }
-}
-
-/**
  * Configuration for creating a PayloadCMS SDK client
  */
 export interface PayloadClientConfig {
@@ -74,7 +60,7 @@ export type PayloadClient = ReturnType<typeof createPayloadClient>
  *
  * @param result - The result from an SDK call
  * @param context - Description of the operation for error messages
- * @throws PayloadAPIError if result is undefined or null
+ * @throws Error if result is undefined or null
  * @returns The validated result
  */
 export function validateSDKResponse<T>(
@@ -82,7 +68,7 @@ export function validateSDKResponse<T>(
   context: string
 ): T {
   if (result === undefined || result === null) {
-    throw new PayloadAPIError(`PayloadCMS SDK returned undefined: ${context}`)
+    throw new Error(`PayloadCMS SDK returned undefined: ${context}`)
   }
   return result
 }

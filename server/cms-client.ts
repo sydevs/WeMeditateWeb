@@ -6,23 +6,22 @@
  *
  * ## Error Handling Strategy
  *
- * All functions convert SDK errors to PayloadAPIError for retry compatibility:
+ * Errors propagate naturally for retry compatibility with error-utils.ts:
  * - **Single item queries** (getPageBySlug, getPageById, getMeditationById):
- *   Return null for empty results, throw PayloadAPIError for network/SDK errors.
+ *   Return null for empty results, let errors propagate for retry logic.
  * - **Global queries** (getWeMeditateWebSettings):
- *   Use validateSDKResponse() since settings must exist.
+ *   Use validateSDKResponse() since settings must exist (handles SDK undefined bug).
  * - **List queries** (getPagesByTags, getMeditationsByTags, getMusicByTags):
- *   Return empty array for empty results, throw PayloadAPIError for errors.
+ *   Return empty array for empty results, let errors propagate for retry logic.
  *
- * This ensures the retry logic in error-utils.ts can properly retry
- * network and server errors across all query types.
+ * Native errors (TypeError for network, Error for SDK) are handled by
+ * detectErrorType() in error-utils.ts via message pattern matching.
  */
 
 import type { KVNamespace } from '@cloudflare/workers-types'
 import {
   createPayloadClient,
   validateSDKResponse,
-  PayloadAPIError,
 } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
 import type {
@@ -82,29 +81,21 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.find({
-          collection: 'pages',
-          where: {
-            slug: { equals: options.slug },
-          },
-          locale: options.locale,
-          limit: 1,
-          depth: 2,
-        })
+      const result = await client.find({
+        collection: 'pages',
+        where: {
+          slug: { equals: options.slug },
+        },
+        locale: options.locale,
+        limit: 1,
+        depth: 2,
+      })
 
-        if (!result?.docs?.length) {
-          return null
-        }
-
-        return result.docs[0] as Page
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
+      if (!result?.docs?.length) {
+        return null
       }
+
+      return result.docs[0] as Page
     },
   })
 }
@@ -144,23 +135,15 @@ export async function getPageById(options: LocalizedQueryOptions & {
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.findByID({
-          collection: 'pages',
-          id: options.id,
-          locale: options.locale,
-          depth: 2,
-        })
+      const result = await client.findByID({
+        collection: 'pages',
+        id: options.id,
+        locale: options.locale,
+        depth: 2,
+      })
 
-        if (!result) return null
-        return result as Page
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
-      }
+      if (!result) return null
+      return result as Page
     },
   })
 }
@@ -197,23 +180,15 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.findByID({
-          collection: 'meditations',
-          id: options.id,
-          locale: options.locale,
-          depth: 2,
-        })
+      const result = await client.findByID({
+        collection: 'meditations',
+        id: options.id,
+        locale: options.locale,
+        depth: 2,
+      })
 
-        if (!result) return null
-        return result as Meditation
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
-      }
+      if (!result) return null
+      return result as Meditation
     },
   })
 }
@@ -249,23 +224,15 @@ export async function getWeMeditateWebSettings(
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.findGlobal({
-          slug: 'we-meditate-web-settings',
-          depth: 2,
-        })
+      const result = await client.findGlobal({
+        slug: 'we-meditate-web-settings',
+        depth: 2,
+      })
 
-        return validateSDKResponse(
-          result,
-          'WeMeditateWebSettings'
-        ) as WeMeditateWebSettings
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
-      }
+      return validateSDKResponse(
+        result,
+        'WeMeditateWebSettings'
+      ) as WeMeditateWebSettings
     },
   })
 }
@@ -308,29 +275,21 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.find({
-          collection: 'pages',
-          where: { tags: { in: options.tagIds } },
-          locale: options.locale,
-          limit,
-          depth: 2,
-        })
+      const result = await client.find({
+        collection: 'pages',
+        where: { tags: { in: options.tagIds } },
+        locale: options.locale,
+        limit,
+        depth: 2,
+      })
 
-        if (!result?.docs) return []
+      if (!result?.docs) return []
 
-        return result.docs.map((page) => ({
-          id: page.id,
-          title: page.title ?? null,
-          meta: page.meta ? { image: page.meta.image ?? null } : null,
-        })) as PageListItem[]
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
-      }
+      return result.docs.map((page) => ({
+        id: page.id,
+        title: page.title ?? null,
+        meta: page.meta ? { image: page.meta.image ?? null } : null,
+      })) as PageListItem[]
     },
   })
 }
@@ -369,29 +328,21 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.find({
-          collection: 'meditations',
-          where: { tags: { in: options.tagIds } },
-          locale: options.locale,
-          limit,
-          depth: 2,
-        })
+      const result = await client.find({
+        collection: 'meditations',
+        where: { tags: { in: options.tagIds } },
+        locale: options.locale,
+        limit,
+        depth: 2,
+      })
 
-        if (!result?.docs) return []
+      if (!result?.docs) return []
 
-        return result.docs.map((meditation) => ({
-          id: meditation.id,
-          title: meditation.title ?? null,
-          thumbnail: meditation.thumbnail ?? null,
-        })) as MeditationListItem[]
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
-      }
+      return result.docs.map((meditation) => ({
+        id: meditation.id,
+        title: meditation.title ?? null,
+        thumbnail: meditation.thumbnail ?? null,
+      })) as MeditationListItem[]
     },
   })
 }
@@ -430,24 +381,16 @@ export async function getMusicByTags(options: LocalizedQueryOptions & {
         baseURL: options.baseURL,
       })
 
-      try {
-        const result = await client.find({
-          collection: 'music',
-          where: { tags: { in: options.tagIds } },
-          locale: options.locale,
-          limit,
-          depth: 2,
-        })
+      const result = await client.find({
+        collection: 'music',
+        where: { tags: { in: options.tagIds } },
+        locale: options.locale,
+        limit,
+        depth: 2,
+      })
 
-        if (!result?.docs) return []
-        return result.docs as Music[]
-      } catch (error) {
-        // Convert SDK errors to PayloadAPIError for retry compatibility
-        if (error instanceof Error) {
-          throw new PayloadAPIError(error.message, 500)
-        }
-        throw error
-      }
+      if (!result?.docs) return []
+      return result.docs as Music[]
     },
   })
 }

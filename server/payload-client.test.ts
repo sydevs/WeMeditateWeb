@@ -3,67 +3,20 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import {
-  PayloadAPIError,
-  validateSDKResponse,
-} from './payload-client'
-import { detectErrorType, ErrorType } from './error-utils'
-
-describe('PayloadAPIError', () => {
-  it('should create error with default 500 status', () => {
-    const error = new PayloadAPIError('Test error message')
-
-    expect(error).toBeInstanceOf(Error)
-    expect(error.name).toBe('PayloadAPIError')
-    expect(error.message).toBe('Test error message')
-    expect(error.response.status).toBe(500)
-  })
-
-  it('should create error with custom status', () => {
-    const error = new PayloadAPIError('Not found', 404)
-
-    expect(error.message).toBe('Not found')
-    expect(error.response.status).toBe(404)
-  })
-
-  it('should be compatible with detectErrorType for server errors', () => {
-    const error = new PayloadAPIError('Server error', 500)
-    expect(detectErrorType(error)).toBe(ErrorType.SERVER)
-  })
-
-  it('should be compatible with detectErrorType for 502 errors', () => {
-    const error = new PayloadAPIError('Bad gateway', 502)
-    expect(detectErrorType(error)).toBe(ErrorType.SERVER)
-  })
-
-  it('should be compatible with detectErrorType for 503 errors', () => {
-    const error = new PayloadAPIError('Service unavailable', 503)
-    expect(detectErrorType(error)).toBe(ErrorType.SERVER)
-  })
-
-  it('should be compatible with detectErrorType for client errors', () => {
-    const error = new PayloadAPIError('Not found', 404)
-    expect(detectErrorType(error)).toBe(ErrorType.CLIENT)
-  })
-
-  it('should be compatible with detectErrorType for 401 errors', () => {
-    const error = new PayloadAPIError('Unauthorized', 401)
-    expect(detectErrorType(error)).toBe(ErrorType.CLIENT)
-  })
-})
+import { validateSDKResponse } from './payload-client'
 
 describe('validateSDKResponse', () => {
   describe('throws on invalid responses', () => {
-    it('should throw PayloadAPIError when result is undefined', () => {
+    it('should throw Error when result is undefined', () => {
       expect(() => validateSDKResponse(undefined, 'getPage'))
-        .toThrow(PayloadAPIError)
+        .toThrow(Error)
       expect(() => validateSDKResponse(undefined, 'getPage'))
         .toThrow('PayloadCMS SDK returned undefined: getPage')
     })
 
-    it('should throw PayloadAPIError when result is null', () => {
+    it('should throw Error when result is null', () => {
       expect(() => validateSDKResponse(null, 'getMeditation'))
-        .toThrow(PayloadAPIError)
+        .toThrow(Error)
       expect(() => validateSDKResponse(null, 'getMeditation'))
         .toThrow('PayloadCMS SDK returned undefined: getMeditation')
     })
@@ -72,8 +25,8 @@ describe('validateSDKResponse', () => {
       try {
         validateSDKResponse(undefined, 'getPageBySlug(home)')
       } catch (error) {
-        expect(error).toBeInstanceOf(PayloadAPIError)
-        expect((error as PayloadAPIError).message).toContain('getPageBySlug(home)')
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error).message).toContain('getPageBySlug(home)')
       }
     })
   })
