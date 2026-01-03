@@ -172,7 +172,6 @@ The PayloadCMS REST API client is located in [server/cms-client.ts](server/cms-c
 - `createPayloadClient()` - Creates configured PayloadCMS SDK instance
 - `PayloadAPIError` - Error class compatible with retry logic in error-utils.ts
 - `validateSDKResponse()` - Handles SDK bug where errors return undefined instead of throwing
-- `toSDKLocale()` - Converts app locale format (`pt_br`) to SDK format (`pt-br`)
 
 **Type Definitions**: PayloadCMS schema types are in [server/payload-types.ts](server/payload-types.ts), with app-specific types in [server/cms-types.ts](server/cms-types.ts)
 
@@ -399,7 +398,7 @@ These enable page transition animations (currently minimal implementation).
          const result = await client.find({
            collection: 'content',
            where: { slug: { equals: options.slug } },
-           locale: toSDKLocale(options.locale),
+           locale: options.locale,
            depth: 2,
          })
 

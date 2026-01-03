@@ -4,7 +4,7 @@
  * and custom properties added by hooks like onBeforeRoute.
  */
 
-import type { Locale } from '@/lib/i18n'
+import type { Locale } from '../server/cms-types'
 
 declare global {
   namespace Vike {
@@ -15,7 +15,7 @@ declare global {
       /** Cloudflare Workers runtime context */
       cloudflare?: {
         env?: {
-          /** Cloudflare KV namespace for caching GraphQL responses */
+          /** Cloudflare KV namespace for caching API responses */
           WEMEDITATE_CACHE?: KVNamespace
         }
       }

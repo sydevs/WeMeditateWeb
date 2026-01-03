@@ -6,7 +6,6 @@ import { describe, it, expect } from 'vitest'
 import {
   PayloadAPIError,
   validateSDKResponse,
-  toSDKLocale,
 } from './payload-client'
 import { detectErrorType, ErrorType } from './error-utils'
 
@@ -120,58 +119,6 @@ describe('validateSDKResponse', () => {
     it('should return empty array (valid)', () => {
       const result = validateSDKResponse([], 'getPages')
       expect(result).toEqual([])
-    })
-  })
-})
-
-describe('toSDKLocale', () => {
-  describe('converts underscore to hyphen format', () => {
-    it('should convert pt_br to pt-br', () => {
-      expect(toSDKLocale('pt_br')).toBe('pt-br')
-    })
-
-    it('should convert zh_cn to zh-cn', () => {
-      expect(toSDKLocale('zh_cn')).toBe('zh-cn')
-    })
-
-    it('should convert zh_tw to zh-tw', () => {
-      expect(toSDKLocale('zh_tw')).toBe('zh-tw')
-    })
-  })
-
-  describe('handles locales without underscore', () => {
-    it('should pass through en unchanged', () => {
-      expect(toSDKLocale('en')).toBe('en')
-    })
-
-    it('should pass through es unchanged', () => {
-      expect(toSDKLocale('es')).toBe('es')
-    })
-
-    it('should pass through de unchanged', () => {
-      expect(toSDKLocale('de')).toBe('de')
-    })
-
-    it('should pass through fr unchanged', () => {
-      expect(toSDKLocale('fr')).toBe('fr')
-    })
-
-    it('should pass through ru unchanged', () => {
-      expect(toSDKLocale('ru')).toBe('ru')
-    })
-
-    it('should pass through uk unchanged', () => {
-      expect(toSDKLocale('uk')).toBe('uk')
-    })
-  })
-
-  describe('handles already hyphenated locales', () => {
-    it('should pass through pt-br unchanged', () => {
-      expect(toSDKLocale('pt-br')).toBe('pt-br')
-    })
-
-    it('should pass through zh-cn unchanged', () => {
-      expect(toSDKLocale('zh-cn')).toBe('zh-cn')
     })
   })
 })

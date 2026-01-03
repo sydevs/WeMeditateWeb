@@ -66,23 +66,6 @@ export function createPayloadClient(config: PayloadClientConfig) {
 export type PayloadClient = ReturnType<typeof createPayloadClient>
 
 /**
- * SDK locale type extracted from Config for type safety.
- * The SDK uses hyphen format (pt-br) while our app uses underscore format (pt_br).
- */
-export type SDKLocale = NonNullable<Parameters<PayloadClient['find']>[0]['locale']>
-
-/**
- * Converts app locale format (underscore) to SDK locale format (hyphen).
- *
- * @param locale - App locale string (e.g., 'pt_br')
- * @returns SDK-compatible locale string (e.g., 'pt-br')
- */
-export function toSDKLocale(locale: string): SDKLocale {
-  // Convert underscore to hyphen for SDK compatibility
-  return locale.replace('_', '-') as SDKLocale
-}
-
-/**
  * Validates SDK response and throws if undefined/null.
  *
  * The PayloadCMS SDK has a known bug where it returns undefined on error

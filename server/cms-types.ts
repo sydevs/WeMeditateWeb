@@ -8,6 +8,7 @@
 
 // Import base types for extending
 import type {
+  Config,
   Page,
   Meditation,
   Music,
@@ -62,30 +63,11 @@ export interface WeMeditateWebSettings extends Omit<WeMeditateWebSetting,
   liveMeditationsPage: Page
 }
 
-// Type alias for backwards compatibility (Image -> MediaImage)
-export type { Image as MediaImage } from './payload-types'
-
 /**
- * Available locales in the PayloadCMS system.
- * This is defined manually since the generated types don't include locale enums.
+ * Available locales extracted from PayloadCMS Config.
+ * Uses hyphen format (e.g., 'pt-br') matching PayloadCMS and URL patterns.
  */
-export type Locale =
-  | 'en'
-  | 'es'
-  | 'de'
-  | 'it'
-  | 'fr'
-  | 'ru'
-  | 'ro'
-  | 'cs'
-  | 'uk'
-  | 'el'
-  | 'hy'
-  | 'pl'
-  | 'pt_br'
-  | 'fa'
-  | 'bg'
-  | 'tr'
+export type Locale = Config['locale']
 
 /**
  * Page status enum

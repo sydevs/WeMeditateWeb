@@ -3,6 +3,19 @@
  *
  * This module provides the same API as the previous GraphQL client,
  * ensuring a seamless migration for consuming code.
+ *
+ * ## Error Handling Strategy
+ *
+ * All functions convert SDK errors to PayloadAPIError for retry compatibility:
+ * - **Single item queries** (getPageBySlug, getPageById, getMeditationById):
+ *   Return null for empty results, throw PayloadAPIError for network/SDK errors.
+ * - **Global queries** (getWeMeditateWebSettings):
+ *   Use validateSDKResponse() since settings must exist.
+ * - **List queries** (getPagesByTags, getMeditationsByTags, getMusicByTags):
+ *   Return empty array for empty results, throw PayloadAPIError for errors.
+ *
+ * This ensures the retry logic in error-utils.ts can properly retry
+ * network and server errors across all query types.
  */
 
 import type { KVNamespace } from '@cloudflare/workers-types'
@@ -10,7 +23,6 @@ import {
   createPayloadClient,
   validateSDKResponse,
   PayloadAPIError,
-  toSDKLocale,
 } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
 import type {
@@ -57,7 +69,7 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
 }): Promise<Page | null> {
   const cacheKey = generateCacheKey('page', {
     slug: options.slug,
-    locale: toSDKLocale(options.locale),
+    locale: options.locale,
   })
 
   return withCache({
@@ -76,7 +88,7 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
           where: {
             slug: { equals: options.slug },
           },
-          locale: toSDKLocale(options.locale),
+          locale: options.locale,
           limit: 1,
           depth: 2,
         })
@@ -118,7 +130,7 @@ export async function getPageById(options: LocalizedQueryOptions & {
 }): Promise<Page | null> {
   const cacheKey = generateCacheKey('page', {
     id: options.id,
-    locale: toSDKLocale(options.locale),
+    locale: options.locale,
   })
 
   return withCache({
@@ -136,15 +148,18 @@ export async function getPageById(options: LocalizedQueryOptions & {
         const result = await client.findByID({
           collection: 'pages',
           id: options.id,
-          locale: toSDKLocale(options.locale),
+          locale: options.locale,
           depth: 2,
         })
 
         if (!result) return null
         return result as Page
-      } catch {
-        // Page not found or other error
-        return null
+      } catch (error) {
+        // Convert SDK errors to PayloadAPIError for retry compatibility
+        if (error instanceof Error) {
+          throw new PayloadAPIError(error.message, 500)
+        }
+        throw error
       }
     },
   })
@@ -168,7 +183,7 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
 }): Promise<Meditation | null> {
   const cacheKey = generateCacheKey('meditation', {
     id: options.id,
-    locale: toSDKLocale(options.locale),
+    locale: options.locale,
   })
 
   return withCache({
@@ -186,15 +201,18 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
         const result = await client.findByID({
           collection: 'meditations',
           id: options.id,
-          locale: toSDKLocale(options.locale),
+          locale: options.locale,
           depth: 2,
         })
 
         if (!result) return null
         return result as Meditation
-      } catch {
-        // Meditation not found or other error
-        return null
+      } catch (error) {
+        // Convert SDK errors to PayloadAPIError for retry compatibility
+        if (error instanceof Error) {
+          throw new PayloadAPIError(error.message, 500)
+        }
+        throw error
       }
     },
   })
@@ -276,7 +294,7 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
 
   const cacheKey = generateCacheKey('pages-by-tags', {
     tagIds: options.tagIds,
-    locale: toSDKLocale(options.locale),
+    locale: options.locale,
     limit,
   })
 
@@ -294,7 +312,7 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
         const result = await client.find({
           collection: 'pages',
           where: { tags: { in: options.tagIds } },
-          locale: toSDKLocale(options.locale),
+          locale: options.locale,
           limit,
           depth: 2,
         })
@@ -306,8 +324,12 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
           title: page.title ?? null,
           meta: page.meta ? { image: page.meta.image ?? null } : null,
         })) as PageListItem[]
-      } catch {
-        return []
+      } catch (error) {
+        // Convert SDK errors to PayloadAPIError for retry compatibility
+        if (error instanceof Error) {
+          throw new PayloadAPIError(error.message, 500)
+        }
+        throw error
       }
     },
   })
@@ -333,7 +355,7 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
 
   const cacheKey = generateCacheKey('meditations-by-tags', {
     tagIds: options.tagIds,
-    locale: toSDKLocale(options.locale),
+    locale: options.locale,
     limit,
   })
 
@@ -351,7 +373,7 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
         const result = await client.find({
           collection: 'meditations',
           where: { tags: { in: options.tagIds } },
-          locale: toSDKLocale(options.locale),
+          locale: options.locale,
           limit,
           depth: 2,
         })
@@ -363,8 +385,12 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
           title: meditation.title ?? null,
           thumbnail: meditation.thumbnail ?? null,
         })) as MeditationListItem[]
-      } catch {
-        return []
+      } catch (error) {
+        // Convert SDK errors to PayloadAPIError for retry compatibility
+        if (error instanceof Error) {
+          throw new PayloadAPIError(error.message, 500)
+        }
+        throw error
       }
     },
   })
@@ -390,7 +416,7 @@ export async function getMusicByTags(options: LocalizedQueryOptions & {
 
   const cacheKey = generateCacheKey('music-by-tags', {
     tagIds: options.tagIds,
-    locale: toSDKLocale(options.locale),
+    locale: options.locale,
     limit,
   })
 
@@ -408,15 +434,19 @@ export async function getMusicByTags(options: LocalizedQueryOptions & {
         const result = await client.find({
           collection: 'music',
           where: { tags: { in: options.tagIds } },
-          locale: toSDKLocale(options.locale),
+          locale: options.locale,
           limit,
           depth: 2,
         })
 
         if (!result?.docs) return []
         return result.docs as Music[]
-      } catch {
-        return []
+      } catch (error) {
+        // Convert SDK errors to PayloadAPIError for retry compatibility
+        if (error instanceof Error) {
+          throw new PayloadAPIError(error.message, 500)
+        }
+        throw error
       }
     },
   })
