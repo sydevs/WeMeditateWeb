@@ -3,8 +3,8 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { Page, WeMeditateWebSettings } from '../../server/graphql-types'
-import { getPageBySlug, getWeMeditateWebSettings } from '../../server/graphql-client'
+import type { Page, WeMeditateWebSettings } from '../../server/cms-types'
+import { getPageBySlug, getWeMeditateWebSettings } from '../../server/cms-client'
 import { render } from 'vike/abort'
 
 export interface PageData {
@@ -27,7 +27,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   // Fetch WeMeditateWebSettings
   const settings = await getWeMeditateWebSettings({
     apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
+    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
     kv,
   })
 
@@ -36,7 +36,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     slug,
     locale,
     apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
+    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
     kv,
   })
 

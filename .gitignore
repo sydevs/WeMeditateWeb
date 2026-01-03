@@ -147,3 +147,6 @@ cdk.out
 
 # Mac OS
 .DS_Store
+
+# OpenAPI for SahajCloud
+sahajcloud-api.json

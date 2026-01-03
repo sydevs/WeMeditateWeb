@@ -6,7 +6,7 @@ import { Header } from "../components/organisms/Header";
 import { Footer } from "../components/organisms/Footer";
 import { useData } from "vike-react/useData";
 import { usePageContext } from "vike-react/usePageContext";
-import { WeMeditateWebSettings } from "../server/graphql-types";
+import type { WeMeditateWebSettings } from "../server/cms-types";
 import * as Sentry from "@sentry/react";
 
 /**

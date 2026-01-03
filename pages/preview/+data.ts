@@ -14,8 +14,8 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { Page, Meditation, WeMeditateWebSettings, Locale } from '../../server/graphql-types'
-import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/graphql-client'
+import type { Page, Meditation, WeMeditateWebSettings, Locale } from '../../server/cms-types'
+import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/cms-client'
 import { render } from 'vike/abort'
 import type { KVNamespace } from '@cloudflare/workers-types'
 
@@ -37,7 +37,7 @@ export type PreviewPageData =
     }
 
 /**
- * Registry mapping collection names to their GraphQL fetcher functions
+ * Registry mapping collection names to their REST API fetcher functions
  */
 const PREVIEW_FETCHERS = {
   pages: getPageById,
@@ -74,7 +74,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   // Fetch WeMeditateWebSettings (shared across all content types)
   const settings = await getWeMeditateWebSettings({
     apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
+    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
     kv: cloudflare?.env?.WEMEDITATE_CACHE,
   })
 
@@ -84,7 +84,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     id,
     locale,
     apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    endpoint: import.meta.env.PUBLIC__SAHAJCLOUD_URL + '/api/graphql',
+    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
     kv: cloudflare?.env?.WEMEDITATE_CACHE,
     bypassCache: true,  // Always fetch fresh data in preview mode
   })

@@ -2238,7 +2238,5 @@ export interface Auth {
   [k: string]: unknown;
 }
 
-
-declare module 'payload' {
-  export interface GeneratedTypes extends Config {}
-}
+// Module augmentation removed - 'payload' package is not installed in this project.
+// This file is used only for type definitions via @payloadcms/sdk.

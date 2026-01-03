@@ -14,8 +14,22 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import { Meditation } from '../../server/graphql-types'
+import type { Meditation, Image } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
+
+/**
+ * Type guard to check if a relationship field is a populated object (not just an ID)
+ */
+function isPopulatedImage(value: number | Image | null | undefined): value is Image {
+  return typeof value === 'object' && value !== null && 'url' in value
+}
+
+/**
+ * Safely get URL from an image relationship field that may be populated or just an ID
+ */
+function getImageUrl(image: number | Image | null | undefined): string | undefined {
+  return isPopulatedImage(image) ? image.url ?? undefined : undefined
+}
 
 export interface MeditationTemplateProps {
   /**
@@ -41,29 +55,33 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: Meditat
     } catch (error) {
       console.error('Failed to parse meditation frames:', error)
       // Fallback: use thumbnail as single frame if available
-      if (meditation.thumbnail?.url) {
+      const thumbnailUrl = getImageUrl(meditation.thumbnail)
+      if (thumbnailUrl) {
         frames = [
           {
             timestamp: 0,
             media: {
               type: 'image',
-              src: meditation.thumbnail.url,
+              src: thumbnailUrl,
             },
           },
         ]
       }
     }
-  } else if (meditation.thumbnail?.url) {
+  } else {
     // No frames provided, use thumbnail as fallback
-    frames = [
-      {
-        timestamp: 0,
-        media: {
-          type: 'image',
-          src: meditation.thumbnail.url,
+    const thumbnailUrl = getImageUrl(meditation.thumbnail)
+    if (thumbnailUrl) {
+      frames = [
+        {
+          timestamp: 0,
+          media: {
+            type: 'image',
+            src: thumbnailUrl,
+          },
         },
-      },
-    ]
+      ]
+    }
   }
 
   // Validate required fields
@@ -87,7 +105,7 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: Meditat
           title: meditation.title || 'Untitled Meditation',
           credit: '',
           creditURL: '',
-          thumbnailURL: meditation.thumbnail?.url || '',
+          thumbnailURL: getImageUrl(meditation.thumbnail) || '',
           duration: 0, // Duration will be detected by audio player
         }}
         title={meditation.title || 'Untitled Meditation'}
