@@ -1,23 +1,19 @@
 /**
- * Data fetching for preview mode - supports multiple content types (pages, meditations, etc.)
+ * Data fetching for embed preview mode - supports all content types
  *
- * This endpoint handles SahajCloud live preview for any collection type.
- * Uses LayoutDefault (full chrome with Header/Footer) which requires WeMeditateWebSettings.
+ * This endpoint is similar to /preview but uses LayoutEmbed (no Header/Footer).
+ * Unlike /preview, this does NOT fetch WeMeditateWebSettings since LayoutEmbed
+ * doesn't require them.
  *
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
  * - id: Document ID to preview
- *
- * Adding a new content type:
- * 1. Add to PREVIEW_FETCHERS object below
- * 2. Add to the discriminated union types in _components/types.ts
- * 3. Add rendering logic in +Page.tsx
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/cms-client'
+import { getPageById, getMeditationById } from '../../../server/cms-client'
 import { render } from 'vike/abort'
-import { type CollectionType, type FullPreviewData } from './_components'
+import { type CollectionType, type BasePreviewData } from '../_components'
 
 /**
  * Registry mapping collection names to their REST API fetcher functions
@@ -31,9 +27,9 @@ const PREVIEW_FETCHERS = {
 } as const
 
 // Re-export for use in +Page.tsx
-export type PreviewPageData = FullPreviewData
+export type EmbedPreviewPageData = BasePreviewData
 
-export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
+export async function data(pageContext: PageContextServer): Promise<EmbedPreviewPageData> {
   // Extract URL parameters
   const { search: { collection, id } } = pageContext.urlParsed
   const { locale } = pageContext
@@ -58,19 +54,18 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
 
   const fetchById = PREVIEW_FETCHERS[collection as CollectionType]
 
-  // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
-  const settings = await getWeMeditateWebSettings()
+  // NOTE: Unlike /preview, we do NOT fetch WeMeditateWebSettings here
+  // because LayoutEmbed doesn't require them (no Header/Footer)
 
   // Fetch content using the collection-specific fetcher
   // Always bypass cache in preview mode to ensure fresh data
   const data = await fetchById({
     id,
     locale,
-    bypassCache: true,  // Always fetch fresh data in preview mode
+    bypassCache: true,
   })
 
   if (!data) {
-    // Content not found - this is a valid 404 state, not an error
     throw render(404, `${collection} content not found.`)
   }
 
@@ -79,6 +74,5 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     collection: collection as CollectionType,
     initialData: data,
     locale,
-    settings,
-  } as PreviewPageData
+  } as EmbedPreviewPageData
 }
