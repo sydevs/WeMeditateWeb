@@ -15,6 +15,7 @@
 import { KVNamespace } from "@cloudflare/workers-types"
 import * as Sentry from "@sentry/react"
 import { withRetry, type RetryConfig } from './error-utils'
+import { getCmsContext } from './cms-context'
 
 /**
  * Default TTL values in seconds
@@ -168,18 +169,17 @@ function getRetryConfig(): RetryConfig {
  * If caching fails, the query function is executed and the result is returned without caching.
  *
  * @param options - Cache configuration options
- * @param options.kv - Cloudflare KV namespace (optional, bypasses caching if not provided)
  * @param options.cacheKey - Cache key to use
  * @param options.ttl - Time to live in seconds
- * @param options.fetchFn - Async function that executes the GraphQL query
+ * @param options.fetchFn - Async function that executes the query
  * @param options.bypassCache - If true, skip cache read/write (useful for preview mode)
  * @param options.retryConfig - Optional retry configuration (overrides env defaults)
  * @returns The query result (either from cache or fresh)
  *
  * @example
  * ```typescript
+ * // KV is automatically retrieved from context:
  * const page = await withCache({
- *   kv,
  *   cacheKey: generateCacheKey('page', { slug: 'home', locale: 'en' }),
  *   ttl: CacheTTL.PAGE,
  *   fetchFn: async () => await client.request(query, variables)
@@ -187,32 +187,24 @@ function getRetryConfig(): RetryConfig {
  *
  * // For preview mode (bypass cache, still retries):
  * const previewPage = await withCache({
- *   kv,
  *   cacheKey: generateCacheKey('page', { id: '123', locale: 'en' }),
  *   ttl: CacheTTL.PAGE,
  *   fetchFn: async () => await client.request(query, variables),
  *   bypassCache: true
  * })
- *
- * // Custom retry configuration:
- * const page = await withCache({
- *   kv,
- *   cacheKey: generateCacheKey('page', { slug: 'home', locale: 'en' }),
- *   ttl: CacheTTL.PAGE,
- *   fetchFn: async () => await client.request(query, variables),
- *   retryConfig: { maxAttempts: 5, baseDelayMs: 500 }
- * })
  * ```
  */
 export async function withCache<T>(options: {
-  kv: KVNamespace | undefined
   cacheKey: string
   ttl: number
   fetchFn: () => Promise<T>
   bypassCache?: boolean
   retryConfig?: RetryConfig
 }): Promise<T> {
-  const { kv, cacheKey, ttl, fetchFn, bypassCache = false, retryConfig } = options
+  const { cacheKey, ttl, fetchFn, bypassCache = false, retryConfig } = options
+
+  // Get KV from CMS context (may be undefined in local dev)
+  const { kv } = getCmsContext()
 
   // Get retry configuration (use provided config or env defaults)
   const finalRetryConfig = retryConfig || getRetryConfig()

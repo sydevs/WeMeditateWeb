@@ -1,8 +1,9 @@
 /**
  * CMS API client functions using PayloadCMS REST API.
  *
- * This module provides the same API as the previous GraphQL client,
- * ensuring a seamless migration for consuming code.
+ * This module provides query functions for fetching content from PayloadCMS.
+ * Configuration (apiKey, baseURL, kv) is automatically retrieved from the
+ * request context - no need to pass these values explicitly.
  *
  * ## Error Handling Strategy
  *
@@ -18,7 +19,6 @@
  * detectErrorType() in error-utils.ts via message pattern matching.
  */
 
-import type { KVNamespace } from '@cloudflare/workers-types'
 import {
   createPayloadClient,
   validateSDKResponse,
@@ -38,13 +38,7 @@ import type {
 // Common Options Interfaces
 // ============================================================================
 
-interface BaseQueryOptions {
-  apiKey: string
-  baseURL?: string
-  kv?: KVNamespace
-}
-
-interface LocalizedQueryOptions extends BaseQueryOptions {
+interface LocalizedQueryOptions {
   locale: Locale
 }
 
@@ -56,11 +50,8 @@ interface LocalizedQueryOptions extends BaseQueryOptions {
  * Retrieves a specific page by slug and locale.
  *
  * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.slug - The page slug to search for
  * @param options.locale - The locale to retrieve the page in
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns The page data or null if not found
  */
 export async function getPageBySlug(options: LocalizedQueryOptions & {
@@ -72,14 +63,10 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
   })
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.PAGE,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.find({
         collection: 'pages',
@@ -107,11 +94,8 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
  * When used in preview mode, set bypassCache to true to ensure fresh data.
  *
  * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.id - The page ID to retrieve
  * @param options.locale - The locale to retrieve the page in
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @param options.bypassCache - If true, bypass cache (useful for preview mode)
  * @returns The page data or null if not found
  */
@@ -125,15 +109,11 @@ export async function getPageById(options: LocalizedQueryOptions & {
   })
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.PAGE,
     bypassCache: options.bypassCache,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.findByID({
         collection: 'pages',
@@ -152,11 +132,8 @@ export async function getPageById(options: LocalizedQueryOptions & {
  * Retrieves a specific meditation by ID.
  *
  * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.id - The meditation ID to retrieve
  * @param options.locale - The locale to retrieve the meditation in
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @param options.bypassCache - If true, bypass cache (useful for preview mode)
  * @returns The meditation data or null if not found
  */
@@ -170,15 +147,11 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
   })
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.MEDITATION,
     bypassCache: options.bypassCache,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.findByID({
         collection: 'meditations',
@@ -203,26 +176,16 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
  * This is a singleton global configuration that contains references to important
  * pages throughout the site (home page, featured pages, chakra pages, etc.).
  *
- * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns The web settings configuration
  */
-export async function getWeMeditateWebSettings(
-  options: BaseQueryOptions
-): Promise<WeMeditateWebSettings> {
+export async function getWeMeditateWebSettings(): Promise<WeMeditateWebSettings> {
   const cacheKey = generateCacheKey('settings', {})
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.SETTINGS,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.findGlobal({
         slug: 'we-meditate-web-settings',
@@ -245,12 +208,9 @@ export async function getWeMeditateWebSettings(
  * Retrieves a list of pages filtered by tags (minimal data: id, title, thumbnail).
  *
  * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.tagIds - Array of tag IDs to filter by
  * @param options.locale - The locale to retrieve pages in
  * @param options.limit - Maximum number of pages to return (default: 100)
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns Array of page list items
  */
 export async function getPagesByTags(options: LocalizedQueryOptions & {
@@ -266,14 +226,10 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
   })
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.LIST,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.find({
         collection: 'pages',
@@ -298,12 +254,9 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
  * Retrieves a list of meditations filtered by tags (minimal data: id, title, thumbnail).
  *
  * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.tagIds - Array of tag IDs to filter by
  * @param options.locale - The locale to retrieve meditations in
  * @param options.limit - Maximum number of meditations to return (default: 100)
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns Array of meditation list items
  */
 export async function getMeditationsByTags(options: LocalizedQueryOptions & {
@@ -319,14 +272,10 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
   })
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.LIST,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.find({
         collection: 'meditations',
@@ -351,12 +300,9 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
  * Retrieves a list of music filtered by tags (full music data).
  *
  * @param options - Query options
- * @param options.apiKey - PayloadCMS API key for authentication
  * @param options.tagIds - Array of tag IDs to filter by
  * @param options.locale - The locale to retrieve music in
  * @param options.limit - Maximum number of music items to return (default: 100)
- * @param options.baseURL - Optional base URL for the CMS API
- * @param options.kv - Optional Cloudflare KV namespace for caching
  * @returns Array of music items
  */
 export async function getMusicByTags(options: LocalizedQueryOptions & {
@@ -372,14 +318,10 @@ export async function getMusicByTags(options: LocalizedQueryOptions & {
   })
 
   return withCache({
-    kv: options.kv,
     cacheKey,
     ttl: CacheTTL.MUSIC,
     fetchFn: async () => {
-      const client = createPayloadClient({
-        apiKey: options.apiKey,
-        baseURL: options.baseURL,
-      })
+      const client = createPayloadClient()
 
       const result = await client.find({
         collection: 'music',

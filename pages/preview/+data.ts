@@ -14,10 +14,9 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import type { Page, Meditation, WeMeditateWebSettings, Locale } from '../../server/cms-types'
+import type { Page, Meditation, WeMeditateWebSettings } from '../../server/cms-types'
 import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/cms-client'
 import { render } from 'vike/abort'
-import type { KVNamespace } from '@cloudflare/workers-types'
 
 /**
  * Discriminated union for preview data based on collection type
@@ -49,7 +48,7 @@ type CollectionType = keyof typeof PREVIEW_FETCHERS
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
   // Extract URL parameters
   const { search: { collection, id } } = pageContext.urlParsed
-  const { cloudflare, locale } = pageContext
+  const { locale } = pageContext
 
   // Validate required parameters
   if (!collection) {
@@ -72,20 +71,13 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   const fetchById = PREVIEW_FETCHERS[collection as CollectionType]
 
   // Fetch WeMeditateWebSettings (shared across all content types)
-  const settings = await getWeMeditateWebSettings({
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
-    kv: cloudflare?.env?.WEMEDITATE_CACHE,
-  })
+  const settings = await getWeMeditateWebSettings()
 
   // Fetch content using the collection-specific fetcher
   // Always bypass cache in preview mode to ensure fresh data
   const data = await fetchById({
     id,
     locale,
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
-    kv: cloudflare?.env?.WEMEDITATE_CACHE,
     bypassCache: true,  // Always fetch fresh data in preview mode
   })
 

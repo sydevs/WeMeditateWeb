@@ -14,33 +14,13 @@ export interface MeditationPageData {
  * Fetch meditation data by ID for server-side rendering
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationPageData> {
-  const {
-    cloudflare,
-    locale,
-    routeParams: { id },
-  } = pageContext
+  const { locale, routeParams: { id } } = pageContext
 
-  // Access Cloudflare KV namespace for caching
-  const kv = cloudflare?.env?.WEMEDITATE_CACHE
-
-  const apiKey = import.meta.env.SAHAJCLOUD_API_KEY
-  const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL
-
-  // Fetch global settings (cached 24 hours)
-  const settings = await getWeMeditateWebSettings({
-    apiKey,
-    baseURL,
-    kv,
-  })
-
-  // Fetch meditation by ID (cached 1 hour)
-  const meditation = await getMeditationById({
-    id,
-    locale,
-    apiKey,
-    baseURL,
-    kv,
-  })
+  // Fetch global settings and meditation in parallel
+  const [settings, meditation] = await Promise.all([
+    getWeMeditateWebSettings(),
+    getMeditationById({ id, locale }),
+  ])
 
   if (!meditation) {
     // Meditation not found - throw 404

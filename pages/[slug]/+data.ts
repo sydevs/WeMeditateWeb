@@ -15,30 +15,13 @@ export interface PageData {
 }
 
 export async function data(pageContext: PageContextServer): Promise<PageData> {
-  const {
-    cloudflare,
-    locale,
-    routeParams: { slug },
-  } = pageContext
+  const { locale, routeParams: { slug } } = pageContext
 
-  // Access Cloudflare KV namespace for caching
-  const kv = cloudflare?.env?.WEMEDITATE_CACHE
-
-  // Fetch WeMeditateWebSettings
-  const settings = await getWeMeditateWebSettings({
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
-    kv,
-  })
-
-  // Fetch page by slug
-  const page = await getPageBySlug({
-    slug,
-    locale,
-    apiKey: import.meta.env.SAHAJCLOUD_API_KEY,
-    baseURL: import.meta.env.PUBLIC__SAHAJCLOUD_URL,
-    kv,
-  })
+  // Fetch WeMeditateWebSettings and page by slug
+  const [settings, page] = await Promise.all([
+    getWeMeditateWebSettings(),
+    getPageBySlug({ slug, locale }),
+  ])
 
   if (!page) {
     // Page not found - this is a valid 404 state, not an error

@@ -10,14 +10,16 @@
 
 import { PayloadSDK } from '@payloadcms/sdk'
 import type { Config } from './payload-types'
+import { getCmsContext } from './cms-context'
 
 /**
- * Configuration for creating a PayloadCMS SDK client
+ * Configuration for creating a PayloadCMS SDK client.
+ * All fields are optional - defaults come from CMS context/environment.
  */
 export interface PayloadClientConfig {
-  /** PayloadCMS API key for authentication */
-  apiKey: string
-  /** Base URL for the PayloadCMS API (without /api suffix) */
+  /** PayloadCMS API key (optional - falls back to context/env) */
+  apiKey?: string
+  /** Base URL for the PayloadCMS API (optional - falls back to context/env) */
   baseURL?: string
 }
 
@@ -39,7 +41,7 @@ export class PayloadConfigError extends Error {
  * Validates PayloadCMS configuration before making API requests.
  * Provides clear error messages for common configuration issues.
  *
- * @param config - Configuration to validate
+ * @param config - Configuration to validate (should already have resolved values)
  * @throws PayloadConfigError with descriptive message if configuration is invalid
  */
 export function validatePayloadConfig(config: {
@@ -55,13 +57,12 @@ export function validatePayloadConfig(config: {
   }
 
   // Validate URL format if provided
-  const baseURL = config.baseURL || import.meta.env.PUBLIC__SAHAJCLOUD_URL
-  if (baseURL) {
+  if (config.baseURL) {
     try {
-      new URL(baseURL)
+      new URL(config.baseURL)
     } catch {
       throw new PayloadConfigError(
-        `Invalid PayloadCMS URL: "${baseURL}". URL must include protocol (e.g., https://cms.example.com).`,
+        `Invalid PayloadCMS URL: "${config.baseURL}". URL must include protocol (e.g., https://cms.example.com).`,
         400
       )
     }
@@ -74,25 +75,26 @@ export function validatePayloadConfig(config: {
  * IMPORTANT: Always create a new client instance per request when using
  * Cloudflare Workers to ensure proper I/O context isolation.
  *
- * @param config - Client configuration with API key and optional base URL
+ * @param config - Optional client configuration. Defaults come from CMS context/environment.
  * @returns Configured PayloadSDK instance
  * @throws PayloadConfigError if configuration is invalid (missing API key, malformed URL)
  */
-export function createPayloadClient(config: PayloadClientConfig) {
+export function createPayloadClient(config: PayloadClientConfig = {}) {
+  // Get defaults from CMS context if not provided in config
+  const cmsContext = getCmsContext()
+
+  const apiKey = config.apiKey ?? cmsContext.apiKey
+  const baseURL = config.baseURL ?? cmsContext.baseURL
+
   // Validate configuration before creating client
   // This provides clear error messages for common misconfiguration issues
-  validatePayloadConfig(config)
-
-  const baseURL =
-    config.baseURL ||
-    import.meta.env.PUBLIC__SAHAJCLOUD_URL ||
-    'http://localhost:3000'
+  validatePayloadConfig({ apiKey, baseURL })
 
   return new PayloadSDK<Config>({
     baseURL: `${baseURL}/api`,
     baseInit: {
       headers: {
-        Authorization: `clients API-Key ${config.apiKey}`,
+        Authorization: `clients API-Key ${apiKey}`,
       },
     },
   })
