@@ -18,6 +18,8 @@ import type { KVNamespace } from '@cloudflare/workers-types'
  */
 export type CmsEnv = {
   Bindings: {
+    SAHAJCLOUD_API_KEY?: string
+    PUBLIC__SAHAJCLOUD_URL?: string
     WEMEDITATE_CACHE?: KVNamespace
   }
 }
@@ -49,8 +51,8 @@ function tryGetContext(): Context<CmsEnv> | undefined {
  * Gets CMS configuration from Hono's context storage.
  *
  * This function attempts to retrieve apiKey, baseURL, and kv from:
- * 1. Hono context bindings (Cloudflare Workers runtime)
- * 2. import.meta.env fallback (Vite dev server)
+ * 1. Hono context bindings (Cloudflare Workers runtime - secrets & env vars)
+ * 2. import.meta.env fallback (Vite dev server - .env.local)
  *
  * @returns CMS configuration with apiKey, baseURL, and optional kv
  * @throws Error if apiKey is not available from any source
@@ -59,8 +61,9 @@ export function getCmsContext(): CmsContext {
   // Try to get context from Hono's AsyncLocalStorage
   const context = tryGetContext()
 
-  // Get apiKey from import.meta.env (always available at build time)
-  const apiKey = import.meta.env.SAHAJCLOUD_API_KEY
+  // Get apiKey: first from Cloudflare Workers context (secrets), then import.meta.env (dev)
+  const apiKey =
+    context?.env?.SAHAJCLOUD_API_KEY || import.meta.env.SAHAJCLOUD_API_KEY
 
   if (!apiKey) {
     throw new Error(
@@ -68,9 +71,11 @@ export function getCmsContext(): CmsContext {
     )
   }
 
-  // Get baseURL from import.meta.env with fallback
+  // Get baseURL: first from Cloudflare Workers context, then import.meta.env, then default
   const baseURL =
-    import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
+    context?.env?.PUBLIC__SAHAJCLOUD_URL ||
+    import.meta.env.PUBLIC__SAHAJCLOUD_URL ||
+    'http://localhost:3000'
 
   // Get KV from context bindings (undefined in dev or when context unavailable)
   const kv = context?.env?.WEMEDITATE_CACHE
