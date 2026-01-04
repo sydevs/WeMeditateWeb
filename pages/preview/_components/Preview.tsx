@@ -19,15 +19,10 @@ export interface PreviewProps {
 }
 
 export function Preview({ collection, locale, initialData }: PreviewProps) {
-  return (
-    <>
-      <PreviewBanner collection={collection} locale={locale} />
-
-      {/* Content with top padding to account for fixed banner */}
-      <div className="pt-20 min-h-screen">
-        {collection === 'pages' && <PagePreview initialData={initialData as Page} />}
-        {collection === 'meditations' && <MeditationPreview initialData={initialData as Meditation} />}
-      </div>
-    </>
-  )
+  switch (collection) {
+    case 'pages':
+      return <PagePreview initialData={initialData as Page} />
+    case 'meditations':
+      return <MeditationPreview initialData={initialData as Meditation} />
+  }
 }

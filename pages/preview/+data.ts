@@ -67,6 +67,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     id,
     locale,
     bypassCache: true,  // Always fetch fresh data in preview mode
+    draft: true,  // Fetch draft documents for live preview
   })
 
   if (!data) {

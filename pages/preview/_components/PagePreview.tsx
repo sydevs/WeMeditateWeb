@@ -26,9 +26,5 @@ export function PagePreview({ initialData }: PagePreviewProps) {
 
   const pageData = liveData || initialData
 
-  return (
-    <div className="py-12 px-4">
-      <PageTemplate page={pageData} />
-    </div>
-  )
+  return <PageTemplate page={pageData} />
 }

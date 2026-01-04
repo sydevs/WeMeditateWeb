@@ -102,6 +102,7 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
 export async function getPageById(options: LocalizedQueryOptions & {
   id: string
   bypassCache?: boolean
+  draft?: boolean
 }): Promise<Page | null> {
   const cacheKey = generateCacheKey('page', {
     id: options.id,
@@ -120,6 +121,7 @@ export async function getPageById(options: LocalizedQueryOptions & {
         id: options.id,
         locale: options.locale,
         depth: 2,
+        draft: options.draft,
       })
 
       if (!result) return null
@@ -140,6 +142,7 @@ export async function getPageById(options: LocalizedQueryOptions & {
 export async function getMeditationById(options: LocalizedQueryOptions & {
   id: string
   bypassCache?: boolean
+  draft?: boolean
 }): Promise<Meditation | null> {
   const cacheKey = generateCacheKey('meditation', {
     id: options.id,
@@ -158,6 +161,7 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
         id: options.id,
         locale: options.locale,
         depth: 2,
+        draft: options.draft,
       })
 
       if (!result) return null

@@ -63,6 +63,7 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
     id,
     locale,
     bypassCache: true,
+    draft: true,  // Fetch draft documents for live preview
   })
 
   if (!data) {

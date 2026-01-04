@@ -170,7 +170,8 @@ export function MeditationPlayer({
       }
     }
 
-    return currentFrame.media
+    // Fallback to placeholder if frame has no media (defensive handling for incomplete CMS data)
+    return currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE }
   }, [frames, state.currentTime])
 
   // Play/pause handler

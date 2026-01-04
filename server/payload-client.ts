@@ -70,6 +70,47 @@ export function validatePayloadConfig(config: {
 }
 
 /**
+ * Custom fetch wrapper that captures HTTP error details.
+ *
+ * The PayloadCMS SDK's findByID method swallows HTTP status codes and response
+ * bodies, replacing them with a generic error message. This wrapper logs the
+ * actual error details before the SDK discards them.
+ *
+ * @see https://github.com/payloadcms/payload/issues/14495
+ */
+async function fetchWithErrorDetails(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const response = await fetch(input, init)
+
+  // Log all API requests for debugging
+  console.log(`[PayloadCMS] ${init?.method || 'GET'} ${input} → ${response.status}`)
+
+  // If not OK, log the actual error details before SDK swallows them
+  if (!response.ok) {
+    const clonedResponse = response.clone()
+    try {
+      const errorBody = await clonedResponse.json()
+      console.error(`[PayloadCMS] Error response:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: input.toString(),
+        body: errorBody,
+      })
+    } catch {
+      console.error(`[PayloadCMS] Error response (non-JSON):`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: input.toString(),
+      })
+    }
+  }
+
+  return response
+}
+
+/**
  * Creates a new PayloadCMS SDK client instance.
  *
  * IMPORTANT: Always create a new client instance per request when using
@@ -92,6 +133,7 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
 
   return new PayloadSDK<Config>({
     baseURL: `${baseURL}/api`,
+    fetch: fetchWithErrorDetails,
     baseInit: {
       headers: {
         Authorization: `clients API-Key ${apiKey}`,

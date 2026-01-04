@@ -44,32 +44,37 @@ export interface MeditationTemplateProps {
 }
 
 export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: MeditationTemplateProps) {
-  // Parse frames JSON with error handling
+  // Get CMS base URL for building full frame URLs
+  const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
+
+  // Parse and transform frames from CMS format to MeditationPlayer format
   let frames: MeditationFrame[] = []
   if (meditation.frames) {
     try {
-      frames =
+      const rawFrames =
         typeof meditation.frames === 'string'
           ? JSON.parse(meditation.frames)
-          : meditation.frames
+          : Array.isArray(meditation.frames)
+            ? meditation.frames
+            : []
+
+      // Transform CMS frames to MeditationPlayer format
+      frames = rawFrames
+        .filter((frame: { url?: string | null }) => frame.url)
+        .map((frame: { timestamp?: number; url: string; mimeType?: string | null }) => ({
+          timestamp: frame.timestamp ?? 0,
+          media: {
+            type: frame.mimeType?.startsWith('video/') ? 'video' : 'image',
+            src: frame.url.startsWith('http') ? frame.url : `${cmsBaseUrl}${frame.url}`,
+          },
+        }))
     } catch (error) {
       console.error('Failed to parse meditation frames:', error)
-      // Fallback: use thumbnail as single frame if available
-      const thumbnailUrl = getImageUrl(meditation.thumbnail)
-      if (thumbnailUrl) {
-        frames = [
-          {
-            timestamp: 0,
-            media: {
-              type: 'image',
-              src: thumbnailUrl,
-            },
-          },
-        ]
-      }
     }
-  } else {
-    // No frames provided, use thumbnail as fallback
+  }
+
+  // Fallback: use thumbnail as single frame if no frames available
+  if (frames.length === 0) {
     const thumbnailUrl = getImageUrl(meditation.thumbnail)
     if (thumbnailUrl) {
       frames = [
