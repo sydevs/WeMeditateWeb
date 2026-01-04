@@ -11,6 +11,19 @@ export type { Track } from '../../molecules/AudioPlayer/useAudioPlayer'
 const PROGRESS_RADIUS = 48
 const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 
+// Placeholder image for when no frames are available (teal gradient)
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    <defs>
+      <radialGradient id="g" cx="50%" cy="50%" r="70%">
+        <stop offset="0%" stop-color="#5eead4"/>
+        <stop offset="100%" stop-color="#0d9488"/>
+      </radialGradient>
+    </defs>
+    <rect width="400" height="400" fill="url(#g)"/>
+  </svg>
+`)
+
 /**
  * Format time in seconds to MM:SS format
  */
@@ -139,6 +152,11 @@ export function MeditationPlayer({
 
   // Get current media frame based on playback time (memoized to avoid re-sorting on every render)
   const currentMedia = useMemo(() => {
+    // Handle empty frames array with placeholder
+    if (!frames || frames.length === 0) {
+      return { type: 'image' as const, src: PLACEHOLDER_IMAGE }
+    }
+
     // Sort frames by timestamp and find the current one
     const sortedFrames = [...frames].sort((a, b) => a.timestamp - b.timestamp)
 
