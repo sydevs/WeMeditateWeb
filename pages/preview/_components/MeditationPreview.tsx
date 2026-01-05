@@ -101,5 +101,5 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
     }
   }, [])
 
-  return <MeditationTemplate meditation={meditation} onPlaybackTimeUpdate={handlePlaybackTimeUpdate} />
+  return <MeditationTemplate meditation={meditation} onPlaybackTimeUpdate={handlePlaybackTimeUpdate} timeDisplay="elapsed" />
 }

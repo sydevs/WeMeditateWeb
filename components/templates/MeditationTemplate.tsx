@@ -41,9 +41,14 @@ export interface MeditationTemplateProps {
    * Also fired on play, pause, and seek events
    */
   onPlaybackTimeUpdate?: (currentTime: number) => void
+  /**
+   * How to display time in the player: 'countdown' shows remaining time, 'elapsed' shows current position
+   * @default 'countdown'
+   */
+  timeDisplay?: 'countdown' | 'elapsed'
 }
 
-export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: MeditationTemplateProps) {
+export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDisplay }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
 
@@ -102,7 +107,7 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: Meditat
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto h-full">
       {/* Meditation Player */}
       <MeditationPlayer
         track={{
@@ -114,9 +119,9 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate }: Meditat
           duration: 0, // Duration will be detected by audio player
         }}
         title={meditation.title || 'Untitled Meditation'}
-        subtitle={meditation.label || undefined}
         frames={frames}
         onPlaybackTimeUpdate={onPlaybackTimeUpdate}
+        timeDisplay={timeDisplay}
       />
     </div>
   )

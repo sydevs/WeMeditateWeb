@@ -1,8 +1,9 @@
-import { ComponentProps, useRef, useState, useCallback, useEffect, useMemo } from 'react'
+import { ComponentProps, useMemo } from 'react'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
 import { useAudioPlayer, Track } from '../../molecules/AudioPlayer/useAudioPlayer'
+import { useCircularProgress } from './useCircularProgress'
 import founderImage from '../../../assets/smnd.webp'
 
 export type { Track } from '../../molecules/AudioPlayer/useAudioPlayer'
@@ -85,6 +86,11 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
    * Also fired on play, pause, and seek events
    */
   onPlaybackTimeUpdate?: (currentTime: number) => void
+  /**
+   * How to display time: 'countdown' shows remaining time, 'elapsed' shows current position
+   * @default 'countdown'
+   */
+  timeDisplay?: 'countdown' | 'elapsed'
 }
 
 /**
@@ -141,6 +147,7 @@ export function MeditationPlayer({
   onPlay,
   onPause,
   onPlaybackTimeUpdate,
+  timeDisplay = 'countdown',
   className = '',
   ...props
 }: MeditationPlayerProps) {
@@ -150,7 +157,15 @@ export function MeditationPlayer({
     onPlaybackTimeUpdate,
   })
 
-  // Get current media frame based on playback time (memoized to avoid re-sorting on every render)
+  // Circular progress hook handles all drag and coordinate calculation logic
+  const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
+    currentTime: state.currentTime,
+    duration: state.duration,
+    onSeek: controls.seek,
+  })
+
+  // Get current media frame based on display time (memoized to avoid re-sorting on every render)
+  // Uses displayTime so frames update during drag
   const currentMedia = useMemo(() => {
     // Handle empty frames array with placeholder
     if (!frames || frames.length === 0) {
@@ -160,10 +175,10 @@ export function MeditationPlayer({
     // Sort frames by timestamp and find the current one
     const sortedFrames = [...frames].sort((a, b) => a.timestamp - b.timestamp)
 
-    // Find the last frame whose timestamp is less than or equal to current time
+    // Find the last frame whose timestamp is less than or equal to display time
     let currentFrame = sortedFrames[0]
     for (const frame of sortedFrames) {
-      if (frame.timestamp <= state.currentTime) {
+      if (frame.timestamp <= displayTime) {
         currentFrame = frame
       } else {
         break
@@ -172,7 +187,7 @@ export function MeditationPlayer({
 
     // Fallback to placeholder if frame has no media (defensive handling for incomplete CMS data)
     return currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE }
-  }, [frames, state.currentTime])
+  }, [frames, displayTime])
 
   // Play/pause handler
   const handlePlayPause = () => {
@@ -185,8 +200,8 @@ export function MeditationPlayer({
     }
   }
 
-  // Progress calculations
-  const progressPercent = state.duration > 0 ? (state.currentTime / state.duration) * 100 : 0
+  // Progress calculations - use displayTime for visual updates during drag
+  const progressPercent = state.duration > 0 ? (displayTime / state.duration) * 100 : 0
   const progressAngle = (progressPercent / 100) * 360
 
   // Draggable handle position (subtract 90 degrees to account for SVG rotation)
@@ -194,107 +209,14 @@ export function MeditationPlayer({
   const handleX = 50 + PROGRESS_RADIUS * Math.cos(angle)
   const handleY = 50 + PROGRESS_RADIUS * Math.sin(angle)
 
-  // State for dragging
-  const [isDragging, setIsDragging] = useState(false)
-  const progressRef = useRef<SVGSVGElement>(null)
-  const previousAngleRef = useRef<number>(0)
-
-  // Handle seeking via dragging the progress circle
-  const handleProgressSeek = useCallback((clientX: number, clientY: number) => {
-    if (!progressRef.current) return
-
-    const rect = progressRef.current.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-
-    // Calculate angle from center
-    const angle = Math.atan2(clientY - centerY, clientX - centerX)
-    // Convert to degrees and normalize to 0-360
-    let degrees = (angle * 180) / Math.PI + 90
-    if (degrees < 0) degrees += 360
-
-    const previousDegrees = previousAngleRef.current
-
-    // Prevent wraparound at top of circle by detecting boundary crossings
-    // Check if we're trying to wrap from end to start or vice versa
-    const isWrappingForward = previousDegrees > 270 && degrees < 90
-    const isWrappingBackward = previousDegrees < 90 && degrees > 270
-
-    if (isWrappingForward) {
-      // Trying to wrap from near 360° to near 0°, clamp to maximum
-      degrees = 360
-    } else if (isWrappingBackward) {
-      // Trying to wrap from near 0° to near 360°, clamp to minimum
-      degrees = 0
-    } else {
-      // Normal movement, clamp to valid range
-      degrees = Math.max(1, Math.min(359, degrees))
-    }
-
-    // Update previous angle for next frame
-    previousAngleRef.current = degrees
-
-    // Calculate seek position as percentage
-    const seekPercent = degrees / 360
-    const seekTime = seekPercent * state.duration
-
-    controls.seek(seekTime)
-  }, [controls, state.duration])
-
-  // Mouse/touch event handlers
-  const handleMouseDown = useCallback(() => {
-    // Initialize previous angle based on current playback position
-    if (state.duration > 0) {
-      const currentAngle = (state.currentTime / state.duration) * 360
-      previousAngleRef.current = currentAngle
-    }
-    setIsDragging(true)
-  }, [state.currentTime, state.duration])
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return
-    handleProgressSeek(e.clientX, e.clientY)
-  }, [isDragging, handleProgressSeek])
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging || e.touches.length === 0) return
-    e.preventDefault()
-    const touch = e.touches[0]
-    handleProgressSeek(touch.clientX, touch.clientY)
-  }, [isDragging, handleProgressSeek])
-
-  const handleMouseUp = () => setIsDragging(false)
-
-  // Add/remove event listeners for dragging
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-      window.addEventListener('touchmove', handleTouchMove, { passive: false })
-      window.addEventListener('touchend', handleMouseUp)
-    } else {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleMouseUp)
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleMouseUp)
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove])
-
   return (
     <div
-      className={`@container w-full min-h-screen flex items-center justify-center bg-linear-to-b from-transparent via-teal-200/60 to-transparent ${className}`}
+      className={`@container w-full h-full min-h-0 flex items-center justify-center bg-linear-to-b from-transparent via-teal-200/60 to-transparent ${className}`}
       {...props}
     >
-      <div className="w-full max-w-7xl mx-auto px-6 py-8">
+      <div className="w-full max-w-7xl mx-auto px-6 py-4 flex-1 min-h-0 flex flex-col justify-center">
         {/* Unified responsive grid layout */}
-        <div className="grid grid-cols-1 @4xl:grid-cols-12 gap-6 @4xl:gap-8 @4xl:items-center">
+        <div className="grid grid-cols-1 @4xl:grid-cols-12 gap-4 @4xl:items-center">
 
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
@@ -401,11 +323,11 @@ export function MeditationPlayer({
                   }}
                   onMouseDown={(e) => {
                     e.stopPropagation()
-                    handleMouseDown()
+                    startDrag()
                   }}
                   onTouchStart={(e) => {
                     e.stopPropagation()
-                    handleMouseDown()
+                    startDrag()
                   }}
                 >
                   {/* Visual handle - smaller than clickable area */}
@@ -415,10 +337,10 @@ export function MeditationPlayer({
                 </div>
               </div>
 
-              {/* Remaining Time */}
-              <div className="flex justify-center mt-4 @4xl:mt-6">
+              {/* Time Display */}
+              <div className="flex justify-center mt-2">
                 <span className="text-base @4xl:text-lg font-number text-gray-700">
-                  {formatTime(state.duration - state.currentTime)}
+                  {formatTime(timeDisplay === 'countdown' ? state.duration - displayTime : displayTime)}
                 </span>
               </div>
             </div>
@@ -432,7 +354,7 @@ export function MeditationPlayer({
             </p>
 
             {/* Title and Subtitle */}
-            <div className="mb-6 @4xl:mb-8">
+            <div className="mb-4">
               <h1 className="text-lg sm:text-xl @4xl:text-2xl font-medium text-gray-900 mb-2 @4xl:mb-4">
                 {title}
               </h1>
