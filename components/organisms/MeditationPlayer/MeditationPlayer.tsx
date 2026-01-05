@@ -1,12 +1,13 @@
-import { ComponentProps, useMemo } from 'react'
+import { ComponentProps, useMemo, useState, useEffect, useCallback, useRef } from 'react'
+import { AudioPlayerProvider, useAudioPlayer } from 'react-use-audio-player'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
-import { useAudioPlayer, Track } from '../../molecules/AudioPlayer/useAudioPlayer'
 import { useCircularProgress } from './useCircularProgress'
+import type { Track } from '../../molecules/AudioPlayer/types'
 import founderImage from '../../../assets/smnd.webp'
 
-export type { Track } from '../../molecules/AudioPlayer/useAudioPlayer'
+export type { Track } from '../../molecules/AudioPlayer/types'
 
 // Progress circle geometry constants
 const PROGRESS_RADIUS = 48
@@ -97,6 +98,8 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  * MeditationPlayer component for playing guided meditations with dynamic visuals.
  * Features a circular player with radial progress, draggable seeking, and frame-based media.
  *
+ * Built on react-use-audio-player (Howler.js) for reliable cross-browser audio.
+ *
  * Supports responsive layouts:
  * - Narrow: Vertical stacked layout
  * - Wide: Three-column horizontal layout with centered player
@@ -138,7 +141,7 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  *   onPlaybackTimeUpdate={handlePlaybackUpdate}
  * />
  */
-export function MeditationPlayer({
+function MeditationPlayerInner({
   track,
   title,
   subtitle,
@@ -151,17 +154,86 @@ export function MeditationPlayer({
   className = '',
   ...props
 }: MeditationPlayerProps) {
-  const [state, controls] = useAudioPlayer({
-    tracks: [track],
-    initialTrackIndex: 0,
-    onPlaybackTimeUpdate,
-  })
+  // Library hook for audio control
+  const player = useAudioPlayer()
+
+  // Local state for current time (updated via polling)
+  const [currentTime, setCurrentTime] = useState(0)
+
+  // Refs for callbacks to avoid stale closures
+  const onPlayRef = useRef(onPlay)
+  const onPauseRef = useRef(onPause)
+  const onPlaybackTimeUpdateRef = useRef(onPlaybackTimeUpdate)
+
+  // Keep refs in sync
+  useEffect(() => {
+    onPlayRef.current = onPlay
+  }, [onPlay])
+
+  useEffect(() => {
+    onPauseRef.current = onPause
+  }, [onPause])
+
+  useEffect(() => {
+    onPlaybackTimeUpdateRef.current = onPlaybackTimeUpdate
+  }, [onPlaybackTimeUpdate])
+
+  // Load track on mount or when URL changes
+  useEffect(() => {
+    player.load(track.url, {
+      html5: true, // Better for streaming
+      onplay: () => onPlayRef.current?.(),
+      onpause: () => onPauseRef.current?.(),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [track.url]) // player.load is stable, don't include player object
+
+  // Poll for current time (100ms interval when playing)
+  useEffect(() => {
+    if (player.isPlaying) {
+      // Get initial time
+      const time = player.getPosition()
+      setCurrentTime(time)
+      onPlaybackTimeUpdateRef.current?.(time)
+
+      // Poll every 100ms
+      const interval = setInterval(() => {
+        const time = player.getPosition()
+        setCurrentTime(time)
+        onPlaybackTimeUpdateRef.current?.(time)
+      }, 100)
+
+      return () => clearInterval(interval)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player.isPlaying]) // player.getPosition is stable
+
+  // Update time when paused (fire callback on pause)
+  useEffect(() => {
+    if (player.isPaused) {
+      const time = player.getPosition()
+      setCurrentTime(time)
+      onPlaybackTimeUpdateRef.current?.(time)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player.isPaused]) // player.getPosition is stable
+
+  // Seek handler with callback
+  const handleSeek = useCallback(
+    (time: number) => {
+      player.seek(time)
+      setCurrentTime(time)
+      onPlaybackTimeUpdateRef.current?.(time)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [] // player.seek is stable
+  )
 
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
-    currentTime: state.currentTime,
-    duration: state.duration,
-    onSeek: controls.seek,
+    currentTime,
+    duration: player.duration,
+    onSeek: handleSeek,
   })
 
   // Get current media frame based on display time (memoized to avoid re-sorting on every render)
@@ -191,17 +263,15 @@ export function MeditationPlayer({
 
   // Play/pause handler
   const handlePlayPause = () => {
-    if (state.isPlaying) {
-      controls.pause()
-      onPause?.()
+    if (player.isPlaying) {
+      player.pause()
     } else {
-      controls.play()
-      onPlay?.()
+      player.play()
     }
   }
 
   // Progress calculations - use displayTime for visual updates during drag
-  const progressPercent = state.duration > 0 ? (displayTime / state.duration) * 100 : 0
+  const progressPercent = player.duration > 0 ? (displayTime / player.duration) * 100 : 0
   const progressAngle = (progressPercent / 100) * 360
 
   // Draggable handle position (subtract 90 degrees to account for SVG rotation)
@@ -272,20 +342,20 @@ export function MeditationPlayer({
                   )}
 
                   {/* Teal overlay when paused or loading */}
-                  {(!state.isPlaying || state.isLoading) && (
+                  {(!player.isPlaying || player.isLoading) && (
                     <div className="absolute inset-0 bg-teal-700/20" />
                   )}
 
                   {/* Play/Pause Button - Fades in/out when paused or hovering */}
-                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}>
+                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!player.isPlaying || player.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}>
                     <Button
-                      icon={state.isPlaying ? PauseIcon : PlayIcon}
+                      icon={player.isPlaying ? PauseIcon : PlayIcon}
                       variant="neutral"
                       shape="circular"
                       size="lg"
                       onClick={handlePlayPause}
-                      isLoading={state.isLoading}
-                      aria-label={state.isPlaying ? 'Pause' : 'Play'}
+                      isLoading={player.isLoading}
+                      aria-label={player.isPlaying ? 'Pause' : 'Play'}
                       className="border-0 shadow-2xl"
                     />
                   </div>
@@ -340,7 +410,7 @@ export function MeditationPlayer({
               {/* Time Display */}
               <div className="flex justify-center mt-2">
                 <span className="text-base @4xl:text-lg font-number text-gray-700">
-                  {formatTime(timeDisplay === 'countdown' ? state.duration - displayTime : displayTime)}
+                  {formatTime(timeDisplay === 'countdown' ? player.duration - displayTime : displayTime)}
                 </span>
               </div>
             </div>
@@ -368,19 +438,19 @@ export function MeditationPlayer({
             {/* Volume Control */}
             <div className="flex items-center justify-center @4xl:justify-start gap-2">
               <Button
-                icon={state.isMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
+                icon={player.isMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
                 variant="ghost"
                 size="lg"
-                onClick={controls.toggleMute}
-                aria-label={state.isMuted ? 'Unmute' : 'Mute'}
+                onClick={player.toggleMute}
+                aria-label={player.isMuted ? 'Unmute' : 'Mute'}
               />
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.01"
-                value={state.isMuted ? 0 : state.volume}
-                onChange={(e) => controls.setVolume(parseFloat(e.target.value))}
+                value={player.isMuted ? 0 : player.volume}
+                onChange={(e) => player.setVolume(parseFloat(e.target.value))}
                 className="w-24 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-teal-600"
                 aria-label="Volume"
               />
@@ -413,5 +483,16 @@ export function MeditationPlayer({
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * MeditationPlayer with AudioPlayerProvider context wrapper
+ */
+export function MeditationPlayer(props: MeditationPlayerProps) {
+  return (
+    <AudioPlayerProvider>
+      <MeditationPlayerInner {...props} />
+    </AudioPlayerProvider>
   )
 }

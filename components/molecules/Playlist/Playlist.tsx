@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
 import { Link, Button } from '../../atoms'
-import type { Track } from '../AudioPlayer/useAudioPlayer'
+import type { Track } from '../AudioPlayer/types'
 import type { HeroIcon } from '../../atoms/Icon/Icon'
 
 export interface MusicFilter {

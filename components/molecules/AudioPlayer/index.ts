@@ -1,2 +1,5 @@
 export { AudioPlayer } from './AudioPlayer'
-export type { AudioPlayerProps, Track } from './AudioPlayer'
+export type { AudioPlayerProps, AudioControl } from './AudioPlayer'
+export type { Track, PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from './types'
+export { usePlaylistAudioPlayer } from './usePlaylistAudioPlayer'
+export type { UsePlaylistAudioPlayerOptions } from './usePlaylistAudioPlayer'
