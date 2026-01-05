@@ -1,4 +1,11 @@
-import { ComponentProps, useMemo, useState, useEffect, useCallback, useRef } from 'react'
+import {
+  ComponentProps,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  useEffectEvent,
+} from 'react'
 import { AudioPlayerProvider, useAudioPlayer } from 'react-use-audio-player'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
@@ -160,74 +167,52 @@ function MeditationPlayerInner({
   // Local state for current time (updated via polling)
   const [currentTime, setCurrentTime] = useState(0)
 
-  // Refs for callbacks to avoid stale closures
-  const onPlayRef = useRef(onPlay)
-  const onPauseRef = useRef(onPause)
-  const onPlaybackTimeUpdateRef = useRef(onPlaybackTimeUpdate)
+  // Effect Events - always access latest props/state, not dependencies
+  const loadTrack = useEffectEvent(() => {
+    player.load(track.url, {
+      html5: true, // Better for streaming
+      onplay: () => onPlay?.(),
+      onpause: () => onPause?.(),
+    })
+  })
 
-  // Keep refs in sync
-  useEffect(() => {
-    onPlayRef.current = onPlay
-  }, [onPlay])
+  const updateTime = useEffectEvent(() => {
+    const time = player.getPosition()
+    setCurrentTime(time)
+    onPlaybackTimeUpdate?.(time)
+  })
 
-  useEffect(() => {
-    onPauseRef.current = onPause
-  }, [onPause])
-
-  useEffect(() => {
-    onPlaybackTimeUpdateRef.current = onPlaybackTimeUpdate
-  }, [onPlaybackTimeUpdate])
+  const seekTo = useEffectEvent((time: number) => {
+    player.seek(time)
+    setCurrentTime(time)
+    onPlaybackTimeUpdate?.(time)
+  })
 
   // Load track on mount or when URL changes
   useEffect(() => {
-    player.load(track.url, {
-      html5: true, // Better for streaming
-      onplay: () => onPlayRef.current?.(),
-      onpause: () => onPauseRef.current?.(),
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [track.url]) // player.load is stable, don't include player object
+    loadTrack()
+  }, [track.url])
 
   // Poll for current time (100ms interval when playing)
   useEffect(() => {
     if (player.isPlaying) {
-      // Get initial time
-      const time = player.getPosition()
-      setCurrentTime(time)
-      onPlaybackTimeUpdateRef.current?.(time)
-
-      // Poll every 100ms
-      const interval = setInterval(() => {
-        const time = player.getPosition()
-        setCurrentTime(time)
-        onPlaybackTimeUpdateRef.current?.(time)
-      }, 100)
-
+      updateTime()
+      const interval = setInterval(updateTime, 100)
       return () => clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [player.isPlaying]) // player.getPosition is stable
+  }, [player.isPlaying])
 
   // Update time when paused (fire callback on pause)
   useEffect(() => {
     if (player.isPaused) {
-      const time = player.getPosition()
-      setCurrentTime(time)
-      onPlaybackTimeUpdateRef.current?.(time)
+      updateTime()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [player.isPaused]) // player.getPosition is stable
+  }, [player.isPaused])
 
-  // Seek handler with callback
-  const handleSeek = useCallback(
-    (time: number) => {
-      player.seek(time)
-      setCurrentTime(time)
-      onPlaybackTimeUpdateRef.current?.(time)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [] // player.seek is stable
-  )
+  // Seek handler
+  const handleSeek = useCallback((time: number) => {
+    seekTo(time)
+  }, [])
 
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
