@@ -7,10 +7,11 @@
 
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import type { Meditation } from './types'
 import { MeditationTemplate } from '../../../components/templates'
+import { mergeData } from './mergeData'
 
 export interface MeditationPreviewProps {
   initialData: Meditation
@@ -51,7 +52,12 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
     depth: 2,
   })
 
-  const meditation = liveData || initialData
+  // Merge liveData with initialData, preserving initialData values when liveData has undefined
+  // This handles the 403 error case where mergeData fails and returns incomplete data
+  const meditation = useMemo(
+    () => mergeData(initialData, liveData),
+    [liveData, initialData]
+  )
 
   // Debug logging for meditation state and frames
   useEffect(() => {
