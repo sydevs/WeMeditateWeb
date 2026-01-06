@@ -10,7 +10,7 @@ import {
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
 import { Button, Image } from '../../atoms'
-import { usePlaylistAudioPlayer } from './usePlaylistAudioPlayer'
+import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import type { Track } from './types'
 
 export type { Track } from './types'

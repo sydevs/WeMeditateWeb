@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useEffectEvent, useRef } from 'react'
-import { useAudioPlayer } from 'react-use-audio-player'
-import type { Track, PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from './types'
+import { useAudioPlayer } from './useAudioPlayer'
+import type { Track, PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from '../../components/molecules/AudioPlayer/types'
 
 export interface UsePlaylistAudioPlayerOptions {
   /** Array of tracks to manage */
@@ -16,8 +16,8 @@ export interface UsePlaylistAudioPlayerOptions {
 }
 
 /**
- * Playlist wrapper hook for react-use-audio-player.
- * Adds playlist management (tracks, shuffle, next/prev) on top of the library.
+ * Playlist wrapper hook for useAudioPlayer.
+ * Adds playlist management (tracks, shuffle, next/prev) on top of the core hook.
  *
  * @example
  * // Basic usage
@@ -41,14 +41,15 @@ export function usePlaylistAudioPlayer({
   onTrackChange,
   onPlaybackTimeUpdate,
 }: UsePlaylistAudioPlayerOptions): [PlaylistAudioPlayerState, PlaylistAudioPlayerControls] {
-  // Library hook for audio control
-  const player = useAudioPlayer()
+  // Core audio player hook (handles time polling, seek callbacks)
+  const [playerState, playerControls] = useAudioPlayer({
+    onPlaybackTimeUpdate,
+  })
 
   // Playlist state
   const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   const [playOrder, setPlayOrder] = useState<number[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
   const [hasEnded, setHasEnded] = useState(false)
 
   // Ref for tracking if audio was playing before track change (for auto-resume)
@@ -71,7 +72,7 @@ export function usePlaylistAudioPlayer({
     }
   }, [isShuffleOn, tracks.length])
 
-  // Effect Events - always access latest props/state, not dependencies
+  // Effect Event for handling track end (advances to next track)
   const handleTrackEnd = useEffectEvent(() => {
     setHasEnded(true)
     const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
@@ -79,27 +80,15 @@ export function usePlaylistAudioPlayer({
     setCurrentTrackIndex(playOrder[nextOrderIndex])
   })
 
+  // Effect Event for loading current track
   const loadCurrentTrack = useEffectEvent(() => {
     if (currentTrack) {
-      player.load(currentTrack.url, {
+      playerControls.load(currentTrack.url, {
         autoplay: wasPlayingRef.current,
-        html5: true, // Better for streaming large files
-        onend: handleTrackEnd,
+        onEnd: handleTrackEnd,
       })
       onTrackChange?.(currentTrackIndex)
     }
-  })
-
-  const updateTime = useEffectEvent(() => {
-    const time = player.getPosition()
-    setCurrentTime(time)
-    onPlaybackTimeUpdate?.(time)
-  })
-
-  const seekTo = useEffectEvent((time: number) => {
-    player.seek(time)
-    setCurrentTime(time)
-    onPlaybackTimeUpdate?.(time)
   })
 
   // Load track when currentTrackIndex changes
@@ -107,46 +96,31 @@ export function usePlaylistAudioPlayer({
     loadCurrentTrack()
   }, [currentTrackIndex, currentTrack?.url])
 
-  // Poll for current time (100ms interval when playing)
+  // Track playing state for auto-resume logic
   useEffect(() => {
-    if (player.isPlaying) {
+    if (playerState.isPlaying) {
       wasPlayingRef.current = true
       setHasEnded(false)
-      updateTime()
-      const interval = setInterval(updateTime, 100)
-      return () => clearInterval(interval)
-    } else if (!player.isLoading && !player.isReady) {
+    } else if (!playerState.isLoading && !playerState.isReady) {
       // Reset when stopped/unloaded
       wasPlayingRef.current = false
     }
-  }, [player.isPlaying, player.isLoading, player.isReady])
-
-  // Update time when paused (fire callback on pause)
-  useEffect(() => {
-    if (player.isPaused) {
-      updateTime()
-    }
-  }, [player.isPaused])
+  }, [playerState.isPlaying, playerState.isLoading, playerState.isReady])
 
   // Navigation controls
   const previous = useCallback(() => {
     const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
     const prevIndex = currentOrderIndex > 0 ? currentOrderIndex - 1 : playOrder.length - 1
-    wasPlayingRef.current = player.isPlaying
+    wasPlayingRef.current = playerState.isPlaying
     setCurrentTrackIndex(playOrder[prevIndex])
-  }, [playOrder, currentTrackIndex, player.isPlaying])
+  }, [playOrder, currentTrackIndex, playerState.isPlaying])
 
   const next = useCallback(() => {
     const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
     const nextIndex = currentOrderIndex < playOrder.length - 1 ? currentOrderIndex + 1 : 0
-    wasPlayingRef.current = player.isPlaying
+    wasPlayingRef.current = playerState.isPlaying
     setCurrentTrackIndex(playOrder[nextIndex])
-  }, [playOrder, currentTrackIndex, player.isPlaying])
-
-  // Seek with callback
-  const seek = useCallback((time: number) => {
-    seekTo(time)
-  }, [])
+  }, [playOrder, currentTrackIndex, playerState.isPlaying])
 
   const toggleShuffle = useCallback(() => {
     setIsShuffleOn((prev) => !prev)
@@ -154,36 +128,36 @@ export function usePlaylistAudioPlayer({
 
   const selectTrack = useCallback(
     (index: number) => {
-      wasPlayingRef.current = player.isPlaying
+      wasPlayingRef.current = playerState.isPlaying
       setCurrentTrackIndex(index)
     },
-    [player.isPlaying]
+    [playerState.isPlaying]
   )
 
   // Compose state
   const state: PlaylistAudioPlayerState = {
     currentTrackIndex,
-    isPlaying: player.isPlaying,
-    currentTime,
-    duration: player.duration,
-    volume: player.volume,
-    isMuted: player.isMuted,
+    isPlaying: playerState.isPlaying,
+    currentTime: playerState.currentTime,
+    duration: playerState.duration,
+    volume: playerState.volume,
+    isMuted: playerState.isMuted,
     isShuffleOn,
     currentTrack,
-    isLoading: player.isLoading,
+    isLoading: playerState.isLoading,
     hasEnded,
   }
 
   // Compose controls
   const controls: PlaylistAudioPlayerControls = {
-    play: player.play,
-    pause: player.pause,
-    togglePlayPause: player.togglePlayPause,
+    play: playerControls.play,
+    pause: playerControls.pause,
+    togglePlayPause: playerControls.togglePlayPause,
     previous,
     next,
-    seek,
-    setVolume: player.setVolume,
-    toggleMute: player.toggleMute,
+    seek: playerControls.seek,
+    setVolume: playerControls.setVolume,
+    toggleMute: playerControls.toggleMute,
     toggleShuffle,
     selectTrack,
   }
