@@ -113,13 +113,21 @@ PUBLIC__SENTRY_DSN=<dsn>                 # Browser-side error tracking
 PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch component
 ```
 
+**Variable Sources:**
+
+| Variable Type | Development | Production |
+|---------------|-------------|------------|
+| Server secrets | `.env.local` | Cloudflare dashboard |
+| Build-time public | `.env.local` | `.env.production` (git) |
+| Build-time secrets | `.env.local` | Cloudflare dashboard |
+
 **Variable Prefixes:**
 - `PUBLIC__` - Exposed to browser, embedded at build time via `envPrefix: 'PUBLIC__'` in `vite.config.ts`
-- No prefix - Server-side only, accessed at runtime via `import.meta.env` or `context.cloudflare.env`
+- No prefix - Server-side only, accessed at runtime via `context.cloudflare.env`
 
 **Production Deployment:**
-- Set secrets as encrypted variables in Cloudflare dashboard
-- Navigate to: Workers & Pages → wemeditate-web → Settings → Environment variables
+- **Secrets**: Set as encrypted variables in Cloudflare dashboard (Workers & Pages → wemeditate-web → Settings)
+- **Build-time public vars**: Fixed values in `.env.production` (committed to git, no secrets)
 
 **Note**: `PUBLIC__` means "browser-accessible," not "public knowledge." Variables like `PUBLIC__MAPBOX_ACCESS_TOKEN` are still YOUR secret tokens (restrict by domain).
 
@@ -242,8 +250,7 @@ The app implements graceful error handling with automatic retry and user-friendl
 
 **Error Detection and Retry** ([server/error-utils.ts](server/error-utils.ts)):
 - Automatically detects error types (network, server, client)
-- Retries network and server errors with exponential backoff
-- Configurable via `RETRY_MAX_ATTEMPTS` (default: 3) and `RETRY_BASE_DELAY_MS` (default: 1000ms)
+- Retries network and server errors with exponential backoff (3 attempts, 1s/2s/4s delays)
 - Logs all retry attempts to Sentry for monitoring
 - Does NOT retry client errors (400, 401, 403, 404)
 
@@ -273,9 +280,7 @@ The app implements graceful error handling with automatic retry and user-friendl
 
 **Configuration**:
 ```bash
-# .env or Cloudflare dashboard
-RETRY_MAX_ATTEMPTS=3              # Number of retry attempts
-RETRY_BASE_DELAY_MS=1000          # Base delay for exponential backoff
+# Cloudflare dashboard (optional)
 PUBLIC__STATUS_PAGE_URL=<url>     # Optional external status page
 ```
 

@@ -15,11 +15,14 @@ import type { KVNamespace } from '@cloudflare/workers-types'
 
 /**
  * Hono environment type definition for Cloudflare Workers bindings
+ *
+ * Note: Only runtime bindings are defined here.
+ * PUBLIC__* variables are build-time (embedded by Vite from .env.production)
+ * and accessed via import.meta.env, not context.env.
  */
 export type CmsEnv = {
   Bindings: {
     SAHAJCLOUD_API_KEY?: string
-    PUBLIC__SAHAJCLOUD_URL?: string
     WEMEDITATE_CACHE?: KVNamespace
   }
 }
@@ -50,9 +53,10 @@ function tryGetContext(): Context<CmsEnv> | undefined {
 /**
  * Gets CMS configuration from Hono's context storage.
  *
- * This function attempts to retrieve apiKey, baseURL, and kv from:
- * 1. Hono context bindings (Cloudflare Workers runtime - secrets & env vars)
- * 2. import.meta.env fallback (Vite dev server - .env.local)
+ * Configuration sources:
+ * - apiKey: Cloudflare Workers context (runtime secret) or import.meta.env (dev)
+ * - baseURL: import.meta.env (build-time, from .env.production or .env.local)
+ * - kv: Cloudflare Workers context bindings (undefined in dev)
  *
  * @returns CMS configuration with apiKey, baseURL, and optional kv
  * @throws Error if apiKey is not available from any source
@@ -71,11 +75,8 @@ export function getCmsContext(): CmsContext {
     )
   }
 
-  // Get baseURL: first from Cloudflare Workers context, then import.meta.env, then default
-  const baseURL =
-    context?.env?.PUBLIC__SAHAJCLOUD_URL ||
-    import.meta.env.PUBLIC__SAHAJCLOUD_URL ||
-    'http://localhost:3000'
+  // Get baseURL from build-time env (Vite embeds from .env.production or .env.local)
+  const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
 
   // Get KV from context bindings (undefined in dev or when context unavailable)
   const kv = context?.env?.WEMEDITATE_CACHE

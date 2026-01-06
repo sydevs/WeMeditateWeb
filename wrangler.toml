@@ -18,14 +18,16 @@ preview_id = "cf4eaa694eed4a7aa7f0482905e496a1"
 # For secrets, use Cloudflare dashboard encrypted secrets:
 # Workers & Pages → wemeditate-web → Settings → Environment variables
 #
-# Secrets to set in Cloudflare dashboard:
+# Required secrets in Cloudflare dashboard:
 # - SAHAJCLOUD_API_KEY (server-side only)
 # - PUBLIC__MAPBOX_ACCESS_TOKEN (browser-accessible, but still secret)
 # - PUBLIC__SENTRY_DSN (browser-accessible, but still secret)
 # - SENTRY_DSN (server-side only)
 #
-[vars]
-PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"
-
-# Note: PUBLIC__* variables here are available at runtime via context.cloudflare.env
-# They are ALSO embedded into client bundles at build time by Vite
+# Build-time PUBLIC__* variables:
+# - Defined in .env.production (committed to git, no secrets)
+# - Embedded by Vite during production build
+# - Example: PUBLIC__SAHAJCLOUD_URL
+#
+# Note: wrangler.toml [vars] are runtime-only and NOT available during Vite build.
+# Use .env.production for PUBLIC__* variables that need to be in client bundles.

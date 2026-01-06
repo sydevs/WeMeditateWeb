@@ -134,21 +134,14 @@ async function setCachedResponse<T>(
 }
 
 /**
- * Gets retry configuration from environment variables with sensible defaults.
+ * Default retry configuration for network/server errors.
+ * These values provide a good balance between resilience and latency.
  */
-function getRetryConfig(): RetryConfig {
-  const maxAttempts = import.meta.env.RETRY_MAX_ATTEMPTS
-    ? parseInt(import.meta.env.RETRY_MAX_ATTEMPTS, 10)
-    : 3
-
-  const baseDelayMs = import.meta.env.RETRY_BASE_DELAY_MS
-    ? parseInt(import.meta.env.RETRY_BASE_DELAY_MS, 10)
-    : 1000
-
-  return {
-    maxAttempts: isNaN(maxAttempts) ? 3 : maxAttempts,
-    baseDelayMs: isNaN(baseDelayMs) ? 1000 : baseDelayMs,
-  }
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+  /** Maximum number of retry attempts (1 initial + 2 retries) */
+  maxAttempts: 3,
+  /** Base delay for exponential backoff (1s, 2s, 4s) */
+  baseDelayMs: 1000,
 }
 
 /**
@@ -162,8 +155,8 @@ function getRetryConfig(): RetryConfig {
  *
  * Retry behavior:
  * - Automatically retries network and server errors (not client errors like 404)
- * - Uses exponential backoff with jitter (1s, 2s, 4s by default)
- * - Configurable via RETRY_MAX_ATTEMPTS and RETRY_BASE_DELAY_MS env vars
+ * - Uses exponential backoff with jitter (1s, 2s, 4s)
+ * - Override defaults via retryConfig parameter if needed
  *
  * Errors during cache operations are logged to Sentry but do not interrupt the request.
  * If caching fails, the query function is executed and the result is returned without caching.
@@ -206,8 +199,8 @@ export async function withCache<T>(options: {
   // Get KV from CMS context (may be undefined in local dev)
   const { kv } = getCmsContext()
 
-  // Get retry configuration (use provided config or env defaults)
-  const finalRetryConfig = retryConfig || getRetryConfig()
+  // Get retry configuration (use provided config or defaults)
+  const finalRetryConfig = retryConfig || DEFAULT_RETRY_CONFIG
 
   // If bypass flag is set, skip cache but still use retry
   if (bypassCache) {
