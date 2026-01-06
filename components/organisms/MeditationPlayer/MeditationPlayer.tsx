@@ -1,12 +1,14 @@
-import { ComponentProps, useMemo } from 'react'
+import { ComponentProps, useMemo, useCallback } from 'react'
+import { AudioPlayerProvider } from 'react-use-audio-player'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
-import { useAudioPlayer, Track } from '../../molecules/AudioPlayer/useAudioPlayer'
 import { useCircularProgress } from './useCircularProgress'
+import { useAudioPlayer } from '../../../hooks/audio'
+import type { Track } from '../../molecules/AudioPlayer/types'
 import founderImage from '../../../assets/smnd.webp'
 
-export type { Track } from '../../molecules/AudioPlayer/useAudioPlayer'
+export type { Track } from '../../molecules/AudioPlayer/types'
 
 // Progress circle geometry constants
 const PROGRESS_RADIUS = 48
@@ -97,6 +99,8 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  * MeditationPlayer component for playing guided meditations with dynamic visuals.
  * Features a circular player with radial progress, draggable seeking, and frame-based media.
  *
+ * Built on react-use-audio-player (Howler.js) for reliable cross-browser audio.
+ *
  * Supports responsive layouts:
  * - Narrow: Vertical stacked layout
  * - Wide: Three-column horizontal layout with centered player
@@ -138,7 +142,7 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  *   onPlaybackTimeUpdate={handlePlaybackUpdate}
  * />
  */
-export function MeditationPlayer({
+function MeditationPlayerInner({
   track,
   title,
   subtitle,
@@ -151,17 +155,24 @@ export function MeditationPlayer({
   className = '',
   ...props
 }: MeditationPlayerProps) {
+  // Core audio player hook (handles time polling, seek callbacks, track loading)
   const [state, controls] = useAudioPlayer({
-    tracks: [track],
-    initialTrackIndex: 0,
+    url: track.url,
+    onPlay,
+    onPause,
     onPlaybackTimeUpdate,
   })
+
+  // Seek handler wrapped in useCallback for stable reference in useCircularProgress
+  const handleSeek = useCallback((time: number) => {
+    controls.seek(time)
+  }, [controls])
 
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
     currentTime: state.currentTime,
     duration: state.duration,
-    onSeek: controls.seek,
+    onSeek: handleSeek,
   })
 
   // Get current media frame based on display time (memoized to avoid re-sorting on every render)
@@ -193,10 +204,8 @@ export function MeditationPlayer({
   const handlePlayPause = () => {
     if (state.isPlaying) {
       controls.pause()
-      onPause?.()
     } else {
       controls.play()
-      onPlay?.()
     }
   }
 
@@ -413,5 +422,16 @@ export function MeditationPlayer({
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * MeditationPlayer with AudioPlayerProvider context wrapper
+ */
+export function MeditationPlayer(props: MeditationPlayerProps) {
+  return (
+    <AudioPlayerProvider>
+      <MeditationPlayerInner {...props} />
+    </AudioPlayerProvider>
   )
 }

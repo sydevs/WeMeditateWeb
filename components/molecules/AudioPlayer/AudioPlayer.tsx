@@ -1,4 +1,5 @@
 import { ComponentProps } from 'react'
+import { AudioPlayerProvider } from 'react-use-audio-player'
 import {
   PlayIcon,
   PauseIcon,
@@ -9,9 +10,10 @@ import {
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
 import { Button, Image } from '../../atoms'
-import { useAudioPlayer, Track } from './useAudioPlayer'
+import { usePlaylistAudioPlayer } from '../../../hooks/audio'
+import type { Track } from './types'
 
-export type { Track } from './useAudioPlayer'
+export type { Track } from './types'
 
 export type AudioControl = 'skip' | 'shuffle' | 'volume' | 'progress' | 'trackInfo'
 
@@ -49,7 +51,7 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
  * AudioPlayer molecule - Standalone audio player with configurable controls
  *
  * Features:
- * - Lightweight custom hook for audio management
+ * - Built on react-use-audio-player (Howler.js) for reliable cross-browser audio
  * - Configurable controls via props
  * - Play/pause, previous, next controls
  * - Shuffle mode
@@ -57,7 +59,7 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
  * - Progress bar with time display
  * - Current track info display
  */
-export function AudioPlayer({
+function AudioPlayerInner({
   tracks,
   shuffle = false,
   initialTrackIndex = 0,
@@ -66,7 +68,7 @@ export function AudioPlayer({
   className = '',
   ...props
 }: AudioPlayerProps) {
-  const [state, playerControls] = useAudioPlayer({
+  const [state, playerControls] = usePlaylistAudioPlayer({
     tracks,
     shuffle,
     initialTrackIndex,
@@ -213,5 +215,16 @@ export function AudioPlayer({
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * AudioPlayer with AudioPlayerProvider context wrapper
+ */
+export function AudioPlayer(props: AudioPlayerProps) {
+  return (
+    <AudioPlayerProvider>
+      <AudioPlayerInner {...props} />
+    </AudioPlayerProvider>
   )
 }
