@@ -25,6 +25,8 @@ export interface AudioPlayerState {
   duration: number
   volume: number
   isMuted: boolean
+  /** Error message from audio loading/playback, if any */
+  error: string | null
 }
 
 export interface AudioPlayerControls {
@@ -87,9 +89,17 @@ export function useAudioPlayer({
     onPlaybackTimeUpdate?.(time)
   })
 
-  // Handler for onplay callback
+  // Effect Events for callbacks - always access latest props, avoid stale closures
   const handleOnPlay = useEffectEvent(() => {
     onPlay?.()
+  })
+
+  const handleOnPause = useEffectEvent(() => {
+    onPause?.()
+  })
+
+  const handleOnEnd = useEffectEvent(() => {
+    onEnd?.()
   })
 
   // Seek handler - simplified since html5 mode is disabled
@@ -100,14 +110,15 @@ export function useAudioPlayer({
   })
 
   // Load track via URL option (when provided)
+  // Note: Only re-loads when URL changes. Callbacks use useEffectEvent to always get latest values.
   useEffect(() => {
     if (url) {
       player.load(url, {
         autoplay,
         html5: true, // Better for streaming large files
-        onplay: () => onPlay?.(),
-        onpause: () => onPause?.(),
-        onend: () => onEnd?.(),
+        onplay: () => handleOnPlay(),
+        onpause: () => handleOnPause(),
+        onend: () => handleOnEnd(),
       })
     }
   }, [url])
@@ -134,15 +145,16 @@ export function useAudioPlayer({
   }, [])
 
   // Dynamic load function for playlists and manual loading
+  // Note: Uses useEffectEvent handlers for consistent callback behavior
   const load = useCallback((loadUrl: string, options?: { autoplay?: boolean; onEnd?: () => void }) => {
     player.load(loadUrl, {
       autoplay: options?.autoplay ?? false,
       html5: true,
       onplay: () => handleOnPlay(),
-      onpause: () => onPause?.(),
-      onend: () => options?.onEnd?.(),
+      onpause: () => handleOnPause(),
+      onend: () => options?.onEnd?.(), // Caller-provided onEnd for playlist track-end handling
     })
-  }, [onPause])
+  }, [])
 
   // Compose state
   const state: AudioPlayerState = {
@@ -154,6 +166,7 @@ export function useAudioPlayer({
     duration: player.duration,
     volume: player.volume,
     isMuted: player.isMuted,
+    error: player.error ?? null,
   }
 
   // Compose controls

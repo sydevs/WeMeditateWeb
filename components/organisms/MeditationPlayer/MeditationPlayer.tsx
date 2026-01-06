@@ -163,7 +163,7 @@ function MeditationPlayerInner({
     onPlaybackTimeUpdate,
   })
 
-  // Seek handler for circular progress - use controls.seek directly to avoid dependency issues
+  // Seek handler wrapped in useCallback for stable reference in useCircularProgress
   const handleSeek = useCallback((time: number) => {
     controls.seek(time)
   }, [controls])
