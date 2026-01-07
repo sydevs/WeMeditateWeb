@@ -47,18 +47,13 @@ export interface MeditationTemplateProps {
    */
   timeDisplay?: 'countdown' | 'elapsed'
   /**
-   * External seek command - when set to a timestamp (in seconds), the player will seek to that position.
-   * Set to null after seeking is complete via onSeekComplete callback.
+   * External seek command. When provided, the player will seek to the specified timestamp.
+   * Uses { timestamp, id } format so each command is unique, allowing repeated seeks to the same position.
    */
-  seekTo?: number | null
-  /**
-   * Callback fired after an external seek command has been executed.
-   * Use this to reset seekTo to null.
-   */
-  onSeekComplete?: () => void
+  seekTo?: { timestamp: number; id: number } | null
 }
 
-export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDisplay, seekTo, onSeekComplete }: MeditationTemplateProps) {
+export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDisplay, seekTo }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
 
@@ -133,7 +128,6 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
         onPlaybackTimeUpdate={onPlaybackTimeUpdate}
         timeDisplay={timeDisplay}
         seekTo={seekTo}
-        onSeekComplete={onSeekComplete}
       />
     </div>
   )

@@ -46,7 +46,8 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
   const serverURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
 
   // State for external seek commands from parent window
-  const [seekTo, setSeekTo] = useState<number | null>(null)
+  // Uses { timestamp, id } so each message triggers a new seek, even to the same timestamp
+  const [seekCommand, setSeekCommand] = useState<{ timestamp: number; id: number } | null>(null)
 
   // useLivePreview listens for postMessage events from SahajCloud admin
   const { data: liveData } = useLivePreview<Meditation>({
@@ -67,7 +68,7 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
       // Handle SEEK_TO_TIME message
       if (event.data?.type === 'SEEK_TO_TIME' && typeof event.data?.timestamp === 'number') {
         console.log('[MeditationPreview] Received SEEK_TO_TIME:', event.data.timestamp)
-        setSeekTo(event.data.timestamp)
+        setSeekCommand({ timestamp: event.data.timestamp, id: Date.now() })
       }
     }
 
@@ -135,8 +136,7 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
       meditation={meditation}
       onPlaybackTimeUpdate={handlePlaybackTimeUpdate}
       timeDisplay="elapsed"
-      seekTo={seekTo}
-      onSeekComplete={() => setSeekTo(null)}
+      seekTo={seekCommand}
     />
   )
 }

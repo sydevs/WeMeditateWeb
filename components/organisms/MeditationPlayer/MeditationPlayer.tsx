@@ -94,15 +94,10 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
    */
   timeDisplay?: 'countdown' | 'elapsed'
   /**
-   * External seek command - when set to a timestamp (in seconds), the player will seek to that position.
-   * Set to null after seeking is complete via onSeekComplete callback.
+   * External seek command. When provided, the player will seek to the specified timestamp.
+   * Uses { timestamp, id } format so each command is unique, allowing repeated seeks to the same position.
    */
-  seekTo?: number | null
-  /**
-   * Callback fired after an external seek command has been executed.
-   * Use this to reset seekTo to null.
-   */
-  onSeekComplete?: () => void
+  seekTo?: { timestamp: number; id: number } | null
 }
 
 /**
@@ -163,7 +158,6 @@ function MeditationPlayerInner({
   onPlaybackTimeUpdate,
   timeDisplay = 'countdown',
   seekTo,
-  onSeekComplete,
   className = '',
   ...props
 }: MeditationPlayerProps) {
@@ -181,12 +175,12 @@ function MeditationPlayerInner({
   }, [controls])
 
   // Handle external seek commands (e.g., from postMessage in preview mode)
+  // Depends on entire seekTo object so it fires when id changes (even for same timestamp)
   useEffect(() => {
-    if (seekTo !== null && seekTo !== undefined) {
-      controls.seek(seekTo)
-      onSeekComplete?.()
+    if (seekTo) {
+      controls.seek(seekTo.timestamp)
     }
-  }, [seekTo, controls, onSeekComplete])
+  }, [seekTo, controls])
 
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
