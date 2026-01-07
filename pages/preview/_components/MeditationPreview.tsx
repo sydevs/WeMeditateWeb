@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import type { Meditation } from './types'
 import { MeditationTemplate } from '../../../components/templates'
@@ -45,12 +45,35 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
   // Get the server URL, defaulting to empty string if not configured
   const serverURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
 
+  // State for external seek commands from parent window
+  const [seekTo, setSeekTo] = useState<number | null>(null)
+
   // useLivePreview listens for postMessage events from SahajCloud admin
   const { data: liveData } = useLivePreview<Meditation>({
     initialData,
     serverURL,
     depth: 2,
   })
+
+  // Listen for SEEK_TO_TIME messages from SahajCloud admin
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate origin for security
+      const expectedOrigin = getSahajCloudOrigin()
+      if (expectedOrigin !== '*' && event.origin !== expectedOrigin) {
+        return
+      }
+
+      // Handle SEEK_TO_TIME message
+      if (event.data?.type === 'SEEK_TO_TIME' && typeof event.data?.timestamp === 'number') {
+        console.log('[MeditationPreview] Received SEEK_TO_TIME:', event.data.timestamp)
+        setSeekTo(event.data.timestamp)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
 
   // Merge liveData with initialData, preserving initialData values when liveData has undefined
   // This handles the 403 error case where mergeData fails and returns incomplete data
@@ -107,5 +130,13 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
     }
   }, [])
 
-  return <MeditationTemplate meditation={meditation} onPlaybackTimeUpdate={handlePlaybackTimeUpdate} timeDisplay="elapsed" />
+  return (
+    <MeditationTemplate
+      meditation={meditation}
+      onPlaybackTimeUpdate={handlePlaybackTimeUpdate}
+      timeDisplay="elapsed"
+      seekTo={seekTo}
+      onSeekComplete={() => setSeekTo(null)}
+    />
+  )
 }

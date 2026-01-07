@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useCallback } from 'react'
+import { ComponentProps, useMemo, useCallback, useEffect } from 'react'
 import { AudioPlayerProvider } from 'react-use-audio-player'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
@@ -93,6 +93,16 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
    * @default 'countdown'
    */
   timeDisplay?: 'countdown' | 'elapsed'
+  /**
+   * External seek command - when set to a timestamp (in seconds), the player will seek to that position.
+   * Set to null after seeking is complete via onSeekComplete callback.
+   */
+  seekTo?: number | null
+  /**
+   * Callback fired after an external seek command has been executed.
+   * Use this to reset seekTo to null.
+   */
+  onSeekComplete?: () => void
 }
 
 /**
@@ -152,6 +162,8 @@ function MeditationPlayerInner({
   onPause,
   onPlaybackTimeUpdate,
   timeDisplay = 'countdown',
+  seekTo,
+  onSeekComplete,
   className = '',
   ...props
 }: MeditationPlayerProps) {
@@ -167,6 +179,14 @@ function MeditationPlayerInner({
   const handleSeek = useCallback((time: number) => {
     controls.seek(time)
   }, [controls])
+
+  // Handle external seek commands (e.g., from postMessage in preview mode)
+  useEffect(() => {
+    if (seekTo !== null && seekTo !== undefined) {
+      controls.seek(seekTo)
+      onSeekComplete?.()
+    }
+  }, [seekTo, controls, onSeekComplete])
 
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
