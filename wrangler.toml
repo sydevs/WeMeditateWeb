@@ -31,3 +31,7 @@ preview_id = "cf4eaa694eed4a7aa7f0482905e496a1"
 #
 # Note: wrangler.toml [vars] are runtime-only and NOT available during Vite build.
 # Use .env.production for PUBLIC__* variables that need to be in client bundles.
+
+[vars]
+PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"
+PUBLIC__STATUS_PAGE_URL = "https://stats.uptimerobot.com/oJ9B8UX9lA"
