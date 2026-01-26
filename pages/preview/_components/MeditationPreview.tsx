@@ -23,7 +23,6 @@ export interface MeditationPreviewProps {
  */
 function getSahajCloudOrigin(): string {
   const url = import.meta.env.PUBLIC__SAHAJCLOUD_URL
-  console.log('[MeditationPreview] getSahajCloudOrigin called, url:', JSON.stringify(url), 'type:', typeof url)
 
   if (!url) {
     console.warn('[MeditationPreview] PUBLIC__SAHAJCLOUD_URL not configured, using "*" as target origin')
@@ -32,7 +31,6 @@ function getSahajCloudOrigin(): string {
 
   try {
     const origin = new URL(url).origin
-    console.log('[MeditationPreview] Successfully parsed URL, origin:', origin)
     return origin
   } catch (err) {
     // Explicit error variable for compatibility
@@ -49,6 +47,17 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
   // Uses { timestamp, id } so each message triggers a new seek, even to the same timestamp
   const [seekCommand, setSeekCommand] = useState<{ timestamp: number; id: number } | null>(null)
 
+  // Log component mount configuration for debugging
+  useEffect(() => {
+    console.log('[MeditationPreview] Component mounted with config:', {
+      serverURL,
+      initialDataId: initialData.id,
+      initialDataTitle: initialData.title,
+      isInIframe: window.parent !== window,
+      expectedOrigin: getSahajCloudOrigin(),
+    })
+  }, [serverURL, initialData.id, initialData.title])
+
   // useLivePreview listens for postMessage events from SahajCloud admin
   const { data: liveData } = useLivePreview<Meditation>({
     initialData,
@@ -56,12 +65,43 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
     depth: 2,
   })
 
-  // Listen for SEEK_TO_TIME messages from SahajCloud admin
+  // Log when liveData changes to track live preview updates
+  useEffect(() => {
+    console.log('[MeditationPreview] liveData updated:', {
+      id: liveData?.id,
+      title: liveData?.title,
+      hasUrl: !!liveData?.url,
+      hasFrames: !!liveData?.frames,
+      framesType: typeof liveData?.frames,
+      isInitialData: liveData === initialData,
+      liveDataRef: liveData ? 'has data' : 'null/undefined',
+    })
+  }, [liveData, initialData])
+
+  // Listen for postMessage events from SahajCloud admin
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Validate origin for security
+      // Log ALL incoming postMessage events for debugging live preview
       const expectedOrigin = getSahajCloudOrigin()
-      if (expectedOrigin !== '*' && event.origin !== expectedOrigin) {
+      const originMatches = expectedOrigin === '*' || event.origin === expectedOrigin
+
+      // Log all messages that look like they might be from PayloadCMS
+      if (event.data && typeof event.data === 'object') {
+        console.log('[MeditationPreview] postMessage received:', {
+          type: event.data?.type,
+          origin: event.origin,
+          expectedOrigin,
+          originMatches,
+          dataKeys: Object.keys(event.data),
+          // Log data snapshot for live preview messages
+          ...(event.data?.type?.includes('payload') || event.data?.type?.includes('live')
+            ? { dataPreview: JSON.stringify(event.data).slice(0, 500) }
+            : {}),
+        })
+      }
+
+      // Validate origin for security
+      if (!originMatches) {
         return
       }
 

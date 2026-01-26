@@ -39,22 +39,45 @@ export function mergeData<T>(
   liveData: T | undefined | null,
   maxDepth: number = 3
 ): T {
+  // Log inputs for debugging live preview data flow
+  console.log('[mergeData] Input:', {
+    hasInitialData: !!initialData,
+    hasLiveData: !!liveData,
+    liveDataIsNull: liveData === null,
+    liveDataIsUndefined: liveData === undefined,
+    areSameReference: initialData === liveData,
+    initialDataId: (initialData as Record<string, unknown>)?.id,
+    liveDataId: (liveData as Record<string, unknown>)?.id,
+  })
+
   // If no liveData, return initialData
   if (!liveData) {
+    console.log('[mergeData] No liveData, returning initialData')
     return initialData
   }
 
   // If either is not a plain object, prefer liveData (unless undefined)
   if (!isPlainObject(initialData) || !isPlainObject(liveData)) {
+    console.log('[mergeData] Not plain objects, returning liveData or initialData')
     return liveData ?? initialData
   }
 
-  return mergeRecursive(
+  const result = mergeRecursive(
     initialData as Record<string, unknown>,
     liveData as Record<string, unknown>,
     0,
     maxDepth
   ) as T
+
+  // Log merge result for debugging
+  console.log('[mergeData] Merged result:', {
+    resultId: (result as Record<string, unknown>)?.id,
+    resultTitle: (result as Record<string, unknown>)?.title,
+    resultHasUrl: !!(result as Record<string, unknown>)?.url,
+    resultHasFrames: !!(result as Record<string, unknown>)?.frames,
+  })
+
+  return result
 }
 
 /**
