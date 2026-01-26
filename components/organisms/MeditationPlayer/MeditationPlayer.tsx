@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useCallback, useEffect } from 'react'
+import { ComponentProps, useMemo, useCallback, useEffect, useEffectEvent } from 'react'
 import { AudioPlayerProvider } from 'react-use-audio-player'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
@@ -174,13 +174,17 @@ function MeditationPlayerInner({
     controls.seek(time)
   }, [controls])
 
+  const applyExternalSeek = useEffectEvent((timestamp: number) => {
+    controls.seek(timestamp)
+  })
+
   // Handle external seek commands (e.g., from postMessage in preview mode)
   // Depends on entire seekTo object so it fires when id changes (even for same timestamp)
   useEffect(() => {
     if (seekTo) {
-      controls.seek(seekTo.timestamp)
+      applyExternalSeek(seekTo.timestamp)
     }
-  }, [seekTo, controls])
+  }, [seekTo?.id])
 
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({

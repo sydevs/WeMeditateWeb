@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useEffectEvent } from 'react'
+import { useState, useEffect, useCallback, useEffectEvent, useRef } from 'react'
 import { useAudioPlayer as useAudioPlayerLib } from 'react-use-audio-player'
 
 export interface UseAudioPlayerOptions {
@@ -81,16 +81,24 @@ export function useAudioPlayer({
 
   // Local state for current time (updated via polling)
   const [currentTime, setCurrentTime] = useState(0)
+  const soundIdRef = useRef<number | null>(null)
 
   // Effect Events - always access latest props/state, not dependencies
   const updateTime = useEffectEvent(() => {
-    const time = player.getPosition()
+    const howl = player.player
+    const time =
+      howl && soundIdRef.current !== null
+        ? (howl.seek(soundIdRef.current) as number)
+        : player.getPosition()
     setCurrentTime(time)
     onPlaybackTimeUpdate?.(time)
   })
 
   // Effect Events for callbacks - always access latest props, avoid stale closures
-  const handleOnPlay = useEffectEvent(() => {
+  const handleOnPlay = useEffectEvent((soundId?: number) => {
+    if (typeof soundId === 'number') {
+      soundIdRef.current = soundId
+    }
     onPlay?.()
   })
 
@@ -99,12 +107,18 @@ export function useAudioPlayer({
   })
 
   const handleOnEnd = useEffectEvent(() => {
+    soundIdRef.current = null
     onEnd?.()
   })
 
   // Seek handler - simplified since html5 mode is disabled
   const seekTo = useEffectEvent((time: number) => {
-    player.seek(time)
+    const howl = player.player
+    if (howl && soundIdRef.current !== null) {
+      howl.seek(time, soundIdRef.current)
+    } else {
+      player.seek(time)
+    }
     setCurrentTime(time)
     onPlaybackTimeUpdate?.(time)
   })
@@ -113,9 +127,10 @@ export function useAudioPlayer({
   // Note: Only re-loads when URL changes. Callbacks use useEffectEvent to always get latest values.
   useEffect(() => {
     if (url) {
+      soundIdRef.current = null
       player.load(url, {
         autoplay,
-        onplay: () => handleOnPlay(),
+        onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
         onpause: () => handleOnPause(),
         onend: () => handleOnEnd(),
       })
@@ -143,14 +158,55 @@ export function useAudioPlayer({
     seekTo(time)
   }, [])
 
+  // Play/pause handlers that track a single sound id to avoid overlapping audio instances
+  const play = useEffectEvent(() => {
+    const howl = player.player
+    if (!howl) {
+      player.play()
+      return
+    }
+
+    if (soundIdRef.current !== null) {
+      if (!howl.playing(soundIdRef.current)) {
+        howl.play(soundIdRef.current)
+      }
+      return
+    }
+
+    soundIdRef.current = howl.play()
+  })
+
+  const pause = useEffectEvent(() => {
+    const howl = player.player
+    if (howl && soundIdRef.current !== null) {
+      howl.pause(soundIdRef.current)
+      return
+    }
+
+    player.pause()
+  })
+
+  const togglePlayPause = useEffectEvent(() => {
+    if (player.isPlaying) {
+      pause()
+      return
+    }
+
+    play()
+  })
+
   // Dynamic load function for playlists and manual loading
   // Note: Uses useEffectEvent handlers for consistent callback behavior
   const load = useCallback((loadUrl: string, options?: { autoplay?: boolean; onEnd?: () => void }) => {
+    soundIdRef.current = null
     player.load(loadUrl, {
       autoplay: options?.autoplay ?? false,
-      onplay: () => handleOnPlay(),
+      onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
       onpause: () => handleOnPause(),
-      onend: () => options?.onEnd?.(), // Caller-provided onEnd for playlist track-end handling
+      onend: () => {
+        soundIdRef.current = null
+        options?.onEnd?.() // Caller-provided onEnd for playlist track-end handling
+      },
     })
   }, [])
 
@@ -169,9 +225,9 @@ export function useAudioPlayer({
 
   // Compose controls
   const controls: AudioPlayerControls = {
-    play: player.play,
-    pause: player.pause,
-    togglePlayPause: player.togglePlayPause,
+    play,
+    pause,
+    togglePlayPause,
     seek,
     setVolume: player.setVolume,
     toggleMute: player.toggleMute,
