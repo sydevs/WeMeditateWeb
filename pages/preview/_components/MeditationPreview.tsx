@@ -17,6 +17,35 @@ export interface MeditationPreviewProps {
   initialData: Meditation
 }
 
+const summarizePayloadResponse = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return { type: 'array', length: value.length }
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    const errors = Array.isArray(record.errors) ? record.errors.length : 0
+    return {
+      type: 'object',
+      keys: Object.keys(record).slice(0, 20),
+      id: record.id,
+      _status: record._status,
+      hasErrors: errors > 0,
+      errorCount: errors,
+    }
+  }
+
+  return { type: typeof value }
+}
+
+const normalizeError = (error: unknown) => {
+  if (error instanceof Error) {
+    return { message: error.message, stack: error.stack }
+  }
+
+  return { message: String(error) }
+}
+
 /**
  * Safely get the origin from PUBLIC__SAHAJCLOUD_URL environment variable.
  * Falls back to '*' if the URL is not configured or invalid.
@@ -57,6 +86,101 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
       expectedOrigin: getSahajCloudOrigin(),
     })
   }, [serverURL, initialData.id, initialData.title])
+
+  // Log when live preview fetches data from Payload
+  useEffect(() => {
+    if (!serverURL || typeof window === 'undefined') {
+      return
+    }
+
+    const originalFetch = window.fetch.bind(window)
+    let requestId = 0
+
+    window.fetch = async (input, init) => {
+      const url = typeof input === 'string'
+        ? input
+        : input instanceof Request
+          ? input.url
+          : ''
+      const isPayloadRequest = url.startsWith(serverURL) && url.includes('/api/')
+
+      if (!isPayloadRequest) {
+        return originalFetch(input, init)
+      }
+
+      const currentId = ++requestId
+      const method = init?.method || (input instanceof Request ? input.method : 'GET')
+      const bodyPreview = typeof init?.body === 'string' ? init.body.slice(0, 500) : undefined
+
+      console.log('[MeditationPreview] Payload fetch start:', {
+        requestId: currentId,
+        url,
+        method,
+        bodyPreview,
+      })
+
+      try {
+        const response = await originalFetch(input, init)
+        const clonedResponse = response.clone()
+        const contentType = clonedResponse.headers.get('content-type') || ''
+
+        if (contentType.includes('application/json')) {
+          clonedResponse
+            .json()
+            .then((json) => {
+              console.log('[MeditationPreview] Payload fetch response:', {
+                requestId: currentId,
+                url,
+                status: response.status,
+                ok: response.ok,
+                summary: summarizePayloadResponse(json),
+              })
+            })
+            .catch((error) => {
+              console.warn('[MeditationPreview] Payload response JSON parse failed:', {
+                requestId: currentId,
+                url,
+                status: response.status,
+                error: normalizeError(error),
+              })
+            })
+        } else {
+          clonedResponse
+            .text()
+            .then((text) => {
+              console.log('[MeditationPreview] Payload fetch response:', {
+                requestId: currentId,
+                url,
+                status: response.status,
+                ok: response.ok,
+                textPreview: text.slice(0, 300),
+              })
+            })
+            .catch((error) => {
+              console.warn('[MeditationPreview] Payload response text parse failed:', {
+                requestId: currentId,
+                url,
+                status: response.status,
+                error: normalizeError(error),
+              })
+            })
+        }
+
+        return response
+      } catch (error) {
+        console.error('[MeditationPreview] Payload fetch failed:', {
+          requestId: currentId,
+          url,
+          error: normalizeError(error),
+        })
+        throw error
+      }
+    }
+
+    return () => {
+      window.fetch = originalFetch
+    }
+  }, [serverURL])
 
   // useLivePreview listens for postMessage events from SahajCloud admin
   const { data: liveData } = useLivePreview<Meditation>({
