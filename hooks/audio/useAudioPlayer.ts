@@ -115,13 +115,12 @@ export function useAudioPlayer({
     if (url) {
       player.load(url, {
         autoplay,
-        html5: true, // Better for streaming large files
         onplay: () => handleOnPlay(),
         onpause: () => handleOnPause(),
         onend: () => handleOnEnd(),
       })
     }
-  }, [url])
+  }, [url, autoplay])
 
   // Poll for current time (100ms interval when playing)
   useEffect(() => {
@@ -149,7 +148,6 @@ export function useAudioPlayer({
   const load = useCallback((loadUrl: string, options?: { autoplay?: boolean; onEnd?: () => void }) => {
     player.load(loadUrl, {
       autoplay: options?.autoplay ?? false,
-      html5: true,
       onplay: () => handleOnPlay(),
       onpause: () => handleOnPause(),
       onend: () => options?.onEnd?.(), // Caller-provided onEnd for playlist track-end handling
