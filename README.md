@@ -1,94 +1,71 @@
 # WeMeditateWeb
 
-A modern meditation website delivering content at lightning speed from the edge.
+Welcome! This repo powers the WeMeditate web experience. It is a fast, accessible meditation site built with React, TypeScript, Vike, Tailwind CSS, and Cloudflare Workers.
 
-## What is this?
+## Quick start
 
-WeMeditateWeb serves meditation content through a fast, accessible interface. Content comes from our headless CMS and is delivered globally through Cloudflare's edge network.
-
-**Built with:** React, TypeScript, Tailwind CSS, and Cloudflare Workers
-
-## Getting Started
-
-### You'll need:
-- Node.js 18+
+### Prerequisites
+- Node.js `22.17.0` (see `.node-version`)
 - pnpm (`npm install -g pnpm`)
 
 ### Setup
-
-1. **Install dependencies**
+1. Install dependencies:
    ```bash
    pnpm install
    ```
 
-2. **Configure environment**
+2. Create your local environment file:
    ```bash
    pnpm env:setup
    ```
 
-   Then edit `.env.local` with your API keys (see `.env.example` for what you need).
+3. Fill in `.env.local` using `.env.example` as a reference.
 
-3. **Start developing**
-   ```bash
-   pnpm dev
-   ```
-
-   Visit [http://localhost:5173](http://localhost:5173)
-
-## Common Commands
-
+### Run locally
 ```bash
-pnpm dev              # Start development server
-pnpm build            # Build for production
-pnpm deploy           # Deploy to Cloudflare
-
-pnpm ladle            # Open component library
-pnpm lint             # Check code quality
+pnpm dev
 ```
+Then open `http://localhost:5173`.
 
-## Project Structure
+## Key commands
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Start the local dev server. |
+| `pnpm build` | Build the production client and server bundles. |
+| `pnpm preview` | Preview the production build locally. |
+| `pnpm prod` | Build and run the production server locally with Wrangler. |
+| `pnpm deploy` | Build and deploy to Cloudflare. |
+| `pnpm lint` | Run ESLint across the codebase. |
+| `pnpm test` | Run tests in watch mode. |
+| `pnpm test:run` | Run tests once (CI style). |
+| `pnpm test:ui` | Open the Vitest UI runner. |
+| `pnpm ladle` | Run the component library locally. |
+| `pnpm ladle:build` | Build the component library for static hosting. |
+| `pnpm env:setup` | Copy `.env.example` to `.env.local`. |
+| `pnpm types:cms` | Refresh CMS types from the external Payload repo (requires network). |
+
+## Project structure
 
 ```
-pages/          # App pages and routes
+pages/          # Vike pages and routes
 components/     # Reusable UI components
-  atoms/        # Basic elements (buttons, inputs)
-  molecules/    # Simple groups (form fields, cards)
-  organisms/    # Complex sections (header, footer)
-layouts/        # Page layouts
-server/         # Backend logic and caching
+layouts/        # Layout wrappers
+hooks/          # Shared React hooks
+server/         # Backend logic, caching, CMS integration
+public/         # Static assets
 ```
 
-## Key Features
+## Working agreements
+- Review `DEVELOPMENT_STANDARDS.md` before making changes.
+- Follow the component rules in `DESIGN_SYSTEM.md`.
+- Use `STORYBOOK.md` for component library guidance.
 
-- **Fast Global Delivery** - Runs on Cloudflare's edge network
-- **Smart Caching** - Intelligent content caching reduces load times
-- **Multi-Language** - Automatic locale handling for international content
-- **Live Preview** - See content changes in real-time from the CMS
-- **Component Library** - Isolated component development with Ladle
+## Help & docs
+- `CLAUDE.md` provides the full project guide.
+- `MCP_USAGE.md` documents MCP usage.
+- `STORYBOOK.md` explains the component documentation flow.
 
-## Documentation
-
-- **[CLAUDE.md](CLAUDE.md)** - Complete project guide
-- **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** - Design patterns and components
-- **[STORYBOOK.md](STORYBOOK.md)** - Component documentation guide
-
-## Deployment
-
-Deploy to Cloudflare Workers:
-
-```bash
-pnpm deploy
-```
-
-Make sure to configure environment variables in the Cloudflare dashboard first.
-
-## Need Help?
-
-- **Type errors?** Run `pnpm typecheck`
-- **Port in use?** Run `lsof -ti:5173 | xargs kill`
-- **Cache issues?** See [server/CACHING.md](server/CACHING.md)
-
-## Contributing
-
-We follow the Atomic Design methodology and maintain strict accessibility standards. Read [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) before creating components.
-
+## Common issues
+- If local config changes are not taking effect, delete `.env.local` and rerun `pnpm env:setup`.
+- If `pnpm deploy` fails, confirm your Cloudflare credentials and environment variables are configured.
