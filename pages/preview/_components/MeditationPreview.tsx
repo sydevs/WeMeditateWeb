@@ -7,8 +7,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { useLivePreview } from '@payloadcms/live-preview-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Meditation } from './types'
 import { MeditationTemplate } from '../../../components/templates'
 
@@ -46,12 +45,41 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
   // Uses { timestamp, id } so each message triggers a new seek, even to the same timestamp
   const [seekCommand, setSeekCommand] = useState<{ timestamp: number; id: number } | null>(null)
 
-  // useLivePreview listens for postMessage events from SahajCloud admin
-  const { data: liveData } = useLivePreview<Meditation>({
-    initialData,
-    serverURL,
-    depth: 2,
-  })
+  // Live preview data (meditations only) with no server refetch
+  const [liveData, setLiveData] = useState<Meditation>(initialData)
+  const hasSentReadyMessage = useRef(false)
+
+  useEffect(() => {
+    if (!serverURL) return
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== serverURL) return
+      if (!event.data || typeof event.data !== 'object') return
+      if (event.data.type !== 'payload-live-preview') return
+      if (event.data.collectionSlug && event.data.collectionSlug !== 'meditations') return
+
+      const incoming = event.data.data as Meditation
+      if (initialData?.id && incoming?.id && incoming.id !== initialData.id) return
+
+      setLiveData(incoming)
+    }
+
+    window.addEventListener('message', handleMessage)
+
+    if (!hasSentReadyMessage.current) {
+      hasSentReadyMessage.current = true
+      const windowToPostTo = window?.opener || window?.parent
+      windowToPostTo?.postMessage(
+        {
+          type: 'payload-live-preview',
+          ready: true,
+        },
+        serverURL,
+      )
+    }
+
+    return () => window.removeEventListener('message', handleMessage)
+  }, [serverURL, initialData?.id])
 
   // Listen for postMessage events from SahajCloud admin
   useEffect(() => {
