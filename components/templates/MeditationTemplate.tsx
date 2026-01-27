@@ -71,13 +71,25 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
       // Transform CMS frames to MeditationPlayer format
       frames = rawFrames
         .filter((frame: { url?: string | null }) => frame.url)
-        .map((frame: { timestamp?: number; url: string; mimeType?: string | null }) => ({
-          timestamp: frame.timestamp ?? 0,
-          media: {
-            type: frame.mimeType?.startsWith('video/') ? 'video' : 'image',
-            src: frame.url.startsWith('http') ? frame.url : `${cmsBaseUrl}${frame.url}`,
-          },
-        }))
+        .map((frame: {
+          timestamp?: number
+          url: string
+          downloadUrl?: string | null
+          mimeType?: string | null
+        }) => {
+          const cleanUrl = frame.url.split('?')[0]
+          const isHls = cleanUrl.endsWith('.m3u8') || frame.mimeType?.includes('mpegurl')
+          const isVideo = frame.mimeType?.startsWith('video/') || isHls
+
+          return {
+            timestamp: frame.timestamp ?? 0,
+            media: {
+              type: isVideo ? 'video' : 'image',
+              src: frame.url,
+              fallbackSrc: frame.downloadUrl,
+            },
+          }
+        })
     } catch (error) {
       console.error('Failed to parse meditation frames:', error)
     }

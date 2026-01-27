@@ -48,6 +48,10 @@ export interface MeditationFrame {
   media: {
     type: 'image' | 'video'
     src: string
+    /**
+     * Optional fallback source (e.g., MP4) when primary HLS source isn't supported.
+     */
+    fallbackSrc?: string
   }
 }
 
@@ -218,6 +222,8 @@ function MeditationPlayerInner({
     return currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE }
   }, [frames, displayTime])
 
+  const isHlsSource = currentMedia.type === 'video' && currentMedia.src.split('?')[0].endsWith('.m3u8')
+
   // Play/pause handler
   const handlePlayPause = () => {
     if (state.isPlaying) {
@@ -281,14 +287,21 @@ function MeditationPlayerInner({
                 >
                   {currentMedia.type === 'video' ? (
                     <video
-                      src={currentMedia.src}
                       autoPlay
                       loop
                       muted
                       playsInline
                       draggable={false}
                       className="w-full h-full object-cover"
-                    />
+                    >
+                      <source
+                        src={currentMedia.src}
+                        type={isHlsSource ? 'application/x-mpegURL' : undefined}
+                      />
+                      {currentMedia.fallbackSrc ? (
+                        <source src={currentMedia.fallbackSrc} type="video/mp4" />
+                      ) : null}
+                    </video>
                   ) : (
                     <img
                       src={currentMedia.src}
