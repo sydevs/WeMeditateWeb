@@ -77,17 +77,36 @@ describe('validateSDKResponse', () => {
 })
 
 describe('validatePayloadConfig', () => {
-  it('should throw with 401 status when API key is missing or empty', () => {
-    const testCases = [undefined, '', '   ']
-    for (const apiKey of testCases) {
-      try {
-        validatePayloadConfig({ apiKey })
-        expect.fail('Should have thrown')
-      } catch (error) {
-        expect(error).toBeInstanceOf(PayloadConfigError)
-        expect((error as PayloadConfigError).response.status).toBe(401)
-        expect((error as Error).message).toContain('API key')
-      }
+  it('should throw with 401 status when API key is missing', () => {
+    try {
+      validatePayloadConfig({ apiKey: undefined })
+      expect.fail('Should have thrown')
+    } catch (error) {
+      expect(error).toBeInstanceOf(PayloadConfigError)
+      expect((error as PayloadConfigError).response.status).toBe(401)
+      expect((error as Error).message).toContain('apiKey')
+    }
+  })
+
+  it('should throw with 401 status when API key is empty string', () => {
+    try {
+      validatePayloadConfig({ apiKey: '' })
+      expect.fail('Should have thrown')
+    } catch (error) {
+      expect(error).toBeInstanceOf(PayloadConfigError)
+      expect((error as PayloadConfigError).response.status).toBe(401)
+      expect((error as Error).message).toContain('apiKey')
+    }
+  })
+
+  it('should throw with 401 status when API key is whitespace only', () => {
+    try {
+      validatePayloadConfig({ apiKey: '   ' })
+      expect.fail('Should have thrown')
+    } catch (error) {
+      expect(error).toBeInstanceOf(PayloadConfigError)
+      expect((error as PayloadConfigError).response.status).toBe(401)
+      expect((error as Error).message).toContain('apiKey')
     }
   })
 
@@ -98,7 +117,7 @@ describe('validatePayloadConfig', () => {
     } catch (error) {
       expect(error).toBeInstanceOf(PayloadConfigError)
       expect((error as PayloadConfigError).response.status).toBe(400)
-      expect((error as Error).message).toContain('URL must include protocol')
+      expect((error as Error).message).toContain('Base URL must be a valid URL')
     }
   })
 
