@@ -12,6 +12,7 @@
 import { getContext } from 'hono/context-storage'
 import type { Context } from 'hono'
 import type { KVNamespace } from '@cloudflare/workers-types'
+import { z } from 'zod'
 
 /**
  * Hono environment type definition for Cloudflare Workers bindings
@@ -37,6 +38,14 @@ export interface CmsContext {
 }
 
 /**
+ * Zod schema for validating CMS context configuration.
+ */
+const cmsContextSchema = z.object({
+  apiKey: z.string().min(1, 'CMS API key is required'),
+  baseURL: z.url('Base URL must be a valid URL'),
+})
+
+/**
  * Attempts to get the Hono context, returning undefined if not available.
  * This handles the case where code runs outside of a request context
  * (e.g., during local development without Workers runtime).
@@ -52,6 +61,7 @@ function tryGetContext(): Context<CmsEnv> | undefined {
 
 /**
  * Gets CMS configuration from Hono's context storage.
+ * Uses Zod for validation with clear error messages.
  *
  * Configuration sources:
  * - apiKey: Cloudflare Workers context (runtime secret) or import.meta.env (dev)
@@ -59,29 +69,34 @@ function tryGetContext(): Context<CmsEnv> | undefined {
  * - kv: Cloudflare Workers context bindings (undefined in dev)
  *
  * @returns CMS configuration with apiKey, baseURL, and optional kv
- * @throws Error if apiKey is not available from any source
+ * @throws Error if configuration validation fails
  */
 export function getCmsContext(): CmsContext {
   // Try to get context from Hono's AsyncLocalStorage
   const context = tryGetContext()
 
   // Get apiKey: first from Cloudflare Workers context (secrets), then import.meta.env (dev)
-  const apiKey =
-    context?.env?.SAHAJCLOUD_API_KEY || import.meta.env.SAHAJCLOUD_API_KEY
-
-  if (!apiKey) {
-    throw new Error(
-      'CMS API key not available. Ensure SAHAJCLOUD_API_KEY is set in environment.'
-    )
-  }
+  const apiKey = context?.env?.SAHAJCLOUD_API_KEY || import.meta.env.SAHAJCLOUD_API_KEY
 
   // Get baseURL from build-time env (Vite embeds from .env.production or .env.local)
   const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
 
+  // Validate with Zod - provides consistent error messages
+  const result = cmsContextSchema.safeParse({ apiKey, baseURL })
+
+  if (!result.success) {
+    const errorMessage = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
+    throw new Error(`CMS context validation failed: ${errorMessage}`)
+  }
+
   // Get KV from context bindings (undefined in dev or when context unavailable)
   const kv = context?.env?.WEMEDITATE_CACHE
 
-  return { apiKey, baseURL, kv }
+  return {
+    apiKey: result.data.apiKey,
+    baseURL: result.data.baseURL,
+    kv,
+  }
 }
 
 /**

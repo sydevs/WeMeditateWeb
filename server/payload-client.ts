@@ -9,6 +9,7 @@
  */
 
 import { PayloadSDK } from '@payloadcms/sdk'
+import { z } from 'zod'
 import type { Config } from './payload-types'
 import { getCmsContext } from './cms-context'
 
@@ -24,48 +25,52 @@ export interface PayloadClientConfig {
 }
 
 /**
+ * Zod schema for PayloadCMS client configuration.
+ */
+const payloadConfigSchema = z.object({
+  apiKey: z.string().min(1, 'PayloadCMS API key is required'),
+  baseURL: z.url('Base URL must be a valid URL').optional(),
+})
+
+/**
+ * Zod issue structure for error reporting
+ */
+interface ValidationIssue {
+  path: PropertyKey[]
+  message: string
+}
+
+/**
  * Error thrown when PayloadCMS configuration is invalid.
  * Has a `response.status` property for compatibility with detectErrorType().
  */
 export class PayloadConfigError extends Error {
   public readonly response: { status: number }
+  public readonly issues: ValidationIssue[]
 
-  constructor(message: string, status: number = 400) {
-    super(message)
+  constructor(issues: ValidationIssue[]) {
+    const message = issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
+    super(`PayloadCMS configuration error: ${message}`)
     this.name = 'PayloadConfigError'
-    this.response = { status }
+    this.issues = issues
+
+    // Determine status: missing API key = 401, invalid URL = 400
+    const hasApiKeyError = issues.some((i) => i.path.includes('apiKey'))
+    this.response = { status: hasApiKeyError ? 401 : 400 }
   }
 }
 
 /**
  * Validates PayloadCMS configuration before making API requests.
- * Provides clear error messages for common configuration issues.
+ * Uses Zod for schema validation with clear error messages.
  *
  * @param config - Configuration to validate (should already have resolved values)
- * @throws PayloadConfigError with descriptive message if configuration is invalid
+ * @throws PayloadConfigError with Zod issues if configuration is invalid
  */
-export function validatePayloadConfig(config: {
-  apiKey?: string
-  baseURL?: string
-}): void {
-  // Check API key is provided and not empty
-  if (!config.apiKey || config.apiKey.trim() === '') {
-    throw new PayloadConfigError(
-      'PayloadCMS API key is not configured. Set the SAHAJCLOUD_API_KEY environment variable.',
-      401
-    )
-  }
-
-  // Validate URL format if provided
-  if (config.baseURL) {
-    try {
-      new URL(config.baseURL)
-    } catch {
-      throw new PayloadConfigError(
-        `Invalid PayloadCMS URL: "${config.baseURL}". URL must include protocol (e.g., https://cms.example.com).`,
-        400
-      )
-    }
+export function validatePayloadConfig(config: { apiKey?: string; baseURL?: string }): void {
+  const result = payloadConfigSchema.safeParse(config)
+  if (!result.success) {
+    throw new PayloadConfigError(result.error.issues)
   }
 }
 

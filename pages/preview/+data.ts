@@ -18,6 +18,7 @@ import type { PageContextServer } from 'vike/types'
 import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/cms-client'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from './_components'
+import { idSchema, collectionSchema } from '../../server/validation'
 
 /**
  * Registry mapping collection names to their REST API fetcher functions
@@ -35,28 +36,36 @@ export type PreviewPageData = FullPreviewData
 
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
   // Extract URL parameters
-  const { search: { collection, id } } = pageContext.urlParsed
+  const { search: { collection: collectionParam, id: idParam } } = pageContext.urlParsed
   const { locale } = pageContext
 
   // Validate required parameters
-  if (!collection) {
-    throw new Error('Preview error: Missing "collection" parameter')
+  if (!collectionParam) {
+    throw render(400, 'Preview error: Missing "collection" parameter')
   }
 
-  if (!id) {
-    throw new Error('Preview error: Missing "id" parameter')
+  if (!idParam) {
+    throw render(400, 'Preview error: Missing "id" parameter')
   }
 
-  // Validate collection type
-  if (!(collection in PREVIEW_FETCHERS)) {
-    const supported = Object.keys(PREVIEW_FETCHERS).join(', ')
-    throw new Error(
-      `Preview error: Unsupported collection type "${collection}". ` +
-      `Supported types: ${supported}`
-    )
+  // Validate collection type with Zod
+  let collection: CollectionType
+  try {
+    collection = collectionSchema.parse(collectionParam)
+  } catch (error) {
+    const supported = collectionSchema.options.join(', ')
+    throw render(400, `Invalid collection: "${collectionParam}". Supported types: ${supported}`)
   }
 
-  const fetchById = PREVIEW_FETCHERS[collection as CollectionType]
+  // Validate ID parameter with Zod (numeric ID)
+  let id: string
+  try {
+    id = idSchema.parse(idParam)
+  } catch (error) {
+    throw render(400, `Preview error: ${error instanceof Error ? error.message : 'Invalid ID'}`)
+  }
+
+  const fetchById = PREVIEW_FETCHERS[collection]
 
   // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
   const settings = await getWeMeditateWebSettings()

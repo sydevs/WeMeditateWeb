@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '../../atoms/Input'
 import { Textarea } from '../../atoms/Textarea'
 import { Select } from '../../atoms/Select'
@@ -128,6 +129,22 @@ export interface FormBuilderProps {
    * Additional CSS classes for the form wrapper
    */
   className?: string
+
+  /**
+   * Optional Zod schema for form validation.
+   * When provided, uses zodResolver for type-safe validation.
+   * Falls back to react-hook-form's built-in validation when not provided.
+   *
+   * @example
+   * import { z } from 'zod'
+   * const schema = z.object({
+   *   email: z.string().email('Invalid email'),
+   *   name: z.string().min(1, 'Name is required'),
+   * })
+   * <FormBuilder form={formConfig} onSubmit={handleSubmit} schema={schema} />
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  schema?: any
 }
 
 /**
@@ -237,7 +254,7 @@ function renderField(
  *   }}
  * />
  */
-export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left', className = '' }: FormBuilderProps) {
+export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left', className = '', schema }: FormBuilderProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string>('')
@@ -248,6 +265,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
     formState: { errors, isSubmitting },
   } = useForm({
     mode: 'onSubmit',
+    resolver: schema ? zodResolver(schema) : undefined,
   })
 
   /**
