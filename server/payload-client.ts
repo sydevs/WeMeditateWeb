@@ -28,7 +28,10 @@ export interface PayloadClientConfig {
  * Zod schema for PayloadCMS client configuration.
  */
 const payloadConfigSchema = z.object({
-  apiKey: z.string().min(1, 'PayloadCMS API key is required'),
+  apiKey: z
+    .string()
+    .min(1, 'PayloadCMS API key is required')
+    .regex(/^[a-zA-Z0-9-]+$/, 'API key must contain only alphanumeric characters and dashes'),
   baseURL: z.url('Base URL must be a valid URL').optional(),
 })
 

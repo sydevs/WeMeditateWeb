@@ -10,7 +10,7 @@
  * try {
  *   const slug = slugSchema.parse(routeParams.slug)
  * } catch (error) {
- *   throw render(400, error instanceof Error ? error.message : 'Invalid slug')
+ *   throw render(404, error instanceof Error ? error.message : 'Invalid slug')
  * }
  */
 
@@ -41,7 +41,6 @@ export const idSchema = z.coerce
 
 /**
  * Schema for validating collection types in preview routes.
+ * The CollectionType is defined in pages/preview/_components/types.ts
  */
 export const collectionSchema = z.enum(['pages', 'meditations'])
-
-export type CollectionType = z.infer<typeof collectionSchema>

@@ -41,7 +41,10 @@ export interface CmsContext {
  * Zod schema for validating CMS context configuration.
  */
 const cmsContextSchema = z.object({
-  apiKey: z.string().min(1, 'CMS API key is required'),
+  apiKey: z
+    .string()
+    .min(1, 'CMS API key is required')
+    .regex(/^[a-zA-Z0-9-]+$/, 'API key must contain only alphanumeric characters and dashes'),
   baseURL: z.url('Base URL must be a valid URL'),
 })
 

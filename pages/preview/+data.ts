@@ -41,11 +41,11 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
 
   // Validate required parameters
   if (!collectionParam) {
-    throw render(400, 'Preview error: Missing "collection" parameter')
+    throw render(404, 'Missing "collection" parameter')
   }
 
   if (!idParam) {
-    throw render(400, 'Preview error: Missing "id" parameter')
+    throw render(404, 'Missing "id" parameter')
   }
 
   // Validate collection type with Zod
@@ -54,7 +54,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     collection = collectionSchema.parse(collectionParam)
   } catch (error) {
     const supported = collectionSchema.options.join(', ')
-    throw render(400, `Invalid collection: "${collectionParam}". Supported types: ${supported}`)
+    throw render(404, `Invalid collection: "${collectionParam}". Supported types: ${supported}`)
   }
 
   // Validate ID parameter with Zod (numeric ID)
@@ -62,7 +62,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   try {
     id = idSchema.parse(idParam)
   } catch (error) {
-    throw render(400, `Preview error: ${error instanceof Error ? error.message : 'Invalid ID'}`)
+    throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
   const fetchById = PREVIEW_FETCHERS[collection]

@@ -18,12 +18,12 @@ export interface MeditationEmbedPageData {
 export async function data(pageContext: PageContextServer): Promise<MeditationEmbedPageData> {
   const { locale, routeParams } = pageContext
 
-  // Validate ID parameter - returns 400 for invalid IDs
+  // Validate ID parameter - returns 404 for invalid IDs
   let id: string
   try {
     id = idSchema.parse(routeParams.id)
   } catch (error) {
-    throw render(400, error instanceof Error ? error.message : 'Invalid ID')
+    throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
   // Fetch global settings and meditation in parallel

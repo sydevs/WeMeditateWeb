@@ -454,9 +454,11 @@ try {
   const slug = slugSchema.parse(routeParams.slug)
   const id = idSchema.parse(routeParams.id)  // Returns string
 } catch (error) {
-  throw render(400, error instanceof Error ? error.message : 'Validation error')
+  throw render(404, error instanceof Error ? error.message : 'Validation error')
 }
 ```
+
+**Note**: Vike's `render()` only supports specific status codes: 401, 403, 404, 410, 429, 500, 503. For validation errors, use 404 since an invalid slug/ID means the resource doesn't exist.
 
 ### Adding New Validation Schemas
 
@@ -470,7 +472,7 @@ try {
    try {
      const value = mySchema.parse(input)
    } catch (error) {
-     throw render(400, error instanceof Error ? error.message : 'Invalid input')
+     throw render(404, error instanceof Error ? error.message : 'Invalid input')
    }
    ```
 

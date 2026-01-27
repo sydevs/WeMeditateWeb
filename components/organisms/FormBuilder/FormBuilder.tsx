@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { ZodObject, ZodRawShape } from 'zod'
 import { Input } from '../../atoms/Input'
 import { Textarea } from '../../atoms/Textarea'
 import { Select } from '../../atoms/Select'
@@ -143,8 +144,7 @@ export interface FormBuilderProps {
    * })
    * <FormBuilder form={formConfig} onSubmit={handleSubmit} schema={schema} />
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema?: any
+  schema?: ZodObject<ZodRawShape>
 }
 
 /**

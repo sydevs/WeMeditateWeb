@@ -18,12 +18,12 @@ export interface PageData {
 export async function data(pageContext: PageContextServer): Promise<PageData> {
   const { locale, routeParams } = pageContext
 
-  // Validate slug parameter - returns 400 for invalid slugs
+  // Validate slug parameter - returns 404 for invalid slugs
   let slug: string
   try {
     slug = slugSchema.parse(routeParams.slug)
   } catch (error) {
-    throw render(400, error instanceof Error ? error.message : 'Invalid slug')
+    throw render(404, error instanceof Error ? error.message : 'Invalid slug')
   }
 
   // Fetch WeMeditateWebSettings and page by slug
