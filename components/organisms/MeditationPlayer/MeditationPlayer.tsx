@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useCallback, useEffect, useEffectEvent } from 'react'
+import { ComponentProps, useMemo, useCallback, useEffect, useEffectEvent, useRef } from 'react'
 import { AudioPlayerProvider } from 'react-use-audio-player'
 import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { Avatar, Button, Link } from '../../atoms'
@@ -52,6 +52,10 @@ export interface MeditationFrame {
      * Optional fallback source (e.g., MP4) when primary HLS source isn't supported.
      */
     fallbackSrc?: string
+    /**
+     * Optional duration (seconds) from CMS metadata.
+     */
+    duration?: number
   }
 }
 
@@ -173,6 +177,11 @@ function MeditationPlayerInner({
     onPlaybackTimeUpdate,
   })
 
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const lastAudioTimeRef = useRef(0)
+  const lastFrameKeyRef = useRef<string | null>(null)
+  const pendingSeekRef = useRef<number | null>(null)
+
   // Seek handler wrapped in useCallback for stable reference in useCircularProgress
   const handleSeek = useCallback((time: number) => {
     controls.seek(time)
@@ -197,12 +206,14 @@ function MeditationPlayerInner({
     onSeek: handleSeek,
   })
 
+  const timeForSync = isDragging ? displayTime : state.currentTime
+
   // Get current media frame based on display time (memoized to avoid re-sorting on every render)
   // Uses displayTime so frames update during drag
-  const currentMedia = useMemo(() => {
+  const currentFrame = useMemo(() => {
     // Handle empty frames array with placeholder
     if (!frames || frames.length === 0) {
-      return { type: 'image' as const, src: PLACEHOLDER_IMAGE }
+      return { timestamp: 0, media: { type: 'image' as const, src: PLACEHOLDER_IMAGE } }
     }
 
     // Sort frames by timestamp and find the current one
@@ -211,7 +222,7 @@ function MeditationPlayerInner({
     // Find the last frame whose timestamp is less than or equal to display time
     let currentFrame = sortedFrames[0]
     for (const frame of sortedFrames) {
-      if (frame.timestamp <= displayTime) {
+      if (frame.timestamp <= timeForSync) {
         currentFrame = frame
       } else {
         break
@@ -219,10 +230,92 @@ function MeditationPlayerInner({
     }
 
     // Fallback to placeholder if frame has no media (defensive handling for incomplete CMS data)
-    return currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE }
-  }, [frames, displayTime])
+    return {
+      timestamp: currentFrame.timestamp,
+      media: currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE },
+    }
+  }, [frames, timeForSync])
 
-  const isHlsSource = currentMedia.type === 'video' && currentMedia.src.split('?')[0].endsWith('.m3u8')
+  const currentMedia = currentFrame.media
+  const isHlsSource =
+    currentMedia.type === 'video' && currentMedia.src.split('?')[0].endsWith('.m3u8')
+  const frameKey =
+    currentMedia.type === 'video'
+      ? `${currentMedia.src}|${currentMedia.fallbackSrc ?? ''}`
+      : null
+
+  // Apply any pending seek once metadata is available
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const handleLoadedMetadata = () => {
+      if (pendingSeekRef.current !== null) {
+        const target = pendingSeekRef.current
+        pendingSeekRef.current = null
+        try {
+          video.currentTime = target
+        } catch {
+          // Ignore seek errors until the stream is ready
+        }
+      }
+    }
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata)
+    return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+  }, [frameKey])
+
+  // Keep video frames synchronized to the audio timeline
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || currentMedia.type !== 'video') {
+      lastFrameKeyRef.current = null
+      return
+    }
+
+    const audioTime = timeForSync
+    const frameStart = currentFrame.timestamp ?? 0
+    const relativeTime = Math.max(0, audioTime - frameStart)
+
+    const mediaDuration =
+      Number.isFinite(video.duration) && video.duration > 0
+        ? video.duration
+        : typeof currentMedia.duration === 'number' && currentMedia.duration > 0
+          ? currentMedia.duration
+          : null
+
+    const targetTime = mediaDuration ? relativeTime % mediaDuration : relativeTime
+    const isFrameChange = frameKey !== lastFrameKeyRef.current
+    const isSeek = Math.abs(audioTime - lastAudioTimeRef.current) > 0.5 || isDragging
+    const shouldSnap = !state.isPlaying || isSeek || isFrameChange
+
+    if (shouldSnap && Number.isFinite(targetTime)) {
+      const diff = Math.abs(video.currentTime - targetTime)
+      if (diff > 0.2) {
+        if (video.readyState >= 1) {
+          try {
+            video.currentTime = targetTime
+          } catch {
+            // Ignore seek errors until the stream is ready
+          }
+        } else {
+          pendingSeekRef.current = targetTime
+        }
+      }
+    }
+
+    if (state.isPlaying) {
+      const playPromise = video.play()
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {})
+      }
+    } else {
+      video.pause()
+    }
+
+    lastAudioTimeRef.current = audioTime
+    lastFrameKeyRef.current = frameKey
+  }, [currentMedia, currentFrame.timestamp, timeForSync, state.isPlaying, isDragging, frameKey])
 
   // Play/pause handler
   const handlePlayPause = () => {
@@ -287,6 +380,7 @@ function MeditationPlayerInner({
                 >
                   {currentMedia.type === 'video' ? (
                     <video
+                      ref={videoRef}
                       autoPlay
                       loop
                       muted

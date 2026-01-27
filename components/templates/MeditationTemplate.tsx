@@ -76,6 +76,7 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
           url: string
           downloadUrl?: string | null
           mimeType?: string | null
+          duration?: number | null
         }) => {
           const cleanUrl = frame.url.split('?')[0]
           const isHls = cleanUrl.endsWith('.m3u8') || frame.mimeType?.includes('mpegurl')
@@ -85,8 +86,9 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
             timestamp: frame.timestamp ?? 0,
             media: {
               type: isVideo ? 'video' : 'image',
-              src: frame.url,
-              fallbackSrc: frame.downloadUrl,
+              src: resolveMediaUrl(frame.url),
+              fallbackSrc: frame.downloadUrl ? resolveMediaUrl(frame.downloadUrl) : undefined,
+              duration: typeof frame.duration === 'number' ? frame.duration : undefined,
             },
           }
         })

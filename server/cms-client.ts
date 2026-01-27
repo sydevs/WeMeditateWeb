@@ -82,7 +82,11 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
         return null
       }
 
-      return result.docs[0] as Page
+      const page = result.docs[0] as Page
+      if (page._status === 'draft') {
+        return null
+      }
+      return page
     },
   })
 }
@@ -125,6 +129,10 @@ export async function getPageById(options: LocalizedQueryOptions & {
       })
 
       if (!result) return null
+      // Public pages should never render drafts
+      if (!options.draft && result._status === 'draft') {
+        return null
+      }
       return result as Page
     },
   })
@@ -165,6 +173,10 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
       })
 
       if (!result) return null
+      // Public pages should never render drafts
+      if (!options.draft && result._status === 'draft') {
+        return null
+      }
       return result as Meditation
     },
   })
