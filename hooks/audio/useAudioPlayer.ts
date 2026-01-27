@@ -178,8 +178,8 @@ export function useAudioPlayer({
 
   const pause = useEffectEvent(() => {
     const howl = player.player
-    if (howl && soundIdRef.current !== null) {
-      howl.pause(soundIdRef.current)
+    if (howl) {
+      howl.pause()
       return
     }
 

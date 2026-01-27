@@ -310,7 +310,10 @@ function MeditationPlayerInner({
                       variant="neutral"
                       shape="circular"
                       size="lg"
-                      onClick={handlePlayPause}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        handlePlayPause()
+                      }}
                       isLoading={state.isLoading}
                       aria-label={state.isPlaying ? 'Pause' : 'Play'}
                       className="border-0 shadow-2xl"
