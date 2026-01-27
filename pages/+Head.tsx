@@ -6,6 +6,8 @@ import logoUrl from "../assets/logo.svg";
 export default function HeadDefault() {
   return (
     <>
+      <link rel="preconnect" href="https://assets.sydevelopers.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://cloud.sydevelopers.com" />
       <link rel="icon" href={logoUrl} />
 
       {/* See https://plausible.io/docs/plausible-script */}

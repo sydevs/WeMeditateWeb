@@ -177,6 +177,8 @@ function MeditationPlayerInner({
     onPlaybackTimeUpdate,
   })
 
+  const effectiveDuration = state.duration > 0 ? state.duration : track.duration
+
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastAudioTimeRef = useRef(0)
   const lastFrameKeyRef = useRef<string | null>(null)
@@ -202,7 +204,7 @@ function MeditationPlayerInner({
   // Circular progress hook handles all drag and coordinate calculation logic
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
     currentTime: state.currentTime,
-    duration: state.duration,
+    duration: effectiveDuration,
     onSeek: handleSeek,
   })
 
@@ -327,7 +329,7 @@ function MeditationPlayerInner({
   }
 
   // Progress calculations - use displayTime for visual updates during drag
-  const progressPercent = state.duration > 0 ? (displayTime / state.duration) * 100 : 0
+  const progressPercent = effectiveDuration > 0 ? (displayTime / effectiveDuration) * 100 : 0
   const progressAngle = (progressPercent / 100) * 360
 
   // Draggable handle position (subtract 90 degrees to account for SVG rotation)
@@ -477,7 +479,11 @@ function MeditationPlayerInner({
               {/* Time Display */}
               <div className="flex justify-center mt-2">
                 <span className="text-base @4xl:text-lg font-number text-gray-700">
-                  {formatTime(timeDisplay === 'countdown' ? state.duration - displayTime : displayTime)}
+                  {formatTime(
+                    timeDisplay === 'countdown'
+                      ? Math.max(0, effectiveDuration - displayTime)
+                      : displayTime
+                  )}
                 </span>
               </div>
             </div>

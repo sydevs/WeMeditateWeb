@@ -130,6 +130,7 @@ export function useAudioPlayer({
       soundIdRef.current = null
       player.load(url, {
         autoplay,
+        html5: true,
         onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
         onpause: () => handleOnPause(),
         onend: () => handleOnEnd(),
@@ -201,6 +202,7 @@ export function useAudioPlayer({
     soundIdRef.current = null
     player.load(loadUrl, {
       autoplay: options?.autoplay ?? false,
+      html5: true,
       onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
       onpause: () => handleOnPause(),
       onend: () => {

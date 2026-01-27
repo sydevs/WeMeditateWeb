@@ -135,7 +135,10 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
           credit: '',
           creditURL: '',
           thumbnailURL: getImageUrl(meditation.thumbnail) || '',
-          duration: 0, // Duration will be detected by audio player
+          duration:
+            typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
+              ? meditation.durationMinutes * 60
+              : 0,
         }}
         title={meditation.title || 'Untitled Meditation'}
         frames={frames}
