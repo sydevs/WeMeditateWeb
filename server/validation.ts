@@ -44,3 +44,20 @@ export const idSchema = z.coerce
  * The CollectionType is defined in pages/preview/_components/types.ts
  */
 export const collectionSchema = z.enum(['pages', 'meditations'])
+
+// ===== Configuration Schemas =====
+
+/**
+ * Schema for validating API keys.
+ * Used by both cms-context.ts and payload-client.ts for consistent validation.
+ */
+export const apiKeySchema = z
+  .string()
+  .min(1, 'API key is required')
+  .regex(/^[a-zA-Z0-9-]+$/, 'API key must contain only alphanumeric characters and dashes')
+
+/**
+ * Schema for validating base URLs.
+ * Used for CMS API endpoint validation.
+ */
+export const baseUrlSchema = z.url('Base URL must be a valid URL')

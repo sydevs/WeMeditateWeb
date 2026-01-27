@@ -12,6 +12,7 @@ import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
 import { getCmsContext } from './cms-context'
+import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
  * Configuration for creating a PayloadCMS SDK client.
@@ -26,13 +27,11 @@ export interface PayloadClientConfig {
 
 /**
  * Zod schema for PayloadCMS client configuration.
+ * Uses shared schemas from validation.ts for consistency.
  */
 const payloadConfigSchema = z.object({
-  apiKey: z
-    .string()
-    .min(1, 'PayloadCMS API key is required')
-    .regex(/^[a-zA-Z0-9-]+$/, 'API key must contain only alphanumeric characters and dashes'),
-  baseURL: z.url('Base URL must be a valid URL').optional(),
+  apiKey: apiKeySchema,
+  baseURL: baseUrlSchema.optional(),
 })
 
 /**

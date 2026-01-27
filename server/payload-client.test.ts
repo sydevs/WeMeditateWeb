@@ -99,6 +99,17 @@ describe('validatePayloadConfig', () => {
     }
   })
 
+  it('should throw with 401 status when API key is whitespace only', () => {
+    try {
+      validatePayloadConfig({ apiKey: '   ' })
+      expect.fail('Should have thrown')
+    } catch (error) {
+      expect(error).toBeInstanceOf(PayloadConfigError)
+      expect((error as PayloadConfigError).response.status).toBe(401)
+      expect((error as Error).message).toContain('apiKey')
+    }
+  })
+
   it('should throw with 400 status for invalid URL format', () => {
     try {
       validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'cms.example.com' })

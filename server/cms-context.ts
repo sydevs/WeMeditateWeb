@@ -13,6 +13,7 @@ import { getContext } from 'hono/context-storage'
 import type { Context } from 'hono'
 import type { KVNamespace } from '@cloudflare/workers-types'
 import { z } from 'zod'
+import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
  * Hono environment type definition for Cloudflare Workers bindings
@@ -39,13 +40,11 @@ export interface CmsContext {
 
 /**
  * Zod schema for validating CMS context configuration.
+ * Uses shared schemas from validation.ts for consistency.
  */
 const cmsContextSchema = z.object({
-  apiKey: z
-    .string()
-    .min(1, 'CMS API key is required')
-    .regex(/^[a-zA-Z0-9-]+$/, 'API key must contain only alphanumeric characters and dashes'),
-  baseURL: z.url('Base URL must be a valid URL'),
+  apiKey: apiKeySchema,
+  baseURL: baseUrlSchema,
 })
 
 /**
