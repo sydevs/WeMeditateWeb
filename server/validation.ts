@@ -1,71 +1,24 @@
 /**
- * Shared Zod validation schemas for server-side use.
+ * Shared Zod validation schemas for route parameters.
  *
- * This module provides Zod schemas for validating:
- * - Route parameters (slugs, IDs)
- * - Locale codes
- * - Collection types
- *
- * Use `.parse()` to validate and throw on error, or `.safeParse()` for error handling.
+ * Use `.parse()` to validate and throw on error.
  *
  * @example
- * import { slugSchema, idSchema, collectionSchema } from './validation'
+ * import { slugSchema, idSchema } from './validation'
  * import { render } from 'vike/abort'
  *
- * // In a +data.ts file - throws ZodError on invalid input:
  * try {
  *   const slug = slugSchema.parse(routeParams.slug)
- *   const id = idSchema.parse(routeParams.id)
  * } catch (error) {
- *   throw render(400, error instanceof Error ? error.message : 'Validation error')
+ *   throw render(400, error instanceof Error ? error.message : 'Invalid slug')
  * }
  */
 
 import { z } from 'zod'
 
 /**
- * Valid locales supported by the CMS.
- * Must be kept in sync with Config['locale'] in payload-types.ts.
- */
-export const VALID_LOCALES = [
-  'en',
-  'es',
-  'de',
-  'it',
-  'fr',
-  'ru',
-  'ro',
-  'cs',
-  'uk',
-  'el',
-  'hy',
-  'pl',
-  'pt-br',
-  'fa',
-  'bg',
-  'tr',
-] as const
-
-/**
- * Schema for validating locale parameters.
- */
-export const localeSchema = z.enum(VALID_LOCALES)
-
-/**
  * Schema for validating page/content slugs.
- *
- * Requirements:
- * - Lowercase letters, numbers, hyphens only
- * - Cannot start or end with hyphen
- * - No consecutive hyphens
- * - Between 1 and 100 characters
- *
- * @example
- * slugSchema.parse('about-us')     // ✓ Valid
- * slugSchema.parse('meditation-101') // ✓ Valid
- * slugSchema.parse('ABOUT')        // ✗ Uppercase
- * slugSchema.parse('-about')       // ✗ Leading hyphen
- * slugSchema.parse('about--us')    // ✗ Consecutive hyphens
+ * Lowercase letters, numbers, hyphens only. No leading/trailing/consecutive hyphens.
  */
 export const slugSchema = z
   .string()
@@ -78,18 +31,7 @@ export const slugSchema = z
 
 /**
  * Schema for validating numeric IDs.
- * PayloadCMS uses number IDs by default (defaultIdType: 'number').
- *
- * Uses z.coerce.number() to automatically convert string inputs to numbers,
- * validates, then transforms back to string for API compatibility.
- *
- * @example
- * idSchema.parse(42)    // ✓ Returns "42"
- * idSchema.parse('123') // ✓ Returns "123" (coerced, validated, stringified)
- * idSchema.parse(0)     // ✗ Must be positive
- * idSchema.parse(-1)    // ✗ Must be positive
- * idSchema.parse(1.5)   // ✗ Must be integer
- * idSchema.parse('abc') // ✗ Must be numeric
+ * Coerces string to number, validates, transforms back to string for API compatibility.
  */
 export const idSchema = z.coerce
   .number({ message: 'ID must be a number' })
@@ -99,8 +41,6 @@ export const idSchema = z.coerce
 
 /**
  * Schema for validating collection types in preview routes.
- *
- * This should match the keys of PREVIEW_FETCHERS in pages/preview/+data.ts.
  */
 export const collectionSchema = z.enum(['pages', 'meditations'])
 

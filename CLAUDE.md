@@ -432,15 +432,9 @@ The project uses **Zod 4** for runtime schema validation at critical data bounda
 
 ### Validation Schemas Location
 
-**Environment Variables** ([env.ts](env.ts)):
-- `clientEnvSchema` - Browser-accessible vars (PUBLIC__*)
-- `serverEnvSchema` - Server-only vars
-- `validateServerEnv()` - Runtime validation in CMS context
-
 **Route Parameters** ([server/validation.ts](server/validation.ts)):
 - `slugSchema` - Page slugs (lowercase alphanumeric with hyphens)
 - `idSchema` - Numeric IDs (coerces to number, validates, returns string)
-- `localeSchema` - Supported locale codes
 - `collectionSchema` - Preview collection types (pages, meditations)
 
 **API Configuration** ([server/payload-client.ts](server/payload-client.ts)):
