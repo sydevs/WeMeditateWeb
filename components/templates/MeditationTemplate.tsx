@@ -56,6 +56,26 @@ export interface MeditationTemplateProps {
 export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDisplay, seekTo }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
+  const resolveMediaUrl = (url: string): string => {
+    if (!url) {
+      return url
+    }
+
+    // Keep fully-qualified/data/blob URLs as-is.
+    if (/^(?:[a-z]+:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+      return url
+    }
+
+    if (!cmsBaseUrl) {
+      return url
+    }
+
+    try {
+      return new URL(url, cmsBaseUrl).toString()
+    } catch {
+      return url
+    }
+  }
 
   // Parse and transform frames from CMS format to MeditationPlayer format
   let frames: MeditationFrame[] = []
