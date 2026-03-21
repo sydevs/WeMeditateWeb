@@ -62,8 +62,7 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
   const data = await fetchById({
     id,
     locale,
-    bypassCache: true,
-    draft: true,  // Fetch draft documents for live preview
+    preview: true,
   })
 
   if (!data) {

@@ -393,11 +393,12 @@ These enable page transition animations (currently minimal implementation).
        cacheKey: generateCacheKey('new-content', { slug: options.slug, locale: options.locale }),
        ttl: CacheTTL.PAGE,
        kv: options.kv,
-       bypassCache: options.bypassCache,
+       bypassCache: options.preview === true,
        fetchFn: async () => {
          const client = createPayloadClient({
            apiKey: options.apiKey,
            baseURL: options.baseURL,
+           preview: options.preview === true,
          })
 
          const result = await client.find({
@@ -1596,4 +1597,3 @@ git reset --hard pre-dependency-update
 # Or rollback specific commits
 git revert HEAD~3..HEAD
 ```
-

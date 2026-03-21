@@ -1,7 +1,7 @@
 /**
  * Meditation Preview Component
  *
- * Preview component for Meditation content type using PayloadCMS live preview hook.
+ * Preview component for Meditation content type using PayloadCMS live preview messages.
  * Includes playback time sync to send updates back to SahajCloud admin for frame highlighting.
  */
 
@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Meditation } from './types'
 import { MeditationTemplate } from '../../../components/templates'
+import { mergePreviewData } from './mergePreviewData'
 
 export interface MeditationPreviewProps {
   initialData: Meditation
@@ -50,6 +51,10 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
   const hasSentReadyMessage = useRef(false)
 
   useEffect(() => {
+    setLiveData(initialData)
+  }, [initialData])
+
+  useEffect(() => {
     if (!serverURL) return
 
     const handleMessage = (event: MessageEvent) => {
@@ -61,7 +66,7 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
       const incoming = event.data.data as Meditation
       if (initialData?.id && incoming?.id && incoming.id !== initialData.id) return
 
-      setLiveData(incoming)
+      setLiveData((current) => mergePreviewData(current ?? initialData, incoming))
     }
 
     window.addEventListener('message', handleMessage)

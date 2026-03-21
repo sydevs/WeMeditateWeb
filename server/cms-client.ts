@@ -94,20 +94,20 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
 /**
  * Retrieves a specific page by ID.
  *
- * This function supports caching with an optional bypass flag for preview mode.
- * When used in preview mode, set bypassCache to true to ensure fresh data.
+ * This function supports an optional preview mode for trusted draft previews.
+ * When preview mode is enabled, the request bypasses cache and fetches draft data.
  *
  * @param options - Query options
  * @param options.id - The page ID to retrieve
  * @param options.locale - The locale to retrieve the page in
- * @param options.bypassCache - If true, bypass cache (useful for preview mode)
+ * @param options.preview - If true, fetch draft data with trusted preview credentials and bypass cache
  * @returns The page data or null if not found
  */
 export async function getPageById(options: LocalizedQueryOptions & {
   id: string
-  bypassCache?: boolean
-  draft?: boolean
+  preview?: boolean
 }): Promise<Page | null> {
+  const isPreview = options.preview === true
   const cacheKey = generateCacheKey('page', {
     id: options.id,
     locale: options.locale,
@@ -116,21 +116,23 @@ export async function getPageById(options: LocalizedQueryOptions & {
   return withCache({
     cacheKey,
     ttl: CacheTTL.PAGE,
-    bypassCache: options.bypassCache,
+    bypassCache: isPreview,
     fetchFn: async () => {
-      const client = createPayloadClient()
+      const client = createPayloadClient({
+        preview: isPreview,
+      })
 
       const result = await client.findByID({
         collection: 'pages',
         id: options.id,
         locale: options.locale,
         depth: 2,
-        draft: options.draft,
+        draft: isPreview,
       })
 
       if (!result) return null
       // Public pages should never render drafts
-      if (!options.draft && result._status === 'draft') {
+      if (!isPreview && result._status === 'draft') {
         return null
       }
       return result as Page
@@ -144,14 +146,14 @@ export async function getPageById(options: LocalizedQueryOptions & {
  * @param options - Query options
  * @param options.id - The meditation ID to retrieve
  * @param options.locale - The locale to retrieve the meditation in
- * @param options.bypassCache - If true, bypass cache (useful for preview mode)
+ * @param options.preview - If true, fetch draft data with trusted preview credentials and bypass cache
  * @returns The meditation data or null if not found
  */
 export async function getMeditationById(options: LocalizedQueryOptions & {
   id: string
-  bypassCache?: boolean
-  draft?: boolean
+  preview?: boolean
 }): Promise<Meditation | null> {
+  const isPreview = options.preview === true
   const cacheKey = generateCacheKey('meditation', {
     id: options.id,
     locale: options.locale,
@@ -160,21 +162,23 @@ export async function getMeditationById(options: LocalizedQueryOptions & {
   return withCache({
     cacheKey,
     ttl: CacheTTL.MEDITATION,
-    bypassCache: options.bypassCache,
+    bypassCache: isPreview,
     fetchFn: async () => {
-      const client = createPayloadClient()
+      const client = createPayloadClient({
+        preview: isPreview,
+      })
 
       const result = await client.findByID({
         collection: 'meditations',
         id: options.id,
         locale: options.locale,
         depth: 2,
-        draft: options.draft,
+        draft: isPreview,
       })
 
       if (!result) return null
       // Public pages should never render drafts
-      if (!options.draft && result._status === 'draft') {
+      if (!isPreview && result._status === 'draft') {
         return null
       }
       return result as Meditation

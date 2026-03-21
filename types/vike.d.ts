@@ -37,6 +37,9 @@ interface ImportMetaEnv {
   /** PayloadCMS API key for authenticated requests */
   readonly SAHAJCLOUD_API_KEY?: string
 
+  /** Shared secret used only for trusted draft preview requests */
+  readonly SAHAJCLOUD_PREVIEW_SECRET?: string
+
   /** Sentry DSN for server-side error tracking */
   readonly SENTRY_DSN?: string
 }
@@ -56,6 +59,9 @@ declare global {
         env?: {
           /** Cloudflare KV namespace for caching API responses */
           WEMEDITATE_CACHE?: KVNamespace
+
+          /** Shared secret used only for trusted draft preview requests */
+          SAHAJCLOUD_PREVIEW_SECRET?: string
         }
       }
     }

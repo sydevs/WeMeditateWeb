@@ -84,20 +84,21 @@ The following GraphQL query functions support caching:
 - ✅ `getPagesByTags()` - Cached (30 minutes)
 - ✅ `getMeditationsByTags()` - Cached (30 minutes)
 - ✅ `getMusicByTags()` - Cached (1 hour)
-- ✅ `getPageById()` - **Cached (1 hour)** - supports `bypassCache` flag for preview mode
+- ✅ `getPageById()` - **Cached (1 hour)** - supports `preview` mode for draft previews
 
-### Cache Bypass for Preview Mode
+### Preview Mode
 
-Some query functions support a `bypassCache` flag to skip caching for specific requests:
+Some query functions support a `preview` flag that bundles the preview-specific behavior:
+- bypass cache
+- fetch draft content
+- include trusted preview credentials
 
 ```typescript
 // Preview mode - always fetch fresh data
 const previewPage = await getPageById({
   id: '68fe4aba450d28b73070d8e5',
   locale: 'en',
-  apiKey: process.env.SAHAJCLOUD_API_KEY!,
-  kv: pageContext.cloudflare?.env?.WEMEDITATE_CACHE,
-  bypassCache: true,  // Skip cache entirely
+  preview: true,
 })
 ```
 
