@@ -58,10 +58,19 @@ iframe.contentWindow.postMessage(
 )
 ```
 
+## Authentication
+
+Preview routes require a `secret` query parameter for authentication. The CMS admin panel includes this automatically when constructing the preview iframe URL.
+
+**URL format**: `/preview?collection=pages&id=123&secret=[previewSecret]`
+
+The web app passes the secret through to the CMS API as the `x-sahajcloud-preview-secret` header. The CMS validates the secret and returns draft content if valid. Without a valid secret, the preview routes return 403 Forbidden.
+
 ## Security
 
-- **Origin validation**: Messages are validated against `PUBLIC__SAHAJCLOUD_URL`
-- **Fallback**: If the env var is not set, falls back to `'*'` with a console warning
+- **Preview secret**: Passed as URL query parameter, consumed server-side only (never reaches browser JS)
+- **Origin validation**: PostMessage events are validated against `PUBLIC__SAHAJCLOUD_URL`
+- **Fallback**: If the origin env var is not set, falls back to `'*'` with a console warning
 - **Type checking**: Message payloads are validated before processing
 
 ## Implementation Details

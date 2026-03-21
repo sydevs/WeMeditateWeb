@@ -25,8 +25,13 @@ export type PreviewPageData = FullPreviewData
 
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
   // Extract URL parameters
-  const { search: { collection: collectionParam, id: idParam } } = pageContext.urlParsed
+  const { search: { collection: collectionParam, id: idParam, secret: previewSecret } } = pageContext.urlParsed
   const { locale } = pageContext
+
+  // Preview secret is required — the CMS includes it in the iframe URL
+  if (!previewSecret) {
+    throw render(403, 'Missing preview secret')
+  }
 
   // Validate required parameters
   if (!collectionParam) {
@@ -64,6 +69,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     id,
     locale,
     preview: true,
+    previewSecret,
   })
 
   if (!data) {

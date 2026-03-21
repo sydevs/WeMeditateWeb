@@ -8,6 +8,7 @@
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
  * - id: Document ID to preview
+ * - secret: Preview secret for authentication
  */
 
 import type { PageContextServer } from 'vike/types'
@@ -20,8 +21,13 @@ export type EmbedPreviewPageData = BasePreviewData
 
 export async function data(pageContext: PageContextServer): Promise<EmbedPreviewPageData> {
   // Extract URL parameters
-  const { search: { collection, id } } = pageContext.urlParsed
+  const { search: { collection, id, secret: previewSecret } } = pageContext.urlParsed
   const { locale } = pageContext
+
+  // Preview secret is required — the CMS includes it in the iframe URL
+  if (!previewSecret) {
+    throw render(403, 'Missing preview secret')
+  }
 
   // Validate required parameters
   if (!collection) {
@@ -51,6 +57,7 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
     id,
     locale,
     preview: true,
+    previewSecret,
   })
 
   if (!data) {

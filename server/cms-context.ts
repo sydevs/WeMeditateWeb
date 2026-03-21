@@ -25,7 +25,6 @@ import { apiKeySchema, baseUrlSchema } from './validation'
 export type CmsEnv = {
   Bindings: {
     SAHAJCLOUD_API_KEY?: string
-    SAHAJCLOUD_PREVIEW_SECRET?: string
     WEMEDITATE_CACHE?: KVNamespace
   }
 }
@@ -36,7 +35,6 @@ export type CmsEnv = {
 export interface CmsContext {
   apiKey: string
   baseURL: string
-  previewSecret?: string
   kv: KVNamespace | undefined
 }
 
@@ -84,8 +82,6 @@ export function getCmsContext(): CmsContext {
 
   // Get baseURL from build-time env (Vite embeds from .env.production or .env.local)
   const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
-  const previewSecret =
-    context?.env?.SAHAJCLOUD_PREVIEW_SECRET || import.meta.env.SAHAJCLOUD_PREVIEW_SECRET
 
   // Validate with Zod - provides consistent error messages
   const result = cmsContextSchema.safeParse({ apiKey, baseURL })
@@ -101,7 +97,6 @@ export function getCmsContext(): CmsContext {
   return {
     apiKey: result.data.apiKey,
     baseURL: result.data.baseURL,
-    previewSecret,
     kv,
   }
 }

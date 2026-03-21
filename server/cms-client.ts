@@ -121,6 +121,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
     collection: C
     id: string
     preview?: boolean
+    previewSecret?: string
   }
 ): Promise<Config['collections'][C] | null> {
   const config = COLLECTION_BY_ID_CONFIG[options.collection]
@@ -135,7 +136,10 @@ export async function getDocumentById<C extends FindByIdCollection>(
     ttl: config.ttl,
     bypassCache: isPreview,
     fetchFn: async () => {
-      const client = createPayloadClient({ preview: isPreview })
+      const client = createPayloadClient({
+        preview: isPreview,
+        previewSecret: options.previewSecret,
+      })
 
       const result = await client.findByID({
         collection: options.collection,

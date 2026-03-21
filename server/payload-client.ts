@@ -23,8 +23,10 @@ export interface PayloadClientConfig {
   apiKey?: string
   /** Base URL for the PayloadCMS API (optional - falls back to context/env) */
   baseURL?: string
-  /** Enable preview mode for trusted draft preview requests */
+  /** Enable preview mode for draft content requests */
   preview?: boolean
+  /** Preview secret for authenticating draft requests (passed via URL parameter) */
+  previewSecret?: string
 }
 
 const PREVIEW_SECRET_HEADER = 'x-sahajcloud-preview-secret'
@@ -137,7 +139,7 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
 
   const apiKey = config.apiKey ?? cmsContext.apiKey
   const baseURL = config.baseURL ?? cmsContext.baseURL
-  const previewSecret = config.preview ? cmsContext.previewSecret : undefined
+  const previewSecret = config.preview ? config.previewSecret : undefined
 
   // Validate configuration before creating client
   // This provides clear error messages for common misconfiguration issues
