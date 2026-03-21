@@ -1,7 +1,7 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
 import type { Meditation, WeMeditateWebSettings } from '../../../server/cms-types'
-import { getMeditationById, getWeMeditateWebSettings } from '../../../server/cms-client'
+import { getDocumentById, getWeMeditateWebSettings } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
 
 export interface MeditationPageData {
@@ -28,7 +28,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationPa
   // Fetch global settings and meditation in parallel
   const [settings, meditation] = await Promise.all([
     getWeMeditateWebSettings(),
-    getMeditationById({ id, locale }),
+    getDocumentById({ collection: 'meditations', id, locale }),
   ])
 
   if (!meditation) {

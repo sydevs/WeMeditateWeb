@@ -11,20 +11,9 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getPageById, getMeditationById } from '../../../server/cms-client'
+import { getDocumentById } from '../../../server/cms-client'
 import { render } from 'vike/abort'
 import { type CollectionType, type BasePreviewData } from '../_components'
-
-/**
- * Registry mapping collection names to their REST API fetcher functions
- *
- * NOTE: This is defined locally in +data.ts (server-only) rather than in
- * _components/ to avoid bundling server code in client bundles.
- */
-const PREVIEW_FETCHERS = {
-  pages: getPageById,
-  meditations: getMeditationById,
-} as const
 
 // Re-export for use in +Page.tsx
 export type EmbedPreviewPageData = BasePreviewData
@@ -44,22 +33,21 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
   }
 
   // Validate collection type
-  if (!(collection in PREVIEW_FETCHERS)) {
-    const supported = Object.keys(PREVIEW_FETCHERS).join(', ')
+  const validCollections: CollectionType[] = ['pages', 'meditations']
+  if (!validCollections.includes(collection as CollectionType)) {
     throw new Error(
       `Preview error: Unsupported collection type "${collection}". ` +
-      `Supported types: ${supported}`
+      `Supported types: ${validCollections.join(', ')}`
     )
   }
-
-  const fetchById = PREVIEW_FETCHERS[collection as CollectionType]
 
   // NOTE: Unlike /preview, we do NOT fetch WeMeditateWebSettings here
   // because LayoutEmbed doesn't require them (no Header/Footer)
 
-  // Fetch content using the collection-specific fetcher
+  // Fetch content using the generic document fetcher
   // Always bypass cache in preview mode to ensure fresh data
-  const data = await fetchById({
+  const data = await getDocumentById({
+    collection: collection as CollectionType,
     id,
     locale,
     preview: true,

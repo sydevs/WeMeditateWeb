@@ -15,21 +15,10 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/cms-client'
+import { getDocumentById, getWeMeditateWebSettings } from '../../server/cms-client'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from './_components'
 import { idSchema, collectionSchema } from '../../server/validation'
-
-/**
- * Registry mapping collection names to their REST API fetcher functions
- *
- * NOTE: This is defined locally in +data.ts (server-only) rather than in
- * _components/ to avoid bundling server code in client bundles.
- */
-const PREVIEW_FETCHERS = {
-  pages: getPageById,
-  meditations: getMeditationById,
-} as const
 
 // Re-export for use in +Page.tsx
 export type PreviewPageData = FullPreviewData
@@ -65,14 +54,13 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  const fetchById = PREVIEW_FETCHERS[collection]
-
   // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
   const settings = await getWeMeditateWebSettings()
 
-  // Fetch content using the collection-specific fetcher
+  // Fetch content using the generic document fetcher
   // Always bypass cache in preview mode to ensure fresh data
-  const data = await fetchById({
+  const data = await getDocumentById({
+    collection,
     id,
     locale,
     preview: true,
