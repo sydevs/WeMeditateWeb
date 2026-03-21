@@ -7,11 +7,13 @@
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
  * - id: Document ID to preview
+ * - secret: Preview secret for authentication (required)
  *
  * Adding a new content type:
- * 1. Add to PREVIEW_FETCHERS object below
- * 2. Add to the discriminated union types in _components/types.ts
- * 3. Add rendering logic in +Page.tsx
+ * 1. Add to COLLECTION_BY_ID_CONFIG in server/cms-client.ts
+ * 2. Add to collectionSchema in server/validation.ts
+ * 3. Add to the discriminated union types in _components/types.ts
+ * 4. Add rendering logic in +Page.tsx
  */
 
 import type { PageContextServer } from 'vike/types'
