@@ -7,37 +7,33 @@
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
  * - id: Document ID to preview
+ * - secret: Preview secret for authentication (required)
  *
  * Adding a new content type:
- * 1. Add to PREVIEW_FETCHERS object below
- * 2. Add to the discriminated union types in _components/types.ts
- * 3. Add rendering logic in +Page.tsx
+ * 1. Add to COLLECTION_BY_ID_CONFIG in server/cms-client.ts
+ * 2. Add to collectionSchema in server/validation.ts
+ * 3. Add to the discriminated union types in _components/types.ts
+ * 4. Add rendering logic in +Page.tsx
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getPageById, getMeditationById, getWeMeditateWebSettings } from '../../server/cms-client'
+import { getDocumentById, getWeMeditateWebSettings } from '../../server/cms-client'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from './_components'
 import { idSchema, collectionSchema } from '../../server/validation'
-
-/**
- * Registry mapping collection names to their REST API fetcher functions
- *
- * NOTE: This is defined locally in +data.ts (server-only) rather than in
- * _components/ to avoid bundling server code in client bundles.
- */
-const PREVIEW_FETCHERS = {
-  pages: getPageById,
-  meditations: getMeditationById,
-} as const
 
 // Re-export for use in +Page.tsx
 export type PreviewPageData = FullPreviewData
 
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
   // Extract URL parameters
-  const { search: { collection: collectionParam, id: idParam } } = pageContext.urlParsed
+  const { search: { collection: collectionParam, id: idParam, secret: previewSecret } } = pageContext.urlParsed
   const { locale } = pageContext
+
+  // Preview secret is required — the CMS includes it in the iframe URL
+  if (!previewSecret) {
+    throw render(403, 'Missing preview secret')
+  }
 
   // Validate required parameters
   if (!collectionParam) {
@@ -65,18 +61,17 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  const fetchById = PREVIEW_FETCHERS[collection]
-
   // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
   const settings = await getWeMeditateWebSettings()
 
-  // Fetch content using the collection-specific fetcher
+  // Fetch content using the generic document fetcher
   // Always bypass cache in preview mode to ensure fresh data
-  const data = await fetchById({
+  const data = await getDocumentById({
+    collection,
     id,
     locale,
-    bypassCache: true,  // Always fetch fresh data in preview mode
-    draft: true,  // Fetch draft documents for live preview
+    preview: true,
+    previewSecret,
   })
 
   if (!data) {

@@ -8,7 +8,7 @@
  * ## Error Handling Strategy
  *
  * Errors propagate naturally for retry compatibility with error-utils.ts:
- * - **Single item queries** (getPageBySlug, getPageById, getMeditationById):
+ * - **Single item queries** (getPageBySlug, getDocumentById):
  *   Return null for empty results, let errors propagate for retry logic.
  * - **Global queries** (getWeMeditateWebSettings):
  *   Use validateSDKResponse() since settings must exist (handles SDK undefined bug).
@@ -24,10 +24,10 @@ import {
   validateSDKResponse,
 } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import type { Config } from './payload-types'
 import type {
   Locale,
   Page,
-  Meditation,
   Music,
   WeMeditateWebSettings,
   PageListItem,
@@ -41,6 +41,17 @@ import type {
 interface LocalizedQueryOptions {
   locale: Locale
 }
+
+/**
+ * Configuration for collections that support findById queries.
+ * Maps PayloadCMS collection slugs to their cache prefix and TTL.
+ */
+const COLLECTION_BY_ID_CONFIG = {
+  pages: { cachePrefix: 'page', ttl: CacheTTL.PAGE },
+  meditations: { cachePrefix: 'meditation', ttl: CacheTTL.MEDITATION },
+} as const
+
+type FindByIdCollection = keyof typeof COLLECTION_BY_ID_CONFIG
 
 // ============================================================================
 // Single Item Queries
@@ -92,92 +103,56 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
 }
 
 /**
- * Retrieves a specific page by ID.
+ * Retrieves a document by ID from any configured collection.
  *
- * This function supports caching with an optional bypass flag for preview mode.
- * When used in preview mode, set bypassCache to true to ensure fresh data.
+ * This is a generic function that handles pages, meditations, and any future
+ * collection types that support findById queries. It supports preview mode
+ * for trusted draft previews.
  *
  * @param options - Query options
- * @param options.id - The page ID to retrieve
- * @param options.locale - The locale to retrieve the page in
- * @param options.bypassCache - If true, bypass cache (useful for preview mode)
- * @returns The page data or null if not found
+ * @param options.collection - The PayloadCMS collection slug
+ * @param options.id - The document ID to retrieve
+ * @param options.locale - The locale to retrieve the document in
+ * @param options.preview - If true, fetch draft data with trusted preview credentials and bypass cache
+ * @returns The document data or null if not found
  */
-export async function getPageById(options: LocalizedQueryOptions & {
-  id: string
-  bypassCache?: boolean
-  draft?: boolean
-}): Promise<Page | null> {
-  const cacheKey = generateCacheKey('page', {
+export async function getDocumentById<C extends FindByIdCollection>(
+  options: LocalizedQueryOptions & {
+    collection: C
+    id: string
+    preview?: boolean
+    previewSecret?: string
+  }
+): Promise<Config['collections'][C] | null> {
+  const config = COLLECTION_BY_ID_CONFIG[options.collection]
+  const isPreview = options.preview === true
+  const cacheKey = generateCacheKey(config.cachePrefix, {
     id: options.id,
     locale: options.locale,
   })
 
   return withCache({
     cacheKey,
-    ttl: CacheTTL.PAGE,
-    bypassCache: options.bypassCache,
+    ttl: config.ttl,
+    bypassCache: isPreview,
     fetchFn: async () => {
-      const client = createPayloadClient()
+      const client = createPayloadClient({
+        preview: isPreview,
+        previewSecret: options.previewSecret,
+      })
 
       const result = await client.findByID({
-        collection: 'pages',
+        collection: options.collection,
         id: options.id,
         locale: options.locale,
         depth: 2,
-        draft: options.draft,
+        draft: isPreview,
       })
 
       if (!result) return null
-      // Public pages should never render drafts
-      if (!options.draft && result._status === 'draft') {
-        return null
-      }
-      return result as Page
-    },
-  })
-}
-
-/**
- * Retrieves a specific meditation by ID.
- *
- * @param options - Query options
- * @param options.id - The meditation ID to retrieve
- * @param options.locale - The locale to retrieve the meditation in
- * @param options.bypassCache - If true, bypass cache (useful for preview mode)
- * @returns The meditation data or null if not found
- */
-export async function getMeditationById(options: LocalizedQueryOptions & {
-  id: string
-  bypassCache?: boolean
-  draft?: boolean
-}): Promise<Meditation | null> {
-  const cacheKey = generateCacheKey('meditation', {
-    id: options.id,
-    locale: options.locale,
-  })
-
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.MEDITATION,
-    bypassCache: options.bypassCache,
-    fetchFn: async () => {
-      const client = createPayloadClient()
-
-      const result = await client.findByID({
-        collection: 'meditations',
-        id: options.id,
-        locale: options.locale,
-        depth: 2,
-        draft: options.draft,
-      })
-
-      if (!result) return null
-      // Public pages should never render drafts
-      if (!options.draft && result._status === 'draft') {
-        return null
-      }
-      return result as Meditation
+      // Public requests should never render drafts
+      if (!isPreview && result._status === 'draft') return null
+      return result as Config['collections'][C]
     },
   })
 }
