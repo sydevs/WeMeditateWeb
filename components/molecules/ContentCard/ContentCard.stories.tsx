@@ -193,7 +193,7 @@ export const Default: Story = () => (
                 title="Meditation"
                 href="#"
                 thumbnailSrc="https://picsum.photos/seed/grid9/800/600"
-                aspectRatio="4/3"
+                aspectRatio="4-3"
                 variant="default"
                 playButton={false}
               />
@@ -203,7 +203,7 @@ export const Default: Story = () => (
                 title="Meditation"
                 href="#"
                 thumbnailSrc="https://picsum.photos/seed/grid10/800/600"
-                aspectRatio="4/3"
+                aspectRatio="4-3"
                 variant="default"
                 playButton={true}
               />
@@ -213,7 +213,7 @@ export const Default: Story = () => (
                 title="Meditation"
                 href="#"
                 thumbnailSrc="https://picsum.photos/seed/grid12/800/600"
-                aspectRatio="4/3"
+                aspectRatio="4-3"
                 variant="hero"
                 playButton={true}
               />
@@ -227,7 +227,7 @@ export const Default: Story = () => (
                 title="Meditation"
                 href="#"
                 thumbnailSrc="https://picsum.photos/seed/grid13/800/533"
-                aspectRatio="3/2"
+                aspectRatio="3-2"
                 variant="default"
                 playButton={false}
               />
@@ -237,7 +237,7 @@ export const Default: Story = () => (
                 title="Meditation"
                 href="#"
                 thumbnailSrc="https://picsum.photos/seed/grid14/800/533"
-                aspectRatio="3/2"
+                aspectRatio="3-2"
                 variant="default"
                 playButton={true}
               />
@@ -247,7 +247,7 @@ export const Default: Story = () => (
                 title="Meditation"
                 href="#"
                 thumbnailSrc="https://picsum.photos/seed/grid16/800/533"
-                aspectRatio="3/2"
+                aspectRatio="3-2"
                 variant="hero"
                 playButton={true}
               />
@@ -314,7 +314,7 @@ export const Default: Story = () => (
           href="#"
           thumbnailSrc="https://picsum.photos/seed/content2/800/600"
           description="Discover the ancient practice of Sahaja Yoga and its transformative power."
-          aspectRatio="4/3"
+          aspectRatio="4-3"
         />
         <ContentCard
           title="Evening Calm"
@@ -329,7 +329,7 @@ export const Default: Story = () => (
           href="#"
           thumbnailSrc="https://picsum.photos/seed/content4/800/533"
           description="Learn how consistent meditation transforms your mind, body, and spirit."
-          aspectRatio="3/2"
+          aspectRatio="3-2"
         />
         <ContentCard
           title="Quick Reset"

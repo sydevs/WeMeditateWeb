@@ -5,6 +5,7 @@ import { Link } from '../../atoms/Link'
 import { Button } from '../../atoms/Button/Button'
 import { Duration } from '../../atoms/Duration/Duration'
 import { Badge } from '../../atoms/Badge/Badge'
+import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /**
@@ -36,7 +37,7 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
    * Aspect ratio for the thumbnail image
    * @default 'square'
    */
-  aspectRatio?: 'square' | 'video' | '4/3' | '3/2' | '16/9' | '21/9'
+  aspectRatio?: AspectRatio
 
   /**
    * Card variant

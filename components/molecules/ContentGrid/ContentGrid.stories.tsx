@@ -61,7 +61,7 @@ export const Default: Story = () => {
       description: "Wind down with this calming evening practice for better sleep.",
       playButton: true,
       durationMinutes: 15,
-      aspectRatio: "4/3" as const,
+      aspectRatio: "4-3" as const,
     },
     {
       id: 6,
@@ -92,7 +92,7 @@ export const Default: Story = () => {
       description: "Combine gentle movement with meditation techniques.",
       playButton: true,
       durationMinutes: 12,
-      aspectRatio: "3/2" as const,
+      aspectRatio: "3-2" as const,
     },
   ];
 

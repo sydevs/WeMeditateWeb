@@ -141,7 +141,7 @@ import { PlayIcon, CheckIcon } from '@heroicons/react/24/outline'
 ### Image
 ```tsx
 <Image src="/photo.jpg" alt="Description" />
-<Image src="/banner.jpg" alt="Banner" aspectRatio="16/9" />
+<Image src="/banner.jpg" alt="Banner" aspectRatio="video" />
 <Image src="/profile.jpg" alt="Profile" aspectRatio="square" />
 ```
 

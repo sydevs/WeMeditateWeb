@@ -67,7 +67,7 @@ export const Default: Story = () => (
           <Image
             src="https://picsum.photos/id/10/800/600"
             alt="4:3 aspect ratio"
-            aspectRatio="4/3"
+            aspectRatio="4-3"
           />
         </div>
       </div>
@@ -80,19 +80,19 @@ export const Default: Story = () => (
           <Image
             src="https://picsum.photos/id/30/600/400"
             alt="Image with loading"
-            aspectRatio="4/3"
+            aspectRatio="4-3"
             showLoading
           />
           <Image
             src="https://picsum.photos/id/30/600/400"
             alt="Image with loading"
-            aspectRatio="4/3"
+            aspectRatio="4-3"
             showLoading
           />
           <Image
             src="https://picsum.photos/id/30/600/400"
             alt="Image with loading"
-            aspectRatio="4/3"
+            aspectRatio="4-3"
             showLoading
           />
         </div>
@@ -104,20 +104,20 @@ export const Default: Story = () => (
         <Image
           src="https://picsum.photos/id/50/600/800"
           alt="Portrait meditation"
-          aspectRatio="3/2"
+          aspectRatio="3-2"
           rounded="rounded"
         />
         <div className="flex flex-col gap-3">
           <Image
             src="https://picsum.photos/id/51/600/400"
             alt="Landscape meditation"
-            aspectRatio="3/2"
+            aspectRatio="3-2"
             rounded="rounded"
           />
           <Image
             src="https://picsum.photos/id/52/600/400"
             alt="Another landscape"
-            aspectRatio="3/2"
+            aspectRatio="3-2"
             rounded="rounded"
           />
         </div>
