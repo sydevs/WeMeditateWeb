@@ -178,7 +178,7 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
  *   fetchFn: async () => await client.request(query, variables)
  * })
  *
- * // For preview mode (bypass cache, still retries):
+ * // For preview mode (bypass cache and retries, fail fast):
  * const previewPage = await withCache({
  *   cacheKey: generateCacheKey('page', { id: '123', locale: 'en' }),
  *   ttl: CacheTTL.PAGE,
@@ -202,9 +202,10 @@ export async function withCache<T>(options: {
   // Get retry configuration (use provided config or defaults)
   const finalRetryConfig = retryConfig || DEFAULT_RETRY_CONFIG
 
-  // If bypass flag is set, skip cache but still use retry
+  // Preview/bypass mode: fail fast so editors see errors immediately rather
+  // than waiting through ~7s of exponential backoff.
   if (bypassCache) {
-    return await withRetry(fetchFn, finalRetryConfig)
+    return await fetchFn()
   }
 
   // Try to get from cache first

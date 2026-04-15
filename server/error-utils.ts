@@ -1,17 +1,12 @@
 /**
  * Error handling utilities for graceful degradation when CMS is unreachable.
  *
- * This module provides:
- * - Error type detection (network vs server errors)
- * - Retry logic with exponential backoff
- * - User-friendly error categorization
+ * Provides error type detection, retry logic with exponential backoff,
+ * and user-friendly message generation.
  */
 
 import * as Sentry from '@sentry/react'
 
-/**
- * Error types for better error handling and user messaging
- */
 export enum ErrorType {
   /** Network connectivity issues (DNS, timeout, connection refused) */
   NETWORK = 'NETWORK',
@@ -23,9 +18,6 @@ export enum ErrorType {
   UNKNOWN = 'UNKNOWN',
 }
 
-/**
- * Configuration for retry behavior
- */
 export interface RetryConfig {
   /** Maximum number of retry attempts (default: 3) */
   maxAttempts?: number
@@ -34,83 +26,76 @@ export interface RetryConfig {
   /** Maximum delay in milliseconds (default: 10000ms) */
   maxDelayMs?: number
   /** Function to determine if error should be retried (default: retry network/server errors only) */
-  shouldRetry?: (error: unknown, attempt: number) => boolean
+  shouldRetry?: (error: unknown) => boolean
 }
 
-/**
- * Default retry configuration
- */
 const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
   maxAttempts: 3,
   baseDelayMs: 1000,
   maxDelayMs: 10000,
-  shouldRetry: (error: unknown, attempt: number) => {
+  shouldRetry: (error: unknown) => {
     const errorType = detectErrorType(error)
-    // Retry network and server errors, but not client errors
     return errorType === ErrorType.NETWORK || errorType === ErrorType.SERVER
   },
 }
 
 /**
- * Detects the type of error for better handling and messaging.
- *
- * @param error - The error to classify
- * @returns The error type classification
+ * Shape of HTTP-like errors we can inspect for status codes.
+ */
+interface HttpErrorLike {
+  response?: { status?: unknown }
+  status?: unknown
+}
+
+function readStatus(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) return undefined
+  const e = error as HttpErrorLike
+  const responseStatus = e.response?.status
+  if (typeof responseStatus === 'number') return responseStatus
+  if (typeof e.status === 'number') return e.status
+  return undefined
+}
+
+// Error code patterns matched as substrings (codes like ECONNREFUSED can appear
+// mid-token, e.g. "connect ECONNREFUSED 127.0.0.1").
+const NETWORK_CODE_PATTERNS = [
+  'econnrefused',
+  'econnreset',
+  'enotfound',
+  'etimedout',
+  'eai_again',
+  'getaddrinfo',
+]
+
+// English phrases matched at word boundaries to avoid false positives like
+// "network policy violation" or "timeout: operation completed successfully".
+const NETWORK_PHRASE_PATTERN = /\b(fetch failed|network error|connection refused|connection reset|dns|request timeout|request timed out|socket hang up)\b/i
+
+const SERVER_PHRASE_PATTERN = /\b(internal server error|bad gateway|service unavailable|gateway timeout|50[0-9])\b/i
+
+/**
+ * Classifies an error as NETWORK, SERVER, CLIENT, or UNKNOWN.
  */
 export function detectErrorType(error: unknown): ErrorType {
   if (!error) return ErrorType.UNKNOWN
 
-  const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()
+  // HTTP status codes take precedence — they're unambiguous.
+  const status = readStatus(error)
+  if (status !== undefined) {
+    if (status >= 500) return ErrorType.SERVER
+    if (status >= 400) return ErrorType.CLIENT
+  }
 
-  // Network connectivity issues
-  const networkPatterns = [
-    'fetch failed',
-    'network',
-    'econnrefused',
-    'enotfound',
-    'etimedout',
-    'connection refused',
-    'dns',
-    'timeout',
-    'getaddrinfo',
-  ]
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  const lower = errorMessage.toLowerCase()
 
-  if (networkPatterns.some(pattern => errorMessage.includes(pattern))) {
+  if (NETWORK_CODE_PATTERNS.some(code => lower.includes(code))) {
     return ErrorType.NETWORK
   }
-
-  // Check for GraphQL/HTTP error responses
-  if (typeof error === 'object' && error !== null) {
-    const errorObj = error as any
-
-    // GraphQL errors from graphql-request
-    if (errorObj.response?.status) {
-      const status = errorObj.response.status
-      if (status >= 500) return ErrorType.SERVER
-      if (status >= 400) return ErrorType.CLIENT
-    }
-
-    // Standard HTTP errors
-    if (errorObj.status) {
-      const status = errorObj.status
-      if (status >= 500) return ErrorType.SERVER
-      if (status >= 400) return ErrorType.CLIENT
-    }
+  if (NETWORK_PHRASE_PATTERN.test(errorMessage)) {
+    return ErrorType.NETWORK
   }
-
-  // Server error patterns in message
-  const serverPatterns = [
-    'internal server error',
-    '500',
-    '502',
-    '503',
-    '504',
-    'bad gateway',
-    'service unavailable',
-    'gateway timeout',
-  ]
-
-  if (serverPatterns.some(pattern => errorMessage.includes(pattern))) {
+  if (SERVER_PHRASE_PATTERN.test(errorMessage)) {
     return ErrorType.SERVER
   }
 
@@ -118,23 +103,16 @@ export function detectErrorType(error: unknown): ErrorType {
 }
 
 /**
- * Gets a user-friendly error message based on error type.
- *
- * @param error - The error to get a message for
- * @param statusPageUrl - Optional URL to external status page
- * @returns User-friendly error message
+ * Returns a plain-text, user-friendly message for an error.
+ * Callers that want to surface a status page link should render it separately
+ * as a React element — never interpolate URLs into HTML here.
  */
-export function getUserFriendlyErrorMessage(error: unknown, statusPageUrl?: string): string {
-  const errorType = detectErrorType(error)
-
-  switch (errorType) {
+export function getUserFriendlyErrorMessage(error: unknown): string {
+  switch (detectErrorType(error)) {
     case ErrorType.NETWORK:
       return 'Unable to connect to our content servers. Please check your internet connection and try again.'
     case ErrorType.SERVER:
-      const statusMsg = statusPageUrl
-        ? ` Check our <a href="${statusPageUrl}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-700 underline">status page</a> for updates.`
-        : ''
-      return `Our content servers are experiencing issues. We're working to resolve this.${statusMsg}`
+      return "Our content servers are experiencing issues. We're working to resolve this."
     case ErrorType.CLIENT:
       return 'This content is not available. It may have been moved or deleted.'
     default:
@@ -143,54 +121,44 @@ export function getUserFriendlyErrorMessage(error: unknown, statusPageUrl?: stri
 }
 
 /**
- * Sleeps for a specified duration (for retry delays).
- *
- * @param ms - Milliseconds to sleep
+ * True if the URL parses and uses an http(s) scheme. Used to gate rendering of
+ * externally-configured status page links to avoid `javascript:` / `data:` XSS.
  */
+export function isSafeHttpUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
- * Calculates exponential backoff delay with jitter.
- *
- * @param attempt - Current attempt number (0-indexed)
- * @param baseDelayMs - Base delay in milliseconds
- * @param maxDelayMs - Maximum delay cap
- * @returns Delay in milliseconds
+ * Exponential backoff with full jitter: delay is a random value in
+ * [0, min(base * 2^attempt, maxDelay)]. Spreads retries more evenly than
+ * additive jitter, per AWS "Exponential Backoff And Jitter".
  */
 function calculateBackoffDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
-  // Exponential: baseDelay * 2^attempt
   const exponentialDelay = baseDelayMs * Math.pow(2, attempt)
-
-  // Cap at maxDelay
   const cappedDelay = Math.min(exponentialDelay, maxDelayMs)
-
-  // Add jitter (random 0-20% variation) to avoid thundering herd
-  const jitter = cappedDelay * 0.2 * Math.random()
-
-  return Math.floor(cappedDelay + jitter)
+  return Math.floor(Math.random() * cappedDelay)
 }
 
 /**
  * Executes an async function with automatic retry and exponential backoff.
  *
- * This function will:
- * 1. Execute the provided async function
- * 2. On failure, determine if the error should be retried
- * 3. If retryable, wait with exponential backoff and retry
- * 4. Log all attempts to Sentry for monitoring
- * 5. Throw the last error if all retries are exhausted
- *
- * @param fn - Async function to execute with retry
- * @param config - Retry configuration
- * @returns Promise resolving to the function's result
- * @throws The last error encountered if all retries fail
+ * Retries are only attempted when `shouldRetry(error)` returns true. The default
+ * retries NETWORK and SERVER errors but not CLIENT or UNKNOWN. All attempts are
+ * reported to Sentry.
  *
  * @example
  * ```typescript
  * const data = await withRetry(
- *   async () => await client.request(query, variables),
+ *   () => client.request(query, variables),
  *   { maxAttempts: 3, baseDelayMs: 1000 }
  * )
  * ```
@@ -200,14 +168,11 @@ export async function withRetry<T>(
   config: RetryConfig = {}
 ): Promise<T> {
   const finalConfig = { ...DEFAULT_RETRY_CONFIG, ...config }
-  let lastError: unknown
 
   for (let attempt = 0; attempt < finalConfig.maxAttempts; attempt++) {
     try {
-      // Execute the function
       const result = await fn()
 
-      // If this was a retry that succeeded, log to Sentry
       if (attempt > 0) {
         console.log(`Request succeeded after ${attempt} ${attempt === 1 ? 'retry' : 'retries'}`)
         Sentry.captureMessage(`Request succeeded after ${attempt} retries`, {
@@ -218,20 +183,17 @@ export async function withRetry<T>(
 
       return result
     } catch (error) {
-      lastError = error
       const isLastAttempt = attempt === finalConfig.maxAttempts - 1
+      const errorType = detectErrorType(error)
 
-      // Check if we should retry
-      if (!isLastAttempt && finalConfig.shouldRetry(error, attempt)) {
+      if (!isLastAttempt && finalConfig.shouldRetry(error)) {
         const delay = calculateBackoffDelay(attempt, finalConfig.baseDelayMs, finalConfig.maxDelayMs)
-        const errorType = detectErrorType(error)
 
         console.log(
           `Request failed (attempt ${attempt + 1}/${finalConfig.maxAttempts}), ` +
           `error type: ${errorType}, retrying in ${delay}ms...`
         )
 
-        // Log retry to Sentry for monitoring
         Sentry.captureException(error, {
           level: 'warning',
           tags: {
@@ -239,40 +201,33 @@ export async function withRetry<T>(
             max_attempts: finalConfig.maxAttempts,
             error_type: errorType,
           },
-          extra: {
-            delay_ms: delay,
-            will_retry: true,
-          },
+          extra: { delay_ms: delay, will_retry: true },
         })
 
         await sleep(delay)
-      } else {
-        // Last attempt or non-retryable error
-        const errorType = detectErrorType(error)
-        console.error(
-          `Request failed permanently after ${attempt + 1} ${attempt === 0 ? 'attempt' : 'attempts'}, ` +
-          `error type: ${errorType}`
-        )
-
-        // Log final failure to Sentry
-        Sentry.captureException(error, {
-          level: 'error',
-          tags: {
-            retry_attempt: attempt + 1,
-            max_attempts: finalConfig.maxAttempts,
-            error_type: errorType,
-          },
-          extra: {
-            will_retry: false,
-            exhausted_retries: isLastAttempt,
-          },
-        })
-
-        throw error
+        continue
       }
+
+      console.error(
+        `Request failed permanently after ${attempt + 1} ${attempt === 0 ? 'attempt' : 'attempts'}, ` +
+        `error type: ${errorType}`
+      )
+
+      Sentry.captureException(error, {
+        level: 'error',
+        tags: {
+          retry_attempt: attempt + 1,
+          max_attempts: finalConfig.maxAttempts,
+          error_type: errorType,
+        },
+        extra: { will_retry: false, exhausted_retries: isLastAttempt },
+      })
+
+      throw error
     }
   }
 
-  // This should never be reached, but TypeScript needs it
-  throw lastError
+  // Unreachable: the loop either returns or throws on every iteration.
+  // TypeScript requires a terminator because it can't prove maxAttempts >= 1.
+  throw new Error('withRetry: unreachable')
 }
