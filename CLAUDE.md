@@ -346,6 +346,9 @@ server/                  # Server-side utilities
 ├── kv-cache.ts         # Cloudflare KV caching layer
 └── CACHING.md          # Caching documentation
 
+lib/                     # Framework-agnostic shared utilities
+└── cloudflare-images.ts # Cloudflare Images variant helpers (used by Image atom, Splash, SplashLoader)
+
 types/                   # Global TypeScript types
 └── vike.d.ts           # PageContext extensions (locale, KV bindings)
 ```
@@ -544,6 +547,47 @@ Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin using the **CSS-fi
 - Vite environment types
 - Cloudflare Workers types (`@cloudflare/workers-types`)
 - Strict type checking
+
+## Testing
+
+The project uses **Vitest** with `environment: 'node'` (see [vitest.config.ts](vitest.config.ts)). **jsdom and `@testing-library/react` are NOT installed** — don't reach for them.
+
+**Commands:**
+```bash
+pnpm test         # Watch mode
+pnpm test:run     # Single run (use this in scripts/CI)
+pnpm test:ui      # Vitest UI
+```
+
+**File conventions:**
+- Co-locate tests next to source: `Foo.tsx` → `Foo.test.tsx`, `foo.ts` → `foo.test.ts`
+- Vitest globals are enabled — import `describe`, `it`, `expect` from `'vitest'` explicitly (matches existing files like [lib/cloudflare-images.test.ts](lib/cloudflare-images.test.ts) and [server/error-utils.test.ts](server/error-utils.test.ts))
+
+**Testing React components without jsdom:**
+
+For component-level assertions (attributes, rendered markup), use `renderToStaticMarkup` from `react-dom/server` and search the returned HTML string. This runs in the node environment with no extra setup.
+
+```tsx
+import { describe, it, expect } from 'vitest'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { Image } from './Image'
+
+it('emits a responsive srcSet for Cloudflare URLs', () => {
+  const html = renderToStaticMarkup(
+    <Image src="https://imagedelivery.net/acct/id/" alt="x" aspectRatio="video" />,
+  )
+  expect(html).toContain('video-800 800w')
+  expect(html).not.toContain('srcset=')  // React SSR emits lowercase attrs
+})
+```
+
+See [components/atoms/Image/Image.test.tsx](components/atoms/Image/Image.test.tsx) for a full example. Note that `useState`/`useMemo` work under SSR but `useEffect` does not run — plan assertions around the first-render state.
+
+**What to test:**
+- ✅ Pure utilities (logic, parsing, transforms) — fast and high-value
+- ✅ Component contracts at the markup level (attributes, conditional children, accessibility markers)
+- ⚠️ Interactive behavior (hover, focus, click handlers) — no DOM event simulation available; prefer Ladle for visual verification
+- ❌ Don't add jsdom/RTL without discussing first — it's a larger config change
 
 ## Design System
 
@@ -1302,6 +1346,32 @@ find components -name "*.stories.tsx" -type f -print0 | xargs -0 perl -i -pe 's/
 - `-i`: Edit files in-place
 - `-pe`: Perl one-liner mode with automatic line processing
 - `s/OLD/NEW/g`: Substitute globally (all occurrences per line)
+
+### Common Perl Substitution Pitfalls
+
+Silent mistakes in the replacement side of `s///` can mangle hundreds of files before you notice. Before running `-i` across the repo, dry-run once on a single file and diff the output.
+
+**Pitfall: adjacent literal text in the replacement is not implicit concatenation.**
+
+```bash
+# Goal: replace aspectRatio="4/3" with aspectRatio="4-3"
+# Broken — `$1.4-3.$1` inserts the captured quote, then literal ".4-3.", then the quote again,
+# producing aspectRatio=".4-3." (with surrounding dots). There is no "." operator in perl s/// RHS.
+perl -i -pe 's{aspectRatio=(["\x27])4/3\1}{aspectRatio=$1.4-3.$1}g' file.tsx
+
+# Correct — no backrefs needed when the quote itself doesn't need to vary
+perl -i -pe 's{aspectRatio="4/3"}{aspectRatio="4-3"}g' file.tsx
+```
+
+**Dry-run pattern**: pipe to diff before ever using `-i`.
+
+```bash
+# Print the transformed file without touching disk; compare to the original
+perl -pe 's/OLD/NEW/g' components/atoms/Example/Example.stories.tsx \
+  | diff components/atoms/Example/Example.stories.tsx -
+```
+
+**After the in-place run**: always grep for the pattern you intended to leave behind *and* a couple of plausible corruptions (e.g. if replacing `4/3` with `4-3`, also grep for `.4-3.`, `4-3-`, `"4-3"`) so a silent mistake surfaces immediately.
 
 ### Verify Changes Before Committing
 
