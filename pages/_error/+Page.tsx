@@ -15,7 +15,7 @@ export default function Page() {
   const { is404, abortReason } = usePageContext()
   const statusPageUrl = import.meta.env.PUBLIC__STATUS_PAGE_URL
 
-  const errorType = is404 ? ErrorType.CLIENT : ErrorType.UNKNOWN
+  const errorType = is404 ? ErrorType.CLIENT : ErrorType.SERVER
   const message = is404
     ? "The page you're looking for doesn't exist."
     : typeof abortReason === 'string'

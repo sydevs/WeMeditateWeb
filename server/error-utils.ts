@@ -169,6 +169,10 @@ export async function withRetry<T>(
 ): Promise<T> {
   const finalConfig = { ...DEFAULT_RETRY_CONFIG, ...config }
 
+  if (finalConfig.maxAttempts < 1) {
+    throw new Error(`withRetry: maxAttempts must be >= 1, got ${finalConfig.maxAttempts}`)
+  }
+
   for (let attempt = 0; attempt < finalConfig.maxAttempts; attempt++) {
     try {
       const result = await fn()

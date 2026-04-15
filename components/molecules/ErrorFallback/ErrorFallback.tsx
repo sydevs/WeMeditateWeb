@@ -77,7 +77,11 @@ export function ErrorFallback({
         {TITLE_BY_TYPE[resolvedType]}
       </Heading>
 
-      <p className="text-base sm:text-lg font-light text-gray-700 mb-2 max-w-md">
+      <p
+        className={`text-base sm:text-lg font-light text-gray-700 max-w-md ${
+          showStatusLink ? 'mb-2' : 'mb-6'
+        }`}
+      >
         {userMessage}
       </p>
 
@@ -95,7 +99,6 @@ export function ErrorFallback({
           for updates.
         </p>
       )}
-      {!showStatusLink && <div className="mb-4" />}
 
       {showDetails && (
         <details className="mb-6 max-w-md text-left w-full">
