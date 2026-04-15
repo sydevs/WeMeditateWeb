@@ -30,6 +30,16 @@ describe('getImageURL', () => {
   it('appends variant to a URL without trailing slash', () => {
     expect(getImageURL(BASE_URL_NO_SLASH, 'video-800')).toBe(`${BASE_URL_NO_SLASH}/video-800`)
   })
+
+  it('returns the URL unchanged when a variant is already appended', () => {
+    const withVariant = `${BASE_URL}public`
+    expect(getImageURL(withVariant, 'video-800')).toBe(withVariant)
+  })
+
+  it('returns the URL unchanged for non-Cloudflare URLs', () => {
+    const external = 'https://picsum.photos/seed/foo/400/400'
+    expect(getImageURL(external, 'video-800')).toBe(external)
+  })
 })
 
 describe('getVariantName', () => {
@@ -51,10 +61,9 @@ describe('getVariantName', () => {
     expect(getVariantName('3-2', 'small')).toBe('3-2-800')
   })
 
-  it('falls back to the largest available width when neither the requested size nor medium is defined', () => {
-    // ultrawide has no small/medium, so request "small" should fall through to a defined width
-    const variant = getVariantName('ultrawide', 'small')
-    expect(['ultrawide-1536', 'ultrawide-2048']).toContain(variant)
+  it('falls back to the smallest defined width when neither the requested size nor medium exists', () => {
+    // ultrawide has no small/medium; fallback is deterministic: smallest defined width.
+    expect(getVariantName('ultrawide', 'small')).toBe('ultrawide-1536')
   })
 })
 
@@ -77,5 +86,19 @@ describe('getImageSrcSet', () => {
     expect(getImageSrcSet(BASE_URL, 'ultrawide')).toBe(
       `${BASE_URL}ultrawide-1536 1536w, ${BASE_URL}ultrawide-2048 2048w`,
     )
+  })
+
+  it('emits widths sorted ascending', () => {
+    const srcset = getImageSrcSet(BASE_URL, 'video')
+    const widths = srcset.match(/(\d+)w/g)?.map((w) => parseInt(w, 10))
+    expect(widths).toEqual([640, 800, 1024, 1536])
+  })
+
+  it('returns empty string when baseUrl already has a variant appended', () => {
+    expect(getImageSrcSet(`${BASE_URL}public`, 'video')).toBe('')
+  })
+
+  it('returns empty string for non-Cloudflare URLs', () => {
+    expect(getImageSrcSet('https://picsum.photos/seed/foo/400/400', 'video')).toBe('')
   })
 })

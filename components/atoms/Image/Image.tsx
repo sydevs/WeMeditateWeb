@@ -54,6 +54,11 @@ export interface ImageProps extends ComponentProps<'img'> {
   /**
    * Emit a responsive srcset for Cloudflare-hosted images.
    * Has no effect on non-Cloudflare URLs.
+   *
+   * When true, a `sizes` attribute tuned for full-width viewport layouts is
+   * used by default. Callers rendering images inside grids, cards, or
+   * fixed-width containers should pass their own `sizes` prop so the browser
+   * picks the correct variant instead of over-fetching.
    * @default true
    */
   responsive?: boolean
@@ -92,7 +97,9 @@ export interface ImageProps extends ComponentProps<'img'> {
  *
  * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio`
  * is set, the component automatically appends a variant (`{aspectRatio}-{width}`)
- * and emits a responsive srcset.
+ * and emits a responsive srcset. The default `sizes` attribute assumes a
+ * roughly full-width viewport layout — pass an explicit `sizes` prop when
+ * rendering inside grids, cards, or fixed-width containers.
  *
  * When width and height are provided, uses a blurred gradient placeholder
  * with shimmer animation to prevent layout shift during loading.
@@ -128,9 +135,10 @@ export function Image({
     if (!aspectRatio || !isCloudflareImageURL(src)) {
       return { imageSrc: src, imageSrcSet: undefined as string | undefined }
     }
+    const srcSet = responsive ? getImageSrcSet(src, aspectRatio) : ''
     return {
       imageSrc: getImageURL(src, getVariantName(aspectRatio, size)),
-      imageSrcSet: responsive ? getImageSrcSet(src, aspectRatio) : undefined,
+      imageSrcSet: srcSet || undefined,
     }
   }, [src, aspectRatio, size, responsive])
 
