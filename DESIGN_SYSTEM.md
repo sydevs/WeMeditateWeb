@@ -1884,6 +1884,30 @@ public/fonts/
 └── futura-book/    # Futura Book font
 ```
 
+### Image Optimization (Cloudflare Images)
+
+All CMS-hosted images are served through Cloudflare Images. The `<Image>` atom automatically detects `imagedelivery.net/` URLs and appends a variant to request an optimized, format-negotiated image.
+
+**How it works:**
+- `aspectRatio` and `size` props map to a variant named `{aspectRatio}-{width}` (e.g. `square` + `small` → `square-400`)
+- The atom also emits a responsive `srcset` covering every width defined for that aspect ratio, plus a sensible default `sizes` attribute
+- Non-Cloudflare URLs (static assets, picsum placeholders in stories) pass through unchanged
+
+**Aspect ratio values** — these align directly with Cloudflare variant prefixes:
+- `square` (1:1) — widths: 400, 800, 1200
+- `video` (16:9) — widths: 640, 800, 1024, 1536
+- `4-3` — widths: 800, 1024, 1536
+- `3-2` — widths: 800, 1024, 1536
+- `ultrawide` (21:9) — widths: 1536, 2048
+
+**Size tiers**: `small` | `medium` (default) | `large` | `xlarge`. When a tier isn't defined for a ratio, the helper falls back to `medium`, then to the smallest width defined for that ratio — so the returned variant always exists in the dashboard.
+
+**Background images**: `<Splash>` and `<SplashLoader>` expose `imageAspectRatio` / `imageSize` props for the same treatment. Defaults are `ultrawide` / `xlarge`.
+
+**Migration from the old slash notation**: `16/9` → `video`, `21/9` → `ultrawide`, `4/3` → `4-3`, `3/2` → `3-2`.
+
+See [lib/cloudflare-images.ts](./lib/cloudflare-images.ts) for the utility source.
+
 ### Icons
 
 This project uses **Heroicons** (https://heroicons.com/) by the makers of Tailwind CSS.

@@ -54,6 +54,13 @@ This project integrates with the following external services:
 - **Configuration**: `SAHAJCLOUD_API_KEY` and `PUBLIC__SAHAJCLOUD_URL` in `.env.local`
 - **Documentation**: REST API client in [server/cms-client.ts](server/cms-client.ts)
 
+### Cloudflare Images (Required for CMS-hosted media)
+- **Purpose**: Image optimization and delivery via predefined variants
+- **Used for**: Automatic format negotiation (AVIF/WebP/JPEG) and responsive sizing for all SahajCloud image URLs
+- **URL shape**: `https://imagedelivery.net/<account>/<image_id>/` — the `<Image>` atom appends a variant like `video-800` based on the `aspectRatio` and `size` props
+- **Utilities**: [lib/cloudflare-images.ts](lib/cloudflare-images.ts)
+- **Variants**: 15 predefined variants, named `{aspectRatio}-{width}` (e.g. `square-400`, `video-1024`, `4-3-800`, `ultrawide-2048`). The full list lives in `SIZE_WIDTH_MAP` in the utility module and must be configured in the Cloudflare dashboard.
+
 ### Cloudflare Workers & KV (Required for Production)
 - **Purpose**: Edge computing platform and key-value storage for caching
 - **Used for**: Server-side rendering at the edge, caching API responses
