@@ -29,8 +29,8 @@ export const CacheTTL = {
   LIST: 1800,
   /** Meditation content cache duration (1 hour) */
   MEDITATION: 3600,
-  /** Music content cache duration (1 hour) */
-  MUSIC: 3600,
+  /** Song content cache duration (1 hour) */
+  SONG: 3600,
 } as const
 
 /**

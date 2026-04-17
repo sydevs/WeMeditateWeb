@@ -86,8 +86,9 @@ export interface Config {
   collections: {
     pages: Page;
     meditations: Meditation;
-    music: Music;
+    songs: Song;
     albums: Album;
+    videos: Video;
     lessons: Lesson;
     lectures: Lecture;
     frames: Frame;
@@ -95,12 +96,12 @@ export interface Config {
     authors: Author;
     images: Image;
     files: File;
-    'image-tags': ImageTag;
+    'lecture-tags': LectureTag;
     'meditation-tags': MeditationTag;
-    'music-tags': MusicTag;
-    'page-tags': PageTag;
+    'song-tags': SongTag;
     managers: Manager;
     clients: Client;
+    'app-cards': AppCard;
     forms: Form;
     'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
@@ -111,29 +112,27 @@ export interface Config {
   };
   collectionsJoins: {
     albums: {
-      music: 'music';
+      songs: 'songs';
     };
     authors: {
       articles: 'pages';
     };
-    'image-tags': {
-      images: 'images';
+    'lecture-tags': {
+      lectures: 'lectures';
     };
     'meditation-tags': {
-      meditations: 'meditations';
+      children: 'meditation-tags';
     };
-    'music-tags': {
-      music: 'music';
-    };
-    'page-tags': {
-      pages: 'pages';
+    'song-tags': {
+      songs: 'songs';
     };
   };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     meditations: MeditationsSelect<false> | MeditationsSelect<true>;
-    music: MusicSelect<false> | MusicSelect<true>;
+    songs: SongsSelect<false> | SongsSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     lessons: LessonsSelect<false> | LessonsSelect<true>;
     lectures: LecturesSelect<false> | LecturesSelect<true>;
     frames: FramesSelect<false> | FramesSelect<true>;
@@ -141,12 +140,12 @@ export interface Config {
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     images: ImagesSelect<false> | ImagesSelect<true>;
     files: FilesSelect<false> | FilesSelect<true>;
-    'image-tags': ImageTagsSelect<false> | ImageTagsSelect<true>;
+    'lecture-tags': LectureTagsSelect<false> | LectureTagsSelect<true>;
     'meditation-tags': MeditationTagsSelect<false> | MeditationTagsSelect<true>;
-    'music-tags': MusicTagsSelect<false> | MusicTagsSelect<true>;
-    'page-tags': PageTagsSelect<false> | PageTagsSelect<true>;
+    'song-tags': SongTagsSelect<false> | SongTagsSelect<true>;
     managers: ManagersSelect<false> | ManagersSelect<true>;
     clients: ClientsSelect<false> | ClientsSelect<true>;
+    'app-cards': AppCardsSelect<false> | AppCardsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -182,15 +181,21 @@ export interface Config {
         | 'tr'
       )[];
   globals: {
-    'we-meditate-web-settings': WeMeditateWebSetting;
-    'we-meditate-app-settings': WeMeditateAppSetting;
-    'sahaj-atlas-settings': SahajAtlasSetting;
+    'wm-web-config': WmWebConfig;
+    'wm-web-translations': WmWebTranslation;
+    'wm-app-config': WmAppConfig;
+    'wm-app-translations': WmAppTranslation;
+    'sy-atlas-config': SyAtlasConfig;
+    'sy-atlas-translations': SyAtlasTranslation;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
-    'we-meditate-web-settings': WeMeditateWebSettingsSelect<false> | WeMeditateWebSettingsSelect<true>;
-    'we-meditate-app-settings': WeMeditateAppSettingsSelect<false> | WeMeditateAppSettingsSelect<true>;
-    'sahaj-atlas-settings': SahajAtlasSettingsSelect<false> | SahajAtlasSettingsSelect<true>;
+    'wm-web-config': WmWebConfigSelect<false> | WmWebConfigSelect<true>;
+    'wm-web-translations': WmWebTranslationsSelect<false> | WmWebTranslationsSelect<true>;
+    'wm-app-config': WmAppConfigSelect<false> | WmAppConfigSelect<true>;
+    'wm-app-translations': WmAppTranslationsSelect<false> | WmAppTranslationsSelect<true>;
+    'sy-atlas-config': SyAtlasConfigSelect<false> | SyAtlasConfigSelect<true>;
+    'sy-atlas-translations': SyAtlasTranslationsSelect<false> | SyAtlasTranslationsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale:
@@ -210,18 +215,14 @@ export interface Config {
     | 'fa'
     | 'bg'
     | 'tr';
-  user:
-    | (Manager & {
-        collection: 'managers';
-      })
-    | (Client & {
-        collection: 'clients';
-      });
+  widgets: {
+    collections: CollectionsWidget;
+  };
+  user: Manager | Client;
   jobs: {
     tasks: {
-      resetClientUsage: TaskResetClientUsage;
-      trackClientUsage: TaskTrackClientUsage;
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
+      resetUsage: TaskResetUsage;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -306,7 +307,7 @@ export interface Page {
    * Article author (for article pages)
    */
   author?: (number | null) | Author;
-  tags?: (number | PageTag)[] | null;
+  tags?: ('wisdom' | 'lifestyle' | 'creativity' | 'event' | 'technique')[] | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -326,7 +327,22 @@ export interface Image {
   /**
    * Tags to categorize this image
    */
-  tags?: (number | ImageTag)[] | null;
+  tags?:
+    | (
+        | 'landscape'
+        | 'portrait'
+        | 'square'
+        | 'thumbnail'
+        | 'author'
+        | 'icon'
+        | 'stock-photo'
+        | 'technique'
+        | 'meditation'
+        | 'placeholder'
+        | 'lesson'
+        | 'app-card'
+      )[]
+    | null;
   fileMetadata?:
     | {
         [k: string]: unknown;
@@ -348,21 +364,6 @@ export interface Image {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "image-tags".
- */
-export interface ImageTag {
-  id: number;
-  title: string;
-  images?: {
-    docs?: (number | Image)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -396,36 +397,10 @@ export interface Author {
    */
   yearsMeditating?: number | null;
   /**
-   * Author profile image
+   * Author profile photo
    */
-  image?: (number | null) | Image;
+  photo?: (number | null) | Image;
   articles?: {
-    docs?: (number | Page)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "page-tags".
- */
-export interface PageTag {
-  id: number;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * URL-friendly identifier (auto-generated from title)
-   */
-  slug: string;
-  /**
-   * This localized title will be shown to public users
-   */
-  title: string;
-  pages?: {
     docs?: (number | Page)[];
     hasNextPage?: boolean;
     totalDocs?: number;
@@ -439,6 +414,7 @@ export interface PageTag {
  */
 export interface Meditation {
   id: number;
+  randomSongUrl?: string | null;
   label: string;
   locale:
     | 'en'
@@ -458,22 +434,14 @@ export interface Meditation {
     | 'bg'
     | 'tr';
   /**
-   * This should be the name of the yogi who did the recording. We need this for dynamic followup audio clips.
+   * This should be the name of the yogi who did the recording. We need this for dynamic followup audio clips. Cannot be changed after creation.
    */
   narrator: number | Narrator;
   /**
    * Music with this tag will be offered to the seeker
    */
-  musicTag?: (number | null) | MusicTag;
-  fileMetadata?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  songTag?: (number | null) | SongTag;
+  duration?: number | null;
   durationMinutes?: number | null;
   title?: string | null;
   /**
@@ -482,10 +450,48 @@ export interface Meditation {
   generateSlug?: boolean | null;
   slug: string;
   thumbnail?: (number | null) | Image;
+  type: 'quick' | 'daily' | 'lesson';
   /**
-   * Categorize this meditation for seekers to find it
+   * Shows which categories use this meditation for each time of day. Managed from the Categories collection.
    */
-  tags?: (number | MeditationTag)[] | null;
+  tagAssignments?: {
+    asMorningMeditation?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    asAfternoonMeditation?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    asEveningMeditation?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    asNightMeditation?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
   frames?:
     | {
         [k: string]: unknown;
@@ -522,9 +528,9 @@ export interface Narrator {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "music-tags".
+ * via the `definition` "song-tags".
  */
-export interface MusicTag {
+export interface SongTag {
   id: number;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -538,8 +544,8 @@ export interface MusicTag {
    * Localized title shown to public users
    */
   title: string;
-  music?: {
-    docs?: (number | Music)[];
+  songs?: {
+    docs?: (number | Song)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -557,16 +563,16 @@ export interface MusicTag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "music".
+ * via the `definition` "songs".
  */
-export interface Music {
+export interface Song {
   id: number;
   title: string;
   /**
    * The album this track belongs to
    */
   album: number | Album;
-  tags?: (number | MusicTag)[] | null;
+  tags?: (number | SongTag)[] | null;
   fileMetadata?:
     | {
         [k: string]: unknown;
@@ -595,6 +601,7 @@ export interface Music {
  */
 export interface Album {
   id: number;
+  artwork: number | Image;
   title: string;
   artist: string;
   /**
@@ -604,51 +611,49 @@ export interface Album {
   /**
    * Music tracks in this album
    */
-  music?: {
-    docs?: (number | Music)[];
+  songs?: {
+    docs?: (number | Song)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "meditation-tags".
+ * via the `definition` "videos".
  */
-export interface MeditationTag {
+export interface Video {
   id: number;
+  streamUrl?: string | null;
+  previewUrl?: string | null;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  /**
-   * URL-friendly identifier (auto-generated from title)
-   */
-  slug: string;
-  /**
-   * Localized title shown to public users
+   * Video title shown to users
    */
   title: string;
-  /**
-   * Tag color for UI theming (hex format)
-   */
-  color: string;
-  meditations?: {
-    docs?: (number | Meditation)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
+  subtitles?: {
+    captions: {
+      duration: number;
+      content: string;
+      startTime: string;
+      [k: string]: unknown;
+    }[];
+    [k: string]: unknown;
   };
+  tags: 'testimonial' | 'workshop' | 'event' | 'technique';
+  /**
+   * Auto-populated video metadata (duration, format, etc.)
+   */
+  fileMetadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -669,34 +674,29 @@ export interface Lesson {
   id: number;
   title: string;
   /**
-   * Story panels to introduce this lesson. First panel must be a Cover Panel.
+   * Story panels to introduce this lesson.
    */
-  panels: (
-    | {
-        title: string;
-        quote: string;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'cover';
-      }
-    | {
-        /**
-         * Video file for this panel.
-         */
-        video?: (number | null) | File;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'video';
-      }
-    | {
-        title: string;
-        text: string;
-        image: number | Image;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'text';
-      }
-  )[];
+  panels: {
+    title?: string | null;
+    text?: string | null;
+    /**
+     * Image or video for this panel.
+     */
+    media?: (number | null) | File;
+    /**
+     * Subtitles for video media (JSON format).
+     */
+    subtitles?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    id?: string | null;
+  }[];
   /**
    * Link to a related guided meditation that complements this lesson content.
    */
@@ -705,6 +705,9 @@ export interface Lesson {
    * Audio introduction to this lesson.
    */
   introAudio?: (number | null) | File;
+  /**
+   * Subtitles for intro audio (JSON format). Schema: duration, content, startTime.
+   */
   introSubtitles?:
     | {
         [k: string]: unknown;
@@ -734,13 +737,13 @@ export interface Lesson {
    * This will determine the order of the path steps
    */
   step: number;
-  icon?: (number | null) | Image;
+  icon: number | Image;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
 }
 /**
- * Audio, video, and PDF files used by other collections. Orphaned files are automatically moved to trash and permanently deleted during monthly cleanup.
+ * Media files (images, audio, video) and PDFs used by other collections. Orphaned files are automatically moved to trash and permanently deleted during monthly cleanup.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "files".
@@ -748,6 +751,8 @@ export interface Lesson {
 export interface File {
   id: number;
   createdAt: string;
+  streamUrl?: string | null;
+  previewUrl?: string | null;
   updatedAt: string;
   deletedAt?: string | null;
   url?: string | null;
@@ -766,10 +771,64 @@ export interface File {
  */
 export interface Lecture {
   id: number;
-  title: string;
-  thumbnail: number | Image;
-  videoUrl: string;
+  /**
+   * Paste the Vimeo URL from amruta.org (e.g. https://vimeo.com/123456789).
+   */
+  nirmalVidyaVimeoUrl: string;
+  /**
+   * Start of the excerpt (HH:MM:SS)
+   */
+  startTime: number;
+  /**
+   * End of the excerpt (HH:MM:SS)
+   */
+  endTime: number;
+  /**
+   * Auto-populated from Nirmala Vidya. Can be edited after creation.
+   */
+  title?: string | null;
+  thumbnail?: (number | null) | Image;
+  /**
+   * HLS stream URL
+   */
+  videoUrl?: string | null;
+  /**
+   * VTT subtitle URL — auto-populated from Nirmala Vidya API per locale.
+   */
   subtitlesUrl?: string | null;
+  tags?: (number | LectureTag)[] | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lecture-tags".
+ */
+export interface LectureTag {
+  id: number;
+  label: string;
+  rules?: {
+    logic?: 'AND' | 'OR';
+    pathProgress?: {
+      min?: number;
+      max?: number;
+    };
+    totalMeditationsViewed?: {
+      min?: number;
+      max?: number;
+    };
+    totalLecturesViewed?: {
+      min?: number;
+      max?: number;
+    };
+  };
+  isEligibleForViewer?: boolean | null;
+  lectures?: {
+    docs?: (number | Lecture)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -779,6 +838,7 @@ export interface Lecture {
  */
 export interface Frame {
   id: number;
+  streamUrl?: string | null;
   previewUrl?: string | null;
   imageSet: 'male' | 'female';
   category:
@@ -848,6 +908,81 @@ export interface Frame {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meditation-tags".
+ */
+export interface MeditationTag {
+  id: number;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  /**
+   * URL-friendly identifier (auto-generated from title)
+   */
+  slug: string;
+  /**
+   * Localized title shown to public users
+   */
+  title: string;
+  /**
+   * Tag color for UI theming (hex format)
+   */
+  color: string;
+  /**
+   * Parent category for grouping. Parent categories are not selectable on meditations.
+   */
+  parent?: (number | null) | MeditationTag;
+  /**
+   * Featured categories are shown prominently; non-featured categories appear in a dropdown
+   */
+  isFeatured: boolean;
+  /**
+   * Display order (lower numbers appear first)
+   */
+  order?: number | null;
+  /**
+   * Which times of day this category offers meditations
+   */
+  timings?: ('morning' | 'afternoon' | 'evening' | 'night')[] | null;
+  /**
+   * The meditation offered for this category in the morning
+   */
+  morningMeditation?: (number | null) | Meditation;
+  /**
+   * The meditation offered for this category in the afternoon
+   */
+  afternoonMeditation?: (number | null) | Meditation;
+  /**
+   * The meditation offered for this category in the evening
+   */
+  eveningMeditation?: (number | null) | Meditation;
+  /**
+   * The meditation offered for this category at night
+   */
+  nightMeditation?: (number | null) | Meditation;
+  /**
+   * Automatically set when this tag has child categories
+   */
+  isParent: boolean;
+  children?: {
+    docs?: (number | MeditationTag)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "managers".
  */
 export interface Manager {
@@ -890,6 +1025,7 @@ export interface Manager {
       }[]
     | null;
   password?: string | null;
+  collection: 'managers';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -932,11 +1068,16 @@ export interface Client {
   /**
    * API usage statistics
    */
-  usageStats?: {
-    /**
-     * All-time request count
-     */
-    totalRequests?: number | null;
+  usage?: {
+    abuseScore?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
     /**
      * Today's request count
      */
@@ -944,21 +1085,151 @@ export interface Client {
     /**
      * Maximum historical request count
      */
-    maxDailyRequests?: number | null;
+    peakDailyRequests?: number | null;
     /**
      * Last API call timestamp
      */
     lastRequestAt?: string | null;
     /**
-     * Indicates if daily limit exceeded (>1000 requests)
+     * Lifetime total requests (never resets)
      */
-    highUsageAlert?: boolean | null;
+    totalRequests?: number | null;
+    /**
+     * Count of days exceeding threshold
+     */
+    highUsageDays?: number | null;
+    /**
+     * Last date threshold was exceeded
+     */
+    lastHighUsageAt?: string | null;
+    /**
+     * First API request (tracking start)
+     */
+    firstRequestAt?: string | null;
   };
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
+  collection: 'clients';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "app-cards".
+ */
+export interface AppCard {
+  id: number;
+  image: number | Image;
+  title: string;
+  subtitle?: string | null;
+  /**
+   * Button label text
+   */
+  button?: string | null;
+  /**
+   * A custom header that will appear above the card if it is selected as a hero card.
+   */
+  header: string;
+  type: 'app-page' | 'content' | 'external';
+  /**
+   * Select the app page this card links to
+   */
+  appPage?: ('map' | 'lectures' | 'path' | 'music' | 'live-meditations') | null;
+  /**
+   * Select the content item this card links to
+   */
+  content?:
+    | ({
+        relationTo: 'lectures';
+        value: number | Lecture;
+      } | null)
+    | ({
+        relationTo: 'albums';
+        value: number | Album;
+      } | null)
+    | ({
+        relationTo: 'meditations';
+        value: number | Meditation;
+      } | null);
+  /**
+   * External URL this card links to
+   */
+  linkUrl?: string | null;
+  /**
+   * Enable recurring schedule for this card (countdown/reminder functionality)
+   */
+  countdown?: boolean | null;
+  /**
+   * Render the card with a dark overlay and white text instead of the default style.
+   */
+  overlay?: boolean | null;
+  /**
+   * Configure the recurring schedule for this reminder card
+   */
+  schedule?: {
+    firstDate: string;
+    firstDate_tz: SupportedTimezones;
+    recurrenceType?: ('DAILY' | 'WEEKLY' | 'MONTHLY') | null;
+    /**
+     * Repeat every N days/weeks/months
+     */
+    interval?: number | null;
+    weekdays?: ('MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU')[] | null;
+    /**
+     * Dates when this recurring event will not occur, such as holidays or seasonal breaks.
+     */
+    exclusions?:
+      | {
+          startDate: string;
+          endDate?: string | null;
+          reason?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    icalRule?: string | null;
+    upcomingDates?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  /**
+   * Target sections where this card should appear on the app homepage.
+   */
+  targetSections?: ('hero' | 'highlights')[] | null;
+  rules?: {
+    logic?: 'AND' | 'OR';
+    hasRealization?: boolean;
+    pathProgress?: {
+      min?: number;
+      max?: number;
+    };
+    meditationsPerWeek?: {
+      min?: number;
+      max?: number;
+    };
+    totalMeditationsViewed?: {
+      min?: number;
+      max?: number;
+    };
+    totalLecturesViewed?: {
+      min?: number;
+      max?: number;
+    };
+  };
+  isEligibleForViewer?: boolean | null;
+  /**
+   * Controls how likely this card is to be chosen when displayed to a user.
+   */
+  weight?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1220,7 +1491,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'resetClientUsage' | 'trackClientUsage' | 'cleanupOrphanedMedia' | 'schedulePublish';
+        taskSlug: 'inline' | 'cleanupOrphanedMedia' | 'resetUsage' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1253,7 +1524,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'resetClientUsage' | 'trackClientUsage' | 'cleanupOrphanedMedia' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'cleanupOrphanedMedia' | 'resetUsage' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1285,12 +1556,16 @@ export interface PayloadLockedDocument {
         value: number | Meditation;
       } | null)
     | ({
-        relationTo: 'music';
-        value: number | Music;
+        relationTo: 'songs';
+        value: number | Song;
       } | null)
     | ({
         relationTo: 'albums';
         value: number | Album;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
       } | null)
     | ({
         relationTo: 'lessons';
@@ -1321,20 +1596,16 @@ export interface PayloadLockedDocument {
         value: number | File;
       } | null)
     | ({
-        relationTo: 'image-tags';
-        value: number | ImageTag;
+        relationTo: 'lecture-tags';
+        value: number | LectureTag;
       } | null)
     | ({
         relationTo: 'meditation-tags';
         value: number | MeditationTag;
       } | null)
     | ({
-        relationTo: 'music-tags';
-        value: number | MusicTag;
-      } | null)
-    | ({
-        relationTo: 'page-tags';
-        value: number | PageTag;
+        relationTo: 'song-tags';
+        value: number | SongTag;
       } | null)
     | ({
         relationTo: 'managers';
@@ -1343,6 +1614,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'clients';
         value: number | Client;
+      } | null)
+    | ({
+        relationTo: 'app-cards';
+        value: number | AppCard;
       } | null)
     | ({
         relationTo: 'forms';
@@ -1432,17 +1707,26 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "meditations_select".
  */
 export interface MeditationsSelect<T extends boolean = true> {
+  randomSongUrl?: T;
   label?: T;
   locale?: T;
   narrator?: T;
-  musicTag?: T;
-  fileMetadata?: T;
+  songTag?: T;
+  duration?: T;
   durationMinutes?: T;
   title?: T;
   generateSlug?: T;
   slug?: T;
   thumbnail?: T;
-  tags?: T;
+  type?: T;
+  tagAssignments?:
+    | T
+    | {
+        asMorningMeditation?: T;
+        asAfternoonMeditation?: T;
+        asEveningMeditation?: T;
+        asNightMeditation?: T;
+      };
   frames?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1460,9 +1744,9 @@ export interface MeditationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "music_select".
+ * via the `definition` "songs_select".
  */
-export interface MusicSelect<T extends boolean = true> {
+export interface SongsSelect<T extends boolean = true> {
   title?: T;
   album?: T;
   tags?: T;
@@ -1485,13 +1769,28 @@ export interface MusicSelect<T extends boolean = true> {
  * via the `definition` "albums_select".
  */
 export interface AlbumsSelect<T extends boolean = true> {
+  artwork?: T;
   title?: T;
   artist?: T;
   artistUrl?: T;
-  music?: T;
+  songs?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  streamUrl?: T;
+  previewUrl?: T;
+  title?: T;
+  subtitles?: T;
+  tags?: T;
+  fileMetadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;
@@ -1511,30 +1810,11 @@ export interface LessonsSelect<T extends boolean = true> {
   panels?:
     | T
     | {
-        cover?:
-          | T
-          | {
-              title?: T;
-              quote?: T;
-              id?: T;
-              blockName?: T;
-            };
-        video?:
-          | T
-          | {
-              video?: T;
-              id?: T;
-              blockName?: T;
-            };
-        text?:
-          | T
-          | {
-              title?: T;
-              text?: T;
-              image?: T;
-              id?: T;
-              blockName?: T;
-            };
+        title?: T;
+        text?: T;
+        media?: T;
+        subtitles?: T;
+        id?: T;
       };
   meditation?: T;
   introAudio?: T;
@@ -1552,18 +1832,24 @@ export interface LessonsSelect<T extends boolean = true> {
  * via the `definition` "lectures_select".
  */
 export interface LecturesSelect<T extends boolean = true> {
+  nirmalVidyaVimeoUrl?: T;
+  startTime?: T;
+  endTime?: T;
   title?: T;
   thumbnail?: T;
   videoUrl?: T;
   subtitlesUrl?: T;
+  tags?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "frames_select".
  */
 export interface FramesSelect<T extends boolean = true> {
+  streamUrl?: T;
   previewUrl?: T;
   imageSet?: T;
   category?: T;
@@ -1604,7 +1890,7 @@ export interface AuthorsSelect<T extends boolean = true> {
   description?: T;
   countryCode?: T;
   yearsMeditating?: T;
-  image?: T;
+  photo?: T;
   articles?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1637,6 +1923,8 @@ export interface ImagesSelect<T extends boolean = true> {
  */
 export interface FilesSelect<T extends boolean = true> {
   createdAt?: T;
+  streamUrl?: T;
+  previewUrl?: T;
   updatedAt?: T;
   deletedAt?: T;
   url?: T;
@@ -1651,11 +1939,13 @@ export interface FilesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "image-tags_select".
+ * via the `definition` "lecture-tags_select".
  */
-export interface ImageTagsSelect<T extends boolean = true> {
-  title?: T;
-  images?: T;
+export interface LectureTagsSelect<T extends boolean = true> {
+  label?: T;
+  rules?: T;
+  isEligibleForViewer?: T;
+  lectures?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1668,7 +1958,16 @@ export interface MeditationTagsSelect<T extends boolean = true> {
   slug?: T;
   title?: T;
   color?: T;
-  meditations?: T;
+  parent?: T;
+  isFeatured?: T;
+  order?: T;
+  timings?: T;
+  morningMeditation?: T;
+  afternoonMeditation?: T;
+  eveningMeditation?: T;
+  nightMeditation?: T;
+  isParent?: T;
+  children?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1683,13 +1982,13 @@ export interface MeditationTagsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "music-tags_select".
+ * via the `definition` "song-tags_select".
  */
-export interface MusicTagsSelect<T extends boolean = true> {
+export interface SongTagsSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   title?: T;
-  music?: T;
+  songs?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1701,18 +2000,6 @@ export interface MusicTagsSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "page-tags_select".
- */
-export interface PageTagsSelect<T extends boolean = true> {
-  generateSlug?: T;
-  slug?: T;
-  title?: T;
-  pages?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1756,20 +2043,66 @@ export interface ClientsSelect<T extends boolean = true> {
   domains?: T;
   active?: T;
   keyGeneratedAt?: T;
-  usageStats?:
+  usage?:
     | T
     | {
-        totalRequests?: T;
+        abuseScore?: T;
         dailyRequests?: T;
-        maxDailyRequests?: T;
+        peakDailyRequests?: T;
         lastRequestAt?: T;
-        highUsageAlert?: T;
+        totalRequests?: T;
+        highUsageDays?: T;
+        lastHighUsageAt?: T;
+        firstRequestAt?: T;
       };
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "app-cards_select".
+ */
+export interface AppCardsSelect<T extends boolean = true> {
+  image?: T;
+  title?: T;
+  subtitle?: T;
+  button?: T;
+  header?: T;
+  type?: T;
+  appPage?: T;
+  content?: T;
+  linkUrl?: T;
+  countdown?: T;
+  overlay?: T;
+  schedule?:
+    | T
+    | {
+        firstDate?: T;
+        firstDate_tz?: T;
+        recurrenceType?: T;
+        interval?: T;
+        weekdays?: T;
+        exclusions?:
+          | T
+          | {
+              startDate?: T;
+              endDate?: T;
+              reason?: T;
+              id?: T;
+            };
+        icalRule?: T;
+        upcomingDates?: T;
+      };
+  targetSections?: T;
+  rules?: T;
+  isEligibleForViewer?: T;
+  weight?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1994,94 +2327,289 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "we-meditate-web-settings".
+ * via the `definition` "wm-web-config".
  */
-export interface WeMeditateWebSetting {
+export interface WmWebConfig {
   id: number;
-  /**
-   * Select the page content for the home page
-   */
   homePage: number | Page;
   /**
-   * Select 3-7 pages to feature in the website menu. Drag to reorder.
+   * Select 2-3 pages to feature in the website header and footer.
    */
   featuredPages: (number | Page)[];
   /**
-   * Select 3-5 pages to display in the website footer
+   * Select up to 5 pages for seekers to start meditating. The first one will be featured in the header. (eg. Classes Near Me, Online Meditations, Recorded Meditations, WeMeditate App
    */
-  footerPages: (number | Page)[];
-  musicPage: number | Page;
+  classPages?: (number | Page)[] | null;
   /**
-   * Select 3-5 music tags to display on the Music page
+   * Select up to 5 pages for seeker to learn more about meditation. (eg. Shri Mataji, Kundalini, Subtle System, etc)
    */
-  musicPageTags: (number | MusicTag)[];
-  subtleSystemPage: number | Page;
-  left: number | Page;
-  right: number | Page;
-  center: number | Page;
-  mooladhara: number | Page;
-  kundalini: number | Page;
-  swadhistan: number | Page;
-  nabhi: number | Page;
-  void: number | Page;
-  anahat: number | Page;
-  vishuddhi: number | Page;
-  agnya: number | Page;
-  sahasrara: number | Page;
-  techniquesPage: number | Page;
+  knowledgePages?: (number | Page)[] | null;
   /**
-   * Select the page tag that represents all technique pages
+   * Select up to 5 meta pages about the website. eg. Privacy Notice, Contact Form, etc.
    */
-  techniquePageTag: number | PageTag;
-  inspirationPage: number | Page;
-  /**
-   * Select 3-5 page tags to display on the Inspiration page
-   */
-  inspirationPageTags: (number | PageTag)[];
-  classesPage: number | Page;
-  /**
-   * Select the page for live meditation classes
-   */
-  liveMeditationsPage: number | Page;
+  infoPages?: (number | Page)[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "we-meditate-app-settings".
+ * via the `definition` "wm-web-translations".
  */
-export interface WeMeditateAppSetting {
+export interface WmWebTranslation {
   id: number;
-  /**
-   * Current mobile app version
-   */
-  appVersion?: string | null;
-  /**
-   * Select up to 10 meditations to feature in the mobile app
-   */
-  featuredMeditations?: (number | Meditation)[] | null;
-  /**
-   * Select up to 10 lessons to feature in the mobile app
-   */
-  featuredLessons?: (number | Lesson)[] | null;
+  common?: {
+    /**
+     * Loading indicator text shown while content is being fetched
+     */
+    loading: string;
+    /**
+     * Generic error message shown when something goes wrong
+     */
+    error: string;
+    /**
+     * Button text to retry a failed action
+     */
+    retry: string;
+  };
+  navigation?: {
+    /**
+     * Navigation link to the About Meditation section
+     */
+    about_meditation: string;
+    /**
+     * Navigation link to educational content and resources
+     */
+    learn_more: string;
+    /**
+     * Call-to-action navigation link inviting users to meditate
+     */
+    come_meditate: string;
+    /**
+     * Language selector label in the navigation
+     */
+    languages: string;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sahaj-atlas-settings".
+ * via the `definition` "wm-app-config".
  */
-export interface SahajAtlasSetting {
+export interface WmAppConfig {
   id: number;
   /**
-   * Current Sahaj Atlas version
+   * Self-realization meditation for new users.
    */
-  atlasVersion?: string | null;
+  selfRealizationMeditation?: (number | null) | Meditation;
+  /**
+   * Lecture shown after the first meditation.
+   */
+  postRealizationLecture?: (number | null) | Lecture;
+  /**
+   * Audio prompts and subtitles for the vibe check step of the first meditation.
+   */
+  vibeCheckTracks?:
+    | {
+        /**
+         * Predefined code identifying this track in the app.
+         */
+        identifier:
+          | 'WHAT-YOU-FEEL-START'
+          | 'WHAT-YOU-FEEL-LEFT'
+          | 'WHAT-YOU-FEEL-RIGHT'
+          | 'INTRO-INTERPRET'
+          | 'BH-COOL'
+          | 'SOMETHING-NO-COOL'
+          | 'SOMETHING-COOL'
+          | 'BH-NOTHING';
+        /**
+         * MP3 audio file for this vibe check prompt.
+         */
+        audio: number | File;
+        /**
+         * WebVTT (.vtt) subtitle file for this audio.
+         */
+        subtitles: number | File;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wm-app-translations".
+ */
+export interface WmAppTranslation {
+  id: number;
+  daily?: {
+    /**
+     * Daily meditation section title
+     */
+    title: string;
+    /**
+     * Subtitle or description for daily content
+     */
+    subtitle: string;
+    /**
+     * Message when daily meditation is complete
+     */
+    complete: string;
+    /**
+     * Meditation streak counter label
+     */
+    streak: string;
+    /**
+     * Skip daily meditation button
+     */
+    skip: string;
+  };
+  path?: {
+    /**
+     * Path section title
+     */
+    title: string;
+    /**
+     * Progress indicator label
+     */
+    progress: string;
+    /**
+     * Continue lesson button
+     */
+    continue: string;
+    /**
+     * Start new unit button
+     */
+    start_unit: string;
+    /**
+     * Lesson completion message
+     */
+    lesson_complete: string;
+  };
+  explore?: {
+    /**
+     * Explore section title
+     */
+    title: string;
+    /**
+     * Search placeholder text
+     */
+    search: string;
+    /**
+     * Filter button label
+     */
+    filter: string;
+    /**
+     * Categories section header
+     */
+    categories: string;
+    /**
+     * View all items link
+     */
+    view_all: string;
+  };
+  profile?: {
+    /**
+     * Profile screen title
+     */
+    title: string;
+    /**
+     * Settings button label
+     */
+    settings: string;
+    /**
+     * Statistics section header
+     */
+    statistics: string;
+    /**
+     * Logout button
+     */
+    logout: string;
+    /**
+     * Edit profile button
+     */
+    edit: string;
+  };
+  meditation?: {
+    /**
+     * Play button label
+     */
+    play: string;
+    /**
+     * Pause button label
+     */
+    pause: string;
+    /**
+     * Meditation complete message
+     */
+    complete: string;
+    /**
+     * Timer display label
+     */
+    timer: string;
+    /**
+     * Background sound selector
+     */
+    background_sound: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sy-atlas-config".
+ */
+export interface SyAtlasConfig {
+  id: number;
   defaultMapCenter: {
     latitude: number;
     longitude: number;
   };
   defaultZoomLevel?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sy-atlas-translations".
+ */
+export interface SyAtlasTranslation {
+  id: number;
+  common?: {
+    /**
+     * Loading indicator text shown while content is being fetched
+     */
+    loading: string;
+    /**
+     * Generic error message shown when something goes wrong
+     */
+    error: string;
+  };
+  map?: {
+    /**
+     * Tooltip for the zoom in map control button
+     */
+    zoom_in: string;
+    /**
+     * Tooltip for the zoom out map control button
+     */
+    zoom_out: string;
+    /**
+     * Button text to center the map on the user's current location
+     */
+    my_location: string;
+  };
+  location?: {
+    /**
+     * Link text to view full details of a location
+     */
+    details: string;
+    /**
+     * Button text to get directions to a location
+     */
+    directions: string;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2105,55 +2633,67 @@ export interface PayloadJobsStat {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "we-meditate-web-settings_select".
+ * via the `definition` "wm-web-config_select".
  */
-export interface WeMeditateWebSettingsSelect<T extends boolean = true> {
+export interface WmWebConfigSelect<T extends boolean = true> {
   homePage?: T;
   featuredPages?: T;
-  footerPages?: T;
-  musicPage?: T;
-  musicPageTags?: T;
-  subtleSystemPage?: T;
-  left?: T;
-  right?: T;
-  center?: T;
-  mooladhara?: T;
-  kundalini?: T;
-  swadhistan?: T;
-  nabhi?: T;
-  void?: T;
-  anahat?: T;
-  vishuddhi?: T;
-  agnya?: T;
-  sahasrara?: T;
-  techniquesPage?: T;
-  techniquePageTag?: T;
-  inspirationPage?: T;
-  inspirationPageTags?: T;
-  classesPage?: T;
-  liveMeditationsPage?: T;
+  classPages?: T;
+  knowledgePages?: T;
+  infoPages?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "we-meditate-app-settings_select".
+ * via the `definition` "wm-web-translations_select".
  */
-export interface WeMeditateAppSettingsSelect<T extends boolean = true> {
-  appVersion?: T;
-  featuredMeditations?: T;
-  featuredLessons?: T;
+export interface WmWebTranslationsSelect<T extends boolean = true> {
+  common?: T;
+  navigation?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sahaj-atlas-settings_select".
+ * via the `definition` "wm-app-config_select".
  */
-export interface SahajAtlasSettingsSelect<T extends boolean = true> {
-  atlasVersion?: T;
+export interface WmAppConfigSelect<T extends boolean = true> {
+  selfRealizationMeditation?: T;
+  postRealizationLecture?: T;
+  vibeCheckTracks?:
+    | T
+    | {
+        identifier?: T;
+        audio?: T;
+        subtitles?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wm-app-translations_select".
+ */
+export interface WmAppTranslationsSelect<T extends boolean = true> {
+  daily?: T;
+  path?: T;
+  explore?: T;
+  profile?: T;
+  meditation?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sy-atlas-config_select".
+ */
+export interface SyAtlasConfigSelect<T extends boolean = true> {
   defaultMapCenter?:
     | T
     | {
@@ -2161,6 +2701,18 @@ export interface SahajAtlasSettingsSelect<T extends boolean = true> {
         longitude?: T;
       };
   defaultZoomLevel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sy-atlas-translations_select".
+ */
+export interface SyAtlasTranslationsSelect<T extends boolean = true> {
+  common?: T;
+  map?: T;
+  location?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -2177,28 +2729,30 @@ export interface PayloadJobsStatsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskResetClientUsage".
+ * via the `definition` "collections_widget".
  */
-export interface TaskResetClientUsage {
-  input?: unknown;
-  output?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskTrackClientUsage".
- */
-export interface TaskTrackClientUsage {
-  input: {
-    clientId: string;
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
   };
-  output?: unknown;
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskCleanupOrphanedMedia".
  */
 export interface TaskCleanupOrphanedMedia {
-  input?: unknown;
+  input: {
+    testDateRange?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
   output: {
     permanentlyDeletedFiles: number;
     permanentlyDeletedImages: number;
@@ -2207,6 +2761,14 @@ export interface TaskCleanupOrphanedMedia {
     skippedImages: number;
     errors: number;
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskResetUsage".
+ */
+export interface TaskResetUsage {
+  input?: unknown;
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2237,6 +2799,7 @@ export interface TaskSchedulePublish {
 export interface Auth {
   [k: string]: unknown;
 }
+
 
 // Module augmentation removed - 'payload' package is not installed in this project.
 // This file is used only for type definitions via @payloadcms/sdk.

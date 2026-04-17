@@ -17,7 +17,7 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getDocumentById, getWeMeditateWebSettings } from '../../server/cms-client'
+import { getDocumentById, getWebConfig } from '../../server/cms-client'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from './_components'
 import { idSchema, collectionSchema } from '../../server/validation'
@@ -62,7 +62,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   }
 
   // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
-  const settings = await getWeMeditateWebSettings()
+  const settings = await getWebConfig()
 
   // Fetch content using the generic document fetcher
   // Always bypass cache in preview mode to ensure fresh data

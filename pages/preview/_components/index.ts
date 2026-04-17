@@ -23,5 +23,5 @@ export {
   type FullPreviewData,
   type Page,
   type Meditation,
-  type WeMeditateWebSettings,
+  type WebConfig,
 } from './types'

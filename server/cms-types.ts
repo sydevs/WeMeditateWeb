@@ -11,56 +11,31 @@ import type {
   Config,
   Page,
   Meditation,
-  Music,
+  Song,
   Image,
   Author,
-  PageTag,
   MeditationTag,
-  MusicTag,
-  WeMeditateWebSetting,
+  SongTag,
+  WmWebConfig,
 } from './payload-types'
 
 // Re-export core types from PayloadCMS generated types
-export type { Page, Meditation, Music, Image, Author, PageTag, MeditationTag, MusicTag }
+export type { Page, Meditation, Song, Image, Author, MeditationTag, SongTag }
 
 /**
- * WeMeditateWebSettings with populated relationships.
+ * WebConfig with populated relationships.
  *
  * Since we always use depth: 2 in our queries, all relationship fields
  * are fully populated objects, not just IDs.
  */
-export interface WeMeditateWebSettings extends Omit<WeMeditateWebSetting,
-  | 'homePage' | 'featuredPages' | 'footerPages' | 'musicPage' | 'musicPageTags'
-  | 'subtleSystemPage' | 'left' | 'right' | 'center'
-  | 'mooladhara' | 'kundalini' | 'swadhistan' | 'nabhi' | 'void'
-  | 'anahat' | 'vishuddhi' | 'agnya' | 'sahasrara'
-  | 'techniquesPage' | 'techniquePageTag' | 'inspirationPage' | 'inspirationPageTags'
-  | 'classesPage' | 'liveMeditationsPage'
+export interface WebConfig extends Omit<WmWebConfig,
+  | 'homePage' | 'featuredPages' | 'classPages' | 'knowledgePages' | 'infoPages'
 > {
   homePage: Page
   featuredPages: Page[]
-  footerPages: Page[]
-  musicPage: Page
-  musicPageTags: MusicTag[]
-  subtleSystemPage: Page
-  left: Page
-  right: Page
-  center: Page
-  mooladhara: Page
-  kundalini: Page
-  swadhistan: Page
-  nabhi: Page
-  void: Page
-  anahat: Page
-  vishuddhi: Page
-  agnya: Page
-  sahasrara: Page
-  techniquesPage: Page
-  techniquePageTag: PageTag
-  inspirationPage: Page
-  inspirationPageTags: PageTag[]
-  classesPage: Page
-  liveMeditationsPage: Page
+  classPages: Page[]
+  knowledgePages: Page[]
+  infoPages: Page[]
 }
 
 /**

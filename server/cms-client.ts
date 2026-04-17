@@ -28,10 +28,9 @@ import type { Config } from './payload-types'
 import type {
   Locale,
   Page,
-  Music,
-  WeMeditateWebSettings,
+  Song,
+  WebConfig,
   PageListItem,
-  MeditationListItem,
 } from './cms-types'
 
 // ============================================================================
@@ -162,15 +161,15 @@ export async function getDocumentById<C extends FindByIdCollection>(
 // ============================================================================
 
 /**
- * Retrieves the WeMeditateWebSettings configuration.
+ * Retrieves the WebConfig (site configuration).
  *
  * This is a singleton global configuration that contains references to important
- * pages throughout the site (home page, featured pages, chakra pages, etc.).
+ * pages throughout the site (home page, featured pages, class pages, etc.).
  *
- * @returns The web settings configuration
+ * @returns The web configuration with populated page relationships
  */
-export async function getWeMeditateWebSettings(): Promise<WeMeditateWebSettings> {
-  const cacheKey = generateCacheKey('settings', {})
+export async function getWebConfig(): Promise<WebConfig> {
+  const cacheKey = generateCacheKey('web-config', {})
 
   return withCache({
     cacheKey,
@@ -179,14 +178,19 @@ export async function getWeMeditateWebSettings(): Promise<WeMeditateWebSettings>
       const client = createPayloadClient()
 
       const result = await client.findGlobal({
-        slug: 'we-meditate-web-settings',
+        slug: 'wm-web-config',
         depth: 2,
       })
 
-      return validateSDKResponse(
-        result,
-        'WeMeditateWebSettings'
-      ) as WeMeditateWebSettings
+      const validated = validateSDKResponse(result, 'WmWebConfig')
+
+      // Normalize nullable arrays to empty arrays for consumer convenience
+      return {
+        ...validated,
+        classPages: (validated.classPages ?? []) as Page[],
+        knowledgePages: (validated.knowledgePages ?? []) as Page[],
+        infoPages: (validated.infoPages ?? []) as Page[],
+      } as WebConfig
     },
   })
 }
@@ -199,19 +203,19 @@ export async function getWeMeditateWebSettings(): Promise<WeMeditateWebSettings>
  * Retrieves a list of pages filtered by tags (minimal data: id, title, thumbnail).
  *
  * @param options - Query options
- * @param options.tagIds - Array of tag IDs to filter by
+ * @param options.tags - Array of tag values to filter by (e.g., 'wisdom', 'lifestyle', 'technique')
  * @param options.locale - The locale to retrieve pages in
  * @param options.limit - Maximum number of pages to return (default: 100)
  * @returns Array of page list items
  */
 export async function getPagesByTags(options: LocalizedQueryOptions & {
-  tagIds: string[]
+  tags: string[]
   limit?: number
 }): Promise<PageListItem[]> {
   const limit = options.limit || 100
 
   const cacheKey = generateCacheKey('pages-by-tags', {
-    tagIds: options.tagIds,
+    tags: options.tags,
     locale: options.locale,
     limit,
   })
@@ -224,7 +228,7 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
 
       const result = await client.find({
         collection: 'pages',
-        where: { tags: { in: options.tagIds } },
+        where: { tags: { in: options.tags } },
         locale: options.locale,
         limit,
         depth: 2,
@@ -242,21 +246,21 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
 }
 
 /**
- * Retrieves a list of meditations filtered by tags (minimal data: id, title, thumbnail).
+ * Retrieves a list of songs filtered by tags (full song data).
  *
  * @param options - Query options
  * @param options.tagIds - Array of tag IDs to filter by
- * @param options.locale - The locale to retrieve meditations in
- * @param options.limit - Maximum number of meditations to return (default: 100)
- * @returns Array of meditation list items
+ * @param options.locale - The locale to retrieve songs in
+ * @param options.limit - Maximum number of songs to return (default: 100)
+ * @returns Array of song items
  */
-export async function getMeditationsByTags(options: LocalizedQueryOptions & {
+export async function getSongsByTags(options: LocalizedQueryOptions & {
   tagIds: string[]
   limit?: number
-}): Promise<MeditationListItem[]> {
+}): Promise<Song[]> {
   const limit = options.limit || 100
 
-  const cacheKey = generateCacheKey('meditations-by-tags', {
+  const cacheKey = generateCacheKey('songs-by-tags', {
     tagIds: options.tagIds,
     locale: options.locale,
     limit,
@@ -264,12 +268,12 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
 
   return withCache({
     cacheKey,
-    ttl: CacheTTL.LIST,
+    ttl: CacheTTL.SONG,
     fetchFn: async () => {
       const client = createPayloadClient()
 
       const result = await client.find({
-        collection: 'meditations',
+        collection: 'songs',
         where: { tags: { in: options.tagIds } },
         locale: options.locale,
         limit,
@@ -277,53 +281,7 @@ export async function getMeditationsByTags(options: LocalizedQueryOptions & {
       })
 
       if (!result?.docs) return []
-
-      return result.docs.map((meditation) => ({
-        id: meditation.id,
-        title: meditation.title ?? null,
-        thumbnail: meditation.thumbnail ?? null,
-      })) as MeditationListItem[]
-    },
-  })
-}
-
-/**
- * Retrieves a list of music filtered by tags (full music data).
- *
- * @param options - Query options
- * @param options.tagIds - Array of tag IDs to filter by
- * @param options.locale - The locale to retrieve music in
- * @param options.limit - Maximum number of music items to return (default: 100)
- * @returns Array of music items
- */
-export async function getMusicByTags(options: LocalizedQueryOptions & {
-  tagIds: string[]
-  limit?: number
-}): Promise<Music[]> {
-  const limit = options.limit || 100
-
-  const cacheKey = generateCacheKey('music-by-tags', {
-    tagIds: options.tagIds,
-    locale: options.locale,
-    limit,
-  })
-
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.MUSIC,
-    fetchFn: async () => {
-      const client = createPayloadClient()
-
-      const result = await client.find({
-        collection: 'music',
-        where: { tags: { in: options.tagIds } },
-        locale: options.locale,
-        limit,
-        depth: 2,
-      })
-
-      if (!result?.docs) return []
-      return result.docs as Music[]
+      return result.docs as Song[]
     },
   })
 }

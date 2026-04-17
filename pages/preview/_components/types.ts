@@ -7,7 +7,7 @@
  * to avoid bundling server code in client bundles.
  */
 
-import type { Page, Meditation, WeMeditateWebSettings } from '../../../server/cms-types'
+import type { Page, Meditation, WebConfig } from '../../../server/cms-types'
 
 export type CollectionType = 'pages' | 'meditations'
 
@@ -34,14 +34,14 @@ export type FullPreviewData =
       collection: 'pages'
       initialData: Page
       locale: string
-      settings: WeMeditateWebSettings
+      settings: WebConfig
     }
   | {
       collection: 'meditations'
       initialData: Meditation
       locale: string
-      settings: WeMeditateWebSettings
+      settings: WebConfig
     }
 
 // Re-export types for convenience
-export type { Page, Meditation, WeMeditateWebSettings }
+export type { Page, Meditation, WebConfig }
