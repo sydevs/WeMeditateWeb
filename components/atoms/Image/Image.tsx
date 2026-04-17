@@ -1,7 +1,17 @@
-import { ComponentProps, useState } from 'react'
+import { ComponentProps, useMemo, useState } from 'react'
 import { Placeholder } from '../Placeholder'
 import { Icon } from '../Icon'
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
+import {
+  type AspectRatio,
+  type ImageSize,
+  getImageSrcSet,
+  getImageURL,
+  getVariantName,
+  isCloudflareImageURL,
+} from '../../../lib/cloudflare-images'
+
+const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px'
 
 export interface ImageProps extends ComponentProps<'img'> {
   /**
@@ -27,10 +37,31 @@ export interface ImageProps extends ComponentProps<'img'> {
   height?: number
 
   /**
-   * Aspect ratio for the image container
+   * Aspect ratio for the image container.
+   * Values align with Cloudflare Images variant prefixes so SahajCloud-hosted
+   * images are automatically optimized (e.g. `video` → `video-800`).
    * @default undefined (intrinsic aspect ratio)
    */
-  aspectRatio?: 'square' | 'video' | '4/3' | '3/2' | '16/9' | '21/9'
+  aspectRatio?: AspectRatio
+
+  /**
+   * Size tier used to pick a Cloudflare Images variant and generate srcset.
+   * Ignored for non-Cloudflare URLs.
+   * @default 'medium'
+   */
+  size?: ImageSize
+
+  /**
+   * Emit a responsive srcset for Cloudflare-hosted images.
+   * Has no effect on non-Cloudflare URLs.
+   *
+   * When true, a `sizes` attribute tuned for full-width viewport layouts is
+   * used by default. Callers rendering images inside grids, cards, or
+   * fixed-width containers should pass their own `sizes` prop so the browser
+   * picks the correct variant instead of over-fetching.
+   * @default true
+   */
+  responsive?: boolean
 
   /**
    * Object fit for the image
@@ -64,12 +95,18 @@ export interface ImageProps extends ComponentProps<'img'> {
  * Provides consistent image rendering with aspect ratio control.
  * Supports loading states and various object-fit options.
  *
+ * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio`
+ * is set, the component automatically appends a variant (`{aspectRatio}-{width}`)
+ * and emits a responsive srcset. The default `sizes` attribute assumes a
+ * roughly full-width viewport layout — pass an explicit `sizes` prop when
+ * rendering inside grids, cards, or fixed-width containers.
+ *
  * When width and height are provided, uses a blurred gradient placeholder
  * with shimmer animation to prevent layout shift during loading.
  *
  * @example
  * <Image src="/path/to/image.jpg" alt="Description" />
- * <Image src="/banner.jpg" alt="Banner" aspectRatio="16/9" />
+ * <Image src="/banner.jpg" alt="Banner" aspectRatio="video" />
  * <Image src="/profile.jpg" alt="Profile" aspectRatio="square" rounded="circle" />
  * <Image src="/hero.jpg" alt="Hero" width={1200} height={600} placeholderVariant="primary" />
  */
@@ -79,11 +116,14 @@ export function Image({
   width,
   height,
   aspectRatio,
+  size = 'medium',
+  responsive = true,
   objectFit = 'cover',
   rounded = 'square',
   showLoading = true,
   placeholderVariant = 'neutral',
   className = '',
+  sizes,
   onLoad,
   onError,
   ...props
@@ -91,14 +131,24 @@ export function Image({
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
+  const { imageSrc, imageSrcSet } = useMemo(() => {
+    if (!aspectRatio || !isCloudflareImageURL(src)) {
+      return { imageSrc: src, imageSrcSet: undefined as string | undefined }
+    }
+    const srcSet = responsive ? getImageSrcSet(src, aspectRatio) : ''
+    return {
+      imageSrc: getImageURL(src, getVariantName(aspectRatio, size)),
+      imageSrcSet: srcSet || undefined,
+    }
+  }, [src, aspectRatio, size, responsive])
+
   const aspectRatioStyles = aspectRatio
     ? {
         square: 'aspect-square',
         video: 'aspect-video',
-        '4/3': 'aspect-[4/3]',
-        '3/2': 'aspect-[3/2]',
-        '16/9': 'aspect-[16/9]',
-        '21/9': 'aspect-[21/9]',
+        '4-3': 'aspect-[4/3]',
+        '3-2': 'aspect-[3/2]',
+        ultrawide: 'aspect-[21/9]',
       }[aspectRatio]
     : ''
 
@@ -152,7 +202,9 @@ export function Image({
       {/* Image element (hidden until loaded, not rendered on error) */}
       {!hasError && (
         <img
-          src={src}
+          src={imageSrc}
+          srcSet={imageSrcSet}
+          sizes={sizes ?? (imageSrcSet ? DEFAULT_SIZES : undefined)}
           alt={alt}
           width={width}
           height={height}

@@ -1,5 +1,12 @@
 import { ComponentProps, useEffect, useState } from 'react'
 import { AnimatedLogoSvg } from '../svgs/AnimatedLogoSvg'
+import {
+  type AspectRatio,
+  type ImageSize,
+  getImageURL,
+  getVariantName,
+  isCloudflareImageURL,
+} from '../../../lib/cloudflare-images'
 
 export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> {
   /**
@@ -21,8 +28,23 @@ export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> 
 
   /**
    * Background image URL. If provided, will be blended with the color using multiply blend mode.
+   * Cloudflare Images URLs are automatically transformed to the matching variant.
    */
   backgroundImage?: string
+
+  /**
+   * Aspect ratio used to pick a Cloudflare Images variant for `backgroundImage`.
+   * Ignored for non-Cloudflare URLs.
+   * @default 'ultrawide'
+   */
+  imageAspectRatio?: AspectRatio
+
+  /**
+   * Size tier used to pick a Cloudflare Images variant for `backgroundImage`.
+   * Ignored for non-Cloudflare URLs.
+   * @default 'xlarge'
+   */
+  imageSize?: ImageSize
 
   /**
    * When true, triggers the fade-out animation and removes the component.
@@ -57,6 +79,8 @@ export function SplashLoader({
   color = 'primary',
   size = 'md',
   backgroundImage,
+  imageAspectRatio = 'ultrawide',
+  imageSize = 'xlarge',
   isLoading = true,
   text,
   className = '',
@@ -106,8 +130,14 @@ export function SplashLoader({
     },
   }
 
-  const backgroundImageStyle = backgroundImage
-    ? { backgroundImage: `url(${backgroundImage})` }
+  const resolvedBackgroundImage = backgroundImage
+    ? isCloudflareImageURL(backgroundImage)
+      ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
+      : backgroundImage
+    : undefined
+
+  const backgroundImageStyle = resolvedBackgroundImage
+    ? { backgroundImage: `url(${resolvedBackgroundImage})` }
     : {}
 
   return (

@@ -1,9 +1,31 @@
 import { ComponentProps, ReactNode } from 'react'
 import { LeafSvg } from '../../atoms/svgs'
+import {
+  type AspectRatio,
+  type ImageSize,
+  getImageURL,
+  getVariantName,
+  isCloudflareImageURL,
+} from '../../../lib/cloudflare-images'
 
 export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /** URL of the background image */
+  /**
+   * URL of the background image.
+   * Cloudflare Images URLs are automatically transformed to the matching variant.
+   */
   backgroundImage: string
+  /**
+   * Aspect ratio used to pick a Cloudflare Images variant for `backgroundImage`.
+   * Ignored for non-Cloudflare URLs.
+   * @default 'ultrawide'
+   */
+  imageAspectRatio?: AspectRatio
+  /**
+   * Size tier used to pick a Cloudflare Images variant for `backgroundImage`.
+   * Ignored for non-Cloudflare URLs.
+   * @default 'xlarge'
+   */
+  imageSize?: ImageSize
   /** Main title text */
   title?: string
   /** Subtitle text below the title */
@@ -42,6 +64,8 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
  */
 export function Splash({
   backgroundImage,
+  imageAspectRatio = 'ultrawide',
+  imageSize = 'xlarge',
   title,
   subtitle,
   ctaText,
@@ -54,6 +78,10 @@ export function Splash({
 }: SplashProps) {
   const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
 
+  const resolvedBackgroundImage = isCloudflareImageURL(backgroundImage)
+    ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
+    : backgroundImage
+
   return (
     <div
       className={`relative min-h-screen flex items-center justify-center overflow-hidden ${className}`}
@@ -62,7 +90,7 @@ export function Splash({
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        style={{ backgroundImage: `url(${resolvedBackgroundImage})` }}
         aria-hidden="true"
       />
 
