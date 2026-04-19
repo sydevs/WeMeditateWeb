@@ -26,7 +26,17 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     throw render(404, error instanceof Error ? error.message : 'Invalid slug')
   }
 
-  // Fetch WeMeditateWebSettings and page by slug
+  // Homepage (slug "index") uses homePage from WebConfig directly.
+  // The onBeforeRoute hook converts "/" to "/index", so this is the homepage path.
+  if (slug === 'index') {
+    const settings = await getWebConfig()
+    if (!settings.homePage) {
+      throw render(404, 'Homepage not configured.')
+    }
+    return { page: settings.homePage, locale, slug, settings }
+  }
+
+  // Non-homepage: fetch WebConfig and page by slug in parallel
   const [settings, page] = await Promise.all([
     getWebConfig(),
     getPageBySlug({ slug, locale }),
@@ -37,10 +47,5 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     throw render(404, 'Page not found.')
   }
 
-  return {
-    page,
-    locale,
-    slug,
-    settings,
-  }
+  return { page, locale, slug, settings }
 }
