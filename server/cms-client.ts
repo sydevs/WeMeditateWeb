@@ -24,7 +24,15 @@ import {
   validateSDKResponse,
 } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
-import type { Config } from './payload-types'
+import type {
+  Config,
+  PagesSelect,
+  MeditationsSelect,
+  SongsSelect,
+  AlbumsSelect,
+  SongTagsSelect,
+  ImagesSelect,
+} from './payload-types'
 import type {
   Locale,
   Page,
@@ -41,13 +49,91 @@ interface LocalizedQueryOptions {
   locale: Locale
 }
 
+// ============================================================================
+// Field Selection (required by the SahajCloud API client query-validation hook)
+//
+// The backend rejects API-client reads that omit `select`, or that use depth > 1
+// without `populate`. Each query below declares exactly the fields the frontend
+// renders. These constants are typed against the generated *Select interfaces so
+// that a CMS schema change (pulled via `pnpm types:cms`) surfaces as a compile
+// error here rather than a silent 400 / missing field at runtime.
+//
+// Note on uploads: when selecting an upload's `url`, `filename` must also be
+// selected, otherwise PayloadCMS returns `url: null`.
+// ============================================================================
+
+/** Image fields needed wherever an Image relationship/upload is populated. */
+const IMAGE_POPULATE = {
+  images: {
+    url: true,
+    filename: true,
+    alt: true,
+    width: true,
+    height: true,
+  } satisfies ImagesSelect<true>,
+}
+
+/** Fields rendered for a full Page (PageTemplate) plus SEO meta and draft status. */
+const PAGE_SELECT = {
+  title: true,
+  content: true,
+  slug: true,
+  createdAt: true,
+  _status: true,
+  meta: { title: true, description: true, image: true },
+} satisfies PagesSelect<true>
+
+/** Minimal fields for page list items (getPagesByTags → PageListItem). */
+const PAGE_LIST_SELECT = {
+  title: true,
+  meta: { image: true },
+} satisfies PagesSelect<true>
+
+/** Fields rendered for a Meditation (MeditationTemplate) plus draft status. */
+const MEDITATION_SELECT = {
+  url: true,
+  filename: true,
+  title: true,
+  durationMinutes: true,
+  frames: true,
+  thumbnail: true,
+  _status: true,
+} satisfies MeditationsSelect<true>
+
+/** Fields for songs (getSongsByTags returns full Song-ish data). */
+const SONG_SELECT = {
+  title: true,
+  url: true,
+  filename: true,
+  album: true,
+  tags: true,
+} satisfies SongsSelect<true>
+
+/** Populate shapes for song relationships (album → artwork image, song tags). */
+const SONG_POPULATE = {
+  albums: { title: true, artist: true, artwork: true } satisfies AlbumsSelect<true>,
+  'song-tags': { title: true, slug: true } satisfies SongTagsSelect<true>,
+  images: IMAGE_POPULATE.images,
+}
+
 /**
  * Configuration for collections that support findById queries.
- * Maps PayloadCMS collection slugs to their cache prefix and TTL.
+ * Maps PayloadCMS collection slugs to their cache prefix, TTL, and the
+ * select/populate shapes required by the backend query-validation hook.
  */
 const COLLECTION_BY_ID_CONFIG = {
-  pages: { cachePrefix: 'page', ttl: CacheTTL.PAGE },
-  meditations: { cachePrefix: 'meditation', ttl: CacheTTL.MEDITATION },
+  pages: {
+    cachePrefix: 'page',
+    ttl: CacheTTL.PAGE,
+    select: PAGE_SELECT,
+    populate: IMAGE_POPULATE,
+  },
+  meditations: {
+    cachePrefix: 'meditation',
+    ttl: CacheTTL.MEDITATION,
+    select: MEDITATION_SELECT,
+    populate: IMAGE_POPULATE,
+  },
 } as const
 
 type FindByIdCollection = keyof typeof COLLECTION_BY_ID_CONFIG
@@ -86,6 +172,8 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
         locale: options.locale,
         limit: 1,
         depth: 2,
+        select: PAGE_SELECT,
+        populate: IMAGE_POPULATE,
       })
 
       if (!result?.docs?.length) {
@@ -140,18 +228,25 @@ export async function getDocumentById<C extends FindByIdCollection>(
         previewSecret: options.previewSecret,
       })
 
-      const result = await client.findByID({
+      const found = await client.findByID({
         collection: options.collection,
         id: options.id,
         locale: options.locale,
         depth: 2,
         draft: isPreview,
+        // select/populate are validated per-collection at their definitions above
+        // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript can't
+        // correlate the union-typed config to the generic collection `C`, so the
+        // input is cast here; the response is re-typed to the concrete doc below.
+        select: config.select as never,
+        populate: config.populate as never,
       })
 
+      const result = found as Config['collections'][C] | null
       if (!result) return null
       // Public requests should never render drafts
       if (!isPreview && result._status === 'draft') return null
-      return result as Config['collections'][C]
+      return result
     },
   })
 }
@@ -232,6 +327,8 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
         locale: options.locale,
         limit,
         depth: 2,
+        select: PAGE_LIST_SELECT,
+        populate: IMAGE_POPULATE,
       })
 
       if (!result?.docs) return []
@@ -278,6 +375,8 @@ export async function getSongsByTags(options: LocalizedQueryOptions & {
         locale: options.locale,
         limit,
         depth: 2,
+        select: SONG_SELECT,
+        populate: SONG_POPULATE,
       })
 
       if (!result?.docs) return []
