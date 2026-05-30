@@ -243,7 +243,7 @@ function MeditationPlayerInner({
     currentMedia.type === 'video' && currentMedia.src.split('?')[0].endsWith('.m3u8')
   const frameKey =
     currentMedia.type === 'video'
-      ? `${currentMedia.src}|${currentMedia.fallbackSrc ?? ''}`
+      ? `${currentFrame.timestamp}|${currentMedia.src}|${currentMedia.fallbackSrc ?? ''}`
       : null
 
   // Apply any pending seek once metadata is available
@@ -382,6 +382,7 @@ function MeditationPlayerInner({
                 >
                   {currentMedia.type === 'video' ? (
                     <video
+                      key={frameKey}
                       ref={videoRef}
                       autoPlay
                       loop
