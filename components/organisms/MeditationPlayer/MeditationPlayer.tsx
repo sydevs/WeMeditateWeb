@@ -59,15 +59,11 @@ export interface MeditationFrame {
   }
 }
 
-export interface MeditationPlayerProps extends ComponentProps<'div'> {
+export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**
    * Audio track to play
    */
   track: Track
-  /**
-   * Meditation title
-   */
-  title: string
   /**
    * Optional subtitle
    */
@@ -129,7 +125,6 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  *     thumbnailURL: '/images/thumb.jpg',
  *     duration: 0
  *   }}
- *   title="Morning Meditation"
  *   subtitle="Start your day with clarity"
  *   frames={[
  *     { timestamp: 0, media: { type: 'image', src: '/frame1.jpg' } },
@@ -150,14 +145,12 @@ export interface MeditationPlayerProps extends ComponentProps<'div'> {
  *
  * <MeditationPlayer
  *   track={track}
- *   title="Meditation"
  *   frames={frames}
  *   onPlaybackTimeUpdate={handlePlaybackUpdate}
  * />
  */
 function MeditationPlayerInner({
   track,
-  title,
   subtitle,
   frames,
   upsell,
@@ -402,7 +395,7 @@ function MeditationPlayerInner({
                   ) : (
                     <img
                       src={currentMedia.src}
-                      alt={title}
+                      alt={track.title}
                       draggable={false}
                       className="w-full h-full object-cover"
                     />
@@ -490,24 +483,18 @@ function MeditationPlayerInner({
             </div>
           </div>
 
-          {/* Title/Subtitle + Volume - Below player on narrow, left column on wide */}
+          {/* Subtitle + Volume - Below player on narrow, left column on wide */}
           <div className="text-center @4xl:text-left @4xl:col-span-3 @4xl:order-1 @4xl:space-y-6">
             {/* Label - hidden on narrow, visible on wide */}
             <p className="hidden @4xl:block text-sm tracking-widest text-gray-600 uppercase mb-8">
               Meditation
             </p>
 
-            {/* Title and Subtitle */}
-            <div className="mb-4">
-              <h1 className="text-lg sm:text-xl @4xl:text-2xl font-medium text-gray-900 mb-2 @4xl:mb-4">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-sm sm:text-base font-light text-gray-700">
-                  {subtitle}
-                </p>
-              )}
-            </div>
+            {subtitle && (
+              <p className="mb-4 text-sm sm:text-base font-light text-gray-700">
+                {subtitle}
+              </p>
+            )}
 
             {/* Volume Control */}
             <div className="flex items-center justify-center @4xl:justify-start gap-2">
