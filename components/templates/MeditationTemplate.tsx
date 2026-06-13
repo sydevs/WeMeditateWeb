@@ -28,7 +28,7 @@ function isPopulatedImage(value: number | Image | null | undefined): value is Im
  * Safely get URL from an image relationship field that may be populated or just an ID
  */
 function getImageUrl(image: number | Image | null | undefined): string | undefined {
-  return isPopulatedImage(image) ? image.url ?? undefined : undefined
+  return isPopulatedImage(image) ? (image.url ?? undefined) : undefined
 }
 
 export interface MeditationTemplateProps {
@@ -53,7 +53,12 @@ export interface MeditationTemplateProps {
   seekTo?: { timestamp: number; id: number } | null
 }
 
-export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDisplay, seekTo }: MeditationTemplateProps) {
+export function MeditationTemplate({
+  meditation,
+  onPlaybackTimeUpdate,
+  timeDisplay,
+  seekTo,
+}: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
   const resolveMediaUrl = (url: string): string => {
@@ -79,6 +84,7 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
 
   // Parse and transform frames from CMS format to MeditationPlayer format
   let frames: MeditationFrame[] = []
+
   if (meditation.frames) {
     try {
       const rawFrames =
@@ -91,27 +97,29 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
       // Transform CMS frames to MeditationPlayer format
       frames = rawFrames
         .filter((frame: { url?: string | null }) => frame.url)
-        .map((frame: {
-          timestamp?: number
-          url: string
-          downloadUrl?: string | null
-          mimeType?: string | null
-          duration?: number | null
-        }) => {
-          const cleanUrl = frame.url.split('?')[0]
-          const isHls = cleanUrl.endsWith('.m3u8') || frame.mimeType?.includes('mpegurl')
-          const isVideo = frame.mimeType?.startsWith('video/') || isHls
+        .map(
+          (frame: {
+            timestamp?: number
+            url: string
+            downloadUrl?: string | null
+            mimeType?: string | null
+            duration?: number | null
+          }) => {
+            const cleanUrl = frame.url.split('?')[0]
+            const isHls = cleanUrl.endsWith('.m3u8') || frame.mimeType?.includes('mpegurl')
+            const isVideo = frame.mimeType?.startsWith('video/') || isHls
 
-          return {
-            timestamp: frame.timestamp ?? 0,
-            media: {
-              type: isVideo ? 'video' : 'image',
-              src: resolveMediaUrl(frame.url),
-              fallbackSrc: frame.downloadUrl ? resolveMediaUrl(frame.downloadUrl) : undefined,
-              duration: typeof frame.duration === 'number' ? frame.duration : undefined,
-            },
-          }
-        })
+            return {
+              timestamp: frame.timestamp ?? 0,
+              media: {
+                type: isVideo ? 'video' : 'image',
+                src: resolveMediaUrl(frame.url),
+                fallbackSrc: frame.downloadUrl ? resolveMediaUrl(frame.downloadUrl) : undefined,
+                duration: typeof frame.duration === 'number' ? frame.duration : undefined,
+              },
+            }
+          },
+        )
     } catch (error) {
       console.error('Failed to parse meditation frames:', error)
     }
@@ -120,6 +128,7 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
   // Fallback: use thumbnail as single frame if no frames available
   if (frames.length === 0) {
     const thumbnailUrl = getImageUrl(meditation.thumbnail)
+
     if (thumbnailUrl) {
       frames = [
         {
@@ -149,6 +158,9 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
     <div className="max-w-6xl mx-auto h-full">
       {/* Meditation Player */}
       <MeditationPlayer
+        frames={frames}
+        seekTo={seekTo}
+        timeDisplay={timeDisplay}
         track={{
           url: meditation.url,
           title: meditation.title || 'Untitled Meditation',
@@ -160,11 +172,7 @@ export function MeditationTemplate({ meditation, onPlaybackTimeUpdate, timeDispl
               ? meditation.durationMinutes * 60
               : 0,
         }}
-        title={meditation.title || 'Untitled Meditation'}
-        frames={frames}
         onPlaybackTimeUpdate={onPlaybackTimeUpdate}
-        timeDisplay={timeDisplay}
-        seekTo={seekTo}
       />
     </div>
   )

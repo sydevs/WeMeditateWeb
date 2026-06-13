@@ -56,10 +56,9 @@ export const Default: Story = () => {
       <StorySection title="Vertical Layout (Mobile)">
         <div className="w-full max-w-md mx-auto">
           <MeditationPlayer
-            track={sampleTrack}
-            title="Delving Deeper"
-            subtitle="All pervading power"
             frames={sampleFrames}
+            subtitle="All pervading power"
+            track={sampleTrack}
           />
         </div>
       </StorySection>
@@ -67,10 +66,9 @@ export const Default: Story = () => {
       <StorySection title="Horizontal Layout (Tablet+)">
         <div className="w-full">
           <MeditationPlayer
-            track={sampleTrack}
-            title="Delving Deeper"
-            subtitle="All pervading power"
             frames={sampleFrames}
+            subtitle="All pervading power"
+            track={sampleTrack}
           />
         </div>
       </StorySection>
@@ -78,10 +76,9 @@ export const Default: Story = () => {
       <StorySection title="Web Upsell">
         <div className="w-full">
           <MeditationPlayer
-            track={sampleTrack}
-            title="Delving Deeper"
-            subtitle="All pervading power"
             frames={sampleFrames}
+            subtitle="All pervading power"
+            track={sampleTrack}
             upsell="web"
           />
         </div>
@@ -90,10 +87,9 @@ export const Default: Story = () => {
       <StorySection title="App Upsell">
         <div className="w-full">
           <MeditationPlayer
-            track={sampleTrack}
-            title="Delving Deeper"
-            subtitle="All pervading power"
             frames={sampleFrames}
+            subtitle="All pervading power"
+            track={sampleTrack}
             upsell="app"
           />
         </div>
