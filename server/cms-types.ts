@@ -14,13 +14,12 @@ import type {
   Song,
   Image,
   Author,
-  MeditationTag,
   SongTag,
   WmWebConfig,
 } from './payload-types'
 
 // Re-export core types from PayloadCMS generated types
-export type { Page, Meditation, Song, Image, Author, MeditationTag, SongTag }
+export type { Page, Meditation, Song, Image, Author, SongTag }
 
 /**
  * WebConfig with populated relationships.
