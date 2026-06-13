@@ -12,7 +12,7 @@
     "ladle": "ladle serve",
     "ladle:build": "ladle build",
     "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
-    "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts"
+    "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
