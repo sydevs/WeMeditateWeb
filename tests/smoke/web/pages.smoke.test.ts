@@ -12,13 +12,16 @@
  *  - Unknown paths return a real 404 (the ErrorFallback "Content Not Found" page).
  */
 import { describe, it, expect } from 'vitest'
-import { fetchPage, expectRenders, discoverFromCms } from '../_helpers/preview'
+import { fetchPage, expectRenders, expectNoBrokenLinks, discoverFromCms } from '../_helpers/preview'
 
 describe('web preview pages', () => {
-  it('homepage renders with real content', async () => {
+  it('homepage renders with real content and working navigation', async () => {
     const home = await fetchPage('/')
 
     expectRenders(home, '/')
+    // The layout nav is built from WebConfig page relationships; an under-populated
+    // read renders /undefined hrefs (200 but dead nav). Guard against that.
+    expectNoBrokenLinks(home.html, '/')
   })
 
   it('a CMS page renders with real content', async (ctx) => {

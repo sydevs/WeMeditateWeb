@@ -19,10 +19,7 @@
  * detectErrorType() in error-utils.ts via message pattern matching.
  */
 
-import {
-  createPayloadClient,
-  validateSDKResponse,
-} from './payload-client'
+import { createPayloadClient, validateSDKResponse } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
 import type {
   Config,
@@ -32,14 +29,9 @@ import type {
   AlbumsSelect,
   SongTagsSelect,
   ImagesSelect,
+  WmWebConfigSelect,
 } from './payload-types'
-import type {
-  Locale,
-  Page,
-  Song,
-  WebConfig,
-  PageListItem,
-} from './cms-types'
+import type { Locale, Page, Song, WebConfig, PageListItem } from './cms-types'
 
 // ============================================================================
 // Common Options Interfaces
@@ -82,6 +74,25 @@ const PAGE_SELECT = {
   _status: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
+
+/** Global config fields — all are `pages` relationships the layout + home page need. */
+const WEB_CONFIG_SELECT = {
+  homePage: true,
+  featuredPages: true,
+  classPages: true,
+  knowledgePages: true,
+  infoPages: true,
+} satisfies WmWebConfigSelect<true>
+
+/**
+ * Populate the global's page relationships at depth 2 with the fields the layout
+ * (title/slug for nav) and the home page (content/meta) render. Required because
+ * the backend rejects depth > 1 reads without `populate`.
+ */
+const WEB_CONFIG_POPULATE = {
+  pages: PAGE_SELECT,
+  images: IMAGE_POPULATE.images,
+}
 
 /** Minimal fields for page list items (getPagesByTags → PageListItem). */
 const PAGE_LIST_SELECT = {
@@ -150,9 +161,11 @@ type FindByIdCollection = keyof typeof COLLECTION_BY_ID_CONFIG
  * @param options.locale - The locale to retrieve the page in
  * @returns The page data or null if not found
  */
-export async function getPageBySlug(options: LocalizedQueryOptions & {
-  slug: string
-}): Promise<Page | null> {
+export async function getPageBySlug(
+  options: LocalizedQueryOptions & {
+    slug: string
+  },
+): Promise<Page | null> {
   const cacheKey = generateCacheKey('page', {
     slug: options.slug,
     locale: options.locale,
@@ -181,9 +194,11 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
       }
 
       const page = result.docs[0] as Page
+
       if (page._status === 'draft') {
         return null
       }
+
       return page
     },
   })
@@ -209,7 +224,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
     id: string
     preview?: boolean
     previewSecret?: string
-  }
+  },
 ): Promise<Config['collections'][C] | null> {
   const config = COLLECTION_BY_ID_CONFIG[options.collection]
   const isPreview = options.preview === true
@@ -243,9 +258,11 @@ export async function getDocumentById<C extends FindByIdCollection>(
       })
 
       const result = found as Config['collections'][C] | null
+
       if (!result) return null
       // Public requests should never render drafts
       if (!isPreview && result._status === 'draft') return null
+
       return result
     },
   })
@@ -263,8 +280,8 @@ export async function getDocumentById<C extends FindByIdCollection>(
  *
  * @returns The web configuration with populated page relationships
  */
-export async function getWebConfig(): Promise<WebConfig> {
-  const cacheKey = generateCacheKey('web-config', {})
+export async function getWebConfig(options: { locale?: Locale } = {}): Promise<WebConfig> {
+  const cacheKey = generateCacheKey('web-config', { locale: options.locale })
 
   return withCache({
     cacheKey,
@@ -275,6 +292,9 @@ export async function getWebConfig(): Promise<WebConfig> {
       const result = await client.findGlobal({
         slug: 'wm-web-config',
         depth: 2,
+        locale: options.locale,
+        select: WEB_CONFIG_SELECT,
+        populate: WEB_CONFIG_POPULATE,
       })
 
       const validated = validateSDKResponse(result, 'WmWebConfig')
@@ -303,10 +323,12 @@ export async function getWebConfig(): Promise<WebConfig> {
  * @param options.limit - Maximum number of pages to return (default: 100)
  * @returns Array of page list items
  */
-export async function getPagesByTags(options: LocalizedQueryOptions & {
-  tags: string[]
-  limit?: number
-}): Promise<PageListItem[]> {
+export async function getPagesByTags(
+  options: LocalizedQueryOptions & {
+    tags: string[]
+    limit?: number
+  },
+): Promise<PageListItem[]> {
   const limit = options.limit || 100
 
   const cacheKey = generateCacheKey('pages-by-tags', {
@@ -351,10 +373,12 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
  * @param options.limit - Maximum number of songs to return (default: 100)
  * @returns Array of song items
  */
-export async function getSongsByTags(options: LocalizedQueryOptions & {
-  tagIds: string[]
-  limit?: number
-}): Promise<Song[]> {
+export async function getSongsByTags(
+  options: LocalizedQueryOptions & {
+    tagIds: string[]
+    limit?: number
+  },
+): Promise<Song[]> {
   const limit = options.limit || 100
 
   const cacheKey = generateCacheKey('songs-by-tags', {
@@ -380,6 +404,7 @@ export async function getSongsByTags(options: LocalizedQueryOptions & {
       })
 
       if (!result?.docs) return []
+
       return result.docs as Song[]
     },
   })

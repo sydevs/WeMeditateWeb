@@ -81,6 +81,23 @@ export function expectRenders(page: PageResult, path: string): void {
   }
 }
 
+/**
+ * Assert the HTML has no broken internal links — i.e. links to "/undefined" or
+ * "/null", which appear when a page relationship (e.g. a nav item) is fetched
+ * without its slug resolved. Catches under-populated CMS reads that otherwise
+ * render a 200 page with dead navigation.
+ */
+export function expectNoBrokenLinks(html: string, path: string): void {
+  const broken = [
+    ...new Set([...html.matchAll(/href="(\/(?:undefined|null)\b[^"]*)"/gi)].map((m) => m[1])),
+  ]
+
+  expect(
+    broken,
+    `${path} has broken internal links (unresolved slugs): ${broken.join(', ')}`,
+  ).toEqual([])
+}
+
 /** Same-origin link paths found in the HTML (deduped, anchors/external dropped). */
 export function internalLinks(html: string): string[] {
   const found = new Set<string>()
