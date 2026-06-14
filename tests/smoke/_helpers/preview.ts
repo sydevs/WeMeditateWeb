@@ -133,17 +133,30 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
   const headers = { Authorization: `clients API-Key ${apiKey}` }
 
   const firstDoc = async (path: string): Promise<Record<string, unknown> | null> => {
+    const collection = path.split('?')[0]
+
     try {
       const res = await fetch(`${base}/api/${path}`, {
         headers,
         signal: AbortSignal.timeout(15_000),
       })
 
-      if (!res.ok) return null
-      const body = (await res.json()) as { docs?: Record<string, unknown>[] }
+      // Log why discovery found nothing so a silent skip is diagnosable in CI
+      // (e.g. 403 = unauthorized key vs. 0 docs = no published content).
+      if (!res.ok) {
+        console.warn(`[discoverFromCms] GET /api/${collection} → HTTP ${res.status}`)
 
-      return body.docs?.[0] ?? null
-    } catch {
+        return null
+      }
+      const body = (await res.json()) as { docs?: Record<string, unknown>[] }
+      const doc = body.docs?.[0] ?? null
+
+      if (!doc) console.warn(`[discoverFromCms] GET /api/${collection} → 0 docs`)
+
+      return doc
+    } catch (err) {
+      console.warn(`[discoverFromCms] GET /api/${collection} → ${(err as Error).message}`)
+
       return null
     }
   }
