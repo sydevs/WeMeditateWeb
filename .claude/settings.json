@@ -1,16 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_sydevs-web_*",
-      "mcp__plugin_sydevs_*",
-      "Bash(pnpm exec playwright test --list)",
       "Bash(pnpm vitest list:*)",
       "Bash(pnpm test:*)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm types:cms:*)",
+      "Bash(pnpm lint:*)",
       "Bash(pnpm outdated:*)",
       "Bash(pnpm audit:*)",
       "Bash(pnpm update:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm lint:*)",
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
@@ -18,11 +17,41 @@
       "Bash(git branch:*)",
       "Bash(git remote:*)",
       "Bash(git stash:*)",
+      "Bash(mktemp:*)",
       "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh issue view:*)",
       "Bash(gh issue list:*)"
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-generated-files.mjs"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-wrong-bash.mjs"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -30,35 +59,10 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/typecheck.mjs"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/eslint.mjs"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/build-validation.mjs"
           }
         ]
       }

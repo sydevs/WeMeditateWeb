@@ -1,85 +1,43 @@
 #!/usr/bin/env node
 
 /**
- * ESLint Hook (PostToolUse)
+ * ESLint Hook (PostToolUse / Edit|Write)
  *
- * Runs after Edit/Write operations on JavaScript/TypeScript files
- * Auto-fixes linting issues when possible and reports unfixable errors to Claude
+ * Auto-fixes the edited JS/TS file with ESLint (which also applies Prettier via
+ * eslint-plugin-prettier). Surfaces any remaining unfixable errors to Claude.
+ * Silent on success.
  */
 
-import { readFileSync } from 'fs';
-import { spawn } from 'child_process';
+import { readFileSync } from 'fs'
+import { spawnSync } from 'child_process'
 
-// Read hook input from stdin
-let input = '';
+let input
 try {
-  input = readFileSync(0, 'utf-8');
-} catch (error) {
-  console.error(JSON.stringify({
-    continue: true,
-    additionalContext: `Failed to read stdin: ${error.message}`
-  }));
-  process.exit(0);
+  input = JSON.parse(readFileSync(0, 'utf-8'))
+} catch {
+  process.exit(0)
 }
 
-const hookData = JSON.parse(input);
-const { filePath } = hookData;
+// Claude Code nests the path under tool_input.file_path; tolerate a top-level fallback.
+const filePath = input?.tool_input?.file_path ?? input?.filePath
 
-// Only check JS/TS files
-if (!filePath || !filePath.match(/\.(js|jsx|ts|tsx|mjs|cjs)$/)) {
-  console.log(JSON.stringify({
-    continue: true,
-    suppressOutput: true
-  }));
-  process.exit(0);
+if (!filePath || !/\.(js|jsx|ts|tsx|mjs|cjs)$/.test(filePath)) {
+  process.exit(0)
 }
 
-// Run ESLint with auto-fix
-const eslint = spawn('npx', ['eslint', '--fix', filePath], {
+const res = spawnSync('pnpm', ['exec', 'eslint', '--fix', filePath], {
   cwd: process.env.CLAUDE_PROJECT_DIR,
-  stdio: ['ignore', 'pipe', 'pipe']
-});
+  encoding: 'utf-8',
+})
 
-let stdout = '';
-let stderr = '';
+const output = `${res.stdout || ''}${res.stderr || ''}`.trim()
 
-eslint.stdout.on('data', (data) => {
-  stdout += data.toString();
-});
+// ESLint exits non-zero only when errors remain after --fix (warnings alone don't).
+if (res.status && res.status !== 0 && output) {
+  console.error(
+    `ESLint reported unresolved problems in ${filePath} (auto-fix applied what it could):\n\n${output}\n\nPlease fix these.`,
+  )
+  process.exit(2)
+}
 
-eslint.stderr.on('data', (data) => {
-  stderr += data.toString();
-});
-
-eslint.on('close', (code) => {
-  const output = stdout + stderr;
-
-  if (code !== 0 && output.trim()) {
-    // Extract error count
-    const errorMatch = output.match(/(\d+)\s+error/);
-    const warningMatch = output.match(/(\d+)\s+warning/);
-    const errors = errorMatch ? parseInt(errorMatch[1]) : 0;
-    const warnings = warningMatch ? parseInt(warningMatch[1]) : 0;
-
-    if (errors > 0) {
-      console.log(JSON.stringify({
-        continue: true,
-        additionalContext: `ESLint found ${errors} error(s) and ${warnings} warning(s) in ${filePath}:\n\n${output}\n\nPlease fix these linting issues.`
-      }));
-    } else {
-      // Only warnings - suppress to avoid noise
-      console.log(JSON.stringify({
-        continue: true,
-        suppressOutput: true
-      }));
-    }
-  } else {
-    // No errors or successfully auto-fixed - suppress success message
-    console.log(JSON.stringify({
-      continue: true,
-      suppressOutput: true
-    }));
-  }
-
-  process.exit(0);
-});
+process.exit(0)

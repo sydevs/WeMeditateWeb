@@ -1,84 +1,55 @@
 #!/usr/bin/env node
 
 /**
- * TypeScript Type-Checking Hook (PostToolUse)
+ * TypeScript Type-Checking Hook (PostToolUse / Edit|Write)
  *
- * Runs after Edit/Write operations on TypeScript files
- * Checks for type errors and reports them to Claude for automatic fixing
+ * Runs `tsc --noEmit` after editing a .ts/.tsx file and surfaces any type
+ * errors that mention the edited file. Silent on success. Note: tsc checks the
+ * whole project, so this scales with project size.
  */
 
-import { readFileSync } from 'fs';
-import { spawn } from 'child_process';
+import { readFileSync } from 'fs'
+import { spawnSync } from 'child_process'
 
-// Read hook input from stdin
-let input = '';
+let input
 try {
-  input = readFileSync(0, 'utf-8');
-} catch (error) {
-  console.error(JSON.stringify({
-    continue: true,
-    additionalContext: `Failed to read stdin: ${error.message}`
-  }));
-  process.exit(0);
+  input = JSON.parse(readFileSync(0, 'utf-8'))
+} catch {
+  process.exit(0)
 }
 
-const hookData = JSON.parse(input);
-const { filePath } = hookData;
+// Claude Code nests the path under tool_input.file_path; tolerate a top-level fallback.
+const filePath = input?.tool_input?.file_path ?? input?.filePath
 
-// Only check TypeScript files
-if (!filePath || !filePath.match(/\.(ts|tsx)$/)) {
-  console.log(JSON.stringify({
-    continue: true,
-    suppressOutput: true
-  }));
-  process.exit(0);
+if (!filePath || !/\.(ts|tsx)$/.test(filePath)) {
+  process.exit(0)
 }
 
-// Run TypeScript compiler
-const tsc = spawn('npx', ['tsc', '--noEmit', '--pretty', 'false'], {
+const res = spawnSync('pnpm', ['exec', 'tsc', '--noEmit', '--pretty', 'false'], {
   cwd: process.env.CLAUDE_PROJECT_DIR,
-  stdio: ['ignore', 'pipe', 'pipe']
-});
+  encoding: 'utf-8',
+})
 
-let stdout = '';
-let stderr = '';
+if (res.status === 0) {
+  process.exit(0)
+}
 
-tsc.stdout.on('data', (data) => {
-  stdout += data.toString();
-});
+const output = `${res.stdout || ''}${res.stderr || ''}`
+const projectDir = process.env.CLAUDE_PROJECT_DIR || ''
+const rel = filePath.startsWith(projectDir + '/') ? filePath.slice(projectDir.length + 1) : filePath
 
-tsc.stderr.on('data', (data) => {
-  stderr += data.toString();
-});
+// tsc prints project-relative paths; match on both the relative and absolute form
+// so we only surface errors for the file Claude just edited.
+const relevant = output
+  .split('\n')
+  .filter((line) => line.includes(rel) || line.includes(filePath))
+  .join('\n')
+  .trim()
 
-tsc.on('close', (code) => {
-  const output = stdout + stderr;
+if (relevant) {
+  console.error(`TypeScript errors in ${rel}:\n\n${relevant}\n\nPlease fix these type errors.`)
+  process.exit(2)
+}
 
-  // Filter errors related to the file being edited
-  const relevantErrors = output.split('\n')
-    .filter(line => line.includes(filePath))
-    .join('\n');
-
-  if (code !== 0 && relevantErrors) {
-    const errorCount = (relevantErrors.match(/error TS\d+:/g) || []).length;
-
-    console.log(JSON.stringify({
-      continue: true,
-      additionalContext: `TypeScript found ${errorCount} type error(s) in ${filePath}:\n\n${relevantErrors}\n\nPlease fix these type errors.`
-    }));
-  } else if (code !== 0) {
-    // Type errors exist but not in this file - suppress to avoid noise
-    console.log(JSON.stringify({
-      continue: true,
-      suppressOutput: true
-    }));
-  } else {
-    // No errors - suppress success message
-    console.log(JSON.stringify({
-      continue: true,
-      suppressOutput: true
-    }));
-  }
-
-  process.exit(0);
-});
+// Type errors exist elsewhere but not in this file — stay silent to avoid noise.
+process.exit(0)
