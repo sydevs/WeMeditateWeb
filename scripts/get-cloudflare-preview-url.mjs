@@ -165,20 +165,20 @@ async function discoverUrl() {
   return null
 }
 
-async function waitHealthy(url) {
+async function waitReachable(url) {
   const deadline = Date.now() + HEALTH_TIMEOUT_MS
   let attempt = 0
   while (Date.now() < deadline) {
     attempt++
     try {
       const res = await fetch(`${url}${HEALTH_PATH}`, { signal: AbortSignal.timeout(10_000) })
-      if (res.ok) {
-        console.error(`preview healthy after ${attempt} attempt(s)`)
-        return true
-      }
-      console.error(`health attempt ${attempt}: HTTP ${res.status}`)
+      // Any HTTP response means the deployment is up and routable. We intentionally
+      // do NOT require 2xx: a 500 (e.g. a broken homepage) is exactly what the smoke
+      // specs should catch and report — not a reason to fail discovery before they run.
+      console.error(`reachable (HTTP ${res.status}) after ${attempt} attempt(s)`)
+      return true
     } catch (err) {
-      console.error(`health attempt ${attempt}: ${err.message}`)
+      console.error(`reachability attempt ${attempt}: ${err.message}`)
     }
     await sleep(POLL_INTERVAL_MS)
   }
@@ -216,8 +216,8 @@ async function main() {
   }
 
   console.error(`preview URL: ${url}`)
-  if (!(await waitHealthy(url))) {
-    console.error('Preview environment never became healthy.')
+  if (!(await waitReachable(url))) {
+    console.error('Preview environment never became reachable.')
     process.exit(1)
   }
   exportUrl(url)

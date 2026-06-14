@@ -10,7 +10,7 @@
  * is client-side and out of scope for fetch smoke (see issue comments on #26).
  */
 import { describe, it } from 'vitest'
-import { fetchPage, expectRenders, internalLinks, discoverFromCms } from './_helpers/preview'
+import { fetchPage, expectRenders, internalLinks, discoverFromCms } from '../_helpers/preview'
 
 async function discoverMeditationId(): Promise<string | null> {
   const cms = await discoverFromCms()
