@@ -117,6 +117,35 @@ export interface CmsSamples {
 }
 
 /**
+ * Serialize nested params into PayloadCMS's qs bracket format, e.g.
+ * { select: { meta: { title: true } } } → "select[meta][title]=true".
+ */
+function toQueryString(params: Record<string, unknown>, prefix = ''): string {
+  return Object.entries(params)
+    .flatMap(([key, value]) => {
+      const path = prefix ? `${prefix}[${key}]` : key
+
+      return value !== null && typeof value === 'object'
+        ? toQueryString(value as Record<string, unknown>, path)
+        : `${encodeURIComponent(path)}=${encodeURIComponent(String(value))}`
+    })
+    .join('&')
+}
+
+// The CMS enforces select/populate on collection reads via a query-validation
+// hook (PR #23), so bare queries 400. Mirror the shapes cms-client.ts uses.
+const PAGE_SELECT = {
+  title: true,
+  slug: true,
+  _status: true,
+  meta: { title: true, description: true, image: true },
+}
+const MEDITATION_SELECT = { title: true, thumbnail: true, _status: true }
+const IMAGE_POPULATE = {
+  images: { url: true, filename: true, alt: true, width: true, height: true },
+}
+
+/**
  * Optionally pull deterministic sample content from the production CMS so
  * ID-specific specs (meditations, lectures) always have a target. Requires the
  * SAHAJCLOUD_API_KEY secret; returns null when it's absent so callers test.skip.
@@ -161,8 +190,22 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
     }
   }
 
-  const page = await firstDoc('pages?limit=1&depth=0&where[_status][equals]=published')
-  const meditation = await firstDoc('meditations?limit=1&depth=0')
+  const pageQuery = toQueryString({
+    limit: 1,
+    depth: 2,
+    where: { _status: { equals: 'published' } },
+    select: PAGE_SELECT,
+    populate: IMAGE_POPULATE,
+  })
+  const meditationQuery = toQueryString({
+    limit: 1,
+    depth: 2,
+    where: { _status: { equals: 'published' } },
+    select: MEDITATION_SELECT,
+    populate: IMAGE_POPULATE,
+  })
+  const page = await firstDoc(`pages?${pageQuery}`)
+  const meditation = await firstDoc(`meditations?${meditationQuery}`)
 
   return {
     pageSlug: typeof page?.slug === 'string' ? page.slug : null,
