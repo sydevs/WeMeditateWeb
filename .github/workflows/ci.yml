@@ -8,9 +8,11 @@ concurrency:
 
 permissions:
   contents: read
-  deployments: read # read the Cloudflare preview deployment + its environment_url
-  statuses: read # fallback: Cloudflare preview URL posted as a commit status
-  checks: read # fallback: Cloudflare preview URL posted in a check run
+  pull-requests: read # primary: Cloudflare posts the preview URL in a PR comment
+  issues: read # PR comments are read via the issues/{n}/comments endpoint
+  checks: read # fallback: Cloudflare preview URL in the "Cloudflare Pages" check-run output
+  deployments: read # fallback: a Workers-Builds-style deployment environment_url
+  statuses: read # fallback: a preview URL posted as a commit status
 
 jobs:
   gate:
@@ -46,14 +48,19 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # Discover the PR's Cloudflare preview URL from the GitHub API and wait
-      # until it's healthy. Skips gracefully (empty preview_url) when no preview
-      # is posted — e.g. a forked PR without repo permissions.
+      # Discover the PR's Cloudflare preview URL for the WEB APP from the GitHub
+      # API and wait until it's healthy. The repo also has a Ladle design-system
+      # preview (wm-design.pages.dev) which the script deliberately excludes.
+      # Set the CF_PREVIEW_PROJECT repo variable to the web-app preview project's
+      # name/host (e.g. "wemeditate-web") once that preview exists. Until then,
+      # this finds no matching preview and the smoke step is skipped (job stays green).
       - name: Discover Cloudflare preview URL
         id: preview
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          CF_PROJECT_MATCH: ${{ vars.CF_PREVIEW_PROJECT }}
         run: node scripts/get-cloudflare-preview-url.mjs
 
       - name: Run smoke specs against the preview
