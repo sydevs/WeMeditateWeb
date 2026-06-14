@@ -1,0 +1,66 @@
+name: CI
+
+on: pull_request
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: read # read the Cloudflare preview deployment + its environment_url
+  statuses: read # fallback: Cloudflare preview URL posted as a commit status
+  checks: read # fallback: Cloudflare preview URL posted in a check run
+
+jobs:
+  gate:
+    name: Lint, Typecheck & Unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test:run # unit only — smoke specs are excluded in vitest.config.ts
+
+  smoke:
+    name: Smoke (Cloudflare preview)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Discover the PR's Cloudflare preview URL from the GitHub API and wait
+      # until it's healthy. Skips gracefully (empty preview_url) when no preview
+      # is posted — e.g. a forked PR without repo permissions.
+      - name: Discover Cloudflare preview URL
+        id: preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/get-cloudflare-preview-url.mjs
+
+      - name: Run smoke specs against the preview
+        if: ${{ steps.preview.outputs.preview_url != '' }}
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
+          # Optional: enables deterministic meditation/page discovery. Smoke still
+          # runs without it (falls back to homepage-crawled links).
+          SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
+        run: pnpm test:smoke

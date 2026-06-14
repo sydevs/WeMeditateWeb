@@ -5,6 +5,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules', 'dist', 'build', '.ladle'],
+    // Smoke specs hit a deployed preview over the network — run them only via
+    // `pnpm test:smoke` (vitest.smoke.config.ts), never in the unit-test run.
+    exclude: ['node_modules', 'dist', 'build', '.ladle', 'tests/smoke/**'],
   },
 })
