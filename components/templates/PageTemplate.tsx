@@ -11,8 +11,8 @@
  */
 
 import type { Page, Author, Video } from '../../server/cms-types'
-import { RichText, VideoPlayer } from '../organisms'
-import { Author as AuthorByline } from '../molecules/Author'
+import { RichText } from '../organisms'
+import { VideoPlayer, Author as AuthorByline } from '../molecules'
 import { usePageHead } from '../../lib/head'
 import { isPopulated, populatedImageUrl } from '../../lib/cms-relationships'
 
