@@ -4,6 +4,7 @@ import {
   getImageURL,
   getVariantName,
   isCloudflareImageURL,
+  nearestAspectRatio,
 } from './cloudflare-images'
 
 const BASE_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/'
@@ -33,11 +34,13 @@ describe('getImageURL', () => {
 
   it('returns the URL unchanged when a variant is already appended', () => {
     const withVariant = `${BASE_URL}public`
+
     expect(getImageURL(withVariant, 'video-800')).toBe(withVariant)
   })
 
   it('returns the URL unchanged for non-Cloudflare URLs', () => {
     const external = 'https://picsum.photos/seed/foo/400/400'
+
     expect(getImageURL(external, 'video-800')).toBe(external)
   })
 })
@@ -70,6 +73,7 @@ describe('getVariantName', () => {
 describe('getImageSrcSet', () => {
   it('returns one entry per width defined for the aspect ratio', () => {
     const srcset = getImageSrcSet(BASE_URL, 'video')
+
     expect(srcset).toBe(
       `${BASE_URL}video-640 640w, ${BASE_URL}video-800 800w, ${BASE_URL}video-1024 1024w, ${BASE_URL}video-1536 1536w`,
     )
@@ -77,6 +81,7 @@ describe('getImageSrcSet', () => {
 
   it('works with a no-trailing-slash base URL', () => {
     const srcset = getImageSrcSet(BASE_URL_NO_SLASH, 'square')
+
     expect(srcset).toBe(
       `${BASE_URL_NO_SLASH}/square-400 400w, ${BASE_URL_NO_SLASH}/square-800 800w, ${BASE_URL_NO_SLASH}/square-1200 1200w`,
     )
@@ -91,6 +96,7 @@ describe('getImageSrcSet', () => {
   it('emits widths sorted ascending', () => {
     const srcset = getImageSrcSet(BASE_URL, 'video')
     const widths = srcset.match(/(\d+)w/g)?.map((w) => parseInt(w, 10))
+
     expect(widths).toEqual([640, 800, 1024, 1536])
   })
 
@@ -100,5 +106,31 @@ describe('getImageSrcSet', () => {
 
   it('returns empty string for non-Cloudflare URLs', () => {
     expect(getImageSrcSet('https://picsum.photos/seed/foo/400/400', 'video')).toBe('')
+  })
+})
+
+describe('nearestAspectRatio', () => {
+  it('snaps exact dimensions to their matching ratio', () => {
+    expect(nearestAspectRatio(800, 800)).toBe('square')
+    expect(nearestAspectRatio(1600, 900)).toBe('video')
+    expect(nearestAspectRatio(800, 600)).toBe('4-3')
+    expect(nearestAspectRatio(1500, 1000)).toBe('3-2')
+    expect(nearestAspectRatio(2100, 900)).toBe('ultrawide')
+  })
+
+  it('picks the closest ratio for off-spec dimensions', () => {
+    // 1.7 is between 3-2 (1.5) and video (1.78) but closer to video.
+    expect(nearestAspectRatio(1700, 1000)).toBe('video')
+    // 1.4 is between 4-3 (1.33) and 3-2 (1.5) but closer to 4-3.
+    expect(nearestAspectRatio(1400, 1000)).toBe('4-3')
+    // Portrait images snap to the squarest available ratio.
+    expect(nearestAspectRatio(600, 900)).toBe('square')
+  })
+
+  it('falls back to video for missing or invalid dimensions', () => {
+    expect(nearestAspectRatio(null, null)).toBe('video')
+    expect(nearestAspectRatio(0, 100)).toBe('video')
+    expect(nearestAspectRatio(100, 0)).toBe('video')
+    expect(nearestAspectRatio(undefined, 100)).toBe('video')
   })
 })

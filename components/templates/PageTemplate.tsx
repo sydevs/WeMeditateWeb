@@ -10,6 +10,7 @@
  */
 
 import type { Page } from '../../server/cms-types'
+import { RichText } from '../organisms/RichText'
 
 export interface PageTemplateProps {
   /**
@@ -31,14 +32,7 @@ export function PageTemplate({ page }: PageTemplateProps) {
       </header>
 
       {/* Render page content */}
-      {page.content ? (
-        <div className="prose prose-lg max-w-none">
-          {/* TODO: Implement rich text renderer for PayloadCMS content */}
-          <pre className="bg-gray-100 p-4 rounded overflow-auto text-sm">
-            {String(JSON.stringify(page.content, null, 2))}
-          </pre>
-        </div>
-      ) : null}
+      <RichText content={page.content} />
     </article>
   )
 }
