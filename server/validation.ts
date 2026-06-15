@@ -26,7 +26,7 @@ export const slugSchema = z
   .max(100, 'Slug too long (max 100 characters)')
   .regex(
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    'Slug must be lowercase alphanumeric with hyphens (no consecutive hyphens, no leading/trailing hyphens)'
+    'Slug must be lowercase alphanumeric with hyphens (no consecutive hyphens, no leading/trailing hyphens)',
   )
 
 /**
@@ -43,7 +43,7 @@ export const idSchema = z.coerce
  * Schema for validating collection types in preview routes.
  * The CollectionType is defined in pages/preview/_components/types.ts
  */
-export const collectionSchema = z.enum(['pages', 'meditations'])
+export const collectionSchema = z.enum(['pages', 'meditations', 'lectures'])
 
 // ===== Configuration Schemas =====
 

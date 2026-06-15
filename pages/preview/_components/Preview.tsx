@@ -7,15 +7,16 @@
 
 'use client'
 
-import type { BasePreviewData, Page, Meditation } from './types'
+import type { BasePreviewData, Page, Meditation, Lecture } from './types'
 import { PreviewBanner } from './PreviewBanner'
 import { PagePreview } from './PagePreview'
 import { MeditationPreview } from './MeditationPreview'
+import { LecturePreview } from './LecturePreview'
 
 export interface PreviewProps {
   collection: BasePreviewData['collection']
   locale: string
-  initialData: Page | Meditation
+  initialData: Page | Meditation | Lecture
 }
 
 export function Preview({ collection, locale, initialData }: PreviewProps) {
@@ -24,5 +25,7 @@ export function Preview({ collection, locale, initialData }: PreviewProps) {
       return <PagePreview initialData={initialData as Page} />
     case 'meditations':
       return <MeditationPreview initialData={initialData as Meditation} />
+    case 'lectures':
+      return <LecturePreview initialData={initialData as Lecture} locale={locale} />
   }
 }
