@@ -21,6 +21,7 @@
 
 import { createPayloadClient, validateSDKResponse } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import * as Sentry from '@sentry/react'
 import type {
   Config,
   PagesSelect,
@@ -273,10 +274,38 @@ export async function getDocumentById<C extends FindByIdCollection>(
 // ============================================================================
 
 /**
+ * Split a page-relationship array into published, linkable pages (populated
+ * objects with a slug) and unresolved references — relationships returned as a
+ * bare ID (believed unpublished/trashed: a published page populates, an
+ * unpublished one comes back as just its id) or an object missing a slug.
+ */
+export function partitionPublishedPages(pages: (number | Page)[] | null | undefined): {
+  published: Page[]
+  unresolved: string[]
+} {
+  const published: Page[] = []
+  const unresolved: string[] = []
+
+  for (const page of pages ?? []) {
+    if (typeof page === 'object' && page && typeof page.slug === 'string' && page.slug.length > 0) {
+      published.push(page)
+    } else {
+      unresolved.push(typeof page === 'object' && page ? `id:${page.id}(no-slug)` : `id:${page}`)
+    }
+  }
+
+  return { published, unresolved }
+}
+
+/**
  * Retrieves the WebConfig (site configuration).
  *
  * This is a singleton global configuration that contains references to important
  * pages throughout the site (home page, featured pages, class pages, etc.).
+ *
+ * Unresolved page references (believed unpublished) are dropped so the layout
+ * never renders dead `/undefined` links, and reported to Sentry so the
+ * underlying CMS data gap stays visible.
  *
  * @returns The web configuration with populated page relationships
  */
@@ -299,12 +328,40 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
 
       const validated = validateSDKResponse(result, 'WmWebConfig')
 
-      // Normalize nullable arrays to empty arrays for consumer convenience
+      // Drop unresolved (believed-unpublished) page references so the layout
+      // never renders dead `/undefined` links — graceful fallback.
+      const featured = partitionPublishedPages(validated.featuredPages)
+      const classPages = partitionPublishedPages(validated.classPages)
+      const knowledgePages = partitionPublishedPages(validated.knowledgePages)
+      const infoPages = partitionPublishedPages(validated.infoPages)
+
+      const unresolved = [
+        ...(typeof validated.homePage === 'number' ? [`homePage id:${validated.homePage}`] : []),
+        ...featured.unresolved.map((u) => `featuredPages ${u}`),
+        ...classPages.unresolved.map((u) => `classPages ${u}`),
+        ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
+        ...infoPages.unresolved.map((u) => `infoPages ${u}`),
+      ]
+
+      // Surface the data gap to Sentry (a published page populates; an
+      // unpublished one returns as a bare id) without breaking the page.
+      if (unresolved.length > 0) {
+        console.warn(
+          `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
+        )
+        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
+          level: 'warning',
+          tags: { source: 'getWebConfig' },
+          extra: { unresolved, locale: options.locale ?? null },
+        })
+      }
+
       return {
         ...validated,
-        classPages: (validated.classPages ?? []) as Page[],
-        knowledgePages: (validated.knowledgePages ?? []) as Page[],
-        infoPages: (validated.infoPages ?? []) as Page[],
+        featuredPages: featured.published,
+        classPages: classPages.published,
+        knowledgePages: knowledgePages.published,
+        infoPages: infoPages.published,
       } as WebConfig
     },
   })
