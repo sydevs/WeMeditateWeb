@@ -128,10 +128,8 @@ const WEB_CONFIG_SELECT = {
  * the backend rejects depth > 1 reads without `populate`.
  */
 const WEB_CONFIG_POPULATE = {
+  ...PAGE_POPULATE,
   pages: PAGE_SELECT,
-  images: IMAGE_POPULATE.images,
-  authors: AUTHOR_POPULATE,
-  videos: VIDEO_POPULATE,
 }
 
 /** Minimal fields for page list items (getPagesByTags → PageListItem). */

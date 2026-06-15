@@ -3,14 +3,11 @@
  * tested directly and reused by the Lexical → React converters.
  */
 
+import { isPopulated } from '../../../lib/cms-relationships'
+
 /** Combining diacritical marks (U+0300–U+036F), built from ASCII to avoid
  * literal combining characters living in source. */
 const DIACRITICS = new RegExp('[\\u0300-\\u036f]', 'g')
-
-/** True when a relationship/upload value is a populated document, not a bare id. */
-export function isPopulatedDoc(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
 
 /**
  * Recursively collect the plain-text content of a list of Lexical nodes.
@@ -24,7 +21,7 @@ export function getNodeText(nodes: unknown): string {
 
   return nodes
     .map((n) => {
-      if (!isPopulatedDoc(n)) {
+      if (!isPopulated(n)) {
         return ''
       }
       if (typeof n.text === 'string') {
@@ -59,7 +56,7 @@ export function slugify(text: string): string {
  * bare ids (unpopulated) so the converter can degrade instead of linking "[12]".
  */
 export function relationshipLabel(value: unknown): string | null {
-  if (!isPopulatedDoc(value)) {
+  if (!isPopulated(value)) {
     return null
   }
   for (const candidate of [value.title, value.name, value.slug]) {

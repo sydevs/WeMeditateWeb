@@ -12,6 +12,7 @@
 
 import { useConfig } from 'vike-react/useConfig'
 import { getImageURL, getVariantName, isCloudflareImageURL } from './cloudflare-images'
+import { populatedImageUrl } from './cms-relationships'
 
 /** Minimal shape of a page's `meta` field (a subset of the CMS Page meta). */
 export interface PageMetaLike {
@@ -30,10 +31,7 @@ export interface PageMetaLike {
  * (a bare id) so the tag is simply omitted.
  */
 export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
-  if (!image || typeof image !== 'object') {
-    return null
-  }
-  const url = image.url
+  const url = populatedImageUrl(image)
 
   if (!url) {
     return null

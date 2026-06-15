@@ -1,16 +1,14 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { RichText as LexicalRichText } from '@payloadcms/richtext-lexical/react'
-import type { JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
+import {
+  RichText as LexicalRichText,
+  defaultJSXConverters,
+} from '@payloadcms/richtext-lexical/react'
+import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Image, Link } from '../../atoms'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
+import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
-import {
-  getNodeText,
-  isPopulatedDoc,
-  relationshipLabel,
-  slugify,
-  uploadFigureClass,
-} from './lexical-helpers'
+import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
@@ -37,7 +35,7 @@ function renderCaption(caption: unknown): ReactNode {
   if (typeof caption === 'string') {
     return caption
   }
-  if (isPopulatedDoc(caption) && 'root' in caption) {
+  if (isPopulated(caption) && 'root' in caption) {
     // Captions rarely contain links/blocks, so the library defaults are enough.
     return <LexicalRichText disableContainer data={caption as unknown as LexicalEditorState} />
   }
@@ -51,9 +49,12 @@ function renderCaption(caption: unknown): ReactNode {
  * the nodes that need app-specific behavior (anchored headings, locale-aware
  * links, Cloudflare-optimized images) and add a generic fallback so unknown
  * custom blocks (implemented in a later ticket) never crash the page.
+ *
+ * Built once at module scope (rather than via a per-render factory) since the
+ * overrides don't depend on render state.
  */
-const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
-  ...defaultConverters,
+const CONVERTERS: JSXConverters = {
+  ...defaultJSXConverters,
 
   // Headings get a slugified anchor id so a table of contents can link to them.
   heading: ({ node, nodesToJSX }) => {
@@ -120,7 +121,7 @@ const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   upload: ({ node }) => {
     const value = node.value
 
-    if (!isPopulatedDoc(value)) {
+    if (!isPopulated(value)) {
       return null
     }
     const image = value as PopulatedImage
@@ -153,7 +154,7 @@ const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   // custom Page blocks implemented in a later ticket. Renders nothing so an
   // unimplemented block degrades gracefully instead of crashing the page.
   unknown: () => null,
-})
+}
 
 export interface RichTextProps {
   /** PayloadCMS Lexical serialized editor state (e.g. `page.content`). */
@@ -177,7 +178,7 @@ export function RichText({ content, className }: RichTextProps) {
   return (
     <LexicalRichText
       className={className ?? 'prose prose-lg max-w-none'}
-      converters={jsxConverters}
+      converters={CONVERTERS}
       data={content as unknown as LexicalEditorState}
     />
   )

@@ -10,20 +10,11 @@
  * <PageTemplate page={pageData} />
  */
 
-import type { Page, Author, Video, Image } from '../../server/cms-types'
+import type { Page, Author, Video } from '../../server/cms-types'
 import { RichText, VideoPlayer } from '../organisms'
 import { Author as AuthorByline } from '../molecules/Author'
 import { usePageHead } from '../../lib/head'
-
-/** Narrow a relationship field to its populated document (vs. a bare id). */
-function isPopulated<T extends object>(value: number | T | null | undefined): value is T {
-  return typeof value === 'object' && value !== null
-}
-
-/** Resolve an Image relationship to its URL, if populated. */
-function imageUrl(image: number | Image | null | undefined): string | undefined {
-  return isPopulated<Image>(image) ? (image.url ?? undefined) : undefined
-}
+import { isPopulated, populatedImageUrl } from '../../lib/cms-relationships'
 
 export interface PageTemplateProps {
   /**
@@ -45,7 +36,7 @@ export function PageTemplate({ page }: PageTemplateProps) {
         <VideoPlayer
           className="mb-8"
           hlsUrl={video.hlsUrl}
-          poster={imageUrl(video.thumbnail)}
+          poster={populatedImageUrl(video.thumbnail)}
           subtitles={video.subtitles}
           title={video.title}
         />
@@ -62,7 +53,7 @@ export function PageTemplate({ page }: PageTemplateProps) {
           <AuthorByline
             className="mt-6"
             countryCode={author.countryCode ?? undefined}
-            imageUrl={imageUrl(author.photo)}
+            imageUrl={populatedImageUrl(author.photo)}
             meditationYears={author.yearsMeditating ?? undefined}
             name={author.name}
             variant="mini"

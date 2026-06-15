@@ -28,6 +28,9 @@ export function msToVttTimestamp(ms: number): string {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(millis, 3)}`
 }
 
+/** Blank line(s) inside cue text would prematurely terminate the VTT cue. */
+const COLLAPSIBLE_BLANK_LINES = /\r?\n\s*\r?\n+/g
+
 /**
  * Serialize inline cues to a WebVTT document. Cues with empty content or a
  * non-positive duration are dropped; cue text is collapsed so a blank line
@@ -43,7 +46,7 @@ export function cuesToVtt(cues: VideoSubtitleCue[]): string {
         cue.endTimeMs > cue.startTimeMs,
     )
     .map((cue) => {
-      const text = cue.content.replace(/\r?\n\s*\r?\n+/g, '\n').trim()
+      const text = cue.content.replace(COLLAPSIBLE_BLANK_LINES, '\n').trim()
 
       return `${msToVttTimestamp(cue.startTimeMs)} --> ${msToVttTimestamp(cue.endTimeMs)}\n${text}`
     })

@@ -80,6 +80,9 @@ const ASPECT_RATIO_VALUES: Record<AspectRatio, number> = {
   ultrawide: 21 / 9,
 }
 
+/** Precomputed entries so nearestAspectRatio doesn't rebuild them per call. */
+const ASPECT_RATIO_ENTRIES = Object.entries(ASPECT_RATIO_VALUES) as [AspectRatio, number][]
+
 /**
  * Picks the supported AspectRatio closest to an image's intrinsic dimensions.
  *
@@ -102,7 +105,7 @@ export function nearestAspectRatio(
   let best: AspectRatio = 'video'
   let bestDelta = Infinity
 
-  for (const [ratio, value] of Object.entries(ASPECT_RATIO_VALUES) as [AspectRatio, number][]) {
+  for (const [ratio, value] of ASPECT_RATIO_ENTRIES) {
     const delta = Math.abs(value - target)
 
     if (delta < bestDelta) {
