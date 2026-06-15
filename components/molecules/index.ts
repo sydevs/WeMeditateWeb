@@ -6,6 +6,10 @@
  * functional units.
  */
 
+// Alert
+export { Alert } from './Alert'
+export type { AlertProps, AlertVariant } from './Alert'
+
 // Author
 export { Author } from './Author'
 export type { AuthorProps } from './Author'

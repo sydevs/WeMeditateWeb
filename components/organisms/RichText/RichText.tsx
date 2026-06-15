@@ -5,6 +5,7 @@ import {
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Image, Link } from '../../atoms'
+import { Alert } from '../../molecules/Alert'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
@@ -151,9 +152,26 @@ const CONVERTERS: JSXConverters = {
   },
 
   // Generic fallback for any node without a converter — most importantly the
-  // custom Page blocks implemented in a later ticket. Renders nothing so an
-  // unimplemented block degrades gracefully instead of crashing the page.
-  unknown: () => null,
+  // custom Page blocks implemented in a later ticket. In development we surface
+  // what's missing with an Alert; in production we render nothing so an
+  // unimplemented block degrades gracefully instead of showing end users a
+  // warning box.
+  unknown: ({ node }) => {
+    if (!import.meta.env.DEV) {
+      return null
+    }
+    const n = node as { type?: string; fields?: { blockType?: unknown } }
+    const label =
+      n.type === 'block' && typeof n.fields?.blockType === 'string'
+        ? `block: ${n.fields.blockType}`
+        : (n.type ?? 'unknown')
+
+    return (
+      <Alert className="not-prose my-4" title="Unimplemented RichText node" variant="warning">
+        No converter for <code>{label}</code> — implement it or check the CMS content.
+      </Alert>
+    )
+  },
 }
 
 export interface RichTextProps {

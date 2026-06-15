@@ -229,7 +229,8 @@ describe('<RichText>', () => {
     expect(html).not.toContain('<img')
   })
 
-  it('falls back gracefully for unknown custom block nodes (renders nothing, no crash)', () => {
+  it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
+    // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(
       <RichText
         content={editorState([
@@ -239,8 +240,12 @@ describe('<RichText>', () => {
       />,
     )
 
-    // The unknown block is dropped, but the rest of the document still renders.
+    // In development the unknown block surfaces an alert naming the block type,
+    expect(html).toContain('role="alert"')
+    expect(html).toContain('showcase')
+    // the library's default "unknown node" span is suppressed,
     expect(html).not.toContain('unknown node')
+    // and the rest of the document still renders (no crash).
     expect(html).toContain('After the block')
   })
 })

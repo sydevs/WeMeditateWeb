@@ -39,7 +39,7 @@ export { Image } from './Image'
 export { Icon } from './Icon'
 export { Avatar } from './Avatar'
 export { Logo } from './Logo'
-export type { IconProps } from './Icon'
+export type { IconProps, HeroIcon } from './Icon'
 export type { AvatarProps } from './Avatar'
 export type { LogoProps } from './Logo'
 
@@ -50,7 +50,7 @@ export {
   FloralDividerSvg,
   HeaderIllustrationSvg,
   LotusDotsSvg,
-  TriangleDecorationSvg
+  TriangleDecorationSvg,
 } from './svgs'
 export type {
   LogoSvgProps,
@@ -58,7 +58,7 @@ export type {
   FloralDividerSvgProps,
   HeaderIllustrationSvgProps,
   LotusDotsSvgProps,
-  TriangleDecorationSvgProps
+  TriangleDecorationSvgProps,
 } from './svgs'
 
 // Feedback
