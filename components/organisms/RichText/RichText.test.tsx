@@ -35,6 +35,24 @@ const paragraph = (children: unknown[]) => ({
   version: 1,
 })
 
+/** A serialized custom-block node (`fields.blockType` + the block's fields). */
+const block = (blockType: string, fields: Record<string, unknown>) => ({
+  type: 'block',
+  fields: { blockType, id: blockType, ...fields },
+  format: '',
+  version: 2,
+})
+
+/** A populated Cloudflare image ref. */
+const img = (over: Record<string, unknown> = {}) => ({
+  id: 1,
+  url: 'https://imagedelivery.net/acct/img/',
+  alt: 'Image alt',
+  width: 1200,
+  height: 800,
+  ...over,
+})
+
 describe('<RichText>', () => {
   it('renders nothing for empty/missing content', () => {
     expect(renderToStaticMarkup(<RichText content={null} />)).toBe('')
@@ -229,12 +247,162 @@ describe('<RichText>', () => {
     expect(html).not.toContain('<img')
   })
 
+  it('renders a textbox block via ContentTextBox (title, text, CTA, image)', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('textbox', {
+            imagePosition: 'left',
+            title: 'Get Connected',
+            text: 'Meditate together in person.',
+            buttonText: 'Classes near me',
+            buttonUrl: '/classes',
+            image: img({ alt: 'A class' }),
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Get Connected')
+    expect(html).toContain('Meditate together in person.')
+    expect(html).toContain('Classes near me')
+    expect(html).toContain('href="/classes"')
+    expect(html).toContain('imagedelivery.net/acct/img/')
+  })
+
+  it('omits the textbox CTA when there is no button text', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('textbox', { imagePosition: 'left', title: 'No CTA', text: 'Body', image: img() }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('No CTA')
+    expect(html).not.toContain('<a')
+  })
+
+  it('renders a quote block via HeroQuote (title, text, credit, caption)', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('quote', {
+            title: 'On Kundalini',
+            text: 'This Kundalini is the spiritual mother.',
+            credit: 'Shri Mataji',
+            caption: 'London, 1978',
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('On Kundalini')
+    expect(html).toContain('This Kundalini is the spiritual mother.')
+    expect(html).toContain('Shri Mataji')
+    expect(html).toContain('London, 1978')
+  })
+
+  it('renders a button block as a link', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('button', { text: 'Join us', url: 'https://wemeditate.com/live' }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Join us')
+    expect(html).toContain('href="https://wemeditate.com/live"')
+  })
+
+  it('renders an image-gallery block as a grid of images', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [
+              img({ id: 1, alt: 'One' }),
+              img({ id: 2, alt: 'Two', width: 600, height: 800 }),
+            ],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('alt="One"')
+    expect(html).toContain('alt="Two"')
+    expect(html).toContain('columns-2')
+  })
+
+  it('renders a layout block (textList) as a titled list', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('layout', {
+            style: 'textList',
+            title: 'How to do it',
+            items: [
+              { id: 's1', title: 'Step 1', text: 'Raise the Kundalini.' },
+              { id: 's2', title: 'Step 2', text: 'Tie a knot.' },
+            ],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('How to do it')
+    expect(html).toContain('Step 1')
+    expect(html).toContain('Raise the Kundalini.')
+    expect(html).toContain('Step 2')
+  })
+
+  it('renders a layout block (accordion) with item titles and content', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('layout', {
+            style: 'accordion',
+            items: [{ id: 'q1', title: 'How much does it cost?', text: 'It is free.' }],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('How much does it cost?')
+    expect(html).toContain('It is free.')
+  })
+
+  it('renders a table-of-contents block with anchors matching heading ids', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          { type: 'heading', tag: 'h2', children: [text('When to do it?')], version: 1 },
+          block('table-of-contents', {
+            title: 'Explore below',
+            headings: [{ slug: 'stale', text: 'When to do it?', level: 2 }],
+          }),
+        ])}
+      />,
+    )
+
+    // The heading converter emits id="when-to-do-it"; the ToC links to it.
+    expect(html).toContain('id="when-to-do-it"')
+    expect(html).toContain('href="#when-to-do-it"')
+    expect(html).toContain('Explore below')
+  })
+
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
     // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(
       <RichText
         content={editorState([
-          { type: 'block', fields: { blockType: 'showcase', id: 'x' }, format: '', version: 2 },
+          {
+            type: 'block',
+            fields: { blockType: 'mystery-block', id: 'x' },
+            format: '',
+            version: 2,
+          },
           { type: 'heading', tag: 'h2', children: [text('After the block')], version: 1 },
         ])}
       />,
@@ -242,7 +410,7 @@ describe('<RichText>', () => {
 
     // In development the unknown block surfaces an alert naming the block type,
     expect(html).toContain('role="alert"')
-    expect(html).toContain('showcase')
+    expect(html).toContain('mystery-block')
     // the library's default "unknown node" span is suppressed,
     expect(html).not.toContain('unknown node')
     // and the rest of the document still renders (no crash).

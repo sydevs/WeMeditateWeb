@@ -30,6 +30,10 @@ export type { ContentCardProps } from './ContentCard/ContentCard'
 // Blocks
 export { HeroQuote } from './blocks/HeroQuote/HeroQuote'
 export type { HeroQuoteProps } from './blocks/HeroQuote/HeroQuote'
+export { LayoutBlock } from './blocks/LayoutBlock'
+export type { LayoutBlockProps } from './blocks/LayoutBlock'
+export { TableOfContents } from './blocks/TableOfContents'
+export type { TableOfContentsProps } from './blocks/TableOfContents'
 
 // Forms
 export { FormField } from './FormField'

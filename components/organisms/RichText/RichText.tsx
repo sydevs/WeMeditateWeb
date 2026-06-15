@@ -10,6 +10,7 @@ import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
+import { blockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
@@ -56,6 +57,10 @@ function renderCaption(caption: unknown): ReactNode {
  */
 const CONVERTERS: JSXConverters = {
   ...defaultJSXConverters,
+
+  // Custom Page blocks (textbox, quote, showcase, …), keyed by `blockType`.
+  // Any block without an entry here falls through to the `unknown` converter.
+  blocks: blockConverters,
 
   // Headings get a slugified anchor id so a table of contents can link to them.
   heading: ({ node, nodesToJSX }) => {
@@ -151,11 +156,10 @@ const CONVERTERS: JSXConverters = {
     )
   },
 
-  // Generic fallback for any node without a converter — most importantly the
-  // custom Page blocks implemented in a later ticket. In development we surface
-  // what's missing with an Alert; in production we render nothing so an
-  // unimplemented block degrades gracefully instead of showing end users a
-  // warning box.
+  // Generic fallback for any node without a converter — e.g. a future custom
+  // Page block not yet in `blockConverters`. In development we surface what's
+  // missing with an Alert; in production we render nothing so an unimplemented
+  // block degrades gracefully instead of showing end users a warning box.
   unknown: ({ node }) => {
     if (!import.meta.env.DEV) {
       return null
