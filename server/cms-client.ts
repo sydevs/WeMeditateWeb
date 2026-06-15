@@ -30,6 +30,8 @@ import type {
   AlbumsSelect,
   SongTagsSelect,
   ImagesSelect,
+  AuthorsSelect,
+  VideosSelect,
   WmWebConfigSelect,
 } from './payload-types'
 import type { Locale, Page, Song, WebConfig, PageListItem } from './cms-types'
@@ -66,15 +68,50 @@ const IMAGE_POPULATE = {
   } satisfies ImagesSelect<true>,
 }
 
-/** Fields rendered for a full Page (PageTemplate) plus SEO meta and draft status. */
+/** Fields rendered for a full Page (PageTemplate): body, author byline,
+ * featured video, SEO meta, plus slug/draft status. */
 const PAGE_SELECT = {
   title: true,
   content: true,
   slug: true,
   createdAt: true,
   _status: true,
+  author: true,
+  featuredVideo: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
+
+/** Author fields the byline renders (photo populates via `images` at depth 2). */
+const AUTHOR_POPULATE = {
+  name: true,
+  title: true,
+  slug: true,
+  countryCode: true,
+  yearsMeditating: true,
+  photo: true,
+} satisfies AuthorsSelect<true>
+
+/** Video fields the VideoPlayer renders (thumbnail populates via `images`). */
+const VIDEO_POPULATE = {
+  hlsUrl: true,
+  previewUrl: true,
+  title: true,
+  thumbnail: true,
+  subtitles: true,
+} satisfies VideosSelect<true>
+
+/**
+ * Populate map for a full Page read at depth 2. The backend rejects depth > 1
+ * reads without `populate`; without the author/video entries the byline and
+ * featured video come back with their fields stripped. Inline content
+ * relationships to other collections (meditations, lectures, …) intentionally
+ * aren't populated here — the RichText renderer degrades those gracefully.
+ */
+const PAGE_POPULATE = {
+  images: IMAGE_POPULATE.images,
+  authors: AUTHOR_POPULATE,
+  videos: VIDEO_POPULATE,
+}
 
 /** Global config fields — all are `pages` relationships the layout + home page need. */
 const WEB_CONFIG_SELECT = {
@@ -91,8 +128,8 @@ const WEB_CONFIG_SELECT = {
  * the backend rejects depth > 1 reads without `populate`.
  */
 const WEB_CONFIG_POPULATE = {
+  ...PAGE_POPULATE,
   pages: PAGE_SELECT,
-  images: IMAGE_POPULATE.images,
 }
 
 /** Minimal fields for page list items (getPagesByTags → PageListItem). */
@@ -138,7 +175,7 @@ const COLLECTION_BY_ID_CONFIG = {
     cachePrefix: 'page',
     ttl: CacheTTL.PAGE,
     select: PAGE_SELECT,
-    populate: IMAGE_POPULATE,
+    populate: PAGE_POPULATE,
   },
   meditations: {
     cachePrefix: 'meditation',
@@ -187,7 +224,7 @@ export async function getPageBySlug(
         limit: 1,
         depth: 2,
         select: PAGE_SELECT,
-        populate: IMAGE_POPULATE,
+        populate: PAGE_POPULATE,
       })
 
       if (!result?.docs?.length) {

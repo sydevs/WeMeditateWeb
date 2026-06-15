@@ -6,9 +6,18 @@
  * functional units.
  */
 
+// Alert
+export { Alert } from './Alert'
+export type { AlertProps, AlertVariant } from './Alert'
+
 // Author
 export { Author } from './Author'
 export type { AuthorProps } from './Author'
+
+// VideoPlayer (shared HLS player)
+export { VideoPlayer } from './VideoPlayer'
+export type { VideoPlayerProps } from './VideoPlayer'
+export type { VideoSubtitleCue } from './VideoPlayer'
 
 // Content
 export { Column } from './Column'

@@ -14,22 +14,9 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation, Image } from '../../server/cms-types'
+import type { Meditation } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
-
-/**
- * Type guard to check if a relationship field is a populated object (not just an ID)
- */
-function isPopulatedImage(value: number | Image | null | undefined): value is Image {
-  return typeof value === 'object' && value !== null && 'url' in value
-}
-
-/**
- * Safely get URL from an image relationship field that may be populated or just an ID
- */
-function getImageUrl(image: number | Image | null | undefined): string | undefined {
-  return isPopulatedImage(image) ? (image.url ?? undefined) : undefined
-}
+import { populatedImageUrl } from '../../lib/cms-relationships'
 
 export interface MeditationTemplateProps {
   /**
@@ -127,7 +114,7 @@ export function MeditationTemplate({
 
   // Fallback: use thumbnail as single frame if no frames available
   if (frames.length === 0) {
-    const thumbnailUrl = getImageUrl(meditation.thumbnail)
+    const thumbnailUrl = populatedImageUrl(meditation.thumbnail)
 
     if (thumbnailUrl) {
       frames = [
@@ -166,7 +153,7 @@ export function MeditationTemplate({
           title: meditation.title || 'Untitled Meditation',
           credit: '',
           creditURL: '',
-          thumbnailURL: getImageUrl(meditation.thumbnail) || '',
+          thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
           duration:
             typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
               ? meditation.durationMinutes * 60

@@ -14,12 +14,13 @@ import type {
   Song,
   Image,
   Author,
+  Video,
   SongTag,
   WmWebConfig,
 } from './payload-types'
 
 // Re-export core types from PayloadCMS generated types
-export type { Page, Meditation, Song, Image, Author, SongTag }
+export type { Page, Meditation, Song, Image, Author, Video, SongTag }
 
 /**
  * WebConfig with populated relationships.
@@ -27,8 +28,9 @@ export type { Page, Meditation, Song, Image, Author, SongTag }
  * Since we always use depth: 2 in our queries, all relationship fields
  * are fully populated objects, not just IDs.
  */
-export interface WebConfig extends Omit<WmWebConfig,
-  | 'homePage' | 'featuredPages' | 'classPages' | 'knowledgePages' | 'infoPages'
+export interface WebConfig extends Omit<
+  WmWebConfig,
+  'homePage' | 'featuredPages' | 'classPages' | 'knowledgePages' | 'infoPages'
 > {
   homePage: Page
   featuredPages: Page[]

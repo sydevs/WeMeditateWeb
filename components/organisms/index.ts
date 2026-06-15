@@ -28,7 +28,11 @@ export type { SplashProps } from './Splash'
 
 // HeaderDropdown
 export { HeaderDropdown } from './HeaderDropdown'
-export type { HeaderDropdownProps, HeaderDropdownLink, HeaderDropdownArticle } from './HeaderDropdown'
+export type {
+  HeaderDropdownProps,
+  HeaderDropdownLink,
+  HeaderDropdownArticle,
+} from './HeaderDropdown'
 
 // ContentTextBox
 export { ContentTextBox } from './ContentTextBox'
@@ -59,3 +63,7 @@ export type { MusicLibraryProps, MusicFilter } from './MusicLibrary'
 // MeditationPlayer
 export { MeditationPlayer } from './MeditationPlayer'
 export type { MeditationPlayerProps, Track, MeditationFrame } from './MeditationPlayer'
+
+// RichText
+export { RichText } from './RichText'
+export type { RichTextProps } from './RichText'

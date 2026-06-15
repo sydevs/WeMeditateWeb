@@ -10,7 +10,7 @@ import {
 import { useState } from 'react'
 
 export default {
-  title: 'Molecules / Audio',
+  title: 'Molecules / Media',
 } satisfies StoryDefault
 
 // Sample audio tracks
