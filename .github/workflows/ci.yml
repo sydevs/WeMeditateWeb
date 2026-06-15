@@ -1,0 +1,84 @@
+name: CI
+
+on: pull_request
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read # primary: Cloudflare posts the preview URL in a PR comment
+  issues: read # PR comments are read via the issues/{n}/comments endpoint
+  checks: read # fallback: Cloudflare preview URL in the "Cloudflare Pages" check-run output
+  deployments: read # fallback: a Workers-Builds-style deployment environment_url
+  statuses: read # fallback: a preview URL posted as a commit status
+
+jobs:
+  gate:
+    name: Lint, Typecheck & Unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test:run # unit only — smoke specs are excluded in vitest.config.ts
+
+  # This repo has TWO Cloudflare previews per PR, distinguished by URL host:
+  #   - web   → the Vike app, Workers Builds  (…-wemeditate-web.<acct>.workers.dev)
+  #   - ladle → the design system, Pages       (…wm-design.pages.dev)
+  # One matrix smoke job per target; CF_PROJECT_MATCH selects the right one.
+  smoke:
+    name: Smoke (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: web
+            project: wemeditate-web
+            script: test:smoke
+          - target: ladle
+            project: wm-design
+            script: test:smoke:ladle
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Discover this target's preview URL from the GitHub API (Cloudflare posts
+      # it in the bot PR comment; check-run output / deployments are fallbacks)
+      # and wait until it's reachable. Skips gracefully when the preview isn't
+      # posted (e.g. a forked PR without permissions) so the job stays green.
+      - name: Discover ${{ matrix.target }} preview URL
+        id: preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          CF_PROJECT_MATCH: ${{ matrix.project }}
+        run: node scripts/get-cloudflare-preview-url.mjs
+
+      - name: Smoke ${{ matrix.target }}
+        if: ${{ steps.preview.outputs.preview_url != '' }}
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
+          # Web specs use this to discover a real CMS page/meditation; harmless for ladle.
+          SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
+        run: pnpm ${{ matrix.script }}

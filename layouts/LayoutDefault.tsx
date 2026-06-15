@@ -1,30 +1,13 @@
-import "./fonts.css";
-import "./style.css";
-import "./tailwind.css";
-import { ErrorFallback } from "../components/molecules";
-import { Header } from "../components/organisms/Header";
-import { Footer } from "../components/organisms/Footer";
-import { useData } from "vike-react/useData";
-import { usePageContext } from "vike-react/usePageContext";
-import type { WebConfig } from "../server/cms-types";
-import * as Sentry from "@sentry/react";
-
-/**
- * Validates that all required settings are properly configured
- * @throws {Error} If any required settings are missing or invalid
- */
-function assertSettingsConfigured(settings: WebConfig | undefined): asserts settings is WebConfig {
-  if (!settings) {
-    throw new Error('WebConfig not configured')
-  }
-
-  if (!settings.homePage || !settings.homePage.title || !settings.homePage.slug) {
-    throw new Error('homePage not properly configured in settings')
-  }
-  if (!settings.featuredPages || settings.featuredPages.length === 0) {
-    throw new Error('featuredPages not configured in settings')
-  }
-}
+import './fonts.css'
+import './style.css'
+import './tailwind.css'
+import { ErrorFallback } from '../components/molecules'
+import { Header } from '../components/organisms/Header'
+import { Footer } from '../components/organisms/Footer'
+import { useData } from 'vike-react/useData'
+import { usePageContext } from 'vike-react/usePageContext'
+import type { WebConfig } from '../server/cms-types'
+import * as Sentry from '@sentry/react'
 
 export default function LayoutDefault({ children }: { children: React.ReactNode }) {
   const data = useData<{ settings?: WebConfig }>()
@@ -37,17 +20,23 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
     return <>{children}</>
   }
 
-  // Assert that all required settings are configured
-  assertSettingsConfigured(settings)
+  // Degrade gracefully when the CMS config is incomplete. A missing nav group
+  // must never take the whole page down with a 500 (this used to throw via an
+  // assert that ran outside the error boundary). Render whatever is available;
+  // genuinely-missing pages are still handled as 404s in the data hooks.
+  const featuredPages = settings.featuredPages ?? []
+  const knowledgePages = settings.knowledgePages ?? []
+  const infoPages = settings.infoPages ?? []
+  const classPages = settings.classPages ?? []
 
   // Build navigation items from featured pages
-  const navItems = settings.featuredPages.map((page) => ({
+  const navItems = featuredPages.map((page) => ({
     label: page.title,
     href: '/' + page.slug,
   }))
 
   // Build footer hero links from featured pages
-  const footerHeroLinks = settings.featuredPages.map((page) => ({
+  const footerHeroLinks = featuredPages.map((page) => ({
     text: page.title,
     href: '/' + page.slug,
   }))
@@ -55,20 +44,20 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
   // Build footer sections from page groups
   const footerSections: { title: string; links: { text: string; href: string }[] }[] = []
 
-  if (settings.knowledgePages.length > 0) {
+  if (knowledgePages.length > 0) {
     footerSections.push({
-      title: settings.knowledgePages[0].title,
-      links: settings.knowledgePages.map((page) => ({
+      title: knowledgePages[0].title,
+      links: knowledgePages.map((page) => ({
         text: page.title,
         href: '/' + page.slug,
       })),
     })
   }
 
-  if (settings.infoPages.length > 0) {
+  if (infoPages.length > 0) {
     footerSections.push({
       title: 'Info',
-      links: settings.infoPages.map((page) => ({
+      links: infoPages.map((page) => ({
         text: page.title,
         href: '/' + page.slug,
       })),
@@ -96,9 +85,9 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
     <div className="flex flex-col min-h-screen">
       <div className="max-w-7xl mx-auto px-6 w-full">
         <Header
+          actionLinkHref={classPages[0] ? '/' + classPages[0].slug : '/'}
+          actionLinkText={classPages[0]?.title}
           logoHref="/"
-          actionLinkText={settings.classPages[0]?.title}
-          actionLinkHref={settings.classPages[0] ? '/' + settings.classPages[0].slug : '/'}
           navItems={navItems}
         />
       </div>
@@ -114,7 +103,7 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
               />
             )}
             onError={(error, componentStack, eventId) => {
-              console.error('[ErrorBoundary] Caught error:', { error, eventId });
+              console.error('[ErrorBoundary] Caught error:', { error, eventId })
             }}
           >
             {children}
@@ -123,14 +112,14 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
       </main>
 
       <Footer
+        copyrightText={`© WeMeditate, ${new Date().getFullYear()}`}
+        currentLanguage={locale as any}
         heroLinks={footerHeroLinks}
+        languages={languages}
+        locale={locale}
         sections={footerSections}
         socialLinks={socialLinks}
-        currentLanguage={locale as any}
-        languages={languages}
-        copyrightText={`© WeMeditate, ${new Date().getFullYear()}`}
-        locale={locale}
       />
     </div>
-  );
+  )
 }

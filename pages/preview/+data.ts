@@ -27,7 +27,9 @@ export type PreviewPageData = FullPreviewData
 
 export async function data(pageContext: PageContextServer): Promise<PreviewPageData> {
   // Extract URL parameters
-  const { search: { collection: collectionParam, id: idParam, secret: previewSecret } } = pageContext.urlParsed
+  const {
+    search: { collection: collectionParam, id: idParam, secret: previewSecret },
+  } = pageContext.urlParsed
   const { locale } = pageContext
 
   // Preview secret is required — the CMS includes it in the iframe URL
@@ -46,15 +48,18 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
 
   // Validate collection type with Zod
   let collection: CollectionType
+
   try {
     collection = collectionSchema.parse(collectionParam)
   } catch (error) {
     const supported = collectionSchema.options.join(', ')
+
     throw render(404, `Invalid collection: "${collectionParam}". Supported types: ${supported}`)
   }
 
   // Validate ID parameter with Zod (numeric ID)
   let id: string
+
   try {
     id = idSchema.parse(idParam)
   } catch (error) {
@@ -62,7 +67,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   }
 
   // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
-  const settings = await getWebConfig()
+  const settings = await getWebConfig({ locale })
 
   // Fetch content using the generic document fetcher
   // Always bypass cache in preview mode to ensure fresh data

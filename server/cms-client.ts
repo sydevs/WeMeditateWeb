@@ -19,11 +19,9 @@
  * detectErrorType() in error-utils.ts via message pattern matching.
  */
 
-import {
-  createPayloadClient,
-  validateSDKResponse,
-} from './payload-client'
+import { createPayloadClient, validateSDKResponse } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import * as Sentry from '@sentry/react'
 import type {
   Config,
   PagesSelect,
@@ -32,14 +30,9 @@ import type {
   AlbumsSelect,
   SongTagsSelect,
   ImagesSelect,
+  WmWebConfigSelect,
 } from './payload-types'
-import type {
-  Locale,
-  Page,
-  Song,
-  WebConfig,
-  PageListItem,
-} from './cms-types'
+import type { Locale, Page, Song, WebConfig, PageListItem } from './cms-types'
 
 // ============================================================================
 // Common Options Interfaces
@@ -82,6 +75,25 @@ const PAGE_SELECT = {
   _status: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
+
+/** Global config fields — all are `pages` relationships the layout + home page need. */
+const WEB_CONFIG_SELECT = {
+  homePage: true,
+  featuredPages: true,
+  classPages: true,
+  knowledgePages: true,
+  infoPages: true,
+} satisfies WmWebConfigSelect<true>
+
+/**
+ * Populate the global's page relationships at depth 2 with the fields the layout
+ * (title/slug for nav) and the home page (content/meta) render. Required because
+ * the backend rejects depth > 1 reads without `populate`.
+ */
+const WEB_CONFIG_POPULATE = {
+  pages: PAGE_SELECT,
+  images: IMAGE_POPULATE.images,
+}
 
 /** Minimal fields for page list items (getPagesByTags → PageListItem). */
 const PAGE_LIST_SELECT = {
@@ -150,9 +162,11 @@ type FindByIdCollection = keyof typeof COLLECTION_BY_ID_CONFIG
  * @param options.locale - The locale to retrieve the page in
  * @returns The page data or null if not found
  */
-export async function getPageBySlug(options: LocalizedQueryOptions & {
-  slug: string
-}): Promise<Page | null> {
+export async function getPageBySlug(
+  options: LocalizedQueryOptions & {
+    slug: string
+  },
+): Promise<Page | null> {
   const cacheKey = generateCacheKey('page', {
     slug: options.slug,
     locale: options.locale,
@@ -181,9 +195,11 @@ export async function getPageBySlug(options: LocalizedQueryOptions & {
       }
 
       const page = result.docs[0] as Page
+
       if (page._status === 'draft') {
         return null
       }
+
       return page
     },
   })
@@ -209,7 +225,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
     id: string
     preview?: boolean
     previewSecret?: string
-  }
+  },
 ): Promise<Config['collections'][C] | null> {
   const config = COLLECTION_BY_ID_CONFIG[options.collection]
   const isPreview = options.preview === true
@@ -243,9 +259,11 @@ export async function getDocumentById<C extends FindByIdCollection>(
       })
 
       const result = found as Config['collections'][C] | null
+
       if (!result) return null
       // Public requests should never render drafts
       if (!isPreview && result._status === 'draft') return null
+
       return result
     },
   })
@@ -256,15 +274,43 @@ export async function getDocumentById<C extends FindByIdCollection>(
 // ============================================================================
 
 /**
+ * Split a page-relationship array into published, linkable pages (populated
+ * objects with a slug) and unresolved references — relationships returned as a
+ * bare ID (believed unpublished/trashed: a published page populates, an
+ * unpublished one comes back as just its id) or an object missing a slug.
+ */
+export function partitionPublishedPages(pages: (number | Page)[] | null | undefined): {
+  published: Page[]
+  unresolved: string[]
+} {
+  const published: Page[] = []
+  const unresolved: string[] = []
+
+  for (const page of pages ?? []) {
+    if (typeof page === 'object' && page && typeof page.slug === 'string' && page.slug.length > 0) {
+      published.push(page)
+    } else {
+      unresolved.push(typeof page === 'object' && page ? `id:${page.id}(no-slug)` : `id:${page}`)
+    }
+  }
+
+  return { published, unresolved }
+}
+
+/**
  * Retrieves the WebConfig (site configuration).
  *
  * This is a singleton global configuration that contains references to important
  * pages throughout the site (home page, featured pages, class pages, etc.).
  *
+ * Unresolved page references (believed unpublished) are dropped so the layout
+ * never renders dead `/undefined` links, and reported to Sentry so the
+ * underlying CMS data gap stays visible.
+ *
  * @returns The web configuration with populated page relationships
  */
-export async function getWebConfig(): Promise<WebConfig> {
-  const cacheKey = generateCacheKey('web-config', {})
+export async function getWebConfig(options: { locale?: Locale } = {}): Promise<WebConfig> {
+  const cacheKey = generateCacheKey('web-config', { locale: options.locale })
 
   return withCache({
     cacheKey,
@@ -275,16 +321,47 @@ export async function getWebConfig(): Promise<WebConfig> {
       const result = await client.findGlobal({
         slug: 'wm-web-config',
         depth: 2,
+        locale: options.locale,
+        select: WEB_CONFIG_SELECT,
+        populate: WEB_CONFIG_POPULATE,
       })
 
       const validated = validateSDKResponse(result, 'WmWebConfig')
 
-      // Normalize nullable arrays to empty arrays for consumer convenience
+      // Drop unresolved (believed-unpublished) page references so the layout
+      // never renders dead `/undefined` links — graceful fallback.
+      const featured = partitionPublishedPages(validated.featuredPages)
+      const classPages = partitionPublishedPages(validated.classPages)
+      const knowledgePages = partitionPublishedPages(validated.knowledgePages)
+      const infoPages = partitionPublishedPages(validated.infoPages)
+
+      const unresolved = [
+        ...(typeof validated.homePage === 'number' ? [`homePage id:${validated.homePage}`] : []),
+        ...featured.unresolved.map((u) => `featuredPages ${u}`),
+        ...classPages.unresolved.map((u) => `classPages ${u}`),
+        ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
+        ...infoPages.unresolved.map((u) => `infoPages ${u}`),
+      ]
+
+      // Surface the data gap to Sentry (a published page populates; an
+      // unpublished one returns as a bare id) without breaking the page.
+      if (unresolved.length > 0) {
+        console.warn(
+          `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
+        )
+        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
+          level: 'warning',
+          tags: { source: 'getWebConfig' },
+          extra: { unresolved, locale: options.locale ?? null },
+        })
+      }
+
       return {
         ...validated,
-        classPages: (validated.classPages ?? []) as Page[],
-        knowledgePages: (validated.knowledgePages ?? []) as Page[],
-        infoPages: (validated.infoPages ?? []) as Page[],
+        featuredPages: featured.published,
+        classPages: classPages.published,
+        knowledgePages: knowledgePages.published,
+        infoPages: infoPages.published,
       } as WebConfig
     },
   })
@@ -303,10 +380,12 @@ export async function getWebConfig(): Promise<WebConfig> {
  * @param options.limit - Maximum number of pages to return (default: 100)
  * @returns Array of page list items
  */
-export async function getPagesByTags(options: LocalizedQueryOptions & {
-  tags: string[]
-  limit?: number
-}): Promise<PageListItem[]> {
+export async function getPagesByTags(
+  options: LocalizedQueryOptions & {
+    tags: string[]
+    limit?: number
+  },
+): Promise<PageListItem[]> {
   const limit = options.limit || 100
 
   const cacheKey = generateCacheKey('pages-by-tags', {
@@ -351,10 +430,12 @@ export async function getPagesByTags(options: LocalizedQueryOptions & {
  * @param options.limit - Maximum number of songs to return (default: 100)
  * @returns Array of song items
  */
-export async function getSongsByTags(options: LocalizedQueryOptions & {
-  tagIds: string[]
-  limit?: number
-}): Promise<Song[]> {
+export async function getSongsByTags(
+  options: LocalizedQueryOptions & {
+    tagIds: string[]
+    limit?: number
+  },
+): Promise<Song[]> {
   const limit = options.limit || 100
 
   const cacheKey = generateCacheKey('songs-by-tags', {
@@ -380,6 +461,7 @@ export async function getSongsByTags(options: LocalizedQueryOptions & {
       })
 
       if (!result?.docs) return []
+
       return result.docs as Song[]
     },
   })

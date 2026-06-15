@@ -20,6 +20,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationEm
 
   // Validate ID parameter - returns 404 for invalid IDs
   let id: string
+
   try {
     id = idSchema.parse(routeParams.id)
   } catch (error) {
@@ -28,7 +29,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationEm
 
   // Fetch global settings and meditation in parallel
   const [settings, meditation] = await Promise.all([
-    getWebConfig(),
+    getWebConfig({ locale }),
     getDocumentById({ collection: 'meditations', id, locale }),
   ])
 

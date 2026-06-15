@@ -20,6 +20,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
 
   // Validate slug parameter - returns 404 for invalid slugs
   let slug: string
+
   try {
     slug = slugSchema.parse(routeParams.slug)
   } catch (error) {
@@ -29,16 +30,18 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   // Homepage (slug "index") uses homePage from WebConfig directly.
   // The onBeforeRoute hook converts "/" to "/index", so this is the homepage path.
   if (slug === 'index') {
-    const settings = await getWebConfig()
+    const settings = await getWebConfig({ locale })
+
     if (!settings.homePage) {
       throw render(404, 'Homepage not configured.')
     }
+
     return { page: settings.homePage, locale, slug, settings }
   }
 
   // Non-homepage: fetch WebConfig and page by slug in parallel
   const [settings, page] = await Promise.all([
-    getWebConfig(),
+    getWebConfig({ locale }),
     getPageBySlug({ slug, locale }),
   ])
 
