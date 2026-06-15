@@ -3,7 +3,7 @@ import { RichText } from './RichText'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Organisms / Content',
+  title: 'Organisms',
 } satisfies StoryDefault
 
 // --- Lexical node builders (mirror the serialized shape PayloadCMS emits) ---
