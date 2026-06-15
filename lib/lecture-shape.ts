@@ -58,8 +58,13 @@ export interface ResolvedLecture {
   subtitles: LectureSubtitleTrack[]
 }
 
+/** True for a non-empty string — the shape every URL/text field must have. */
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
 function asString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.length > 0 ? value : undefined
+  return isNonEmptyString(value) ? value : undefined
 }
 
 function asFiniteNumber(value: unknown): number | undefined {
@@ -108,13 +113,13 @@ export function mergeSubtitles(
   const byLocale = new Map<string, string>()
 
   for (const [locale, url] of Object.entries(parentSubtitles ?? {})) {
-    if (typeof url === 'string' && url.length > 0) {
+    if (isNonEmptyString(url)) {
       byLocale.set(locale, url)
     }
   }
 
   for (const override of clipOverrides ?? []) {
-    if (override && typeof override.url === 'string' && override.url.length > 0) {
+    if (override && isNonEmptyString(override.url)) {
       byLocale.set(override.locale, override.url)
     }
   }
