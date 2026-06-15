@@ -7,10 +7,7 @@ import { PageData } from './+data'
 import { PageTemplate } from '../../components/templates'
 
 export function Page() {
-  const { page, locale, slug } = useData<PageData>()
-
-  // TODO: Remove debug logging before production
-  console.log('[Page Debug]', { locale, slug, id: page.id })
+  const { page } = useData<PageData>()
 
   return (
     <div className="min-h-screen py-12 px-4">
