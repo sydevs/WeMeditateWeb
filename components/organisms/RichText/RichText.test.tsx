@@ -474,6 +474,43 @@ describe('<RichText>', () => {
     expect(html).toContain('imagedelivery.net/acct/img/')
   })
 
+  it('renders a content-index block from server-resolved items', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('content-index', {
+            type: 'pages',
+            limit: 10,
+            resolvedItems: [
+              {
+                id: 2,
+                title: 'About Sahaja',
+                href: '/about',
+                thumbnailSrc: 'https://imagedelivery.net/a/b/',
+                aspectRatio: 'video',
+              },
+            ],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('About Sahaja')
+    expect(html).toContain('href="/about"')
+  })
+
+  it('renders nothing for a content-index block with no resolved items', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('content-index', { type: 'lectures', limit: 100, resolvedItems: [] }),
+        ])}
+      />,
+    )
+
+    expect(html).not.toContain('href=')
+  })
+
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
     // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(

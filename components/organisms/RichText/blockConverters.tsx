@@ -21,6 +21,7 @@ import {
   showcaseItems,
   subtleSystemItems,
   type ButtonBlockFields,
+  type ContentIndexBlockFields,
   type ImageGalleryBlockFields,
   type LayoutBlockFields,
   type QuoteBlockFields,
@@ -203,5 +204,18 @@ export const blockConverters: BlockConverters = {
         />
       </div>
     )
+  },
+
+  // content-index → grid of the live list resolved server-side in `+data`
+  // (see server/content-index.ts). Empty/unresolvable lists render nothing.
+  'content-index': ({ node }) => {
+    const fields = node.fields as unknown as ContentIndexBlockFields
+    const items = fields.resolvedItems ?? []
+
+    if (items.length === 0) {
+      return null
+    }
+
+    return <ContentGrid className="not-prose my-8" items={items} />
   },
 }
