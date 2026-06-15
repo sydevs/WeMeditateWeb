@@ -67,3 +67,8 @@ export type { MeditationPlayerProps, Track, MeditationFrame } from './Meditation
 // RichText
 export { RichText } from './RichText'
 export type { RichTextProps } from './RichText'
+
+// VideoPlayer
+export { VideoPlayer } from './VideoPlayer'
+export type { VideoPlayerProps } from './VideoPlayer'
+export type { VideoSubtitleCue } from './VideoPlayer'

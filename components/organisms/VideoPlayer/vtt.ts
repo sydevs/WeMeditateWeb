@@ -1,0 +1,52 @@
+/**
+ * WebVTT adapter for the Video collection's inline subtitle cues.
+ *
+ * The `Video` collection stores subtitles as `{ content, startTimeMs, endTimeMs }`
+ * cues. Browsers need a WebVTT track, so we serialize the cues to a VTT string
+ * (turned into a blob `<track>` by VideoPlayer). Kept pure for unit testing.
+ *
+ * Ticket 4 (Lectures) adds a second adapter for per-locale .vtt files; both feed
+ * the same VideoPlayer.
+ */
+
+export interface VideoSubtitleCue {
+  content: string
+  startTimeMs: number
+  endTimeMs: number
+}
+
+const pad = (value: number, length = 2): string => String(value).padStart(length, '0')
+
+/** Format a millisecond offset as a WebVTT timestamp (`HH:MM:SS.mmm`). */
+export function msToVttTimestamp(ms: number): string {
+  const total = Math.max(0, Math.floor(ms))
+  const hours = Math.floor(total / 3_600_000)
+  const minutes = Math.floor((total % 3_600_000) / 60_000)
+  const seconds = Math.floor((total % 60_000) / 1000)
+  const millis = total % 1000
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(millis, 3)}`
+}
+
+/**
+ * Serialize inline cues to a WebVTT document. Cues with empty content or a
+ * non-positive duration are dropped; cue text is collapsed so a blank line
+ * inside it can't prematurely terminate the cue.
+ */
+export function cuesToVtt(cues: VideoSubtitleCue[]): string {
+  const blocks = cues
+    .filter(
+      (cue) =>
+        cue &&
+        typeof cue.content === 'string' &&
+        cue.content.trim().length > 0 &&
+        cue.endTimeMs > cue.startTimeMs,
+    )
+    .map((cue) => {
+      const text = cue.content.replace(/\r?\n\s*\r?\n+/g, '\n').trim()
+
+      return `${msToVttTimestamp(cue.startTimeMs)} --> ${msToVttTimestamp(cue.endTimeMs)}\n${text}`
+    })
+
+  return blocks.length ? `WEBVTT\n\n${blocks.join('\n\n')}\n` : 'WEBVTT\n'
+}
