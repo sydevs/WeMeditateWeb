@@ -322,6 +322,14 @@ dist/
 - Compatibility flags: `nodejs_compat`
 - KV namespace: `WEMEDITATE_CACHE` (for edge caching)
 
+### Keeping client-only heavy deps out of the Worker bundle
+
+Browser-only libraries (e.g. `hls.js`, `@mapbox/search-js-react`) must be loaded via **`ClientOnly` + `React.lazy` in a barrel**, not just a dynamic `import()` inside an effect. Vike's SSR build still bundles dynamically-imported modules into `dist/server`, so an in-effect `import('hls.js')` left the ~1.1 MB library in the Worker even though it never ran server-side.
+
+The pattern (see [components/molecules/LocationSearch/index.tsx](components/molecules/LocationSearch/index.tsx) and [components/molecules/VideoPlayer/index.tsx](components/molecules/VideoPlayer/index.tsx)): the directory `index.tsx` re-exports a wrapper that renders `<ClientOnly fallback={…}><LazyImpl/></ClientOnly>`, where `LazyImpl = React.lazy(() => import('./Impl'))`. `ClientOnly` removes the children server-side entirely, so the heavy impl (and its deps) never enter the SSR graph.
+
+Verify after changes: `grep -rl <lib-internal-symbol> dist/server` should find nothing (the lib should appear only as a code-split chunk under `dist/client`).
+
 ## File Structure (Key Directories)
 
 ```
@@ -594,6 +602,8 @@ it('emits a responsive srcSet for Cloudflare URLs', () => {
 ```
 
 See [components/atoms/Image/Image.test.tsx](components/atoms/Image/Image.test.tsx) for a full example. Note that `useState`/`useMemo` work under SSR but `useEffect` does not run — plan assertions around the first-render state.
+
+**Attribute casing caveat:** React 19 lowercases _some_ attributes (`srcSet` → `srcset`) but preserves others as-authored (`playsInline` stays `playsInline`). Don't assume one rule — when an attribute assertion fails, probe the actual `renderToStaticMarkup` output (e.g. a throwaway test that `console.log`s the HTML) and match what React really emits.
 
 **What to test:**
 - ✅ Pure utilities (logic, parsing, transforms) — fast and high-value
