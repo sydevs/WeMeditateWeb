@@ -13,6 +13,8 @@
  * link text unwrapped instead of emitting a dead `/undefined`.
  */
 
+import { isPopulated } from './cms-relationships'
+
 /** PayloadCMS collection slugs that can be referenced from rich text. */
 export type RelationTo = 'pages' | 'meditations' | 'lectures' | 'albums' | 'app-cards' | 'forms'
 
@@ -27,7 +29,7 @@ export function refId(value: RelationValue | null | undefined): string | null {
   if (typeof value === 'number' || typeof value === 'string') {
     return String(value)
   }
-  if (value && typeof value === 'object' && value.id != null) {
+  if (isPopulated(value) && value.id != null) {
     return String(value.id)
   }
 
@@ -36,12 +38,7 @@ export function refId(value: RelationValue | null | undefined): string | null {
 
 /** Extract a non-empty slug from a populated relationship value. */
 export function refSlug(value: RelationValue | null | undefined): string | null {
-  if (
-    value &&
-    typeof value === 'object' &&
-    typeof value.slug === 'string' &&
-    value.slug.length > 0
-  ) {
+  if (isPopulated(value) && typeof value.slug === 'string' && value.slug.length > 0) {
     return value.slug
   }
 
