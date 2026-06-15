@@ -50,16 +50,31 @@ export function Duration({
 
   // Format duration text
   const formatDuration = () => {
+    // Sub-minute durations would otherwise floor to "0 min" — show seconds.
+    if (totalMinutes === 0 && remainingSeconds > 0) {
+      if (format === 'minimal') {
+        return `${remainingSeconds}s`
+      }
+      if (format === 'long') {
+        return `${remainingSeconds} ${remainingSeconds === 1 ? 'second' : 'seconds'}`
+      }
+
+      return `${remainingSeconds} sec`
+    }
+
     if (format === 'minimal') {
       return `${totalMinutes}m`
     }
 
     if (format === 'long') {
       const minuteText = totalMinutes === 1 ? 'minute' : 'minutes'
+
       if (remainingSeconds > 0) {
         const secondText = remainingSeconds === 1 ? 'second' : 'seconds'
+
         return `${totalMinutes} ${minuteText}, ${remainingSeconds} ${secondText}`
       }
+
       return `${totalMinutes} ${minuteText}`
     }
 
@@ -71,16 +86,12 @@ export function Duration({
 
   const variantStyles = {
     default: 'text-sm text-gray-700',
-    badge:
-      'px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
+    badge: 'px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
     inline: 'text-sm text-gray-600',
   }
 
   return (
-    <span
-      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
-      {...props}
-    >
+    <span className={`${baseStyles} ${variantStyles[variant]} ${className}`} {...props}>
       {formatDuration()}
     </span>
   )

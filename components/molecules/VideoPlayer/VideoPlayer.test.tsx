@@ -40,9 +40,11 @@ describe('<VideoPlayer>', () => {
     expect(renderToStaticMarkup(<VideoPlayer hlsUrl="" />)).toBe('')
   })
 
-  // External per-locale .vtt tracks (Lecture shape) render directly from their
-  // URLs (no Blob), so — unlike inline cues — they ARE present in SSR markup.
-  it('renders per-locale subtitle tracks, defaulting to the current locale', () => {
+  // Per-locale .vtt tracks (Lecture shape) are fetched and re-served as
+  // same-origin blobs in an effect (to fix text/plain content-types and avoid
+  // forcing crossOrigin), so — like inline cues — they are NOT in SSR markup,
+  // and the video never opts into CORS (which would break Safari native HLS).
+  it('does not emit external subtitle tracks or crossorigin during SSR', () => {
     const html = renderToStaticMarkup(
       <VideoPlayer
         defaultSubtitleLang="fr"
@@ -54,19 +56,8 @@ describe('<VideoPlayer>', () => {
       />,
     )
 
-    expect(html).toContain('src="https://cdn.example.com/en.vtt"')
-    expect(html).toContain('src="https://cdn.example.com/fr.vtt"')
-    // React 19 SSR preserves srcLang casing (but lowercases crossOrigin below).
-    expect(html).toContain('srcLang="fr"')
-    // The cross-origin tracks require the video to opt into CORS.
-    expect(html).toContain('crossorigin="anonymous"')
-    // Exactly one track is the default (the current-locale one).
-    expect(html.match(/<track[^>]*\bdefault\b/g)).toHaveLength(1)
-  })
-
-  it('omits crossorigin when there are no external subtitle tracks', () => {
-    const html = renderToStaticMarkup(<VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" />)
-
+    expect(html).not.toContain('<track')
     expect(html).not.toContain('crossorigin')
+    expect(html).not.toContain('en.vtt')
   })
 })
