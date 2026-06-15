@@ -132,8 +132,8 @@ export function ContentTextBox({
           {/* Description */}
           <p className="text-lg font-light text-gray-700">{description}</p>
 
-          {/* CTA Button (optional — omitted when there is no CTA text) */}
-          {ctaText && (
+          {/* CTA Button (optional — needs both text and a destination) */}
+          {ctaText && ctaHref && (
             <div>
               <Button className="mt-1" href={ctaHref} size="lg" variant="outline">
                 {ctaText}

@@ -85,11 +85,15 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     throw render(404, `${collection} content not found.`)
   }
 
-  // Resolve content-index blocks so pages render their live lists in preview.
-  if (collection === 'pages') {
-    const pageData = data as { content?: unknown }
+  // Resolve content-index blocks so any content-bearing collection (currently
+  // pages) renders its live lists in preview too.
+  if (data && typeof data === 'object' && 'content' in data) {
+    const withContent = data as { content?: unknown }
 
-    pageData.content = await resolveContentIndexBlocks(pageData.content, { locale, preview: true })
+    withContent.content = await resolveContentIndexBlocks(withContent.content, {
+      locale,
+      preview: true,
+    })
   }
 
   // Return discriminated union based on collection type
