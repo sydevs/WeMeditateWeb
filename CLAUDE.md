@@ -10,6 +10,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **@STORYBOOK.md** - Component story writing patterns, utility components, section organization, and Ladle configuration
 - **@MCP_USAGE.md** - MCP server best practices for Puppeteer, Serena, and Cloudflare Docs
 
+## Modular Rules & Docs
+
+Scoped guidance lives in `.claude/rules/` (directives to follow) and `.claude/docs/` (reference), each declaring where it applies via `globs` frontmatter. Read the relevant file when working in its scope:
+
+**Rules** (`.claude/rules/`):
+- [cms-api-reads.md](.claude/rules/cms-api-reads.md) — `server/**`: PayloadCMS reads must send `select` (+ `populate` at depth > 1) and `locale`; filter unpublished (bare-ID) relationships and warn to Sentry instead of rendering dead links.
+- [debugging.md](.claude/rules/debugging.md) — repo-wide: confirm behavior with real data (curl the deploy, query the CMS, read the request log) before concluding.
+
+**Docs** (`.claude/docs/`):
+- [cloudflare-previews-ci.md](.claude/docs/cloudflare-previews-ci.md) — `.github/**`, `scripts/**`, `tests/smoke/**`: CI workflow, the two Cloudflare previews (web Worker vs Ladle Pages), and the preview smoke tests.
+- [local-environment.md](.claude/docs/local-environment.md) — local CMS key gotchas (403 = stale key vs 400 = bad query) and `getWebConfig` caching.
+
 ## Project Overview
 
 WeMeditateWeb is a server-side rendered web application built with **Vike** (full-stack meta-framework), **React 19**, and **TypeScript**, deployed to **Cloudflare Workers**. It fetches content from a PayloadCMS backend via REST API and implements sophisticated edge caching using Cloudflare KV.
