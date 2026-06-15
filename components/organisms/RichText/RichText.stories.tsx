@@ -115,6 +115,37 @@ const unknownBlock = (blockType: string) => ({
   version: 2,
 })
 
+// --- Custom Page block builders ---
+
+const block = (blockType: string, fields: Record<string, unknown>) => ({
+  type: 'block',
+  fields: { blockType, id: blockType, ...fields },
+  format: '',
+  version: 2,
+})
+
+const imageRef = (seed: string, alt = 'Image', w = 1200, h = 800) => ({
+  id: seed,
+  url: `https://picsum.photos/seed/${seed}/${w}/${h}`,
+  alt,
+  width: w,
+  height: h,
+})
+
+const pageRef = (id: number, slug: string, title: string, description = '') => ({
+  id,
+  slug,
+  title,
+  meta: { image: imageRef(slug, title), description },
+})
+
+const meditationRef = (id: number, title: string, durationMinutes: number) => ({
+  id,
+  title,
+  durationMinutes,
+  thumbnail: imageRef(`med-${id}`, title, 800, 800),
+})
+
 const editorState = (children: unknown[]) => ({
   root: {
     type: 'root',
@@ -203,14 +234,252 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
+    <StorySection title="Text Box, Quote & Button blocks">
+      <div className="flex flex-col gap-8">
+        <StorySection title="Text box — image left + CTA" variant="subsection">
+          <RichText
+            content={editorState([
+              block('textbox', {
+                imagePosition: 'left',
+                title: 'Get Connected',
+                text: 'Meditation is even stronger when shared. Discover free collective meditations near you.',
+                buttonText: 'Classes near me',
+                buttonUrl: '#',
+                image: imageRef('textbox', 'Group class', 900, 1200),
+              }),
+            ])}
+          />
+        </StorySection>
+        <StorySection title="Quote" variant="subsection">
+          <RichText
+            content={editorState([
+              block('quote', {
+                title: 'On Kundalini',
+                text: 'This Kundalini is the spiritual mother of every individual.',
+                credit: 'Shri Mataji Nirmala Devi',
+                caption: 'Public Program, London, 1978',
+              }),
+            ])}
+          />
+        </StorySection>
+        <StorySection title="Button" variant="subsection">
+          <RichText
+            content={editorState([block('button', { text: 'Join a group meditation', url: '#' })])}
+          />
+        </StorySection>
+      </div>
+    </StorySection>
+
+    <StorySection title="Image Gallery block">
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [
+              imageRef('g1', 'One', 800, 600),
+              imageRef('g2', 'Two', 600, 800),
+              imageRef('g3', 'Three', 1200, 800),
+              imageRef('g4', 'Four', 800, 800),
+            ],
+          }),
+        ])}
+      />
+    </StorySection>
+
+    <StorySection title="Layout block">
+      <div className="flex flex-col gap-8">
+        <StorySection title="Accordion" variant="subsection">
+          <RichText
+            content={editorState([
+              block('layout', {
+                style: 'accordion',
+                title: 'Frequently asked',
+                items: [
+                  { id: 'q1', title: 'How much does it cost?', text: 'Classes are always free.' },
+                  { id: 'q2', title: 'What do I bring?', text: 'Just an open mind.' },
+                ],
+              }),
+            ])}
+          />
+        </StorySection>
+        <StorySection title="Grid" variant="subsection">
+          <RichText
+            content={editorState([
+              block('layout', {
+                style: 'grid',
+                items: [
+                  {
+                    id: 'g1',
+                    title: 'Step 1',
+                    text: 'Sit comfortably.',
+                    image: imageRef('lg1', 'Step 1', 1200, 675),
+                  },
+                  {
+                    id: 'g2',
+                    title: 'Step 2',
+                    text: 'Soften your gaze.',
+                    image: imageRef('lg2', 'Step 2', 1200, 675),
+                  },
+                  {
+                    id: 'g3',
+                    title: 'Step 3',
+                    text: 'Follow the breath.',
+                    image: imageRef('lg3', 'Step 3', 1200, 675),
+                  },
+                ],
+              }),
+            ])}
+          />
+        </StorySection>
+        <StorySection title="Text list" variant="subsection">
+          <RichText
+            content={editorState([
+              block('layout', {
+                style: 'textList',
+                title: 'How to do it',
+                items: [
+                  { id: 's1', title: 'Step 1', text: 'Raise the Kundalini.' },
+                  { id: 's2', title: 'Step 2', text: 'Tie a knot at the top of the head.' },
+                ],
+              }),
+            ])}
+          />
+        </StorySection>
+      </div>
+    </StorySection>
+
+    <StorySection title="Showcase block">
+      <RichText
+        content={editorState([
+          block('showcase', {
+            items: [
+              { relationTo: 'meditations', value: meditationRef(5, 'Morning Meditation', 10) },
+              { relationTo: 'pages', value: pageRef(2, 'about', 'About Sahaja') },
+              { relationTo: 'meditations', value: meditationRef(6, 'Evening Calm', 15) },
+            ],
+          }),
+        ])}
+      />
+    </StorySection>
+
+    <StorySection title="Splash block">
+      <RichText
+        content={editorState([
+          block('splash', {
+            layout: 'default',
+            images: [imageRef('splash', 'Splash background', 1600, 900)],
+            title: 'Meditate for better mental health',
+            subtitle: 'Making a start is easier than you think.',
+            actionText: 'Try it now',
+            actionURL: '#',
+          }),
+        ])}
+      />
+    </StorySection>
+
     <StorySection
-      description="Custom blocks (implemented in a later ticket) degrade gracefully — the surrounding content still renders."
+      description="The 12 page relationships map to chakra/channel SVG nodes; hover or tap a node to preview."
+      title="Subtle System block"
+    >
+      <RichText
+        content={editorState([
+          block('subtle-system', {
+            left: pageRef(
+              61,
+              'left-channel',
+              'Left Channel',
+              'The channel of our desires and emotions.',
+            ),
+            right: pageRef(
+              60,
+              'right-channel',
+              'Right Channel',
+              'The channel of action and planning.',
+            ),
+            center: pageRef(
+              62,
+              'central-channel',
+              'Central Channel',
+              'The channel of our evolution.',
+            ),
+            mooladhara: pageRef(
+              52,
+              'mooladhara-chakra',
+              'Mooladhara Chakra',
+              'Innocence and wisdom.',
+            ),
+            swadhistan: pageRef(
+              53,
+              'swadhistan-chakra',
+              'Swadhistan Chakra',
+              'Creativity and pure attention.',
+            ),
+            nabhi: pageRef(54, 'nabhi-chakra', 'Nabhi Chakra', 'Satisfaction and generosity.'),
+            void: pageRef(55, 'void-chakra', 'Void', 'The ocean of illusion.'),
+            anahat: pageRef(56, 'heart-chakra', 'Anahata Chakra', 'Love and security.'),
+            vishuddhi: pageRef(
+              57,
+              'vishuddhi-chakra',
+              'Vishuddhi Chakra',
+              'Communication and collectivity.',
+            ),
+            agnya: pageRef(58, 'agnya-chakra', 'Agnya Chakra', 'Forgiveness and humility.'),
+            sahasrara: pageRef(
+              59,
+              'sahasrara-chakra',
+              'Sahasrara Chakra',
+              'Integration and self-realisation.',
+            ),
+            kundalini: pageRef(63, 'kundalini', 'Kundalini', 'The maternal spiritual energy.'),
+          }),
+        ])}
+      />
+    </StorySection>
+
+    <StorySection
+      description="Resolved server-side in +data from the block's apiEndpoint; shown here with sample items."
+      title="Content Index block"
+    >
+      <RichText
+        content={editorState([
+          block('content-index', {
+            type: 'pages',
+            limit: 3,
+            resolvedItems: [
+              {
+                id: 1,
+                title: 'What is Meditation?',
+                href: '#',
+                thumbnailSrc: 'https://picsum.photos/seed/ci1/800/450',
+                aspectRatio: 'video',
+              },
+              {
+                id: 2,
+                title: 'The Benefits',
+                href: '#',
+                thumbnailSrc: 'https://picsum.photos/seed/ci2/800/450',
+                aspectRatio: 'video',
+              },
+              {
+                id: 3,
+                title: 'Getting Started',
+                href: '#',
+                thumbnailSrc: 'https://picsum.photos/seed/ci3/800/450',
+                aspectRatio: 'video',
+              },
+            ],
+          }),
+        ])}
+      />
+    </StorySection>
+
+    <StorySection
+      description="A block with no registered converter degrades gracefully — the surrounding content still renders (a dev-only alert flags it)."
       title="Unknown blocks"
     >
       <RichText
         content={editorState([
           paragraph([text('Content before the unknown block.')]),
-          unknownBlock('showcase'),
+          unknownBlock('mystery-block'),
           paragraph([text('Content after the unknown block — nothing crashed.')]),
         ])}
       />
