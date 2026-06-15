@@ -16,10 +16,17 @@ const SUBTITLES = [
   { content: 'Let the breath find its own rhythm.', startTimeMs: 8000, endTimeMs: 12000 },
 ]
 
+// Per-locale external WebVTT tracks (the Lecture subtitle shape).
+const SUBTITLE_TRACKS = [
+  { locale: 'en', url: 'https://test-streams.mux.dev/x36xhzz/subtitles/en.vtt' },
+  { locale: 'fr', url: 'https://test-streams.mux.dev/x36xhzz/subtitles/fr.vtt' },
+]
+
 /**
  * VideoPlayer is a client-only HLS player: it prefers native HLS (Safari/iOS)
- * and otherwise lazy-loads hls.js. It supports a poster, inline subtitle cues
- * (rendered as a WebVTT track) and an optional [startTime, stopTime] window.
+ * and otherwise lazy-loads hls.js. It supports a poster, an optional
+ * [startTime, stopTime] window, and subtitles via either inline cues (Video
+ * collection) or per-locale external .vtt URLs (Lectures).
  *
  * Note: these stories import the raw player; in the app it's wrapped in
  * ClientOnly so hls.js stays out of the SSR/Workers bundle.
@@ -54,6 +61,21 @@ export const Default: Story = () => (
     >
       <div className="max-w-2xl">
         <VideoPlayer hlsUrl={HLS_URL} poster={POSTER} startTime={5} stopTime={15} />
+      </div>
+    </StorySection>
+
+    <StorySection
+      description="Lectures supply subtitles as per-locale .vtt URLs; the track matching the current locale is the default. Pick a language from the player's CC menu."
+      title="Per-locale subtitles (Lectures)"
+    >
+      <div className="max-w-2xl">
+        <VideoPlayer
+          defaultSubtitleLang="fr"
+          hlsUrl={HLS_URL}
+          poster={POSTER}
+          subtitleTracks={SUBTITLE_TRACKS}
+          title="Lecture with per-locale subtitles"
+        />
       </div>
     </StorySection>
 

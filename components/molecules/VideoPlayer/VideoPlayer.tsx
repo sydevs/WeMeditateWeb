@@ -15,10 +15,18 @@ export interface VideoPlayerProps {
   startTime?: number | null
   /** Seconds at which to pause playback (end of a playback window). */
   stopTime?: number | null
-  /** Inline subtitle cues from the Video collection. */
+  /** Inline subtitle cues from the Video collection (rendered as a Blob track). */
   subtitles?: VideoSubtitleCue[]
-  /** BCP-47 language tag for the subtitle track. @default 'en' */
+  /** BCP-47 language tag for the inline-cue subtitle track. @default 'en' */
   subtitleLang?: string
+  /**
+   * Per-locale external WebVTT subtitle tracks (Lecture shape). Each renders as
+   * a `<track>` pointing directly at its `.vtt` URL — an alternative to the
+   * inline-cue `subtitles` adapter above.
+   */
+  subtitleTracks?: { locale: string; url: string }[]
+  /** Which `subtitleTracks` locale to mark as the default/active track. */
+  defaultSubtitleLang?: string
   /** Accessible label for the video (not shown visually). */
   title?: string
   className?: string
@@ -31,9 +39,8 @@ export interface VideoPlayerProps {
  * lazy-loads hls.js on the client. The dynamic `import('hls.js')` lives inside
  * an effect so hls.js stays out of the SSR/Workers bundle and out of the
  * initial client chunk. Supports an optional `[startTime, stopTime]` playback
- * window and inline subtitle cues rendered as a WebVTT `<track>`.
- *
- * Ticket 4 (Lectures) reuses this player with a per-locale .vtt subtitle source.
+ * window and subtitles via either inline cues (Video collection) or per-locale
+ * external `.vtt` URLs (Lectures), both rendered as WebVTT `<track>`s.
  */
 export function VideoPlayer({
   hlsUrl,
@@ -42,6 +49,8 @@ export function VideoPlayer({
   stopTime,
   subtitles,
   subtitleLang = 'en',
+  subtitleTracks,
+  defaultSubtitleLang,
   title,
   className,
 }: VideoPlayerProps) {
@@ -138,6 +147,12 @@ export function VideoPlayer({
     return null
   }
 
+  // External per-locale .vtt tracks (Lecture shape) render directly from their
+  // URLs — no Blob needed — but the cross-origin text tracks require the video
+  // element to opt into CORS. (The HLS manifest must then send CORS headers too;
+  // Nirmala Vidya serves HLS + subtitles from the same origin.)
+  const hasUrlTracks = Boolean(subtitleTracks?.length)
+
   return (
     <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
       <video
@@ -146,6 +161,7 @@ export function VideoPlayer({
         playsInline
         aria-label={title}
         className="h-auto w-full"
+        crossOrigin={hasUrlTracks ? 'anonymous' : undefined}
         poster={poster}
         preload="metadata"
       >
@@ -158,6 +174,16 @@ export function VideoPlayer({
             srcLang={subtitleLang}
           />
         ) : null}
+        {subtitleTracks?.map((track) => (
+          <track
+            key={track.locale}
+            default={track.locale === defaultSubtitleLang}
+            kind="subtitles"
+            label={track.locale.toUpperCase()}
+            src={track.url}
+            srcLang={track.locale}
+          />
+        ))}
       </video>
     </div>
   )
