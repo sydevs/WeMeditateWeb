@@ -11,15 +11,22 @@
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Button, Image } from '../../atoms'
-import { HeroQuote, LayoutBlock, TableOfContents } from '../../molecules'
+import { ContentGrid, HeroQuote, LayoutBlock, TableOfContents } from '../../molecules'
 import { ContentTextBox } from '../ContentTextBox'
+import { Splash } from '../Splash'
+import { SubtleSystem } from '../SubtleSystem'
 import {
   galleryImages,
   populatedImage,
+  showcaseItems,
+  subtleSystemItems,
   type ButtonBlockFields,
   type ImageGalleryBlockFields,
   type LayoutBlockFields,
   type QuoteBlockFields,
+  type ShowcaseBlockFields,
+  type SplashBlockFields,
+  type SubtleSystemBlockFields,
   type TableOfContentsBlockFields,
   type TextBoxBlockFields,
 } from '../../../lib/cms-blocks'
@@ -101,7 +108,7 @@ export const blockConverters: BlockConverters = {
     }
 
     return (
-      <div className="not-prose my-8 columns-2 gap-3 sm:columns-3 [&>*]:mb-3">
+      <div className="not-prose my-8 columns-2 gap-3 sm:columns-3 *:mb-3">
         {images.map((img, index) => (
           <Image
             key={`${img.url}-${index}`}
@@ -140,5 +147,61 @@ export const blockConverters: BlockConverters = {
     }
 
     return <TableOfContents headings={fields.headings} title={fields.title ?? undefined} />
+  },
+
+  // showcase → grid of cards from the populated relationships. Unroutable or
+  // thumbnail-less refs are dropped by showcaseItems (no broken/empty cards).
+  showcase: ({ node }) => {
+    const fields = node.fields as unknown as ShowcaseBlockFields
+    const items = showcaseItems(fields.items)
+
+    if (items.length === 0) {
+      return null
+    }
+
+    return <ContentGrid className="not-prose my-8" items={items} />
+  },
+
+  // subtle-system → interactive chart; the 12 page relationships map to SVG
+  // node ids, dropping any unpublished/unroutable page.
+  'subtle-system': ({ node }) => {
+    const fields = node.fields as unknown as SubtleSystemBlockFields
+    const items = subtleSystemItems(fields)
+
+    if (items.length === 0) {
+      return null
+    }
+
+    return (
+      <div className="not-prose my-10">
+        <SubtleSystem items={items} />
+      </div>
+    )
+  },
+
+  // splash → full-bleed Splash. The block's countdown/app/map-search layouts
+  // lack the extra data (target date, store links, search target) to render
+  // their interactive extras, so every layout renders the shared hero with the
+  // available title/subtitle/CTA over the first image.
+  splash: ({ node }) => {
+    const fields = node.fields as unknown as SplashBlockFields
+    const bg = populatedImage(fields.images?.[0])
+
+    if (!bg) {
+      return null
+    }
+
+    return (
+      <div className="not-prose my-10">
+        <Splash
+          backgroundImage={bg.url}
+          ctaHref={fields.actionURL ?? undefined}
+          ctaText={fields.actionText ?? undefined}
+          subtitle={fields.subtitle ?? undefined}
+          theme="dark"
+          title={fields.title ?? undefined}
+        />
+      </div>
+    )
   },
 }

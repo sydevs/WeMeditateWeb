@@ -28,6 +28,8 @@ import type {
   MeditationsSelect,
   SongsSelect,
   AlbumsSelect,
+  AppCardsSelect,
+  LecturesSelect,
   SongTagsSelect,
   ImagesSelect,
   AuthorsSelect,
@@ -100,17 +102,62 @@ const VIDEO_POPULATE = {
   subtitles: true,
 } satisfies VideosSelect<true>
 
+// ----------------------------------------------------------------------------
+// Narrow selects for documents embedded in a Page's `content` (showcase cards,
+// subtle-system nodes, content-index lists). Deliberately omit each collection's
+// `content`/heavy fields so that bumping page reads to depth 3 stays small:
+// collections NOT listed in `populate` come back fully populated (incl. their
+// own `content`), which would balloon both the response and the KV cache entry.
+// ----------------------------------------------------------------------------
+
+/** Narrow page fields for pages embedded in another page's content. */
+const EMBEDDED_PAGE_SELECT = {
+  title: true,
+  slug: true,
+  meta: { image: true, description: true },
+} satisfies PagesSelect<true>
+
+/** Narrow meditation fields for showcase / content-index cards. */
+const EMBEDDED_MEDITATION_SELECT = {
+  title: true,
+  thumbnail: true,
+  durationMinutes: true,
+} satisfies MeditationsSelect<true>
+
+/** Narrow lecture fields (no public web route yet; populated to cap payload size). */
+const EMBEDDED_LECTURE_SELECT = {
+  title: true,
+  thumbnail: true,
+} satisfies LecturesSelect<true>
+
+/** Narrow album fields for showcase cards (artwork thumbnail). */
+const EMBEDDED_ALBUM_SELECT = {
+  title: true,
+  artwork: true,
+} satisfies AlbumsSelect<true>
+
+/** Minimal app-card fields (no public web route; populated to cap payload size). */
+const EMBEDDED_APP_CARD_SELECT = {
+  label: true,
+} satisfies AppCardsSelect<true>
+
 /**
- * Populate map for a full Page read at depth 2. The backend rejects depth > 1
- * reads without `populate`; without the author/video entries the byline and
- * featured video come back with their fields stripped. Inline content
- * relationships to other collections (meditations, lectures, …) intentionally
- * aren't populated here — the RichText renderer degrades those gracefully.
+ * Populate map for a full Page read (depth 3). The backend rejects depth > 1
+ * reads without `populate`; each entry both enables a relationship to populate
+ * AND restricts it to the fields the frontend renders. Beyond the author/video
+ * byline, this covers the collections referenced from `content` blocks
+ * (showcase, subtle-system, image galleries) so they resolve their titles,
+ * slugs and thumbnails instead of degrading.
  */
 const PAGE_POPULATE = {
   images: IMAGE_POPULATE.images,
   authors: AUTHOR_POPULATE,
   videos: VIDEO_POPULATE,
+  pages: EMBEDDED_PAGE_SELECT,
+  meditations: EMBEDDED_MEDITATION_SELECT,
+  lectures: EMBEDDED_LECTURE_SELECT,
+  albums: EMBEDDED_ALBUM_SELECT,
+  'app-cards': EMBEDDED_APP_CARD_SELECT,
 }
 
 /** Global config fields — all are `pages` relationships the layout + home page need. */
@@ -222,7 +269,10 @@ export async function getPageBySlug(
         },
         locale: options.locale,
         limit: 1,
-        depth: 2,
+        // depth 3 so relationships embedded in `content` blocks (showcase,
+        // subtle-system) resolve their own thumbnails; kept small by the narrow
+        // per-collection selects in PAGE_POPULATE.
+        depth: 3,
         select: PAGE_SELECT,
         populate: PAGE_POPULATE,
       })
@@ -285,7 +335,9 @@ export async function getDocumentById<C extends FindByIdCollection>(
         collection: options.collection,
         id: options.id,
         locale: options.locale,
-        depth: 2,
+        // depth 3 to resolve relationships embedded in `content` blocks (see
+        // getPageBySlug); bounded by the per-collection selects in PAGE_POPULATE.
+        depth: 3,
         draft: isPreview,
         // select/populate are validated per-collection at their definitions above
         // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript can't

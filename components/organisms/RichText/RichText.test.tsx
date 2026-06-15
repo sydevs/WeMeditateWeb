@@ -392,6 +392,88 @@ describe('<RichText>', () => {
     expect(html).toContain('Explore below')
   })
 
+  it('renders a showcase block, resolving relationships and dropping unroutable refs', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('showcase', {
+            items: [
+              {
+                relationTo: 'meditations',
+                value: {
+                  id: 5,
+                  title: 'Morning Med',
+                  thumbnail: img({ alt: 't' }),
+                  durationMinutes: 10,
+                },
+              },
+              {
+                relationTo: 'pages',
+                value: { id: 2, slug: 'about', title: 'About Sahaja', meta: { image: img() } },
+              },
+              // Lectures have no public route yet → dropped.
+              { relationTo: 'lectures', value: { id: 3, title: 'A Lecture', thumbnail: img() } },
+            ],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Morning Med')
+    expect(html).toContain('href="/meditations/5"')
+    expect(html).toContain('About Sahaja')
+    expect(html).toContain('href="/about"')
+    expect(html).not.toContain('A Lecture')
+  })
+
+  it('renders a subtle-system block, mapping page relationships to SVG node ids', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('subtle-system', {
+            left: {
+              id: 61,
+              slug: 'left-channel',
+              title: 'Left Channel',
+              meta: { description: 'The left side' },
+            },
+            mooladhara: { id: 52, slug: 'mooladhara-chakra', title: 'Mooladhara Chakra', meta: {} },
+            kundalini: 99, // bare id → dropped
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('data-node-id="channel_left"')
+    expect(html).toContain('Left Channel')
+    expect(html).toContain('href="/left-channel"')
+    expect(html).toContain('data-node-id="chakra_1"')
+    expect(html).toContain('Mooladhara Chakra')
+  })
+
+  it('renders a splash block over the first image with title, subtitle and CTA', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('splash', {
+            layout: 'default',
+            images: [img({ alt: 'bg' })],
+            title: 'Meditate for better health',
+            subtitle: 'Making a start is easier than you think.',
+            actionText: 'Try it now',
+            actionURL: '/start',
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Meditate for better health')
+    expect(html).toContain('Making a start is easier than you think.')
+    expect(html).toContain('Try it now')
+    expect(html).toContain('href="/start"')
+    expect(html).toContain('imagedelivery.net/acct/img/')
+  })
+
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
     // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(
