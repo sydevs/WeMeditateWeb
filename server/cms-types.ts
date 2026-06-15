@@ -16,11 +16,16 @@ import type {
   Author,
   Video,
   SongTag,
+  Lecture,
   WmWebConfig,
 } from './payload-types'
 
 // Re-export core types from PayloadCMS generated types
-export type { Page, Meditation, Song, Image, Author, Video, SongTag }
+export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
+
+// Re-export the normalized Lecture view model and its pieces (pure, shared by
+// the server fetcher and the client live-preview). See lib/lecture-shape.ts.
+export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../lib/lecture-shape'
 
 /**
  * WebConfig with populated relationships.
