@@ -174,6 +174,9 @@ export function VideoPlayer({
             srcLang={subtitleLang}
           />
         ) : null}
+        {/* When defaultSubtitleLang matches none of the tracks, no track is the
+            default and subtitles stay off — preferable to forcing a non-locale
+            language on the viewer. */}
         {subtitleTracks?.map((track) => (
           <track
             key={track.locale}

@@ -365,7 +365,26 @@ export async function getLecture(
 ): Promise<ResolvedLecture | null> {
   const lecture = await getDocumentById({ collection: 'lectures', ...options })
 
-  return lecture ? resolveLecture(lecture) : null
+  if (!lecture) return null
+
+  const resolved = resolveLecture(lecture)
+
+  // A clip with no resolvable HLS source means its parent `fullLecture` came
+  // back unpopulated (a bare id — believed unpublished/trashed) or hasn't synced
+  // its Nirmala Vidya metadata. The template degrades to an error state; surface
+  // the CMS data gap to Sentry (per the cms-api-reads rule) so it stays visible.
+  if (!options.preview && resolved.type === 'clip' && !resolved.hlsUrl) {
+    console.warn(
+      `[getLecture] clip ${resolved.id} has no resolvable HLS source (unpopulated or unsynced parent lecture)`,
+    )
+    Sentry.captureMessage('Lecture clip has an unresolved parent (no HLS source)', {
+      level: 'warning',
+      tags: { source: 'getLecture' },
+      extra: { lectureId: resolved.id, locale: options.locale ?? null },
+    })
+  }
+
+  return resolved
 }
 
 // ============================================================================
