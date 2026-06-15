@@ -195,6 +195,22 @@ export function galleryImages(images: ImageGalleryBlockFields['items']): Populat
   return result
 }
 
+/** Coerce a possibly-null/absent CMS text field to a string. */
+function asText(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+/** First available card thumbnail across the collections' image fields:
+ * `thumbnail` (meditations/lectures), `meta.image` (pages), `album.artwork` (songs). */
+function cardImage(doc: Record<string, unknown>): PopulatedImage | null {
+  const meta = doc.meta as { image?: unknown } | null | undefined
+  const album = doc.album as { artwork?: unknown } | null | undefined
+
+  return (
+    populatedImage(doc.thumbnail) ?? populatedImage(meta?.image) ?? populatedImage(album?.artwork)
+  )
+}
+
 /**
  * Map one populated showcase relationship to a card, or `null` when it can't be
  * linked or has no thumbnail (degrade rather than render a dead/empty card).
@@ -213,23 +229,16 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
     return null
   }
 
-  // Accessor view over the populated doc (the union of card-bearing collections
-  // shares these optional fields; an intersection of the generated interfaces
-  // would collapse to `never`).
-  const doc = value as {
-    id?: number | string
-    title?: string | null
-    thumbnail?: unknown
-    meta?: { image?: unknown } | null
-    durationMinutes?: number | null
-  }
-  // Pages carry their thumbnail on `meta.image`; meditations/lectures on `thumbnail`.
-  const img = populatedImage(doc.thumbnail) ?? populatedImage(doc.meta?.image)
+  const img = cardImage(value as Record<string, unknown>)
 
   if (!img) {
     return null
   }
-  const title = typeof doc.title === 'string' ? doc.title : ''
+  // Accessor view over the populated doc (the union of card-bearing collections
+  // shares these optional fields; an intersection of the generated interfaces
+  // would collapse to `never`).
+  const doc = value as { id?: number | string; title?: unknown; durationMinutes?: number | null }
+  const title = asText(doc.title)
 
   return {
     id: doc.id ?? href,
@@ -307,7 +316,7 @@ export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystem
 
     items.push({
       id: nodeId,
-      title: typeof page.title === 'string' ? page.title : '',
+      title: asText(page.title),
       description: page.meta?.description ?? '',
       linkHref: href,
     })
@@ -331,7 +340,7 @@ export function contentIndexCard(
   if (id == null) {
     return null
   }
-  const title = typeof doc.title === 'string' ? doc.title : ''
+  const title = asText(doc.title)
 
   const href =
     type === 'meditations'
@@ -343,10 +352,7 @@ export function contentIndexCard(
   if (!href) {
     return null
   }
-  const img =
-    populatedImage(doc.thumbnail) ??
-    populatedImage((doc.meta as { image?: unknown } | undefined)?.image) ??
-    populatedImage((doc.album as { artwork?: unknown } | undefined)?.artwork)
+  const img = cardImage(doc)
 
   return {
     id,

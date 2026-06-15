@@ -121,6 +121,25 @@ function collectContentIndexBlocks(node: unknown, out: ContentIndexBlockFields[]
   }
 }
 
+/** Short-circuiting check for at least one `content-index` block (avoids
+ * cloning content that has none — the common case). */
+function hasContentIndexBlock(node: unknown): boolean {
+  if (Array.isArray(node)) {
+    return node.some(hasContentIndexBlock)
+  }
+  if (node && typeof node === 'object') {
+    const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
+
+    if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
+      return true
+    }
+
+    return Object.values(node).some(hasContentIndexBlock)
+  }
+
+  return false
+}
+
 /**
  * Walk a page's lexical `content`, resolve every `content-index` block's list,
  * and return content with `resolvedItems` attached. The input is left
@@ -131,16 +150,11 @@ export async function resolveContentIndexBlocks<T>(
   content: T,
   options: ResolveOptions = {},
 ): Promise<T> {
-  if (!content || typeof content !== 'object') {
+  if (!content || typeof content !== 'object' || !hasContentIndexBlock(content)) {
     return content
   }
-  const found: ContentIndexBlockFields[] = []
-
-  collectContentIndexBlocks(content, found)
-
-  if (found.length === 0) {
-    return content
-  }
+  // Clone so the (cached) input is never mutated; only reached when there is at
+  // least one content-index block to resolve.
   const cloned = structuredClone(content)
   const targets: ContentIndexBlockFields[] = []
 

@@ -45,11 +45,7 @@ function LayoutCard({ item, orientation }: { item: LayoutItem; orientation: 'gri
             alt={img.alt || title}
             aspectRatio="video"
             rounded="rounded"
-            sizes={
-              orientation === 'list'
-                ? '(max-width: 640px) 100vw, 33vw'
-                : '(max-width: 640px) 100vw, 33vw'
-            }
+            sizes="(max-width: 640px) 100vw, 33vw"
             src={img.url}
           />
         </div>

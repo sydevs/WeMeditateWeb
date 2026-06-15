@@ -13,14 +13,14 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   description: string
 
   /**
-   * Call-to-action button text
+   * Call-to-action button text. When omitted, no CTA button is rendered.
    */
-  ctaText: string
+  ctaText?: string
 
   /**
-   * Call-to-action button destination URL
+   * Call-to-action button destination URL (used when `ctaText` is set).
    */
-  ctaHref: string
+  ctaHref?: string
 
   /**
    * Feature image source URL

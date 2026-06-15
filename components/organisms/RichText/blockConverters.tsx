@@ -52,8 +52,8 @@ export const blockConverters: BlockConverters = {
       <ContentTextBox
         align={align}
         className="not-prose my-10"
-        ctaHref={fields.buttonUrl ?? ''}
-        ctaText={fields.buttonText ?? ''}
+        ctaHref={fields.buttonUrl ?? undefined}
+        ctaText={fields.buttonText ?? undefined}
         description={fields.text ?? ''}
         imageAlt={img.alt}
         imageHeight={img.height}
