@@ -15,7 +15,7 @@
 
 import type { ResolvedLecture } from '../../server/cms-types'
 import { VideoPlayer } from '../molecules'
-import { Badge } from '../atoms'
+import { Badge, PageTitle } from '../atoms'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -93,9 +93,7 @@ export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
 
   return (
     <article className="max-w-4xl mx-auto">
-      {lecture.title ? (
-        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-700 mb-6">{lecture.title}</h1>
-      ) : null}
+      {lecture.title ? <PageTitle title={lecture.title} /> : null}
 
       <LecturePlayer className="mb-4" lecture={lecture} locale={locale} />
 
