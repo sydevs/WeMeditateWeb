@@ -163,11 +163,10 @@ export function Image({
 
   const lightbox = useLightbox()
   const triggerId = useId()
-  const lightboxEnabled = Boolean(lightboxGroup) && lightbox !== null
 
   const slide = useMemo(
-    () => (lightboxEnabled ? buildLightboxSlide(src, alt, aspectRatio) : null),
-    [lightboxEnabled, src, alt, aspectRatio],
+    () => (lightbox && lightboxGroup ? buildLightboxSlide(src, alt, aspectRatio) : null),
+    [lightbox, lightboxGroup, src, alt, aspectRatio],
   )
 
   // Register the slide with the ambient provider so the shared overlay can show
@@ -272,7 +271,7 @@ export function Image({
   // With a lightboxGroup and a provider mounted above, render the image as a
   // focusable trigger that opens the shared lightbox at this image's slide;
   // otherwise the container is unchanged (no wrapper element, no click handler).
-  if (lightboxEnabled && lightbox && lightboxGroup) {
+  if (lightbox && lightboxGroup) {
     return (
       <button
         aria-haspopup="dialog"
