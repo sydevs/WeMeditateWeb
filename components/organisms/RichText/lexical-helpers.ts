@@ -54,16 +54,21 @@ export function relationshipLabel(value: unknown): string | null {
   return null
 }
 
-/** Alignment-only Tailwind classes for an upload `<figure>` (the `wide` option
- * falls through to centered). Vertical spacing is applied by the renderer via
- * the shared block spacing, not here. */
+/**
+ * Tailwind classes for an upload `<figure>` given its CMS alignment. Aligned
+ * images take 40% of the column width (left/right float so text wraps, center
+ * is a centered block); `wide` spans the full width. Full width on mobile so
+ * small screens stay readable.
+ */
 export function uploadFigureClass(align?: string | null): string {
   switch (align) {
+    case 'wide':
+      return 'my-6 w-full text-center'
     case 'left':
-      return 'mr-auto text-left'
+      return 'my-6 w-full text-left sm:float-left sm:mr-6 sm:w-1/2'
     case 'right':
-      return 'ml-auto text-right'
-    default:
-      return 'mx-auto text-center'
+      return 'my-6 w-full text-right sm:float-right sm:ml-6 sm:w-1/2'
+    default: // center
+      return 'my-6 mx-auto w-full text-center sm:w-1/2'
   }
 }

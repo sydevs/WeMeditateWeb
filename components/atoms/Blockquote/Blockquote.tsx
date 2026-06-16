@@ -26,12 +26,7 @@ export interface BlockquoteProps {
  * />
  * ```
  */
-export function Blockquote({
-  text,
-  credit,
-  align = 'right',
-  className = '',
-}: BlockquoteProps) {
+export function Blockquote({ text, credit, align = 'right', className = '' }: BlockquoteProps) {
   const isLeft = align === 'left'
 
   return (
@@ -45,24 +40,23 @@ export function Blockquote({
       <blockquote
         className={`
           relative
-          py-4 sm:py-8
-          ${isLeft ? 'pl-4 sm:pl-6 text-left' : 'pr-4 sm:pr-6 text-right'}
+          max-w-100
+          m-8 px-8 py-4 sm:py-8
+          ${isLeft ? 'pl-16 -ml-12 text-right' : 'pr-16 -mr-12 text-left'}
           before:content-[''] before:absolute before:inset-0 before:-z-10
-          ${isLeft
-            ? 'before:left-0 before:right-[20%] before:bg-linear-to-r'
-            : 'before:left-[20%] before:right-0 before:bg-linear-to-l'
+          leading-relaxed text-gray-600
+          ${
+            isLeft
+              ? 'before:left-0 before:right-[20%] before:bg-linear-to-r'
+              : 'before:left-[20%] before:right-0 before:bg-linear-to-l'
           }
           before:from-transparent before:to-teal-200/30
         `.trim()}
       >
-        <div className={`text-base font-medium leading-relaxed text-gray-600 ${isLeft ? 'text-left' : 'text-left'}`}>
+        <div className={`text-base font-medium`}>
           <p>{text}</p>
         </div>
-        {credit && (
-          <div className={`mt-4 text-sm font-light leading-relaxed text-gray-600 ${isLeft ? 'text-left' : 'text-right'}`}>
-            {credit}
-          </div>
-        )}
+        {credit && <div className={`mt-4 text-sm font-light`}>{credit}</div>}
       </blockquote>
     </div>
   )

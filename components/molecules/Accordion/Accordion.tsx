@@ -89,6 +89,7 @@ export function Accordion({
       }
 
       onToggle?.(itemId, !isCurrentlyOpen)
+
       return newOpenItems
     })
   }
@@ -101,49 +102,48 @@ export function Accordion({
   }
 
   return (
-    <div className={`max-w-full sm:max-w-3xl ${className}`} role="region">
+    <div className={`mx-auto max-w-full sm:max-w-3xl ${className}`} role="region">
       {items.map((item, index) => {
         const isOpen = openItems.has(item.id)
         const isLastItem = index === items.length - 1
 
         return (
-          <article
-            key={item.id}
-            className={`${!isLastItem ? 'border-b border-gray-300' : ''}`}
-          >
+          <article key={item.id} className={`${!isLastItem ? 'border-b border-gray-300' : ''}`}>
             <h3>
               <button
+                aria-controls={`accordion-content-${item.id}`}
+                aria-expanded={isOpen}
+                className="relative w-full text-left py-3 sm:py-4 pr-6 sm:pr-8 cursor-pointer group flex items-center justify-between"
                 type="button"
                 onClick={() => toggleItem(item.id)}
                 onKeyDown={(e) => handleKeyDown(e, item.id)}
-                aria-expanded={isOpen}
-                aria-controls={`accordion-content-${item.id}`}
-                className="relative w-full text-left py-3 sm:py-4 pr-6 sm:pr-8 cursor-pointer group flex items-center justify-between"
               >
-                <span className={`text-xl font-medium transition-colors ${
-                  isOpen ? 'text-gray-800' : 'text-gray-600 group-hover:text-gray-800'
-                }`}>
+                <span
+                  className={`text-xl font-medium transition-colors ${
+                    isOpen ? 'text-gray-800' : 'text-gray-600 group-hover:text-gray-800'
+                  }`}
+                >
                   {item.title}
                 </span>
                 <Icon
-                  icon={ChevronDownIcon}
-                  size="md"
-                  color="neutral"
+                  aria-hidden="true"
                   className={`transition-transform duration-300 shrink-0 ${
                     isOpen ? 'rotate-180' : 'rotate-0'
                   }`}
-                  aria-hidden="true"
+                  color="neutral"
+                  icon={ChevronDownIcon}
+                  size="md"
                 />
               </button>
             </h3>
 
             <div
-              id={`accordion-content-${item.id}`}
-              role="region"
               aria-labelledby={`accordion-header-${item.id}`}
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
               }`}
+              id={`accordion-content-${item.id}`}
+              role="region"
             >
               <div className="pb-4 sm:pb-6 pr-6 sm:pr-8 text-base leading-relaxed text-gray-600">
                 {item.content}

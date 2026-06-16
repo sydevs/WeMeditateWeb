@@ -160,7 +160,7 @@ export function Image({
   }[objectFit]
 
   const roundedStyles = {
-    square: '',
+    square: 'rounded-xs',
     rounded: 'rounded-lg',
     circle: 'rounded-full',
   }[rounded]

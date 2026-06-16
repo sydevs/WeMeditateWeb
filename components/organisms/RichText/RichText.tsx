@@ -1,4 +1,11 @@
-import type { ComponentProps, ReactNode } from 'react'
+import {
+  cloneElement,
+  Fragment,
+  isValidElement,
+  type ComponentProps,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
 import {
   RichText as LexicalRichText,
   defaultJSXConverters,
@@ -10,7 +17,7 @@ import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
-import { blockConverters, BLOCK_SPACING, type BlockConverters } from './blockConverters'
+import { blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
@@ -42,8 +49,8 @@ const ARTICLE_CLASS = [
   '[&>h2]:text-3xl [&>h3]:text-2xl [&>h4]:text-xl [&>h5]:text-lg [&>h6]:text-base',
   '[&>h2]:font-semibold [&>h3]:font-semibold [&>h4]:font-semibold [&>h5]:font-semibold [&>h6]:font-semibold',
   '[&>h2]:text-gray-800 [&>h3]:text-gray-800 [&>h4]:text-gray-800 [&>h5]:text-gray-800 [&>h6]:text-gray-800',
-  // Top margin so headings introduce their section
-  '[&>h2]:mt-8 [&>h3]:mt-6 [&>h4]:mt-4 [&>h5]:mt-4 [&>h6]:mt-4',
+  // Generous top margin so headings clearly introduce their section
+  '[&>h2]:mt-12 [&>h3]:mt-10 [&>h4]:mt-8 [&>h5]:mt-6 [&>h6]:mt-6',
   // Body text
   '[&>p]:my-4 [&>p]:text-lg [&>p]:font-light [&>p]:leading-relaxed [&>p]:text-gray-700',
   // Lists
@@ -177,7 +184,7 @@ const CONVERTERS: JSXConverters = {
     const caption = renderCaption(fields?.caption)
 
     return (
-      <figure className={`${uploadFigureClass(fields?.align)} ${BLOCK_SPACING}`}>
+      <figure className={uploadFigureClass(fields?.align)}>
         <Image
           alt={fields?.alt ?? image.alt ?? ''}
           aspectRatio={nearestAspectRatio(image.width, image.height)}
@@ -230,18 +237,35 @@ function withDebugOverlay(label: string, render: BlockConverterFn): BlockConvert
       // eslint-disable-next-line no-console -- the debug overlay's purpose is to log block data
       console.log(`[RichText] ${label} block`, args.node)
     }
+    const button = (
+      <button
+        key="debug"
+        aria-label={`Log ${label} block data`}
+        className="absolute top-1 right-1 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800/70 text-xs font-bold text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.9)]"
+        type="button"
+        onClick={logNode}
+      >
+        ?
+      </button>
+    )
+    const rendered = render(args)
+
+    // A floated block (the aligned image <figure>) must stay in normal flow so
+    // text wraps around it — inject the button into the element itself rather
+    // than a wrapper that would contain the float.
+    if (isValidElement(rendered) && rendered.type === 'figure') {
+      const figure = rendered as ReactElement<{ className?: string; children?: ReactNode }>
+
+      return cloneElement(figure, { className: `${figure.props.className ?? ''} relative` }, [
+        <Fragment key="content">{figure.props.children}</Fragment>,
+        button,
+      ])
+    }
 
     return (
       <div className="relative">
-        {render(args)}
-        <button
-          aria-label={`Log ${label} block data`}
-          className="absolute top-1 right-1 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800/70 text-xs font-bold text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.9)]"
-          type="button"
-          onClick={logNode}
-        >
-          ?
-        </button>
+        {rendered}
+        {button}
       </div>
     )
   }

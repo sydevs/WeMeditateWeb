@@ -38,9 +38,9 @@ const heading = (tag: 'h2' | 'h3' | 'h4', value: string) => ({
   version: 1,
 })
 
-const listItem = (value: string) => ({
+const listItem = (value: string, ordinal: number) => ({
   type: 'listitem',
-  value: 1,
+  value: ordinal,
   checked: undefined,
   children: [text(value)],
   direction: 'ltr',
@@ -54,7 +54,9 @@ const list = (listType: 'bullet' | 'number', items: string[]) => ({
   listType,
   tag: listType === 'bullet' ? 'ul' : 'ol',
   start: 1,
-  children: items.map(listItem),
+  // value is the item's ordinal — each item must increment or an ordered list
+  // renders every number as "1".
+  children: items.map((item, index) => listItem(item, index + 1)),
   direction: 'ltr',
   format: '',
   indent: 0,
@@ -158,15 +160,14 @@ const editorState = (children: unknown[]) => ({
 
 const FIGURE_IMAGE = 'https://picsum.photos/seed/richtext-figure/1200/800'
 
-// Filler body copy used to separate the blocks with flowing prose (so floated
-// blockquotes have text to wrap, and spacing/altitude read realistically).
+// Filler body copy used to surround the blocks with flowing prose (so floated
+// blockquotes have text to wrap and block spacing reads realistically).
 const FILLER = [
-  'Meditation is not about emptying the mind but about resting attention gently on the present moment, again and again.',
-  'With regular practice the gaps between thoughts widen, and a quiet steadiness begins to carry into ordinary life.',
-  'Begin where you are. A few unhurried breaths are enough to signal to the body that it is safe to soften.',
-  'The breath is a reliable anchor: always available, always now, asking nothing of you but a little attention.',
-  'There is nothing to force and nowhere to arrive. Each time the mind wanders, the return itself is the practice.',
-  'As the nervous system settles, the shoulders drop, the jaw releases, and awareness opens like a window onto a still morning.',
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident.',
+  'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.',
+  'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur quis autem vel eum iure reprehenderit.',
+  'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga et harum quidem rerum facilis est et expedita distinctio nam libero tempore.',
+  'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae itaque earum rerum hic tenetur a sapiente delectus.',
 ]
 
 let fillerCursor = 0
@@ -175,11 +176,29 @@ let fillerCursor = 0
 const fillerParagraphs = (count: number) =>
   Array.from({ length: count }, () => paragraph([text(FILLER[fillerCursor++ % FILLER.length])]))
 
-/** Intersperse 1–3 filler paragraphs between every node (deterministic, varied). */
+/** Nodes that warrant surrounding prose: custom blocks, images, and (floated)
+ * blockquotes — so the float has body text to wrap. */
+const isBlock = (node: unknown): boolean => {
+  const type = (node as { type?: string }).type
+
+  return type === 'block' || type === 'upload' || type === 'quote'
+}
+
+/**
+ * Surround each block with 1–3 filler paragraphs (deterministic, varied).
+ * Filler is only inserted adjacent to a block — consecutive typographic nodes
+ * (headings, paragraphs, lists, blockquotes) keep their own natural flow.
+ */
 const withFiller = (nodes: unknown[]): unknown[] =>
-  nodes.flatMap((node, index) =>
-    index === nodes.length - 1 ? [node] : [node, ...fillerParagraphs((index % 3) + 1)],
-  )
+  nodes.flatMap((node, index) => {
+    const next = nodes[index + 1]
+
+    if (next === undefined || (!isBlock(node) && !isBlock(next))) {
+      return [node]
+    }
+
+    return [node, ...fillerParagraphs((index % 3) + 1)]
+  })
 
 /**
  * A single page simulating every node and custom block RichText can render,
@@ -243,11 +262,21 @@ const pageContent = editorState(
     heading('h3', 'Finding a Quiet Space'),
     paragraph([text('A calm corner is all you need to begin.')]),
     list('bullet', ['Sit comfortably', 'Soften your gaze', 'Notice the breath']),
-    quote('The quieter you become, the more you are able to hear.'),
-    quote('Stillness is where creativity and solutions are found.', 'left'),
-    uploadImage(FIGURE_IMAGE, 'A calm landscape', 'Morning light over the hills', 'center'),
+    quote(
+      'The quieter you become, the more you are able to hear. In the stillness between thoughts there is a patient awareness that was never disturbed by the noise, and it is always available the moment we stop reaching for it. Rest there for even a few breaths and the day rearranges itself around a calmer center.',
+    ),
+    quote(
+      'Stillness is where creativity and solutions are found. When the surface of the mind settles, what was murky becomes clear, and answers that striving could never force arrive on their own — quietly, unhurried, and complete — as though they had been waiting all along for us to stop and listen.',
+      'left',
+    ),
+    uploadImage(FIGURE_IMAGE, 'A misty forest', 'A left-aligned figure', 'left'),
+    paragraph([text(FILLER[1])]),
     uploadImage(FIGURE_IMAGE, 'A meadow at dawn', 'A right-aligned figure', 'right'),
+    paragraph([text(FILLER[1])]),
     uploadImage(FIGURE_IMAGE, 'A wide vista', 'A wide (full-width) figure', 'wide'),
+    paragraph([text(FILLER[0])]),
+    paragraph([text(FILLER[1])]),
+    uploadImage(FIGURE_IMAGE, 'A calm landscape', 'A centered figure', 'center'),
 
     // Text box — all three image positions (left / right side layouts + overlay)
     block('textbox', {

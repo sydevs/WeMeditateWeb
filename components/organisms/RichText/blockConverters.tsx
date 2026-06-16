@@ -12,8 +12,8 @@
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Button, Image } from '../../atoms'
 import {
+  ContentCard,
   ContentCarousel,
-  ContentGrid,
   HeroQuote,
   LayoutBlock,
   TableOfContents,
@@ -225,8 +225,9 @@ export const blockConverters: BlockConverters = {
     )
   },
 
-  // content-index → grid of the live list resolved server-side in `+data`
-  // (see server/content-index.ts). Empty/unresolvable lists render nothing.
+  // content-index → responsive grid of the live list resolved server-side in
+  // `+data` (see server/content-index.ts). A plain grid fills the block width
+  // (unlike the centered masonry); empty/unresolvable lists render nothing.
   'content-index': ({ node }) => {
     const fields = node.fields as unknown as ContentIndexBlockFields
     const items = fields.resolvedItems ?? []
@@ -235,6 +236,12 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <ContentGrid className={BLOCK_SPACING} items={items} />
+    return (
+      <div className={`${BLOCK_SPACING} grid grid-cols-2 gap-4 sm:grid-cols-3`}>
+        {items.map(({ id, ...card }) => (
+          <ContentCard key={id} {...card} />
+        ))}
+      </div>
+    )
   },
 }
