@@ -423,7 +423,6 @@ The section order varies by component category, but generally follows these patt
 
 **Component-Specific Sections**: Some components have unique properties that don't fit standard categories. These typically appear after basic variants/sizes and before States. Examples:
 - **Image**: "Aspect Ratios" for image dimensions (square 1:1, video 16:9, 4:3)
-- **Duration**: "Common Durations" and "Format Variants" for time display
 - **Icon**: "Outline Style" and "Solid Style" for icon collections
 - **LeafDivider**: "With Line" and "Without Line" for decoration options
 

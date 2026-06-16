@@ -1,10 +1,207 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import type HlsInstance from 'hls.js'
+import {
+  ArrowsPointingOutIcon,
+  PauseIcon,
+  PlayIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+} from '@heroicons/react/24/solid'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 
 const NATIVE_HLS_MIME = 'application/vnd.apple.mpegurl'
+
+/** Format a number of seconds as `M:SS`. */
+function formatClock(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds))
+
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
+}
+
+interface ClipControlsProps {
+  containerRef: RefObject<HTMLDivElement | null>
+  videoRef: RefObject<HTMLVideoElement | null>
+  /** Window start, in seconds, within the underlying media. */
+  startTime: number
+  /** Window stop, in seconds, within the underlying media. */
+  stopTime: number
+}
+
+/**
+ * Custom controls that present a `[startTime, stopTime]` window as an isolated
+ * clip: the timeline runs `0:00` → the window length, the displayed time is
+ * relative to the clip start, and seeking is constrained to the window. Native
+ * `<video>` controls always expose the full underlying media timeline and can't
+ * be relinearized, so a clip hides them and uses this bar instead.
+ */
+function ClipControls({ containerRef, videoRef, startTime, stopTime }: ClipControlsProps) {
+  const windowDuration = Math.max(0, stopTime - startTime)
+  const [playing, setPlaying] = useState(false)
+  const [muted, setMuted] = useState(false)
+  // Elapsed seconds *within the window* (0 → windowDuration).
+  const [elapsed, setElapsed] = useState(0)
+  const scrubbingRef = useRef(false)
+
+  useEffect(() => {
+    const video = videoRef.current
+
+    if (!video) {
+      return
+    }
+
+    const syncTime = () => {
+      if (!scrubbingRef.current) {
+        setElapsed(Math.min(windowDuration, Math.max(0, video.currentTime - startTime)))
+      }
+    }
+    const onPlay = () => setPlaying(true)
+    const onPause = () => setPlaying(false)
+    const onVolume = () => setMuted(video.muted)
+
+    syncTime()
+    setPlaying(!video.paused)
+    setMuted(video.muted)
+
+    video.addEventListener('timeupdate', syncTime)
+    video.addEventListener('seeking', syncTime)
+    video.addEventListener('play', onPlay)
+    video.addEventListener('pause', onPause)
+    video.addEventListener('volumechange', onVolume)
+
+    return () => {
+      video.removeEventListener('timeupdate', syncTime)
+      video.removeEventListener('seeking', syncTime)
+      video.removeEventListener('play', onPlay)
+      video.removeEventListener('pause', onPause)
+      video.removeEventListener('volumechange', onVolume)
+    }
+  }, [videoRef, startTime, windowDuration])
+
+  const togglePlay = () => {
+    const video = videoRef.current
+
+    if (!video) {
+      return
+    }
+    if (video.paused) {
+      // Restart from the window start once playback has reached the end.
+      if (video.currentTime >= stopTime - 0.05 || video.currentTime < startTime) {
+        video.currentTime = startTime
+      }
+      void video.play()
+    } else {
+      video.pause()
+    }
+  }
+
+  const seekToRelative = (relative: number) => {
+    const video = videoRef.current
+
+    if (!video) {
+      return
+    }
+    const clamped = Math.min(windowDuration, Math.max(0, relative))
+
+    video.currentTime = startTime + clamped
+    setElapsed(clamped)
+  }
+
+  const toggleMute = () => {
+    const video = videoRef.current
+
+    if (video) {
+      video.muted = !video.muted
+    }
+  }
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen()
+    } else {
+      void containerRef.current?.requestFullscreen?.()
+    }
+  }
+
+  const iconButton =
+    'flex shrink-0 items-center justify-center rounded p-1 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white'
+
+  return (
+    <>
+      {/* Full-area click target: toggles play/pause, with a center play badge
+          while paused (the native big-play button is gone with controls off). */}
+      <button
+        aria-label={playing ? 'Pause' : 'Play'}
+        className={`absolute inset-0 flex items-center justify-center transition ${
+          playing ? '' : 'bg-black/20 hover:bg-black/30'
+        }`}
+        type="button"
+        onClick={togglePlay}
+      >
+        {playing ? null : (
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/50">
+            <PlayIcon className="ml-1 h-8 w-8 text-white" />
+          </span>
+        )}
+      </button>
+
+      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-linear-to-t from-black/70 to-transparent px-3 py-2 text-white">
+        <button
+          aria-label={playing ? 'Pause' : 'Play'}
+          className={iconButton}
+          type="button"
+          onClick={togglePlay}
+        >
+          {playing ? <PauseIcon className="h-5 w-5" /> : <PlayIcon className="h-5 w-5" />}
+        </button>
+
+        <span className="shrink-0 text-xs tabular-nums">{formatClock(elapsed)}</span>
+
+        <input
+          aria-label="Seek"
+          className="h-1 flex-1 cursor-pointer accent-white"
+          max={windowDuration}
+          min={0}
+          step={0.1}
+          type="range"
+          value={elapsed}
+          onChange={(event) => seekToRelative(Number(event.target.value))}
+          onPointerDown={() => {
+            scrubbingRef.current = true
+          }}
+          onPointerUp={() => {
+            scrubbingRef.current = false
+          }}
+        />
+
+        <span className="shrink-0 text-xs tabular-nums">{formatClock(windowDuration)}</span>
+
+        <button
+          aria-label={muted ? 'Unmute' : 'Mute'}
+          className={iconButton}
+          type="button"
+          onClick={toggleMute}
+        >
+          {muted ? (
+            <SpeakerXMarkIcon className="h-5 w-5" />
+          ) : (
+            <SpeakerWaveIcon className="h-5 w-5" />
+          )}
+        </button>
+
+        <button
+          aria-label="Fullscreen"
+          className={iconButton}
+          type="button"
+          onClick={toggleFullscreen}
+        >
+          <ArrowsPointingOutIcon className="h-5 w-5" />
+        </button>
+      </div>
+    </>
+  )
+}
 
 export interface VideoPlayerProps {
   /** HLS manifest URL (.m3u8). */
@@ -15,10 +212,18 @@ export interface VideoPlayerProps {
   startTime?: number | null
   /** Seconds at which to pause playback (end of a playback window). */
   stopTime?: number | null
-  /** Inline subtitle cues from the Video collection. */
+  /** Inline subtitle cues from the Video collection (rendered as a Blob track). */
   subtitles?: VideoSubtitleCue[]
-  /** BCP-47 language tag for the subtitle track. @default 'en' */
+  /** BCP-47 language tag for the inline-cue subtitle track. @default 'en' */
   subtitleLang?: string
+  /**
+   * Per-locale external WebVTT subtitle tracks (Lecture shape). Each `.vtt` URL
+   * is fetched and re-served as a same-origin blob `<track>` — an alternative to
+   * the inline-cue `subtitles` adapter above.
+   */
+  subtitleTracks?: { locale: string; url: string }[]
+  /** Which `subtitleTracks` locale to mark as the default/active track. */
+  defaultSubtitleLang?: string
   /** Accessible label for the video (not shown visually). */
   title?: string
   className?: string
@@ -30,10 +235,13 @@ export interface VideoPlayerProps {
  * Prefers native HLS where the browser supports it (Safari/iOS), otherwise
  * lazy-loads hls.js on the client. The dynamic `import('hls.js')` lives inside
  * an effect so hls.js stays out of the SSR/Workers bundle and out of the
- * initial client chunk. Supports an optional `[startTime, stopTime]` playback
- * window and inline subtitle cues rendered as a WebVTT `<track>`.
+ * initial client chunk. Supports subtitles via either inline cues (Video
+ * collection) or per-locale external `.vtt` URLs (Lectures), both rendered as
+ * WebVTT `<track>`s.
  *
- * Ticket 4 (Lectures) reuses this player with a per-locale .vtt subtitle source.
+ * With a `[startTime, stopTime]` window (a clip), the player presents the window
+ * as an isolated clip: native controls are replaced by a custom bar whose
+ * timeline runs `0:00` → the window length (see ClipControls).
  */
 export function VideoPlayer({
   hlsUrl,
@@ -42,9 +250,12 @@ export function VideoPlayer({
   stopTime,
   subtitles,
   subtitleLang = 'en',
+  subtitleTracks,
+  defaultSubtitleLang,
   title,
   className,
 }: VideoPlayerProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [trackUrl, setTrackUrl] = useState<string>()
 
@@ -134,18 +345,85 @@ export function VideoPlayer({
     return () => URL.revokeObjectURL(url)
   }, [vtt])
 
+  // Fetch the external per-locale .vtt files and re-serve them as same-origin
+  // `text/vtt` blobs. Linking the URLs directly fails in two ways: some hosts
+  // serve .vtt as `text/plain` (which browsers reject for <track>), and a
+  // cross-origin <track> forces `crossOrigin` on the <video>, which can break
+  // native HLS playback in Safari. Blobs are same-origin, so no crossOrigin is
+  // needed and the video plays everywhere.
+  const [trackBlobs, setTrackBlobs] = useState<
+    { locale: string; url: string; isDefault: boolean }[]
+  >([])
+
+  // Stable key so a fresh `subtitleTracks` array identity (e.g. re-resolved on
+  // every live-preview render) doesn't trigger a redundant refetch.
+  const tracksKey = (subtitleTracks ?? []).map((t) => `${t.locale} ${t.url}`).join('')
+
+  useEffect(() => {
+    const tracks = subtitleTracks ?? []
+
+    if (tracks.length === 0) {
+      setTrackBlobs([])
+
+      return
+    }
+
+    let cancelled = false
+    const created: string[] = []
+
+    void Promise.all(
+      tracks.map(async (track) => {
+        try {
+          const res = await fetch(track.url)
+
+          if (!res.ok) {
+            return null
+          }
+          const url = URL.createObjectURL(new Blob([await res.text()], { type: 'text/vtt' }))
+
+          created.push(url)
+
+          return { locale: track.locale, url, isDefault: track.locale === defaultSubtitleLang }
+        } catch {
+          return null
+        }
+      }),
+    ).then((results) => {
+      if (cancelled) {
+        return
+      }
+      setTrackBlobs(results.filter((r) => r !== null))
+    })
+
+    return () => {
+      cancelled = true
+      created.forEach((url) => URL.revokeObjectURL(url))
+    }
+    // Depends on the stable `tracksKey` (not the array identity) to avoid refetch churn.
+  }, [tracksKey, defaultSubtitleLang])
+
   if (!hlsUrl) {
     return null
   }
 
+  // A clip is a valid `[startTime, stopTime]` window. Clips hide the native
+  // controls and use ClipControls so the timeline reads as an isolated 0:00 clip.
+  const clipWindow =
+    typeof startTime === 'number' && typeof stopTime === 'number' && stopTime > startTime
+      ? { start: startTime, stop: stopTime }
+      : null
+
   return (
-    <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
+    <div
+      ref={containerRef}
+      className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}
+    >
       <video
         ref={videoRef}
-        controls
         playsInline
         aria-label={title}
         className="h-auto w-full"
+        controls={!clipWindow}
         poster={poster}
         preload="metadata"
       >
@@ -158,7 +436,29 @@ export function VideoPlayer({
             srcLang={subtitleLang}
           />
         ) : null}
+        {/* When defaultSubtitleLang matches none of the tracks, none is the
+            default and subtitles stay off — preferable to forcing a non-locale
+            language on the viewer. */}
+        {trackBlobs.map((track) => (
+          <track
+            key={track.locale}
+            default={track.isDefault}
+            kind="subtitles"
+            label={track.locale.toUpperCase()}
+            src={track.url}
+            srcLang={track.locale}
+          />
+        ))}
       </video>
+
+      {clipWindow ? (
+        <ClipControls
+          containerRef={containerRef}
+          startTime={clipWindow.start}
+          stopTime={clipWindow.stop}
+          videoRef={videoRef}
+        />
+      ) : null}
     </div>
   )
 }

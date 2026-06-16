@@ -39,4 +39,48 @@ describe('<VideoPlayer>', () => {
   it('renders nothing when hlsUrl is empty', () => {
     expect(renderToStaticMarkup(<VideoPlayer hlsUrl="" />)).toBe('')
   })
+
+  it('uses native controls when there is no clip window', () => {
+    const html = renderToStaticMarkup(<VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" />)
+
+    expect(html).toMatch(/<video[^>]*\bcontrols\b/)
+    expect(html).not.toContain('aria-label="Seek"')
+  })
+
+  // A clip presents its window as an isolated 0:00 clip: native controls are
+  // replaced by a custom bar whose timeline runs 0:00 → the window length
+  // (40s here), not the underlying media position (19:51 → 20:31).
+  it('presents a clip window with relinearized custom controls', () => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" startTime={1191} stopTime={1231} />,
+    )
+
+    expect(html).not.toMatch(/<video[^>]*\bcontrols\b/) // native controls off
+    expect(html).toContain('aria-label="Seek"')
+    expect(html).toContain('max="40"') // window length, not full duration
+    expect(html).toContain('0:00') // elapsed starts at the clip start
+    expect(html).toContain('0:40') // total = window length
+    expect(html).not.toContain('20:31') // never the absolute media position
+  })
+
+  // Per-locale .vtt tracks (Lecture shape) are fetched and re-served as
+  // same-origin blobs in an effect (to fix text/plain content-types and avoid
+  // forcing crossOrigin), so — like inline cues — they are NOT in SSR markup,
+  // and the video never opts into CORS (which would break Safari native HLS).
+  it('does not emit external subtitle tracks or crossorigin during SSR', () => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer
+        defaultSubtitleLang="fr"
+        hlsUrl="https://cdn.example.com/v.m3u8"
+        subtitleTracks={[
+          { locale: 'en', url: 'https://cdn.example.com/en.vtt' },
+          { locale: 'fr', url: 'https://cdn.example.com/fr.vtt' },
+        ]}
+      />,
+    )
+
+    expect(html).not.toContain('<track')
+    expect(html).not.toContain('crossorigin')
+    expect(html).not.toContain('en.vtt')
+  })
 })

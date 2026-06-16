@@ -12,8 +12,8 @@
  * - Retry: Automatic retry with exponential backoff for network/server errors
  */
 
-import { KVNamespace } from "@cloudflare/workers-types"
-import * as Sentry from "@sentry/react"
+import { KVNamespace } from '@cloudflare/workers-types'
+import * as Sentry from '@sentry/react'
 import { withRetry, type RetryConfig } from './error-utils'
 import { getCmsContext } from './cms-context'
 
@@ -29,6 +29,8 @@ export const CacheTTL = {
   LIST: 1800,
   /** Meditation content cache duration (1 hour) */
   MEDITATION: 3600,
+  /** Lecture content cache duration (1 hour) */
+  LECTURE: 3600,
   /** Song content cache duration (1 hour) */
   SONG: 3600,
 } as const
@@ -48,7 +50,7 @@ export const CacheTTL = {
  */
 export function generateCacheKey(
   prefix: string,
-  params: Record<string, string | string[] | number | undefined>
+  params: Record<string, string | string[] | number | undefined>,
 ): string {
   const parts: string[] = [prefix]
 
@@ -57,6 +59,7 @@ export function generateCacheKey(
 
   for (const key of sortedKeys) {
     const value = params[key]
+
     if (value !== undefined) {
       // Handle arrays (e.g., tag IDs)
       if (Array.isArray(value)) {
@@ -77,10 +80,7 @@ export function generateCacheKey(
  * @param key - Cache key to retrieve
  * @returns Parsed cached data or null if not found/expired/unavailable
  */
-async function getCachedResponse<T>(
-  kv: KVNamespace | undefined,
-  key: string
-): Promise<T | null> {
+async function getCachedResponse<T>(kv: KVNamespace | undefined, key: string): Promise<T | null> {
   // Graceful fallback: if KV is not available, skip caching
   if (!kv) {
     return null
@@ -88,14 +88,16 @@ async function getCachedResponse<T>(
 
   try {
     const cached = await kv.get(key, 'json')
+
     return cached as T | null
   } catch (error) {
     // Log error to Sentry and console but don't throw - graceful degradation
     console.error('KV cache read error:', error)
     Sentry.captureException(error, {
       tags: { cache_operation: 'read' },
-      extra: { cacheKey: key }
+      extra: { cacheKey: key },
     })
+
     return null
   }
 }
@@ -112,7 +114,7 @@ async function setCachedResponse<T>(
   kv: KVNamespace | undefined,
   key: string,
   data: T,
-  ttl: number
+  ttl: number,
 ): Promise<void> {
   // Graceful fallback: if KV is not available, skip caching
   if (!kv) {
@@ -128,7 +130,7 @@ async function setCachedResponse<T>(
     console.error('KV cache write error:', error)
     Sentry.captureException(error, {
       tags: { cache_operation: 'write' },
-      extra: { cacheKey: key, ttl }
+      extra: { cacheKey: key, ttl },
     })
   }
 }
@@ -210,6 +212,7 @@ export async function withCache<T>(options: {
 
   // Try to get from cache first
   const cached = await getCachedResponse<T>(kv, cacheKey)
+
   if (cached !== null) {
     return cached
   }
