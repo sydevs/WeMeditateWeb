@@ -19,11 +19,11 @@ const text = (value: string, format = 0) => ({
   version: 1,
 })
 
-const paragraph = (children: unknown[]) => ({
+const paragraph = (children: unknown[], format = '') => ({
   type: 'paragraph',
   children,
   direction: 'ltr',
-  format: '',
+  format,
   indent: 0,
   version: 1,
 })
@@ -98,12 +98,19 @@ const uploadImage = (
   url: string,
   alt: string,
   caption: string,
-  align: 'left' | 'center' | 'right',
+  align: 'left' | 'center' | 'right' | 'wide',
 ) => ({
   type: 'upload',
   relationTo: 'images',
   value: { id: 7, url, alt, width: 1200, height: 800 },
   fields: { align, caption },
+  version: 1,
+})
+
+const relationshipNode = (relationTo: string, value: Record<string, unknown>) => ({
+  type: 'relationship',
+  relationTo,
+  value,
   version: 1,
 })
 
@@ -186,6 +193,11 @@ const pageContent = editorState([
     text('.'),
   ]),
 
+  // Text alignment (AlignFeature) + an inline relationship to another document
+  paragraph([text('This paragraph is centered to demonstrate AlignFeature.')], 'center'),
+  paragraph([text('And this one is right-aligned.')], 'right'),
+  relationshipNode('pages', { id: 9, slug: 'techniques', title: 'Meditation Techniques' }),
+
   // Table of contents (anchors resolve to the headings on this page)
   block('table-of-contents', {
     title: 'In this article',
@@ -209,6 +221,8 @@ const pageContent = editorState([
   list('bullet', ['Sit comfortably', 'Soften your gaze', 'Notice the breath']),
   quote('The quieter you become, the more you are able to hear.'),
   uploadImage(FIGURE_IMAGE, 'A calm landscape', 'Morning light over the hills', 'center'),
+  uploadImage(FIGURE_IMAGE, 'A meadow at dawn', 'A right-aligned figure', 'right'),
+  uploadImage(FIGURE_IMAGE, 'A wide vista', 'A wide (full-width) figure', 'wide'),
 
   // Text box (overlay variant exercises every conditional field)
   block('textbox', {
@@ -423,12 +437,9 @@ const pageContent = editorState([
 
 /**
  * Full-page simulation of every RichText node and custom block at maximal
- * configuration. Mirrors how content renders inside the article column.
+ * configuration. Rendered full-bleed (no padding/max-width) so it fills the
+ * available space.
  */
-export const Default: Story = () => (
-  <div className="mx-auto max-w-4xl p-6">
-    <RichText debug content={pageContent} />
-  </div>
-)
+export const Default: Story = () => <RichText debug content={pageContent} />
 
 Default.storyName = 'Rich Text'

@@ -35,6 +35,13 @@ import {
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
 
+/**
+ * Standard vertical margin applied to non-typographic blocks (media/sections) so
+ * they read as distinct sections within the article's flex `gap-3` flow. Buttons
+ * are treated as typographic and intentionally omit it.
+ */
+export const BLOCK_SPACING = 'my-6'
+
 export const blockConverters: BlockConverters = {
   // textbox → ContentTextBox. imagePosition left/right map to the side layout;
   // `overlay` maps to `center` (ContentTextBox's text-over-image mode).
@@ -51,6 +58,7 @@ export const blockConverters: BlockConverters = {
     return (
       <ContentTextBox
         align={align}
+        className={BLOCK_SPACING}
         ctaHref={fields.buttonUrl ?? undefined}
         ctaText={fields.buttonText ?? undefined}
         description={fields.text ?? ''}
@@ -74,6 +82,7 @@ export const blockConverters: BlockConverters = {
     return (
       <HeroQuote
         caption={fields.caption ?? undefined}
+        className={BLOCK_SPACING}
         credit={fields.credit ?? undefined}
         text={fields.text}
         title={fields.title ?? undefined}
@@ -108,7 +117,7 @@ export const blockConverters: BlockConverters = {
     }
 
     return (
-      <div className="columns-2 gap-3 sm:columns-3 *:mb-3">
+      <div className={`${BLOCK_SPACING} columns-2 gap-3 sm:columns-3 *:mb-3`}>
         {images.map((img, index) => (
           <Image
             key={`${img.url}-${index}`}
@@ -130,6 +139,7 @@ export const blockConverters: BlockConverters = {
 
     return (
       <LayoutBlock
+        className={BLOCK_SPACING}
         items={fields.items ?? []}
         style={fields.style}
         title={fields.title ?? undefined}
@@ -159,7 +169,7 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <ContentGrid items={items} />
+    return <ContentGrid className={BLOCK_SPACING} items={items} />
   },
 
   // subtle-system → interactive chart; the 12 page relationships map to SVG
@@ -172,7 +182,7 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <SubtleSystem items={items} />
+    return <SubtleSystem className={BLOCK_SPACING} items={items} />
   },
 
   // splash → full-bleed Splash. The block's countdown/app/map-search layouts
@@ -190,6 +200,7 @@ export const blockConverters: BlockConverters = {
     return (
       <Splash
         backgroundImage={bg.url}
+        className={BLOCK_SPACING}
         ctaHref={fields.actionURL ?? undefined}
         ctaText={fields.actionText ?? undefined}
         subtitle={fields.subtitle ?? undefined}
@@ -209,6 +220,6 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <ContentGrid items={items} />
+    return <ContentGrid className={BLOCK_SPACING} items={items} />
   },
 }

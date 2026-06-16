@@ -10,7 +10,7 @@ import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
-import { blockConverters, type BlockConverters } from './blockConverters'
+import { blockConverters, BLOCK_SPACING, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
@@ -42,6 +42,8 @@ const ARTICLE_CLASS = [
   '[&>h2]:text-3xl [&>h3]:text-2xl [&>h4]:text-xl [&>h5]:text-lg [&>h6]:text-base',
   '[&>h2]:font-semibold [&>h3]:font-semibold [&>h4]:font-semibold [&>h5]:font-semibold [&>h6]:font-semibold',
   '[&>h2]:text-gray-800 [&>h3]:text-gray-800 [&>h4]:text-gray-800 [&>h5]:text-gray-800 [&>h6]:text-gray-800',
+  // Extra top margin so headings introduce their section (beyond the base gap)
+  '[&>h2]:mt-8 [&>h3]:mt-6 [&>h4]:mt-4 [&>h5]:mt-4 [&>h6]:mt-4',
   // Body text
   '[&>p]:text-lg [&>p]:font-light [&>p]:leading-relaxed [&>p]:text-gray-700',
   // Lists
@@ -173,7 +175,7 @@ const CONVERTERS: JSXConverters = {
     const caption = renderCaption(fields?.caption)
 
     return (
-      <figure className={uploadFigureClass(fields?.align)}>
+      <figure className={`${uploadFigureClass(fields?.align)} ${BLOCK_SPACING}`}>
         <Image
           alt={fields?.alt ?? image.alt ?? ''}
           aspectRatio={nearestAspectRatio(image.width, image.height)}
@@ -214,11 +216,36 @@ const CONVERTERS: JSXConverters = {
 type BlockConverterFn = Extract<JSXConverter, (args: never) => unknown>
 
 /**
- * Wrap every block converter so each rendered block gets a small "?" button in
- * its top-right corner; clicking it logs the complete block node to the console.
- * Used only when `debug` is enabled (built per-render, never in production reads
- * unless explicitly opted in).
+ * Wrap a converter so its rendered block gets a small "?" button in the
+ * top-right corner; clicking it logs the complete node to the console. The white
+ * drop-shadow keeps the marker legible over dark block imagery. Used only when
+ * `debug` is enabled (built per-render, never in production unless opted in).
  */
+function withDebugOverlay(label: string, render: BlockConverterFn): BlockConverterFn {
+  // eslint-disable-next-line react/display-name -- a Lexical converter, not a React component
+  return (args) => {
+    const logNode = () => {
+      // eslint-disable-next-line no-console -- the debug overlay's purpose is to log block data
+      console.log(`[RichText] ${label} block`, args.node)
+    }
+
+    return (
+      <div className="relative">
+        {render(args)}
+        <button
+          aria-label={`Log ${label} block data`}
+          className="absolute top-1 right-1 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800/70 text-xs font-bold text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.9)]"
+          type="button"
+          onClick={logNode}
+        >
+          ?
+        </button>
+      </div>
+    )
+  }
+}
+
+/** Apply the debug overlay to every custom block converter. */
 function withDebugBlocks(converters: BlockConverters): BlockConverters {
   const debugged: Record<string, BlockConverterFn> = {}
 
@@ -226,28 +253,7 @@ function withDebugBlocks(converters: BlockConverters): BlockConverters {
     if (typeof converter !== 'function') {
       continue
     }
-    const render = converter as unknown as BlockConverterFn
-
-    debugged[blockType] = (args) => {
-      const logNode = () => {
-        // eslint-disable-next-line no-console -- the debug overlay's purpose is to log block data
-        console.log(`[RichText] ${blockType} block`, args.node)
-      }
-
-      return (
-        <div className="relative">
-          {render(args)}
-          <button
-            aria-label={`Log ${blockType} block data`}
-            className="absolute top-1 right-1 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800/70 text-xs font-bold text-white"
-            type="button"
-            onClick={logNode}
-          >
-            ?
-          </button>
-        </div>
-      )
-    }
+    debugged[blockType] = withDebugOverlay(blockType, converter as unknown as BlockConverterFn)
   }
 
   return debugged as unknown as BlockConverters
@@ -279,8 +285,13 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
     return null
   }
   // The static CONVERTERS are reused as-is unless debug overlays are requested.
-  const converters = debug
-    ? { ...CONVERTERS, blocks: withDebugBlocks(blockConverters) }
+  // Debug also covers the upload (image) node, which isn't a custom block.
+  const converters: JSXConverters = debug
+    ? ({
+        ...CONVERTERS,
+        blocks: withDebugBlocks(blockConverters),
+        upload: withDebugOverlay('image', CONVERTERS.upload as unknown as BlockConverterFn),
+      } as JSXConverters)
     : CONVERTERS
 
   return (

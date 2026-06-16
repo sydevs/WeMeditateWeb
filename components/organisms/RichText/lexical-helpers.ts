@@ -54,14 +54,16 @@ export function relationshipLabel(value: unknown): string | null {
   return null
 }
 
-/** Tailwind classes for an upload `<figure>` given its CMS alignment field. */
+/** Alignment-only Tailwind classes for an upload `<figure>` (the `wide` option
+ * falls through to centered). Vertical spacing is applied by the renderer via
+ * the shared block spacing, not here. */
 export function uploadFigureClass(align?: string | null): string {
   switch (align) {
     case 'left':
-      return 'my-6 mr-auto text-left'
+      return 'mr-auto text-left'
     case 'right':
-      return 'my-6 ml-auto text-right'
+      return 'ml-auto text-right'
     default:
-      return 'my-6 mx-auto text-center'
+      return 'mx-auto text-center'
   }
 }

@@ -88,7 +88,7 @@ export function LayoutBlock({
     }))
 
     return (
-      <section className={`not-prose my-8 ${className}`}>
+      <section className={className}>
         {heading}
         <Accordion items={accordionItems} />
       </section>
@@ -109,7 +109,7 @@ export function LayoutBlock({
     })
 
     return (
-      <section className={`not-prose my-8 ${className}`}>
+      <section className={className}>
         {heading}
         <ColumnCarousel columns={columns} />
       </section>
@@ -118,7 +118,7 @@ export function LayoutBlock({
 
   if (style === 'textList') {
     return (
-      <section className={`not-prose my-8 ${className}`}>
+      <section className={className}>
         {heading}
         <ul className="flex flex-col gap-4">
           {items.map((it, i) => (
