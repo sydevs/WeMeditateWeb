@@ -51,7 +51,6 @@ export const blockConverters: BlockConverters = {
     return (
       <ContentTextBox
         align={align}
-        className="not-prose my-10"
         ctaHref={fields.buttonUrl ?? undefined}
         ctaText={fields.buttonText ?? undefined}
         description={fields.text ?? ''}
@@ -91,7 +90,7 @@ export const blockConverters: BlockConverters = {
     }
 
     return (
-      <div className="not-prose my-6 flex justify-center">
+      <div className="flex justify-center">
         <Button href={fields.url} size="lg" variant="primary">
           {fields.text}
         </Button>
@@ -109,7 +108,7 @@ export const blockConverters: BlockConverters = {
     }
 
     return (
-      <div className="not-prose my-8 columns-2 gap-3 sm:columns-3 *:mb-3">
+      <div className="columns-2 gap-3 sm:columns-3 *:mb-3">
         {images.map((img, index) => (
           <Image
             key={`${img.url}-${index}`}
@@ -160,7 +159,7 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <ContentGrid className="not-prose my-8" items={items} />
+    return <ContentGrid items={items} />
   },
 
   // subtle-system → interactive chart; the 12 page relationships map to SVG
@@ -173,11 +172,7 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return (
-      <div className="not-prose my-10">
-        <SubtleSystem items={items} />
-      </div>
-    )
+    return <SubtleSystem items={items} />
   },
 
   // splash → full-bleed Splash. The block's countdown/app/map-search layouts
@@ -193,16 +188,14 @@ export const blockConverters: BlockConverters = {
     }
 
     return (
-      <div className="not-prose my-10">
-        <Splash
-          backgroundImage={bg.url}
-          ctaHref={fields.actionURL ?? undefined}
-          ctaText={fields.actionText ?? undefined}
-          subtitle={fields.subtitle ?? undefined}
-          theme="dark"
-          title={fields.title ?? undefined}
-        />
-      </div>
+      <Splash
+        backgroundImage={bg.url}
+        ctaHref={fields.actionURL ?? undefined}
+        ctaText={fields.actionText ?? undefined}
+        subtitle={fields.subtitle ?? undefined}
+        theme="dark"
+        title={fields.title ?? undefined}
+      />
     )
   },
 
@@ -216,6 +209,6 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <ContentGrid className="not-prose my-8" items={items} />
+    return <ContentGrid items={items} />
   },
 }

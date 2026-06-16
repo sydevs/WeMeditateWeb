@@ -23,8 +23,31 @@ interface PopulatedImage {
   height?: number | null
 }
 
-/** Sizes hint: article body images are at most the prose column width. */
+/** Sizes hint: article body images are at most the article column width. */
 const ARTICLE_IMAGE_SIZES = '(max-width: 768px) 100vw, 768px'
+
+/**
+ * Article layout + base typography for the rendered content.
+ *
+ * Blocks (the direct children) are spaced with a uniform flex `gap-3`. Standard
+ * nodes — headings, paragraphs and lists — are styled with child-combinator
+ * utilities scoped to direct children (`[&>h2]`, `[&>p]`, …) so the styling
+ * never leaks into the self-styled custom blocks (e.g. the HeroQuote
+ * blockquote). The project removed its `Text` atom as overengineered, so this
+ * standardises typography with Tailwind directly rather than a wrapper.
+ */
+const ARTICLE_CLASS = [
+  'flex flex-col gap-3',
+  // Headings (h1 is downgraded to h2 by the converter to avoid colliding with the page title)
+  '[&>h2]:text-3xl [&>h3]:text-2xl [&>h4]:text-xl [&>h5]:text-lg [&>h6]:text-base',
+  '[&>h2]:font-semibold [&>h3]:font-semibold [&>h4]:font-semibold [&>h5]:font-semibold [&>h6]:font-semibold',
+  '[&>h2]:text-gray-800 [&>h3]:text-gray-800 [&>h4]:text-gray-800 [&>h5]:text-gray-800 [&>h6]:text-gray-800',
+  // Body text
+  '[&>p]:text-lg [&>p]:font-light [&>p]:leading-relaxed [&>p]:text-gray-700',
+  // Lists
+  '[&>ul]:list-disc [&>ol]:list-decimal [&>ul]:pl-6 [&>ol]:pl-6',
+  '[&>ul]:text-lg [&>ol]:text-lg [&>ul]:font-light [&>ol]:font-light [&>ul]:text-gray-700 [&>ol]:text-gray-700',
+].join(' ')
 
 /**
  * Render an upload image caption. SahajCloud captions may be plain strings or a
@@ -72,6 +95,15 @@ const CONVERTERS: JSXConverters = {
 
     return <Tag id={id || undefined}>{nodesToJSX({ nodes: node.children })}</Tag>
   },
+
+  // Lexical blockquotes (distinct from the `quote` custom block → HeroQuote).
+  // Styled here rather than via ARTICLE_CLASS so the rule can't also hit the
+  // HeroQuote <blockquote>, which is a direct child too.
+  quote: ({ node, nodesToJSX }) => (
+    <blockquote className="border-l-4 border-teal-200 pl-4 text-lg font-light text-gray-600 italic">
+      {nodesToJSX({ nodes: node.children })}
+    </blockquote>
+  ),
 
   // Render links through the locale-aware Link atom. Internal links resolve via
   // the single source-of-truth route mapper; unresolvable refs degrade to plain
@@ -171,7 +203,7 @@ const CONVERTERS: JSXConverters = {
         : (n.type ?? 'unknown')
 
     return (
-      <Alert className="not-prose my-4" title="Unimplemented RichText node" variant="warning">
+      <Alert title="Unimplemented RichText node" variant="warning">
         No converter for <code>{label}</code> — implement it or check the CMS content.
       </Alert>
     )
@@ -181,7 +213,8 @@ const CONVERTERS: JSXConverters = {
 export interface RichTextProps {
   /** PayloadCMS Lexical serialized editor state (e.g. `page.content`). */
   content?: { root?: unknown } | null
-  /** Override the wrapper class (defaults to Tailwind Typography `prose`). */
+  /** Override the wrapper class (defaults to {@link ARTICLE_CLASS}: flex `gap-3`
+   * block spacing + base typography). */
   className?: string
 }
 
@@ -199,7 +232,7 @@ export function RichText({ content, className }: RichTextProps) {
 
   return (
     <LexicalRichText
-      className={className ?? 'prose prose-lg max-w-none'}
+      className={className ?? ARTICLE_CLASS}
       converters={CONVERTERS}
       data={content as unknown as LexicalEditorState}
     />
