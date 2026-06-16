@@ -16,6 +16,13 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
   title?: string
 
   /**
+   * Aspect ratio applied uniformly to every card image so all cards share a
+   * consistent height. Overrides each item's own aspect ratio.
+   * @default 'video'
+   */
+  aspectRatio?: ContentCardProps['aspectRatio']
+
+  /**
    * Custom class name for the carousel container
    */
   className?: string
@@ -45,6 +52,7 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
 export function ContentCarousel({
   items,
   title,
+  aspectRatio = 'video',
   className = '',
   ...props
 }: ContentCarouselProps) {
@@ -69,14 +77,18 @@ export function ContentCarousel({
     setSelectedIndex(emblaApi.selectedScrollSnap())
   }, [emblaApi])
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index)
-  }, [emblaApi])
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index)
+    },
+    [emblaApi],
+  )
 
   useEffect(() => {
     if (!emblaApi) return
     onSelect()
     emblaApi.on('select', onSelect)
+
     return () => {
       emblaApi.off('select', onSelect)
     }
@@ -85,52 +97,47 @@ export function ContentCarousel({
   return (
     <div className={`relative ${className}`} {...props}>
       {/* Optional title */}
-      {title && (
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-          {title}
-        </h2>
-      )}
+      {title && <h2 className="text-2xl font-semibold text-gray-900 mb-6">{title}</h2>}
 
       {/* Navigation buttons */}
       <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between pointer-events-none z-10">
         <Button
-          icon={ChevronLeftIcon}
-          variant="primary"
-          size="md"
-          shape="square"
-          onClick={scrollPrev}
           aria-label="Previous slide"
           className="pointer-events-auto -translate-x-1/2 shadow-lg hover:shadow-xl transition-shadow"
+          icon={ChevronLeftIcon}
+          shape="square"
+          size="md"
+          variant="primary"
+          onClick={scrollPrev}
         />
         <Button
-          icon={ChevronRightIcon}
-          variant="primary"
-          size="md"
-          shape="square"
-          onClick={scrollNext}
           aria-label="Next slide"
           className="pointer-events-auto translate-x-1/2 shadow-lg hover:shadow-xl transition-shadow"
+          icon={ChevronRightIcon}
+          shape="square"
+          size="md"
+          variant="primary"
+          onClick={scrollNext}
         />
       </div>
 
       {/* Carousel viewport */}
-      <div className="overflow-hidden" ref={emblaRef}>
+      <div ref={emblaRef} className="overflow-hidden">
         <div className="flex gap-4 sm:gap-6">
           {items.map((item, index) => {
             const isFocused = index === selectedIndex
+
             return (
               <div
                 key={index}
-                onClick={() => scrollTo(index)}
-                className={`flex-[0_0_auto] transition-opacity duration-300 ${
+                className={`flex-[0_0_85%] transition-opacity duration-300 sm:flex-[0_0_55%] lg:flex-[0_0_40%] ${
                   isFocused ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'
                 }`}
+                onClick={() => scrollTo(index)}
               >
                 <div className={isFocused ? '' : 'pointer-events-none'}>
-                  <ContentCard
-                    {...item}
-                    variant="hero"
-                  />
+                  {/* aspectRatio is forced so every card image is the same height */}
+                  <ContentCard {...item} aspectRatio={aspectRatio} variant="hero" />
                 </div>
               </div>
             )

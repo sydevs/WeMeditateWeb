@@ -4,7 +4,7 @@ import {
   defaultJSXConverters,
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
-import { Image, Link } from '../../atoms'
+import { Blockquote, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
@@ -98,14 +98,10 @@ const CONVERTERS: JSXConverters = {
     return <Tag id={id || undefined}>{nodesToJSX({ nodes: node.children })}</Tag>
   },
 
-  // Lexical blockquotes (distinct from the `quote` custom block → HeroQuote).
-  // Styled here rather than via ARTICLE_CLASS so the rule can't also hit the
-  // HeroQuote <blockquote>, which is a direct child too.
-  quote: ({ node, nodesToJSX }) => (
-    <blockquote className="border-l-4 border-teal-400 pl-6 text-xl text-gray-600 italic">
-      {nodesToJSX({ nodes: node.children })}
-    </blockquote>
-  ),
+  // Lexical blockquotes (distinct from the `quote` custom block → HeroQuote)
+  // render through the Blockquote atom. The atom takes plain text, so inline
+  // formatting inside a blockquote is flattened (rare in practice).
+  quote: ({ node }) => <Blockquote text={getNodeText(node.children)} />,
 
   // Render links through the locale-aware Link atom. Internal links resolve via
   // the single source-of-truth route mapper; unresolvable refs degrade to plain

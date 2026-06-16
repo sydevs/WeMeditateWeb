@@ -402,10 +402,15 @@ const pageContent = editorState([
     kundalini: pageRef(63, 'kundalini', 'Kundalini', 'The maternal spiritual energy.'),
   }),
 
-  // Content index — pre-resolved live list
+  // Content index — production fetches `apiEndpoint` server-side in +data (see
+  // server/content-index.ts) and attaches the results. Ladle has no backend, so
+  // `resolvedItems` here is a fixture standing in for the fetched list; the rest
+  // of the block is shown fully configured.
   block('content-index', {
     type: 'pages',
     limit: 6,
+    pageFilters: ['wisdom', 'lifestyle'],
+    apiEndpoint: '/api/pages?where[tags][in]=wisdom,lifestyle&limit=6',
     resolvedItems: [
       {
         id: 1,

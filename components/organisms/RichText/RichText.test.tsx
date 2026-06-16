@@ -525,7 +525,7 @@ describe('<RichText>', () => {
     expect(withoutDebug).not.toContain('aria-label="Log ')
   })
 
-  it('renders a lexical blockquote (distinct from the quote block) with visible styling', () => {
+  it('renders a lexical blockquote through the Blockquote atom (distinct from the quote block)', () => {
     const html = renderToStaticMarkup(
       <RichText
         content={editorState([{ type: 'quote', children: [text('A wise saying')], version: 1 }])}
@@ -534,7 +534,8 @@ describe('<RichText>', () => {
 
     expect(html).toContain('<blockquote')
     expect(html).toContain('A wise saying')
-    expect(html).toContain('border-teal-400')
+    // The Blockquote atom floats and uses a teal gradient backdrop.
+    expect(html).toContain('float-right')
   })
 
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
