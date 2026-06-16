@@ -5,9 +5,10 @@
 
 import { isPopulated } from '../../../lib/cms-relationships'
 
-/** Combining diacritical marks (U+0300–U+036F), built from ASCII to avoid
- * literal combining characters living in source. */
-const DIACRITICS = new RegExp('[\\u0300-\\u036f]', 'g')
+// Re-exported so existing importers (`./lexical-helpers`) keep working; the
+// heading converter and the `table-of-contents` block share this one
+// implementation so anchors and heading ids never drift apart.
+export { slugify } from '../../../lib/slugify'
 
 /**
  * Recursively collect the plain-text content of a list of Lexical nodes.
@@ -37,21 +38,6 @@ export function getNodeText(nodes: unknown): string {
 }
 
 /**
- * Turn heading text into a URL-safe anchor id. Latin diacritics are folded
- * (é → e) before stripping; fully non-latin scripts collapse to '' (callers
- * should treat an empty id as "no anchor").
- */
-export function slugify(text: string): string {
-  return text
-    .normalize('NFKD')
-    .replace(DIACRITICS, '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
-/**
  * Best-effort human label for an inline relationship target. Returns null for
  * bare ids (unpopulated) so the converter can degrade instead of linking "[12]".
  */
@@ -68,14 +54,21 @@ export function relationshipLabel(value: unknown): string | null {
   return null
 }
 
-/** Tailwind classes for an upload `<figure>` given its CMS alignment field. */
+/**
+ * Tailwind classes for an upload `<figure>` given its CMS alignment. Aligned
+ * images take 40% of the column width (left/right float so text wraps, center
+ * is a centered block); `wide` spans the full width. Full width on mobile so
+ * small screens stay readable.
+ */
 export function uploadFigureClass(align?: string | null): string {
   switch (align) {
+    case 'wide':
+      return 'my-6 w-full text-center'
     case 'left':
-      return 'my-6 mr-auto text-left'
+      return 'my-6 w-full text-left sm:float-left sm:mr-6 sm:w-1/2'
     case 'right':
-      return 'my-6 ml-auto text-right'
-    default:
-      return 'my-6 mx-auto text-center'
+      return 'my-6 w-full text-right sm:float-right sm:ml-6 sm:w-1/2'
+    default: // center
+      return 'my-6 mx-auto w-full text-center sm:w-1/2'
   }
 }

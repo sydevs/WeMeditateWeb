@@ -39,6 +39,15 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
   aspectRatio?: AspectRatio
 
   /**
+   * Render the thumbnail at a fixed height with its natural width (Tailwind
+   * height classes, e.g. `'h-56 sm:h-64'`) instead of a fixed aspect ratio.
+   * Lets a row of cards share a consistent image height while each image keeps
+   * its own proportions. When set, the card sizes to the image width and
+   * `aspectRatio` is ignored.
+   */
+  imageHeight?: string
+
+  /**
    * Card variant
    * - default: Standard card with medium play button, normal title sizing
    * - hero: Larger card with large play button, bigger/bolder title
@@ -134,6 +143,7 @@ export function ContentCard({
   thumbnailAlt,
   description,
   aspectRatio = 'square',
+  imageHeight,
   variant = 'default',
   playButton = false,
   durationMinutes,
@@ -151,8 +161,9 @@ export function ContentCard({
   // Determine play button size based on variant
   const playButtonSize = isHeroVariant ? 'lg' : 'md'
 
-  // Cards always fill their column width
-  const cardSize = 'w-full'
+  // Cards fill their column width, unless a fixed image height is requested
+  // (then the card sizes to the image's natural width).
+  const cardSize = imageHeight ? 'w-auto' : 'w-full'
 
   // Determine title styling based on variant
   // Hero variant matches carousel__name with responsive sizing
@@ -178,8 +189,8 @@ export function ContentCard({
       <div className="relative">
         <Image
           alt={thumbnailAlt || title}
-          aspectRatio={aspectRatio}
-          className="transition-opacity duration-200 group-hover:opacity-90"
+          aspectRatio={imageHeight ? undefined : aspectRatio}
+          className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
           objectFit="cover"
           src={thumbnailSrc}
           onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}

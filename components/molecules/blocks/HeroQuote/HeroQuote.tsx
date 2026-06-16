@@ -64,16 +64,14 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
   const titleSize = isMd ? 'text-base sm:text-lg' : 'text-base sm:text-lg' // responsive title
   const creditSize = isMd ? 'text-sm sm:text-base' : 'text-base sm:text-lg' // responsive credit
   const lineHeight = isMd ? 'leading-relaxed' : 'leading-relaxed' // both 1.625
-  const verticalSpacing = isMd ? 'my-12' : 'my-18 md:my-20'
-  const horizontalMargin = isMd ? 'mx-0' : 'mx-4 sm:mx-8 md:mx-16'
   const dividerSpacing = isMd ? 'mb-8' : 'mb-10.5'
   const dividerSpacingBottom = isMd ? 'mt-8' : 'mt-10.5'
 
   return (
     <blockquote
-      className={`${blockquoteMaxWidth} ${verticalSpacing} ${horizontalMargin} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
-      role="region"
       aria-label={title || 'Quote'}
+      className={`${blockquoteMaxWidth} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
+      role="region"
     >
       {/* Top leaf divider */}
       <div className={`relative ${dividerSpacing} ${dividerMaxWidth} mx-auto`}>
@@ -81,11 +79,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
       </div>
 
       {/* Optional title */}
-      {title && (
-        <h5 className={`${titleSize} font-semibold leading-relaxed mb-4`}>
-          {title}
-        </h5>
-      )}
+      {title && <h5 className={`${titleSize} font-semibold leading-relaxed mb-4`}>{title}</h5>}
 
       {/* Main quote text */}
       <div className={`${textSize} ${lineHeight} mb-4`}>
@@ -93,18 +87,10 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
       </div>
 
       {/* Optional credit */}
-      {credit && (
-        <cite className={`${creditSize} leading-relaxed not-italic block`}>
-          {credit}
-        </cite>
-      )}
+      {credit && <cite className={`${creditSize} leading-relaxed not-italic block`}>{credit}</cite>}
 
       {/* Optional caption */}
-      {caption && (
-        <p className="text-sm leading-normal mt-2 italic text-gray-500">
-          {caption}
-        </p>
-      )}
+      {caption && <p className="text-sm leading-normal mt-2 italic text-gray-500">{caption}</p>}
 
       {/* Bottom leaf divider */}
       <div className={`relative ${dividerSpacingBottom} ${dividerMaxWidth} mx-auto`}>

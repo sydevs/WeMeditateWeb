@@ -18,6 +18,7 @@
 
 import type { PageContextServer } from 'vike/types'
 import { getDocumentById, getWebConfig } from '../../server/cms-client'
+import { resolveContentIndexBlocks } from '../../server/content-index'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from './_components'
 import { idSchema, collectionSchema } from '../../server/validation'
@@ -82,6 +83,17 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   if (!data) {
     // Content not found - this is a valid 404 state, not an error
     throw render(404, `${collection} content not found.`)
+  }
+
+  // Resolve content-index blocks so any content-bearing collection (currently
+  // pages) renders its live lists in preview too.
+  if (data && typeof data === 'object' && 'content' in data) {
+    const withContent = data as { content?: unknown }
+
+    withContent.content = await resolveContentIndexBlocks(withContent.content, {
+      locale,
+      preview: true,
+    })
   }
 
   // Return discriminated union based on collection type

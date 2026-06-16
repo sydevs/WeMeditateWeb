@@ -13,14 +13,14 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   description: string
 
   /**
-   * Call-to-action button text
+   * Call-to-action button text. When omitted, no CTA button is rendered.
    */
-  ctaText: string
+  ctaText?: string
 
   /**
-   * Call-to-action button destination URL
+   * Call-to-action button destination URL (used when `ctaText` is set).
    */
-  ctaHref: string
+  ctaHref?: string
 
   /**
    * Feature image source URL
@@ -89,16 +89,16 @@ export function ContentTextBox({
   // Content container positioning based on alignment (desktop only)
   // Uses flex to center content vertically and position horizontally
   const wrapperClasses =
-    align === 'left' ? 'lg:flex-row' :
-    align === 'right' ? 'lg:flex-row-reverse' :
-    '' // center
+    align === 'left' ? 'lg:flex-row' : align === 'right' ? 'lg:flex-row-reverse' : '' // center
 
   // Content container positioning based on alignment (desktop only)
   // Uses flex to center content vertically and position horizontally
   const contentContainerClasses =
-    align === 'left' ? 'lg:-ml-32 lg:mr-2' :
-    align === 'right' ? 'lg:-mr-32 lg:ml-2' :
-    'lg:absolute lg:inset-0 lg:flex lg:items-center lg:justify-center' // center
+    align === 'left'
+      ? 'lg:-ml-32 lg:mr-2'
+      : align === 'right'
+        ? 'lg:-mr-32 lg:ml-2'
+        : 'lg:absolute lg:inset-0 lg:flex lg:items-center lg:justify-center' // center
 
   return (
     <div
@@ -114,12 +114,12 @@ export function ContentTextBox({
     >
       {/* Image - natural flow on mobile, positioned on desktop */}
       <Image
-        src={imageSrc}
         alt={imageAlt}
-        width={imageWidth}
+        className="w-full max-h-[min(70vh,100vw)] lg:h-full lg:max-h-[85vh]"
         height={imageHeight}
-        className='w-full max-h-[min(70vh,100vw)] lg:h-full lg:max-h-[85vh]'
-        objectFit={align === 'center' ? "cover" : "contain"}
+        objectFit={align === 'center' ? 'cover' : 'contain'}
+        src={imageSrc}
+        width={imageWidth}
       />
 
       {/* Content - natural stack on mobile, positioned and centered on desktop */}
@@ -127,26 +127,19 @@ export function ContentTextBox({
         {/* White box wrapper only on desktop */}
         <div className="flex flex-col gap-6 lg:bg-white lg:shadow-xl lg:p-20 lg:min-w-lg lg:max-w-xl">
           {/* Title */}
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {title}
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
 
           {/* Description */}
-          <p className="text-lg font-light text-gray-700">
-            {description}
-          </p>
+          <p className="text-lg font-light text-gray-700">{description}</p>
 
-          {/* CTA Button */}
-          <div>
-            <Button
-              href={ctaHref}
-              variant="outline"
-              size="lg"
-              className="mt-1"
-            >
-              {ctaText}
-            </Button>
-          </div>
+          {/* CTA Button (optional — needs both text and a destination) */}
+          {ctaText && ctaHref && (
+            <div>
+              <Button className="mt-1" href={ctaHref} size="lg" variant="outline">
+                {ctaText}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

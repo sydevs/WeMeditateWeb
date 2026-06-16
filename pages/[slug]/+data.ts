@@ -5,6 +5,7 @@
 import type { PageContextServer } from 'vike/types'
 import type { Page, WebConfig } from '../../server/cms-types'
 import { getPageBySlug, getWebConfig } from '../../server/cms-client'
+import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
 import { render } from 'vike/abort'
 
@@ -35,8 +36,9 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     if (!settings.homePage) {
       throw render(404, 'Homepage not configured.')
     }
+    const content = await resolveContentIndexBlocks(settings.homePage.content, { locale })
 
-    return { page: settings.homePage, locale, slug, settings }
+    return { page: { ...settings.homePage, content }, locale, slug, settings }
   }
 
   // Non-homepage: fetch WebConfig and page by slug in parallel
@@ -49,6 +51,8 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     // Page not found - this is a valid 404 state, not an error
     throw render(404, 'Page not found.')
   }
+  // Resolve any content-index blocks' live lists for SSR.
+  const content = await resolveContentIndexBlocks(page.content, { locale })
 
-  return { page, locale, slug, settings }
+  return { page: { ...page, content }, locale, slug, settings }
 }
