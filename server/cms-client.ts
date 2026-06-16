@@ -31,7 +31,6 @@ import type {
   SongsSelect,
   AlbumsSelect,
   AppCardsSelect,
-  LecturesSelect,
   SongTagsSelect,
   ImagesSelect,
   AuthorsSelect,
