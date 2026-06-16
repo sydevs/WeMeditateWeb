@@ -56,8 +56,8 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="Seeks to startTime on load and pauses at stopTime — used by Lectures to play a segment of a longer video."
-      title="Playback window"
+      description="A [startTime, stopTime] window (a clip) is presented as an isolated video: native controls are replaced by a custom bar whose timeline runs 0:00 → the window length (0:10 here), not the underlying media position. Used by Lecture clips."
+      title="Playback window (clip)"
     >
       <div className="max-w-2xl">
         <VideoPlayer hlsUrl={HLS_URL} poster={POSTER} startTime={5} stopTime={15} />
