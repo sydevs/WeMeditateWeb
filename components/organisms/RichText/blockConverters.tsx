@@ -116,7 +116,9 @@ export const blockConverters: BlockConverters = {
     )
   },
 
-  // image-gallery → masonry of Image atoms (a gallery, not link-cards).
+  // image-gallery → masonry of Image atoms (a gallery, not link-cards). Each
+  // gallery is its own lightbox group, keyed by the block id, so the overlay's
+  // prev/next navigation and thumbnail strip stay scoped to that gallery.
   'image-gallery': ({ node }) => {
     const fields = node.fields as unknown as ImageGalleryBlockFields
     const images = galleryImages(fields.items)
@@ -124,6 +126,8 @@ export const blockConverters: BlockConverters = {
     if (images.length === 0) {
       return null
     }
+    const blockId = (node.fields as { id?: string | number }).id
+    const group = `gallery-${String(blockId ?? images[0].url)}`
 
     return (
       <div className={`${BLOCK_SPACING} columns-2 gap-3 sm:columns-3 *:mb-3`}>
@@ -133,6 +137,7 @@ export const blockConverters: BlockConverters = {
             alt={img.alt}
             aspectRatio={img.aspectRatio}
             className="w-full"
+            lightboxGroup={group}
             rounded="rounded"
             sizes="(max-width: 640px) 50vw, 33vw"
             src={img.url}
