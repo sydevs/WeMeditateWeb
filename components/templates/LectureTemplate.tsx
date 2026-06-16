@@ -17,6 +17,44 @@ import type { ResolvedLecture } from '../../server/cms-types'
 import { VideoPlayer } from '../molecules'
 import { Badge } from '../atoms'
 
+export interface LecturePlayerProps {
+  /** Normalized lecture view model (full or clip). */
+  lecture: ResolvedLecture
+  /** Current locale — selects which subtitle track is the default/active one. */
+  locale?: string
+  className?: string
+}
+
+/**
+ * The bare lecture video player: maps a `ResolvedLecture` to the shared
+ * VideoPlayer (HLS, clip window, per-locale subtitles, poster) and degrades to a
+ * short message when no HLS source resolves. Rendered standalone by the embed
+ * route (`/l/:id`) and wrapped with a title + duration by LectureTemplate, so
+ * the player wiring stays identical in both.
+ */
+export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
+  if (!lecture.hlsUrl) {
+    return (
+      <p className="p-6 text-center text-gray-500">
+        This lecture is missing a playable video source.
+      </p>
+    )
+  }
+
+  return (
+    <VideoPlayer
+      className={className}
+      defaultSubtitleLang={locale}
+      hlsUrl={lecture.hlsUrl}
+      poster={lecture.thumbnailUrl ?? undefined}
+      startTime={lecture.startTime}
+      stopTime={lecture.stopTime}
+      subtitleTracks={lecture.subtitles}
+      title={lecture.title ?? undefined}
+    />
+  )
+}
+
 export interface LectureTemplateProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
@@ -59,16 +97,7 @@ export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
         <h1 className="text-3xl sm:text-4xl font-semibold text-gray-700 mb-6">{lecture.title}</h1>
       ) : null}
 
-      <VideoPlayer
-        className="mb-4"
-        defaultSubtitleLang={locale}
-        hlsUrl={lecture.hlsUrl}
-        poster={lecture.thumbnailUrl ?? undefined}
-        startTime={lecture.startTime}
-        stopTime={lecture.stopTime}
-        subtitleTracks={lecture.subtitles}
-        title={lecture.title ?? undefined}
-      />
+      <LecturePlayer className="mb-4" lecture={lecture} locale={locale} />
 
       {displaySeconds > 0 ? (
         <Badge color="primary" shape="circular">

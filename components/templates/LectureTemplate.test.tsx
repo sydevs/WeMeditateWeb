@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { ResolvedLecture } from '../../server/cms-types'
-import { LectureTemplate } from './LectureTemplate'
+import { LectureTemplate, LecturePlayer } from './LectureTemplate'
 
 // VideoPlayer is wrapped in vike-react's ClientOnly, which reads vike's page
 // context (absent in a bare node render). Stub it to render its `fallback` —
@@ -64,5 +64,24 @@ describe('<LectureTemplate>', () => {
 
     expect(html).toContain('missing a playable video source')
     expect(html).not.toContain('The Subtle System')
+  })
+})
+
+describe('<LecturePlayer> (bare, used by the embed route)', () => {
+  it('renders only the player — no title heading or duration badge', () => {
+    const html = renderToStaticMarkup(
+      <LecturePlayer lecture={makeResolved({ duration: 600 })} locale="en" />,
+    )
+
+    expect(html).toContain('src="https://cdn.nv/thumb.jpg"') // the player (poster fallback)
+    expect(html).not.toContain('<h1') // no title heading
+    expect(html).not.toContain('The Subtle System')
+    expect(html).not.toContain('min') // no duration badge
+  })
+
+  it('degrades to a short message when there is no resolvable HLS source', () => {
+    const html = renderToStaticMarkup(<LecturePlayer lecture={makeResolved({ hlsUrl: null })} />)
+
+    expect(html).toContain('missing a playable video source')
   })
 })
