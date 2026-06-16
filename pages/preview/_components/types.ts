@@ -7,12 +7,15 @@
  * to avoid bundling server code in client bundles.
  */
 
-import type { Page, Meditation, WebConfig } from '../../../server/cms-types'
+import type { Page, Meditation, Lecture, WebConfig } from '../../../server/cms-types'
 
-export type CollectionType = 'pages' | 'meditations'
+export type CollectionType = 'pages' | 'meditations' | 'lectures'
 
 /**
- * Base preview data (without settings) - used by embed route
+ * Base preview data (without settings) - used by embed route.
+ *
+ * Note: lectures carry the raw `Lecture` (not a normalized ResolvedLecture);
+ * LecturePreview normalizes it client-side after each live-preview update.
  */
 export type BasePreviewData =
   | {
@@ -23,6 +26,11 @@ export type BasePreviewData =
   | {
       collection: 'meditations'
       initialData: Meditation
+      locale: string
+    }
+  | {
+      collection: 'lectures'
+      initialData: Lecture
       locale: string
     }
 
@@ -42,6 +50,12 @@ export type FullPreviewData =
       locale: string
       settings: WebConfig
     }
+  | {
+      collection: 'lectures'
+      initialData: Lecture
+      locale: string
+      settings: WebConfig
+    }
 
 // Re-export types for convenience
-export type { Page, Meditation, WebConfig }
+export type { Page, Meditation, Lecture, WebConfig }

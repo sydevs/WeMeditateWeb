@@ -13,7 +13,7 @@
  * 1. Add to COLLECTION_BY_ID_CONFIG in server/cms-client.ts
  * 2. Add to collectionSchema in server/validation.ts
  * 3. Add to the discriminated union types in _components/types.ts
- * 4. Add rendering logic in +Page.tsx
+ * 4. Add a <Collection>Preview component and a case in _components/Preview.tsx
  */
 
 import type { PageContextServer } from 'vike/types'

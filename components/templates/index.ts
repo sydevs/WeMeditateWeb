@@ -10,3 +10,6 @@ export type { PageTemplateProps } from './PageTemplate'
 
 export { MeditationTemplate } from './MeditationTemplate'
 export type { MeditationTemplateProps } from './MeditationTemplate'
+
+export { LectureTemplate, LecturePlayer } from './LectureTemplate'
+export type { LectureTemplateProps, LecturePlayerProps } from './LectureTemplate'

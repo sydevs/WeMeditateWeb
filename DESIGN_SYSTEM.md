@@ -203,8 +203,7 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 **Feedback**
 - `Spinner` - Loading indicator
 - `SplashLoader` - Full-screen/overlay loading with animated logo and optional text (supports sm/md/lg sizes)
-- `Duration` - Time duration display (e.g., "10 min")
-- `Badge` - Count/status badge
+- `Badge` - Count/status/duration label (e.g., "10 min")
 - `Tag` - Keyword/category tag
 
 **Layout**
@@ -1405,10 +1404,10 @@ Our atom components are organized into five functional categories in Ladle:
 **Atoms / Layout** (4 components)
 - Box, Container, LeafDivider, Spacer
 
-**Atoms / Specialty** (2 components)
-- Duration, Spinner
+**Atoms / Specialty** (1 component)
+- Spinner
 
-**Total**: 19 atom components across 5 categories
+**Total**: 18 atom components across 5 categories
 
 ### Future Hierarchy (Proposed)
 

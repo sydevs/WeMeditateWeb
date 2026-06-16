@@ -15,6 +15,7 @@ export { Preview, type PreviewProps } from './Preview'
 export { PreviewBanner, type PreviewBannerProps } from './PreviewBanner'
 export { PagePreview, type PagePreviewProps } from './PagePreview'
 export { MeditationPreview, type MeditationPreviewProps } from './MeditationPreview'
+export { LecturePreview, type LecturePreviewProps } from './LecturePreview'
 
 // Types only (no server code)
 export {
@@ -23,5 +24,6 @@ export {
   type FullPreviewData,
   type Page,
   type Meditation,
+  type Lecture,
   type WebConfig,
 } from './types'

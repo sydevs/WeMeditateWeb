@@ -21,11 +21,13 @@
 
 import { createPayloadClient, validateSDKResponse } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
 import type {
   Config,
   PagesSelect,
   MeditationsSelect,
+  LecturesSelect,
   SongsSelect,
   AlbumsSelect,
   AppCardsSelect,
@@ -196,6 +198,32 @@ const MEDITATION_SELECT = {
   _status: true,
 } satisfies MeditationsSelect<true>
 
+/**
+ * Fields rendered for a Lecture. `fullLecture` is selected so a clip can reach
+ * its parent's `metadata` (the playback source); see LECTURE_POPULATE.
+ */
+const LECTURE_SELECT = {
+  type: true,
+  title: true,
+  thumbnail: true,
+  startTime: true,
+  stopTime: true,
+  subtitles: true,
+  metadata: true,
+  fullLecture: true,
+} satisfies LecturesSelect<true>
+
+/**
+ * Populate map for a Lecture read at depth 2. `lectures: LECTURE_SELECT`
+ * self-populates a clip's `fullLecture` relationship with the parent's fields
+ * (crucially its `metadata`), so a clip can resolve its HLS URL / duration /
+ * base subtitles. `images` populates the thumbnail upload.
+ */
+const LECTURE_POPULATE = {
+  images: IMAGE_POPULATE.images,
+  lectures: LECTURE_SELECT,
+}
+
 /** Fields for songs (getSongsByTags returns full Song-ish data). */
 const SONG_SELECT = {
   title: true,
@@ -229,6 +257,12 @@ const COLLECTION_BY_ID_CONFIG = {
     ttl: CacheTTL.MEDITATION,
     select: MEDITATION_SELECT,
     populate: IMAGE_POPULATE,
+  },
+  lectures: {
+    cachePrefix: 'lecture',
+    ttl: CacheTTL.LECTURE,
+    select: LECTURE_SELECT,
+    populate: LECTURE_POPULATE,
   },
 } as const
 
@@ -350,12 +384,59 @@ export async function getDocumentById<C extends FindByIdCollection>(
       const result = found as Config['collections'][C] | null
 
       if (!result) return null
-      // Public requests should never render drafts
-      if (!isPreview && result._status === 'draft') return null
+      // Public requests should never render drafts. Collections without
+      // draft/version support (e.g. lectures) have no `_status` and are always
+      // live, so only filter where the field actually exists.
+      const status = (result as { _status?: string })._status
+
+      if (!isPreview && status === 'draft') return null
 
       return result
     },
   })
+}
+
+/**
+ * Retrieves a lecture by ID and normalizes it into a flat `ResolvedLecture`.
+ *
+ * Full lectures and clips resolve to the same shape; a clip inherits its
+ * playback source (HLS URL, duration, base subtitles, thumbnail fallback) from
+ * its parent `fullLecture`, which is populated at depth 2 (see LECTURE_POPULATE).
+ *
+ * @param options.id - The lecture document ID
+ * @param options.locale - The locale to retrieve the lecture in
+ * @param options.preview - If true, fetch draft data and bypass cache
+ * @returns The normalized lecture or null if not found
+ */
+export async function getLecture(
+  options: LocalizedQueryOptions & {
+    id: string
+    preview?: boolean
+    previewSecret?: string
+  },
+): Promise<ResolvedLecture | null> {
+  const lecture = await getDocumentById({ collection: 'lectures', ...options })
+
+  if (!lecture) return null
+
+  const resolved = resolveLecture(lecture)
+
+  // A clip with no resolvable HLS source means its parent `fullLecture` came
+  // back unpopulated (a bare id — believed unpublished/trashed) or hasn't synced
+  // its Nirmala Vidya metadata. The template degrades to an error state; surface
+  // the CMS data gap to Sentry (per the cms-api-reads rule) so it stays visible.
+  if (!options.preview && resolved.type === 'clip' && !resolved.hlsUrl) {
+    console.warn(
+      `[getLecture] clip ${resolved.id} has no resolvable HLS source (unpopulated or unsynced parent lecture)`,
+    )
+    Sentry.captureMessage('Lecture clip has an unresolved parent (no HLS source)', {
+      level: 'warning',
+      tags: { source: 'getLecture' },
+      extra: { lectureId: resolved.id, locale: options.locale ?? null },
+    })
+  }
+
+  return resolved
 }
 
 // ============================================================================
