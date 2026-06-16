@@ -14,7 +14,7 @@
  */
 
 import type { ResolvedLecture } from '../../server/cms-types'
-import { VideoPlayer } from '../molecules'
+import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
 
 export interface LecturePlayerProps {
@@ -60,6 +60,11 @@ export interface LectureTemplateProps {
   lecture: ResolvedLecture
   /** Current locale — selects which subtitle track is the default/active one. */
   locale?: string
+  /**
+   * Whether to show the Embed button (copy an iframe snippet for this lecture).
+   * @default true
+   */
+  showEmbedButton?: boolean
 }
 
 /** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
@@ -69,7 +74,7 @@ function formatLength(seconds: number): string {
   return total < 60 ? `${total} sec` : `${Math.floor(total / 60)} min`
 }
 
-export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
+export function LectureTemplate({ lecture, locale, showEmbedButton = true }: LectureTemplateProps) {
   // A clip shows its playable window length; a full lecture shows the whole
   // source duration.
   const windowSeconds =
@@ -97,11 +102,22 @@ export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
 
       <LecturePlayer className="mb-4" lecture={lecture} locale={locale} />
 
-      {displaySeconds > 0 ? (
-        <Badge color="primary" shape="circular">
-          {formatLength(displaySeconds)}
-        </Badge>
-      ) : null}
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          {displaySeconds > 0 ? (
+            <Badge color="primary" shape="circular">
+              {formatLength(displaySeconds)}
+            </Badge>
+          ) : null}
+        </div>
+        {showEmbedButton ? (
+          <EmbedButton
+            embedPath={`/l/${lecture.id}`}
+            locale={locale}
+            title={lecture.title ?? undefined}
+          />
+        ) : null}
+      </div>
     </article>
   )
 }

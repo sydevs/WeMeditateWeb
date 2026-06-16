@@ -10,5 +10,6 @@ import { MeditationTemplate } from '../../../components/templates'
 export function Page() {
   const { meditation } = useData<MeditationEmbedPageData>()
 
-  return <MeditationTemplate meditation={meditation} />
+  // Already inside an embed iframe — don't offer embed-in-embed.
+  return <MeditationTemplate meditation={meditation} showEmbedButton={false} />
 }

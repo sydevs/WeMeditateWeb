@@ -16,6 +16,7 @@
 
 import type { Meditation } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
+import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/cms-relationships'
 
 export interface MeditationTemplateProps {
@@ -38,6 +39,12 @@ export interface MeditationTemplateProps {
    * Uses { timestamp, id } format so each command is unique, allowing repeated seeks to the same position.
    */
   seekTo?: { timestamp: number; id: number } | null
+  /**
+   * Whether to show the Embed button (copy an iframe snippet for this meditation).
+   * Disable on the embed route itself to avoid offering embed-in-embed.
+   * @default true
+   */
+  showEmbedButton?: boolean
 }
 
 export function MeditationTemplate({
@@ -45,6 +52,7 @@ export function MeditationTemplate({
   onPlaybackTimeUpdate,
   timeDisplay,
   seekTo,
+  showEmbedButton = true,
 }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
@@ -143,6 +151,12 @@ export function MeditationTemplate({
 
   return (
     <div className="max-w-6xl mx-auto h-full">
+      {showEmbedButton ? (
+        <div className="mb-2 flex justify-end">
+          <EmbedButton embedPath={`/m/${meditation.id}`} title={meditation.title ?? undefined} />
+        </div>
+      ) : null}
+
       {/* Meditation Player */}
       <MeditationPlayer
         frames={frames}
