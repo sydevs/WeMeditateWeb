@@ -16,11 +16,12 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
   title?: string
 
   /**
-   * Aspect ratio applied uniformly to every card image so all cards share a
-   * consistent height. Overrides each item's own aspect ratio.
-   * @default 'video'
+   * Fixed image height (Tailwind height classes) applied to every card so the
+   * row shares a consistent height while each image keeps its own aspect ratio
+   * (widths vary). Overrides each item's aspect ratio.
+   * @default 'h-56 sm:h-64 lg:h-72'
    */
-  aspectRatio?: ContentCardProps['aspectRatio']
+  imageHeight?: string
 
   /**
    * Custom class name for the carousel container
@@ -52,7 +53,7 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
 export function ContentCarousel({
   items,
   title,
-  aspectRatio = 'video',
+  imageHeight = 'h-56 sm:h-64 lg:h-72',
   className = '',
   ...props
 }: ContentCarouselProps) {
@@ -130,14 +131,15 @@ export function ContentCarousel({
             return (
               <div
                 key={index}
-                className={`flex-[0_0_85%] transition-opacity duration-300 sm:flex-[0_0_55%] lg:flex-[0_0_40%] ${
+                className={`flex-[0_0_auto] transition-opacity duration-300 ${
                   isFocused ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'
                 }`}
                 onClick={() => scrollTo(index)}
               >
                 <div className={isFocused ? '' : 'pointer-events-none'}>
-                  {/* aspectRatio is forced so every card image is the same height */}
-                  <ContentCard {...item} aspectRatio={aspectRatio} variant="hero" />
+                  {/* Fixed image height (natural width) → consistent row height
+                      without forcing a single aspect ratio. */}
+                  <ContentCard {...item} imageHeight={imageHeight} variant="hero" />
                 </div>
               </div>
             )

@@ -43,12 +43,13 @@ export type BlockConverters = NonNullable<JSXConverters['blocks']>
 
 /**
  * Standard spacing applied to non-typographic blocks (media/sections): a small
- * vertical margin so they read as distinct sections within the article's flex
- * `gap-3` flow, plus `mx-auto` so width-constrained blocks (e.g. the quote)
- * stay centered — handled here at the organism level rather than per component.
- * Buttons are treated as typographic and intentionally omit it.
+ * vertical margin so they read as distinct sections, `mx-auto` so
+ * width-constrained blocks (e.g. the quote) stay centered, and `clear-both` so
+ * a block never collides with a floated blockquote. Handled here at the organism
+ * level rather than per component. Buttons are treated as typographic and
+ * intentionally omit it.
  */
-export const BLOCK_SPACING = 'mx-auto my-6'
+export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
 
 export const blockConverters: BlockConverters = {
   // textbox → ContentTextBox. imagePosition left/right map to the side layout;

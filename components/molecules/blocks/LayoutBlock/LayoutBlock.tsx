@@ -37,7 +37,11 @@ function LayoutCard({ item, orientation }: { item: LayoutItem; orientation: 'gri
 
   return (
     <div
-      className={orientation === 'list' ? 'flex flex-col gap-4 sm:flex-row' : 'flex flex-col gap-3'}
+      className={
+        orientation === 'list'
+          ? 'flex flex-col gap-4 sm:flex-row sm:items-center'
+          : 'flex flex-col gap-3'
+      }
     >
       {img && (
         <div className={orientation === 'list' ? 'sm:w-1/3 sm:shrink-0' : ''}>

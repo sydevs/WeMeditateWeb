@@ -61,11 +61,11 @@ const list = (listType: 'bullet' | 'number', items: string[]) => ({
   version: 1,
 })
 
-const quote = (value: string) => ({
+const quote = (value: string, format = '') => ({
   type: 'quote',
   children: [text(value)],
   direction: 'ltr',
-  format: '',
+  format,
   indent: 0,
   version: 1,
 })
@@ -220,11 +220,29 @@ const pageContent = editorState([
   paragraph([text('A calm corner is all you need to begin.')]),
   list('bullet', ['Sit comfortably', 'Soften your gaze', 'Notice the breath']),
   quote('The quieter you become, the more you are able to hear.'),
+  quote('Stillness is where creativity and solutions are found.', 'left'),
   uploadImage(FIGURE_IMAGE, 'A calm landscape', 'Morning light over the hills', 'center'),
   uploadImage(FIGURE_IMAGE, 'A meadow at dawn', 'A right-aligned figure', 'right'),
   uploadImage(FIGURE_IMAGE, 'A wide vista', 'A wide (full-width) figure', 'wide'),
 
-  // Text box (overlay variant exercises every conditional field)
+  // Text box — all three image positions (left / right side layouts + overlay)
+  block('textbox', {
+    imagePosition: 'left',
+    title: 'Get Connected',
+    text: 'Meditation is even stronger when shared. Discover free collective meditations near you.',
+    buttonText: 'Classes near me',
+    buttonUrl: '#',
+    image: imageRef('textbox-left', 'Group class', 900, 1200),
+  }),
+  block('textbox', {
+    imagePosition: 'right',
+    title: 'Learn the Technique',
+    text: 'A few minutes a day is enough to begin a steady practice.',
+    buttonText: 'Start now',
+    buttonUrl: '#',
+    image: imageRef('textbox-right', 'Meditating', 900, 1200),
+  }),
+  // Overlay variant also exercises every conditional field
   block('textbox', {
     imagePosition: 'overlay',
     textPosition: 'center',
