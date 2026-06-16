@@ -124,12 +124,16 @@ export function LightboxProvider({ children }: LightboxProviderProps) {
   const value = useMemo(() => ({ register, unregister, openAt }), [register, unregister, openAt])
 
   const slides = active ? (groups[active.group] ?? []).map((r) => r.slide) : []
+  // If the active group lost images while the overlay was open (e.g. a
+  // live-preview edit removing a gallery image), clamp the index and drop the
+  // overlay once empty, so the library never receives an out-of-range index.
+  const index = Math.min(active?.index ?? 0, Math.max(slides.length - 1, 0))
 
   return (
     <LightboxContext.Provider value={value}>
       {children}
-      {active ? (
-        <Lightbox open close={() => setActive(null)} index={active.index} slides={slides} />
+      {active && slides.length > 0 ? (
+        <Lightbox open close={() => setActive(null)} index={index} slides={slides} />
       ) : null}
     </LightboxContext.Provider>
   )

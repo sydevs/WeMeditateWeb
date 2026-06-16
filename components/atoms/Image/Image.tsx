@@ -170,7 +170,8 @@ export function Image({
   )
 
   // Register the slide with the ambient provider so the shared overlay can show
-  // it; effects don't run during SSR, so the server output stays a plain trigger.
+  // it. Effects don't run during SSR, so registration happens on the client
+  // after hydration; the trigger markup itself renders on both.
   useEffect(() => {
     if (!lightbox || !lightboxGroup || !slide) {
       return
