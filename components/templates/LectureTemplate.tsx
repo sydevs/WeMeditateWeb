@@ -15,13 +15,20 @@
 
 import type { ResolvedLecture } from '../../server/cms-types'
 import { VideoPlayer } from '../molecules'
-import { Duration } from '../atoms'
+import { Badge } from '../atoms'
 
 export interface LectureTemplateProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
   /** Current locale — selects which subtitle track is the default/active one. */
   locale?: string
+}
+
+/** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
+function formatLength(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds))
+
+  return total < 60 ? `${total} sec` : `${Math.floor(total / 60)} min`
 }
 
 export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
@@ -63,7 +70,11 @@ export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
         title={lecture.title ?? undefined}
       />
 
-      {displaySeconds > 0 ? <Duration seconds={displaySeconds} variant="badge" /> : null}
+      {displaySeconds > 0 ? (
+        <Badge color="primary" shape="circular">
+          {formatLength(displaySeconds)}
+        </Badge>
+      ) : null}
     </article>
   )
 }

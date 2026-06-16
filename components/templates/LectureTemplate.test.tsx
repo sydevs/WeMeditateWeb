@@ -50,6 +50,15 @@ describe('<LectureTemplate>', () => {
     expect(html).not.toContain('60 min')
   })
 
+  it('shows a sub-minute clip window in seconds, not "0 min"', () => {
+    const clip = makeResolved({ type: 'clip', startTime: 1191, stopTime: 1231 }) // 40s window
+
+    const html = renderToStaticMarkup(<LectureTemplate lecture={clip} />)
+
+    expect(html).toContain('40 sec')
+    expect(html).not.toContain('0 min')
+  })
+
   it('degrades to an error message when there is no resolvable HLS source', () => {
     const html = renderToStaticMarkup(<LectureTemplate lecture={makeResolved({ hlsUrl: null })} />)
 

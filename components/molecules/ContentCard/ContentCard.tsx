@@ -3,7 +3,6 @@ import { PlayIcon } from '@heroicons/react/24/solid'
 import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../atoms/Link'
 import { Button } from '../../atoms/Button/Button'
-import { Duration } from '../../atoms/Duration/Duration'
 import { Badge } from '../../atoms/Badge/Badge'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 
@@ -178,11 +177,11 @@ export function ContentCard({
       {/* Thumbnail with optional play button overlay */}
       <div className="relative">
         <Image
-          src={thumbnailSrc}
           alt={thumbnailAlt || title}
           aspectRatio={aspectRatio}
-          objectFit="cover"
           className="transition-opacity duration-200 group-hover:opacity-90"
+          objectFit="cover"
+          src={thumbnailSrc}
           onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
         />
 
@@ -190,14 +189,14 @@ export function ContentCard({
         {showPlayButton && (
           <div className="absolute inset-0 flex items-center justify-center">
             <Button
-              icon={PlayIcon}
-              variant="primary"
-              size={playButtonSize}
-              shape="square"
-              href={href}
-              locale={locale}
               aria-label={`Play ${title}`}
               className="shadow-lg transition-transform duration-200 group-hover:scale-110"
+              href={href}
+              icon={PlayIcon}
+              locale={locale}
+              shape="square"
+              size={playButtonSize}
+              variant="primary"
             />
           </div>
         )}
@@ -206,19 +205,12 @@ export function ContentCard({
         {(durationMinutes !== undefined || badge) && (
           <div className="absolute bottom-2 left-2 flex gap-2">
             {durationMinutes !== undefined && (
-              <Badge
-                color="primary"
-                shape="circular"
-              >
+              <Badge color="primary" shape="circular">
                 {durationMinutes} min
               </Badge>
             )}
             {badge && (
-              <Badge
-                color="secondary"
-                shape="circular"
-                href={badgeUrl}
-              >
+              <Badge color="secondary" href={badgeUrl} shape="circular">
                 {badge}
               </Badge>
             )}
@@ -231,15 +223,15 @@ export function ContentCard({
         {/* Title - styling based on variant and description presence */}
         <h3 className={titleClasses}>
           <Link
-            href={href}
-            locale={locale}
-            variant="unstyled"
-            size="inherit"
             className={
               isHeroVariant
                 ? 'text-gray-500 hover:text-teal-600 transition-colors duration-200'
                 : 'text-gray-700 hover:text-teal-600 transition-colors duration-200'
             }
+            href={href}
+            locale={locale}
+            size="inherit"
+            variant="unstyled"
           >
             {title}
           </Link>
@@ -247,9 +239,7 @@ export function ContentCard({
 
         {/* Optional description */}
         {description && (
-          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-            {description}
-          </p>
+          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">{description}</p>
         )}
       </div>
     </article>
