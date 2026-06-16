@@ -525,6 +525,18 @@ describe('<RichText>', () => {
     expect(withoutDebug).not.toContain('aria-label="Log ')
   })
 
+  it('renders a lexical blockquote (distinct from the quote block) with visible styling', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([{ type: 'quote', children: [text('A wise saying')], version: 1 }])}
+      />,
+    )
+
+    expect(html).toContain('<blockquote')
+    expect(html).toContain('A wise saying')
+    expect(html).toContain('border-teal-400')
+  })
+
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
     // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(

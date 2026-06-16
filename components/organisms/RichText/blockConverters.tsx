@@ -11,7 +11,13 @@
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Button, Image } from '../../atoms'
-import { ContentGrid, HeroQuote, LayoutBlock, TableOfContents } from '../../molecules'
+import {
+  ContentCarousel,
+  ContentGrid,
+  HeroQuote,
+  LayoutBlock,
+  TableOfContents,
+} from '../../molecules'
 import { ContentTextBox } from '../ContentTextBox'
 import { Splash } from '../Splash'
 import { SubtleSystem } from '../SubtleSystem'
@@ -36,11 +42,13 @@ import {
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
 
 /**
- * Standard vertical margin applied to non-typographic blocks (media/sections) so
- * they read as distinct sections within the article's flex `gap-3` flow. Buttons
- * are treated as typographic and intentionally omit it.
+ * Standard spacing applied to non-typographic blocks (media/sections): a small
+ * vertical margin so they read as distinct sections within the article's flex
+ * `gap-3` flow, plus `mx-auto` so width-constrained blocks (e.g. the quote)
+ * stay centered — handled here at the organism level rather than per component.
+ * Buttons are treated as typographic and intentionally omit it.
  */
-export const BLOCK_SPACING = 'my-6'
+export const BLOCK_SPACING = 'mx-auto my-6'
 
 export const blockConverters: BlockConverters = {
   // textbox → ContentTextBox. imagePosition left/right map to the side layout;
@@ -159,8 +167,9 @@ export const blockConverters: BlockConverters = {
     return <TableOfContents headings={fields.headings} title={fields.title ?? undefined} />
   },
 
-  // showcase → grid of cards from the populated relationships. Unroutable or
-  // thumbnail-less refs are dropped by showcaseItems (no broken/empty cards).
+  // showcase → carousel of hero cards from the populated relationships.
+  // Unroutable or thumbnail-less refs are dropped by showcaseItems (no
+  // broken/empty cards). `id` is stringified for the article-card HTML id.
   showcase: ({ node }) => {
     const fields = node.fields as unknown as ShowcaseBlockFields
     const items = showcaseItems(fields.items)
@@ -169,7 +178,12 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <ContentGrid className={BLOCK_SPACING} items={items} />
+    return (
+      <ContentCarousel
+        className={BLOCK_SPACING}
+        items={items.map((item) => ({ ...item, id: String(item.id) }))}
+      />
+    )
   },
 
   // subtle-system → interactive chart; the 12 page relationships map to SVG

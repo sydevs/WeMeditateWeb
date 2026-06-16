@@ -64,14 +64,13 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
   const titleSize = isMd ? 'text-base sm:text-lg' : 'text-base sm:text-lg' // responsive title
   const creditSize = isMd ? 'text-sm sm:text-base' : 'text-base sm:text-lg' // responsive credit
   const lineHeight = isMd ? 'leading-relaxed' : 'leading-relaxed' // both 1.625
-  const horizontalMargin = isMd ? 'mx-0' : 'mx-4 sm:mx-8 md:mx-16'
   const dividerSpacing = isMd ? 'mb-8' : 'mb-10.5'
   const dividerSpacingBottom = isMd ? 'mt-8' : 'mt-10.5'
 
   return (
     <blockquote
       aria-label={title || 'Quote'}
-      className={`${blockquoteMaxWidth} ${horizontalMargin} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
+      className={`${blockquoteMaxWidth} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
       role="region"
     >
       {/* Top leaf divider */}

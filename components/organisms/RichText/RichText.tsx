@@ -102,7 +102,7 @@ const CONVERTERS: JSXConverters = {
   // Styled here rather than via ARTICLE_CLASS so the rule can't also hit the
   // HeroQuote <blockquote>, which is a direct child too.
   quote: ({ node, nodesToJSX }) => (
-    <blockquote className="border-l-4 border-teal-200 pl-4 text-lg font-light text-gray-600 italic">
+    <blockquote className="border-l-4 border-teal-400 pl-6 text-xl text-gray-600 italic">
       {nodesToJSX({ nodes: node.children })}
     </blockquote>
   ),
