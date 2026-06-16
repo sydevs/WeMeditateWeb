@@ -427,7 +427,7 @@ const pageContent = editorState([
  */
 export const Default: Story = () => (
   <div className="mx-auto max-w-4xl p-6">
-    <RichText content={pageContent} />
+    <RichText debug content={pageContent} />
   </div>
 )
 

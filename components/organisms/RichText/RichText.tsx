@@ -3,14 +3,14 @@ import {
   RichText as LexicalRichText,
   defaultJSXConverters,
 } from '@payloadcms/richtext-lexical/react'
-import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
+import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
-import { blockConverters } from './blockConverters'
+import { blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
@@ -210,12 +210,61 @@ const CONVERTERS: JSXConverters = {
   },
 }
 
+/** The callable form of a block converter (its args carry the block `node`). */
+type BlockConverterFn = Extract<JSXConverter, (args: never) => unknown>
+
+/**
+ * Wrap every block converter so each rendered block gets a small "?" button in
+ * its top-right corner; clicking it logs the complete block node to the console.
+ * Used only when `debug` is enabled (built per-render, never in production reads
+ * unless explicitly opted in).
+ */
+function withDebugBlocks(converters: BlockConverters): BlockConverters {
+  const debugged: Record<string, BlockConverterFn> = {}
+
+  for (const [blockType, converter] of Object.entries(converters)) {
+    if (typeof converter !== 'function') {
+      continue
+    }
+    const render = converter as unknown as BlockConverterFn
+
+    debugged[blockType] = (args) => {
+      const logNode = () => {
+        // eslint-disable-next-line no-console -- the debug overlay's purpose is to log block data
+        console.log(`[RichText] ${blockType} block`, args.node)
+      }
+
+      return (
+        <div className="relative">
+          {render(args)}
+          <button
+            aria-label={`Log ${blockType} block data`}
+            className="absolute top-1 right-1 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800/70 text-xs font-bold text-white"
+            type="button"
+            onClick={logNode}
+          >
+            ?
+          </button>
+        </div>
+      )
+    }
+  }
+
+  return debugged as unknown as BlockConverters
+}
+
 export interface RichTextProps {
   /** PayloadCMS Lexical serialized editor state (e.g. `page.content`). */
   content?: { root?: unknown } | null
   /** Override the wrapper class (defaults to {@link ARTICLE_CLASS}: flex `gap-3`
    * block spacing + base typography). */
   className?: string
+  /**
+   * Overlay each block with a top-right "?" that logs the block's node data to
+   * the console on click. For development/inspection only.
+   * @default false
+   */
+  debug?: boolean
 }
 
 /**
@@ -225,15 +274,19 @@ export interface RichTextProps {
  * `/react` subpath, which is render-only and Workers-safe) with app-specific
  * overrides for headings, links, relationships and uploads.
  */
-export function RichText({ content, className }: RichTextProps) {
+export function RichText({ content, className, debug = false }: RichTextProps) {
   if (!content || !content.root) {
     return null
   }
+  // The static CONVERTERS are reused as-is unless debug overlays are requested.
+  const converters = debug
+    ? { ...CONVERTERS, blocks: withDebugBlocks(blockConverters) }
+    : CONVERTERS
 
   return (
     <LexicalRichText
       className={className ?? ARTICLE_CLASS}
-      converters={CONVERTERS}
+      converters={converters}
       data={content as unknown as LexicalEditorState}
     />
   )

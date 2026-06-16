@@ -511,6 +511,20 @@ describe('<RichText>', () => {
     expect(html).not.toContain('href=')
   })
 
+  it('overlays a debug "?" button on each block only when debug is enabled', () => {
+    const content = editorState([
+      block('quote', { text: 'Hi' }),
+      block('button', { text: 'Go', url: '#' }),
+    ])
+
+    const withDebug = renderToStaticMarkup(<RichText debug content={content} />)
+    const withoutDebug = renderToStaticMarkup(<RichText content={content} />)
+
+    // One "?" overlay per block when enabled, none by default.
+    expect((withDebug.match(/aria-label="Log /g) ?? []).length).toBe(2)
+    expect(withoutDebug).not.toContain('aria-label="Log ')
+  })
+
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
     // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(
