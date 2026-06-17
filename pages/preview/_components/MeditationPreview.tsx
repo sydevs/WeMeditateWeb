@@ -14,6 +14,8 @@ import { mergePreviewData } from './mergePreviewData'
 
 export interface MeditationPreviewProps {
   initialData: Meditation
+  /** Whether the underlying template shows the Embed button. @default true */
+  showEmbedButton?: boolean
 }
 
 /**
@@ -24,21 +26,26 @@ function getSahajCloudOrigin(): string {
   const url = import.meta.env.PUBLIC__SAHAJCLOUD_URL
 
   if (!url) {
-    console.warn('[MeditationPreview] PUBLIC__SAHAJCLOUD_URL not configured, using "*" as target origin')
+    console.warn(
+      '[MeditationPreview] PUBLIC__SAHAJCLOUD_URL not configured, using "*" as target origin',
+    )
+
     return '*'
   }
 
   try {
     const origin = new URL(url).origin
+
     return origin
   } catch (err) {
     // Explicit error variable for compatibility
     console.warn('[MeditationPreview] Invalid PUBLIC__SAHAJCLOUD_URL:', url, 'error:', err)
+
     return '*'
   }
 }
 
-export function MeditationPreview({ initialData }: MeditationPreviewProps) {
+export function MeditationPreview({ initialData, showEmbedButton = true }: MeditationPreviewProps) {
   // Get the server URL, defaulting to empty string if not configured
   const serverURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
 
@@ -64,6 +71,7 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
       if (event.data.collectionSlug && event.data.collectionSlug !== 'meditations') return
 
       const incoming = event.data.data as Meditation
+
       if (initialData?.id && incoming?.id && incoming.id !== initialData.id) return
 
       setLiveData((current) => mergePreviewData(current ?? initialData, incoming))
@@ -74,6 +82,7 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
     if (!hasSentReadyMessage.current) {
       hasSentReadyMessage.current = true
       const windowToPostTo = window?.opener || window?.parent
+
       windowToPostTo?.postMessage(
         {
           type: 'payload-live-preview',
@@ -104,6 +113,7 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
     }
 
     window.addEventListener('message', handleMessage)
+
     return () => window.removeEventListener('message', handleMessage)
   }, [])
 
@@ -116,10 +126,14 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
       try {
         // Use SahajCloud URL as target origin for security
         const targetOrigin = getSahajCloudOrigin()
-        window.parent.postMessage({
-          type: 'PLAYBACK_TIME_UPDATE',
-          currentTime: Math.floor(currentTime),
-        }, targetOrigin)
+
+        window.parent.postMessage(
+          {
+            type: 'PLAYBACK_TIME_UPDATE',
+            currentTime: Math.floor(currentTime),
+          },
+          targetOrigin,
+        )
       } catch (error) {
         console.error('[MeditationPreview] Failed to send playback update:', error)
       }
@@ -129,9 +143,10 @@ export function MeditationPreview({ initialData }: MeditationPreviewProps) {
   return (
     <MeditationTemplate
       meditation={meditation}
-      onPlaybackTimeUpdate={handlePlaybackTimeUpdate}
-      timeDisplay="elapsed"
       seekTo={seekCommand}
+      showEmbedButton={showEmbedButton}
+      timeDisplay="elapsed"
+      onPlaybackTimeUpdate={handlePlaybackTimeUpdate}
     />
   )
 }

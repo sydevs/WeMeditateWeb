@@ -30,7 +30,7 @@ export const Default: Story = () => (
       description="Non-English locales prefix the embed path (e.g. /es/m/123)."
       title="Locales"
     >
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-8">
         <StorySection title="English (no prefix)" variant="subsection">
           <EmbedButton embedPath="/m/123" locale="en" origin={ORIGIN} />
         </StorySection>
@@ -47,7 +47,7 @@ export const Default: Story = () => (
       description="Same component for meditations (/m/:id) and lectures (/l/:id)."
       title="Content Types"
     >
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-8">
         <StorySection title="Meditation" variant="subsection">
           <EmbedButton embedPath="/m/123" origin={ORIGIN} title="Morning Meditation" />
         </StorySection>
