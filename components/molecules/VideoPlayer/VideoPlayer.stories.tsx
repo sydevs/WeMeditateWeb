@@ -6,9 +6,10 @@ export default {
   title: 'Molecules / Media',
 } satisfies StoryDefault
 
-// Public HLS test stream (Mux) so the player actually loads in Ladle.
-const HLS_URL = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'
-const POSTER = 'https://picsum.photos/seed/videoposter/1280/720'
+// Vidstack's public demo HLS stream + assets, so the player actually loads and
+// the captions menu has real per-locale .vtt tracks to switch between in Ladle.
+const HLS_URL = 'https://files.vidstack.io/sprite-fight/hls/stream.m3u8'
+const POSTER = 'https://files.vidstack.io/sprite-fight/poster.webp'
 
 const SUBTITLES = [
   { content: 'Welcome to this short meditation.', startTimeMs: 0, endTimeMs: 4000 },
@@ -18,8 +19,8 @@ const SUBTITLES = [
 
 // Per-locale external WebVTT tracks (the Lecture subtitle shape).
 const SUBTITLE_TRACKS = [
-  { locale: 'en', url: 'https://test-streams.mux.dev/x36xhzz/subtitles/en.vtt' },
-  { locale: 'fr', url: 'https://test-streams.mux.dev/x36xhzz/subtitles/fr.vtt' },
+  { locale: 'en', url: 'https://files.vidstack.io/sprite-fight/subs/english.vtt' },
+  { locale: 'es', url: 'https://files.vidstack.io/sprite-fight/subs/spanish.vtt' },
 ]
 
 /**
@@ -72,7 +73,7 @@ export const Default: Story = () => (
     >
       <div className="max-w-2xl">
         <VideoPlayer
-          defaultSubtitleLang="fr"
+          defaultSubtitleLang="es"
           hlsUrl={HLS_URL}
           poster={POSTER}
           subtitleTracks={SUBTITLE_TRACKS}
