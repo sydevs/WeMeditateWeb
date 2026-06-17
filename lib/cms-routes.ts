@@ -102,8 +102,25 @@ export function matchDocumentRoute(
   urlPathname: string,
   options: { embed?: boolean } = {},
 ): { routeParams: { id: string } } | false {
-  const suffix = options.embed ? '/embed' : ''
-  const match = urlPathname.match(new RegExp(`^(?:/[a-z]{2})?/${collection}/([^/]+)${suffix}/?$`))
+  const match = urlPathname.match(documentRoutePattern(collection, options.embed ?? false))
 
   return match ? { routeParams: { id: match[1] } } : false
+}
+
+// Vike calls every +route.ts on each request, so build each route regex once
+// (keyed by `collection[/embed]`) rather than on every match attempt. The key
+// space is the fixed set of document collections × {full, embed}.
+const DOCUMENT_ROUTE_PATTERNS = new Map<string, RegExp>()
+
+function documentRoutePattern(collection: string, embed: boolean): RegExp {
+  const suffix = embed ? '/embed' : ''
+  const key = `${collection}${suffix}`
+  let pattern = DOCUMENT_ROUTE_PATTERNS.get(key)
+
+  if (!pattern) {
+    pattern = new RegExp(`^(?:/[a-z]{2})?/${collection}/([^/]+)${suffix}/?$`)
+    DOCUMENT_ROUTE_PATTERNS.set(key, pattern)
+  }
+
+  return pattern
 }
