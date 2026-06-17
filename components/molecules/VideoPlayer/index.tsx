@@ -29,11 +29,11 @@ function VideoPlayerFallback({
 /**
  * Client-only wrapper around the HLS player.
  *
- * The player and hls.js need browser media APIs, so — following the
+ * The player (Vidstack + hls.js) needs browser media APIs, so — following the
  * LocationSearch/mapbox pattern — the implementation is loaded only in the
- * browser via ClientOnly + React.lazy. This keeps hls.js out of the SSR/Workers
- * bundle entirely (not just lazy within it). The poster renders as the
- * server-side fallback.
+ * browser via ClientOnly + React.lazy. This keeps Vidstack and hls.js out of the
+ * SSR/Workers bundle entirely (not just lazy within it). The poster renders as
+ * the server-side fallback.
  */
 export function VideoPlayer(props: VideoPlayerProps) {
   if (!props.hlsUrl) {
