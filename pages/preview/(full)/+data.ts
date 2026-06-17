@@ -17,7 +17,7 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getDocumentById, getWebConfig } from '../../../server/cms-client'
+import { getDocumentById, getMeditationSongs, getWebConfig } from '../../../server/cms-client'
 import { resolveContentIndexBlocks } from '../../../server/content-index'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from '../_components'
@@ -96,11 +96,16 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     })
   }
 
+  // Background music for meditation previews — keeps the live player in sync
+  // with the published routes (other collections have none).
+  const musicTracks = collection === 'meditations' ? await getMeditationSongs({ id, locale }) : []
+
   // Return discriminated union based on collection type
   return {
     collection: collection as CollectionType,
     initialData: data,
     locale,
+    musicTracks,
     settings,
   } as PreviewPageData
 }

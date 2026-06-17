@@ -26,4 +26,5 @@ export {
   type Meditation,
   type Lecture,
   type WebConfig,
+  type MeditationSong,
 } from './types'

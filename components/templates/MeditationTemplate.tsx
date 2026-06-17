@@ -14,7 +14,7 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation } from '../../server/cms-types'
+import type { Meditation, MeditationSong } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
 import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/cms-relationships'
@@ -24,6 +24,12 @@ export interface MeditationTemplateProps {
    * Meditation data from SahajCloud (PayloadCMS)
    */
   meditation: Meditation
+  /**
+   * Background-music tracks for this meditation (from the `/songs` endpoint),
+   * layered under the guided voice inside the player. Empty/omitted ⇒ voice-only.
+   * @default []
+   */
+  musicTracks?: MeditationSong[]
   /**
    * Optional callback fired every 100ms during playback with current time in seconds
    * Also fired on play, pause, and seek events
@@ -49,6 +55,7 @@ export interface MeditationTemplateProps {
 
 export function MeditationTemplate({
   meditation,
+  musicTracks = [],
   onPlaybackTimeUpdate,
   timeDisplay,
   seekTo,
@@ -164,6 +171,7 @@ export function MeditationTemplate({
       {/* Meditation Player */}
       <MeditationPlayer
         frames={frames}
+        musicTracks={musicTracks}
         seekTo={seekTo}
         timeDisplay={timeDisplay}
         track={{

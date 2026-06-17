@@ -8,12 +8,19 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Meditation } from './types'
+import type { Meditation, MeditationSong } from './types'
 import { MeditationTemplate } from '../../../components/templates'
 import { mergePreviewData } from './mergePreviewData'
 
 export interface MeditationPreviewProps {
   initialData: Meditation
+  /**
+   * Background-music tracks for this meditation (from the loader). Live preview
+   * updates only carry editable meditation fields, so the song list stays fixed
+   * for the preview session.
+   * @default []
+   */
+  musicTracks?: MeditationSong[]
   /** Whether the underlying template shows the Embed button. @default true */
   showEmbedButton?: boolean
 }
@@ -45,7 +52,11 @@ function getSahajCloudOrigin(): string {
   }
 }
 
-export function MeditationPreview({ initialData, showEmbedButton = true }: MeditationPreviewProps) {
+export function MeditationPreview({
+  initialData,
+  musicTracks = [],
+  showEmbedButton = true,
+}: MeditationPreviewProps) {
   // Get the server URL, defaulting to empty string if not configured
   const serverURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
 
@@ -143,6 +154,7 @@ export function MeditationPreview({ initialData, showEmbedButton = true }: Medit
   return (
     <MeditationTemplate
       meditation={meditation}
+      musicTracks={musicTracks}
       seekTo={seekCommand}
       showEmbedButton={showEmbedButton}
       timeDisplay="elapsed"

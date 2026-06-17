@@ -7,7 +7,7 @@
 
 'use client'
 
-import type { BasePreviewData, Page, Meditation, Lecture } from './types'
+import type { BasePreviewData, Page, Meditation, Lecture, MeditationSong } from './types'
 import { PreviewBanner } from './PreviewBanner'
 import { PagePreview } from './PagePreview'
 import { MeditationPreview } from './MeditationPreview'
@@ -18,6 +18,13 @@ export interface PreviewProps {
   locale: string
   initialData: Page | Meditation | Lecture
   /**
+   * Background-music tracks for a meditation preview (ignored by other
+   * collections). Threaded into the player so live preview matches the
+   * published routes.
+   * @default []
+   */
+  musicTracks?: MeditationSong[]
+  /**
    * Whether the meditation/lecture preview should show the Embed button.
    * The embed preview (/preview/embed) renders inside an iframe, so it passes
    * false to avoid embed-in-embed — matching the /meditations/:id/embed and
@@ -27,7 +34,13 @@ export interface PreviewProps {
   showEmbedButton?: boolean
 }
 
-export function Preview({ collection, locale, initialData, showEmbedButton = true }: PreviewProps) {
+export function Preview({
+  collection,
+  locale,
+  initialData,
+  musicTracks = [],
+  showEmbedButton = true,
+}: PreviewProps) {
   switch (collection) {
     case 'pages':
       return <PagePreview initialData={initialData as Page} />
@@ -35,6 +48,7 @@ export function Preview({ collection, locale, initialData, showEmbedButton = tru
       return (
         <MeditationPreview
           initialData={initialData as Meditation}
+          musicTracks={musicTracks}
           showEmbedButton={showEmbedButton}
         />
       )
