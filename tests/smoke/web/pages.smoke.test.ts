@@ -12,13 +12,21 @@
  *  - Unknown paths return a real 404 (the ErrorFallback "Content Not Found" page).
  */
 import { describe, it, expect } from 'vitest'
-import { fetchPage, expectRenders, expectNoBrokenLinks, discoverFromCms } from '../_helpers/preview'
+import {
+  fetchPage,
+  expectRenders,
+  expectChrome,
+  expectNoChrome,
+  expectNoBrokenLinks,
+  discoverFromCms,
+} from '../_helpers/preview'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {
     const home = await fetchPage('/')
 
     expectRenders(home, '/')
+    expectChrome(home, '/')
     // The layout nav is built from WebConfig page relationships; an under-populated
     // read renders /undefined hrefs (200 but dead nav). Guard against that.
     expectNoBrokenLinks(home.html, '/')
@@ -60,5 +68,8 @@ describe('web preview pages', () => {
     expect(res.status, 'unknown path should return 404').toBe(404)
     // ErrorType.CLIENT title from ErrorFallback (see ERROR_MARKERS).
     expect(res.html, '404 should render the Content Not Found page').toContain('Content Not Found')
+    // The error page carries no settings, so LayoutChrome falls back to bare —
+    // the _error route must never render with site chrome.
+    expectNoChrome(res, '/__smoke_does_not_exist__')
   })
 })

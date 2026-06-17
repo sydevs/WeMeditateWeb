@@ -2,7 +2,7 @@
  * Data fetching for preview mode - supports multiple content types (pages, meditations, etc.)
  *
  * This endpoint handles SahajCloud live preview for any collection type.
- * Uses LayoutDefault (full chrome with Header/Footer) which requires WeMeditateWebSettings.
+ * Uses LayoutChrome (full chrome with Header/Footer) which requires WeMeditateWebSettings.
  *
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
@@ -17,11 +17,11 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getDocumentById, getWebConfig } from '../../server/cms-client'
-import { resolveContentIndexBlocks } from '../../server/content-index'
+import { getDocumentById, getWebConfig } from '../../../server/cms-client'
+import { resolveContentIndexBlocks } from '../../../server/content-index'
 import { render } from 'vike/abort'
-import { type CollectionType, type FullPreviewData } from './_components'
-import { idSchema, collectionSchema } from '../../server/validation'
+import { type CollectionType, type FullPreviewData } from '../_components'
+import { idSchema, collectionSchema } from '../../../server/validation'
 
 // Re-export for use in +Page.tsx
 export type PreviewPageData = FullPreviewData
@@ -67,7 +67,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  // Fetch WeMeditateWebSettings (required for LayoutDefault with Header/Footer)
+  // Fetch WeMeditateWebSettings (required for LayoutChrome with Header/Footer)
   const settings = await getWebConfig({ locale })
 
   // Fetch content using the generic document fetcher

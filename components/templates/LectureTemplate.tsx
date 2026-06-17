@@ -1,7 +1,7 @@
 /**
  * LectureTemplate - Template for rendering a lecture.
  *
- * Used by both the lecture routes (/lectures/:id, /l/:id) and the live-preview
+ * Used by both the lecture routes (/lectures/:id, /lectures/:id/embed) and the live-preview
  * route so rendering stays consistent. Following Atomic Design, templates
  * represent page-level layout structures.
  *
@@ -14,7 +14,7 @@
  */
 
 import type { ResolvedLecture } from '../../server/cms-types'
-import { VideoPlayer } from '../molecules'
+import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
 
 export interface LecturePlayerProps {
@@ -29,7 +29,7 @@ export interface LecturePlayerProps {
  * The bare lecture video player: maps a `ResolvedLecture` to the shared
  * VideoPlayer (HLS, clip window, per-locale subtitles, poster) and degrades to a
  * short message when no HLS source resolves. Rendered standalone by the embed
- * route (`/l/:id`) and wrapped with a title + duration by LectureTemplate, so
+ * route (`/lectures/:id/embed`) and wrapped with a title + duration by LectureTemplate, so
  * the player wiring stays identical in both.
  */
 export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
@@ -60,6 +60,11 @@ export interface LectureTemplateProps {
   lecture: ResolvedLecture
   /** Current locale — selects which subtitle track is the default/active one. */
   locale?: string
+  /**
+   * Whether to show the Embed button (copy an iframe snippet for this lecture).
+   * @default true
+   */
+  showEmbedButton?: boolean
 }
 
 /** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
@@ -69,7 +74,7 @@ function formatLength(seconds: number): string {
   return total < 60 ? `${total} sec` : `${Math.floor(total / 60)} min`
 }
 
-export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
+export function LectureTemplate({ lecture, locale, showEmbedButton = true }: LectureTemplateProps) {
   // A clip shows its playable window length; a full lecture shows the whole
   // source duration.
   const windowSeconds =
@@ -97,11 +102,21 @@ export function LectureTemplate({ lecture, locale }: LectureTemplateProps) {
 
       <LecturePlayer className="mb-4" lecture={lecture} locale={locale} />
 
-      {displaySeconds > 0 ? (
-        <Badge color="primary" shape="circular">
-          {formatLength(displaySeconds)}
-        </Badge>
-      ) : null}
+      <div className="flex items-center gap-3">
+        {displaySeconds > 0 ? (
+          <Badge color="primary" shape="circular">
+            {formatLength(displaySeconds)}
+          </Badge>
+        ) : null}
+        {showEmbedButton ? (
+          <EmbedButton
+            className="ml-auto"
+            embedPath={`/lectures/${lecture.id}/embed`}
+            locale={locale}
+            title={lecture.title ?? undefined}
+          />
+        ) : null}
+      </div>
     </article>
   )
 }

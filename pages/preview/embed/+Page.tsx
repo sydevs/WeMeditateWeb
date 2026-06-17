@@ -1,8 +1,9 @@
 /**
  * Embed Live Preview Page for SahajCloud
  *
- * This page displays live preview of draft content using LayoutEmbed
- * (minimal layout without Header/Footer).
+ * This page displays live preview of draft content with no site chrome: it sets
+ * no Layout, so it inherits only the global LayoutRoot (no Header/Footer) — for
+ * previewing how an embedded player will look.
  *
  * Uses window.postMessage to receive real-time updates as editors make changes.
  *
@@ -28,6 +29,8 @@ function Page() {
       collection={collection}
       locale={locale}
       initialData={initialData}
+      // Embed preview already renders inside an iframe — no embed-in-embed.
+      showEmbedButton={false}
     />
   )
 }

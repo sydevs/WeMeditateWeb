@@ -1,10 +1,12 @@
 /**
- * Single source of truth for mapping a PayloadCMS collection + document to the
- * web app's route for that document.
+ * Single source of truth for the web app's document routes, in both directions:
+ * - building a path from a collection + document ({@link cmsHref}), and
+ * - matching an incoming URL back to its route params ({@link matchDocumentRoute}).
  *
- * Used by the RichText renderer (internal links + inline relationship nodes) and
- * reused by the `showcase` block in Ticket 2. Keeping the mapping in one place
- * means new routes (e.g. lectures, albums) are wired up by editing a single
+ * `cmsHref` is used by the RichText renderer (internal links + inline relationship
+ * nodes) and reused by the `showcase` block in Ticket 2. `matchDocumentRoute` is
+ * used by the meditation/lecture `+route.ts` files. Keeping the mapping in one
+ * place means new routes (e.g. lectures, albums) are wired up by editing a single
  * table rather than hunting through converters.
  *
  * Collections without a public web route (forms, app-cards) — or documents that
@@ -82,4 +84,43 @@ export function cmsHref(
   }
 
   return builder({ id: refId(value), slug: refSlug(value) })
+}
+
+/**
+ * Match an incoming URL path against a collection's document route, returning the
+ * Vike route params (`{ id }`) or `false`. The matching inverse of {@link cmsHref}
+ * for the full and embed routes, so the path shapes live in one tested place:
+ *
+ * - full:  `/meditations/:id`        (+ optional `/:locale` prefix)
+ * - embed: `/meditations/:id/embed`  (+ optional `/:locale` prefix)
+ *
+ * The id is a single path segment (`[^/]+`), so the full matcher never swallows
+ * the embed route, and the embed matcher requires the trailing `/embed`.
+ */
+export function matchDocumentRoute(
+  collection: string,
+  urlPathname: string,
+  options: { embed?: boolean } = {},
+): { routeParams: { id: string } } | false {
+  const match = urlPathname.match(documentRoutePattern(collection, options.embed ?? false))
+
+  return match ? { routeParams: { id: match[1] } } : false
+}
+
+// Vike calls every +route.ts on each request, so build each route regex once
+// (keyed by `collection[/embed]`) rather than on every match attempt. The key
+// space is the fixed set of document collections × {full, embed}.
+const DOCUMENT_ROUTE_PATTERNS = new Map<string, RegExp>()
+
+function documentRoutePattern(collection: string, embed: boolean): RegExp {
+  const suffix = embed ? '/embed' : ''
+  const key = `${collection}${suffix}`
+  let pattern = DOCUMENT_ROUTE_PATTERNS.get(key)
+
+  if (!pattern) {
+    pattern = new RegExp(`^(?:/[a-z]{2})?/${collection}/([^/]+)${suffix}/?$`)
+    DOCUMENT_ROUTE_PATTERNS.set(key, pattern)
+  }
+
+  return pattern
 }

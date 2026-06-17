@@ -1,10 +1,10 @@
 import { useData } from 'vike-react/useData'
 import type { MeditationPageData } from './+data'
-import { MeditationTemplate } from '../../../components/templates'
+import { MeditationTemplate } from '../../../../components/templates'
 
 /**
- * Meditation page with full layout (sidebar, navigation)
- * Renders the meditation player with frame-based media
+ * Full meditation page (/meditations/:id) — rendered with site chrome. Shows the
+ * Embed button so visitors can grab the iframe snippet.
  */
 export function Page() {
   const { meditation } = useData<MeditationPageData>()

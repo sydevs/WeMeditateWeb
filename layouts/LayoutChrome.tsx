@@ -1,21 +1,25 @@
-import './fonts.css'
-import './style.css'
-import './tailwind.css'
-import { ErrorFallback } from '../components/molecules'
 import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig } from '../server/cms-types'
-import * as Sentry from '@sentry/react'
 
-export default function LayoutDefault({ children }: { children: React.ReactNode }) {
+/**
+ * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
+ *
+ * Opt-in: only routes that set `Layout: LayoutChrome` in their `+config.ts` get
+ * chrome. It nests inside the global LayoutRoot (which owns CSS + the Sentry
+ * error boundary). Embed routes omit it entirely and render bare.
+ */
+export default function LayoutChrome({ children }: { children: React.ReactNode }) {
   const data = useData<{ settings?: WebConfig }>()
   const { locale } = usePageContext()
   const settings = data?.settings
 
-  // If settings unavailable (e.g., during error page rendering when CMS is down),
-  // render minimal layout without header/footer
+  // CMS-down / error-page fallback: when settings are unavailable (the _error
+  // page carries no data, or the CMS is unreachable) render the content with no
+  // chrome rather than crashing on missing nav config. This is the ONLY remaining
+  // use of the settings check — layout selection itself is handled by Vike config.
   if (!settings) {
     return <>{children}</>
   }
@@ -93,22 +97,7 @@ export default function LayoutDefault({ children }: { children: React.ReactNode 
       </div>
 
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <Sentry.ErrorBoundary
-            fallback={({ error, resetError }) => (
-              <ErrorFallback
-                error={error as Error}
-                resetError={resetError}
-                showDetails={import.meta.env.DEV}
-              />
-            )}
-            onError={(error, componentStack, eventId) => {
-              console.error('[ErrorBoundary] Caught error:', { error, eventId })
-            }}
-          >
-            {children}
-          </Sentry.ErrorBoundary>
-        </div>
+        <div className="max-w-7xl mx-auto px-6 py-8">{children}</div>
       </main>
 
       <Footer
