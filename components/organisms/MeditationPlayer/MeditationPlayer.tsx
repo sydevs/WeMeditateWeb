@@ -1,6 +1,7 @@
 import {
   ComponentProps,
   ReactNode,
+  useId,
   useMemo,
   useCallback,
   useEffect,
@@ -351,9 +352,25 @@ function MeditationPlayerInner({
   className = '',
   ...props
 }: MeditationPlayerProps) {
+  // react-use-audio-player caches Howl instances in a module-global map keyed by
+  // `src`, so multiple players on one page sharing a track URL (e.g. the Ladle
+  // story) would drive a single shared audio instance — pressing play on one
+  // plays them all, and unmounting one unloads the others. Give each player
+  // instance a unique audio URL via an ignored query param so every player owns
+  // an isolated Howl. The CMS server ignores the extra param; Howler strips the
+  // query before codec detection, so playback is unaffected. In production there
+  // is only ever one player per page, so this adds no real cost there.
+  const instanceId = useId()
+  const isolatedTrackUrl = useMemo(() => {
+    if (!track.url) return track.url
+    const separator = track.url.includes('?') ? '&' : '?'
+
+    return `${track.url}${separator}__player=${encodeURIComponent(instanceId)}`
+  }, [track.url, instanceId])
+
   // Core audio player hook (handles time polling, seek callbacks, track loading)
   const [state, controls] = useAudioPlayer({
-    url: track.url,
+    url: isolatedTrackUrl,
     onPlay,
     onPause,
     onPlaybackTimeUpdate,
