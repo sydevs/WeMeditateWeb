@@ -151,6 +151,10 @@ export function VideoPlayer({
         className="w-full"
         clipEndTime={clipEndTime}
         clipStartTime={clipStartTime}
+        // Defer hls.js + the stream until the viewer presses play (the poster
+        // still loads eagerly). Keeps the initial load light and, when several
+        // players share a page, avoids every instance spinning up hls.js at once.
+        load="play"
         poster={poster}
         src={{ src: hlsUrl, type: 'application/x-mpegurl' }}
         style={PLAYER_STYLE}
