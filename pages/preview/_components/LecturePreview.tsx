@@ -18,9 +18,15 @@ export interface LecturePreviewProps {
   initialData: Lecture
   /** Current locale — selects which subtitle track is the default. */
   locale?: string
+  /** Whether the underlying template shows the Embed button. @default true */
+  showEmbedButton?: boolean
 }
 
-export function LecturePreview({ initialData, locale }: LecturePreviewProps) {
+export function LecturePreview({
+  initialData,
+  locale,
+  showEmbedButton = true,
+}: LecturePreviewProps) {
   // useLivePreview listens for postMessage updates from SahajCloud admin.
   // depth: 2 populates a clip's `fullLecture` so its parent metadata resolves.
   const { data: liveData } = useLivePreview<Lecture>({
@@ -32,5 +38,5 @@ export function LecturePreview({ initialData, locale }: LecturePreviewProps) {
   // Normalize full lectures and clips into the same shape the template expects.
   const lecture = resolveLecture(liveData ?? initialData)
 
-  return <LectureTemplate lecture={lecture} locale={locale} />
+  return <LectureTemplate lecture={lecture} locale={locale} showEmbedButton={showEmbedButton} />
 }

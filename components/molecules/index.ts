@@ -57,6 +57,10 @@ export type { PlaylistProps, MusicFilter } from './Playlist'
 export { SocialShare } from './SocialShare'
 export type { SocialShareProps } from './SocialShare'
 
+// Embed
+export { EmbedButton } from './EmbedButton'
+export type { EmbedButtonProps } from './EmbedButton'
+
 // Footer
 export { FooterLinkList } from './FooterLinkList'
 export { LanguageDropdown } from './LanguageDropdown'

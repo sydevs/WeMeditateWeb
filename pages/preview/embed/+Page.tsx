@@ -28,6 +28,8 @@ function Page() {
       collection={collection}
       locale={locale}
       initialData={initialData}
+      // Embed preview already renders inside an iframe — no embed-in-embed.
+      showEmbedButton={false}
     />
   )
 }
