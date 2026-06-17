@@ -1,9 +1,10 @@
 /**
  * Data fetching for embed preview mode - supports all content types
  *
- * This endpoint is similar to /preview but uses LayoutEmbed (no Header/Footer).
- * Unlike /preview, this does NOT fetch WeMeditateWebSettings since LayoutEmbed
- * doesn't require them.
+ * This endpoint is similar to /preview but renders bare (no site chrome): the
+ * route sets no Layout, so it inherits only the global LayoutRoot. Unlike
+ * /preview, it therefore does NOT fetch WeMeditateWebSettings — there is no
+ * Header/Footer/nav to populate.
  *
  * URL Parameters:
  * - collection: Collection name (e.g., "pages", "meditations")
@@ -22,7 +23,9 @@ export type EmbedPreviewPageData = BasePreviewData
 
 export async function data(pageContext: PageContextServer): Promise<EmbedPreviewPageData> {
   // Extract URL parameters
-  const { search: { collection: collectionParam, id: idParam, secret: previewSecret } } = pageContext.urlParsed
+  const {
+    search: { collection: collectionParam, id: idParam, secret: previewSecret },
+  } = pageContext.urlParsed
   const { locale } = pageContext
 
   // Preview secret is required — the CMS includes it in the iframe URL
@@ -41,23 +44,26 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
 
   // Validate collection type with Zod
   let collection: CollectionType
+
   try {
     collection = collectionSchema.parse(collectionParam)
   } catch (error) {
     const supported = collectionSchema.options.join(', ')
+
     throw render(404, `Invalid collection: "${collectionParam}". Supported types: ${supported}`)
   }
 
   // Validate ID parameter with Zod (numeric ID)
   let id: string
+
   try {
     id = idSchema.parse(idParam)
   } catch (error) {
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  // NOTE: Unlike /preview, we do NOT fetch WeMeditateWebSettings here
-  // because LayoutEmbed doesn't require them (no Header/Footer)
+  // NOTE: Unlike /preview, we do NOT fetch WeMeditateWebSettings here — this
+  // route is bare (LayoutRoot only), so there is no Header/Footer/nav to populate.
 
   // Fetch content using the generic document fetcher
   // Always bypass cache in preview mode to ensure fresh data

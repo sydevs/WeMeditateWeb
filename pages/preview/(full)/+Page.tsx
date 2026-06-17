@@ -2,7 +2,7 @@
  * Live Preview Page for SahajCloud
  *
  * This page displays live preview of draft content from SahajCloud (PayloadCMS)
- * using LayoutDefault (full chrome with Header/Footer).
+ * using LayoutChrome (full chrome with Header/Footer).
  *
  * Uses window.postMessage to receive real-time updates as editors make changes.
  *
@@ -16,18 +16,12 @@
 
 import { useData } from 'vike-react/useData'
 import { PreviewPageData } from './+data'
-import { Preview } from './_components'
+import { Preview } from '../_components'
 
 export { Page }
 
 function Page() {
   const { collection, locale, initialData } = useData<PreviewPageData>()
 
-  return (
-    <Preview
-      collection={collection}
-      locale={locale}
-      initialData={initialData}
-    />
-  )
+  return <Preview collection={collection} initialData={initialData} locale={locale} />
 }

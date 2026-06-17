@@ -20,7 +20,8 @@ export interface PreviewProps {
   /**
    * Whether the meditation/lecture preview should show the Embed button.
    * The embed preview (/preview/embed) renders inside an iframe, so it passes
-   * false to avoid embed-in-embed — matching the /m/:id and /l/:id routes.
+   * false to avoid embed-in-embed — matching the /meditations/:id/embed and
+   * /lectures/:id/embed routes.
    * @default true
    */
   showEmbedButton?: boolean

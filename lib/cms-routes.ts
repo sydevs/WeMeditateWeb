@@ -1,10 +1,12 @@
 /**
- * Single source of truth for mapping a PayloadCMS collection + document to the
- * web app's route for that document.
+ * Single source of truth for the web app's document routes, in both directions:
+ * - building a path from a collection + document ({@link cmsHref}), and
+ * - matching an incoming URL back to its route params ({@link matchDocumentRoute}).
  *
- * Used by the RichText renderer (internal links + inline relationship nodes) and
- * reused by the `showcase` block in Ticket 2. Keeping the mapping in one place
- * means new routes (e.g. lectures, albums) are wired up by editing a single
+ * `cmsHref` is used by the RichText renderer (internal links + inline relationship
+ * nodes) and reused by the `showcase` block in Ticket 2. `matchDocumentRoute` is
+ * used by the meditation/lecture `+route.ts` files. Keeping the mapping in one
+ * place means new routes (e.g. lectures, albums) are wired up by editing a single
  * table rather than hunting through converters.
  *
  * Collections without a public web route (forms, app-cards) — or documents that
@@ -82,4 +84,26 @@ export function cmsHref(
   }
 
   return builder({ id: refId(value), slug: refSlug(value) })
+}
+
+/**
+ * Match an incoming URL path against a collection's document route, returning the
+ * Vike route params (`{ id }`) or `false`. The matching inverse of {@link cmsHref}
+ * for the full and embed routes, so the path shapes live in one tested place:
+ *
+ * - full:  `/meditations/:id`        (+ optional `/:locale` prefix)
+ * - embed: `/meditations/:id/embed`  (+ optional `/:locale` prefix)
+ *
+ * The id is a single path segment (`[^/]+`), so the full matcher never swallows
+ * the embed route, and the embed matcher requires the trailing `/embed`.
+ */
+export function matchDocumentRoute(
+  collection: string,
+  urlPathname: string,
+  options: { embed?: boolean } = {},
+): { routeParams: { id: string } } | false {
+  const suffix = options.embed ? '/embed' : ''
+  const match = urlPathname.match(new RegExp(`^(?:/[a-z]{2})?/${collection}/([^/]+)${suffix}/?$`))
+
+  return match ? { routeParams: { id: match[1] } } : false
 }

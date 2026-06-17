@@ -1,12 +1,16 @@
 import type { Config } from 'vike/types'
 import vikePhoton from 'vike-photon/config'
 import vikeReact from 'vike-react/config'
-import Layout from '../layouts/LayoutDefault.js'
+import Layout from '../layouts/LayoutRoot.js'
 
 // Default config (can be overridden by pages)
 // https://vike.dev/config
 
 export default {
+  // Global layout applied to every route: loads global CSS + the Sentry error
+  // boundary and renders bare. Routes opt into the Header/Footer/nav by ALSO
+  // setting `Layout: LayoutChrome` in their own +config.ts (Vike nests the two,
+  // since `Layout` is cumulative). Embed routes set nothing → bare by construction.
   // https://vike.dev/Layout
   Layout,
 

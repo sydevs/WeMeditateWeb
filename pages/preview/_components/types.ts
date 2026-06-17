@@ -35,7 +35,7 @@ export type BasePreviewData =
     }
 
 /**
- * Full preview data with settings - used by default route (LayoutDefault)
+ * Full preview data with settings - used by the chromed /preview route (LayoutChrome)
  */
 export type FullPreviewData =
   | {

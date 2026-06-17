@@ -23,36 +23,45 @@ export const Default: Story = () => (
       description="Click “Embed” to reveal the snippet and Copy button."
       title="Basic Example"
     >
-      <EmbedButton embedPath="/m/123" origin={ORIGIN} title="Morning Meditation" />
+      <EmbedButton embedPath="/meditations/123/embed" origin={ORIGIN} title="Morning Meditation" />
     </StorySection>
 
     <StorySection
-      description="Non-English locales prefix the embed path (e.g. /es/m/123)."
+      description="Non-English locales prefix the embed path (e.g. /es/meditations/123/embed)."
       title="Locales"
     >
       <div className="flex flex-wrap gap-8">
         <StorySection title="English (no prefix)" variant="subsection">
-          <EmbedButton embedPath="/m/123" locale="en" origin={ORIGIN} />
+          <EmbedButton embedPath="/meditations/123/embed" locale="en" origin={ORIGIN} />
         </StorySection>
         <StorySection title="Spanish (/es)" variant="subsection">
-          <EmbedButton embedPath="/m/123" locale="es" origin={ORIGIN} />
+          <EmbedButton embedPath="/meditations/123/embed" locale="es" origin={ORIGIN} />
         </StorySection>
         <StorySection title="German (/de)" variant="subsection">
-          <EmbedButton embedPath="/l/456" locale="de" origin={ORIGIN} title="Lecture on Joy" />
+          <EmbedButton
+            embedPath="/lectures/456/embed"
+            locale="de"
+            origin={ORIGIN}
+            title="Lecture on Joy"
+          />
         </StorySection>
       </div>
     </StorySection>
 
     <StorySection
-      description="Same component for meditations (/m/:id) and lectures (/l/:id)."
+      description="Same component for meditations (/meditations/:id/embed) and lectures (/lectures/:id/embed)."
       title="Content Types"
     >
       <div className="flex flex-wrap gap-8">
         <StorySection title="Meditation" variant="subsection">
-          <EmbedButton embedPath="/m/123" origin={ORIGIN} title="Morning Meditation" />
+          <EmbedButton
+            embedPath="/meditations/123/embed"
+            origin={ORIGIN}
+            title="Morning Meditation"
+          />
         </StorySection>
         <StorySection title="Lecture" variant="subsection">
-          <EmbedButton embedPath="/l/456" origin={ORIGIN} title="Lecture on Joy" />
+          <EmbedButton embedPath="/lectures/456/embed" origin={ORIGIN} title="Lecture on Joy" />
         </StorySection>
       </div>
     </StorySection>
@@ -60,7 +69,7 @@ export const Default: Story = () => (
     <StorySection inContext={true} title="Examples">
       <div className="flex items-center justify-end gap-3 rounded-lg bg-gray-100 p-4">
         <span className="text-sm text-gray-500">Player chrome</span>
-        <EmbedButton embedPath="/l/456" origin={ORIGIN} title="Lecture on Joy" />
+        <EmbedButton embedPath="/lectures/456/embed" origin={ORIGIN} title="Lecture on Joy" />
       </div>
     </StorySection>
 

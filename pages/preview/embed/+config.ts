@@ -1,17 +1,16 @@
 import type { Config } from 'vike/types'
-import LayoutEmbed from '../../../layouts/LayoutEmbed.js'
 
 /**
- * Config for embed preview route
+ * Config for the embed preview route (/preview/embed).
  *
- * This route uses LayoutEmbed (minimal passthrough) instead of LayoutDefault.
- * Use this for previewing content that should render without site chrome
- * (Header/Footer).
+ * It sets no Layout, so it inherits only the global LayoutRoot and previews
+ * content bare (no Header/Footer) — for checking how an embed will look. The
+ * sibling `(full)` route adds LayoutChrome for the chromed /preview.
  *
- * Both /preview and /preview/embed support all collection types.
- * The route determines the layout, not the collection type.
+ * Both /preview and /preview/embed support all collection types; the route
+ * (not the collection) decides the layout. /preview/embed is loaded by the
+ * SahajCloud live-preview iframe — do not rename it.
  */
 export default {
-  Layout: LayoutEmbed,
   title: 'Preview',
 } satisfies Config

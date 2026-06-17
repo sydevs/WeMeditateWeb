@@ -1,7 +1,7 @@
 /**
  * LectureTemplate - Template for rendering a lecture.
  *
- * Used by both the lecture routes (/lectures/:id, /l/:id) and the live-preview
+ * Used by both the lecture routes (/lectures/:id, /lectures/:id/embed) and the live-preview
  * route so rendering stays consistent. Following Atomic Design, templates
  * represent page-level layout structures.
  *
@@ -29,7 +29,7 @@ export interface LecturePlayerProps {
  * The bare lecture video player: maps a `ResolvedLecture` to the shared
  * VideoPlayer (HLS, clip window, per-locale subtitles, poster) and degrades to a
  * short message when no HLS source resolves. Rendered standalone by the embed
- * route (`/l/:id`) and wrapped with a title + duration by LectureTemplate, so
+ * route (`/lectures/:id/embed`) and wrapped with a title + duration by LectureTemplate, so
  * the player wiring stays identical in both.
  */
 export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
@@ -111,7 +111,7 @@ export function LectureTemplate({ lecture, locale, showEmbedButton = true }: Lec
         {showEmbedButton ? (
           <EmbedButton
             className="ml-auto"
-            embedPath={`/l/${lecture.id}`}
+            embedPath={`/lectures/${lecture.id}/embed`}
             locale={locale}
             title={lecture.title ?? undefined}
           />

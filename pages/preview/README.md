@@ -5,7 +5,7 @@ This directory contains preview routes for PayloadCMS live preview functionality
 ## Routes
 
 - `/preview` - Main preview route that handles pages and meditations
-- `/preview/embed` - Embedded preview route with minimal UI (LayoutEmbed)
+- `/preview/embed` - Embedded preview route, rendered bare with no site chrome (LayoutRoot only)
 
 ## PostMessage Protocol
 
