@@ -16,7 +16,7 @@ import {
   SpeakerXMarkIcon,
   ArrowPathRoundedSquareIcon,
 } from '@heroicons/react/24/solid'
-import { Avatar, Button, Link } from '../../atoms'
+import { Avatar, Button, Dropdown, Link } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
 import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
@@ -217,11 +217,11 @@ interface AudioControlsProps {
 }
 
 /**
- * Speaker button that opens a popover centered above it, holding independent
- * Voice and Music volume sliders (each with its own mute toggle) and a shuffle
- * button for the music track. The Music row is hidden when no songs are
- * available. Closes on outside click or Escape; the speaker icon reflects the
- * voice mute state.
+ * Speaker button that opens a popover (above and centered on the trigger via the
+ * shared Dropdown atom, which keeps it on-screen near viewport edges) holding
+ * independent Voice and Music volume sliders — each with its own mute toggle —
+ * and a shuffle button for the music track. The Music row is hidden when no
+ * songs are available; the speaker icon reflects the voice mute state.
  */
 function AudioControls({
   voiceVolume,
@@ -237,83 +237,56 @@ function AudioControls({
   onToggleMusicMute,
   onShuffle,
 }: AudioControlsProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-
-  // Close the popover on outside click or Escape while it's open.
-  useEffect(() => {
-    if (!isOpen) return
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsOpen(false)
-    }
-
-    document.addEventListener('mousedown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen])
-
   return (
-    <div ref={containerRef} className="relative inline-flex">
-      <Button
-        aria-expanded={isOpen}
-        aria-haspopup="true"
-        aria-label="Audio settings"
-        icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
-        size="lg"
-        variant="ghost"
-        onClick={() => setIsOpen((open) => !open)}
-      />
-
-      {isOpen && (
-        <div
+    <Dropdown
+      align="center"
+      ariaLabel="Audio settings"
+      role="dialog"
+      side="top"
+      trigger={
+        <Button
           aria-label="Audio settings"
-          className="absolute bottom-full left-1/2 z-50 mb-3 w-64 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-4 text-left shadow-xl"
-          role="dialog"
-        >
-          <div className="flex flex-col gap-4">
-            <VolumeRow
-              label="Voice"
-              muted={voiceMuted}
-              volume={voiceVolume}
-              onToggleMute={onToggleVoiceMute}
-              onVolumeChange={onVoiceVolumeChange}
-            />
+          icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
+          size="lg"
+          variant="ghost"
+          // The Dropdown wrapper is the focusable trigger (role=button,
+          // aria-expanded); keep this inner button out of the tab order.
+          tabIndex={-1}
+        />
+      }
+    >
+      <div className="flex w-64 flex-col gap-4 p-4 text-left">
+        <VolumeRow
+          label="Voice"
+          muted={voiceMuted}
+          volume={voiceVolume}
+          onToggleMute={onToggleVoiceMute}
+          onVolumeChange={onVoiceVolumeChange}
+        />
 
-            {hasMusic && (
-              <VolumeRow
-                action={
-                  canShuffle ? (
-                    <Button
-                      aria-label="Shuffle music track"
-                      icon={ArrowPathRoundedSquareIcon}
-                      size="md"
-                      variant="ghost"
-                      onClick={onShuffle}
-                    />
-                  ) : undefined
-                }
-                label="Music"
-                muted={musicMuted}
-                sublabel={musicTrackTitle}
-                volume={musicVolume}
-                onToggleMute={onToggleMusicMute}
-                onVolumeChange={onMusicVolumeChange}
-              />
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+        {hasMusic && (
+          <VolumeRow
+            action={
+              canShuffle ? (
+                <Button
+                  aria-label="Shuffle music track"
+                  icon={ArrowPathRoundedSquareIcon}
+                  size="md"
+                  variant="ghost"
+                  onClick={onShuffle}
+                />
+              ) : undefined
+            }
+            label="Music"
+            muted={musicMuted}
+            sublabel={musicTrackTitle}
+            volume={musicVolume}
+            onToggleMute={onToggleMusicMute}
+            onVolumeChange={onMusicVolumeChange}
+          />
+        )}
+      </div>
+    </Dropdown>
   )
 }
 

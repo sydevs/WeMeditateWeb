@@ -24,7 +24,7 @@ export const Default: Story = () => (
     <StorySection title="Sizes">
       <div className="flex flex-col gap-8">
         <StorySection title="Small" variant="subsection">
-          <Dropdown trigger={<Button variant="secondary">Small Dropdown</Button>} size="sm">
+          <Dropdown size="sm" trigger={<Button variant="secondary">Small Dropdown</Button>}>
             <DropdownItem href="#" size="sm">
               Menu Item 1
             </DropdownItem>
@@ -38,7 +38,7 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Medium (Default)" variant="subsection">
-          <Dropdown trigger={<Button variant="secondary">Medium Dropdown</Button>} size="md">
+          <Dropdown size="md" trigger={<Button variant="secondary">Medium Dropdown</Button>}>
             <DropdownItem href="#" size="md">
               Menu Item 1
             </DropdownItem>
@@ -52,7 +52,7 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Large" variant="subsection">
-          <Dropdown trigger={<Button variant="secondary">Large Dropdown</Button>} size="lg">
+          <Dropdown size="lg" trigger={<Button variant="secondary">Large Dropdown</Button>}>
             <DropdownItem href="#" size="lg">
               Menu Item 1
             </DropdownItem>
@@ -110,7 +110,7 @@ export const Default: Story = () => (
     <StorySection title="Alignment">
       <div className="flex flex-col gap-8">
         <StorySection title="Left Aligned (Default)" variant="subsection">
-          <Dropdown trigger={<Button variant="secondary">Left Aligned</Button>} align="left">
+          <Dropdown align="left" trigger={<Button variant="secondary">Left Aligned</Button>}>
             <DropdownItem href="#">This dropdown opens to the left</DropdownItem>
             <DropdownItem href="#">Perfect for left-side triggers</DropdownItem>
           </Dropdown>
@@ -118,7 +118,7 @@ export const Default: Story = () => (
 
         <StorySection title="Right Aligned" variant="subsection">
           <div className="flex justify-end">
-            <Dropdown trigger={<Button variant="secondary">Right Aligned</Button>} align="right">
+            <Dropdown align="right" trigger={<Button variant="secondary">Right Aligned</Button>}>
               <DropdownItem href="#">This dropdown opens to the right</DropdownItem>
               <DropdownItem href="#">Perfect for right-side triggers</DropdownItem>
             </Dropdown>
@@ -127,11 +127,69 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection title="Placement">
+      <p className="mb-6 max-w-prose text-sm text-gray-600">
+        The panel opens on <code>side</code> and automatically <strong>flips</strong> to the
+        opposite side and <strong>shifts</strong> along the cross-axis to stay within the viewport
+        (open one near a screen edge to see it). Positioning is handled by Floating UI, and the
+        panel is portaled so it is never clipped by an ancestor&rsquo;s overflow.
+      </p>
+      <div className="flex flex-wrap gap-8">
+        {(['bottom', 'top', 'left', 'right'] as const).map((side) => (
+          <StorySection key={side} title={`side="${side}"`} variant="subsection">
+            <Dropdown
+              align="center"
+              side={side}
+              trigger={<Button variant="secondary">Open {side}</Button>}
+            >
+              <DropdownItem href="#">Menu Item 1</DropdownItem>
+              <DropdownItem href="#">Menu Item 2</DropdownItem>
+            </Dropdown>
+          </StorySection>
+        ))}
+      </div>
+    </StorySection>
+
+    <StorySection title="Dialog panel">
+      <p className="mb-6 max-w-prose text-sm text-gray-600">
+        With <code>role=&quot;dialog&quot;</code> the panel holds rich, non-menu content (as the
+        meditation player&rsquo;s audio controls do). Pair it with <code>ariaLabel</code> so the
+        popover is announced.
+      </p>
+      <Dropdown
+        align="center"
+        ariaLabel="Display settings"
+        role="dialog"
+        side="top"
+        trigger={
+          <Button icon={Cog6ToothIcon} variant="secondary">
+            Settings
+          </Button>
+        }
+      >
+        <div className="flex w-64 flex-col gap-3 p-4 text-left">
+          <p className="text-sm font-medium text-gray-700">Display options</p>
+          <label className="flex items-center justify-between gap-3 text-sm text-gray-600">
+            Brightness
+            <input
+              aria-label="Brightness"
+              className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-300 accent-teal-600"
+              max="1"
+              min="0"
+              step="0.01"
+              type="range"
+            />
+          </label>
+        </div>
+      </Dropdown>
+    </StorySection>
+
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-8">
         <div>
           <h3 className="text-sm font-semibold mb-4 text-gray-700">User Menu</h3>
           <Dropdown
+            align="right"
             trigger={
               <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600">
                 <Icon icon={UserIcon} size="sm" />
@@ -139,18 +197,17 @@ export const Default: Story = () => (
                 <Icon icon={ChevronDownIcon} size="xs" />
               </button>
             }
-            align="right"
           >
-            <DropdownItem href="#" className="flex items-center gap-2">
+            <DropdownItem className="flex items-center gap-2" href="#">
               <Icon icon={UserIcon} size="sm" />
               Profile
             </DropdownItem>
-            <DropdownItem href="#" className="flex items-center gap-2">
+            <DropdownItem className="flex items-center gap-2" href="#">
               <Icon icon={Cog6ToothIcon} size="sm" />
               Settings
             </DropdownItem>
             <hr className="my-2" />
-            <DropdownItem href="#" className="flex items-center gap-2 text-error">
+            <DropdownItem className="flex items-center gap-2 text-error" href="#">
               <Icon icon={ArrowRightStartOnRectangleIcon} size="sm" />
               Logout
             </DropdownItem>
@@ -170,7 +227,7 @@ export const Default: Story = () => (
             <DropdownItem href="#">Duplicate</DropdownItem>
             <DropdownItem href="#">Archive</DropdownItem>
             <hr className="my-2" />
-            <DropdownItem href="#" className="text-error">
+            <DropdownItem className="text-error" href="#">
               Delete
             </DropdownItem>
           </Dropdown>
