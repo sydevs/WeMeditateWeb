@@ -82,9 +82,7 @@ export function VideoPlayer({
   // `crossorigin` on the media, which can break native HLS playback in Safari.
   // Blobs are same-origin, so no crossOrigin is needed and the video plays
   // everywhere.
-  const [trackBlobs, setTrackBlobs] = useState<
-    { locale: string; url: string; isDefault: boolean }[]
-  >([])
+  const [trackBlobs, setTrackBlobs] = useState<{ locale: string; url: string }[]>([])
 
   // Stable key so a fresh `subtitleTracks` array identity (e.g. re-resolved on
   // every live-preview render) doesn't trigger a redundant refetch.
@@ -114,7 +112,7 @@ export function VideoPlayer({
 
           created.push(url)
 
-          return { locale: track.locale, url, isDefault: track.locale === defaultSubtitleLang }
+          return { locale: track.locale, url }
         } catch {
           return null
         }
@@ -130,8 +128,10 @@ export function VideoPlayer({
       cancelled = true
       created.forEach((url) => URL.revokeObjectURL(url))
     }
-    // Depends on the stable `tracksKey` (not the array identity) to avoid refetch churn.
-  }, [tracksKey, defaultSubtitleLang])
+    // Keyed on the track URLs only (`tracksKey`), not `defaultSubtitleLang`: the
+    // active track is chosen at render time, so switching locale never refetches
+    // or revokes blob URLs the mounted <Track>s still point at.
+  }, [tracksKey])
 
   if (!hlsUrl) {
     return null
@@ -180,7 +180,7 @@ export function VideoPlayer({
           {trackBlobs.map((track) => (
             <Track
               key={track.locale}
-              default={track.isDefault}
+              default={track.locale === defaultSubtitleLang}
               kind="subtitles"
               label={track.locale.toUpperCase()}
               lang={track.locale}

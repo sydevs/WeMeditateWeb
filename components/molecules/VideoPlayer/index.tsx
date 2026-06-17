@@ -7,9 +7,11 @@ const VideoPlayerLazy = React.lazy(() =>
 )
 
 /**
- * Lightweight SSR/hydration fallback: renders the poster (or an aspect-video
- * placeholder) in the same container as the real player, preserving layout and
- * giving an LCP image without loading hls.js.
+ * Lightweight SSR/hydration fallback: renders the poster (or an empty
+ * placeholder) in the same container as the real player. Both the fallback and
+ * the mounted player use a 16:9 box (the player sets `aspectRatio="16/9"`), so
+ * the poster is `object-cover` here to keep the frame congruent and avoid a
+ * layout shift on hydration, while giving an LCP image without loading the player.
  */
 function VideoPlayerFallback({
   poster,
@@ -18,7 +20,7 @@ function VideoPlayerFallback({
   return (
     <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
       {poster ? (
-        <img alt="" className="h-auto w-full" src={poster} />
+        <img alt="" className="aspect-video w-full object-cover" src={poster} />
       ) : (
         <div className="aspect-video w-full" />
       )}
