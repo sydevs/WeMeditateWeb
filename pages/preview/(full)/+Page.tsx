@@ -22,16 +22,6 @@ export { Page }
 
 function Page() {
   const data = useData<PreviewPageData>()
-  // Narrow on the discriminant so musicTracks is only read for meditations.
-  const musicTracks = data.collection === 'meditations' ? data.musicTracks : []
-  const { collection, locale, initialData } = data
 
-  return (
-    <Preview
-      collection={collection}
-      initialData={initialData}
-      locale={locale}
-      musicTracks={musicTracks}
-    />
-  )
+  return <Preview data={data} />
 }

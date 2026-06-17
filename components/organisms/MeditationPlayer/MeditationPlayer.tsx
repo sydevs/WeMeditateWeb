@@ -424,6 +424,8 @@ function MeditationPlayerInner({
   }, [state.isPlaying, hasMusic, currentMusicUrl])
 
   // Keep the music element's volume/mute in sync, independent of the voice track.
+  // No need to react to the track URL: an <audio> element preserves its volume
+  // and muted properties across a src swap, so this stays correct after a shuffle.
   useEffect(() => {
     const el = musicRef.current
 
@@ -431,7 +433,7 @@ function MeditationPlayerInner({
 
     el.volume = musicVolume
     el.muted = musicMuted
-  }, [musicVolume, musicMuted, currentMusicUrl])
+  }, [musicVolume, musicMuted])
 
   // Shuffle to a different random track (no immediate repeat); playback continues
   // seamlessly via the sync effect above when the source changes.
@@ -616,7 +618,7 @@ function MeditationPlayerInner({
       {/* Background-music layer: a hidden, looping <audio> mixed under the guided
           voice. Its play/pause, volume and mute are driven by the effects above. */}
       {currentMusicTrack && (
-        <audio ref={musicRef} loop aria-hidden="true" preload="auto" src={currentMusicTrack.url} />
+        <audio ref={musicRef} loop aria-hidden="true" preload="none" src={currentMusicTrack.url} />
       )}
 
       <div className="w-full max-w-7xl mx-auto px-6 py-4 flex-1 min-h-0 flex flex-col justify-center">

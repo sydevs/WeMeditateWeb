@@ -23,16 +23,10 @@ export { Page }
 
 function Page() {
   const data = useData<EmbedPreviewPageData>()
-  // Narrow on the discriminant so musicTracks is only read for meditations.
-  const musicTracks = data.collection === 'meditations' ? data.musicTracks : []
-  const { collection, locale, initialData } = data
 
   return (
     <Preview
-      collection={collection}
-      initialData={initialData}
-      locale={locale}
-      musicTracks={musicTracks}
+      data={data}
       // Embed preview already renders inside an iframe — no embed-in-embed.
       showEmbedButton={false}
     />
