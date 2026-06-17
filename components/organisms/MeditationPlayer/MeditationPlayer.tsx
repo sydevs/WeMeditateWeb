@@ -771,11 +771,19 @@ function MeditationPlayerInner({
                 musicVolume={musicVolume}
                 voiceMuted={state.isMuted}
                 voiceVolume={state.volume}
-                onMusicVolumeChange={setMusicVolume}
+                // Adjusting a channel's volume always unmutes it (idempotent), so
+                // a muted track can be brought back simply by moving its slider.
+                onMusicVolumeChange={(volume) => {
+                  setMusicVolume(volume)
+                  setMusicMuted(false)
+                }}
                 onShuffle={handleShuffle}
                 onToggleMusicMute={() => setMusicMuted((muted) => !muted)}
                 onToggleVoiceMute={controls.toggleMute}
-                onVoiceVolumeChange={controls.setVolume}
+                onVoiceVolumeChange={(volume) => {
+                  controls.setVolume(volume)
+                  controls.unmute()
+                }}
               />
             </div>
           </div>
