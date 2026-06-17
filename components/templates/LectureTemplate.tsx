@@ -43,6 +43,7 @@ export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps
 
   return (
     <VideoPlayer
+      autoLoad
       className={className}
       defaultSubtitleLang={locale}
       hlsUrl={lecture.hlsUrl}

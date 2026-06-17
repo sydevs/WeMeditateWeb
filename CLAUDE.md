@@ -324,7 +324,7 @@ dist/
 
 ### Keeping client-only heavy deps out of the Worker bundle
 
-Browser-only libraries (e.g. `hls.js`, `@mapbox/search-js-react`) must be loaded via **`ClientOnly` + `React.lazy` in a barrel**, not just a dynamic `import()` inside an effect. Vike's SSR build still bundles dynamically-imported modules into `dist/server`, so an in-effect `import('hls.js')` left the ~1.1 MB library in the Worker even though it never ran server-side.
+Browser-only libraries (e.g. `vidstack`/`@vidstack/react`, `hls.js`, `@mapbox/search-js-react`) must be loaded via **`ClientOnly` + `React.lazy` in a barrel**, not just a dynamic `import()` inside an effect. Vike's SSR build still bundles dynamically-imported modules into `dist/server`, so an in-effect `import('hls.js')` left the ~1.1 MB library in the Worker even though it never ran server-side.
 
 The pattern (see [components/molecules/LocationSearch/index.tsx](components/molecules/LocationSearch/index.tsx) and [components/molecules/VideoPlayer/index.tsx](components/molecules/VideoPlayer/index.tsx)): the directory `index.tsx` re-exports a wrapper that renders `<ClientOnly fallback={…}><LazyImpl/></ClientOnly>`, where `LazyImpl = React.lazy(() => import('./Impl'))`. `ClientOnly` removes the children server-side entirely, so the heavy impl (and its deps) never enter the SSR graph.
 

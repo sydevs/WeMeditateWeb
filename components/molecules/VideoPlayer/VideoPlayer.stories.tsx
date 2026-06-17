@@ -6,9 +6,10 @@ export default {
   title: 'Molecules / Media',
 } satisfies StoryDefault
 
-// Public HLS test stream (Mux) so the player actually loads in Ladle.
-const HLS_URL = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'
-const POSTER = 'https://picsum.photos/seed/videoposter/1280/720'
+// Vidstack's public demo HLS stream + assets, so the player actually loads and
+// the captions menu has real per-locale .vtt tracks to switch between in Ladle.
+const HLS_URL = 'https://files.vidstack.io/sprite-fight/hls/stream.m3u8'
+const POSTER = 'https://files.vidstack.io/sprite-fight/poster.webp'
 
 const SUBTITLES = [
   { content: 'Welcome to this short meditation.', startTimeMs: 0, endTimeMs: 4000 },
@@ -18,18 +19,20 @@ const SUBTITLES = [
 
 // Per-locale external WebVTT tracks (the Lecture subtitle shape).
 const SUBTITLE_TRACKS = [
-  { locale: 'en', url: 'https://test-streams.mux.dev/x36xhzz/subtitles/en.vtt' },
-  { locale: 'fr', url: 'https://test-streams.mux.dev/x36xhzz/subtitles/fr.vtt' },
+  { locale: 'en', url: 'https://files.vidstack.io/sprite-fight/subs/english.vtt' },
+  { locale: 'es', url: 'https://files.vidstack.io/sprite-fight/subs/spanish.vtt' },
 ]
 
 /**
- * VideoPlayer is a client-only HLS player: it prefers native HLS (Safari/iOS)
- * and otherwise lazy-loads hls.js. It supports a poster, an optional
- * [startTime, stopTime] window, and subtitles via either inline cues (Video
- * collection) or per-locale external .vtt URLs (Lectures).
+ * VideoPlayer is a client-only HLS player built on Vidstack's `<MediaPlayer>` +
+ * default layout: brand-teal (#61aaa0), touch-friendly controls with a captions
+ * menu over a native `<video>`. HLS plays natively (Safari/iOS) or via our
+ * bundled hls.js. It supports a poster, an optional [startTime, stopTime] window
+ * (relinearized via Vidstack clipping), and subtitles via either inline cues
+ * (Video collection) or per-locale external .vtt URLs (Lectures).
  *
  * Note: these stories import the raw player; in the app it's wrapped in
- * ClientOnly so hls.js stays out of the SSR/Workers bundle.
+ * ClientOnly so Vidstack and hls.js stay out of the SSR/Workers bundle.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -56,7 +59,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="A [startTime, stopTime] window (a clip) is presented as an isolated video: native controls are replaced by a custom bar whose timeline runs 0:00 → the window length (0:10 here), not the underlying media position. Used by Lecture clips."
+      description="A [startTime, stopTime] window (a clip) is passed to Vidstack's clipStartTime/clipEndTime: the timeline is relinearized to 0:00 → the window length (0:10 here), not the underlying media position, and playback seeks to the start and pauses at the stop. Used by Lecture clips."
       title="Playback window (clip)"
     >
       <div className="max-w-2xl">
@@ -70,7 +73,7 @@ export const Default: Story = () => (
     >
       <div className="max-w-2xl">
         <VideoPlayer
-          defaultSubtitleLang="fr"
+          defaultSubtitleLang="es"
           hlsUrl={HLS_URL}
           poster={POSTER}
           subtitleTracks={SUBTITLE_TRACKS}

@@ -7,9 +7,11 @@ const VideoPlayerLazy = React.lazy(() =>
 )
 
 /**
- * Lightweight SSR/hydration fallback: renders the poster (or an aspect-video
- * placeholder) in the same container as the real player, preserving layout and
- * giving an LCP image without loading hls.js.
+ * Lightweight SSR/hydration fallback: renders the poster (or an empty
+ * placeholder) in the same container as the real player. Both the fallback and
+ * the mounted player use a 16:9 box (the player sets `aspectRatio="16/9"`), so
+ * the poster is `object-cover` here to keep the frame congruent and avoid a
+ * layout shift on hydration, while giving an LCP image without loading the player.
  */
 function VideoPlayerFallback({
   poster,
@@ -18,7 +20,7 @@ function VideoPlayerFallback({
   return (
     <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
       {poster ? (
-        <img alt="" className="h-auto w-full" src={poster} />
+        <img alt="" className="aspect-video w-full object-cover" src={poster} />
       ) : (
         <div className="aspect-video w-full" />
       )}
@@ -29,11 +31,11 @@ function VideoPlayerFallback({
 /**
  * Client-only wrapper around the HLS player.
  *
- * The player and hls.js need browser media APIs, so — following the
+ * The player (Vidstack + hls.js) needs browser media APIs, so — following the
  * LocationSearch/mapbox pattern — the implementation is loaded only in the
- * browser via ClientOnly + React.lazy. This keeps hls.js out of the SSR/Workers
- * bundle entirely (not just lazy within it). The poster renders as the
- * server-side fallback.
+ * browser via ClientOnly + React.lazy. This keeps Vidstack and hls.js out of the
+ * SSR/Workers bundle entirely (not just lazy within it). The poster renders as
+ * the server-side fallback.
  */
 export function VideoPlayer(props: VideoPlayerProps) {
   if (!props.hlsUrl) {
