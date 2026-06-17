@@ -1,21 +1,24 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { MediaPlayer, MediaProvider, Track, isHLSProvider } from '@vidstack/react'
+import { MediaPlayer, MediaProvider, Poster, Track, isHLSProvider } from '@vidstack/react'
 import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/default'
 import '@vidstack/react/player/styles/default/theme.css'
+import '@vidstack/react/player/styles/default/poster.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 
 /**
- * Player accent, scoped to this instance (no global CSS). Vidstack's default
- * layout reads `--media-brand` for the scrubber fill, the large play button, and
- * other active states; the rest of the bar stays neutral. We point it at the
- * brand teal token (`--color-teal-500` = #61aaa0, a `:root` custom property from
- * the Tailwind theme that inherits into Vidstack's shadow DOM) so the player
- * tracks the design system instead of duplicating the hex.
+ * Player accent, scoped to this instance (no global CSS). Vidstack derives its
+ * accent `--media-brand` from `--video-brand` (`--media-brand: var(--video-brand,
+ * #f5f5f5)`) and re-declares it on the default layout's own element — so setting
+ * `--media-brand` here is overridden by the `#f5f5f5` fallback. Setting
+ * `--video-brand` (the layout-level theming var) instead tints the scrubber fill,
+ * the large play button, and other active states with the brand teal token
+ * (`--color-teal-500` = #61aaa0), keeping the player in step with the design
+ * system instead of duplicating the hex.
  */
-const PLAYER_STYLE = { '--media-brand': 'var(--color-teal-500)' }
+const PLAYER_STYLE = { '--video-brand': 'var(--color-teal-500)' }
 
 export interface VideoPlayerProps {
   /** HLS manifest URL (.m3u8). */
@@ -202,6 +205,10 @@ export function VideoPlayer({
             />
           ))}
         </MediaProvider>
+
+        {/* The default layout doesn't render a poster from the `poster` prop —
+            add the Poster element (and its stylesheet) explicitly. */}
+        {poster ? <Poster alt={title ?? ''} className="vds-poster" /> : null}
 
         <DefaultVideoLayout icons={defaultLayoutIcons} />
       </MediaPlayer>
