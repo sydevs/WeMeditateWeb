@@ -198,8 +198,12 @@ export function ContentTextBox({
           {/* Title */}
           <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
 
-          {/* Subtitle (optional) */}
-          {subtitle && <p className="text-xl font-normal text-gray-700">{subtitle}</p>}
+          {/* Subtitle (optional) — darker on the warm parchment for AA contrast */}
+          {subtitle && (
+            <p className={`text-xl font-normal ${wisdomStyle ? 'text-gray-800' : 'text-gray-700'}`}>
+              {subtitle}
+            </p>
+          )}
 
           {/* Description */}
           <p className={`text-lg font-light ${wisdomStyle ? 'text-gray-800' : 'text-gray-700'}`}>

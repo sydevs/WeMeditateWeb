@@ -22,7 +22,7 @@ export const Default: Story = () => (
             description="The experience of meditation is even stronger when it is shared! Discover the beauty of collective meditations, led by experienced practitioners in hundreds of cities around the world - always completely free."
             imageAlt="Group meditation class with instructor"
             imageHeight={800}
-            imageSrc="https://picsum.photos/800?random=1"
+            imageSrc="https://picsum.photos/seed/textbox-left/800/800"
             imageWidth={800}
             title="Get Connected"
           />
@@ -36,7 +36,7 @@ export const Default: Story = () => (
             description="Whether you're new to meditation or looking to deepen your practice, our expert instructors guide you every step of the way. Join free classes in your area and discover the transformative power of meditation."
             imageAlt="Beginner meditation session"
             imageHeight={800}
-            imageSrc="https://picsum.photos/800?random=1"
+            imageSrc="https://picsum.photos/seed/textbox-right/800/800"
             imageWidth={800}
             title="Learn Meditation"
           />
@@ -50,7 +50,7 @@ export const Default: Story = () => (
             description="Connect with thousands of meditators worldwide. Experience guided sessions, workshops, and events designed to deepen your practice and foster meaningful connections."
             imageAlt="Meditation community gathering"
             imageHeight={800}
-            imageSrc="https://picsum.photos/1200/800?random=1"
+            imageSrc="https://picsum.photos/seed/textbox-center/1200/800"
             imageWidth={1200}
             title="Join Our Community"
           />
