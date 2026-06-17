@@ -295,12 +295,23 @@ const pageContent = editorState(
       buttonUrl: '#',
       image: imageRef('textbox-right', 'Meditating', 900, 1200),
     }),
-    // Overlay variant also exercises every conditional field
+    // Ancient Wisdom styling applies only to the side (non-overlay) layouts
+    block('textbox', {
+      imagePosition: 'left',
+      wisdomStyle: true,
+      title: 'Ancient Wisdom',
+      subtitle: 'Timeless teachings',
+      text: 'For thousands of years, seekers have turned inward to discover a deeper truth.',
+      buttonText: 'Explore',
+      buttonUrl: '#',
+      image: imageRef('textbox-wisdom', 'Manuscript', 900, 1200),
+    }),
+    // Overlay variant exercises the overlay-only conditional fields
+    // (textPosition / textColor) plus subtitle, with light text over the image
     block('textbox', {
       imagePosition: 'overlay',
       textPosition: 'center',
       textColor: 'light',
-      wisdomStyle: true,
       title: 'Get Connected',
       subtitle: 'Collective meditation',
       text: 'Meditation is even stronger when shared. Discover free collective meditations near you.',
