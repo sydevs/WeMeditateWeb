@@ -226,11 +226,17 @@ export function Dropdown({
         onFocus: () => setIsOpen(true),
         onBlur: (event: React.FocusEvent<HTMLDivElement>) => {
           if (!closeOnBlur) return
-          // Keep open while focus moves into the panel (which lives in a portal,
-          // so check the floating element, not a DOM descendant of the trigger).
           const next = event.relatedTarget as Node | null
 
-          if (next && refs.floating.current?.contains(next)) return
+          // Only close on a *real* focus-out to an element outside both the
+          // trigger and the (portaled) panel — i.e. tab/focus moving away. A null
+          // relatedTarget means focus didn't land on a focusable element (e.g. a
+          // mouse press on non-focusable panel chrome, or a press on a suggestion
+          // before it focuses); that's not a focus-out, so leave dismissal of true
+          // outside presses to useDismiss and keep the panel open here.
+          if (!next) return
+          if (refs.floating.current?.contains(next)) return
+          if (refs.domReference.current?.contains(next)) return
           setIsOpen(false)
         },
       }
@@ -258,9 +264,11 @@ export function Dropdown({
         <FloatingPortal>
           <FloatingFocusManager
             context={context}
-            // Non-modal so background stays interactive; don't pull focus into the
-            // panel on open (preserves autocomplete typing / avoids focus jumps).
-            disabled={openOnFocus}
+            // Non-modal so the background stays interactive, and initialFocus={-1}
+            // so opening never pulls focus into the panel (preserves autocomplete
+            // typing). Keeping it enabled in focus mode inserts focus guards so Tab
+            // still flows from the trigger into the portaled panel. Don't return
+            // focus in focus mode — the trigger's own control already owns it.
             initialFocus={-1}
             modal={false}
             returnFocus={!openOnFocus}
