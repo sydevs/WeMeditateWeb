@@ -40,6 +40,13 @@ export interface VideoPlayerProps {
   defaultSubtitleLang?: string
   /** Accessible label for the video (not shown visually). */
   title?: string
+  /**
+   * Begin loading the stream as soon as the player is visible instead of waiting
+   * for the viewer to press play. Use for primary content (e.g. a Lecture) where
+   * playback is the main intent; leave off for secondary/embedded videos to keep
+   * the initial load light (poster only until play). @default false
+   */
+  autoLoad?: boolean
   className?: string
 }
 
@@ -67,6 +74,7 @@ export function VideoPlayer({
   subtitleTracks,
   defaultSubtitleLang,
   title,
+  autoLoad = false,
   className,
 }: VideoPlayerProps) {
   // Inline cues (Video collection) → a single inline WebVTT track. Vidstack
@@ -151,10 +159,11 @@ export function VideoPlayer({
         className="w-full"
         clipEndTime={clipEndTime}
         clipStartTime={clipStartTime}
-        // Defer hls.js + the stream until the viewer presses play (the poster
-        // still loads eagerly). Keeps the initial load light and, when several
-        // players share a page, avoids every instance spinning up hls.js at once.
-        load="play"
+        // `autoLoad` content loads when visible; otherwise hls.js + the stream
+        // are deferred until the viewer presses play (the poster still loads
+        // eagerly). Deferring keeps the initial load light and avoids every
+        // instance on a page spinning up hls.js at once.
+        load={autoLoad ? 'visible' : 'play'}
         poster={poster}
         src={{ src: hlsUrl, type: 'application/x-mpegurl' }}
         style={PLAYER_STYLE}
