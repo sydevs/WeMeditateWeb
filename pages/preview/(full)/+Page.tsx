@@ -21,7 +21,7 @@ import { Preview } from '../_components'
 export { Page }
 
 function Page() {
-  const { collection, locale, initialData } = useData<PreviewPageData>()
+  const data = useData<PreviewPageData>()
 
-  return <Preview collection={collection} initialData={initialData} locale={locale} />
+  return <Preview data={data} />
 }

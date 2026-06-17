@@ -20,6 +20,26 @@ export const Default: Story = () => {
     duration: 485, // 8:05
   }
 
+  // Background-music tracks (as returned by GET /api/meditations/:id/songs). Open
+  // the speaker popover to reveal the Voice + Music sliders and the shuffle button.
+  const sampleMusicTracks = [
+    {
+      id: 1,
+      title: 'Raag Durga',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    },
+    {
+      id: 2,
+      title: 'Raag Bhairavi',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    },
+    {
+      id: 3,
+      title: 'Raag Yaman',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+    },
+  ]
+
   const sampleFrames = [
     {
       timestamp: 0,
@@ -67,6 +87,17 @@ export const Default: Story = () => {
         <div className="w-full">
           <MeditationPlayer
             frames={sampleFrames}
+            subtitle="All pervading power"
+            track={sampleTrack}
+          />
+        </div>
+      </StorySection>
+
+      <StorySection title="With Background Music">
+        <div className="w-full">
+          <MeditationPlayer
+            frames={sampleFrames}
+            musicTracks={sampleMusicTracks}
             subtitle="All pervading power"
             track={sampleTrack}
           />

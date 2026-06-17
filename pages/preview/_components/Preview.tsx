@@ -7,16 +7,21 @@
 
 'use client'
 
-import type { BasePreviewData, Page, Meditation, Lecture } from './types'
+import type { BasePreviewData } from './types'
 import { PreviewBanner } from './PreviewBanner'
 import { PagePreview } from './PagePreview'
 import { MeditationPreview } from './MeditationPreview'
 import { LecturePreview } from './LecturePreview'
 
 export interface PreviewProps {
-  collection: BasePreviewData['collection']
-  locale: string
-  initialData: Page | Meditation | Lecture
+  /**
+   * The previewed document as a discriminated union (collection + initialData +
+   * locale, plus musicTracks for meditations). Preview narrows on `collection`,
+   * so collection-specific payloads (e.g. a meditation's music) stay type-safe
+   * here without per-route narrowing or casts. FullPreviewData (which also
+   * carries `settings`) is accepted structurally.
+   */
+  data: BasePreviewData
   /**
    * Whether the meditation/lecture preview should show the Embed button.
    * The embed preview (/preview/embed) renders inside an iframe, so it passes
@@ -27,22 +32,23 @@ export interface PreviewProps {
   showEmbedButton?: boolean
 }
 
-export function Preview({ collection, locale, initialData, showEmbedButton = true }: PreviewProps) {
-  switch (collection) {
+export function Preview({ data, showEmbedButton = true }: PreviewProps) {
+  switch (data.collection) {
     case 'pages':
-      return <PagePreview initialData={initialData as Page} />
+      return <PagePreview initialData={data.initialData} />
     case 'meditations':
       return (
         <MeditationPreview
-          initialData={initialData as Meditation}
+          initialData={data.initialData}
+          musicTracks={data.musicTracks}
           showEmbedButton={showEmbedButton}
         />
       )
     case 'lectures':
       return (
         <LecturePreview
-          initialData={initialData as Lecture}
-          locale={locale}
+          initialData={data.initialData}
+          locale={data.locale}
           showEmbedButton={showEmbedButton}
         />
       )

@@ -7,7 +7,13 @@
  * to avoid bundling server code in client bundles.
  */
 
-import type { Page, Meditation, Lecture, WebConfig } from '../../../server/cms-types'
+import type {
+  Page,
+  Meditation,
+  Lecture,
+  WebConfig,
+  MeditationSong,
+} from '../../../server/cms-types'
 
 export type CollectionType = 'pages' | 'meditations' | 'lectures'
 
@@ -26,6 +32,7 @@ export type BasePreviewData =
   | {
       collection: 'meditations'
       initialData: Meditation
+      musicTracks: MeditationSong[]
       locale: string
     }
   | {
@@ -47,6 +54,7 @@ export type FullPreviewData =
   | {
       collection: 'meditations'
       initialData: Meditation
+      musicTracks: MeditationSong[]
       locale: string
       settings: WebConfig
     }
@@ -58,4 +66,4 @@ export type FullPreviewData =
     }
 
 // Re-export types for convenience
-export type { Page, Meditation, Lecture, WebConfig }
+export type { Page, Meditation, Lecture, WebConfig, MeditationSong }

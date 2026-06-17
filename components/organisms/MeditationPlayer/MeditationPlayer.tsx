@@ -1,11 +1,29 @@
-import { ComponentProps, useMemo, useCallback, useEffect, useEffectEvent, useRef } from 'react'
+import {
+  ComponentProps,
+  ReactNode,
+  useId,
+  useMemo,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react'
 import { AudioPlayerProvider } from 'react-use-audio-player'
-import { PlayIcon, PauseIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
-import { Avatar, Button, Link } from '../../atoms'
+import {
+  PlayIcon,
+  PauseIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+  ArrowPathRoundedSquareIcon,
+} from '@heroicons/react/24/solid'
+import { Avatar, Button, Dropdown, Link, Tooltip } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
 import { useCircularProgress } from './useCircularProgress'
+import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
 import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
+import type { MeditationSong } from '../../../server/cms-types'
 import founderImage from '../../../assets/smnd.webp'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
@@ -14,8 +32,13 @@ export type { Track } from '../../molecules/AudioPlayer/types'
 const PROGRESS_RADIUS = 48
 const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 
+// Default background-music level — sits clearly under the guided voice (~1.0).
+const DEFAULT_MUSIC_VOLUME = 0.4
+
 // Placeholder image for when no frames are available (teal gradient)
-const PLACEHOLDER_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(`
+const PLACEHOLDER_IMAGE =
+  'data:image/svg+xml,' +
+  encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
     <defs>
       <radialGradient id="g" cx="50%" cy="50%" r="70%">
@@ -34,6 +57,7 @@ function formatTime(seconds: number): string {
   if (!isFinite(seconds)) return '0:00'
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
+
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
@@ -73,6 +97,13 @@ export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'titl
    */
   frames: MeditationFrame[]
   /**
+   * Background-music tracks layered under the guided voice. One is auto-selected
+   * (with a shuffle control to switch). When empty, the player is voice-only and
+   * the Music slider / shuffle button are hidden.
+   * @default []
+   */
+  musicTracks?: MeditationSong[]
+  /**
    * Optional upsell message variant
    * - 'web': Link to more meditations on wemeditate.com
    * - 'app': Link to interactive meditations in the free app
@@ -102,6 +133,164 @@ export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'titl
    * Uses { timestamp, id } format so each command is unique, allowing repeated seeks to the same position.
    */
   seekTo?: { timestamp: number; id: number } | null
+}
+
+interface VolumeRowProps {
+  /** Visible label (e.g. "Voice", "Music"); also drives the control aria-labels. */
+  label: string
+  /** Optional secondary text shown next to the label (e.g. the music track title). */
+  sublabel?: string
+  /** Current volume 0–1. */
+  volume: number
+  /** Whether this channel is muted (slider reads 0 while muted). */
+  muted: boolean
+  onVolumeChange: (volume: number) => void
+  onToggleMute: () => void
+  /** Optional trailing control (e.g. the music shuffle button). */
+  action?: ReactNode
+}
+
+/**
+ * One labeled volume channel inside the audio popover: a mute toggle, a slider,
+ * and an optional trailing action. Used for both the Voice and Music channels so
+ * the two stay visually consistent and independently mutable.
+ */
+function VolumeRow({
+  label,
+  sublabel,
+  volume,
+  muted,
+  onVolumeChange,
+  onToggleMute,
+  action,
+}: VolumeRowProps) {
+  const labelLower = label.toLowerCase()
+
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-600">
+        {label}
+        {sublabel ? (
+          <span className="ml-1 font-normal normal-case text-gray-400">· {sublabel}</span>
+        ) : null}
+      </p>
+      <div className="flex items-center gap-2">
+        <Button
+          aria-label={muted ? `Unmute ${labelLower}` : `Mute ${labelLower}`}
+          icon={muted ? SpeakerXMarkIcon : SpeakerWaveIcon}
+          size="md"
+          variant="ghost"
+          onClick={onToggleMute}
+        />
+        <input
+          aria-label={`${label} volume`}
+          className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-300 accent-teal-600"
+          max="1"
+          min="0"
+          step="0.01"
+          type="range"
+          value={muted ? 0 : volume}
+          onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+        />
+        {action}
+      </div>
+    </div>
+  )
+}
+
+interface AudioControlsProps {
+  /** Guided-voice volume (0–1) and mute state, plus their setters. */
+  voiceVolume: number
+  voiceMuted: boolean
+  onVoiceVolumeChange: (volume: number) => void
+  onToggleVoiceMute: () => void
+  /** Whether any background music is available — gates the Music row entirely. */
+  hasMusic: boolean
+  musicVolume: number
+  musicMuted: boolean
+  /** Title of the currently selected music track (shown beside the Music label). */
+  musicTrackTitle?: string
+  /** Whether shuffle is offered (only when more than one track exists). */
+  canShuffle: boolean
+  onMusicVolumeChange: (volume: number) => void
+  onToggleMusicMute: () => void
+  onShuffle: () => void
+}
+
+/**
+ * Speaker button that opens a popover (above and centered on the trigger via the
+ * shared Dropdown atom, which keeps it on-screen near viewport edges) holding
+ * independent Voice and Music volume sliders — each with its own mute toggle —
+ * and a shuffle button for the music track. The Music row is hidden when no
+ * songs are available; the speaker icon reflects the voice mute state.
+ */
+function AudioControls({
+  voiceVolume,
+  voiceMuted,
+  onVoiceVolumeChange,
+  onToggleVoiceMute,
+  hasMusic,
+  musicVolume,
+  musicMuted,
+  musicTrackTitle,
+  canShuffle,
+  onMusicVolumeChange,
+  onToggleMusicMute,
+  onShuffle,
+}: AudioControlsProps) {
+  return (
+    <Dropdown
+      align="center"
+      ariaLabel="Audio settings"
+      role="dialog"
+      side="top"
+      trigger={
+        <Button
+          aria-label="Audio settings"
+          icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
+          size="lg"
+          variant="ghost"
+          // The Dropdown wrapper is the focusable trigger (role=button,
+          // aria-expanded); keep this inner button out of the tab order.
+          tabIndex={-1}
+        />
+      }
+    >
+      <div className="flex w-64 flex-col gap-4 p-4 text-left">
+        <VolumeRow
+          label="Voice"
+          muted={voiceMuted}
+          volume={voiceVolume}
+          onToggleMute={onToggleVoiceMute}
+          onVolumeChange={onVoiceVolumeChange}
+        />
+
+        {hasMusic && (
+          <VolumeRow
+            action={
+              canShuffle ? (
+                <Tooltip label="Change background music track">
+                  <Button
+                    aria-label="Shuffle music track"
+                    icon={ArrowPathRoundedSquareIcon}
+                    size="md"
+                    variant="ghost"
+                    onClick={onShuffle}
+                  />
+                </Tooltip>
+              ) : undefined
+            }
+            label="Music"
+            muted={musicMuted}
+            sublabel={musicTrackTitle}
+            volume={musicVolume}
+            onToggleMute={onToggleMusicMute}
+            onVolumeChange={onMusicVolumeChange}
+          />
+        )}
+      </div>
+    </Dropdown>
+  )
 }
 
 /**
@@ -153,6 +342,7 @@ function MeditationPlayerInner({
   track,
   subtitle,
   frames,
+  musicTracks = [],
   upsell,
   onPlay,
   onPause,
@@ -162,9 +352,25 @@ function MeditationPlayerInner({
   className = '',
   ...props
 }: MeditationPlayerProps) {
+  // react-use-audio-player caches Howl instances in a module-global map keyed by
+  // `src`, so multiple players on one page sharing a track URL (e.g. the Ladle
+  // story) would drive a single shared audio instance — pressing play on one
+  // plays them all, and unmounting one unloads the others. Give each player
+  // instance a unique audio URL via an ignored query param so every player owns
+  // an isolated Howl. The CMS server ignores the extra param; Howler strips the
+  // query before codec detection, so playback is unaffected. In production there
+  // is only ever one player per page, so this adds no real cost there.
+  const instanceId = useId()
+  const isolatedTrackUrl = useMemo(() => {
+    if (!track.url) return track.url
+    const separator = track.url.includes('?') ? '&' : '?'
+
+    return `${track.url}${separator}__player=${encodeURIComponent(instanceId)}`
+  }, [track.url, instanceId])
+
   // Core audio player hook (handles time polling, seek callbacks, track loading)
   const [state, controls] = useAudioPlayer({
-    url: track.url,
+    url: isolatedTrackUrl,
     onPlay,
     onPause,
     onPlaybackTimeUpdate,
@@ -172,15 +378,76 @@ function MeditationPlayerInner({
 
   const effectiveDuration = state.duration > 0 ? state.duration : track.duration
 
+  // --- Background-music layer (optional, mixed under the guided voice) ---
+  const hasMusic = musicTracks.length > 0
+  const [musicIndex, setMusicIndex] = useState(0)
+  const [musicVolume, setMusicVolume] = useState(DEFAULT_MUSIC_VOLUME)
+  const [musicMuted, setMusicMuted] = useState(false)
+  const musicRef = useRef<HTMLAudioElement | null>(null)
+  // Clamp the index so a track list that ever shrinks (without the index being
+  // reset yet) can't index past the end and silently drop the music layer.
+  const safeMusicIndex = hasMusic ? Math.min(musicIndex, musicTracks.length - 1) : 0
+  const currentMusicTrack = hasMusic ? musicTracks[safeMusicIndex] : undefined
+  const currentMusicUrl = currentMusicTrack?.url
+
+  // On mount, start from a random track. The endpoint already returns songs in
+  // randomized order (so SSR's docs[0] is itself random per cache window); this
+  // adds per-load variety on the client with no SSR/hydration mismatch, and runs
+  // before playback so the source swap is inaudible.
+  useEffect(() => {
+    if (musicTracks.length > 1) {
+      setMusicIndex(pickRandomIndex(musicTracks.length))
+    }
+  }, [musicTracks])
+
+  // Tie the music layer's play/pause to the meditation's. Re-runs when the track
+  // changes (shuffle) so the new source resumes if the meditation is playing.
+  useEffect(() => {
+    const el = musicRef.current
+
+    if (!el || !hasMusic) return
+
+    if (state.isPlaying) {
+      const playPromise = el.play()
+
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {})
+      }
+    } else {
+      el.pause()
+    }
+  }, [state.isPlaying, hasMusic, currentMusicUrl])
+
+  // Keep the music element's volume/mute in sync, independent of the voice track.
+  // No need to react to the track URL: an <audio> element preserves its volume
+  // and muted properties across a src swap, so this stays correct after a shuffle.
+  useEffect(() => {
+    const el = musicRef.current
+
+    if (!el) return
+
+    el.volume = musicVolume
+    el.muted = musicMuted
+  }, [musicVolume, musicMuted])
+
+  // Shuffle to a different random track (no immediate repeat); playback continues
+  // seamlessly via the sync effect above when the source changes.
+  const handleShuffle = useCallback(() => {
+    setMusicIndex((current) => pickNextRandomIndex(musicTracks.length, current))
+  }, [musicTracks.length])
+
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastAudioTimeRef = useRef(0)
   const lastFrameKeyRef = useRef<string | null>(null)
   const pendingSeekRef = useRef<number | null>(null)
 
   // Seek handler wrapped in useCallback for stable reference in useCircularProgress
-  const handleSeek = useCallback((time: number) => {
-    controls.seek(time)
-  }, [controls])
+  const handleSeek = useCallback(
+    (time: number) => {
+      controls.seek(time)
+    },
+    [controls],
+  )
 
   const applyExternalSeek = useEffectEvent((timestamp: number) => {
     controls.seek(timestamp)
@@ -216,6 +483,7 @@ function MeditationPlayerInner({
 
     // Find the last frame whose timestamp is less than or equal to display time
     let currentFrame = sortedFrames[0]
+
     for (const frame of sortedFrames) {
       if (frame.timestamp <= timeForSync) {
         currentFrame = frame
@@ -242,11 +510,13 @@ function MeditationPlayerInner({
   // Apply any pending seek once metadata is available
   useEffect(() => {
     const video = videoRef.current
+
     if (!video) return
 
     const handleLoadedMetadata = () => {
       if (pendingSeekRef.current !== null) {
         const target = pendingSeekRef.current
+
         pendingSeekRef.current = null
         try {
           video.currentTime = target
@@ -257,14 +527,17 @@ function MeditationPlayerInner({
     }
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
+
     return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata)
   }, [frameKey])
 
   // Keep video frames synchronized to the audio timeline
   useEffect(() => {
     const video = videoRef.current
+
     if (!video || currentMedia.type !== 'video') {
       lastFrameKeyRef.current = null
+
       return
     }
 
@@ -286,6 +559,7 @@ function MeditationPlayerInner({
 
     if (shouldSnap && Number.isFinite(targetTime)) {
       const diff = Math.abs(video.currentTime - targetTime)
+
       if (diff > 0.2) {
         if (video.readyState >= 1) {
           try {
@@ -301,6 +575,7 @@ function MeditationPlayerInner({
 
     if (state.isPlaying) {
       const playPromise = video.play()
+
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {})
       }
@@ -335,10 +610,15 @@ function MeditationPlayerInner({
       className={`@container w-full h-full min-h-0 flex items-center justify-center bg-linear-to-b from-transparent via-teal-200/60 to-transparent ${className}`}
       {...props}
     >
+      {/* Background-music layer: a hidden, looping <audio> mixed under the guided
+          voice. Its play/pause, volume and mute are driven by the effects above. */}
+      {currentMusicTrack && (
+        <audio ref={musicRef} loop aria-hidden="true" preload="none" src={currentMusicTrack.url} />
+      )}
+
       <div className="w-full max-w-7xl mx-auto px-6 py-4 flex-1 min-h-0 flex flex-col justify-center">
         {/* Unified responsive grid layout */}
         <div className="grid grid-cols-1 @4xl:grid-cols-12 gap-4 @4xl:items-center">
-
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
@@ -348,15 +628,17 @@ function MeditationPlayerInner({
             </div>
             <div className="flex flex-col items-end gap-2">
               <Avatar
-                src={founderImage}
                 alt="Shri Mataji Nirmala Devi"
-                size="xl"
                 className="@4xl:w-32 @4xl:h-32"
                 shape="circle"
+                size="xl"
+                src={founderImage}
               />
               <div className="text-right">
                 <p className="text-xs @4xl:text-sm font-medium text-gray-800">
-                  Shri Mataji<br />Nirmala Devi
+                  Shri Mataji
+                  <br />
+                  Nirmala Devi
                 </p>
                 <p className="text-xs @4xl:text-sm italic text-gray-600">founder</p>
               </div>
@@ -381,8 +663,8 @@ function MeditationPlayerInner({
                       loop
                       muted
                       playsInline
-                      draggable={false}
                       className="w-full h-full object-cover"
+                      draggable={false}
                     >
                       <source
                         src={currentMedia.src}
@@ -394,10 +676,10 @@ function MeditationPlayerInner({
                     </video>
                   ) : (
                     <img
-                      src={currentMedia.src}
                       alt={track.title}
-                      draggable={false}
                       className="w-full h-full object-cover"
+                      draggable={false}
+                      src={currentMedia.src}
                     />
                   )}
 
@@ -407,19 +689,21 @@ function MeditationPlayerInner({
                   )}
 
                   {/* Play/Pause Button - Fades in/out when paused or hovering */}
-                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}>
+                  <div
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}
+                  >
                     <Button
+                      aria-label={state.isPlaying ? 'Pause' : 'Play'}
+                      className="border-0 shadow-2xl"
                       icon={state.isPlaying ? PauseIcon : PlayIcon}
-                      variant="neutral"
+                      isLoading={state.isLoading}
                       shape="circular"
                       size="lg"
+                      variant="neutral"
                       onClick={(event) => {
                         event.stopPropagation()
                         handlePlayPause()
                       }}
-                      isLoading={state.isLoading}
-                      aria-label={state.isPlaying ? 'Pause' : 'Play'}
-                      className="border-0 shadow-2xl"
                     />
                   </div>
                 </div>
@@ -434,11 +718,11 @@ function MeditationPlayerInner({
                   <circle
                     cx="50"
                     cy="50"
-                    r={PROGRESS_RADIUS}
                     fill="none"
+                    r={PROGRESS_RADIUS}
                     stroke="#0f766e"
-                    strokeWidth="1.5"
                     strokeDasharray={`${(progressPercent / 100) * PROGRESS_CIRCUMFERENCE} ${PROGRESS_CIRCUMFERENCE}`}
+                    strokeWidth="1.5"
                   />
                 </svg>
 
@@ -476,7 +760,7 @@ function MeditationPlayerInner({
                   {formatTime(
                     timeDisplay === 'countdown'
                       ? Math.max(0, effectiveDuration - displayTime)
-                      : displayTime
+                      : displayTime,
                   )}
                 </span>
               </div>
@@ -491,33 +775,35 @@ function MeditationPlayerInner({
             </p>
 
             {subtitle && (
-              <p className="mb-4 text-sm sm:text-base font-light text-gray-700">
-                {subtitle}
-              </p>
+              <p className="mb-4 text-sm sm:text-base font-light text-gray-700">{subtitle}</p>
             )}
 
-            {/* Volume Control */}
-            <div className="flex items-center justify-center @4xl:justify-start gap-2">
-              <Button
-                icon={state.isMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
-                variant="ghost"
-                size="lg"
-                onClick={controls.toggleMute}
-                aria-label={state.isMuted ? 'Unmute' : 'Mute'}
-              />
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={state.isMuted ? 0 : state.volume}
-                onChange={(e) => controls.setVolume(parseFloat(e.target.value))}
-                className="w-24 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-teal-600"
-                aria-label="Volume"
+            {/* Audio controls: speaker button → popover with Voice + Music sliders */}
+            <div className="flex items-center justify-center @4xl:justify-start">
+              <AudioControls
+                canShuffle={musicTracks.length > 1}
+                hasMusic={hasMusic}
+                musicMuted={musicMuted}
+                musicTrackTitle={currentMusicTrack?.title || undefined}
+                musicVolume={musicVolume}
+                voiceMuted={state.isMuted}
+                voiceVolume={state.volume}
+                // Adjusting a channel's volume always unmutes it (idempotent), so
+                // a muted track can be brought back simply by moving its slider.
+                onMusicVolumeChange={(volume) => {
+                  setMusicVolume(volume)
+                  setMusicMuted(false)
+                }}
+                onShuffle={handleShuffle}
+                onToggleMusicMute={() => setMusicMuted((muted) => !muted)}
+                onToggleVoiceMute={controls.toggleMute}
+                onVoiceVolumeChange={(volume) => {
+                  controls.setVolume(volume)
+                  controls.unmute()
+                }}
               />
             </div>
           </div>
-
         </div>
 
         {/* Upsell Message */}
@@ -527,14 +813,14 @@ function MeditationPlayerInner({
               {upsell === 'web' ? (
                 <>
                   Find more meditations on{' '}
-                  <Link href="https://wemeditate.com/meditations" variant="primary" external>
+                  <Link external href="https://wemeditate.com/meditations" variant="primary">
                     wemeditate.com
                   </Link>
                 </>
               ) : (
                 <>
                   Find interactive meditations with meditation music in our{' '}
-                  <Link href="https://wemeditate.com/app" variant="primary" external>
+                  <Link external href="https://wemeditate.com/app" variant="primary">
                     free app
                   </Link>
                 </>

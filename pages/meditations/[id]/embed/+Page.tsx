@@ -9,7 +9,9 @@ import { MeditationTemplate } from '../../../../components/templates'
  * button is hidden to avoid offering embed-in-embed.
  */
 export function Page() {
-  const { meditation } = useData<MeditationEmbedPageData>()
+  const { meditation, musicTracks } = useData<MeditationEmbedPageData>()
 
-  return <MeditationTemplate meditation={meditation} showEmbedButton={false} />
+  return (
+    <MeditationTemplate meditation={meditation} musicTracks={musicTracks} showEmbedButton={false} />
+  )
 }

@@ -18,6 +18,7 @@
     "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.19",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@mapbox/search-js-core": "^1.5.1",

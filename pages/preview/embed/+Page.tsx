@@ -22,13 +22,11 @@ import { Preview } from '../_components'
 export { Page }
 
 function Page() {
-  const { collection, locale, initialData } = useData<EmbedPreviewPageData>()
+  const data = useData<EmbedPreviewPageData>()
 
   return (
     <Preview
-      collection={collection}
-      locale={locale}
-      initialData={initialData}
+      data={data}
       // Embed preview already renders inside an iframe — no embed-in-embed.
       showEmbedButton={false}
     />

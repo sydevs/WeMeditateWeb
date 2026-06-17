@@ -13,7 +13,7 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getDocumentById } from '../../../server/cms-client'
+import { getDocumentById, getMeditationSongs } from '../../../server/cms-client'
 import { render } from 'vike/abort'
 import { type CollectionType, type BasePreviewData } from '../_components'
 import { idSchema, collectionSchema } from '../../../server/validation'
@@ -79,10 +79,15 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
     throw render(404, `${collection} content not found.`)
   }
 
+  // Background music for meditation previews — keeps the live player in sync
+  // with the published embed route (other collections have none).
+  const musicTracks = collection === 'meditations' ? await getMeditationSongs({ id, locale }) : []
+
   // Return discriminated union based on collection type
   return {
     collection: collection as CollectionType,
     initialData: data,
     locale,
+    musicTracks,
   } as EmbedPreviewPageData
 }
