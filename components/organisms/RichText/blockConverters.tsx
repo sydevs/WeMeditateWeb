@@ -138,6 +138,7 @@ export const blockConverters: BlockConverters = {
             aspectRatio={img.aspectRatio}
             className="w-full"
             lightboxGroup={group}
+            lightboxIndex={index}
             rounded="rounded"
             sizes="(max-width: 640px) 50vw, 33vw"
             src={img.url}

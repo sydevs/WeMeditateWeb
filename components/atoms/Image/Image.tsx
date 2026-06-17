@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useId, useMemo, useState } from 'react'
+import { ComponentProps, useEffect, useMemo, useState } from 'react'
 import { Placeholder } from '../Placeholder'
 import { Icon } from '../Icon'
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
@@ -97,6 +97,14 @@ export interface ImageProps extends ComponentProps<'img'> {
    * would — no wrapper element and no click handler.
    */
   lightboxGroup?: string
+
+  /**
+   * Position of this image within its {@link lightboxGroup}, in document order.
+   * Determines slide order and which slide the trigger opens. Must be unique per
+   * group (e.g. the map index for a gallery; `0` for a single-image group).
+   * @default 0
+   */
+  lightboxIndex?: number
 }
 
 /**
@@ -152,6 +160,7 @@ export function Image({
   showLoading = true,
   placeholderVariant = 'neutral',
   lightboxGroup,
+  lightboxIndex = 0,
   className = '',
   sizes,
   onLoad,
@@ -162,7 +171,6 @@ export function Image({
   const [hasError, setHasError] = useState(false)
 
   const lightbox = useLightbox()
-  const triggerId = useId()
 
   const slide = useMemo(
     () => (lightbox && lightboxGroup ? buildLightboxSlide(src, alt, aspectRatio) : null),
@@ -170,16 +178,17 @@ export function Image({
   )
 
   // Register the slide with the ambient provider so the shared overlay can show
-  // it. Effects don't run during SSR, so registration happens on the client
-  // after hydration; the trigger markup itself renders on both.
+  // it, keyed by its document-order index. Effects don't run during SSR, so
+  // registration happens on the client after hydration; the trigger markup
+  // itself renders on both.
   useEffect(() => {
     if (!lightbox || !lightboxGroup || !slide) {
       return
     }
-    lightbox.register(lightboxGroup, triggerId, slide)
+    lightbox.register(lightboxGroup, lightboxIndex, slide)
 
-    return () => lightbox.unregister(lightboxGroup, triggerId)
-  }, [lightbox, lightboxGroup, slide, triggerId])
+    return () => lightbox.unregister(lightboxGroup, lightboxIndex)
+  }, [lightbox, lightboxGroup, lightboxIndex, slide])
 
   const { imageSrc, imageSrcSet } = useMemo(() => {
     if (!aspectRatio || !isCloudflareImageURL(src)) {
@@ -279,7 +288,7 @@ export function Image({
         aria-label={alt ? `View image: ${alt}` : 'View image'}
         className={`${containerClasses} block w-full cursor-zoom-in appearance-none border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2`}
         type="button"
-        onClick={() => lightbox.openAt(lightboxGroup, triggerId)}
+        onClick={() => lightbox.openAt(lightboxGroup, lightboxIndex)}
       >
         {content}
       </button>
