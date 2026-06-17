@@ -251,7 +251,7 @@ Molecules combine atoms into functional units. Examples:
 
 **Interactive**
 - `AudioPlayer` - Play button + progress bar + time
-- `VideoPlayer` - Video controls interface
+- `VideoPlayer` - Vidstack-based HLS player; brand-teal controls (set `--media-brand`), captions menu, and relinearized `[startTime, stopTime]` clip windows
 - `Accordion` - Collapsible content section
 - `Tooltip` - Tooltip trigger + content
 

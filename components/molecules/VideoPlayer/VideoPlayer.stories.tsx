@@ -23,13 +23,15 @@ const SUBTITLE_TRACKS = [
 ]
 
 /**
- * VideoPlayer is a client-only HLS player: it prefers native HLS (Safari/iOS)
- * and otherwise lazy-loads hls.js. It supports a poster, an optional
- * [startTime, stopTime] window, and subtitles via either inline cues (Video
- * collection) or per-locale external .vtt URLs (Lectures).
+ * VideoPlayer is a client-only HLS player built on Vidstack's `<MediaPlayer>` +
+ * default layout: brand-teal (#61aaa0), touch-friendly controls with a captions
+ * menu over a native `<video>`. HLS plays natively (Safari/iOS) or via our
+ * bundled hls.js. It supports a poster, an optional [startTime, stopTime] window
+ * (relinearized via Vidstack clipping), and subtitles via either inline cues
+ * (Video collection) or per-locale external .vtt URLs (Lectures).
  *
  * Note: these stories import the raw player; in the app it's wrapped in
- * ClientOnly so hls.js stays out of the SSR/Workers bundle.
+ * ClientOnly so Vidstack and hls.js stay out of the SSR/Workers bundle.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -56,7 +58,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="A [startTime, stopTime] window (a clip) is presented as an isolated video: native controls are replaced by a custom bar whose timeline runs 0:00 → the window length (0:10 here), not the underlying media position. Used by Lecture clips."
+      description="A [startTime, stopTime] window (a clip) is passed to Vidstack's clipStartTime/clipEndTime: the timeline is relinearized to 0:00 → the window length (0:10 here), not the underlying media position, and playback seeks to the start and pauses at the stop. Used by Lecture clips."
       title="Playback window (clip)"
     >
       <div className="max-w-2xl">
