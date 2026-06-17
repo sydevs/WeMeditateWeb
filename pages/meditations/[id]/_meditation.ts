@@ -4,24 +4,20 @@ import type { Meditation } from '../../../server/cms-types'
 import { getDocumentById } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
 
-export interface MeditationEmbedPageData {
+export interface MeditationData {
   meditation: Meditation
   locale: string
   id: string
 }
 
 /**
- * Fetch meditation data for the embed route (iframe).
- *
- * Unlike the full route, this does NOT fetch WeMeditateWebSettings: LayoutDefault
- * renders the bare player whenever page data carries no `settings` (its
- * `if (!settings) return <>{children}</>` branch), which is what makes the embed
- * chrome-free. Providing settings here would render the full Header/Footer/nav.
+ * Validate the route id and fetch the meditation. Shared by the full
+ * (/meditations/:id) and embed (/meditations/:id/embed) routes so the two stay in
+ * lockstep. Throws a 404 for an invalid id or a missing meditation.
  */
-export async function data(pageContext: PageContextServer): Promise<MeditationEmbedPageData> {
+export async function loadMeditation(pageContext: PageContextServer): Promise<MeditationData> {
   const { locale, routeParams } = pageContext
 
-  // Validate ID parameter - returns 404 for invalid IDs
   let id: string
 
   try {
@@ -33,13 +29,8 @@ export async function data(pageContext: PageContextServer): Promise<MeditationEm
   const meditation = await getDocumentById({ collection: 'meditations', id, locale })
 
   if (!meditation) {
-    // Meditation not found - throw 404
     throw render(404, `Meditation with ID "${id}" not found.`)
   }
 
-  return {
-    meditation,
-    locale,
-    id,
-  }
+  return { meditation, locale, id }
 }

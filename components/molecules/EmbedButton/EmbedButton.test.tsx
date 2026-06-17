@@ -4,9 +4,9 @@ import { EmbedButton, buildEmbedSnippet } from './EmbedButton'
 
 describe('buildEmbedSnippet', () => {
   it('builds an absolute iframe snippet for the English (unprefixed) path', () => {
-    const snippet = buildEmbedSnippet('/m/123', 'en', 'https://wemeditate.com')
+    const snippet = buildEmbedSnippet('/meditations/123/embed', 'en', 'https://wemeditate.com')
 
-    expect(snippet).toContain('src="https://wemeditate.com/m/123"')
+    expect(snippet).toContain('src="https://wemeditate.com/meditations/123/embed"')
     expect(snippet).toContain('<iframe ')
     expect(snippet).toContain('allowfullscreen')
     expect(snippet).toContain('frameborder="0"')
@@ -16,33 +16,41 @@ describe('buildEmbedSnippet', () => {
   })
 
   it('prefixes the path for non-English locales', () => {
-    expect(buildEmbedSnippet('/m/123', 'es', 'https://wemeditate.com')).toContain(
-      'src="https://wemeditate.com/es/m/123"',
+    expect(buildEmbedSnippet('/meditations/123/embed', 'es', 'https://wemeditate.com')).toContain(
+      'src="https://wemeditate.com/es/meditations/123/embed"',
     )
-    expect(buildEmbedSnippet('/l/456', 'de', 'https://wemeditate.com')).toContain(
-      'src="https://wemeditate.com/de/l/456"',
+    expect(buildEmbedSnippet('/lectures/456/embed', 'de', 'https://wemeditate.com')).toContain(
+      'src="https://wemeditate.com/de/lectures/456/embed"',
     )
   })
 
   it('works for both meditation and lecture embed paths', () => {
-    expect(buildEmbedSnippet('/m/123', 'en', 'https://x.test')).toContain(
-      'src="https://x.test/m/123"',
+    expect(buildEmbedSnippet('/meditations/123/embed', 'en', 'https://x.test')).toContain(
+      'src="https://x.test/meditations/123/embed"',
     )
-    expect(buildEmbedSnippet('/l/456', 'en', 'https://x.test')).toContain(
-      'src="https://x.test/l/456"',
+    expect(buildEmbedSnippet('/lectures/456/embed', 'en', 'https://x.test')).toContain(
+      'src="https://x.test/lectures/456/embed"',
     )
   })
 
   it('emits a bare path when origin is empty (SSR / no window)', () => {
-    expect(buildEmbedSnippet('/m/123', 'en', '')).toContain('src="/m/123"')
-    expect(buildEmbedSnippet('/m/123', 'fr', '')).toContain('src="/fr/m/123"')
+    expect(buildEmbedSnippet('/meditations/123/embed', 'en', '')).toContain(
+      'src="/meditations/123/embed"',
+    )
+    expect(buildEmbedSnippet('/meditations/123/embed', 'fr', '')).toContain(
+      'src="/fr/meditations/123/embed"',
+    )
   })
 })
 
 describe('<EmbedButton>', () => {
   it('renders the "Embed" trigger', () => {
     const html = renderToStaticMarkup(
-      <EmbedButton embedPath="/m/123" locale="en" origin="https://wemeditate.com" />,
+      <EmbedButton
+        embedPath="/meditations/123/embed"
+        locale="en"
+        origin="https://wemeditate.com"
+      />,
     )
 
     expect(html).toContain('Embed')
@@ -52,7 +60,11 @@ describe('<EmbedButton>', () => {
     // The Dropdown renders its children only when open, so the iframe snippet is
     // absent from the initial markup — opening is verified visually in Ladle.
     const html = renderToStaticMarkup(
-      <EmbedButton embedPath="/m/123" locale="en" origin="https://wemeditate.com" />,
+      <EmbedButton
+        embedPath="/meditations/123/embed"
+        locale="en"
+        origin="https://wemeditate.com"
+      />,
     )
 
     expect(html).not.toContain('<iframe')

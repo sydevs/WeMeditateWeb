@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cmsHref, refId, refSlug } from './cms-routes'
+import { cmsHref, matchDocumentRoute, refId, refSlug } from './cms-routes'
 
 describe('refId', () => {
   it('returns a bare numeric id as a string', () => {
@@ -60,5 +60,62 @@ describe('cmsHref', () => {
 
   it('returns null for an unknown collection slug', () => {
     expect(cmsHref('something-else', { id: 1, slug: 'x' })).toBeNull()
+  })
+})
+
+describe('matchDocumentRoute', () => {
+  describe('full route', () => {
+    it('matches /collection/:id and extracts the id', () => {
+      expect(matchDocumentRoute('meditations', '/meditations/123')).toEqual({
+        routeParams: { id: '123' },
+      })
+      expect(matchDocumentRoute('lectures', '/lectures/abc-def')).toEqual({
+        routeParams: { id: 'abc-def' },
+      })
+    })
+
+    it('matches a locale-prefixed path', () => {
+      expect(matchDocumentRoute('meditations', '/es/meditations/123')).toEqual({
+        routeParams: { id: '123' },
+      })
+    })
+
+    it('tolerates a trailing slash', () => {
+      expect(matchDocumentRoute('meditations', '/meditations/123/')).toEqual({
+        routeParams: { id: '123' },
+      })
+    })
+
+    it('does NOT match the embed route (id is a single segment)', () => {
+      expect(matchDocumentRoute('meditations', '/meditations/123/embed')).toBe(false)
+    })
+
+    it('rejects extra segments and a missing id', () => {
+      expect(matchDocumentRoute('meditations', '/meditations/123/extra')).toBe(false)
+      expect(matchDocumentRoute('meditations', '/meditations')).toBe(false)
+      expect(matchDocumentRoute('meditations', '/meditations/')).toBe(false)
+    })
+
+    it('does not match a different collection', () => {
+      expect(matchDocumentRoute('meditations', '/lectures/123')).toBe(false)
+    })
+  })
+
+  describe('embed route', () => {
+    it('matches /collection/:id/embed and extracts the id', () => {
+      expect(matchDocumentRoute('meditations', '/meditations/123/embed', { embed: true })).toEqual({
+        routeParams: { id: '123' },
+      })
+    })
+
+    it('matches a locale-prefixed embed path', () => {
+      expect(matchDocumentRoute('lectures', '/de/lectures/456/embed', { embed: true })).toEqual({
+        routeParams: { id: '456' },
+      })
+    })
+
+    it('does NOT match the full route (requires the /embed suffix)', () => {
+      expect(matchDocumentRoute('meditations', '/meditations/123', { embed: true })).toBe(false)
+    })
   })
 })

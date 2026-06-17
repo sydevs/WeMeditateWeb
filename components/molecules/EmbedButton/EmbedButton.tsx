@@ -24,7 +24,7 @@ export function buildEmbedSnippet(embedPath: string, locale: string, origin: str
 }
 
 export interface EmbedButtonProps {
-  /** Locale-agnostic embed path, e.g. `/m/123` (meditation) or `/l/456` (lecture). */
+  /** Locale-agnostic embed path, e.g. `/meditations/123/embed` or `/lectures/456/embed`. */
   embedPath: string
   /**
    * Locale for path prefixing. Falls back to the current page locale, then `en`

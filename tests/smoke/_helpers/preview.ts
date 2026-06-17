@@ -82,6 +82,30 @@ export function expectRenders(page: PageResult, path: string): void {
 }
 
 /**
+ * Header/Footer tags emitted only by LayoutChrome — i.e. only on routes that opt
+ * into the site chrome. Embed routes (LayoutRoot only) render neither, so these
+ * cleanly distinguish a chromed page from a bare one.
+ */
+const CHROME_MARKERS = ['<header', '<footer'] as const
+
+/** Assert the page rendered with the full site chrome (Header + Footer). */
+export function expectChrome(page: PageResult, path: string): void {
+  for (const marker of CHROME_MARKERS) {
+    expect(page.html.includes(marker), `${path} should render site chrome ("${marker}")`).toBe(true)
+  }
+}
+
+/** Assert the page rendered bare — no site chrome (e.g. an embed route). */
+export function expectNoChrome(page: PageResult, path: string): void {
+  for (const marker of CHROME_MARKERS) {
+    expect(
+      page.html.includes(marker),
+      `${path} should render bare, without site chrome ("${marker}")`,
+    ).toBe(false)
+  }
+}
+
+/**
  * Assert the HTML has no broken internal links — i.e. links to "/undefined" or
  * "/null", which appear when a page relationship (e.g. a nav item) is fetched
  * without its slug resolved. Catches under-populated CMS reads that otherwise
