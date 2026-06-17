@@ -268,7 +268,7 @@ function AudioControls({
           <VolumeRow
             action={
               canShuffle ? (
-                <Tooltip label="Play a different background music track">
+                <Tooltip label="Change background music track">
                   <Button
                     aria-label="Shuffle music track"
                     icon={ArrowPathRoundedSquareIcon}

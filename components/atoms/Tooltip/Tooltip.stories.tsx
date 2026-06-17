@@ -19,7 +19,7 @@ export const Default: Story = () => (
         Hover (or tab to) the trigger to reveal the tooltip. It appears after a short delay on hover
         and immediately on keyboard focus.
       </p>
-      <Tooltip label="Play a different background music track">
+      <Tooltip label="Change background music track">
         <Button
           aria-label="Shuffle music track"
           icon={ArrowPathRoundedSquareIcon}

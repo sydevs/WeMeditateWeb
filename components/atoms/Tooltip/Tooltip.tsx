@@ -49,7 +49,7 @@ export interface TooltipProps {
  * still resolve to the child via event bubbling.
  *
  * @example
- * <Tooltip label="Play a different background music track">
+ * <Tooltip label="Change background music track">
  *   <Button icon={ArrowPathRoundedSquareIcon} aria-label="Shuffle music track" />
  * </Tooltip>
  */

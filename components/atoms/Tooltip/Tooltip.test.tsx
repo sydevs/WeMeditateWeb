@@ -11,7 +11,7 @@ import { Tooltip } from './Tooltip'
 describe('Tooltip', () => {
   it('renders the trigger and keeps the label hidden until hovered/focused', () => {
     const html = renderToStaticMarkup(
-      <Tooltip label="Play a different background music track">
+      <Tooltip label="Change background music track">
         <button aria-label="Shuffle music track">icon</button>
       </Tooltip>,
     )
@@ -19,6 +19,6 @@ describe('Tooltip', () => {
     expect(html).toContain('aria-label="Shuffle music track"')
     expect(html).toContain('icon')
     // Closed by default → the label is not in the SSR output.
-    expect(html).not.toContain('Play a different background music track')
+    expect(html).not.toContain('Change background music track')
   })
 })
