@@ -8,11 +8,14 @@ import '@vidstack/react/player/styles/default/layouts/video.css'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 
 /**
- * Brand teal (teal-500, #61aaa0) used as the player accent. Vidstack's default
+ * Player accent, scoped to this instance (no global CSS). Vidstack's default
  * layout reads `--media-brand` for the scrubber fill, the large play button, and
- * other active states; the rest of the bar stays neutral.
+ * other active states; the rest of the bar stays neutral. We point it at the
+ * brand teal token (`--color-teal-500` = #61aaa0, a `:root` custom property from
+ * the Tailwind theme that inherits into Vidstack's shadow DOM) so the player
+ * tracks the design system instead of duplicating the hex.
  */
-const BRAND_TEAL = '#61aaa0'
+const PLAYER_STYLE = { '--media-brand': 'var(--color-teal-500)' }
 
 export interface VideoPlayerProps {
   /** HLS manifest URL (.m3u8). */
@@ -150,9 +153,7 @@ export function VideoPlayer({
         clipStartTime={clipStartTime}
         poster={poster}
         src={{ src: hlsUrl, type: 'application/x-mpegurl' }}
-        // Scope the brand accent to this player instance (no global CSS). Inline
-        // so the `--media-brand` key matches MediaPlayer's CSS-var index signature.
-        style={{ '--media-brand': BRAND_TEAL }}
+        style={PLAYER_STYLE}
         title={title}
         // Use our bundled hls.js instead of Vidstack's default CDN copy. The
         // dynamic import keeps hls.js in a client-only chunk (out of the Worker).
