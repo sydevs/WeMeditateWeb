@@ -32,7 +32,8 @@ export interface LightboxImplProps {
  * multi-slide groups, so they are dropped for a single slide.
  */
 export function Lightbox({ slides, open, index, close }: LightboxImplProps) {
-  const plugins = slides.length > 1 ? [Captions, Thumbnails, Zoom] : [Captions, Zoom]
+  const single = slides.length <= 1
+  const plugins = single ? [Captions, Zoom] : [Captions, Thumbnails, Zoom]
 
   return (
     <YARLightbox
@@ -40,6 +41,9 @@ export function Lightbox({ slides, open, index, close }: LightboxImplProps) {
       index={index}
       open={open}
       plugins={plugins}
+      // A single slide has nowhere to navigate, so drop the prev/next arrows
+      // (YARL would otherwise show them and wrap back to the same image).
+      render={single ? { buttonPrev: () => null, buttonNext: () => null } : undefined}
       slides={slides}
       zoom={{ scrollToZoom: true }}
     />
