@@ -1,5 +1,4 @@
 import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/outline'
-import { useMemo } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
@@ -71,10 +70,7 @@ export function EmbedButton({
 
   const resolvedOrigin = origin ?? (typeof window !== 'undefined' ? window.location.origin : '')
 
-  const snippet = useMemo(
-    () => buildEmbedSnippet(embedPath, resolvedLocale, resolvedOrigin),
-    [embedPath, resolvedLocale, resolvedOrigin],
-  )
+  const snippet = buildEmbedSnippet(embedPath, resolvedLocale, resolvedOrigin)
 
   const { copy, copied } = useClipboard()
 

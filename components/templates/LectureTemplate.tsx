@@ -102,16 +102,15 @@ export function LectureTemplate({ lecture, locale, showEmbedButton = true }: Lec
 
       <LecturePlayer className="mb-4" lecture={lecture} locale={locale} />
 
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          {displaySeconds > 0 ? (
-            <Badge color="primary" shape="circular">
-              {formatLength(displaySeconds)}
-            </Badge>
-          ) : null}
-        </div>
+      <div className="flex items-center gap-3">
+        {displaySeconds > 0 ? (
+          <Badge color="primary" shape="circular">
+            {formatLength(displaySeconds)}
+          </Badge>
+        ) : null}
         {showEmbedButton ? (
           <EmbedButton
+            className="ml-auto"
             embedPath={`/l/${lecture.id}`}
             locale={locale}
             title={lecture.title ?? undefined}

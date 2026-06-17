@@ -153,6 +153,7 @@ export function MeditationTemplate({
     <div className="max-w-6xl mx-auto h-full">
       {showEmbedButton ? (
         <div className="mb-2 flex justify-end">
+          {/* No locale prop: EmbedButton self-resolves it from page context (like Link). */}
           <EmbedButton embedPath={`/m/${meditation.id}`} title={meditation.title ?? undefined} />
         </div>
       ) : null}
