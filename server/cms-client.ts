@@ -668,40 +668,58 @@ export async function getMeditationSongs(
     locale: options.locale,
   })
 
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.SONG,
-    fetchFn: async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url = `${baseURL}/api/meditations/${encodeURIComponent(
-        options.id,
-      )}/songs?locale=${encodeURIComponent(options.locale)}`
+  try {
+    return await withCache({
+      cacheKey,
+      ttl: CacheTTL.SONG,
+      fetchFn: async () => {
+        const { apiKey, baseURL } = getCmsContext()
+        const url = `${baseURL}/api/meditations/${encodeURIComponent(
+          options.id,
+        )}/songs?locale=${encodeURIComponent(options.locale)}`
 
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
+        const response = await fetch(url, {
+          headers: { Authorization: `clients API-Key ${apiKey}` },
+        })
 
-      // Mirror the SDK's request logging so the dev request log stays complete.
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+        // Mirror the SDK's request logging so the dev request log stays complete.
+        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-      // Unknown meditation id (or no songs route) → no music, not an error.
-      if (response.status === 404) return []
+        // Unknown meditation id (or no songs route) → no music, not an error.
+        if (response.status === 404) return []
 
-      // Let server/network errors propagate so withCache's retry kicks in.
-      if (!response.ok) {
-        throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
-      }
+        // Let server/network errors propagate so withCache's retry kicks in.
+        if (!response.ok) {
+          throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
+        }
 
-      const body = (await response.json()) as {
-        docs?: Array<{ id: number; title?: string | null; url?: string | null }>
-      }
-      const docs = Array.isArray(body.docs) ? body.docs : []
+        const body = (await response.json()) as {
+          docs?: Array<{ id: number; title?: string | null; url?: string | null }>
+        }
+        const docs = Array.isArray(body.docs) ? body.docs : []
 
-      // Keep only playable tracks (the player needs a real URL); the endpoint
-      // omits duration/artwork/credit, so title + url are all we surface.
-      return docs
-        .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
-        .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
-    },
-  })
+        // Keep only playable tracks (the player needs a real URL); the endpoint
+        // omits duration/artwork/credit, so title + url are all we surface.
+        return docs
+          .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
+          .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
+      },
+    })
+  } catch (error) {
+    // Background music is supplementary — a failure to load it (after withCache's
+    // retries) must never break the meditation page. Degrade to voice-only and
+    // surface the gap to Sentry. The failed result isn't cached, so the next
+    // request retries.
+    console.warn(
+      `[getMeditationSongs] degrading to voice-only for meditation ${options.id}:`,
+      error,
+    )
+    Sentry.captureMessage('getMeditationSongs failed; rendering meditation voice-only', {
+      level: 'warning',
+      tags: { source: 'getMeditationSongs' },
+      extra: { meditationId: options.id, locale: options.locale ?? null },
+    })
+
+    return []
+  }
 }

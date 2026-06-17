@@ -392,7 +392,10 @@ function MeditationPlayerInner({
   const [musicVolume, setMusicVolume] = useState(DEFAULT_MUSIC_VOLUME)
   const [musicMuted, setMusicMuted] = useState(false)
   const musicRef = useRef<HTMLAudioElement | null>(null)
-  const currentMusicTrack = hasMusic ? musicTracks[musicIndex] : undefined
+  // Clamp the index so a track list that ever shrinks (without the index being
+  // reset yet) can't index past the end and silently drop the music layer.
+  const safeMusicIndex = hasMusic ? Math.min(musicIndex, musicTracks.length - 1) : 0
+  const currentMusicTrack = hasMusic ? musicTracks[safeMusicIndex] : undefined
   const currentMusicUrl = currentMusicTrack?.url
 
   // On mount, start from a random track. The endpoint already returns songs in
