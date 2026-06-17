@@ -19,8 +19,10 @@ export type { LinkProps } from './Link'
 // Interactive
 export { Button } from './Button'
 export { Dropdown, DropdownItem } from './Dropdown'
+export { Tooltip } from './Tooltip'
 export type { ButtonProps } from './Button'
 export type { DropdownProps, DropdownItemProps } from './Dropdown'
+export type { TooltipProps, TooltipSide } from './Tooltip'
 
 // Form Inputs
 export { Input } from './Input'

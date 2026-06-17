@@ -16,7 +16,7 @@ import {
   SpeakerXMarkIcon,
   ArrowPathRoundedSquareIcon,
 } from '@heroicons/react/24/solid'
-import { Avatar, Button, Dropdown, Link } from '../../atoms'
+import { Avatar, Button, Dropdown, Link, Tooltip } from '../../atoms'
 import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
 import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
@@ -268,13 +268,15 @@ function AudioControls({
           <VolumeRow
             action={
               canShuffle ? (
-                <Button
-                  aria-label="Shuffle music track"
-                  icon={ArrowPathRoundedSquareIcon}
-                  size="md"
-                  variant="ghost"
-                  onClick={onShuffle}
-                />
+                <Tooltip label="Play a different background music track">
+                  <Button
+                    aria-label="Shuffle music track"
+                    icon={ArrowPathRoundedSquareIcon}
+                    size="md"
+                    variant="ghost"
+                    onClick={onShuffle}
+                  />
+                </Tooltip>
               ) : undefined
             }
             label="Music"
