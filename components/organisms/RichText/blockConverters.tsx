@@ -54,7 +54,9 @@ export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
 export const blockConverters: BlockConverters = {
   // textbox → ContentTextBox. imagePosition left/right map to the side layout;
   // `overlay` maps to `center` (ContentTextBox's text-over-image mode).
-  // subtitle / textColor / wisdomStyle are deferred to #30.
+  // The CMS `textColor` describes the *text* (dark/light), while ContentTextBox's
+  // `theme` describes the *background context* (Splash convention), so the two
+  // are inverted: light text → dark theme, dark text → light theme.
   textbox: ({ node }) => {
     const fields = node.fields as unknown as TextBoxBlockFields
     const img = populatedImage(fields.image)
@@ -75,7 +77,10 @@ export const blockConverters: BlockConverters = {
         imageHeight={img.height}
         imageSrc={img.url}
         imageWidth={img.width}
+        subtitle={fields.subtitle ?? undefined}
+        theme={fields.textColor === 'light' ? 'dark' : 'light'}
         title={fields.title ?? ''}
+        wisdomStyle={fields.wisdomStyle ?? undefined}
       />
     )
   },
