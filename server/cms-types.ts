@@ -92,3 +92,18 @@ export interface MeditationListItem {
   title: string | null
   thumbnail: import('./payload-types').Image | null
 }
+
+/**
+ * Background-music track for a meditation, as returned by the
+ * `GET /api/meditations/:id/songs` endpoint.
+ *
+ * That endpoint emits a fixed minimal projection (no album/artwork/duration/
+ * credit) and encapsulates the songTag + `includeForMeditations` selection
+ * server-side. The player layers one of these under the guided voice and needs
+ * only a playable URL plus a title; see `getMeditationSongs` in cms-client.
+ */
+export interface MeditationSong {
+  id: number
+  title: string
+  url: string
+}

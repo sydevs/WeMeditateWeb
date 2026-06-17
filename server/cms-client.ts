@@ -21,6 +21,7 @@
 
 import { createPayloadClient, validateSDKResponse } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import { getCmsContext } from './cms-context'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
 import type {
@@ -37,7 +38,7 @@ import type {
   VideosSelect,
   WmWebConfigSelect,
 } from './payload-types'
-import type { Locale, Page, Song, WebConfig, PageListItem } from './cms-types'
+import type { Locale, Page, Song, WebConfig, PageListItem, MeditationSong } from './cms-types'
 
 // ============================================================================
 // Common Options Interfaces
@@ -632,6 +633,75 @@ export async function getSongsByTags(
       if (!result?.docs) return []
 
       return result.docs as Song[]
+    },
+  })
+}
+
+/**
+ * Retrieves the background-music tracks eligible for a meditation via the custom
+ * nested route `GET /api/meditations/:id/songs`.
+ *
+ * Unlike the standard collection reads above, this endpoint encapsulates the
+ * songTag + `includeForMeditations` selection server-side and returns a fixed
+ * minimal projection (`{ id, title, url, tags }`) — it does NOT accept `select`
+ * and ignores `populate`/`depth`/`limit` (it honors `locale`). Because it is not
+ * a collection `find`, the PayloadCMS SDK can't model it, so we issue a raw
+ * authenticated fetch (same `clients API-Key` header the SDK sends) wrapped in
+ * the shared cache + retry layer.
+ *
+ * The endpoint returns songs in randomized order on every request; callers pick
+ * a track client-side, so a per-TTL-window cached list is fine. Degrades to an
+ * empty list for meditations with no eligible songs (HTTP 200 `{ docs: [] }`)
+ * and for an unknown id (HTTP 404) so the player simply renders voice-only.
+ *
+ * @param options.id - The meditation document ID
+ * @param options.locale - The locale to retrieve songs in
+ * @returns Playable music tracks (`{ id, title, url }`, url guaranteed non-empty)
+ */
+export async function getMeditationSongs(
+  options: LocalizedQueryOptions & {
+    id: string
+  },
+): Promise<MeditationSong[]> {
+  const cacheKey = generateCacheKey('meditation-songs', {
+    id: options.id,
+    locale: options.locale,
+  })
+
+  return withCache({
+    cacheKey,
+    ttl: CacheTTL.SONG,
+    fetchFn: async () => {
+      const { apiKey, baseURL } = getCmsContext()
+      const url = `${baseURL}/api/meditations/${encodeURIComponent(
+        options.id,
+      )}/songs?locale=${encodeURIComponent(options.locale)}`
+
+      const response = await fetch(url, {
+        headers: { Authorization: `clients API-Key ${apiKey}` },
+      })
+
+      // Mirror the SDK's request logging so the dev request log stays complete.
+      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+
+      // Unknown meditation id (or no songs route) → no music, not an error.
+      if (response.status === 404) return []
+
+      // Let server/network errors propagate so withCache's retry kicks in.
+      if (!response.ok) {
+        throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
+      }
+
+      const body = (await response.json()) as {
+        docs?: Array<{ id: number; title?: string | null; url?: string | null }>
+      }
+      const docs = Array.isArray(body.docs) ? body.docs : []
+
+      // Keep only playable tracks (the player needs a real URL); the endpoint
+      // omits duration/artwork/credit, so title + url are all we surface.
+      return docs
+        .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
+        .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
     },
   })
 }
