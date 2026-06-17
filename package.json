@@ -42,6 +42,7 @@
     "vike": "^0.4.252",
     "vike-photon": "^0.1.24",
     "vike-react": "^0.6.19",
+    "yet-another-react-lightbox": "^3.32.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

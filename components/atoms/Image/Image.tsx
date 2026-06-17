@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useState } from 'react'
+import { ComponentProps, useEffect, useMemo, useState } from 'react'
 import { Placeholder } from '../Placeholder'
 import { Icon } from '../Icon'
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
@@ -10,6 +10,7 @@ import {
   getVariantName,
   isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
+import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
 
 const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px'
 
@@ -87,6 +88,42 @@ export interface ImageProps extends ComponentProps<'img'> {
    * @default 'neutral'
    */
   placeholderVariant?: 'primary' | 'secondary' | 'neutral'
+
+  /**
+   * Opt into the rich-text lightbox. When set *and* a `LightboxProvider` is
+   * mounted above, the image registers a full-resolution slide under this group
+   * key and renders as a focusable trigger that opens the lightbox at its slide.
+   * When unset (or with no provider) the image renders exactly as it otherwise
+   * would — no wrapper element and no click handler.
+   */
+  lightboxGroup?: string
+
+  /**
+   * Position of this image within its {@link lightboxGroup}, in document order.
+   * Determines slide order and which slide the trigger opens. Must be unique per
+   * group (e.g. the map index for a gallery; `0` for a single-image group).
+   * @default 0
+   */
+  lightboxIndex?: number
+}
+
+/**
+ * Build a {@link LightboxSlide} for an image. For Cloudflare-hosted images the
+ * largest configured variant is requested so the full-screen view (and zoom)
+ * get the highest available resolution; other URLs are used as-is. The alt text
+ * doubles as the slide caption.
+ */
+export function buildLightboxSlide(
+  src: string,
+  alt: string,
+  aspectRatio?: AspectRatio,
+): LightboxSlide {
+  const fullRes =
+    aspectRatio && isCloudflareImageURL(src)
+      ? getImageURL(src, getVariantName(aspectRatio, 'xlarge'))
+      : src
+
+  return { src: fullRes, alt, description: alt || undefined }
 }
 
 /**
@@ -122,6 +159,8 @@ export function Image({
   rounded = 'square',
   showLoading = true,
   placeholderVariant = 'neutral',
+  lightboxGroup,
+  lightboxIndex = 0,
   className = '',
   sizes,
   onLoad,
@@ -131,11 +170,32 @@ export function Image({
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
+  const lightbox = useLightbox()
+
+  const slide = useMemo(
+    () => (lightbox && lightboxGroup ? buildLightboxSlide(src, alt, aspectRatio) : null),
+    [lightbox, lightboxGroup, src, alt, aspectRatio],
+  )
+
+  // Register the slide with the ambient provider so the shared overlay can show
+  // it, keyed by its document-order index. Effects don't run during SSR, so
+  // registration happens on the client after hydration; the trigger markup
+  // itself renders on both.
+  useEffect(() => {
+    if (!lightbox || !lightboxGroup || !slide) {
+      return
+    }
+    lightbox.register(lightboxGroup, lightboxIndex, slide)
+
+    return () => lightbox.unregister(lightboxGroup, lightboxIndex)
+  }, [lightbox, lightboxGroup, lightboxIndex, slide])
+
   const { imageSrc, imageSrcSet } = useMemo(() => {
     if (!aspectRatio || !isCloudflareImageURL(src)) {
       return { imageSrc: src, imageSrcSet: undefined as string | undefined }
     }
     const srcSet = responsive ? getImageSrcSet(src, aspectRatio) : ''
+
     return {
       imageSrc: getImageURL(src, getVariantName(aspectRatio, size)),
       imageSrcSet: srcSet || undefined,
@@ -184,16 +244,16 @@ export function Image({
     aspectRatio ? 'absolute inset-0 w-full h-full' : ''
   } transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} ${className}`
 
-  return (
-    <div className={containerClasses}>
+  const content = (
+    <>
       {/* Always show Placeholder when loading or error */}
       {showLoading && (isLoading || hasError) && (
         <Placeholder
-          width={width}
-          height={height}
-          variant={placeholderVariant}
           animate={!hasError}
           className="absolute inset-0"
+          height={height}
+          variant={placeholderVariant}
+          width={width}
         >
           {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
         </Placeholder>
@@ -202,19 +262,38 @@ export function Image({
       {/* Image element (hidden until loaded, not rendered on error) */}
       {!hasError && (
         <img
+          alt={alt}
+          className={imageClasses}
+          height={height}
+          loading="lazy"
+          sizes={sizes ?? (imageSrcSet ? DEFAULT_SIZES : undefined)}
           src={imageSrc}
           srcSet={imageSrcSet}
-          sizes={sizes ?? (imageSrcSet ? DEFAULT_SIZES : undefined)}
-          alt={alt}
           width={width}
-          height={height}
-          className={imageClasses}
-          onLoad={handleLoad}
           onError={handleError}
-          loading="lazy"
+          onLoad={handleLoad}
           {...props}
         />
       )}
-    </div>
+    </>
   )
+
+  // With a lightboxGroup and a provider mounted above, render the image as a
+  // focusable trigger that opens the shared lightbox at this image's slide;
+  // otherwise the container is unchanged (no wrapper element, no click handler).
+  if (lightbox && lightboxGroup) {
+    return (
+      <button
+        aria-haspopup="dialog"
+        aria-label={alt ? `View image: ${alt}` : 'View image'}
+        className={`${containerClasses} block w-full cursor-zoom-in appearance-none border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2`}
+        type="button"
+        onClick={() => lightbox.openAt(lightboxGroup, lightboxIndex)}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return <div className={containerClasses}>{content}</div>
 }

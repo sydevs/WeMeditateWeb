@@ -13,6 +13,7 @@ import {
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Blockquote, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
+import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
@@ -189,6 +190,7 @@ const CONVERTERS: JSXConverters = {
           alt={fields?.alt ?? image.alt ?? ''}
           aspectRatio={nearestAspectRatio(image.width, image.height)}
           height={image.height ?? undefined}
+          lightboxGroup={`upload-${image.url}`}
           rounded="rounded"
           sizes={ARTICLE_IMAGE_SIZES}
           src={image.url}
@@ -320,11 +322,15 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
       } as JSXConverters)
     : CONVERTERS
 
+  // One provider per document: every gallery/upload image below shares a single
+  // client-only lightbox overlay (the provider renders no DOM until one opens).
   return (
-    <LexicalRichText
-      className={className ?? ARTICLE_CLASS}
-      converters={converters}
-      data={content as unknown as LexicalEditorState}
-    />
+    <LightboxProvider>
+      <LexicalRichText
+        className={className ?? ARTICLE_CLASS}
+        converters={converters}
+        data={content as unknown as LexicalEditorState}
+      />
+    </LightboxProvider>
   )
 }

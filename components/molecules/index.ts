@@ -19,6 +19,12 @@ export { VideoPlayer } from './VideoPlayer'
 export type { VideoPlayerProps } from './VideoPlayer'
 export type { VideoSubtitleCue } from './VideoPlayer'
 
+// Lightbox (client-only image overlay + ambient provider)
+export { Lightbox } from './Lightbox'
+export type { LightboxImplProps } from './Lightbox'
+export { LightboxProvider, useLightbox } from './Lightbox/LightboxProvider'
+export type { LightboxSlide, LightboxProviderProps } from './Lightbox/LightboxProvider'
+
 // Content
 export { Column } from './Column'
 export type { ColumnProps } from './Column'

@@ -335,6 +335,53 @@ describe('<RichText>', () => {
     expect(html).toContain('columns-2')
   })
 
+  it('wraps each image-gallery image in a keyboard-accessible lightbox trigger', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [img({ id: 1, alt: 'One' }), img({ id: 2, alt: 'Two' })],
+          }),
+        ])}
+      />,
+    )
+
+    // One trigger per image, each labelled by its alt text; the masonry is intact.
+    expect((html.match(/aria-label="View image:/g) ?? []).length).toBe(2)
+    expect(html).toContain('aria-label="View image: One"')
+    expect(html).toContain('aria-label="View image: Two"')
+    expect(html).toContain('aria-haspopup="dialog"')
+    expect(html).toContain('columns-2')
+  })
+
+  it('wraps the standalone upload image in a lightbox trigger inside its figure', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'upload',
+            relationTo: 'images',
+            value: {
+              id: 4,
+              url: 'https://imagedelivery.net/acct/img123/',
+              alt: 'A sunrise',
+              width: 1600,
+              height: 900,
+            },
+            fields: { align: 'center', caption: 'Sunrise over the hills' },
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+    // The SSR figure + caption still render (the lightbox only adds the trigger).
+    expect(html).toContain('<figure')
+    expect(html).toContain('<figcaption')
+    expect(html).toContain('<button')
+    expect(html).toContain('aria-label="View image: A sunrise"')
+  })
+
   it('renders a layout block (textList) as a titled list', () => {
     const html = renderToStaticMarkup(
       <RichText
