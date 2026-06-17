@@ -1,19 +1,22 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Meditation, WebConfig } from '../../../server/cms-types'
-import { getDocumentById, getWebConfig } from '../../../server/cms-client'
+import type { Meditation } from '../../../server/cms-types'
+import { getDocumentById } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
 
 export interface MeditationEmbedPageData {
   meditation: Meditation
-  settings: WebConfig
   locale: string
   id: string
 }
 
 /**
- * Fetch meditation data for embed route
- * This route is designed for embedding in iframes
+ * Fetch meditation data for the embed route (iframe).
+ *
+ * Unlike the full route, this does NOT fetch WeMeditateWebSettings: LayoutDefault
+ * renders the bare player whenever page data carries no `settings` (its
+ * `if (!settings) return <>{children}</>` branch), which is what makes the embed
+ * chrome-free. Providing settings here would render the full Header/Footer/nav.
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationEmbedPageData> {
   const { locale, routeParams } = pageContext
@@ -27,11 +30,7 @@ export async function data(pageContext: PageContextServer): Promise<MeditationEm
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  // Fetch global settings and meditation in parallel
-  const [settings, meditation] = await Promise.all([
-    getWebConfig({ locale }),
-    getDocumentById({ collection: 'meditations', id, locale }),
-  ])
+  const meditation = await getDocumentById({ collection: 'meditations', id, locale })
 
   if (!meditation) {
     // Meditation not found - throw 404
@@ -40,7 +39,6 @@ export async function data(pageContext: PageContextServer): Promise<MeditationEm
 
   return {
     meditation,
-    settings,
     locale,
     id,
   }
