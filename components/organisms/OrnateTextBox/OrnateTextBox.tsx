@@ -129,7 +129,7 @@ export function OrnateTextBox({
       {sidetext && (
         <span
           aria-hidden="true"
-          className={`absolute top-1/2 hidden -translate-y-1/2 rotate-180 select-none text-sm font-light uppercase tracking-[0.2em] text-gray-500 [writing-mode:vertical-rl] md:block ${
+          className={`absolute top-1/2 hidden -translate-y-1/2 rotate-180 select-none text-sm font-light uppercase tracking-[0.2em] text-gray-600 [writing-mode:vertical-rl] md:block ${
             imageOnRight ? 'right-3' : 'left-3'
           }`}
         >
