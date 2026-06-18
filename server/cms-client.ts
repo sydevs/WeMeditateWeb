@@ -166,6 +166,7 @@ const PAGE_POPULATE = {
 const WEB_CONFIG_SELECT = {
   homePage: true,
   featuredPages: true,
+  featuredArticles: true,
   classPages: true,
   knowledgePages: true,
   infoPages: true,
@@ -501,6 +502,7 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
       // Drop unresolved (believed-unpublished) page references so the layout
       // never renders dead `/undefined` links — graceful fallback.
       const featured = partitionPublishedPages(validated.featuredPages)
+      const featuredArticles = partitionPublishedPages(validated.featuredArticles)
       const classPages = partitionPublishedPages(validated.classPages)
       const knowledgePages = partitionPublishedPages(validated.knowledgePages)
       const infoPages = partitionPublishedPages(validated.infoPages)
@@ -508,6 +510,7 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
       const unresolved = [
         ...(typeof validated.homePage === 'number' ? [`homePage id:${validated.homePage}`] : []),
         ...featured.unresolved.map((u) => `featuredPages ${u}`),
+        ...featuredArticles.unresolved.map((u) => `featuredArticles ${u}`),
         ...classPages.unresolved.map((u) => `classPages ${u}`),
         ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
         ...infoPages.unresolved.map((u) => `infoPages ${u}`),
@@ -529,6 +532,7 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
       return {
         ...validated,
         featuredPages: featured.published,
+        featuredArticles: featuredArticles.published,
         classPages: classPages.published,
         knowledgePages: knowledgePages.published,
         infoPages: infoPages.published,
