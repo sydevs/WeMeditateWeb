@@ -13,6 +13,7 @@
  * via the `definition` "supportedTimezones".
  */
 export type SupportedTimezones =
+  | 'UTC'
   | 'Pacific/Midway'
   | 'Pacific/Niue'
   | 'Pacific/Honolulu'
@@ -59,7 +60,540 @@ export type SupportedTimezones =
   | 'Pacific/Guam'
   | 'Pacific/Noumea'
   | 'Pacific/Auckland'
-  | 'Pacific/Fiji';
+  | 'Pacific/Fiji'
+  | 'Pacific/Pago_Pago'
+  | 'US/Samoa'
+  | 'Pacific/Samoa'
+  | 'US/Hawaii'
+  | 'Pacific/Johnston'
+  | 'HST'
+  | 'Pacific/Tahiti'
+  | 'Pacific/Marquesas'
+  | 'America/Adak'
+  | 'US/Aleutian'
+  | 'America/Atka'
+  | 'America/Juneau'
+  | 'America/Metlakatla'
+  | 'America/Nome'
+  | 'America/Sitka'
+  | 'America/Yakutat'
+  | 'US/Alaska'
+  | 'Pacific/Pitcairn'
+  | 'America/Hermosillo'
+  | 'America/Mazatlan'
+  | 'Mexico/BajaSur'
+  | 'MST'
+  | 'US/Arizona'
+  | 'America/Creston'
+  | 'US/Pacific'
+  | 'PST8PDT'
+  | 'Mexico/BajaNorte'
+  | 'America/Ensenada'
+  | 'America/Santa_Isabel'
+  | 'America/Vancouver'
+  | 'Canada/Pacific'
+  | 'America/Whitehorse'
+  | 'America/Dawson'
+  | 'America/Dawson_Creek'
+  | 'America/Fort_Nelson'
+  | 'Canada/Yukon'
+  | 'America/Belize'
+  | 'America/Managua'
+  | 'America/Mexico_City'
+  | 'America/Bahia_Banderas'
+  | 'America/Chihuahua'
+  | 'America/Merida'
+  | 'America/Monterrey'
+  | 'Mexico/General'
+  | 'America/Costa_Rica'
+  | 'America/El_Salvador'
+  | 'America/Regina'
+  | 'America/Swift_Current'
+  | 'Canada/Saskatchewan'
+  | 'America/Tegucigalpa'
+  | 'Pacific/Easter'
+  | 'Chile/EasterIsland'
+  | 'Pacific/Galapagos'
+  | 'America/Edmonton'
+  | 'America/Cambridge_Bay'
+  | 'America/Inuvik'
+  | 'Canada/Mountain'
+  | 'America/Yellowknife'
+  | 'America/Ciudad_Juarez'
+  | 'America/Boise'
+  | 'MST7MDT'
+  | 'Navajo'
+  | 'US/Mountain'
+  | 'America/Shiprock'
+  | 'America/Rio_Branco'
+  | 'America/Eirunepe'
+  | 'Brazil/Acre'
+  | 'America/Porto_Acre'
+  | 'America/Indiana/Knox'
+  | 'America/Indiana/Tell_City'
+  | 'America/Menominee'
+  | 'America/North_Dakota/Beulah'
+  | 'America/North_Dakota/Center'
+  | 'America/North_Dakota/New_Salem'
+  | 'CST6CDT'
+  | 'US/Central'
+  | 'US/Indiana-Starke'
+  | 'America/Knox_IN'
+  | 'America/Matamoros'
+  | 'America/Ojinaga'
+  | 'America/Winnipeg'
+  | 'America/Rankin_Inlet'
+  | 'America/Resolute'
+  | 'Canada/Central'
+  | 'America/Rainy_River'
+  | 'America/Atikokan'
+  | 'America/Cancun'
+  | 'America/Cayman'
+  | 'America/Jamaica'
+  | 'Jamaica'
+  | 'America/Panama'
+  | 'EST'
+  | 'America/Coral_Harbour'
+  | 'America/Guayaquil'
+  | 'America/Lima'
+  | 'America/Manaus'
+  | 'America/Boa_Vista'
+  | 'America/Campo_Grande'
+  | 'America/Cuiaba'
+  | 'America/Porto_Velho'
+  | 'Brazil/West'
+  | 'America/St_Kitts'
+  | 'America/Blanc-Sablon'
+  | 'America/Montserrat'
+  | 'America/Barbados'
+  | 'America/Port_of_Spain'
+  | 'America/Martinique'
+  | 'America/St_Lucia'
+  | 'America/St_Barthelemy'
+  | 'America/St_Vincent'
+  | 'America/Kralendijk'
+  | 'America/Guadeloupe'
+  | 'America/Marigot'
+  | 'America/Aruba'
+  | 'America/Lower_Princes'
+  | 'America/Tortola'
+  | 'America/Dominica'
+  | 'America/St_Thomas'
+  | 'America/Grenada'
+  | 'America/Antigua'
+  | 'America/Puerto_Rico'
+  | 'America/Virgin'
+  | 'America/Anguilla'
+  | 'America/Curacao'
+  | 'America/Santo_Domingo'
+  | 'America/La_Paz'
+  | 'Chile/Continental'
+  | 'America/Havana'
+  | 'Cuba'
+  | 'America/Nassau'
+  | 'America/Detroit'
+  | 'America/Indiana/Indianapolis'
+  | 'America/Indiana/Marengo'
+  | 'America/Indiana/Petersburg'
+  | 'America/Indiana/Vevay'
+  | 'America/Indiana/Vincennes'
+  | 'America/Indiana/Winamac'
+  | 'America/Kentucky/Louisville'
+  | 'America/Kentucky/Monticello'
+  | 'US/Michigan'
+  | 'US/East-Indiana'
+  | 'America/Indianapolis'
+  | 'America/Fort_Wayne'
+  | 'America/Louisville'
+  | 'EST5EDT'
+  | 'US/Eastern'
+  | 'America/Port-au-Prince'
+  | 'America/Grand_Turk'
+  | 'America/Toronto'
+  | 'America/Iqaluit'
+  | 'America/Pangnirtung'
+  | 'Canada/Eastern'
+  | 'America/Montreal'
+  | 'America/Nipigon'
+  | 'America/Thunder_Bay'
+  | 'America/Guyana'
+  | 'America/Argentina/Buenos_Aires'
+  | 'America/Argentina/Catamarca'
+  | 'America/Argentina/Cordoba'
+  | 'America/Argentina/Jujuy'
+  | 'America/Argentina/La_Rioja'
+  | 'America/Argentina/Mendoza'
+  | 'America/Argentina/Rio_Gallegos'
+  | 'America/Argentina/Salta'
+  | 'America/Argentina/San_Juan'
+  | 'America/Argentina/San_Luis'
+  | 'America/Argentina/Tucuman'
+  | 'America/Argentina/Ushuaia'
+  | 'America/Catamarca'
+  | 'America/Argentina/ComodRivadavia'
+  | 'America/Cordoba'
+  | 'America/Rosario'
+  | 'America/Jujuy'
+  | 'America/Mendoza'
+  | 'America/Halifax'
+  | 'America/Glace_Bay'
+  | 'America/Goose_Bay'
+  | 'America/Moncton'
+  | 'Canada/Atlantic'
+  | 'Atlantic/Bermuda'
+  | 'America/Thule'
+  | 'America/Araguaina'
+  | 'America/Bahia'
+  | 'America/Belem'
+  | 'America/Fortaleza'
+  | 'America/Maceio'
+  | 'America/Recife'
+  | 'America/Santarem'
+  | 'Brazil/East'
+  | 'Antarctica/Palmer'
+  | 'Antarctica/Rothera'
+  | 'America/Punta_Arenas'
+  | 'America/Coyhaique'
+  | 'Atlantic/Stanley'
+  | 'America/Cayenne'
+  | 'America/Asuncion'
+  | 'America/Paramaribo'
+  | 'America/Montevideo'
+  | 'America/St_Johns'
+  | 'Canada/Newfoundland'
+  | 'America/Noronha'
+  | 'Brazil/DeNoronha'
+  | 'America/Miquelon'
+  | 'America/Nuuk'
+  | 'America/Scoresbysund'
+  | 'America/Godthab'
+  | 'Africa/Abidjan'
+  | 'Iceland'
+  | 'Africa/Accra'
+  | 'Africa/Bamako'
+  | 'Africa/Banjul'
+  | 'Africa/Conakry'
+  | 'Africa/Dakar'
+  | 'Africa/Freetown'
+  | 'Africa/Lome'
+  | 'Africa/Nouakchott'
+  | 'Africa/Ouagadougou'
+  | 'Atlantic/Reykjavik'
+  | 'Atlantic/St_Helena'
+  | 'Africa/Timbuktu'
+  | 'Africa/Bissau'
+  | 'America/Danmarkshavn'
+  | 'Africa/Monrovia'
+  | 'Africa/Sao_Tome'
+  | 'Africa/Algiers'
+  | 'Africa/Tunis'
+  | 'Europe/Isle_of_Man'
+  | 'Europe/Dublin'
+  | 'Eire'
+  | 'GB'
+  | 'GB-Eire'
+  | 'Europe/Guernsey'
+  | 'Europe/Jersey'
+  | 'Europe/Belfast'
+  | 'Africa/Bangui'
+  | 'Africa/Malabo'
+  | 'Africa/Brazzaville'
+  | 'Africa/Porto-Novo'
+  | 'Africa/Douala'
+  | 'Africa/Kinshasa'
+  | 'Africa/Libreville'
+  | 'Africa/Luanda'
+  | 'Africa/Niamey'
+  | 'Africa/Ndjamena'
+  | 'Africa/Casablanca'
+  | 'Africa/El_Aaiun'
+  | 'Atlantic/Canary'
+  | 'Europe/Lisbon'
+  | 'Atlantic/Madeira'
+  | 'Portugal'
+  | 'WET'
+  | 'Atlantic/Faroe'
+  | 'Atlantic/Faeroe'
+  | 'Africa/Bujumbura'
+  | 'Africa/Gaborone'
+  | 'Africa/Harare'
+  | 'Africa/Juba'
+  | 'Africa/Khartoum'
+  | 'Africa/Kigali'
+  | 'Africa/Blantyre'
+  | 'Africa/Lubumbashi'
+  | 'Africa/Lusaka'
+  | 'Africa/Maputo'
+  | 'Africa/Windhoek'
+  | 'Europe/Andorra'
+  | 'Europe/Belgrade'
+  | 'Europe/Ljubljana'
+  | 'Europe/Podgorica'
+  | 'Europe/Sarajevo'
+  | 'Europe/Skopje'
+  | 'Europe/Zagreb'
+  | 'Europe/Busingen'
+  | 'Arctic/Longyearbyen'
+  | 'Europe/Copenhagen'
+  | 'Europe/Oslo'
+  | 'Europe/Stockholm'
+  | 'Atlantic/Jan_Mayen'
+  | 'Europe/Bratislava'
+  | 'Europe/Brussels'
+  | 'CET'
+  | 'MET'
+  | 'Europe/Amsterdam'
+  | 'Europe/Luxembourg'
+  | 'Europe/Budapest'
+  | 'Europe/Gibraltar'
+  | 'Europe/Madrid'
+  | 'Africa/Ceuta'
+  | 'Europe/Monaco'
+  | 'Europe/Paris'
+  | 'Europe/Prague'
+  | 'Europe/Rome'
+  | 'Europe/San_Marino'
+  | 'Europe/Vatican'
+  | 'Europe/Malta'
+  | 'Europe/Tirane'
+  | 'Europe/Vaduz'
+  | 'Europe/Vienna'
+  | 'Europe/Warsaw'
+  | 'Poland'
+  | 'Europe/Zurich'
+  | 'Europe/Kaliningrad'
+  | 'Africa/Tripoli'
+  | 'Libya'
+  | 'Antarctica/Troll'
+  | 'Africa/Johannesburg'
+  | 'Africa/Maseru'
+  | 'Africa/Mbabane'
+  | 'Asia/Kuwait'
+  | 'Asia/Bahrain'
+  | 'Asia/Baghdad'
+  | 'Asia/Qatar'
+  | 'Antarctica/Syowa'
+  | 'Asia/Aden'
+  | 'Asia/Amman'
+  | 'Asia/Damascus'
+  | 'Africa/Addis_Ababa'
+  | 'Indian/Antananarivo'
+  | 'Africa/Asmara'
+  | 'Africa/Dar_es_Salaam'
+  | 'Africa/Djibouti'
+  | 'Africa/Kampala'
+  | 'Indian/Mayotte'
+  | 'Africa/Mogadishu'
+  | 'Indian/Comoro'
+  | 'Africa/Nairobi'
+  | 'Africa/Asmera'
+  | 'EET'
+  | 'Asia/Beirut'
+  | 'Europe/Bucharest'
+  | 'Egypt'
+  | 'Europe/Chisinau'
+  | 'Europe/Tiraspol'
+  | 'Asia/Hebron'
+  | 'Asia/Gaza'
+  | 'Europe/Helsinki'
+  | 'Europe/Mariehamn'
+  | 'Europe/Kyiv'
+  | 'Europe/Uzhgorod'
+  | 'Europe/Zaporozhye'
+  | 'Europe/Kiev'
+  | 'Asia/Nicosia'
+  | 'Asia/Famagusta'
+  | 'Europe/Nicosia'
+  | 'Europe/Riga'
+  | 'Europe/Sofia'
+  | 'Europe/Tallinn'
+  | 'Europe/Vilnius'
+  | 'Asia/Jerusalem'
+  | 'Israel'
+  | 'Asia/Tel_Aviv'
+  | 'Europe/Minsk'
+  | 'Europe/Kirov'
+  | 'Europe/Volgograd'
+  | 'W-SU'
+  | 'Europe/Simferopol'
+  | 'Europe/Istanbul'
+  | 'Turkey'
+  | 'Asia/Istanbul'
+  | 'Asia/Tehran'
+  | 'Iran'
+  | 'Asia/Yerevan'
+  | 'Asia/Tbilisi'
+  | 'Asia/Muscat'
+  | 'Indian/Mahe'
+  | 'Indian/Reunion'
+  | 'Indian/Mauritius'
+  | 'Europe/Samara'
+  | 'Europe/Astrakhan'
+  | 'Europe/Saratov'
+  | 'Europe/Ulyanovsk'
+  | 'Asia/Kabul'
+  | 'Indian/Kerguelen'
+  | 'Asia/Aqtau'
+  | 'Asia/Aqtobe'
+  | 'Asia/Atyrau'
+  | 'Asia/Oral'
+  | 'Asia/Qostanay'
+  | 'Asia/Qyzylorda'
+  | 'Indian/Maldives'
+  | 'Antarctica/Mawson'
+  | 'Antarctica/Vostok'
+  | 'Asia/Dushanbe'
+  | 'Asia/Ashgabat'
+  | 'Asia/Ashkhabad'
+  | 'Asia/Samarkand'
+  | 'Asia/Yekaterinburg'
+  | 'Asia/Colombo'
+  | 'Asia/Kolkata'
+  | 'Asia/Kathmandu'
+  | 'Asia/Katmandu'
+  | 'Asia/Dacca'
+  | 'Asia/Thimphu'
+  | 'Asia/Thimbu'
+  | 'Asia/Urumqi'
+  | 'Asia/Kashgar'
+  | 'Indian/Chagos'
+  | 'Asia/Bishkek'
+  | 'Asia/Omsk'
+  | 'Indian/Cocos'
+  | 'Asia/Yangon'
+  | 'Asia/Rangoon'
+  | 'Indian/Christmas'
+  | 'Antarctica/Davis'
+  | 'Asia/Hovd'
+  | 'Asia/Phnom_Penh'
+  | 'Asia/Vientiane'
+  | 'Asia/Ho_Chi_Minh'
+  | 'Asia/Saigon'
+  | 'Asia/Novosibirsk'
+  | 'Asia/Barnaul'
+  | 'Asia/Krasnoyarsk'
+  | 'Asia/Novokuznetsk'
+  | 'Asia/Tomsk'
+  | 'Asia/Pontianak'
+  | 'Antarctica/Casey'
+  | 'Australia/Perth'
+  | 'Australia/West'
+  | 'Asia/Brunei'
+  | 'Asia/Makassar'
+  | 'Asia/Ujung_Pandang'
+  | 'Asia/Macau'
+  | 'Asia/Macao'
+  | 'PRC'
+  | 'Asia/Chongqing'
+  | 'Asia/Harbin'
+  | 'Asia/Chungking'
+  | 'Asia/Hong_Kong'
+  | 'Hongkong'
+  | 'Asia/Irkutsk'
+  | 'Asia/Kuala_Lumpur'
+  | 'Asia/Kuching'
+  | 'Asia/Manila'
+  | 'Singapore'
+  | 'Asia/Taipei'
+  | 'ROC'
+  | 'Asia/Ulaanbaatar'
+  | 'Asia/Choibalsan'
+  | 'Asia/Ulan_Bator'
+  | 'Australia/Eucla'
+  | 'Asia/Jayapura'
+  | 'Japan'
+  | 'Asia/Pyongyang'
+  | 'ROK'
+  | 'Pacific/Palau'
+  | 'Asia/Dili'
+  | 'Asia/Chita'
+  | 'Asia/Khandyga'
+  | 'Asia/Yakutsk'
+  | 'Australia/Adelaide'
+  | 'Australia/Broken_Hill'
+  | 'Australia/South'
+  | 'Australia/Yancowinna'
+  | 'Australia/Darwin'
+  | 'Australia/North'
+  | 'Australia/Lindeman'
+  | 'Australia/Queensland'
+  | 'Antarctica/Macquarie'
+  | 'Australia/Hobart'
+  | 'Australia/Melbourne'
+  | 'Australia/Tasmania'
+  | 'Australia/Currie'
+  | 'Australia/Victoria'
+  | 'Australia/ACT'
+  | 'Australia/NSW'
+  | 'Australia/Canberra'
+  | 'Pacific/Saipan'
+  | 'Pacific/Chuuk'
+  | 'Antarctica/DumontDUrville'
+  | 'Pacific/Port_Moresby'
+  | 'Pacific/Yap'
+  | 'Pacific/Truk'
+  | 'Asia/Vladivostok'
+  | 'Asia/Ust-Nera'
+  | 'Australia/Lord_Howe'
+  | 'Australia/LHI'
+  | 'Pacific/Bougainville'
+  | 'Pacific/Kosrae'
+  | 'Pacific/Pohnpei'
+  | 'Pacific/Norfolk'
+  | 'Asia/Sakhalin'
+  | 'Asia/Magadan'
+  | 'Asia/Srednekolymsk'
+  | 'Pacific/Guadalcanal'
+  | 'Pacific/Ponape'
+  | 'Pacific/Efate'
+  | 'Pacific/Tarawa'
+  | 'Pacific/Funafuti'
+  | 'Pacific/Majuro'
+  | 'Pacific/Wake'
+  | 'Pacific/Wallis'
+  | 'Asia/Kamchatka'
+  | 'Asia/Anadyr'
+  | 'Pacific/Kwajalein'
+  | 'Kwajalein'
+  | 'Pacific/Nauru'
+  | 'NZ'
+  | 'Antarctica/McMurdo'
+  | 'Antarctica/South_Pole'
+  | 'Pacific/Chatham'
+  | 'NZ-CHAT'
+  | 'Pacific/Kanton'
+  | 'Pacific/Enderbury'
+  | 'Pacific/Apia'
+  | 'Pacific/Fakaofo'
+  | 'Pacific/Tongatapu'
+  | 'Pacific/Kiritimati'
+  | 'Etc/GMT-14'
+  | 'Etc/GMT-13'
+  | 'Etc/GMT-12'
+  | 'Etc/GMT-11'
+  | 'Etc/GMT-10'
+  | 'Etc/GMT-9'
+  | 'Etc/GMT-8'
+  | 'Etc/GMT-7'
+  | 'Etc/GMT-6'
+  | 'Etc/GMT-5'
+  | 'Etc/GMT-4'
+  | 'Etc/GMT-3'
+  | 'Etc/GMT-2'
+  | 'Etc/GMT-1'
+  | 'Etc/GMT'
+  | 'Etc/GMT+1'
+  | 'Etc/GMT+2'
+  | 'Etc/GMT+3'
+  | 'Etc/GMT+4'
+  | 'Etc/GMT+5'
+  | 'Etc/GMT+6'
+  | 'Etc/GMT+7'
+  | 'Etc/GMT+8'
+  | 'Etc/GMT+9'
+  | 'Etc/GMT+10'
+  | 'Etc/GMT+11'
+  | 'Etc/GMT+12';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ProjectSlug".
@@ -148,6 +682,9 @@ export interface Config {
     };
     regions: {
       events: 'events';
+      childrenRegions: 'regions';
+      childrenCities: 'regions';
+      childrenCenters: 'regions';
     };
     events: {
       registrations: 'registrations';
@@ -258,6 +795,7 @@ export interface Config {
   jobs: {
     tasks: {
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
+      expireEvents: TaskExpireEvents;
       syncLectureMetadata: TaskSyncLectureMetadata;
       resetUsage: TaskResetUsage;
       schedulePublish: TaskSchedulePublish;
@@ -462,6 +1000,7 @@ export interface Author {
 export interface Video {
   id: number;
   hlsUrl?: string | null;
+  mp4Url?: string | null;
   previewUrl?: string | null;
   thumbnail?: (number | null) | Image;
   /**
@@ -542,7 +1081,7 @@ export interface Manager {
   /**
    * The manager's preferred language.
    */
-  languageCode?:
+  language?:
     | (
         | 'ab'
         | 'aa'
@@ -800,25 +1339,25 @@ export interface Region {
    * The geographic parent of this node (a higher level).
    */
   parent?: (number | null) | Region;
-  name: string;
   /**
-   * Text that appears below the region name in listings
+   * Managers responsible for this region.
    */
-  subtitle?: string | null;
+  managers?: (number | Manager)[] | null;
   /**
    * Search for this place (country, region, city, or venue) to set its geographic identity, or "Enter manually" to provide your own coordinates.
    */
   mapboxId: string;
+  name?: string | null;
+  /**
+   * Text that appears below the region name in listings
+   */
+  subtitle?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   /**
    * Radius in meters.
    */
   radius?: number | null;
-  /**
-   * Managers responsible for this region.
-   */
-  managers?: (number | Manager)[] | null;
   /**
    * These fields will be used to set defaults for Events in this region
    */
@@ -1012,6 +1551,7 @@ export interface Region {
       | null;
     timeZone?:
       | (
+          | 'UTC'
           | 'Pacific/Midway'
           | 'Pacific/Niue'
           | 'Pacific/Honolulu'
@@ -1059,6 +1599,539 @@ export interface Region {
           | 'Pacific/Noumea'
           | 'Pacific/Auckland'
           | 'Pacific/Fiji'
+          | 'Pacific/Pago_Pago'
+          | 'US/Samoa'
+          | 'Pacific/Samoa'
+          | 'US/Hawaii'
+          | 'Pacific/Johnston'
+          | 'HST'
+          | 'Pacific/Tahiti'
+          | 'Pacific/Marquesas'
+          | 'America/Adak'
+          | 'US/Aleutian'
+          | 'America/Atka'
+          | 'America/Juneau'
+          | 'America/Metlakatla'
+          | 'America/Nome'
+          | 'America/Sitka'
+          | 'America/Yakutat'
+          | 'US/Alaska'
+          | 'Pacific/Pitcairn'
+          | 'America/Hermosillo'
+          | 'America/Mazatlan'
+          | 'Mexico/BajaSur'
+          | 'MST'
+          | 'US/Arizona'
+          | 'America/Creston'
+          | 'US/Pacific'
+          | 'PST8PDT'
+          | 'Mexico/BajaNorte'
+          | 'America/Ensenada'
+          | 'America/Santa_Isabel'
+          | 'America/Vancouver'
+          | 'Canada/Pacific'
+          | 'America/Whitehorse'
+          | 'America/Dawson'
+          | 'America/Dawson_Creek'
+          | 'America/Fort_Nelson'
+          | 'Canada/Yukon'
+          | 'America/Belize'
+          | 'America/Managua'
+          | 'America/Mexico_City'
+          | 'America/Bahia_Banderas'
+          | 'America/Chihuahua'
+          | 'America/Merida'
+          | 'America/Monterrey'
+          | 'Mexico/General'
+          | 'America/Costa_Rica'
+          | 'America/El_Salvador'
+          | 'America/Regina'
+          | 'America/Swift_Current'
+          | 'Canada/Saskatchewan'
+          | 'America/Tegucigalpa'
+          | 'Pacific/Easter'
+          | 'Chile/EasterIsland'
+          | 'Pacific/Galapagos'
+          | 'America/Edmonton'
+          | 'America/Cambridge_Bay'
+          | 'America/Inuvik'
+          | 'Canada/Mountain'
+          | 'America/Yellowknife'
+          | 'America/Ciudad_Juarez'
+          | 'America/Boise'
+          | 'MST7MDT'
+          | 'Navajo'
+          | 'US/Mountain'
+          | 'America/Shiprock'
+          | 'America/Rio_Branco'
+          | 'America/Eirunepe'
+          | 'Brazil/Acre'
+          | 'America/Porto_Acre'
+          | 'America/Indiana/Knox'
+          | 'America/Indiana/Tell_City'
+          | 'America/Menominee'
+          | 'America/North_Dakota/Beulah'
+          | 'America/North_Dakota/Center'
+          | 'America/North_Dakota/New_Salem'
+          | 'CST6CDT'
+          | 'US/Central'
+          | 'US/Indiana-Starke'
+          | 'America/Knox_IN'
+          | 'America/Matamoros'
+          | 'America/Ojinaga'
+          | 'America/Winnipeg'
+          | 'America/Rankin_Inlet'
+          | 'America/Resolute'
+          | 'Canada/Central'
+          | 'America/Rainy_River'
+          | 'America/Atikokan'
+          | 'America/Cancun'
+          | 'America/Cayman'
+          | 'America/Jamaica'
+          | 'Jamaica'
+          | 'America/Panama'
+          | 'EST'
+          | 'America/Coral_Harbour'
+          | 'America/Guayaquil'
+          | 'America/Lima'
+          | 'America/Manaus'
+          | 'America/Boa_Vista'
+          | 'America/Campo_Grande'
+          | 'America/Cuiaba'
+          | 'America/Porto_Velho'
+          | 'Brazil/West'
+          | 'America/St_Kitts'
+          | 'America/Blanc-Sablon'
+          | 'America/Montserrat'
+          | 'America/Barbados'
+          | 'America/Port_of_Spain'
+          | 'America/Martinique'
+          | 'America/St_Lucia'
+          | 'America/St_Barthelemy'
+          | 'America/St_Vincent'
+          | 'America/Kralendijk'
+          | 'America/Guadeloupe'
+          | 'America/Marigot'
+          | 'America/Aruba'
+          | 'America/Lower_Princes'
+          | 'America/Tortola'
+          | 'America/Dominica'
+          | 'America/St_Thomas'
+          | 'America/Grenada'
+          | 'America/Antigua'
+          | 'America/Puerto_Rico'
+          | 'America/Virgin'
+          | 'America/Anguilla'
+          | 'America/Curacao'
+          | 'America/Santo_Domingo'
+          | 'America/La_Paz'
+          | 'Chile/Continental'
+          | 'America/Havana'
+          | 'Cuba'
+          | 'America/Nassau'
+          | 'America/Detroit'
+          | 'America/Indiana/Indianapolis'
+          | 'America/Indiana/Marengo'
+          | 'America/Indiana/Petersburg'
+          | 'America/Indiana/Vevay'
+          | 'America/Indiana/Vincennes'
+          | 'America/Indiana/Winamac'
+          | 'America/Kentucky/Louisville'
+          | 'America/Kentucky/Monticello'
+          | 'US/Michigan'
+          | 'US/East-Indiana'
+          | 'America/Indianapolis'
+          | 'America/Fort_Wayne'
+          | 'America/Louisville'
+          | 'EST5EDT'
+          | 'US/Eastern'
+          | 'America/Port-au-Prince'
+          | 'America/Grand_Turk'
+          | 'America/Toronto'
+          | 'America/Iqaluit'
+          | 'America/Pangnirtung'
+          | 'Canada/Eastern'
+          | 'America/Montreal'
+          | 'America/Nipigon'
+          | 'America/Thunder_Bay'
+          | 'America/Guyana'
+          | 'America/Argentina/Buenos_Aires'
+          | 'America/Argentina/Catamarca'
+          | 'America/Argentina/Cordoba'
+          | 'America/Argentina/Jujuy'
+          | 'America/Argentina/La_Rioja'
+          | 'America/Argentina/Mendoza'
+          | 'America/Argentina/Rio_Gallegos'
+          | 'America/Argentina/Salta'
+          | 'America/Argentina/San_Juan'
+          | 'America/Argentina/San_Luis'
+          | 'America/Argentina/Tucuman'
+          | 'America/Argentina/Ushuaia'
+          | 'America/Catamarca'
+          | 'America/Argentina/ComodRivadavia'
+          | 'America/Cordoba'
+          | 'America/Rosario'
+          | 'America/Jujuy'
+          | 'America/Mendoza'
+          | 'America/Halifax'
+          | 'America/Glace_Bay'
+          | 'America/Goose_Bay'
+          | 'America/Moncton'
+          | 'Canada/Atlantic'
+          | 'Atlantic/Bermuda'
+          | 'America/Thule'
+          | 'America/Araguaina'
+          | 'America/Bahia'
+          | 'America/Belem'
+          | 'America/Fortaleza'
+          | 'America/Maceio'
+          | 'America/Recife'
+          | 'America/Santarem'
+          | 'Brazil/East'
+          | 'Antarctica/Palmer'
+          | 'Antarctica/Rothera'
+          | 'America/Punta_Arenas'
+          | 'America/Coyhaique'
+          | 'Atlantic/Stanley'
+          | 'America/Cayenne'
+          | 'America/Asuncion'
+          | 'America/Paramaribo'
+          | 'America/Montevideo'
+          | 'America/St_Johns'
+          | 'Canada/Newfoundland'
+          | 'America/Noronha'
+          | 'Brazil/DeNoronha'
+          | 'America/Miquelon'
+          | 'America/Nuuk'
+          | 'America/Scoresbysund'
+          | 'America/Godthab'
+          | 'Africa/Abidjan'
+          | 'Iceland'
+          | 'Africa/Accra'
+          | 'Africa/Bamako'
+          | 'Africa/Banjul'
+          | 'Africa/Conakry'
+          | 'Africa/Dakar'
+          | 'Africa/Freetown'
+          | 'Africa/Lome'
+          | 'Africa/Nouakchott'
+          | 'Africa/Ouagadougou'
+          | 'Atlantic/Reykjavik'
+          | 'Atlantic/St_Helena'
+          | 'Africa/Timbuktu'
+          | 'Africa/Bissau'
+          | 'America/Danmarkshavn'
+          | 'Africa/Monrovia'
+          | 'Africa/Sao_Tome'
+          | 'Africa/Algiers'
+          | 'Africa/Tunis'
+          | 'Europe/Isle_of_Man'
+          | 'Europe/Dublin'
+          | 'Eire'
+          | 'GB'
+          | 'GB-Eire'
+          | 'Europe/Guernsey'
+          | 'Europe/Jersey'
+          | 'Europe/Belfast'
+          | 'Africa/Bangui'
+          | 'Africa/Malabo'
+          | 'Africa/Brazzaville'
+          | 'Africa/Porto-Novo'
+          | 'Africa/Douala'
+          | 'Africa/Kinshasa'
+          | 'Africa/Libreville'
+          | 'Africa/Luanda'
+          | 'Africa/Niamey'
+          | 'Africa/Ndjamena'
+          | 'Africa/Casablanca'
+          | 'Africa/El_Aaiun'
+          | 'Atlantic/Canary'
+          | 'Europe/Lisbon'
+          | 'Atlantic/Madeira'
+          | 'Portugal'
+          | 'WET'
+          | 'Atlantic/Faroe'
+          | 'Atlantic/Faeroe'
+          | 'Africa/Bujumbura'
+          | 'Africa/Gaborone'
+          | 'Africa/Harare'
+          | 'Africa/Juba'
+          | 'Africa/Khartoum'
+          | 'Africa/Kigali'
+          | 'Africa/Blantyre'
+          | 'Africa/Lubumbashi'
+          | 'Africa/Lusaka'
+          | 'Africa/Maputo'
+          | 'Africa/Windhoek'
+          | 'Europe/Andorra'
+          | 'Europe/Belgrade'
+          | 'Europe/Ljubljana'
+          | 'Europe/Podgorica'
+          | 'Europe/Sarajevo'
+          | 'Europe/Skopje'
+          | 'Europe/Zagreb'
+          | 'Europe/Busingen'
+          | 'Arctic/Longyearbyen'
+          | 'Europe/Copenhagen'
+          | 'Europe/Oslo'
+          | 'Europe/Stockholm'
+          | 'Atlantic/Jan_Mayen'
+          | 'Europe/Bratislava'
+          | 'Europe/Brussels'
+          | 'CET'
+          | 'MET'
+          | 'Europe/Amsterdam'
+          | 'Europe/Luxembourg'
+          | 'Europe/Budapest'
+          | 'Europe/Gibraltar'
+          | 'Europe/Madrid'
+          | 'Africa/Ceuta'
+          | 'Europe/Monaco'
+          | 'Europe/Paris'
+          | 'Europe/Prague'
+          | 'Europe/Rome'
+          | 'Europe/San_Marino'
+          | 'Europe/Vatican'
+          | 'Europe/Malta'
+          | 'Europe/Tirane'
+          | 'Europe/Vaduz'
+          | 'Europe/Vienna'
+          | 'Europe/Warsaw'
+          | 'Poland'
+          | 'Europe/Zurich'
+          | 'Europe/Kaliningrad'
+          | 'Africa/Tripoli'
+          | 'Libya'
+          | 'Antarctica/Troll'
+          | 'Africa/Johannesburg'
+          | 'Africa/Maseru'
+          | 'Africa/Mbabane'
+          | 'Asia/Kuwait'
+          | 'Asia/Bahrain'
+          | 'Asia/Baghdad'
+          | 'Asia/Qatar'
+          | 'Antarctica/Syowa'
+          | 'Asia/Aden'
+          | 'Asia/Amman'
+          | 'Asia/Damascus'
+          | 'Africa/Addis_Ababa'
+          | 'Indian/Antananarivo'
+          | 'Africa/Asmara'
+          | 'Africa/Dar_es_Salaam'
+          | 'Africa/Djibouti'
+          | 'Africa/Kampala'
+          | 'Indian/Mayotte'
+          | 'Africa/Mogadishu'
+          | 'Indian/Comoro'
+          | 'Africa/Nairobi'
+          | 'Africa/Asmera'
+          | 'EET'
+          | 'Asia/Beirut'
+          | 'Europe/Bucharest'
+          | 'Egypt'
+          | 'Europe/Chisinau'
+          | 'Europe/Tiraspol'
+          | 'Asia/Hebron'
+          | 'Asia/Gaza'
+          | 'Europe/Helsinki'
+          | 'Europe/Mariehamn'
+          | 'Europe/Kyiv'
+          | 'Europe/Uzhgorod'
+          | 'Europe/Zaporozhye'
+          | 'Europe/Kiev'
+          | 'Asia/Nicosia'
+          | 'Asia/Famagusta'
+          | 'Europe/Nicosia'
+          | 'Europe/Riga'
+          | 'Europe/Sofia'
+          | 'Europe/Tallinn'
+          | 'Europe/Vilnius'
+          | 'Asia/Jerusalem'
+          | 'Israel'
+          | 'Asia/Tel_Aviv'
+          | 'Europe/Minsk'
+          | 'Europe/Kirov'
+          | 'Europe/Volgograd'
+          | 'W-SU'
+          | 'Europe/Simferopol'
+          | 'Europe/Istanbul'
+          | 'Turkey'
+          | 'Asia/Istanbul'
+          | 'Asia/Tehran'
+          | 'Iran'
+          | 'Asia/Yerevan'
+          | 'Asia/Tbilisi'
+          | 'Asia/Muscat'
+          | 'Indian/Mahe'
+          | 'Indian/Reunion'
+          | 'Indian/Mauritius'
+          | 'Europe/Samara'
+          | 'Europe/Astrakhan'
+          | 'Europe/Saratov'
+          | 'Europe/Ulyanovsk'
+          | 'Asia/Kabul'
+          | 'Indian/Kerguelen'
+          | 'Asia/Aqtau'
+          | 'Asia/Aqtobe'
+          | 'Asia/Atyrau'
+          | 'Asia/Oral'
+          | 'Asia/Qostanay'
+          | 'Asia/Qyzylorda'
+          | 'Indian/Maldives'
+          | 'Antarctica/Mawson'
+          | 'Antarctica/Vostok'
+          | 'Asia/Dushanbe'
+          | 'Asia/Ashgabat'
+          | 'Asia/Ashkhabad'
+          | 'Asia/Samarkand'
+          | 'Asia/Yekaterinburg'
+          | 'Asia/Colombo'
+          | 'Asia/Kolkata'
+          | 'Asia/Kathmandu'
+          | 'Asia/Katmandu'
+          | 'Asia/Dacca'
+          | 'Asia/Thimphu'
+          | 'Asia/Thimbu'
+          | 'Asia/Urumqi'
+          | 'Asia/Kashgar'
+          | 'Indian/Chagos'
+          | 'Asia/Bishkek'
+          | 'Asia/Omsk'
+          | 'Indian/Cocos'
+          | 'Asia/Yangon'
+          | 'Asia/Rangoon'
+          | 'Indian/Christmas'
+          | 'Antarctica/Davis'
+          | 'Asia/Hovd'
+          | 'Asia/Phnom_Penh'
+          | 'Asia/Vientiane'
+          | 'Asia/Ho_Chi_Minh'
+          | 'Asia/Saigon'
+          | 'Asia/Novosibirsk'
+          | 'Asia/Barnaul'
+          | 'Asia/Krasnoyarsk'
+          | 'Asia/Novokuznetsk'
+          | 'Asia/Tomsk'
+          | 'Asia/Pontianak'
+          | 'Antarctica/Casey'
+          | 'Australia/Perth'
+          | 'Australia/West'
+          | 'Asia/Brunei'
+          | 'Asia/Makassar'
+          | 'Asia/Ujung_Pandang'
+          | 'Asia/Macau'
+          | 'Asia/Macao'
+          | 'PRC'
+          | 'Asia/Chongqing'
+          | 'Asia/Harbin'
+          | 'Asia/Chungking'
+          | 'Asia/Hong_Kong'
+          | 'Hongkong'
+          | 'Asia/Irkutsk'
+          | 'Asia/Kuala_Lumpur'
+          | 'Asia/Kuching'
+          | 'Asia/Manila'
+          | 'Singapore'
+          | 'Asia/Taipei'
+          | 'ROC'
+          | 'Asia/Ulaanbaatar'
+          | 'Asia/Choibalsan'
+          | 'Asia/Ulan_Bator'
+          | 'Australia/Eucla'
+          | 'Asia/Jayapura'
+          | 'Japan'
+          | 'Asia/Pyongyang'
+          | 'ROK'
+          | 'Pacific/Palau'
+          | 'Asia/Dili'
+          | 'Asia/Chita'
+          | 'Asia/Khandyga'
+          | 'Asia/Yakutsk'
+          | 'Australia/Adelaide'
+          | 'Australia/Broken_Hill'
+          | 'Australia/South'
+          | 'Australia/Yancowinna'
+          | 'Australia/Darwin'
+          | 'Australia/North'
+          | 'Australia/Lindeman'
+          | 'Australia/Queensland'
+          | 'Antarctica/Macquarie'
+          | 'Australia/Hobart'
+          | 'Australia/Melbourne'
+          | 'Australia/Tasmania'
+          | 'Australia/Currie'
+          | 'Australia/Victoria'
+          | 'Australia/ACT'
+          | 'Australia/NSW'
+          | 'Australia/Canberra'
+          | 'Pacific/Saipan'
+          | 'Pacific/Chuuk'
+          | 'Antarctica/DumontDUrville'
+          | 'Pacific/Port_Moresby'
+          | 'Pacific/Yap'
+          | 'Pacific/Truk'
+          | 'Asia/Vladivostok'
+          | 'Asia/Ust-Nera'
+          | 'Australia/Lord_Howe'
+          | 'Australia/LHI'
+          | 'Pacific/Bougainville'
+          | 'Pacific/Kosrae'
+          | 'Pacific/Pohnpei'
+          | 'Pacific/Norfolk'
+          | 'Asia/Sakhalin'
+          | 'Asia/Magadan'
+          | 'Asia/Srednekolymsk'
+          | 'Pacific/Guadalcanal'
+          | 'Pacific/Ponape'
+          | 'Pacific/Efate'
+          | 'Pacific/Tarawa'
+          | 'Pacific/Funafuti'
+          | 'Pacific/Majuro'
+          | 'Pacific/Wake'
+          | 'Pacific/Wallis'
+          | 'Asia/Kamchatka'
+          | 'Asia/Anadyr'
+          | 'Pacific/Kwajalein'
+          | 'Kwajalein'
+          | 'Pacific/Nauru'
+          | 'NZ'
+          | 'Antarctica/McMurdo'
+          | 'Antarctica/South_Pole'
+          | 'Pacific/Chatham'
+          | 'NZ-CHAT'
+          | 'Pacific/Kanton'
+          | 'Pacific/Enderbury'
+          | 'Pacific/Apia'
+          | 'Pacific/Fakaofo'
+          | 'Pacific/Tongatapu'
+          | 'Pacific/Kiritimati'
+          | 'Etc/GMT-14'
+          | 'Etc/GMT-13'
+          | 'Etc/GMT-12'
+          | 'Etc/GMT-11'
+          | 'Etc/GMT-10'
+          | 'Etc/GMT-9'
+          | 'Etc/GMT-8'
+          | 'Etc/GMT-7'
+          | 'Etc/GMT-6'
+          | 'Etc/GMT-5'
+          | 'Etc/GMT-4'
+          | 'Etc/GMT-3'
+          | 'Etc/GMT-2'
+          | 'Etc/GMT-1'
+          | 'Etc/GMT'
+          | 'Etc/GMT+1'
+          | 'Etc/GMT+2'
+          | 'Etc/GMT+3'
+          | 'Etc/GMT+4'
+          | 'Etc/GMT+5'
+          | 'Etc/GMT+6'
+          | 'Etc/GMT+7'
+          | 'Etc/GMT+8'
+          | 'Etc/GMT+9'
+          | 'Etc/GMT+10'
+          | 'Etc/GMT+11'
+          | 'Etc/GMT+12'
         )[]
       | null;
   };
@@ -1067,6 +2140,38 @@ export interface Region {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Region-level nodes nested directly beneath this one.
+   */
+  childrenRegions?: {
+    docs?: (number | Region)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Cities nested directly beneath this one.
+   */
+  childrenCities?: {
+    docs?: (number | Region)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * SY Centers nested directly beneath this one.
+   */
+  childrenCenters?: {
+    docs?: (number | Region)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Region;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   legacyId?: number | null;
   legacyData?:
     | {
@@ -1076,14 +2181,6 @@ export interface Region {
     | string
     | number
     | boolean
-    | null;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | Region;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
     | null;
   updatedAt: string;
   createdAt: string;
@@ -1099,9 +2196,9 @@ export interface Event {
    */
   title: string;
   /**
-   * Language this event is conducted in.
+   * Language(s) this event is conducted in.
    */
-  language:
+  languages: (
     | 'ab'
     | 'aa'
     | 'af'
@@ -1284,8 +2381,15 @@ export interface Event {
     | 'yi'
     | 'yo'
     | 'za'
-    | 'zu';
+    | 'zu'
+  )[];
+  /**
+   * A phone number that seekers can call to learn more about the program.
+   */
   contactPhone?: string | null;
+  /**
+   * The name of the person they are calling
+   */
   contactName?: string | null;
   description?: {
     root: {
@@ -1307,9 +2411,13 @@ export interface Event {
    */
   images?: (number | Image)[] | null;
   /**
+   * Mark this event dormant — it has no active schedule. With no schedule to show, you must provide contact info (phone + name) so seekers can reach out and find out more. Inactive events still need verification but never auto-finish.
+   */
+  inactive?: boolean | null;
+  /**
    * Configure when this event occurs and repeats
    */
-  schedule: {
+  schedule?: {
     firstDate: string;
     firstDate_tz: SupportedTimezones;
     /**
@@ -1357,7 +2465,7 @@ export interface Event {
   /**
    * The city or center this event belongs to.
    */
-  region?: (number | null) | Region;
+  region: number | Region;
   eventType: 'offline' | 'online';
   /**
    * Link attendees join the online event through.
@@ -1366,9 +2474,6 @@ export interface Event {
   address?: {
     mapboxId?: string | null;
     street?: string | null;
-    /**
-     * Room or floor within the venue, if any.
-     */
     room?: string | null;
     postCode?: string | null;
     country?: string | null;
@@ -1402,11 +2507,21 @@ export interface Event {
    * Manager responsible for verifying this event.
    */
   manager: number | Manager;
-  status: 'active' | 'expired' | 'inactive';
+  verificationStage: 'verified' | 'reminded' | 'escalated' | 'urgent' | 'expired' | 'finished';
+  nextCheckAt?: string | null;
   /**
-   * Consecutive successful verifications.
+   * Current verification cycle — the verification that opened it plus each reminder sent. Reset on every verification.
    */
-  verificationStreak?: number | null;
+  notificationLog?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  webUrl?: string | null;
   legacyId?: number | null;
   legacyData?:
     | {
@@ -1419,6 +2534,7 @@ export interface Event {
     | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
 }
 /**
@@ -1802,6 +2918,7 @@ export interface File {
   id: number;
   createdAt: string;
   hlsUrl?: string | null;
+  mp4Url?: string | null;
   previewUrl?: string | null;
   updatedAt: string;
   deletedAt?: string | null;
@@ -2573,6 +3690,7 @@ export interface SubtleSystemNode {
 export interface Frame {
   id: number;
   hlsUrl?: string | null;
+  mp4Url?: string | null;
   previewUrl?: string | null;
   imageSet: 'male' | 'female';
   /**
@@ -3215,7 +4333,13 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'cleanupOrphanedMedia' | 'syncLectureMetadata' | 'resetUsage' | 'schedulePublish';
+        taskSlug:
+          | 'inline'
+          | 'cleanupOrphanedMedia'
+          | 'expireEvents'
+          | 'syncLectureMetadata'
+          | 'resetUsage'
+          | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -3248,7 +4372,9 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'cleanupOrphanedMedia' | 'syncLectureMetadata' | 'resetUsage' | 'schedulePublish') | null;
+  taskSlug?:
+    | ('inline' | 'cleanupOrphanedMedia' | 'expireEvents' | 'syncLectureMetadata' | 'resetUsage' | 'schedulePublish')
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -3531,6 +4657,7 @@ export interface AlbumsSelect<T extends boolean = true> {
  */
 export interface VideosSelect<T extends boolean = true> {
   hlsUrl?: T;
+  mp4Url?: T;
   previewUrl?: T;
   thumbnail?: T;
   title?: T;
@@ -3610,6 +4737,7 @@ export interface LecturesSelect<T extends boolean = true> {
  */
 export interface FramesSelect<T extends boolean = true> {
   hlsUrl?: T;
+  mp4Url?: T;
   previewUrl?: T;
   imageSet?: T;
   subtleSystemNode?: T;
@@ -3685,6 +4813,7 @@ export interface ImagesSelect<T extends boolean = true> {
 export interface FilesSelect<T extends boolean = true> {
   createdAt?: T;
   hlsUrl?: T;
+  mp4Url?: T;
   previewUrl?: T;
   updatedAt?: T;
   deletedAt?: T;
@@ -3817,7 +4946,7 @@ export interface ManagersSelect<T extends boolean = true> {
   managedPages?: T;
   managedRegions?: T;
   managedEvents?: T;
-  languageCode?: T;
+  language?: T;
   contactDetails?:
     | T
     | {
@@ -3993,13 +5122,13 @@ export interface AppCardsSelect<T extends boolean = true> {
 export interface RegionsSelect<T extends boolean = true> {
   level?: T;
   parent?: T;
+  managers?: T;
+  mapboxId?: T;
   name?: T;
   subtitle?: T;
-  mapboxId?: T;
   latitude?: T;
   longitude?: T;
   radius?: T;
-  managers?: T;
   eventDefaults?:
     | T
     | {
@@ -4007,8 +5136,9 @@ export interface RegionsSelect<T extends boolean = true> {
         timeZone?: T;
       };
   events?: T;
-  legacyId?: T;
-  legacyData?: T;
+  childrenRegions?: T;
+  childrenCities?: T;
+  childrenCenters?: T;
   breadcrumbs?:
     | T
     | {
@@ -4017,6 +5147,8 @@ export interface RegionsSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
+  legacyId?: T;
+  legacyData?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4026,11 +5158,12 @@ export interface RegionsSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   title?: T;
-  language?: T;
+  languages?: T;
   contactPhone?: T;
   contactName?: T;
   description?: T;
   images?: T;
+  inactive?: T;
   schedule?:
     | T
     | {
@@ -4088,12 +5221,15 @@ export interface EventsSelect<T extends boolean = true> {
       };
   registrations?: T;
   manager?: T;
-  status?: T;
-  verificationStreak?: T;
+  verificationStage?: T;
+  nextCheckAt?: T;
+  notificationLog?: T;
+  webUrl?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   _status?: T;
 }
 /**
@@ -4358,6 +5494,10 @@ export interface WmWebConfig {
    * Select 2-3 pages to feature in the website header and footer.
    */
   featuredPages: (number | Page)[];
+  /**
+   * Select 2 or more article pages to feature in the website header dropdown.
+   */
+  featuredArticles: (number | Page)[];
   /**
    * Select up to 5 pages for seekers to start meditating. The first one will be featured in the header. (eg. Classes Near Me, Online Meditations, Recorded Meditations, WeMeditate App
    */
@@ -5501,6 +6641,7 @@ export interface PayloadJobsStat {
 export interface WmWebConfigSelect<T extends boolean = true> {
   homePage?: T;
   featuredPages?: T;
+  featuredArticles?: T;
   classPages?: T;
   knowledgePages?: T;
   infoPages?: T;
@@ -5735,6 +6876,21 @@ export interface TaskCleanupOrphanedMedia {
     trashedImages: number;
     skippedImages: number;
     errors: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExpireEvents".
+ */
+export interface TaskExpireEvents {
+  input?: unknown;
+  output: {
+    processed: number;
+    finished: number;
+    advanced: number;
+    trashed: number;
+    remindersSent: number;
+    failed: number;
   };
 }
 /**
