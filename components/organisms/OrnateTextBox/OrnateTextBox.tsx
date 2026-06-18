@@ -102,14 +102,14 @@ export function OrnateTextBox({
 
   return (
     <div
-      className={`relative isolate flex min-h-[80vh] w-full items-center [background-image:linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
+      className={`relative isolate flex min-h-[80vh] w-full items-center bg-[linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
       {...props}
     >
-      {/* Large faded floral graphic, offset ~40% to the right, behind content */}
+      {/* Large faded floral graphic, offset ~45% to the right, behind content */}
       <img
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-[40%] z-0 h-full w-[80%] object-cover object-left opacity-60"
+        className="pointer-events-none absolute inset-y-0 left-[45%] z-0 h-full w-[80%] object-cover object-left opacity-40"
         src={ornateBackground}
       />
 
@@ -117,7 +117,7 @@ export function OrnateTextBox({
           (the gradient--ornate ::before). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 bottom-0 left-0 z-0 w-1/3 [background-image:linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]"
+        className="pointer-events-none absolute -top-24 bottom-0 left-0 z-0 w-1/3 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]"
       />
 
       {/* Decorative vertical sidetext label (desktop only, single line) */}
