@@ -2,6 +2,8 @@ import { ComponentProps, useState, useEffect, useRef } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
 import { HeaderIllustrationSvg } from '../../atoms/svgs'
+import { HeaderNavDropdown } from './HeaderNavDropdown'
+import type { HeaderDropdownProps } from '../HeaderDropdown'
 
 export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> {
   /** Logo href (default: "/") */
@@ -10,8 +12,11 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   actionLinkText?: string
   /** Action link href */
   actionLinkHref?: string
-  /** Main navigation menu items */
-  navItems?: Array<{ label: string; href: string }>
+  /**
+   * Main navigation menu items. An item with a `dropdown` renders as a
+   * hover/click mega-menu (HeaderNavDropdown) instead of a flat link.
+   */
+  navItems?: Array<{ label: string; href: string; dropdown?: HeaderDropdownProps }>
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
   /**
@@ -45,6 +50,7 @@ export function Header({
 
   useEffect(() => {
     const sentinel = sentinelRef.current
+
     if (!sentinel) return
 
     const observer = new IntersectionObserver(
@@ -52,7 +58,7 @@ export function Header({
         // When sentinel goes out of view (scrolled past), nav becomes sticky
         setIsSticky(!entry.isIntersecting)
       },
-      { threshold: [0] }
+      { threshold: [0] },
     )
 
     observer.observe(sentinel)
@@ -68,46 +74,43 @@ export function Header({
 
   return (
     <>
-      <header
-        className={className}
-        {...props}
-      >
+      <header className={className} {...props}>
         {/* Top banner with logo, illustration, and action link */}
         <div className={`flex items-center justify-between gap-8 py-4 ${textColorClass}`}>
-        {/* Logo - responsive: lg inline-text on mobile, sm inline-text on desktop */}
-        <div className="shrink-0">
-          <Logo
-            variant="text"
-            align="left"
-            href={logoHref}
-            size="sm"
-            className="hidden lg:flex"
-          />
-        </div>
-
-        {/* Decorative illustration - hidden on mobile */}
-        <div className="flex-1 mx-8 hidden lg:block">
-          <HeaderIllustrationSvg />
-        </div>
-
-        {/* Action link - regular link, not button */}
-        {actionLinkText && actionLinkHref && (
-          <div className="shrink-0 max-w-20 text-right">
-            <Link
-              href={actionLinkHref}
-              variant="unstyled"
+          {/* Logo - responsive: lg inline-text on mobile, sm inline-text on desktop */}
+          <div className="shrink-0">
+            <Logo
+              align="left"
+              className="hidden lg:flex"
+              href={logoHref}
               size="sm"
-              className="no-underline leading-none hover:opacity-75 transition-opacity"
-            >
-              {actionLinkText}
-            </Link>
+              variant="text"
+            />
           </div>
-        )}
-      </div>
+
+          {/* Decorative illustration - hidden on mobile */}
+          <div className="flex-1 mx-8 hidden lg:block">
+            <HeaderIllustrationSvg />
+          </div>
+
+          {/* Action link - regular link, not button */}
+          {actionLinkText && actionLinkHref && (
+            <div className="shrink-0 max-w-20 text-right">
+              <Link
+                className="no-underline leading-none hover:opacity-75 transition-opacity"
+                href={actionLinkHref}
+                size="sm"
+                variant="unstyled"
+              >
+                {actionLinkText}
+              </Link>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Sentinel element to detect when nav should be sticky */}
-      <div ref={sentinelRef} className="h-0" aria-hidden="true" />
+      <div ref={sentinelRef} aria-hidden="true" className="h-0" />
 
       {/* Main navigation menu - sticky on scroll (outside header so it can stick globally) */}
       {navItems.length > 0 && (
@@ -127,28 +130,38 @@ export function Header({
           <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">
             {/* Logo - only visible when sticky */}
             <Logo
-              variant="icon"
-              href={logoHref}
-              size="sm"
               className={`shrink-0 transition-opacity duration-200 ${
                 isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
+              href={logoHref}
+              size="sm"
+              variant="icon"
             />
 
             {/* Navigation buttons */}
             <div className="flex items-stretch justify-center gap-2 max-w-3xl flex-1">
-              {navItems.map((item, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  theme={isSticky ? 'light' : theme}
-                  size="sm"
-                  href={item.href}
-                  className="px-0 basis-1/4"
-                >
-                  {item.label}
-                </Button>
-              ))}
+              {navItems.map((item, index) =>
+                item.dropdown ? (
+                  <HeaderNavDropdown
+                    key={index}
+                    className="basis-1/4"
+                    dropdown={item.dropdown}
+                    label={item.label}
+                    theme={isSticky ? 'light' : theme}
+                  />
+                ) : (
+                  <Button
+                    key={index}
+                    className="px-0 basis-1/4"
+                    href={item.href}
+                    size="sm"
+                    theme={isSticky ? 'light' : theme}
+                    variant="ghost"
+                  >
+                    {item.label}
+                  </Button>
+                ),
+              )}
             </div>
 
             {/* Map pin icon - only visible when sticky and action link exists */}
@@ -158,7 +171,11 @@ export function Header({
                   isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
-                <Link href={actionLinkHref} variant="unstyled" className="flex items-center gap-1 no-underline hover:opacity-75 transition-opacity">
+                <Link
+                  className="flex items-center gap-1 no-underline hover:opacity-75 transition-opacity"
+                  href={actionLinkHref}
+                  variant="unstyled"
+                >
                   <Icon icon={MapPinIcon} size="sm" />
                 </Link>
               </div>
