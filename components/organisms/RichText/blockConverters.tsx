@@ -18,7 +18,9 @@ import {
   LayoutBlock,
   TableOfContents,
 } from '../../molecules'
+import { ContentOverlay } from '../ContentOverlay'
 import { ContentTextBox } from '../ContentTextBox'
+import { OrnateTextBox } from '../OrnateTextBox'
 import { Splash } from '../Splash'
 import { SubtleSystem } from '../SubtleSystem'
 import {
@@ -52,9 +54,10 @@ export type BlockConverters = NonNullable<JSXConverters['blocks']>
 export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
 
 export const blockConverters: BlockConverters = {
-  // textbox → ContentTextBox. imagePosition left/right map to the side layout;
-  // `overlay` maps to `center` (ContentTextBox's text-over-image mode).
-  // subtitle / textColor / wisdomStyle are deferred to #30.
+  // textbox → one of three organisms by the block's mode:
+  //   imagePosition 'overlay'      → ContentOverlay (text over the image)
+  //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
+  //   otherwise (left/right)       → ContentTextBox (side box overlapping image)
   textbox: ({ node }) => {
     const fields = node.fields as unknown as TextBoxBlockFields
     const img = populatedImage(fields.image)
@@ -62,21 +65,51 @@ export const blockConverters: BlockConverters = {
     if (!img) {
       return null
     }
-    const align = fields.imagePosition === 'overlay' ? 'center' : fields.imagePosition
+    const ctaHref = fields.buttonUrl ?? undefined
+    const ctaText = fields.buttonText ?? undefined
+    const subtitle = fields.subtitle ?? undefined
+    const title = fields.title ?? ''
+    const description = fields.text ?? ''
 
-    return (
-      <ContentTextBox
-        align={align}
-        className={BLOCK_SPACING}
-        ctaHref={fields.buttonUrl ?? undefined}
-        ctaText={fields.buttonText ?? undefined}
-        description={fields.text ?? ''}
-        imageAlt={img.alt}
-        imageHeight={img.height}
-        imageSrc={img.url}
-        imageWidth={img.width}
-        title={fields.title ?? ''}
-      />
+    // Overlay: text sits over the image. The CMS `textColor` describes the
+    // *text* (dark/light) while `theme` describes the *background context*
+    // (Splash convention), so they invert: light text → dark theme.
+    if (fields.imagePosition === 'overlay') {
+      return (
+        <ContentOverlay
+          align={fields.textPosition ?? 'center'}
+          className={BLOCK_SPACING}
+          ctaHref={ctaHref}
+          ctaText={ctaText}
+          imageAlt={img.alt}
+          imageSrc={img.url}
+          subtitle={subtitle}
+          text={description}
+          theme={fields.textColor === 'light' ? 'dark' : 'light'}
+          title={title}
+        />
+      )
+    }
+
+    // Side layouts share most props; OrnateTextBox renders the "Ancient Wisdom"
+    // treatment (left-aligned only), ContentTextBox the default white box.
+    const sideProps = {
+      className: BLOCK_SPACING,
+      ctaHref,
+      ctaText,
+      description,
+      imageAlt: img.alt,
+      imageHeight: img.height,
+      imageSrc: img.url,
+      imageWidth: img.width,
+      subtitle,
+      title,
+    }
+
+    return fields.wisdomStyle ? (
+      <OrnateTextBox {...sideProps} />
+    ) : (
+      <ContentTextBox {...sideProps} align={fields.imagePosition} />
     )
   },
 

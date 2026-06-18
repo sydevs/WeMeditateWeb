@@ -1,11 +1,17 @@
 import { ComponentProps } from 'react'
-import { Button, Heading, Image } from '../../atoms'
+import { Button, Image } from '../../atoms'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**
    * Main heading/title
    */
   title: string
+
+  /**
+   * Secondary line rendered directly below the title. When omitted, no
+   * subtitle is shown.
+   */
+  subtitle?: string
 
   /**
    * Description text content
@@ -47,20 +53,22 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   /**
    * Text box position relative to image
    * - left: Text box on left, image on right (max 50% width on desktop)
-   * - center: Text box centered over image
    * - right: Text box on right, image on left (max 50% width on desktop)
    * @default 'left'
    */
-  align?: 'left' | 'center' | 'right'
+  align?: 'left' | 'right'
 }
 
 /**
- * ContentTextBox displays a white content box with title, description,
- * and CTA button that overlaps a tall feature image.
+ * ContentTextBox displays a white content box with title, optional subtitle,
+ * description, and CTA button that overlaps a tall feature image.
  *
- * Based on the .cb-image-textbox--dark pattern from wemeditate.com.
+ * Based on the `.cb-image-textbox` (left/right) pattern from wemeditate.com.
  * The white box overlays the image on desktop, creating visual depth.
  * Responsive: stacks vertically on mobile, overlapping layout on desktop.
+ *
+ * For text-over-image (the CMS `overlay` position) use `ContentOverlay`; for the
+ * ornate "Ancient Wisdom" treatment use `OrnateTextBox`.
  *
  * @example
  * <ContentTextBox
@@ -75,6 +83,7 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
  */
 export function ContentTextBox({
   title,
+  subtitle,
   description,
   ctaText,
   ctaHref,
@@ -86,19 +95,8 @@ export function ContentTextBox({
   className = '',
   ...props
 }: ContentTextBoxProps) {
-  // Content container positioning based on alignment (desktop only)
-  // Uses flex to center content vertically and position horizontally
-  const wrapperClasses =
-    align === 'left' ? 'lg:flex-row' : align === 'right' ? 'lg:flex-row-reverse' : '' // center
-
-  // Content container positioning based on alignment (desktop only)
-  // Uses flex to center content vertically and position horizontally
-  const contentContainerClasses =
-    align === 'left'
-      ? 'lg:-ml-32 lg:mr-2'
-      : align === 'right'
-        ? 'lg:-mr-32 lg:ml-2'
-        : 'lg:absolute lg:inset-0 lg:flex lg:items-center lg:justify-center' // center
+  const wrapperClasses = align === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row'
+  const contentContainerClasses = align === 'right' ? 'lg:-mr-32 lg:ml-2' : 'lg:-ml-32 lg:mr-2'
 
   return (
     <div
@@ -117,7 +115,7 @@ export function ContentTextBox({
         alt={imageAlt}
         className="w-full max-h-[min(70vh,100vw)] lg:h-full lg:max-h-[85vh]"
         height={imageHeight}
-        objectFit={align === 'center' ? 'cover' : 'contain'}
+        objectFit="contain"
         src={imageSrc}
         width={imageWidth}
       />
@@ -126,8 +124,11 @@ export function ContentTextBox({
       <div className={`lg:z-10 ${contentContainerClasses}`}>
         {/* White box wrapper only on desktop */}
         <div className="flex flex-col gap-6 lg:bg-white lg:shadow-xl lg:p-20 lg:min-w-lg lg:max-w-xl">
-          {/* Title */}
-          <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+          {/* Title + subtitle group (kept tight together) */}
+          <div className="flex flex-col gap-1.5">
+            <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+            {subtitle && <p className="text-base font-light text-gray-700">{subtitle}</p>}
+          </div>
 
           {/* Description */}
           <p className="text-lg font-light text-gray-700">{description}</p>

@@ -42,6 +42,10 @@ export type { ContentTextBoxProps } from './ContentTextBox'
 export { ContentOverlay } from './ContentOverlay'
 export type { ContentOverlayProps } from './ContentOverlay'
 
+// OrnateTextBox
+export { OrnateTextBox } from './OrnateTextBox'
+export type { OrnateTextBoxProps } from './OrnateTextBox'
+
 // FormBuilder
 export { FormBuilder } from './FormBuilder'
 export type {
