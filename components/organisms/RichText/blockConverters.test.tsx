@@ -25,35 +25,48 @@ function renderTextbox(fields: Record<string, unknown>): string {
   return renderToStaticMarkup(convertTextbox(fields))
 }
 
-describe('textbox block converter', () => {
-  it('threads the subtitle through to ContentTextBox', () => {
-    const html = renderTextbox({ title: 'Get Connected', subtitle: 'Collective meditation' })
+describe('textbox block converter — routing', () => {
+  it('left/right → ContentTextBox (white box, not parchment or overlay)', () => {
+    const html = renderTextbox({ imagePosition: 'left', title: 'Hi', subtitle: 'Sub' })
 
-    expect(html).toContain('Collective meditation')
+    expect(html).toContain('lg:bg-white')
+    expect(html).not.toContain('bg-warm')
+    expect(html).toContain('Sub') // subtitle threaded through
   })
 
-  it('maps CMS textColor="light" to white overlay text (theme="dark")', () => {
+  it('overlay → ContentOverlay, mapping textColor="light" to white text', () => {
     const html = renderTextbox({ imagePosition: 'overlay', textColor: 'light', title: 'Hi' })
 
     expect(html).toContain('text-white')
     expect(html).toContain('text-glow-dark')
+    expect(html).not.toContain('bg-warm')
   })
 
-  it('maps CMS textColor="dark" to dark overlay text (theme="light")', () => {
+  it('overlay with textColor="dark" renders dark text (no white)', () => {
     const html = renderTextbox({ imagePosition: 'overlay', textColor: 'dark', title: 'Hi' })
 
-    expect(html).toContain('text-gray-900')
     expect(html).not.toContain('text-white')
   })
 
-  it('applies wisdomStyle on a side (left) layout', () => {
+  it('threads the subtitle into the overlay', () => {
+    const html = renderTextbox({
+      imagePosition: 'overlay',
+      title: 'Hi',
+      subtitle: 'Collective meditation',
+    })
+
+    expect(html).toContain('Collective meditation')
+  })
+
+  it('wisdomStyle (side layout) → OrnateTextBox (parchment + ornament + sidetext)', () => {
     const html = renderTextbox({ imagePosition: 'left', wisdomStyle: true, title: 'Wisdom' })
 
     expect(html).toContain('bg-warm')
     expect(html).toContain('<svg')
+    expect(html).toContain('Ancient Wisdom')
   })
 
-  it('does not apply wisdomStyle in overlay mode (no parchment)', () => {
+  it('overlay takes precedence over wisdomStyle (no parchment)', () => {
     const html = renderTextbox({ imagePosition: 'overlay', wisdomStyle: true, title: 'Wisdom' })
 
     expect(html).not.toContain('bg-warm')

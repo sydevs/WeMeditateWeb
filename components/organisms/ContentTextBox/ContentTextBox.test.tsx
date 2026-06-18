@@ -19,59 +19,30 @@ describe('<ContentTextBox> subtitle', () => {
   it('omits the subtitle markup when not provided', () => {
     const html = renderToStaticMarkup(<ContentTextBox {...BASE} />)
 
-    // Title and description still render; subtitle adds no extra <p>.
+    // Description still renders; subtitle adds no extra <p>.
     expect(html).toContain('Get Connected')
     expect(html.match(/<p/g)?.length).toBe(1)
   })
 })
 
-describe('<ContentTextBox> overlay theme', () => {
-  it('renders white text in overlay mode with theme="dark"', () => {
-    const html = renderToStaticMarkup(<ContentTextBox {...BASE} align="center" theme="dark" />)
+describe('<ContentTextBox> alignment', () => {
+  it('defaults to the left layout (image left of the box)', () => {
+    const html = renderToStaticMarkup(<ContentTextBox {...BASE} />)
 
-    expect(html).toContain('text-white')
-    expect(html).toContain('text-glow-dark')
-    expect(html).not.toContain('lg:bg-white')
+    expect(html).toContain('lg:flex-row')
+    expect(html).not.toContain('lg:flex-row-reverse')
   })
 
-  it('renders dark text in overlay mode with theme="light" (default)', () => {
-    const html = renderToStaticMarkup(<ContentTextBox {...BASE} align="center" />)
+  it('reverses the layout when align="right"', () => {
+    const html = renderToStaticMarkup(<ContentTextBox {...BASE} align="right" />)
 
-    expect(html).toContain('text-gray-900')
-    expect(html).toContain('text-glow-light')
-    expect(html).not.toContain('text-white')
+    expect(html).toContain('lg:flex-row-reverse')
   })
 
-  it('ignores theme in side (left/right) mode — no overlay glow', () => {
-    const html = renderToStaticMarkup(<ContentTextBox {...BASE} align="left" theme="dark" />)
+  it('renders the white box treatment (no overlay glow)', () => {
+    const html = renderToStaticMarkup(<ContentTextBox {...BASE} />)
 
-    expect(html).not.toContain('text-white')
-    expect(html).not.toContain('text-glow-dark')
-    // Side layout keeps the white box treatment.
     expect(html).toContain('lg:bg-white')
-  })
-})
-
-describe('<ContentTextBox> Ancient Wisdom styling', () => {
-  it('renders the parchment box and floral ornament in side mode', () => {
-    const html = renderToStaticMarkup(<ContentTextBox {...BASE} wisdomStyle align="left" />)
-
-    expect(html).toContain('bg-warm')
-    // The FloralDividerSvg ornament renders an <svg>.
-    expect(html).toContain('<svg')
-    expect(html).not.toContain('lg:bg-white')
-  })
-
-  it('is a no-op in overlay mode (no parchment box)', () => {
-    const html = renderToStaticMarkup(<ContentTextBox {...BASE} wisdomStyle align="center" />)
-
-    expect(html).not.toContain('bg-warm')
-  })
-
-  it('renders neither parchment nor ornament when wisdomStyle is unset', () => {
-    const html = renderToStaticMarkup(<ContentTextBox {...BASE} align="left" />)
-
-    expect(html).not.toContain('bg-warm')
-    expect(html).not.toContain('<svg')
+    expect(html).not.toContain('text-glow')
   })
 })
