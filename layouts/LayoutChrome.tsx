@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig } from '../server/cms-types'
+import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 
 /**
  * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
@@ -32,11 +34,30 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   const knowledgePages = settings.knowledgePages ?? []
   const infoPages = settings.infoPages ?? []
   const classPages = settings.classPages ?? []
+  const featuredArticles = settings.featuredArticles ?? []
 
-  // Build navigation items from featured pages
-  const navItems = featuredPages.map((page) => ({
+  // The final featured nav item ("About Meditation") opens a mega-menu listing
+  // every knowledge page plus 2 featured-article thumbnails. The 2 articles are
+  // picked at random once per mount (compute-once-and-reuse): because the panel
+  // is closed during SSR the picks never enter the server HTML, so this is
+  // hydration-safe. Falls back to knowledge pages when featuredArticles is empty.
+  const [articlePicks] = useState(() => pickFeaturedArticles(featuredArticles, knowledgePages))
+
+  // Build navigation items from featured pages. Only the last item gains a
+  // dropdown, and only when there are knowledge pages to show (else it stays a
+  // plain link — graceful degradation).
+  const lastIndex = featuredPages.length - 1
+  const navItems = featuredPages.map((page, index) => ({
     label: page.title,
     href: '/' + page.slug,
+    dropdown:
+      index === lastIndex && knowledgePages.length > 0
+        ? {
+            title: page.title,
+            links: knowledgePages.map(pageToLink),
+            featuredArticles: articlePicks.map(pageToArticle),
+          }
+        : undefined,
   }))
 
   // Build footer hero links from featured pages

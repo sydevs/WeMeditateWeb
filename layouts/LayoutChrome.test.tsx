@@ -14,8 +14,8 @@ const ctx: { settings: unknown } = { settings: undefined }
 vi.mock('vike-react/useData', () => ({ useData: () => ({ settings: ctx.settings }) }))
 vi.mock('vike-react/usePageContext', () => ({ usePageContext: () => ({ locale: 'en' }) }))
 vi.mock('../components/organisms/Header', () => ({
-  Header: ({ navItems }: { navItems: { label: string }[] }) => (
-    <nav>{navItems.map((n) => n.label).join(',')}</nav>
+  Header: ({ navItems }: { navItems: { label: string; dropdown?: unknown }[] }) => (
+    <nav>{navItems.map((n) => `${n.label}${n.dropdown ? '[dropdown]' : ''}`).join(',')}</nav>
   ),
 }))
 vi.mock('../components/organisms/Footer', () => ({ Footer: () => <footer /> }))
@@ -53,5 +53,38 @@ describe('LayoutChrome', () => {
 
     expect(html).toContain('About')
     expect(html).toContain('Contact')
+  })
+
+  it('gives only the last nav item a knowledge dropdown when knowledge pages exist', () => {
+    ctx.settings = {
+      featuredPages: [
+        { title: 'Meditate', slug: 'meditate' },
+        { title: 'About', slug: 'about' },
+      ],
+      knowledgePages: [{ title: 'Kundalini', slug: 'kundalini' }],
+      featuredArticles: [{ title: 'History', slug: 'history', meta: { image: { url: 'x' } } }],
+      classPages: [],
+      infoPages: [],
+    }
+    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
+
+    expect(html).toContain('About[dropdown]')
+    // Earlier items stay plain links.
+    expect(html).toContain('Meditate,')
+    expect(html).not.toContain('Meditate[dropdown]')
+  })
+
+  it('leaves the last nav item a plain link when there are no knowledge pages', () => {
+    ctx.settings = {
+      featuredPages: [{ title: 'About', slug: 'about' }],
+      knowledgePages: [],
+      featuredArticles: [],
+      classPages: [],
+      infoPages: [],
+    }
+    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
+
+    expect(html).toContain('About')
+    expect(html).not.toContain('[dropdown]')
   })
 })
