@@ -77,14 +77,19 @@ export function HeaderNavDropdown({
 
   return (
     <>
-      <span ref={refs.setReference} {...getReferenceProps()} className={`flex ${className}`}>
+      {/*
+       * The span is the positioning anchor (Button doesn't forward a ref); the
+       * interaction props + ARIA (aria-haspopup/expanded/controls from useRole,
+       * plus the hover/click/keyboard handlers) go on the focusable Button so
+       * the popup contract lives on the element a keyboard/AT user lands on.
+       */}
+      <span ref={refs.setReference} className={`flex ${className}`}>
         <Button
-          aria-expanded={isOpen}
-          aria-haspopup="dialog"
           className="px-0 w-full"
           size="sm"
           theme={theme}
           variant="ghost"
+          {...getReferenceProps()}
         >
           {label}
         </Button>
