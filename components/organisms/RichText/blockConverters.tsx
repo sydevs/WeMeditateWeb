@@ -91,41 +91,23 @@ export const blockConverters: BlockConverters = {
       )
     }
 
-    const align = fields.imagePosition
-
-    if (fields.wisdomStyle) {
-      return (
-        <OrnateTextBox
-          align={align}
-          className={BLOCK_SPACING}
-          ctaHref={ctaHref}
-          ctaText={ctaText}
-          description={description}
-          imageAlt={img.alt}
-          imageHeight={img.height}
-          imageSrc={img.url}
-          imageWidth={img.width}
-          subtitle={subtitle}
-          title={title}
-        />
-      )
+    // Side layouts (left/right) share one prop shape; OrnateTextBox renders the
+    // "Ancient Wisdom" treatment, ContentTextBox the default white box.
+    const sideProps = {
+      align: fields.imagePosition,
+      className: BLOCK_SPACING,
+      ctaHref,
+      ctaText,
+      description,
+      imageAlt: img.alt,
+      imageHeight: img.height,
+      imageSrc: img.url,
+      imageWidth: img.width,
+      subtitle,
+      title,
     }
 
-    return (
-      <ContentTextBox
-        align={align}
-        className={BLOCK_SPACING}
-        ctaHref={ctaHref}
-        ctaText={ctaText}
-        description={description}
-        imageAlt={img.alt}
-        imageHeight={img.height}
-        imageSrc={img.url}
-        imageWidth={img.width}
-        subtitle={subtitle}
-        title={title}
-      />
-    )
+    return fields.wisdomStyle ? <OrnateTextBox {...sideProps} /> : <ContentTextBox {...sideProps} />
   },
 
   // quote → HeroQuote (supports title + text + credit + caption).
