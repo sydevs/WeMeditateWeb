@@ -71,10 +71,10 @@ function toParagraphs(text: string): string[] {
  * right, a soft warm gradient lightening the left edge (and bleeding above the
  * block), light text, and a faded vertical sidetext label.
  *
- * Full-width and left-aligned: the title + subtitle sit above the body; the
- * image floats left and the body text wraps around it, reclaiming the full
- * width below. Reuses the `Image` and `Button` atoms and the bundled
- * `assets/ornate.svg` graphic. Stacks on mobile.
+ * Full-width and left-aligned (min 80vh tall): the title + subtitle sit above
+ * the body; the image floats left and the body sits in its own column beside it,
+ * kept clear of the left gradient. Reuses the `Image` and `Button` atoms and the
+ * bundled `assets/ornate.svg` graphic. Stacks on mobile.
  *
  * @example
  * <OrnateTextBox
@@ -102,14 +102,14 @@ export function OrnateTextBox({
 
   return (
     <div
-      className={`relative isolate w-full [background-image:linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
+      className={`relative isolate flex min-h-[80vh] w-full items-center [background-image:linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
       {...props}
     >
-      {/* Large faded floral graphic on the right, behind content */}
+      {/* Large faded floral graphic, offset ~40% to the right, behind content */}
       <img
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-[80%] object-cover object-right opacity-60"
+        className="pointer-events-none absolute inset-y-0 left-[40%] z-0 h-full w-[80%] object-cover object-left opacity-60"
         src={ornateBackground}
       />
 
@@ -124,7 +124,7 @@ export function OrnateTextBox({
       {sidetext && (
         <span
           aria-hidden="true"
-          className="absolute top-1/2 right-6 z-10 hidden -translate-y-1/2 rotate-180 select-none whitespace-nowrap text-4xl font-light uppercase tracking-[0.12em] text-white/75 [writing-mode:vertical-rl] lg:block"
+          className="absolute top-1/2 right-12 z-10 hidden -translate-y-1/2 rotate-180 select-none whitespace-nowrap text-2xl font-light uppercase tracking-[0.12em] text-white/75 [writing-mode:vertical-rl] lg:block"
         >
           {sidetext}
         </span>
@@ -132,14 +132,14 @@ export function OrnateTextBox({
 
       {/* Content. Asymmetric desktop padding insets the column and reserves the
           sidetext side. */}
-      <div className="relative z-10 mx-auto max-w-[2000px] px-8 py-12 lg:py-20 lg:pl-[11%] lg:pr-[16%]">
+      <div className="relative z-10 mx-auto w-full max-w-[2000px] px-8 py-12 lg:py-20 lg:pl-[11%] lg:pr-[16%]">
         {/* Title + subtitle header, above the body */}
         <div className="mb-8 lg:mb-6">
           <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
           {subtitle && <p className="mt-2 text-base font-light text-white/80">{subtitle}</p>}
         </div>
 
-        {/* Feature image — floats left so the body text wraps around it */}
+        {/* Feature image — floats left, beside the body column */}
         <div className="mb-6 w-full lg:float-left lg:mr-12 lg:mb-4 lg:w-[44%]">
           <Image
             alt={imageAlt}
@@ -151,8 +151,9 @@ export function OrnateTextBox({
           />
         </div>
 
-        {/* Body text — wraps around the floated image, reclaiming width below it */}
-        <div className="space-y-5 text-base font-light leading-relaxed text-white/90">
+        {/* Body — its own block-formatting context so it stays a clean column to
+            the side of the gradient (never reclaiming under the image). */}
+        <div className="space-y-5 text-base font-light leading-relaxed text-white/90 lg:flow-root">
           {paragraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
