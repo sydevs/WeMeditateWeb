@@ -1,6 +1,5 @@
 import { ComponentProps } from 'react'
 import { Button, Image } from '../../atoms'
-import { FloralDividerSvg } from '../../atoms/svgs'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**
@@ -54,44 +53,22 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   /**
    * Text box position relative to image
    * - left: Text box on left, image on right (max 50% width on desktop)
-   * - center: Text rendered directly over the image (overlay mode)
    * - right: Text box on right, image on left (max 50% width on desktop)
    * @default 'left'
    */
-  align?: 'left' | 'center' | 'right'
-
-  /**
-   * Background context for the text, used **only** in overlay (`align="center"`)
-   * mode where the text sits over the image. Mirrors the convention used by
-   * `Splash`:
-   * - light: dark text, for light backgrounds (default)
-   * - dark: white text, for dark backgrounds
-   *
-   * A text-shadow glow is applied in both cases so the text stays legible over
-   * an arbitrary image (WCAG 2.1 AA). Ignored in `left`/`right` modes, where the
-   * text lives in its own box.
-   * @default 'light'
-   */
-  theme?: 'light' | 'dark'
-
-  /**
-   * Apply the decorative "Ancient Wisdom" treatment: a warm parchment box with a
-   * floral divider ornament above a centered title. Takes effect **only** in the
-   * `left`/`right` side layouts; ignored in overlay (`align="center"`) mode.
-   * @default false
-   */
-  wisdomStyle?: boolean
+  align?: 'left' | 'right'
 }
 
 /**
- * ContentTextBox pairs a tall feature image with a content block (title,
- * optional subtitle, description, and CTA).
+ * ContentTextBox displays a white content box with title, optional subtitle,
+ * description, and CTA button that overlaps a tall feature image.
  *
- * Based on the `.cb-image-textbox` pattern from wemeditate.com. In the `left`
- * and `right` layouts the white content box overlaps the image on desktop,
- * creating visual depth; in `center` (overlay) mode the text is rendered
- * directly over the image. Responsive: stacks/centers on mobile, overlapping
- * layout on desktop.
+ * Based on the `.cb-image-textbox` (left/right) pattern from wemeditate.com.
+ * The white box overlays the image on desktop, creating visual depth.
+ * Responsive: stacks vertically on mobile, overlapping layout on desktop.
+ *
+ * For text-over-image (the CMS `overlay` position) use `ContentOverlay`; for the
+ * ornate "Ancient Wisdom" treatment use `OrnateTextBox`.
  *
  * @example
  * <ContentTextBox
@@ -115,57 +92,11 @@ export function ContentTextBox({
   imageWidth,
   imageHeight,
   align = 'left',
-  theme = 'light',
-  wisdomStyle = false,
   className = '',
   ...props
 }: ContentTextBoxProps) {
-  const cta = ctaText && ctaHref && (
-    <div>
-      <Button className="mt-1" href={ctaHref} size="lg" variant="outline">
-        {ctaText}
-      </Button>
-    </div>
-  )
-
-  // Overlay mode: text rendered directly over the image, with theme-driven
-  // colour and a glow for legibility (WCAG AA over an arbitrary image).
-  if (align === 'center') {
-    const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
-    const glow = theme === 'dark' ? 'text-glow-dark' : 'text-glow-light'
-
-    return (
-      <div className={`relative ${className}`} {...props}>
-        <Image
-          alt={imageAlt}
-          className="w-full max-h-[min(70vh,100vw)] lg:max-h-[85vh]"
-          height={imageHeight}
-          objectFit="cover"
-          src={imageSrc}
-          width={imageWidth}
-        />
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 text-center">
-          <h2 className={`text-2xl font-semibold ${textColor} ${glow}`}>{title}</h2>
-          {subtitle && <p className={`text-xl font-normal ${textColor} ${glow}`}>{subtitle}</p>}
-          <p className={`text-lg font-light ${textColor} ${glow}`}>{description}</p>
-          {cta}
-        </div>
-      </div>
-    )
-  }
-
-  // Side layouts (left/right). The image sits on one side and the box overlaps
-  // it on desktop.
   const wrapperClasses = align === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row'
   const contentContainerClasses = align === 'right' ? 'lg:-mr-32 lg:ml-2' : 'lg:-ml-32 lg:mr-2'
-
-  // Ancient Wisdom: warm parchment box with a floral ornament and centered text,
-  // visible at every breakpoint. The default box is white and only "boxed" on
-  // desktop.
-  const boxClasses = wisdomStyle
-    ? 'flex flex-col items-center gap-6 text-center bg-warm p-10 shadow-md lg:p-20 lg:shadow-xl lg:min-w-lg lg:max-w-xl'
-    : 'flex flex-col gap-6 lg:bg-white lg:shadow-xl lg:p-20 lg:min-w-lg lg:max-w-xl'
 
   return (
     <div
@@ -191,27 +122,25 @@ export function ContentTextBox({
 
       {/* Content - natural stack on mobile, positioned and centered on desktop */}
       <div className={`lg:z-10 ${contentContainerClasses}`}>
-        <div className={boxClasses}>
-          {/* Ancient Wisdom ornament */}
-          {wisdomStyle && <FloralDividerSvg className="w-40 h-auto text-teal-500" />}
-
-          {/* Title */}
-          <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
-
-          {/* Subtitle (optional) — darker on the warm parchment for AA contrast */}
-          {subtitle && (
-            <p className={`text-xl font-normal ${wisdomStyle ? 'text-gray-800' : 'text-gray-700'}`}>
-              {subtitle}
-            </p>
-          )}
+        {/* White box wrapper only on desktop */}
+        <div className="flex flex-col gap-6 lg:bg-white lg:shadow-xl lg:p-20 lg:min-w-lg lg:max-w-xl">
+          {/* Title + subtitle group (kept tight together) */}
+          <div className="flex flex-col gap-1.5">
+            <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+            {subtitle && <p className="text-base font-light text-gray-700">{subtitle}</p>}
+          </div>
 
           {/* Description */}
-          <p className={`text-lg font-light ${wisdomStyle ? 'text-gray-800' : 'text-gray-700'}`}>
-            {description}
-          </p>
+          <p className="text-lg font-light text-gray-700">{description}</p>
 
           {/* CTA Button (optional — needs both text and a destination) */}
-          {cta}
+          {ctaText && ctaHref && (
+            <div>
+              <Button className="mt-1" href={ctaHref} size="lg" variant="outline">
+                {ctaText}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

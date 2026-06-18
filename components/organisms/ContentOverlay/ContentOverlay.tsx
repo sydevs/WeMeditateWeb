@@ -8,6 +8,12 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
   title: string
 
   /**
+   * Secondary line rendered directly below the title (kept visually faded but
+   * still high-contrast). When omitted, no subtitle is shown.
+   */
+  subtitle?: string
+
+  /**
    * Body text content (can be string or array of paragraphs)
    */
   text: string | string[]
@@ -63,6 +69,7 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
  */
 export function ContentOverlay({
   title,
+  subtitle,
   text,
   imageSrc,
   imageAlt = '',
@@ -78,35 +85,35 @@ export function ContentOverlay({
   const textColorClass = theme === 'dark' ? 'text-white' : 'text-[#444]'
 
   // Text glow/halo shadows - applied to all variants for better readability
-  const textShadowClass = theme === 'dark'
-    ? 'text-glow-dark'
-    : 'text-glow-light'
+  const textShadowClass = theme === 'dark' ? 'text-glow-dark' : 'text-glow-light'
 
   // Blend mode for high contrast images
-  const imageBlendClass = variant === 'highContrast'
-    ? theme === 'dark'
-      ? 'brightness-70 contrast-70'
-      : 'brightness-130 contrast-70'
-    : ''
+  const imageBlendClass =
+    variant === 'highContrast'
+      ? theme === 'dark'
+        ? 'brightness-70 contrast-70'
+        : 'brightness-130 contrast-70'
+      : ''
 
   // Box variant styling - border matches text color, subtle blur
-  const boxClasses = variant === 'box'
-    ? theme === 'dark'
-      ? 'bg-black/40 bg-blend-multiply p-12'
-      : 'bg-white/40 bg-blend-multiply p-12'
-    : ''
+  const boxClasses =
+    variant === 'box'
+      ? theme === 'dark'
+        ? 'bg-black/40 bg-blend-multiply p-12'
+        : 'bg-white/40 bg-blend-multiply p-12'
+      : ''
 
   // Button variant based on contrast level
-  const buttonVariant = variant === 'highContrast'
-    ? theme === 'dark' ? 'secondary' : 'primary'
-    : 'outline'
+  const buttonVariant =
+    variant === 'highContrast' ? (theme === 'dark' ? 'secondary' : 'primary') : 'outline'
 
   // Button styling for non-highContrast variants to match content text
-  const buttonClassName = variant === 'highContrast'
-    ? ''
-    : theme === 'dark'
-      ? 'border-white text-white [&:not(:hover)]:text-glow-dark'
-      : 'border-gray-900 text-gray-900 [&:not(:hover)]:text-glow-light'
+  const buttonClassName =
+    variant === 'highContrast'
+      ? ''
+      : theme === 'dark'
+        ? 'border-white text-white [&:not(:hover)]:text-glow-dark'
+        : 'border-gray-900 text-gray-900 [&:not(:hover)]:text-glow-light'
 
   // Convert text to array for consistent handling
   const textParagraphs = Array.isArray(text) ? text : [text]
@@ -119,30 +126,22 @@ export function ContentOverlay({
   }
 
   // Max width classes - 50% on lg+ for non-box variants
-  const maxWidthClasses = variant === 'box'
-    ? 'max-w-md lg:max-w-lg'
-    : 'max-w-md lg:max-w-[50%]'
+  const maxWidthClasses = variant === 'box' ? 'max-w-md lg:max-w-lg' : 'max-w-md lg:max-w-[50%]'
 
   return (
-    <div
-      className={`w-full ${className}`}
-      {...props}
-    >
+    <div className={`w-full ${className}`} {...props}>
       {/* Mobile: Stacked layout - no variant or theme styling */}
       <div className="flex flex-col gap-6 md:hidden">
         {/* Image on top */}
         <div className="w-full aspect-video">
-          <img
-            src={imageSrc}
-            alt={imageAlt}
-            className="w-full h-full object-cover"
-          />
+          <img alt={imageAlt} className="w-full h-full object-cover" src={imageSrc} />
         </div>
 
-        {/* Content below */}
-        <h2 className="text-2xl font-semibold tracking-wide text-gray-900">
-          {title}
-        </h2>
+        {/* Content below — title + optional subtitle kept tight together */}
+        <div className="flex flex-col gap-1.5">
+          <h2 className="text-2xl font-semibold tracking-wide text-gray-900">{title}</h2>
+          {subtitle && <p className="text-base font-light text-gray-700">{subtitle}</p>}
+        </div>
 
         <div className="text-lg font-light leading-relaxed text-gray-900">
           {textParagraphs.map((paragraph, index) => (
@@ -154,11 +153,7 @@ export function ContentOverlay({
 
         {ctaText && ctaHref && (
           <div className="mt-6">
-            <Button
-              href={ctaHref}
-              variant="outline"
-              size="md"
-            >
+            <Button href={ctaHref} size="md" variant="outline">
               {ctaText}
             </Button>
           </div>
@@ -170,10 +165,10 @@ export function ContentOverlay({
         {/* Background Image - 16:9 aspect ratio */}
         <div className="absolute inset-0">
           <Image
-            src={imageSrc}
             alt={imageAlt}
-            aspectRatio='video'
+            aspectRatio="video"
             className={`w-full h-full object-cover ${imageBlendClass}`}
+            src={imageSrc}
           />
         </div>
 
@@ -181,11 +176,24 @@ export function ContentOverlay({
         <div className="relative h-full flex items-center md:px-8 lg:px-24">
           {/* Content Box - 50% max-width on lg+ for non-box variants */}
           <div className={`${maxWidthClasses} ${alignmentClasses[align]} ${boxClasses}`}>
-            <h2 className={`text-xl md:text-2xl font-semibold tracking-wide mb-7 ${textColorClass} ${textShadowClass}`}>
-              {title}
-            </h2>
+            <div className="mb-7 flex flex-col gap-1.5">
+              <h2
+                className={`text-xl md:text-2xl font-semibold tracking-wide ${textColorClass} ${textShadowClass}`}
+              >
+                {title}
+              </h2>
+              {subtitle && (
+                <p
+                  className={`text-base md:text-lg font-light ${textColorClass} ${textShadowClass}`}
+                >
+                  {subtitle}
+                </p>
+              )}
+            </div>
 
-            <div className={`text-base md:text-lg font-medium leading-relaxed ${textColorClass} ${textShadowClass}`}>
+            <div
+              className={`text-base md:text-lg font-medium leading-relaxed ${textColorClass} ${textShadowClass}`}
+            >
               {textParagraphs.map((paragraph, index) => (
                 <p key={index} className={index < textParagraphs.length - 1 ? 'mb-4' : ''}>
                   {paragraph}
@@ -196,11 +204,11 @@ export function ContentOverlay({
             {ctaText && ctaHref && (
               <div className="mt-6">
                 <Button
-                  href={ctaHref}
-                  variant={buttonVariant}
-                  theme={theme}
-                  size="md"
                   className={buttonClassName}
+                  href={ctaHref}
+                  size="md"
+                  theme={theme}
+                  variant={buttonVariant}
                 >
                   {ctaText}
                 </Button>
