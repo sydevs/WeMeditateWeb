@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getPageBySlug, partitionPublishedPages } from './cms-client'
+import { getPageBySlug, getWebConfig, partitionPublishedPages } from './cms-client'
 import { createPayloadClient } from './payload-client'
 import type { Page } from './cms-types'
 
@@ -9,6 +9,8 @@ vi.mock('./payload-client', () => ({
   createPayloadClient: vi.fn(),
   validateSDKResponse: (value: unknown) => value,
 }))
+// Silence the Sentry warning emitted on unresolved page references.
+vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 vi.mock('./kv-cache', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./kv-cache')>()
 
@@ -39,6 +41,31 @@ describe('partitionPublishedPages', () => {
 
     expect(published).toHaveLength(2)
     expect(unresolved).toEqual([])
+  })
+})
+
+describe('getWebConfig featuredArticles', () => {
+  it('selects featuredArticles and drops unpublished (bare-id) refs', async () => {
+    const findGlobal = vi.fn().mockResolvedValue({
+      id: 1,
+      homePage: page(1, 'home'),
+      featuredPages: [page(2, 'about')],
+      // One published article + one unpublished page (returned as a bare id).
+      featuredArticles: [page(3, 'history-of-meditation'), 42],
+      classPages: [],
+      knowledgePages: [page(4, 'kundalini')],
+      infoPages: [],
+    })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+
+    const config = await getWebConfig({ locale: 'en' })
+    const args = findGlobal.mock.calls[0][0]
+
+    // The read must request featuredArticles (per .claude/rules/cms-api-reads.md).
+    expect(args.select.featuredArticles).toBe(true)
+    // The bare-id (unpublished) ref is dropped; only linkable articles remain.
+    expect(config.featuredArticles.map((p) => p.slug)).toEqual(['history-of-meditation'])
   })
 })
 

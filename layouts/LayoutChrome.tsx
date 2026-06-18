@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig } from '../server/cms-types'
+import type { HeaderDropdownProps } from '../components/organisms'
+import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 
 /**
  * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
@@ -32,12 +35,39 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   const knowledgePages = settings.knowledgePages ?? []
   const infoPages = settings.infoPages ?? []
   const classPages = settings.classPages ?? []
+  const featuredArticles = settings.featuredArticles ?? []
 
-  // Build navigation items from featured pages
-  const navItems = featuredPages.map((page) => ({
-    label: page.title,
-    href: '/' + page.slug,
-  }))
+  // The knowledge mega-menu shows 2 featured-article thumbnails picked at random
+  // once per mount (compute-once-and-reuse): because the panel is closed during
+  // SSR the picks never enter the server HTML, so this is hydration-safe. Falls
+  // back to knowledge pages when featuredArticles is empty.
+  const [articlePicks] = useState(() => pickFeaturedArticles(featuredArticles, knowledgePages))
+
+  // Nav = the featured pages as plain links, plus a trailing link-less
+  // "About Meditation" item that only opens the knowledge mega-menu (every
+  // knowledge page as a link + the 2 featured-article thumbnails). Appended only
+  // when there are knowledge pages to show — otherwise the nav is featured-only.
+  const navItems: Array<{ label: string; href?: string; dropdown?: HeaderDropdownProps }> =
+    featuredPages.map((page) => ({
+      label: page.title,
+      href: '/' + page.slug,
+    }))
+
+  if (knowledgePages.length > 0) {
+    // TODO: Source this label from WmWebTranslations.navigation once that global
+    // is configured in the CMS. Interim: the knowledge group's first page title,
+    // matching how the footer labels the same group below (localized either way).
+    const knowledgeLabel = knowledgePages[0].title
+
+    navItems.push({
+      label: knowledgeLabel,
+      dropdown: {
+        title: knowledgeLabel,
+        links: knowledgePages.map(pageToLink),
+        featuredArticles: articlePicks.map(pageToArticle),
+      },
+    })
+  }
 
   // Build footer hero links from featured pages
   const footerHeroLinks = featuredPages.map((page) => ({

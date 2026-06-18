@@ -14,8 +14,8 @@ const ctx: { settings: unknown } = { settings: undefined }
 vi.mock('vike-react/useData', () => ({ useData: () => ({ settings: ctx.settings }) }))
 vi.mock('vike-react/usePageContext', () => ({ usePageContext: () => ({ locale: 'en' }) }))
 vi.mock('../components/organisms/Header', () => ({
-  Header: ({ navItems }: { navItems: { label: string }[] }) => (
-    <nav>{navItems.map((n) => n.label).join(',')}</nav>
+  Header: ({ navItems }: { navItems: { label: string; dropdown?: unknown }[] }) => (
+    <nav>{navItems.map((n) => `${n.label}${n.dropdown ? '[dropdown]' : ''}`).join(',')}</nav>
   ),
 }))
 vi.mock('../components/organisms/Footer', () => ({ Footer: () => <footer /> }))
@@ -53,5 +53,41 @@ describe('LayoutChrome', () => {
 
     expect(html).toContain('About')
     expect(html).toContain('Contact')
+  })
+
+  it('appends a separate link-less knowledge dropdown item (featured links stay plain)', () => {
+    ctx.settings = {
+      featuredPages: [
+        { title: 'Meditate', slug: 'meditate' },
+        { title: 'Music', slug: 'music' },
+      ],
+      // The dropdown item is labelled from the first knowledge page (interim).
+      knowledgePages: [{ title: 'About Meditation', slug: 'about-meditation' }],
+      featuredArticles: [{ title: 'History', slug: 'history', meta: { image: { url: 'x' } } }],
+      classPages: [],
+      infoPages: [],
+    }
+    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
+
+    // The appended item carries the dropdown...
+    expect(html).toContain('About Meditation[dropdown]')
+    // ...and the featured pages remain plain links (no dropdown attached).
+    expect(html).toContain('Meditate,')
+    expect(html).not.toContain('Meditate[dropdown]')
+    expect(html).not.toContain('Music[dropdown]')
+  })
+
+  it('omits the dropdown item entirely when there are no knowledge pages', () => {
+    ctx.settings = {
+      featuredPages: [{ title: 'About', slug: 'about' }],
+      knowledgePages: [],
+      featuredArticles: [],
+      classPages: [],
+      infoPages: [],
+    }
+    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
+
+    expect(html).toContain('About')
+    expect(html).not.toContain('[dropdown]')
   })
 })

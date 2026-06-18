@@ -9,6 +9,8 @@
 // Header
 export { Header } from './Header'
 export type { HeaderProps } from './Header'
+export { HeaderNavDropdown } from './Header'
+export type { HeaderNavDropdownProps } from './Header'
 
 // Footer
 export { Footer } from './Footer'

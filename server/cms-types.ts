@@ -35,10 +35,11 @@ export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../
  */
 export interface WebConfig extends Omit<
   WmWebConfig,
-  'homePage' | 'featuredPages' | 'classPages' | 'knowledgePages' | 'infoPages'
+  'homePage' | 'featuredPages' | 'featuredArticles' | 'classPages' | 'knowledgePages' | 'infoPages'
 > {
   homePage: Page
   featuredPages: Page[]
+  featuredArticles: Page[]
   classPages: Page[]
   knowledgePages: Page[]
   infoPages: Page[]
