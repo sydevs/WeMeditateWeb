@@ -7,8 +7,9 @@ export default {
 } satisfies StoryDefault
 
 /**
- * ContentTextBox organism showcasing white content box that overlaps
- * a tall feature image, creating visual depth.
+ * ContentTextBox organism showcasing a white content box that overlaps a tall
+ * feature image (left/right layouts). For text-over-image use ContentOverlay;
+ * for the ornate treatment use OrnateTextBox.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -41,24 +42,13 @@ export const Default: Story = () => (
             title="Learn Meditation"
           />
         </StorySection>
-
-        <StorySection title="Center / Overlay" variant="subsection">
-          <ContentTextBox
-            align="center"
-            ctaHref="#"
-            ctaText="Find events"
-            description="Connect with thousands of meditators worldwide. Experience guided sessions, workshops, and events designed to deepen your practice and foster meaningful connections."
-            imageAlt="Meditation community gathering"
-            imageHeight={800}
-            imageSrc="https://picsum.photos/seed/textbox-center/1200/800"
-            imageWidth={1200}
-            title="Join Our Community"
-          />
-        </StorySection>
       </div>
     </StorySection>
 
-    <StorySection title="Subtitle">
+    <StorySection
+      description="An optional subtitle renders directly below the title, kept visually faded but high-contrast."
+      title="Subtitle"
+    >
       <ContentTextBox
         align="left"
         ctaHref="#"
@@ -70,64 +60,6 @@ export const Default: Story = () => (
         imageWidth={900}
         subtitle="Collective meditation"
         title="Get Connected"
-      />
-    </StorySection>
-
-    <StorySection
-      description="In center/overlay mode, theme controls the text colour over the image. theme='light' (default) renders dark text; theme='dark' renders white text. A glow keeps text legible over the image."
-      title="Overlay Text Color"
-    >
-      <div className="flex flex-col gap-16">
-        <StorySection title="Dark Theme (white text)" variant="subsection">
-          <ContentTextBox
-            align="center"
-            ctaHref="#"
-            ctaText="Begin now"
-            description="A few minutes of meditation each day can transform your relationship with stress and bring lasting peace."
-            imageAlt="Calm evening landscape"
-            imageHeight={800}
-            imageSrc="https://picsum.photos/seed/overlay-dark/1200/800"
-            imageWidth={1200}
-            subtitle="Find your center"
-            theme="dark"
-            title="Inner Stillness"
-          />
-        </StorySection>
-
-        <StorySection title="Light Theme (dark text)" variant="subsection">
-          <ContentTextBox
-            align="center"
-            ctaHref="#"
-            ctaText="Begin now"
-            description="A few minutes of meditation each day can transform your relationship with stress and bring lasting peace."
-            imageAlt="Bright morning landscape"
-            imageHeight={800}
-            imageSrc="https://picsum.photos/seed/overlay-light/1200/800"
-            imageWidth={1200}
-            subtitle="Find your center"
-            theme="light"
-            title="Inner Stillness"
-          />
-        </StorySection>
-      </div>
-    </StorySection>
-
-    <StorySection
-      description="A decorative treatment for the left/right side layouts: a warm parchment box with a floral ornament above a centered title. Has no effect in center/overlay mode."
-      title="Ancient Wisdom Styling"
-    >
-      <ContentTextBox
-        wisdomStyle
-        align="left"
-        ctaHref="#"
-        ctaText="Explore the teachings"
-        description="For thousands of years, seekers have turned inward to discover a deeper truth. This knowledge, passed down through generations, remains as relevant today as ever."
-        imageAlt="Ancient meditation manuscript"
-        imageHeight={1200}
-        imageSrc="https://picsum.photos/seed/wisdom-example/900/1200"
-        imageWidth={900}
-        subtitle="Timeless teachings"
-        title="Ancient Wisdom"
       />
     </StorySection>
 
@@ -147,20 +79,6 @@ export const Default: Story = () => (
           />
         </StorySection>
 
-        <StorySection title="Landscape (16:9)" variant="subsection">
-          <ContentTextBox
-            align="left"
-            ctaHref="#"
-            ctaText="Learn more"
-            description="Develop a daily mindfulness practice that transforms your relationship with stress, anxiety, and everyday challenges. Learn practical techniques you can apply anywhere, anytime."
-            imageAlt="Peaceful nature scene"
-            imageHeight={1080}
-            imageSrc="https://picsum.photos/seed/landscape-nature/1920/1080"
-            imageWidth={1920}
-            title="Mindfulness Practice"
-          />
-        </StorySection>
-
         <StorySection title="Portrait (3:4)" variant="subsection">
           <ContentTextBox
             align="left"
@@ -172,20 +90,6 @@ export const Default: Story = () => (
             imageSrc="https://picsum.photos/seed/portrait-person/1200/1600"
             imageWidth={1200}
             title="Meditation Guide"
-          />
-        </StorySection>
-
-        <StorySection title="Wide (21:9)" variant="subsection">
-          <ContentTextBox
-            align="left"
-            ctaHref="#"
-            ctaText="View events"
-            description="Join our global community of meditators in person and online. Participate in workshops, retreats, and special events led by experienced teachers from around the world."
-            imageAlt="Wide panoramic meditation hall"
-            imageHeight={900}
-            imageSrc="https://picsum.photos/seed/wide-panorama/2100/900"
-            imageWidth={2100}
-            title="Community Events"
           />
         </StorySection>
       </div>
