@@ -55,26 +55,29 @@ describe('LayoutChrome', () => {
     expect(html).toContain('Contact')
   })
 
-  it('gives only the last nav item a knowledge dropdown when knowledge pages exist', () => {
+  it('appends a separate link-less knowledge dropdown item (featured links stay plain)', () => {
     ctx.settings = {
       featuredPages: [
         { title: 'Meditate', slug: 'meditate' },
-        { title: 'About', slug: 'about' },
+        { title: 'Music', slug: 'music' },
       ],
-      knowledgePages: [{ title: 'Kundalini', slug: 'kundalini' }],
+      // The dropdown item is labelled from the first knowledge page (interim).
+      knowledgePages: [{ title: 'About Meditation', slug: 'about-meditation' }],
       featuredArticles: [{ title: 'History', slug: 'history', meta: { image: { url: 'x' } } }],
       classPages: [],
       infoPages: [],
     }
     const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
 
-    expect(html).toContain('About[dropdown]')
-    // Earlier items stay plain links.
+    // The appended item carries the dropdown...
+    expect(html).toContain('About Meditation[dropdown]')
+    // ...and the featured pages remain plain links (no dropdown attached).
     expect(html).toContain('Meditate,')
     expect(html).not.toContain('Meditate[dropdown]')
+    expect(html).not.toContain('Music[dropdown]')
   })
 
-  it('leaves the last nav item a plain link when there are no knowledge pages', () => {
+  it('omits the dropdown item entirely when there are no knowledge pages', () => {
     ctx.settings = {
       featuredPages: [{ title: 'About', slug: 'about' }],
       knowledgePages: [],

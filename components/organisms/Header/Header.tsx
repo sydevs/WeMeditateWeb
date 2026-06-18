@@ -14,9 +14,10 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   actionLinkHref?: string
   /**
    * Main navigation menu items. An item with a `dropdown` renders as a
-   * hover/click mega-menu (HeaderNavDropdown) instead of a flat link.
+   * link-less hover/click mega-menu (HeaderNavDropdown) instead of a flat link;
+   * such items omit `href`. Plain link items provide `href`.
    */
-  navItems?: Array<{ label: string; href: string; dropdown?: HeaderDropdownProps }>
+  navItems?: Array<{ label: string; href?: string; dropdown?: HeaderDropdownProps }>
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
   /**

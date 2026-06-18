@@ -56,7 +56,8 @@ export const Default: Story = () => (
           { label: 'Meditate Now', href: '/meditate' },
           { label: 'Music for Meditation', href: '/music' },
           { label: 'Inspiration', href: '/inspiration' },
-          { label: 'About Meditation', href: '/about', dropdown: aboutDropdown },
+          // Link-less: opens the mega-menu, no navigation of its own.
+          { label: 'About Meditation', dropdown: aboutDropdown },
         ]}
         theme="light"
       />
@@ -102,7 +103,8 @@ export const Default: Story = () => (
           { label: 'Meditate Now', href: '/meditate' },
           { label: 'Music for Meditation', href: '/music' },
           { label: 'Inspiration', href: '/inspiration' },
-          { label: 'About Meditation', href: '/about', dropdown: aboutDropdown },
+          // Link-less: opens the mega-menu, no navigation of its own.
+          { label: 'About Meditation', dropdown: aboutDropdown },
         ]}
         theme="dark"
       />
