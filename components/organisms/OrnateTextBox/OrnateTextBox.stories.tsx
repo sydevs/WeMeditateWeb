@@ -18,14 +18,16 @@ export const Default: Story = () => (
         <StorySection title="Left Aligned (Default)" variant="subsection">
           <OrnateTextBox
             align="left"
-            ctaHref="#"
-            ctaText="Explore the teachings"
-            description="In every culture and religion, one can find great tales of the immense power of a mother's love and the lengths she will go to protect her children. It is this deep sense of love which gives a child security in their heart and removes their fears."
+            description={
+              "In every culture and religion, one can find great tales of the immense power of a mother's love and the lengths that she will go to in order to protect her children. It is this deep sense of love which gives a child security in their heart and removes their fears.\n\n" +
+              'In Hinduism, the goddess Durga is the great warrior mother who defeats all the enemies of her children. A fearsome, yet extremely compassionate figure who rides on a tiger yielding great weapons with her many arms, she fights tirelessly to free her children from the evils of ego, fears and desires.\n\n' +
+              'While the stories recounted in these sacred texts do not appear to resemble any modern scene of the world today, we all still fight our own battles on a daily basis. With the motherly love of our Kundalini we are empowered to overcome all of our inner demons.'
+            }
             imageAlt="Ancient meditation artwork"
-            imageHeight={1200}
-            imageSrc="https://picsum.photos/seed/ornate-left/900/1200"
-            imageWidth={900}
-            subtitle="Timeless teachings"
+            imageHeight={900}
+            imageSrc="https://picsum.photos/seed/ornate-left/1200/900"
+            imageWidth={1200}
+            sidetext="Ancient Knowledge"
             title="A Mother's Love"
           />
         </StorySection>

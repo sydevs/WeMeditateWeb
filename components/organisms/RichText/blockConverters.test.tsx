@@ -58,18 +58,18 @@ describe('textbox block converter — routing', () => {
     expect(html).toContain('Collective meditation')
   })
 
-  it('wisdomStyle (side layout) → OrnateTextBox (parchment + ornament + sidetext)', () => {
+  it('wisdomStyle (side layout) → OrnateTextBox (ornate ground + sidetext)', () => {
     const html = renderTextbox({ imagePosition: 'left', wisdomStyle: true, title: 'Wisdom' })
 
-    expect(html).toContain('bg-warm')
-    expect(html).toContain('<svg')
-    expect(html).toContain('Ancient Wisdom')
+    expect(html).toContain('#6b5340') // warm ornate gradient ground
+    expect(html).toContain('Ancient Wisdom') // decorative sidetext
+    expect(html).not.toContain('lg:bg-white') // not the plain ContentTextBox
   })
 
-  it('overlay takes precedence over wisdomStyle (no parchment)', () => {
+  it('overlay takes precedence over wisdomStyle (no ornate ground)', () => {
     const html = renderTextbox({ imagePosition: 'overlay', wisdomStyle: true, title: 'Wisdom' })
 
-    expect(html).not.toContain('bg-warm')
+    expect(html).not.toContain('#6b5340')
   })
 
   it('renders nothing when the image is an unpopulated (bare-id) relationship', () => {

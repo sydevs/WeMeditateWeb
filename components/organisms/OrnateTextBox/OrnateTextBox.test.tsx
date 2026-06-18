@@ -10,11 +10,13 @@ const BASE = {
 } as const
 
 describe('<OrnateTextBox>', () => {
-  it('renders the warm parchment surface and a botanical ornament', () => {
+  it('renders the warm ornate ground and the floral graphic', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
-    expect(html).toContain('bg-warm')
-    expect(html).toContain('<svg')
+    // Warm-brown gradient ground (distinctive to the ornate treatment).
+    expect(html).toContain('#6b5340')
+    // The decorative ornate.svg graphic is rendered as a background image.
+    expect(html).toContain('ornate')
   })
 
   it('renders title and description', () => {
@@ -22,6 +24,15 @@ describe('<OrnateTextBox>', () => {
 
     expect(html).toContain('Sacred Teachings')
     expect(html).toContain('timeless wisdom')
+  })
+
+  it('splits the description into paragraphs on newlines', () => {
+    const html = renderToStaticMarkup(
+      <OrnateTextBox {...BASE} description={'First paragraph.\n\nSecond paragraph.'} />,
+    )
+
+    expect(html).toContain('<p>First paragraph.</p>')
+    expect(html).toContain('<p>Second paragraph.</p>')
   })
 
   it('renders the subtitle when provided', () => {
@@ -43,10 +54,11 @@ describe('<OrnateTextBox>', () => {
     expect(html).not.toContain('Ancient Wisdom')
   })
 
-  it('reverses the layout when align="right"', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
-
-    expect(html).toContain('lg:flex-row-reverse')
+  it('floats the title+image column left by default, right when align="right"', () => {
+    expect(renderToStaticMarkup(<OrnateTextBox {...BASE} />)).toContain('lg:float-left')
+    expect(renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)).toContain(
+      'lg:float-right',
+    )
   })
 
   it('renders the CTA only when both text and href are set', () => {
