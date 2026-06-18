@@ -54,11 +54,19 @@ describe('<OrnateTextBox>', () => {
     expect(html).not.toContain('Ancient Wisdom')
   })
 
-  it('floats the title+image column left by default, right when align="right"', () => {
-    expect(renderToStaticMarkup(<OrnateTextBox {...BASE} />)).toContain('lg:float-left')
-    expect(renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)).toContain(
-      'lg:float-right',
-    )
+  it('floats the image left so the body text wraps around it', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
+
+    expect(html).toContain('lg:float-left')
+    expect(html).not.toContain('lg:float-right')
+  })
+
+  it('renders the title above the body (header precedes the image)', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
+
+    // Title + subtitle appear before the floated image in document order.
+    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('lg:float-left'))
+    expect(html.indexOf('Sub')).toBeLessThan(html.indexOf('lg:float-left'))
   })
 
   it('renders the CTA only when both text and href are set', () => {

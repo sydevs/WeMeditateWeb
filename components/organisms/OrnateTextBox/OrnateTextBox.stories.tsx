@@ -7,72 +7,53 @@ export default {
 } satisfies StoryDefault
 
 /**
- * OrnateTextBox organism — the decorative "Ancient Wisdom" treatment: a warm
- * parchment surface with a soft gradient, faded botanical flourishes, and a
- * vertical sidetext label. Mirrors wemeditate.com's `.cb-image-textbox--ornate`.
+ * OrnateTextBox organism — the decorative "Ancient Wisdom" treatment: a
+ * full-width warm-brown ground with a soft gradient, a faded floral graphic,
+ * and a vertical sidetext label. Mirrors wemeditate.com's
+ * `.cb-image-textbox--ornate`.
  */
 export const Default: Story = () => (
   <StoryWrapper>
-    <StorySection title="Alignments">
-      <div className="flex flex-col gap-16">
-        <StorySection title="Left Aligned (Default)" variant="subsection">
-          <OrnateTextBox
-            align="left"
-            description={
-              "In every culture and religion, one can find great tales of the immense power of a mother's love and the lengths that she will go to in order to protect her children. It is this deep sense of love which gives a child security in their heart and removes their fears.\n\n" +
-              'In Hinduism, the goddess Durga is the great warrior mother who defeats all the enemies of her children. A fearsome, yet extremely compassionate figure who rides on a tiger yielding great weapons with her many arms, she fights tirelessly to free her children from the evils of ego, fears and desires.\n\n' +
-              'While the stories recounted in these sacred texts do not appear to resemble any modern scene of the world today, we all still fight our own battles on a daily basis. With the motherly love of our Kundalini we are empowered to overcome all of our inner demons.'
-            }
-            imageAlt="Ancient meditation artwork"
-            imageHeight={900}
-            imageSrc="https://picsum.photos/seed/ornate-left/1200/900"
-            imageWidth={1200}
-            sidetext="Ancient Knowledge"
-            title="A Mother's Love"
-          />
-        </StorySection>
-
-        <StorySection title="Right Aligned" variant="subsection">
-          <OrnateTextBox
-            align="right"
-            ctaHref="#"
-            ctaText="Read more"
-            description="For thousands of years, seekers have turned inward to discover a deeper truth. This knowledge, passed down through generations, remains as relevant today as it ever was."
-            imageAlt="Ancient manuscript"
-            imageHeight={1200}
-            imageSrc="https://picsum.photos/seed/ornate-right/900/1200"
-            imageWidth={900}
-            subtitle="Sacred knowledge"
-            title="Ancient Wisdom"
-          />
-        </StorySection>
-      </div>
+    <StorySection title="Default">
+      <OrnateTextBox
+        description={
+          "In every culture and religion, one can find great tales of the immense power of a mother's love and the lengths that she will go to in order to protect her children. It is this deep sense of love which gives a child security in their heart and removes their fears.\n\n" +
+          'In Hinduism, the goddess Durga is the great warrior mother who defeats all the enemies of her children. A fearsome, yet extremely compassionate figure who rides on a tiger yielding great weapons with her many arms, she fights tirelessly to free her children from the evils of ego, fears and desires.\n\n' +
+          'While the stories recounted in these sacred texts do not appear to resemble any modern scene of the world today, we all still fight our own battles on a daily basis. With the motherly love of our Kundalini we are empowered to overcome all of our inner demons.'
+        }
+        imageAlt="Ancient meditation artwork"
+        imageHeight={900}
+        imageSrc="https://picsum.photos/seed/ornate-left/1200/900"
+        imageWidth={1200}
+        sidetext="Ancient Knowledge"
+        title="A Mother's Love"
+      />
     </StorySection>
 
     <StorySection
-      description="The vertical sidetext label is decorative and customisable; it defaults to 'Ancient Wisdom'."
-      title="Custom Sidetext"
+      description="An optional subtitle sits under the title; the sidetext label is decorative and customisable (defaults to 'Ancient Wisdom')."
+      title="With Subtitle & CTA"
     >
       <OrnateTextBox
-        align="left"
-        description="A fearsome yet compassionate figure, the great warrior mother fights tirelessly to free her children from the evils of ego, fear and desire."
+        ctaHref="#"
+        ctaText="Read more"
+        description="For thousands of years, seekers have turned inward to discover a deeper truth. This knowledge, passed down through generations, remains as relevant today as it ever was."
         imageAlt="Goddess Durga artwork"
-        imageHeight={1200}
-        imageSrc="https://picsum.photos/seed/ornate-sidetext/900/1200"
-        imageWidth={900}
-        sidetext="Ancient Knowledge"
+        imageHeight={900}
+        imageSrc="https://picsum.photos/seed/ornate-sidetext/1200/900"
+        imageWidth={1200}
+        subtitle="Sacred knowledge"
         title="The Warrior Mother"
       />
     </StorySection>
 
     <StorySection inContext={true} title="Without CTA or Subtitle">
       <OrnateTextBox
-        align="left"
         description="While the stories recounted in sacred texts do not resemble the modern world, we all still fight our own battles daily. With the motherly love of our Kundalini we are empowered to overcome our inner demons."
         imageAlt="Meditative scene"
-        imageHeight={1200}
-        imageSrc="https://picsum.photos/seed/ornate-minimal/900/1200"
-        imageWidth={900}
+        imageHeight={900}
+        imageSrc="https://picsum.photos/seed/ornate-minimal/1200/900"
+        imageWidth={1200}
         title="Inner Battles"
       />
     </StorySection>
