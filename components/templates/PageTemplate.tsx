@@ -16,6 +16,7 @@ import { VideoPlayer, Author as AuthorByline } from '../molecules'
 import { PageTitle } from '../atoms'
 import { usePageHead } from '../../lib/head'
 import { isPopulated, populatedImageUrl } from '../../lib/cms-relationships'
+import { getLeadSplash } from '../../lib/cms-blocks'
 
 export interface PageTemplateProps {
   /**
@@ -24,26 +25,15 @@ export interface PageTemplateProps {
   page: Page
 }
 
-/**
- * True when the page's content leads with a `splash` block. A splash renders
- * its own full-bleed title, so the PageTitle banner is skipped to avoid showing
- * the title twice.
- */
-function leadsWithSplash(content: Page['content']): boolean {
-  const first = content?.root?.children?.[0] as
-    | { type?: string; fields?: { blockType?: string } }
-    | undefined
-
-  return first?.type === 'block' && first?.fields?.blockType === 'splash'
-}
-
 export function PageTemplate({ page }: PageTemplateProps) {
   // Set <title>/description/og:image from CMS meta (must run unconditionally).
   usePageHead({ meta: page.meta, fallbackTitle: page.title })
 
   const author = isPopulated<Author>(page.author) ? page.author : null
   const video = isPopulated<Video>(page.featuredVideo) ? page.featuredVideo : null
-  const showTitle = !leadsWithSplash(page.content)
+  // A lead splash renders its own full-bleed title, so skip the PageTitle banner
+  // to avoid showing the title twice.
+  const showTitle = !getLeadSplash(page.content)
 
   return (
     <article className="max-w-4xl mx-auto">

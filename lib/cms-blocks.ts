@@ -95,6 +95,12 @@ export interface SplashBlockFields {
   subtitle?: string | null
   actionText?: string | null
   actionURL?: string | null
+  /**
+   * Describes the *text* color (dark/light), mirroring the `textbox` overlay
+   * convention. Not yet authored in the CMS (see SahajCloud ticket) — absent is
+   * treated as light text on a dark hero (`theme: 'dark'`).
+   */
+  textColor?: 'dark' | 'light' | null
 }
 
 /** `layout` — LayoutBlock item. */
@@ -193,6 +199,34 @@ export function galleryImages(images: ImageGalleryBlockFields['items']): Populat
   }
 
   return result
+}
+
+/**
+ * Derive a Splash background-context theme from its `textColor` field. `textColor`
+ * describes the *text* (dark/light); `theme` describes the *background* (they
+ * invert, matching the `textbox` overlay convention in blockConverters). Defaults
+ * to `'dark'` (light text over a dark hero) when the field is absent — the splash's
+ * historical hardcoded treatment.
+ */
+export function splashTheme(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
+  return textColor === 'dark' ? 'light' : 'dark'
+}
+
+/**
+ * When a page's content leads with a `splash` block, return its background-context
+ * theme; otherwise `null`. Shared by the layout (header overlay theme), the page
+ * wrappers (flush-to-top spacing) and PageTemplate (skipping the duplicate title).
+ */
+export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dark' } | null {
+  const first = content?.root?.children?.[0] as
+    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
+    | undefined
+
+  if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
+    return null
+  }
+
+  return { theme: splashTheme(first.fields.textColor) }
 }
 
 /** Coerce a possibly-null/absent CMS text field to a string. */

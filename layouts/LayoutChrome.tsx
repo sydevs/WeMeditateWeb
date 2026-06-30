@@ -3,8 +3,9 @@ import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
-import type { WebConfig } from '../server/cms-types'
+import type { WebConfig, Page } from '../server/cms-types'
 import type { HeaderDropdownProps } from '../components/organisms'
+import { getLeadSplash } from '../lib/cms-blocks'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 
 /**
@@ -15,9 +16,16 @@ import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdow
  * error boundary). Embed routes omit it entirely and render bare.
  */
 export default function LayoutChrome({ children }: { children: React.ReactNode }) {
-  const data = useData<{ settings?: WebConfig }>()
+  const data = useData<{ settings?: WebConfig; page?: Page }>()
   const { locale } = usePageContext()
   const settings = data?.settings
+
+  // When the page leads with a Splash, overlay the header on it (transparent,
+  // themed to match) and let the splash sit flush at the top. The Splash reserves
+  // `pt-60` for exactly this. `data.page` is present on content routes ([slug]);
+  // the live-preview route uses a different data shape (`initialData`) and keeps
+  // the in-flow header.
+  const leadSplash = getLeadSplash(data?.page?.content)
 
   // CMS-down / error-page fallback: when settings are unavailable (the _error
   // page carries no data, or the CMS is unreachable) render the content with no
@@ -115,19 +123,33 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     { code: 'fr' as const, label: 'Français', flagCode: 'fr', href: '/fr' },
   ]
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <div className="max-w-7xl mx-auto px-6 w-full">
-        <Header
-          actionLinkHref={classPages[0] ? '/' + classPages[0].slug : '/'}
-          actionLinkText={classPages[0]?.title}
-          logoHref="/"
-          navItems={navItems}
-        />
-      </div>
+  const header = (
+    <div className="max-w-7xl mx-auto px-6 w-full">
+      <Header
+        actionLinkHref={classPages[0] ? '/' + classPages[0].slug : '/'}
+        actionLinkText={classPages[0]?.title}
+        logoHref="/"
+        navItems={navItems}
+        theme={leadSplash?.theme}
+      />
+    </div>
+  )
 
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-6 py-8">{children}</div>
+  return (
+    <div className={`flex flex-col min-h-screen ${leadSplash ? 'relative' : ''}`}>
+      {leadSplash ? (
+        // Overlay the header transparently on the lead splash.
+        <div className="absolute inset-x-0 top-0 z-30">{header}</div>
+      ) : (
+        header
+      )}
+
+      {/* `container-type: inline-size` makes `full-bleed` blocks size with `cqi`
+          relative to this window-width box (not the viewport — excludes scrollbar);
+          `overflow-x-clip` contains decorative horizontal bleed. The sticky nav
+          lives outside <main>, so this containment never touches it. */}
+      <main className="flex-1 @container overflow-x-clip">
+        <div className={`max-w-7xl mx-auto px-6 ${leadSplash ? 'pb-8' : 'py-8'}`}>{children}</div>
       </main>
 
       <Footer
