@@ -109,17 +109,41 @@
 }
 
 /**
+ * `--page-width` — the width a `full-bleed` block should span. It's a *registered*
+ * `<length>`, which is what makes this robust: a container-query unit assigned to a
+ * registered `<length>` is resolved (captured) at the element where it's set and
+ * then inherits down as a fixed length — even through descendant `@container`s.
+ *
+ * That immunity to nested containers is the whole point. A raw `100cqi` on the
+ * block resolves against the *nearest* container, so a full-bleed block placed
+ * inside some inner `@container` (e.g. a future component reusing MeditationPlayer's
+ * container) would size to that inner box instead of the page. Capturing the width
+ * at the page-content wrapper removes that footgun.
+ *
+ * Defaults to the viewport (no container context — embed routes, and the sticky nav
+ * which lives outside `<main>`). The page-content wrapper in <main> and the Ladle
+ * story container override it with `100cqi` so it tracks the content area and
+ * excludes the scrollbar. See LayoutChrome.tsx and .ladle/components.tsx.
+ */
+@property --page-width {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+:root {
+  --page-width: 100vw;
+}
+
+/**
  * Full-bleed: break a block out of its centered, width-constrained ancestors to
- * span the full content container. Uses container-query inline units (`cqi`) so it
- * fills the window on real pages (the `<main>` inline-size container) and the story
- * area in Ladle (the global Provider container), excluding the scrollbar. Where no
- * container ancestor exists, `cqi` falls back to viewport units. The centering math
- * matches the legacy `vw` break-out; it relies on the element's containing block
- * being horizontally centered within the query container (true for the article).
+ * span `--page-width` (the captured content-area width). The centering math relies
+ * on the element's containing block being horizontally centered within the page
+ * (true for the article column).
  */
 @utility full-bleed {
-  width: 100cqi;
-  max-width: 100cqi;
-  margin-left: calc(50% - 50cqi);
-  margin-right: calc(50% - 50cqi);
+  width: var(--page-width);
+  max-width: var(--page-width);
+  margin-left: calc(50% - var(--page-width) / 2);
+  margin-right: calc(50% - var(--page-width) / 2);
 }

@@ -123,13 +123,13 @@ export function ContentTextBox({
     >
       {/* Image - natural flow on mobile, positioned on desktop.
           Mobile: fill the column width, capped to a 1:1 aspect (height ≤ width, via
-          the local content-container width `100cqi` minus the page gutters) and
+          the captured page width `--page-width` minus the page gutters) and
           `object-cover` so portrait images crop to ≤ square rather than running
           tall. Desktop (lg): the original contained, container-height behavior. */}
       <Image
         alt={imageAlt}
         aspectRatio={imageAspectRatio}
-        className="w-full max-h-[calc(100cqi-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
+        className="w-full max-h-[calc(var(--page-width)-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
         forceAspectRatio={false}
         height={imageHeight}
         objectFit="cover"

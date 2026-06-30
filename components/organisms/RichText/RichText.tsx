@@ -332,8 +332,9 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
   // (max-w-4xl) with responsive gutters — owned here so it's consistent whether
   // RichText is rendered inside a page template or standalone (e.g. a story).
   // Full-bleed blocks (Splash, OrnateTextBox, SubtleSystem, ContentOverlay, wide
-  // uploads) escape it via the `full-bleed` cqi break-out, which resolves against
-  // the `@container` on <main> (the window) regardless of this Container.
+  // uploads) escape it via the `full-bleed` break-out, which spans `--page-width`
+  // (the content-area width captured on <main>'s wrapper) regardless of this
+  // Container or any nested `@container`.
   return (
     <LightboxProvider>
       <Container maxWidth="md">
