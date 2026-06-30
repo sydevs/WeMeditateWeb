@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, Image } from '../../atoms'
+import { Button, Container, Image } from '../../atoms'
 import ornateBackground from '../../../assets/ornate.svg'
 
 export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
@@ -141,10 +141,11 @@ export function OrnateTextBox({
         </span>
       )}
 
-      {/* Content. Capped to a reasonable max (the content-area width) and centered
-          so the interior doesn't sprawl on ultra-wide screens; asymmetric desktop
-          padding insets the column and reserves the sidetext side. */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-8 py-12 lg:py-20 lg:pl-[11%] lg:pr-[16%]">
+      {/* Content — capped to a readable width via a Container (the brown ground,
+          floral graphic and gradient stay full-bleed behind it). Since the content
+          is always narrower than where the sidetext appears (lg+), the sidetext
+          sits clear in the margin without needing asymmetric padding. */}
+      <Container className="relative z-10 py-12 lg:py-20" maxWidth="md">
         {/* Title + subtitle header, above the body */}
         <div className="mb-8 lg:mb-6">
           <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
@@ -182,7 +183,7 @@ export function OrnateTextBox({
             </Button>
           )}
         </div>
-      </div>
+      </Container>
     </div>
   )
 }
