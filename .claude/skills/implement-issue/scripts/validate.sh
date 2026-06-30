@@ -2,8 +2,8 @@
 #
 # Validate that the current branch is ready to open a PR.
 #
-# WeMeditateWeb has no test/lint CI — its only PR check is the Cloudflare
-# preview deployment — so this local gate is the substantive quality bar.
+# CI (.github/workflows/ci.yml) re-runs lint + type-check + the unit suite on
+# every PR; this local gate runs the same checks first to keep the loop fast.
 #
 # Default (lean gate): lint + type-check + the Vitest suite.
 #   - pnpm lint
