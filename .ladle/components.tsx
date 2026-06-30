@@ -14,8 +14,15 @@ import '../layouts/tailwind.css'
 // pageContext and a Suspense boundary here, mirroring what Vike provides at runtime.
 const ladlePageContext = { isClientSide: true, locale: 'en' } as unknown as PageContext
 
+// The inline-size container makes `full-bleed` blocks (which size with `cqi`)
+// resolve to the Ladle story area instead of the whole window — so they don't
+// overflow under the sidebar. `overflowX: clip` contains decorative horizontal
+// bleed (e.g. OrnateTextBox's floral graphic) without creating a scroll container.
+// Inline styles (not Tailwind classes) because Tailwind doesn't scan `.ladle/`.
 export const Provider: GlobalProvider = ({ children }) => (
   <VikeReactProviderPageContext pageContext={ladlePageContext}>
-    <Suspense fallback={null}>{children}</Suspense>
+    <div style={{ containerType: 'inline-size', overflowX: 'clip' }}>
+      <Suspense fallback={null}>{children}</Suspense>
+    </div>
   </VikeReactProviderPageContext>
 )

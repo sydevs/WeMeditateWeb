@@ -118,14 +118,9 @@ export function Header({
         <nav
           className={`sticky top-0 z-50 border-t border-b transition-colors duration-200 ${
             isSticky
-              ? 'bg-white border-gray-200 text-gray-700'
+              ? 'full-bleed bg-white border-gray-200 text-gray-700'
               : `${textColorClass} ${borderColorClass}`
           }`}
-          style={{
-            width: isSticky ? '100vw' : 'auto',
-            marginLeft: isSticky ? 'calc(-50vw + 50%)' : '0',
-            marginRight: isSticky ? 'calc(-50vw + 50%)' : '0',
-          }}
         >
           {/* Centered content container */}
           <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">

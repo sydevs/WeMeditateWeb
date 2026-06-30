@@ -107,3 +107,19 @@
 @utility text-glow-dark {
   text-shadow: 0 0 8px rgb(0 0 0 / 80%), 0 0 16px rgb(0 0 0 / 60%), 0 0 24px rgb(0 0 0 / 40%);
 }
+
+/**
+ * Full-bleed: break a block out of its centered, width-constrained ancestors to
+ * span the full content container. Uses container-query inline units (`cqi`) so it
+ * fills the window on real pages (the `<main>` inline-size container) and the story
+ * area in Ladle (the global Provider container), excluding the scrollbar. Where no
+ * container ancestor exists, `cqi` falls back to viewport units. The centering math
+ * matches the legacy `vw` break-out; it relies on the element's containing block
+ * being horizontally centered within the query container (true for the article).
+ */
+@utility full-bleed {
+  width: 100cqi;
+  max-width: 100cqi;
+  margin-left: calc(50% - 50cqi);
+  margin-right: calc(50% - 50cqi);
+}

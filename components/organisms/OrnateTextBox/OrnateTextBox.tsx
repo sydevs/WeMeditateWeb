@@ -102,7 +102,7 @@ export function OrnateTextBox({
 
   return (
     <div
-      className={`relative isolate flex min-h-[80vh] w-full items-center bg-[linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
+      className={`relative isolate flex min-h-[80vh] items-center bg-[linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
       {...props}
     >
       {/* Large faded floral graphic, offset ~45% to the right, behind content */}
