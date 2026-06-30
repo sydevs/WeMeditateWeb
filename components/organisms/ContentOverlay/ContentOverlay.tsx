@@ -125,8 +125,8 @@ export function ContentOverlay({
     center: 'md:mx-auto md:text-center',
   }
 
-  // Max width classes - 50% on lg+ for non-box variants
-  const maxWidthClasses = variant === 'box' ? 'max-w-md lg:max-w-lg' : 'max-w-md lg:max-w-[50%]'
+  // Max width classes - 40% on lg+ for non-box variants (narrower text column)
+  const maxWidthClasses = variant === 'box' ? 'max-w-md lg:max-w-lg' : 'max-w-md lg:max-w-[40%]'
 
   return (
     <div className={className} {...props}>
