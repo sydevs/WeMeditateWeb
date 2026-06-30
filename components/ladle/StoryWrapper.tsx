@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from 'react'
 
 export interface StoryWrapperProps {
   /**
    * Story content to wrap
    */
-  children: ReactNode;
+  children: ReactNode
 }
 
 /**
@@ -23,9 +23,9 @@ export interface StoryWrapperProps {
  * ```
  */
 export function StoryWrapper({ children }: StoryWrapperProps) {
-  return (
-    <div className="flex flex-col gap-8 p-2">
-      {children}
-    </div>
-  );
+  // Horizontal gutter lives here (inside the Provider's inline-size container) so
+  // `full-bleed` blocks escape it and reach the story-canvas edges, matching the
+  // page model where the content gutter sits inside `<main>`. Ladle's own
+  // `.ladle-main` horizontal padding is removed in .ladle/story-overrides.css.
+  return <div className="flex flex-col gap-8 px-12 py-2">{children}</div>
 }

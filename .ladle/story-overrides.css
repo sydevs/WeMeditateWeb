@@ -1,0 +1,14 @@
+/**
+ * Remove Ladle's default horizontal story padding so the inline-size container in
+ * the global Provider (.ladle/components.tsx) spans the full story canvas. This
+ * lets `full-bleed` blocks reach the canvas edges in Ladle — matching how they
+ * fill the window on real pages — instead of stopping at Ladle's 48px gutter.
+ *
+ * Per-story breathing room moves onto StoryWrapper (components/ladle/StoryWrapper),
+ * which lives inside the container and is therefore escaped by `full-bleed`,
+ * mirroring the page model (gutter on the content wrapper inside `<main>`).
+ */
+.ladle-main {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}

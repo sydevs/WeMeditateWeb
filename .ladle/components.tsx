@@ -5,6 +5,7 @@ import type { PageContext } from 'vike/types'
 import '../layouts/fonts.css'
 import '../layouts/style.css'
 import '../layouts/tailwind.css'
+import './story-overrides.css'
 
 // Ladle isn't a Vike app, so vike-react's runtime `pageContext` and the app-root
 // <Suspense> boundary don't exist. Components that read `usePageContext()` or use
