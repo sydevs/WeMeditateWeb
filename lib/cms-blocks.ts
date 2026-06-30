@@ -244,6 +244,29 @@ export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dar
   return { theme: splashTheme(first.fields.textColor) }
 }
 
+/**
+ * Resolve the lead splash from a layout route's data, whose shape differs by route:
+ * content routes ([slug]) carry the page as `page`; the live-preview route (/preview)
+ * carries the previewed document as `initialData` — only a `pages` preview has
+ * splash-leading content (meditation/lecture previews never do). Lets LayoutChrome
+ * apply the same overlaid-header treatment in preview as on the published page.
+ */
+export function leadSplashFromRouteData(
+  data:
+    | {
+        page?: Pick<Page, 'content'> | null
+        collection?: string
+        initialData?: Pick<Page, 'content'> | null
+      }
+    | null
+    | undefined,
+): { theme: 'light' | 'dark' } | null {
+  const content =
+    data?.page?.content ?? (data?.collection === 'pages' ? data?.initialData?.content : undefined)
+
+  return getLeadSplash(content)
+}
+
 /** Coerce a possibly-null/absent CMS text field to a string. */
 function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''

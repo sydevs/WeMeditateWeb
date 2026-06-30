@@ -3,6 +3,7 @@ import {
   contentIndexCard,
   galleryImages,
   getLeadSplash,
+  leadSplashFromRouteData,
   isExternalUrl,
   populatedImage,
   showcaseItems,
@@ -201,5 +202,35 @@ describe('getLeadSplash', () => {
     expect(getLeadSplash(leadContent({ type: 'paragraph' }))).toBeNull()
     expect(getLeadSplash(leadContent())).toBeNull()
     expect(getLeadSplash(undefined as unknown as Page['content'])).toBeNull()
+  })
+})
+
+describe('leadSplashFromRouteData', () => {
+  const splashPage = (textColor?: 'dark' | 'light') => ({
+    content: leadContent({
+      type: 'block',
+      fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
+    }),
+  })
+
+  it('reads page content on content routes ([slug])', () => {
+    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ theme: 'light' })
+  })
+
+  it('reads initialData content on a pages preview', () => {
+    expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
+      theme: 'dark',
+    })
+  })
+
+  it('ignores initialData for non-page previews (meditations/lectures)', () => {
+    expect(
+      leadSplashFromRouteData({ collection: 'meditations', initialData: splashPage() }),
+    ).toBeNull()
+  })
+
+  it('returns null without a lead splash or data', () => {
+    expect(leadSplashFromRouteData(undefined)).toBeNull()
+    expect(leadSplashFromRouteData({})).toBeNull()
   })
 })
