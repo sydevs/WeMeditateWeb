@@ -126,10 +126,10 @@ export const blockConverters: BlockConverters = {
     ) : (
       // ContentTextBox is wider than the readable body but capped (not full
       // window): break out of the prose Container with full-bleed, then constrain
-      // to the large Container width (lg / 5xl) with gutters. `className=""` drops
-      // the spread BLOCK_SPACING since the wrapper owns spacing/centering.
+      // to the Container `xl` width (6xl) with gutters. `className=""` drops the
+      // spread BLOCK_SPACING since the wrapper owns spacing/centering.
       <div className={FULL_BLEED_BLOCK}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <ContentTextBox {...sideProps} align={fields.imagePosition} className="" />
         </Container>
       </div>

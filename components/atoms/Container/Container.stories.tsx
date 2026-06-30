@@ -43,6 +43,24 @@ export const Default: Story = () => (
           </Container>
         </div>
         <div>
+          <p className="text-sm text-gray-600 mb-2">XL (max-w-6xl)</p>
+          <Container maxWidth="xl">
+            <div className="bg-gray-100 p-4 rounded">
+              <p className="text-gray-700">XL container - wide feature sections</p>
+            </div>
+          </Container>
+        </div>
+        <div>
+          <p className="text-sm text-gray-600 mb-2">2XL / Default (max-w-7xl)</p>
+          <Container maxWidth="2xl">
+            <div className="bg-gray-100 p-4 rounded">
+              <p className="text-gray-700">
+                2XL container - the default; spans the full page content area
+              </p>
+            </div>
+          </Container>
+        </div>
+        <div>
           <p className="text-sm text-gray-600 mb-2">Full (no max-width)</p>
           <Container maxWidth="full">
             <div className="bg-gray-100 p-4 rounded">
