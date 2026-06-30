@@ -1,9 +1,9 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { LanguageFlag } from "./LanguageFlag";
-import { StorySection, StoryWrapper } from '../../ladle';
+import { StorySection, StoryWrapper } from '../../../ladle';
 
 export default {
-  title: "Atoms / Media"
+  title: "Atoms / Graphics"
 } satisfies StoryDefault;
 
 /**

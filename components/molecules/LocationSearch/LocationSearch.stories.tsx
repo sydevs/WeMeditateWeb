@@ -3,7 +3,7 @@ import { LocationSearch } from './LocationSearch'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Molecules / Forms',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 /**

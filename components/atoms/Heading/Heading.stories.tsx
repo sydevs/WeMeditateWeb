@@ -4,7 +4,7 @@ import { StorySection,
    StoryWrapper } from '../../ladle';
 
 export default {
-  title: "Atoms / Typography"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

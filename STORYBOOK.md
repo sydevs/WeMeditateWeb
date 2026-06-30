@@ -648,7 +648,7 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 **Structure**: Variants (grid) → Sizes (subsections) → States (subsections) → Widths → Examples (subsections)
 
 #### Checkbox & Radio - Simple Grid Stories
-[Checkbox.stories.tsx](components/atoms/Checkbox/Checkbox.stories.tsx) and [Radio.stories.tsx](components/atoms/Radio/Radio.stories.tsx):
+[Checkbox.stories.tsx](components/atoms/form/Checkbox/Checkbox.stories.tsx) and [Radio.stories.tsx](components/atoms/form/Radio/Radio.stories.tsx):
 - Clean color × state matrix grids
 - Minimal text, focus on visual comparison
 - Single comprehensive Examples section
@@ -664,7 +664,7 @@ Use `StoryExampleSection` for all example sections. It automatically sets the ti
 **Structure**: Variants (grid) → Padding → Shadows → Examples
 
 #### SocialIcon - Large Matrix Grid
-[SocialIcon.stories.tsx](components/atoms/SocialIcon/SocialIcon.stories.tsx):
+[SocialIcon.stories.tsx](components/atoms/graphics/SocialIcon/SocialIcon.stories.tsx):
 - Programmatically generated 10×4 grid (platform × color)
 - Demonstrates efficient grid generation with map
 - Interactive examples with hover states

@@ -5,7 +5,7 @@ import {
   PhoneIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline'
-import type { HeroIcon } from '../Icon/Icon'
+import type { HeroIcon } from '../../Icon/Icon'
 
 export interface InputProps extends ComponentProps<'input'> {
   /**

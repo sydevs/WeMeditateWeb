@@ -3,7 +3,7 @@ import { Alert } from './Alert'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Molecules / Feedback',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 /**

@@ -3,7 +3,7 @@ import { Link } from "./Link";
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
-  title: "Atoms / Typography"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

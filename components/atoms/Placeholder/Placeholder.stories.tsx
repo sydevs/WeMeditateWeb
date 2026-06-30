@@ -5,7 +5,7 @@ import { ExclamationCircleIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
-  title: "Atoms / Feedback"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

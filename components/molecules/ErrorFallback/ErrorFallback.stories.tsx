@@ -4,7 +4,7 @@ import { StoryWrapper, StorySection } from '../../ladle'
 import * as Sentry from '@sentry/react'
 
 export default {
-  title: 'Molecules / Feedback',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 /**

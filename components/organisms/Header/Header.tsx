@@ -1,7 +1,7 @@
 import { ComponentProps, useState, useEffect, useRef } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
-import { HeaderIllustrationSvg } from '../../atoms/svgs'
+import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
 

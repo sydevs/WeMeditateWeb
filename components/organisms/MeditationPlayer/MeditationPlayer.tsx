@@ -18,7 +18,7 @@ import {
   ArrowPathRoundedSquareIcon,
 } from '@heroicons/react/24/solid'
 import { Avatar, Button, Dropdown, Link, Tooltip } from '../../atoms'
-import { SimpleLeafSvg } from '../../atoms/svgs/SimpleLeafSvg'
+import { SimpleLeafSvg } from '../../atoms/graphics/svgs/SimpleLeafSvg'
 import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
 import { useAudioPlayer } from '../../../hooks/audio'

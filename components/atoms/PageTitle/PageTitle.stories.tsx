@@ -3,7 +3,7 @@ import { PageTitle } from './PageTitle'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Atoms / Typography',
+  title: 'Atoms',
 } satisfies StoryDefault
 
 /**

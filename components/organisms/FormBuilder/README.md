@@ -344,10 +344,10 @@ See [FormBuilder.stories.tsx](FormBuilder.stories.tsx) for comprehensive example
 
 ## Related Components
 
-- [Input](../../atoms/Input/Input.tsx) - Text input atom
-- [Textarea](../../atoms/Textarea/Textarea.tsx) - Multi-line text atom
-- [Select](../../atoms/Select/Select.tsx) - Dropdown selection atom
-- [Checkbox](../../atoms/Checkbox/Checkbox.tsx) - Checkbox atom
+- [Input](../../atoms/form/Input/Input.tsx) - Text input atom
+- [Textarea](../../atoms/form/Textarea/Textarea.tsx) - Multi-line text atom
+- [Select](../../atoms/form/Select/Select.tsx) - Dropdown selection atom
+- [Checkbox](../../atoms/form/Checkbox/Checkbox.tsx) - Checkbox atom
 - [Button](../../atoms/Button/Button.tsx) - Submit button atom
 - [FormField](../../molecules/FormField/FormField.tsx) - Field wrapper molecule
 

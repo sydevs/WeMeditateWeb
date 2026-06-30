@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { SocialIcon } from '../../atoms/SocialIcon'
+import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 
 export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**

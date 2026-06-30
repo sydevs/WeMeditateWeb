@@ -3,7 +3,7 @@ import { TableOfContents } from './TableOfContents'
 import { StoryWrapper, StorySection } from '../../../ladle'
 
 export default {
-  title: 'Molecules / Display',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 /**

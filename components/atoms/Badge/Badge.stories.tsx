@@ -14,7 +14,7 @@ import {
 } from '../../ladle';
 
 export default {
-  title: "Atoms / Specialty"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

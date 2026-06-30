@@ -187,7 +187,7 @@ Atoms are the foundational elements. Examples for wemeditate.com:
 - `Image` - Responsive image with loading states
 - `Divider` - Horizontal rules, leaf decorations
 
-**SVG Components (components/atoms/svgs/)**
+**SVG Components (components/atoms/graphics/svgs/)**
 - Standalone SVG graphics extracted into reusable components
 - Brand icons (LogoSvg, LeafSvg, AnimatedLogoSvg)
 - Illustrations (HeaderIllustrationSvg)
@@ -317,7 +317,7 @@ components/atoms/Button/
 
 ### SVG Components
 
-All standalone SVG graphics should be extracted into reusable components in the `components/atoms/svgs/` directory:
+All standalone SVG graphics should be extracted into reusable components in the `components/atoms/graphics/svgs/` directory:
 
 **Naming Convention**: Suffix with "Svg" (e.g., `LogoSvg`, `LeafSvg`, `TriangleDecorationSvg`)
 

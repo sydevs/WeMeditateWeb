@@ -3,7 +3,7 @@ import { FooterLinkList } from './FooterLinkList'
 import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
-  title: 'Molecules / Display',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 const sampleLinks = [

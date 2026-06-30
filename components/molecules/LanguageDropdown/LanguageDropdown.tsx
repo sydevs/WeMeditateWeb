@@ -1,5 +1,5 @@
 import { Dropdown } from '../../atoms/Dropdown'
-import { LanguageFlag } from '../../atoms/LanguageFlag'
+import { LanguageFlag } from '../../atoms/graphics/LanguageFlag'
 import { Link } from '../../atoms/Link'
 import { GlobeAltIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { Icon } from '../../atoms/Icon'

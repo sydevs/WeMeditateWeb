@@ -11,16 +11,22 @@ input=$(cat)
 # Extract command from JSON input
 command=$(echo "$input" | grep -o '"command":"[^"]*"' | sed 's/"command":"//;s/"$//')
 
-# Patterns to detect secrets and sensitive operations
+# Patterns to detect secrets and sensitive operations.
+#
+# Named env-var tokens must be an actual assignment to a secret-like value
+# (NAME=<16+ token chars>) — a bare mention of the NAME in docs/.env.example
+# (e.g. "set SENTRY_AUTH_TOKEN in your env") is not a secret and is ignored.
+# The password rule requires a direct assignment whose value starts with an
+# alphanumeric, so masked UI placeholders like "••••••••" are not flagged.
 patterns=(
-  "AWS_SECRET_ACCESS_KEY"
-  "CLOUDFLARE_API_TOKEN"
-  "SENTRY_AUTH_TOKEN"
+  "AWS_SECRET_ACCESS_KEY[[:space:]]*[:=][[:space:]]*['\"]?[A-Za-z0-9_/+-]{16,}"
+  "CLOUDFLARE_API_TOKEN[[:space:]]*[:=][[:space:]]*['\"]?[A-Za-z0-9_/+-]{16,}"
+  "SENTRY_AUTH_TOKEN[[:space:]]*[:=][[:space:]]*['\"]?[A-Za-z0-9_/+-]{16,}"
   "-----BEGIN PRIVATE KEY-----"
   "-----BEGIN RSA PRIVATE KEY-----"
   "api[_-]?key.*=.*['\"][a-zA-Z0-9]{20,}['\"]"
   "secret.*=.*['\"][a-zA-Z0-9]{20,}['\"]"
-  "password.*=.*['\"][^'\"]{8,}['\"]"
+  "password['\"]?[[:space:]]*[:=][[:space:]]*['\"][A-Za-z0-9][^'\"]{7,}['\"]"
   "token.*=.*['\"][a-zA-Z0-9]{20,}['\"]"
 )
 
@@ -33,7 +39,7 @@ if echo "$command" | grep -qE "git\s+(commit|push|add)"; then
   while IFS= read -r file; do
     if [ -f "$CLAUDE_PROJECT_DIR/$file" ]; then
       for pattern in "${patterns[@]}"; do
-        if grep -qE "$pattern" "$CLAUDE_PROJECT_DIR/$file" 2>/dev/null; then
+        if grep -qE -- "$pattern" "$CLAUDE_PROJECT_DIR/$file" 2>/dev/null; then
           echo "{\"continue\": false, \"reason\": \"Security scan detected potential secret in $file. Please review and use environment variables for sensitive data.\"}"
           exit 2
         fi

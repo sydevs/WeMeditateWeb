@@ -13,7 +13,7 @@ import {
 } from '../../ladle'
 
 export default {
-  title: 'Atoms / Typography',
+  title: 'Atoms',
 } satisfies StoryDefault
 
 /**

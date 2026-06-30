@@ -3,7 +3,7 @@ import { Countdown } from "./Countdown";
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
-  title: "Atoms / Specialty"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

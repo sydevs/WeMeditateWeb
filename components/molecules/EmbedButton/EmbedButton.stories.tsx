@@ -5,7 +5,7 @@ import { EmbedButton } from './EmbedButton'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Molecules / Interactive',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 // Ladle is served from its own host, so pass an explicit origin to keep the

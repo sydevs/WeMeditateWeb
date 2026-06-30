@@ -1,5 +1,5 @@
 import { ComponentProps, ReactNode } from 'react'
-import { LeafSvg } from '../../atoms/svgs'
+import { LeafSvg } from '../../atoms/graphics/svgs'
 import {
   type AspectRatio,
   type ImageSize,

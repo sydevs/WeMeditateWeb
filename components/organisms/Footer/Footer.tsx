@@ -1,7 +1,7 @@
 import { FooterLinkList, FooterLink } from '../../molecules/FooterLinkList'
 import { LanguageDropdown, LanguageOption } from '../../molecules/LanguageDropdown'
-import { SocialIcon } from '../../atoms/SocialIcon'
-import { FloralDividerSvg } from '../../atoms/svgs'
+import { SocialIcon } from '../../atoms/graphics/SocialIcon'
+import { FloralDividerSvg } from '../../atoms/graphics/svgs'
 
 /**
  * A footer section with title and links

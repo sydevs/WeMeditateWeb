@@ -1,5 +1,5 @@
 import { ComponentProps, useEffect, useState } from 'react'
-import { AnimatedLogoSvg } from '../svgs/AnimatedLogoSvg'
+import { AnimatedLogoSvg } from '../graphics/svgs/AnimatedLogoSvg'
 import {
   type AspectRatio,
   type ImageSize,

@@ -5,7 +5,7 @@ import { StorySection, StoryWrapper } from '../../ladle'
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/solid'
 
 export default {
-  title: 'Atoms / Interactive',
+  title: 'Atoms',
 } satisfies StoryDefault
 
 /**

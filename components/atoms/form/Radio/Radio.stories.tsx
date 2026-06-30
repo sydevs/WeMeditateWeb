@@ -10,7 +10,7 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-} from '../../ladle';
+} from '../../../ladle';
 
 export default {
   title: "Atoms / Form"
