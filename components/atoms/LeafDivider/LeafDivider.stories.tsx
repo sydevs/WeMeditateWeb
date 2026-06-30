@@ -3,7 +3,7 @@ import { LeafDivider } from './LeafDivider'
 import { StoryWrapper, StorySection, StoryGrid } from '../../ladle'
 
 export default {
-  title: 'Atoms / Layout'
+  title: 'Atoms'
 } satisfies StoryDefault
 
 /**

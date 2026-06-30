@@ -5,7 +5,7 @@ import { StoryWrapper, StorySection } from '../../ladle'
 import { Checkbox } from '../../atoms'
 
 export default {
-  title: 'Molecules / Media',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 // Sample audio tracks for stories

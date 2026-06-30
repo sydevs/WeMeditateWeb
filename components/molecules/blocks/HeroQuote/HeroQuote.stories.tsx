@@ -3,7 +3,7 @@ import { HeroQuote } from './HeroQuote'
 import { StoryWrapper, StorySection } from '../../../ladle'
 
 export default {
-  title: 'Molecules / Display'
+  title: 'Molecules'
 } satisfies StoryDefault
 
 /**

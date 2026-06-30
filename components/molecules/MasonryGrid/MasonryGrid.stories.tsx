@@ -3,7 +3,7 @@ import { MasonryGrid, MasonryGridItem } from "./MasonryGrid";
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
-  title: "Molecules / Sections"
+  title: "Molecules"
 } satisfies StoryDefault;
 
 // Sample data based on Shri Mataji timeline from wemeditate.com

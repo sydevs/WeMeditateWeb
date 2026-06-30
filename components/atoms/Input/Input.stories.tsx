@@ -14,7 +14,7 @@ import {
 import { HeartIcon } from '@heroicons/react/24/outline';
 
 export default {
-  title: "Atoms / Form"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

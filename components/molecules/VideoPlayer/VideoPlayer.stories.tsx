@@ -3,7 +3,7 @@ import { VideoPlayer } from './VideoPlayer'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Molecules / Media',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 // Vidstack's public demo HLS stream + assets, so the player actually loads and

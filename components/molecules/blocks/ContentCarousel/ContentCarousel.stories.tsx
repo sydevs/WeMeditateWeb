@@ -3,7 +3,7 @@ import { ContentCarousel } from "./ContentCarousel";
 import { StoryWrapper, StorySection } from '../../../ladle';
 
 export default {
-  title: "Molecules / Sections"
+  title: "Molecules"
 } satisfies StoryDefault;
 
 // Sample meditation data - with play button, duration, title, and optional category badges (no description)

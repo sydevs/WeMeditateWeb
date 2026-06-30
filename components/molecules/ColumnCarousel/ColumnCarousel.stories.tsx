@@ -3,7 +3,7 @@ import { ColumnCarousel } from "./ColumnCarousel"
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Molecules / Sections"
+  title: "Molecules"
 } satisfies StoryDefault
 
 /**

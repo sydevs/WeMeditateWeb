@@ -9,7 +9,7 @@ import { AnimatedLogoSvg } from './AnimatedLogoSvg'
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
-  title: "Atoms / Media"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

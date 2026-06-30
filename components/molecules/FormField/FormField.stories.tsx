@@ -18,7 +18,7 @@ import {
 } from '../../ladle';
 
 export default {
-  title: "Molecules / Interactive"
+  title: "Molecules"
 } satisfies StoryDefault;
 
 /**

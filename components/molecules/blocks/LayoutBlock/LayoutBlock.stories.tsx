@@ -4,7 +4,7 @@ import { StoryWrapper, StorySection } from '../../../ladle'
 import type { LayoutItem } from '../../../../lib/cms-blocks'
 
 export default {
-  title: 'Molecules / Sections',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 const imageRef = (seed: string, alt: string): LayoutItem['image'] =>

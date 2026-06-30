@@ -13,7 +13,7 @@ import {
 } from '../../ladle';
 
 export default {
-  title: "Molecules / Display"
+  title: "Molecules"
 } satisfies StoryDefault;
 
 // Sample data for stories using picsum.photos

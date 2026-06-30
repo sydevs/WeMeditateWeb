@@ -3,7 +3,7 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { StoryWrapper, StorySection } from '../../ladle';
 
 export default {
-  title: "Atoms / Navigation"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

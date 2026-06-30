@@ -3,7 +3,7 @@ import { LanguageDropdown } from './LanguageDropdown'
 import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
-  title: 'Molecules / Interactive',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 const sampleLanguages = [

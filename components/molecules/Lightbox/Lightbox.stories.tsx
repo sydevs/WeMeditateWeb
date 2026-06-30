@@ -6,7 +6,7 @@ import { Button } from '../../atoms'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: 'Molecules / Media',
+  title: 'Molecules',
 } satisfies StoryDefault
 
 const single: LightboxSlide[] = [

@@ -3,7 +3,7 @@ import { Logo } from "./Logo";
 import { StoryWrapper, StorySection, StoryGrid, StoryGridHeader, StoryGridHeaderRow, StoryGridHeaderCell, StoryGridBody, StoryGridRow, StoryGridCell } from '../../ladle';
 
 export default {
-  title: "Atoms / Media"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**

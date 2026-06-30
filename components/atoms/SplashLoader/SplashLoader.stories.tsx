@@ -5,7 +5,7 @@ import { StoryWrapper, StorySection } from '../../ladle';
 import { Button } from '../Button';
 
 export default {
-  title: "Atoms / Feedback"
+  title: "Atoms"
 } satisfies StoryDefault;
 
 /**
