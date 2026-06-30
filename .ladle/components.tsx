@@ -16,12 +16,12 @@ const ladlePageContext = { isClientSide: true, locale: 'en' } as unknown as Page
 
 // The inline-size container makes `full-bleed` blocks (which size with `cqi`)
 // resolve to the Ladle story area instead of the whole window — so they don't
-// overflow under the sidebar. `overflowX: clip` contains decorative horizontal
-// bleed (e.g. OrnateTextBox's floral graphic) without creating a scroll container.
-// Inline styles (not Tailwind classes) because Tailwind doesn't scan `.ladle/`.
+// overflow under the sidebar. Inline style (not a Tailwind class) because Tailwind
+// doesn't scan `.ladle/`. No `overflowX: clip` here — it would clip ContentTextBox's
+// desktop overlap; blocks that bleed horizontally (OrnateTextBox) clip themselves.
 export const Provider: GlobalProvider = ({ children }) => (
   <VikeReactProviderPageContext pageContext={ladlePageContext}>
-    <div style={{ containerType: 'inline-size', overflowX: 'clip' }}>
+    <div style={{ containerType: 'inline-size' }}>
       <Suspense fallback={null}>{children}</Suspense>
     </div>
   </VikeReactProviderPageContext>

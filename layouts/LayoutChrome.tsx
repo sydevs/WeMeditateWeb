@@ -145,10 +145,12 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
       )}
 
       {/* `container-type: inline-size` makes `full-bleed` blocks size with `cqi`
-          relative to this window-width box (not the viewport — excludes scrollbar);
-          `overflow-x-clip` contains decorative horizontal bleed. The sticky nav
-          lives outside <main>, so this containment never touches it. */}
-      <main className="flex-1 @container overflow-x-clip">
+          relative to this window-width box (not the viewport — excludes scrollbar).
+          The sticky nav lives outside <main>, so this containment never touches it.
+          NB: no `overflow-x-clip` here — it would clip ContentTextBox's intentional
+          desktop overlap (negative `-ml-32`/`-mr-32` margins). Blocks that bleed
+          horizontally (OrnateTextBox) clip themselves instead. */}
+      <main className="flex-1 @container">
         <div className={`max-w-7xl mx-auto px-6 ${leadSplash ? 'pb-8' : 'py-8'}`}>{children}</div>
       </main>
 
