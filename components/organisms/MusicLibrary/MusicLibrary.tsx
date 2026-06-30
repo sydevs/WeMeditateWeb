@@ -45,6 +45,7 @@ export function MusicLibrary({
 
   const handleFilterClick = (filterId: string) => {
     const newFilter = selectedFilter === filterId ? null : filterId
+
     setSelectedFilter(newFilter)
     onFilterChange?.(newFilter)
   }
@@ -56,10 +57,7 @@ export function MusicLibrary({
   const currentTrack = tracks[currentTrackIndex]
 
   return (
-    <div
-      className={`w-full max-w-7xl mx-auto p-4 sm:p-6 ${className}`}
-      {...props}
-    >
+    <div className={`w-full max-w-7xl mx-auto p-4 sm:p-6 ${className}`} {...props}>
       {/* Mobile-First: 2-Column Layout (stacks on mobile) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column: Current Track Art + Player */}
@@ -67,11 +65,11 @@ export function MusicLibrary({
           {/* Current Track Thumbnail with Overlay */}
           <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg">
             <Image
-              src={currentTrack.thumbnailURL}
               alt={currentTrack.title}
-              className="w-full h-full"
               aspectRatio="square"
+              className="w-full h-full"
               placeholderVariant="primary"
+              src={currentTrack.thumbnailURL}
             />
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
@@ -81,10 +79,10 @@ export function MusicLibrary({
                 {currentTrack.title}
               </h3>
               <a
-                href={currentTrack.creditURL}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-sm text-white/90 hover:text-white truncate block mt-1"
+                href={currentTrack.creditURL}
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 {currentTrack.credit}
               </a>
@@ -93,11 +91,11 @@ export function MusicLibrary({
 
           {/* Audio Player */}
           <AudioPlayer
-            tracks={tracks}
-            initialTrackIndex={currentTrackIndex}
-            onTrackChange={setCurrentTrackIndex}
-            shuffle={true}
             disabledControls={['trackInfo']}
+            initialTrackIndex={currentTrackIndex}
+            shuffle={true}
+            tracks={tracks}
+            onTrackChange={setCurrentTrackIndex}
           />
         </div>
 
@@ -106,16 +104,16 @@ export function MusicLibrary({
           {/* Gradient background - extended above, below, and horizontally */}
           <div className="absolute -inset-6 bg-linear-to-r from-teal-100/50 to-transparent pointer-events-none -z-10" />
 
-          <div className="relative h-full p-6 sm:p-6 z-10">
+          <div className="relative h-full p-6 md:pr-10 z-10">
             <Playlist
-              title="Playlist"
-              tracks={tracks}
+              className="min-w-xs"
               currentTrackIndex={currentTrackIndex}
-              onTrackClick={handleTrackClick}
               filters={filters}
               selectedFilter={selectedFilter}
+              title="Playlist"
+              tracks={tracks}
               onFilterChange={handleFilterClick}
-              className="min-w-xs"
+              onTrackClick={handleTrackClick}
             />
           </div>
         </div>
