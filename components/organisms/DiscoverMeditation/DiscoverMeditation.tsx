@@ -122,7 +122,7 @@ function ActionItem({ href, locale, icon: Icon, title, subtitle }: ActionItemPro
       <div className="w-16 h-16 group-hover:scale-105 transition-transform">
         <Icon className="w-full h-full stroke-current stroke-[0.5]" />
       </div>
-      <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/40 backdrop-blur-xs">
+      <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/40 backdrop-blur-xs transition-colors duration-200 group-hover:bg-white/60">
         <span className="text-lg font-medium text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
           {title}
         </span>
