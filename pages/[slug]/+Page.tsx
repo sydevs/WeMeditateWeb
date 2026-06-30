@@ -14,7 +14,10 @@ export function Page() {
   const leadSplash = getLeadSplash(page.content)
 
   return (
-    <div className={`min-h-screen px-4 ${leadSplash ? 'pb-12' : 'py-12'}`}>
+    // Horizontal gutters now come from the Container inside PageTemplate/RichText,
+    // so no px here (avoids over-narrowing content). Drop the top padding when the
+    // page leads with a splash so the full-bleed hero sits flush at the top.
+    <div className={`min-h-screen ${leadSplash ? 'pb-12' : 'py-12'}`}>
       <PageTemplate page={page} />
     </div>
   )

@@ -9,9 +9,10 @@ export interface ContainerProps {
 
   /**
    * Maximum width variant
+   * - `prose`: readable article column (max-w-4xl, ~896px)
    * @default 'default'
    */
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default'
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default' | 'prose'
 
   /**
    * Center the container
@@ -60,6 +61,7 @@ export function Container({
     xl: 'max-w-screen-xl',
     '2xl': 'max-w-screen-2xl',
     full: 'max-w-full',
+    prose: 'max-w-4xl', // Readable article column (~896px)
     default: 'max-w-7xl', // Default max width (1280px)
   }
 

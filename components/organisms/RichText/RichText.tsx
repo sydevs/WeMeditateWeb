@@ -11,7 +11,7 @@ import {
   defaultJSXConverters,
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
-import { Blockquote, Image, Link } from '../../atoms'
+import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
@@ -327,13 +327,22 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
 
   // One provider per document: every gallery/upload image below shares a single
   // client-only lightbox overlay (the provider renders no DOM until one opens).
+  //
+  // The Container constrains non-full-bleed content to a readable column
+  // (max-w-4xl) with responsive gutters — owned here so it's consistent whether
+  // RichText is rendered inside a page template or standalone (e.g. a story).
+  // Full-bleed blocks (Splash, OrnateTextBox, SubtleSystem, ContentOverlay, wide
+  // uploads) escape it via the `full-bleed` cqi break-out, which resolves against
+  // the `@container` on <main> (the window) regardless of this Container.
   return (
     <LightboxProvider>
-      <LexicalRichText
-        className={className ?? ARTICLE_CLASS}
-        converters={converters}
-        data={content as unknown as LexicalEditorState}
-      />
+      <Container maxWidth="prose">
+        <LexicalRichText
+          className={className ?? ARTICLE_CLASS}
+          converters={converters}
+          data={content as unknown as LexicalEditorState}
+        />
+      </Container>
     </LightboxProvider>
   )
 }
