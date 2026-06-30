@@ -10,7 +10,7 @@
  */
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
-import { Button, Image } from '../../atoms'
+import { Button, Container, Image } from '../../atoms'
 import {
   ContentCard,
   ContentCarousel,
@@ -27,7 +27,9 @@ import {
   galleryImages,
   populatedImage,
   showcaseItems,
+  splashTheme,
   subtleSystemItems,
+  textColorToTheme,
   type ButtonBlockFields,
   type ContentIndexBlockFields,
   type ImageGalleryBlockFields,
@@ -52,6 +54,18 @@ export type BlockConverters = NonNullable<JSXConverters['blocks']>
  * intentionally omit it.
  */
 export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
+
+/**
+ * Width-escaping blocks break out of the article column to span the full content
+ * container via the `full-bleed` utility (see layouts/tailwind.css). `clear-both`
+ * keeps them clear of floated blockquotes; no `mx-auto` (full-bleed owns the
+ * horizontal margins).
+ *
+ * `FULL_BLEED_BLOCK` (OrnateTextBox, SubtleSystem) keeps vertical block spacing;
+ * `FULL_BLEED_SPLASH` drops it so a lead splash sits flush under the overlaid header.
+ */
+export const FULL_BLEED_BLOCK = 'full-bleed my-6 clear-both'
+export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
 
 export const blockConverters: BlockConverters = {
   // textbox → one of three organisms by the block's mode:
@@ -78,14 +92,14 @@ export const blockConverters: BlockConverters = {
       return (
         <ContentOverlay
           align={fields.textPosition ?? 'center'}
-          className={BLOCK_SPACING}
+          className={FULL_BLEED_BLOCK}
           ctaHref={ctaHref}
           ctaText={ctaText}
           imageAlt={img.alt}
           imageSrc={img.url}
           subtitle={subtitle}
           text={description}
-          theme={fields.textColor === 'light' ? 'dark' : 'light'}
+          theme={textColorToTheme(fields.textColor, 'light')}
           title={title}
         />
       )
@@ -99,6 +113,7 @@ export const blockConverters: BlockConverters = {
       ctaText,
       description,
       imageAlt: img.alt,
+      imageAspectRatio: img.aspectRatio,
       imageHeight: img.height,
       imageSrc: img.url,
       imageWidth: img.width,
@@ -107,9 +122,19 @@ export const blockConverters: BlockConverters = {
     }
 
     return fields.wisdomStyle ? (
-      <OrnateTextBox {...sideProps} />
+      // OrnateTextBox breaks out to full content width (later className wins over
+      // the spread BLOCK_SPACING).
+      <OrnateTextBox {...sideProps} className={FULL_BLEED_BLOCK} />
     ) : (
-      <ContentTextBox {...sideProps} align={fields.imagePosition} />
+      // ContentTextBox is wider than the readable body but capped (not full
+      // window): break out of the prose Container with full-bleed, then constrain
+      // to the Container `xl` width (6xl) with gutters. `className=""` drops the
+      // spread BLOCK_SPACING since the wrapper owns spacing/centering.
+      <div className={FULL_BLEED_BLOCK}>
+        <Container maxWidth="xl">
+          <ContentTextBox {...sideProps} align={fields.imagePosition} className="" />
+        </Container>
+      </div>
     )
   },
 
@@ -163,7 +188,7 @@ export const blockConverters: BlockConverters = {
     const group = `gallery-${String(blockId ?? images[0].url)}`
 
     return (
-      <div className={`${BLOCK_SPACING} columns-2 gap-3 sm:columns-3 *:mb-3`}>
+      <div className={`${BLOCK_SPACING} columns-2 gap-3 lg:columns-3 *:mb-3`}>
         {images.map((img, index) => (
           <Image
             key={`${img.url}-${index}`}
@@ -173,7 +198,7 @@ export const blockConverters: BlockConverters = {
             lightboxGroup={group}
             lightboxIndex={index}
             rounded="rounded"
-            sizes="(max-width: 640px) 50vw, 33vw"
+            sizes="(max-width: 1024px) 50vw, 33vw"
             src={img.url}
           />
         ))}
@@ -236,7 +261,7 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    return <SubtleSystem className={BLOCK_SPACING} items={items} />
+    return <SubtleSystem className={FULL_BLEED_BLOCK} items={items} />
   },
 
   // splash → full-bleed Splash. The block's countdown/app/map-search layouts
@@ -254,11 +279,13 @@ export const blockConverters: BlockConverters = {
     return (
       <Splash
         backgroundImage={bg.url}
-        className={BLOCK_SPACING}
+        // Full-bleed and flush: a lead splash sits at the top of the page under
+        // the overlaid header (see LayoutChrome / getLeadSplash).
+        className={FULL_BLEED_SPLASH}
         ctaHref={fields.actionURL ?? undefined}
         ctaText={fields.actionText ?? undefined}
         subtitle={fields.subtitle ?? undefined}
-        theme="dark"
+        theme={splashTheme(fields.textColor)}
         title={fields.title ?? undefined}
       />
     )
@@ -276,7 +303,7 @@ export const blockConverters: BlockConverters = {
     }
 
     return (
-      <div className={`${BLOCK_SPACING} grid grid-cols-2 gap-4 sm:grid-cols-3`}>
+      <div className={`${BLOCK_SPACING} grid grid-cols-2 gap-4 lg:grid-cols-3`}>
         {items.map(({ id, ...card }) => (
           <ContentCard key={id} {...card} />
         ))}

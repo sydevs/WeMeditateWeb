@@ -3,8 +3,6 @@ import {
   useFloating,
   autoUpdate,
   offset,
-  flip,
-  shift,
   useHover,
   useClick,
   useDismiss,
@@ -62,10 +60,13 @@ export function HeaderNavDropdown({
     open: isOpen,
     onOpenChange: setIsOpen,
     placement: 'bottom',
+    // Fixed + no transform so we can keep Floating UI's vertical placement (below
+    // the nav, tracking the sticky state) while pinning the panel to the viewport
+    // horizontally — its inner max-w-7xl box then centers to the page content area.
+    strategy: 'fixed',
+    transform: false,
     whileElementsMounted: autoUpdate,
-    // Open flush below the nav; flip/shift keep the wide panel on-screen in both
-    // the static and the scroll-sticky nav states.
-    middleware: [offset(0), flip({ padding: 8 }), shift({ padding: 8 })],
+    middleware: [offset(0)],
   })
 
   const hover = useHover(context, { handleClose: safePolygon() })
@@ -99,7 +100,15 @@ export function HeaderNavDropdown({
         <FloatingPortal>
           <div
             ref={refs.setFloating}
-            style={floatingStyles}
+            // `left:0; right:0` (not `width:100vw`) spans the viewport content area
+            // excluding the scrollbar, so the open panel never adds a horizontal
+            // scrollbar; the inner max-w-7xl box still centers to the content area.
+            style={{
+              position: floatingStyles.position,
+              top: floatingStyles.top,
+              left: 0,
+              right: 0,
+            }}
             {...getFloatingProps()}
             className="z-50"
           >

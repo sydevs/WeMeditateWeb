@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, Image } from '../../atoms'
+import { Button, Container, Image } from '../../atoms'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**
@@ -125,11 +125,58 @@ export function ContentOverlay({
     center: 'md:mx-auto md:text-center',
   }
 
-  // Max width classes - 50% on lg+ for non-box variants
-  const maxWidthClasses = variant === 'box' ? 'max-w-md lg:max-w-lg' : 'max-w-md lg:max-w-[50%]'
+  // Outer positioning zone — up to 50% of the overlay on lg+ for non-box. The
+  // readable text width inside is capped by a Container (lg) below.
+  const maxWidthClasses = variant === 'box' ? 'max-w-lg' : 'max-w-lg lg:max-w-[50%]'
+
+  // Position the readable Container within the zone to match the alignment.
+  const innerAlign = { left: '', right: 'md:ml-auto', center: 'md:mx-auto' }[align]
+
+  // Desktop overlay content (header + body + CTA). Reused inside the readable
+  // Container for non-box variants, or directly for `box` (already a card).
+  const desktopContent = (
+    <>
+      <div className="mb-7 flex flex-col gap-1.5">
+        <h2
+          className={`text-xl md:text-2xl font-semibold tracking-wide ${textColorClass} ${textShadowClass}`}
+        >
+          {title}
+        </h2>
+        {subtitle && (
+          <p className={`text-base md:text-lg font-light ${textColorClass} ${textShadowClass}`}>
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      <div
+        className={`text-base md:text-lg font-medium leading-relaxed ${textColorClass} ${textShadowClass}`}
+      >
+        {textParagraphs.map((paragraph, index) => (
+          <p key={index} className={index < textParagraphs.length - 1 ? 'mb-4' : ''}>
+            {paragraph}
+          </p>
+        ))}
+      </div>
+
+      {ctaText && ctaHref && (
+        <div className="mt-6">
+          <Button
+            className={buttonClassName}
+            href={ctaHref}
+            size="md"
+            theme={theme}
+            variant={buttonVariant}
+          >
+            {ctaText}
+          </Button>
+        </div>
+      )}
+    </>
+  )
 
   return (
-    <div className={`w-full ${className}`} {...props}>
+    <div className={className} {...props}>
       {/* Mobile: Stacked layout - no variant or theme styling */}
       <div className="flex flex-col gap-6 md:hidden">
         {/* Image on top */}
@@ -174,45 +221,15 @@ export function ContentOverlay({
 
         {/* Content Overlay */}
         <div className="relative h-full flex items-center md:px-8 lg:px-24">
-          {/* Content Box - 50% max-width on lg+ for non-box variants */}
+          {/* Positioning zone (up to 50%); the readable text is capped by the
+              Container inside (non-box). The box variant is already a constrained card. */}
           <div className={`${maxWidthClasses} ${alignmentClasses[align]} ${boxClasses}`}>
-            <div className="mb-7 flex flex-col gap-1.5">
-              <h2
-                className={`text-xl md:text-2xl font-semibold tracking-wide ${textColorClass} ${textShadowClass}`}
-              >
-                {title}
-              </h2>
-              {subtitle && (
-                <p
-                  className={`text-base md:text-lg font-light ${textColorClass} ${textShadowClass}`}
-                >
-                  {subtitle}
-                </p>
-              )}
-            </div>
-
-            <div
-              className={`text-base md:text-lg font-medium leading-relaxed ${textColorClass} ${textShadowClass}`}
-            >
-              {textParagraphs.map((paragraph, index) => (
-                <p key={index} className={index < textParagraphs.length - 1 ? 'mb-4' : ''}>
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-
-            {ctaText && ctaHref && (
-              <div className="mt-6">
-                <Button
-                  className={buttonClassName}
-                  href={ctaHref}
-                  size="md"
-                  theme={theme}
-                  variant={buttonVariant}
-                >
-                  {ctaText}
-                </Button>
-              </div>
+            {variant === 'box' ? (
+              desktopContent
+            ) : (
+              <Container center={false} className={innerAlign} maxWidth="lg">
+                {desktopContent}
+              </Container>
             )}
           </div>
         </div>

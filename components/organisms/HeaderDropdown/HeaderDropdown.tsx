@@ -46,7 +46,7 @@ export function HeaderDropdown({
   useEffect(() => {
     if (featuredArticles.length > 2) {
       console.warn(
-        `HeaderDropdown: Only 2 featured articles are allowed. Received ${featuredArticles.length}. Extra articles will be truncated.`
+        `HeaderDropdown: Only 2 featured articles are allowed. Received ${featuredArticles.length}. Extra articles will be truncated.`,
       )
     }
   }, [featuredArticles.length])
@@ -55,7 +55,7 @@ export function HeaderDropdown({
 
   return (
     <div
-      className={`bg-gray-100 max-w-7xl mx-auto relative px-16 pb-12 overflow-hidden ${className}`}
+      className={`bg-gray-100 max-w-7xl mx-auto relative px-6 pb-12 overflow-hidden ${className}`}
       {...props}
     >
       {/* Background Logo - scaled 2x, top-left quadrant visible */}
@@ -72,9 +72,7 @@ export function HeaderDropdown({
         <div className="flex flex-col">
           {/* Title - Fixed Height */}
           <div className="h-20 py-4 flex items-center">
-            <h3 className="text-xl font-semibold text-gray-700 line-clamp-2">
-              {title}
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-700 line-clamp-2">{title}</h3>
           </div>
 
           {/* Links Section */}
@@ -83,10 +81,10 @@ export function HeaderDropdown({
               {links.map((link, index) => (
                 <li key={index}>
                   <Link
-                    href={link.href}
-                    variant="neutral"
-                    size="base"
                     className="hover:text-teal-600 transition-colors"
+                    href={link.href}
+                    size="base"
+                    variant="neutral"
                   >
                     {link.label}
                   </Link>
@@ -125,9 +123,9 @@ function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColum
       {/* Article Title - Fixed Height */}
       <div className="h-20 py-4 flex items-center">
         <Link
+          className="hover:text-teal-600 transition-colors line-clamp-3 text-sm"
           href={article.href}
           variant="neutral"
-          className="hover:text-teal-600 transition-colors line-clamp-3 text-sm"
         >
           {article.title}
         </Link>
@@ -136,18 +134,18 @@ function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColum
       {/* Article Thumbnail with Hover Overlay */}
       <div>
         <Link
+          className="relative block aspect-square overflow-hidden"
           href={article.href}
           variant="unstyled"
-          className="relative block aspect-square overflow-hidden"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           <Image
-            src={article.image}
             alt={article.imageAlt}
             aspectRatio="square"
-            objectFit="cover"
             className="w-full h-full"
+            objectFit="cover"
+            src={article.image}
           />
 
           {/* Hover Overlay */}

@@ -2,12 +2,21 @@ import { describe, it, expect } from 'vitest'
 import {
   contentIndexCard,
   galleryImages,
+  getLeadSplash,
+  leadSplashFromRouteData,
   isExternalUrl,
   populatedImage,
   showcaseItems,
+  splashTheme,
   subtleSystemItems,
+  textColorToTheme,
   type ShowcaseItem,
 } from './cms-blocks'
+import type { Page } from '../server/cms-types'
+
+/** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
+const leadContent = (firstBlock?: Record<string, unknown>) =>
+  ({ root: { children: firstBlock ? [firstBlock] : [] } }) as unknown as Page['content']
 
 /** A populated Cloudflare image (1600×900 ≈ 16:9 → `video`). */
 const cfImage = (over: Record<string, unknown> = {}) => ({
@@ -148,5 +157,80 @@ describe('isExternalUrl', () => {
     expect(isExternalUrl('http://example.com')).toBe(true)
     expect(isExternalUrl('/about')).toBe(false)
     expect(isExternalUrl('#anchor')).toBe(false)
+  })
+})
+
+describe('textColorToTheme', () => {
+  it('inverts textColor and falls back when absent', () => {
+    // The inversion is fixed; only the fallback for absent values varies per caller.
+    expect(textColorToTheme('dark', 'light')).toBe('light')
+    expect(textColorToTheme('light', 'dark')).toBe('dark')
+    expect(textColorToTheme('dark', 'dark')).toBe('light') // explicit value wins over fallback
+    expect(textColorToTheme(undefined, 'light')).toBe('light')
+    expect(textColorToTheme(null, 'dark')).toBe('dark')
+  })
+})
+
+describe('splashTheme', () => {
+  it('inverts textColor → background theme, defaulting to dark', () => {
+    // textColor describes the *text*; theme describes the *background* (they invert).
+    expect(splashTheme('dark')).toBe('light')
+    expect(splashTheme('light')).toBe('dark')
+    // Absent/null → dark (the splash's historical hardcoded treatment).
+    expect(splashTheme(undefined)).toBe('dark')
+    expect(splashTheme(null)).toBe('dark')
+  })
+})
+
+describe('getLeadSplash', () => {
+  const splashBlock = (textColor?: 'dark' | 'light') => ({
+    type: 'block',
+    fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
+  })
+
+  it('returns the derived theme when content leads with a splash block', () => {
+    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ theme: 'dark' })
+    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({ theme: 'light' })
+    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({ theme: 'dark' })
+  })
+
+  it('returns null when the first block is not a splash', () => {
+    expect(getLeadSplash(leadContent({ type: 'block', fields: { blockType: 'quote' } }))).toBeNull()
+  })
+
+  it('returns null when the first child is not a block, or content is empty', () => {
+    expect(getLeadSplash(leadContent({ type: 'paragraph' }))).toBeNull()
+    expect(getLeadSplash(leadContent())).toBeNull()
+    expect(getLeadSplash(undefined as unknown as Page['content'])).toBeNull()
+  })
+})
+
+describe('leadSplashFromRouteData', () => {
+  const splashPage = (textColor?: 'dark' | 'light') => ({
+    content: leadContent({
+      type: 'block',
+      fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
+    }),
+  })
+
+  it('reads page content on content routes ([slug])', () => {
+    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ theme: 'light' })
+  })
+
+  it('reads initialData content on a pages preview', () => {
+    expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
+      theme: 'dark',
+    })
+  })
+
+  it('ignores initialData for non-page previews (meditations/lectures)', () => {
+    expect(
+      leadSplashFromRouteData({ collection: 'meditations', initialData: splashPage() }),
+    ).toBeNull()
+  })
+
+  it('returns null without a lead splash or data', () => {
+    expect(leadSplashFromRouteData(undefined)).toBeNull()
+    expect(leadSplashFromRouteData({})).toBeNull()
   })
 })

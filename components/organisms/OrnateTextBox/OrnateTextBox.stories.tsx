@@ -16,6 +16,7 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Default">
       <OrnateTextBox
+        className="full-bleed"
         description={
           "In every culture and religion, one can find great tales of the immense power of a mother's love and the lengths that she will go to in order to protect her children. It is this deep sense of love which gives a child security in their heart and removes their fears.\n\n" +
           'In Hinduism, the goddess Durga is the great warrior mother who defeats all the enemies of her children. A fearsome, yet extremely compassionate figure who rides on a tiger yielding great weapons with her many arms, she fights tirelessly to free her children from the evils of ego, fears and desires.\n\n' +
@@ -35,6 +36,7 @@ export const Default: Story = () => (
       title="With Subtitle & CTA"
     >
       <OrnateTextBox
+        className="full-bleed"
         ctaHref="#"
         ctaText="Read more"
         description="For thousands of years, seekers have turned inward to discover a deeper truth. This knowledge, passed down through generations, remains as relevant today as it ever was."
@@ -49,6 +51,7 @@ export const Default: Story = () => (
 
     <StorySection inContext={true} title="Without CTA or Subtitle">
       <OrnateTextBox
+        className="full-bleed"
         description="While the stories recounted in sacred texts do not resemble the modern world, we all still fight our own battles daily. With the motherly love of our Kundalini we are empowered to overcome our inner demons."
         imageAlt="Meditative scene"
         imageHeight={900}

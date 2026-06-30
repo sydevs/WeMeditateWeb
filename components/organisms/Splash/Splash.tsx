@@ -49,7 +49,7 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
 
 /**
  * Full-screen splash section with background image, centered content, and decorative leaves.
- * Reserves 234px at top for Header overlay.
+ * Reserves 240px (pt-60) at top for the overlaid Header.
  *
  * @example
  * <Splash
@@ -89,9 +89,9 @@ export function Splash({
     >
       {/* Background Image */}
       <div
+        aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${resolvedBackgroundImage})` }}
-        aria-hidden="true"
       />
 
       {/* Content Container */}
@@ -108,7 +108,9 @@ export function Splash({
 
           {/* Subtitle */}
           {subtitle && (
-            <p className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} ${textColor}`}>
+            <p
+              className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} ${textColor}`}
+            >
               {subtitle}
             </p>
           )}
@@ -119,25 +121,19 @@ export function Splash({
           {/* Call-to-Action with Decorative Leaves */}
           {ctaText && ctaHref && (
             <a
-              href={ctaHref}
               className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light ${textColor} transition-transform hover:scale-105 ${
                 pulsate ? 'animate-pulse-scale' : ''
               }`}
+              href={ctaHref}
             >
               {/* Left Leaf (rotated outward) */}
-              <LeafSvg
-                className="w-16 h-16 -rotate-90"
-                aria-hidden="true"
-              />
+              <LeafSvg aria-hidden="true" className="w-16 h-16 -rotate-90" />
 
               {/* CTA Text */}
               <span>{ctaText}</span>
 
               {/* Right Leaf (rotated outward) */}
-              <LeafSvg
-                className="w-16 h-16 rotate-90"
-                aria-hidden="true"
-              />
+              <LeafSvg aria-hidden="true" className="w-16 h-16 rotate-90" />
             </a>
           )}
         </div>

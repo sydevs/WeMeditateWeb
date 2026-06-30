@@ -11,7 +11,7 @@ import {
   defaultJSXConverters,
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
-import { Blockquote, Image, Link } from '../../atoms'
+import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
@@ -183,6 +183,9 @@ const CONVERTERS: JSXConverters = {
       | { caption?: unknown; align?: string | null; alt?: string | null }
       | undefined
     const caption = renderCaption(fields?.caption)
+    // `wide` images break out to the full content width: no rounding (they meet the
+    // edges) and a full-width `sizes` hint so the browser fetches a large variant.
+    const isWide = fields?.align === 'wide'
 
     return (
       <figure className={uploadFigureClass(fields?.align)}>
@@ -191,8 +194,8 @@ const CONVERTERS: JSXConverters = {
           aspectRatio={nearestAspectRatio(image.width, image.height)}
           height={image.height ?? undefined}
           lightboxGroup={`upload-${image.url}`}
-          rounded="rounded"
-          sizes={ARTICLE_IMAGE_SIZES}
+          rounded={isWide ? 'none' : 'rounded'}
+          sizes={isWide ? '100vw' : ARTICLE_IMAGE_SIZES}
           src={image.url}
           width={image.width ?? undefined}
         />
@@ -324,13 +327,23 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
 
   // One provider per document: every gallery/upload image below shares a single
   // client-only lightbox overlay (the provider renders no DOM until one opens).
+  //
+  // The Container constrains non-full-bleed content to a readable column
+  // (max-w-4xl) with responsive gutters — owned here so it's consistent whether
+  // RichText is rendered inside a page template or standalone (e.g. a story).
+  // Full-bleed blocks (Splash, OrnateTextBox, SubtleSystem, ContentOverlay, wide
+  // uploads) escape it via the `full-bleed` break-out, which spans `--page-width`
+  // (the content-area width captured on <main>'s wrapper) regardless of this
+  // Container or any nested `@container`.
   return (
     <LightboxProvider>
-      <LexicalRichText
-        className={className ?? ARTICLE_CLASS}
-        converters={converters}
-        data={content as unknown as LexicalEditorState}
-      />
+      <Container maxWidth="md">
+        <LexicalRichText
+          className={className ?? ARTICLE_CLASS}
+          converters={converters}
+          data={content as unknown as LexicalEditorState}
+        />
+      </Container>
     </LightboxProvider>
   )
 }

@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useMemo, useState } from 'react'
+import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react'
 import { Placeholder } from '../Placeholder'
 import { Icon } from '../Icon'
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
@@ -46,6 +46,17 @@ export interface ImageProps extends ComponentProps<'img'> {
   aspectRatio?: AspectRatio
 
   /**
+   * When an `aspectRatio` is set, also crop the layout to a fixed box of that
+   * ratio (the `<img>` fills it via `absolute inset-0` + `object-fit`). The
+   * aspect ratio is still used to pick an optimized Cloudflare variant + srcset
+   * either way. Set `false` to keep the `<img>` in natural document flow (sized
+   * by its intrinsic `width`/`height`) while still fetching an optimized
+   * variant — used by feature blocks that render at the image's own ratio.
+   * @default true
+   */
+  forceAspectRatio?: boolean
+
+  /**
    * Size tier used to pick a Cloudflare Images variant and generate srcset.
    * Ignored for non-Cloudflare URLs.
    * @default 'medium'
@@ -74,7 +85,7 @@ export interface ImageProps extends ComponentProps<'img'> {
    * Border radius style
    * @default 'square'
    */
-  rounded?: 'square' | 'rounded' | 'circle'
+  rounded?: 'none' | 'square' | 'rounded' | 'circle'
 
   /**
    * Show loading state
@@ -153,6 +164,7 @@ export function Image({
   width,
   height,
   aspectRatio,
+  forceAspectRatio = true,
   size = 'medium',
   responsive = true,
   objectFit = 'cover',
@@ -169,6 +181,7 @@ export function Image({
 }: ImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const imgRef = useRef<HTMLImageElement>(null)
 
   const lightbox = useLightbox()
 
@@ -202,15 +215,50 @@ export function Image({
     }
   }, [src, aspectRatio, size, responsive])
 
-  const aspectRatioStyles = aspectRatio
-    ? {
-        square: 'aspect-square',
-        video: 'aspect-video',
-        '4-3': 'aspect-[4/3]',
-        '3-2': 'aspect-[3/2]',
-        ultrawide: 'aspect-[21/9]',
-      }[aspectRatio]
-    : ''
+  // Reset loading/error state when the resolved src changes in place (a
+  // persistent <Image> whose `src` prop mutates, e.g. the AudioPlayer now-playing
+  // thumbnail on track switch). React's "adjust state during render" pattern runs
+  // before paint, so the new image shows its placeholder instead of briefly
+  // flashing the previous (or a stuck error) state; the effect below then clears
+  // `isLoading` immediately if the new src is already cached.
+  const [loadedSrc, setLoadedSrc] = useState(imageSrc)
+
+  if (imageSrc !== loadedSrc) {
+    setLoadedSrc(imageSrc)
+    setIsLoading(true)
+    setHasError(false)
+  }
+
+  // A cached image can already be `complete` before React attaches `onLoad`, so
+  // the load event never reaches our handler and `isLoading` stays stuck `true`
+  // (placeholder lingers, image held at opacity-0). Effects don't run during SSR,
+  // so on mount — and whenever the resolved src changes — re-check `complete` and
+  // clear the loading state for an already-decoded image. `naturalWidth > 0`
+  // excludes broken images so `onError` still owns the error path.
+  useEffect(() => {
+    const img = imgRef.current
+
+    if (img?.complete && img.naturalWidth > 0) {
+      setIsLoading(false)
+    }
+  }, [imageSrc, imageSrcSet])
+
+  // `aspectRatio` always drives Cloudflare variant/srcset selection (above), but
+  // only constrains the layout to a fixed-ratio box when `forceAspectRatio`
+  // is set (the default). Natural-flow callers pass `forceAspectRatio=false`
+  // to render the image at its own ratio while still fetching an optimized variant.
+  const boxed = Boolean(aspectRatio) && forceAspectRatio
+
+  const aspectRatioStyles =
+    boxed && aspectRatio
+      ? {
+          square: 'aspect-square',
+          video: 'aspect-video',
+          '4-3': 'aspect-[4/3]',
+          '3-2': 'aspect-[3/2]',
+          ultrawide: 'aspect-[21/9]',
+        }[aspectRatio]
+      : ''
 
   const objectFitStyles = {
     cover: 'object-cover',
@@ -220,6 +268,7 @@ export function Image({
   }[objectFit]
 
   const roundedStyles = {
+    none: '',
     square: 'rounded-xs',
     rounded: 'rounded-lg',
     circle: 'rounded-full',
@@ -236,25 +285,23 @@ export function Image({
     onError?.(e)
   }
 
-  const containerClasses = aspectRatio
-    ? `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
-    : `relative ${roundedStyles} overflow-hidden`
+  // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
+  const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
-    aspectRatio ? 'absolute inset-0 w-full h-full' : ''
+    boxed ? 'absolute inset-0 w-full h-full' : ''
   } transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} ${className}`
 
   const content = (
     <>
-      {/* Always show Placeholder when loading or error */}
+      {/* Loading/error overlay. It's always positioned `absolute inset-0` to fill
+          the container the image occupies, so it must NOT take explicit pixel
+          dimensions — passing the intrinsic width/height here would size the
+          overlay to the raw image and anchor it top-left, overflowing/clipping
+          instead of matching the rendered image box. The <img>'s own width/height
+          attributes reserve layout space and prevent shift. */}
       {showLoading && (isLoading || hasError) && (
-        <Placeholder
-          animate={!hasError}
-          className="absolute inset-0"
-          height={height}
-          variant={placeholderVariant}
-          width={width}
-        >
+        <Placeholder animate={!hasError} className="absolute inset-0" variant={placeholderVariant}>
           {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
         </Placeholder>
       )}
@@ -262,6 +309,7 @@ export function Image({
       {/* Image element (hidden until loaded, not rendered on error) */}
       {!hasError && (
         <img
+          ref={imgRef}
           alt={alt}
           className={imageClasses}
           height={height}

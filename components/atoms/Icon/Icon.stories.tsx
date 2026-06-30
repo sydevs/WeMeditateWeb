@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Icon } from "./Icon";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Icon } from './Icon'
 import {
   HeartIcon,
   StarIcon,
@@ -37,12 +37,12 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-  StoryWrapper
-} from '../../ladle';
+  StoryWrapper,
+} from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms / Graphics',
+} satisfies StoryDefault
 
 /**
  * Icon component showcasing all sizes, colors, common icons, and usage in context.
@@ -93,17 +93,17 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Outline</StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="primary" />
+              <Icon color="primary" icon={StarIcon} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="secondary" />
+              <Icon color="secondary" icon={StarIcon} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="neutral" />
+              <Icon color="neutral" icon={StarIcon} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
-                <Icon icon={StarIcon} size="lg" color="currentColor" />
+                <Icon color="currentColor" icon={StarIcon} size="lg" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -111,17 +111,17 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Solid</StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="primary" />
+              <Icon color="primary" icon={StarIconSolid} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="secondary" />
+              <Icon color="secondary" icon={StarIconSolid} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="neutral" />
+              <Icon color="neutral" icon={StarIconSolid} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
-                <Icon icon={StarIconSolid} size="lg" color="currentColor" />
+                <Icon color="currentColor" icon={StarIconSolid} size="lg" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -130,10 +130,10 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Dark Theme"
-      theme="dark"
       background="neutral"
       description="Lightened colors (teal-300, coral-300, white) for contrast on dark backgrounds"
+      theme="dark"
+      title="Dark Theme"
     >
       <StoryGrid>
         <StoryGridHeader>
@@ -149,17 +149,17 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Outline</StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="primary" theme="dark" />
+              <Icon color="primary" icon={StarIcon} size="lg" theme="dark" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="secondary" theme="dark" />
+              <Icon color="secondary" icon={StarIcon} size="lg" theme="dark" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIcon} size="lg" color="neutral" theme="dark" />
+              <Icon color="neutral" icon={StarIcon} size="lg" theme="dark" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
-                <Icon icon={StarIcon} size="lg" color="currentColor" theme="dark" />
+                <Icon color="currentColor" icon={StarIcon} size="lg" theme="dark" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -167,17 +167,17 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Solid</StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="primary" theme="dark" />
+              <Icon color="primary" icon={StarIconSolid} size="lg" theme="dark" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="secondary" theme="dark" />
+              <Icon color="secondary" icon={StarIconSolid} size="lg" theme="dark" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon icon={StarIconSolid} size="lg" color="neutral" theme="dark" />
+              <Icon color="neutral" icon={StarIconSolid} size="lg" theme="dark" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
-                <Icon icon={StarIconSolid} size="lg" color="currentColor" theme="dark" />
+                <Icon color="currentColor" icon={StarIconSolid} size="lg" theme="dark" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -291,7 +291,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-6">
         <StorySection title="Button with Icons" variant="subsection">
           <div className="flex flex-wrap gap-3">
@@ -313,19 +313,19 @@ export const Default: Story = () => (
         <StorySection title="List Items with Icons" variant="subsection">
           <ul className="space-y-3">
             <li className="flex items-center gap-3">
-              <Icon icon={CheckIcon} size="md" color="primary" />
+              <Icon color="primary" icon={CheckIcon} size="md" />
               <span className="text-gray-700">Reduce stress and anxiety</span>
             </li>
             <li className="flex items-center gap-3">
-              <Icon icon={CheckIcon} size="md" color="primary" />
+              <Icon color="primary" icon={CheckIcon} size="md" />
               <span className="text-gray-700">Improve focus and concentration</span>
             </li>
             <li className="flex items-center gap-3">
-              <Icon icon={CheckIcon} size="md" color="primary" />
+              <Icon color="primary" icon={CheckIcon} size="md" />
               <span className="text-gray-700">Enhance emotional well-being</span>
             </li>
             <li className="flex items-center gap-3">
-              <Icon icon={CheckIcon} size="md" color="primary" />
+              <Icon color="primary" icon={CheckIcon} size="md" />
               <span className="text-gray-700">Better sleep quality</span>
             </li>
           </ul>
@@ -334,14 +334,14 @@ export const Default: Story = () => (
         <StorySection title="Information Cards" variant="subsection">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 flex gap-3">
-              <Icon icon={InformationCircleIcon} size="lg" color="primary" />
+              <Icon color="primary" icon={InformationCircleIcon} size="lg" />
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">Beginner Friendly</h4>
                 <p className="text-sm text-gray-700">Perfect for those new to meditation</p>
               </div>
             </div>
             <div className="border border-coral-200 bg-coral-50 rounded-lg p-4 flex gap-3">
-              <Icon icon={ClockIcon} size="lg" color="secondary" />
+              <Icon color="secondary" icon={ClockIcon} size="lg" />
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">Quick Session</h4>
                 <p className="text-sm text-gray-700">Just 10 minutes a day</p>
@@ -353,15 +353,15 @@ export const Default: Story = () => (
         <StorySection title="Current Color on Dark Background" variant="subsection">
           <div className="bg-gray-800 rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3 text-white">
-              <Icon icon={HeartIcon} size="lg" color="currentColor" />
+              <Icon color="currentColor" icon={HeartIcon} size="lg" />
               <span>White icon inherits from parent text color</span>
             </div>
             <div className="flex items-center gap-3 text-teal-300">
-              <Icon icon={StarIcon} size="lg" color="currentColor" />
+              <Icon color="currentColor" icon={StarIcon} size="lg" />
               <span>Teal icon inherits custom color</span>
             </div>
             <div className="flex items-center gap-3 text-coral-300">
-              <Icon icon={PlayIcon} size="lg" color="currentColor" />
+              <Icon color="currentColor" icon={PlayIcon} size="lg" />
               <span>Coral icon inherits custom color</span>
             </div>
           </div>
@@ -371,5 +371,5 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
-Default.storyName = "Icon"
+)
+Default.storyName = 'Icon'

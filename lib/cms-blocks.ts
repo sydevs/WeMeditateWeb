@@ -95,6 +95,12 @@ export interface SplashBlockFields {
   subtitle?: string | null
   actionText?: string | null
   actionURL?: string | null
+  /**
+   * Describes the *text* color (dark/light), mirroring the `textbox` overlay
+   * convention. Not yet authored in the CMS (see SahajCloud ticket) — absent is
+   * treated as light text on a dark hero (`theme: 'dark'`).
+   */
+  textColor?: 'dark' | 'light' | null
 }
 
 /** `layout` — LayoutBlock item. */
@@ -193,6 +199,72 @@ export function galleryImages(images: ImageGalleryBlockFields['items']): Populat
   }
 
   return result
+}
+
+/**
+ * Invert a CMS `textColor` (which describes the *text*: dark/light) into a
+ * background-context `theme` — light text implies a dark background, and vice
+ * versa. When `textColor` is absent, fall back to `fallback`. Shared by the
+ * splash hero and the `textbox` overlay, which use this same inversion but
+ * differ only in their default.
+ */
+export function textColorToTheme(
+  textColor: 'dark' | 'light' | null | undefined,
+  fallback: 'light' | 'dark',
+): 'light' | 'dark' {
+  if (textColor === 'dark') return 'light'
+  if (textColor === 'light') return 'dark'
+
+  return fallback
+}
+
+/**
+ * Derive a Splash background-context theme from its `textColor` field. Defaults
+ * to `'dark'` (light text over a dark hero) when the field is absent — the
+ * splash's historical hardcoded treatment.
+ */
+export function splashTheme(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
+  return textColorToTheme(textColor, 'dark')
+}
+
+/**
+ * When a page's content leads with a `splash` block, return its background-context
+ * theme; otherwise `null`. Shared by the layout (header overlay theme), the page
+ * wrappers (flush-to-top spacing) and PageTemplate (skipping the duplicate title).
+ */
+export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dark' } | null {
+  const first = content?.root?.children?.[0] as
+    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
+    | undefined
+
+  if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
+    return null
+  }
+
+  return { theme: splashTheme(first.fields.textColor) }
+}
+
+/**
+ * Resolve the lead splash from a layout route's data, whose shape differs by route:
+ * content routes ([slug]) carry the page as `page`; the live-preview route (/preview)
+ * carries the previewed document as `initialData` — only a `pages` preview has
+ * splash-leading content (meditation/lecture previews never do). Lets LayoutChrome
+ * apply the same overlaid-header treatment in preview as on the published page.
+ */
+export function leadSplashFromRouteData(
+  data:
+    | {
+        page?: Pick<Page, 'content'> | null
+        collection?: string
+        initialData?: Pick<Page, 'content'> | null
+      }
+    | null
+    | undefined,
+): { theme: 'light' | 'dark' } | null {
+  const content =
+    data?.page?.content ?? (data?.collection === 'pages' ? data?.initialData?.content : undefined)
+
+  return getLeadSplash(content)
 }
 
 /** Coerce a possibly-null/absent CMS text field to a string. */

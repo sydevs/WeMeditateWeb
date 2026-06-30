@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
-import { Button, Image } from '../../atoms'
+import { Button, Container, Image } from '../../atoms'
+import type { AspectRatio } from '../../../lib/cloudflare-images'
 import ornateBackground from '../../../assets/ornate.svg'
 
 export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
@@ -50,6 +51,14 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   imageHeight?: number
 
   /**
+   * Nearest configured Cloudflare aspect ratio for the image. When set (and the
+   * `imageSrc` is a Cloudflare URL), an optimized variant + srcset is fetched
+   * instead of the full-resolution original. The image still renders at its
+   * natural ratio (the ratio only selects the variant, not a cropping box).
+   */
+  imageAspectRatio?: AspectRatio
+
+  /**
    * Decorative vertical label along the outer edge (desktop only). Purely
    * ornamental. @default 'Ancient Wisdom'
    */
@@ -94,6 +103,7 @@ export function OrnateTextBox({
   imageAlt,
   imageWidth,
   imageHeight,
+  imageAspectRatio,
   sidetext = 'Ancient Wisdom',
   className = '',
   ...props
@@ -102,22 +112,33 @@ export function OrnateTextBox({
 
   return (
     <div
-      className={`relative isolate flex min-h-[80vh] w-full items-center bg-[linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)] text-white ${className}`}
+      className={`relative flex min-h-[80vh] items-center overflow-x-clip text-white ${className}`}
       {...props}
     >
+      {/* Brown ground — the OrnateTextBox background, furthest back (-z-20). A
+          separate layer (not the root's bg) so the gradient below can sit ABOVE it
+          while still being negative-z. NB: no `isolate` on the root, so the
+          negative-z layers participate in the page stacking context and render
+          behind other blocks' text where the gradient bleeds above this block. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-20 bg-[linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)]"
+      />
+
       {/* Large faded floral graphic, offset ~45% to the right, behind content */}
       <img
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-[45%] z-0 h-full w-[80%] object-cover object-left opacity-40"
+        className="pointer-events-none absolute inset-y-0 left-[45%] -z-10 h-full w-[80%] object-cover object-left opacity-40"
         src={ornateBackground}
       />
 
-      {/* Soft warm gradient lightening the left edge — extends above the block
-          (the gradient--ornate ::before). */}
+      {/* Soft warm gradient lightening the left edge — extends above the block (the
+          gradient--ornate ::before). Negative z so it sits over the brown ground
+          but behind text from the block above. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 bottom-0 left-0 z-0 w-1/3 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]"
+        className="pointer-events-none absolute -top-24 bottom-0 left-0 -z-10 w-1/3 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]"
       />
 
       {/* Decorative vertical sidetext label (desktop only, single line) */}
@@ -130,9 +151,11 @@ export function OrnateTextBox({
         </span>
       )}
 
-      {/* Content. Asymmetric desktop padding insets the column and reserves the
-          sidetext side. */}
-      <div className="relative z-10 mx-auto w-full max-w-[2000px] px-8 py-12 lg:py-20 lg:pl-[11%] lg:pr-[16%]">
+      {/* Content — capped to a readable width via a Container (the brown ground,
+          floral graphic and gradient stay full-bleed behind it). On lg+ the
+          centered container's right margin can shrink to where the sidetext sits,
+          so reserve a right gutter (lg:pr-24) to keep the body clear of it. */}
+      <Container className="relative z-10 py-12 lg:py-20 lg:pr-24" maxWidth="md">
         {/* Title + subtitle header, above the body */}
         <div className="mb-8 lg:mb-6">
           <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
@@ -143,9 +166,12 @@ export function OrnateTextBox({
         <div className="mb-6 w-full lg:float-left lg:mr-12 lg:mb-4 lg:w-[44%]">
           <Image
             alt={imageAlt}
+            aspectRatio={imageAspectRatio}
             className="w-full"
+            forceAspectRatio={false}
             height={imageHeight}
             objectFit="cover"
+            sizes="(max-width: 1024px) 100vw, 400px"
             src={imageSrc}
             width={imageWidth}
           />
@@ -170,7 +196,7 @@ export function OrnateTextBox({
             </Button>
           )}
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

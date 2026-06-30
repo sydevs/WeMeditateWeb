@@ -525,8 +525,9 @@ const pageContent = editorState(
 
 /**
  * Full-page simulation of every RichText node and custom block at maximal
- * configuration. Rendered full-bleed (no padding/max-width) so it fills the
- * available space.
+ * configuration. RichText constrains non-full-bleed content to a readable column
+ * via its own Container; full-bleed blocks (Splash, OrnateTextBox, SubtleSystem,
+ * ContentOverlay, wide uploads) break out to the story-canvas edges.
  */
 export const Default: Story = () => <RichText debug content={pageContent} />
 

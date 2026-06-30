@@ -70,7 +70,10 @@ export function SubtleSystem({
    */
   const isNested = useCallback((current: string | null, target: string) => {
     if (!current) return false
-    const nestedGroup = NESTED_CHAKRAS[target as keyof typeof NESTED_CHAKRAS] as readonly string[] | undefined
+    const nestedGroup = NESTED_CHAKRAS[target as keyof typeof NESTED_CHAKRAS] as
+      | readonly string[]
+      | undefined
+
     return nestedGroup?.includes(current) ?? false
   }, [])
 
@@ -90,23 +93,26 @@ export function SubtleSystem({
   /**
    * Handle node hover with timing delay for nested elements
    */
-  const handleNodeHover = useCallback((nodeId: string) => {
-    if (nodeId === activeNode) return
+  const handleNodeHover = useCallback(
+    (nodeId: string) => {
+      if (nodeId === activeNode) return
 
-    // Clear any existing timeout
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
+      // Clear any existing timeout
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
 
-    // Determine delay time for nested chakras
-    const delay = isNested(activeNode, nodeId) ? NESTED_HOVER_DELAY : 0
+      // Determine delay time for nested chakras
+      const delay = isNested(activeNode, nodeId) ? NESTED_HOVER_DELAY : 0
 
-    hoverTimeoutRef.current = setTimeout(() => {
-      setIsAnimated(false)
-      setActiveNode(nodeId)
-      onNodeSelect?.(nodeId)
-    }, delay)
-  }, [activeNode, onNodeSelect, isNested])
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsAnimated(false)
+        setActiveNode(nodeId)
+        onNodeSelect?.(nodeId)
+      }, delay)
+    },
+    [activeNode, onNodeSelect, isNested],
+  )
 
   /**
    * Handle node hover end
@@ -121,37 +127,50 @@ export function SubtleSystem({
   /**
    * Handle node click
    */
-  const handleNodeClick = useCallback((nodeId: string) => {
-    setActiveNode(nodeId)
-    onNodeSelect?.(nodeId)
-    scrollToPreview(nodeId)
-  }, [onNodeSelect, scrollToPreview])
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      setActiveNode(nodeId)
+      onNodeSelect?.(nodeId)
+      scrollToPreview(nodeId)
+    },
+    [onNodeSelect, scrollToPreview],
+  )
 
   /**
    * Handle view toggle
    */
-  const handleViewToggle = useCallback((view: 'chakras' | 'channels') => {
-    if (view === activeView) return
+  const handleViewToggle = useCallback(
+    (view: 'chakras' | 'channels') => {
+      if (view === activeView) return
 
-    setActiveView(view)
-    setIsAnimated(true)
-    setActiveNode(null)
-    onNodeSelect?.(null)
-  }, [activeView, onNodeSelect])
+      setActiveView(view)
+      setIsAnimated(true)
+      setActiveNode(null)
+      onNodeSelect?.(null)
+    },
+    [activeView, onNodeSelect],
+  )
 
   /**
    * Handle fullscreen toggle
    */
   const handleFullscreenToggle = useCallback(async () => {
-    if (!containerRef.current) return
+    // Support the WebKit-prefixed Fullscreen API (Safari < 16.4) alongside the
+    // standard one; without the fallback the request throws and is swallowed by
+    // the catch, so the button silently does nothing in those browsers.
+    const el = containerRef.current as
+      | (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> })
+      | null
+
+    if (!el) return
+    const doc = document as Document & { webkitExitFullscreen?: () => Promise<void> }
 
     try {
       if (!isFullscreen) {
-        await containerRef.current.requestFullscreen()
-        // State will be updated by fullscreenchange event listener
+        // State will be updated by the fullscreenchange event listener
+        await (el.requestFullscreen?.() ?? el.webkitRequestFullscreen?.())
       } else {
-        await document.exitFullscreen()
-        // State will be updated by fullscreenchange event listener
+        await (doc.exitFullscreen?.() ?? doc.webkitExitFullscreen?.())
       }
     } catch (error) {
       console.error('Fullscreen error:', error)
@@ -159,16 +178,20 @@ export function SubtleSystem({
   }, [isFullscreen])
 
   /**
-   * Listen for fullscreen change events
+   * Listen for fullscreen change events (standard + WebKit-prefixed)
    */
   useEffect(() => {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null }
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
+      setIsFullscreen(Boolean(document.fullscreenElement || doc.webkitFullscreenElement))
     }
 
     document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
     }
   }, [])
 
@@ -179,16 +202,18 @@ export function SubtleSystem({
     if (!svgRef.current) return
 
     const svg = svgRef.current.querySelector('svg')
+
     if (!svg) return
 
     const containerSelector = activeView === 'chakras' ? '#hover_chakras' : '#hover_channels'
     const hoverContainer = svg.querySelector(containerSelector)
+
     if (!hoverContainer) return
 
     const nodes = Array.from(hoverContainer.children) as SVGElement[]
 
     // Update active classes
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.id === activeNode) {
         node.classList.add('active')
       } else {
@@ -199,6 +224,7 @@ export function SubtleSystem({
     // Setup event listeners
     const handleMouseOver = (event: Event) => {
       const target = event.currentTarget as SVGElement
+
       handleNodeHover(target.id)
     }
 
@@ -208,10 +234,11 @@ export function SubtleSystem({
 
     const handleClick = (event: Event) => {
       const target = event.currentTarget as SVGElement
+
       handleNodeClick(target.id)
     }
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.addEventListener('mouseover', handleMouseOver)
       node.addEventListener('mouseout', handleMouseOut)
       node.addEventListener('click', handleClick)
@@ -219,7 +246,7 @@ export function SubtleSystem({
 
     // Cleanup
     return () => {
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         node.removeEventListener('mouseover', handleMouseOver)
         node.removeEventListener('mouseout', handleMouseOut)
         node.removeEventListener('click', handleClick)
@@ -230,29 +257,29 @@ export function SubtleSystem({
   return (
     <div
       ref={containerRef}
-      data-view={activeView}
-      data-animated={isAnimated}
       className={`${isFullscreen ? 'bg-white' : ''} ${className}`}
+      data-animated={isAnimated}
+      data-view={activeView}
       {...props}
     >
       {/* Toggle */}
       <div className="text-center mb-7 text-base sm:text-lg leading-[25px]">
         <button
+          aria-pressed={activeView === 'chakras'}
           className={`px-2 cursor-pointer transition-colors ${
             activeView === 'chakras' ? 'font-bold text-teal-600' : 'hover:text-teal-600'
           }`}
           onClick={() => handleViewToggle('chakras')}
-          aria-pressed={activeView === 'chakras'}
         >
           Chakras
         </button>
         <span className="px-1">|</span>
         <button
+          aria-pressed={activeView === 'channels'}
           className={`px-2 cursor-pointer transition-colors ${
             activeView === 'channels' ? 'font-bold text-teal-600' : 'hover:text-teal-600'
           }`}
           onClick={() => handleViewToggle('channels')}
-          aria-pressed={activeView === 'channels'}
         >
           Channels
         </button>
@@ -262,19 +289,19 @@ export function SubtleSystem({
       <div className="relative max-w-[1200px] mx-auto mb-[100px]">
         {/* SVG Chart */}
         <div
+          dangerouslySetInnerHTML={{ __html: chartSvg }}
           ref={svgRef}
           className="subtle-system-chart min-h-[400px] max-h-[550px] sm:h-[550px] sm:max-h-[80vh] max-w-full block mx-auto"
-          dangerouslySetInnerHTML={{ __html: chartSvg }}
         />
 
         {/* Fullscreen Button */}
         <div className="absolute top-4 right-4">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handleFullscreenToggle}
-            icon={isFullscreen ? ArrowsPointingInIcon : ArrowsPointingOutIcon}
             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            icon={isFullscreen ? ArrowsPointingInIcon : ArrowsPointingOutIcon}
+            size="sm"
+            variant="outline"
+            onClick={handleFullscreenToggle}
           />
         </div>
 
@@ -286,23 +313,19 @@ export function SubtleSystem({
             return (
               <div
                 key={item.id}
-                data-node-id={item.id}
                 className={`hidden sm:block opacity-0 invisible transition-[visibility,opacity] duration-500 ease-in-out ${
                   isActive ? 'delay-0 block! opacity-100! visible!' : 'delay-0'
                 } bg-white/50 shadow-[0_0_10px_5px_rgba(255,255,255,0.5)] sm:absolute sm:top-16 sm:w-80 sm:max-w-[45%] sm:mt-[70px] ${
                   index % 2 === 0 ? 'sm:left-0 sm:pr-0' : 'sm:right-0 sm:pl-0'
                 } p-4 sm:p-8`}
+                data-node-id={item.id}
               >
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                  {item.title}
-                </h3>
-                <p className="text-base mb-4 text-gray-700">
-                  {item.description}
-                </p>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
+                <p className="text-base mb-4 text-gray-700">{item.description}</p>
                 <a
-                  href={item.linkHref}
-                  className="inline-block text-teal-600 hover:text-teal-700 font-medium transition-colors"
                   aria-label={`Learn more about ${item.title}`}
+                  className="inline-block text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                  href={item.linkHref}
                 >
                   Learn More →
                 </a>

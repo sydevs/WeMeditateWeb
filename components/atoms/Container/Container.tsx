@@ -8,7 +8,9 @@ export interface ContainerProps {
   as?: ElementType
 
   /**
-   * Maximum width variant
+   * Maximum width variant — a content-width scale (max-w-3xl → max-w-7xl):
+   * `sm`=3xl (768px), `md`=4xl (896px, readable body), `lg`=5xl (1024px),
+   * `xl`=6xl (1152px), `2xl`=7xl (1280px). `full` removes the constraint.
    * @default 'default'
    */
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default'
@@ -33,9 +35,8 @@ export interface ContainerProps {
 /**
  * Container component for consistent content width and spacing.
  *
- * Provides responsive container with max-width constraints and horizontal padding.
- * Padding is automatically responsive: small on mobile, medium on tablet, large on desktop.
- * Centers content by default for standard page layouts.
+ * Provides a max-width constraint and a flat horizontal gutter (px-4 at all
+ * breakpoints). Centers content by default for standard page layouts.
  *
  * @example
  * <Container>Content here</Container>
@@ -54,17 +55,17 @@ export function Container({
   const Component = as
 
   const maxWidthStyles = {
-    sm: 'max-w-screen-sm',
-    md: 'max-w-screen-md',
-    lg: 'max-w-screen-lg',
-    xl: 'max-w-screen-xl',
-    '2xl': 'max-w-screen-2xl',
+    sm: 'max-w-3xl', // 768px
+    md: 'max-w-4xl', // 896px — readable article/body column
+    lg: 'max-w-5xl', // 1024px
+    xl: 'max-w-6xl', // 1152px
+    '2xl': 'max-w-7xl', // 1280px
     full: 'max-w-full',
     default: 'max-w-7xl', // Default max width (1280px)
   }
 
-  // Responsive padding: small (mobile), medium (tablet), large (desktop)
-  const paddingStyles = 'px-4 sm:px-8 lg:px-16'
+  // Horizontal gutter — a flat px-4 at all breakpoints
+  const paddingStyles = 'px-4'
 
   const centerStyles = center ? 'mx-auto' : ''
 

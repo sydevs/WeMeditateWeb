@@ -46,6 +46,28 @@ describe('<Image> Cloudflare Images integration', () => {
   })
 })
 
+describe('<Image> forceAspectRatio', () => {
+  it('constrains to a fixed-ratio box by default (aspect class on container, img fills it)', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).toContain('aspect-video')
+    expect(html).toContain('w-full h-full') // <img> fills the box
+  })
+
+  it('renders natural flow when false, but still fetches the optimized variant + srcset', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} src={CF_URL} />,
+    )
+
+    // The optimized variant + responsive srcSet are still emitted...
+    expect(html).toContain(`src="${CF_URL}video-800"`)
+    expect(html).toContain('video-1536 1536w')
+    // ...but no fixed-ratio box, and the <img> is not absolutely positioned to fill one.
+    expect(html).not.toContain('aspect-video')
+    expect(html).not.toContain('w-full h-full')
+  })
+})
+
 describe('buildLightboxSlide', () => {
   it('requests the largest Cloudflare variant and mirrors alt into the caption', () => {
     const slide = buildLightboxSlide(CF_URL, 'A sunrise', 'video')

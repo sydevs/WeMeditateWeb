@@ -17,4 +17,12 @@ export default {
 
   // Use Vite config from the project
   viteConfig: ".ladle/vite.config.ts",
+
+  // Disable the dark-mode toggle — the component library is light-theme only
+  addons: {
+    theme: {
+      enabled: false, // removes the dark/light toggle from the toolbar
+      defaultState: "light", // force light theme
+    },
+  },
 };
