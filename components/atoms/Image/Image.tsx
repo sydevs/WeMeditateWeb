@@ -215,6 +215,20 @@ export function Image({
     }
   }, [src, aspectRatio, size, responsive])
 
+  // Reset loading/error state when the resolved src changes in place (a
+  // persistent <Image> whose `src` prop mutates, e.g. the AudioPlayer now-playing
+  // thumbnail on track switch). React's "adjust state during render" pattern runs
+  // before paint, so the new image shows its placeholder instead of briefly
+  // flashing the previous (or a stuck error) state; the effect below then clears
+  // `isLoading` immediately if the new src is already cached.
+  const [loadedSrc, setLoadedSrc] = useState(imageSrc)
+
+  if (imageSrc !== loadedSrc) {
+    setLoadedSrc(imageSrc)
+    setIsLoading(true)
+    setHasError(false)
+  }
+
   // A cached image can already be `complete` before React attaches `onLoad`, so
   // the load event never reaches our handler and `isLoading` stays stuck `true`
   // (placeholder lingers, image held at opacity-0). Effects don't run during SSR,
