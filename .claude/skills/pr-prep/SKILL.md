@@ -8,7 +8,7 @@ allowed-tools: Bash, Read, Grep
 
 Validates that the current branch is PR-ready for **WeMeditateWeb**.
 
-This repo has **no test/lint CI** — the only automated PR check is the **Cloudflare preview deployment** (which runs the production build). So this local gate is the substantive quality bar, not a convenience.
+CI (`.github/workflows/ci.yml`) re-runs lint + type-check + the unit suite on every PR, plus a smoke matrix and two Cloudflare preview builds. Running this lean gate **locally first** keeps the implement loop fast — catch failures before they reach CI, not after.
 
 | Gate            | Command                                              | What it catches                          |
 | --------------- | --------------------------------------------------- | ---------------------------------------- |
@@ -54,7 +54,7 @@ Swaps just the suspect file to its `main` version, re-checks, then restores ever
 
 ## PR description format
 
-Include a Test Results section (see `.claude/skills/implement-issue/pr-template.md`):
+Include a Test Results section (see `.claude/skills/finalize-pr/pr-template.md`):
 
 ```markdown
 ## Test Results
@@ -78,4 +78,6 @@ Include a Test Results section (see `.claude/skills/implement-issue/pr-template.
 
 - Shared validation script: `.claude/skills/implement-issue/scripts/validate.sh`
 - Full issue→PR workflow: `.claude/skills/implement-issue/SKILL.md`
+- Finalize / ship pipeline (uses this lean gate): `.claude/skills/finalize-pr/SKILL.md`
+- 3-phase PR workflow: CLAUDE.md "PR Workflow (3 Phases)"
 - Testing approach: CLAUDE.md "Testing" section

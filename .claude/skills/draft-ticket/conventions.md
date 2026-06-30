@@ -70,7 +70,7 @@ Labels in use: `enhancement`, `bug`, `good first issue`, `wait for upstream`.
 
 ## PR description format
 
-Required sections (per `.claude/skills/pr-prep/SKILL.md` and `.claude/skills/implement-issue/pr-template.md`):
+Required sections (per `.claude/skills/pr-prep/SKILL.md` and `.claude/skills/finalize-pr/pr-template.md`):
 
 ```markdown
 ## Summary
@@ -91,4 +91,4 @@ Required sections (per `.claude/skills/pr-prep/SKILL.md` and `.claude/skills/imp
 Closes #NNN
 ```
 
-There is no test/lint CI — the Cloudflare preview deployment is the only automated PR check, so the local gate (lint + tsc + tests, build for build-affecting changes) is the substantive verification.
+CI (`.github/workflows/ci.yml`) runs lint + type-check + the unit suite and a smoke matrix on every PR, plus two Cloudflare preview builds. The local gate (lint + tsc + tests, build for build-affecting changes) runs the same checks first to keep the loop fast.
