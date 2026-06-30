@@ -55,13 +55,16 @@ export type BlockConverters = NonNullable<JSXConverters['blocks']>
 export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
 
 /**
- * Width-escaping blocks (OrnateTextBox, SubtleSystem) break out of the article
- * column to span the full content container via the `full-bleed` utility (see
- * layouts/tailwind.css). `clear-both` keeps them clear of floated blockquotes; no
- * `mx-auto` (full-bleed owns the horizontal margins). Splash uses a no-top-margin
- * variant so a lead splash sits flush under the overlaid header.
+ * Width-escaping blocks break out of the article column to span the full content
+ * container via the `full-bleed` utility (see layouts/tailwind.css). `clear-both`
+ * keeps them clear of floated blockquotes; no `mx-auto` (full-bleed owns the
+ * horizontal margins).
+ *
+ * `FULL_BLEED_BLOCK` (OrnateTextBox, SubtleSystem) keeps vertical block spacing;
+ * `FULL_BLEED_SPLASH` drops it so a lead splash sits flush under the overlaid header.
  */
 export const FULL_BLEED_BLOCK = 'full-bleed my-6 clear-both'
+export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
 
 export const blockConverters: BlockConverters = {
   // textbox → one of three organisms by the block's mode:
@@ -266,9 +269,9 @@ export const blockConverters: BlockConverters = {
     return (
       <Splash
         backgroundImage={bg.url}
-        // Full-bleed and flush (no top margin): a lead splash sits at the top of
-        // the page under the overlaid header (see LayoutChrome / getLeadSplash).
-        className="full-bleed clear-both"
+        // Full-bleed and flush: a lead splash sits at the top of the page under
+        // the overlaid header (see LayoutChrome / getLeadSplash).
+        className={FULL_BLEED_SPLASH}
         ctaHref={fields.actionURL ?? undefined}
         ctaText={fields.actionText ?? undefined}
         subtitle={fields.subtitle ?? undefined}
