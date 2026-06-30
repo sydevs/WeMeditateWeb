@@ -43,7 +43,7 @@ export function PageTemplate({ page }: PageTemplateProps) {
   return (
     <article>
       {hasHeader && (
-        <Container maxWidth="prose">
+        <Container maxWidth="md">
           {video && video.hlsUrl ? (
             <VideoPlayer
               className="mb-8"

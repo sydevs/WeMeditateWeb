@@ -8,11 +8,12 @@ export interface ContainerProps {
   as?: ElementType
 
   /**
-   * Maximum width variant
-   * - `prose`: readable article column (max-w-4xl, ~896px)
+   * Maximum width variant — a content-width scale (max-w-3xl → max-w-7xl):
+   * `sm`=3xl (768px), `md`=4xl (896px, readable body), `lg`=5xl (1024px),
+   * `xl`=6xl (1152px), `2xl`=7xl (1280px). `full` removes the constraint.
    * @default 'default'
    */
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default' | 'prose'
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full' | 'default'
 
   /**
    * Center the container
@@ -55,13 +56,12 @@ export function Container({
   const Component = as
 
   const maxWidthStyles = {
-    sm: 'max-w-screen-sm',
-    md: 'max-w-screen-md',
-    lg: 'max-w-screen-lg',
-    xl: 'max-w-screen-xl',
-    '2xl': 'max-w-screen-2xl',
+    sm: 'max-w-3xl', // 768px
+    md: 'max-w-4xl', // 896px — readable article/body column
+    lg: 'max-w-5xl', // 1024px
+    xl: 'max-w-6xl', // 1152px
+    '2xl': 'max-w-7xl', // 1280px
     full: 'max-w-full',
-    prose: 'max-w-4xl', // Readable article column (~896px)
     default: 'max-w-7xl', // Default max width (1280px)
   }
 

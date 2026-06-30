@@ -336,7 +336,7 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
   // the `@container` on <main> (the window) regardless of this Container.
   return (
     <LightboxProvider>
-      <Container maxWidth="prose">
+      <Container maxWidth="md">
         <LexicalRichText
           className={className ?? ARTICLE_CLASS}
           converters={converters}

@@ -1,11 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Container } from "./Container";
-import { StoryWrapper, StorySection,
-   } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Container } from './Container'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Container component showcasing all max widths and usage in context.
@@ -19,20 +18,24 @@ export const Default: Story = () => (
           <p className="text-sm text-gray-600 mb-2">Small (max-w-3xl)</p>
           <Container maxWidth="sm">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-700">Small container - ideal for focused content like forms</p>
+              <p className="text-gray-700">
+                Small container - ideal for focused content like forms
+              </p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Medium (max-w-5xl)</p>
+          <p className="text-sm text-gray-600 mb-2">Medium (max-w-4xl)</p>
           <Container maxWidth="md">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-700">Medium container - perfect for articles and blog posts</p>
+              <p className="text-gray-700">
+                Medium container - perfect for articles and blog posts
+              </p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Large (max-w-7xl)</p>
+          <p className="text-sm text-gray-600 mb-2">Large (max-w-5xl)</p>
           <Container maxWidth="lg">
             <div className="bg-gray-100 p-4 rounded">
               <p className="text-gray-700">Large container - great for dashboards and grids</p>
@@ -50,7 +53,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <StorySection title="Article" variant="subsection">
         <div className="bg-gray-50 py-8">
           <Container maxWidth="md">
@@ -59,19 +62,19 @@ export const Default: Story = () => (
                 The Benefits of Daily Meditation
               </h1>
               <p className="text-gray-700 mb-4">
-                Meditation is a powerful practice that can transform your life in many ways.
-                Regular practice has been shown to reduce stress, improve focus, and enhance
-                overall well-being.
+                Meditation is a powerful practice that can transform your life in many ways. Regular
+                practice has been shown to reduce stress, improve focus, and enhance overall
+                well-being.
               </p>
               <p className="text-gray-700 mb-4">
-                Starting a meditation practice doesn't have to be complicated. Just a few
-                minutes each day can make a significant difference in how you feel and how
-                you respond to life's challenges.
+                Starting a meditation practice doesn't have to be complicated. Just a few minutes
+                each day can make a significant difference in how you feel and how you respond to
+                life's challenges.
               </p>
               <p className="text-gray-700">
-                The key is consistency. Find a quiet time and place, sit comfortably, and
-                simply focus on your breath. Over time, you'll discover the profound benefits
-                that meditation can bring.
+                The key is consistency. Find a quiet time and place, sit comfortably, and simply
+                focus on your breath. Over time, you'll discover the profound benefits that
+                meditation can bring.
               </p>
             </article>
           </Container>
@@ -82,24 +85,22 @@ export const Default: Story = () => (
         <div className="bg-gray-50 py-8">
           <Container maxWidth="sm">
             <div className="bg-white rounded-lg shadow-md p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                Sign Up for Free
-              </h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Sign Up for Free</h2>
               <form className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-900">Name</label>
                   <input
-                    type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     placeholder="Your name"
+                    type="text"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-900">Email</label>
                   <input
-                    type="email"
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     placeholder="you@example.com"
+                    type="email"
                   />
                 </div>
                 <button className="w-full bg-teal-500 text-white py-2 px-4 rounded hover:bg-teal-600">
@@ -117,9 +118,9 @@ export const Default: Story = () => (
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Meditation Journey</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { title: "Sessions", value: "127", subtitle: "Total meditations" },
-                { title: "Streak", value: "15", subtitle: "Days in a row" },
-                { title: "Minutes", value: "1,840", subtitle: "Time practiced" },
+                { title: 'Sessions', value: '127', subtitle: 'Total meditations' },
+                { title: 'Streak', value: '15', subtitle: 'Days in a row' },
+                { title: 'Minutes', value: '1,840', subtitle: 'Time practiced' },
               ].map((stat) => (
                 <div key={stat.title} className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-sm font-medium text-gray-600 mb-2">{stat.title}</h3>
@@ -133,6 +134,6 @@ export const Default: Story = () => (
       </StorySection>
     </StorySection>
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Container"
+Default.storyName = 'Container'

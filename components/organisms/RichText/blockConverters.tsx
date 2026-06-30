@@ -10,7 +10,7 @@
  */
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
-import { Button, Image } from '../../atoms'
+import { Button, Container, Image } from '../../atoms'
 import {
   ContentCard,
   ContentCarousel,
@@ -124,7 +124,15 @@ export const blockConverters: BlockConverters = {
       // the spread BLOCK_SPACING).
       <OrnateTextBox {...sideProps} className={FULL_BLEED_BLOCK} />
     ) : (
-      <ContentTextBox {...sideProps} align={fields.imagePosition} />
+      // ContentTextBox is wider than the readable body but capped (not full
+      // window): break out of the prose Container with full-bleed, then constrain
+      // to the large Container width (lg / 5xl) with gutters. `className=""` drops
+      // the spread BLOCK_SPACING since the wrapper owns spacing/centering.
+      <div className={FULL_BLEED_BLOCK}>
+        <Container maxWidth="lg">
+          <ContentTextBox {...sideProps} align={fields.imagePosition} className="" />
+        </Container>
+      </div>
     )
   },
 
