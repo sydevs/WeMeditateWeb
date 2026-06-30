@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 import { Button, Image } from '../../atoms'
+import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**
@@ -51,6 +52,14 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   imageHeight?: number
 
   /**
+   * Nearest configured Cloudflare aspect ratio for the image. When set (and the
+   * `imageSrc` is a Cloudflare URL), an optimized variant + srcset is fetched
+   * instead of the full-resolution original. The image still renders at its
+   * natural ratio (the ratio only selects the variant, not a cropping box).
+   */
+  imageAspectRatio?: AspectRatio
+
+  /**
    * Text box position relative to image
    * - left: Text box on left, image on right (max 50% width on desktop)
    * - right: Text box on right, image on left (max 50% width on desktop)
@@ -91,6 +100,7 @@ export function ContentTextBox({
   imageAlt,
   imageWidth,
   imageHeight,
+  imageAspectRatio,
   align = 'left',
   className = '',
   ...props
@@ -102,6 +112,7 @@ export function ContentTextBox({
     <div
       className={`
         relative
+        my-24 lg:my-32
         lg:max-h-[700px]
         gap-6 lg:gap-0
         flex flex-col items-center ${wrapperClasses}
@@ -117,9 +128,12 @@ export function ContentTextBox({
           tall. Desktop (lg): the original contained, container-height behavior. */}
       <Image
         alt={imageAlt}
+        aspectRatio={imageAspectRatio}
         className="w-full max-h-[calc(100cqi-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
+        forceAspectRatio={false}
         height={imageHeight}
         objectFit="cover"
+        sizes="(max-width: 1024px) 100vw, 600px"
         src={imageSrc}
         width={imageWidth}
       />

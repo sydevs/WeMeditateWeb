@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 import { Button, Container, Image } from '../../atoms'
+import type { AspectRatio } from '../../../lib/cloudflare-images'
 import ornateBackground from '../../../assets/ornate.svg'
 
 export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
@@ -50,6 +51,14 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   imageHeight?: number
 
   /**
+   * Nearest configured Cloudflare aspect ratio for the image. When set (and the
+   * `imageSrc` is a Cloudflare URL), an optimized variant + srcset is fetched
+   * instead of the full-resolution original. The image still renders at its
+   * natural ratio (the ratio only selects the variant, not a cropping box).
+   */
+  imageAspectRatio?: AspectRatio
+
+  /**
    * Decorative vertical label along the outer edge (desktop only). Purely
    * ornamental. @default 'Ancient Wisdom'
    */
@@ -94,6 +103,7 @@ export function OrnateTextBox({
   imageAlt,
   imageWidth,
   imageHeight,
+  imageAspectRatio,
   sidetext = 'Ancient Wisdom',
   className = '',
   ...props
@@ -142,10 +152,10 @@ export function OrnateTextBox({
       )}
 
       {/* Content — capped to a readable width via a Container (the brown ground,
-          floral graphic and gradient stay full-bleed behind it). Since the content
-          is always narrower than where the sidetext appears (lg+), the sidetext
-          sits clear in the margin without needing asymmetric padding. */}
-      <Container className="relative z-10 py-12 lg:py-20" maxWidth="md">
+          floral graphic and gradient stay full-bleed behind it). On lg+ the
+          centered container's right margin can shrink to where the sidetext sits,
+          so reserve a right gutter (lg:pr-24) to keep the body clear of it. */}
+      <Container className="relative z-10 py-12 lg:py-20 lg:pr-24" maxWidth="md">
         {/* Title + subtitle header, above the body */}
         <div className="mb-8 lg:mb-6">
           <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
@@ -156,9 +166,12 @@ export function OrnateTextBox({
         <div className="mb-6 w-full lg:float-left lg:mr-12 lg:mb-4 lg:w-[44%]">
           <Image
             alt={imageAlt}
+            aspectRatio={imageAspectRatio}
             className="w-full"
+            forceAspectRatio={false}
             height={imageHeight}
             objectFit="cover"
+            sizes="(max-width: 1024px) 100vw, 400px"
             src={imageSrc}
             width={imageWidth}
           />

@@ -112,6 +112,7 @@ export const blockConverters: BlockConverters = {
       ctaText,
       description,
       imageAlt: img.alt,
+      imageAspectRatio: img.aspectRatio,
       imageHeight: img.height,
       imageSrc: img.url,
       imageWidth: img.width,
