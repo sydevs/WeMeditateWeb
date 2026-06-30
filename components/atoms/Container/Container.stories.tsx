@@ -8,7 +8,7 @@ export default {
 
 /**
  * Container component showcasing all max widths and usage in context.
- * Padding is automatically responsive (small on mobile, medium on tablet, large on desktop).
+ * Horizontal gutter is a flat px-4 at all breakpoints.
  */
 export const Default: Story = () => (
   <StoryWrapper>

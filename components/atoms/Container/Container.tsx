@@ -35,9 +35,8 @@ export interface ContainerProps {
 /**
  * Container component for consistent content width and spacing.
  *
- * Provides responsive container with max-width constraints and horizontal padding.
- * Padding is automatically responsive: small on mobile, medium on tablet, large on desktop.
- * Centers content by default for standard page layouts.
+ * Provides a max-width constraint and a flat horizontal gutter (px-4 at all
+ * breakpoints). Centers content by default for standard page layouts.
  *
  * @example
  * <Container>Content here</Container>
@@ -65,8 +64,8 @@ export function Container({
     default: 'max-w-7xl', // Default max width (1280px)
   }
 
-  // Responsive padding: small (mobile), medium (tablet), large (desktop)
-  const paddingStyles = 'px-4 sm:px-8 lg:px-16'
+  // Horizontal gutter — a flat px-4 at all breakpoints
+  const paddingStyles = 'px-4'
 
   const centerStyles = center ? 'mx-auto' : ''
 
