@@ -1,11 +1,6 @@
 import { ComponentProps } from 'react'
 import { Link } from '../../atoms'
-import {
-  PlayCircleIcon,
-  ComputerDesktopIcon,
-  UserGroupIcon,
-  MapPinIcon,
-} from '@heroicons/react/24/outline'
+import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /**
@@ -124,14 +119,14 @@ function ActionItem({ href, locale, icon: Icon, title, subtitle }: ActionItemPro
       locale={locale}
       variant="neutral"
     >
-      <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 group-hover:scale-105 transition-transform">
+      <div className="w-16 h-16 group-hover:scale-105 transition-transform">
         <Icon className="w-full h-full stroke-current stroke-[0.5]" />
       </div>
-      <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/40 backdrop-blur-xs lg:bg-transparent lg:backdrop-blur-none">
-        <span className="text-lg md:text-xl lg:text-2xl font-medium text-gray-900 lg:text-gray-700 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+      <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/40 backdrop-blur-xs">
+        <span className="text-lg font-medium text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
           {title}
         </span>
-        <span className="text-sm md:text-base lg:text-lg font-light text-gray-900 lg:text-gray-700 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+        <span className="text-sm font-light text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
           {subtitle}
         </span>
       </div>
