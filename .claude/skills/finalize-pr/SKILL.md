@@ -87,7 +87,7 @@ git diff --name-only origin/main...HEAD | grep -E \
 
 Use `--full` when the branch touches the build, server entry, Vike config, or Wrangler/Cloudflare setup — `pnpm build` is the closest local mirror of the preview deploy. Fix + re-run on failure.
 
-The **smoke** specs (`pnpm test:smoke`) run in CI against the *deployed* previews — they need a live `PREVIEW_URL`, so don't run them locally; they're covered by the CI watch in step 7.
+The **smoke** specs (`pnpm test:smoke` for web, `pnpm test:smoke:ladle` for Ladle) run in CI against the *deployed* previews — they need a live `PREVIEW_URL`, so don't run them locally; they're covered by the CI watch in step 7.
 
 ### 5. Push
 
@@ -127,10 +127,10 @@ gh pr checks <pr-or-branch> --watch
 gh pr checks <pr-or-branch>            # confirm final state
 ```
 
-Checks: **Lint, Typecheck & Unit** (the `gate` job), **Smoke (web)** / **Smoke (ladle)**, **Workers Builds: wemeditate-web**, **Cloudflare Pages**.
+GitHub checks to watch: **Lint, Typecheck & Unit** (the `gate` job), **Smoke (web)** / **Smoke (ladle)** (the smoke matrix), and **Cloudflare Pages** (the Ladle preview's check-run). The **web** Worker preview (`wemeditate-web`) posts **no GitHub check or status** on this repo — its URL appears only in the `cloudflare-workers-and-pages[bot]` PR comment, and **Smoke (web)** is what actually exercises it. So don't wait on a "Workers Builds" check; confirm the web preview via the bot PR comment + a green **Smoke (web)**. See `.claude/docs/cloudflare-previews-ci.md`.
 
 - **Green** → report.
-- **Red** → `gh run view <run-id> --log-failed` for the gate/smoke jobs (or open the Cloudflare build logs via the check's "Details" for the preview builds), diagnose, fix locally (re-run the relevant part of the lean gate; reproduce a red preview build with `validate.sh --full`), commit, push, re-watch. Smoke reds often mean the *deployed* render differs from local (it hits the production CMS) — read the job logs before assuming a code bug.
+- **Red** → `gh run view <run-id> --log-failed` for the gate/smoke jobs (for the Ladle Pages build, open its logs via the check's "Details"), diagnose, fix locally (re-run the relevant part of the lean gate; reproduce a build failure with `validate.sh --full`), commit, push, re-watch. Smoke reds often mean the *deployed* render differs from local (it hits the production CMS) — read the job logs before assuming a code bug.
 - **Cap at 3 fix iterations.** If CI is still red after three rounds, **stop and summarize** the remaining failure(s) for the user instead of looping.
 - A failure **pre-existing on `main`** (not caused by this branch) → fix it in this PR and note it, per `.claude/skills/pr-prep/SKILL.md`.
 
