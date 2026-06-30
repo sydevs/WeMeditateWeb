@@ -8,6 +8,7 @@ import {
   showcaseItems,
   splashTheme,
   subtleSystemItems,
+  textColorToTheme,
   type ShowcaseItem,
 } from './cms-blocks'
 import type { Page } from '../server/cms-types'
@@ -155,6 +156,17 @@ describe('isExternalUrl', () => {
     expect(isExternalUrl('http://example.com')).toBe(true)
     expect(isExternalUrl('/about')).toBe(false)
     expect(isExternalUrl('#anchor')).toBe(false)
+  })
+})
+
+describe('textColorToTheme', () => {
+  it('inverts textColor and falls back when absent', () => {
+    // The inversion is fixed; only the fallback for absent values varies per caller.
+    expect(textColorToTheme('dark', 'light')).toBe('light')
+    expect(textColorToTheme('light', 'dark')).toBe('dark')
+    expect(textColorToTheme('dark', 'dark')).toBe('light') // explicit value wins over fallback
+    expect(textColorToTheme(undefined, 'light')).toBe('light')
+    expect(textColorToTheme(null, 'dark')).toBe('dark')
   })
 })
 

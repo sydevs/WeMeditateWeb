@@ -271,9 +271,8 @@ export function Image({
     onError?.(e)
   }
 
-  const containerClasses = boxed
-    ? `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
-    : `relative ${roundedStyles} overflow-hidden`
+  // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
+  const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
     boxed ? 'absolute inset-0 w-full h-full' : ''

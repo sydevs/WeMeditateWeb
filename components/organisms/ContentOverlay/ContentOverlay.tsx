@@ -127,7 +127,7 @@ export function ContentOverlay({
 
   // Outer positioning zone — up to 50% of the overlay on lg+ for non-box. The
   // readable text width inside is capped by a Container (lg) below.
-  const maxWidthClasses = variant === 'box' ? 'max-w-lg lg:max-w-lg' : 'max-w-lg lg:max-w-[50%]'
+  const maxWidthClasses = variant === 'box' ? 'max-w-lg' : 'max-w-lg lg:max-w-[50%]'
 
   // Position the readable Container within the zone to match the alignment.
   const innerAlign = { left: '', right: 'md:ml-auto', center: 'md:mx-auto' }[align]

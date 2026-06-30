@@ -29,6 +29,7 @@ import {
   showcaseItems,
   splashTheme,
   subtleSystemItems,
+  textColorToTheme,
   type ButtonBlockFields,
   type ContentIndexBlockFields,
   type ImageGalleryBlockFields,
@@ -98,7 +99,7 @@ export const blockConverters: BlockConverters = {
           imageSrc={img.url}
           subtitle={subtitle}
           text={description}
-          theme={fields.textColor === 'light' ? 'dark' : 'light'}
+          theme={textColorToTheme(fields.textColor, 'light')}
           title={title}
         />
       )
