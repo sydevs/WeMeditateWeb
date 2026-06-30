@@ -1,10 +1,10 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { FormField } from "./FormField";
-import { Input } from "../../atoms/Input/Input";
-import { Select } from "../../atoms/Select/Select";
-import { Textarea } from "../../atoms/Textarea/Textarea";
-import { Checkbox } from "../../atoms/Checkbox/Checkbox";
-import { Radio } from "../../atoms/Radio/Radio";
+import { Input } from "../../atoms/form/Input/Input";
+import { Select } from "../../atoms/form/Select/Select";
+import { Textarea } from "../../atoms/form/Textarea/Textarea";
+import { Checkbox } from "../../atoms/form/Checkbox/Checkbox";
+import { Radio } from "../../atoms/form/Radio/Radio";
 import {
   StoryWrapper,
   StorySection,

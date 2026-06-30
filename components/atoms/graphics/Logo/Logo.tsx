@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Link } from '../Link'
+import { Link } from '../../Link'
 import { LogoSvg } from '../svgs'
 
 export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'> {

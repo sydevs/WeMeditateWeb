@@ -1,9 +1,9 @@
 import type { Story, StoryDefault } from "@ladle/react";
 import { Logo } from "./Logo";
-import { StoryWrapper, StorySection, StoryGrid, StoryGridHeader, StoryGridHeaderRow, StoryGridHeaderCell, StoryGridBody, StoryGridRow, StoryGridCell } from '../../ladle';
+import { StoryWrapper, StorySection, StoryGrid, StoryGridHeader, StoryGridHeaderRow, StoryGridHeaderCell, StoryGridBody, StoryGridRow, StoryGridCell } from '../../../ladle';
 
 export default {
-  title: "Atoms"
+  title: "Atoms / Graphics"
 } satisfies StoryDefault;
 
 /**

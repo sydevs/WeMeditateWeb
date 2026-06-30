@@ -1002,7 +1002,7 @@ Key requirements:
 
 **Gold Standard Examples**:
 - [Button](components/atoms/Button/Button.stories.tsx) - Comprehensive grid layout with subsections
-- [Checkbox](components/atoms/Checkbox/Checkbox.stories.tsx) - Grid combining color × state
+- [Checkbox](components/atoms/form/Checkbox/Checkbox.stories.tsx) - Grid combining color × state
 - [Text](components/atoms/Text/Text.stories.tsx) - Simple vertical stacking with sections
 
 ### Development Server Troubleshooting
@@ -1247,7 +1247,7 @@ Then proceed with planning:
   - Implement component with mobile-first approach
   - Add responsive breakpoints (md:, lg:)
   - Use only Tailwind tokens (no custom CSS)
-  - **Extract any inline SVGs to `components/atoms/svgs/` and import them**
+  - **Extract any inline SVGs to `components/atoms/graphics/svgs/` and import them**
 
 - [ ] Create barrel export: `components/[level]/ComponentName/index.ts`
   ```typescript

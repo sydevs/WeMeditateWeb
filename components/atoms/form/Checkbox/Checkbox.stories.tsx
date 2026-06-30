@@ -10,10 +10,10 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell
-} from '../../ladle';
+} from '../../../ladle';
 
 export default {
-  title: "Atoms"
+  title: "Atoms / Form"
 } satisfies StoryDefault;
 
 /**

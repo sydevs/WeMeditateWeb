@@ -6,10 +6,10 @@ import { FloralDividerSvg } from './FloralDividerSvg'
 import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 import { TriangleDecorationSvg } from './TriangleDecorationSvg'
 import { AnimatedLogoSvg } from './AnimatedLogoSvg'
-import { StoryWrapper, StorySection } from '../../ladle';
+import { StoryWrapper, StorySection } from '../../../ladle';
 
 export default {
-  title: "Atoms"
+  title: "Atoms / Graphics"
 } satisfies StoryDefault;
 
 /**

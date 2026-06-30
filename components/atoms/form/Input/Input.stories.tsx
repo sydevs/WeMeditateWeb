@@ -10,11 +10,11 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell
-} from '../../ladle';
+} from '../../../ladle';
 import { HeartIcon } from '@heroicons/react/24/outline';
 
 export default {
-  title: "Atoms"
+  title: "Atoms / Form"
 } satisfies StoryDefault;
 
 /**

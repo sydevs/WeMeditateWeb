@@ -25,43 +25,18 @@ export type { DropdownProps, DropdownItemProps } from './Dropdown'
 export type { TooltipProps, TooltipSide } from './Tooltip'
 
 // Form Inputs
-export { Input } from './Input'
-export { Textarea } from './Textarea'
-export { Checkbox } from './Checkbox'
-export { Radio } from './Radio'
-export { Select } from './Select'
-export type { InputProps } from './Input'
-export type { TextareaProps } from './Textarea'
-export type { CheckboxProps } from './Checkbox'
-export type { RadioProps } from './Radio'
-export type { SelectProps } from './Select'
+export { Input, Textarea, Checkbox, Radio, Select } from './form'
+export type { InputProps, TextareaProps, CheckboxProps, RadioProps, SelectProps } from './form'
 
 // Media
 export { Image } from './Image'
 export { Icon } from './Icon'
 export { Avatar } from './Avatar'
-export { Logo } from './Logo'
 export type { IconProps, HeroIcon } from './Icon'
 export type { AvatarProps } from './Avatar'
-export type { LogoProps } from './Logo'
 
-// SVG Components
-export {
-  LogoSvg,
-  LeafSvg,
-  FloralDividerSvg,
-  HeaderIllustrationSvg,
-  LotusDotsSvg,
-  TriangleDecorationSvg,
-} from './svgs'
-export type {
-  LogoSvgProps,
-  LeafSvgProps,
-  FloralDividerSvgProps,
-  HeaderIllustrationSvgProps,
-  LotusDotsSvgProps,
-  TriangleDecorationSvgProps,
-} from './svgs'
+// Graphics (Logo, LanguageFlag, SocialIcon, svgs)
+export * from './graphics'
 
 // Feedback
 export { Spinner } from './Spinner'
@@ -86,9 +61,5 @@ export type { LeafDividerProps } from './LeafDivider/LeafDivider'
 export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 
 // Specialty
-export { LanguageFlag } from './LanguageFlag'
-export { SocialIcon } from './SocialIcon'
 export { Countdown } from './Countdown'
-export type { LanguageFlagProps } from './LanguageFlag'
-export type { SocialIconProps } from './SocialIcon'
 export type { CountdownProps } from './Countdown'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { LeafSvg } from '../svgs'
+import { LeafSvg } from '../graphics/svgs'
 
 export interface LeafDividerProps {
   /** Whether to show the divider line */
