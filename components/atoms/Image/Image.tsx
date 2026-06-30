@@ -74,7 +74,7 @@ export interface ImageProps extends ComponentProps<'img'> {
    * Border radius style
    * @default 'square'
    */
-  rounded?: 'square' | 'rounded' | 'circle'
+  rounded?: 'none' | 'square' | 'rounded' | 'circle'
 
   /**
    * Show loading state
@@ -220,6 +220,7 @@ export function Image({
   }[objectFit]
 
   const roundedStyles = {
+    none: '',
     square: 'rounded-xs',
     rounded: 'rounded-lg',
     circle: 'rounded-full',

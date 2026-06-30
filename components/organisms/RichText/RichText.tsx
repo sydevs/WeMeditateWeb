@@ -183,6 +183,9 @@ const CONVERTERS: JSXConverters = {
       | { caption?: unknown; align?: string | null; alt?: string | null }
       | undefined
     const caption = renderCaption(fields?.caption)
+    // `wide` images break out to the full content width: no rounding (they meet the
+    // edges) and a full-width `sizes` hint so the browser fetches a large variant.
+    const isWide = fields?.align === 'wide'
 
     return (
       <figure className={uploadFigureClass(fields?.align)}>
@@ -191,8 +194,8 @@ const CONVERTERS: JSXConverters = {
           aspectRatio={nearestAspectRatio(image.width, image.height)}
           height={image.height ?? undefined}
           lightboxGroup={`upload-${image.url}`}
-          rounded="rounded"
-          sizes={ARTICLE_IMAGE_SIZES}
+          rounded={isWide ? 'none' : 'rounded'}
+          sizes={isWide ? '100vw' : ARTICLE_IMAGE_SIZES}
           src={image.url}
           width={image.width ?? undefined}
         />

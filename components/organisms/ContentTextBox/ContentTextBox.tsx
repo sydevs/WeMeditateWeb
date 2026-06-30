@@ -110,12 +110,16 @@ export function ContentTextBox({
       `}
       {...props}
     >
-      {/* Image - natural flow on mobile, positioned on desktop */}
+      {/* Image - natural flow on mobile, positioned on desktop.
+          Mobile: fill the column width, capped to a 1:1 aspect (height ≤ width, via
+          the local content-container width `100cqi` minus the page gutters) and
+          `object-cover` so portrait images crop to ≤ square rather than running
+          tall. Desktop (lg): the original contained, container-height behavior. */}
       <Image
         alt={imageAlt}
-        className="w-full max-h-[min(70vh,100vw)] lg:h-full lg:max-h-[85vh]"
+        className="w-full max-h-[calc(100cqi-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
         height={imageHeight}
-        objectFit="contain"
+        objectFit="cover"
         src={imageSrc}
         width={imageWidth}
       />

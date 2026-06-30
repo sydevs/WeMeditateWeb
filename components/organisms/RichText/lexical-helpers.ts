@@ -57,13 +57,14 @@ export function relationshipLabel(value: unknown): string | null {
 /**
  * Tailwind classes for an upload `<figure>` given its CMS alignment. Aligned
  * images take 40% of the column width (left/right float so text wraps, center
- * is a centered block); `wide` spans the full width. Full width on mobile so
- * small screens stay readable.
+ * is a centered block); `wide` breaks out of the article column to span the full
+ * content container via the `full-bleed` utility. Full width on mobile so small
+ * screens stay readable.
  */
 export function uploadFigureClass(align?: string | null): string {
   switch (align) {
     case 'wide':
-      return 'my-6 w-full text-center'
+      return 'my-6 full-bleed text-center'
     case 'left':
       return 'my-6 w-full text-left sm:float-left sm:mr-6 sm:w-1/2'
     case 'right':
