@@ -62,7 +62,7 @@ This is a CMS-consuming frontend; the security-relevant surface is API-key/auth 
 
 ```bash
 git diff --name-only origin/main...HEAD | grep -E \
-  'server/|pages/preview/|wrangler\.toml|vite\.config\.ts|sentry\.[a-z]+\.config\.ts|scripts/|\.env|\.dev\.vars'
+  '^server/|^pages/preview/|^wrangler\.toml|^vite\.config\.ts|^sentry\.[a-z]+\.config\.ts|^scripts/|^\.env|^\.dev\.vars'
 ```
 
 | Path | Why it's risky |
