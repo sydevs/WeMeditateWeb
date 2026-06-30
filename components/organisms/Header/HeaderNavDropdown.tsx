@@ -100,11 +100,14 @@ export function HeaderNavDropdown({
         <FloatingPortal>
           <div
             ref={refs.setFloating}
+            // `left:0; right:0` (not `width:100vw`) spans the viewport content area
+            // excluding the scrollbar, so the open panel never adds a horizontal
+            // scrollbar; the inner max-w-7xl box still centers to the content area.
             style={{
               position: floatingStyles.position,
               top: floatingStyles.top,
               left: 0,
-              width: '100vw',
+              right: 0,
             }}
             {...getFloatingProps()}
             className="z-50"
