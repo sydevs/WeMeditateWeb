@@ -12,6 +12,7 @@ import { PreviewBanner } from './PreviewBanner'
 import { PagePreview } from './PagePreview'
 import { MeditationPreview } from './MeditationPreview'
 import { LecturePreview } from './LecturePreview'
+import { usePreviewLinkGuard } from './previewNavigation'
 
 export interface PreviewProps {
   /**
@@ -33,6 +34,10 @@ export interface PreviewProps {
 }
 
 export function Preview({ data, showEmbedButton = true }: PreviewProps) {
+  // Make every link in the preview inert so editors don't navigate the
+  // live-preview iframe away from the document being edited.
+  usePreviewLinkGuard()
+
   switch (data.collection) {
     case 'pages':
       return <PagePreview initialData={data.initialData} />
