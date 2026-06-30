@@ -91,7 +91,7 @@ export const blockConverters: BlockConverters = {
       return (
         <ContentOverlay
           align={fields.textPosition ?? 'center'}
-          className={BLOCK_SPACING}
+          className={FULL_BLEED_BLOCK}
           ctaHref={ctaHref}
           ctaText={ctaText}
           imageAlt={img.alt}

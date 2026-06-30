@@ -129,7 +129,7 @@ export function ContentOverlay({
   const maxWidthClasses = variant === 'box' ? 'max-w-md lg:max-w-lg' : 'max-w-md lg:max-w-[50%]'
 
   return (
-    <div className={`w-full ${className}`} {...props}>
+    <div className={className} {...props}>
       {/* Mobile: Stacked layout - no variant or theme styling */}
       <div className="flex flex-col gap-6 md:hidden">
         {/* Image on top */}

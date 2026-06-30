@@ -16,6 +16,7 @@ export const Default: Story = () => (
         <StorySection title="Left Aligned" variant="subsection">
           <ContentOverlay
             align="left"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Get Inspired"
             imageAlt="Meditation practice"
@@ -32,6 +33,7 @@ export const Default: Story = () => (
         <StorySection title="Right Aligned" variant="subsection">
           <ContentOverlay
             align="right"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Start Your Journey"
             imageAlt="Inner peace"
@@ -48,6 +50,7 @@ export const Default: Story = () => (
         <StorySection title="Center Aligned" variant="subsection">
           <ContentOverlay
             align="center"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Learn More"
             imageAlt="Life transformation"
@@ -71,6 +74,7 @@ export const Default: Story = () => (
         <StorySection title="Dark Theme" variant="subsection">
           <ContentOverlay
             align="left"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Get Inspired"
             imageAlt="Meditation at dusk"
@@ -85,6 +89,7 @@ export const Default: Story = () => (
         <StorySection title="Light Theme" variant="subsection">
           <ContentOverlay
             align="right"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Begin Today"
             imageAlt="Bright morning meditation"
@@ -103,6 +108,7 @@ export const Default: Story = () => (
         <StorySection title="Left Aligned" variant="subsection">
           <ContentOverlay
             align="left"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Explore Techniques"
             imageAlt="Unlock potential"
@@ -119,6 +125,7 @@ export const Default: Story = () => (
         <StorySection title="Right Aligned" variant="subsection">
           <ContentOverlay
             align="right"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Begin Today"
             imageAlt="Mental clarity"
@@ -135,6 +142,7 @@ export const Default: Story = () => (
         <StorySection title="Center Aligned" variant="subsection">
           <ContentOverlay
             align="center"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Join Now"
             imageAlt="Meditation community"
@@ -155,6 +163,7 @@ export const Default: Story = () => (
         <StorySection title="Dark Theme with High Contrast" variant="subsection">
           <ContentOverlay
             align="left"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Learn More"
             imageAlt="High contrast dark theme"
@@ -172,6 +181,7 @@ export const Default: Story = () => (
         <StorySection title="Light Theme with High Contrast" variant="subsection">
           <ContentOverlay
             align="right"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Get Started"
             imageAlt="High contrast light theme"
@@ -193,6 +203,7 @@ export const Default: Story = () => (
         <StorySection title="Dark Theme with Box" variant="subsection">
           <ContentOverlay
             align="center"
+            className="full-bleed"
             ctaHref="#"
             ctaText="Explore Features"
             imageAlt="Box variant dark theme"
@@ -210,6 +221,7 @@ export const Default: Story = () => (
         <StorySection title="Light Theme with Box" variant="subsection">
           <ContentOverlay
             align="right"
+            className="full-bleed"
             ctaHref="#"
             ctaText="View Details"
             imageAlt="Box variant light theme"
