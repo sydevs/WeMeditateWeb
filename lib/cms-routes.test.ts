@@ -51,8 +51,12 @@ describe('cmsHref', () => {
     expect(cmsHref('meditations', { id: 12, slug: null })).toBe('/meditations/12')
   })
 
+  it('builds a lecture path from an id (bare or populated)', () => {
+    expect(cmsHref('lectures', 7)).toBe('/lectures/7')
+    expect(cmsHref('lectures', { id: 7, slug: null })).toBe('/lectures/7')
+  })
+
   it('returns null for collections without a public web route', () => {
-    expect(cmsHref('lectures', { id: 1 })).toBeNull()
     expect(cmsHref('albums', { id: 1 })).toBeNull()
     expect(cmsHref('app-cards', { id: 1 })).toBeNull()
     expect(cmsHref('forms', { id: 1 })).toBeNull()
