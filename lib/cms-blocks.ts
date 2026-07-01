@@ -492,12 +492,15 @@ export function contentIndexCard(
     return null
   }
   const img = cardImage(doc)
+  // The lectures /for-audience feed returns a plain `thumbnailUrl` string (not a
+  // populated `thumbnail` relationship), so fall back to it for the card image.
+  const thumbnailUrl = typeof doc.thumbnailUrl === 'string' ? doc.thumbnailUrl : ''
 
   return {
     id,
     title,
     href,
-    thumbnailSrc: img?.url ?? '',
+    thumbnailSrc: img?.url ?? thumbnailUrl,
     thumbnailAlt: img?.alt ?? title,
     aspectRatio: img?.aspectRatio,
     playButton: type === 'meditations',

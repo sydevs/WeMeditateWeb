@@ -93,6 +93,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     withContent.content = await resolveContentIndexBlocks(withContent.content, {
       locale,
       preview: true,
+      audiences: settings.audiences,
     })
   }
 

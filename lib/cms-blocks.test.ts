@@ -164,6 +164,18 @@ describe('contentIndexCard', () => {
     ).toMatchObject({ href: '/lectures/7', playButton: false })
   })
 
+  it('uses the /for-audience feed thumbnailUrl string when there is no thumbnail relationship', () => {
+    const card = contentIndexCard(
+      { id: 7, title: 'Lecture', thumbnailUrl: 'https://img.example/mq.jpg' },
+      'lectures',
+    )
+
+    expect(card).toMatchObject({
+      href: '/lectures/7',
+      thumbnailSrc: 'https://img.example/mq.jpg',
+    })
+  })
+
   it('returns null when the doc has no id', () => {
     expect(contentIndexCard({ title: 'x' }, 'pages')).toBeNull()
   })
