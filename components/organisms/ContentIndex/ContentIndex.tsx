@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Button } from '../../atoms'
 import { ContentGrid } from '../../molecules'
 import type { ResolvedCardItem } from '../../../lib/cms-blocks'
 
@@ -41,16 +42,6 @@ export function filterByFacets(
   return items.filter((item) => (item.tags ?? []).some((tag) => selected.has(tag.id)))
 }
 
-const PILL_BASE =
-  'inline-flex items-center justify-center min-h-11 min-w-11 px-4 py-2 rounded-full text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2'
-
-/** Pill classes for the given active state (teal when active, muted otherwise). */
-function pillClassName(active: boolean): string {
-  return `${PILL_BASE} ${
-    active ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-  }`
-}
-
 interface FilterPillsProps {
   facets: Facet[]
   /** Selected facet ids; empty means "All". */
@@ -59,43 +50,51 @@ interface FilterPillsProps {
   onClear: () => void
 }
 
+/** A toggle pill built on the Button atom (square, primary when active).
+ * `min-h-11` keeps the ≥44px touch target the `sm` size alone doesn't guarantee. */
+function Pill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: string
+}) {
+  return (
+    <Button
+      aria-pressed={active}
+      className="min-h-11"
+      shape="square"
+      size="sm"
+      variant={active ? 'primary' : 'ghost'}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
+  )
+}
+
 /**
  * Filter pill row: an "All" pill plus one toggle per facet. Multi-select with OR
  * semantics; "All" clears the selection. Kept internal — extract a reusable
  * `FilterPills` molecule only when a second consumer appears.
  */
 function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) {
-  const allActive = selected.size === 0
-
   return (
     <div
       aria-label="Filter content by tag"
       className="flex flex-wrap justify-center gap-2 mb-6"
       role="group"
     >
-      <button
-        aria-pressed={allActive}
-        className={pillClassName(allActive)}
-        type="button"
-        onClick={onClear}
-      >
+      <Pill active={selected.size === 0} onClick={onClear}>
         All
-      </button>
-      {facets.map((facet) => {
-        const active = selected.has(facet.id)
-
-        return (
-          <button
-            key={facet.id}
-            aria-pressed={active}
-            className={pillClassName(active)}
-            type="button"
-            onClick={() => onToggle(facet.id)}
-          >
-            {facet.label}
-          </button>
-        )
-      })}
+      </Pill>
+      {facets.map((facet) => (
+        <Pill key={facet.id} active={selected.has(facet.id)} onClick={() => onToggle(facet.id)}>
+          {facet.label}
+        </Pill>
+      ))}
     </div>
   )
 }
