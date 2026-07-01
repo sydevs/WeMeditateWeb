@@ -22,7 +22,10 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     collection?: string
     initialData?: Page
   }>()
-  const { locale } = usePageContext()
+  // `urlPathname` is the logical, locale-stripped path (onBeforeRoute rewrites
+  // `/es/about` → `/about` and `/` → `/index`), so comparing it to the
+  // locale-agnostic nav hrefs (`/slug`) highlights the right link in every locale.
+  const { locale, urlPathname } = usePageContext()
   const settings = data?.settings
 
   // When the page leads with a Splash, overlay the header on it (transparent,
@@ -60,11 +63,16 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // "About Meditation" item that only opens the knowledge mega-menu (every
   // knowledge page as a link + the 2 featured-article thumbnails). Appended only
   // when there are knowledge pages to show — otherwise the nav is featured-only.
-  const navItems: Array<{ label: string; href?: string; dropdown?: HeaderDropdownProps }> =
-    featuredPages.map((page) => ({
-      label: page.title,
-      href: '/' + page.slug,
-    }))
+  const navItems: Array<{
+    label: string
+    href?: string
+    active?: boolean
+    dropdown?: HeaderDropdownProps
+  }> = featuredPages.map((page) => ({
+    label: page.title,
+    href: '/' + page.slug,
+    active: '/' + page.slug === urlPathname,
+  }))
 
   if (knowledgePages.length > 0) {
     // TODO: Source this label from WmWebTranslations.navigation once that global

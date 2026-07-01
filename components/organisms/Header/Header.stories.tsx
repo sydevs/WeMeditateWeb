@@ -53,7 +53,8 @@ export const Default: Story = () => (
         ]}
         logoHref="/"
         navItems={[
-          { label: 'Meditate Now', href: '/meditate' },
+          // `active` marks the current page — a persistent tint + aria-current.
+          { label: 'Meditate Now', href: '/meditate', active: true },
           { label: 'Music for Meditation', href: '/music' },
           { label: 'Inspiration', href: '/inspiration' },
           // Link-less: opens the mega-menu, no navigation of its own.
@@ -100,7 +101,8 @@ export const Default: Story = () => (
         ]}
         logoHref="/"
         navItems={[
-          { label: 'Meditate Now', href: '/meditate' },
+          // `active` marks the current page — a persistent tint + aria-current.
+          { label: 'Meditate Now', href: '/meditate', active: true },
           { label: 'Music for Meditation', href: '/music' },
           { label: 'Inspiration', href: '/inspiration' },
           // Link-less: opens the mega-menu, no navigation of its own.

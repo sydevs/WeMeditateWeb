@@ -15,9 +15,16 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   /**
    * Main navigation menu items. An item with a `dropdown` renders as a
    * link-less hover/click mega-menu (HeaderNavDropdown) instead of a flat link;
-   * such items omit `href`. Plain link items provide `href`.
+   * such items omit `href`. Plain link items provide `href`. `active` marks the
+   * current page's link (persistent tint + `aria-current="page"`); it applies
+   * only to plain link items.
    */
-  navItems?: Array<{ label: string; href?: string; dropdown?: HeaderDropdownProps }>
+  navItems?: Array<{
+    label: string
+    href?: string
+    active?: boolean
+    dropdown?: HeaderDropdownProps
+  }>
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
   /**
@@ -150,6 +157,7 @@ export function Header({
                     key={index}
                     className="px-0 basis-1/4"
                     href={item.href}
+                    isActive={item.active}
                     size="sm"
                     theme={isSticky ? 'light' : theme}
                     variant="ghost"
