@@ -367,7 +367,15 @@ export const blockConverters: BlockConverters = {
       )
     }
 
-    // Pages / lectures → filterable grid with facet pills.
-    return <ContentIndex className={BLOCK_SPACING} items={items} />
+    // Pages / lectures → filterable grid with facet pills. Break out of the prose
+    // column to the wider content Container (xl / 6xl), like ContentTextBox, so the
+    // grid has more room; the full-bleed wrapper owns the vertical spacing.
+    return (
+      <div className={FULL_BLEED_BLOCK}>
+        <Container maxWidth="xl">
+          <ContentIndex items={items} />
+        </Container>
+      </div>
+    )
   },
 }
