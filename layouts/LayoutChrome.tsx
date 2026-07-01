@@ -7,6 +7,7 @@ import type { WebConfig, Page } from '../server/cms-types'
 import type { NavItem } from '../components/organisms'
 import { leadSplashFromRouteData } from '../lib/cms-blocks'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
+import { activeFeaturedSlug } from '../lib/featured-nav'
 
 /**
  * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
@@ -61,15 +62,15 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // knowledge page as a link + the 2 featured-article thumbnails). Appended only
   // when there are knowledge pages to show — otherwise the nav is featured-only.
   //
-  // Highlight the featured link for the current page. Match on the current
-  // page's slug (locale-agnostic, and the same fact `isFeaturedNavPage` uses to
-  // suppress that page's title) so the nav highlight and the hidden title always
-  // agree. `data.page` is absent on non-[slug] routes, so nothing highlights there.
-  const currentSlug = data?.page?.slug
+  // Highlight the featured link for the current page. Both the highlight and the
+  // title suppression (pages/[slug]/+Page.tsx) derive from `activeFeaturedSlug`,
+  // so they can't disagree. `data.page` is absent on non-[slug] routes, so
+  // `activeSlug` is undefined there and nothing highlights.
+  const activeSlug = activeFeaturedSlug(data?.page?.slug, settings)
   const navItems: NavItem[] = featuredPages.map((page) => ({
     label: page.title,
     href: '/' + page.slug,
-    active: page.slug === currentSlug,
+    active: page.slug === activeSlug,
   }))
 
   if (knowledgePages.length > 0) {
