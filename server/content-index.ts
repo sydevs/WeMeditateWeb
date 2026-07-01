@@ -52,10 +52,15 @@ const QUERY_BY_TYPE: Record<
     depth: 1,
   },
   songs: {
+    // A Song is an upload: `url`/`thumbnailURL` are virtual fields the upload
+    // afterRead hook derives from `filename`, so `filename` MUST be selected or
+    // they come back null — dropping every track (empty MusicLibrary). Same for
+    // related image uploads: `populate[images][filename]` lets the album
+    // artwork's url compute (url-only populate would return null).
     select:
-      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true',
+      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true&select[filename]=true',
     populate:
-      'populate[albums][artist]=true&populate[albums][artistUrl]=true&populate[albums][artwork]=true&populate[song-tags][slug]=true&populate[images][url]=true',
+      'populate[albums][artist]=true&populate[albums][artistUrl]=true&populate[albums][artwork]=true&populate[song-tags][slug]=true&populate[images][url]=true&populate[images][filename]=true',
     depth: 2,
   },
 }

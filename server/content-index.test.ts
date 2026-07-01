@@ -151,6 +151,10 @@ describe('resolveContentIndexTracks', () => {
     expect(url).toContain('select[url]=true')
     expect(url).toContain('populate[albums][artwork]=true')
     expect(url).toContain('depth=2')
+    // `url`/`thumbnailURL` are upload virtuals derived from `filename`; without
+    // it selected the CMS returns them null and every track is dropped.
+    expect(url).toContain('select[filename]=true')
+    expect(url).toContain('populate[images][filename]=true')
   })
 })
 
