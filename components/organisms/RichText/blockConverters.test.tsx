@@ -76,3 +76,29 @@ describe('textbox block converter — routing', () => {
     expect(textbox({ node: { fields: { image: 123, title: 'Orphan' } } })).toBeNull()
   })
 })
+
+// Every block defined for `pages.content` upstream. Adding a block in the CMS
+// without a converter here should fail this test rather than silently fall
+// through to RichText's `unknown` fallback at runtime.
+const KNOWN_BLOCK_TYPES = [
+  'textbox',
+  'quote',
+  'button',
+  'image-gallery',
+  'layout',
+  'table-of-contents',
+  'showcase',
+  'subtle-system',
+  'splash',
+  'content-index',
+] as const
+
+describe('block coverage', () => {
+  it.each(KNOWN_BLOCK_TYPES)('has a converter function for the %s block', (blockType) => {
+    expect(typeof blockConverters[blockType]).toBe('function')
+  })
+
+  it('defines no converters beyond the known block types (spot stale keys)', () => {
+    expect(Object.keys(blockConverters).sort()).toEqual([...KNOWN_BLOCK_TYPES].sort())
+  })
+})
