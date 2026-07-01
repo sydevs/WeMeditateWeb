@@ -154,7 +154,11 @@ export function ContentCard({
   className = '',
   ...props
 }: ContentCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false)
+  // A card with no loadable image renders a placeholder, not an <img>, so its
+  // onLoad never fires — under fadeInOnLoad that would leave the card stuck at
+  // opacity-0 (invisible). Start "loaded" when there's no image src to wait for.
+  const hasImageSrc = thumbnailSrc.length > 0
+  const [imageLoaded, setImageLoaded] = useState(!hasImageSrc)
   const showPlayButton = playButton
   const isHeroVariant = variant === 'hero'
 
@@ -193,6 +197,7 @@ export function ContentCard({
           className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
           objectFit="cover"
           src={thumbnailSrc}
+          onError={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
           onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
         />
 
