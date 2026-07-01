@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Button } from "./Button";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Button } from './Button'
 import {
   PlayIcon,
   PauseIcon,
@@ -23,12 +23,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../ladle';
+  StoryGridCell,
+} from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Unified Button component showcasing all variants, sizes, shapes, and use cases.
@@ -55,80 +55,100 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Primary</StoryGridCell>
             <StoryGridCell>
-              <Button icon={PlayIcon} variant="primary" shape="square" aria-label="Play" />
+              <Button aria-label="Play" icon={PlayIcon} shape="square" variant="primary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={PlayIcon} variant="primary" shape="circular" aria-label="Play" />
+              <Button aria-label="Play" icon={PlayIcon} shape="circular" variant="primary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={PlayIcon} variant="primary" shape="square">Button</Button>
+              <Button icon={PlayIcon} shape="square" variant="primary">
+                Button
+              </Button>
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={PlayIcon} variant="primary" shape="circular">Button</Button>
+              <Button icon={PlayIcon} shape="circular" variant="primary">
+                Button
+              </Button>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Secondary</StoryGridCell>
             <StoryGridCell>
-              <Button icon={HeartIcon} variant="secondary" shape="square" aria-label="Like" />
+              <Button aria-label="Like" icon={HeartIcon} shape="square" variant="secondary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={HeartIcon} variant="secondary" shape="circular" aria-label="Like" />
+              <Button aria-label="Like" icon={HeartIcon} shape="circular" variant="secondary" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={HeartIcon} variant="secondary" shape="square">Button</Button>
+              <Button icon={HeartIcon} shape="square" variant="secondary">
+                Button
+              </Button>
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={HeartIcon} variant="secondary" shape="circular">Button</Button>
+              <Button icon={HeartIcon} shape="circular" variant="secondary">
+                Button
+              </Button>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Neutral</StoryGridCell>
             <StoryGridCell>
-              <Button icon={CheckIcon} variant="neutral" shape="square" aria-label="Confirm" />
+              <Button aria-label="Confirm" icon={CheckIcon} shape="square" variant="neutral" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={CheckIcon} variant="neutral" shape="circular" aria-label="Confirm" />
+              <Button aria-label="Confirm" icon={CheckIcon} shape="circular" variant="neutral" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={CheckIcon} variant="neutral" shape="square">Button</Button>
+              <Button icon={CheckIcon} shape="square" variant="neutral">
+                Button
+              </Button>
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={CheckIcon} variant="neutral" shape="circular">Button</Button>
+              <Button icon={CheckIcon} shape="circular" variant="neutral">
+                Button
+              </Button>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Outline</StoryGridCell>
             <StoryGridCell>
-              <Button icon={StarIcon} variant="outline" shape="square" aria-label="Favorite" />
+              <Button aria-label="Favorite" icon={StarIcon} shape="square" variant="outline" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={StarIcon} variant="outline" shape="circular" aria-label="Favorite" />
+              <Button aria-label="Favorite" icon={StarIcon} shape="circular" variant="outline" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={StarIcon} variant="outline" shape="square">Button</Button>
+              <Button icon={StarIcon} shape="square" variant="outline">
+                Button
+              </Button>
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={StarIcon} variant="outline" shape="circular">Button</Button>
+              <Button icon={StarIcon} shape="circular" variant="outline">
+                Button
+              </Button>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Ghost</StoryGridCell>
             <StoryGridCell>
-              <Button icon={XMarkIcon} variant="ghost" shape="square" aria-label="Close" />
+              <Button aria-label="Close" icon={XMarkIcon} shape="square" variant="ghost" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={XMarkIcon} variant="ghost" shape="circular" aria-label="Close" />
+              <Button aria-label="Close" icon={XMarkIcon} shape="circular" variant="ghost" />
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={XMarkIcon} variant="ghost" shape="square">Button</Button>
+              <Button icon={XMarkIcon} shape="square" variant="ghost">
+                Button
+              </Button>
             </StoryGridCell>
             <StoryGridCell>
-              <Button icon={XMarkIcon} variant="ghost" shape="circular">Button</Button>
+              <Button icon={XMarkIcon} shape="circular" variant="ghost">
+                Button
+              </Button>
             </StoryGridCell>
           </StoryGridRow>
         </StoryGridBody>
@@ -136,22 +156,32 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Dark Theme"
-      theme="dark"
       background="neutral"
       description="All button variants on dark backgrounds - outline and ghost use white, primary and secondary remain vibrant"
+      theme="dark"
+      title="Dark Theme"
     >
       <div className="flex gap-4 items-center flex-wrap">
-        <Button variant="primary" theme="dark" icon={PlayIcon} aria-label="Play" />
-        <Button variant="primary" theme="dark">Primary</Button>
-        <Button variant="secondary" theme="dark" icon={HeartIcon} aria-label="Like" />
-        <Button variant="secondary" theme="dark">Secondary</Button>
-        <Button variant="neutral" theme="dark" icon={CheckIcon} aria-label="Confirm" />
-        <Button variant="neutral" theme="dark">Neutral</Button>
-        <Button variant="outline" theme="dark" icon={StarIcon} aria-label="Favorite" />
-        <Button variant="outline" theme="dark">Outline</Button>
-        <Button variant="ghost" theme="dark" icon={XMarkIcon} aria-label="Close" />
-        <Button variant="ghost" theme="dark">Ghost</Button>
+        <Button aria-label="Play" icon={PlayIcon} theme="dark" variant="primary" />
+        <Button theme="dark" variant="primary">
+          Primary
+        </Button>
+        <Button aria-label="Like" icon={HeartIcon} theme="dark" variant="secondary" />
+        <Button theme="dark" variant="secondary">
+          Secondary
+        </Button>
+        <Button aria-label="Confirm" icon={CheckIcon} theme="dark" variant="neutral" />
+        <Button theme="dark" variant="neutral">
+          Neutral
+        </Button>
+        <Button aria-label="Favorite" icon={StarIcon} theme="dark" variant="outline" />
+        <Button theme="dark" variant="outline">
+          Outline
+        </Button>
+        <Button aria-label="Close" icon={XMarkIcon} theme="dark" variant="ghost" />
+        <Button theme="dark" variant="ghost">
+          Ghost
+        </Button>
       </div>
     </StorySection>
 
@@ -166,16 +196,22 @@ export const Default: Story = () => (
         </StorySection>
         <StorySection title="Icon-only Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
-            <Button icon={HeartIcon} size="sm" aria-label="Like (small)" />
-            <Button icon={HeartIcon} size="md" aria-label="Like (medium)" />
-            <Button icon={HeartIcon} size="lg" aria-label="Like (large)" />
+            <Button aria-label="Like (small)" icon={HeartIcon} size="sm" />
+            <Button aria-label="Like (medium)" icon={HeartIcon} size="md" />
+            <Button aria-label="Like (large)" icon={HeartIcon} size="lg" />
           </div>
         </StorySection>
         <StorySection title="Icon + Text Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
-            <Button icon={CheckIcon} size="sm">Small</Button>
-            <Button icon={CheckIcon} size="md">Medium</Button>
-            <Button icon={CheckIcon} size="lg">Large</Button>
+            <Button icon={CheckIcon} size="sm">
+              Small
+            </Button>
+            <Button icon={CheckIcon} size="md">
+              Medium
+            </Button>
+            <Button icon={CheckIcon} size="lg">
+              Large
+            </Button>
           </div>
         </StorySection>
       </div>
@@ -188,26 +224,38 @@ export const Default: Story = () => (
             <div>
               <p className="text-sm text-gray-600 mb-2">Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
-                <Button variant="primary" isLoading>Primary</Button>
-                <Button variant="secondary" isLoading>Secondary</Button>
-                <Button variant="outline" isLoading>Outline</Button>
-                <Button variant="ghost" isLoading>Ghost</Button>
+                <Button isLoading variant="primary">
+                  Primary
+                </Button>
+                <Button isLoading variant="secondary">
+                  Secondary
+                </Button>
+                <Button isLoading variant="outline">
+                  Outline
+                </Button>
+                <Button isLoading variant="ghost">
+                  Ghost
+                </Button>
               </div>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-2">Icon-only Buttons</p>
               <div className="flex gap-3 flex-wrap">
-                <Button icon={PlayIcon} variant="primary" isLoading aria-label="Loading" />
-                <Button icon={HeartIcon} variant="secondary" isLoading aria-label="Loading" />
-                <Button icon={StarIcon} variant="outline" isLoading aria-label="Loading" />
-                <Button icon={XMarkIcon} variant="ghost" isLoading aria-label="Loading" />
+                <Button isLoading aria-label="Loading" icon={PlayIcon} variant="primary" />
+                <Button isLoading aria-label="Loading" icon={HeartIcon} variant="secondary" />
+                <Button isLoading aria-label="Loading" icon={StarIcon} variant="outline" />
+                <Button isLoading aria-label="Loading" icon={XMarkIcon} variant="ghost" />
               </div>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-2">Icon + Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
-                <Button icon={CheckIcon} variant="primary" isLoading>Saving</Button>
-                <Button icon={PlusIcon} variant="secondary" isLoading>Adding</Button>
+                <Button isLoading icon={CheckIcon} variant="primary">
+                  Saving
+                </Button>
+                <Button isLoading icon={PlusIcon} variant="secondary">
+                  Adding
+                </Button>
               </div>
             </div>
           </div>
@@ -218,29 +266,81 @@ export const Default: Story = () => (
             <div>
               <p className="text-sm text-gray-600 mb-2">Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
-                <Button variant="primary" disabled>Primary</Button>
-                <Button variant="secondary" disabled>Secondary</Button>
-                <Button variant="outline" disabled>Outline</Button>
-                <Button variant="ghost" disabled>Ghost</Button>
+                <Button disabled variant="primary">
+                  Primary
+                </Button>
+                <Button disabled variant="secondary">
+                  Secondary
+                </Button>
+                <Button disabled variant="outline">
+                  Outline
+                </Button>
+                <Button disabled variant="ghost">
+                  Ghost
+                </Button>
               </div>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-2">Icon-only Buttons</p>
               <div className="flex gap-3 flex-wrap">
-                <Button icon={PlayIcon} variant="primary" disabled aria-label="Play" />
-                <Button icon={HeartIcon} variant="secondary" disabled aria-label="Like" />
-                <Button icon={StarIcon} variant="outline" disabled aria-label="Favorite" />
-                <Button icon={XMarkIcon} variant="ghost" disabled aria-label="Close" />
+                <Button disabled aria-label="Play" icon={PlayIcon} variant="primary" />
+                <Button disabled aria-label="Like" icon={HeartIcon} variant="secondary" />
+                <Button disabled aria-label="Favorite" icon={StarIcon} variant="outline" />
+                <Button disabled aria-label="Close" icon={XMarkIcon} variant="ghost" />
               </div>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-2">Icon + Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
-                <Button icon={CheckIcon} variant="primary" disabled>Save</Button>
-                <Button icon={PlusIcon} variant="outline" disabled>Add</Button>
+                <Button disabled icon={CheckIcon} variant="primary">
+                  Save
+                </Button>
+                <Button disabled icon={PlusIcon} variant="outline">
+                  Add
+                </Button>
               </div>
             </div>
           </div>
+        </StorySection>
+      </div>
+    </StorySection>
+
+    <StorySection title="Active">
+      <div className="flex flex-col gap-6">
+        <StorySection title="Ghost on Light Background" variant="subsection">
+          <div className="flex gap-3 flex-wrap">
+            <Button isActive href="#" variant="ghost">
+              Meditate Now
+            </Button>
+            <Button href="#" variant="ghost">
+              Music for Meditation
+            </Button>
+            <Button href="#" variant="ghost">
+              Inspiration
+            </Button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            The active link keeps a persistent tinted fill and carries aria-current="page"
+          </p>
+        </StorySection>
+
+        <StorySection title="Ghost on Dark Background" variant="subsection">
+          <div className="bg-gray-900 p-6 rounded">
+            <div className="flex gap-3 flex-wrap">
+              <Button isActive href="#" theme="dark" variant="ghost">
+                Meditate Now
+              </Button>
+              <Button href="#" theme="dark" variant="ghost">
+                Music for Meditation
+              </Button>
+              <Button href="#" theme="dark" variant="ghost">
+                Inspiration
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            The active tint is theme-aware — a lighter fill for dark (splash-overlay) headers
+          </p>
         </StorySection>
       </div>
     </StorySection>
@@ -249,32 +349,53 @@ export const Default: Story = () => (
       <div className="max-w-md flex flex-col items-start gap-3">
         <Button variant="primary">Ok</Button>
         <Button variant="secondary">Adaptive Button Width</Button>
-        <Button variant="outline" fullWidth>Full Width</Button>
+        <Button fullWidth variant="outline">
+          Full Width
+        </Button>
       </div>
       <p className="text-xs text-gray-500 mt-2">
-        Buttons automatically size to content with a minimum width constraint (min-w-20/24/28 for sm/md/lg)
+        Buttons automatically size to content with a minimum width constraint (min-w-20/24/28 for
+        sm/md/lg)
       </p>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-6">
-        <StorySection title="Call-to-Action on Light Background (wemeditate.com style)" variant="subsection">
+        <StorySection
+          title="Call-to-Action on Light Background (wemeditate.com style)"
+          variant="subsection"
+        >
           <div className="flex gap-4 flex-wrap">
-            <Button variant="outline" size="lg">Meditate Now</Button>
-            <Button variant="outline" size="lg">Learn More</Button>
-            <Button variant="outline" size="lg">Discover My Sound</Button>
+            <Button size="lg" variant="outline">
+              Meditate Now
+            </Button>
+            <Button size="lg" variant="outline">
+              Learn More
+            </Button>
+            <Button size="lg" variant="outline">
+              Discover My Sound
+            </Button>
           </div>
           <p className="text-xs text-gray-500 mt-2">
             Hover to see the animated background fill from center to edges
           </p>
         </StorySection>
 
-        <StorySection title="Call-to-Action on Dark Background (wemeditate.com style)" variant="subsection">
+        <StorySection
+          title="Call-to-Action on Dark Background (wemeditate.com style)"
+          variant="subsection"
+        >
           <div className="bg-gray-900 p-6 rounded">
             <div className="flex gap-4 flex-wrap">
-              <Button variant="outline" theme="dark" size="lg">Get Inspired</Button>
-              <Button variant="outline" theme="dark" size="lg">Start Today</Button>
-              <Button variant="outline" theme="dark" size="lg">Join Now</Button>
+              <Button size="lg" theme="dark" variant="outline">
+                Get Inspired
+              </Button>
+              <Button size="lg" theme="dark" variant="outline">
+                Start Today
+              </Button>
+              <Button size="lg" theme="dark" variant="outline">
+                Join Now
+              </Button>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
@@ -291,16 +412,16 @@ export const Default: Story = () => (
 
         <StorySection title="Media Controls" variant="subsection">
           <div className="flex gap-3 flex-wrap">
-            <Button icon={PlayIcon} variant="primary" aria-label="Play" />
-            <Button icon={PauseIcon} variant="primary" aria-label="Pause" />
-            <Button icon={ChevronLeftIcon} variant="ghost" aria-label="Previous" />
-            <Button icon={ChevronRightIcon} variant="ghost" aria-label="Next" />
+            <Button aria-label="Play" icon={PlayIcon} variant="primary" />
+            <Button aria-label="Pause" icon={PauseIcon} variant="primary" />
+            <Button aria-label="Previous" icon={ChevronLeftIcon} variant="ghost" />
+            <Button aria-label="Next" icon={ChevronRightIcon} variant="ghost" />
           </div>
         </StorySection>
 
         <StorySection title="Dialog Actions" variant="subsection">
           <div className="flex gap-3 flex-wrap">
-            <Button icon={XMarkIcon} variant="ghost" shape="square" aria-label="Close dialog" />
+            <Button aria-label="Close dialog" icon={XMarkIcon} shape="square" variant="ghost" />
             <div className="flex-1" />
             <Button variant="ghost">Cancel</Button>
             <Button variant="primary">Confirm</Button>
@@ -309,17 +430,21 @@ export const Default: Story = () => (
 
         <StorySection title="Navigation" variant="subsection">
           <div className="flex gap-3 flex-wrap">
-            <Button icon={ChevronLeftIcon} variant="outline">Back</Button>
-            <Button icon={ArrowRightIcon} variant="primary">Continue</Button>
+            <Button icon={ChevronLeftIcon} variant="outline">
+              Back
+            </Button>
+            <Button icon={ArrowRightIcon} variant="primary">
+              Continue
+            </Button>
           </div>
         </StorySection>
 
         <StorySection title="Toolbar" variant="subsection">
           <div className="flex gap-2">
-            <Button icon={Bars3Icon} variant="ghost" aria-label="Menu" />
-            <Button icon={MagnifyingGlassIcon} variant="ghost" aria-label="Search" />
-            <Button icon={HeartIcon} variant="ghost" aria-label="Favorites" />
-            <Button icon={StarIcon} variant="ghost" aria-label="Rate" />
+            <Button aria-label="Menu" icon={Bars3Icon} variant="ghost" />
+            <Button aria-label="Search" icon={MagnifyingGlassIcon} variant="ghost" />
+            <Button aria-label="Favorites" icon={HeartIcon} variant="ghost" />
+            <Button aria-label="Rate" icon={StarIcon} variant="ghost" />
           </div>
         </StorySection>
       </div>
@@ -327,6 +452,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Button"
+Default.storyName = 'Button'
