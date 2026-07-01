@@ -17,6 +17,17 @@ describe('ContentCard fadeInOnLoad visibility', () => {
     expect(cls).not.toContain('opacity-0')
   })
 
+  it('renders a branded 16:9 fallback (Placeholder + white Logo, no <img>) when imageless', () => {
+    const html = renderToStaticMarkup(<ContentCard href="#" thumbnailSrc="" title="No image" />)
+
+    expect(html).not.toContain('<img') // no image element for a blank src
+    expect(html).toContain('aspect-video') // fixed 16:9 fallback box
+    expect(html).toContain('from-teal-100') // coloured (primary) Placeholder gradient
+    expect(html).not.toContain('animate-shimmer') // non-animated
+    expect(html).toContain('<svg') // the centered Logo
+    expect(html).toContain('text-white') // white logo
+  })
+
   it('starts hidden (opacity-0) when an image will load and can fade in', () => {
     const cls = articleClass(
       renderToStaticMarkup(

@@ -4,6 +4,8 @@ import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../atoms/Link'
 import { Button } from '../../atoms/Button/Button'
 import { Badge } from '../../atoms/Badge/Badge'
+import { Placeholder } from '../../atoms/Placeholder/Placeholder'
+import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
@@ -191,15 +193,25 @@ export function ContentCard({
     >
       {/* Thumbnail with optional play button overlay */}
       <div className="relative">
-        <Image
-          alt={thumbnailAlt || title}
-          aspectRatio={imageHeight ? undefined : aspectRatio}
-          className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
-          objectFit="cover"
-          src={thumbnailSrc}
-          onError={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
-          onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
-        />
+        {hasImageSrc ? (
+          <Image
+            alt={thumbnailAlt || title}
+            aspectRatio={imageHeight ? undefined : aspectRatio}
+            className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
+            objectFit="cover"
+            src={thumbnailSrc}
+            onError={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
+            onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
+          />
+        ) : (
+          // No CMS thumbnail — a branded, non-animated fallback beats a blank
+          // card. Fixed 16:9 box so imageless cards read consistently in the grid.
+          <div className="relative aspect-video overflow-hidden rounded-xs">
+            <Placeholder animate={false} variant="primary">
+              <Logo className="text-white" size="xl" variant="icon" />
+            </Placeholder>
+          </div>
+        )}
 
         {/* Play button overlay */}
         {showPlayButton && (
