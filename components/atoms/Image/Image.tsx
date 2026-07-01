@@ -285,6 +285,13 @@ export function Image({
     onError?.(e)
   }
 
+  // An empty `src` must never reach the <img>: the browser treats src="" as a
+  // request for the current page URL (re-downloading the whole document) and
+  // React warns about it. This happens when a caller threads an unpopulated CMS
+  // image field (e.g. a bare/absent relationship) straight through. Treat a
+  // blank src as a missing image — skip the <img> and let the placeholder show.
+  const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''
+
   // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
   const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
@@ -300,14 +307,18 @@ export function Image({
           overlay to the raw image and anchor it top-left, overflowing/clipping
           instead of matching the rendered image box. The <img>'s own width/height
           attributes reserve layout space and prevent shift. */}
-      {showLoading && (isLoading || hasError) && (
-        <Placeholder animate={!hasError} className="absolute inset-0" variant={placeholderVariant}>
+      {showLoading && (isLoading || hasError || !hasSrc) && (
+        <Placeholder
+          animate={!hasError && hasSrc}
+          className="absolute inset-0"
+          variant={placeholderVariant}
+        >
           {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
         </Placeholder>
       )}
 
-      {/* Image element (hidden until loaded, not rendered on error) */}
-      {!hasError && (
+      {/* Image element (hidden until loaded; skipped on error or a blank src) */}
+      {!hasError && hasSrc && (
         <img
           ref={imgRef}
           alt={alt}
