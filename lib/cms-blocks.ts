@@ -530,19 +530,21 @@ const USER_CHOICE_MEDITATION_SLOTS = [
 ] as const
 
 /** Card duration (minutes) for a populated meditation: the explicit
- * `durationMinutes`, else derived from `duration` (seconds), else omitted. */
+ * `durationMinutes`, else derived from `duration` (seconds), else omitted. A
+ * value below 1 (sub-minute duration or `0`) is omitted — a "0 min" badge is
+ * meaningless. */
 function meditationDurationMinutes(med: {
   durationMinutes?: number | null
   duration?: number | null
 }): number | undefined {
-  if (typeof med.durationMinutes === 'number') {
-    return med.durationMinutes
-  }
-  if (typeof med.duration === 'number' && med.duration > 0) {
-    return Math.round(med.duration / 60)
-  }
+  const minutes =
+    typeof med.durationMinutes === 'number'
+      ? med.durationMinutes
+      : typeof med.duration === 'number' && med.duration > 0
+        ? Math.round(med.duration / 60)
+        : undefined
 
-  return undefined
+  return minutes !== undefined && minutes >= 1 ? minutes : undefined
 }
 
 /**

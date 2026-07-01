@@ -115,6 +115,9 @@ function audienceIds(audiences: ResolveOptions['audiences']): string[] {
 function contentIndexCacheKey(fields: ContentIndexBlockFields, options: ResolveOptions): string {
   return generateCacheKey('content-index', {
     endpoint: fields.apiEndpoint ?? undefined,
+    // Fold in the type so two blocks sharing an endpoint+locale can't collide
+    // and return the wrong shape from cache (a songs Track[] vs a card list).
+    type: fields.type,
     locale: options.locale,
     audiences: fields.type === 'lectures' ? audienceIds(options.audiences) : undefined,
   })

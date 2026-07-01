@@ -300,6 +300,18 @@ describe('meditationCardsFromUserChoices', () => {
     ])
   })
 
+  it('omits a sub-minute / zero duration rather than showing a "0 min" badge', () => {
+    const [subMinute] = meditationCardsFromUserChoices([
+      { id: 25, title: '5 min', morningMeditation: med({ duration: 20 }) }, // 20s → 0 min
+    ])
+    const [explicitZero] = meditationCardsFromUserChoices([
+      { id: 26, title: '5-10 min', morningMeditation: med({ durationMinutes: 0, duration: 0 }) },
+    ])
+
+    expect(subMinute.durationMinutes).toBeUndefined()
+    expect(explicitZero.durationMinutes).toBeUndefined()
+  })
+
   it('prefers an explicit durationMinutes and the meditation title over its label', () => {
     const [card] = meditationCardsFromUserChoices([
       {
