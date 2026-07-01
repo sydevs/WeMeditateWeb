@@ -46,6 +46,39 @@ describe('<Image> Cloudflare Images integration', () => {
   })
 })
 
+describe('<Image> blank src', () => {
+  it('renders no <img> for an empty src (never emits src="")', () => {
+    const html = renderToStaticMarkup(<Image alt="test" src="" />)
+
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('src=""')
+  })
+
+  it('renders no <img> for a whitespace-only src', () => {
+    const html = renderToStaticMarkup(<Image alt="test" src="   " />)
+
+    expect(html).not.toContain('<img')
+  })
+
+  it('still shows the placeholder overlay so layout is preserved', () => {
+    const html = renderToStaticMarkup(<Image alt="test" src="" />)
+
+    // The loading/placeholder overlay fills the container in the absence of an image.
+    expect(html).toContain('absolute inset-0')
+  })
+
+  it('does not emit src="" for a blank src inside a lightbox trigger', () => {
+    const html = renderToStaticMarkup(
+      <LightboxProvider>
+        <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" src="" />
+      </LightboxProvider>,
+    )
+
+    expect(html).not.toContain('src=""')
+    expect(html).not.toContain('<img')
+  })
+})
+
 describe('<Image> forceAspectRatio', () => {
   it('constrains to a fixed-ratio box by default (aspect class on container, img fills it)', () => {
     const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
