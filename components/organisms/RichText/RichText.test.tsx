@@ -192,15 +192,15 @@ describe('<RichText>', () => {
         content={editorState([
           {
             type: 'relationship',
-            relationTo: 'lectures',
-            value: { id: 3, title: 'A Lecture' },
+            relationTo: 'app-cards',
+            value: { id: 3, title: 'An App Card' },
             version: 1,
           },
         ])}
       />,
     )
 
-    expect(html).toContain('A Lecture')
+    expect(html).toContain('An App Card')
     expect(html).not.toContain('<a')
   })
 
@@ -458,8 +458,10 @@ describe('<RichText>', () => {
                 relationTo: 'pages',
                 value: { id: 2, slug: 'about', title: 'About Sahaja', meta: { image: img() } },
               },
-              // Lectures have no public route yet → dropped.
+              // Lectures are routable now → rendered as /lectures/:id.
               { relationTo: 'lectures', value: { id: 3, title: 'A Lecture', thumbnail: img() } },
+              // App-cards have no public route → dropped.
+              { relationTo: 'app-cards', value: { id: 8, title: 'An App Card', thumbnail: img() } },
             ],
           }),
         ])}
@@ -470,7 +472,9 @@ describe('<RichText>', () => {
     expect(html).toContain('href="/meditations/5"')
     expect(html).toContain('About Sahaja')
     expect(html).toContain('href="/about"')
-    expect(html).not.toContain('A Lecture')
+    expect(html).toContain('A Lecture')
+    expect(html).toContain('href="/lectures/3"')
+    expect(html).not.toContain('An App Card')
   })
 
   it('renders a subtle-system block, mapping page relationships to SVG node ids', () => {

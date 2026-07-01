@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
+import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
+import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
+import type { Track } from '../../molecules'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.
@@ -92,6 +95,99 @@ const KNOWN_BLOCK_TYPES = [
   'splash',
   'content-index',
 ] as const
+
+// The content-index converter reads `node.fields`; narrow to the callable shape.
+type CIConverter = (args: { node: { fields: Record<string, unknown> } }) => ReactElement | null
+
+const contentIndex = blockConverters['content-index'] as unknown as CIConverter
+
+function convertCI(fields: Record<string, unknown>) {
+  return contentIndex({ node: { fields: { blockType: 'content-index', ...fields } } })
+}
+
+const CARD = {
+  id: 1,
+  title: 'What Is Meditation?',
+  href: '/what-is-meditation',
+  thumbnailSrc: 'https://picsum.photos/seed/x/600/400',
+}
+
+describe('content-index block converter — dispatch', () => {
+  it('pages → ContentIndex (filter pills + cards)', () => {
+    const html = renderToStaticMarkup(
+      convertCI({
+        type: 'pages',
+        resolvedItems: [{ ...CARD, tags: [{ id: 'wisdom', label: 'Wisdom' }] }],
+      }),
+    )
+
+    expect(html).toContain('Filter content by tag')
+    expect(html).toContain('>Wisdom<')
+    expect(html).toContain('What Is Meditation?')
+  })
+
+  it('lectures → ContentIndex cards linking to /lectures/:id (no pills without facets)', () => {
+    const html = renderToStaticMarkup(
+      convertCI({
+        type: 'lectures',
+        resolvedItems: [{ ...CARD, id: 7, title: 'A Lecture', href: '/lectures/7' }],
+      }),
+    )
+
+    expect(html).toContain('/lectures/7')
+    expect(html).toContain('A Lecture')
+    expect(html).not.toContain('Filter content by tag') // no facets → no pill row
+  })
+
+  it('meditations → static grid (no filter pills)', () => {
+    const html = renderToStaticMarkup(
+      convertCI({
+        type: 'meditations',
+        resolvedItems: [{ ...CARD, id: 5, href: '/meditations/5', playButton: true }],
+      }),
+    )
+
+    expect(html).toContain('grid-cols-2')
+    expect(html).not.toContain('Filter content by tag')
+  })
+
+  it('songs → MusicLibrary with tracks + music-tag filters', () => {
+    const el = convertCI({
+      type: 'songs',
+      resolvedTracks: [
+        {
+          url: 'https://cdn/a.mp3',
+          title: 'Raga',
+          credit: 'X',
+          creditURL: '',
+          thumbnailURL: '',
+          duration: 0,
+          tags: ['vocals'],
+        },
+      ],
+    })
+
+    // Inspect the element tree rather than rendering the whole MusicLibrary /
+    // AudioPlayer subtree — this test only asserts the dispatch + filter derivation.
+    const wrapper = el as ReactElement<{
+      children: ReactElement<{ tracks: Track[]; filters: MusicFilter[] }>
+    }>
+    const library = wrapper.props.children
+
+    expect(library.type).toBe(MusicLibrary)
+    expect(library.props.tracks).toHaveLength(1)
+    expect(library.props.filters.map((f) => ({ id: f.id, label: f.label }))).toEqual([
+      { id: 'vocals', label: 'Vocals' },
+    ])
+    expect(library.props.filters[0].icon).toBe(MusicalNoteIcon)
+  })
+
+  it('renders nothing for empty / unresolved lists', () => {
+    expect(convertCI({ type: 'pages', resolvedItems: [] })).toBeNull()
+    expect(convertCI({ type: 'songs', resolvedTracks: [] })).toBeNull()
+    expect(convertCI({ type: 'pages' })).toBeNull()
+  })
+})
 
 describe('block coverage', () => {
   it.each(KNOWN_BLOCK_TYPES)('has a converter function for the %s block', (blockType) => {
