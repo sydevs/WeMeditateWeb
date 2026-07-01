@@ -250,6 +250,18 @@ describe('contentIndexTrack', () => {
 
     expect(track).toMatchObject({ credit: '', creditURL: '', thumbnailURL: '', tags: [] })
   })
+
+  it("falls back to the song's own thumbnailURL when the album has no artwork", () => {
+    const track = contentIndexTrack({
+      id: 10,
+      title: 'Raga',
+      url: 'https://cdn/a.mp3',
+      album: { id: 1, artist: 'Nightingale', artwork: 99 }, // artwork unpopulated (bare id)
+      thumbnailURL: 'https://cdn/song-thumb.jpg',
+    })
+
+    expect(track?.thumbnailURL).toBe('https://cdn/song-thumb.jpg')
+  })
 })
 
 describe('isExternalUrl', () => {

@@ -536,6 +536,9 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
   }
   const album = isPopulated<Album>(doc.album) ? doc.album : null
   const artwork = album ? populatedImage(album.artwork) : null
+  // Prefer the album cover; fall back to the song's own thumbnail when the album
+  // has no artwork (or is an unpublished/bare-id relationship).
+  const songThumbnail = typeof doc.thumbnailURL === 'string' ? doc.thumbnailURL : ''
   const tags = (Array.isArray(doc.tags) ? doc.tags : [])
     .map((tag) => (isPopulated<SongTag>(tag) && typeof tag.slug === 'string' ? tag.slug : null))
     .filter((slug): slug is string => slug !== null)
@@ -545,7 +548,7 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
     title: asText(doc.title),
     credit: album?.artist ?? '',
     creditURL: album?.artistUrl ?? '',
-    thumbnailURL: artwork?.url ?? '',
+    thumbnailURL: artwork?.url ?? songThumbnail,
     duration: 0,
     tags,
   }

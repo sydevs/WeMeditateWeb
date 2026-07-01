@@ -52,7 +52,8 @@ const QUERY_BY_TYPE: Record<
     depth: 1,
   },
   songs: {
-    select: 'select[title]=true&select[album]=true&select[url]=true&select[tags]=true',
+    select:
+      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true',
     populate:
       'populate[albums][artist]=true&populate[albums][artistUrl]=true&populate[albums][artwork]=true&populate[song-tags][slug]=true&populate[images][url]=true',
     depth: 2,
