@@ -139,16 +139,26 @@ describe('content-index block converter — dispatch', () => {
     expect(html).not.toContain('Filter content by tag') // no facets → no pill row
   })
 
-  it('meditations → static grid (no filter pills)', () => {
+  it('meditations → ContentIndex with user-choice pills', () => {
     const html = renderToStaticMarkup(
       convertCI({
         type: 'meditations',
-        resolvedItems: [{ ...CARD, id: 5, href: '/meditations/5', playButton: true }],
+        resolvedItems: [
+          {
+            ...CARD,
+            id: 5,
+            title: 'Feel Calm',
+            href: '/meditations/5',
+            playButton: true,
+            tags: [{ id: '25', label: '5 min' }],
+          },
+        ],
       }),
     )
 
-    expect(html).toContain('grid-cols-2')
-    expect(html).not.toContain('Filter content by tag')
+    expect(html).toContain('Filter content by tag') // user-choices → filter pills
+    expect(html).toContain('>5 min<')
+    expect(html).toContain('/meditations/5')
   })
 
   it('songs → MusicLibrary with tracks + music-tag filters', () => {

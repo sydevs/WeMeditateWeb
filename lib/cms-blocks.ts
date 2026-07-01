@@ -521,6 +521,92 @@ export function contentIndexCard(
   }
 }
 
+/** The four time-of-day meditation slots on a UserChoice category. */
+const USER_CHOICE_MEDITATION_SLOTS = [
+  'morningMeditation',
+  'afternoonMeditation',
+  'eveningMeditation',
+  'nightMeditation',
+] as const
+
+/** Card duration (minutes) for a populated meditation: the explicit
+ * `durationMinutes`, else derived from `duration` (seconds), else omitted. */
+function meditationDurationMinutes(med: {
+  durationMinutes?: number | null
+  duration?: number | null
+}): number | undefined {
+  if (typeof med.durationMinutes === 'number') {
+    return med.durationMinutes
+  }
+  if (typeof med.duration === 'number' && med.duration > 0) {
+    return Math.round(med.duration / 60)
+  }
+
+  return undefined
+}
+
+/**
+ * Flatten a `meditations` content-index into a deduped grid of meditation cards.
+ *
+ * The block's endpoint resolves to user-choice *categories* (e.g. the "5 min" /
+ * "5-10 min" duration picker), each referencing up to four meditations
+ * (morning/afternoon/evening/night). We merge every referenced meditation into a
+ * single card list and tag each card with the user-choice(s) that reference it,
+ * so `ContentIndex` renders the meditations as a grid with the user-choices as
+ * filter pills. A meditation shared across choices appears once, carrying all its
+ * facets. Unpopulated slots and unidentifiable docs are skipped.
+ */
+export function meditationCardsFromUserChoices(
+  docs: Record<string, unknown>[],
+): ResolvedCardItem[] {
+  const byId = new Map<string | number, ResolvedCardItem>()
+
+  for (const uc of docs) {
+    const ucId = uc.id
+    const title = asText(uc.title)
+
+    if (ucId == null || title.length === 0) {
+      continue
+    }
+    const facet = { id: String(ucId), label: title }
+
+    for (const slot of USER_CHOICE_MEDITATION_SLOTS) {
+      const med = uc[slot]
+
+      if (!isPopulated<Meditation>(med) || med.id == null) {
+        continue
+      }
+      const existing = byId.get(med.id)
+
+      if (existing) {
+        // Referenced by more than one choice — add the facet (deduped).
+        if (!existing.tags?.some((t) => t.id === facet.id)) {
+          existing.tags = [...(existing.tags ?? []), facet]
+        }
+        continue
+      }
+      const img = populatedImage(med.thumbnail)
+      const medTitle = asText(med.title) || asText(med.label)
+
+      byId.set(med.id, {
+        id: med.id,
+        title: medTitle,
+        href: `/meditations/${med.id}`,
+        thumbnailSrc: img?.url ?? '',
+        // Meditation thumbnails are populated without `alt`; fall back to the
+        // title (`||`, so an empty alt still falls through).
+        thumbnailAlt: img?.alt || medTitle,
+        aspectRatio: img?.aspectRatio,
+        playButton: true,
+        durationMinutes: meditationDurationMinutes(med),
+        tags: [facet],
+      })
+    }
+  }
+
+  return Array.from(byId.values())
+}
+
 /**
  * Map a content-index `songs` API document to a playable {@link Track} for the
  * MusicLibrary organism. Songs without a playable URL are skipped. `duration` is

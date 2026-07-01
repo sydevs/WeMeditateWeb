@@ -13,7 +13,6 @@ import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { Button, Container, Image } from '../../atoms'
 import {
-  ContentCard,
   ContentCarousel,
   HeroQuote,
   LayoutBlock,
@@ -327,10 +326,10 @@ export const blockConverters: BlockConverters = {
 
   // content-index → the live list resolved server-side in `+data` (see
   // server/content-index.ts), dispatched by content type:
-  //   songs        → MusicLibrary (playback + its own tag filtering)
-  //   pages/lectures → ContentIndex (filterable card grid with pills)
-  //   meditations  → static card grid (deferred; no client filtering)
-  // Empty / unresolvable lists render nothing.
+  //   songs                    → MusicLibrary (playback + its own tag filtering)
+  //   pages/lectures/meditations → ContentIndex (filterable card grid with pills)
+  // Meditations resolve to user-choice categories flattened into meditation
+  // cards, with the categories as the filter pills. Empty lists render nothing.
   'content-index': ({ node }) => {
     const fields = node.fields as unknown as ContentIndexBlockFields
 
@@ -354,22 +353,9 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    // Meditations keep the static grid (client filtering deferred). A plain grid
-    // fills the block width (unlike the centered masonry). `tags` is stripped —
-    // ContentCard forwards unknown props to the DOM.
-    if (fields.type === 'meditations') {
-      return (
-        <div className={`${BLOCK_SPACING} grid grid-cols-2 gap-4 lg:grid-cols-3`}>
-          {items.map(({ id, tags: _tags, ...card }) => (
-            <ContentCard key={id} {...card} />
-          ))}
-        </div>
-      )
-    }
-
-    // Pages / lectures → filterable grid with facet pills. Break out of the prose
-    // column to the wider content Container (xl / 6xl), like ContentTextBox, so the
-    // grid has more room; the full-bleed wrapper owns the vertical spacing.
+    // Filterable grid with facet pills. Break out of the prose column to the
+    // wider content Container (xl / 6xl), like ContentTextBox, so the grid has
+    // more room; the full-bleed wrapper owns the vertical spacing.
     return (
       <div className={FULL_BLEED_BLOCK}>
         <Container maxWidth="xl">

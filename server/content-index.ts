@@ -21,6 +21,7 @@ import type { Locale } from './cms-types'
 import {
   contentIndexCard,
   contentIndexTrack,
+  meditationCardsFromUserChoices,
   type ContentIndexBlockFields,
   type ResolvedCardItem,
 } from '../lib/cms-blocks'
@@ -42,9 +43,18 @@ const QUERY_BY_TYPE: Record<
     select: 'select[title]=true&select[slug]=true&select[meta]=true&select[tags]=true',
     depth: 1,
   },
+  // A `meditations` block resolves to user-choice *categories* (a duration/mood
+  // picker), not meditation docs. Select each category's title (the filter-pill
+  // label) and its four time-of-day meditation slots, then populate those
+  // meditations (title/label/thumbnail/duration) and their thumbnail images
+  // (url needs `filename` — the upload virtual gotcha). depth=2 reaches
+  // category → meditation → image. See `meditationCardsFromUserChoices`.
   meditations: {
-    select: 'select[title]=true&select[thumbnail]=true&select[durationMinutes]=true',
-    depth: 1,
+    select:
+      'select[title]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true&select[nightMeditation]=true',
+    populate:
+      'populate[meditations][title]=true&populate[meditations][label]=true&populate[meditations][thumbnail]=true&populate[meditations][duration]=true&populate[meditations][durationMinutes]=true&populate[images][url]=true&populate[images][filename]=true&populate[images][width]=true&populate[images][height]=true',
+    depth: 2,
   },
   lectures: {
     select: 'select[title]=true&select[thumbnail]=true&select[userChoices]=true',
@@ -72,6 +82,19 @@ interface ResolveOptions {
   /** The site's fixed audiences (WmWebConfig.audiences), passed to the lectures
    * `/for-audience` feed so it resolves server-side. */
   audiences?: (number | Audience)[]
+}
+
+/**
+ * Drop every `key=…` param from a path+query string. The CMS-computed endpoint
+ * sometimes bakes in its own `depth` (e.g. the meditations user-choices feed);
+ * our per-type `depth` must be the only one, since duplicate `depth` params
+ * parse to an array and the backend 400s ("populate required when depth > 1").
+ */
+function stripQueryParam(endpoint: string, key: string): string {
+  const [path, query = ''] = endpoint.split('?')
+  const kept = query.split('&').filter((part) => part !== '' && part.split('=')[0] !== key)
+
+  return kept.length > 0 ? `${path}?${kept.join('&')}` : path
 }
 
 /** Extract audience document ids (populated object or bare id) as strings. */
@@ -121,11 +144,13 @@ async function fetchContentIndexDocs(
   }
   const { apiKey, baseURL } = getCmsContext()
   const { select, populate, depth } = QUERY_BY_TYPE[type]
-  const separator = apiEndpoint.includes('?') ? '&' : '?'
+  // Strip any depth the CMS baked into the endpoint so ours is the only one.
+  const endpoint = stripQueryParam(apiEndpoint, 'depth')
+  const separator = endpoint.includes('?') ? '&' : '?'
   const populateParam = populate ? `&${populate}` : ''
   const localeParam = options.locale ? `&locale=${options.locale}` : ''
   const audiencesParam = audiences.length > 0 ? `&audiences=${audiences.join(',')}` : ''
-  const url = `${baseURL}${apiEndpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
+  const url = `${baseURL}${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
 
   try {
     const response = await fetch(url, {
@@ -158,14 +183,15 @@ async function fetchContentIndexDocs(
 }
 
 /**
- * Fetch a content-index block's list (cached), mapping each doc via `mapper` and
- * dropping the ones it rejects (`null`). Shared by the card and track resolvers,
- * which differ only in their per-doc mapping.
+ * Fetch a content-index block's list (cached) and run `transform` over the raw
+ * docs. A `transform` (not a per-doc mapper) because the meditations type is
+ * 1-doc→many-cards (a user-choice category expands into its meditations), while
+ * cards/tracks are 1:1.
  */
 async function resolveContentIndex<T>(
   fields: ContentIndexBlockFields,
   options: ResolveOptions,
-  mapper: (doc: Record<string, unknown>) => T | null,
+  transform: (docs: Record<string, unknown>[]) => T[],
 ): Promise<T[]> {
   if (!fields.apiEndpoint) {
     return []
@@ -175,11 +201,7 @@ async function resolveContentIndex<T>(
     cacheKey: contentIndexCacheKey(fields, options),
     ttl: CacheTTL.LIST,
     bypassCache: options.preview === true,
-    fetchFn: async () => {
-      const docs = await fetchContentIndexDocs(fields, options)
-
-      return docs.map(mapper).filter((mapped): mapped is T => mapped !== null)
-    },
+    fetchFn: async () => transform(await fetchContentIndexDocs(fields, options)),
   })
 }
 
@@ -188,7 +210,17 @@ export function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
-  return resolveContentIndex(fields, options, (doc) => contentIndexCard(doc, fields.type))
+  // Meditations resolve to user-choice categories and flatten into a deduped,
+  // facet-tagged grid; pages/lectures map one card per doc.
+  const transform =
+    fields.type === 'meditations'
+      ? meditationCardsFromUserChoices
+      : (docs: Record<string, unknown>[]) =>
+          docs
+            .map((doc) => contentIndexCard(doc, fields.type))
+            .filter((card): card is ResolvedCardItem => card !== null)
+
+  return resolveContentIndex(fields, options, transform)
 }
 
 /** Fetch and map a `songs` content-index block's list to playable tracks. */
@@ -196,7 +228,9 @@ export function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  return resolveContentIndex(fields, options, contentIndexTrack)
+  return resolveContentIndex(fields, options, (docs) =>
+    docs.map(contentIndexTrack).filter((track): track is Track => track !== null),
+  )
 }
 
 /** Recursively collect every `content-index` block's `fields` object. */

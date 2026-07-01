@@ -6,6 +6,7 @@ import {
   getLeadSplash,
   leadSplashFromRouteData,
   isExternalUrl,
+  meditationCardsFromUserChoices,
   populatedImage,
   showcaseItems,
   splashTheme,
@@ -261,6 +262,77 @@ describe('contentIndexTrack', () => {
     })
 
     expect(track?.thumbnailURL).toBe('https://cdn/song-thumb.jpg')
+  })
+})
+
+describe('meditationCardsFromUserChoices', () => {
+  const med = (over: Record<string, unknown> = {}) => ({
+    id: 105,
+    label: 'Morning med-5 min',
+    duration: 297, // seconds → 5 min
+    thumbnail: cfImage({ alt: '' }), // meditation thumbnails carry no alt
+    ...over,
+  })
+
+  it('flattens a category into meditation cards tagged by the user-choice', () => {
+    const cards = meditationCardsFromUserChoices([
+      {
+        id: 25,
+        title: '5 min',
+        morningMeditation: med(),
+        afternoonMeditation: 999, // bare id → skipped
+        eveningMeditation: null,
+      },
+    ])
+
+    expect(cards).toEqual([
+      {
+        id: 105,
+        title: 'Morning med-5 min',
+        href: '/meditations/105',
+        thumbnailSrc: 'https://imagedelivery.net/acct/img/',
+        thumbnailAlt: 'Morning med-5 min',
+        aspectRatio: expect.any(String),
+        playButton: true,
+        durationMinutes: 5, // derived from duration (297s)
+        tags: [{ id: '25', label: '5 min' }],
+      },
+    ])
+  })
+
+  it('prefers an explicit durationMinutes and the meditation title over its label', () => {
+    const [card] = meditationCardsFromUserChoices([
+      {
+        id: 26,
+        title: '5-10 min',
+        morningMeditation: med({ title: 'Feel Harmony', durationMinutes: 10, duration: 600 }),
+      },
+    ])
+
+    expect(card).toMatchObject({ title: 'Feel Harmony', durationMinutes: 10 })
+  })
+
+  it('dedupes a meditation shared across categories, merging both facets', () => {
+    const cards = meditationCardsFromUserChoices([
+      { id: 25, title: '5 min', morningMeditation: med({ id: 44 }) },
+      { id: 26, title: '5-10 min', eveningMeditation: med({ id: 44 }) },
+    ])
+
+    expect(cards).toHaveLength(1)
+    expect(cards[0].id).toBe(44)
+    expect(cards[0].tags).toEqual([
+      { id: '25', label: '5 min' },
+      { id: '26', label: '5-10 min' },
+    ])
+  })
+
+  it('skips categories without an id/title and slots that are bare ids', () => {
+    expect(
+      meditationCardsFromUserChoices([
+        { title: '', morningMeditation: med() }, // no title
+        { id: 27, title: '10-15 min', morningMeditation: 500 }, // bare-id slot
+      ]),
+    ).toEqual([])
   })
 })
 

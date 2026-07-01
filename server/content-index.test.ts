@@ -51,6 +51,48 @@ describe('resolveContentIndexItems', () => {
     expect(auth).toContain('API-Key test-key')
   })
 
+  it('resolves a meditations block via user-choice categories (single depth, flattened + tagged)', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse([
+        {
+          id: 25,
+          title: '5 min',
+          morningMeditation: { id: 105, label: 'Feel Calm', duration: 300, thumbnail: null },
+        },
+      ]),
+    )
+
+    const items = await resolveContentIndexItems(
+      {
+        type: 'meditations',
+        limit: 100,
+        // The CMS bakes `depth=1` into the endpoint; the resolver must not append
+        // a second one (duplicate `depth` params 400 the backend).
+        apiEndpoint: '/api/user-choices?where[id][in]=25&depth=1&limit=100',
+      },
+      { locale: 'en' },
+    )
+
+    expect(items).toEqual([
+      expect.objectContaining({
+        id: 105,
+        title: 'Feel Calm',
+        href: '/meditations/105',
+        playButton: true,
+        durationMinutes: 5,
+        tags: [{ id: '25', label: '5 min' }],
+      }),
+    ])
+
+    const url = fetchSpy.mock.calls[0][0] as string
+
+    // Baked-in depth stripped; only our depth=2 remains.
+    expect(url).toContain('https://cms.test/api/user-choices?where[id][in]=25&limit=100')
+    expect(url).toContain('depth=2')
+    expect(url).not.toContain('depth=1')
+    expect(url).toContain('populate[meditations][thumbnail]=true')
+  })
+
   it('caps the result at the block limit', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       jsonResponse([
