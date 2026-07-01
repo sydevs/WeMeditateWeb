@@ -11,8 +11,11 @@
  * converters) so they can be unit-tested without rendering.
  */
 
-import type { AppCard, Image, Lecture } from '../server/payload-types'
+import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
 import type { Meditation, Page } from '../server/cms-types'
+// Type-only import (erased at build): reuse the audio player's Track shape so the
+// songs content-index feeds MusicLibrary without a parallel type.
+import type { Track } from '../components/molecules/AudioPlayer/types'
 import { cmsHref, type RelationValue } from './cms-routes'
 import { isPopulated } from './cms-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
@@ -134,21 +137,48 @@ export interface TableOfContentsBlockFields {
   headings?: TocHeading[] | null
 }
 
-/** `content-index` — ContentIndexBlock. `resolvedItems` is attached by the
- * server-side pre-resolve pass in `+data`; the editor never stores it. */
+/** The `pages` collection's tag enum (drives page content-index facets). */
+export type PageTag = NonNullable<Page['tags']>[number]
+
+/** Display labels for page tags. Localizing these (via wm-web-translations) is
+ * a follow-up; the enum values are the stable identifiers used for filtering. */
+export const PAGE_TAG_LABELS: Record<PageTag, string> = {
+  wisdom: 'Wisdom',
+  lifestyle: 'Lifestyle',
+  creativity: 'Creativity',
+  event: 'Event',
+  technique: 'Technique',
+}
+
+/** `content-index` — ContentIndexBlock. `resolvedItems`/`resolvedTracks` are
+ * attached by the server-side pre-resolve pass in `+data`; the editor never
+ * stores them. The `*Filters` fields mirror the CMS schema but are unused for
+ * rendering — facets are derived from the resolved items' own `tags` instead. */
 export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
   limit: number
+  /** Configured page-tag filters (CMS schema mirror; facets come from items). */
+  pageFilters?: PageTag[] | null
+  /** Configured user-choice filters (CMS schema mirror; facets come from items). */
+  userChoiceFilters?: (number | UserChoice)[] | null
+  /** Configured song-tag filters (CMS schema mirror; facets come from tracks). */
+  songFilters?: (number | SongTag)[] | null
   /** Virtual field computed by the CMS (path + filters + limit). */
   apiEndpoint?: string | null
+  /** Cards for pages/lectures/meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
+  /** Playable tracks for the songs type (attached in +data). */
+  resolvedTracks?: Track[] | null
 }
 
 // ============================================================================
 // Shared card shape + helpers
 // ============================================================================
 
-/** A grid/card item shape, structurally compatible with `ContentGridItem`. */
+/** A grid/card item shape, structurally compatible with `ContentGridItem`.
+ * `tags` are the item's own facets (page-tag enum, or lecture user-choices),
+ * used by `ContentIndex` for client-side filter pills — strip before spreading
+ * onto `ContentCard`, which forwards unknown props to the DOM. */
 export interface ResolvedCardItem {
   id: string | number
   title: string
@@ -159,6 +189,7 @@ export interface ResolvedCardItem {
   playButton?: boolean
   durationMinutes?: number
   badge?: string
+  tags?: { id: string; label: string }[]
 }
 
 /** A populated image resolved to the fields the `Image` atom needs. */
@@ -295,8 +326,8 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   }
   const href = cmsHref(relationTo, value as RelationValue)
 
-  // Collections without a public web route (lectures until Ticket 3, app-cards)
-  // resolve to null — skip rather than emit a dead link.
+  // Collections without a public web route (app-cards) resolve to null —
+  // skip rather than emit a dead link.
   if (!href) {
     return null
   }
@@ -402,6 +433,40 @@ export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url)
 }
 
+/**
+ * Filter facets for a content-index card: page-tag enum labels (`pages`) or
+ * populated user-choice titles (`lectures`). Other types carry no card-level
+ * facets. Returns `undefined` (not `[]`) when empty so the field is omitted.
+ */
+function contentIndexCardTags(
+  doc: Record<string, unknown>,
+  type: ContentIndexBlockFields['type'],
+): ResolvedCardItem['tags'] {
+  if (type === 'pages') {
+    const raw = Array.isArray(doc.tags) ? doc.tags : []
+    const facets = raw
+      .filter((t): t is PageTag => typeof t === 'string' && t in PAGE_TAG_LABELS)
+      .map((t) => ({ id: t, label: PAGE_TAG_LABELS[t] }))
+
+    return facets.length > 0 ? facets : undefined
+  }
+
+  if (type === 'lectures') {
+    const raw = Array.isArray(doc.userChoices) ? doc.userChoices : []
+    const facets = raw
+      .map((uc) =>
+        isPopulated<UserChoice>(uc) && typeof uc.title === 'string' && uc.title.length > 0
+          ? { id: String(uc.id), label: uc.title }
+          : null,
+      )
+      .filter((f): f is { id: string; label: string } => f !== null)
+
+    return facets.length > 0 ? facets : undefined
+  }
+
+  return undefined
+}
+
 /** Map a content-index API document to a card for the given content type. */
 export function contentIndexCard(
   doc: Record<string, unknown>,
@@ -419,7 +484,9 @@ export function contentIndexCard(
       ? `/meditations/${id}`
       : type === 'pages'
         ? cmsHref('pages', doc as RelationValue)
-        : null
+        : type === 'lectures'
+          ? cmsHref('lectures', doc as RelationValue)
+          : null
 
   if (!href) {
     return null
@@ -438,5 +505,36 @@ export function contentIndexCard(
       type === 'meditations' && typeof doc.durationMinutes === 'number'
         ? doc.durationMinutes
         : undefined,
+    tags: contentIndexCardTags(doc, type),
+  }
+}
+
+/**
+ * Map a content-index `songs` API document to a playable {@link Track} for the
+ * MusicLibrary organism. Songs without a playable URL are skipped. `duration` is
+ * `0` — the Song CMS type has no duration field, so AudioPlayer derives it from
+ * the audio element at load. `tags` are the populated SongTag slugs, matched
+ * against MusicLibrary's filter ids.
+ */
+export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
+  const url = typeof doc.url === 'string' ? doc.url : ''
+
+  if (url.length === 0) {
+    return null
+  }
+  const album = isPopulated<Album>(doc.album) ? doc.album : null
+  const artwork = album ? populatedImage(album.artwork) : null
+  const tags = (Array.isArray(doc.tags) ? doc.tags : [])
+    .map((tag) => (isPopulated<SongTag>(tag) && typeof tag.slug === 'string' ? tag.slug : null))
+    .filter((slug): slug is string => slug !== null)
+
+  return {
+    url,
+    title: asText(doc.title),
+    credit: album?.artist ?? '',
+    creditURL: album?.artistUrl ?? '',
+    thumbnailURL: artwork?.url ?? '',
+    duration: 0,
+    tags,
   }
 }
