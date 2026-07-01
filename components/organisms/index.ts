@@ -73,3 +73,7 @@ export type { MeditationPlayerProps, Track, MeditationFrame } from './Meditation
 // RichText
 export { RichText } from './RichText'
 export type { RichTextProps } from './RichText'
+
+// ContentIndex
+export { ContentIndex } from './ContentIndex'
+export type { ContentIndexProps } from './ContentIndex'

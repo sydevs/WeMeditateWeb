@@ -61,9 +61,9 @@ export function ContentGrid({
   items,
   cardVariant = 'default',
   breakpointCols = {
-    default: 3,  // Desktop: 3 columns (1024px+)
-    1023: 2,     // Tablet: 2 columns (640px - 1023px)
-    639: 1,      // Mobile: 1 column (< 640px)
+    default: 3, // Desktop: 3 columns (1024px+)
+    1023: 2, // Tablet: 2 columns (640px - 1023px)
+    639: 1, // Mobile: 1 column (< 640px)
   },
   className = '',
   ...props
@@ -73,24 +73,30 @@ export function ContentGrid({
   // Hero: 24px mobile, 30px tablet, 36px desktop (50% larger)
   const isHero = cardVariant === 'hero'
   const gapClasses = isHero
-    ? '-ml-6 sm:-ml-[1.875rem] lg:-ml-9'  // 24px, 30px, 36px
-    : '-ml-4 sm:-ml-5 lg:-ml-6'           // 16px, 20px, 24px
+    ? '-ml-6 sm:-ml-[1.875rem] lg:-ml-9' // 24px, 30px, 36px
+    : '-ml-4 sm:-ml-5 lg:-ml-6' // 16px, 20px, 24px
   const columnGapClasses = isHero
-    ? 'pl-6 sm:pl-[1.875rem] lg:pl-9'     // 24px, 30px, 36px
-    : 'pl-4 sm:pl-5 lg:pl-6'              // 16px, 20px, 24px
+    ? 'pl-6 sm:pl-[1.875rem] lg:pl-9' // 24px, 30px, 36px
+    : 'pl-4 sm:pl-5 lg:pl-6' // 16px, 20px, 24px
 
   return (
-    <div className={`flex justify-center w-full ${className}`} {...props}>
+    // The Masonry must FILL this wrapper, not be a shrink-to-fit flex child:
+    // react-masonry-css sizes each column to 100%/columns, so a content-collapsed
+    // container makes columns (and their cards) collapse to the cards' min-content
+    // (e.g. the title). A plain block wrapper + w-full Masonry keeps columns at a
+    // consistent fraction of the available width regardless of item count.
+    <div className={`w-full ${className}`} {...props}>
       <Masonry
         breakpointCols={breakpointCols}
-        className={`flex ${gapClasses} max-w-full`}
+        className={`flex ${gapClasses} w-full`}
         columnClassName={`${columnGapClasses} bg-clip-padding`}
       >
         {items.map((item) => {
           const { id, ...cardProps } = item
+
           return (
             <div key={id} className="mb-8 flex justify-center">
-              <ContentCard {...cardProps} variant={cardVariant} fadeInOnLoad={true} />
+              <ContentCard {...cardProps} fadeInOnLoad={true} variant={cardVariant} />
             </div>
           )
         })}

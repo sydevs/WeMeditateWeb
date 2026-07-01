@@ -11,8 +11,11 @@
  * converters) so they can be unit-tested without rendering.
  */
 
-import type { AppCard, Image, Lecture } from '../server/payload-types'
+import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
 import type { Meditation, Page } from '../server/cms-types'
+// Type-only import (erased at build): reuse the audio player's Track shape so the
+// songs content-index feeds MusicLibrary without a parallel type.
+import type { Track } from '../components/molecules/AudioPlayer/types'
 import { cmsHref, type RelationValue } from './cms-routes'
 import { isPopulated } from './cms-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
@@ -134,21 +137,48 @@ export interface TableOfContentsBlockFields {
   headings?: TocHeading[] | null
 }
 
-/** `content-index` — ContentIndexBlock. `resolvedItems` is attached by the
- * server-side pre-resolve pass in `+data`; the editor never stores it. */
+/** The `pages` collection's tag enum (drives page content-index facets). */
+export type PageTag = NonNullable<Page['tags']>[number]
+
+/** Display labels for page tags. Localizing these (via wm-web-translations) is
+ * a follow-up; the enum values are the stable identifiers used for filtering. */
+export const PAGE_TAG_LABELS: Record<PageTag, string> = {
+  wisdom: 'Wisdom',
+  lifestyle: 'Lifestyle',
+  creativity: 'Creativity',
+  event: 'Event',
+  technique: 'Technique',
+}
+
+/** `content-index` — ContentIndexBlock. `resolvedItems`/`resolvedTracks` are
+ * attached by the server-side pre-resolve pass in `+data`; the editor never
+ * stores them. The `*Filters` fields mirror the CMS schema but are unused for
+ * rendering — facets are derived from the resolved items' own `tags` instead. */
 export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
   limit: number
+  /** Configured page-tag filters (CMS schema mirror; facets come from items). */
+  pageFilters?: PageTag[] | null
+  /** Configured user-choice filters (CMS schema mirror; facets come from items). */
+  userChoiceFilters?: (number | UserChoice)[] | null
+  /** Configured song-tag filters (CMS schema mirror; facets come from tracks). */
+  songFilters?: (number | SongTag)[] | null
   /** Virtual field computed by the CMS (path + filters + limit). */
   apiEndpoint?: string | null
+  /** Cards for pages/lectures/meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
+  /** Playable tracks for the songs type (attached in +data). */
+  resolvedTracks?: Track[] | null
 }
 
 // ============================================================================
 // Shared card shape + helpers
 // ============================================================================
 
-/** A grid/card item shape, structurally compatible with `ContentGridItem`. */
+/** A grid/card item shape, structurally compatible with `ContentGridItem`.
+ * `tags` are the item's own facets (page-tag enum, or lecture user-choices),
+ * used by `ContentIndex` for client-side filter pills — strip before spreading
+ * onto `ContentCard`, which forwards unknown props to the DOM. */
 export interface ResolvedCardItem {
   id: string | number
   title: string
@@ -159,6 +189,7 @@ export interface ResolvedCardItem {
   playButton?: boolean
   durationMinutes?: number
   badge?: string
+  tags?: { id: string; label: string }[]
 }
 
 /** A populated image resolved to the fields the `Image` atom needs. */
@@ -295,8 +326,8 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   }
   const href = cmsHref(relationTo, value as RelationValue)
 
-  // Collections without a public web route (lectures until Ticket 3, app-cards)
-  // resolve to null — skip rather than emit a dead link.
+  // Collections without a public web route (app-cards) resolve to null —
+  // skip rather than emit a dead link.
   if (!href) {
     return null
   }
@@ -402,6 +433,57 @@ export function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url)
 }
 
+/**
+ * Filter facets for a content-index card: page-tag enum labels (`pages`) or
+ * populated user-choice titles (`lectures`). Other types carry no card-level
+ * facets. Returns `undefined` (not `[]`) when empty so the field is omitted.
+ */
+function contentIndexCardTags(
+  doc: Record<string, unknown>,
+  type: ContentIndexBlockFields['type'],
+): ResolvedCardItem['tags'] {
+  if (type === 'pages') {
+    const raw = Array.isArray(doc.tags) ? doc.tags : []
+    const facets = raw
+      .filter((t): t is PageTag => typeof t === 'string' && t in PAGE_TAG_LABELS)
+      .map((t) => ({ id: t, label: PAGE_TAG_LABELS[t] }))
+
+    return facets.length > 0 ? facets : undefined
+  }
+
+  if (type === 'lectures') {
+    const raw = Array.isArray(doc.userChoices) ? doc.userChoices : []
+    const facets = raw
+      .map((uc) =>
+        isPopulated<UserChoice>(uc) && typeof uc.title === 'string' && uc.title.length > 0
+          ? { id: String(uc.id), label: uc.title }
+          : null,
+      )
+      .filter((f): f is { id: string; label: string } => f !== null)
+
+    return facets.length > 0 ? facets : undefined
+  }
+
+  return undefined
+}
+
+/** Web path for a content-index card by type: meditations route by id, pages by
+ * slug, lectures by id; other types have no public route (`null`). */
+function cardHref(
+  type: ContentIndexBlockFields['type'],
+  doc: Record<string, unknown>,
+  id: string | number,
+): string | null {
+  if (type === 'meditations') {
+    return `/meditations/${id}`
+  }
+  if (type === 'pages' || type === 'lectures') {
+    return cmsHref(type, doc as RelationValue)
+  }
+
+  return null
+}
+
 /** Map a content-index API document to a card for the given content type. */
 export function contentIndexCard(
   doc: Record<string, unknown>,
@@ -413,24 +495,21 @@ export function contentIndexCard(
     return null
   }
   const title = asText(doc.title)
-
-  const href =
-    type === 'meditations'
-      ? `/meditations/${id}`
-      : type === 'pages'
-        ? cmsHref('pages', doc as RelationValue)
-        : null
+  const href = cardHref(type, doc, id)
 
   if (!href) {
     return null
   }
   const img = cardImage(doc)
+  // The lectures /for-audience feed returns a plain `thumbnailUrl` string (not a
+  // populated `thumbnail` relationship), so fall back to it for the card image.
+  const thumbnailUrl = typeof doc.thumbnailUrl === 'string' ? doc.thumbnailUrl : ''
 
   return {
     id,
     title,
     href,
-    thumbnailSrc: img?.url ?? '',
+    thumbnailSrc: img?.url ?? thumbnailUrl,
     thumbnailAlt: img?.alt ?? title,
     aspectRatio: img?.aspectRatio,
     playButton: type === 'meditations',
@@ -438,5 +517,127 @@ export function contentIndexCard(
       type === 'meditations' && typeof doc.durationMinutes === 'number'
         ? doc.durationMinutes
         : undefined,
+    tags: contentIndexCardTags(doc, type),
+  }
+}
+
+/** The four time-of-day meditation slots on a UserChoice category. */
+const USER_CHOICE_MEDITATION_SLOTS = [
+  'morningMeditation',
+  'afternoonMeditation',
+  'eveningMeditation',
+  'nightMeditation',
+] as const
+
+/** Card duration (minutes) for a populated meditation: the explicit
+ * `durationMinutes`, else derived from `duration` (seconds), else omitted. A
+ * value below 1 (sub-minute duration or `0`) is omitted — a "0 min" badge is
+ * meaningless. */
+function meditationDurationMinutes(med: {
+  durationMinutes?: number | null
+  duration?: number | null
+}): number | undefined {
+  const minutes =
+    typeof med.durationMinutes === 'number'
+      ? med.durationMinutes
+      : typeof med.duration === 'number' && med.duration > 0
+        ? Math.round(med.duration / 60)
+        : undefined
+
+  return minutes !== undefined && minutes >= 1 ? minutes : undefined
+}
+
+/**
+ * Flatten a `meditations` content-index into a deduped grid of meditation cards.
+ *
+ * The block's endpoint resolves to user-choice *categories* (e.g. the "5 min" /
+ * "5-10 min" duration picker), each referencing up to four meditations
+ * (morning/afternoon/evening/night). We merge every referenced meditation into a
+ * single card list and tag each card with the user-choice(s) that reference it,
+ * so `ContentIndex` renders the meditations as a grid with the user-choices as
+ * filter pills. A meditation shared across choices appears once, carrying all its
+ * facets. Unpopulated slots and unidentifiable docs are skipped.
+ */
+export function meditationCardsFromUserChoices(
+  docs: Record<string, unknown>[],
+): ResolvedCardItem[] {
+  const byId = new Map<string | number, ResolvedCardItem>()
+
+  for (const uc of docs) {
+    const ucId = uc.id
+    const title = asText(uc.title)
+
+    if (ucId == null || title.length === 0) {
+      continue
+    }
+    const facet = { id: String(ucId), label: title }
+
+    for (const slot of USER_CHOICE_MEDITATION_SLOTS) {
+      const med = uc[slot]
+
+      if (!isPopulated<Meditation>(med) || med.id == null) {
+        continue
+      }
+      const existing = byId.get(med.id)
+
+      if (existing) {
+        // Referenced by more than one choice — add the facet (deduped).
+        if (!existing.tags?.some((t) => t.id === facet.id)) {
+          existing.tags = [...(existing.tags ?? []), facet]
+        }
+        continue
+      }
+      const img = populatedImage(med.thumbnail)
+      const medTitle = asText(med.title) || asText(med.label)
+
+      byId.set(med.id, {
+        id: med.id,
+        title: medTitle,
+        href: `/meditations/${med.id}`,
+        thumbnailSrc: img?.url ?? '',
+        // Meditation thumbnails are populated without `alt`; fall back to the
+        // title (`||`, so an empty alt still falls through).
+        thumbnailAlt: img?.alt || medTitle,
+        aspectRatio: img?.aspectRatio,
+        playButton: true,
+        durationMinutes: meditationDurationMinutes(med),
+        tags: [facet],
+      })
+    }
+  }
+
+  return Array.from(byId.values())
+}
+
+/**
+ * Map a content-index `songs` API document to a playable {@link Track} for the
+ * MusicLibrary organism. Songs without a playable URL are skipped. `duration` is
+ * `0` — the Song CMS type has no duration field, so AudioPlayer derives it from
+ * the audio element at load. `tags` are the populated SongTag slugs, matched
+ * against MusicLibrary's filter ids.
+ */
+export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
+  const url = typeof doc.url === 'string' ? doc.url : ''
+
+  if (url.length === 0) {
+    return null
+  }
+  const album = isPopulated<Album>(doc.album) ? doc.album : null
+  const artwork = album ? populatedImage(album.artwork) : null
+  // Prefer the album cover; fall back to the song's own thumbnail when the album
+  // has no artwork (or is an unpublished/bare-id relationship).
+  const songThumbnail = typeof doc.thumbnailURL === 'string' ? doc.thumbnailURL : ''
+  const tags = (Array.isArray(doc.tags) ? doc.tags : [])
+    .map((tag) => (isPopulated<SongTag>(tag) && typeof tag.slug === 'string' ? tag.slug : null))
+    .filter((slug): slug is string => slug !== null)
+
+  return {
+    url,
+    title: asText(doc.title),
+    credit: album?.artist ?? '',
+    creditURL: album?.artistUrl ?? '',
+    thumbnailURL: artwork?.url ?? songThumbnail,
+    duration: 0,
+    tags,
   }
 }

@@ -36,7 +36,10 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     if (!settings.homePage) {
       throw render(404, 'Homepage not configured.')
     }
-    const content = await resolveContentIndexBlocks(settings.homePage.content, { locale })
+    const content = await resolveContentIndexBlocks(settings.homePage.content, {
+      locale,
+      audiences: settings.audiences,
+    })
 
     return { page: { ...settings.homePage, content }, locale, slug, settings }
   }
@@ -52,7 +55,10 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     throw render(404, 'Page not found.')
   }
   // Resolve any content-index blocks' live lists for SSR.
-  const content = await resolveContentIndexBlocks(page.content, { locale })
+  const content = await resolveContentIndexBlocks(page.content, {
+    locale,
+    audiences: settings.audiences,
+  })
 
   return { page: { ...page, content }, locale, slug, settings }
 }

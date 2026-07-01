@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
   contentIndexCard,
+  contentIndexTrack,
   galleryImages,
   getLeadSplash,
   leadSplashFromRouteData,
   isExternalUrl,
+  meditationCardsFromUserChoices,
   populatedImage,
   showcaseItems,
   splashTheme,
@@ -98,9 +100,20 @@ describe('showcaseItems', () => {
     expect(card.thumbnailSrc).toBe('https://imagedelivery.net/acct/img/')
   })
 
-  it('drops unroutable (lectures/app-cards), bare-id, and thumbnail-less refs', () => {
+  it('maps a lecture to a card by id (now routable)', () => {
     const items: ShowcaseItem[] = [
       { relationTo: 'lectures', value: { id: 3, title: 'Lecture', thumbnail: cfImage() } as never },
+    ]
+    const [card] = showcaseItems(items)
+
+    expect(card.href).toBe('/lectures/3')
+    expect(card.playButton).toBe(false)
+    expect(card.thumbnailSrc).toBe('https://imagedelivery.net/acct/img/')
+  })
+
+  it('drops unroutable (app-cards), bare-id, and thumbnail-less refs', () => {
+    const items: ShowcaseItem[] = [
+      { relationTo: 'app-cards', value: { id: 3, title: 'Card', thumbnail: cfImage() } as never },
       { relationTo: 'pages', value: 7 },
       { relationTo: 'pages', value: { id: 8, slug: 'no-thumb', title: 'NT' } as never },
     ]
@@ -146,8 +159,192 @@ describe('contentIndexCard', () => {
     ).toMatchObject({ href: '/meditations/5', playButton: true, durationMinutes: 8 })
   })
 
+  it('routes lectures by id (/lectures/:id)', () => {
+    expect(
+      contentIndexCard({ id: 7, title: 'Lecture', thumbnail: cfImage() }, 'lectures'),
+    ).toMatchObject({ href: '/lectures/7', playButton: false })
+  })
+
+  it('uses the /for-audience feed thumbnailUrl string when there is no thumbnail relationship', () => {
+    const card = contentIndexCard(
+      { id: 7, title: 'Lecture', thumbnailUrl: 'https://img.example/mq.jpg' },
+      'lectures',
+    )
+
+    expect(card).toMatchObject({
+      href: '/lectures/7',
+      thumbnailSrc: 'https://img.example/mq.jpg',
+    })
+  })
+
   it('returns null when the doc has no id', () => {
     expect(contentIndexCard({ title: 'x' }, 'pages')).toBeNull()
+  })
+
+  it('attaches page-tag facets with display labels, omitting unknown tags', () => {
+    const card = contentIndexCard(
+      { id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom', 'technique', 'bogus'] },
+      'pages',
+    )
+
+    expect(card?.tags).toEqual([
+      { id: 'wisdom', label: 'Wisdom' },
+      { id: 'technique', label: 'Technique' },
+    ])
+  })
+
+  it('attaches lecture facets from populated user-choices (dropping bare ids / empty titles)', () => {
+    const card = contentIndexCard(
+      {
+        id: 7,
+        title: 'Lecture',
+        userChoices: [{ id: 3, title: 'Calm' }, 99, { id: 4, title: '' }],
+      },
+      'lectures',
+    )
+
+    expect(card?.tags).toEqual([{ id: '3', label: 'Calm' }])
+  })
+
+  it('omits tags entirely when none resolve', () => {
+    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide' }, 'pages')
+
+    expect(card?.tags).toBeUndefined()
+  })
+})
+
+describe('contentIndexTrack', () => {
+  const album = (over: Record<string, unknown> = {}) => ({
+    id: 1,
+    artist: 'Nightingale',
+    artistUrl: 'https://example.com/artist',
+    artwork: cfImage(),
+    ...over,
+  })
+
+  it('maps a song doc to a playable Track (duration 0, tags as songTag slugs)', () => {
+    const track = contentIndexTrack({
+      id: 10,
+      title: 'Raga',
+      url: 'https://cdn/audio.mp3',
+      album: album(),
+      tags: [{ id: 1, slug: 'strings' }, 42, { id: 2, slug: 'vocal' }],
+    })
+
+    expect(track).toEqual({
+      url: 'https://cdn/audio.mp3',
+      title: 'Raga',
+      credit: 'Nightingale',
+      creditURL: 'https://example.com/artist',
+      thumbnailURL: 'https://imagedelivery.net/acct/img/',
+      duration: 0,
+      tags: ['strings', 'vocal'],
+    })
+  })
+
+  it('returns null for a song with no playable url', () => {
+    expect(contentIndexTrack({ id: 10, title: 'Raga', album: album() })).toBeNull()
+  })
+
+  it('degrades gracefully when the album is a bare id (no credit/artwork)', () => {
+    const track = contentIndexTrack({ id: 10, title: 'Raga', url: 'https://cdn/a.mp3', album: 5 })
+
+    expect(track).toMatchObject({ credit: '', creditURL: '', thumbnailURL: '', tags: [] })
+  })
+
+  it("falls back to the song's own thumbnailURL when the album has no artwork", () => {
+    const track = contentIndexTrack({
+      id: 10,
+      title: 'Raga',
+      url: 'https://cdn/a.mp3',
+      album: { id: 1, artist: 'Nightingale', artwork: 99 }, // artwork unpopulated (bare id)
+      thumbnailURL: 'https://cdn/song-thumb.jpg',
+    })
+
+    expect(track?.thumbnailURL).toBe('https://cdn/song-thumb.jpg')
+  })
+})
+
+describe('meditationCardsFromUserChoices', () => {
+  const med = (over: Record<string, unknown> = {}) => ({
+    id: 105,
+    label: 'Morning med-5 min',
+    duration: 297, // seconds → 5 min
+    thumbnail: cfImage({ alt: '' }), // meditation thumbnails carry no alt
+    ...over,
+  })
+
+  it('flattens a category into meditation cards tagged by the user-choice', () => {
+    const cards = meditationCardsFromUserChoices([
+      {
+        id: 25,
+        title: '5 min',
+        morningMeditation: med(),
+        afternoonMeditation: 999, // bare id → skipped
+        eveningMeditation: null,
+      },
+    ])
+
+    expect(cards).toEqual([
+      {
+        id: 105,
+        title: 'Morning med-5 min',
+        href: '/meditations/105',
+        thumbnailSrc: 'https://imagedelivery.net/acct/img/',
+        thumbnailAlt: 'Morning med-5 min',
+        aspectRatio: expect.any(String),
+        playButton: true,
+        durationMinutes: 5, // derived from duration (297s)
+        tags: [{ id: '25', label: '5 min' }],
+      },
+    ])
+  })
+
+  it('omits a sub-minute / zero duration rather than showing a "0 min" badge', () => {
+    const [subMinute] = meditationCardsFromUserChoices([
+      { id: 25, title: '5 min', morningMeditation: med({ duration: 20 }) }, // 20s → 0 min
+    ])
+    const [explicitZero] = meditationCardsFromUserChoices([
+      { id: 26, title: '5-10 min', morningMeditation: med({ durationMinutes: 0, duration: 0 }) },
+    ])
+
+    expect(subMinute.durationMinutes).toBeUndefined()
+    expect(explicitZero.durationMinutes).toBeUndefined()
+  })
+
+  it('prefers an explicit durationMinutes and the meditation title over its label', () => {
+    const [card] = meditationCardsFromUserChoices([
+      {
+        id: 26,
+        title: '5-10 min',
+        morningMeditation: med({ title: 'Feel Harmony', durationMinutes: 10, duration: 600 }),
+      },
+    ])
+
+    expect(card).toMatchObject({ title: 'Feel Harmony', durationMinutes: 10 })
+  })
+
+  it('dedupes a meditation shared across categories, merging both facets', () => {
+    const cards = meditationCardsFromUserChoices([
+      { id: 25, title: '5 min', morningMeditation: med({ id: 44 }) },
+      { id: 26, title: '5-10 min', eveningMeditation: med({ id: 44 }) },
+    ])
+
+    expect(cards).toHaveLength(1)
+    expect(cards[0].id).toBe(44)
+    expect(cards[0].tags).toEqual([
+      { id: '25', label: '5 min' },
+      { id: '26', label: '5-10 min' },
+    ])
+  })
+
+  it('skips categories without an id/title and slots that are bare ids', () => {
+    expect(
+      meditationCardsFromUserChoices([
+        { title: '', morningMeditation: med() }, // no title
+        { id: 27, title: '10-15 min', morningMeditation: 500 }, // bare-id slot
+      ]),
+    ).toEqual([])
   })
 })
 

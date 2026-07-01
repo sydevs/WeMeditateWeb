@@ -162,7 +162,8 @@ const PAGE_POPULATE = {
   'app-cards': EMBEDDED_APP_CARD_SELECT,
 }
 
-/** Global config fields — all are `pages` relationships the layout + home page need. */
+/** Global config fields: `pages` relationships the layout + home page need, plus
+ * `audiences` (the site's fixed audience set the lectures /for-audience feed uses). */
 const WEB_CONFIG_SELECT = {
   homePage: true,
   featuredPages: true,
@@ -170,6 +171,7 @@ const WEB_CONFIG_SELECT = {
   classPages: true,
   knowledgePages: true,
   infoPages: true,
+  audiences: true,
 } satisfies WmWebConfigSelect<true>
 
 /**

@@ -4,8 +4,8 @@
  * - matching an incoming URL back to its route params ({@link matchDocumentRoute}).
  *
  * `cmsHref` is used by the RichText renderer (internal links + inline relationship
- * nodes) and reused by the `showcase` block in Ticket 2. `matchDocumentRoute` is
- * used by the meditation/lecture `+route.ts` files. Keeping the mapping in one
+ * nodes) and reused by the `showcase` and `content-index` blocks. `matchDocumentRoute`
+ * is used by the meditation/lecture `+route.ts` files. Keeping the mapping in one
  * place means new routes (e.g. lectures, albums) are wired up by editing a single
  * table rather than hunting through converters.
  *
@@ -57,8 +57,9 @@ const ROUTE_BUILDERS: Record<
 > = {
   pages: ({ slug }) => (slug ? `/${slug}` : null),
   meditations: ({ id }) => (id ? `/meditations/${id}` : null),
-  // No public web route yet — added in later tickets (lectures: Ticket 3).
-  lectures: () => null,
+  // Lectures route by id, mirroring meditations (route: pages/lectures/[id]/(full)/).
+  lectures: ({ id }) => (id ? `/lectures/${id}` : null),
+  // No public web route yet.
   albums: () => null,
   // App-only / embedded content with no standalone web route.
   'app-cards': () => null,

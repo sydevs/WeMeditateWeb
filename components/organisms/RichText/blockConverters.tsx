@@ -10,16 +10,19 @@
  */
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
+import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { Button, Container, Image } from '../../atoms'
 import {
-  ContentCard,
   ContentCarousel,
   HeroQuote,
   LayoutBlock,
   TableOfContents,
+  type Track,
 } from '../../molecules'
+import { ContentIndex } from '../ContentIndex'
 import { ContentOverlay } from '../ContentOverlay'
 import { ContentTextBox } from '../ContentTextBox'
+import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import { OrnateTextBox } from '../OrnateTextBox'
 import { Splash } from '../Splash'
 import { SubtleSystem } from '../SubtleSystem'
@@ -66,6 +69,36 @@ export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
  */
 export const FULL_BLEED_BLOCK = 'full-bleed my-6 clear-both'
 export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
+
+/** Title-case a song-tag slug for a filter label ('wind-instruments' → 'Wind Instruments'). */
+function humanizeSlug(slug: string): string {
+  return slug
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+/**
+ * Build MusicLibrary filters from the unique song-tag slugs across the tracks.
+ * SongTag carries no icon, so every filter uses a single music glyph (the
+ * shared MusicLibrary/Playlist API takes a Heroicon per filter).
+ */
+function songMusicFilters(tracks: Track[]): MusicFilter[] {
+  const seen = new Set<string>()
+  const filters: MusicFilter[] = []
+
+  for (const track of tracks) {
+    for (const slug of track.tags ?? []) {
+      if (!seen.has(slug)) {
+        seen.add(slug)
+        filters.push({ id: slug, label: humanizeSlug(slug), icon: MusicalNoteIcon })
+      }
+    }
+  }
+
+  return filters
+}
 
 export const blockConverters: BlockConverters = {
   // textbox → one of three organisms by the block's mode:
@@ -291,22 +324,43 @@ export const blockConverters: BlockConverters = {
     )
   },
 
-  // content-index → responsive grid of the live list resolved server-side in
-  // `+data` (see server/content-index.ts). A plain grid fills the block width
-  // (unlike the centered masonry); empty/unresolvable lists render nothing.
+  // content-index → the live list resolved server-side in `+data` (see
+  // server/content-index.ts), dispatched by content type:
+  //   songs                    → MusicLibrary (playback + its own tag filtering)
+  //   pages/lectures/meditations → ContentIndex (filterable card grid with pills)
+  // Meditations resolve to user-choice categories flattened into meditation
+  // cards, with the categories as the filter pills. Empty lists render nothing.
   'content-index': ({ node }) => {
     const fields = node.fields as unknown as ContentIndexBlockFields
+
+    if (fields.type === 'songs') {
+      const tracks = fields.resolvedTracks ?? []
+
+      if (tracks.length === 0) {
+        return null
+      }
+
+      return (
+        <div className={FULL_BLEED_BLOCK}>
+          <MusicLibrary filters={songMusicFilters(tracks)} tracks={tracks} />
+        </div>
+      )
+    }
+
     const items = fields.resolvedItems ?? []
 
     if (items.length === 0) {
       return null
     }
 
+    // Filterable grid with facet pills. Break out of the prose column to the
+    // wider content Container (xl / 6xl), like ContentTextBox, so the grid has
+    // more room; the full-bleed wrapper owns the vertical spacing.
     return (
-      <div className={`${BLOCK_SPACING} grid grid-cols-2 gap-4 lg:grid-cols-3`}>
-        {items.map(({ id, ...card }) => (
-          <ContentCard key={id} {...card} />
-        ))}
+      <div className={FULL_BLEED_BLOCK}>
+        <Container maxWidth="xl">
+          <ContentIndex items={items} />
+        </Container>
       </div>
     )
   },
