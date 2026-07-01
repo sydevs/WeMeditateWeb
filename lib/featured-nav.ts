@@ -2,10 +2,14 @@
  * Shared rule for "is this page one of the site's featured top-level nav pages"
  * — the pages the header renders as plain nav links (settings.featuredPages).
  *
- * Kept framework-free and centralised so the two places that care agree:
- *  - the header highlights the matching nav link (LayoutChrome), and
- *  - the page suppresses its own PageTitle banner, since the highlighted nav
- *    link already names the page (pages/[slug]/+Page.tsx → PageTemplate).
+ * Both current-page behaviours key off the same fact — the current page's slug
+ * matching a featured page's slug — so they can't drift:
+ *  - the header highlights the matching nav link (LayoutChrome compares each
+ *    featured page's slug to the current page's slug), and
+ *  - the page suppresses its own PageTitle banner via this predicate, since the
+ *    highlighted nav link already names the page (pages/[slug]/+Page.tsx).
+ *
+ * Kept framework-free so the membership test can be unit-tested without rendering.
  */
 import type { Page, WebConfig } from '../server/cms-types'
 

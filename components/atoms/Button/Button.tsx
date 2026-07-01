@@ -146,9 +146,10 @@ export function Button({
   // theme-aware tint. It reuses each variant's `after:bg-*` colour (ghost →
   // gray-100 on light, white/20 on dark), so no separate `bg-*` override is
   // needed and there's no Tailwind class-order conflict.
+  const animatedBase = 'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10'
   const animatedHoverEffect = isActive
-    ? 'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10 after:scale-x-100 after:opacity-100'
-    : 'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10 after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100'
+    ? `${animatedBase} after:scale-x-100 after:opacity-100`
+    : `${animatedBase} after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100`
 
   const baseStyles =
     'inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'

@@ -4,7 +4,7 @@ import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig, Page } from '../server/cms-types'
-import type { HeaderDropdownProps } from '../components/organisms'
+import type { NavItem } from '../components/organisms'
 import { leadSplashFromRouteData } from '../lib/cms-blocks'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 
@@ -22,10 +22,7 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     collection?: string
     initialData?: Page
   }>()
-  // `urlPathname` is the logical, locale-stripped path (onBeforeRoute rewrites
-  // `/es/about` → `/about` and `/` → `/index`), so comparing it to the
-  // locale-agnostic nav hrefs (`/slug`) highlights the right link in every locale.
-  const { locale, urlPathname } = usePageContext()
+  const { locale } = usePageContext()
   const settings = data?.settings
 
   // When the page leads with a Splash, overlay the header on it (transparent,
@@ -63,15 +60,16 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // "About Meditation" item that only opens the knowledge mega-menu (every
   // knowledge page as a link + the 2 featured-article thumbnails). Appended only
   // when there are knowledge pages to show — otherwise the nav is featured-only.
-  const navItems: Array<{
-    label: string
-    href?: string
-    active?: boolean
-    dropdown?: HeaderDropdownProps
-  }> = featuredPages.map((page) => ({
+  //
+  // Highlight the featured link for the current page. Match on the current
+  // page's slug (locale-agnostic, and the same fact `isFeaturedNavPage` uses to
+  // suppress that page's title) so the nav highlight and the hidden title always
+  // agree. `data.page` is absent on non-[slug] routes, so nothing highlights there.
+  const currentSlug = data?.page?.slug
+  const navItems: NavItem[] = featuredPages.map((page) => ({
     label: page.title,
     href: '/' + page.slug,
-    active: '/' + page.slug === urlPathname,
+    active: page.slug === currentSlug,
   }))
 
   if (knowledgePages.length > 0) {
