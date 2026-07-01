@@ -151,11 +151,16 @@ async function fetchContentIndexDocs(
   }
 }
 
-/** Fetch and map a content-index block's list to cards (pages/lectures/meditations). */
-export async function resolveContentIndexItems(
+/**
+ * Fetch a content-index block's list (cached), mapping each doc via `mapper` and
+ * dropping the ones it rejects (`null`). Shared by the card and track resolvers,
+ * which differ only in their per-doc mapping.
+ */
+async function resolveContentIndex<T>(
   fields: ContentIndexBlockFields,
-  options: ResolveOptions = {},
-): Promise<ResolvedCardItem[]> {
+  options: ResolveOptions,
+  mapper: (doc: Record<string, unknown>) => T | null,
+): Promise<T[]> {
   if (!fields.apiEndpoint) {
     return []
   }
@@ -167,32 +172,25 @@ export async function resolveContentIndexItems(
     fetchFn: async () => {
       const docs = await fetchContentIndexDocs(fields, options)
 
-      return docs
-        .map((doc) => contentIndexCard(doc, fields.type))
-        .filter((card): card is ResolvedCardItem => card !== null)
+      return docs.map(mapper).filter((mapped): mapped is T => mapped !== null)
     },
   })
 }
 
+/** Fetch and map a content-index block's list to cards (pages/lectures/meditations). */
+export function resolveContentIndexItems(
+  fields: ContentIndexBlockFields,
+  options: ResolveOptions = {},
+): Promise<ResolvedCardItem[]> {
+  return resolveContentIndex(fields, options, (doc) => contentIndexCard(doc, fields.type))
+}
+
 /** Fetch and map a `songs` content-index block's list to playable tracks. */
-export async function resolveContentIndexTracks(
+export function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  if (!fields.apiEndpoint) {
-    return []
-  }
-
-  return withCache({
-    cacheKey: contentIndexCacheKey(fields, options),
-    ttl: CacheTTL.LIST,
-    bypassCache: options.preview === true,
-    fetchFn: async () => {
-      const docs = await fetchContentIndexDocs(fields, options)
-
-      return docs.map((doc) => contentIndexTrack(doc)).filter((t): t is Track => t !== null)
-    },
-  })
+  return resolveContentIndex(fields, options, contentIndexTrack)
 }
 
 /** Recursively collect every `content-index` block's `fields` object. */

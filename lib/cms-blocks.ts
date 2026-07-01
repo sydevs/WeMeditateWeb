@@ -467,6 +467,23 @@ function contentIndexCardTags(
   return undefined
 }
 
+/** Web path for a content-index card by type: meditations route by id, pages by
+ * slug, lectures by id; other types have no public route (`null`). */
+function cardHref(
+  type: ContentIndexBlockFields['type'],
+  doc: Record<string, unknown>,
+  id: string | number,
+): string | null {
+  if (type === 'meditations') {
+    return `/meditations/${id}`
+  }
+  if (type === 'pages' || type === 'lectures') {
+    return cmsHref(type, doc as RelationValue)
+  }
+
+  return null
+}
+
 /** Map a content-index API document to a card for the given content type. */
 export function contentIndexCard(
   doc: Record<string, unknown>,
@@ -478,15 +495,7 @@ export function contentIndexCard(
     return null
   }
   const title = asText(doc.title)
-
-  const href =
-    type === 'meditations'
-      ? `/meditations/${id}`
-      : type === 'pages'
-        ? cmsHref('pages', doc as RelationValue)
-        : type === 'lectures'
-          ? cmsHref('lectures', doc as RelationValue)
-          : null
+  const href = cardHref(type, doc, id)
 
   if (!href) {
     return null
