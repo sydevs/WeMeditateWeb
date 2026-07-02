@@ -5,6 +5,20 @@ import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
 
+/**
+ * A single top-level nav entry. An item with a `dropdown` renders as a
+ * link-less hover/click mega-menu (HeaderNavDropdown) instead of a flat link;
+ * such items omit `href`. Plain link items provide `href`. `active` marks the
+ * current page's link (persistent tint + `aria-current="page"`); it applies
+ * only to plain link items.
+ */
+export interface NavItem {
+  label: string
+  href?: string
+  active?: boolean
+  dropdown?: HeaderDropdownProps
+}
+
 export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> {
   /** Logo href (default: "/") */
   logoHref?: string
@@ -12,12 +26,8 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   actionLinkText?: string
   /** Action link href */
   actionLinkHref?: string
-  /**
-   * Main navigation menu items. An item with a `dropdown` renders as a
-   * link-less hover/click mega-menu (HeaderNavDropdown) instead of a flat link;
-   * such items omit `href`. Plain link items provide `href`.
-   */
-  navItems?: Array<{ label: string; href?: string; dropdown?: HeaderDropdownProps }>
+  /** Main navigation menu items. */
+  navItems?: NavItem[]
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
   /**
@@ -150,6 +160,7 @@ export function Header({
                     key={index}
                     className="px-0 basis-1/4"
                     href={item.href}
+                    isActive={item.active}
                     size="sm"
                     theme={isSticky ? 'light' : theme}
                     variant="ghost"

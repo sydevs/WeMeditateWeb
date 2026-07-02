@@ -23,17 +23,26 @@ export interface PageTemplateProps {
    * Page data from PayloadCMS
    */
   page: Page
+
+  /**
+   * Suppress the PageTitle banner (e.g. on featured nav pages, where the
+   * highlighted nav link already names the page). When this is the only header
+   * element, the surrounding header Container collapses cleanly.
+   * @default false
+   */
+  hideTitle?: boolean
 }
 
-export function PageTemplate({ page }: PageTemplateProps) {
+export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
   // Set <title>/description/og:image from CMS meta (must run unconditionally).
   usePageHead({ meta: page.meta, fallbackTitle: page.title })
 
   const author = isPopulated<Author>(page.author) ? page.author : null
   const video = isPopulated<Video>(page.featuredVideo) ? page.featuredVideo : null
   // A lead splash renders its own full-bleed title, so skip the PageTitle banner
-  // to avoid showing the title twice.
-  const showTitle = !getLeadSplash(page.content)
+  // to avoid showing the title twice. `hideTitle` also suppresses it on featured
+  // nav pages, where the highlighted nav link already names the page.
+  const showTitle = !getLeadSplash(page.content) && !hideTitle
   const hasVideo = Boolean(video && video.hlsUrl)
   const hasHeader = hasVideo || showTitle || Boolean(author)
 

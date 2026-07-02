@@ -51,6 +51,15 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   isLoading?: boolean
 
   /**
+   * Active/current state for navigation links. When true, the button renders
+   * with a persistent tinted fill (reusing the ghost hover fill, so it's
+   * theme-aware) and carries `aria-current="page"`. Intended for the current
+   * page's link in a nav.
+   * @default false
+   */
+  isActive?: boolean
+
+  /**
    * Full width button (only applies to text buttons, not icon-only)
    * @default false
    */
@@ -114,6 +123,7 @@ export function Button({
   shape,
   icon,
   isLoading = false,
+  isActive = false,
   fullWidth = false,
   href,
   locale,
@@ -129,9 +139,17 @@ export function Button({
 
   // Styles for animated hover effect (wemeditate.com center-to-edges animation)
   // Uses ::after pseudo-element that scales from center on hover
-  // Only applied to text buttons, not icon-only buttons
-  const animatedHoverEffect =
-    'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10 after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100'
+  // Only applied to text buttons, not icon-only buttons.
+  //
+  // When `isActive`, the same ::after fill is shown permanently (scaled/opaque
+  // instead of hover-triggered) so the current-page nav link keeps a persistent,
+  // theme-aware tint. It reuses each variant's `after:bg-*` colour (ghost →
+  // gray-100 on light, white/20 on dark), so no separate `bg-*` override is
+  // needed and there's no Tailwind class-order conflict.
+  const animatedBase = 'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10'
+  const animatedHoverEffect = isActive
+    ? `${animatedBase} after:scale-x-100 after:opacity-100`
+    : `${animatedBase} after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100`
 
   const baseStyles =
     'inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
@@ -142,30 +160,24 @@ export function Button({
 
   // Variant styles for light theme (icon-only buttons)
   const iconOnlyLightThemeStyles = {
-    primary:
-      'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
+    primary: 'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
     secondary:
       'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
     outline:
       'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 hover:bg-teal-100 hover:border-gray-500',
-    ghost:
-      'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
-    neutral:
-      'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
+    ghost: 'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
+    neutral: 'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
   }
 
   // Variant styles for dark theme (icon-only buttons)
   const iconOnlyDarkThemeStyles = {
-    primary:
-      'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
+    primary: 'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
     secondary:
       'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
     outline:
       'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
-    ghost:
-      'bg-transparent text-white focus:ring-white hover:bg-white/20 hover:text-white',
-    neutral:
-      'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
+    ghost: 'bg-transparent text-white focus:ring-white hover:bg-white/20 hover:text-white',
+    neutral: 'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
   }
 
   // Variant styles for light theme (text buttons with animation)
@@ -176,10 +188,8 @@ export function Button({
       'bg-coral-500 after:bg-coral-600 text-white focus:ring-coral-500 active:after:bg-coral-700',
     outline:
       'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 after:bg-teal-100 hover:border-gray-500',
-    ghost:
-      'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
-    neutral:
-      'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
+    ghost: 'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
+    neutral: 'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
   }
 
   // Variant styles for dark theme (text buttons with animation)
@@ -190,15 +200,17 @@ export function Button({
       'bg-coral-600 after:bg-coral-500 text-white focus:ring-coral-500 active:after:bg-coral-700',
     outline:
       'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
-    ghost:
-      'bg-transparent text-white focus:ring-white after:bg-white/20 hover:text-white',
-    neutral:
-      'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
+    ghost: 'bg-transparent text-white focus:ring-white after:bg-white/20 hover:text-white',
+    neutral: 'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
   }
 
   const variantStyles = isIconOnly
-    ? (theme === 'dark' ? iconOnlyDarkThemeStyles : iconOnlyLightThemeStyles)
-    : (theme === 'dark' ? textButtonDarkThemeStyles : textButtonLightThemeStyles)
+    ? theme === 'dark'
+      ? iconOnlyDarkThemeStyles
+      : iconOnlyLightThemeStyles
+    : theme === 'dark'
+      ? textButtonDarkThemeStyles
+      : textButtonLightThemeStyles
 
   // Size styles for icon-only buttons
   const iconOnlySizeStyles = {
@@ -248,8 +260,10 @@ export function Button({
   // Spinner colors and theme based on button variant and theme
   const getSpinnerColor = () => {
     if (variant === 'primary' || variant === 'secondary') return 'neutral' as const
-    if (variant === 'outline') return theme === 'dark' ? 'neutral' as const : 'primary' as const
-    if (variant === 'ghost') return theme === 'dark' ? 'neutral' as const : 'currentColor' as const
+    if (variant === 'outline') return theme === 'dark' ? ('neutral' as const) : ('primary' as const)
+    if (variant === 'ghost')
+      return theme === 'dark' ? ('neutral' as const) : ('currentColor' as const)
+
     return 'currentColor' as const
   }
 
@@ -258,13 +272,12 @@ export function Button({
     if (variant === 'primary' || variant === 'secondary') return 'dark'
     // Outline and ghost with dark theme also need white spinners
     if (theme === 'dark') return 'dark'
+
     // Otherwise use light theme
     return 'light'
   }
 
-  const sizeClass = isIconOnly
-    ? iconOnlySizeStyles[size]
-    : textButtonSizeStyles[size]
+  const sizeClass = isIconOnly ? iconOnlySizeStyles[size] : textButtonSizeStyles[size]
 
   // Default shape differs based on button type
   const defaultShape = isIconOnly ? 'circular' : 'square'
@@ -279,7 +292,7 @@ export function Button({
   const commonClassNames = `${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
 
   const content = isLoading ? (
-    <Spinner size={spinnerSizeMap[size]} color={getSpinnerColor()} theme={getSpinnerTheme()} />
+    <Spinner color={getSpinnerColor()} size={spinnerSizeMap[size]} theme={getSpinnerTheme()} />
   ) : (
     <>
       {icon && <Icon icon={icon} size={iconSizeMap[size]} />}
@@ -291,11 +304,12 @@ export function Button({
   if (href) {
     return (
       <Link
+        aria-current={isActive ? 'page' : undefined}
+        aria-label={isIconOnly ? ariaLabel : undefined}
+        className={commonClassNames}
         href={href}
         locale={locale}
         variant="unstyled"
-        className={commonClassNames}
-        aria-label={isIconOnly ? ariaLabel : undefined}
         {...(props as any)}
       >
         {content}
@@ -306,11 +320,12 @@ export function Button({
   // Render as button
   return (
     <button
-      type={type}
+      aria-busy={isLoading}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={isIconOnly ? ariaLabel : undefined}
       className={commonClassNames}
       disabled={disabled || isLoading}
-      aria-busy={isLoading}
-      aria-label={isIconOnly ? ariaLabel : undefined}
+      type={type}
       {...props}
     >
       {content}
