@@ -87,9 +87,14 @@ export function ContentCarousel({
     align: 'center',
     slidesToScroll: 1,
     containScroll: 'trimSnaps',
+    // A slide counts as "in view" (full opacity + interactive) once ~3/4
+    // visible. Basing focus on actual visibility — not a single centered index
+    // — means every fully-visible card stays bright and only edge-clipped
+    // peekers fade, however many slides fit at the current size/viewport.
+    inViewThreshold: 0.75,
   })
 
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [slidesInView, setSlidesInView] = useState<number[]>([])
   // Whether the carousel can scroll further in each direction; drives hiding the
   // prev/next arrows at the first/last slide.
   const [canScrollPrev, setCanScrollPrev] = useState(false)
@@ -103,9 +108,9 @@ export function ContentCarousel({
     if (emblaApi) emblaApi.scrollNext()
   }, [emblaApi])
 
-  const onSelect = useCallback(() => {
+  const updateState = useCallback(() => {
     if (!emblaApi) return
-    setSelectedIndex(emblaApi.selectedScrollSnap())
+    setSlidesInView(emblaApi.slidesInView())
     setCanScrollPrev(emblaApi.canScrollPrev())
     setCanScrollNext(emblaApi.canScrollNext())
   }, [emblaApi])
@@ -119,17 +124,20 @@ export function ContentCarousel({
 
   useEffect(() => {
     if (!emblaApi) return
-    onSelect()
-    emblaApi.on('select', onSelect)
-    // reInit fires when the slides change (e.g. items load in), so the arrow
-    // visibility stays correct after a late data fetch.
-    emblaApi.on('reInit', onSelect)
+    updateState()
+    emblaApi.on('select', updateState)
+    // slidesInView fires as slides enter/leave the viewport while scrolling.
+    emblaApi.on('slidesInView', updateState)
+    // reInit fires when the slides change (e.g. items load in), so arrow
+    // visibility + in-view state stay correct after a late data fetch.
+    emblaApi.on('reInit', updateState)
 
     return () => {
-      emblaApi.off('select', onSelect)
-      emblaApi.off('reInit', onSelect)
+      emblaApi.off('select', updateState)
+      emblaApi.off('slidesInView', updateState)
+      emblaApi.off('reInit', updateState)
     }
-  }, [emblaApi, onSelect])
+  }, [emblaApi, updateState])
 
   return (
     <div className={`relative ${className}`} {...props}>
@@ -178,17 +186,22 @@ export function ContentCarousel({
         <div ref={emblaRef} className="overflow-hidden">
           <div className={`flex ${slideGap}`}>
             {items.map((item, index) => {
-              const isFocused = index === selectedIndex
+              // Before Embla measures (SSR + first paint) slidesInView is empty;
+              // treat that as "all visible" so the row renders bright rather than
+              // fully dimmed until the fade kicks in on mount.
+              const inView = slidesInView.length === 0 || slidesInView.includes(index)
 
               return (
                 <div
                   key={index}
                   className={`flex-[0_0_auto] transition-opacity duration-300 ${
-                    isFocused ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'
+                    inView ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'
                   }`}
-                  onClick={() => scrollTo(index)}
+                  // A clipped/edge slide scrolls into view on click; a fully
+                  // visible one keeps its own links/play button clickable.
+                  onClick={inView ? undefined : () => scrollTo(index)}
                 >
-                  <div className={isFocused ? '' : 'pointer-events-none'}>
+                  <div className={inView ? '' : 'pointer-events-none'}>
                     {/* Fixed image height (natural width) → consistent row height
                         without forcing a single aspect ratio. */}
                     <ContentCard {...item} imageHeight={imageHeight} variant={card} />
