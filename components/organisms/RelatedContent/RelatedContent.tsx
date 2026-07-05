@@ -1,6 +1,5 @@
 import type { ResolvedCardItem } from '../../../lib/cms-blocks'
-import { ContentGrid } from '../../molecules'
-import { Heading } from '../../atoms'
+import { ContentCarousel } from '../../molecules/blocks/ContentCarousel/ContentCarousel'
 
 export interface RelatedContentProps {
   /** Section heading, e.g. "Related meditations" / "Related lectures". */
@@ -14,26 +13,31 @@ export interface RelatedContentProps {
 }
 
 /**
- * RelatedContent organism — a titled `ContentGrid` of related cards shown below
- * a meditation or lecture player.
+ * RelatedContent organism — a titled `ContentCarousel` of related cards shown
+ * below a meditation or lecture player.
  *
  * Renders `null` when there are no items, so a page with no matches (or a
  * degraded/empty fetch, or a non-English locale where meditation titles don't
- * resolve) simply omits the whole section rather than showing a bare heading.
- * This is what keeps the section off the minimal embed route: the embed data
- * loader never fetches related content, so `items` is empty there.
+ * resolve) omits the whole section rather than showing a bare heading. It is
+ * loaded client-side by RelatedContentLoader, so `items` is empty until the
+ * (slow, KV-cached) related-content fetch resolves — nothing renders meanwhile.
  */
 export function RelatedContent({ title, items, className = '' }: RelatedContentProps) {
   if (items.length === 0) {
     return null
   }
 
+  // ContentCarousel items are `Omit<ContentCardProps, 'variant'>`; strip the
+  // fields ResolvedCardItem carries that ContentCardProps doesn't model (`id`
+  // is `string | number`, `tags` is a facet list) so they aren't spread onto
+  // the ContentCard DOM node.
+  const carouselItems = items.map(({ id: _id, tags: _tags, ...card }) => card)
+
   return (
-    <section aria-label={title} className={`mt-10 sm:mt-12 ${className}`}>
-      <Heading className="mb-6 text-center" level="h2" styleAs="h4">
-        {title}
-      </Heading>
-      <ContentGrid items={items} />
-    </section>
+    <ContentCarousel
+      className={`mt-10 sm:mt-12 ${className}`}
+      items={carouselItems}
+      title={title}
+    />
   )
 }

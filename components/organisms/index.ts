@@ -79,5 +79,5 @@ export { ContentIndex } from './ContentIndex'
 export type { ContentIndexProps } from './ContentIndex'
 
 // RelatedContent
-export { RelatedContent } from './RelatedContent'
-export type { RelatedContentProps } from './RelatedContent'
+export { RelatedContent, RelatedContentLoader } from './RelatedContent'
+export type { RelatedContentProps, RelatedContentLoaderProps } from './RelatedContent'

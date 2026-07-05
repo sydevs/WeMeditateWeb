@@ -14,7 +14,7 @@ const item = (id: number, title: string): ResolvedCardItem => ({
 })
 
 describe('RelatedContent', () => {
-  it('renders the heading and a card per item when items are present', () => {
+  it('renders a titled carousel with a card per item when items are present', () => {
     const html = renderToStaticMarkup(
       <RelatedContent items={[item(1, 'Alpha'), item(2, 'Beta')]} title="Related meditations" />,
     )
@@ -24,8 +24,9 @@ describe('RelatedContent', () => {
     expect(html).toContain('Beta')
     expect(html).toContain('/meditations/1')
     expect(html).toContain('/meditations/2')
-    // Accessible section label for the related grouping.
-    expect(html).toContain('aria-label="Related meditations"')
+    // Rendered via ContentCarousel (its nav controls are present).
+    expect(html).toContain('aria-label="Previous slide"')
+    expect(html).toContain('aria-label="Next slide"')
   })
 
   it('renders nothing when there are no items (empty section omitted, not a bare heading)', () => {
