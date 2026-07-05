@@ -37,6 +37,7 @@ import type {
   AuthorsSelect,
   VideosSelect,
   WmWebConfigSelect,
+  Audience,
 } from './payload-types'
 import type {
   Locale,
@@ -739,8 +740,9 @@ export async function getMeditationSongs(
   }
 }
 
-/** Extract audience document ids (populated object or bare id) as strings. */
-function audienceIdList(audiences: WebConfig['audiences']): string[] {
+/** Extract audience document ids (populated object or bare id) as strings.
+ * Shared with the content-index `/for-audience` lecture feed (server/content-index.ts). */
+export function audienceIdList(audiences: (number | Audience)[] | null | undefined): string[] {
   if (!audiences) {
     return []
   }
@@ -883,7 +885,9 @@ export async function getRelatedLectures(
     locale: options.locale,
     limit,
     // Fold audiences into the key so a config change can't serve a stale list.
-    audiences,
+    // Pass a copy: generateCacheKey sorts array values in place, and the URL
+    // below reuses `audiences` — don't let the key build mutate it.
+    audiences: [...audiences],
   })
 
   try {

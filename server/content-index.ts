@@ -25,6 +25,7 @@ import {
   type ContentIndexBlockFields,
   type ResolvedCardItem,
 } from '../lib/cms-blocks'
+import { audienceIdList } from './cms-client'
 // Type-only import (erased at build): the songs index resolves to MusicLibrary tracks.
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
@@ -97,17 +98,6 @@ function stripQueryParam(endpoint: string, key: string): string {
   return kept.length > 0 ? `${path}?${kept.join('&')}` : path
 }
 
-/** Extract audience document ids (populated object or bare id) as strings. */
-function audienceIds(audiences: ResolveOptions['audiences']): string[] {
-  if (!audiences) {
-    return []
-  }
-
-  return audiences
-    .map((a) => (typeof a === 'number' ? String(a) : a?.id != null ? String(a.id) : null))
-    .filter((id): id is string => id !== null)
-}
-
 /**
  * Cache key for a content-index resolve. Audience ids are folded in for lectures
  * so a WmWebConfig audience change doesn't serve a stale `/for-audience` list.
@@ -119,7 +109,7 @@ function contentIndexCacheKey(fields: ContentIndexBlockFields, options: ResolveO
     // and return the wrong shape from cache (a songs Track[] vs a card list).
     type: fields.type,
     locale: options.locale,
-    audiences: fields.type === 'lectures' ? audienceIds(options.audiences) : undefined,
+    audiences: fields.type === 'lectures' ? audienceIdList(options.audiences) : undefined,
   })
 }
 
@@ -140,7 +130,7 @@ async function fetchContentIndexDocs(
   }
   // Lectures resolve via the /for-audience feed keyed on the site's fixed
   // audiences; with none configured the block degrades to empty (not an error).
-  const audiences = type === 'lectures' ? audienceIds(options.audiences) : []
+  const audiences = type === 'lectures' ? audienceIdList(options.audiences) : []
 
   if (type === 'lectures' && audiences.length === 0) {
     return []

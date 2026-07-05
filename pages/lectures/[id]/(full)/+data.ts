@@ -11,22 +11,21 @@ export interface LecturePageData extends LectureData {
 }
 
 /**
- * Fetch the lecture (shared with the embed route) plus the WebConfig that
- * LayoutChrome needs, in parallel — then the related meditations (keyed on the
- * validated lecture id). Related content is fetched only here on the full
- * route, so the embed route stays player-only. `getRelatedMeditations` degrades
- * to [] on any failure, so it never blocks the page.
+ * Fetch the lecture (shared with the embed route), the WebConfig that
+ * LayoutChrome needs, and the related meditations — all in parallel. Unlike the
+ * meditation route (whose related fetch needs the config's audiences),
+ * getRelatedMeditations needs only the route id, so it joins the same
+ * Promise.all. Related content is fetched only here on the full route, so the
+ * embed route stays player-only; getRelatedMeditations degrades to [] on any
+ * failure (and a malformed id makes loadLecture 404 the page anyway), so it
+ * never blocks or breaks rendering.
  */
 export async function data(pageContext: PageContextServer): Promise<LecturePageData> {
-  const [base, settings] = await Promise.all([
+  const [base, settings, relatedMeditations] = await Promise.all([
     loadLecture(pageContext),
     getWebConfig({ locale: pageContext.locale }),
+    getRelatedMeditations({ id: pageContext.routeParams.id, locale: pageContext.locale }),
   ])
-
-  const relatedMeditations = await getRelatedMeditations({
-    id: base.id,
-    locale: pageContext.locale,
-  })
 
   return { ...base, settings, relatedMeditations }
 }
