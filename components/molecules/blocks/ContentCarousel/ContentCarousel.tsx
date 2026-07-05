@@ -87,10 +87,10 @@ export function ContentCarousel({
     align: 'center',
     slidesToScroll: 1,
     containScroll: 'trimSnaps',
-    // A slide counts as "in view" (full opacity + interactive) once ~3/4
-    // visible. Basing focus on actual visibility — not a single centered index
-    // — means every fully-visible card stays bright and only edge-clipped
-    // peekers fade, however many slides fit at the current size/viewport.
+    // A slide counts as "in view" (full opacity + interactive) once nearly
+    // fully (~0.95) visible. Basing focus on actual visibility — not a single
+    // centered index — means every fully-visible card stays bright and only
+    // edge-clipped peekers fade, however many slides fit at the current viewport.
     inViewThreshold: 0.95,
   })
 
