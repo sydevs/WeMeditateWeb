@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { ResolvedCardItem } from '../../../lib/cms-blocks'
+import { Spinner } from '../../atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
 
 export interface RelatedContentLoaderProps {
@@ -25,9 +26,12 @@ export interface RelatedContentLoaderProps {
  * The related endpoints are slow (~5–12s, KV-cached), so fetching them in a
  * Vike `data()` hook would block SSR and trip the slow-hook warning. Instead the
  * player page renders immediately and this loader fetches the (already mapped)
- * cards from `/api/:kind/:anchorId` after mount, rendering nothing until they
- * arrive. SSR and the first client render both produce an empty list → `null`
- * (no hydration mismatch); the section appears once the fetch resolves.
+ * cards from `/api/:kind/:anchorId` after mount.
+ *
+ * While the fetch is in flight (`items === null`) it shows the heading + a
+ * spinner so the wait is visible; it then swaps in the carousel, or renders
+ * nothing if the result is empty (e.g. a non-English locale). SSR and the first
+ * client render both show the loading state, so there's no hydration mismatch.
  */
 export function RelatedContentLoader({
   title,
@@ -36,10 +40,15 @@ export function RelatedContentLoader({
   className,
 }: RelatedContentLoaderProps) {
   const { locale } = usePageContext()
-  const [items, setItems] = useState<ResolvedCardItem[]>([])
+  // null → loading (fetch in flight); [] → loaded but empty; [...] → loaded.
+  const [items, setItems] = useState<ResolvedCardItem[] | null>(null)
 
   useEffect(() => {
     let cancelled = false
+
+    // Reset to the loading state when the anchor/locale changes (client nav).
+    setItems(null)
+
     const url = `/api/${kind}/${encodeURIComponent(String(anchorId))}?locale=${encodeURIComponent(locale)}`
 
     fetch(url)
@@ -60,6 +69,17 @@ export function RelatedContentLoader({
       cancelled = true
     }
   }, [kind, anchorId, locale])
+
+  if (items === null) {
+    return (
+      <section aria-busy className={`mt-10 sm:mt-12 ${className ?? ''}`}>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">{title}</h2>
+        <div className="flex justify-center py-8">
+          <Spinner label={`Loading ${title.toLowerCase()}`} size="lg" />
+        </div>
+      </section>
+    )
+  }
 
   return <RelatedContent className={className} items={items} title={title} />
 }

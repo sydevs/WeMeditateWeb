@@ -37,6 +37,7 @@ export function RelatedContent({ title, items, className = '' }: RelatedContentP
     <ContentCarousel
       className={`mt-10 sm:mt-12 ${className}`}
       items={carouselItems}
+      size="sm"
       title={title}
     />
   )

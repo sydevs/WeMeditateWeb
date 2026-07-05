@@ -246,10 +246,13 @@ export function ContentCard({
         )}
       </div>
 
-      {/* Content section */}
-      <div className={`flex flex-col ${contentGap}`}>
+      {/* Content section. In fixed-image-height mode the card sizes to the
+          image's natural width, so constrain the text to that width (`w-0
+          min-w-full` contributes 0 to the card's max-content but fills the image
+          width) — otherwise a title wider than the image would stretch the card. */}
+      <div className={`flex flex-col ${contentGap} ${imageHeight ? 'w-0 min-w-full' : ''}`}>
         {/* Title - styling based on variant and description presence */}
-        <h3 className={titleClasses}>
+        <h3 className={`${titleClasses} wrap-break-word`}>
           <Link
             className={
               isHeroVariant
