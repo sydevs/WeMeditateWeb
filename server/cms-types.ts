@@ -108,3 +108,39 @@ export interface MeditationSong {
   title: string
   url: string
 }
+
+/**
+ * A related meditation card, as returned by
+ * `GET /api/lectures/:id/related-meditations` (SahajCloud #523).
+ *
+ * A *shaped* endpoint (like `/songs`): it encapsulates the node-overlap ranking
+ * server-side, returns a fixed projection, and — crucially — drops any card
+ * missing a public title / duration / thumbnail, so it never leaks the internal
+ * admin `label`. Every field here is guaranteed present and displayable. The
+ * grid is English-only in practice: meditation titles aren't localized, so the
+ * endpoint returns an empty list for non-English locales (a hidden section, not
+ * an error). See `getRelatedMeditations` in cms-client.
+ */
+export interface RelatedMeditationCard {
+  id: number
+  title: string
+  durationMinutes: number
+  thumbnailUrl: string
+  narratorName: string
+}
+
+/**
+ * A related lecture card, as returned by
+ * `GET /api/meditations/:id/related-lectures` (the pre-existing mirror of the
+ * endpoint above; requires the site's `audiences`).
+ *
+ * The endpoint returns the full lecture *player* projection (hls, subtitles,
+ * clip window); we surface only the card-relevant subset. `durationSeconds` is
+ * the playable length (clip window or full duration). See `getRelatedLectures`.
+ */
+export interface RelatedLectureCard {
+  id: number
+  title: string
+  durationSeconds: number
+  thumbnailUrl: string
+}
