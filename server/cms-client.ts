@@ -37,8 +37,18 @@ import type {
   AuthorsSelect,
   VideosSelect,
   WmWebConfigSelect,
+  Audience,
 } from './payload-types'
-import type { Locale, Page, Song, WebConfig, PageListItem, MeditationSong } from './cms-types'
+import type {
+  Locale,
+  Page,
+  Song,
+  WebConfig,
+  PageListItem,
+  MeditationSong,
+  RelatedMeditationCard,
+  RelatedLectureCard,
+} from './cms-types'
 
 // ============================================================================
 // Common Options Interfaces
@@ -723,6 +733,213 @@ export async function getMeditationSongs(
     Sentry.captureMessage('getMeditationSongs failed; rendering meditation voice-only', {
       level: 'warning',
       tags: { source: 'getMeditationSongs' },
+      extra: { meditationId: options.id, locale: options.locale ?? null },
+    })
+
+    return []
+  }
+}
+
+/** Extract audience document ids (populated object or bare id) as strings.
+ * Shared with the content-index `/for-audience` lecture feed (server/content-index.ts). */
+export function audienceIdList(audiences: (number | Audience)[] | null | undefined): string[] {
+  if (!audiences) {
+    return []
+  }
+
+  return audiences
+    .map((a) => (typeof a === 'number' ? String(a) : a?.id != null ? String(a.id) : null))
+    .filter((id): id is string => id !== null)
+}
+
+/**
+ * Retrieves the meditations related to a lecture via the shaped nested route
+ * `GET /api/lectures/:id/related-meditations` (SahajCloud #523).
+ *
+ * Like `/songs`, this is not a collection `find`: it encapsulates the
+ * subtle-system-node-overlap ranking (with a recency top-up fallback) server-
+ * side, returns a fixed card projection, and ignores `select`/`populate`/`depth`
+ * (it honors `locale` + `limit`). The SDK can't model it, so we issue a raw
+ * authenticated fetch wrapped in the shared cache + retry layer.
+ *
+ * The endpoint drops any card missing a public title / duration / thumbnail, so
+ * the internal `label` never leaks. Meditation titles aren't localized, so the
+ * endpoint returns an empty list for non-English locales — the caller simply
+ * renders no related section (graceful, not an error). Degrades to `[]` for an
+ * unknown lecture id (404) and, after retries, any failure.
+ *
+ * @param options.id - The lecture document ID (the anchor)
+ * @param options.locale - The locale to retrieve meditation cards in
+ * @param options.limit - Max cards to request (default 8)
+ */
+export async function getRelatedMeditations(
+  options: LocalizedQueryOptions & {
+    id: string
+    limit?: number
+  },
+): Promise<RelatedMeditationCard[]> {
+  const limit = options.limit ?? 8
+  const cacheKey = generateCacheKey('related-meditations', {
+    id: options.id,
+    locale: options.locale,
+    limit,
+  })
+
+  try {
+    return await withCache({
+      cacheKey,
+      ttl: CacheTTL.LIST,
+      fetchFn: async () => {
+        const { apiKey, baseURL } = getCmsContext()
+        const url =
+          `${baseURL}/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
+          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`
+
+        const response = await fetch(url, {
+          headers: { Authorization: `clients API-Key ${apiKey}` },
+        })
+
+        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+
+        // Unknown lecture id (or no related route) → no related content.
+        if (response.status === 404) return []
+
+        if (!response.ok) {
+          throw new Error(`getRelatedMeditations(${options.id}) failed: ${response.status}`)
+        }
+
+        const body = (await response.json()) as {
+          docs?: Array<Record<string, unknown>>
+        }
+        const docs = Array.isArray(body.docs) ? body.docs : []
+
+        // The endpoint already shapes cards, but guard the fields we render so a
+        // partial doc can never surface a blank card or a broken thumbnail.
+        return docs
+          .filter(
+            (doc): doc is Record<string, unknown> =>
+              typeof doc.id === 'number' &&
+              typeof doc.title === 'string' &&
+              doc.title.length > 0 &&
+              typeof doc.thumbnailUrl === 'string' &&
+              doc.thumbnailUrl.length > 0,
+          )
+          .map((doc) => ({
+            id: doc.id as number,
+            title: doc.title as string,
+            durationMinutes: typeof doc.durationMinutes === 'number' ? doc.durationMinutes : 0,
+            thumbnailUrl: doc.thumbnailUrl as string,
+            narratorName: typeof doc.narratorName === 'string' ? doc.narratorName : '',
+          }))
+      },
+    })
+  } catch (error) {
+    // Related content is supplementary — a failure to load it must never break
+    // the lecture page. Degrade to no related section and surface to Sentry.
+    console.warn(`[getRelatedMeditations] degrading to none for lecture ${options.id}:`, error)
+    Sentry.captureMessage('getRelatedMeditations failed; rendering lecture without related', {
+      level: 'warning',
+      tags: { source: 'getRelatedMeditations' },
+      extra: { lectureId: options.id, locale: options.locale ?? null },
+    })
+
+    return []
+  }
+}
+
+/**
+ * Retrieves the lectures related to a meditation via the shaped nested route
+ * `GET /api/meditations/:id/related-lectures` (the mirror of the endpoint
+ * above). Unlike `/related-meditations`, this endpoint is audience-gated: it
+ * *requires* the site's `audiences` (a 400 without), so with none configured we
+ * short-circuit to `[]` rather than issue a request that would 400.
+ *
+ * The endpoint returns the full lecture player projection ranked by node
+ * overlap with an audience/recency fallback; we surface only the card subset
+ * (id, title, thumbnail, playable duration). Degrades to `[]` for an unknown
+ * meditation id (404) and, after retries, any failure.
+ *
+ * @param options.id - The meditation document ID (the anchor)
+ * @param options.locale - The locale to retrieve lecture cards in
+ * @param options.audiences - The site's fixed audiences (WebConfig.audiences)
+ * @param options.limit - Max cards to request (default 8)
+ */
+export async function getRelatedLectures(
+  options: LocalizedQueryOptions & {
+    id: string
+    audiences: WebConfig['audiences']
+    limit?: number
+  },
+): Promise<RelatedLectureCard[]> {
+  const audiences = audienceIdList(options.audiences)
+
+  // Audience-gated: with none configured the site can't call the endpoint
+  // (it 400s), so degrade to no related section — matching the /for-audience
+  // content-index behavior. An admin sets audiences in WeMeditate Web config.
+  if (audiences.length === 0) {
+    return []
+  }
+  const limit = options.limit ?? 8
+  const cacheKey = generateCacheKey('related-lectures', {
+    id: options.id,
+    locale: options.locale,
+    limit,
+    // Fold audiences into the key so a config change can't serve a stale list.
+    // Pass a copy: generateCacheKey sorts array values in place, and the URL
+    // below reuses `audiences` — don't let the key build mutate it.
+    audiences: [...audiences],
+  })
+
+  try {
+    return await withCache({
+      cacheKey,
+      ttl: CacheTTL.LIST,
+      fetchFn: async () => {
+        const { apiKey, baseURL } = getCmsContext()
+        const url =
+          `${baseURL}/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
+          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
+          `&audiences=${audiences.join(',')}`
+
+        const response = await fetch(url, {
+          headers: { Authorization: `clients API-Key ${apiKey}` },
+        })
+
+        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+
+        if (response.status === 404) return []
+
+        if (!response.ok) {
+          throw new Error(`getRelatedLectures(${options.id}) failed: ${response.status}`)
+        }
+
+        const body = (await response.json()) as {
+          docs?: Array<Record<string, unknown>>
+        }
+        const docs = Array.isArray(body.docs) ? body.docs : []
+
+        return docs
+          .filter(
+            (doc): doc is Record<string, unknown> =>
+              typeof doc.id === 'number' &&
+              typeof doc.title === 'string' &&
+              doc.title.length > 0 &&
+              typeof doc.thumbnailUrl === 'string' &&
+              doc.thumbnailUrl.length > 0,
+          )
+          .map((doc) => ({
+            id: doc.id as number,
+            title: doc.title as string,
+            durationSeconds: typeof doc.duration === 'number' ? doc.duration : 0,
+            thumbnailUrl: doc.thumbnailUrl as string,
+          }))
+      },
+    })
+  } catch (error) {
+    console.warn(`[getRelatedLectures] degrading to none for meditation ${options.id}:`, error)
+    Sentry.captureMessage('getRelatedLectures failed; rendering meditation without related', {
+      level: 'warning',
+      tags: { source: 'getRelatedLectures' },
       extra: { meditationId: options.id, locale: options.locale ?? null },
     })
 

@@ -77,3 +77,7 @@ export type { RichTextProps } from './RichText'
 // ContentIndex
 export { ContentIndex } from './ContentIndex'
 export type { ContentIndexProps } from './ContentIndex'
+
+// RelatedContent
+export { RelatedContent, RelatedContentLoader } from './RelatedContent'
+export type { RelatedContentProps, RelatedContentLoaderProps } from './RelatedContent'

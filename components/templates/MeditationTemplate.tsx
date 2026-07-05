@@ -16,6 +16,7 @@
 
 import type { Meditation, MeditationSong } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
+import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/cms-relationships'
 
@@ -51,6 +52,13 @@ export interface MeditationTemplateProps {
    * @default true
    */
   showEmbedButton?: boolean
+  /**
+   * Whether to render the "Related lectures" section below the player (loaded
+   * client-side by RelatedContentLoader). Off on the minimal embed route so it
+   * stays player-only.
+   * @default false
+   */
+  showRelated?: boolean
 }
 
 export function MeditationTemplate({
@@ -60,6 +68,7 @@ export function MeditationTemplate({
   timeDisplay,
   seekTo,
   showEmbedButton = true,
+  showRelated = false,
 }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
@@ -157,36 +166,48 @@ export function MeditationTemplate({
   }
 
   return (
-    <div className="max-w-6xl mx-auto h-full">
-      {showEmbedButton ? (
-        <div className="mb-2 flex justify-end">
-          {/* No locale prop: EmbedButton self-resolves it from page context (like Link). */}
-          <EmbedButton
-            embedPath={`/meditations/${meditation.id}/embed`}
-            title={meditation.title ?? undefined}
-          />
-        </div>
-      ) : null}
+    <>
+      <div className="max-w-6xl mx-auto h-full">
+        {showEmbedButton ? (
+          <div className="mb-2 flex justify-end">
+            {/* No locale prop: EmbedButton self-resolves it from page context (like Link). */}
+            <EmbedButton
+              embedPath={`/meditations/${meditation.id}/embed`}
+              title={meditation.title ?? undefined}
+            />
+          </div>
+        ) : null}
 
-      {/* Meditation Player */}
-      <MeditationPlayer
-        frames={frames}
-        musicTracks={musicTracks}
-        seekTo={seekTo}
-        timeDisplay={timeDisplay}
-        track={{
-          url: meditation.url,
-          title: meditation.title || 'Untitled Meditation',
-          credit: '',
-          creditURL: '',
-          thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
-          duration:
-            typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
-              ? meditation.durationMinutes * 60
-              : 0,
-        }}
-        onPlaybackTimeUpdate={onPlaybackTimeUpdate}
-      />
-    </div>
+        {/* Meditation Player */}
+        <MeditationPlayer
+          frames={frames}
+          musicTracks={musicTracks}
+          seekTo={seekTo}
+          timeDisplay={timeDisplay}
+          track={{
+            url: meditation.url,
+            title: meditation.title || 'Untitled Meditation',
+            credit: '',
+            creditURL: '',
+            thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
+            duration:
+              typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
+                ? meditation.durationMinutes * 60
+                : 0,
+          }}
+          onPlaybackTimeUpdate={onPlaybackTimeUpdate}
+        />
+      </div>
+
+      {/* Related lectures (SahajCloud cross-type mirror), loaded client-side so
+          the slow ranking endpoint never blocks SSR. Off on the embed route. */}
+      {showRelated ? (
+        <RelatedContentLoader
+          anchorId={meditation.id}
+          kind="related-lectures"
+          title="Related lectures"
+        />
+      ) : null}
+    </>
   )
 }

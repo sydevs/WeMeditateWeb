@@ -16,6 +16,7 @@
 import type { ResolvedLecture } from '../../server/cms-types'
 import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
+import { RelatedContentLoader } from '../organisms/RelatedContent'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -66,6 +67,13 @@ export interface LectureTemplateProps {
    * @default true
    */
   showEmbedButton?: boolean
+  /**
+   * Whether to render the "Related meditations" section below the player (loaded
+   * client-side by RelatedContentLoader). The bare embed route uses LecturePlayer
+   * (not this template), so it's unaffected regardless.
+   * @default false
+   */
+  showRelated?: boolean
 }
 
 /** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
@@ -75,7 +83,12 @@ function formatLength(seconds: number): string {
   return total < 60 ? `${total} sec` : `${Math.floor(total / 60)} min`
 }
 
-export function LectureTemplate({ lecture, locale, showEmbedButton = true }: LectureTemplateProps) {
+export function LectureTemplate({
+  lecture,
+  locale,
+  showEmbedButton = true,
+  showRelated = false,
+}: LectureTemplateProps) {
   // A clip shows its playable window length; a full lecture shows the whole
   // source duration.
   const windowSeconds =
@@ -118,6 +131,17 @@ export function LectureTemplate({ lecture, locale, showEmbedButton = true }: Lec
           />
         ) : null}
       </div>
+
+      {/* Related meditations (SahajCloud cross-type mirror), loaded client-side
+          so the slow ranking endpoint never blocks SSR. The bare embed route
+          uses LecturePlayer (not this template), so it's unaffected regardless. */}
+      {showRelated ? (
+        <RelatedContentLoader
+          anchorId={lecture.id}
+          kind="related-meditations"
+          title="Related meditations"
+        />
+      ) : null}
     </article>
   )
 }

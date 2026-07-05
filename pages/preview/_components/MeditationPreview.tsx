@@ -21,7 +21,11 @@ export interface MeditationPreviewProps {
    * @default []
    */
   musicTracks?: MeditationSong[]
-  /** Whether the underlying template shows the Embed button. @default true */
+  /**
+   * Whether the underlying template shows the Embed button — also gates the
+   * client-loaded related-content section, since both are full-chrome features
+   * shown in the full preview but not the bare embed preview. @default true
+   */
   showEmbedButton?: boolean
 }
 
@@ -157,6 +161,7 @@ export function MeditationPreview({
       musicTracks={musicTracks}
       seekTo={seekCommand}
       showEmbedButton={showEmbedButton}
+      showRelated={showEmbedButton}
       timeDisplay="elapsed"
       onPlaybackTimeUpdate={handlePlaybackTimeUpdate}
     />

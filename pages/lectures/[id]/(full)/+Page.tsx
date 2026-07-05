@@ -9,5 +9,5 @@ import { LectureTemplate } from '../../../../components/templates'
 export function Page() {
   const { lecture, locale } = useData<LecturePageData>()
 
-  return <LectureTemplate lecture={lecture} locale={locale} />
+  return <LectureTemplate showRelated lecture={lecture} locale={locale} />
 }

@@ -98,7 +98,9 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   }
 
   // Background music for meditation previews — keeps the live player in sync
-  // with the published routes (other collections have none).
+  // with the published routes (other collections have none). Related content is
+  // NOT fetched here — the preview page renders it client-side like the live
+  // routes (RelatedContentLoader), since the ranking endpoints are slow.
   const musicTracks = collection === 'meditations' ? await getMeditationSongs({ id, locale }) : []
 
   // Return discriminated union based on collection type

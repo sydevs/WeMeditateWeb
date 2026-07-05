@@ -18,7 +18,11 @@ export interface LecturePreviewProps {
   initialData: Lecture
   /** Current locale — selects which subtitle track is the default. */
   locale?: string
-  /** Whether the underlying template shows the Embed button. @default true */
+  /**
+   * Whether the underlying template shows the Embed button — also gates the
+   * client-loaded related-content section, since both are full-chrome features
+   * shown in the full preview but not the bare embed preview. @default true
+   */
   showEmbedButton?: boolean
 }
 
@@ -38,5 +42,12 @@ export function LecturePreview({
   // Normalize full lectures and clips into the same shape the template expects.
   const lecture = resolveLecture(liveData ?? initialData)
 
-  return <LectureTemplate lecture={lecture} locale={locale} showEmbedButton={showEmbedButton} />
+  return (
+    <LectureTemplate
+      lecture={lecture}
+      locale={locale}
+      showEmbedButton={showEmbedButton}
+      showRelated={showEmbedButton}
+    />
+  )
 }

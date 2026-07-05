@@ -9,5 +9,5 @@ import { MeditationTemplate } from '../../../../components/templates'
 export function Page() {
   const { meditation, musicTracks } = useData<MeditationPageData>()
 
-  return <MeditationTemplate meditation={meditation} musicTracks={musicTracks} />
+  return <MeditationTemplate showRelated meditation={meditation} musicTracks={musicTracks} />
 }
