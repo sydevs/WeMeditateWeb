@@ -13,6 +13,8 @@ import type {
   Lecture,
   WebConfig,
   MeditationSong,
+  RelatedLectureCard,
+  RelatedMeditationCard,
 } from '../../../server/cms-types'
 
 export type CollectionType = 'pages' | 'meditations' | 'lectures'
@@ -34,11 +36,17 @@ export type BasePreviewData =
       initialData: Meditation
       musicTracks: MeditationSong[]
       locale: string
+      /** Related lectures, rendered below the player on the chromed full preview.
+       * Omitted on the bare embed preview (mirrors the embed route). */
+      relatedLectures?: RelatedLectureCard[]
     }
   | {
       collection: 'lectures'
       initialData: Lecture
       locale: string
+      /** Related meditations, rendered below the player on the chromed full
+       * preview. Omitted on the bare embed preview. */
+      relatedMeditations?: RelatedMeditationCard[]
     }
 
 /**
@@ -57,13 +65,25 @@ export type FullPreviewData =
       musicTracks: MeditationSong[]
       locale: string
       settings: WebConfig
+      /** Related lectures, rendered below the player in the full preview. */
+      relatedLectures?: RelatedLectureCard[]
     }
   | {
       collection: 'lectures'
       initialData: Lecture
       locale: string
       settings: WebConfig
+      /** Related meditations, rendered below the player in the full preview. */
+      relatedMeditations?: RelatedMeditationCard[]
     }
 
 // Re-export types for convenience
-export type { Page, Meditation, Lecture, WebConfig, MeditationSong }
+export type {
+  Page,
+  Meditation,
+  Lecture,
+  WebConfig,
+  MeditationSong,
+  RelatedLectureCard,
+  RelatedMeditationCard,
+}

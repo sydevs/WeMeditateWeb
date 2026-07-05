@@ -46,6 +46,7 @@ export function Preview({ data, showEmbedButton = true }: PreviewProps) {
         <MeditationPreview
           initialData={data.initialData}
           musicTracks={data.musicTracks}
+          relatedLectures={data.relatedLectures}
           showEmbedButton={showEmbedButton}
         />
       )
@@ -54,6 +55,7 @@ export function Preview({ data, showEmbedButton = true }: PreviewProps) {
         <LecturePreview
           initialData={data.initialData}
           locale={data.locale}
+          relatedMeditations={data.relatedMeditations}
           showEmbedButton={showEmbedButton}
         />
       )
