@@ -39,11 +39,17 @@ export function registerApiRoutes(app: Hono<CmsEnv>): void {
     } catch {
       return c.json({ items: [] }, 400)
     }
-    const cards = await getRelatedMeditations({ id, locale: parseLocale(c.req.query('locale')) })
 
-    c.header('Cache-Control', CACHE_CONTROL)
+    // Related content never 500s — degrade to an empty section on any failure.
+    try {
+      const cards = await getRelatedMeditations({ id, locale: parseLocale(c.req.query('locale')) })
 
-    return c.json({ items: relatedMeditationsToCards(cards) })
+      c.header('Cache-Control', CACHE_CONTROL)
+
+      return c.json({ items: relatedMeditationsToCards(cards) })
+    } catch {
+      return c.json({ items: [] })
+    }
   })
 
   // Lectures related to a meditation (audience-gated: audiences come from the
@@ -57,11 +63,18 @@ export function registerApiRoutes(app: Hono<CmsEnv>): void {
       return c.json({ items: [] }, 400)
     }
     const locale = parseLocale(c.req.query('locale'))
-    const settings = await getWebConfig({ locale })
-    const cards = await getRelatedLectures({ id, locale, audiences: settings.audiences })
 
-    c.header('Cache-Control', CACHE_CONTROL)
+    // getWebConfig can rethrow after exhausting retries (the fetchers themselves
+    // degrade internally). Related content never 500s — fall back to empty.
+    try {
+      const settings = await getWebConfig({ locale })
+      const cards = await getRelatedLectures({ id, locale, audiences: settings.audiences })
 
-    return c.json({ items: relatedLecturesToCards(cards) })
+      c.header('Cache-Control', CACHE_CONTROL)
+
+      return c.json({ items: relatedLecturesToCards(cards) })
+    } catch {
+      return c.json({ items: [] })
+    }
   })
 }
