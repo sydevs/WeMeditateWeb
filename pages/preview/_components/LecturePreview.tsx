@@ -10,7 +10,7 @@
 'use client'
 
 import { useLivePreview } from '@payloadcms/live-preview-react'
-import type { Lecture, RelatedMeditationCard } from './types'
+import type { Lecture } from './types'
 import { LectureTemplate } from '../../../components/templates'
 import { resolveLecture } from '../../../lib/lecture-shape'
 
@@ -19,19 +19,16 @@ export interface LecturePreviewProps {
   /** Current locale — selects which subtitle track is the default. */
   locale?: string
   /**
-   * Related meditations (from the loader), shown below the player. Fixed for the
-   * preview session — live updates only carry the edited lecture's own fields.
-   * @default []
+   * Whether the underlying template shows the Embed button — also gates the
+   * client-loaded related-content section, since both are full-chrome features
+   * shown in the full preview but not the bare embed preview. @default true
    */
-  relatedMeditations?: RelatedMeditationCard[]
-  /** Whether the underlying template shows the Embed button. @default true */
   showEmbedButton?: boolean
 }
 
 export function LecturePreview({
   initialData,
   locale,
-  relatedMeditations = [],
   showEmbedButton = true,
 }: LecturePreviewProps) {
   // useLivePreview listens for postMessage updates from SahajCloud admin.
@@ -49,8 +46,8 @@ export function LecturePreview({
     <LectureTemplate
       lecture={lecture}
       locale={locale}
-      relatedMeditations={relatedMeditations}
       showEmbedButton={showEmbedButton}
+      showRelated={showEmbedButton}
     />
   )
 }

@@ -7,13 +7,7 @@ import { MeditationTemplate } from '../../../../components/templates'
  * Embed button so visitors can grab the iframe snippet.
  */
 export function Page() {
-  const { meditation, musicTracks, relatedLectures } = useData<MeditationPageData>()
+  const { meditation, musicTracks } = useData<MeditationPageData>()
 
-  return (
-    <MeditationTemplate
-      meditation={meditation}
-      musicTracks={musicTracks}
-      relatedLectures={relatedLectures}
-    />
-  )
+  return <MeditationTemplate showRelated meditation={meditation} musicTracks={musicTracks} />
 }

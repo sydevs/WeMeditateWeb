@@ -1,22 +1,20 @@
 import type { PageContextServer } from 'vike/types'
-import type { WebConfig, RelatedLectureCard } from '../../../../server/cms-types'
-import { getWebConfig, getRelatedLectures } from '../../../../server/cms-client'
+import type { WebConfig } from '../../../../server/cms-types'
+import { getWebConfig } from '../../../../server/cms-client'
 import { loadMeditation, type MeditationData } from '../_meditation'
 
 export interface MeditationPageData extends MeditationData {
   settings: WebConfig
-  /** Lectures related to this meditation, shown below the player. Empty when
-   * the site has no audiences configured, there are none, or the fetch
-   * degrades (the section is then omitted). */
-  relatedLectures: RelatedLectureCard[]
 }
 
 /**
  * Fetch the meditation (shared with the embed route) plus the WebConfig that
- * LayoutChrome needs, in parallel — then the related lectures, which is
- * audience-gated so it needs the config's `audiences` first. Related content is
- * fetched only here on the full route (the embed route stays player-only), and
- * `getRelatedLectures` degrades to [] on any failure, so it never blocks the page.
+ * LayoutChrome needs to render the nav, in parallel.
+ *
+ * Related lectures are NOT fetched here: the ranking endpoint is slow (~5s+), so
+ * blocking SSR on it trips Vike's slow-hook warning. The full route renders the
+ * related section client-side instead (RelatedContentLoader via the template's
+ * showRelated flag).
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationPageData> {
   const [base, settings] = await Promise.all([
@@ -24,11 +22,5 @@ export async function data(pageContext: PageContextServer): Promise<MeditationPa
     getWebConfig({ locale: pageContext.locale }),
   ])
 
-  const relatedLectures = await getRelatedLectures({
-    id: base.id,
-    locale: pageContext.locale,
-    audiences: settings.audiences,
-  })
-
-  return { ...base, settings, relatedLectures }
+  return { ...base, settings }
 }

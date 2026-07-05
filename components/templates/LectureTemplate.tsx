@@ -13,11 +13,10 @@
  * <LectureTemplate lecture={resolvedLecture} locale="en" />
  */
 
-import type { ResolvedLecture, RelatedMeditationCard } from '../../server/cms-types'
+import type { ResolvedLecture } from '../../server/cms-types'
 import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
-import { RelatedContent } from '../organisms/RelatedContent'
-import { relatedMeditationsToCards } from '../../lib/related-content'
+import { RelatedContentLoader } from '../organisms/RelatedContent'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -69,12 +68,12 @@ export interface LectureTemplateProps {
    */
   showEmbedButton?: boolean
   /**
-   * Meditations related to this lecture (from `getRelatedMeditations`), rendered
-   * as a grid below the player. Empty/omitted ⇒ no related section — which keeps
-   * the minimal embed route (LecturePlayer) player-only.
-   * @default []
+   * Whether to render the "Related meditations" section below the player (loaded
+   * client-side by RelatedContentLoader). The bare embed route uses LecturePlayer
+   * (not this template), so it's unaffected regardless.
+   * @default false
    */
-  relatedMeditations?: RelatedMeditationCard[]
+  showRelated?: boolean
 }
 
 /** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
@@ -88,7 +87,7 @@ export function LectureTemplate({
   lecture,
   locale,
   showEmbedButton = true,
-  relatedMeditations = [],
+  showRelated = false,
 }: LectureTemplateProps) {
   // A clip shows its playable window length; a full lecture shows the whole
   // source duration.
@@ -133,12 +132,16 @@ export function LectureTemplate({
         ) : null}
       </div>
 
-      {/* Related meditations (SahajCloud cross-type mirror) — renders nothing
-          when empty, so the bare embed route (LecturePlayer) is unaffected. */}
-      <RelatedContent
-        items={relatedMeditationsToCards(relatedMeditations)}
-        title="Related meditations"
-      />
+      {/* Related meditations (SahajCloud cross-type mirror), loaded client-side
+          so the slow ranking endpoint never blocks SSR. The bare embed route
+          uses LecturePlayer (not this template), so it's unaffected regardless. */}
+      {showRelated ? (
+        <RelatedContentLoader
+          anchorId={lecture.id}
+          kind="related-meditations"
+          title="Related meditations"
+        />
+      ) : null}
     </article>
   )
 }

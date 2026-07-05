@@ -14,12 +14,11 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation, MeditationSong, RelatedLectureCard } from '../../server/cms-types'
+import type { Meditation, MeditationSong } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
-import { RelatedContent } from '../organisms/RelatedContent'
+import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/cms-relationships'
-import { relatedLecturesToCards } from '../../lib/related-content'
 
 export interface MeditationTemplateProps {
   /**
@@ -54,12 +53,12 @@ export interface MeditationTemplateProps {
    */
   showEmbedButton?: boolean
   /**
-   * Lectures related to this meditation (from `getRelatedLectures`), rendered as
-   * a grid below the player. Empty/omitted ⇒ no related section — which is how
-   * the minimal embed route stays player-only (it never fetches these).
-   * @default []
+   * Whether to render the "Related lectures" section below the player (loaded
+   * client-side by RelatedContentLoader). Off on the minimal embed route so it
+   * stays player-only.
+   * @default false
    */
-  relatedLectures?: RelatedLectureCard[]
+  showRelated?: boolean
 }
 
 export function MeditationTemplate({
@@ -69,7 +68,7 @@ export function MeditationTemplate({
   timeDisplay,
   seekTo,
   showEmbedButton = true,
-  relatedLectures = [],
+  showRelated = false,
 }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
@@ -200,9 +199,15 @@ export function MeditationTemplate({
         />
       </div>
 
-      {/* Related lectures (SahajCloud cross-type mirror) — renders nothing when
-          empty, so the embed route (which never fetches these) stays bare. */}
-      <RelatedContent items={relatedLecturesToCards(relatedLectures)} title="Related lectures" />
+      {/* Related lectures (SahajCloud cross-type mirror), loaded client-side so
+          the slow ranking endpoint never blocks SSR. Off on the embed route. */}
+      {showRelated ? (
+        <RelatedContentLoader
+          anchorId={meditation.id}
+          kind="related-lectures"
+          title="Related lectures"
+        />
+      ) : null}
     </>
   )
 }

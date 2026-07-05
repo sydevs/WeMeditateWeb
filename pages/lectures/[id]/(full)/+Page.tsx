@@ -7,9 +7,7 @@ import { LectureTemplate } from '../../../../components/templates'
  * wraps the player with a title + duration and shows the Embed button.
  */
 export function Page() {
-  const { lecture, locale, relatedMeditations } = useData<LecturePageData>()
+  const { lecture, locale } = useData<LecturePageData>()
 
-  return (
-    <LectureTemplate lecture={lecture} locale={locale} relatedMeditations={relatedMeditations} />
-  )
+  return <LectureTemplate showRelated lecture={lecture} locale={locale} />
 }
