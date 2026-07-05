@@ -91,7 +91,7 @@ export function ContentCarousel({
     // visible. Basing focus on actual visibility — not a single centered index
     // — means every fully-visible card stays bright and only edge-clipped
     // peekers fade, however many slides fit at the current size/viewport.
-    inViewThreshold: 0.75,
+    inViewThreshold: 0.95,
   })
 
   const [slidesInView, setSlidesInView] = useState<number[]>([])
