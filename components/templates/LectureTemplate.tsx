@@ -13,9 +13,11 @@
  * <LectureTemplate lecture={resolvedLecture} locale="en" />
  */
 
-import type { ResolvedLecture } from '../../server/cms-types'
+import type { ResolvedLecture, RelatedMeditationCard } from '../../server/cms-types'
 import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
+import { RelatedContent } from '../organisms/RelatedContent'
+import { relatedMeditationsToCards } from '../../lib/related-content'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -66,6 +68,13 @@ export interface LectureTemplateProps {
    * @default true
    */
   showEmbedButton?: boolean
+  /**
+   * Meditations related to this lecture (from `getRelatedMeditations`), rendered
+   * as a grid below the player. Empty/omitted ⇒ no related section — which keeps
+   * the minimal embed route (LecturePlayer) player-only.
+   * @default []
+   */
+  relatedMeditations?: RelatedMeditationCard[]
 }
 
 /** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
@@ -75,7 +84,12 @@ function formatLength(seconds: number): string {
   return total < 60 ? `${total} sec` : `${Math.floor(total / 60)} min`
 }
 
-export function LectureTemplate({ lecture, locale, showEmbedButton = true }: LectureTemplateProps) {
+export function LectureTemplate({
+  lecture,
+  locale,
+  showEmbedButton = true,
+  relatedMeditations = [],
+}: LectureTemplateProps) {
   // A clip shows its playable window length; a full lecture shows the whole
   // source duration.
   const windowSeconds =
@@ -118,6 +132,13 @@ export function LectureTemplate({ lecture, locale, showEmbedButton = true }: Lec
           />
         ) : null}
       </div>
+
+      {/* Related meditations (SahajCloud cross-type mirror) — renders nothing
+          when empty, so the bare embed route (LecturePlayer) is unaffected. */}
+      <RelatedContent
+        items={relatedMeditationsToCards(relatedMeditations)}
+        title="Related meditations"
+      />
     </article>
   )
 }

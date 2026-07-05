@@ -14,10 +14,12 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation, MeditationSong } from '../../server/cms-types'
+import type { Meditation, MeditationSong, RelatedLectureCard } from '../../server/cms-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
+import { RelatedContent } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/cms-relationships'
+import { relatedLecturesToCards } from '../../lib/related-content'
 
 export interface MeditationTemplateProps {
   /**
@@ -51,6 +53,13 @@ export interface MeditationTemplateProps {
    * @default true
    */
   showEmbedButton?: boolean
+  /**
+   * Lectures related to this meditation (from `getRelatedLectures`), rendered as
+   * a grid below the player. Empty/omitted ⇒ no related section — which is how
+   * the minimal embed route stays player-only (it never fetches these).
+   * @default []
+   */
+  relatedLectures?: RelatedLectureCard[]
 }
 
 export function MeditationTemplate({
@@ -60,6 +69,7 @@ export function MeditationTemplate({
   timeDisplay,
   seekTo,
   showEmbedButton = true,
+  relatedLectures = [],
 }: MeditationTemplateProps) {
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
@@ -157,36 +167,42 @@ export function MeditationTemplate({
   }
 
   return (
-    <div className="max-w-6xl mx-auto h-full">
-      {showEmbedButton ? (
-        <div className="mb-2 flex justify-end">
-          {/* No locale prop: EmbedButton self-resolves it from page context (like Link). */}
-          <EmbedButton
-            embedPath={`/meditations/${meditation.id}/embed`}
-            title={meditation.title ?? undefined}
-          />
-        </div>
-      ) : null}
+    <>
+      <div className="max-w-6xl mx-auto h-full">
+        {showEmbedButton ? (
+          <div className="mb-2 flex justify-end">
+            {/* No locale prop: EmbedButton self-resolves it from page context (like Link). */}
+            <EmbedButton
+              embedPath={`/meditations/${meditation.id}/embed`}
+              title={meditation.title ?? undefined}
+            />
+          </div>
+        ) : null}
 
-      {/* Meditation Player */}
-      <MeditationPlayer
-        frames={frames}
-        musicTracks={musicTracks}
-        seekTo={seekTo}
-        timeDisplay={timeDisplay}
-        track={{
-          url: meditation.url,
-          title: meditation.title || 'Untitled Meditation',
-          credit: '',
-          creditURL: '',
-          thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
-          duration:
-            typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
-              ? meditation.durationMinutes * 60
-              : 0,
-        }}
-        onPlaybackTimeUpdate={onPlaybackTimeUpdate}
-      />
-    </div>
+        {/* Meditation Player */}
+        <MeditationPlayer
+          frames={frames}
+          musicTracks={musicTracks}
+          seekTo={seekTo}
+          timeDisplay={timeDisplay}
+          track={{
+            url: meditation.url,
+            title: meditation.title || 'Untitled Meditation',
+            credit: '',
+            creditURL: '',
+            thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
+            duration:
+              typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
+                ? meditation.durationMinutes * 60
+                : 0,
+          }}
+          onPlaybackTimeUpdate={onPlaybackTimeUpdate}
+        />
+      </div>
+
+      {/* Related lectures (SahajCloud cross-type mirror) — renders nothing when
+          empty, so the embed route (which never fetches these) stays bare. */}
+      <RelatedContent items={relatedLecturesToCards(relatedLectures)} title="Related lectures" />
+    </>
   )
 }
