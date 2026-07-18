@@ -18,6 +18,7 @@
       "Bash(git remote:*)",
       "Bash(git stash:*)",
       "Bash(mktemp:*)",
+      "Bash(.claude/skills/pr-prep/check.sh:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr checks:*)",

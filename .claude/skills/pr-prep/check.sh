@@ -16,8 +16,8 @@
 # reproduce a red preview build. Runs SEQUENTIALLY.
 #
 # Usage:
-#   .claude/skills/implement-issue/scripts/validate.sh           # lint + tsc + test:run
-#   .claude/skills/implement-issue/scripts/validate.sh --full    # + pnpm build
+#   .claude/skills/pr-prep/check.sh           # lint + tsc + test:run
+#   .claude/skills/pr-prep/check.sh --full    # + pnpm build
 
 set -u
 

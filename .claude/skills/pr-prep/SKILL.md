@@ -17,11 +17,11 @@ CI (`.github/workflows/ci.yml`) re-runs lint + type-check + the unit suite on ev
 
 ## Quick start
 
-Reuses the shared validation script (do not duplicate it):
+The canonical shared gate script lives here (do not duplicate it — `/implement-issue` and `/finalize-pr` both call this path):
 
 ```bash
-.claude/skills/implement-issue/scripts/validate.sh          # lean: lint + tsc + test:run
-.claude/skills/implement-issue/scripts/validate.sh --full   # + pnpm build (Cloudflare preview parity)
+.claude/skills/pr-prep/check.sh          # lean: lint + tsc + test:run
+.claude/skills/pr-prep/check.sh --full   # + pnpm build (Cloudflare preview parity)
 ```
 
 Runs sequentially.
@@ -76,7 +76,7 @@ Include a Test Results section (see `.claude/skills/finalize-pr/pr-template.md`)
 
 ## References
 
-- Shared validation script: `.claude/skills/implement-issue/scripts/validate.sh`
+- Shared validation script: `.claude/skills/pr-prep/check.sh`
 - Full issue→PR workflow: `.claude/skills/implement-issue/SKILL.md`
 - Finalize / ship pipeline (uses this lean gate): `.claude/skills/finalize-pr/SKILL.md`
 - 3-phase PR workflow: CLAUDE.md "PR Workflow (3 Phases)"

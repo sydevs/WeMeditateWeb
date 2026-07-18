@@ -41,7 +41,7 @@ There is no DOM event simulation. For hover/focus/click, responsive breakpoints,
 
 ## Minimum bar before opening a PR
 
-Run `.claude/skills/implement-issue/scripts/validate.sh` (add `--full` for build-affecting changes):
+Run `.claude/skills/pr-prep/check.sh` (add `--full` for build-affecting changes):
 
 - `pnpm lint` — 0 errors
 - `pnpm exec tsc --noEmit` — clean
