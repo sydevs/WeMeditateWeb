@@ -131,8 +131,8 @@ For each acceptance-criterion item that can be tested:
 Run the lean gate as you implement — it keeps the loop fast and catches failures before they reach finalize. The full CI gate + Cloudflare preview builds run in the finalize step (step 9). Run it via the validation script:
 
 ```bash
-.claude/skills/implement-issue/scripts/validate.sh          # lint + tsc --noEmit + pnpm test:run
-.claude/skills/implement-issue/scripts/validate.sh --full   # the above + pnpm build (mirrors the Cloudflare preview build)
+.claude/skills/pr-prep/check.sh          # lint + tsc --noEmit + pnpm test:run
+.claude/skills/pr-prep/check.sh --full   # the above + pnpm build (mirrors the Cloudflare preview build)
 ```
 
 Or manually:
@@ -191,7 +191,7 @@ The CMS schema lives in the SahajCloud repo, not here. If your change depends on
 
 - Branch naming: `branch-naming.md`
 - What to test per change type: `test-plan-checklist.md`
-- Lean validation gate: `scripts/validate.sh` (also `.claude/skills/pr-prep/SKILL.md`)
+- Lean validation gate: `.claude/skills/pr-prep/check.sh` (also `.claude/skills/pr-prep/SKILL.md`)
 - Finalize pipeline (simplify → review → push → PR → CI): `.claude/skills/finalize-pr/SKILL.md`
 - PR body template: `.claude/skills/finalize-pr/pr-template.md`
 - Repo conventions (commit/scope format): `.claude/skills/draft-ticket/conventions.md`

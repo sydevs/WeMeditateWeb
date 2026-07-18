@@ -15,7 +15,7 @@ This is **phase 3** of the PR workflow (Implement → Adjust → **Finalize**) d
 ## Stack quick reference
 
 - **pnpm only.** Lint `pnpm lint` · Types `pnpm typecheck` (`tsc --noEmit`) · Tests `pnpm test:run` (Vitest, unit) · Build `pnpm build` (vike build).
-- **Lean gate:** `.claude/skills/implement-issue/scripts/validate.sh` (lint + tsc + test:run); `--full` adds `pnpm build`.
+- **Lean gate:** `.claude/skills/pr-prep/check.sh` (lint + tsc + test:run); `--full` adds `pnpm build`.
 - **CI** (`.github/workflows/ci.yml`, on every PR): a `gate` job (**Lint, Typecheck & Unit**) + a `smoke` matrix (**Smoke (web)** / **Smoke (ladle)**) that fetch-tests the deployed Cloudflare previews. Two Cloudflare preview builds also run per PR: **Workers Builds: wemeditate-web** (the Vike Worker) and **Cloudflare Pages** (the Ladle design system). See `.claude/docs/cloudflare-previews-ci.md`.
 
 ## Invocation
@@ -81,8 +81,8 @@ git diff --name-only origin/main...HEAD | grep -E \
 ### 4. Lean test gate
 
 ```bash
-.claude/skills/implement-issue/scripts/validate.sh          # lint + tsc --noEmit + pnpm test:run
-.claude/skills/implement-issue/scripts/validate.sh --full   # + pnpm build (Cloudflare preview parity)
+.claude/skills/pr-prep/check.sh          # lint + tsc --noEmit + pnpm test:run
+.claude/skills/pr-prep/check.sh --full   # + pnpm build (Cloudflare preview parity)
 ```
 
 Use `--full` when the branch touches the build, server entry, Vike config, or Wrangler/Cloudflare setup — `pnpm build` is the closest local mirror of the preview deploy. Fix + re-run on failure.
@@ -130,7 +130,7 @@ gh pr checks <pr-or-branch>            # confirm final state
 GitHub checks — all five appear in `gh pr checks`: **Lint, Typecheck & Unit** (the `gate` job), **Smoke (web)** / **Smoke (ladle)** (the smoke matrix), **Workers Builds: wemeditate-web** (the web Vike Worker preview build), and **Cloudflare Pages** (the Ladle preview build). The two Cloudflare build checks report pass/fail with a `dash.cloudflare.com` "Details" link. The deployed web preview **URL** itself is posted in the `cloudflare-workers-and-pages[bot]` PR comment — which **Smoke (web)** discovers and fetch-tests (see `.claude/docs/cloudflare-previews-ci.md`); on a forked PR without that comment, the smoke jobs skip gracefully and stay green.
 
 - **Green** → report.
-- **Red** → `gh run view <run-id> --log-failed` for the gate/smoke jobs; for a red **Workers Builds** or **Cloudflare Pages** check, open its `dash.cloudflare.com` build log via the check's "Details". Diagnose, fix locally (re-run the relevant part of the lean gate; reproduce a build failure with `validate.sh --full`), commit, push, re-watch. Smoke reds often mean the *deployed* render differs from local (it hits the production CMS) — read the job logs before assuming a code bug.
+- **Red** → `gh run view <run-id> --log-failed` for the gate/smoke jobs; for a red **Workers Builds** or **Cloudflare Pages** check, open its `dash.cloudflare.com` build log via the check's "Details". Diagnose, fix locally (re-run the relevant part of the lean gate; reproduce a build failure with `check.sh --full`), commit, push, re-watch. Smoke reds often mean the *deployed* render differs from local (it hits the production CMS) — read the job logs before assuming a code bug.
 - **Cap at 3 fix iterations.** If CI is still red after three rounds, **stop and summarize** the remaining failure(s) for the user instead of looping.
 - A failure **pre-existing on `main`** (not caused by this branch) → fix it in this PR and note it, per `.claude/skills/pr-prep/SKILL.md`.
 
@@ -156,7 +156,7 @@ GitHub checks — all five appear in `gh pr checks`: **Lint, Typecheck & Unit** 
 ## References
 
 - PR body template: `pr-template.md`
-- Lean / `--full` gate + pre-existing-failure handling: `.claude/skills/pr-prep/SKILL.md` (shared script: `.claude/skills/implement-issue/scripts/validate.sh`)
+- Lean / `--full` gate + pre-existing-failure handling: `.claude/skills/pr-prep/SKILL.md` (shared script: `.claude/skills/pr-prep/check.sh`)
 - 3-phase PR workflow: `CLAUDE.md` → "PR Workflow (3 Phases)" (aliased by `AGENTS.md`)
 - CI + the two Cloudflare previews: `.claude/docs/cloudflare-previews-ci.md`
 - Commit conventions (HEREDOC + `Co-Authored-By`): `.claude/skills/draft-ticket/conventions.md`, `CLAUDE.md`
