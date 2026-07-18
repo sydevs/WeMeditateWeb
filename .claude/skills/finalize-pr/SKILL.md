@@ -1,6 +1,6 @@
 ---
 name: finalize-pr
-description: Finalize the current branch's PR — simplify, a single code-review, conditional security-review, run the lean gate, push, create or refresh the PR, and watch CI with a capped fix-loop. User-invoked; also run as the final step of /implement-issue. Does not run unless explicitly triggered.
+description: Finalize the current branch's PR — simplify, a single code-review, conditional security-review, the lean gate, a documentation-sync commit, push, create or refresh the PR, and watch CI with a capped fix-loop. User-invoked; also run as the final step of /implement-issue. Does not run unless explicitly triggered.
 disable-model-invocation: true
 effort: max
 allowed-tools: Bash(*), Read, Edit, Write, Grep, Glob, Task
@@ -8,7 +8,7 @@ allowed-tools: Bash(*), Read, Edit, Write, Grep, Glob, Task
 
 # Finalize PR
 
-The reusable **ship pipeline** for **WeMeditateWeb** (Vike + React + TypeScript + Cloudflare Workers frontend over the SahajCloud PayloadCMS): take the current branch's accumulated local commits and ship them — simplify → single code-review → conditional security-review → lean gate → push → open/refresh the PR → get CI green → report.
+The reusable **ship pipeline** for **WeMeditateWeb** (Vike + React + TypeScript + Cloudflare Workers frontend over the SahajCloud PayloadCMS): take the current branch's accumulated local commits and ship them — simplify → single code-review → conditional security-review → lean gate → update docs → push → open/refresh the PR → get CI green → report.
 
 This is **phase 3** of the PR workflow (Implement → Adjust → **Finalize**) documented in `CLAUDE.md` → "PR Workflow (3 Phases)" (aliased by `AGENTS.md`). `/implement-issue` runs this pipeline at the end of its implementation; you also run it directly (`/finalize-pr`) once you're happy with a batch of local-only Adjust-phase commits — it's what turns those un-pushed commits into one pushed PR + one CI run.
 
@@ -87,9 +87,21 @@ git diff --name-only origin/main...HEAD | grep -E \
 
 Use `--full` when the branch touches the build, server entry, Vike config, or Wrangler/Cloudflare setup — `pnpm build` is the closest local mirror of the preview deploy. Fix + re-run on failure.
 
-The **smoke** specs (`pnpm test:smoke` for web, `pnpm test:smoke:ladle` for Ladle) run in CI against the *deployed* previews — they need a live `PREVIEW_URL`, so don't run them locally; they're covered by the CI watch in step 7.
+The **smoke** specs (`pnpm test:smoke` for web, `pnpm test:smoke:ladle` for Ladle) run in CI against the *deployed* previews — they need a live `PREVIEW_URL`, so don't run them locally; they're covered by the CI watch in step 8.
 
-### 5. Push
+### 5. Update documentation
+
+Sync the documentation the branch's changes affect, committed as the **final commit before pushing** (docs ship with the code, not in a follow-up PR). Sweep the branch diff (`origin/main...HEAD`) for what changed and update every stale surface:
+
+- **`CLAUDE.md`** (aliased by `AGENTS.md`) + **`.claude/docs/*`** — architecture, routing/data-fetching, caching, CI/preview, or local-environment facts the diff alters.
+- **`.claude/rules/*`** — the path-scoped rule for any subsystem the diff touched (`server/**` CMS reads, repo-wide debugging).
+- **`.claude/skills/*`** — the workflow skills themselves, when the diff changes a command, script path, gate, or convention they document.
+- **`DESIGN_SYSTEM.md` / `STORYBOOK.md`** for component/story conventions; **`MCP_USAGE.md`** for MCP tooling changes; **`README`** for new commands, env vars, or scripts.
+- JSDoc/comments and inline examples referencing anything the diff renamed, removed, or re-flagged — grep the diff for stale references.
+
+Commit it on its own (`docs: <what changed>`). If the update touched lintable files, re-run the lean gate (step 4). If the branch genuinely affects no docs, **say so in the report (step 9)** rather than skipping silently.
+
+### 6. Push
 
 ```bash
 git push        # first push: git push -u origin <branch>
@@ -97,7 +109,7 @@ git push        # first push: git push -u origin <branch>
 
 Never force-push a shared branch; never `--no-verify`.
 
-### 6. Open or refresh the PR
+### 7. Open or refresh the PR
 
 ```bash
 gh pr view --json number,url 2>/dev/null   # does a PR already exist for this branch?
@@ -114,13 +126,13 @@ BODY_FILE=$(mktemp -t pr-body.XXXXXX).md
   ```bash
   gh pr create --title "<conventional commit title>" --body-file "$BODY_FILE" --base main
   ```
-- **PR exists** → **refresh** its description so it reflects the final diff + test results (Adjust-phase commits may have changed the story since it was opened):
+- **PR exists** → **refresh** its **title and description** so they reflect the final diff + test results, not the state when it was first opened. Re-derive **both** from the **current** `origin/main...HEAD` — Adjust-phase commits since the last push often change the story (a scope shift, a reverted or newly-added sub-feature, fresh verification), so don't reuse the originals:
   ```bash
-  gh pr edit <pr> --body-file "$BODY_FILE"
+  gh pr edit <pr> --title "<conventional commit title, re-derived>" --body-file "$BODY_FILE"
   ```
-  Never leave a stale description from an earlier state.
+  Update the title whenever the branch no longer matches it (a feature dropped or added since the last push); keep it only if it's still accurate. Never leave a stale title or description from an earlier state.
 
-### 7. Watch CI and fix (capped)
+### 8. Watch CI and fix (capped)
 
 ```bash
 gh pr checks <pr-or-branch> --watch
@@ -134,7 +146,7 @@ GitHub checks — all five appear in `gh pr checks`: **Lint, Typecheck & Unit** 
 - **Cap at 3 fix iterations.** If CI is still red after three rounds, **stop and summarize** the remaining failure(s) for the user instead of looping.
 - A failure **pre-existing on `main`** (not caused by this branch) → fix it in this PR and note it, per `.claude/skills/pr-prep/SKILL.md`.
 
-### 8. Report
+### 9. Report
 
 - PR URL + final CI status (green, or the capped-out summary).
 - Dismissed review findings (with the one-line reasons).
@@ -150,7 +162,8 @@ GitHub checks — all five appear in `gh pr checks`: **Lint, Typecheck & Unit** 
 - **Always** run `/simplify` and `/code-review` over the **full branch diff** (`origin/main...HEAD`), not just the last commit.
 - **Always** run `/code-review` (and the conditional `/security-review`) via a **dispatched Task subagent**, never inline in the main thread.
 - **Always** keep it to a **single** code-review pass — no redundant second review.
-- **Always** use `--body-file` (with a `mktemp` path) for `gh pr create` / `gh pr edit`; always refresh a stale PR body.
+- **Always** commit a **documentation sync as the final commit before pushing** (step 5) — update `CLAUDE.md`/`AGENTS.md`, `.claude/docs/*`, `.claude/rules/*`, `.claude/skills/*`, `DESIGN_SYSTEM.md`, `STORYBOOK.md`, `MCP_USAGE.md`, and any example the diff affects; or state in the report that no docs are affected.
+- **Always** use `--body-file` (with a `mktemp` path) for `gh pr create` / `gh pr edit`; always refresh a stale PR **title and** body to match the current `origin/main...HEAD`.
 - **Cap** the CI fix-loop at 3 iterations, then hand back to the user.
 
 ## References
