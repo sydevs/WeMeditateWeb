@@ -27,6 +27,8 @@ import { generateCacheKey, withCache } from './kv-cache'
 import { createPayloadClient } from './payload-client'
 import type { Locale } from './cms-types'
 import type { AtlasSeoResponse } from './atlas-types'
+import type { SitemapUrl } from './sitemap'
+import type { RegionsSelect, EventsSelect } from './payload-types'
 import { parseAtlasRoute } from '../lib/atlas-route'
 
 /**
@@ -143,15 +145,35 @@ const SITEMAP_READ_LIMIT = 500
 const SITEMAP_MAX_PAGES = 4
 
 /**
+ * Field selections for the atlas sitemap reads.
+ *
+ * Typed against the generated `*Select` interfaces per
+ * `.claude/rules/cms-api-reads.md`: `select` is mandatory for API clients, and
+ * typing it means a CMS schema change surfaces here as a compile error rather
+ * than a silent 400. The two are structurally identical today and still declared
+ * separately, because they are answerable to different collections.
+ *
+ * `webUrl` is a virtual field deriving from the document id alone, so nothing
+ * extra has to be co-selected for it to resolve.
+ */
+const SITEMAP_SELECTS = {
+  regions: { webUrl: true, updatedAt: true } satisfies RegionsSelect<true>,
+  events: { webUrl: true, updatedAt: true } satisfies EventsSelect<true>,
+}
+
+/** A row either sitemap read can yield. */
+type SitemapDoc = { webUrl?: string | null; updatedAt?: string | null }
+
+/**
  * Every atlas URL this site is the canonical home of.
  *
  * **Filtered to our own origin, deliberately.** A sitemap is a list of the URLs
  * you are claiming, and atlas ownership is per-subtree: most regions canonicalize
  * to the national site that owns them (#640). Listing those would ask a crawler
  * to index URLs we ourselves declare non-canonical. So we return the `webUrl`
- * values that are already on this origin — the regions and classes that fall
- * back to the We Meditate surface, which is exactly the set these routes exist
- * to be the safety net for.
+ * values already on this origin — the regions and classes that fall back to the
+ * We Meditate surface, which is exactly the set these routes are the safety net
+ * for.
  *
  * That also makes the answer self-adjusting: on a preview origin, and before the
  * wemeditate.com cutover, it is legitimately empty.
@@ -161,9 +183,7 @@ const SITEMAP_MAX_PAGES = 4
  *
  * @param origin - The origin serving the request, e.g. `https://wemeditate.com`
  */
-export async function getAtlasSitemapUrls(
-  origin: string,
-): Promise<Array<{ loc: string; lastmod: string | null }>> {
+export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     return await withCache({
       cacheKey: generateCacheKey('atlas-sitemap', { origin }),
@@ -171,22 +191,20 @@ export async function getAtlasSitemapUrls(
       fetchFn: async () => {
         const client = createPayloadClient()
 
-        // `webUrl` is a virtual field deriving from the document id alone, so
-        // nothing extra has to be co-selected for it to resolve.
-        const collections = ['regions', 'events'] as const
-        const found = await Promise.all(
-          collections.map((collection) => readAllPages(client, collection)),
-        )
+        const found = await Promise.all([
+          readAllPages(client, 'regions'),
+          readAllPages(client, 'events'),
+        ])
 
         const prefix = `${origin.replace(/\/$/, '')}/`
 
         return found
           .flat()
-          .filter((doc) => typeof doc.webUrl === 'string' && doc.webUrl.startsWith(prefix))
-          .map((doc) => ({
-            loc: doc.webUrl as string,
-            lastmod: typeof doc.updatedAt === 'string' ? doc.updatedAt : null,
-          }))
+          .filter(
+            (doc): doc is SitemapDoc & { webUrl: string } =>
+              typeof doc.webUrl === 'string' && doc.webUrl.startsWith(prefix),
+          )
+          .map((doc) => ({ loc: doc.webUrl, lastmod: doc.updatedAt ?? null }))
       },
     })
   } catch (error) {
@@ -201,12 +219,18 @@ export async function getAtlasSitemapUrls(
   }
 }
 
-/** Walk a collection's pages up to the read ceiling, collecting URL fields. */
+/**
+ * Walk a collection's pages up to the read ceiling.
+ *
+ * Bounded because this runs inside a Worker request: an unbounded paginated read
+ * is one CMS data change away from a timeout, and a sitemap missing its tail
+ * beats a route that hangs.
+ */
 async function readAllPages(
   client: ReturnType<typeof createPayloadClient>,
-  collection: 'regions' | 'events',
-): Promise<Array<{ webUrl?: unknown; updatedAt?: unknown }>> {
-  const docs: Array<{ webUrl?: unknown; updatedAt?: unknown }> = []
+  collection: keyof typeof SITEMAP_SELECTS,
+): Promise<SitemapDoc[]> {
+  const docs: SitemapDoc[] = []
 
   for (let page = 1; page <= SITEMAP_MAX_PAGES; page++) {
     const result = await client.find({
@@ -214,10 +238,10 @@ async function readAllPages(
       limit: SITEMAP_READ_LIMIT,
       page,
       depth: 0,
-      select: { webUrl: true, updatedAt: true },
+      select: SITEMAP_SELECTS[collection],
     })
 
-    docs.push(...((result?.docs ?? []) as Array<{ webUrl?: unknown; updatedAt?: unknown }>))
+    docs.push(...((result?.docs ?? []) as SitemapDoc[]))
 
     if (!result?.hasNextPage) {
       break
