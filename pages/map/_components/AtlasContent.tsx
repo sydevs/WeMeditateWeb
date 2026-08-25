@@ -141,7 +141,20 @@ function EventContent({
   content: AtlasSeoEventContent
   breadcrumbs: AtlasSeoBreadcrumb[]
 }) {
-  const lead = content.images[0]
+  // Defensive reads throughout this component. `AtlasSeoResponse` is
+  // hand-mirrored from upstream (see server/atlas-types.ts), so a field that
+  // silently stops being sent would otherwise be a 500 on the page rather than
+  // the degraded render the rest of the feature is built for.
+  const paragraphs = content.paragraphs ?? []
+  const languages = content.languages ?? []
+  const lead = content.images?.[0]
+
+  // `||`, not `??`: upstream uses the empty string for "absent" elsewhere in
+  // this contract (`address.oneLine`, `schedule.oneLine`), so an empty
+  // `onlineUrl` must fall through to the website rather than render href="".
+  const joinUrl = content.onlineUrl || null
+  const websiteUrl = content.website || null
+  const linkUrl = joinUrl ?? websiteUrl
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -150,7 +163,7 @@ function EventContent({
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{content.title}</h1>
 
       <dl className="mt-4 flex flex-col gap-2 text-gray-700">
-        {content.schedule.oneLine && (
+        {content.schedule?.oneLine && (
           <div>
             <dt className="sr-only">When</dt>
             <dd>{content.schedule.oneLine}</dd>
@@ -162,10 +175,10 @@ function EventContent({
             <dd>{content.address.oneLine}</dd>
           </div>
         )}
-        {content.languages.length > 0 && (
+        {languages.length > 0 && (
           <div>
             <dt className="sr-only">Languages</dt>
-            <dd className="text-sm text-gray-600">{content.languages.join(', ')}</dd>
+            <dd className="text-sm text-gray-600">{languages.join(', ')}</dd>
           </div>
         )}
       </dl>
@@ -180,20 +193,16 @@ function EventContent({
       )}
 
       {/* Plain text from the CMS, rendered as text. See the module comment. */}
-      {content.paragraphs.map((paragraph, index) => (
+      {paragraphs.map((paragraph, index) => (
         <p key={index} className="mt-4 text-gray-700">
           {paragraph}
         </p>
       ))}
 
-      {(content.onlineUrl || content.website) && (
+      {linkUrl && (
         <p className="mt-6">
-          <a
-            className="text-teal-600 hover:text-teal-700"
-            href={content.onlineUrl ?? content.website ?? '#'}
-            rel="noopener noreferrer"
-          >
-            {content.onlineUrl ? 'Join online' : 'Visit the website'}
+          <a className="text-teal-600 hover:text-teal-700" href={linkUrl} rel="noopener noreferrer">
+            {joinUrl ? 'Join online' : 'Visit the website'}
           </a>
         </p>
       )}

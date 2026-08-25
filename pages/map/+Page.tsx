@@ -30,9 +30,12 @@ export function Page() {
     <>
       <sahaj-atlas>{seo && <AtlasContent seo={seo} />}</sahaj-atlas>
 
-      {/* No `async`/`defer`: the loader reads its own script tag for its
-          settings. Without a key the page is still a complete, indexable
-          document — it just doesn't upgrade. */}
+      {/* `type="module"` is required — the loader is an ES module — and
+          `async`/`defer` are omitted per its documented contract. Note the
+          module type already nulls `document.currentScript`, so the loader
+          finds its own tag by filename either way; omitting them costs nothing
+          and keeps us on the supported path. Without a key the page is still a
+          complete, indexable document — it just doesn't upgrade. */}
       {embedKey && <script src={atlasEmbedSrc({ key: embedKey, atlasRoute })} type="module" />}
     </>
   )

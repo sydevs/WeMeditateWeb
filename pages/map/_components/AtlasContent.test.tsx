@@ -203,6 +203,27 @@ describe('a class page', () => {
     expect(html).toContain('Join online')
   })
 
+  it('falls through to the website when onlineUrl is empty rather than linking to nothing', () => {
+    // Regression: the guard used `||` while the href used `??`, so an empty
+    // onlineUrl passed the guard and then rendered href="". Upstream uses the
+    // empty string for "absent" elsewhere in this contract.
+    const html = render(eventSeo({ onlineUrl: '', website: 'https://site.test' }))
+
+    expect(html).toContain('href="https://site.test"')
+    expect(html).toContain('Visit the website')
+    expect(html).not.toContain('href=""')
+  })
+
+  it('degrades rather than throwing when a hand-mirrored field goes missing', () => {
+    // `AtlasSeoResponse` is mirrored from upstream by hand; a field that stops
+    // being sent must not turn the page into a 500.
+    const html = render(
+      eventSeo({ images: undefined, languages: undefined, paragraphs: undefined }),
+    )
+
+    expect(html).toContain('Saturday morning meditation')
+  })
+
   it('omits the link entirely when there is neither an online room nor a website', () => {
     const html = render(eventSeo())
 

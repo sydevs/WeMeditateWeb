@@ -106,8 +106,14 @@ export async function getAtlasSeo(options: {
         console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
         // The route named nothing upstream — a stale inbound link, or a region
-        // that has since been unpublished. Cached like any other answer so a
-        // crawler working through dead links doesn't re-ask every time.
+        // that has since been unpublished.
+        //
+        // ⚠ This answer is **not** effectively cached: `withCache` stores it,
+        // but reads a stored `null` back as a cache miss, so every request for a
+        // dead route re-queries the CMS. Acceptable — a 404 costs one cheap
+        // upstream read and dead atlas routes are rare — but it is not the
+        // cached path the successful branch takes, and a crawler grinding
+        // through stale links will reach the CMS each time.
         if (response.status === 404) {
           return null
         }
