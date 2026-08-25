@@ -1,3 +1,9 @@
+/**
+ * Named without the `+` its subject carries: Vike loads every `+`-prefixed file
+ * under `pages/` as a config file and rejects one that exports no `route` /
+ * `default`, which fails the build rather than the test run. Co-located all the
+ * same.
+ */
 import { describe, it, expect } from 'vitest'
 import route from './+route'
 
