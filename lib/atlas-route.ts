@@ -121,3 +121,43 @@ export function parseAtlasRoute(route: string): AtlasRouteTarget | null {
 
   return { kind: 'region', slug: terminal }
 }
+
+/**
+ * The path prefix this site serves the atlas under.
+ *
+ * Shared by the Vike route matcher, the sitemap and the widget's `routing=path`
+ * configuration, so all three agree on where the atlas lives.
+ */
+export const MAP_PREFIX = '/map'
+
+/**
+ * Match an incoming URL against the `/map` routes, returning the atlas route it
+ * carries — or `false` when the URL is not ours.
+ *
+ * ```
+ * /map                    → '/'
+ * /map/nl/amsterdam       → '/nl/amsterdam'
+ * /map/nl/amsterdam/1204  → '/nl/amsterdam/1204'
+ * ```
+ *
+ * **Depth is variable**, which is why `pages/map/` uses a route function rather
+ * than a filesystem route: an atlas route is anywhere from zero to five segments
+ * and Vike's filesystem router matches a fixed shape.
+ *
+ * An optional locale prefix is tolerated for the same reason `matchDocumentRoute`
+ * tolerates one: `onBeforeRoute` normally strips it into `urlLogical` before the
+ * router runs, but matching it here keeps the matcher correct on its own rather
+ * than dependent on that ordering.
+ */
+export function matchMapRoute(urlPathname: string): { routeParams: { atlasRoute: string } } | false {
+  const match = urlPathname.match(/^(?:\/[a-z]{2}(?:-[A-Z]{2})?)?\/map(\/.*)?$/)
+
+  if (!match) {
+    return false
+  }
+
+  // `/map`, `/map/` and `/map` with a trailing slash all mean the atlas root.
+  const rest = (match[1] ?? '').replace(/\/+$/, '')
+
+  return { routeParams: { atlasRoute: rest === '' ? '/' : rest } }
+}

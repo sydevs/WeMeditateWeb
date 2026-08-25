@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { parseAtlasRoute, MAX_ATLAS_ROUTE_LENGTH } from './atlas-route'
+import { parseAtlasRoute, matchMapRoute, MAX_ATLAS_ROUTE_LENGTH } from './atlas-route'
 
 describe('parseAtlasRoute', () => {
   describe('region routes', () => {
@@ -114,5 +114,32 @@ describe('parseAtlasRoute', () => {
         parseAtlasRoute(`/${Array.from({ length: 13 }, (_, i) => `s${i}`).join('/')}`),
       ).toBeNull()
     })
+  })
+})
+
+describe('matchMapRoute', () => {
+  it.each([
+    ['/map', '/'],
+    ['/map/', '/'],
+    ['/map/nl/amsterdam', '/nl/amsterdam'],
+    ['/map/nl/amsterdam/', '/nl/amsterdam'],
+    ['/map/nl/amsterdam/1204', '/nl/amsterdam/1204'],
+    ['/map/search', '/search'],
+    // onBeforeRoute normally strips the locale, but the matcher stands alone.
+    ['/fr/map/nl/amsterdam', '/nl/amsterdam'],
+    ['/fr/map', '/'],
+  ])('matches %s to the atlas route %s', (pathname, atlasRoute) => {
+    expect(matchMapRoute(pathname)).toEqual({ routeParams: { atlasRoute } })
+  })
+
+  it.each([
+    ['the homepage', '/'],
+    ['another page', '/about'],
+    // ⚠ The trap the ticket flags: a page whose slug merely starts with "map"
+    // is a Pages document, not the atlas.
+    ['a page whose slug starts with map', '/maps'],
+    ['a nested non-atlas route', '/meditations/142'],
+  ])('does not match %s', (_label, pathname) => {
+    expect(matchMapRoute(pathname)).toBe(false)
   })
 })
