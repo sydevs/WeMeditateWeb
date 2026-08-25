@@ -149,7 +149,9 @@ export const MAP_PREFIX = '/map'
  * router runs, but matching it here keeps the matcher correct on its own rather
  * than dependent on that ordering.
  */
-export function matchMapRoute(urlPathname: string): { routeParams: { atlasRoute: string } } | false {
+export function matchMapRoute(
+  urlPathname: string,
+): { routeParams: { atlasRoute: string } } | false {
   const match = urlPathname.match(/^(?:\/[a-z]{2}(?:-[A-Z]{2})?)?\/map(\/.*)?$/)
 
   if (!match) {

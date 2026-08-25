@@ -35,6 +35,7 @@ export default function route(pageContext: { urlPathname: string }) {
 
   // Match single-level paths like /about, /contact
   const match = urlPathname.match(/^\/([^/]+)\/?$/)
+
   if (match && !RESERVED_SEGMENTS.has(match[1])) {
     return {
       routeParams: {

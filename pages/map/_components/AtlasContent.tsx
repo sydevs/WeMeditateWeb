@@ -57,7 +57,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
               {isCurrent || !href ? (
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
-                <a href={href} className="hover:text-teal-600">
+                <a className="hover:text-teal-600" href={href}>
                   {rung.name}
                 </a>
               )}
@@ -77,7 +77,7 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
     <li className="border-t border-gray-200 py-4">
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
-          <a href={href} className="hover:text-teal-600">
+          <a className="hover:text-teal-600" href={href}>
             {card.title}
           </a>
         ) : (
@@ -172,10 +172,10 @@ function EventContent({
 
       {lead && (
         <img
-          src={lead.url}
           alt={lead.alt ?? ''}
-          loading="lazy"
           className="mt-6 w-full max-w-full rounded"
+          loading="lazy"
+          src={lead.url}
         />
       )}
 
@@ -189,8 +189,8 @@ function EventContent({
       {(content.onlineUrl || content.website) && (
         <p className="mt-6">
           <a
-            href={content.onlineUrl ?? content.website ?? '#'}
             className="text-teal-600 hover:text-teal-700"
+            href={content.onlineUrl ?? content.website ?? '#'}
             rel="noopener noreferrer"
           >
             {content.onlineUrl ? 'Join online' : 'Visit the website'}
@@ -207,8 +207,8 @@ function EventContent({
  */
 export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
   return seo.type === 'region' ? (
-    <RegionContent content={seo.content} breadcrumbs={seo.breadcrumbs} />
+    <RegionContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
   ) : (
-    <EventContent content={seo.content} breadcrumbs={seo.breadcrumbs} />
+    <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
   )
 }

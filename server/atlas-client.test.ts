@@ -48,6 +48,7 @@ describe('getAtlasSeo', () => {
     expect(result).toEqual(regionAnswer)
 
     const [url, init] = fetchSpy.mock.calls[0]
+
     expect(url).toBe('https://cms.test/api/atlas/seo?route=%2Fgb%2Flondon&locale=en')
     expect((init as RequestInit).headers).toEqual({
       Authorization: 'clients API-Key test-key',

@@ -102,14 +102,15 @@ describe('parseAtlasRoute', () => {
 
     it('refuses a route past the length ceiling', () => {
       const long = `/${'a'.repeat(MAX_ATLAS_ROUTE_LENGTH)}`
+
       expect(long.length).toBeGreaterThan(MAX_ATLAS_ROUTE_LENGTH)
       expect(parseAtlasRoute(long)).toBeNull()
     })
 
     it('refuses a route with more segments than any real one has', () => {
-      expect(parseAtlasRoute(`/${Array.from({ length: 12 }, (_, i) => `s${i}`).join('/')}`)).toEqual(
-        { kind: 'region', slug: 's11' },
-      )
+      expect(
+        parseAtlasRoute(`/${Array.from({ length: 12 }, (_, i) => `s${i}`).join('/')}`),
+      ).toEqual({ kind: 'region', slug: 's11' })
       expect(
         parseAtlasRoute(`/${Array.from({ length: 13 }, (_, i) => `s${i}`).join('/')}`),
       ).toBeNull()

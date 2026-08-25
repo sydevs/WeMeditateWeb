@@ -60,7 +60,7 @@ export function isSafeJsonLd(jsonLd: string): boolean {
 export function AtlasHeadTags({ seo }: { seo: AtlasSeoResponse }) {
   return (
     <>
-      {seo.canonical && <link rel="canonical" href={seo.canonical} />}
+      {seo.canonical && <link href={seo.canonical} rel="canonical" />}
 
       {/* One row per enabled atlas locale, plus x-default. The canonical is
           locale-free by design — nothing in the atlas is translated, so the
@@ -82,16 +82,13 @@ export function AtlasHeadTags({ seo }: { seo: AtlasSeoResponse }) {
       {Object.entries(seo.openGraph)
         .filter(([property]) => !OG_EMITTED_BY_CONFIG.has(property))
         .map(([property, content]) => (
-          <meta key={property} property={property} content={content} />
+          <meta key={property} content={content} property={property} />
         ))}
 
       {isSafeJsonLd(seo.jsonLd) && (
-        <script
-          type="application/ld+json"
-          // Emitted verbatim: see `isSafeJsonLd` for why this is neither
-          // re-escaped nor re-serialized.
-          dangerouslySetInnerHTML={{ __html: seo.jsonLd }}
-        />
+        // Emitted verbatim: see `isSafeJsonLd` for why this is neither
+        // re-escaped nor re-serialized.
+        <script dangerouslySetInnerHTML={{ __html: seo.jsonLd }} type="application/ld+json" />
       )}
     </>
   )

@@ -33,9 +33,7 @@ export function Page() {
       {/* No `async`/`defer`: the loader reads its own script tag for its
           settings. Without a key the page is still a complete, indexable
           document — it just doesn't upgrade. */}
-      {embedKey && (
-        <script type="module" src={atlasEmbedSrc({ key: embedKey, atlasRoute })}></script>
-      )}
+      {embedKey && <script src={atlasEmbedSrc({ key: embedKey, atlasRoute })} type="module" />}
     </>
   )
 }

@@ -34,6 +34,8 @@ describe('atlasEmbedSrc', () => {
   })
 
   it('opens at the atlas root for /map itself', () => {
-    expect(new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/' })).searchParams.get('atlas')).toBe('/')
+    expect(new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/' })).searchParams.get('atlas')).toBe(
+      '/',
+    )
   })
 })

@@ -197,9 +197,7 @@ describe('a class page', () => {
   })
 
   it('offers the join link for an online class', () => {
-    const html = render(
-      eventSeo({ onlineUrl: 'https://meet.test/room', address: null }),
-    )
+    const html = render(eventSeo({ onlineUrl: 'https://meet.test/room', address: null }))
 
     expect(html).toContain('href="https://meet.test/room"')
     expect(html).toContain('Join online')
