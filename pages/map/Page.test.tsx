@@ -108,6 +108,16 @@ describe('the atlas page', () => {
       expect(configCalls[0]).toMatchObject({ title: 'London, United Kingdom' })
     })
 
+    it('passes Head as an array, which vike-react spreads', () => {
+      // Regression: `Head` is a cumulative config that vike-react spreads
+      // (`...configViaHook.Head ?? []`), so a bare element throws
+      // "is not iterable" and 500s every page that has a document. Its own
+      // types accept the singular form, so only a runtime render catches it.
+      render({})
+
+      expect(Array.isArray(configCalls[0].Head)).toBe(true)
+    })
+
     it('contributes nothing when there is no document — a guessed canonical is worse than none', () => {
       render({ seo: null })
 

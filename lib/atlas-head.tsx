@@ -115,6 +115,13 @@ export function useAtlasHead(seo: AtlasSeoResponse | null): void {
     title: seo.title,
     ...(seo.description ? { description: seo.description } : {}),
     ...(image ? { image } : {}),
-    Head: <AtlasHeadTags seo={seo} />,
+    // ⚠ **An array, even for one element.** `Head` is a *cumulative* config, and
+    // vike-react spreads it at render time
+    // (`...pageContext._configViaHook?.Head ?? []` in its `getHeadHtml`), so a
+    // bare element throws `((intermediate value) ?? []) is not iterable` and
+    // 500s the page. Its own types don't say so — `ConfigViaHook` picks `Head`
+    // from `Vike.Config`, where it is singular — so the compiler accepts the
+    // broken form. Verified against vike-react@0.6.19.
+    Head: [<AtlasHeadTags key="atlas-head" seo={seo} />],
   })
 }
