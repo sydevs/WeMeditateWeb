@@ -28,7 +28,24 @@ export function Page() {
 
   return (
     <>
-      <sahaj-atlas>{seo && <AtlasContent seo={seo} />}</sahaj-atlas>
+      {/* `block` + a **definite height** is the opt-in for the widget's contained
+          map mode (SahajAtlasWeb#170): it makes the element the containing block
+          for the map's fixed descendants and a stacking context, so our sticky
+          header floats above the map instead of the map escaping to cover the
+          viewport. Unsized, the map fills the window and our `z-50` nav paints
+          over it.
+
+          ⚠ `height`, never `min-height`. A `min-height` box has a non-zero rect
+          so containment engages, but the widget's own `height: 100%` then
+          resolves against an `auto` parent to zero — it verifies its box and
+          refuses, rendering uncontained.
+
+          `overflow-y-auto` keeps the server-rendered content reachable for a
+          no-JS visitor when a region lists more classes than the box fits;
+          crawlers read the DOM regardless of overflow. */}
+      <sahaj-atlas className="block h-[80dvh] overflow-y-auto">
+        {seo && <AtlasContent seo={seo} />}
+      </sahaj-atlas>
 
       {/* `type="module"` is required — the loader is an ES module — and
           `async`/`defer` are omitted per its documented contract. Note the

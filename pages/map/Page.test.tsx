@@ -63,7 +63,21 @@ describe('the atlas page', () => {
     // reads real content in the real document at the real URL.
     const html = render({})
 
-    expect(html).toMatch(/<sahaj-atlas>.*London.*<\/sahaj-atlas>/s)
+    expect(html).toMatch(/<sahaj-atlas[^>]*>.*London.*<\/sahaj-atlas>/s)
+  })
+
+  it('sizes the element so the widget contains its map instead of taking the viewport', () => {
+    // The opt-in for contained map mode (SahajAtlasWeb#170). Without a definite
+    // height the map is `position: fixed` over the whole window and the site's
+    // sticky nav paints on top of it.
+    const html = render({})
+    const tag = html.match(/<sahaj-atlas[^>]*>/)?.[0] ?? ''
+
+    expect(tag).toContain('block')
+    // `height`, not `min-height`: a min-height box engages containment but then
+    // resolves to zero, and the widget refuses and renders uncontained.
+    expect(tag).toMatch(/h-\[[^\]]*dvh\]/)
+    expect(tag).not.toContain('min-h-')
   })
 
   it('mounts the loader after the element, as a module without async or defer', () => {
@@ -97,7 +111,7 @@ describe('the atlas page', () => {
     // the widget is what most visitors see, and it fetches its own data.
     const html = render({ seo: null, atlasRoute: '/' })
 
-    expect(html).toContain('<sahaj-atlas>')
+    expect(html).toMatch(/<sahaj-atlas[^>]*>/)
     expect(html).toContain('auto.js')
   })
 
