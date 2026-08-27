@@ -14,8 +14,26 @@
     },
     "puppeteer": {
       "command": "npx",
-      "args": ["-y", "puppeteer-mcp-server"],
+      "args": [
+        "-y",
+        "puppeteer-mcp-server"
+      ],
       "env": {}
+    },
+    "payloadcms-docs": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpdoc",
+        "--with",
+        "mcp<2",
+        "mcpdoc",
+        "--urls",
+        "PayloadCMS:https://payloadcms.com/llms.txt",
+        "--transport",
+        "stdio"
+      ]
     }
   }
 }

@@ -1,4 +1,7 @@
 {
+  "env": {
+    "MAX_THINKING_TOKENS": "10000"
+  },
   "permissions": {
     "allow": [
       "Bash(pnpm vitest list:*)",
@@ -25,48 +28,66 @@
       "Bash(gh pr create:*)",
       "Bash(gh run view:*)",
       "Bash(gh issue view:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebSearch",
+      "Bash(pnpm lint)",
+      "Bash(pnpm build)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git fetch:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(cat:*)",
+      "Bash(tree:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(chmod:*)",
+      "Bash(curl:*)",
+      "Bash(echo:*)",
+      "Bash(awk:*)",
+      "Bash(tee:*)",
+      "Bash(lsof:*)",
+      "Bash(which:*)",
+      "Bash(sed:*)",
+      "mcp__cloudflare-docs__*",
+      "mcp__github__*",
+      "Bash(npm view:*)",
+      "Edit(.claude/docs/**)",
+      "Write(.claude/docs/**)"
     ]
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-generated-files.mjs"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-wrong-bash.mjs"
-          },
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.sh"
-          }
-        ]
+  "extraKnownMarketplaces": {
+    "sydevs": {
+      "source": {
+        "source": "github",
+        "repo": "sydevs/claude-workflow"
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/typecheck.mjs"
-          },
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/eslint.mjs"
-          }
-        ]
-      }
-    ]
+    }
+  },
+  "enabledPlugins": {
+    "workflow@sydevs": true
   }
 }
