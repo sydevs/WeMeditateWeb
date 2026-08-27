@@ -43,7 +43,7 @@ export function Page() {
           `overflow-y-auto` keeps the server-rendered content reachable for a
           no-JS visitor when a region lists more classes than the box fits;
           crawlers read the DOM regardless of overflow. */}
-      <sahaj-atlas className="block h-[80dvh] overflow-y-auto">
+      <sahaj-atlas className="block h-full overflow-y-auto">
         {seo && <AtlasContent seo={seo} />}
       </sahaj-atlas>
 

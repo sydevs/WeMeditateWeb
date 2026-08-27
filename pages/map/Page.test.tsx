@@ -74,9 +74,11 @@ describe('the atlas page', () => {
     const tag = html.match(/<sahaj-atlas[^>]*>/)?.[0] ?? ''
 
     expect(tag).toContain('block')
-    // `height`, not `min-height`: a min-height box engages containment but then
-    // resolves to zero, and the widget refuses and renders uncontained.
-    expect(tag).toMatch(/h-\[[^\]]*dvh\]/)
+    // A `height`, never a `min-height`: a min-height box engages containment but
+    // then resolves to zero, and the widget refuses and renders uncontained.
+    // The definite value comes from LayoutMap (`h-dvh` column, `flex-1 min-h-0`
+    // main), so `h-full` here resolves rather than falling back to auto.
+    expect(tag).toContain('h-full')
     expect(tag).not.toContain('min-h-')
   })
 

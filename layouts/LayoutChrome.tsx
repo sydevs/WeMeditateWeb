@@ -1,12 +1,10 @@
-import { useState } from 'react'
 import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig, Page } from '../server/cms-types'
-import type { NavItem } from '../components/organisms'
 import { leadSplashFromRouteData } from '../lib/cms-blocks'
-import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
+import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 
 /**
@@ -48,46 +46,19 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   const featuredPages = settings.featuredPages ?? []
   const knowledgePages = settings.knowledgePages ?? []
   const infoPages = settings.infoPages ?? []
-  const classPages = settings.classPages ?? []
-  const featuredArticles = settings.featuredArticles ?? []
-
-  // The knowledge mega-menu shows 2 featured-article thumbnails picked at random
-  // once per mount (compute-once-and-reuse): because the panel is closed during
-  // SSR the picks never enter the server HTML, so this is hydration-safe. Falls
-  // back to knowledge pages when featuredArticles is empty.
-  const [articlePicks] = useState(() => pickFeaturedArticles(featuredArticles, knowledgePages))
 
   // Nav = the featured pages as plain links, plus a trailing link-less
-  // "About Meditation" item that only opens the knowledge mega-menu (every
-  // knowledge page as a link + the 2 featured-article thumbnails). Appended only
-  // when there are knowledge pages to show — otherwise the nav is featured-only.
+  // "About Meditation" item that only opens the knowledge mega-menu. Shared with
+  // LayoutMap via useSiteNav so the two can't drift.
   //
   // Highlight the featured link for the current page. Both the highlight and the
   // title suppression (pages/[slug]/+Page.tsx) derive from `activeFeaturedSlug`,
   // so they can't disagree. `data.page` is absent on non-[slug] routes, so
   // `activeSlug` is undefined there and nothing highlights.
-  const activeSlug = activeFeaturedSlug(data?.page?.slug, settings)
-  const navItems: NavItem[] = featuredPages.map((page) => ({
-    label: page.title,
-    href: '/' + page.slug,
-    active: page.slug === activeSlug,
-  }))
-
-  if (knowledgePages.length > 0) {
-    // TODO: Source this label from WmWebTranslations.navigation once that global
-    // is configured in the CMS. Interim: the knowledge group's first page title,
-    // matching how the footer labels the same group below (localized either way).
-    const knowledgeLabel = knowledgePages[0].title
-
-    navItems.push({
-      label: knowledgeLabel,
-      dropdown: {
-        title: knowledgeLabel,
-        links: knowledgePages.map(pageToLink),
-        featuredArticles: articlePicks.map(pageToArticle),
-      },
-    })
-  }
+  const { navItems, actionLinkHref, actionLinkText } = useSiteNav(
+    settings,
+    activeFeaturedSlug(data?.page?.slug, settings),
+  )
 
   // Build footer hero links from featured pages
   const footerHeroLinks = featuredPages.map((page) => ({
@@ -138,8 +109,8 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   const header = (
     <div className="max-w-7xl mx-auto px-6 w-full">
       <Header
-        actionLinkHref={classPages[0] ? '/' + classPages[0].slug : '/'}
-        actionLinkText={classPages[0]?.title}
+        actionLinkHref={actionLinkHref}
+        actionLinkText={actionLinkText}
         logoHref="/"
         navItems={navItems}
         theme={leadSplash?.theme}

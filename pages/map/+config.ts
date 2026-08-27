@@ -1,15 +1,15 @@
 import type { Config } from 'vike/types'
-import LayoutChrome from '../../layouts/LayoutChrome.js'
+import LayoutMap from '../../layouts/LayoutMap.js'
 
 /**
- * The atlas pages carry the site chrome, so a no-JS visitor — and a crawler —
- * gets the surrounding navigation with the content.
+ * The atlas uses its own chrome rather than LayoutChrome: condensed header, no
+ * footer, and no content padding, so the map meets the nav edge to edge and the
+ * page never scrolls. See LayoutMap for why each of those follows from the atlas
+ * owning the viewport.
  *
- * The widget covers it once it mounts: in its default map mode the canvas is
- * `position: fixed; inset: 0`, which is what the atlas wants on a page of its
- * own. That is the intended split rather than a conflict — the chrome is the
- * page's fallback state, the widget is its upgraded one.
+ * A no-JS visitor and a crawler still get the nav and the server-rendered
+ * region/class content; only the framing differs.
  */
 export default {
-  Layout: LayoutChrome,
+  Layout: LayoutMap,
 } satisfies Config
