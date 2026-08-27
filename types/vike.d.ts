@@ -24,6 +24,15 @@ interface ImportMetaEnv {
   /** Mapbox access token for location search functionality */
   readonly PUBLIC__MAPBOX_ACCESS_TOKEN?: string
 
+  /**
+   * Published Sahaj Atlas client key for the `/map` widget embed.
+   *
+   * Public by design — it ships in the page's HTML and is scoped to read-only
+   * atlas data. When it is unset the `/map` pages still server-render their
+   * content; they simply don't mount the interactive widget over it.
+   */
+  readonly PUBLIC__SAHAJ_ATLAS_KEY?: string
+
   /** Sentry DSN for client-side error tracking */
   readonly PUBLIC__SENTRY_DSN?: string
 

@@ -130,6 +130,7 @@ SENTRY_DSN=<dsn>                         # Server-side error tracking
 PUBLIC__SAHAJCLOUD_URL=<cms-url>        # PayloadCMS base URL
 PUBLIC__SENTRY_DSN=<dsn>                 # Browser-side error tracking
 PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch component
+PUBLIC__SAHAJ_ATLAS_KEY=<key>            # Sahaj Atlas widget key for /map (genuinely public)
 ```
 
 **Variable Sources:**
@@ -157,6 +158,13 @@ PUBLIC__MAPBOX_ACCESS_TOKEN=<token>      # Mapbox API key for LocationSearch com
 Vike uses a convention-based router where files in `pages/` define routes:
 
 - **Dynamic Routes**: [pages/[slug]/+route.ts](pages/[slug]/+route.ts) matches paths like `/about`, `/contact`
+  - ⚠ It matches **any single segment**, so a top-level path owned by another route function must be
+    excluded there explicitly — see its `RESERVED_SEGMENTS` (currently `map`). Without the exclusion the
+    path silently renders the Pages "not found" state instead of its real route.
+- **Atlas Routes**: [pages/map/+route.ts](pages/map/+route.ts) serves `/map`, `/map/<region-path>` and
+  `/map/<region-path>/<eventId>`. A **route function**, because atlas depth is variable. Content is
+  server-rendered as children of `<sahaj-atlas>` and the widget replaces them when it mounts — the server
+  owns the `<head>`, the children own the body. See [server/atlas-client.ts](server/atlas-client.ts).
 - **Locale Handling**: [pages/+onBeforeRoute.ts](pages/+onBeforeRoute.ts) extracts locale from URL patterns like `/es/about`
   - Locale is made available via `pageContext.locale`
   - English locale (`en`) prefix is removed from URLs (redirects `/en/about` → `/about`)
@@ -581,6 +589,10 @@ pnpm test:ui      # Vitest UI
 
 **File conventions:**
 - Co-locate tests next to source: `Foo.tsx` → `Foo.test.tsx`, `foo.ts` → `foo.test.ts`
+- ⚠ **Under `pages/`, a test file must not start with `+`.** Vike loads every `+`-prefixed file there as a
+  config file and fails the build on one that exports no `route`/`default` — so `+route.ts` is tested by
+  `route.test.ts`, not `+route.test.ts`. `pnpm test:run` and `tsc` both pass either way; only `pnpm build`
+  catches it.
 - Vitest globals are enabled — import `describe`, `it`, `expect` from `'vitest'` explicitly (matches existing files like [lib/cloudflare-images.test.ts](lib/cloudflare-images.test.ts) and [server/error-utils.test.ts](server/error-utils.test.ts))
 
 **Testing React components without jsdom:**

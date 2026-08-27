@@ -37,6 +37,17 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
    * @default 'light'
    */
   theme?: 'light' | 'dark'
+  /**
+   * Render the condensed header permanently, rather than only once the page has
+   * been scrolled past the banner.
+   *
+   * Drops the tall banner (logo, illustration, action link) and pins the nav in
+   * the compact state it otherwise animates into. For a page that owns the
+   * viewport — the atlas at `/map` — the banner is chrome the page has no room
+   * to give away.
+   * @default false
+   */
+  condensed?: boolean
 }
 
 /**
@@ -53,21 +64,27 @@ export function Header({
   navItems = [],
   breadcrumbs,
   theme = 'light',
+  condensed = false,
   className = '',
   ...props
 }: HeaderProps) {
-  const [isSticky, setIsSticky] = useState(false)
+  const [isScrolledPast, setIsScrolledPast] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
+
+  // `condensed` is the same visual state the scroll observer produces, so it
+  // short-circuits rather than duplicating the styling below.
+  const isSticky = condensed || isScrolledPast
 
   useEffect(() => {
     const sentinel = sentinelRef.current
 
-    if (!sentinel) return
+    // Nothing to observe when the condensed state is already pinned on.
+    if (!sentinel || condensed) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         // When sentinel goes out of view (scrolled past), nav becomes sticky
-        setIsSticky(!entry.isIntersecting)
+        setIsScrolledPast(!entry.isIntersecting)
       },
       { threshold: [0] },
     )
@@ -75,7 +92,7 @@ export function Header({
     observer.observe(sentinel)
 
     return () => observer.disconnect()
-  }, [])
+  }, [condensed])
 
   // Text color based on theme and sticky state
   const textColorClass = theme === 'dark' ? 'text-white' : 'text-gray-700'
@@ -86,42 +103,46 @@ export function Header({
   return (
     <>
       <header className={className} {...props}>
-        {/* Top banner with logo, illustration, and action link */}
-        <div className={`flex items-center justify-between gap-8 py-4 ${textColorClass}`}>
-          {/* Logo - responsive: lg inline-text on mobile, sm inline-text on desktop */}
-          <div className="shrink-0">
-            <Logo
-              align="left"
-              className="hidden lg:flex"
-              href={logoHref}
-              size="sm"
-              variant="text"
-            />
-          </div>
-
-          {/* Decorative illustration - hidden on mobile */}
-          <div className="flex-1 mx-8 hidden lg:block">
-            <HeaderIllustrationSvg />
-          </div>
-
-          {/* Action link - regular link, not button */}
-          {actionLinkText && actionLinkHref && (
-            <div className="shrink-0 max-w-20 text-right">
-              <Link
-                className="no-underline leading-none hover:opacity-75 transition-opacity"
-                href={actionLinkHref}
+        {/* Top banner with logo, illustration, and action link. Omitted when
+            condensed — the compact nav below carries the logo and action link
+            itself, so rendering both would duplicate them. */}
+        {!condensed && (
+          <div className={`flex items-center justify-between gap-8 py-4 ${textColorClass}`}>
+            {/* Logo - responsive: lg inline-text on mobile, sm inline-text on desktop */}
+            <div className="shrink-0">
+              <Logo
+                align="left"
+                className="hidden lg:flex"
+                href={logoHref}
                 size="sm"
-                variant="unstyled"
-              >
-                {actionLinkText}
-              </Link>
+                variant="text"
+              />
             </div>
-          )}
-        </div>
+
+            {/* Decorative illustration - hidden on mobile */}
+            <div className="flex-1 mx-8 hidden lg:block">
+              <HeaderIllustrationSvg />
+            </div>
+
+            {/* Action link - regular link, not button */}
+            {actionLinkText && actionLinkHref && (
+              <div className="shrink-0 max-w-20 text-right">
+                <Link
+                  className="no-underline leading-none hover:opacity-75 transition-opacity"
+                  href={actionLinkHref}
+                  size="sm"
+                  variant="unstyled"
+                >
+                  {actionLinkText}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Sentinel element to detect when nav should be sticky */}
-      <div ref={sentinelRef} aria-hidden="true" className="h-0" />
+      {!condensed && <div ref={sentinelRef} aria-hidden="true" className="h-0" />}
 
       {/* Main navigation menu - sticky on scroll (outside header so it can stick globally) */}
       {navItems.length > 0 && (

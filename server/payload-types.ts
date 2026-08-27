@@ -640,6 +640,7 @@ export interface Config {
     'app-cards': AppCard;
     regions: Region;
     events: Event;
+    'event-submissions': EventSubmission;
     registrations: Registration;
     users: User;
     forms: Form;
@@ -685,13 +686,14 @@ export interface Config {
       events: 'events';
       childrenRegions: 'regions';
       childrenCities: 'regions';
-      childrenCenters: 'regions';
+      childrenVenues: 'regions';
     };
     events: {
       registrations: 'registrations';
     };
     users: {
       registrations: 'registrations';
+      submittedEvents: 'events';
     };
   };
   collectionsSelect: {
@@ -716,6 +718,7 @@ export interface Config {
     'app-cards': AppCardsSelect<false> | AppCardsSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    'event-submissions': EventSubmissionsSelect<false> | EventSubmissionsSelect<true>;
     registrations: RegistrationsSelect<false> | RegistrationsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -733,7 +736,6 @@ export interface Config {
     | ('false' | 'none' | 'null')
     | false
     | null
-    | ('en' | 'es' | 'de' | 'it' | 'fr' | 'ru' | 'ro' | 'cs' | 'uk' | 'el' | 'hy' | 'pl' | 'pt-br' | 'fa' | 'bg' | 'tr')
     | (
         | 'en'
         | 'es'
@@ -747,10 +749,34 @@ export interface Config {
         | 'el'
         | 'hy'
         | 'pl'
-        | 'pt-br'
+        | 'pt-BR'
         | 'fa'
         | 'bg'
         | 'tr'
+        | 'en-AU'
+        | 'hu'
+        | 'nl'
+      )
+    | (
+        | 'en'
+        | 'es'
+        | 'de'
+        | 'it'
+        | 'fr'
+        | 'ru'
+        | 'ro'
+        | 'cs'
+        | 'uk'
+        | 'el'
+        | 'hy'
+        | 'pl'
+        | 'pt-BR'
+        | 'fa'
+        | 'bg'
+        | 'tr'
+        | 'en-AU'
+        | 'hu'
+        | 'nl'
       )[];
   globals: {
     'wm-web-config': WmWebConfig;
@@ -785,10 +811,13 @@ export interface Config {
     | 'el'
     | 'hy'
     | 'pl'
-    | 'pt-br'
+    | 'pt-BR'
     | 'fa'
     | 'bg'
-    | 'tr';
+    | 'tr'
+    | 'en-AU'
+    | 'hu'
+    | 'nl';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -797,7 +826,12 @@ export interface Config {
     tasks: {
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
       expireEvents: TaskExpireEvents;
+      screenEventSubmission: TaskScreenEventSubmission;
+      sendPostEventFollowUps: TaskSendPostEventFollowUps;
+      sendRegistrationDigests: TaskSendRegistrationDigests;
+      sendSessionReminders: TaskSendSessionReminders;
       syncLectureMetadata: TaskSyncLectureMetadata;
+      verifyEmbeds: TaskVerifyEmbeds;
       resetUsage: TaskResetUsage;
       schedulePublish: TaskSchedulePublish;
       inline: {
@@ -892,6 +926,7 @@ export interface Page {
    * Managers who can edit this page without broader permissions.
    */
   managers?: (number | Manager)[] | null;
+  webPath?: string | null;
   webUrl?: string | null;
   appUrl?: string | null;
   updatedAt: string;
@@ -1298,6 +1333,7 @@ export interface Manager {
     | number
     | boolean
     | null;
+  lastRegistrationDigestSentAt?: string | null;
   legacyId?: number | null;
   legacyData?:
     | {
@@ -1335,7 +1371,7 @@ export interface Manager {
  */
 export interface Region {
   id: number;
-  level: 'country' | 'region' | 'city' | 'center';
+  level: 'country' | 'region' | 'city' | 'venue';
   /**
    * The geographic parent of this node (a higher level).
    */
@@ -1359,783 +1395,6 @@ export interface Region {
    * Radius in meters.
    */
   radius?: number | null;
-  /**
-   * These fields will be used to set defaults for Events in this region
-   */
-  eventDefaults?: {
-    language?:
-      | (
-          | 'ab'
-          | 'aa'
-          | 'af'
-          | 'ak'
-          | 'sq'
-          | 'am'
-          | 'ar'
-          | 'an'
-          | 'hy'
-          | 'as'
-          | 'av'
-          | 'ae'
-          | 'ay'
-          | 'az'
-          | 'bm'
-          | 'ba'
-          | 'eu'
-          | 'be'
-          | 'bn'
-          | 'bi'
-          | 'bs'
-          | 'br'
-          | 'bg'
-          | 'my'
-          | 'ca'
-          | 'ch'
-          | 'ce'
-          | 'ny'
-          | 'zh'
-          | 'cv'
-          | 'kw'
-          | 'co'
-          | 'cr'
-          | 'hr'
-          | 'cs'
-          | 'da'
-          | 'dv'
-          | 'nl'
-          | 'dz'
-          | 'en'
-          | 'eo'
-          | 'et'
-          | 'ee'
-          | 'fo'
-          | 'fj'
-          | 'fi'
-          | 'fr'
-          | 'ff'
-          | 'gl'
-          | 'lg'
-          | 'ka'
-          | 'de'
-          | 'el'
-          | 'gn'
-          | 'gu'
-          | 'ht'
-          | 'ha'
-          | 'he'
-          | 'hz'
-          | 'hi'
-          | 'ho'
-          | 'hu'
-          | 'is'
-          | 'io'
-          | 'ig'
-          | 'id'
-          | 'ia'
-          | 'ie'
-          | 'iu'
-          | 'ik'
-          | 'ga'
-          | 'it'
-          | 'ja'
-          | 'jv'
-          | 'kl'
-          | 'kn'
-          | 'kr'
-          | 'ks'
-          | 'kk'
-          | 'km'
-          | 'ki'
-          | 'rw'
-          | 'rn'
-          | 'kv'
-          | 'kg'
-          | 'ko'
-          | 'ku'
-          | 'kj'
-          | 'ky'
-          | 'lo'
-          | 'la'
-          | 'lv'
-          | 'li'
-          | 'ln'
-          | 'lt'
-          | 'lu'
-          | 'lb'
-          | 'mk'
-          | 'mg'
-          | 'ms'
-          | 'ml'
-          | 'mt'
-          | 'gv'
-          | 'mi'
-          | 'mr'
-          | 'mh'
-          | 'mn'
-          | 'na'
-          | 'nv'
-          | 'ng'
-          | 'ne'
-          | 'nd'
-          | 'se'
-          | 'no'
-          | 'nb'
-          | 'nn'
-          | 'ii'
-          | 'oc'
-          | 'oj'
-          | 'cu'
-          | 'or'
-          | 'om'
-          | 'os'
-          | 'pi'
-          | 'pa'
-          | 'ps'
-          | 'fa'
-          | 'pl'
-          | 'pt'
-          | 'qu'
-          | 'ro'
-          | 'rm'
-          | 'ru'
-          | 'sm'
-          | 'sg'
-          | 'sa'
-          | 'sc'
-          | 'gd'
-          | 'sr'
-          | 'sn'
-          | 'sd'
-          | 'si'
-          | 'sk'
-          | 'sl'
-          | 'so'
-          | 'nr'
-          | 'st'
-          | 'es'
-          | 'su'
-          | 'sw'
-          | 'ss'
-          | 'sv'
-          | 'tl'
-          | 'ty'
-          | 'tg'
-          | 'ta'
-          | 'tt'
-          | 'te'
-          | 'th'
-          | 'bo'
-          | 'ti'
-          | 'to'
-          | 'ts'
-          | 'tn'
-          | 'tr'
-          | 'tk'
-          | 'tw'
-          | 'uk'
-          | 'ur'
-          | 'ug'
-          | 'uz'
-          | 've'
-          | 'vi'
-          | 'vo'
-          | 'wa'
-          | 'cy'
-          | 'fy'
-          | 'wo'
-          | 'xh'
-          | 'yi'
-          | 'yo'
-          | 'za'
-          | 'zu'
-        )
-      | null;
-    timeZone?:
-      | (
-          | 'UTC'
-          | 'Pacific/Midway'
-          | 'Pacific/Niue'
-          | 'Pacific/Honolulu'
-          | 'Pacific/Rarotonga'
-          | 'America/Anchorage'
-          | 'Pacific/Gambier'
-          | 'America/Los_Angeles'
-          | 'America/Tijuana'
-          | 'America/Denver'
-          | 'America/Phoenix'
-          | 'America/Chicago'
-          | 'America/Guatemala'
-          | 'America/New_York'
-          | 'America/Bogota'
-          | 'America/Caracas'
-          | 'America/Santiago'
-          | 'America/Buenos_Aires'
-          | 'America/Sao_Paulo'
-          | 'Atlantic/South_Georgia'
-          | 'Atlantic/Azores'
-          | 'Atlantic/Cape_Verde'
-          | 'Europe/London'
-          | 'Europe/Berlin'
-          | 'Africa/Lagos'
-          | 'Europe/Athens'
-          | 'Africa/Cairo'
-          | 'Europe/Moscow'
-          | 'Asia/Riyadh'
-          | 'Asia/Dubai'
-          | 'Asia/Baku'
-          | 'Asia/Karachi'
-          | 'Asia/Tashkent'
-          | 'Asia/Calcutta'
-          | 'Asia/Dhaka'
-          | 'Asia/Almaty'
-          | 'Asia/Jakarta'
-          | 'Asia/Bangkok'
-          | 'Asia/Shanghai'
-          | 'Asia/Singapore'
-          | 'Asia/Tokyo'
-          | 'Asia/Seoul'
-          | 'Australia/Brisbane'
-          | 'Australia/Sydney'
-          | 'Pacific/Guam'
-          | 'Pacific/Noumea'
-          | 'Pacific/Auckland'
-          | 'Pacific/Fiji'
-          | 'Pacific/Pago_Pago'
-          | 'US/Samoa'
-          | 'Pacific/Samoa'
-          | 'US/Hawaii'
-          | 'Pacific/Johnston'
-          | 'HST'
-          | 'Pacific/Tahiti'
-          | 'Pacific/Marquesas'
-          | 'America/Adak'
-          | 'US/Aleutian'
-          | 'America/Atka'
-          | 'America/Juneau'
-          | 'America/Metlakatla'
-          | 'America/Nome'
-          | 'America/Sitka'
-          | 'America/Yakutat'
-          | 'US/Alaska'
-          | 'Pacific/Pitcairn'
-          | 'America/Hermosillo'
-          | 'America/Mazatlan'
-          | 'Mexico/BajaSur'
-          | 'MST'
-          | 'US/Arizona'
-          | 'America/Creston'
-          | 'US/Pacific'
-          | 'PST8PDT'
-          | 'Mexico/BajaNorte'
-          | 'America/Ensenada'
-          | 'America/Santa_Isabel'
-          | 'America/Vancouver'
-          | 'Canada/Pacific'
-          | 'America/Whitehorse'
-          | 'America/Dawson'
-          | 'America/Dawson_Creek'
-          | 'America/Fort_Nelson'
-          | 'Canada/Yukon'
-          | 'America/Belize'
-          | 'America/Managua'
-          | 'America/Mexico_City'
-          | 'America/Bahia_Banderas'
-          | 'America/Chihuahua'
-          | 'America/Merida'
-          | 'America/Monterrey'
-          | 'Mexico/General'
-          | 'America/Costa_Rica'
-          | 'America/El_Salvador'
-          | 'America/Regina'
-          | 'America/Swift_Current'
-          | 'Canada/Saskatchewan'
-          | 'America/Tegucigalpa'
-          | 'Pacific/Easter'
-          | 'Chile/EasterIsland'
-          | 'Pacific/Galapagos'
-          | 'America/Edmonton'
-          | 'America/Cambridge_Bay'
-          | 'America/Inuvik'
-          | 'Canada/Mountain'
-          | 'America/Yellowknife'
-          | 'America/Ciudad_Juarez'
-          | 'America/Boise'
-          | 'MST7MDT'
-          | 'Navajo'
-          | 'US/Mountain'
-          | 'America/Shiprock'
-          | 'America/Rio_Branco'
-          | 'America/Eirunepe'
-          | 'Brazil/Acre'
-          | 'America/Porto_Acre'
-          | 'America/Indiana/Knox'
-          | 'America/Indiana/Tell_City'
-          | 'America/Menominee'
-          | 'America/North_Dakota/Beulah'
-          | 'America/North_Dakota/Center'
-          | 'America/North_Dakota/New_Salem'
-          | 'CST6CDT'
-          | 'US/Central'
-          | 'US/Indiana-Starke'
-          | 'America/Knox_IN'
-          | 'America/Matamoros'
-          | 'America/Ojinaga'
-          | 'America/Winnipeg'
-          | 'America/Rankin_Inlet'
-          | 'America/Resolute'
-          | 'Canada/Central'
-          | 'America/Rainy_River'
-          | 'America/Atikokan'
-          | 'America/Cancun'
-          | 'America/Cayman'
-          | 'America/Jamaica'
-          | 'Jamaica'
-          | 'America/Panama'
-          | 'EST'
-          | 'America/Coral_Harbour'
-          | 'America/Guayaquil'
-          | 'America/Lima'
-          | 'America/Manaus'
-          | 'America/Boa_Vista'
-          | 'America/Campo_Grande'
-          | 'America/Cuiaba'
-          | 'America/Porto_Velho'
-          | 'Brazil/West'
-          | 'America/St_Kitts'
-          | 'America/Blanc-Sablon'
-          | 'America/Montserrat'
-          | 'America/Barbados'
-          | 'America/Port_of_Spain'
-          | 'America/Martinique'
-          | 'America/St_Lucia'
-          | 'America/St_Barthelemy'
-          | 'America/St_Vincent'
-          | 'America/Kralendijk'
-          | 'America/Guadeloupe'
-          | 'America/Marigot'
-          | 'America/Aruba'
-          | 'America/Lower_Princes'
-          | 'America/Tortola'
-          | 'America/Dominica'
-          | 'America/St_Thomas'
-          | 'America/Grenada'
-          | 'America/Antigua'
-          | 'America/Puerto_Rico'
-          | 'America/Virgin'
-          | 'America/Anguilla'
-          | 'America/Curacao'
-          | 'America/Santo_Domingo'
-          | 'America/La_Paz'
-          | 'Chile/Continental'
-          | 'America/Havana'
-          | 'Cuba'
-          | 'America/Nassau'
-          | 'America/Detroit'
-          | 'America/Indiana/Indianapolis'
-          | 'America/Indiana/Marengo'
-          | 'America/Indiana/Petersburg'
-          | 'America/Indiana/Vevay'
-          | 'America/Indiana/Vincennes'
-          | 'America/Indiana/Winamac'
-          | 'America/Kentucky/Louisville'
-          | 'America/Kentucky/Monticello'
-          | 'US/Michigan'
-          | 'US/East-Indiana'
-          | 'America/Indianapolis'
-          | 'America/Fort_Wayne'
-          | 'America/Louisville'
-          | 'EST5EDT'
-          | 'US/Eastern'
-          | 'America/Port-au-Prince'
-          | 'America/Grand_Turk'
-          | 'America/Toronto'
-          | 'America/Iqaluit'
-          | 'America/Pangnirtung'
-          | 'Canada/Eastern'
-          | 'America/Montreal'
-          | 'America/Nipigon'
-          | 'America/Thunder_Bay'
-          | 'America/Guyana'
-          | 'America/Argentina/Buenos_Aires'
-          | 'America/Argentina/Catamarca'
-          | 'America/Argentina/Cordoba'
-          | 'America/Argentina/Jujuy'
-          | 'America/Argentina/La_Rioja'
-          | 'America/Argentina/Mendoza'
-          | 'America/Argentina/Rio_Gallegos'
-          | 'America/Argentina/Salta'
-          | 'America/Argentina/San_Juan'
-          | 'America/Argentina/San_Luis'
-          | 'America/Argentina/Tucuman'
-          | 'America/Argentina/Ushuaia'
-          | 'America/Catamarca'
-          | 'America/Argentina/ComodRivadavia'
-          | 'America/Cordoba'
-          | 'America/Rosario'
-          | 'America/Jujuy'
-          | 'America/Mendoza'
-          | 'America/Halifax'
-          | 'America/Glace_Bay'
-          | 'America/Goose_Bay'
-          | 'America/Moncton'
-          | 'Canada/Atlantic'
-          | 'Atlantic/Bermuda'
-          | 'America/Thule'
-          | 'America/Araguaina'
-          | 'America/Bahia'
-          | 'America/Belem'
-          | 'America/Fortaleza'
-          | 'America/Maceio'
-          | 'America/Recife'
-          | 'America/Santarem'
-          | 'Brazil/East'
-          | 'Antarctica/Palmer'
-          | 'Antarctica/Rothera'
-          | 'America/Punta_Arenas'
-          | 'America/Coyhaique'
-          | 'Atlantic/Stanley'
-          | 'America/Cayenne'
-          | 'America/Asuncion'
-          | 'America/Paramaribo'
-          | 'America/Montevideo'
-          | 'America/St_Johns'
-          | 'Canada/Newfoundland'
-          | 'America/Noronha'
-          | 'Brazil/DeNoronha'
-          | 'America/Miquelon'
-          | 'America/Nuuk'
-          | 'America/Scoresbysund'
-          | 'America/Godthab'
-          | 'Africa/Abidjan'
-          | 'Iceland'
-          | 'Africa/Accra'
-          | 'Africa/Bamako'
-          | 'Africa/Banjul'
-          | 'Africa/Conakry'
-          | 'Africa/Dakar'
-          | 'Africa/Freetown'
-          | 'Africa/Lome'
-          | 'Africa/Nouakchott'
-          | 'Africa/Ouagadougou'
-          | 'Atlantic/Reykjavik'
-          | 'Atlantic/St_Helena'
-          | 'Africa/Timbuktu'
-          | 'Africa/Bissau'
-          | 'America/Danmarkshavn'
-          | 'Africa/Monrovia'
-          | 'Africa/Sao_Tome'
-          | 'Africa/Algiers'
-          | 'Africa/Tunis'
-          | 'Europe/Isle_of_Man'
-          | 'Europe/Dublin'
-          | 'Eire'
-          | 'GB'
-          | 'GB-Eire'
-          | 'Europe/Guernsey'
-          | 'Europe/Jersey'
-          | 'Europe/Belfast'
-          | 'Africa/Bangui'
-          | 'Africa/Malabo'
-          | 'Africa/Brazzaville'
-          | 'Africa/Porto-Novo'
-          | 'Africa/Douala'
-          | 'Africa/Kinshasa'
-          | 'Africa/Libreville'
-          | 'Africa/Luanda'
-          | 'Africa/Niamey'
-          | 'Africa/Ndjamena'
-          | 'Africa/Casablanca'
-          | 'Africa/El_Aaiun'
-          | 'Atlantic/Canary'
-          | 'Europe/Lisbon'
-          | 'Atlantic/Madeira'
-          | 'Portugal'
-          | 'WET'
-          | 'Atlantic/Faroe'
-          | 'Atlantic/Faeroe'
-          | 'Africa/Bujumbura'
-          | 'Africa/Gaborone'
-          | 'Africa/Harare'
-          | 'Africa/Juba'
-          | 'Africa/Khartoum'
-          | 'Africa/Kigali'
-          | 'Africa/Blantyre'
-          | 'Africa/Lubumbashi'
-          | 'Africa/Lusaka'
-          | 'Africa/Maputo'
-          | 'Africa/Windhoek'
-          | 'Europe/Andorra'
-          | 'Europe/Belgrade'
-          | 'Europe/Ljubljana'
-          | 'Europe/Podgorica'
-          | 'Europe/Sarajevo'
-          | 'Europe/Skopje'
-          | 'Europe/Zagreb'
-          | 'Europe/Busingen'
-          | 'Arctic/Longyearbyen'
-          | 'Europe/Copenhagen'
-          | 'Europe/Oslo'
-          | 'Europe/Stockholm'
-          | 'Atlantic/Jan_Mayen'
-          | 'Europe/Bratislava'
-          | 'Europe/Brussels'
-          | 'CET'
-          | 'MET'
-          | 'Europe/Amsterdam'
-          | 'Europe/Luxembourg'
-          | 'Europe/Budapest'
-          | 'Europe/Gibraltar'
-          | 'Europe/Madrid'
-          | 'Africa/Ceuta'
-          | 'Europe/Monaco'
-          | 'Europe/Paris'
-          | 'Europe/Prague'
-          | 'Europe/Rome'
-          | 'Europe/San_Marino'
-          | 'Europe/Vatican'
-          | 'Europe/Malta'
-          | 'Europe/Tirane'
-          | 'Europe/Vaduz'
-          | 'Europe/Vienna'
-          | 'Europe/Warsaw'
-          | 'Poland'
-          | 'Europe/Zurich'
-          | 'Europe/Kaliningrad'
-          | 'Africa/Tripoli'
-          | 'Libya'
-          | 'Antarctica/Troll'
-          | 'Africa/Johannesburg'
-          | 'Africa/Maseru'
-          | 'Africa/Mbabane'
-          | 'Asia/Kuwait'
-          | 'Asia/Bahrain'
-          | 'Asia/Baghdad'
-          | 'Asia/Qatar'
-          | 'Antarctica/Syowa'
-          | 'Asia/Aden'
-          | 'Asia/Amman'
-          | 'Asia/Damascus'
-          | 'Africa/Addis_Ababa'
-          | 'Indian/Antananarivo'
-          | 'Africa/Asmara'
-          | 'Africa/Dar_es_Salaam'
-          | 'Africa/Djibouti'
-          | 'Africa/Kampala'
-          | 'Indian/Mayotte'
-          | 'Africa/Mogadishu'
-          | 'Indian/Comoro'
-          | 'Africa/Nairobi'
-          | 'Africa/Asmera'
-          | 'EET'
-          | 'Asia/Beirut'
-          | 'Europe/Bucharest'
-          | 'Egypt'
-          | 'Europe/Chisinau'
-          | 'Europe/Tiraspol'
-          | 'Asia/Hebron'
-          | 'Asia/Gaza'
-          | 'Europe/Helsinki'
-          | 'Europe/Mariehamn'
-          | 'Europe/Kyiv'
-          | 'Europe/Uzhgorod'
-          | 'Europe/Zaporozhye'
-          | 'Europe/Kiev'
-          | 'Asia/Nicosia'
-          | 'Asia/Famagusta'
-          | 'Europe/Nicosia'
-          | 'Europe/Riga'
-          | 'Europe/Sofia'
-          | 'Europe/Tallinn'
-          | 'Europe/Vilnius'
-          | 'Asia/Jerusalem'
-          | 'Israel'
-          | 'Asia/Tel_Aviv'
-          | 'Europe/Minsk'
-          | 'Europe/Kirov'
-          | 'Europe/Volgograd'
-          | 'W-SU'
-          | 'Europe/Simferopol'
-          | 'Europe/Istanbul'
-          | 'Turkey'
-          | 'Asia/Istanbul'
-          | 'Asia/Tehran'
-          | 'Iran'
-          | 'Asia/Yerevan'
-          | 'Asia/Tbilisi'
-          | 'Asia/Muscat'
-          | 'Indian/Mahe'
-          | 'Indian/Reunion'
-          | 'Indian/Mauritius'
-          | 'Europe/Samara'
-          | 'Europe/Astrakhan'
-          | 'Europe/Saratov'
-          | 'Europe/Ulyanovsk'
-          | 'Asia/Kabul'
-          | 'Indian/Kerguelen'
-          | 'Asia/Aqtau'
-          | 'Asia/Aqtobe'
-          | 'Asia/Atyrau'
-          | 'Asia/Oral'
-          | 'Asia/Qostanay'
-          | 'Asia/Qyzylorda'
-          | 'Indian/Maldives'
-          | 'Antarctica/Mawson'
-          | 'Antarctica/Vostok'
-          | 'Asia/Dushanbe'
-          | 'Asia/Ashgabat'
-          | 'Asia/Ashkhabad'
-          | 'Asia/Samarkand'
-          | 'Asia/Yekaterinburg'
-          | 'Asia/Colombo'
-          | 'Asia/Kolkata'
-          | 'Asia/Kathmandu'
-          | 'Asia/Katmandu'
-          | 'Asia/Dacca'
-          | 'Asia/Thimphu'
-          | 'Asia/Thimbu'
-          | 'Asia/Urumqi'
-          | 'Asia/Kashgar'
-          | 'Indian/Chagos'
-          | 'Asia/Bishkek'
-          | 'Asia/Omsk'
-          | 'Indian/Cocos'
-          | 'Asia/Yangon'
-          | 'Asia/Rangoon'
-          | 'Indian/Christmas'
-          | 'Antarctica/Davis'
-          | 'Asia/Hovd'
-          | 'Asia/Phnom_Penh'
-          | 'Asia/Vientiane'
-          | 'Asia/Ho_Chi_Minh'
-          | 'Asia/Saigon'
-          | 'Asia/Novosibirsk'
-          | 'Asia/Barnaul'
-          | 'Asia/Krasnoyarsk'
-          | 'Asia/Novokuznetsk'
-          | 'Asia/Tomsk'
-          | 'Asia/Pontianak'
-          | 'Antarctica/Casey'
-          | 'Australia/Perth'
-          | 'Australia/West'
-          | 'Asia/Brunei'
-          | 'Asia/Makassar'
-          | 'Asia/Ujung_Pandang'
-          | 'Asia/Macau'
-          | 'Asia/Macao'
-          | 'PRC'
-          | 'Asia/Chongqing'
-          | 'Asia/Harbin'
-          | 'Asia/Chungking'
-          | 'Asia/Hong_Kong'
-          | 'Hongkong'
-          | 'Asia/Irkutsk'
-          | 'Asia/Kuala_Lumpur'
-          | 'Asia/Kuching'
-          | 'Asia/Manila'
-          | 'Singapore'
-          | 'Asia/Taipei'
-          | 'ROC'
-          | 'Asia/Ulaanbaatar'
-          | 'Asia/Choibalsan'
-          | 'Asia/Ulan_Bator'
-          | 'Australia/Eucla'
-          | 'Asia/Jayapura'
-          | 'Japan'
-          | 'Asia/Pyongyang'
-          | 'ROK'
-          | 'Pacific/Palau'
-          | 'Asia/Dili'
-          | 'Asia/Chita'
-          | 'Asia/Khandyga'
-          | 'Asia/Yakutsk'
-          | 'Australia/Adelaide'
-          | 'Australia/Broken_Hill'
-          | 'Australia/South'
-          | 'Australia/Yancowinna'
-          | 'Australia/Darwin'
-          | 'Australia/North'
-          | 'Australia/Lindeman'
-          | 'Australia/Queensland'
-          | 'Antarctica/Macquarie'
-          | 'Australia/Hobart'
-          | 'Australia/Melbourne'
-          | 'Australia/Tasmania'
-          | 'Australia/Currie'
-          | 'Australia/Victoria'
-          | 'Australia/ACT'
-          | 'Australia/NSW'
-          | 'Australia/Canberra'
-          | 'Pacific/Saipan'
-          | 'Pacific/Chuuk'
-          | 'Antarctica/DumontDUrville'
-          | 'Pacific/Port_Moresby'
-          | 'Pacific/Yap'
-          | 'Pacific/Truk'
-          | 'Asia/Vladivostok'
-          | 'Asia/Ust-Nera'
-          | 'Australia/Lord_Howe'
-          | 'Australia/LHI'
-          | 'Pacific/Bougainville'
-          | 'Pacific/Kosrae'
-          | 'Pacific/Pohnpei'
-          | 'Pacific/Norfolk'
-          | 'Asia/Sakhalin'
-          | 'Asia/Magadan'
-          | 'Asia/Srednekolymsk'
-          | 'Pacific/Guadalcanal'
-          | 'Pacific/Ponape'
-          | 'Pacific/Efate'
-          | 'Pacific/Tarawa'
-          | 'Pacific/Funafuti'
-          | 'Pacific/Majuro'
-          | 'Pacific/Wake'
-          | 'Pacific/Wallis'
-          | 'Asia/Kamchatka'
-          | 'Asia/Anadyr'
-          | 'Pacific/Kwajalein'
-          | 'Kwajalein'
-          | 'Pacific/Nauru'
-          | 'NZ'
-          | 'Antarctica/McMurdo'
-          | 'Antarctica/South_Pole'
-          | 'Pacific/Chatham'
-          | 'NZ-CHAT'
-          | 'Pacific/Kanton'
-          | 'Pacific/Enderbury'
-          | 'Pacific/Apia'
-          | 'Pacific/Fakaofo'
-          | 'Pacific/Tongatapu'
-          | 'Pacific/Kiritimati'
-          | 'Etc/GMT-14'
-          | 'Etc/GMT-13'
-          | 'Etc/GMT-12'
-          | 'Etc/GMT-11'
-          | 'Etc/GMT-10'
-          | 'Etc/GMT-9'
-          | 'Etc/GMT-8'
-          | 'Etc/GMT-7'
-          | 'Etc/GMT-6'
-          | 'Etc/GMT-5'
-          | 'Etc/GMT-4'
-          | 'Etc/GMT-3'
-          | 'Etc/GMT-2'
-          | 'Etc/GMT-1'
-          | 'Etc/GMT'
-          | 'Etc/GMT+1'
-          | 'Etc/GMT+2'
-          | 'Etc/GMT+3'
-          | 'Etc/GMT+4'
-          | 'Etc/GMT+5'
-          | 'Etc/GMT+6'
-          | 'Etc/GMT+7'
-          | 'Etc/GMT+8'
-          | 'Etc/GMT+9'
-          | 'Etc/GMT+10'
-          | 'Etc/GMT+11'
-          | 'Etc/GMT+12'
-        )[]
-      | null;
-  };
   events?: {
     docs?: (number | Event)[];
     hasNextPage?: boolean;
@@ -2158,9 +1417,9 @@ export interface Region {
     totalDocs?: number;
   };
   /**
-   * SY Centers anywhere beneath this one.
+   * Venues anywhere beneath this one.
    */
-  childrenCenters?: {
+  childrenVenues?: {
     docs?: (number | Region)[];
     hasNextPage?: boolean;
     totalDocs?: number;
@@ -2181,6 +1440,9 @@ export interface Region {
         id?: string | null;
       }[]
     | null;
+  webPath?: string | null;
+  webUrl?: string | null;
+  appUrl?: string | null;
   legacyId?: number | null;
   legacyData?:
     | {
@@ -2201,7 +1463,7 @@ export interface Region {
 export interface Event {
   id: number;
   /**
-   * Event name. Leave blank to auto-fill from the address (e.g. "Meditation at Beethovenstraße 12").
+   * Up to 100 characters. Leave blank to fill in from the venue — "Evening Meditation at Broadstairs Friends Meeting House" — which also translates itself into every language.
    */
   title: string;
   /**
@@ -2397,7 +1659,11 @@ export interface Event {
    */
   contactPhone?: string | null;
   /**
-   * The name of the person they are calling
+   * An email address seekers can write to for more information about the program.
+   */
+  contactEmail?: string | null;
+  /**
+   * The name of the person seekers will reach
    */
   contactName?: string | null;
   description?: {
@@ -2416,9 +1682,40 @@ export interface Event {
     [k: string]: unknown;
   } | null;
   /**
-   * Photos for this event.
+   * Link to a page with more information about this class.
+   */
+  website?: string | null;
+  /**
+   * Photos for this event (up to 7).
    */
   images?: (number | Image)[] | null;
+  webPath?: string | null;
+  webUrl?: string | null;
+  appUrl?: string | null;
+  /**
+   * The city or venue this event belongs to.
+   */
+  region: number | Region;
+  eventType: 'offline' | 'online';
+  /**
+   * Link attendees join the online event through.
+   */
+  onlineUrl?: string | null;
+  address?: {
+    mapboxId?: string | null;
+    /**
+     * The building's own name, where it has one. Shown in place of the street when a listing has no title of its own.
+     */
+    venueName?: string | null;
+    street?: string | null;
+    room?: string | null;
+    postCode?: string | null;
+    country?: string | null;
+    region?: string | null;
+    city?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+  };
   /**
    * Mark this event dormant — it has no active schedule. With no schedule to show, you must provide contact info (phone + name) so seekers can reach out and find out more. Inactive events still need verification but never auto-finish.
    */
@@ -2460,6 +1757,7 @@ export interface Event {
           id?: string | null;
         }[]
       | null;
+    lastDate?: string | null;
     icalRule?: string | null;
     upcomingDates?:
       | {
@@ -2471,26 +1769,6 @@ export interface Event {
       | boolean
       | null;
   };
-  /**
-   * The city or center this event belongs to.
-   */
-  region: number | Region;
-  eventType: 'offline' | 'online';
-  /**
-   * Link attendees join the online event through.
-   */
-  onlineUrl?: string | null;
-  address?: {
-    mapboxId?: string | null;
-    street?: string | null;
-    room?: string | null;
-    postCode?: string | null;
-    country?: string | null;
-    region?: string | null;
-    city?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
-  };
   registrationMode: 'sahaj-atlas' | 'external';
   externalRegistrationUrl?: string | null;
   /**
@@ -2498,14 +1776,18 @@ export interface Event {
    */
   registrationLimit?: number | null;
   /**
+   * Enter an email to redirect updates about new seeker registrations to. Leave blank to send registration updates to the event manager.
+   */
+  registrationNotificationEmail?: string | null;
+  registrationNotificationFrequency?: ('Immediate' | 'Never') | null;
+  /**
    * Optional questions to ask registrants — each enabled question appears on the registration form.
    */
   registrationQuestions?: {
-    priorExperience?: boolean | null;
-    referralSource?: boolean | null;
-    healthInfo?: boolean | null;
-    accessibility?: boolean | null;
-    guests?: boolean | null;
+    experience?: boolean | null;
+    referral?: boolean | null;
+    aspirations?: boolean | null;
+    questions?: boolean | null;
   };
   registrations?: {
     docs?: (number | Registration)[];
@@ -2513,15 +1795,22 @@ export interface Event {
     totalDocs?: number;
   };
   /**
-   * Manager responsible for verifying this event.
+   * Manager responsible for verifying this event. Assigning one to an unverified event adopts it into the verification cycle.
    */
-  manager: number | Manager;
-  verificationStage: 'verified' | 'reminded' | 'escalated' | 'urgent' | 'expired' | 'finished';
-  nextCheckAt?: string | null;
+  manager?: (number | null) | Manager;
+  verificationStage:
+    | 'unverified'
+    | 'denied'
+    | 'verified'
+    | 'reminded'
+    | 'escalated'
+    | 'urgent'
+    | 'expired'
+    | 'finished';
   /**
-   * Current verification cycle — the verification that opened it plus each reminder sent. Reset on every verification.
+   * Current verification cycle — the verification that opened it plus each reminder sent. Reset on every verification. Keeps the most recent 50 entries.
    */
-  notificationLog?:
+  activityLog?:
     | {
         [k: string]: unknown;
       }
@@ -2530,7 +1819,40 @@ export interface Event {
     | number
     | boolean
     | null;
-  webUrl?: string | null;
+  /**
+   * How strongly attendees confirm this event is real (0–1). Rises with confirmations, falls with denials, and stays cautious while there are few votes — the Atlas map ranks unverified listings by it. Blank until the first vote.
+   */
+  confidenceScore?: number | null;
+  qualityReport?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Who submitted this listing (record-keeping only).
+   */
+  submitter?: (number | null) | User;
+  /**
+   * When the nightly job will next act on this event.
+   */
+  nextCheckAt?: string | null;
+  /**
+   * Registrations have reached the limit.
+   */
+  registrationsFull?: boolean | null;
+  /**
+   * Open listing-quality recommendations.
+   */
+  qualityOpenCount?: number | null;
+  /**
+   * Check-set version the count was stamped from.
+   */
+  qualityCheckVersion?: number | null;
+  systemMeta?: HttpsSahajcloudDevSchemasEventSystemMetaJson;
   legacyId?: number | null;
   legacyData?:
     | {
@@ -2563,9 +1885,60 @@ export interface Registration {
   startingAt?: string | null;
   startingAt_tz?: SupportedTimezones;
   /**
-   * Raw registration answers (keys: questions / experience / aspirations / referral).
+   * The client service this registration came through. Brands and localizes the emails sent about it.
    */
-  questions?:
+  client?: (number | null) | Client;
+  /**
+   * The registrant's language. Emails about this registration are rendered in it.
+   */
+  locale?:
+    | (
+        | 'en'
+        | 'es'
+        | 'de'
+        | 'it'
+        | 'fr'
+        | 'ru'
+        | 'ro'
+        | 'cs'
+        | 'uk'
+        | 'el'
+        | 'hy'
+        | 'pl'
+        | 'pt-BR'
+        | 'fa'
+        | 'bg'
+        | 'tr'
+        | 'en-AU'
+        | 'hu'
+        | 'nl'
+      )
+    | null;
+  questions?: {
+    /**
+     * Have you practised Sahaja Yoga meditation before?
+     */
+    experience?: string;
+    /**
+     * How did you hear about this event?
+     */
+    referral?: string;
+    /**
+     * What are you hoping to get out of this?
+     */
+    aspirations?: string;
+    /**
+     * Do you have any questions for us?
+     */
+    questions?: string;
+  };
+  uuid: string;
+  mailingListSubscribedAt?: string | null;
+  remindersUnsubscribedAt?: string | null;
+  /**
+   * Everything recorded about this registration, newest first. Keeps the most recent 50 entries.
+   */
+  activityLog?:
     | {
         [k: string]: unknown;
       }
@@ -2574,8 +1947,11 @@ export interface Registration {
     | number
     | boolean
     | null;
-  uuid: string;
-  mailingListSubscribedAt?: string | null;
+  /**
+   * Registrant’s verdict on an unverified event.
+   */
+  eventFeedback?: ('confirmed' | 'denied') | null;
+  followUpSentAt?: string | null;
   legacyId?: number | null;
   legacyData?:
     | {
@@ -2602,6 +1978,11 @@ export interface User {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  submittedEvents?: {
+    docs?: (number | Event)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   legacyId?: number | null;
   legacyData?:
     | {
@@ -2614,6 +1995,379 @@ export interface User {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients".
+ */
+export interface Client {
+  id: number;
+  /**
+   * Client organization or application name
+   */
+  name: string;
+  /**
+   * What domains are associated with this client. Put each domain on a new line.
+   */
+  allowedDomains?: string | null;
+  /**
+   * Hex color code (e.g., #FF5733)
+   */
+  color1?: string | null;
+  /**
+   * Hex color code (e.g., #FF5733)
+   */
+  color2?: string | null;
+  /**
+   * Hex color code (e.g., #FF5733)
+   */
+  color3?: string | null;
+  /**
+   * Logo shown in registrant emails. Resolved to a PNG at send time — email clients render SVG poorly or not at all.
+   */
+  logo?: (number | null) | Image;
+  /**
+   * Linked from the footer of registrant emails.
+   */
+  websiteUrl?: string | null;
+  /**
+   * Reply-To on registrant emails, so replies reach this service rather than us.
+   */
+  supportEmail?: string | null;
+  /**
+   * Primary language for this service (any language).
+   */
+  locale?:
+    | (
+        | 'ab'
+        | 'aa'
+        | 'af'
+        | 'ak'
+        | 'sq'
+        | 'am'
+        | 'ar'
+        | 'an'
+        | 'hy'
+        | 'as'
+        | 'av'
+        | 'ae'
+        | 'ay'
+        | 'az'
+        | 'bm'
+        | 'ba'
+        | 'eu'
+        | 'be'
+        | 'bn'
+        | 'bi'
+        | 'bs'
+        | 'br'
+        | 'bg'
+        | 'my'
+        | 'ca'
+        | 'ch'
+        | 'ce'
+        | 'ny'
+        | 'zh'
+        | 'cv'
+        | 'kw'
+        | 'co'
+        | 'cr'
+        | 'hr'
+        | 'cs'
+        | 'da'
+        | 'dv'
+        | 'nl'
+        | 'dz'
+        | 'en'
+        | 'eo'
+        | 'et'
+        | 'ee'
+        | 'fo'
+        | 'fj'
+        | 'fi'
+        | 'fr'
+        | 'ff'
+        | 'gl'
+        | 'lg'
+        | 'ka'
+        | 'de'
+        | 'el'
+        | 'gn'
+        | 'gu'
+        | 'ht'
+        | 'ha'
+        | 'he'
+        | 'hz'
+        | 'hi'
+        | 'ho'
+        | 'hu'
+        | 'is'
+        | 'io'
+        | 'ig'
+        | 'id'
+        | 'ia'
+        | 'ie'
+        | 'iu'
+        | 'ik'
+        | 'ga'
+        | 'it'
+        | 'ja'
+        | 'jv'
+        | 'kl'
+        | 'kn'
+        | 'kr'
+        | 'ks'
+        | 'kk'
+        | 'km'
+        | 'ki'
+        | 'rw'
+        | 'rn'
+        | 'kv'
+        | 'kg'
+        | 'ko'
+        | 'ku'
+        | 'kj'
+        | 'ky'
+        | 'lo'
+        | 'la'
+        | 'lv'
+        | 'li'
+        | 'ln'
+        | 'lt'
+        | 'lu'
+        | 'lb'
+        | 'mk'
+        | 'mg'
+        | 'ms'
+        | 'ml'
+        | 'mt'
+        | 'gv'
+        | 'mi'
+        | 'mr'
+        | 'mh'
+        | 'mn'
+        | 'na'
+        | 'nv'
+        | 'ng'
+        | 'ne'
+        | 'nd'
+        | 'se'
+        | 'no'
+        | 'nb'
+        | 'nn'
+        | 'ii'
+        | 'oc'
+        | 'oj'
+        | 'cu'
+        | 'or'
+        | 'om'
+        | 'os'
+        | 'pi'
+        | 'pa'
+        | 'ps'
+        | 'fa'
+        | 'pl'
+        | 'pt'
+        | 'qu'
+        | 'ro'
+        | 'rm'
+        | 'ru'
+        | 'sm'
+        | 'sg'
+        | 'sa'
+        | 'sc'
+        | 'gd'
+        | 'sr'
+        | 'sn'
+        | 'sd'
+        | 'si'
+        | 'sk'
+        | 'sl'
+        | 'so'
+        | 'nr'
+        | 'st'
+        | 'es'
+        | 'su'
+        | 'sw'
+        | 'ss'
+        | 'sv'
+        | 'tl'
+        | 'ty'
+        | 'tg'
+        | 'ta'
+        | 'tt'
+        | 'te'
+        | 'th'
+        | 'bo'
+        | 'ti'
+        | 'to'
+        | 'ts'
+        | 'tn'
+        | 'tr'
+        | 'tk'
+        | 'tw'
+        | 'uk'
+        | 'ur'
+        | 'ug'
+        | 'uz'
+        | 've'
+        | 'vi'
+        | 'vo'
+        | 'wa'
+        | 'cy'
+        | 'fy'
+        | 'wo'
+        | 'xh'
+        | 'yi'
+        | 'yo'
+        | 'za'
+        | 'zu'
+      )
+    | null;
+  /**
+   * Atlas geographic scope for this service.
+   */
+  region?: (number | null) | Region;
+  /**
+   * Declares that this service owns the canonical Atlas URLs for its region. Off by default, and nothing resolves differently until it is switched on.
+   */
+  canonical?: {
+    /**
+     * At most one service per region may own them. Requires a region and one of the embeds this service has reported — the CMS then loads that page itself to confirm the widget is really there, and only a verified embed ever yields a canonical URL.
+     */
+    enabled?: boolean | null;
+    /**
+     * Which of the embeds this service reported owns the canonical URLs. Domain, mount and routing all come from this one choice.
+     */
+    embed?: string | null;
+    verification?: HttpsSahajcloudDevSchemasClientCanonicalVerificationJson;
+    nextVerifyAt?: string | null;
+  };
+  embedMetadata?: HttpsSahajcloudDevSchemasClientEmbedMetadataJson;
+  /**
+   * Purpose and usage notes for this client
+   */
+  notes?: string | null;
+  /**
+   * Assign API client roles. Roles apply to all locales.
+   */
+  roles?: ('wemeditate-web-client' | 'wemeditate-app-client' | 'sahaj-atlas-client')[] | null;
+  /**
+   * Users who can manage this client
+   */
+  managers: (number | Manager)[];
+  /**
+   * Primary user contact for this client. Only needed when more than one manager is assigned.
+   */
+  primaryContact?: (number | null) | Manager;
+  /**
+   * Public identifier for this service. Auto-generated, or the Atlas public key for imported services.
+   */
+  clientId?: string | null;
+  /**
+   * Timestamp of last API key generation
+   */
+  keyGeneratedAt?: string | null;
+  /**
+   * API usage statistics
+   */
+  usage?: {
+    abuseScore?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    /**
+     * Today's request count
+     */
+    dailyRequests?: number | null;
+    /**
+     * Maximum historical request count
+     */
+    peakDailyRequests?: number | null;
+    /**
+     * Last API call timestamp
+     */
+    lastRequestAt?: string | null;
+    /**
+     * Lifetime total requests (never resets)
+     */
+    totalRequests?: number | null;
+    /**
+     * Count of days exceeding threshold
+     */
+    highUsageDays?: number | null;
+    /**
+     * Last date threshold was exceeded
+     */
+    lastHighUsageAt?: string | null;
+    /**
+     * First API request (tracking start)
+     */
+    firstRequestAt?: string | null;
+  };
+  legacyId?: number | null;
+  legacyData?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'clients';
+}
+export interface HttpsSahajcloudDevSchemasClientCanonicalVerificationJson {
+  verified: {
+    domain: string;
+    mount: string;
+    routing: 'query' | 'path';
+    widgetVersion: number;
+    at: string;
+  } | null;
+  failureCount: number;
+  attempts: {
+    at: string;
+    status: 'verified' | 'failed' | 'inconclusive';
+    reason?: 'dns' | 'http' | 'marker-absent' | 'not-configured' | 'provider-error' | 'quota' | 'bot-challenge';
+  }[];
+}
+export interface HttpsSahajcloudDevSchemasClientEmbedMetadataJson {
+  [k: string]: {
+    mode: 'inline' | 'iframe';
+    topLevel: boolean;
+    urlWritable: boolean;
+    paramPersisted: boolean;
+    routing: 'query' | 'path';
+    lastSeen: string;
+  };
+}
+export interface HttpsSahajcloudDevSchemasEventSystemMetaJson {
+  communityFeedback?: {
+    /**
+     * Registrants who confirmed the event exists.
+     */
+    confirmations?: number;
+    /**
+     * Registrants who denied it.
+     */
+    denials?: number;
+    /**
+     * ISO timestamp of the last vote applied.
+     */
+    updatedAt?: string;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2635,10 +2389,13 @@ export interface Meditation {
     | 'el'
     | 'hy'
     | 'pl'
-    | 'pt-br'
+    | 'pt-BR'
     | 'fa'
     | 'bg'
-    | 'tr';
+    | 'tr'
+    | 'en-AU'
+    | 'hu'
+    | 'nl';
   /**
    * This should be the name of the yogi who did the recording. We need this for dynamic followup audio clips. Cannot be changed after creation.
    */
@@ -2986,10 +2743,13 @@ export interface Lecture {
           | 'el'
           | 'hy'
           | 'pl'
-          | 'pt-br'
+          | 'pt-BR'
           | 'fa'
           | 'bg'
-          | 'tr';
+          | 'tr'
+          | 'en-AU'
+          | 'hu'
+          | 'nl';
         url: string;
         id?: string | null;
       }[]
@@ -3534,6 +3294,7 @@ export interface AppCard {
           id?: string | null;
         }[]
       | null;
+    lastDate?: string | null;
     icalRule?: string | null;
     upcomingDates?:
       | {
@@ -3765,244 +3526,66 @@ export interface Frame {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "clients".
+ * via the `definition` "event-submissions".
  */
-export interface Client {
+export interface EventSubmission {
   id: number;
-  /**
-   * Client organization or application name
-   */
-  name: string;
-  /**
-   * Purpose and usage notes for this client
-   */
-  notes?: string | null;
-  /**
-   * Assign API client roles. Roles apply to all locales.
-   */
-  roles?: ('wemeditate-web-client' | 'wemeditate-app-client' | 'sahaj-atlas-client')[] | null;
-  /**
-   * Users who can manage this client
-   */
-  managers: (number | Manager)[];
-  /**
-   * Primary user contact for this client. Only needed when more than one manager is assigned.
-   */
-  primaryContact?: (number | null) | Manager;
-  /**
-   * What domains are associated with this client. Put each domain on a new line.
-   */
-  allowedDomains?: string | null;
-  /**
-   * Hex color code (e.g., #FF5733)
-   */
-  color1?: string | null;
-  /**
-   * Hex color code (e.g., #FF5733)
-   */
-  color2?: string | null;
-  /**
-   * Hex color code (e.g., #FF5733)
-   */
-  color3?: string | null;
-  /**
-   * Primary language for this service (any language).
-   */
-  locale?:
-    | (
-        | 'ab'
-        | 'aa'
-        | 'af'
-        | 'ak'
-        | 'sq'
-        | 'am'
-        | 'ar'
-        | 'an'
-        | 'hy'
-        | 'as'
-        | 'av'
-        | 'ae'
-        | 'ay'
-        | 'az'
-        | 'bm'
-        | 'ba'
-        | 'eu'
-        | 'be'
-        | 'bn'
-        | 'bi'
-        | 'bs'
-        | 'br'
-        | 'bg'
-        | 'my'
-        | 'ca'
-        | 'ch'
-        | 'ce'
-        | 'ny'
-        | 'zh'
-        | 'cv'
-        | 'kw'
-        | 'co'
-        | 'cr'
-        | 'hr'
-        | 'cs'
-        | 'da'
-        | 'dv'
-        | 'nl'
-        | 'dz'
-        | 'en'
-        | 'eo'
-        | 'et'
-        | 'ee'
-        | 'fo'
-        | 'fj'
-        | 'fi'
-        | 'fr'
-        | 'ff'
-        | 'gl'
-        | 'lg'
-        | 'ka'
-        | 'de'
-        | 'el'
-        | 'gn'
-        | 'gu'
-        | 'ht'
-        | 'ha'
-        | 'he'
-        | 'hz'
-        | 'hi'
-        | 'ho'
-        | 'hu'
-        | 'is'
-        | 'io'
-        | 'ig'
-        | 'id'
-        | 'ia'
-        | 'ie'
-        | 'iu'
-        | 'ik'
-        | 'ga'
-        | 'it'
-        | 'ja'
-        | 'jv'
-        | 'kl'
-        | 'kn'
-        | 'kr'
-        | 'ks'
-        | 'kk'
-        | 'km'
-        | 'ki'
-        | 'rw'
-        | 'rn'
-        | 'kv'
-        | 'kg'
-        | 'ko'
-        | 'ku'
-        | 'kj'
-        | 'ky'
-        | 'lo'
-        | 'la'
-        | 'lv'
-        | 'li'
-        | 'ln'
-        | 'lt'
-        | 'lu'
-        | 'lb'
-        | 'mk'
-        | 'mg'
-        | 'ms'
-        | 'ml'
-        | 'mt'
-        | 'gv'
-        | 'mi'
-        | 'mr'
-        | 'mh'
-        | 'mn'
-        | 'na'
-        | 'nv'
-        | 'ng'
-        | 'ne'
-        | 'nd'
-        | 'se'
-        | 'no'
-        | 'nb'
-        | 'nn'
-        | 'ii'
-        | 'oc'
-        | 'oj'
-        | 'cu'
-        | 'or'
-        | 'om'
-        | 'os'
-        | 'pi'
-        | 'pa'
-        | 'ps'
-        | 'fa'
-        | 'pl'
-        | 'pt'
-        | 'qu'
-        | 'ro'
-        | 'rm'
-        | 'ru'
-        | 'sm'
-        | 'sg'
-        | 'sa'
-        | 'sc'
-        | 'gd'
-        | 'sr'
-        | 'sn'
-        | 'sd'
-        | 'si'
-        | 'sk'
-        | 'sl'
-        | 'so'
-        | 'nr'
-        | 'st'
-        | 'es'
-        | 'su'
-        | 'sw'
-        | 'ss'
-        | 'sv'
-        | 'tl'
-        | 'ty'
-        | 'tg'
-        | 'ta'
-        | 'tt'
-        | 'te'
-        | 'th'
-        | 'bo'
-        | 'ti'
-        | 'to'
-        | 'ts'
-        | 'tn'
-        | 'tr'
-        | 'tk'
-        | 'tw'
-        | 'uk'
-        | 'ur'
-        | 'ug'
-        | 'uz'
-        | 've'
-        | 'vi'
-        | 'vo'
-        | 'wa'
-        | 'cy'
-        | 'fy'
-        | 'wo'
-        | 'xh'
-        | 'yi'
-        | 'yo'
-        | 'za'
-        | 'zu'
-      )
+  screeningResult?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  submitterInfo?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  proposedChanges?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  previewEvent?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
     | null;
   /**
-   * Atlas geographic scope for this service.
+   * The event this submission proposes changes to. After acceptance it links the created event.
+   */
+  event?: (number | null) | Event;
+  /**
+   * Optional. The manager who will look after this event. Assign one to publish it as verified; leave blank and it goes on the map as unverified until a manager takes it on.
+   */
+  manager?: (number | null) | Manager;
+  /**
+   * The city or venue this event belongs to. Resolved by screening — correct it here if it came back empty or wrong.
    */
   region?: (number | null) | Region;
   /**
-   * Deprecated Atlas config (routing_type, embed_type, default_view).
+   * Generated from the proposal when the submission arrives.
    */
-  legacyConfig?:
+  title?: string | null;
+  /**
+   * The proposed Events field patch, exactly as submitted.
+   */
+  proposed?:
     | {
         [k: string]: unknown;
       }
@@ -4011,58 +3594,12 @@ export interface Client {
     | number
     | boolean
     | null;
+  status: 'screening' | 'pending' | 'spam' | 'created' | 'updated' | 'rejected';
+  submitter?: (number | null) | User;
   /**
-   * Public identifier for this service. Auto-generated, or the Atlas public key for imported services.
+   * Region targeting as submitted (country / state / anchor).
    */
-  clientId?: string | null;
-  /**
-   * Timestamp of last API key generation
-   */
-  keyGeneratedAt?: string | null;
-  /**
-   * API usage statistics
-   */
-  usage?: {
-    abuseScore?:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
-    /**
-     * Today's request count
-     */
-    dailyRequests?: number | null;
-    /**
-     * Maximum historical request count
-     */
-    peakDailyRequests?: number | null;
-    /**
-     * Last API call timestamp
-     */
-    lastRequestAt?: string | null;
-    /**
-     * Lifetime total requests (never resets)
-     */
-    totalRequests?: number | null;
-    /**
-     * Count of days exceeding threshold
-     */
-    highUsageDays?: number | null;
-    /**
-     * Last date threshold was exceeded
-     */
-    lastHighUsageAt?: string | null;
-    /**
-     * First API request (tracking start)
-     */
-    firstRequestAt?: string | null;
-  };
-  legacyId?: number | null;
-  legacyData?:
+  regionHint?:
     | {
         [k: string]: unknown;
       }
@@ -4071,13 +3608,10 @@ export interface Client {
     | number
     | boolean
     | null;
+  reviewedBy?: (number | null) | Manager;
+  reviewedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
-  enableAPIKey?: boolean | null;
-  apiKey?: string | null;
-  apiKeyIndex?: string | null;
-  collection: 'clients';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4196,9 +3730,6 @@ export interface Form {
       )[]
     | null;
   submitButtonLabel?: string | null;
-  /**
-   * Choose whether to display an on-page message or redirect to a different page after they submit the form.
-   */
   confirmationType?: ('message' | 'redirect') | null;
   confirmationMessage?: {
     root: {
@@ -4218,9 +3749,6 @@ export interface Form {
   redirect?: {
     url: string;
   };
-  /**
-   * Send custom emails when the form submits. Use comma separated lists to send the same email to multiple recipients. To reference a value from this form, wrap that field's name with double curly brackets, i.e. {{firstName}}. You can use a wildcard {{*}} to output all data and {{*:table}} to format it as an HTML table in the email.
-   */
   emails?:
     | {
         emailTo?: string | null;
@@ -4229,9 +3757,6 @@ export interface Form {
         replyTo?: string | null;
         emailFrom?: string | null;
         subject: string;
-        /**
-         * Enter the message that should be sent in this email.
-         */
         message?: {
           root: {
             type: string;
@@ -4343,7 +3868,12 @@ export interface PayloadJob {
           | 'inline'
           | 'cleanupOrphanedMedia'
           | 'expireEvents'
+          | 'screenEventSubmission'
+          | 'sendPostEventFollowUps'
+          | 'sendRegistrationDigests'
+          | 'sendSessionReminders'
           | 'syncLectureMetadata'
+          | 'verifyEmbeds'
           | 'resetUsage'
           | 'schedulePublish';
         taskID: string;
@@ -4379,11 +3909,27 @@ export interface PayloadJob {
       }[]
     | null;
   taskSlug?:
-    | ('inline' | 'cleanupOrphanedMedia' | 'expireEvents' | 'syncLectureMetadata' | 'resetUsage' | 'schedulePublish')
+    | (
+        | 'inline'
+        | 'cleanupOrphanedMedia'
+        | 'expireEvents'
+        | 'screenEventSubmission'
+        | 'sendPostEventFollowUps'
+        | 'sendRegistrationDigests'
+        | 'sendSessionReminders'
+        | 'syncLectureMetadata'
+        | 'verifyEmbeds'
+        | 'resetUsage'
+        | 'schedulePublish'
+      )
     | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  /**
+   * Used for concurrency control. Jobs with the same key are subject to exclusive/supersedes rules.
+   */
+  concurrencyKey?: string | null;
   meta?:
     | {
         [k: string]: unknown;
@@ -4488,6 +4034,10 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
+        relationTo: 'event-submissions';
+        value: number | EventSubmission;
+      } | null)
+    | ({
         relationTo: 'registrations';
         value: number | Registration;
       } | null)
@@ -4575,6 +4125,7 @@ export interface PagesSelect<T extends boolean = true> {
   featuredVideo?: T;
   tags?: T;
   managers?: T;
+  webPath?: T;
   webUrl?: T;
   appUrl?: T;
   updatedAt?: T;
@@ -4962,6 +4513,7 @@ export interface ManagersSelect<T extends boolean = true> {
         id?: T;
       };
   notificationPreferences?: T;
+  lastRegistrationDigestSentAt?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
@@ -4989,17 +4541,28 @@ export interface ManagersSelect<T extends boolean = true> {
  */
 export interface ClientsSelect<T extends boolean = true> {
   name?: T;
-  notes?: T;
-  roles?: T;
-  managers?: T;
-  primaryContact?: T;
   allowedDomains?: T;
   color1?: T;
   color2?: T;
   color3?: T;
+  logo?: T;
+  websiteUrl?: T;
+  supportEmail?: T;
   locale?: T;
   region?: T;
-  legacyConfig?: T;
+  canonical?:
+    | T
+    | {
+        enabled?: T;
+        embed?: T;
+        verification?: T;
+        nextVerifyAt?: T;
+      };
+  embedMetadata?: T;
+  notes?: T;
+  roles?: T;
+  managers?: T;
+  primaryContact?: T;
   clientId?: T;
   keyGeneratedAt?: T;
   usage?:
@@ -5109,6 +4672,7 @@ export interface AppCardsSelect<T extends boolean = true> {
               reason?: T;
               id?: T;
             };
+        lastDate?: T;
         icalRule?: T;
         upcomingDates?: T;
       };
@@ -5135,16 +4699,10 @@ export interface RegionsSelect<T extends boolean = true> {
   latitude?: T;
   longitude?: T;
   radius?: T;
-  eventDefaults?:
-    | T
-    | {
-        language?: T;
-        timeZone?: T;
-      };
   events?: T;
   childrenRegions?: T;
   childrenCities?: T;
-  childrenCenters?: T;
+  childrenVenues?: T;
   generateSlug?: T;
   slug?: T;
   breadcrumbs?:
@@ -5155,6 +4713,9 @@ export interface RegionsSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
+  webPath?: T;
+  webUrl?: T;
+  appUrl?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
@@ -5168,9 +4729,31 @@ export interface EventsSelect<T extends boolean = true> {
   title?: T;
   languages?: T;
   contactPhone?: T;
+  contactEmail?: T;
   contactName?: T;
   description?: T;
+  website?: T;
   images?: T;
+  webPath?: T;
+  webUrl?: T;
+  appUrl?: T;
+  region?: T;
+  eventType?: T;
+  onlineUrl?: T;
+  address?:
+    | T
+    | {
+        mapboxId?: T;
+        venueName?: T;
+        street?: T;
+        room?: T;
+        postCode?: T;
+        country?: T;
+        region?: T;
+        city?: T;
+        latitude?: T;
+        longitude?: T;
+      };
   inactive?: T;
   schedule?:
     | T
@@ -5196,49 +4779,63 @@ export interface EventsSelect<T extends boolean = true> {
               reason?: T;
               id?: T;
             };
+        lastDate?: T;
         icalRule?: T;
         upcomingDates?: T;
-      };
-  region?: T;
-  eventType?: T;
-  onlineUrl?: T;
-  address?:
-    | T
-    | {
-        mapboxId?: T;
-        street?: T;
-        room?: T;
-        postCode?: T;
-        country?: T;
-        region?: T;
-        city?: T;
-        latitude?: T;
-        longitude?: T;
       };
   registrationMode?: T;
   externalRegistrationUrl?: T;
   registrationLimit?: T;
+  registrationNotificationEmail?: T;
+  registrationNotificationFrequency?: T;
   registrationQuestions?:
     | T
     | {
-        priorExperience?: T;
-        referralSource?: T;
-        healthInfo?: T;
-        accessibility?: T;
-        guests?: T;
+        experience?: T;
+        referral?: T;
+        aspirations?: T;
+        questions?: T;
       };
   registrations?: T;
   manager?: T;
   verificationStage?: T;
+  activityLog?: T;
+  confidenceScore?: T;
+  qualityReport?: T;
+  submitter?: T;
   nextCheckAt?: T;
-  notificationLog?: T;
-  webUrl?: T;
+  registrationsFull?: T;
+  qualityOpenCount?: T;
+  qualityCheckVersion?: T;
+  systemMeta?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-submissions_select".
+ */
+export interface EventSubmissionsSelect<T extends boolean = true> {
+  screeningResult?: T;
+  submitterInfo?: T;
+  proposedChanges?: T;
+  previewEvent?: T;
+  event?: T;
+  manager?: T;
+  region?: T;
+  title?: T;
+  proposed?: T;
+  status?: T;
+  submitter?: T;
+  regionHint?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5249,9 +4846,15 @@ export interface RegistrationsSelect<T extends boolean = true> {
   user?: T;
   startingAt?: T;
   startingAt_tz?: T;
+  client?: T;
+  locale?: T;
   questions?: T;
   uuid?: T;
   mailingListSubscribedAt?: T;
+  remindersUnsubscribedAt?: T;
+  activityLog?: T;
+  eventFeedback?: T;
+  followUpSentAt?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
@@ -5265,6 +4868,7 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   registrations?: T;
+  submittedEvents?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
@@ -5455,6 +5059,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  concurrencyKey?: T;
   meta?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -5541,6 +5146,33 @@ export interface WmWebTranslation {
     | boolean
     | null;
   navigation?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  footer?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  page_tags?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errors?:
     | {
         [k: string]: unknown;
       }
@@ -6574,6 +6206,32 @@ export interface WmAppStatus {
  */
 export interface SyAtlasConfig {
   id: number;
+  /**
+   * Languages the atlas is offered in. Drives the widget’s language picker and the hreflang links on every atlas page, so removing one tells search engines that language is gone. Adding one needs a matching translation bundle in the widget — check with a developer first.
+   */
+  languages: {
+    code:
+      | 'en'
+      | 'es'
+      | 'de'
+      | 'it'
+      | 'fr'
+      | 'ru'
+      | 'ro'
+      | 'cs'
+      | 'uk'
+      | 'el'
+      | 'hy'
+      | 'pl'
+      | 'pt-BR'
+      | 'fa'
+      | 'bg'
+      | 'tr'
+      | 'en-AU'
+      | 'hu'
+      | 'nl';
+    id?: string | null;
+  }[];
   defaultMapCenter: {
     latitude: number;
     longitude: number;
@@ -6597,7 +6255,94 @@ export interface SyAtlasTranslation {
     | number
     | boolean
     | null;
-  map?:
+  region?: {
+    locations?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    venues?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  event?: {
+    details?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    recurrence?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    timing?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    title?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  registration?: {
+    form?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    errors?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    questions?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  share?:
     | {
         [k: string]: unknown;
       }
@@ -6606,16 +6351,7 @@ export interface SyAtlasTranslation {
     | number
     | boolean
     | null;
-  location?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  event?:
+  emails?:
     | {
         [k: string]: unknown;
       }
@@ -6669,6 +6405,9 @@ export interface WmWebConfigSelect<T extends boolean = true> {
 export interface WmWebTranslationsSelect<T extends boolean = true> {
   common?: T;
   navigation?: T;
+  footer?: T;
+  page_tags?: T;
+  errors?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -6821,6 +6560,12 @@ export interface WmAppStatusSelect<T extends boolean = true> {
  * via the `definition` "sy-atlas-config_select".
  */
 export interface SyAtlasConfigSelect<T extends boolean = true> {
+  languages?:
+    | T
+    | {
+        code?: T;
+        id?: T;
+      };
   defaultMapCenter?:
     | T
     | {
@@ -6838,9 +6583,29 @@ export interface SyAtlasConfigSelect<T extends boolean = true> {
  */
 export interface SyAtlasTranslationsSelect<T extends boolean = true> {
   common?: T;
-  map?: T;
-  location?: T;
-  event?: T;
+  region?:
+    | T
+    | {
+        locations?: T;
+        venues?: T;
+      };
+  event?:
+    | T
+    | {
+        details?: T;
+        recurrence?: T;
+        timing?: T;
+        title?: T;
+      };
+  registration?:
+    | T
+    | {
+        form?: T;
+        errors?: T;
+        questions?: T;
+      };
+  share?: T;
+  emails?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -6881,6 +6646,7 @@ export interface TaskCleanupOrphanedMedia {
       | number
       | boolean
       | null;
+    maxOperations?: number | null;
   };
   output: {
     permanentlyDeletedFiles: number;
@@ -6908,6 +6674,56 @@ export interface TaskExpireEvents {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskScreenEventSubmission".
+ */
+export interface TaskScreenEventSubmission {
+  input: {
+    submissionId: number;
+  };
+  output: {
+    status: string;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendPostEventFollowUps".
+ */
+export interface TaskSendPostEventFollowUps {
+  input?: unknown;
+  output: {
+    scanned: number;
+    sent: number;
+    failed: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendRegistrationDigests".
+ */
+export interface TaskSendRegistrationDigests {
+  input?: unknown;
+  output: {
+    eligibleManagers: number;
+    digestsSent: number;
+    registrationsIncluded: number;
+    failed: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendSessionReminders".
+ */
+export interface TaskSendSessionReminders {
+  input?: unknown;
+  output: {
+    processedEvents: number;
+    remindersSent: number;
+    skipped: number;
+    failed: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSyncLectureMetadata".
  */
 export interface TaskSyncLectureMetadata {
@@ -6927,6 +6743,20 @@ export interface TaskSyncLectureMetadata {
     synced: number;
     failed: number;
     skippedNoVimeoId: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskVerifyEmbeds".
+ */
+export interface TaskVerifyEmbeds {
+  input?: unknown;
+  output: {
+    processed: number;
+    verified: number;
+    failed: number;
+    inconclusive: number;
+    disabled: number;
   };
 }
 /**
