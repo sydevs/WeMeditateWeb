@@ -46,5 +46,5 @@
     ".claude/**",
     "server/payload-types.ts"
   ],
-  "prAllowlistNote": "Where a TICKETLESS PR may be opened without an `approved` issue: dependency bumps, lint/format sweeps, generated-type re-syncs, doc corrections. Ticket work is gated on the `approved` label instead, never on these globs."
+  "prAllowlistNote": "Where a TICKETLESS PR may be opened without a `ready-to-implement` issue: dependency bumps, lint/format sweeps, generated-type re-syncs, doc corrections. Ticket work is gated on the `ready-to-implement` label instead, never on these globs."
 }
