@@ -14,7 +14,7 @@
  * (SahajCloud #646). Production's **We Meditate Web** client holds it. The
  * separate **We Meditate Web (LOCAL)** client used by `.env.local` does not, so
  * these reads 403 in local dev while working on the deploy — the same asymmetry
- * `.claude/docs/local-environment.md` describes for a stale key, and the same
+ * `docs/local-environment.md` describes for a stale key, and the same
  * remedy: verify against the deployed preview.
  *
  * A 403 must therefore degrade rather than 500 — an atlas page still renders its
@@ -154,7 +154,7 @@ const SITEMAP_MAX_PAGES = 4
  * Field selections for the atlas sitemap reads.
  *
  * Typed against the generated `*Select` interfaces per
- * `.claude/rules/cms-api-reads.md`: `select` is mandatory for API clients, and
+ * `server/CLAUDE.md`: `select` is mandatory for API clients, and
  * typing it means a CMS schema change surfaces here as a compile error rather
  * than a silent 400. The two are structurally identical today and still declared
  * separately, because they are answerable to different collections.

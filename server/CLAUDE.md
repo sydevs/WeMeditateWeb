@@ -1,10 +1,3 @@
----
-description: Required query params and graceful handling for PayloadCMS API-client reads.
-globs:
-  - "server/**"
-alwaysApply: false
----
-
 # CMS API-client reads (`server/cms-client.ts`)
 
 The SahajCloud (PayloadCMS) API enforces a query-validation hook on API-client reads. Follow these rules for every read.
