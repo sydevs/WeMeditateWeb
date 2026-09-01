@@ -1,0 +1,1 @@
+../../docs/rules/design-system.md

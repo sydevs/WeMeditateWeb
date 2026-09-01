@@ -1,0 +1,1 @@
+../../docs/rules/component-stories.md

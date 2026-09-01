@@ -1,0 +1,1 @@
+../../docs/rules/rest-api.md
