@@ -62,7 +62,9 @@ public/         # Static assets
 - Use `STORYBOOK.md` for component library guidance.
 
 ## Help & docs
-- `CLAUDE.md` provides the full project guide.
+- `AGENTS.md` provides the project guide (`CLAUDE.md` is a symlink to it) and maps where everything else lives.
+- `docs/rules/` holds the path-scoped rules; `.claude/rules/` symlinks to them so Claude Code loads each one when a matching file is read.
+- `.claude/skills/` holds the multi-step procedures (component development, design extraction, batch refactoring, dependency updates).
 - `MCP_USAGE.md` documents MCP usage.
 - `STORYBOOK.md` explains the component documentation flow.
 

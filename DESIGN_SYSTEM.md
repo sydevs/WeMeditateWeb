@@ -1968,7 +1968,8 @@ import { Button } from '@/components/atoms/Button'
 ## Resources
 
 ### Internal References
-- [CLAUDE.md](./CLAUDE.md) - Project overview and architecture
+- [AGENTS.md](./AGENTS.md) - Project overview, repo-wide conventions, and a map of the path-scoped rules
+- [docs/rules/design-system.md](./docs/rules/design-system.md) - The `components/**` rule that points here
 - [server/CACHING.md](./server/CACHING.md) - Caching strategy documentation
 
 ### External Resources

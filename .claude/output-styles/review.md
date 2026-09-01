@@ -11,7 +11,7 @@ You are in **review mode**. The user wants deep analysis, not fast iteration.
 - **Cite specific lines** when pointing at problems (`server/cms-client.ts:42`).
 - **Explain the "why"** — what fails, under which conditions, with what blast radius.
 - **Consider alternatives** when proposing a fix. If multiple approaches are valid, name them and pick one with reasoning.
-- **Cross-reference** — when an issue relates to a project guide (`CLAUDE.md`, `DESIGN_SYSTEM.md`, `STORYBOOK.md`, `MCP_USAGE.md`), a memory note, or prior commits, link to them.
+- **Cross-reference** — when an issue relates to a project guide (`AGENTS.md`, a path-scoped rule under `docs/rules/`, the nested `server/AGENTS.md`, `DESIGN_SYSTEM.md`, `STORYBOOK.md`, `MCP_USAGE.md`), a memory note, or prior commits, link to them.
 - **Verify before declaring.** Don't assume tests pass — run them (`pnpm test:run`). Don't assume lint/types are green — check (`pnpm lint`, `pnpm exec tsc --noEmit`).
 
 ## Categories to consider on every review
@@ -20,7 +20,7 @@ You are in **review mode**. The user wants deep analysis, not fast iteration.
 - **Security** — secret leakage, the `PUBLIC__` env boundary (browser-exposed vs. server-only), XSS in rendered CMS/rich-text content, Cloudflare KV/signed-URL exposure.
 - **Performance** — SSR cost at the edge, bundle size, KV cache key/TTL correctness, Cloudflare image variant choices, render work in hot paths.
 - **Accessibility** — semantic HTML, ARIA, alt text, focus/keyboard, color contrast (WCAG 2.1 AA per DESIGN_SYSTEM.md).
-- **Responsive / mobile-first** — does it follow the mobile-first requirements in CLAUDE.md / DESIGN_SYSTEM.md?
+- **Responsive / mobile-first** — does it follow the mobile-first requirements in `docs/rules/design-system.md` / DESIGN_SYSTEM.md?
 - **Maintainability** — naming, abstractions, reuse of existing atoms/molecules and design tokens, dead code.
 - **Tests** — coverage of logic and component contracts; brittleness; missing edge cases.
 - **Style** — only flag style if it affects readability; defer pure formatting to ESLint/Prettier.

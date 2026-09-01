@@ -30,7 +30,7 @@ const CONTENT_READ_LIMIT = 500
  * Field selections for the sitemap reads.
  *
  * Typed against the generated `*Select` interfaces, per
- * `.claude/rules/cms-api-reads.md`: `select` is mandatory for API clients, and
+ * `server/AGENTS.md`: `select` is mandatory for API clients, and
  * typing it here means a CMS schema change surfaces as a compile error rather
  * than a silent 400 at runtime. `updatedAt` feeds `<lastmod>`; the id every doc
  * carries regardless of the selection.

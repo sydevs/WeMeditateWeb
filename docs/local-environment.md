@@ -12,7 +12,7 @@ alwaysApply: false
 `.env.local`'s `SAHAJCLOUD_API_KEY` must be a **valid production key**. When local CMS access fails:
 
 - **403 Forbidden** on CMS reads (pages 500 locally; `[PayloadCMS] … → 403` in the dev log) ⇒ the local key is **stale/invalid** — refresh it. It is **not** an origin/IP block (the request reaches Payload's access control).
-- A **valid** key returns **400** on a malformed query (missing `select`, or `depth > 1` without `populate` — see [cms-api-reads](../rules/cms-api-reads.md)). So: **400 = authenticated but bad query; 403 = not authenticated.**
+- A **valid** key returns **400** on a malformed query (missing `select`, or `depth > 1` without `populate` — see [cms-api-reads](../server/AGENTS.md)). So: **400 = authenticated but bad query; 403 = not authenticated.**
 - The **deployed Worker** uses its own key configured in the Cloudflare dashboard, independent of `.env.local` — the deploy can serve CMS content even when local 403s. When the local key is unusable, verify against the deployed preview via CI.
 
 ### The exception: a 403 that is *not* a stale key

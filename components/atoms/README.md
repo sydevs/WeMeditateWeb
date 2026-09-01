@@ -187,7 +187,8 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 
 - [Design System Guide](../../DESIGN_SYSTEM.md) - Complete design system documentation
 - [Tailwind Config](../../tailwind.config.ts) - Brand colors and typography tokens
-- [Project Overview](../../CLAUDE.md) - Architecture and development guide
+- [Component Rules](../../docs/rules/design-system.md) - The `components/**` rule Claude Code loads automatically
+- [Project Overview](../../AGENTS.md) - Repo-wide conventions and a map of the rules, skills and reference docs
 
 ## Contributing
 

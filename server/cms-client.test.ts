@@ -77,7 +77,7 @@ describe('getWebConfig featuredArticles', () => {
     const config = await getWebConfig({ locale: 'en' })
     const args = findGlobal.mock.calls[0][0]
 
-    // The read must request featuredArticles (per .claude/rules/cms-api-reads.md).
+    // The read must request featuredArticles (per server/AGENTS.md).
     expect(args.select.featuredArticles).toBe(true)
     // The bare-id (unpublished) ref is dropped; only linkable articles remain.
     expect(config.featuredArticles.map((p) => p.slug)).toEqual(['history-of-meditation'])
