@@ -154,7 +154,7 @@ const SITEMAP_MAX_PAGES = 4
  * Field selections for the atlas sitemap reads.
  *
  * Typed against the generated `*Select` interfaces per
- * `server/CLAUDE.md`: `select` is mandatory for API clients, and
+ * `server/AGENTS.md`: `select` is mandatory for API clients, and
  * typing it means a CMS schema change surfaces here as a compile error rather
  * than a silent 400. The two are structurally identical today and still declared
  * separately, because they are answerable to different collections.

@@ -77,13 +77,15 @@
       "Bash(npm view:*)",
       "Edit(docs/**)",
       "Write(docs/**)",
+      "Edit(**/AGENTS.md)",
+      "Write(**/AGENTS.md)",
       "Edit(**/CLAUDE.md)",
       "Write(**/CLAUDE.md)",
       "Edit(.claude/skills/**)",
       "Write(.claude/skills/**)",
-      "Edit(CLAUDE.md)",
       "Edit(AGENTS.md)",
-      "Write(AGENTS.md)"
+      "Write(AGENTS.md)",
+      "Edit(CLAUDE.md)"
     ]
   },
   "extraKnownMarketplaces": {

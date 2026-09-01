@@ -62,7 +62,7 @@ public/         # Static assets
 - Use `STORYBOOK.md` for component library guidance.
 
 ## Help & docs
-- `CLAUDE.md` provides the full project guide.
+- `AGENTS.md` provides the full project guide (`CLAUDE.md` is a symlink to it).
 - `MCP_USAGE.md` documents MCP usage.
 - `STORYBOOK.md` explains the component documentation flow.
 
