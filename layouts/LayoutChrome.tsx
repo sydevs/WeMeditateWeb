@@ -6,6 +6,7 @@ import type { WebConfig, Page } from '../server/cms-types'
 import { leadSplashFromRouteData } from '../lib/cms-blocks'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
+import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 
 /**
  * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
@@ -136,7 +137,10 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
           NB: no `overflow-x-clip` here — it would clip ContentTextBox's intentional
           desktop overlap (negative `-ml-32`/`-mr-32` margins). Blocks that bleed
           horizontally (OrnateTextBox) clip themselves instead. */}
-      <main className="flex-1 @container">
+      {/* `tabIndex={-1}` makes this focusable programmatically WITHOUT adding it
+          to the tab order — it is what lets the route announcer move focus here
+          after a client-side navigation. See `lib/route-announcer.ts`. */}
+      <main className="flex-1 @container" id={MAIN_CONTENT_ID} tabIndex={-1}>
         <div
           className={`max-w-7xl mx-auto px-6 [--page-width:100cqi] ${leadSplash ? 'pb-8' : 'py-8'}`}
         >
