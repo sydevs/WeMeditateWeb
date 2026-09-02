@@ -2,6 +2,7 @@ import { Header } from '../components/organisms/Header'
 import { useData } from 'vike-react/useData'
 import type { WebConfig } from '../server/cms-types'
 import { useSiteNav } from './useSiteNav'
+import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 
 /**
  * LayoutMap — chrome for the atlas at `/map`.
@@ -54,7 +55,11 @@ function MapChrome({ settings, children }: { settings: WebConfig; children: Reac
         navItems={navItems}
       />
 
-      <main className="min-h-0 flex-1">{children}</main>
+      {/* `tabIndex={-1}`: programmatically focusable, but not in the tab order.
+          See `lib/route-announcer.ts`. */}
+      <main className="min-h-0 flex-1" id={MAIN_CONTENT_ID} tabIndex={-1}>
+        {children}
+      </main>
     </div>
   )
 }

@@ -143,6 +143,34 @@ Before marking a component as complete, verify:
 - [ ] Text is readable at all sizes
 - [ ] No horizontal scrolling on any breakpoint
 
+## Route changes are already announced — don't add a second announcer
+
+Vike Client Routing swaps the page under `<main>` while the chrome persists, so a
+navigation does none of what a full page load does for free: focus is not reset,
+and `document.title` changes with nothing to speak it. That is a WCAG 2.1 **4.1.3
+Status Messages (AA)** gap, and it is handled centrally (#70):
+
+| Piece | Where |
+| --- | --- |
+| One polite live region, rendered once and persisting across navigations | `layouts/LayoutRoot.tsx` — in the ROOT layout, so bare embed routes get it too |
+| `id` + `tabIndex={-1}` on `<main>`, the programmatic focus target | `layouts/LayoutChrome.tsx`, `layouts/LayoutMap.tsx` |
+| The announce-and-focus decision | `lib/route-announcer.ts`, called from `pages/+onPageTransitionEnd.ts` |
+
+Three things not to undo:
+
+- **`tabIndex={-1}` on `<main>` is load-bearing**, though it looks like dead
+  markup — it is what makes the element focusable programmatically *without*
+  putting it in the tab order. Removing it silently ends focus management.
+- **The announcer must be created once and left in the DOM**, empty. A live
+  region only announces content inserted into a region the screen reader was
+  already observing, so one mounted at the same moment as its text says nothing.
+- **A back/forward navigation announces but does NOT move focus.** The browser
+  restores the previous scroll position there, and focusing `<main>` would scroll
+  to the top and lose the reader's place.
+
+A component needing to announce something of its own (a form result, a loading
+state) still uses its own region — see `FormBuilder`. This one is for navigation.
+
 ## Common Components Reference
 
 This project has specific patterns for frequently-used components. Always use these correctly:
