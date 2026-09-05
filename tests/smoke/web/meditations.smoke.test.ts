@@ -1,13 +1,16 @@
 /**
- * Smoke specs for the meditation routes against the deployed Cloudflare preview.
+ * Smoke specs for the meditation routes, against the deployed Cloudflare
+ * preview.
  *
- * Targets a real meditation id — discovered from the production CMS when the
- * SAHAJCLOUD_API_KEY secret is set, otherwise crawled from the homepage links.
- * Skips cleanly when no id is discoverable (e.g. forked PR without the secret
- * and no meditation linked from home) rather than failing.
+ * Targets a real meditation id. This is discovered from the production
+ * CMS when the SAHAJCLOUD_API_KEY secret is set, otherwise crawled from
+ * the homepage links. Skips cleanly when no id is discoverable (for
+ * example, a forked PR without the secret and no meditation linked from
+ * home), instead of failing.
  *
- * Note: this only verifies the server *renders* the page. Audio/video playback
- * is client-side and out of scope for fetch smoke (see issue comments on #26).
+ * Note: this only verifies that the server renders the page. Audio and
+ * video playback are client-side, and out of scope for fetch smoke (see
+ * issue comments on #26).
  */
 import { describe, it } from 'vitest'
 import {

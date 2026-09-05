@@ -80,11 +80,12 @@ export function ContentGrid({
     : 'pl-4 sm:pl-5 lg:pl-6' // 16px, 20px, 24px
 
   return (
-    // The Masonry must FILL this wrapper, not be a shrink-to-fit flex child:
-    // react-masonry-css sizes each column to 100%/columns, so a content-collapsed
-    // container makes columns (and their cards) collapse to the cards' min-content
-    // (e.g. the title). A plain block wrapper + w-full Masonry keeps columns at a
-    // consistent fraction of the available width regardless of item count.
+    // The Masonry must fill this wrapper, not act as a shrink-to-fit flex
+    // child: react-masonry-css sizes each column to 100%/columns, so a
+    // content-collapsed container makes its columns, and their cards,
+    // collapse to the cards' min-content, for example the title. A plain
+    // block wrapper, with w-full Masonry, keeps columns at a consistent
+    // fraction of the available width, regardless of item count.
     <div className={`w-full ${className}`} {...props}>
       <Masonry
         breakpointCols={breakpointCols}

@@ -64,9 +64,9 @@ describe('announceRouteChange', () => {
   })
 
   it('does not throw when either element is missing', () => {
-    // The ids are shared constants precisely so this cannot happen, but the
-    // failure mode if one ever drifts is a silent null — never a crash that
-    // takes the navigation down with it.
+    // The IDs are shared constants, precisely so this cannot happen. But
+    // the failure mode if one ever drifts is a silent null, never a
+    // crash that takes the navigation down with it.
     const noAnnouncer = stubDocument('X', { withAnnouncer: false })
     expect(() => announceRouteChange(noAnnouncer.doc, { isBackwardNavigation: false })).not.toThrow()
     expect(noAnnouncer.main.focus).toHaveBeenCalledOnce()

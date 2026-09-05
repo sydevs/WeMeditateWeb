@@ -1,14 +1,14 @@
 /**
- * MeditationTemplate - Template for rendering meditation content
+ * MeditationTemplate renders meditation content.
  *
- * This template is used by both regular meditation pages and preview pages to ensure
- * consistent meditation rendering. Following Atomic Design, templates represent
- * page layout structures.
+ * Both regular meditation pages and preview pages use this template, to
+ * keep meditation rendering consistent. Following Atomic Design, templates
+ * represent page layout structures.
  *
  * This template wraps the MeditationPlayer organism and handles:
  * - Frame JSON parsing with error handling
- * - Fallback to thumbnail when frames unavailable
- * - Validation of required fields (audio URL)
+ * - A fallback to the thumbnail when frames are unavailable
+ * - Validation of required fields (the audio URL)
  *
  * @example
  * <MeditationTemplate meditation={meditationData} />

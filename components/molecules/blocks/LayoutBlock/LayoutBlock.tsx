@@ -64,8 +64,8 @@ function LayoutCard({ item, orientation }: { item: LayoutItem; orientation: 'gri
 
 /**
  * Renders the `layout` block in one of five styles. `accordion` and `tabs`
- * reuse the Accordion / ColumnCarousel molecules; `grid`/`list`/`textList`
- * render with the LayoutCard subcomponent and simple lists.
+ * reuse the Accordion and ColumnCarousel molecules. `grid`, `list`, and
+ * `textList` render with the LayoutCard subcomponent and simple lists.
  */
 export function LayoutBlock({
   style,

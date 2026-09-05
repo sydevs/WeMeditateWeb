@@ -52,9 +52,10 @@ const VARIANT_STYLES: Record<AlertVariant, { container: string; icon: HeroIcon }
 /**
  * Alert displays a contextual message with a semantic icon and color.
  *
- * Combines the Icon atom with a message (and optional title / dismiss button)
- * into a single inline notice. Presentational only — dismissal is delegated to
- * the caller via `onDismiss`, so the component stays SSR-safe and stateless.
+ * It combines the Icon atom with a message, and an optional title or
+ * dismiss button, into a single inline notice. This is presentational
+ * only: it delegates dismissal to the caller through `onDismiss`, so the
+ * component stays SSR-safe and stateless.
  *
  * @example
  * <Alert variant="warning" title="Heads up">Something needs attention.</Alert>

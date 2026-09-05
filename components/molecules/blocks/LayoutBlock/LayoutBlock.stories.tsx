@@ -51,9 +51,9 @@ const cards: LayoutItem[] = [
 ]
 
 /**
- * LayoutBlock renders the `layout` block in one of five styles. `accordion` and
- * `tabs` reuse the Accordion / ColumnCarousel molecules; `grid`/`list`/`textList`
- * render with a card subcomponent and simple lists.
+ * LayoutBlock renders the `layout` block in one of five styles. `accordion`
+ * and `tabs` reuse the Accordion and ColumnCarousel molecules. `grid`,
+ * `list`, and `textList` render with a card subcomponent and simple lists.
  */
 export const Default: Story = () => (
   <StoryWrapper>

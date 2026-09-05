@@ -1,10 +1,11 @@
 /**
- * Shared types for preview routes
+ * Shared types for preview routes.
  *
- * This module provides common types used by both /preview and /preview/embed routes.
+ * This module provides common types for both /preview and /preview/embed
+ * routes.
  *
- * NOTE: This file should NOT import from server modules (cms-client, etc.)
- * to avoid bundling server code in client bundles.
+ * Note: This file should not import from server modules (cms-client, and
+ * others), to avoid bundling server code in client bundles.
  */
 
 import type {
@@ -18,10 +19,11 @@ import type {
 export type CollectionType = 'pages' | 'meditations' | 'lectures'
 
 /**
- * Base preview data (without settings) - used by embed route.
+ * Base preview data (without settings). Used by the embed route.
  *
- * Note: lectures carry the raw `Lecture` (not a normalized ResolvedLecture);
- * LecturePreview normalizes it client-side after each live-preview update.
+ * Note: lectures carry the raw `Lecture`, not a normalized
+ * ResolvedLecture. LecturePreview normalizes it client-side after each
+ * live-preview update.
  */
 export type BasePreviewData =
   | {
@@ -42,7 +44,7 @@ export type BasePreviewData =
     }
 
 /**
- * Full preview data with settings - used by the chromed /preview route (LayoutChrome)
+ * Full preview data, with settings. Used by the chromed /preview route (LayoutChrome).
  */
 export type FullPreviewData =
   | {

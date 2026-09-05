@@ -92,10 +92,10 @@ describe('<Image> forceAspectRatio', () => {
       <Image alt="test" aspectRatio="video" forceAspectRatio={false} src={CF_URL} />,
     )
 
-    // The optimized variant + responsive srcSet are still emitted...
+    // The optimized variant and responsive srcSet still emit.
     expect(html).toContain(`src="${CF_URL}video-800"`)
     expect(html).toContain('video-1536 1536w')
-    // ...but no fixed-ratio box, and the <img> is not absolutely positioned to fill one.
+    // There is no fixed-ratio box, and the <img> is not absolutely positioned to fill one.
     expect(html).not.toContain('aspect-video')
     expect(html).not.toContain('w-full h-full')
   })

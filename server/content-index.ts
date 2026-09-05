@@ -1,16 +1,18 @@
 /**
  * Server-side pre-resolution for `content-index` blocks.
  *
- * A `content-index` block carries a CMS-computed virtual `apiEndpoint` (path +
- * filters + limit) describing the live list it should show. The endpoint can't
- * be fetched verbatim by an API client — collection reads require a `select`,
- * and the lectures `/for-audience` endpoint needs runtime audience context — so
- * here we take the computed endpoint, append the `select`/`locale`/`depth` the
- * backend requires, fetch it (cached), and attach the resulting cards to the
- * block so the renderer can display them synchronously during SSR.
+ * A `content-index` block carries a CMS-computed virtual `apiEndpoint`
+ * (path, filters, and limit) that describes the live list it should show.
+ * An API client cannot fetch that endpoint as-is: a collection read
+ * requires `select`, and the lectures `/for-audience` endpoint needs
+ * runtime audience context. So this module takes the computed endpoint,
+ * appends the `select`, `locale`, and `depth` the backend requires,
+ * fetches it (cached), and attaches the resulting cards to the block. The
+ * renderer can then display them synchronously during SSR.
  *
- * Anything we can't resolve (lectures without audiences, a failed fetch)
- * degrades to an empty list — the block renders nothing rather than breaking.
+ * Anything this module cannot resolve (lectures with no audiences, a
+ * failed fetch) degrades to an empty list. The block then renders nothing,
+ * instead of breaking the page.
  */
 
 import * as Sentry from '@sentry/react'
@@ -30,11 +32,12 @@ import { audienceIdList } from './cms-client'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
 /**
- * Per-type query fragments appended to the CMS-computed endpoint:
- * - `select` is mandatory — the backend rejects API-client reads without it.
- * - `populate` returns the fields of related docs a card/track needs (song
- *   album credit + artwork + tags, lecture user-choice titles).
- * - `depth` reaches those relations (songs need 2 for album → artwork).
+ * Per-type query fragments, appended to the CMS-computed endpoint:
+ * - `select` is mandatory. The backend rejects an API-client read without it.
+ * - `populate` returns the fields of related docs a card or track needs:
+ *   song album credit, artwork, and tags, or lecture user-choice titles.
+ * - `depth` reaches those relations (songs need depth 2, for album to
+ *   artwork).
  */
 const QUERY_BY_TYPE: Record<
   ContentIndexBlockFields['type'],
@@ -44,12 +47,13 @@ const QUERY_BY_TYPE: Record<
     select: 'select[title]=true&select[slug]=true&select[meta]=true&select[tags]=true',
     depth: 1,
   },
-  // A `meditations` block resolves to user-choice *categories* (a duration/mood
-  // picker), not meditation docs. Select each category's title (the filter-pill
-  // label) and its four time-of-day meditation slots, then populate those
-  // meditations (title/label/thumbnail/duration) and their thumbnail images
-  // (url needs `filename` — the upload virtual gotcha). depth=2 reaches
-  // category → meditation → image. See `meditationCardsFromUserChoices`.
+  // A `meditations` block resolves to user-choice categories (a
+  // duration/mood picker), not meditation docs. Select each category's
+  // title (the filter-pill label) and its four time-of-day meditation
+  // slots. Then populate those meditations (title, label, thumbnail,
+  // duration) and their thumbnail images. `url` needs `filename` too: the
+  // upload virtual-field gotcha. depth 2 reaches category, then meditation,
+  // then image. See `meditationCardsFromUserChoices`.
   meditations: {
     select:
       'select[title]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true&select[nightMeditation]=true',
@@ -63,11 +67,12 @@ const QUERY_BY_TYPE: Record<
     depth: 1,
   },
   songs: {
-    // A Song is an upload: `url`/`thumbnailURL` are virtual fields the upload
-    // afterRead hook derives from `filename`, so `filename` MUST be selected or
-    // they come back null — dropping every track (empty MusicLibrary). Same for
-    // related image uploads: `populate[images][filename]` lets the album
-    // artwork's url compute (url-only populate would return null).
+    // A Song is an upload. `url` and `thumbnailURL` are virtual fields the
+    // upload afterRead hook derives from `filename`. Select `filename`, or
+    // both fields return null and every track drops (an empty
+    // MusicLibrary). The same applies to related image uploads:
+    // `populate[images][filename]` lets the album artwork's url compute. A
+    // url-only populate returns null.
     select:
       'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true&select[filename]=true',
     populate:
@@ -86,10 +91,11 @@ interface ResolveOptions {
 }
 
 /**
- * Drop every `key=…` param from a path+query string. The CMS-computed endpoint
- * sometimes bakes in its own `depth` (e.g. the meditations user-choices feed);
- * our per-type `depth` must be the only one, since duplicate `depth` params
- * parse to an array and the backend 400s ("populate required when depth > 1").
+ * Drops every `key=…` param from a path-and-query string. The
+ * CMS-computed endpoint sometimes bakes in its own `depth` (for example,
+ * the meditations user-choices feed). The per-type `depth` here must be
+ * the only one: a duplicate `depth` param parses to an array, and the
+ * backend then 400s ("populate required when depth > 1").
  */
 function stripQueryParam(endpoint: string, key: string): string {
   const [path, query = ''] = endpoint.split('?')
@@ -99,14 +105,16 @@ function stripQueryParam(endpoint: string, key: string): string {
 }
 
 /**
- * Cache key for a content-index resolve. Audience ids are folded in for lectures
- * so a WmWebConfig audience change doesn't serve a stale `/for-audience` list.
+ * Cache key for a content-index resolve. Audience IDs are folded in for
+ * lectures, so a WmWebConfig audience change cannot serve a stale
+ * `/for-audience` list.
  */
 function contentIndexCacheKey(fields: ContentIndexBlockFields, options: ResolveOptions): string {
   return generateCacheKey('content-index', {
     endpoint: fields.apiEndpoint ?? undefined,
-    // Fold in the type so two blocks sharing an endpoint+locale can't collide
-    // and return the wrong shape from cache (a songs Track[] vs a card list).
+    // Fold in the type, so two blocks that share an endpoint and locale
+    // cannot collide and return the wrong shape from cache (a songs
+    // Track[] vs a card list).
     type: fields.type,
     locale: options.locale,
     audiences: fields.type === 'lectures' ? audienceIdList(options.audiences) : undefined,
@@ -114,10 +122,10 @@ function contentIndexCacheKey(fields: ContentIndexBlockFields, options: ResolveO
 }
 
 /**
- * Fetch the live list for a content-index block and return its raw docs, capped
- * at the block `limit`. Degrades to `[]` — warning to Sentry — on any non-200,
- * fetch error, or (for lectures) missing audience context. Shared by the card
- * and track resolvers.
+ * Gets the live list for a content-index block, and returns its raw docs,
+ * capped at the block `limit`. Degrades to `[]`, with a Sentry warning, on
+ * any non-200, fetch error, or (for lectures) missing audience context.
+ * Shared by the card and track resolvers.
  */
 async function fetchContentIndexDocs(
   fields: ContentIndexBlockFields,
@@ -128,8 +136,9 @@ async function fetchContentIndexDocs(
   if (!apiEndpoint) {
     return []
   }
-  // Lectures resolve via the /for-audience feed keyed on the site's fixed
-  // audiences; with none configured the block degrades to empty (not an error).
+  // Lectures resolve through the /for-audience feed, keyed on the site's
+  // fixed audiences. With none configured, the block degrades to empty.
+  // This is not an error.
   const audiences = type === 'lectures' ? audienceIdList(options.audiences) : []
 
   if (type === 'lectures' && audiences.length === 0) {
@@ -176,10 +185,10 @@ async function fetchContentIndexDocs(
 }
 
 /**
- * Fetch a content-index block's list (cached) and run `transform` over the raw
- * docs. A `transform` (not a per-doc mapper) because the meditations type is
- * 1-doc→many-cards (a user-choice category expands into its meditations), while
- * cards/tracks are 1:1.
+ * Gets a content-index block's list (cached), and runs `transform` over
+ * the raw docs. This takes a `transform`, not a per-doc mapper, because the
+ * meditations type maps one doc to many cards (a user-choice category
+ * expands into its meditations), while cards and tracks map one to one.
  */
 async function resolveContentIndex<T>(
   fields: ContentIndexBlockFields,
@@ -198,13 +207,13 @@ async function resolveContentIndex<T>(
   })
 }
 
-/** Fetch and map a content-index block's list to cards (pages/lectures/meditations). */
+/** Gets and maps a content-index block's list to cards (pages, lectures, meditations). */
 export function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
-  // Meditations resolve to user-choice categories and flatten into a deduped,
-  // facet-tagged grid; pages/lectures map one card per doc.
+  // Meditations resolve to user-choice categories, then flatten into a
+  // deduped, facet-tagged grid. Pages and lectures map one card per doc.
   const transform =
     fields.type === 'meditations'
       ? meditationCardsFromUserChoices
@@ -216,7 +225,7 @@ export function resolveContentIndexItems(
   return resolveContentIndex(fields, options, transform)
 }
 
-/** Fetch and map a `songs` content-index block's list to playable tracks. */
+/** Gets and maps a `songs` content-index block's list to playable tracks. */
 export function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
@@ -247,8 +256,8 @@ function collectContentIndexBlocks(node: unknown, out: ContentIndexBlockFields[]
   }
 }
 
-/** Short-circuiting check for at least one `content-index` block (avoids
- * cloning content that has none — the common case). */
+/** Checks for at least one `content-index` block, and stops at the first
+ * match. Avoids cloning content that has none, the common case. */
 function hasContentIndexBlock(node: unknown): boolean {
   if (Array.isArray(node)) {
     return node.some(hasContentIndexBlock)
@@ -267,10 +276,11 @@ function hasContentIndexBlock(node: unknown): boolean {
 }
 
 /**
- * Walk a page's lexical `content`, resolve every `content-index` block's list,
- * and return content with `resolvedItems` attached. The input is left
- * untouched (the cached page object is never mutated); a structural clone is
- * returned only when there is at least one content-index block to resolve.
+ * Walks a page's lexical `content`, resolves every `content-index` block's
+ * list, and returns content with `resolvedItems` attached. The input stays
+ * untouched: this function never mutates the cached page object. It
+ * returns a structural clone only when there is at least one
+ * content-index block to resolve.
  */
 export async function resolveContentIndexBlocks<T>(
   content: T,
@@ -279,8 +289,8 @@ export async function resolveContentIndexBlocks<T>(
   if (!content || typeof content !== 'object' || !hasContentIndexBlock(content)) {
     return content
   }
-  // Clone so the (cached) input is never mutated; only reached when there is at
-  // least one content-index block to resolve.
+  // Clone so the cached input is never mutated. Reached only when there is
+  // at least one content-index block to resolve.
   const cloned = structuredClone(content)
   const targets: ContentIndexBlockFields[] = []
 
@@ -288,8 +298,8 @@ export async function resolveContentIndexBlocks<T>(
 
   await Promise.all(
     targets.map(async (fields) => {
-      // Songs feed the MusicLibrary organism (tracks + playback); every other
-      // type feeds a card grid.
+      // Songs feed the MusicLibrary organism (tracks and playback). Every
+      // other type feeds a card grid.
       if (fields.type === 'songs') {
         fields.resolvedTracks = await resolveContentIndexTracks(fields, options)
       } else {

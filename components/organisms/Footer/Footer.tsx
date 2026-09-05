@@ -49,7 +49,7 @@ export interface FooterProps {
  *
  * Features:
  * - Decorative floral divider at top
- * - 4-column grid on desktop (hero links, 2 link sections, social + language)
+ * - 4-column grid on desktop (hero links, 2 link sections, social and language)
  * - 2x2 grid on tablet
  * - Stacked vertically on mobile
  * - Copyright bar at bottom

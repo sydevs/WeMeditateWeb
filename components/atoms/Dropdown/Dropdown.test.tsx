@@ -32,7 +32,7 @@ describe('Dropdown', () => {
       </Dropdown>,
     )
 
-    // The inner control owns focus in this mode; the wrapper stays transparent.
+    // The inner control owns focus in this mode. The wrapper stays transparent.
     expect(html).not.toContain('role="button"')
     expect(html).not.toContain('tabindex="0"')
     expect(html).toContain('aria-label="Search"')

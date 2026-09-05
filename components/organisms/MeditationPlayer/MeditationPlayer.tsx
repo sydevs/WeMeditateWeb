@@ -32,7 +32,7 @@ export type { Track } from '../../molecules/AudioPlayer/types'
 const PROGRESS_RADIUS = 48
 const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 
-// Default background-music level — sits clearly under the guided voice (~1.0).
+// Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
 
 // Placeholder image for when no frames are available (teal gradient)
@@ -73,7 +73,7 @@ export interface MeditationFrame {
     type: 'image' | 'video'
     src: string
     /**
-     * Optional fallback source (e.g., MP4) when primary HLS source isn't supported.
+     * Optional fallback source, for example MP4, for when the browser does not support the primary HLS source.
      */
     fallbackSrc?: string
     /**
@@ -97,63 +97,65 @@ export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'titl
    */
   frames: MeditationFrame[]
   /**
-   * Background-music tracks layered under the guided voice. One is auto-selected
-   * (with a shuffle control to switch). When empty, the player is voice-only and
-   * the Music slider / shuffle button are hidden.
+   * Background-music tracks layered under the guided voice. The player picks
+   * one automatically, with a shuffle control to switch. When this list is
+   * empty, the player is voice-only, and it hides the Music slider and the
+   * shuffle button.
    * @default []
    */
   musicTracks?: MeditationSong[]
   /**
-   * Optional upsell message variant
-   * - 'web': Link to more meditations on wemeditate.com
-   * - 'app': Link to interactive meditations in the free app
-   * - undefined: No upsell shown
+   * Optional upsell message variant.
+   * - 'web': link to more meditations on wemeditate.com
+   * - 'app': link to interactive meditations in the free app
+   * - undefined: no upsell shown
    */
   upsell?: 'web' | 'app'
   /**
-   * Callback when playback starts
+   * Callback that fires when playback starts.
    */
   onPlay?: () => void
   /**
-   * Callback when playback pauses
+   * Callback that fires when playback pauses.
    */
   onPause?: () => void
   /**
-   * Callback fired every 100ms during playback with current time in seconds
-   * Also fired on play, pause, and seek events
+   * Callback that fires every 100ms during playback, with the current time
+   * in seconds. It also fires on play, pause, and seek events.
    */
   onPlaybackTimeUpdate?: (currentTime: number) => void
   /**
-   * How to display time: 'countdown' shows remaining time, 'elapsed' shows current position
+   * How to display time. 'countdown' shows the remaining time. 'elapsed' shows the current position.
    * @default 'countdown'
    */
   timeDisplay?: 'countdown' | 'elapsed'
   /**
-   * External seek command. When provided, the player will seek to the specified timestamp.
-   * Uses { timestamp, id } format so each command is unique, allowing repeated seeks to the same position.
+   * External seek command. When set, the player seeks to the given
+   * timestamp. The { timestamp, id } shape keeps each command unique, so a
+   * repeated seek to the same position still fires.
    */
   seekTo?: { timestamp: number; id: number } | null
 }
 
 interface VolumeRowProps {
-  /** Visible label (e.g. "Voice", "Music"); also drives the control aria-labels. */
+  /** Visible label, for example "Voice" or "Music". Also names the control aria-labels. */
   label: string
-  /** Optional secondary text shown next to the label (e.g. the music track title). */
+  /** Optional secondary text next to the label, for example the music track title. */
   sublabel?: string
-  /** Current volume 0–1. */
+  /** Current volume, 0 to 1. */
   volume: number
-  /** Whether this channel is muted (slider reads 0 while muted). */
+  /** Whether this channel is muted. The slider reads 0 while muted. */
   muted: boolean
   onVolumeChange: (volume: number) => void
   onToggleMute: () => void
-  /** Optional trailing control (e.g. the music shuffle button). */
+  /** Optional trailing control, for example the music shuffle button. */
   action?: ReactNode
 }
 
 /**
- * One labeled volume channel inside the audio popover: a mute toggle, a slider,
- * and an optional trailing action. Used for both the Voice and Music channels so
- * the two stay visually consistent and independently mutable.
+ * One labeled volume channel inside the audio popover: a mute toggle, a
+ * slider, and an optional trailing action. The Voice and Music channels both
+ * use this, so they stay visually consistent and mute independently.
  */
 function VolumeRow({
   label,
@@ -199,18 +201,18 @@ function VolumeRow({
 }
 
 interface AudioControlsProps {
-  /** Guided-voice volume (0–1) and mute state, plus their setters. */
+  /** Guided-voice volume (0 to 1) and mute state, plus their setters. */
   voiceVolume: number
   voiceMuted: boolean
   onVoiceVolumeChange: (volume: number) => void
   onToggleVoiceMute: () => void
-  /** Whether any background music is available — gates the Music row entirely. */
+  /** Whether background music is available. This gates the whole Music row. */
   hasMusic: boolean
   musicVolume: number
   musicMuted: boolean
-  /** Title of the currently selected music track (shown beside the Music label). */
+  /** Title of the current music track, shown beside the Music label. */
   musicTrackTitle?: string
-  /** Whether shuffle is offered (only when more than one track exists). */
+  /** Whether to offer shuffle. True only when more than one track exists. */
   canShuffle: boolean
   onMusicVolumeChange: (volume: number) => void
   onToggleMusicMute: () => void
@@ -218,11 +220,11 @@ interface AudioControlsProps {
 }
 
 /**
- * Speaker button that opens a popover (above and centered on the trigger via the
- * shared Dropdown atom, which keeps it on-screen near viewport edges) holding
- * independent Voice and Music volume sliders — each with its own mute toggle —
- * and a shuffle button for the music track. The Music row is hidden when no
- * songs are available; the speaker icon reflects the voice mute state.
+ * A speaker button that opens a popover with independent Voice and Music
+ * volume sliders, each with its own mute toggle, plus a shuffle button for
+ * the music track. The shared Dropdown atom centers the popover above the
+ * trigger and keeps it on screen near viewport edges. The Music row hides
+ * when no songs are available. The speaker icon reflects the voice mute state.
  */
 function AudioControls({
   voiceVolume,
@@ -251,7 +253,7 @@ function AudioControls({
           size="lg"
           variant="ghost"
           // The Dropdown wrapper is the focusable trigger (role=button,
-          // aria-expanded); keep this inner button out of the tab order.
+          // aria-expanded). Keep this inner button out of the tab order.
           tabIndex={-1}
         />
       }
@@ -294,14 +296,13 @@ function AudioControls({
 }
 
 /**
- * MeditationPlayer component for playing guided meditations with dynamic visuals.
- * Features a circular player with radial progress, draggable seeking, and frame-based media.
+ * MeditationPlayer plays guided meditations with dynamic visuals. It has a
+ * circular player with radial progress, draggable seeking, and frame-based
+ * media, built on react-use-audio-player (Howler.js) for cross-browser audio.
  *
- * Built on react-use-audio-player (Howler.js) for reliable cross-browser audio.
- *
- * Supports responsive layouts:
- * - Narrow: Vertical stacked layout
- * - Wide: Three-column horizontal layout with centered player
+ * The layout is responsive:
+ * - Narrow: a vertical, stacked layout
+ * - Wide: a three-column horizontal layout with the player centered
  *
  * @example
  * // Basic usage
@@ -352,14 +353,15 @@ function MeditationPlayerInner({
   className = '',
   ...props
 }: MeditationPlayerProps) {
-  // react-use-audio-player caches Howl instances in a module-global map keyed by
-  // `src`, so multiple players on one page sharing a track URL (e.g. the Ladle
-  // story) would drive a single shared audio instance — pressing play on one
-  // plays them all, and unmounting one unloads the others. Give each player
-  // instance a unique audio URL via an ignored query param so every player owns
-  // an isolated Howl. The CMS server ignores the extra param; Howler strips the
-  // query before codec detection, so playback is unaffected. In production there
-  // is only ever one player per page, so this adds no real cost there.
+  // react-use-audio-player caches Howl instances in a module-global map,
+  // keyed by `src`. So multiple players on one page that share a track URL,
+  // for example the Ladle story, would drive one shared audio instance:
+  // pressing play on one would play them all, and unmounting one would
+  // unload the others. Give each player instance a unique audio URL, with an
+  // ignored query parameter, so every player owns an isolated Howl instance.
+  // The CMS server ignores the extra parameter. Howler strips the query
+  // string before codec detection, so playback is not affected. Production
+  // has only one player per page, so this adds no real cost there.
   const instanceId = useId()
   const isolatedTrackUrl = useMemo(() => {
     if (!track.url) return track.url
@@ -368,7 +370,7 @@ function MeditationPlayerInner({
     return `${track.url}${separator}__player=${encodeURIComponent(instanceId)}`
   }, [track.url, instanceId])
 
-  // Core audio player hook (handles time polling, seek callbacks, track loading)
+  // Core audio-player hook. It handles time polling, seek callbacks, and track loading.
   const [state, controls] = useAudioPlayer({
     url: isolatedTrackUrl,
     onPlay,
@@ -378,30 +380,31 @@ function MeditationPlayerInner({
 
   const effectiveDuration = state.duration > 0 ? state.duration : track.duration
 
-  // --- Background-music layer (optional, mixed under the guided voice) ---
+  // Background-music layer. Optional, and mixed under the guided voice.
   const hasMusic = musicTracks.length > 0
   const [musicIndex, setMusicIndex] = useState(0)
   const [musicVolume, setMusicVolume] = useState(DEFAULT_MUSIC_VOLUME)
   const [musicMuted, setMusicMuted] = useState(false)
   const musicRef = useRef<HTMLAudioElement | null>(null)
-  // Clamp the index so a track list that ever shrinks (without the index being
-  // reset yet) can't index past the end and silently drop the music layer.
+  // Clamp the index. If the track list shrinks before the index resets, an
+  // unclamped index would read past the end and silently drop the music layer.
   const safeMusicIndex = hasMusic ? Math.min(musicIndex, musicTracks.length - 1) : 0
   const currentMusicTrack = hasMusic ? musicTracks[safeMusicIndex] : undefined
   const currentMusicUrl = currentMusicTrack?.url
 
-  // On mount, start from a random track. The endpoint already returns songs in
-  // randomized order (so SSR's docs[0] is itself random per cache window); this
-  // adds per-load variety on the client with no SSR/hydration mismatch, and runs
-  // before playback so the source swap is inaudible.
+  // On mount, start from a random track. The endpoint already returns songs
+  // in random order, so SSR's docs[0] is itself random per cache window.
+  // This adds variety on each client load with no SSR/hydration mismatch. It
+  // also runs before playback starts, so the source swap is inaudible.
   useEffect(() => {
     if (musicTracks.length > 1) {
       setMusicIndex(pickRandomIndex(musicTracks.length))
     }
   }, [musicTracks])
 
-  // Tie the music layer's play/pause to the meditation's. Re-runs when the track
-  // changes (shuffle) so the new source resumes if the meditation is playing.
+  // Tie the music layer's play and pause state to the meditation's. This
+  // effect reruns when the track changes on shuffle, so the new source
+  // resumes if the meditation is playing.
   useEffect(() => {
     const el = musicRef.current
 
@@ -418,9 +421,10 @@ function MeditationPlayerInner({
     }
   }, [state.isPlaying, hasMusic, currentMusicUrl])
 
-  // Keep the music element's volume/mute in sync, independent of the voice track.
-  // No need to react to the track URL: an <audio> element preserves its volume
-  // and muted properties across a src swap, so this stays correct after a shuffle.
+  // Keep the music element's volume and mute in sync, independent of the
+  // voice track. This does not need to react to the track URL: an <audio>
+  // element keeps its volume and muted properties across a src swap, so it
+  // stays correct after a shuffle.
   useEffect(() => {
     const el = musicRef.current
 
@@ -430,8 +434,9 @@ function MeditationPlayerInner({
     el.muted = musicMuted
   }, [musicVolume, musicMuted])
 
-  // Shuffle to a different random track (no immediate repeat); playback continues
-  // seamlessly via the sync effect above when the source changes.
+  // Shuffle to a different random track, never an immediate repeat.
+  // Playback continues without a gap, through the sync effect above, when
+  // the source changes.
   const handleShuffle = useCallback(() => {
     setMusicIndex((current) => pickNextRandomIndex(musicTracks.length, current))
   }, [musicTracks.length])
@@ -441,7 +446,7 @@ function MeditationPlayerInner({
   const lastFrameKeyRef = useRef<string | null>(null)
   const pendingSeekRef = useRef<number | null>(null)
 
-  // Seek handler wrapped in useCallback for stable reference in useCircularProgress
+  // Seek handler, wrapped in useCallback for a stable reference in useCircularProgress.
   const handleSeek = useCallback(
     (time: number) => {
       controls.seek(time)
@@ -453,15 +458,16 @@ function MeditationPlayerInner({
     controls.seek(timestamp)
   })
 
-  // Handle external seek commands (e.g., from postMessage in preview mode)
-  // Depends on entire seekTo object so it fires when id changes (even for same timestamp)
+  // Handle external seek commands, for example from postMessage in preview
+  // mode. This depends on the whole seekTo object, so it fires when id
+  // changes, even for the same timestamp.
   useEffect(() => {
     if (seekTo) {
       applyExternalSeek(seekTo.timestamp)
     }
   }, [seekTo?.id])
 
-  // Circular progress hook handles all drag and coordinate calculation logic
+  // The circular-progress hook handles all drag and coordinate calculations.
   const { progressRef, displayTime, isDragging, startDrag } = useCircularProgress({
     currentTime: state.currentTime,
     duration: effectiveDuration,
@@ -470,18 +476,19 @@ function MeditationPlayerInner({
 
   const timeForSync = isDragging ? displayTime : state.currentTime
 
-  // Get current media frame based on display time (memoized to avoid re-sorting on every render)
-  // Uses displayTime so frames update during drag
+  // Get the current media frame from the display time. This is memoized, to
+  // avoid re-sorting frames on every render. It uses displayTime, so frames
+  // update during a drag.
   const currentFrame = useMemo(() => {
-    // Handle empty frames array with placeholder
+    // Handle an empty frames array with a placeholder.
     if (!frames || frames.length === 0) {
       return { timestamp: 0, media: { type: 'image' as const, src: PLACEHOLDER_IMAGE } }
     }
 
-    // Sort frames by timestamp and find the current one
+    // Sort frames by timestamp and find the current one.
     const sortedFrames = [...frames].sort((a, b) => a.timestamp - b.timestamp)
 
-    // Find the last frame whose timestamp is less than or equal to display time
+    // Find the last frame whose timestamp is less than or equal to the display time.
     let currentFrame = sortedFrames[0]
 
     for (const frame of sortedFrames) {
@@ -492,7 +499,7 @@ function MeditationPlayerInner({
       }
     }
 
-    // Fallback to placeholder if frame has no media (defensive handling for incomplete CMS data)
+    // Use the placeholder if the frame has no media. This guards against incomplete CMS data.
     return {
       timestamp: currentFrame.timestamp,
       media: currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE },
@@ -596,11 +603,11 @@ function MeditationPlayerInner({
     }
   }
 
-  // Progress calculations - use displayTime for visual updates during drag
+  // Progress calculations. Use displayTime for visual updates during a drag.
   const progressPercent = effectiveDuration > 0 ? (displayTime / effectiveDuration) * 100 : 0
   const progressAngle = (progressPercent / 100) * 360
 
-  // Draggable handle position (subtract 90 degrees to account for SVG rotation)
+  // Draggable handle position. Subtract 90 degrees because the SVG is rotated.
   const angle = ((progressAngle - 90) * Math.PI) / 180
   const handleX = 50 + PROGRESS_RADIUS * Math.cos(angle)
   const handleY = 50 + PROGRESS_RADIUS * Math.sin(angle)
@@ -788,8 +795,9 @@ function MeditationPlayerInner({
                 musicVolume={musicVolume}
                 voiceMuted={state.isMuted}
                 voiceVolume={state.volume}
-                // Adjusting a channel's volume always unmutes it (idempotent), so
-                // a muted track can be brought back simply by moving its slider.
+                // Moving a channel's slider always unmutes that channel. This is
+                // safe to call repeatedly, so a muted track becomes audible
+                // again just by moving its slider.
                 onMusicVolumeChange={(volume) => {
                   setMusicVolume(volume)
                   setMusicMuted(false)

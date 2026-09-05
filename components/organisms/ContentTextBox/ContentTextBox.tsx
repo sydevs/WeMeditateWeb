@@ -4,7 +4,7 @@ import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**
-   * Main heading/title
+   * Main heading.
    */
   title: string
 
@@ -40,44 +40,44 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   imageAlt: string
 
   /**
-   * Image width in pixels (optional)
-   * When provided with imageHeight, prevents layout shift during loading
+   * Image width in pixels, optional. Together with imageHeight, this prevents layout shift during loading.
    */
   imageWidth?: number
 
   /**
-   * Image height in pixels (optional)
-   * When provided with imageWidth, prevents layout shift during loading
+   * Image height in pixels, optional. Together with imageWidth, this prevents layout shift during loading.
    */
   imageHeight?: number
 
   /**
-   * Nearest configured Cloudflare aspect ratio for the image. When set (and the
-   * `imageSrc` is a Cloudflare URL), an optimized variant + srcset is fetched
-   * instead of the full-resolution original. The image still renders at its
-   * natural ratio (the ratio only selects the variant, not a cropping box).
+   * Nearest configured Cloudflare aspect ratio for the image. When set, and
+   * when `imageSrc` is a Cloudflare URL, the browser fetches an optimized
+   * variant and srcset instead of the full-resolution original. The image
+   * still renders at its natural ratio: the ratio only selects the variant,
+   * not a cropping box.
    */
   imageAspectRatio?: AspectRatio
 
   /**
-   * Text box position relative to image
-   * - left: Text box on left, image on right (max 50% width on desktop)
-   * - right: Text box on right, image on left (max 50% width on desktop)
+   * Text box position, relative to the image.
+   * - left: text box on the left, image on the right (max 50% width on desktop)
+   * - right: text box on the right, image on the left (max 50% width on desktop)
    * @default 'left'
    */
   align?: 'left' | 'right'
 }
 
 /**
- * ContentTextBox displays a white content box with title, optional subtitle,
- * description, and CTA button that overlaps a tall feature image.
+ * ContentTextBox displays a white content box with a title, an optional
+ * subtitle, a description, and a CTA button, overlapping a tall feature image.
  *
- * Based on the `.cb-image-textbox` (left/right) pattern from wemeditate.com.
- * The white box overlays the image on desktop, creating visual depth.
- * Responsive: stacks vertically on mobile, overlapping layout on desktop.
+ * This follows the `.cb-image-textbox` (left or right) pattern from
+ * wemeditate.com. The white box overlays the image on desktop, which
+ * creates visual depth. It is responsive: it stacks vertically on mobile,
+ * with the overlapping layout on desktop.
  *
- * For text-over-image (the CMS `overlay` position) use `ContentOverlay`; for the
- * ornate "Ancient Wisdom" treatment use `OrnateTextBox`.
+ * For text-over-image, the CMS `overlay` position, use `ContentOverlay`.
+ * For the ornate "Ancient Wisdom" treatment, use `OrnateTextBox`.
  *
  * @example
  * <ContentTextBox

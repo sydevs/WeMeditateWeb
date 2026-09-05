@@ -10,102 +10,100 @@ import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /**
-   * Card title (required)
+   * Card title.
    */
   title: string
 
   /**
-   * URL for the content (required for linking)
+   * URL for the content. The title and play button link here.
    */
   href: string
 
   /**
-   * Thumbnail image URL
+   * Thumbnail image URL.
    */
   thumbnailSrc: string
 
   /**
-   * Thumbnail image alt text (defaults to title if not provided)
+   * Thumbnail alt text. Defaults to the title.
    */
   thumbnailAlt?: string
 
   /**
-   * Optional description text
+   * Optional description text.
    */
   description?: string
 
   /**
-   * Aspect ratio for the thumbnail image
+   * Aspect ratio for the thumbnail image.
    * @default 'square'
    */
   aspectRatio?: AspectRatio
 
   /**
-   * Render the thumbnail at a fixed height with its natural width (Tailwind
-   * height classes, e.g. `'h-56 sm:h-64'`) instead of a fixed aspect ratio.
-   * Lets a row of cards share a consistent image height while each image keeps
-   * its own proportions. When set, the card sizes to the image width and
-   * `aspectRatio` is ignored.
+   * Render the thumbnail at a fixed height with its natural width (a
+   * Tailwind height class, for example `'h-56 sm:h-64'`) instead of a fixed aspect
+   * ratio. A row of cards can then share one image height while each image
+   * keeps its own proportions. This ignores `aspectRatio` when set.
    */
   imageHeight?: string
 
   /**
-   * Card variant
-   * - default: Standard card with medium play button, normal title sizing
-   * - hero: Larger card with large play button, bigger/bolder title
+   * Card variant.
+   * - default: standard card, medium play button, normal title size
+   * - hero: larger card, large play button, bigger and bolder title
    * @default 'default'
    */
   variant?: 'default' | 'hero'
 
   /**
-   * Show play button overlay
+   * Show a play button overlay.
    * @default false
    */
   playButton?: boolean
 
   /**
-   * Optional duration in minutes (displays in bottom left corner of thumbnail)
+   * Optional duration in minutes. Shows in the bottom-left corner of the thumbnail.
    */
   durationMinutes?: number
 
   /**
-   * Optional badge text (e.g., category name, displayed next to duration badge)
+   * Optional badge text, for example a category name. Shows next to the duration badge.
    */
   badge?: string
 
   /**
-   * Optional URL for the badge link
+   * Optional URL for the badge link.
    */
   badgeUrl?: string
 
   /**
-   * Locale for the link (defaults to current page locale from context)
+   * Locale for the link. Defaults to the current page locale from context.
    */
   locale?: string
 
   /**
-   * Enable fade-in animation when image loads
+   * Fade the image in when it loads.
    * @default false
    */
   fadeInOnLoad?: boolean
 
   /**
-   * Custom class name for the card container
+   * Custom class name for the card container.
    */
   className?: string
 }
 
 /**
- * ContentCard molecule - displays a content preview with thumbnail, title, and optional description.
- *
- * A simple group of atoms (Image, Link, Button, Text) that work together to preview content.
- * Used for previewing pages, meditations, and other content types.
+ * ContentCard is a molecule. It shows a content preview: a thumbnail, a
+ * title, and an optional description. Use it to preview pages, meditations,
+ * and other content types.
  *
  * Features:
- * - Responsive thumbnail with configurable aspect ratio
- * - Optional play button overlay (for meditations/media)
- * - Title that's bold when no description is present
- * - Accessible with proper ARIA labels and semantic HTML
+ * - Responsive thumbnail with a configurable aspect ratio
+ * - Optional play button overlay, for meditations or other media
+ * - Bold title when no description is present
+ * - Proper ARIA labels and semantic HTML
  * - Locale-aware linking
  *
  * @example
@@ -156,32 +154,27 @@ export function ContentCard({
   className = '',
   ...props
 }: ContentCardProps) {
-  // A card with no loadable image renders a placeholder, not an <img>, so its
-  // onLoad never fires — under fadeInOnLoad that would leave the card stuck at
-  // opacity-0 (invisible). Start "loaded" when there's no image src to wait for.
+  // A card with no loadable image renders a placeholder, not an <img>. Its
+  // onLoad event never fires, so fadeInOnLoad would leave the card stuck at
+  // opacity-0. Start "loaded" when there is no image src to wait for.
   const hasImageSrc = thumbnailSrc.length > 0
   const [imageLoaded, setImageLoaded] = useState(!hasImageSrc)
   const showPlayButton = playButton
   const isHeroVariant = variant === 'hero'
 
-  // Determine play button size based on variant
   const playButtonSize = isHeroVariant ? 'lg' : 'md'
 
-  // Cards fill their column width, unless a fixed image height is requested
-  // (then the card sizes to the image's natural width).
+  // Cards fill their column width. A fixed image height overrides this, so
+  // the card sizes to the image's natural width instead.
   const cardSize = imageHeight ? 'w-auto' : 'w-full'
 
-  // Determine title styling based on variant
-  // Hero variant matches carousel__name with responsive sizing
-  // Default variant uses normal styling
   const titleClasses = isHeroVariant
     ? 'text-xl sm:text-2xl font-semibold'
     : 'text-base sm:text-lg font-normal'
 
-  // Hero variant has larger gap between thumbnail and title (responsive)
+  // The hero variant uses a larger gap between the thumbnail and the title.
   const contentGap = isHeroVariant ? 'gap-6 sm:gap-9' : 'gap-2'
 
-  // Build opacity classes based on fadeInOnLoad prop
   const opacityClasses = fadeInOnLoad
     ? `transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`
     : ''
@@ -204,8 +197,8 @@ export function ContentCard({
             onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
           />
         ) : (
-          // No CMS thumbnail — a branded, non-animated fallback beats a blank
-          // card. Fixed 16:9 box so imageless cards read consistently in the grid.
+          // No CMS thumbnail. Show a branded, non-animated fallback in a
+          // fixed 16:9 box, so imageless cards look consistent in the grid.
           <div className="relative aspect-video overflow-hidden rounded-xs">
             <Placeholder animate={false} variant="primary">
               <Logo className="text-white" size="xl" variant="icon" />
@@ -247,11 +240,10 @@ export function ContentCard({
       </div>
 
       {/* Content section. In fixed-image-height mode the card sizes to the
-          image's natural width, so constrain the text to that width (`w-0
-          min-w-full` contributes 0 to the card's max-content but fills the image
-          width) — otherwise a title wider than the image would stretch the card. */}
+          image's natural width. `w-0 min-w-full` constrains the text to that
+          width, so a wide title cannot stretch the card. */}
       <div className={`flex flex-col ${contentGap} ${imageHeight ? 'w-0 min-w-full' : ''}`}>
-        {/* Title - styling based on variant and description presence */}
+        {/* Title style depends on the variant. */}
         <h3 className={`${titleClasses} wrap-break-word`}>
           <Link
             className={

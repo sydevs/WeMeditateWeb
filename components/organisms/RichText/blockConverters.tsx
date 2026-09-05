@@ -1,12 +1,12 @@
 /**
  * Lexical → React converters for the custom Page blocks embedded in
- * `pages.content`. Wired into the RichText converter map under the `blocks`
- * key, keyed by each block's `blockType` slug.
+ * `pages.content`. These converters wire into RichText's converter map under
+ * the `blocks` key, keyed by each block's `blockType` slug.
  *
- * Each converter reads the (loosely-typed) `node.fields`, casts it to the
- * matching interface from `lib/cms-blocks`, and renders an existing component.
- * Blocks that can't render meaningfully (missing required field, empty
- * relationship) return `null` and degrade silently.
+ * Each converter reads the loosely-typed `node.fields`, casts it to the
+ * matching interface from `lib/cms-blocks`, and renders an existing
+ * component. A block that cannot render meaningfully — a missing required
+ * field, an empty relationship — returns `null` and degrades silently.
  */
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
@@ -49,23 +49,25 @@ import {
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
 
 /**
- * Standard spacing applied to non-typographic blocks (media/sections): a small
+ * Standard spacing for non-typographic blocks (media and sections): a small
  * vertical margin so they read as distinct sections, `mx-auto` so
- * width-constrained blocks (e.g. the quote) stay centered, and `clear-both` so
- * a block never collides with a floated blockquote. Handled here at the organism
- * level rather than per component. Buttons are treated as typographic and
- * intentionally omit it.
+ * width-constrained blocks (for example the quote) stay centered, and
+ * `clear-both` so a block never collides with a floated blockquote. This
+ * spacing lives here, at the organism level, instead of per component.
+ * Buttons count as typographic, so they intentionally omit it.
  */
 export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
 
 /**
- * Width-escaping blocks break out of the article column to span the full content
- * container via the `full-bleed` utility (see layouts/tailwind.css). `clear-both`
- * keeps them clear of floated blockquotes; no `mx-auto` (full-bleed owns the
- * horizontal margins).
+ * Width-escaping blocks break out of the article column to span the full
+ * content container, through the `full-bleed` utility (see
+ * layouts/tailwind.css). `clear-both` keeps them clear of floated
+ * blockquotes. There is no `mx-auto`, because full-bleed owns the horizontal
+ * margins.
  *
- * `FULL_BLEED_BLOCK` (OrnateTextBox, SubtleSystem) keeps vertical block spacing;
- * `FULL_BLEED_SPLASH` drops it so a lead splash sits flush under the overlaid header.
+ * `FULL_BLEED_BLOCK` (OrnateTextBox, SubtleSystem) keeps vertical block
+ * spacing. `FULL_BLEED_SPLASH` drops it, so a lead splash sits flush under
+ * the overlaid header.
  */
 export const FULL_BLEED_BLOCK = 'full-bleed my-6 clear-both'
 export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
@@ -82,7 +84,7 @@ function humanizeSlug(slug: string): string {
 /**
  * Build MusicLibrary filters from the unique song-tag slugs across the tracks.
  * SongTag carries no icon, so every filter uses a single music glyph (the
- * shared MusicLibrary/Playlist API takes a Heroicon per filter).
+ * shared MusicLibrary and Playlist API takes a Heroicon per filter).
  */
 function songMusicFilters(tracks: Track[]): MusicFilter[] {
   const seen = new Set<string>()
@@ -104,7 +106,7 @@ export const blockConverters: BlockConverters = {
   // textbox → one of three organisms by the block's mode:
   //   imagePosition 'overlay'      → ContentOverlay (text over the image)
   //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
-  //   otherwise (left/right)       → ContentTextBox (side box overlapping image)
+  //   otherwise (left or right)    → ContentTextBox (side box overlapping image)
   textbox: ({ node }) => {
     const fields = node.fields as unknown as TextBoxBlockFields
     const img = populatedImage(fields.image)
@@ -119,8 +121,8 @@ export const blockConverters: BlockConverters = {
     const description = fields.text ?? ''
 
     // Overlay: text sits over the image. The CMS `textColor` describes the
-    // *text* (dark/light) while `theme` describes the *background context*
-    // (Splash convention), so they invert: light text → dark theme.
+    // *text* (dark or light), while `theme` describes the *background
+    // context* (Splash convention). So they invert: light text → dark theme.
     if (fields.imagePosition === 'overlay') {
       return (
         <ContentOverlay
@@ -138,8 +140,9 @@ export const blockConverters: BlockConverters = {
       )
     }
 
-    // Side layouts share most props; OrnateTextBox renders the "Ancient Wisdom"
-    // treatment (left-aligned only), ContentTextBox the default white box.
+    // Side layouts share most props. OrnateTextBox renders the "Ancient
+    // Wisdom" treatment, left-aligned only. ContentTextBox renders the
+    // default white box.
     const sideProps = {
       className: BLOCK_SPACING,
       ctaHref,
@@ -159,10 +162,11 @@ export const blockConverters: BlockConverters = {
       // the spread BLOCK_SPACING).
       <OrnateTextBox {...sideProps} className={FULL_BLEED_BLOCK} />
     ) : (
-      // ContentTextBox is wider than the readable body but capped (not full
-      // window): break out of the prose Container with full-bleed, then constrain
-      // to the Container `xl` width (6xl) with gutters. `className=""` drops the
-      // spread BLOCK_SPACING since the wrapper owns spacing/centering.
+      // ContentTextBox is wider than the readable body, but capped, not full
+      // window. This breaks out of the prose Container with full-bleed, then
+      // constrains to the Container `xl` width (6xl) with gutters.
+      // `className=""` drops the spread BLOCK_SPACING, because the wrapper
+      // owns the spacing and centering.
       <div className={FULL_BLEED_BLOCK}>
         <Container maxWidth="xl">
           <ContentTextBox {...sideProps} align={fields.imagePosition} className="" />
@@ -171,7 +175,7 @@ export const blockConverters: BlockConverters = {
     )
   },
 
-  // quote → HeroQuote (supports title + text + credit + caption).
+  // quote → HeroQuote (supports title, text, credit, and caption).
   quote: ({ node }) => {
     const fields = node.fields as unknown as QuoteBlockFields
 
@@ -208,8 +212,9 @@ export const blockConverters: BlockConverters = {
   },
 
   // image-gallery → masonry of Image atoms (a gallery, not link-cards). Each
-  // gallery is its own lightbox group, keyed by the block id, so the overlay's
-  // prev/next navigation and thumbnail strip stay scoped to that gallery.
+  // gallery is its own lightbox group, keyed by the block id, so the
+  // overlay's previous and next navigation and thumbnail strip stay scoped
+  // to that gallery.
   'image-gallery': ({ node }) => {
     const fields = node.fields as unknown as ImageGalleryBlockFields
     const images = galleryImages(fields.items)
@@ -239,7 +244,7 @@ export const blockConverters: BlockConverters = {
     )
   },
 
-  // layout → grid / tabs / accordion / list / textList.
+  // layout → grid, tabs, accordion, list, or textList.
   layout: ({ node }) => {
     const fields = node.fields as unknown as LayoutBlockFields
 
@@ -266,8 +271,8 @@ export const blockConverters: BlockConverters = {
   },
 
   // showcase → carousel of hero cards from the populated relationships.
-  // Unroutable or thumbnail-less refs are dropped by showcaseItems (no
-  // broken/empty cards). `id` is stringified for the article-card HTML id.
+  // showcaseItems drops unroutable or thumbnail-less references, so no card
+  // is broken or empty. `id` is stringified for the article-card HTML id.
   showcase: ({ node }) => {
     const fields = node.fields as unknown as ShowcaseBlockFields
     const items = showcaseItems(fields.items)
@@ -284,8 +289,8 @@ export const blockConverters: BlockConverters = {
     )
   },
 
-  // subtle-system → interactive chart; the 12 page relationships map to SVG
-  // node ids, dropping any unpublished/unroutable page.
+  // subtle-system → interactive chart. The 12 page relationships map to SVG
+  // node ids. This drops any unpublished or unroutable page.
   'subtle-system': ({ node }) => {
     const fields = node.fields as unknown as SubtleSystemBlockFields
     const items = subtleSystemItems(fields)
@@ -297,10 +302,10 @@ export const blockConverters: BlockConverters = {
     return <SubtleSystem className={FULL_BLEED_BLOCK} items={items} />
   },
 
-  // splash → full-bleed Splash. The block's countdown/app/map-search layouts
-  // lack the extra data (target date, store links, search target) to render
-  // their interactive extras, so every layout renders the shared hero with the
-  // available title/subtitle/CTA over the first image.
+  // splash → full-bleed Splash. The block's countdown, app, and map-search
+  // layouts lack the extra data (a target date, store links, a search
+  // target) to render their interactive extras. So every layout renders the
+  // shared hero with the available title, subtitle, and CTA over the first image.
   splash: ({ node }) => {
     const fields = node.fields as unknown as SplashBlockFields
     const bg = populatedImage(fields.images?.[0])
@@ -313,7 +318,7 @@ export const blockConverters: BlockConverters = {
       <Splash
         backgroundImage={bg.url}
         // Full-bleed and flush: a lead splash sits at the top of the page under
-        // the overlaid header (see LayoutChrome / getLeadSplash).
+        // the overlaid header (see LayoutChrome and getLeadSplash).
         className={FULL_BLEED_SPLASH}
         ctaHref={fields.actionURL ?? undefined}
         ctaText={fields.actionText ?? undefined}
@@ -326,10 +331,10 @@ export const blockConverters: BlockConverters = {
 
   // content-index → the live list resolved server-side in `+data` (see
   // server/content-index.ts), dispatched by content type:
-  //   songs                    → MusicLibrary (playback + its own tag filtering)
-  //   pages/lectures/meditations → ContentIndex (filterable card grid with pills)
-  // Meditations resolve to user-choice categories flattened into meditation
-  // cards, with the categories as the filter pills. Empty lists render nothing.
+  //   songs                        → MusicLibrary (playback and its own tag filtering)
+  //   pages, lectures, meditations → ContentIndex (filterable card grid with pills)
+  // Meditations resolve to user-choice categories, flattened into meditation
+  // cards, with the categories as the filter pills. An empty list renders nothing.
   'content-index': ({ node }) => {
     const fields = node.fields as unknown as ContentIndexBlockFields
 
@@ -353,9 +358,9 @@ export const blockConverters: BlockConverters = {
       return null
     }
 
-    // Filterable grid with facet pills. Break out of the prose column to the
-    // wider content Container (xl / 6xl), like ContentTextBox, so the grid has
-    // more room; the full-bleed wrapper owns the vertical spacing.
+    // Filterable grid with facet pills. This breaks out of the prose column
+    // to the wider content Container (xl, 6xl), like ContentTextBox, so the
+    // grid has more room. The full-bleed wrapper owns the vertical spacing.
     return (
       <div className={FULL_BLEED_BLOCK}>
         <Container maxWidth="xl">

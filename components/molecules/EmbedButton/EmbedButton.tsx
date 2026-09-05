@@ -3,7 +3,7 @@ import { usePageContext } from 'vike-react/usePageContext'
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
 
-/** Fixed iframe geometry/permissions for the generated embed snippet. */
+/** Fixed iframe geometry and permissions for the generated embed snippet. */
 const IFRAME_WIDTH = 560
 const IFRAME_HEIGHT = 315
 const IFRAME_ALLOW = 'autoplay; fullscreen; encrypted-media; picture-in-picture'
@@ -11,10 +11,10 @@ const IFRAME_ALLOW = 'autoplay; fullscreen; encrypted-media; picture-in-picture'
 /**
  * Build the ready-to-paste `<iframe>` snippet for an embed path.
  *
- * Locale-prefixes the path the same way `Link` does (non-`en` locales get a
- * `/{locale}` prefix; `en` stays bare), then prepends `origin` so the `src` is
- * absolute. Kept pure and origin-injectable so it is unit-testable and
- * deterministic in stories.
+ * This locale-prefixes the path the same way `Link` does: a non-`en` locale
+ * gets a `/{locale}` prefix, and `en` stays bare. Then it prepends `origin`,
+ * so the `src` is absolute. The function stays pure and origin-injectable,
+ * so it is unit-testable and deterministic in stories.
  */
 export function buildEmbedSnippet(embedPath: string, locale: string, origin: string): string {
   const localePath =
@@ -24,31 +24,32 @@ export function buildEmbedSnippet(embedPath: string, locale: string, origin: str
 }
 
 export interface EmbedButtonProps {
-  /** Locale-agnostic embed path, e.g. `/meditations/123/embed` or `/lectures/456/embed`. */
+  /** Locale-agnostic embed path, for example `/meditations/123/embed` or `/lectures/456/embed`. */
   embedPath: string
   /**
-   * Locale for path prefixing. Falls back to the current page locale, then `en`
-   * — mirroring `Link`.
+   * Locale for path prefixing. This falls back to the current page locale,
+   * then to `en`, mirroring `Link`.
    */
   locale?: string
   /** Content title, used to label the popover. */
   title?: string
   /**
-   * Origin used to build the absolute `src`. Defaults to `window.location.origin`
-   * (the component renders client-only). Override for stories/tests.
+   * Origin used to build the absolute `src`. It defaults to
+   * `window.location.origin`, because the component renders client-only.
+   * Override it for stories or tests.
    */
   origin?: string
   className?: string
 }
 
 /**
- * "Embed" popover: shows a read-only, ready-to-paste `<iframe>` snippet pointing
- * at a content item's embed route, with a Copy action and transient "Copied!"
- * feedback.
+ * An "Embed" popover. It shows a read-only, ready-to-paste `<iframe>`
+ * snippet that points at a content item's embed route, with a Copy action
+ * and transient "Copied!" feedback.
  *
- * Depends on `window` and the Clipboard API, so it is rendered client-only via
- * the `index.tsx` barrel (`ClientOnly` + `React.lazy`) and produces nothing
- * during SSR.
+ * This depends on `window` and the Clipboard API, so it renders client-only
+ * through the `index.tsx` barrel (`ClientOnly` and `React.lazy`), and it
+ * produces nothing during SSR.
  */
 export function EmbedButton({
   embedPath,
@@ -57,8 +58,9 @@ export function EmbedButton({
   origin,
   className = '',
 }: EmbedButtonProps) {
-  // Resolve locale prop → page context → 'en', tolerating environments (Ladle)
-  // that have no page context — same approach as Link.
+  // Resolve locale in this order: the locale prop, then page context, then
+  // 'en'. This tolerates environments, for example Ladle, that have no page
+  // context, the same approach as Link.
   let pageContext
 
   try {
@@ -83,8 +85,8 @@ export function EmbedButton({
         <Button
           icon={CodeBracketIcon}
           size="sm"
-          // The Dropdown wrapper is the keyboard-focusable trigger (role=button,
-          // aria-expanded); keep this inner button out of the tab order.
+          // The Dropdown wrapper is the keyboard-focusable trigger
+          // (role=button, aria-expanded). Keep this inner button out of the tab order.
           tabIndex={-1}
           variant="ghost"
         >

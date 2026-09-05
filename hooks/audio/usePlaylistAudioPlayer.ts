@@ -52,7 +52,7 @@ export function usePlaylistAudioPlayer({
   const [playOrder, setPlayOrder] = useState<number[]>([])
   const [hasEnded, setHasEnded] = useState(false)
 
-  // Ref for tracking if audio was playing before track change (for auto-resume)
+  // Ref that tracks whether audio was playing before a track change (for auto-resume)
   const wasPlayingRef = useRef(false)
 
   const currentTrack = tracks[currentTrackIndex]
@@ -72,7 +72,7 @@ export function usePlaylistAudioPlayer({
     }
   }, [isShuffleOn, tracks.length])
 
-  // Effect Event for handling track end (advances to next track)
+  // Effect Event that handles track end (advances to the next track)
   const handleTrackEnd = useEffectEvent(() => {
     setHasEnded(true)
     const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
@@ -80,7 +80,7 @@ export function usePlaylistAudioPlayer({
     setCurrentTrackIndex(playOrder[nextOrderIndex])
   })
 
-  // Effect Event for loading current track
+  // Effect Event that loads the current track
   const loadCurrentTrack = useEffectEvent(() => {
     if (currentTrack) {
       playerControls.load(currentTrack.url, {

@@ -1,10 +1,11 @@
 /**
- * Lecture Preview Component
+ * Lecture preview component.
  *
- * Preview component for the Lecture content type using PayloadCMS live preview.
- * Live preview delivers a RAW Lecture (full or clip), so this replicates the
- * server-side clip→parent metadata/subtitle merge client-side via resolveLecture
- * — fetching at depth 2 so a clip's `fullLecture` (and its metadata) is populated.
+ * Preview component for the Lecture content type, using PayloadCMS live
+ * preview. Live preview delivers a raw Lecture (full or clip). This
+ * replicates the server-side merge of a clip's metadata and subtitle from
+ * its parent, client-side, with resolveLecture. It fetches at depth 2, so
+ * a clip's `fullLecture` (and its metadata) is populated.
  */
 
 'use client'
@@ -19,9 +20,11 @@ export interface LecturePreviewProps {
   /** Current locale — selects which subtitle track is the default. */
   locale?: string
   /**
-   * Whether the underlying template shows the Embed button — also gates the
-   * client-loaded related-content section, since both are full-chrome features
-   * shown in the full preview but not the bare embed preview. @default true
+   * Whether the underlying template shows the Embed button. This also
+   * gates the client-loaded related-content section, because both are
+   * full-chrome features. They show in the full preview, but not in the
+   * bare embed preview.
+   * @default true
    */
   showEmbedButton?: boolean
 }

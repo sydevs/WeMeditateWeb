@@ -44,14 +44,14 @@ export function filterByFacets(
 
 interface FilterPillsProps {
   facets: Facet[]
-  /** Selected facet ids; empty means "All". */
+  /** Selected facet ids. An empty set means "All". */
   selected: Set<string>
   onToggle: (id: string) => void
   onClear: () => void
 }
 
 /** A toggle pill built on the Button atom (square, primary when active).
- * `min-h-11` keeps the ≥44px touch target the `sm` size alone doesn't guarantee. */
+ * `min-h-11` keeps the touch target at least 44px, which the `sm` size alone does not guarantee. */
 function Pill({
   active,
   onClick,
@@ -76,9 +76,10 @@ function Pill({
 }
 
 /**
- * Filter pill row: an "All" pill plus one toggle per facet. Multi-select with OR
- * semantics; "All" clears the selection. Kept internal — extract a reusable
- * `FilterPills` molecule only when a second consumer appears.
+ * Filter pill row: an "All" pill, plus one toggle per facet. This is
+ * multi-select, with OR semantics. "All" clears the selection. This stays
+ * internal. Extract a reusable `FilterPills` molecule only when a second
+ * consumer appears.
  */
 function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) {
   return (
@@ -100,13 +101,14 @@ function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) 
 }
 
 /**
- * ContentIndex organism — a filterable card grid for `pages` / `lectures`
- * content-index blocks. The full list is resolved server-side (SEO-friendly);
- * the visitor narrows it client-side with multi-select filter pills derived from
- * the items' own tags. Renders as a plain grid when no facets are present.
+ * ContentIndex is a filterable card grid for `pages` or `lectures`
+ * content-index blocks. The server resolves the full list, which keeps it
+ * SEO-friendly. The visitor then narrows it client-side, with multi-select
+ * filter pills derived from the items' own tags. It renders as a plain grid
+ * when no facets are present.
  *
- * SSR renders every card (pure `useState`, no `ClientOnly`); hydration wires up
- * the pill toggles.
+ * SSR renders every card, with a pure `useState` and no `ClientOnly`.
+ * Hydration then wires up the pill toggles.
  */
 export function ContentIndex({ items, className = '' }: ContentIndexProps) {
   const facets = useMemo(() => deriveFacets(items), [items])
@@ -127,9 +129,9 @@ export function ContentIndex({ items, className = '' }: ContentIndexProps) {
 
   const clear = () => setSelected(new Set())
 
-  // Narrow to items whose tags intersect the selection (OR; empty selection
-  // shows everything), then strip `tags` — ContentCard forwards unknown props
-  // to the DOM.
+  // Narrow to items whose tags intersect the selection: this is an OR
+  // match, and an empty selection shows everything. Then strip `tags`,
+  // because ContentCard forwards unknown props to the DOM.
   const gridItems = useMemo(
     () => filterByFacets(items, selected).map(({ tags: _tags, ...card }) => card),
     [items, selected],

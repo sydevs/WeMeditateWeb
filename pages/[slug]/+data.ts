@@ -19,7 +19,7 @@ export interface PageData {
 export async function data(pageContext: PageContextServer): Promise<PageData> {
   const { locale, routeParams } = pageContext
 
-  // Validate slug parameter - returns 404 for invalid slugs
+  // Validate the slug parameter. Return 404 for an invalid slug.
   let slug: string
 
   try {
@@ -51,7 +51,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   ])
 
   if (!page) {
-    // Page not found - this is a valid 404 state, not an error
+    // Page not found. This is a valid 404 state, not an error.
     throw render(404, 'Page not found.')
   }
   // Resolve any content-index blocks' live lists for SSR.

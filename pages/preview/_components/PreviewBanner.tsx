@@ -1,7 +1,8 @@
 /**
- * Preview Banner Component
+ * Preview banner component.
  *
- * Yellow fixed banner indicating live preview mode with collection and locale info.
+ * A yellow, fixed banner that shows live-preview mode, with the
+ * collection and locale.
  */
 
 export interface PreviewBannerProps {

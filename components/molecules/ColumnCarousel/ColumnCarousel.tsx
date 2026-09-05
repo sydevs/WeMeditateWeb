@@ -27,7 +27,7 @@ interface CarouselNavButtonProps {
 }
 
 /**
- * Navigation button for carousel - displays chevron and adjacent column title
+ * Navigation button for the carousel. Displays a chevron and the adjacent column title.
  */
 function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
   const isPrev = direction === 'prev'
@@ -52,7 +52,7 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
 }
 
 /**
- * ColumnCarousel molecule - displays columns in a responsive layout.
+ * ColumnCarousel is a molecule that displays columns in a responsive layout.
  *
  * Responsive behavior based on column count:
  * - Mobile (< 768px): Carousel for 3+ columns, stacked for 1-2 columns

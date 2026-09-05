@@ -1,6 +1,6 @@
 /** @type {import('@ladle/react').UserConfig} */
 export default {
-  // Story patterns - where Ladle should look for stories
+  // Story patterns: where Ladle finds stories
   stories: "components/**/*.stories.{js,jsx,ts,tsx}",
 
   // Port for Ladle dev server
@@ -12,17 +12,17 @@ export default {
   // Enable hot module replacement
   hmr: true,
 
-  // Base path for production builds (if you ever deploy it)
+  // Base path for a production build, if you deploy one
   base: "/",
 
-  // Use Vite config from the project
+  // Use the project's Vite config
   viteConfig: ".ladle/vite.config.ts",
 
   // Disable the dark-mode toggle — the component library is light-theme only
   addons: {
     theme: {
       enabled: false, // removes the dark/light toggle from the toolbar
-      defaultState: "light", // force light theme
+      defaultState: "light", // forces light theme
     },
   },
 };

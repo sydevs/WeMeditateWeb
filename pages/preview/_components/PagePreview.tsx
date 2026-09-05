@@ -1,8 +1,9 @@
 /**
- * Page Preview Component
+ * Page preview component.
  *
- * Preview component for Page content type using PayloadCMS live preview hook.
- * Listens for postMessage events from SahajCloud admin and updates in real-time.
+ * Preview component for the Page content type, using the PayloadCMS live
+ * preview hook. Listens for postMessage events from SahajCloud admin, and
+ * updates in real time.
  */
 
 'use client'

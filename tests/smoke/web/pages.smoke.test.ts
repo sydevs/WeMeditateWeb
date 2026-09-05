@@ -1,15 +1,15 @@
 /**
  * Smoke specs for the WeMeditate web app (Workers preview) page rendering.
  *
- * Verifies the Worker loads real content from the production CMS: the homepage,
- * a real CMS page, a non-English locale homepage, the default-locale canonical
- * redirect, and the 404 path. These are always-present surfaces that should
- * never silently break.
+ * Verifies the Worker loads real content from the production CMS: the
+ * homepage, a real CMS page, a non-English locale homepage, the
+ * default-locale canonical redirect, and the 404 path. These are
+ * always-present surfaces. They should never silently break.
  *
  * Conventions confirmed against the deployed Worker:
- *  - Locale roots have NO trailing slash; "/es/" 301s to "/es".
- *  - The default locale is stripped: "/en" 301s to "/index" (the homepage).
- *  - Unknown paths return a real 404 (the ErrorFallback "Content Not Found" page).
+ *  - A locale root has no trailing slash. "/es/" 301s to "/es".
+ *  - The default locale is stripped. "/en" 301s to "/index" (the homepage).
+ *  - An unknown path returns a real 404 (the ErrorFallback "Content Not Found" page).
  */
 import { describe, it, expect } from 'vitest'
 import {
@@ -27,8 +27,9 @@ describe('web preview pages', () => {
 
     expectRenders(home, '/')
     expectChrome(home, '/')
-    // The layout nav is built from WebConfig page relationships; an under-populated
-    // read renders /undefined hrefs (200 but dead nav). Guard against that.
+    // The layout nav is built from WebConfig page relationships. An
+    // under-populated read renders /undefined hrefs (200 but dead nav).
+    // Guard against that.
     expectNoBrokenLinks(home.html, '/')
   })
 

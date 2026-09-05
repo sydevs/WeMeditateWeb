@@ -64,7 +64,7 @@ describe('<OrnateTextBox>', () => {
   it('renders the title above the body (header precedes the image)', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
 
-    // Title + subtitle appear before the floated image in document order.
+    // Title and subtitle appear before the floated image in document order.
     expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('lg:float-left'))
     expect(html.indexOf('Sub')).toBeLessThan(html.indexOf('lg:float-left'))
   })

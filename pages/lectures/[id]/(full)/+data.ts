@@ -11,10 +11,10 @@ export interface LecturePageData extends LectureData {
  * Fetch the lecture (shared with the embed route) plus the WebConfig that
  * LayoutChrome needs to render the nav, in parallel.
  *
- * Related meditations are NOT fetched here: the ranking endpoint is slow
- * (~12s), so blocking SSR on it trips Vike's slow-hook warning. The full route
- * renders the related section client-side instead (RelatedContentLoader via the
- * template's showRelated flag).
+ * This does not fetch related meditations here. The ranking endpoint is
+ * slow (~12s), so blocking SSR on it trips Vike's slow-hook warning. The
+ * full route renders the related section client-side instead
+ * (RelatedContentLoader, through the template's showRelated flag).
  */
 export async function data(pageContext: PageContextServer): Promise<LecturePageData> {
   const [base, settings] = await Promise.all([

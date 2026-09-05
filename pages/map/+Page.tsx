@@ -7,52 +7,55 @@ import { atlasEmbedSrc } from '../../lib/atlas-embed'
 /**
  * An atlas page: `/map`, `/map/:region-path`, or `/map/:region-path/:eventId`.
  *
- * The architecture in one component. **The server owns the `<head>`** — via
- * `useAtlasHead`, from the endpoint's SEO document — and **the children own the
- * body**: the content is rendered inside `<sahaj-atlas>`, which the loader
- * adopts and React's own `createRoot` then replaces when the widget mounts.
+ * The architecture in one component. The server owns the `<head>`, through
+ * `useAtlasHead`, from the endpoint's SEO document. The children own the
+ * body: the content renders inside `<sahaj-atlas>`, which the loader
+ * adopts. React's own `createRoot` then replaces the content when the
+ * widget mounts.
  *
- * So the same URL serves both audiences from one document: a crawler, a social
- * scraper or a no-JS visitor reads real HTML, and a visitor with JavaScript gets
- * the interactive atlas in its place. The widget is built never to write to a
- * host's head, which is what makes the split safe rather than a race.
+ * So the same URL serves both audiences from one document. A crawler, a
+ * social scraper, or a no-JS visitor reads real HTML. A visitor with
+ * JavaScript gets the interactive atlas in its place. The widget never
+ * writes to a host's head, which is what makes the split safe, not a race.
  */
 export function Page() {
   const { seo, atlasRoute } = useData<MapPageData>()
 
-  // A hook, so called unconditionally; it contributes nothing when `seo` is null
-  // (the atlas landing page, or a document we couldn't read).
+  // A hook, so this call is unconditional. It contributes nothing when
+  // `seo` is null (the atlas landing page, or a document this app could
+  // not read).
   useAtlasHead(seo)
 
   const embedKey = import.meta.env.PUBLIC__SAHAJ_ATLAS_KEY
 
   return (
     <>
-      {/* `block` + a **definite height** is the opt-in for the widget's contained
-          map mode (SahajAtlasWeb#170): it makes the element the containing block
-          for the map's fixed descendants and a stacking context, so our sticky
-          header floats above the map instead of the map escaping to cover the
-          viewport. Unsized, the map fills the window and our `z-50` nav paints
-          over it.
+      {/* `block` plus a definite height is the opt-in for the widget's
+          contained map mode (SahajAtlasWeb#170). It makes the element the
+          containing block for the map's fixed descendants, and a stacking
+          context, so our sticky header floats above the map instead of the
+          map escaping to cover the viewport. Unsized, the map fills the
+          window, and our `z-50` nav paints over it.
 
-          ⚠ `height`, never `min-height`. A `min-height` box has a non-zero rect
-          so containment engages, but the widget's own `height: 100%` then
-          resolves against an `auto` parent to zero — it verifies its box and
-          refuses, rendering uncontained.
+          ⚠ Use `height`, never `min-height`. A `min-height` box has a
+          non-zero rect, so containment engages. But the widget's own
+          `height: 100%` then resolves against an `auto` parent as zero. It
+          checks its own box, finds nothing, and renders uncontained.
 
-          `overflow-y-auto` keeps the server-rendered content reachable for a
-          no-JS visitor when a region lists more classes than the box fits;
-          crawlers read the DOM regardless of overflow. */}
+          `overflow-y-auto` keeps the server-rendered content reachable
+          for a no-JS visitor, when a region lists more classes than the
+          box fits. Crawlers read the DOM regardless of overflow. */}
       <sahaj-atlas className="block h-full overflow-y-auto">
         {seo && <AtlasContent seo={seo} />}
       </sahaj-atlas>
 
-      {/* `type="module"` is required — the loader is an ES module — and
-          `async`/`defer` are omitted per its documented contract. Note the
-          module type already nulls `document.currentScript`, so the loader
-          finds its own tag by filename either way; omitting them costs nothing
-          and keeps us on the supported path. Without a key the page is still a
-          complete, indexable document — it just doesn't upgrade. */}
+      {/* `type="module"` is required, because the loader is an ES module.
+          `async` and `defer` are omitted, per its documented contract. The
+          module type already nulls `document.currentScript`, so the
+          loader finds its own tag by filename either way. Omitting them
+          costs nothing, and keeps this on the supported path. Without a
+          key, the page is still a complete, indexable document. It just
+          does not upgrade. */}
       {embedKey && <script src={atlasEmbedSrc({ key: embedKey, atlasRoute })} type="module" />}
     </>
   )

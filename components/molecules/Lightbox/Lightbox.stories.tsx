@@ -55,10 +55,10 @@ function LightboxDemo({ slides, label }: { slides: LightboxSlide[]; label: strin
 }
 
 /**
- * Lightbox overlay showcasing a single image (zoom + caption) and a multi-image
- * gallery (prev/next, ←/→ keys, a thumbnail strip, per-slide captions, and
- * scroll/double-click/pinch zoom). Click a button to open; Esc or the close
- * button dismisses it.
+ * Lightbox overlay, showcasing a single image (zoom and caption) and a
+ * multi-image gallery (previous and next, ←/→ keys, a thumbnail strip,
+ * per-slide captions, and scroll, double-click, or pinch zoom). Click a
+ * button to open. Esc or the close button dismisses it.
  */
 export const Default: Story = () => (
   <StoryWrapper>

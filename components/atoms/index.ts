@@ -1,12 +1,3 @@
-/**
- * Atoms - Foundational UI Elements
- *
- * This barrel export provides convenient access to all atomic components.
- * Atoms are the basic building blocks of the design system that cannot
- * be broken down further without losing their meaning.
- */
-
-// Typography
 export { Heading } from './Heading'
 export { PageTitle } from './PageTitle/PageTitle'
 export { Blockquote } from './Blockquote'
@@ -16,7 +7,6 @@ export type { PageTitleProps } from './PageTitle/PageTitle'
 export type { BlockquoteProps } from './Blockquote'
 export type { LinkProps } from './Link'
 
-// Interactive
 export { Button } from './Button'
 export { Dropdown, DropdownItem } from './Dropdown'
 export { Tooltip } from './Tooltip'
@@ -24,21 +14,17 @@ export type { ButtonProps } from './Button'
 export type { DropdownProps, DropdownItemProps } from './Dropdown'
 export type { TooltipProps, TooltipSide } from './Tooltip'
 
-// Form Inputs
 export { Input, Textarea, Checkbox, Radio, Select } from './form'
 export type { InputProps, TextareaProps, CheckboxProps, RadioProps, SelectProps } from './form'
 
-// Media
 export { Image } from './Image'
 export { Icon } from './Icon'
 export { Avatar } from './Avatar'
 export type { IconProps, HeroIcon } from './Icon'
 export type { AvatarProps } from './Avatar'
 
-// Graphics (Logo, LanguageFlag, SocialIcon, svgs)
 export * from './graphics'
 
-// Feedback
 export { Spinner } from './Spinner'
 export { SplashLoader } from './SplashLoader'
 export { Placeholder } from './Placeholder'
@@ -48,7 +34,6 @@ export type { SplashLoaderProps } from './SplashLoader'
 export type { PlaceholderProps } from './Placeholder'
 export type { BadgeProps } from './Badge'
 
-// Layout
 export { Container } from './Container'
 export { Spacer } from './Spacer'
 export { Box } from './Box'
@@ -60,6 +45,5 @@ export type { BoxProps } from './Box'
 export type { LeafDividerProps } from './LeafDivider/LeafDivider'
 export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 
-// Specialty
 export { Countdown } from './Countdown'
 export type { CountdownProps } from './Countdown'

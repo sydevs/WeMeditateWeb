@@ -20,7 +20,7 @@ import type { Page } from '../server/cms-types'
 const leadContent = (firstBlock?: Record<string, unknown>) =>
   ({ root: { children: firstBlock ? [firstBlock] : [] } }) as unknown as Page['content']
 
-/** A populated Cloudflare image (1600×900 ≈ 16:9 → `video`). */
+/** A populated Cloudflare image (1600×900, about 16:9, maps to `video`). */
 const cfImage = (over: Record<string, unknown> = {}) => ({
   id: 1,
   url: 'https://imagedelivery.net/acct/img/',
@@ -359,7 +359,7 @@ describe('isExternalUrl', () => {
 
 describe('textColorToTheme', () => {
   it('inverts textColor and falls back when absent', () => {
-    // The inversion is fixed; only the fallback for absent values varies per caller.
+    // The inversion is fixed. Only the fallback for absent values varies per caller.
     expect(textColorToTheme('dark', 'light')).toBe('light')
     expect(textColorToTheme('light', 'dark')).toBe('dark')
     expect(textColorToTheme('dark', 'dark')).toBe('light') // explicit value wins over fallback
@@ -370,10 +370,10 @@ describe('textColorToTheme', () => {
 
 describe('splashTheme', () => {
   it('inverts textColor → background theme, defaulting to dark', () => {
-    // textColor describes the *text*; theme describes the *background* (they invert).
+    // textColor describes the text. theme describes the background. They invert.
     expect(splashTheme('dark')).toBe('light')
     expect(splashTheme('light')).toBe('dark')
-    // Absent/null → dark (the splash's historical hardcoded treatment).
+    // Absent or null becomes dark (the splash's historical hardcoded treatment).
     expect(splashTheme(undefined)).toBe('dark')
     expect(splashTheme(null)).toBe('dark')
   })

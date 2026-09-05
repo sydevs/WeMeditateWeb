@@ -1,22 +1,22 @@
 /**
  * Global type extensions for Vike's PageContext and environment variables.
- * This file extends the default PageContext with Cloudflare Workers bindings
- * and custom properties added by hooks like onBeforeRoute.
+ * Adds Cloudflare Workers bindings and custom properties set by hooks such
+ * as onBeforeRoute.
  */
 
 import type { Locale } from '../server/cms-types'
 
 /**
- * Typed environment variables available via import.meta.env.
+ * Typed environment variables from import.meta.env.
  *
- * Client-side (PUBLIC__*) variables are embedded at build time by Vite.
- * Server-side variables are available in dev via .env.local.
+ * Vite embeds client-side (PUBLIC__*) variables at build time. In dev,
+ * server-side variables come from .env.local.
  *
  * @see env.ts for validation schemas
  */
 interface ImportMetaEnv {
   // ===== Client-side (browser) environment variables =====
-  // These are embedded at build time and accessible in browser code.
+  // Vite embeds these at build time. Browser code can read them.
 
   /** PayloadCMS base URL (required for API requests) */
   readonly PUBLIC__SAHAJCLOUD_URL: string
@@ -27,9 +27,9 @@ interface ImportMetaEnv {
   /**
    * Published Sahaj Atlas client key for the `/map` widget embed.
    *
-   * Public by design — it ships in the page's HTML and is scoped to read-only
-   * atlas data. When it is unset the `/map` pages still server-render their
-   * content; they simply don't mount the interactive widget over it.
+   * Public by design: it ships in the page's HTML and reaches only read-only
+   * atlas data. When it is unset, the `/map` pages still server-render their
+   * content. They just do not mount the interactive widget over it.
    */
   readonly PUBLIC__SAHAJ_ATLAS_KEY?: string
 
@@ -40,8 +40,8 @@ interface ImportMetaEnv {
   readonly PUBLIC__STATUS_PAGE_URL?: string
 
   // ===== Server-side environment variables =====
-  // Only available in server code (via .env.local in dev).
-  // In production, these come from Cloudflare Workers context.env.
+  // Server code only. In dev, these come from .env.local. In production,
+  // they come from Cloudflare Workers context.env.
 
   /** PayloadCMS API key for authenticated requests */
   readonly SAHAJCLOUD_API_KEY?: string
@@ -63,7 +63,7 @@ declare global {
       /** Cloudflare Workers runtime context */
       cloudflare?: {
         env?: {
-          /** Cloudflare KV namespace for caching API responses */
+          /** Cloudflare KV namespace that caches API responses */
           WEMEDITATE_CACHE?: KVNamespace
         }
       }

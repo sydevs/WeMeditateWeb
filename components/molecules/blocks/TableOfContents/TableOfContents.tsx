@@ -3,7 +3,7 @@ import { slugify } from '../../../../lib/slugify'
 import type { TocHeading } from '../../../../lib/cms-blocks'
 
 export interface TableOfContentsProps {
-  /** Optional heading shown above the list (e.g. "In this article"). */
+  /** Optional heading shown above the list (for example "In this article"). */
   title?: string
   /** Enabled headings, in document order, as stored by the CMS block. */
   headings: TocHeading[]
@@ -17,10 +17,10 @@ const INDENT_CLASSES = ['pl-0', 'pl-4', 'pl-8', 'pl-12'] as const
 /**
  * Renders the `table-of-contents` block as anchor links to the page's headings.
  *
- * Anchors are derived with the same `slugify` the RichText heading converter
- * uses, so they always match the `id` emitted on each heading (the stored
- * `slug` may differ if the CMS uses a different slugifier). Headings are
- * indented by their level relative to the shallowest one in the list.
+ * This uses the same `slugify` function as the RichText heading converter,
+ * so the anchors always match the `id` emitted on each heading. The stored
+ * `slug` may differ, if the CMS uses a different slugifier. Headings are
+ * indented by their level, relative to the shallowest one in the list.
  */
 export function TableOfContents({ title, headings, className = '' }: TableOfContentsProps) {
   const valid = headings.filter((h) => h.text?.trim())

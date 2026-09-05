@@ -1,11 +1,11 @@
 /**
- * Shared preview components
+ * Shared preview components.
  *
- * These components are used by both /preview and /preview/embed routes.
+ * Both /preview and /preview/embed routes use these components.
  *
- * NOTE: PREVIEW_FETCHERS is intentionally NOT exported here because it imports
- * from server modules. Each +data.ts file defines its own fetcher registry
- * to avoid bundling server code in client bundles.
+ * Note: This file does not export PREVIEW_FETCHERS, because it imports
+ * from server modules. Each +data.ts file defines its own fetcher
+ * registry, to avoid bundling server code in client bundles.
  */
 
 // Main unified component

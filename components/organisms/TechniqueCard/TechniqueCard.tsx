@@ -3,12 +3,12 @@ import { Button, Heading, Image } from '../../atoms'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**
-   * Card number displayed above the content (e.g., "01", "02", "03")
+   * Card number displayed above the content, for example "01", "02", "03"
    */
   number: string
 
   /**
-   * Main heading/title of the technique
+   * Main heading of the technique
    */
   title: string
 
@@ -38,7 +38,7 @@ export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'>
   buttonText: string
 
   /**
-   * Layout alignment - determines image position
+   * Layout alignment. Determines the image position.
    * @default 'left'
    */
   align?: 'left' | 'right'

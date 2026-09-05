@@ -222,7 +222,7 @@ const pageContent = editorState(
       actionURL: '#',
     }),
 
-    // Headings + formatted body + links
+    // Headings, formatted body, and links
     heading('h2', 'What is Meditation?'),
     paragraph([
       text('Meditation is the art of '),
@@ -278,7 +278,7 @@ const pageContent = editorState(
     paragraph([text(FILLER[1])]),
     uploadImage(FIGURE_IMAGE, 'A calm landscape', 'A centered figure', 'center'),
 
-    // Text box — all three image positions (left / right side layouts + overlay)
+    // Text box: all three image positions (left, right side layouts, and overlay)
     block('textbox', {
       imagePosition: 'left',
       title: 'Get Connected',
@@ -484,10 +484,10 @@ const pageContent = editorState(
       kundalini: pageRef(63, 'kundalini', 'Kundalini', 'The maternal spiritual energy.'),
     }),
 
-    // Content index — production fetches `apiEndpoint` server-side in +data (see
-    // server/content-index.ts) and attaches the results. Ladle has no backend, so
-    // `resolvedItems` here is a fixture standing in for the fetched list; the rest
-    // of the block is shown fully configured.
+    // Content index: production fetches `apiEndpoint` server-side in +data
+    // (see server/content-index.ts) and attaches the results. Ladle has no
+    // backend, so `resolvedItems` here is a fixture that stands in for the
+    // fetched list. The rest of the block shows fully configured.
     block('content-index', {
       type: 'pages',
       limit: 6,
@@ -525,9 +525,10 @@ const pageContent = editorState(
 
 /**
  * Full-page simulation of every RichText node and custom block at maximal
- * configuration. RichText constrains non-full-bleed content to a readable column
- * via its own Container; full-bleed blocks (Splash, OrnateTextBox, SubtleSystem,
- * ContentOverlay, wide uploads) break out to the story-canvas edges.
+ * configuration. RichText constrains non-full-bleed content to a readable
+ * column through its own Container. Full-bleed blocks (Splash,
+ * OrnateTextBox, SubtleSystem, ContentOverlay, wide uploads) break out to
+ * the story-canvas edges.
  */
 export const Default: Story = () => <RichText debug content={pageContent} />
 

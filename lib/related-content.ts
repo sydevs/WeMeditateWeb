@@ -1,15 +1,16 @@
 /**
- * Map the shaped related-content endpoint cards (SahajCloud #523) to the shared
- * `ResolvedCardItem` grid shape rendered by `RelatedContent` / `ContentGrid`.
+ * Maps the shaped related-content endpoint cards (SahajCloud #523) to the
+ * shared `ResolvedCardItem` grid shape that `RelatedContent` and
+ * `ContentGrid` render.
  *
- * The endpoints already shape and filter their docs server-side (dropping any
- * card missing a public title / duration / thumbnail), and the cms-client
- * fetchers guard the rendered fields again — so these mappers are pure shape
- * translation with no further filtering.
+ * The endpoints already shape and filter their docs on the server
+ * (dropping any card with no public title, duration, or thumbnail), and
+ * the cms-client fetchers guard the rendered fields again. So these
+ * mappers only translate shape, with no further filtering.
  *
- * Both card types use `aspectRatio: 'video'`: meditation thumbnails are ~16:9
- * (`imagedelivery.net/.../public`) and lecture thumbnails are YouTube
- * `mqdefault` (320×180, exactly 16:9).
+ * Both card types use `aspectRatio: 'video'`. Meditation thumbnails are
+ * about 16:9 (`imagedelivery.net/.../public`), and lecture thumbnails are
+ * YouTube `mqdefault` (320×180, exactly 16:9).
  */
 
 import type { RelatedMeditationCard, RelatedLectureCard } from '../server/cms-types'

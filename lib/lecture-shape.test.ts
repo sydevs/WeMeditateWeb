@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import type { Lecture } from '../server/payload-types'
 import { mergeSubtitles, parseLectureMetadata, resolveLecture } from './lecture-shape'
 
-// Minimal Lecture factory — only the fields resolveLecture reads matter; the
-// rest are stubbed to satisfy the generated type.
+// Minimal Lecture factory. Only the fields resolveLecture reads matter.
+// The rest are stubbed to satisfy the generated type.
 function makeLecture(overrides: Partial<Lecture>): Lecture {
   return {
     id: 1,

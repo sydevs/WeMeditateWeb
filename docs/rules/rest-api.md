@@ -6,13 +6,13 @@ paths:
   - "server/atlas-client.ts"
 ---
 
-# Working with REST API
+# Working with the REST API
 
-## Adding New Query Functions
+## Add a new query function
 
-1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts)
-2. Add app-specific types to [server/cms-types.ts](../../server/cms-types.ts) if needed
-3. Add query function in [server/cms-client.ts](../../server/cms-client.ts):
+1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts).
+2. Add app-specific types to [server/cms-types.ts](../../server/cms-types.ts) if needed.
+3. Add the query function to [server/cms-client.ts](../../server/cms-client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
      return withCache({
@@ -40,16 +40,15 @@ paths:
    }
    ```
 
-## Updating PayloadCMS Types
+## Update PayloadCMS types
 
-When the CMS schema changes, regenerate types:
+Run this command when the CMS schema changes:
 ```bash
 pnpm types:cms
 ```
+It downloads the latest `payload-types.ts` from SahajCloud.
 
-This downloads the latest `payload-types.ts` from SahajCloud.
+## API authentication
 
-## API Authentication
-
-All REST API requests require authentication via `Authorization: clients API-Key {apiKey}` header. The SDK client factory handles this automatically.
-
+Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
+factory adds this header for you.

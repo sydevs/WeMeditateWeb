@@ -1,9 +1,10 @@
 /**
- * Merge sparse live preview payloads onto the last known good document.
+ * Merge sparse live-preview payloads onto the last known good document.
  *
- * Payload's live preview messages can collapse populated relationships back to
- * scalar IDs. This preserves the richer server-fetched object when the relation
- * still points at the same document, while allowing real changes through.
+ * Payload's live-preview messages can collapse populated relationships
+ * back to scalar IDs. This preserves the richer server-fetched object,
+ * when the relation still points at the same document. It still allows
+ * real changes through.
  */
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

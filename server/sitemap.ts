@@ -1,9 +1,10 @@
 /**
  * Pure builders for `/sitemap.xml` and `/robots.txt`.
  *
- * Kept free of I/O so the awkward parts — escaping, and the decision about
- * whether an origin should be indexed at all — are unit-testable without a
- * request. The reads and the Hono wiring live in `sitemap-routes.ts`.
+ * This file has no I/O, so the awkward parts (escaping, and the decision
+ * about whether an origin should be indexed at all) stay unit-testable
+ * without a request. The reads and the Hono wiring live in
+ * `sitemap-routes.ts`.
  */
 
 /** One `<url>` entry. */
@@ -14,12 +15,12 @@ export interface SitemapUrl {
 }
 
 /**
- * Escape a string for XML text content.
+ * Escapes a string for XML text content.
  *
- * A sitemap carries CMS-derived URLs, and a slug or a query string containing
- * `&` produces a document no parser will accept — a silently *empty* sitemap
- * rather than a loud failure, which is the worst kind. The five predefined
- * entities are all XML has.
+ * A sitemap carries CMS-derived URLs. A slug or query string with an `&`
+ * produces a document no parser accepts. That fails silently, as an empty
+ * sitemap, instead of loudly. This is the worst kind of failure. The five
+ * predefined entities are all XML has.
  */
 export function xmlEscape(value: string): string {
   return value
@@ -34,10 +35,11 @@ export function xmlEscape(value: string): string {
  * Hosts that must never be indexed: the Cloudflare preview deployments and
  * local development.
  *
- * Every PR builds a preview Worker and a preview Ladle site on these domains. A
- * preview that invites crawlers competes with production for the same content
- * and can outrank it — so the rule is an allowlist by exclusion, applied to
- * whatever host actually served the request rather than to a build-time guess.
+ * Every PR builds a preview Worker and a preview Ladle site on these
+ * domains. A preview that invites crawlers competes with production for
+ * the same content, and can outrank it. So this rule works as an
+ * allowlist by exclusion, applied to whatever host actually served the
+ * request, not to a build-time guess.
  */
 const NON_CANONICAL_HOST = /(\.workers\.dev|\.pages\.dev)$|^localhost$|^127\.0\.0\.1$/
 
@@ -49,9 +51,9 @@ export function isIndexableHost(hostname: string): boolean {
 /**
  * `robots.txt` for an origin.
  *
- * A preview or local origin refuses everything; the real site allows everything
- * and points at its sitemap. The sitemap reference is absolute because
- * `robots.txt` requires it to be.
+ * A preview or local origin refuses everything. The real site allows
+ * everything, and points at its sitemap. The sitemap reference is
+ * absolute, because `robots.txt` requires it.
  */
 export function buildRobotsTxt(origin: string): string {
   const { hostname } = new URL(origin)
@@ -66,12 +68,13 @@ export function buildRobotsTxt(origin: string): string {
 /**
  * A sitemap document.
  *
- * One file, no index and no pagination: the whole surface — pages, meditations,
- * lectures and the atlas — is a few thousand URLs, comfortably inside the
- * 50,000-URL / 50 MB limits a single sitemap allows.
+ * One file, with no index and no pagination. The whole surface, pages,
+ * meditations, lectures, and the atlas, is a few thousand URLs. This
+ * comfortably fits inside the limits a single sitemap allows: 50,000 URLs
+ * and 50 MB.
  *
- * Duplicates are collapsed, because the same URL arriving from two sources is a
- * validation warning rather than a harmless repeat.
+ * This function collapses duplicates, because the same URL arriving from
+ * two sources is a validation warning, not a harmless repeat.
  */
 export function buildSitemapXml(urls: SitemapUrl[]): string {
   const seen = new Set<string>()

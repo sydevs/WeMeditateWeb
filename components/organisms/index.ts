@@ -1,34 +1,20 @@
-/**
- * Organisms - Complex Component Sections
- *
- * This barrel export provides convenient access to all organism components.
- * Organisms are relatively complex UI components composed of groups of molecules
- * and/or atoms and/or other organisms.
- */
-
-// Header
 export { Header } from './Header'
 export type { HeaderProps, NavItem } from './Header'
 export { HeaderNavDropdown } from './Header'
 export type { HeaderNavDropdownProps } from './Header'
 
-// Footer
 export { Footer } from './Footer'
 export type { FooterProps, FooterSection, SocialLink } from './Footer'
 
-// TechniqueCard
 export { TechniqueCard } from './TechniqueCard'
 export type { TechniqueCardProps } from './TechniqueCard'
 
-// DiscoverMeditation
 export { DiscoverMeditation } from './DiscoverMeditation'
 export type { DiscoverMeditationProps } from './DiscoverMeditation'
 
-// Splash
 export { Splash } from './Splash'
 export type { SplashProps } from './Splash'
 
-// HeaderDropdown
 export { HeaderDropdown } from './HeaderDropdown'
 export type {
   HeaderDropdownProps,
@@ -36,19 +22,15 @@ export type {
   HeaderDropdownArticle,
 } from './HeaderDropdown'
 
-// ContentTextBox
 export { ContentTextBox } from './ContentTextBox'
 export type { ContentTextBoxProps } from './ContentTextBox'
 
-// ContentOverlay
 export { ContentOverlay } from './ContentOverlay'
 export type { ContentOverlayProps } from './ContentOverlay'
 
-// OrnateTextBox
 export { OrnateTextBox } from './OrnateTextBox'
 export type { OrnateTextBoxProps } from './OrnateTextBox'
 
-// FormBuilder
 export { FormBuilder } from './FormBuilder'
 export type {
   FormBuilderProps,
@@ -58,26 +40,20 @@ export type {
   FormBuilderApiError,
 } from './FormBuilder'
 
-// SubtleSystem
 export { SubtleSystem } from './SubtleSystem'
 export type { SubtleSystemProps, SubtleSystemItem } from './SubtleSystem'
 
-// MusicLibrary
 export { MusicLibrary } from './MusicLibrary'
 export type { MusicLibraryProps, MusicFilter } from './MusicLibrary'
 
-// MeditationPlayer
 export { MeditationPlayer } from './MeditationPlayer'
 export type { MeditationPlayerProps, Track, MeditationFrame } from './MeditationPlayer'
 
-// RichText
 export { RichText } from './RichText'
 export type { RichTextProps } from './RichText'
 
-// ContentIndex
 export { ContentIndex } from './ContentIndex'
 export type { ContentIndexProps } from './ContentIndex'
 
-// RelatedContent
 export { RelatedContent, RelatedContentLoader } from './RelatedContent'
 export type { RelatedContentProps, RelatedContentLoaderProps } from './RelatedContent'

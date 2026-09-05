@@ -4,7 +4,7 @@ import { LectureTemplate } from '../../../../components/templates'
 
 /**
  * Full lecture page (/lectures/:id) — rendered with site chrome. LectureTemplate
- * wraps the player with a title + duration and shows the Embed button.
+ * wraps the player with a title and duration, and shows the Embed button.
  */
 export function Page() {
   const { lecture, locale } = useData<LecturePageData>()

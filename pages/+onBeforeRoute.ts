@@ -7,10 +7,10 @@ export function onBeforeRoute(pageContext: PageContext) {
 
   return {
     pageContext: {
-      // Make locale available as pageContext.locale
+      // Make locale available as pageContext.locale.
       locale,
-      // Vike's router will use pageContext.urlLogical instead of pageContext.urlOriginal and
-      // the locale is removed from pageContext.urlParsed
+      // Vike's router uses pageContext.urlLogical, not pageContext.urlOriginal.
+      // pageContext.urlParsed no longer includes the locale.
       urlLogical: urlWithoutLocale,
     },
   }
@@ -19,7 +19,7 @@ export function onBeforeRoute(pageContext: PageContext) {
 function extractLocale(url: PageContext['urlParsed']) {
   const { href, pathname, searchOriginal } = url
 
-  // Match locale pattern at the start of the path (e.g., /en/, /fr/, /es-MX/)
+  // Match the locale pattern at the start of the path (for example, /en/, /fr/, /es-MX/)
   const match = pathname.match(/^\/([a-z]{2}(?:-[A-Z]{2})?)(?:\/(.*))?$/);
 
   let locale = 'en'; // Default locale

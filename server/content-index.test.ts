@@ -66,8 +66,8 @@ describe('resolveContentIndexItems', () => {
       {
         type: 'meditations',
         limit: 100,
-        // The CMS bakes `depth=1` into the endpoint; the resolver must not append
-        // a second one (duplicate `depth` params 400 the backend).
+        // The CMS bakes `depth=1` into the endpoint. The resolver must not
+        // append a second one (duplicate `depth` params 400 the backend).
         apiEndpoint: '/api/user-choices?where[id][in]=25&depth=1&limit=100',
       },
       { locale: 'en' },
@@ -86,7 +86,7 @@ describe('resolveContentIndexItems', () => {
 
     const url = fetchSpy.mock.calls[0][0] as string
 
-    // Baked-in depth stripped; only our depth=2 remains.
+    // Baked-in depth is stripped. Only the depth=2 above remains.
     expect(url).toContain('https://cms.test/api/user-choices?where[id][in]=25&limit=100')
     expect(url).toContain('depth=2')
     expect(url).not.toContain('depth=1')
@@ -193,8 +193,8 @@ describe('resolveContentIndexTracks', () => {
     expect(url).toContain('select[url]=true')
     expect(url).toContain('populate[albums][artwork]=true')
     expect(url).toContain('depth=2')
-    // `url`/`thumbnailURL` are upload virtuals derived from `filename`; without
-    // it selected the CMS returns them null and every track is dropped.
+    // `url` and `thumbnailURL` are upload virtuals derived from `filename`.
+    // Without it selected, the CMS returns them null, and every track drops.
     expect(url).toContain('select[filename]=true')
     expect(url).toContain('populate[images][filename]=true')
   })

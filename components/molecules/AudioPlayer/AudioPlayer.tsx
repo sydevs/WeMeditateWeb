@@ -48,11 +48,11 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
 }
 
 /**
- * AudioPlayer molecule - Standalone audio player with configurable controls
+ * AudioPlayer is a molecule: a standalone audio player with configurable controls.
  *
  * Features:
  * - Built on react-use-audio-player (Howler.js) for reliable cross-browser audio
- * - Configurable controls via props
+ * - Configurable controls through props
  * - Play/pause, previous, next controls
  * - Shuffle mode
  * - Volume control with mute

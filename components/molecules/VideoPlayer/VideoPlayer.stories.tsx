@@ -6,8 +6,8 @@ export default {
   title: 'Molecules',
 } satisfies StoryDefault
 
-// Vidstack's public demo HLS stream + assets, so the player actually loads and
-// the captions menu has real per-locale .vtt tracks to switch between in Ladle.
+// Vidstack's public demo HLS stream and assets, so the player actually
+// loads, and the captions menu has real per-locale .vtt tracks to switch between in Ladle.
 const HLS_URL = 'https://files.vidstack.io/sprite-fight/hls/stream.m3u8'
 const POSTER = 'https://files.vidstack.io/sprite-fight/poster.webp'
 
@@ -24,15 +24,17 @@ const SUBTITLE_TRACKS = [
 ]
 
 /**
- * VideoPlayer is a client-only HLS player built on Vidstack's `<MediaPlayer>` +
- * default layout: brand-teal (#61aaa0), touch-friendly controls with a captions
- * menu over a native `<video>`. HLS plays natively (Safari/iOS) or via our
- * bundled hls.js. It supports a poster, an optional [startTime, stopTime] window
- * (relinearized via Vidstack clipping), and subtitles via either inline cues
- * (Video collection) or per-locale external .vtt URLs (Lectures).
+ * VideoPlayer is a client-only HLS player, built on Vidstack's
+ * `<MediaPlayer>` and its default layout: brand-teal (#61aaa0),
+ * touch-friendly controls with a captions menu, over a native `<video>`.
+ * HLS plays natively on Safari or iOS, or otherwise through this project's
+ * bundled hls.js. It supports a poster, an optional [startTime, stopTime]
+ * window, relinearized through Vidstack clipping, and subtitles through
+ * either inline cues (Video collection) or per-locale external .vtt URLs
+ * (Lectures).
  *
- * Note: these stories import the raw player; in the app it's wrapped in
- * ClientOnly so Vidstack and hls.js stay out of the SSR/Workers bundle.
+ * Note: these stories import the raw player. In the app it is wrapped in
+ * ClientOnly, so Vidstack and hls.js stay out of the SSR/Workers bundle.
  */
 export const Default: Story = () => (
   <StoryWrapper>

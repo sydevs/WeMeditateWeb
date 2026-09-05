@@ -23,7 +23,7 @@ vi.mock('./kv-cache', async (importOriginal) => {
   }
 })
 
-/** Build a fetch Response stub for the given status + JSON body. */
+/** Builds a fetch Response stub for the given status and JSON body. */
 function fetchResponse(status: number, body: unknown) {
   return { ok: status >= 200 && status < 300, status, json: async () => body }
 }
@@ -120,8 +120,8 @@ describe('getAtlasSeo', () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch')
 
       expect(await getAtlasSeo({ route, locale: 'en' })).toBeNull()
-      // Never asking also keeps a crawler grinding through view routes off the
-      // endpoint entirely.
+      // Never asking also stops a crawler that grinds through view routes
+      // from reaching the endpoint at all.
       expect(fetchSpy).not.toHaveBeenCalled()
       expect(Sentry.captureMessage).not.toHaveBeenCalled()
     })
@@ -145,8 +145,9 @@ describe('getAtlasSeo', () => {
         fetchResponse(status, { errors: [] }) as unknown as Response,
       )
 
-      // The page must still render: the widget works without us, and a lost
-      // server-rendered half is a degraded page rather than a broken one.
+      // The page must still render. The widget works without server
+      // rendering, and a lost server-rendered half makes a degraded page,
+      // not a broken one.
       expect(await getAtlasSeo({ route: '/gb/london', locale: 'en' })).toBeNull()
       expect(Sentry.captureMessage).toHaveBeenCalledWith(
         expect.stringContaining('getAtlasSeo failed'),

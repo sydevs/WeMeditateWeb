@@ -5,11 +5,11 @@ import { Button, Link } from '../../atoms'
 export interface MasonryGridItem {
   /** Unique identifier for the item */
   id: string | number
-  /** Heading text (e.g., location and year) */
+  /** Heading text, for example location and year */
   heading: string
   /** Body content text */
   content: string
-  /** Optional link URL - when provided, heading becomes a clickable link */
+  /** Optional link URL. When provided, the heading becomes a clickable link. */
   href?: string
 }
 
@@ -23,10 +23,12 @@ export interface MasonryGridProps extends Omit<ComponentProps<'div'>, 'children'
 }
 
 /**
- * MasonryGrid molecule displays items in a responsive masonry layout with optional "Show More" functionality.
+ * MasonryGrid is a molecule that displays items in a responsive masonry
+ * layout, with optional "Show More" functionality.
  *
- * Based on the `.cb-grid-layout` element from wemeditate.com, this component uses CSS-based masonry
- * via react-masonry-css for optimal performance and browser compatibility.
+ * This follows the `.cb-grid-layout` element from wemeditate.com. It uses
+ * CSS-based masonry through react-masonry-css, for good performance and
+ * browser compatibility.
  */
 export function MasonryGrid({
   items,

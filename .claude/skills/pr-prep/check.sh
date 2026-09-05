@@ -2,18 +2,20 @@
 #
 # Validate that the current branch is ready to open a PR.
 #
-# CI (.github/workflows/ci.yml) re-runs lint + type-check + the unit suite on
-# every PR; this local gate runs the same checks first to keep the loop fast.
+# CI (.github/workflows/ci.yml) re-runs lint, type-check, and the unit suite
+# on every PR. This local gate runs the same checks first, to keep the loop
+# fast.
 #
 # Default (lean gate): lint + type-check + the Vitest suite.
 #   - pnpm lint
 #   - pnpm exec tsc --noEmit
 #   - pnpm test:run
 #
-# --full: the lean gate PLUS the production build (`pnpm build`, i.e. vike
-# build), which is the closest local mirror of what the Cloudflare preview
-# deployment runs. Use it before pushing build/server/Wrangler changes, or to
-# reproduce a red preview build. Runs SEQUENTIALLY.
+# --full: the lean gate, plus the production build (`pnpm build`, the vike
+# build). This is the closest local match to what the Cloudflare preview
+# deployment runs. Use it before you push build, server, or Wrangler
+# changes, or to reproduce a red preview build. It runs the checks in
+# sequence.
 #
 # Usage:
 #   .claude/skills/pr-prep/check.sh           # lint + tsc + test:run

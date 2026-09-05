@@ -38,7 +38,7 @@ export interface InputProps extends ComponentProps<'input'> {
  * Provides consistent styling with validation states.
  * Supports all native input types and attributes.
  * Automatically displays appropriate icons for certain input types (search, email, tel, url).
- * Defaults to full width - constrain width using max-w-* classes or parent container.
+ * Defaults to full width. Constrain width with max-w-* classes or a parent container.
  *
  * @example
  * <Input type="text" placeholder="Enter your name" />

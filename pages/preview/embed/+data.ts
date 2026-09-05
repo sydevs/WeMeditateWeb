@@ -1,15 +1,15 @@
 /**
- * Data fetching for embed preview mode - supports all content types
+ * Data fetching for embed preview mode. Supports all content types.
  *
- * This endpoint is similar to /preview but renders bare (no site chrome): the
- * route sets no Layout, so it inherits only the global LayoutRoot. Unlike
- * /preview, it therefore does NOT fetch WeMeditateWebSettings — there is no
- * Header/Footer/nav to populate.
+ * This endpoint is similar to /preview, but renders bare (no site
+ * chrome). The route sets no Layout, so it inherits only the global
+ * LayoutRoot. Unlike /preview, it does not fetch WeMeditateWebSettings.
+ * There is no Header, Footer, or nav to populate.
  *
- * URL Parameters:
- * - collection: Collection name (e.g., "pages", "meditations")
- * - id: Document ID to preview
- * - secret: Preview secret for authentication (required)
+ * URL parameters:
+ * - collection: collection name (for example, "pages", "meditations")
+ * - id: document ID to preview
+ * - secret: preview secret for authentication (required)
  */
 
 import type { PageContextServer } from 'vike/types'
@@ -62,11 +62,8 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  // NOTE: Unlike /preview, we do NOT fetch WeMeditateWebSettings here — this
-  // route is bare (LayoutRoot only), so there is no Header/Footer/nav to populate.
-
-  // Fetch content using the generic document fetcher
-  // Always bypass cache in preview mode to ensure fresh data
+  // Fetch content with the generic document fetcher.
+  // Always bypass the cache in preview mode, for fresh data.
   const data = await getDocumentById({
     collection,
     id,
@@ -79,8 +76,8 @@ export async function data(pageContext: PageContextServer): Promise<EmbedPreview
     throw render(404, `${collection} content not found.`)
   }
 
-  // Background music for meditation previews — keeps the live player in sync
-  // with the published embed route (other collections have none).
+  // Background music for meditation previews. This keeps the live player
+  // in sync with the published embed route (other collections have none).
   const musicTracks = collection === 'meditations' ? await getMeditationSongs({ id, locale }) : []
 
   // Return discriminated union based on collection type

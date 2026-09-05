@@ -97,9 +97,9 @@ describe('/sitemap.xml', () => {
 
   describe('the atlas half', () => {
     it('lists only atlas URLs this origin is the canonical home of', async () => {
-      // Ownership is per-subtree: most regions canonicalize to the national site
-      // that owns them, and listing those would ask a crawler to index URLs we
-      // ourselves declare non-canonical.
+      // Ownership is per-subtree. Most regions canonicalize to the
+      // national site that owns them. Listing those would ask a crawler to
+      // index URLs this site itself marks non-canonical.
       stubCollections({
         regions: [
           { id: 1, webUrl: 'https://wemeditate.com/map/gb/london', updatedAt: null },
@@ -159,7 +159,7 @@ describe('/sitemap.xml', () => {
       expect(response.status).toBe(200)
       expect(xml).toContain('</urlset>')
       expect(xml).not.toContain('<url>')
-      // No point reading the CMS for a document we refuse to fill.
+      // No need to read the CMS for a document this response will not fill.
       expect(find).not.toHaveBeenCalled()
     })
   })

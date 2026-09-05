@@ -13,7 +13,7 @@ export interface AuthorProps {
   name: string
 
   /**
-   * Country code (e.g., "FI", "US")
+   * Country code, for example "FI" or "US"
    */
   countryCode?: string
 

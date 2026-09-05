@@ -24,7 +24,7 @@ describe('RelatedContent', () => {
     expect(html).toContain('Beta')
     expect(html).toContain('/meditations/1')
     expect(html).toContain('/meditations/2')
-    // Rendered via ContentCarousel (its nav controls are present).
+    // This renders through ContentCarousel. Its nav controls are present.
     expect(html).toContain('aria-label="Previous slide"')
     expect(html).toContain('aria-label="Next slide"')
   })

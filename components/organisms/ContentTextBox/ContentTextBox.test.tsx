@@ -19,7 +19,7 @@ describe('<ContentTextBox> subtitle', () => {
   it('omits the subtitle markup when not provided', () => {
     const html = renderToStaticMarkup(<ContentTextBox {...BASE} />)
 
-    // Description still renders; subtitle adds no extra <p>.
+    // Description still renders. Subtitle adds no extra <p>.
     expect(html).toContain('Get Connected')
     expect(html.match(/<p/g)?.length).toBe(1)
   })

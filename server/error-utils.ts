@@ -12,7 +12,7 @@ export enum ErrorType {
   NETWORK = 'NETWORK',
   /** Server returned an error status (500, 503, etc.) */
   SERVER = 'SERVER',
-  /** Client error (400, 401, 403, 404, etc.) - should not retry */
+  /** Client error (400, 401, 403, 404, etc.). Do not retry these. */
   CLIENT = 'CLIENT',
   /** Unknown error type */
   UNKNOWN = 'UNKNOWN',
@@ -25,7 +25,7 @@ export interface RetryConfig {
   baseDelayMs?: number
   /** Maximum delay in milliseconds (default: 10000ms) */
   maxDelayMs?: number
-  /** Function to determine if error should be retried (default: retry network/server errors only) */
+  /** Function that decides whether to retry an error (default: retry only network or server errors) */
   shouldRetry?: (error: unknown) => boolean
 }
 
@@ -40,7 +40,7 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
 }
 
 /**
- * Shape of HTTP-like errors we can inspect for status codes.
+ * Shape of an HTTP-like error this module can read a status code from.
  */
 interface HttpErrorLike {
   response?: { status?: unknown }
@@ -56,8 +56,8 @@ function readStatus(error: unknown): number | undefined {
   return undefined
 }
 
-// Error code patterns matched as substrings (codes like ECONNREFUSED can appear
-// mid-token, e.g. "connect ECONNREFUSED 127.0.0.1").
+// Error code patterns, matched as substrings. A code like ECONNREFUSED can
+// appear mid-token, for example "connect ECONNREFUSED 127.0.0.1".
 const NETWORK_CODE_PATTERNS = [
   'econnrefused',
   'econnreset',
@@ -79,7 +79,7 @@ const SERVER_PHRASE_PATTERN = /\b(internal server error|bad gateway|service unav
 export function detectErrorType(error: unknown): ErrorType {
   if (!error) return ErrorType.UNKNOWN
 
-  // HTTP status codes take precedence — they're unambiguous.
+  // HTTP status codes take precedence. They are unambiguous.
   const status = readStatus(error)
   if (status !== undefined) {
     if (status >= 500) return ErrorType.SERVER
@@ -121,8 +121,9 @@ export function getUserFriendlyErrorMessage(error: unknown): string {
 }
 
 /**
- * True if the URL parses and uses an http(s) scheme. Used to gate rendering of
- * externally-configured status page links to avoid `javascript:` / `data:` XSS.
+ * True if the URL parses and uses an http(s) scheme. Gates the rendering
+ * of externally configured status-page links, to block `javascript:` and
+ * `data:` XSS.
  */
 export function isSafeHttpUrl(url: string): boolean {
   try {
@@ -149,17 +150,17 @@ function calculateBackoffDelay(attempt: number, baseDelayMs: number, maxDelayMs:
 }
 
 /**
- * Executes an async function with automatic retry and exponential backoff.
+ * Runs an async function with automatic retry and exponential backoff.
  *
- * Retries are only attempted when `shouldRetry(error)` returns true. The default
- * retries NETWORK and SERVER errors but not CLIENT or UNKNOWN. All attempts are
- * reported to Sentry.
+ * This function retries only when `shouldRetry(error)` returns true. By
+ * default, it retries NETWORK and SERVER errors, but not CLIENT or
+ * UNKNOWN. It reports every attempt to Sentry.
  *
  * @example
  * ```typescript
- * const data = await withRetry(
- *   () => client.request(query, variables),
- *   { maxAttempts: 3, baseDelayMs: 1000 }
+ * const page = await withRetry(
+ *   () => getPageBySlug({ slug: 'home', locale: 'en' }),
+ *   { maxAttempts: 3, baseDelayMs: 1000 },
  * )
  * ```
  */
@@ -231,7 +232,7 @@ export async function withRetry<T>(
     }
   }
 
-  // Unreachable: the loop either returns or throws on every iteration.
-  // TypeScript requires a terminator because it can't prove maxAttempts >= 1.
+  // Unreachable. The loop either returns or throws on every iteration.
+  // TypeScript requires a terminator because it cannot prove maxAttempts >= 1.
   throw new Error('withRetry: unreachable')
 }

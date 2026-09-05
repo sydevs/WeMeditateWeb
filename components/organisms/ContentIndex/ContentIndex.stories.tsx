@@ -41,9 +41,9 @@ const untagged: ResolvedCardItem[] = [
 ]
 
 /**
- * ContentIndex organism — a server-resolved card grid that the visitor filters
- * client-side with multi-select pills. Toggle the pills to narrow the grid; the
- * "All" pill clears the selection.
+ * ContentIndex is a server-resolved card grid that the visitor filters
+ * client-side with multi-select pills. Toggle the pills to narrow the
+ * grid. The "All" pill clears the selection.
  */
 export const Default: Story = () => (
   <StoryWrapper>

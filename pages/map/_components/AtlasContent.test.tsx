@@ -93,8 +93,8 @@ const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo
 
 describe('atlasHref', () => {
   it('prefers the canonical, which may live on another owner’s domain', () => {
-    // Ownership is per-subtree, so linking anywhere else would build a link
-    // graph pointing at URLs we ourselves declare non-canonical.
+    // Ownership is per-subtree, so linking anywhere else would build a
+    // link graph pointing at URLs this app itself declares non-canonical.
     expect(atlasHref({ route: '/gb/london', url: 'https://other.org/classes/gb/london' })).toBe(
       'https://other.org/classes/gb/london',
     )
@@ -215,8 +215,8 @@ describe('a class page', () => {
   })
 
   it('degrades rather than throwing when a hand-mirrored field goes missing', () => {
-    // `AtlasSeoResponse` is mirrored from upstream by hand; a field that stops
-    // being sent must not turn the page into a 500.
+    // `AtlasSeoResponse` is mirrored from upstream by hand. A field that
+    // stops being sent must not turn the page into a 500.
     const html = render(
       eventSeo({ images: undefined, languages: undefined, paragraphs: undefined }),
     )

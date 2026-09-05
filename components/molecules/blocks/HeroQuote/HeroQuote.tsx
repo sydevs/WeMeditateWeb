@@ -10,9 +10,9 @@ export interface HeroQuoteProps {
   credit?: string
   /** Optional caption displayed after the credit */
   caption?: string
-  /** Text alignment - left or center */
+  /** Text alignment: left or center */
   align?: 'left' | 'center'
-  /** Size variant - md or lg */
+  /** Size variant: md or lg */
   size?: 'md' | 'lg'
   /** Additional CSS classes */
   className?: string

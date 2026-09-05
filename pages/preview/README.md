@@ -1,21 +1,24 @@
 # Preview Routes
 
-This directory contains preview routes for PayloadCMS live preview functionality. These pages are rendered inside iframes in the SahajCloud admin panel.
+This directory holds the preview routes for PayloadCMS live preview. SahajCloud's admin panel
+renders these pages inside an iframe.
 
 ## Routes
 
-- `/preview` - Main preview route that handles pages and meditations
-- `/preview/embed` - Embedded preview route, rendered bare with no site chrome (LayoutRoot only)
+- `/preview` — the main preview route. It handles pages and meditations.
+- `/preview/embed` — an embedded preview route. It renders bare, with no site chrome (LayoutRoot
+  only).
 
-## PostMessage Protocol
+## PostMessage protocol
 
-The preview components communicate with the SahajCloud admin panel via `window.postMessage`. All messages are validated against `PUBLIC__SAHAJCLOUD_URL` origin for security.
+The preview components talk to the SahajCloud admin panel through `window.postMessage`. The code
+validates every message against the `PUBLIC__SAHAJCLOUD_URL` origin.
 
-### Outbound Messages (Preview → Admin)
+### Outbound messages (preview to admin)
 
 #### PLAYBACK_TIME_UPDATE
 
-Sent during meditation playback to sync the current position with the admin UI.
+Sent during meditation playback, to sync the current position with the admin UI.
 
 ```typescript
 {
@@ -24,15 +27,15 @@ Sent during meditation playback to sync the current position with the admin UI.
 }
 ```
 
-**Frequency**: Every 100ms during playback, plus on play/pause/seek events.
+**Frequency**: every 100ms during playback, plus on every play, pause, and seek event.
 
-**Use case**: Highlighting the current frame thumbnail in the admin panel.
+**Use case**: highlights the current frame thumbnail in the admin panel.
 
-### Inbound Messages (Admin → Preview)
+### Inbound messages (admin to preview)
 
 #### SEEK_TO_TIME
 
-Sent when an editor clicks a frame thumbnail to jump to that position.
+Sent when an editor clicks a frame thumbnail, to jump to that position.
 
 ```typescript
 {
@@ -41,52 +44,49 @@ Sent when an editor clicks a frame thumbnail to jump to that position.
 }
 ```
 
-**Response**: The player seeks to the specified timestamp and continues sending `PLAYBACK_TIME_UPDATE` messages.
+**Response**: the player seeks to the timestamp, then keeps sending `PLAYBACK_TIME_UPDATE`
+messages.
 
-## Testing
+## Test the seek command
 
-From the SahajCloud admin console, you can test the seek functionality:
+From the SahajCloud admin console:
 
 ```javascript
 // Get the preview iframe
 const iframe = document.querySelector('iframe')
 
-// Send seek command
+// Send the seek command
 iframe.contentWindow.postMessage(
   { type: 'SEEK_TO_TIME', timestamp: 30 },
-  '*'  // Or use specific origin for security
+  '*', // or a specific origin, for security
 )
 ```
 
 ## Authentication
 
-Preview routes require a `secret` query parameter for authentication. The CMS admin panel includes this automatically when constructing the preview iframe URL.
+A preview route needs a `secret` query parameter. The CMS admin panel adds it automatically when
+it builds the preview iframe URL.
 
 **URL format**: `/preview?collection=pages&id=123&secret=[previewSecret]`
 
-The web app passes the secret through to the CMS API as the `x-sahajcloud-preview-secret` header. The CMS validates the secret and returns draft content if valid. Without a valid secret, the preview routes return 403 Forbidden.
+The web app forwards the secret to the CMS API as the `x-sahajcloud-preview-secret` header. The
+CMS validates the secret and returns draft content when it is valid. Without a valid secret, the
+preview routes return 403 Forbidden.
 
 ## Security
 
-- **Preview secret**: Passed as URL query parameter, consumed server-side only (never reaches browser JS)
-- **Origin validation**: PostMessage events are validated against `PUBLIC__SAHAJCLOUD_URL`
-- **Fallback**: If the origin env var is not set, falls back to `'*'` with a console warning
-- **Type checking**: Message payloads are validated before processing
+- The preview secret stays server-side. It never reaches browser JavaScript.
+- The code validates every postMessage event against `PUBLIC__SAHAJCLOUD_URL`. When that env var is
+  unset, the validation uses `'*'` instead, and logs a console warning.
+- The code validates each message payload before it acts on it.
 
-## Implementation Details
+## Implementation
 
-### MeditationPreview Component
+**MeditationPreview** (`_components/MeditationPreview.tsx`):
+- Uses the `useLivePreview` hook for real-time content updates.
+- Listens for `SEEK_TO_TIME` through `window.addEventListener`.
+- Sends `PLAYBACK_TIME_UPDATE` through `window.parent.postMessage`.
+- Tracks seek state as `{ timestamp, id }`, so a repeated seek to the same position still fires.
 
-Located at `_components/MeditationPreview.tsx`:
-
-1. Uses `useLivePreview` hook from PayloadCMS for real-time content updates
-2. Listens for `SEEK_TO_TIME` messages via `window.addEventListener('message', ...)`
-3. Sends `PLAYBACK_TIME_UPDATE` messages via `window.parent.postMessage(...)`
-4. Uses counter-based seek state (`{ timestamp, id }`) to allow repeated seeks to same position
-
-### PagePreview Component
-
-Located at `_components/PagePreview.tsx`:
-
-- Handles page content preview (non-meditation content)
-- Uses same `useLivePreview` pattern for real-time updates
+**PagePreview** (`_components/PagePreview.tsx`) handles preview for non-meditation page content,
+using the same `useLivePreview` pattern.

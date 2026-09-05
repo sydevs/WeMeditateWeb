@@ -6,21 +6,20 @@ paths:
 
 # Tailwind CSS
 
-Tailwind v4.1.16 is configured via `@tailwindcss/vite` plugin using the **CSS-first configuration approach**.
+Tailwind v4.1.16 runs through the `@tailwindcss/vite` plugin, with CSS-first configuration.
 
-**Theme Configuration**: [layouts/tailwind.css](../../layouts/tailwind.css) - Uses `@theme` directive for customization:
-- Brand colors (teal, coral, gray palettes with semantic colors)
-- Typography (Raleway and Futura Book fonts with weights 200-700)
-- Custom font weights (200-700)
-- Semantic colors (error, success, info)
-- Uses Tailwind CSS defaults for spacing, font sizes, shadows, and animations
+**Theme configuration**: [layouts/tailwind.css](../../layouts/tailwind.css) sets the theme through
+the `@theme` directive:
+- Brand colors — teal, coral, and gray palettes, plus semantic colors (error, success, info)
+- Typography — Raleway and Futura Book, weights 200–700
+- Everything else uses Tailwind's defaults for spacing, font sizes, shadows, and animation
 
-**Important**: In Tailwind v4, theme customization is done via the `@theme` directive in CSS, NOT in `tailwind.config.ts`. The config file only specifies content paths for class detection.
+In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailwind.config.ts`.
+`tailwind.config.ts` only lists content paths for class detection.
 
-**Fonts**: Web fonts are loaded via [layouts/fonts.css](../../layouts/fonts.css):
-- Raleway (weights: 200, 300, 400, 500, 600, 700) - Primary font family
-- Futura Book (weight: 400) - Secondary font family
-- WeMeditate Icons - Custom icon font
-- Font files located in [public/fonts/](../../public/fonts/) (WOFF2 + WOFF formats)
-- Uses `font-display: swap` for optimal performance
-
+**Fonts**: [layouts/fonts.css](../../layouts/fonts.css) loads the web fonts:
+- Raleway, weights 200–700 — the primary font family
+- Futura Book, weight 400 — the secondary font family
+- WeMeditate Icons — a custom icon font
+- Font files live in [public/fonts/](../../public/fonts/), in WOFF2 and WOFF
+- Every `@font-face` rule sets `font-display: swap`

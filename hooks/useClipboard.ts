@@ -11,8 +11,8 @@ export interface UseClipboardOptions {
 export interface UseClipboardResult {
   /**
    * Copy text to the clipboard. Resolves to `true` on success, or `false` when
-   * the Clipboard API is unavailable or the write was rejected (e.g. insecure
-   * context or denied permission).
+   * the Clipboard API is unavailable or the write was rejected (for example,
+   * an insecure context or denied permission).
    */
   copy: (text: string) => Promise<boolean>
   /** True for `timeout` ms after the most recent successful copy. */
@@ -20,12 +20,13 @@ export interface UseClipboardResult {
 }
 
 /**
- * Tiny wrapper around `navigator.clipboard.writeText()` that exposes a `copied`
+ * Tiny wrapper around `navigator.clipboard.writeText()`. Exposes a `copied`
  * flag for transient "Copied!" feedback.
  *
- * Guards environments without the Clipboard API (SSR, insecure contexts, older
- * browsers) by returning `false` instead of throwing. The `copied` flag flips
- * back to false after `timeout` ms, and any pending timer is cleared on unmount.
+ * Guards environments without the Clipboard API (SSR, insecure contexts, and
+ * older browsers) by returning `false` instead of throwing an error. The
+ * `copied` flag flips back to false after `timeout` ms. The cleanup clears
+ * any pending timer when the component unmounts.
  *
  * @example
  * const { copy, copied } = useClipboard()

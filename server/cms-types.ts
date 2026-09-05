@@ -1,12 +1,11 @@
 /**
  * Application-specific type definitions for CMS content.
  *
- * These types provide a stable API for the application, independent of
- * the auto-generated PayloadCMS types. They include app-specific
- * conveniences like Locale type and list item types.
+ * These types give the application a stable API, independent of the
+ * auto-generated PayloadCMS types. They add app-specific conveniences,
+ * like the Locale type and list-item types.
  */
 
-// Import base types for extending
 import type {
   Config,
   Page,
@@ -20,18 +19,18 @@ import type {
   WmWebConfig,
 } from './payload-types'
 
-// Re-export core types from PayloadCMS generated types
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
 
-// Re-export the normalized Lecture view model and its pieces (pure, shared by
-// the server fetcher and the client live-preview). See lib/lecture-shape.ts.
+// Re-exports the normalized Lecture view model and its pieces. This pure
+// module is shared by the server fetcher and the client live preview.
+// See lib/lecture-shape.ts.
 export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../lib/lecture-shape'
 
 /**
  * WebConfig with populated relationships.
  *
- * Since we always use depth: 2 in our queries, all relationship fields
- * are fully populated objects, not just IDs.
+ * These queries always use depth: 2, so every relationship field is a
+ * fully populated object, not just an ID.
  */
 export interface WebConfig extends Omit<
   WmWebConfig,
@@ -57,7 +56,7 @@ export type Locale = Config['locale']
 export type PageStatus = 'draft' | 'published'
 
 /**
- * Simplified page reference (used in WeMeditateWebSettings navigation)
+ * Simplified page reference, used in WebConfig navigation.
  */
 export interface PageReference {
   id: string | number
@@ -75,7 +74,7 @@ export interface PageMeta {
 }
 
 /**
- * Minimal page data for lists (id, title, thumbnail)
+ * Minimal page data for lists (id, title, and meta image).
  */
 export interface PageListItem {
   id: string | number
@@ -98,10 +97,11 @@ export interface MeditationListItem {
  * Background-music track for a meditation, as returned by the
  * `GET /api/meditations/:id/songs` endpoint.
  *
- * That endpoint emits a fixed minimal projection (no album/artwork/duration/
- * credit) and encapsulates the songTag + `includeForMeditations` selection
- * server-side. The player layers one of these under the guided voice and needs
- * only a playable URL plus a title; see `getMeditationSongs` in cms-client.
+ * That endpoint emits a fixed minimal projection: no album, artwork,
+ * duration, or credit. It does the songTag and `includeForMeditations`
+ * selection on the server. The player layers one of these under the
+ * guided voice, and needs only a playable URL and a title. See
+ * `getMeditationSongs` in cms-client.
  */
 export interface MeditationSong {
   id: number
@@ -113,13 +113,14 @@ export interface MeditationSong {
  * A related meditation card, as returned by
  * `GET /api/lectures/:id/related-meditations` (SahajCloud #523).
  *
- * A *shaped* endpoint (like `/songs`): it encapsulates the node-overlap ranking
- * server-side, returns a fixed projection, and — crucially — drops any card
- * missing a public title / duration / thumbnail, so it never leaks the internal
- * admin `label`. Every field here is guaranteed present and displayable. The
- * grid is English-only in practice: meditation titles aren't localized, so the
- * endpoint returns an empty list for non-English locales (a hidden section, not
- * an error). See `getRelatedMeditations` in cms-client.
+ * A shaped endpoint, like `/songs`. It does the node-overlap ranking on
+ * the server, and returns a fixed projection. It also drops any card
+ * missing a public title, duration, or thumbnail, so the internal admin
+ * `label` never leaks. Every field here is guaranteed present and
+ * displayable. The grid is English-only in practice: meditation titles
+ * are not localized, so the endpoint returns an empty list for a
+ * non-English locale (a hidden section, not an error). See
+ * `getRelatedMeditations` in cms-client.
  */
 export interface RelatedMeditationCard {
   id: number
@@ -131,12 +132,13 @@ export interface RelatedMeditationCard {
 
 /**
  * A related lecture card, as returned by
- * `GET /api/meditations/:id/related-lectures` (the pre-existing mirror of the
- * endpoint above; requires the site's `audiences`).
+ * `GET /api/meditations/:id/related-lectures` (the mirror of the endpoint
+ * above, requiring the site's `audiences`).
  *
- * The endpoint returns the full lecture *player* projection (hls, subtitles,
- * clip window); we surface only the card-relevant subset. `durationSeconds` is
- * the playable length (clip window or full duration). See `getRelatedLectures`.
+ * The endpoint returns the full lecture player projection (HLS,
+ * subtitles, clip window). This type surfaces only the card-relevant
+ * subset. `durationSeconds` is the playable length: the clip window, or
+ * the full duration. See `getRelatedLectures`.
  */
 export interface RelatedLectureCard {
   id: number

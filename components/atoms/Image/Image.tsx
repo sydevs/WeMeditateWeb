@@ -26,32 +26,33 @@ export interface ImageProps extends ComponentProps<'img'> {
   alt: string
 
   /**
-   * Width of the image in pixels
-   * When provided with height, prevents layout shift during loading
+   * Width of the image in pixels. Together with height, this prevents
+   * layout shift during loading.
    */
   width?: number
 
   /**
-   * Height of the image in pixels
-   * When provided with width, prevents layout shift during loading
+   * Height of the image in pixels. Together with width, this prevents
+   * layout shift during loading.
    */
   height?: number
 
   /**
-   * Aspect ratio for the image container.
-   * Values align with Cloudflare Images variant prefixes so SahajCloud-hosted
-   * images are automatically optimized (e.g. `video` → `video-800`).
+   * Aspect ratio for the image container. Values align with Cloudflare
+   * Images variant prefixes, so this automatically optimizes
+   * SahajCloud-hosted images (for example `video` maps to `video-800`).
    * @default undefined (intrinsic aspect ratio)
    */
   aspectRatio?: AspectRatio
 
   /**
-   * When an `aspectRatio` is set, also crop the layout to a fixed box of that
-   * ratio (the `<img>` fills it via `absolute inset-0` + `object-fit`). The
-   * aspect ratio is still used to pick an optimized Cloudflare variant + srcset
-   * either way. Set `false` to keep the `<img>` in natural document flow (sized
-   * by its intrinsic `width`/`height`) while still fetching an optimized
-   * variant — used by feature blocks that render at the image's own ratio.
+   * When `aspectRatio` is set, this also crops the layout to a fixed box of
+   * that ratio: the `<img>` fills it through `absolute inset-0` and
+   * `object-fit`. The aspect ratio still picks an optimized Cloudflare
+   * variant and srcset either way. Set `false` to keep the `<img>` in
+   * natural document flow, sized by its intrinsic width and height, while
+   * still fetching an optimized variant. Feature blocks that render at the
+   * image's own ratio use this.
    * @default true
    */
   forceAspectRatio?: boolean
@@ -67,9 +68,9 @@ export interface ImageProps extends ComponentProps<'img'> {
    * Emit a responsive srcset for Cloudflare-hosted images.
    * Has no effect on non-Cloudflare URLs.
    *
-   * When true, a `sizes` attribute tuned for full-width viewport layouts is
-   * used by default. Callers rendering images inside grids, cards, or
-   * fixed-width containers should pass their own `sizes` prop so the browser
+   * When true, this uses a `sizes` attribute tuned for full-width viewport
+   * layouts by default. A caller that renders images inside grids, cards, or
+   * fixed-width containers should pass its own `sizes` prop, so the browser
    * picks the correct variant instead of over-fetching.
    * @default true
    */
@@ -94,8 +95,8 @@ export interface ImageProps extends ComponentProps<'img'> {
   showLoading?: boolean
 
   /**
-   * Color variant for the loading placeholder
-   * Only used when width and height are provided
+   * Color variant for the loading placeholder.
+   * This applies only when width and height are provided.
    * @default 'neutral'
    */
   placeholderVariant?: 'primary' | 'secondary' | 'neutral'
@@ -110,19 +111,20 @@ export interface ImageProps extends ComponentProps<'img'> {
   lightboxGroup?: string
 
   /**
-   * Position of this image within its {@link lightboxGroup}, in document order.
-   * Determines slide order and which slide the trigger opens. Must be unique per
-   * group (e.g. the map index for a gallery; `0` for a single-image group).
+   * Position of this image within its {@link lightboxGroup}, in document
+   * order. This determines slide order and which slide the trigger opens.
+   * It must be unique per group, for example the map index for a gallery,
+   * or `0` for a single-image group.
    * @default 0
    */
   lightboxIndex?: number
 }
 
 /**
- * Build a {@link LightboxSlide} for an image. For Cloudflare-hosted images the
- * largest configured variant is requested so the full-screen view (and zoom)
- * get the highest available resolution; other URLs are used as-is. The alt text
- * doubles as the slide caption.
+ * Build a {@link LightboxSlide} for an image. For a Cloudflare-hosted
+ * image, this requests the largest configured variant, so the full-screen
+ * view, and zoom, get the highest available resolution. Other URLs pass
+ * through as-is. The alt text doubles as the slide caption.
  */
 export function buildLightboxSlide(
   src: string,
@@ -138,19 +140,21 @@ export function buildLightboxSlide(
 }
 
 /**
- * Image component with responsive sizing and loading states.
+ * Image renders with responsive sizing and loading states.
  *
- * Provides consistent image rendering with aspect ratio control.
- * Supports loading states and various object-fit options.
+ * It gives consistent image rendering with aspect ratio control, loading
+ * states, and several object-fit options.
  *
- * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio`
- * is set, the component automatically appends a variant (`{aspectRatio}-{width}`)
- * and emits a responsive srcset. The default `sizes` attribute assumes a
- * roughly full-width viewport layout — pass an explicit `sizes` prop when
- * rendering inside grids, cards, or fixed-width containers.
+ * When `src` is a Cloudflare Images URL (imagedelivery.net) and
+ * `aspectRatio` is set, the component automatically appends a variant
+ * (`{aspectRatio}-{width}`) and emits a responsive srcset. The default
+ * `sizes` attribute assumes a roughly full-width viewport layout. Pass an
+ * explicit `sizes` prop when rendering inside grids, cards, or fixed-width
+ * containers.
  *
- * When width and height are provided, uses a blurred gradient placeholder
- * with shimmer animation to prevent layout shift during loading.
+ * When width and height are provided, the component uses a blurred
+ * gradient placeholder, with a shimmer animation, to prevent layout shift
+ * during loading.
  *
  * @example
  * <Image src="/path/to/image.jpg" alt="Description" />
@@ -190,10 +194,10 @@ export function Image({
     [lightbox, lightboxGroup, src, alt, aspectRatio],
   )
 
-  // Register the slide with the ambient provider so the shared overlay can show
-  // it, keyed by its document-order index. Effects don't run during SSR, so
-  // registration happens on the client after hydration; the trigger markup
-  // itself renders on both.
+  // Register the slide with the ambient provider, so the shared overlay can
+  // show it, keyed by its document-order index. Effects do not run during
+  // SSR, so registration happens on the client after hydration. The trigger
+  // markup itself renders on both.
   useEffect(() => {
     if (!lightbox || !lightboxGroup || !slide) {
       return
@@ -215,12 +219,13 @@ export function Image({
     }
   }, [src, aspectRatio, size, responsive])
 
-  // Reset loading/error state when the resolved src changes in place (a
-  // persistent <Image> whose `src` prop mutates, e.g. the AudioPlayer now-playing
-  // thumbnail on track switch). React's "adjust state during render" pattern runs
-  // before paint, so the new image shows its placeholder instead of briefly
-  // flashing the previous (or a stuck error) state; the effect below then clears
-  // `isLoading` immediately if the new src is already cached.
+  // Reset loading and error state when the resolved src changes in place.
+  // This happens for a persistent <Image> whose `src` prop mutates, for
+  // example the AudioPlayer now-playing thumbnail on a track switch. React's
+  // "adjust state during render" pattern runs before paint, so the new
+  // image shows its placeholder instead of briefly flashing the previous
+  // state, or a stuck error state. The effect below then clears `isLoading`
+  // immediately if the new src is already cached.
   const [loadedSrc, setLoadedSrc] = useState(imageSrc)
 
   if (imageSrc !== loadedSrc) {
@@ -229,12 +234,13 @@ export function Image({
     setHasError(false)
   }
 
-  // A cached image can already be `complete` before React attaches `onLoad`, so
-  // the load event never reaches our handler and `isLoading` stays stuck `true`
-  // (placeholder lingers, image held at opacity-0). Effects don't run during SSR,
-  // so on mount — and whenever the resolved src changes — re-check `complete` and
-  // clear the loading state for an already-decoded image. `naturalWidth > 0`
-  // excludes broken images so `onError` still owns the error path.
+  // A cached image can already be `complete` before React attaches
+  // `onLoad`, so the load event never reaches this component's handler, and
+  // `isLoading` stays stuck at `true`: the placeholder lingers, and the
+  // image stays at opacity-0. Effects do not run during SSR. So on mount,
+  // and whenever the resolved src changes, this re-checks `complete` and
+  // clears the loading state for an already-decoded image. `naturalWidth >
+  // 0` excludes broken images, so `onError` still owns the error path.
   useEffect(() => {
     const img = imgRef.current
 
@@ -243,10 +249,11 @@ export function Image({
     }
   }, [imageSrc, imageSrcSet])
 
-  // `aspectRatio` always drives Cloudflare variant/srcset selection (above), but
-  // only constrains the layout to a fixed-ratio box when `forceAspectRatio`
-  // is set (the default). Natural-flow callers pass `forceAspectRatio=false`
-  // to render the image at its own ratio while still fetching an optimized variant.
+  // `aspectRatio` always drives Cloudflare variant and srcset selection
+  // (above), but it constrains the layout to a fixed-ratio box only when
+  // `forceAspectRatio` is set, the default. A natural-flow caller passes
+  // `forceAspectRatio=false` to render the image at its own ratio, while
+  // still fetching an optimized variant.
   const boxed = Boolean(aspectRatio) && forceAspectRatio
 
   const aspectRatioStyles =
@@ -285,11 +292,12 @@ export function Image({
     onError?.(e)
   }
 
-  // An empty `src` must never reach the <img>: the browser treats src="" as a
-  // request for the current page URL (re-downloading the whole document) and
-  // React warns about it. This happens when a caller threads an unpopulated CMS
-  // image field (e.g. a bare/absent relationship) straight through. Treat a
-  // blank src as a missing image — skip the <img> and let the placeholder show.
+  // An empty `src` must never reach the <img>: the browser treats src=""
+  // as a request for the current page URL, which re-downloads the whole
+  // document, and React warns about it. This happens when a caller threads
+  // an unpopulated CMS image field straight through, for example a bare or
+  // absent relationship. Treat a blank src as a missing image: skip the
+  // <img> and let the placeholder show.
   const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''
 
   // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
@@ -301,12 +309,13 @@ export function Image({
 
   const content = (
     <>
-      {/* Loading/error overlay. It's always positioned `absolute inset-0` to fill
-          the container the image occupies, so it must NOT take explicit pixel
-          dimensions — passing the intrinsic width/height here would size the
-          overlay to the raw image and anchor it top-left, overflowing/clipping
-          instead of matching the rendered image box. The <img>'s own width/height
-          attributes reserve layout space and prevent shift. */}
+      {/* Loading and error overlay. This always positions `absolute
+          inset-0`, to fill the container the image occupies, so it must not
+          take explicit pixel dimensions. Passing the intrinsic width and
+          height here would size the overlay to the raw image and anchor it
+          top-left, overflowing or clipping instead of matching the rendered
+          image box. The <img>'s own width and height attributes reserve
+          layout space and prevent shift. */}
       {showLoading && (isLoading || hasError || !hasSrc) && (
         <Placeholder
           animate={!hasError && hasSrc}
@@ -317,7 +326,7 @@ export function Image({
         </Placeholder>
       )}
 
-      {/* Image element (hidden until loaded; skipped on error or a blank src) */}
+      {/* Image element. Hidden until loaded, and skipped on error or a blank src. */}
       {!hasError && hasSrc && (
         <img
           ref={imgRef}
@@ -337,9 +346,10 @@ export function Image({
     </>
   )
 
-  // With a lightboxGroup and a provider mounted above, render the image as a
-  // focusable trigger that opens the shared lightbox at this image's slide;
-  // otherwise the container is unchanged (no wrapper element, no click handler).
+  // With a lightboxGroup and a provider mounted above, this renders the
+  // image as a focusable trigger that opens the shared lightbox at this
+  // image's slide. Otherwise the container stays unchanged: no wrapper
+  // element, no click handler.
   if (lightbox && lightboxGroup) {
     return (
       <button

@@ -13,7 +13,7 @@ describe('Header', () => {
   it('renders the full banner by default', () => {
     const html = render()
 
-    // The banner carries the decorative illustration; the condensed bar doesn't.
+    // The banner carries the decorative illustration. The condensed bar does not.
     expect(html).toContain('<svg')
     expect(html).toContain('Classes near me')
     expect(html).toContain('Meditate Now')

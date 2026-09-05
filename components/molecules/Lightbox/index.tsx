@@ -9,11 +9,11 @@ const LightboxLazy = React.lazy(() =>
 /**
  * Worker-safe lightbox overlay.
  *
- * The implementation — and the browser-only `yet-another-react-lightbox`
- * library it pulls in — is loaded only in the browser via `ClientOnly` +
- * `React.lazy`, so it never enters the SSR / Workers bundle (mirroring the
- * VideoPlayer / LocationSearch pattern). Renders nothing on the server; callers
- * (the `LightboxProvider`) mount it only once a slide group is open.
+ * `ClientOnly` and `React.lazy` load the implementation, and the
+ * browser-only `yet-another-react-lightbox` library it pulls in, only in
+ * the browser. So it never enters the SSR or Workers bundle, mirroring the
+ * VideoPlayer and LocationSearch pattern. It renders nothing on the server.
+ * Callers, the `LightboxProvider`, mount it only once a slide group is open.
  */
 export function Lightbox(props: LightboxImplProps) {
   return (

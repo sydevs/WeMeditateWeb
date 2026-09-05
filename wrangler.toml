@@ -3,7 +3,7 @@ compatibility_date = "2025-09-06"
 compatibility_flags = ["nodejs_compat"]
 main = "virtual:photon:cloudflare:server-entry"
 
-# KV namespace for caching SahajCloud data
+# KV namespace that caches SahajCloud data.
 # To create: pnpm wrangler kv namespace create "WEMEDITATE_CACHE"
 # For preview: pnpm wrangler kv namespace create "WEMEDITATE_CACHE" --preview
 [[kv_namespaces]]
@@ -13,24 +13,24 @@ preview_id = "cf4eaa694eed4a7aa7f0482905e496a1"
 
 # Environment Variables
 #
-# SECURITY: Only put NON-SENSITIVE values here (this file is in git)
+# SECURITY: Put only non-sensitive values here. Git tracks this file.
 #
-# For secrets, use Cloudflare dashboard encrypted secrets:
+# Store secrets as encrypted variables in the Cloudflare dashboard:
 # Workers & Pages → wemeditate-web → Settings → Environment variables
 #
-# Required secrets in Cloudflare dashboard:
+# Required secrets in the Cloudflare dashboard:
 # - SAHAJCLOUD_API_KEY (server-side only)
 # - PUBLIC__MAPBOX_ACCESS_TOKEN (browser-accessible, but still secret)
 # - PUBLIC__SENTRY_DSN (browser-accessible, but still secret)
 # - SENTRY_DSN (server-side only)
 #
 # Build-time PUBLIC__* variables:
-# - Defined in .env.production (committed to git, no secrets)
-# - Embedded by Vite during production build
+# - Set in .env.production (tracked in git, no secrets)
+# - Vite embeds these values during the production build
 # - Example: PUBLIC__SAHAJCLOUD_URL
 #
-# Note: wrangler.toml [vars] are runtime-only and NOT available during Vite build.
-# Use .env.production for PUBLIC__* variables that need to be in client bundles.
+# Note: [vars] in this file are runtime-only. Vite cannot read them at build
+# time. Put client-visible PUBLIC__* values in .env.production instead.
 
 [vars]
 PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"

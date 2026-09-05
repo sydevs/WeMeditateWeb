@@ -20,8 +20,8 @@ export const Default: Story = () => {
     duration: 485, // 8:05
   }
 
-  // Background-music tracks (as returned by GET /api/meditations/:id/songs). Open
-  // the speaker popover to reveal the Voice + Music sliders and the shuffle button.
+  // Background-music tracks (as returned by GET /api/meditations/:id/songs).
+  // Open the speaker popover to reveal the Voice and Music sliders and the shuffle button.
   const sampleMusicTracks = [
     {
       id: 1,

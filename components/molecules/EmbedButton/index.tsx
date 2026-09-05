@@ -9,10 +9,11 @@ const EmbedButtonLazy = React.lazy(() =>
 /**
  * Client-only wrapper around EmbedButton.
  *
- * The button reads `window.location.origin` and the Clipboard API, so — like
- * VideoPlayer/LocationSearch — the implementation loads only in the browser via
- * ClientOnly + React.lazy. It renders nothing during SSR (no fallback needed —
- * it is supplementary player chrome, not content).
+ * The button reads `window.location.origin` and the Clipboard API. So,
+ * like VideoPlayer and LocationSearch, the implementation loads only in
+ * the browser, through ClientOnly and React.lazy. It renders nothing
+ * during SSR. It needs no fallback, because it is supplementary player
+ * chrome, not content.
  */
 export function EmbedButton(props: EmbedButtonProps) {
   return (
