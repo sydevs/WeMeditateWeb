@@ -8,7 +8,7 @@ export type {
 export { usePlaylistAudioPlayer } from './usePlaylistAudioPlayer'
 export type { UsePlaylistAudioPlayerOptions } from './usePlaylistAudioPlayer'
 
-// Re-export types from AudioPlayer component for convenience
+// Re-exports types from the AudioPlayer component
 export type {
   Track,
   PlaylistAudioPlayerState,

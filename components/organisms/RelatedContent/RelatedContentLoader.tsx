@@ -7,7 +7,7 @@ import { Spinner } from '../../atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
 
 export interface RelatedContentLoaderProps {
-  /** Section heading, e.g. "Related meditations" / "Related lectures". */
+  /** Section heading, for example "Related meditations" or "Related lectures". */
   title: string
   /**
    * Which same-origin JSON route to load (see server/api-routes.ts):
@@ -23,15 +23,17 @@ export interface RelatedContentLoaderProps {
 /**
  * Client-side loader for the related-content section.
  *
- * The related endpoints are slow (~5–12s, KV-cached), so fetching them in a
- * Vike `data()` hook would block SSR and trip the slow-hook warning. Instead the
- * player page renders immediately and this loader fetches the (already mapped)
- * cards from `/api/:kind/:anchorId` after mount.
+ * The related endpoints are slow (about 5 to 12 seconds, KV-cached), so
+ * fetching them in a Vike `data()` hook would block SSR and trip the
+ * slow-hook warning. Instead the player page renders immediately, and this
+ * loader fetches the already-mapped cards from `/api/:kind/:anchorId` after
+ * mount.
  *
- * While the fetch is in flight (`items === null`) it shows the heading + a
- * spinner so the wait is visible; it then swaps in the carousel, or renders
- * nothing if the result is empty (e.g. a non-English locale). SSR and the first
- * client render both show the loading state, so there's no hydration mismatch.
+ * While the fetch is in flight, `items === null`, it shows the heading and
+ * a spinner, so the wait stays visible. It then swaps in the carousel, or
+ * renders nothing if the result is empty, for example for a non-English
+ * locale. SSR and the first client render both show the loading state, so
+ * there is no hydration mismatch.
  */
 export function RelatedContentLoader({
   title,
@@ -40,7 +42,7 @@ export function RelatedContentLoader({
   className,
 }: RelatedContentLoaderProps) {
   const { locale } = usePageContext()
-  // null → loading (fetch in flight); [] → loaded but empty; [...] → loaded.
+  // null → loading (fetch in flight). [] → loaded but empty. [...] → loaded.
   const [items, setItems] = useState<ResolvedCardItem[] | null>(null)
 
   useEffect(() => {

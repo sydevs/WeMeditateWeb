@@ -1,18 +1,20 @@
 /**
- * Data fetching for preview mode - supports multiple content types (pages, meditations, etc.)
+ * Data fetching for preview mode. Supports multiple content types (pages,
+ * meditations, and more).
  *
  * This endpoint handles SahajCloud live preview for any collection type.
- * Uses LayoutChrome (full chrome with Header/Footer) which requires WeMeditateWebSettings.
+ * It uses LayoutChrome (full chrome, with Header and Footer), which needs
+ * WeMeditateWebSettings.
  *
- * URL Parameters:
- * - collection: Collection name (e.g., "pages", "meditations")
- * - id: Document ID to preview
- * - secret: Preview secret for authentication (required)
+ * URL parameters:
+ * - collection: collection name (for example, "pages", "meditations")
+ * - id: document ID to preview
+ * - secret: preview secret for authentication (required)
  *
- * Adding a new content type:
- * 1. Add to COLLECTION_BY_ID_CONFIG in server/cms-client.ts
- * 2. Add to collectionSchema in server/validation.ts
- * 3. Add to the discriminated union types in _components/types.ts
+ * To add a new content type:
+ * 1. Add it to COLLECTION_BY_ID_CONFIG in server/cms-client.ts
+ * 2. Add it to collectionSchema in server/validation.ts
+ * 3. Add it to the discriminated union types in _components/types.ts
  * 4. Add a <Collection>Preview component and a case in _components/Preview.tsx
  */
 
@@ -70,8 +72,8 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   // Fetch WeMeditateWebSettings (required for LayoutChrome with Header/Footer)
   const settings = await getWebConfig({ locale })
 
-  // Fetch content using the generic document fetcher
-  // Always bypass cache in preview mode to ensure fresh data
+  // Fetch content with the generic document fetcher.
+  // Always bypass the cache in preview mode, for fresh data.
   const data = await getDocumentById({
     collection,
     id,
@@ -81,7 +83,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   })
 
   if (!data) {
-    // Content not found - this is a valid 404 state, not an error
+    // Content not found. This is a valid 404 state, not an error.
     throw render(404, `${collection} content not found.`)
   }
 
@@ -97,10 +99,11 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
     })
   }
 
-  // Background music for meditation previews — keeps the live player in sync
-  // with the published routes (other collections have none). Related content is
-  // NOT fetched here — the preview page renders it client-side like the live
-  // routes (RelatedContentLoader), since the ranking endpoints are slow.
+  // Background music for meditation previews. This keeps the live player
+  // in sync with the published routes (other collections have none).
+  // Related content is not fetched here. The preview page renders it
+  // client-side, like the live routes (RelatedContentLoader), because the
+  // ranking endpoints are slow.
   const musicTracks = collection === 'meditations' ? await getMeditationSongs({ id, locale }) : []
 
   // Return discriminated union based on collection type

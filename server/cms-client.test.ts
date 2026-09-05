@@ -9,13 +9,13 @@ import {
 import { createPayloadClient } from './payload-client'
 import type { Page } from './cms-types'
 
-// Stub the SDK factory so we can capture the query, and the cache so the
-// fetch function runs synchronously without KV.
+// Stub the SDK factory to capture the query. Stub the cache so the
+// fetch function runs synchronously, without KV.
 vi.mock('./payload-client', () => ({
   createPayloadClient: vi.fn(),
   validateSDKResponse: (value: unknown) => value,
 }))
-// The shaped nested-route fetchers (related-*) read apiKey/baseURL from context.
+// The shaped nested-route fetchers (related-*) read apiKey and baseURL from context.
 vi.mock('./cms-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
 }))
@@ -27,7 +27,7 @@ vi.mock('./kv-cache', async (importOriginal) => {
   return { ...actual, withCache: (opts: { fetchFn: () => unknown }) => opts.fetchFn() }
 })
 
-/** Build a fetch Response stub for the given status + JSON body. */
+/** Builds a fetch Response stub for the given status and JSON body. */
 function fetchResponse(status: number, body: unknown) {
   return { ok: status >= 200 && status < 300, status, json: async () => body }
 }
@@ -38,8 +38,8 @@ describe('partitionPublishedPages', () => {
   it('keeps published pages with a slug; flags bare IDs (unpublished) and slugless objects', () => {
     const { published, unresolved } = partitionPublishedPages([
       page(10, 'meditate-now'),
-      7, // unpublished page → CMS returns a bare id instead of a populated object
-      page(99, ''), // populated but no slug → can't form a link
+      7, // unpublished page: the CMS returns a bare id instead of a populated object
+      page(99, ''), // populated but no slug: cannot form a link
     ])
 
     expect(published.map((p) => p.slug)).toEqual(['meditate-now'])
@@ -65,7 +65,7 @@ describe('getWebConfig featuredArticles', () => {
       id: 1,
       homePage: page(1, 'home'),
       featuredPages: [page(2, 'about')],
-      // One published article + one unpublished page (returned as a bare id).
+      // One published article, and one unpublished page (returned as a bare id).
       featuredArticles: [page(3, 'history-of-meditation'), 42],
       classPages: [],
       knowledgePages: [page(4, 'kundalini')],
@@ -79,7 +79,7 @@ describe('getWebConfig featuredArticles', () => {
 
     // The read must request featuredArticles (per server/AGENTS.md).
     expect(args.select.featuredArticles).toBe(true)
-    // The bare-id (unpublished) ref is dropped; only linkable articles remain.
+    // The bare-id (unpublished) ref is dropped. Only linkable articles remain.
     expect(config.featuredArticles.map((p) => p.slug)).toEqual(['history-of-meditation'])
   })
 })
@@ -98,11 +98,11 @@ describe('getPageBySlug query shape', () => {
 
     expect(args.collection).toBe('pages')
     expect(args.depth).toBe(3)
-    // Embedded content relationships are populated narrowly...
+    // Embedded content relationships are populated narrowly.
     expect(Object.keys(args.populate)).toEqual(
       expect.arrayContaining(['pages', 'meditations', 'lectures', 'albums', 'app-cards', 'images']),
     )
-    // ...and the embedded page select omits the heavy `content` field.
+    // The embedded page select also omits the heavy `content` field.
     expect(args.populate.pages.slug).toBe(true)
     expect(args.populate.pages.content).toBeUndefined()
   })
@@ -167,7 +167,7 @@ describe('getRelatedMeditations', () => {
     const cards = await getRelatedMeditations({ id: '163', locale: 'en' })
 
     expect(cards.map((c) => c.id)).toEqual([3])
-    // narratorName is optional in the payload; defaults to '' so the card type holds.
+    // narratorName is optional in the payload. It defaults to '', so the card type holds.
     expect(cards[0].narratorName).toBe('')
   })
 
@@ -195,8 +195,9 @@ describe('getRelatedLectures', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [] })).toEqual([])
-    // Defensive: the field is typed required, but pre-config it can be nullish at
-    // runtime (the deploy ships an empty audience set) — guard against it anyway.
+    // Defensive. The field is typed required, but before config it can be
+    // nullish at runtime (the deploy ships an empty audience set). Guard
+    // against it anyway.
     expect(
       await getRelatedLectures({
         id: '142',
@@ -228,7 +229,7 @@ describe('getRelatedLectures', () => {
     const cards = await getRelatedLectures({
       id: '142',
       locale: 'en',
-      // Mixed bare id + populated audience object → both ids sent.
+      // Mixed bare id and populated audience object: both ids sent.
       audiences: [1, { id: 6 } as never],
       limit: 6,
     })

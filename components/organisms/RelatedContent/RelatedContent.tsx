@@ -2,7 +2,7 @@ import type { ResolvedCardItem } from '../../../lib/cms-blocks'
 import { ContentCarousel } from '../../molecules/blocks/ContentCarousel/ContentCarousel'
 
 export interface RelatedContentProps {
-  /** Section heading, e.g. "Related meditations" / "Related lectures". */
+  /** Section heading, for example "Related meditations" or "Related lectures". */
   title: string
   /**
    * Server-resolved related cards (see lib/related-content.ts). An empty list
@@ -13,24 +13,25 @@ export interface RelatedContentProps {
 }
 
 /**
- * RelatedContent organism — a titled `ContentCarousel` of related cards shown
+ * RelatedContent is a titled `ContentCarousel` of related cards, shown
  * below a meditation or lecture player.
  *
- * Renders `null` when there are no items, so a page with no matches (or a
- * degraded/empty fetch, or a non-English locale where meditation titles don't
- * resolve) omits the whole section rather than showing a bare heading. It is
- * loaded client-side by RelatedContentLoader, so `items` is empty until the
- * (slow, KV-cached) related-content fetch resolves — nothing renders meanwhile.
+ * It renders `null` when there are no items, so a page with no matches, or
+ * a degraded or empty fetch, or a non-English locale where meditation
+ * titles do not resolve, omits the whole section instead of showing a bare
+ * heading. RelatedContentLoader loads it client-side, so `items` stays
+ * empty until the slow, KV-cached related-content fetch resolves. Nothing
+ * renders meanwhile.
  */
 export function RelatedContent({ title, items, className = '' }: RelatedContentProps) {
   if (items.length === 0) {
     return null
   }
 
-  // ContentCarousel items are `Omit<ContentCardProps, 'variant'>`; strip the
-  // fields ResolvedCardItem carries that ContentCardProps doesn't model (`id`
-  // is `string | number`, `tags` is a facet list) so they aren't spread onto
-  // the ContentCard DOM node.
+  // ContentCarousel items are `Omit<ContentCardProps, 'variant'>`. Strip the
+  // fields that ResolvedCardItem carries but ContentCardProps does not
+  // model: `id` is `string | number`, and `tags` is a facet list. This
+  // keeps them from spreading onto the ContentCard DOM node.
   const carouselItems = items.map(({ id: _id, tags: _tags, ...card }) => card)
 
   return (

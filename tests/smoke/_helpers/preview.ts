@@ -1,10 +1,10 @@
 /**
  * Shared helpers for smoke specs that hit the deployed Cloudflare preview.
  *
- * The app has no database — every page is rendered server-side from the
- * production PayloadCMS. These helpers verify the Worker actually returns real
- * rendered content (not an error boundary) over plain HTTP, which is the right
- * altitude for "did the server load the page?".
+ * The app has no database. Every page renders server-side from the
+ * production PayloadCMS. These helpers verify that the Worker returns
+ * real rendered content (not an error boundary) over plain HTTP. That is
+ * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
 
@@ -30,7 +30,7 @@ export interface PageResult {
   html: string
 }
 
-/** Fetch a path on the preview and return status + body + key headers. */
+/** Fetch a path on the preview, and return the status, body, and key headers. */
 export async function fetchPage(
   path: string,
   init: { redirect?: RequestRedirect } = {},
@@ -40,7 +40,7 @@ export async function fetchPage(
     signal: AbortSignal.timeout(20_000),
     headers: { 'User-Agent': 'wemeditate-smoke' },
   })
-  // 3xx responses (redirect: 'manual') have no useful body; guard the read.
+  // A 3xx response (redirect: 'manual') has no useful body. Guard the read.
   const html = res.status >= 300 && res.status < 400 ? '' : await res.text()
 
   return {
@@ -53,9 +53,10 @@ export async function fetchPage(
 }
 
 /**
- * Error-page / error-boundary titles rendered by ErrorFallback + the _error
- * route. Copied verbatim from components/molecules/ErrorFallback/ErrorFallback.tsx
- * (TITLE_BY_TYPE). A real content page must contain none of these.
+ * Error-page and error-boundary titles that ErrorFallback and the _error
+ * route render. Copied verbatim from
+ * components/molecules/ErrorFallback/ErrorFallback.tsx (TITLE_BY_TYPE). A
+ * real content page must contain none of these.
  */
 export const ERROR_MARKERS = [
   'Service Temporarily Unavailable', // ErrorType.SERVER (500)
@@ -82,20 +83,21 @@ export function expectRenders(page: PageResult, path: string): void {
 }
 
 /**
- * Header/Footer tags emitted only by LayoutChrome — i.e. only on routes that opt
- * into the site chrome. Embed routes (LayoutRoot only) render neither, so these
- * cleanly distinguish a chromed page from a bare one.
+ * Header and Footer tags that only LayoutChrome emits, that is, only on
+ * routes that opt into the site chrome. Embed routes (LayoutRoot only)
+ * render neither, so these cleanly separate a chromed page from a bare
+ * one.
  */
 const CHROME_MARKERS = ['<header', '<footer'] as const
 
-/** Assert the page rendered with the full site chrome (Header + Footer). */
+/** Assert the page rendered with the full site chrome (Header and Footer). */
 export function expectChrome(page: PageResult, path: string): void {
   for (const marker of CHROME_MARKERS) {
     expect(page.html.includes(marker), `${path} should render site chrome ("${marker}")`).toBe(true)
   }
 }
 
-/** Assert the page rendered bare — no site chrome (e.g. an embed route). */
+/** Assert the page rendered bare, with no site chrome (for example, an embed route). */
 export function expectNoChrome(page: PageResult, path: string): void {
   for (const marker of CHROME_MARKERS) {
     expect(
@@ -106,10 +108,11 @@ export function expectNoChrome(page: PageResult, path: string): void {
 }
 
 /**
- * Assert the HTML has no broken internal links — i.e. links to "/undefined" or
- * "/null", which appear when a page relationship (e.g. a nav item) is fetched
- * without its slug resolved. Catches under-populated CMS reads that otherwise
- * render a 200 page with dead navigation.
+ * Assert the HTML has no broken internal links, that is, links to
+ * "/undefined" or "/null". These appear when a page fetches a
+ * relationship (for example, a nav item) without resolving its slug.
+ * This catches under-populated CMS reads that would otherwise render a
+ * 200 page with dead navigation.
  */
 export function expectNoBrokenLinks(html: string, path: string): void {
   const broken = [
@@ -158,7 +161,7 @@ export interface CmsSamples {
 }
 
 /**
- * Serialize nested params into PayloadCMS's qs bracket format, e.g.
+ * Serialize nested params into PayloadCMS's qs bracket format. For example,
  * { select: { meta: { title: true } } } → "select[meta][title]=true".
  */
 function toQueryString(params: Record<string, unknown>, prefix = ''): string {
@@ -173,8 +176,9 @@ function toQueryString(params: Record<string, unknown>, prefix = ''): string {
     .join('&')
 }
 
-// The CMS enforces select/populate on collection reads via a query-validation
-// hook (PR #23), so bare queries 400. Mirror the shapes cms-client.ts uses.
+// The CMS enforces select and populate on collection reads, through a
+// query-validation hook (PR #23), so a bare query returns 400. This
+// mirrors the shapes cms-client.ts uses.
 const PAGE_SELECT = {
   title: true,
   slug: true,
@@ -187,9 +191,10 @@ const IMAGE_POPULATE = {
 }
 
 /**
- * Optionally pull deterministic sample content from the production CMS so
- * ID-specific specs (meditations, lectures) always have a target. Requires the
- * SAHAJCLOUD_API_KEY secret; returns null when it's absent so callers test.skip.
+ * Optionally pull deterministic sample content from the production CMS,
+ * so ID-specific specs (meditations, lectures) always have a target.
+ * Requires the SAHAJCLOUD_API_KEY secret. Returns null when the secret is
+ * absent, so callers can call test.skip.
  */
 export async function discoverFromCms(): Promise<CmsSamples | null> {
   const apiKey = process.env.SAHAJCLOUD_API_KEY
@@ -211,8 +216,9 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
         signal: AbortSignal.timeout(15_000),
       })
 
-      // Log why discovery found nothing so a silent skip is diagnosable in CI
-      // (e.g. 403 = unauthorized key vs. 0 docs = no published content).
+      // Log why discovery found nothing, so a silent skip is diagnosable
+      // in CI (for example, 403 means an unauthorized key, and 0 docs
+      // means no published content).
       if (!res.ok) {
         console.warn(`[discoverFromCms] GET /api/${collection} → HTTP ${res.status}`)
 

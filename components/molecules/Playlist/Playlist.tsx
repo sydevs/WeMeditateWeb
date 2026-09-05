@@ -5,7 +5,7 @@ import type { HeroIcon } from '../../atoms/Icon/Icon'
 
 export interface MusicFilter {
   /**
-   * Filter identifier (e.g., 'strings', 'vocal', 'wind')
+   * Filter identifier, for example 'strings', 'vocal', 'wind'
    */
   id: string
 
@@ -58,7 +58,7 @@ export interface PlaylistProps extends Omit<ComponentProps<'div'>, 'children'> {
 }
 
 /**
- * PlaylistItem subcomponent - Individual track item in the playlist
+ * PlaylistItem is a subcomponent: an individual track item in the playlist.
  */
 interface PlaylistItemProps {
   track: Track
@@ -116,7 +116,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
 }
 
 /**
- * Playlist molecule - Displays a scrollable list of audio tracks
+ * Playlist is a molecule that displays a scrollable list of audio tracks.
  *
  * Features:
  * - Current track highlighting

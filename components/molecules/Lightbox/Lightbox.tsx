@@ -23,13 +23,13 @@ export interface LightboxImplProps {
 /**
  * Full-screen image lightbox wrapping `yet-another-react-lightbox`.
  *
- * Browser-only (it imports the library and its CSS), so it is loaded lazily
- * behind `ClientOnly` via the directory barrel — never statically — to keep the
- * library out of the SSR / Workers bundle.
+ * This is browser-only, because it imports the library and its CSS. So the
+ * directory barrel loads it lazily behind `ClientOnly`, never statically,
+ * to keep the library out of the SSR or Workers bundle.
  *
- * Captions render each slide's `description`; Zoom handles scroll, double-click/
- * tap and pinch. Thumbnails and the prev/next carousel are only meaningful for
- * multi-slide groups, so they are dropped for a single slide.
+ * Captions render each slide's `description`. Zoom handles scroll,
+ * double-click or tap, and pinch. Thumbnails and the previous and next
+ * carousel matter only for multi-slide groups, so they drop for a single slide.
  */
 export function Lightbox({ slides, open, index, close }: LightboxImplProps) {
   const single = slides.length <= 1
@@ -41,8 +41,9 @@ export function Lightbox({ slides, open, index, close }: LightboxImplProps) {
       index={index}
       open={open}
       plugins={plugins}
-      // A single slide has nowhere to navigate, so drop the prev/next arrows
-      // (YARL would otherwise show them and wrap back to the same image).
+      // A single slide has nowhere to navigate, so this drops the previous
+      // and next arrows. YARL would otherwise show them and wrap back to
+      // the same image.
       render={single ? { buttonPrev: () => null, buttonNext: () => null } : undefined}
       slides={slides}
       zoom={{ scrollToZoom: true }}

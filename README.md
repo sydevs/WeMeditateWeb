@@ -1,6 +1,7 @@
 # WeMeditateWeb
 
-Welcome! This repo powers the WeMeditate web experience. It is a fast, accessible meditation site built with React, TypeScript, Vike, Tailwind CSS, and Cloudflare Workers.
+This repo builds the WeMeditate site. It uses React, TypeScript, Vike, Tailwind CSS, and
+Cloudflare Workers.
 
 ## Quick start
 
@@ -9,23 +10,15 @@ Welcome! This repo powers the WeMeditate web experience. It is a fast, accessibl
 - pnpm (`npm install -g pnpm`)
 
 ### Setup
-1. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-
-2. Create your local environment file:
-   ```bash
-   pnpm env:setup
-   ```
-
-3. Fill in `.env.local` using `.env.example` as a reference.
+1. Install dependencies: `pnpm install`
+2. Create your local environment file: `pnpm env:setup`
+3. Add your values to `.env.local`. Use `.env.example` as a reference.
 
 ### Run locally
 ```bash
 pnpm dev
 ```
-Then open `http://localhost:5173`.
+Open `http://localhost:5173`.
 
 ## Key commands
 
@@ -43,7 +36,7 @@ Then open `http://localhost:5173`.
 | `pnpm ladle` | Run the component library locally. |
 | `pnpm ladle:build` | Build the component library for static hosting. |
 | `pnpm env:setup` | Copy `.env.example` to `.env.local`. |
-| `pnpm types:cms` | Refresh CMS types from the external Payload repo (requires network). |
+| `pnpm types:cms` | Refresh CMS types from the external Payload repo (needs network access). |
 
 ## Project structure
 
@@ -57,17 +50,16 @@ public/         # Static assets
 ```
 
 ## Working agreements
-- Review `DEVELOPMENT_STANDARDS.md` before making changes.
 - Follow the component rules in `DESIGN_SYSTEM.md`.
 - Use `STORYBOOK.md` for component library guidance.
 
-## Help & docs
-- `AGENTS.md` provides the project guide (`CLAUDE.md` is a symlink to it) and maps where everything else lives.
-- `docs/rules/` holds the path-scoped rules; `.claude/rules/` symlinks to them so Claude Code loads each one when a matching file is read.
-- `.claude/skills/` holds the multi-step procedures (component development, design extraction, batch refactoring, dependency updates).
-- `MCP_USAGE.md` documents MCP usage.
+## Help and docs
+- `AGENTS.md` is the project guide (`CLAUDE.md` symlinks to it). It maps where everything else
+  lives, including `docs/rules/` (path-scoped rules) and `.claude/skills/` (multi-step
+  procedures).
+- `MCP_USAGE.md` documents MCP server usage.
 - `STORYBOOK.md` explains the component documentation flow.
 
 ## Common issues
-- If local config changes are not taking effect, delete `.env.local` and rerun `pnpm env:setup`.
-- If `pnpm deploy` fails, confirm your Cloudflare credentials and environment variables are configured.
+- If local config changes have no effect, delete `.env.local` and run `pnpm env:setup` again.
+- If `pnpm deploy` fails, check your Cloudflare credentials and environment variables.

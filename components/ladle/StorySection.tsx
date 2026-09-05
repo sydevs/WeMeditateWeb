@@ -52,15 +52,16 @@ export const StorySection = ({
     return ''
   }
 
-  // Text colors based on theme
-  // For non-subsection dark sections with background, title/description appear on light wrapper background
+  // Text colors based on theme.
+  // For non-subsection dark sections with a background, the title and
+  // description appear on a light wrapper background.
   const getTitleColor = () => {
     if (variant === 'subsection') {
       return theme === 'dark' ? 'text-gray-100' : 'text-gray-700'
     }
 
-    // Non-subsection dark theme sections have title/description on light background wrapper
-    // So they should use light theme colors
+    // Non-subsection dark-theme sections have the title and description on
+    // a light background wrapper. So they use light theme colors.
     return 'text-gray-900'
   }
 

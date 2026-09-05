@@ -27,8 +27,8 @@ export interface FooterLinkListProps {
 /**
  * A list of footer links with optional title.
  * Supports two variants:
- * - `default`: Smaller links with a title (e.g., "Learn more" section)
- * - `hero`: Larger links without a title (e.g., "Meditate Now" section)
+ * - `default`: smaller links with a title, for example a "Learn more" section
+ * - `hero`: larger links without a title, for example a "Meditate Now" section
  *
  * @example
  * ```tsx

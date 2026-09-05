@@ -35,18 +35,18 @@ interface PopulatedImage {
 const ARTICLE_IMAGE_SIZES = '(max-width: 768px) 100vw, 768px'
 
 /**
- * Article layout + base typography for the rendered content.
+ * Article layout and base typography for the rendered content.
  *
- * Uses normal block flow (not flex) so blockquotes can `float` beside the body
- * text; vertical rhythm comes from margins (which collapse) rather than a flex
- * gap. Standard nodes — headings, paragraphs and lists — are styled with
- * child-combinator utilities scoped to direct children (`[&>h2]`, `[&>p]`, …) so
- * the styling never leaks into the self-styled custom blocks. The project
- * removed its `Text` atom as overengineered, so this standardises typography
- * with Tailwind directly rather than a wrapper.
+ * This uses normal block flow, not flex, so blockquotes can `float` beside
+ * the body text. Vertical rhythm comes from margins, which collapse, rather
+ * than from a flex gap. Standard nodes — headings, paragraphs, and lists —
+ * use child-combinator utilities scoped to direct children (`[&>h2]`,
+ * `[&>p]`, and so on), so the styling never leaks into the self-styled
+ * custom blocks. The project removed its `Text` atom as overengineered, so
+ * this sets typography directly with Tailwind instead of a wrapper.
  */
 const ARTICLE_CLASS = [
-  // Headings (h1 is downgraded to h2 by the converter to avoid colliding with the page title)
+  // Headings. The converter downgrades h1 to h2, to avoid a clash with the page title.
   '[&>h2]:text-3xl [&>h3]:text-2xl [&>h4]:text-xl [&>h5]:text-lg [&>h6]:text-base',
   '[&>h2]:font-semibold [&>h3]:font-semibold [&>h4]:font-semibold [&>h5]:font-semibold [&>h6]:font-semibold',
   '[&>h2]:text-gray-800 [&>h3]:text-gray-800 [&>h4]:text-gray-800 [&>h5]:text-gray-800 [&>h6]:text-gray-800',
@@ -60,8 +60,8 @@ const ARTICLE_CLASS = [
 ].join(' ')
 
 /**
- * Render an upload image caption. SahajCloud captions may be plain strings or a
- * nested Lexical document; anything else degrades to nothing.
+ * Render an upload image caption. A SahajCloud caption may be a plain string
+ * or a nested Lexical document. Anything else renders nothing.
  */
 function renderCaption(caption: unknown): ReactNode {
   if (!caption) {
@@ -79,14 +79,15 @@ function renderCaption(caption: unknown): ReactNode {
 }
 
 /**
- * Converter overrides layered on top of the library defaults. Defaults handle
- * paragraphs, text formatting, lists, blockquotes and line breaks; we override
- * the nodes that need app-specific behavior (anchored headings, locale-aware
- * links, Cloudflare-optimized images) and add a generic fallback so unknown
- * custom blocks (implemented in a later ticket) never crash the page.
+ * Converter overrides layered on top of the library defaults. The defaults
+ * handle paragraphs, text formatting, lists, blockquotes, and line breaks.
+ * This file overrides the nodes that need app-specific behavior — anchored
+ * headings, locale-aware links, Cloudflare-optimized images — and adds a
+ * generic fallback, so an unknown custom block, built in a later ticket,
+ * never crashes the page.
  *
- * Built once at module scope (rather than via a per-render factory) since the
- * overrides don't depend on render state.
+ * This builds once at module scope, not through a per-render factory,
+ * because the overrides do not depend on render state.
  */
 const CONVERTERS: JSXConverters = {
   ...defaultJSXConverters,
@@ -106,10 +107,10 @@ const CONVERTERS: JSXConverters = {
     return <Tag id={id || undefined}>{nodesToJSX({ nodes: node.children })}</Tag>
   },
 
-  // Lexical blockquotes (distinct from the `quote` custom block → HeroQuote)
-  // render through the Blockquote atom, which floats to match the node's
-  // alignment. The atom takes plain text, so inline formatting inside a
-  // blockquote is flattened (rare in practice).
+  // Lexical blockquotes (distinct from the `quote` custom block, which
+  // renders as HeroQuote) render through the Blockquote atom. The atom
+  // floats to match the node's alignment, and it takes only plain text, so
+  // inline formatting inside a blockquote is flattened. This is rare in practice.
   quote: ({ node }) => {
     const format = (node as { format?: string }).format
     const align = format === 'left' || format === 'start' ? 'left' : 'right'
@@ -117,9 +118,9 @@ const CONVERTERS: JSXConverters = {
     return <Blockquote align={align} text={getNodeText(node.children)} />
   },
 
-  // Render links through the locale-aware Link atom. Internal links resolve via
-  // the single source-of-truth route mapper; unresolvable refs degrade to plain
-  // text rather than a dead /undefined link.
+  // Render links through the locale-aware Link atom. An internal link
+  // resolves through the single source-of-truth route mapper. An
+  // unresolvable reference degrades to plain text, not a dead /undefined link.
   link: ({ node, nodesToJSX }) => {
     const children = nodesToJSX({ nodes: node.children })
     const fields = node.fields
@@ -140,7 +141,7 @@ const CONVERTERS: JSXConverters = {
     )
   },
 
-  // Autolinks are always external URLs auto-detected by the editor.
+  // Autolinks are external URLs that the editor detects automatically.
   autolink: ({ node, nodesToJSX }) => {
     const children = nodesToJSX({ nodes: node.children })
     const url = node.fields?.url
@@ -154,7 +155,7 @@ const CONVERTERS: JSXConverters = {
     )
   },
 
-  // Inline relationship nodes link to the referenced document via the mapper.
+  // Inline relationship nodes link to the referenced document through the mapper.
   relationship: ({ node }) => {
     const label = relationshipLabel(node.value)
 
@@ -166,8 +167,8 @@ const CONVERTERS: JSXConverters = {
     return href ? <Link href={href}>{label}</Link> : <>{label}</>
   },
 
-  // Upload images render through the Cloudflare-aware Image atom inside a
-  // <figure>, honoring the CMS caption + alignment fields.
+  // Upload images render through the Cloudflare-aware Image atom, inside a
+  // <figure>. This honors the CMS caption and alignment fields.
   upload: ({ node }) => {
     const value = node.value
 
@@ -183,8 +184,9 @@ const CONVERTERS: JSXConverters = {
       | { caption?: unknown; align?: string | null; alt?: string | null }
       | undefined
     const caption = renderCaption(fields?.caption)
-    // `wide` images break out to the full content width: no rounding (they meet the
-    // edges) and a full-width `sizes` hint so the browser fetches a large variant.
+    // `wide` images break out to the full content width. They get no
+    // rounding, because they meet the edges, and a full-width `sizes` hint,
+    // so the browser fetches a large variant.
     const isWide = fields?.align === 'wide'
 
     return (
@@ -204,10 +206,11 @@ const CONVERTERS: JSXConverters = {
     )
   },
 
-  // Generic fallback for any node without a converter — e.g. a future custom
-  // Page block not yet in `blockConverters`. In development we surface what's
-  // missing with an Alert; in production we render nothing so an unimplemented
-  // block degrades gracefully instead of showing end users a warning box.
+  // Generic fallback for any node without a converter, for example a future
+  // custom Page block not yet in `blockConverters`. In development, this
+  // shows an Alert naming what is missing. In production, it renders
+  // nothing, so an unimplemented block degrades quietly instead of showing
+  // users a warning box.
   unknown: ({ node }) => {
     if (!import.meta.env.DEV) {
       return null
@@ -231,15 +234,16 @@ type BlockConverterFn = Extract<JSXConverter, (args: never) => unknown>
 
 /**
  * Wrap a converter so its rendered block gets a small "?" button in the
- * top-right corner; clicking it logs the complete node to the console. The white
- * drop-shadow keeps the marker legible over dark block imagery. Used only when
- * `debug` is enabled (built per-render, never in production unless opted in).
+ * top-right corner. Clicking the button logs the complete node to the
+ * console. The white drop-shadow keeps the marker legible over dark block
+ * imagery. This wrapper runs only when `debug` is enabled: it builds per
+ * render, and never in production unless a caller opts in.
  */
 function withDebugOverlay(label: string, render: BlockConverterFn): BlockConverterFn {
   // eslint-disable-next-line react/display-name -- a Lexical converter, not a React component
   return (args) => {
     const logNode = () => {
-      // eslint-disable-next-line no-console -- the debug overlay's purpose is to log block data
+      // eslint-disable-next-line no-console -- the debug overlay logs block data
       console.log(`[RichText] ${label} block`, args.node)
     }
     const button = (
@@ -255,9 +259,9 @@ function withDebugOverlay(label: string, render: BlockConverterFn): BlockConvert
     )
     const rendered = render(args)
 
-    // A floated block (the aligned image <figure>) must stay in normal flow so
-    // text wraps around it — inject the button into the element itself rather
-    // than a wrapper that would contain the float.
+    // A floated block, the aligned image <figure>, must stay in normal flow
+    // so text wraps around it. So this injects the button into the element
+    // itself, instead of into a wrapper that would contain the float.
     if (isValidElement(rendered) && rendered.type === 'figure') {
       const figure = rendered as ReactElement<{ className?: string; children?: ReactNode }>
 
@@ -291,14 +295,14 @@ function withDebugBlocks(converters: BlockConverters): BlockConverters {
 }
 
 export interface RichTextProps {
-  /** PayloadCMS Lexical serialized editor state (e.g. `page.content`). */
+  /** PayloadCMS Lexical serialized editor state, for example `page.content`. */
   content?: { root?: unknown } | null
-  /** Override the wrapper class (defaults to {@link ARTICLE_CLASS}: flex `gap-3`
-   * block spacing + base typography). */
+  /** Override the wrapper class. Defaults to {@link ARTICLE_CLASS}: flex
+   * `gap-3` block spacing and base typography. */
   className?: string
   /**
-   * Overlay each block with a top-right "?" that logs the block's node data to
-   * the console on click. For development/inspection only.
+   * Overlay each block with a top-right "?" that logs the block's node data
+   * to the console on click. For development and inspection only.
    * @default false
    */
   debug?: boolean
@@ -307,16 +311,16 @@ export interface RichTextProps {
 /**
  * Renders PayloadCMS Lexical rich-text content as React.
  *
- * Wraps `@payloadcms/richtext-lexical/react`'s converter (imported only via the
- * `/react` subpath, which is render-only and Workers-safe) with app-specific
- * overrides for headings, links, relationships and uploads.
+ * Wraps `@payloadcms/richtext-lexical/react`'s converter, imported only
+ * through the `/react` subpath, which is render-only and Workers-safe, with
+ * app-specific overrides for headings, links, relationships, and uploads.
  */
 export function RichText({ content, className, debug = false }: RichTextProps) {
   if (!content || !content.root) {
     return null
   }
-  // The static CONVERTERS are reused as-is unless debug overlays are requested.
-  // Debug also covers the upload (image) node, which isn't a custom block.
+  // The static CONVERTERS apply as-is, unless a caller requests debug
+  // overlays. Debug also covers the upload (image) node, which is not a custom block.
   const converters: JSXConverters = debug
     ? ({
         ...CONVERTERS,
@@ -325,16 +329,18 @@ export function RichText({ content, className, debug = false }: RichTextProps) {
       } as JSXConverters)
     : CONVERTERS
 
-  // One provider per document: every gallery/upload image below shares a single
-  // client-only lightbox overlay (the provider renders no DOM until one opens).
+  // One provider per document: every gallery and upload image below shares a
+  // single client-only lightbox overlay. The provider renders no DOM until
+  // an image opens.
   //
   // The Container constrains non-full-bleed content to a readable column
-  // (max-w-4xl) with responsive gutters — owned here so it's consistent whether
-  // RichText is rendered inside a page template or standalone (e.g. a story).
-  // Full-bleed blocks (Splash, OrnateTextBox, SubtleSystem, ContentOverlay, wide
-  // uploads) escape it via the `full-bleed` break-out, which spans `--page-width`
-  // (the content-area width captured on <main>'s wrapper) regardless of this
-  // Container or any nested `@container`.
+  // (max-w-4xl), with responsive gutters. This lives here so the column
+  // stays consistent whether RichText renders inside a page template or on
+  // its own, for example in a story. Full-bleed blocks — Splash,
+  // OrnateTextBox, SubtleSystem, ContentOverlay, and wide uploads — escape
+  // it through the `full-bleed` break-out. That break-out spans
+  // `--page-width`, the content-area width captured on <main>'s wrapper,
+  // regardless of this Container or any nested `@container`.
   return (
     <LightboxProvider>
       <Container maxWidth="md">

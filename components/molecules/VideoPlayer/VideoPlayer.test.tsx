@@ -2,11 +2,12 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 
-// The player is wrapped in vike-react's ClientOnly: server-side it renders only
-// the poster fallback (the impl — Vidstack + hls.js — is browser-only). Stub
-// ClientOnly to its fallback so we can assert that SSR/CLS contract here. The
-// interactive Vidstack layer (controls, captions menu, clip timeline, teal
-// theming) is verified visually in Ladle, not at the markup level.
+// The player is wrapped in vike-react's ClientOnly: server-side it renders
+// only the poster fallback, because the implementation, Vidstack and
+// hls.js, is browser-only. Stub ClientOnly to its fallback, to assert that
+// SSR-and-CLS contract here. Ladle verifies the interactive Vidstack layer
+// (controls, captions menu, clip timeline, teal theming) visually, not at
+// the markup level.
 vi.mock('vike-react/ClientOnly', () => ({
   ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
 }))
@@ -42,9 +43,10 @@ describe('<VideoPlayer> server-side fallback', () => {
 
 describe('VideoPlayer implementation (browser-only)', () => {
   it('imports server-safe and renders nothing without an hlsUrl', async () => {
-    // Importing the impl pulls in @vidstack/react; assert it resolves in a
-    // non-DOM env and that the empty-source guard returns before any player is
-    // mounted. Dynamic import so a resolution failure is isolated to this test.
+    // Importing the impl pulls in @vidstack/react. This test checks that it
+    // resolves in a non-DOM environment, and that the empty-source guard
+    // returns before any player mounts. It uses a dynamic import, so a
+    // resolution failure stays isolated to this test.
     const { VideoPlayer: Impl } = await import('./VideoPlayer')
 
     expect(typeof Impl).toBe('function')

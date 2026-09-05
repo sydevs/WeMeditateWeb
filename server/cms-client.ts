@@ -1,22 +1,21 @@
 /**
- * CMS API client functions using PayloadCMS REST API.
+ * CMS query functions for the PayloadCMS REST API.
  *
- * This module provides query functions for fetching content from PayloadCMS.
- * Configuration (apiKey, baseURL, kv) is automatically retrieved from the
- * request context - no need to pass these values explicitly.
+ * Each function gets its config (apiKey, baseURL, kv) from the request
+ * context. Callers do not pass these values.
  *
- * ## Error Handling Strategy
+ * ## Error handling
  *
- * Errors propagate naturally for retry compatibility with error-utils.ts:
- * - **Single item queries** (getPageBySlug, getDocumentById):
- *   Return null for empty results, let errors propagate for retry logic.
- * - **Global queries** (getWeMeditateWebSettings):
- *   Use validateSDKResponse() since settings must exist (handles SDK undefined bug).
- * - **List queries** (getPagesByTags, getMeditationsByTags, getMusicByTags):
- *   Return empty array for empty results, let errors propagate for retry logic.
+ * Errors propagate so error-utils.ts can retry them:
+ * - Single-item queries (getPageBySlug, getDocumentById) return null for an
+ *   empty result, then let errors propagate.
+ * - The global query (getWebConfig) calls validateSDKResponse(), because the
+ *   config must exist. This also works around an SDK undefined bug.
+ * - List queries (getPagesByTags, getSongsByTags) return an empty array for
+ *   an empty result, then let errors propagate.
  *
- * Native errors (TypeError for network, Error for SDK) are handled by
- * detectErrorType() in error-utils.ts via message pattern matching.
+ * error-utils.ts detects native errors (TypeError for network, Error for
+ * SDK) by matching the error message.
  */
 
 import { createPayloadClient, validateSDKResponse } from './payload-client'
@@ -59,16 +58,17 @@ interface LocalizedQueryOptions {
 }
 
 // ============================================================================
-// Field Selection (required by the SahajCloud API client query-validation hook)
+// Field selection (required by the SahajCloud API query-validation hook)
 //
-// The backend rejects API-client reads that omit `select`, or that use depth > 1
-// without `populate`. Each query below declares exactly the fields the frontend
-// renders. These constants are typed against the generated *Select interfaces so
-// that a CMS schema change (pulled via `pnpm types:cms`) surfaces as a compile
-// error here rather than a silent 400 / missing field at runtime.
+// The backend rejects a read that omits `select`. It also rejects depth > 1
+// without `populate`. Each query below selects only the fields the frontend
+// renders. Each select constant is typed against a generated *Select
+// interface. This turns a CMS schema change (pulled by `pnpm types:cms`)
+// into a compile error here, instead of a silent 400 or a missing field at
+// runtime.
 //
-// Note on uploads: when selecting an upload's `url`, `filename` must also be
-// selected, otherwise PayloadCMS returns `url: null`.
+// Upload note: to select an upload's `url`, also select `filename`.
+// Otherwise PayloadCMS returns `url: null`.
 // ============================================================================
 
 /** Image fields needed wherever an Image relationship/upload is populated. */
@@ -115,11 +115,12 @@ const VIDEO_POPULATE = {
 } satisfies VideosSelect<true>
 
 // ----------------------------------------------------------------------------
-// Narrow selects for documents embedded in a Page's `content` (showcase cards,
-// subtle-system nodes, content-index lists). Deliberately omit each collection's
-// `content`/heavy fields so that bumping page reads to depth 3 stays small:
-// collections NOT listed in `populate` come back fully populated (incl. their
-// own `content`), which would balloon both the response and the KV cache entry.
+// Narrow selects for documents embedded in a Page's `content` (showcase
+// cards, subtle-system nodes, content-index lists). Each select omits the
+// collection's `content` and other heavy fields. This keeps a depth-3 page
+// read small. A collection missing from `populate` returns fully
+// populated, including its own `content`, which would inflate the response
+// and the KV cache entry.
 // ----------------------------------------------------------------------------
 
 /** Narrow page fields for pages embedded in another page's content. */
@@ -136,7 +137,7 @@ const EMBEDDED_MEDITATION_SELECT = {
   durationMinutes: true,
 } satisfies MeditationsSelect<true>
 
-/** Narrow lecture fields (no public web route yet; populated to cap payload size). */
+/** Narrow lecture fields. No public web route exists yet. Selected only to limit payload size. */
 const EMBEDDED_LECTURE_SELECT = {
   title: true,
   thumbnail: true,
@@ -148,18 +149,18 @@ const EMBEDDED_ALBUM_SELECT = {
   artwork: true,
 } satisfies AlbumsSelect<true>
 
-/** Minimal app-card fields (no public web route; populated to cap payload size). */
+/** Minimal app-card fields. No public web route exists. Selected only to limit payload size. */
 const EMBEDDED_APP_CARD_SELECT = {
   label: true,
 } satisfies AppCardsSelect<true>
 
 /**
- * Populate map for a full Page read (depth 3). The backend rejects depth > 1
- * reads without `populate`; each entry both enables a relationship to populate
- * AND restricts it to the fields the frontend renders. Beyond the author/video
- * byline, this covers the collections referenced from `content` blocks
- * (showcase, subtle-system, image galleries) so they resolve their titles,
- * slugs and thumbnails instead of degrading.
+ * Populate map for a full Page read (depth 3). The backend rejects a
+ * depth > 1 read without `populate`. Each entry both enables a relationship
+ * to populate and restricts it to the fields the frontend renders. Beyond
+ * the author and video byline, this covers the collections referenced from
+ * `content` blocks (showcase, subtle-system, image galleries), so they
+ * resolve titles, slugs, and thumbnails instead of degrading.
  */
 const PAGE_POPULATE = {
   images: IMAGE_POPULATE.images,
@@ -185,9 +186,10 @@ const WEB_CONFIG_SELECT = {
 } satisfies WmWebConfigSelect<true>
 
 /**
- * Populate the global's page relationships at depth 2 with the fields the layout
- * (title/slug for nav) and the home page (content/meta) render. Required because
- * the backend rejects depth > 1 reads without `populate`.
+ * Populates the global's page relationships at depth 2, with the fields the
+ * layout (title and slug, for nav) and the home page (content and meta)
+ * render. Required because the backend rejects a depth > 1 read without
+ * `populate`.
  */
 const WEB_CONFIG_POPULATE = {
   ...PAGE_POPULATE,
@@ -212,8 +214,8 @@ const MEDITATION_SELECT = {
 } satisfies MeditationsSelect<true>
 
 /**
- * Fields rendered for a Lecture. `fullLecture` is selected so a clip can reach
- * its parent's `metadata` (the playback source); see LECTURE_POPULATE.
+ * Fields for a Lecture. `fullLecture` is selected so a clip can reach its
+ * parent's `metadata`, the playback source. See LECTURE_POPULATE.
  */
 const LECTURE_SELECT = {
   type: true,
@@ -228,9 +230,10 @@ const LECTURE_SELECT = {
 
 /**
  * Populate map for a Lecture read at depth 2. `lectures: LECTURE_SELECT`
- * self-populates a clip's `fullLecture` relationship with the parent's fields
- * (crucially its `metadata`), so a clip can resolve its HLS URL / duration /
- * base subtitles. `images` populates the thumbnail upload.
+ * self-populates a clip's `fullLecture` relationship with the parent's
+ * fields, most importantly `metadata`. This lets a clip resolve its HLS
+ * URL, duration, and base subtitles. `images` populates the thumbnail
+ * upload.
  */
 const LECTURE_POPULATE = {
   images: IMAGE_POPULATE.images,
@@ -317,8 +320,8 @@ export async function getPageBySlug(
         locale: options.locale,
         limit: 1,
         // depth 3 so relationships embedded in `content` blocks (showcase,
-        // subtle-system) resolve their own thumbnails; kept small by the narrow
-        // per-collection selects in PAGE_POPULATE.
+        // subtle-system) resolve their own thumbnails. The narrow
+        // per-collection selects in PAGE_POPULATE keep this small.
         depth: 3,
         select: PAGE_SELECT,
         populate: PAGE_POPULATE,
@@ -383,13 +386,13 @@ export async function getDocumentById<C extends FindByIdCollection>(
         id: options.id,
         locale: options.locale,
         // depth 3 to resolve relationships embedded in `content` blocks (see
-        // getPageBySlug); bounded by the per-collection selects in PAGE_POPULATE.
+        // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
         depth: 3,
         draft: isPreview,
         // select/populate are validated per-collection at their definitions above
-        // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript can't
-        // correlate the union-typed config to the generic collection `C`, so the
-        // input is cast here; the response is re-typed to the concrete doc below.
+        // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
+        // correlate the union-typed config to the generic collection `C`. The
+        // input is cast here. The response is re-typed to the concrete doc below.
         select: config.select as never,
         populate: config.populate as never,
       })
@@ -397,9 +400,9 @@ export async function getDocumentById<C extends FindByIdCollection>(
       const result = found as Config['collections'][C] | null
 
       if (!result) return null
-      // Public requests should never render drafts. Collections without
-      // draft/version support (e.g. lectures) have no `_status` and are always
-      // live, so only filter where the field actually exists.
+      // Public requests must never render a draft. A collection with no
+      // draft/version support (for example lectures) has no `_status` and
+      // is always live. Filter only where the field actually exists.
       const status = (result as { _status?: string })._status
 
       if (!isPreview && status === 'draft') return null
@@ -410,15 +413,15 @@ export async function getDocumentById<C extends FindByIdCollection>(
 }
 
 /**
- * Retrieves a lecture by ID and normalizes it into a flat `ResolvedLecture`.
+ * Gets a lecture by ID and normalizes it into a flat `ResolvedLecture`.
  *
- * Full lectures and clips resolve to the same shape; a clip inherits its
- * playback source (HLS URL, duration, base subtitles, thumbnail fallback) from
- * its parent `fullLecture`, which is populated at depth 2 (see LECTURE_POPULATE).
+ * Full lectures and clips resolve to the same shape. A clip inherits its
+ * playback source (HLS URL, duration, base subtitles, thumbnail fallback)
+ * from its parent `fullLecture`, populated at depth 2 (see LECTURE_POPULATE).
  *
  * @param options.id - The lecture document ID
  * @param options.locale - The locale to retrieve the lecture in
- * @param options.preview - If true, fetch draft data and bypass cache
+ * @param options.preview - If true, fetch draft data and bypass the cache
  * @returns The normalized lecture or null if not found
  */
 export async function getLecture(
@@ -434,10 +437,11 @@ export async function getLecture(
 
   const resolved = resolveLecture(lecture)
 
-  // A clip with no resolvable HLS source means its parent `fullLecture` came
-  // back unpopulated (a bare id — believed unpublished/trashed) or hasn't synced
-  // its Nirmala Vidya metadata. The template degrades to an error state; surface
-  // the CMS data gap to Sentry (per the cms-api-reads rule) so it stays visible.
+  // A clip with no resolvable HLS source means its parent `fullLecture`
+  // returned unpopulated (a bare id, believed unpublished or trashed), or has
+  // not synced its Nirmala Vidya metadata. The template degrades to an error
+  // state. Report the CMS data gap to Sentry, per the cms-api-reads rule, so
+  // it stays visible.
   if (!options.preview && resolved.type === 'clip' && !resolved.hlsUrl) {
     console.warn(
       `[getLecture] clip ${resolved.id} has no resolvable HLS source (unpopulated or unsynced parent lecture)`,
@@ -457,10 +461,11 @@ export async function getLecture(
 // ============================================================================
 
 /**
- * Split a page-relationship array into published, linkable pages (populated
- * objects with a slug) and unresolved references — relationships returned as a
- * bare ID (believed unpublished/trashed: a published page populates, an
- * unpublished one comes back as just its id) or an object missing a slug.
+ * Splits a page-relationship array into published, linkable pages (populated
+ * objects with a slug) and unresolved references. A relationship is
+ * unresolved when it returns as a bare ID (believed unpublished or trashed:
+ * a published page populates, an unpublished one returns as just its ID) or
+ * as an object with no slug.
  */
 export function partitionPublishedPages(pages: (number | Page)[] | null | undefined): {
   published: Page[]
@@ -481,14 +486,14 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
 }
 
 /**
- * Retrieves the WebConfig (site configuration).
+ * Gets the WebConfig (site configuration).
  *
- * This is a singleton global configuration that contains references to important
- * pages throughout the site (home page, featured pages, class pages, etc.).
+ * This singleton global holds references to important pages across the
+ * site: the home page, featured pages, class pages, and more.
  *
- * Unresolved page references (believed unpublished) are dropped so the layout
- * never renders dead `/undefined` links, and reported to Sentry so the
- * underlying CMS data gap stays visible.
+ * This function drops unresolved page references (believed unpublished), so
+ * the layout never renders a dead `/undefined` link, and reports each drop
+ * to Sentry so the underlying CMS data gap stays visible.
  *
  * @returns The web configuration with populated page relationships
  */
@@ -511,8 +516,8 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
 
       const validated = validateSDKResponse(result, 'WmWebConfig')
 
-      // Drop unresolved (believed-unpublished) page references so the layout
-      // never renders dead `/undefined` links — graceful fallback.
+      // Drop unresolved (believed-unpublished) page references, so the
+      // layout never renders a dead `/undefined` link.
       const featured = partitionPublishedPages(validated.featuredPages)
       const featuredArticles = partitionPublishedPages(validated.featuredArticles)
       const classPages = partitionPublishedPages(validated.classPages)
@@ -528,8 +533,8 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
         ...infoPages.unresolved.map((u) => `infoPages ${u}`),
       ]
 
-      // Surface the data gap to Sentry (a published page populates; an
-      // unpublished one returns as a bare id) without breaking the page.
+      // Report the data gap to Sentry without breaking the page. A published
+      // page populates. An unpublished one returns as a bare id.
       if (unresolved.length > 0) {
         console.warn(
           `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
@@ -654,21 +659,23 @@ export async function getSongsByTags(
 }
 
 /**
- * Retrieves the background-music tracks eligible for a meditation via the custom
- * nested route `GET /api/meditations/:id/songs`.
+ * Gets the background-music tracks eligible for a meditation, from the
+ * custom nested route `GET /api/meditations/:id/songs`.
  *
- * Unlike the standard collection reads above, this endpoint encapsulates the
- * songTag + `includeForMeditations` selection server-side and returns a fixed
- * minimal projection (`{ id, title, url, tags }`) — it does NOT accept `select`
- * and ignores `populate`/`depth`/`limit` (it honors `locale`). Because it is not
- * a collection `find`, the PayloadCMS SDK can't model it, so we issue a raw
- * authenticated fetch (same `clients API-Key` header the SDK sends) wrapped in
- * the shared cache + retry layer.
+ * Unlike the standard collection reads above, this endpoint does the
+ * songTag and `includeForMeditations` selection on the server. It returns a
+ * fixed minimal projection (`{ id, title, url, tags }`). It does not accept
+ * `select`, and it ignores `populate`, `depth`, and `limit` (it does honor
+ * `locale`). This is not a collection `find`, so the PayloadCMS SDK cannot
+ * model it. This function instead issues a raw authenticated fetch, with the
+ * same `clients API-Key` header the SDK sends, wrapped in the shared cache
+ * and retry layer.
  *
- * The endpoint returns songs in randomized order on every request; callers pick
- * a track client-side, so a per-TTL-window cached list is fine. Degrades to an
- * empty list for meditations with no eligible songs (HTTP 200 `{ docs: [] }`)
- * and for an unknown id (HTTP 404) so the player simply renders voice-only.
+ * The endpoint returns songs in a random order on every request. Callers
+ * pick a track on the client, so a list cached per TTL window is fine. The
+ * function returns an empty list when a meditation has no eligible songs
+ * (HTTP 200, `{ docs: [] }`) and for an unknown ID (HTTP 404), so the player
+ * simply renders voice-only.
  *
  * @param options.id - The meditation document ID
  * @param options.locale - The locale to retrieve songs in
@@ -698,13 +705,14 @@ export async function getMeditationSongs(
           headers: { Authorization: `clients API-Key ${apiKey}` },
         })
 
-        // Mirror the SDK's request logging so the dev request log stays complete.
+        // Mirror the SDK's request logging, so the dev request log stays complete.
         console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-        // Unknown meditation id (or no songs route) → no music, not an error.
+        // An unknown meditation ID, or no songs route, means no music. This
+        // is not an error.
         if (response.status === 404) return []
 
-        // Let server/network errors propagate so withCache's retry kicks in.
+        // Let server and network errors propagate, so withCache's retry runs.
         if (!response.ok) {
           throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
         }
@@ -714,18 +722,19 @@ export async function getMeditationSongs(
         }
         const docs = Array.isArray(body.docs) ? body.docs : []
 
-        // Keep only playable tracks (the player needs a real URL); the endpoint
-        // omits duration/artwork/credit, so title + url are all we surface.
+        // Keep only playable tracks. The player needs a real URL. The
+        // endpoint omits duration, artwork, and credit, so title and url are
+        // all this function returns.
         return docs
           .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
           .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
       },
     })
   } catch (error) {
-    // Background music is supplementary — a failure to load it (after withCache's
-    // retries) must never break the meditation page. Degrade to voice-only and
-    // surface the gap to Sentry. The failed result isn't cached, so the next
-    // request retries.
+    // Background music is supplementary. A failure to load it, even after
+    // withCache's retries, must never break the meditation page. Degrade to
+    // voice-only and report the gap to Sentry. This function does not cache
+    // the failed result, so the next request retries.
     console.warn(
       `[getMeditationSongs] degrading to voice-only for meditation ${options.id}:`,
       error,
@@ -740,7 +749,7 @@ export async function getMeditationSongs(
   }
 }
 
-/** Extract audience document ids (populated object or bare id) as strings.
+/** Extracts audience document IDs (populated object or bare ID) as strings.
  * Shared with the content-index `/for-audience` lecture feed (server/content-index.ts). */
 export function audienceIdList(audiences: (number | Audience)[] | null | undefined): string[] {
   if (!audiences) {
@@ -753,20 +762,22 @@ export function audienceIdList(audiences: (number | Audience)[] | null | undefin
 }
 
 /**
- * Retrieves the meditations related to a lecture via the shaped nested route
+ * Gets the meditations related to a lecture, from the shaped nested route
  * `GET /api/lectures/:id/related-meditations` (SahajCloud #523).
  *
- * Like `/songs`, this is not a collection `find`: it encapsulates the
- * subtle-system-node-overlap ranking (with a recency top-up fallback) server-
- * side, returns a fixed card projection, and ignores `select`/`populate`/`depth`
- * (it honors `locale` + `limit`). The SDK can't model it, so we issue a raw
- * authenticated fetch wrapped in the shared cache + retry layer.
+ * Like `/songs`, this is not a collection `find`. The server does the
+ * subtle-system-node-overlap ranking, with a recency-based top-up fallback,
+ * and returns a fixed card projection. It ignores `select`, `populate`, and
+ * `depth` (it does honor `locale` and `limit`). The SDK cannot model it, so
+ * this function issues a raw authenticated fetch, wrapped in the shared
+ * cache and retry layer.
  *
- * The endpoint drops any card missing a public title / duration / thumbnail, so
- * the internal `label` never leaks. Meditation titles aren't localized, so the
- * endpoint returns an empty list for non-English locales — the caller simply
- * renders no related section (graceful, not an error). Degrades to `[]` for an
- * unknown lecture id (404) and, after retries, any failure.
+ * The endpoint drops any card with no public title, duration, or thumbnail,
+ * so the internal `label` never leaks. Meditation titles are not localized,
+ * so the endpoint returns an empty list for a non-English locale. The
+ * caller then renders no related section — this is graceful, not an error.
+ * The function also returns `[]` for an unknown lecture ID (404), and for
+ * any failure that survives retries.
  *
  * @param options.id - The lecture document ID (the anchor)
  * @param options.locale - The locale to retrieve meditation cards in
@@ -801,7 +812,7 @@ export async function getRelatedMeditations(
 
         console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-        // Unknown lecture id (or no related route) → no related content.
+        // An unknown lecture ID, or no related route, means no related content.
         if (response.status === 404) return []
 
         if (!response.ok) {
@@ -813,8 +824,9 @@ export async function getRelatedMeditations(
         }
         const docs = Array.isArray(body.docs) ? body.docs : []
 
-        // The endpoint already shapes cards, but guard the fields we render so a
-        // partial doc can never surface a blank card or a broken thumbnail.
+        // The endpoint already shapes cards. Still guard the rendered
+        // fields, so a partial doc can never produce a blank card or a
+        // broken thumbnail.
         return docs
           .filter(
             (doc): doc is Record<string, unknown> =>
@@ -834,8 +846,9 @@ export async function getRelatedMeditations(
       },
     })
   } catch (error) {
-    // Related content is supplementary — a failure to load it must never break
-    // the lecture page. Degrade to no related section and surface to Sentry.
+    // Related content is supplementary. A failure to load it must never
+    // break the lecture page. Degrade to no related section, and report the
+    // failure to Sentry.
     console.warn(`[getRelatedMeditations] degrading to none for lecture ${options.id}:`, error)
     Sentry.captureMessage('getRelatedMeditations failed; rendering lecture without related', {
       level: 'warning',
@@ -848,16 +861,18 @@ export async function getRelatedMeditations(
 }
 
 /**
- * Retrieves the lectures related to a meditation via the shaped nested route
+ * Gets the lectures related to a meditation, from the shaped nested route
  * `GET /api/meditations/:id/related-lectures` (the mirror of the endpoint
  * above). Unlike `/related-meditations`, this endpoint is audience-gated: it
- * *requires* the site's `audiences` (a 400 without), so with none configured we
- * short-circuit to `[]` rather than issue a request that would 400.
+ * requires the site's `audiences`, and 400s without them. With none
+ * configured, this function returns `[]` immediately, instead of issuing a
+ * request that would 400.
  *
- * The endpoint returns the full lecture player projection ranked by node
- * overlap with an audience/recency fallback; we surface only the card subset
- * (id, title, thumbnail, playable duration). Degrades to `[]` for an unknown
- * meditation id (404) and, after retries, any failure.
+ * The endpoint returns the full lecture player projection, ranked by node
+ * overlap with an audience-and-recency fallback. This function returns only
+ * the card subset: ID, title, thumbnail, and playable duration. It returns
+ * `[]` for an unknown meditation ID (404), and for any failure that
+ * survives retries.
  *
  * @param options.id - The meditation document ID (the anchor)
  * @param options.locale - The locale to retrieve lecture cards in
@@ -873,9 +888,10 @@ export async function getRelatedLectures(
 ): Promise<RelatedLectureCard[]> {
   const audiences = audienceIdList(options.audiences)
 
-  // Audience-gated: with none configured the site can't call the endpoint
-  // (it 400s), so degrade to no related section — matching the /for-audience
-  // content-index behavior. An admin sets audiences in WeMeditate Web config.
+  // Audience-gated. With none configured, the site cannot call the endpoint
+  // (it 400s), so degrade to no related section. This matches the
+  // /for-audience content-index behavior. An admin sets audiences in the
+  // WeMeditate Web config.
   if (audiences.length === 0) {
     return []
   }
@@ -884,9 +900,9 @@ export async function getRelatedLectures(
     id: options.id,
     locale: options.locale,
     limit,
-    // Fold audiences into the key so a config change can't serve a stale list.
-    // Pass a copy: generateCacheKey sorts array values in place, and the URL
-    // below reuses `audiences` — don't let the key build mutate it.
+    // Add audiences to the key, so a config change cannot serve a stale
+    // list. Pass a copy. generateCacheKey sorts array values in place, and
+    // the URL below reuses `audiences`, so the key build must not mutate it.
     audiences: [...audiences],
   })
 

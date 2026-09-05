@@ -7,10 +7,10 @@ import type { HeaderDropdownProps } from '../HeaderDropdown'
 
 /**
  * A single top-level nav entry. An item with a `dropdown` renders as a
- * link-less hover/click mega-menu (HeaderNavDropdown) instead of a flat link;
- * such items omit `href`. Plain link items provide `href`. `active` marks the
- * current page's link (persistent tint + `aria-current="page"`); it applies
- * only to plain link items.
+ * link-less hover-or-click mega-menu (HeaderNavDropdown) instead of a flat
+ * link. Such items omit `href`. Plain link items provide `href`. `active`
+ * marks the current page's link, with a persistent tint and
+ * `aria-current="page"`. It applies only to plain link items.
  */
 export interface NavItem {
   label: string
@@ -22,7 +22,7 @@ export interface NavItem {
 export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> {
   /** Logo href (default: "/") */
   logoHref?: string
-  /** Action link text (e.g., "Classes near me") */
+  /** Action link text, for example "Classes near me" */
   actionLinkText?: string
   /** Action link href */
   actionLinkHref?: string

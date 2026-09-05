@@ -65,7 +65,7 @@ describe('getVariantName', () => {
   })
 
   it('falls back to the smallest defined width when neither the requested size nor medium exists', () => {
-    // ultrawide has no small/medium; fallback is deterministic: smallest defined width.
+    // ultrawide has no small or medium. The fallback is deterministic: smallest defined width.
     expect(getVariantName('ultrawide', 'small')).toBe('ultrawide-1536')
   })
 })

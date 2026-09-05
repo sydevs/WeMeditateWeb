@@ -1,17 +1,13 @@
 import type { Config } from 'tailwindcss'
 
 /**
- * Tailwind CSS v4 Configuration
+ * Tailwind v4 configuration.
  *
- * NOTE: In Tailwind v4, theme customization (colors, fonts, etc.) is done
- * via the @theme directive in CSS files (see layouts/tailwind.css).
+ * Tailwind v4 sets theme values with the @theme directive in
+ * layouts/tailwind.css, not here. This file only sets content paths
+ * (files to scan for classes) and holds space for future plugins.
  *
- * This config file is kept for:
- * - Content paths (which files to scan for classes)
- * - Future plugin configurations if needed
- *
- * The theme.extend configuration below is IGNORED in v4 and kept for
- * reference only. All actual theme customization is in layouts/tailwind.css.
+ * Tailwind ignores the theme.extend block below. It stays for reference only.
  */
 export default {
   content: [

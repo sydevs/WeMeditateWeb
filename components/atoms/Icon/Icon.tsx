@@ -48,7 +48,7 @@ export interface IconProps extends Omit<ComponentProps<'span'>, 'children'> {
  * Icon component for displaying Heroicons.
  *
  * Supports size variants and color options.
- * Uses Heroicons (https://heroicons.com/) - a set of beautiful hand-crafted SVG icons.
+ * Uses Heroicons (https://heroicons.com/), a set of hand-crafted SVG icons.
  *
  * @example
  * import { HeartIcon } from '@heroicons/react/24/outline'

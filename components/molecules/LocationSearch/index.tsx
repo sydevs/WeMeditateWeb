@@ -6,8 +6,8 @@ const LocationSearchLazy = React.lazy(() =>
   import('./LocationSearch').then((mod) => ({ default: mod.LocationSearch }))
 )
 
-// Client-only wrapper to avoid SSR issues with @mapbox/search-js-react
-// The Mapbox library requires browser APIs (document, window) that aren't available during SSR
+// Client-only wrapper to avoid SSR issues with @mapbox/search-js-react.
+// The Mapbox library requires browser APIs (document, window) that are not available during SSR.
 export function LocationSearch(props: LocationSearchProps) {
   return (
     <ClientOnly fallback={null}>

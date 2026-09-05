@@ -8,13 +8,13 @@ export interface MeditationPageData extends MeditationData {
 }
 
 /**
- * Fetch the meditation (shared with the embed route) plus the WebConfig that
- * LayoutChrome needs to render the nav, in parallel.
+ * Fetch the meditation (shared with the embed route) plus the WebConfig
+ * that LayoutChrome needs to render the nav, in parallel.
  *
- * Related lectures are NOT fetched here: the ranking endpoint is slow (~5s+), so
- * blocking SSR on it trips Vike's slow-hook warning. The full route renders the
- * related section client-side instead (RelatedContentLoader via the template's
- * showRelated flag).
+ * This does not fetch related lectures here. The ranking endpoint is slow
+ * (~5s+), so blocking SSR on it trips Vike's slow-hook warning. The full
+ * route renders the related section client-side instead
+ * (RelatedContentLoader, through the template's showRelated flag).
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationPageData> {
   const [base, settings] = await Promise.all([

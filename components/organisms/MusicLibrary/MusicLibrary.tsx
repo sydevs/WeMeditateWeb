@@ -20,11 +20,12 @@ export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children
 }
 
 /**
- * MusicLibrary organism - Full music player interface with filters, playlist, and current track art
+ * MusicLibrary is an organism: a full music player interface with filters,
+ * a playlist, and current track art.
  *
  * Layout:
  * - Mobile: Stacked (Filters → Track Art → Player → Playlist)
- * - Desktop: 2-column grid (Left: Track Art + Player, Right: Filters + Playlist)
+ * - Desktop: 2-column grid — left: Track Art and Player, right: Filters and Playlist
  *
  * Features:
  * - Icon-based filtering

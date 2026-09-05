@@ -51,7 +51,7 @@ const languages = [
 ]
 
 /**
- * Footer organism - Complete website footer based on wemeditate.com design.
+ * Footer is an organism: the complete website footer, based on the wemeditate.com design.
  */
 export const Default: Story = () => (
   <Footer

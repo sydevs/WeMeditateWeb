@@ -16,14 +16,14 @@ interface UseCircularProgressReturn {
   displayTime: number
   /** Whether user is currently dragging */
   isDragging: boolean
-  /** Call on mousedown/touchstart on the progress handle */
+  /** Call on mousedown or touchstart on the progress handle */
   startDrag: () => void
 }
 
 /**
  * Hook for managing circular progress bar state during drag interactions.
  *
- * Handles all circular-specific logic including:
+ * This handles all circular-specific logic, including:
  * - Polar coordinate calculations for angle-to-time conversion
  * - Wraparound prevention at the top of the circle (0°/360° boundary)
  * - Drag state management with seek-on-release
@@ -124,7 +124,7 @@ export function useCircularProgress({
     }
   }, [isDragging, duration, getSeekTimeFromCoords])
 
-  // Perform actual seek when drag ends (don't clear seekPosition here)
+  // Perform the actual seek when the drag ends. Do not clear seekPosition here.
   useEffect(() => {
     if (!isDragging && seekPosition !== null) {
       onSeekRef.current(seekPosition)

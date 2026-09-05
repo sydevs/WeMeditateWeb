@@ -1,27 +1,27 @@
 /**
- * Post-processes the downloaded server/payload-types.ts (see the `types:cms`
- * script) by stripping the trailing `declare module 'payload'` augmentation.
+ * Processes the downloaded server/payload-types.ts (see the `types:cms`
+ * script). Strips the trailing `declare module 'payload'` augmentation.
  *
- * Upstream (SahajCloud) emits this block so the Payload *backend* can wire its
- * generated `Config` into Payload's `GeneratedTypes`:
+ * SahajCloud emits this block so its Payload backend can wire the generated
+ * `Config` into Payload's `GeneratedTypes`:
  *
  *     declare module 'payload' {
  *       export interface GeneratedTypes extends Config {}
  *     }
  *
  * This Cloudflare Workers frontend talks to the CMS only through
- * `@payloadcms/sdk` (typed explicitly via `new PayloadSDK<Config>()`), and does
- * NOT depend on the `payload` package. With `payload` absent, the augmentation
- * fails to compile (`TS2664: module 'payload' cannot be found`). Removing it has
- * no effect on the SDK's typing — it only clears that error.
+ * `@payloadcms/sdk` (typed with `new PayloadSDK<Config>()`). It does not
+ * depend on the `payload` package. Without `payload`, the augmentation fails
+ * to compile (`TS2664: module 'payload' cannot be found`). Removing it does
+ * not change the SDK's typing. It only clears that error.
  */
 
 import { readFile, writeFile } from 'node:fs/promises'
 
 const TYPES_PATH = new URL('../server/payload-types.ts', import.meta.url)
 
-// Matches the augmentation block (and any whitespace preceding it) through EOF.
-// The block is always emitted last, so removing to end-of-file is safe.
+// Matches the augmentation block, plus any whitespace before it, through the
+// end of the file. The block always comes last, so this is safe to remove.
 const AUGMENTATION_RE = /\s*declare module 'payload'[\s\S]*$/
 
 const source = await readFile(TYPES_PATH, 'utf8')

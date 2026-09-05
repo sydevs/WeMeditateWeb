@@ -19,11 +19,11 @@ export type TooltipSide = 'top' | 'bottom' | 'left' | 'right'
 export interface TooltipProps {
   /** The short text shown on hover or keyboard focus of the trigger. */
   label: ReactNode
-  /** The trigger element the tooltip describes (e.g. an icon button). */
+  /** The trigger element the tooltip describes (for example an icon button). */
   children: ReactNode
   /**
-   * Preferred side; the tooltip automatically flips to the opposite side and
-   * shifts to stay within the viewport.
+   * Preferred side. The tooltip automatically flips to the opposite side
+   * and shifts to stay within the viewport.
    * @default 'top'
    */
   side?: TooltipSide
@@ -39,14 +39,14 @@ export interface TooltipProps {
 
 /**
  * A small text tooltip that appears on hover or keyboard focus, built on
- * Floating UI: it is viewport-aware (flips/shifts near edges), rendered in a
- * portal so it is never clipped, and wired with `role="tooltip"` +
- * `aria-describedby` for assistive tech. Dismisses on mouse-leave, blur, or
- * Escape.
+ * Floating UI. It is viewport-aware, flipping and shifting near edges,
+ * rendered in a portal so it is never clipped, and wired with
+ * `role="tooltip"` and `aria-describedby` for assistive tech. It dismisses
+ * on mouse-leave, blur, or Escape.
  *
- * The trigger is wrapped in an inline element rather than cloned, so it works
- * with any child (including components that don't forward a ref); hover/focus
- * still resolve to the child via event bubbling.
+ * The trigger is wrapped in an inline element rather than cloned, so it
+ * works with any child, including components that do not forward a ref.
+ * Hover and focus still resolve to the child through event bubbling.
  *
  * @example
  * <Tooltip label="Change background music track">

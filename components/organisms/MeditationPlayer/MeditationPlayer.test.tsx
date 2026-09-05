@@ -16,17 +16,18 @@ const musicTrack = { id: 1, title: 'Raag Durga', url: 'https://example.com/music
 
 /**
  * SSR markup assertions only. The audio-settings popover is closed on first
- * render (and useEffect doesn't run under SSR), so the Voice/Music sliders and
- * shuffle button aren't asserted here — those interactive affordances are
- * verified visually in Ladle. What SSR can prove is the voice-only vs.
- * with-music contract: the speaker trigger and the background-music <audio>.
+ * render, and useEffect does not run under SSR, so these tests do not
+ * assert the Voice and Music sliders or the shuffle button. Ladle verifies
+ * those interactive parts visually instead. SSR can prove the voice-only
+ * versus with-music contract: the speaker trigger, and the
+ * background-music <audio>.
  */
 describe('MeditationPlayer audio controls', () => {
   it('renders the audio-settings speaker button (replacing the inline volume slider)', () => {
     const html = renderToStaticMarkup(<MeditationPlayer frames={[]} track={track} />)
 
     expect(html).toContain('aria-label="Audio settings"')
-    // The old single control was labeled "Volume"; it should be gone.
+    // The old single control was labeled "Volume". It should be gone.
     expect(html).not.toContain('aria-label="Volume"')
   })
 

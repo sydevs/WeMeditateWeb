@@ -297,7 +297,7 @@ describe('withRetry', () => {
 
     const promise = withRetry(mockFn, { maxAttempts: 2, baseDelayMs: 1000 })
 
-    // Delay of 0 means the retry schedules immediately — one microtask turn is enough.
+    // Delay of 0 means the retry schedules immediately. One microtask turn is enough.
     await vi.advanceTimersByTimeAsync(0)
     expect(mockFn).toHaveBeenCalledTimes(2)
 

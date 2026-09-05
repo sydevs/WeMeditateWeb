@@ -2,20 +2,21 @@
  * Cloudflare Images utilities.
  *
  * SahajCloud returns base URLs like
- * `https://imagedelivery.net/<account>/<image_id>/`. Appending a variant name
- * (e.g. `square-400`, `video-800`, `4-3-1024`) yields an optimized, format-
- * negotiated image (AVIF / WebP / JPEG) delivered through Cloudflare's CDN.
+ * `https://imagedelivery.net/<account>/<image_id>/`. Appending a variant
+ * name (for example, `square-400`, `video-800`, `4-3-1024`) yields an
+ * optimized, format-negotiated image (AVIF, WebP, or JPEG) delivered
+ * through Cloudflare's CDN.
  *
- * Variants must be configured in the Cloudflare dashboard to match the
+ * Variants must be configured in the Cloudflare dashboard, to match the
  * `{aspectRatio}-{width}` names derived from SIZE_WIDTH_MAP below.
  */
 
 const CLOUDFLARE_IMAGE_URL_PREFIX = 'https://imagedelivery.net/'
 
 // Matches a bare Cloudflare Images base URL: <prefix><account>/<image_id>/?
-// Anything after <image_id>/ (e.g. an already-appended variant like `/public`)
-// will fail this check and skip transformation to avoid producing invalid
-// `…/<existing-variant>/<new-variant>` URLs.
+// Anything after <image_id>/ (for example, an already-appended variant
+// like `/public`) fails this check and skips transformation. This avoids
+// producing an invalid `…/<existing-variant>/<new-variant>` URL.
 const BARE_CLOUDFLARE_URL_PATTERN = /^https:\/\/imagedelivery\.net\/[^/]+\/[^/]+\/?$/
 
 const SIZE_WIDTH_MAP = {
@@ -50,9 +51,10 @@ export function getImageURL(baseUrl: string, variant: string): string {
 
 export function getVariantName(aspectRatio: AspectRatio, size: ImageSize = 'medium'): string {
   const widths = SIZE_WIDTH_MAP[aspectRatio] as Partial<Record<ImageSize, number>>
-  // Prefer exact match, then medium, then the smallest defined width for this
-  // ratio — guarantees the returned variant exists in the Cloudflare dashboard
-  // and is deterministic regardless of object-key insertion order.
+  // Prefer an exact match, then medium, then the smallest defined width
+  // for this ratio. This guarantees the returned variant exists in the
+  // Cloudflare dashboard, and stays deterministic regardless of
+  // object-key insertion order.
   const width = widths[size] ?? widths.medium ?? Math.min(...(Object.values(widths) as number[]))
 
   return `${aspectRatio}-${width}`
@@ -80,19 +82,20 @@ const ASPECT_RATIO_VALUES: Record<AspectRatio, number> = {
   ultrawide: 21 / 9,
 }
 
-/** Precomputed entries so nearestAspectRatio doesn't rebuild them per call. */
+/** Precomputed entries, so nearestAspectRatio does not rebuild them per call. */
 const ASPECT_RATIO_ENTRIES = Object.entries(ASPECT_RATIO_VALUES) as [AspectRatio, number][]
 
 /**
  * Picks the supported AspectRatio closest to an image's intrinsic dimensions.
  *
- * Cloudflare Images URLs only resolve once a variant is appended, and the
- * variant name encodes a fixed aspect ratio. For content images of arbitrary
- * dimensions (e.g. inline article uploads) we don't know the ratio ahead of
- * time, so we snap to the nearest configured variant to minimize cropping.
+ * A Cloudflare Images URL only resolves once a variant is appended, and
+ * the variant name encodes a fixed aspect ratio. For a content image of
+ * arbitrary dimensions (for example, an inline article upload), the
+ * ratio is not known ahead of time. This function snaps to the nearest
+ * configured variant, to minimize cropping.
  *
- * Falls back to `video` (a safe landscape default) when dimensions are missing
- * or invalid.
+ * Falls back to `video` (a safe landscape default) when the dimensions
+ * are missing or invalid.
  */
 export function nearestAspectRatio(
   width: number | null | undefined,

@@ -9,9 +9,9 @@
 const DIACRITICS = new RegExp('[\\u0300-\\u036f]', 'g')
 
 /**
- * Turn heading text into a URL-safe anchor id. Latin diacritics are folded
- * (é → e) before stripping; fully non-latin scripts collapse to '' (callers
- * should treat an empty id as "no anchor").
+ * Turns heading text into a URL-safe anchor id. Latin diacritics fold
+ * before stripping (for example, é becomes e). A fully non-latin script
+ * collapses to ''. Callers should treat an empty id as "no anchor".
  */
 export function slugify(text: string): string {
   return text

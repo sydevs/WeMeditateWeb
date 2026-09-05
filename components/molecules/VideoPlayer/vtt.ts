@@ -1,12 +1,13 @@
 /**
  * WebVTT adapter for the Video collection's inline subtitle cues.
  *
- * The `Video` collection stores subtitles as `{ content, startTimeMs, endTimeMs }`
- * cues. Browsers need a WebVTT track, so we serialize the cues to a VTT string
- * (turned into a blob `<track>` by VideoPlayer). Kept pure for unit testing.
+ * The `Video` collection stores subtitles as `{ content, startTimeMs,
+ * endTimeMs }` cues. Browsers need a WebVTT track, so this serializes the
+ * cues to a VTT string, which VideoPlayer turns into a blob `<track>`. This
+ * file stays pure, for unit testing.
  *
- * Ticket 4 (Lectures) adds a second adapter for per-locale .vtt files; both feed
- * the same VideoPlayer.
+ * Ticket 4 (Lectures) adds a second adapter for per-locale .vtt files. Both
+ * feed the same VideoPlayer.
  */
 
 export interface VideoSubtitleCue {
@@ -32,9 +33,9 @@ export function msToVttTimestamp(ms: number): string {
 const COLLAPSIBLE_BLANK_LINES = /\r?\n\s*\r?\n+/g
 
 /**
- * Serialize inline cues to a WebVTT document. Cues with empty content or a
- * non-positive duration are dropped; cue text is collapsed so a blank line
- * inside it can't prematurely terminate the cue.
+ * Serialize inline cues to a WebVTT document. This drops cues with empty
+ * content or a non-positive duration. It also collapses cue text, so a
+ * blank line inside it cannot prematurely terminate the cue.
  */
 export function cuesToVtt(cues: VideoSubtitleCue[]): string {
   const blocks = cues

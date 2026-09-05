@@ -1,7 +1,7 @@
 /**
- * Error page - Displayed for 404 and 500 errors.
+ * Error page. Displays 404 and 500 errors.
  *
- * Rendered when:
+ * Renders when:
  * - Page not found (404)
  * - Server error during data fetching (500)
  * - CMS unreachable after retries

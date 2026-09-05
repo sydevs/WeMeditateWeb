@@ -1,50 +1,28 @@
 #!/usr/bin/env node
 /**
- * Discover the Cloudflare preview URL for the WeMeditate **web app** on the
- * current pull request, wait until it is healthy, and export it as PREVIEW_URL
- * for the smoke specs (tests/smoke).
- *
- * Why this is project-aware
- * -------------------------
- * This repo is connected to MORE THAN ONE Cloudflare project. The design-system
- * (Ladle) build deploys to `wm-design.pages.dev` and posts its own
- * "Cloudflare Pages" check + bot comment on every PR. We must NOT smoke-test that
- * one — it's a static component playground with no server or CMS content. So
- * discovery filters candidates by project: it selects the URL whose project /
- * host matches CF_PROJECT_MATCH (set this to the web-app preview project once it
- * exists), and always excludes the known Ladle project (`wm-design` /
- * `wemeditate-design`).
- *
- * Where Cloudflare posts the URL (confirmed empirically on this repo)
- * ------------------------------------------------------------------
- * There are NO GitHub deployments and NO commit statuses for the preview. The
- * URL lives in:
- *   1. the `cloudflare-workers-and-pages[bot]` **PR comment** — body starts with
- *      "## Deploying <project> with … Cloudflare Pages" and a table containing
- *      "Preview URL" + "Branch Preview URL". This is the ONLY surface that names
- *      the project, so it's the primary source.
- *   2. the "Cloudflare Pages" **check-run** `output.summary` (same table, but no
- *      project name) — used as a fallback.
- * Deployments / commit statuses are also checked as further fallbacks in case a
- * Workers-Builds-style preview is configured later.
+ * Finds the Cloudflare preview URL for the web app on the current pull
+ * request, waits until it responds, and exports it as PREVIEW_URL for the
+ * smoke specs (tests/smoke). See docs/cloudflare-previews-ci.md for why this
+ * script is project-aware, where Cloudflare posts the URL, and the
+ * HTTP-reachability trap.
  *
  * Env:
  *   GITHUB_TOKEN        - GitHub token (CI default)
  *   GITHUB_REPOSITORY   - "owner/repo" (CI default)
  *   PR_HEAD_SHA         - PR head commit SHA (github.event.pull_request.head.sha)
- *   PR_NUMBER           - PR number (github.event.pull_request.number); enables
- *                         the primary PR-comment source
- *   CF_PROJECT_MATCH    - substring the target project/host must contain (e.g.
- *                         "wemeditate-web"). When unset, any non-Ladle preview is
- *                         accepted.
- *   HEALTH_PATH         - health endpoint (default "/" — the app has no /api/health)
+ *   PR_NUMBER           - PR number (github.event.pull_request.number).
+ *                         Enables the primary PR-comment source.
+ *   CF_PROJECT_MATCH    - substring the target project or host must contain
+ *                         (for example "wemeditate-web"). When unset, the
+ *                         script accepts any non-Ladle preview.
+ *   HEALTH_PATH         - health endpoint (default "/", since the app has no /api/health)
  *   DISCOVER_TIMEOUT_MS / HEALTH_TIMEOUT_MS / POLL_INTERVAL_MS - optional overrides
  *
- * Skips gracefully (empty preview_url, exit 0) when no matching preview appears
- * within the timeout — e.g. before the web-app preview is set up, or a forked PR
- * without permissions. Exits 1 only when a matching URL is found but never
- * becomes healthy. Writes `preview_url=<url>` to $GITHUB_OUTPUT and
- * `PREVIEW_URL=<url>` to $GITHUB_ENV.
+ * Skips gracefully (empty preview_url, exit 0) when no matching preview
+ * appears within the timeout, for example before the web-app preview exists,
+ * or on a forked PR without permissions. Exits 1 only when a matching URL is
+ * found but never becomes healthy. Writes `preview_url=<url>` to
+ * $GITHUB_OUTPUT and `PREVIEW_URL=<url>` to $GITHUB_ENV.
  */
 import { appendFileSync } from 'node:fs'
 
@@ -55,15 +33,15 @@ const PR_NUMBER = process.env.PR_NUMBER
 const CF_PROJECT_MATCH = process.env.CF_PROJECT_MATCH
 const HEALTH_PATH = process.env.HEALTH_PATH || '/'
 
-// Poll for the full build window only when a target project is configured (a
-// real build to wait for). Before CF_PROJECT_MATCH is set, there's no web-app
-// preview to wait for, so check quickly and skip instead of burning 12 minutes.
+// Poll for the full build window only when a target project is set (a real
+// build to wait for). Before CF_PROJECT_MATCH is set, there is no web-app
+// preview to wait for. Check quickly, then skip, instead of waiting 12 minutes.
 const DISCOVER_TIMEOUT_MS =
   Number(process.env.DISCOVER_TIMEOUT_MS) || (CF_PROJECT_MATCH ? 12 * 60_000 : 30_000)
 const HEALTH_TIMEOUT_MS = Number(process.env.HEALTH_TIMEOUT_MS) || 5 * 60_000
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 
-// The design-system (Ladle) Cloudflare project — never smoke-test this one.
+// The design-system (Ladle) Cloudflare project. Never run smoke tests on it.
 const EXCLUDE = ['wm-design', 'wemeditate-design']
 // Matches a Cloudflare preview origin at any subdomain depth.
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
@@ -72,7 +50,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 const extractPreviewUrl = (text) => String(text ?? '').match(PREVIEW_URL_RE)?.[0] ?? null
 
-/** Should this candidate (project name + url) be smoke-tested? */
+/** Returns true when this candidate (project name and url) is the smoke-test target. */
 function matchesTarget(project, url) {
   const hay = `${project ?? ''} ${url ?? ''}`.toLowerCase()
   if (CF_PROJECT_MATCH) return hay.includes(CF_PROJECT_MATCH.toLowerCase())
@@ -91,7 +69,7 @@ async function ghFetch(path) {
   return res.json()
 }
 
-// 1. PR comments — the only surface that names the project, so it's primary.
+// 1. PR comments. The only surface that names the project, so this is the primary source.
 async function fromPrComments() {
   if (!PR_NUMBER) return []
   const comments = await ghFetch(`/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100`)
@@ -172,9 +150,8 @@ async function waitReachable(url) {
     attempt++
     try {
       const res = await fetch(`${url}${HEALTH_PATH}`, { signal: AbortSignal.timeout(10_000) })
-      // Any HTTP response means the deployment is up and routable. We intentionally
-      // do NOT require 2xx: a 500 (e.g. a broken homepage) is exactly what the smoke
-      // specs should catch and report — not a reason to fail discovery before they run.
+      // Any HTTP response counts as reachable, on purpose (see
+      // docs/cloudflare-previews-ci.md). The smoke specs catch a 500, not discovery.
       console.error(`reachable (HTTP ${res.status}) after ${attempt} attempt(s)`)
       return true
     } catch (err) {

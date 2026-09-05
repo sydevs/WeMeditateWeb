@@ -1,34 +1,34 @@
 import { MAP_PREFIX } from '../../lib/atlas-route'
 
 /**
- * First path segments owned by a route function elsewhere, which this matcher
- * must not swallow.
+ * First path segments that a route function elsewhere owns. This matcher
+ * must not swallow them.
  *
- * ⚠ **This matcher is greedy**: it matches *any* single segment, so `/map`
- * resolved to the Pages renderer — and did so silently, rendering "page not
- * found" for a route that exists. A filesystem route under `pages/map/` does not
- * win on its own, because `pages/map/+route.ts` is a route function and both
- * candidates are then offered to Vike's router.
+ * ⚠ This matcher is greedy: it matches any single segment. Before this
+ * exclusion, `/map` resolved to the Pages renderer, silently, and rendered
+ * "page not found" for a route that exists. A filesystem route under
+ * `pages/map/` does not win on its own, because `pages/map/+route.ts` is
+ * also a route function. Vike's router sees both candidates.
  *
- * Derived from `MAP_PREFIX` rather than spelled out, so moving the atlas prefix
- * can't leave this list pointing at the old one.
+ * This list derives from `MAP_PREFIX`, instead of a hardcoded string. If
+ * the atlas prefix moves, this list cannot point at the old one.
  */
 const RESERVED_SEGMENTS: ReadonlySet<string> = new Set([MAP_PREFIX.replace(/^\//, '')])
 
 /**
  * Route matcher for pages in default locale (English).
  * Matches: /about, /contact, etc.
- * Does NOT match: / (homepage), /cs/*, /de/*, /map, etc.
+ * Does not match: / (homepage), /cs/*, /de/*, /map, etc.
  */
 export default function route(pageContext: { urlPathname: string }) {
   const { urlPathname } = pageContext
 
-  // Don't match homepage
+  // Do not match the homepage
   if (urlPathname === '/') {
     return false
   }
 
-  // Don't match locale-prefixed routes (handled by [locale]/[slug])
+  // Do not match locale-prefixed routes (handled by [locale]/[slug])
   if (urlPathname.match(/^\/[a-z]{2}\//)) {
     return false
   }

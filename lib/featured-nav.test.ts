@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { Page, WebConfig } from '../server/cms-types'
 import { activeFeaturedSlug, isFeaturedNavPage } from './featured-nav'
 
-/** Minimal featured-page list keyed by slug — only `slug` is read. */
+/** Minimal featured-page list keyed by slug. Only `slug` is read. */
 function settings(slugs: string[]): Pick<WebConfig, 'featuredPages'> {
   return { featuredPages: slugs.map((slug) => ({ slug }) as Page) }
 }
@@ -39,8 +39,9 @@ describe('isFeaturedNavPage', () => {
   })
 })
 
-// The nav highlight (LayoutChrome) and the title suppression (+Page) both key off
-// activeFeaturedSlug, so a page hides its title iff exactly its own nav link is active.
+// The nav highlight (LayoutChrome) and the title suppression (+Page) both
+// key off activeFeaturedSlug. A page hides its title only when its own
+// nav link is the active one.
 describe('highlight and title-suppression agree', () => {
   const s = settings(['meditate', 'music'])
 
@@ -50,7 +51,7 @@ describe('highlight and title-suppression agree', () => {
 
     expect(isFeaturedNavPage(page, s)).toBe(true)
     expect(active).toBe('music')
-    // Exactly one featured nav item is active, and it's this page's.
+    // Exactly one featured nav item is active, and it is this page's.
     expect(s.featuredPages.filter((f) => f.slug === active)).toHaveLength(1)
   })
 

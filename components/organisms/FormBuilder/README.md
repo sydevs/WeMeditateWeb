@@ -1,91 +1,61 @@
 # FormBuilder
 
-Dynamic form rendering component that constructs forms from PayloadCMS's `@payloadcms/plugin-form-builder` plugin data structure.
-
-## Purpose
-
-Enables content editors to create custom forms through the PayloadCMS admin interface without requiring developer intervention. The FormBuilder component consumes form configuration data and renders functional, accessible forms on the frontend using our existing atom components.
+Renders a form from PayloadCMS's `@payloadcms/plugin-form-builder` data structure. A content
+editor builds the form in the PayloadCMS admin. This component then renders it on the frontend,
+using our atom components — no developer change needed per form.
 
 ## Features
 
-- ✅ **Dynamic Field Rendering** - Automatically renders form fields based on PayloadCMS configuration
-- ✅ **All Field Types** - Supports text, email, number, textarea, select, checkbox, and message fields
-- ✅ **Form Validation** - Native HTML5 validation + server-side error display
-- ✅ **Submission Handling** - Flexible submission callback with loading states
-- ✅ **Confirmation Messages** - Shows success message or redirects after submission
-- ✅ **Accessible** - WCAG 2.1 Level AA compliant with ARIA attributes
-- ✅ **Responsive** - Mobile-first design that works on all screen sizes
-- ✅ **Type-Safe** - Full TypeScript support with comprehensive interfaces
+- Renders every field type the plugin supports: text, email, number, textarea, select, checkbox,
+  and message (display-only text).
+- Validates with native HTML5 validation, plus server-side error display.
+- Handles submission through a caller-supplied callback, with a loading state.
+- Displays a confirmation message, or redirects, after a successful submission.
+- Meets WCAG 2.1 Level AA, with the right ARIA attributes.
+- Uses `react-hook-form` (^7.53.2) for form state.
 
-## Supported Field Types
+## Supported field types
 
-| Field Type | Component | Description |
-|------------|-----------|-------------|
-| `text` | Input | Single-line text input |
-| `email` | Input | Email input with validation |
+| Field type | Component | Description |
+| --- | --- | --- |
+| `text` | Input | Single-line text |
+| `email` | Input | Email, with validation |
 | `number` | Input | Numeric input |
-| `textarea` | Textarea | Multi-line text input |
-| `select` | Select | Dropdown selection |
-| `checkbox` | Checkbox | Boolean checkbox |
-| `message` | Text | Display-only informational text (no input) |
+| `textarea` | Textarea | Multi-line text |
+| `select` | Select | Dropdown |
+| `checkbox` | Checkbox | Boolean |
+| `message` | Text | Display-only text, no input |
 
 ## Usage
 
-### Basic Usage
-
 ```tsx
-import { FormBuilder } from '@/components/organisms'
+import { FormBuilder } from '..'
 
-function ContactPage({ formConfig }) {
-  const handleSubmit = async (data) => {
-    const response = await fetch('/api/form-submissions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-
-    if (response.ok) {
-      return { success: true }
-    } else {
-      const error = await response.json()
-      return { success: false, error }
-    }
-  }
-
-  return <FormBuilder form={formConfig} onSubmit={handleSubmit} />
-}
-```
-
-### With Custom Styling
-
-```tsx
-<FormBuilder
-  form={formConfig}
-  onSubmit={handleSubmit}
-  className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow"
-/>
-```
-
-### With Redirect After Submission
-
-```tsx
-const formConfig = {
-  id: 'contact-form',
-  fields: [/* ... */],
-  submitButtonLabel: 'Send Message',
-  redirect: {
-    url: '/thank-you'
-  }
+async function handleSubmit(data) {
+  const response = await fetch('/api/form-submissions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (response.ok) return { success: true }
+  return { success: false, error: await response.json() }
 }
 
 <FormBuilder form={formConfig} onSubmit={handleSubmit} />
 ```
 
+Pass `className` to style the form wrapper. Pass `form.redirect.url` to redirect after a
+successful submission instead of displaying the confirmation message.
+
 ## Props
 
-### `form: FormBuilderConfig` (required)
-
-Form configuration object from PayloadCMS.
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `form` | `FormBuilderConfig` | Yes | The form configuration from PayloadCMS. |
+| `onSubmit` | `(data: FormBuilderSubmission) => Promise<{ success: boolean; error?: {...} }>` | Yes | Handles the submission. Returns success or an error. |
+| `variant` | `'default' \| 'minimal'` | No | `default` displays labels and borders with the primary button. `minimal` displays placeholders instead of labels, with the outline button. |
+| `align` | `'left' \| 'center'` | No | Aligns the title and submit button. Fields stay left-aligned either way. Defaults to `left`. |
+| `className` | `string` | No | Extra classes for the form wrapper. |
 
 ```typescript
 interface FormBuilderConfig {
@@ -94,278 +64,77 @@ interface FormBuilderConfig {
   fields: FormBuilderField[]
   submitButtonLabel?: string
   confirmationMessage?: string
-  redirect?: {
-    url: string
-  }
+  redirect?: { url: string }
 }
 ```
 
-### `onSubmit: (data: FormBuilderSubmission) => Promise<...>` (required)
-
-Callback function that handles form submission. Must return a promise with success status and optional error.
-
-**Submission Data Structure:**
+**Submission data** sent to `onSubmit`:
 ```typescript
 {
   form: "form-id",
-  submissionData: [
-    { field: "name", value: "John Doe" },
-    { field: "email", value: "john@example.com" }
-  ]
+  submissionData: [{ field: "name", value: "John Doe" }, ...]
 }
 ```
 
-**Return Value:**
-```typescript
-{
-  success: boolean
-  error?: {
-    message: string
-    errors?: Array<{
-      field: string
-      message: string
-    }>
-  }
-}
-```
-
-### `variant?: 'default' | 'minimal'` (optional)
-
-Visual variant for the form.
-
-- **default** (default): Standard form with labels and borders, uses default input variants and primary button
-- **minimal**: Minimal form with placeholders instead of labels, uses minimal input variants and outline button
-
-```tsx
-// Default variant
-<FormBuilder form={formConfig} onSubmit={handleSubmit} variant="default" />
-
-// Minimal variant
-<FormBuilder form={formConfig} onSubmit={handleSubmit} variant="minimal" />
-```
-
-### `align?: 'left' | 'center'` (optional)
-
-Form alignment.
-
-- **left** (default): Left-aligned title and button (fields always left-aligned)
-- **center**: Centered title and button (fields always left-aligned)
-
-```tsx
-// Left aligned
-<FormBuilder form={formConfig} onSubmit={handleSubmit} align="left" />
-
-// Center aligned
-<FormBuilder form={formConfig} onSubmit={handleSubmit} align="center" />
-```
-
-### `className?: string` (optional)
-
-Additional CSS classes for the form wrapper.
-
-## Field Configuration
-
-Each field in the `fields` array supports these properties:
+## Field configuration
 
 ```typescript
 interface FormBuilderField {
-  name: string                    // Required: Unique field identifier
-  blockType: FieldType            // Required: Field type (text, email, etc.)
-  label: string                   // Required: Field label
-  required?: boolean              // Optional: Whether field is required
-  defaultValue?: string | boolean // Optional: Default value
-  width?: string                  // Optional: CSS width class
-  placeholder?: string            // Optional: Placeholder text
-  options?: Array<{              // Required for select fields
-    label: string
-    value: string
-  }>
+  name: string                    // Unique field id
+  blockType: FieldType            // text, email, select, ...
+  label: string
+  required?: boolean
+  defaultValue?: string | boolean
+  width?: string                  // Any CSS width class, for example 'w-full', 'w-1/2'
+  placeholder?: string
+  options?: Array<{ label: string; value: string }>  // Required for select
   message?: string                // Required for message fields
 }
 ```
 
-## PayloadCMS Integration
-
-### Form Configuration Example
-
-```typescript
-const contactForm = {
-  id: 'contact-form',
-  title: 'Contact Us',
-  fields: [
-    {
-      name: 'name',
-      blockType: 'text',
-      label: 'Full Name',
-      required: true,
-      placeholder: 'John Doe'
-    },
-    {
-      name: 'email',
-      blockType: 'email',
-      label: 'Email Address',
-      required: true,
-      placeholder: 'your@email.com'
-    },
-    {
-      name: 'subject',
-      blockType: 'select',
-      label: 'Subject',
-      required: true,
-      options: [
-        { label: 'General Inquiry', value: 'general' },
-        { label: 'Technical Support', value: 'support' }
-      ]
-    },
-    {
-      name: 'message',
-      blockType: 'textarea',
-      label: 'Message',
-      required: true,
-      placeholder: 'Tell us how we can help...'
-    },
-    {
-      name: 'newsletter',
-      blockType: 'checkbox',
-      label: 'Subscribe to our newsletter'
-    }
-  ],
-  submitButtonLabel: 'Send Message',
-  confirmationMessage: "Thank you! We'll get back to you soon."
-}
-```
-
-### Fetching Form Data
-
-Form configurations should be fetched as part of your page data in Vike's `+data.ts`:
-
-```typescript
-// pages/contact/+data.ts
-export async function data(pageContext) {
-  const formConfig = await getFormById({
-    id: 'contact-form',
-    locale: pageContext.locale,
-    apiKey: process.env.PAYLOAD_API_KEY,
-    kv: pageContext.cloudflare.env.WEMEDITATE_CACHE
-  })
-
-  return { formConfig }
-}
-```
+Fetch `formConfig` in the page's `+data.ts` with `getFormById({ id, locale, apiKey, kv })`.
 
 ## Validation
 
-### Client-Side Validation
-
-Uses native HTML5 validation:
-- `required` attribute for required fields
-- `type="email"` for email validation
-- `type="number"` for numeric validation
-
-Validation errors are displayed in real-time as users submit the form.
-
-### Server-Side Validation
-
-API can return field-level errors that are displayed next to the corresponding fields:
+Native HTML5 attributes (`required`, `type="email"`, `type="number"`) validate on the client. The
+API can return field-level errors, shown next to the matching field:
 
 ```typescript
-return {
+{
   success: false,
   error: {
     message: 'Please correct the errors below',
-    errors: [
-      { field: 'email', message: 'Email already registered' },
-      { field: 'message', message: 'Message too short' }
-    ]
+    errors: [{ field: 'email', message: 'Email already registered' }],
   }
 }
 ```
 
-## Confirmation & Redirect
+## Confirmation and redirect
 
-### Confirmation Message (Default)
-
-If no redirect is specified, the form is replaced with a confirmation message after successful submission:
-
-```typescript
-const form = {
-  // ...
-  confirmationMessage: 'Thank you for your submission!'
-}
-```
-
-### Redirect
-
-If a redirect URL is provided, the user is redirected immediately after successful submission:
-
-```typescript
-const form = {
-  // ...
-  redirect: {
-    url: '/thank-you'
-  }
-}
-```
+Without `form.redirect`, a successful submission replaces the form with
+`form.confirmationMessage`. With `form.redirect.url` set, FormBuilder redirects the user there
+instead.
 
 ## Accessibility
 
-The FormBuilder component meets WCAG 2.1 Level AA standards:
-
-- ✅ **Semantic HTML** - Uses `<form>`, `<label>`, proper heading hierarchy
-- ✅ **ARIA Attributes** - `aria-invalid`, `aria-describedby`, `aria-live` regions
-- ✅ **Keyboard Navigation** - All interactive elements are keyboard accessible
-- ✅ **Error Announcements** - Screen readers announce validation errors
-- ✅ **Loading States** - Screen reader announcements during form submission
-- ✅ **Required Fields** - Visual and semantic indication of required fields
-
-## Responsive Design
-
-Mobile-first implementation with:
-- Full-width inputs on mobile
-- Stacked field layout on small screens
-- Responsive text sizing (sm: prefix for tablet/desktop)
-- Touch-friendly button sizes
-
-## Performance
-
-- Uses React Hook Form for optimized form state management
-- Minimal re-renders during user input
-- Efficient validation handling
-- Lazy loading of confirmation messages
-
-## Examples
-
-See [FormBuilder.stories.tsx](FormBuilder.stories.tsx) for comprehensive examples including:
-- Contact form
-- Registration form with all field types
-- Simple newsletter signup
-- Form with validation errors
-- Integration examples
-
-## Related Components
-
-- [Input](../../atoms/form/Input/Input.tsx) - Text input atom
-- [Textarea](../../atoms/form/Textarea/Textarea.tsx) - Multi-line text atom
-- [Select](../../atoms/form/Select/Select.tsx) - Dropdown selection atom
-- [Checkbox](../../atoms/form/Checkbox/Checkbox.tsx) - Checkbox atom
-- [Button](../../atoms/Button/Button.tsx) - Submit button atom
-- [FormField](../../molecules/FormField/FormField.tsx) - Field wrapper molecule
-
-## Dependencies
-
-- `react-hook-form` (^7.53.2) - Form state management and validation
-
-## Browser Support
-
-Works in all modern browsers with HTML5 form validation support:
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
+Uses `<form>` and `<label>` with a correct heading hierarchy. Sets `aria-invalid`,
+`aria-describedby`, and an `aria-live` region for validation and submission status, so a screen
+reader announces both. Every interactive element is keyboard-accessible.
 
 ## Notes
 
-- The component is designed to be data-driven and requires no code changes for new forms
-- Labels and error messages should come from PayloadCMS (already localized)
-- The parent page/component is responsible for fetching form configuration and handling actual API submission
-- Field width configuration (`width` property) accepts any valid CSS class (e.g., `w-full`, `w-1/2`, `max-w-md`)
+- The component is data-driven. A new form needs no code change.
+- Field labels and error messages come from PayloadCMS, already localized.
+- The caller fetches the form configuration and handles the actual API submission — this
+  component only renders and validates.
+
+## Related components
+
+- [Input](../../atoms/form/Input/Input.tsx), [Textarea](../../atoms/form/Textarea/Textarea.tsx),
+  [Select](../../atoms/form/Select/Select.tsx), [Checkbox](../../atoms/form/Checkbox/Checkbox.tsx)
+- [Button](../../atoms/Button/Button.tsx) — the submit button
+- [FormField](../../molecules/FormField/FormField.tsx) — the field wrapper molecule
+
+See [FormBuilder.stories.tsx](FormBuilder.stories.tsx) for full examples: a contact form, a
+registration form with every field type, a newsletter signup, and a form displaying validation
+errors.

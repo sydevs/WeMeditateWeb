@@ -1,7 +1,7 @@
 /**
- * ErrorFallback - Error boundary fallback UI
+ * ErrorFallback is the error boundary fallback UI.
  *
- * Used by Sentry.ErrorBoundary and the +Page.tsx error route to display a
+ * Sentry.ErrorBoundary and the +Page.tsx error route use it to display a
  * contextual, user-friendly error message.
  *
  * @example
@@ -25,7 +25,7 @@ export interface ErrorFallbackProps {
   /** The Error object that was thrown */
   error: Error
 
-  /** Override automatic error classification. Useful when the caller knows the error category (e.g. a 404 route) and doesn't want to rely on message-based detection. */
+  /** Override automatic error classification. Use it when the caller knows the error category, for example a 404 route, and does not want to rely on message-based detection. */
   errorType?: ErrorType
 
   /** Function to reset the error boundary and retry. Defaults to reloading the page. */

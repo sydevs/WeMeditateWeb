@@ -1,15 +1,16 @@
 /**
  * The server-rendered body of an atlas page.
  *
- * This markup is what a crawler, a social scraper and a no-JS visitor read. A
- * visitor with JavaScript sees it only until the widget mounts, which replaces
- * it — so it is written for the reader who never gets the upgrade: real
- * headings, real links, real text, no interactivity implied that isn't there.
+ * This markup is what a crawler, a social scraper, and a no-JS visitor
+ * read. A visitor with JavaScript sees it only until the widget mounts,
+ * which replaces it. So this is written for the reader who never gets the
+ * upgrade: real headings, real links, real text, and no interactivity
+ * that is not really there.
  *
- * **Nothing here is HTML from the CMS.** Descriptions arrive as
- * `content.paragraphs`, plain text, one entry per block — upstream converts
- * Lexical to text precisely so no consumer has to sanitize it. Render them as
- * text; never as `dangerouslySetInnerHTML`.
+ * Nothing here is HTML from the CMS. Descriptions arrive as
+ * `content.paragraphs`, plain text, one entry per block. Upstream
+ * converts Lexical to text, precisely so no consumer has to sanitize it.
+ * Render them as text, never as `dangerouslySetInnerHTML`.
  */
 
 import type {
@@ -24,11 +25,12 @@ import { MAP_PREFIX } from '../../../lib/atlas-route'
 /**
  * Where a region or class link should point.
  *
- * The **canonical wins** when there is one. Ownership is per-subtree, so a
- * region's canonical can legitimately live on another client's domain, and
- * linking anywhere else would build a link graph pointing at URLs we ourselves
- * declare non-canonical. Falling back to our own `/map` path keeps a region
- * with no publishable owner reachable rather than rendering dead text.
+ * The canonical wins when there is one. Ownership is per-subtree, so a
+ * region's canonical can legitimately live on another client's domain.
+ * Linking anywhere else would build a link graph that points at URLs
+ * this app itself declares non-canonical. The `/map` path is the
+ * fallback. It keeps a region with no publishable owner reachable,
+ * instead of rendering dead text.
  */
 export function atlasHref(link: { route: string | null; url: string | null }): string | null {
   if (link.url) {
@@ -118,8 +120,8 @@ function RegionContent({
               <EventCard key={card.id} card={card} />
             ))}
           </ul>
-          {/* The listing is capped upstream; `eventCount` is the true total, so
-              a partial page never reads as a complete one. */}
+          {/* The listing is capped upstream. `eventCount` is the true
+              total, so a partial page never reads as a complete one. */}
           {content.eventCount > content.events.length && (
             <p className="mt-4 text-sm text-gray-600">
               Showing {content.events.length} of {content.eventCount} classes.
@@ -142,16 +144,17 @@ function EventContent({
   breadcrumbs: AtlasSeoBreadcrumb[]
 }) {
   // Defensive reads throughout this component. `AtlasSeoResponse` is
-  // hand-mirrored from upstream (see server/atlas-types.ts), so a field that
-  // silently stops being sent would otherwise be a 500 on the page rather than
-  // the degraded render the rest of the feature is built for.
+  // hand-mirrored from upstream (see server/atlas-types.ts). If a field
+  // silently stops arriving, this avoids a 500 on the page. It falls
+  // back to the degraded render the rest of the feature is built for.
   const paragraphs = content.paragraphs ?? []
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
-  // `||`, not `??`: upstream uses the empty string for "absent" elsewhere in
-  // this contract (`address.oneLine`, `schedule.oneLine`), so an empty
-  // `onlineUrl` must fall through to the website rather than render href="".
+  // `||`, not `??`: upstream uses the empty string for "absent" elsewhere
+  // in this contract (`address.oneLine`, `schedule.oneLine`). So an empty
+  // `onlineUrl` must fall through to the website, instead of rendering
+  // href="".
   const joinUrl = content.onlineUrl || null
   const websiteUrl = content.website || null
   const linkUrl = joinUrl ?? websiteUrl
@@ -211,8 +214,8 @@ function EventContent({
 }
 
 /**
- * Dispatch on the answer's `type`, which is what the discriminated union is for:
- * narrow once, and the content shape for that variant follows.
+ * Dispatch on the answer's `type`. This is what the discriminated union
+ * is for: narrow once, and the content shape for that variant follows.
  */
 export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
   return seo.type === 'region' ? (

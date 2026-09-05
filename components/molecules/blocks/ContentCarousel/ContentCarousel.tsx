@@ -36,7 +36,7 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
   /**
    * Size variant — resizes the whole card (image height, title, gap, play
    * button) in a coordinated way, and positions the nav arrows on the image.
-   * - `sm`: compact (smaller image + default card title)
+   * - `sm`: compact (smaller image and default card title)
    * - `md`: medium image, hero card title
    * - `lg`: large image, hero card title
    * @default 'lg'
@@ -50,13 +50,13 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
 }
 
 /**
- * ContentCarousel block - a horizontal scrolling carousel of ContentCards.
+ * ContentCarousel is a horizontal scrolling carousel of ContentCards.
  *
- * Uses Embla Carousel for lightweight, performant carousel functionality with
- * arrow navigation buttons using the Button component. Each card renders its
- * image at a fixed height (natural width) so the row shares a consistent image
- * height while each image keeps its own aspect ratio; `size` picks that height
- * plus the matching card title/spacing.
+ * It uses Embla Carousel for a lightweight, performant carousel, with arrow
+ * navigation buttons built from the Button component. Each card renders its
+ * image at a fixed height and natural width, so the row shares a consistent
+ * image height while each image keeps its own aspect ratio. `size` picks
+ * that height, plus the matching card title and spacing.
  *
  * @example
  * <ContentCarousel
@@ -87,16 +87,17 @@ export function ContentCarousel({
     align: 'center',
     slidesToScroll: 1,
     containScroll: 'trimSnaps',
-    // A slide counts as "in view" (full opacity + interactive) once nearly
-    // fully (~0.95) visible. Basing focus on actual visibility — not a single
-    // centered index — means every fully-visible card stays bright and only
-    // edge-clipped peekers fade, however many slides fit at the current viewport.
+    // A slide counts as "in view", full opacity and interactive, once it is
+    // nearly fully visible (~0.95). This bases focus on actual visibility,
+    // not a single centered index, so every fully-visible card stays bright
+    // and only edge-clipped peekers fade, however many slides fit in the
+    // current viewport.
     inViewThreshold: 0.95,
   })
 
   const [slidesInView, setSlidesInView] = useState<number[]>([])
-  // Whether the carousel can scroll further in each direction; drives hiding the
-  // prev/next arrows at the first/last slide.
+  // Whether the carousel can scroll further in each direction. This drives
+  // hiding the previous and next arrows at the first and last slide.
   const [canScrollPrev, setCanScrollPrev] = useState(false)
   const [canScrollNext, setCanScrollNext] = useState(false)
 
@@ -126,10 +127,10 @@ export function ContentCarousel({
     if (!emblaApi) return
     updateState()
     emblaApi.on('select', updateState)
-    // slidesInView fires as slides enter/leave the viewport while scrolling.
+    // slidesInView fires as slides enter or leave the viewport while scrolling.
     emblaApi.on('slidesInView', updateState)
-    // reInit fires when the slides change (e.g. items load in), so arrow
-    // visibility + in-view state stay correct after a late data fetch.
+    // reInit fires when the slides change, for example when items load in,
+    // so arrow visibility and in-view state stay correct after a late data fetch.
     emblaApi.on('reInit', updateState)
 
     return () => {
@@ -186,9 +187,9 @@ export function ContentCarousel({
         <div ref={emblaRef} className="overflow-hidden">
           <div className={`flex ${slideGap}`}>
             {items.map((item, index) => {
-              // Before Embla measures (SSR + first paint) slidesInView is empty;
-              // treat that as "all visible" so the row renders bright rather than
-              // fully dimmed until the fade kicks in on mount.
+              // Before Embla measures, during SSR and the first paint,
+              // slidesInView is empty. Treat that as "all visible", so the
+              // row renders bright instead of fully dimmed until the fade starts on mount.
               const inView = slidesInView.length === 0 || slidesInView.includes(index)
 
               return (
@@ -197,8 +198,8 @@ export function ContentCarousel({
                   className={`flex-[0_0_auto] transition-opacity duration-300 ${
                     inView ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'
                   }`}
-                  // A clipped/edge slide scrolls into view on click; a fully
-                  // visible one keeps its own links/play button clickable.
+                  // A clipped or edge slide scrolls into view on click. A
+                  // fully visible slide keeps its own links and play button clickable.
                   onClick={inView ? undefined : () => scrollTo(index)}
                 >
                   <div className={inView ? '' : 'pointer-events-none'}>

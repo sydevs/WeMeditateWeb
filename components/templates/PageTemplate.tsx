@@ -1,10 +1,11 @@
 /**
- * PageTemplate - Template for rendering page content
+ * PageTemplate renders page content.
  *
- * Used by both regular pages ([slug]) and the live-preview route so rendering
- * stays consistent. Following Atomic Design, templates represent page layout
- * structures. Composes the article chrome: featured video, title, author
- * byline, rich-text body, and SEO `<head>` tags from the page's CMS meta.
+ * Both regular pages ([slug]) and the live-preview route use it, so
+ * rendering stays consistent. Following Atomic Design, templates represent
+ * page layout structures. It composes the article chrome: featured video,
+ * title, author byline, rich-text body, and SEO `<head>` tags from the
+ * page's CMS meta.
  *
  * @example
  * <PageTemplate page={pageData} />
@@ -25,7 +26,7 @@ export interface PageTemplateProps {
   page: Page
 
   /**
-   * Suppress the PageTitle banner (e.g. on featured nav pages, where the
+   * Suppress the PageTitle banner (for example on featured nav pages, where the
    * highlighted nav link already names the page). When this is the only header
    * element, the surrounding header Container collapses cleanly.
    * @default false
@@ -46,9 +47,10 @@ export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
   const hasVideo = Boolean(video && video.hlsUrl)
   const hasHeader = hasVideo || showTitle || Boolean(author)
 
-  // The article no longer constrains width; the readable column is owned by the
-  // Container here (header chrome) and by RichText's own Container (the body), so
-  // full-bleed blocks can break out cleanly and rendering is consistent in stories.
+  // The article no longer constrains width. The Container here, the header
+  // chrome, and RichText's own Container, the body, each own the readable
+  // column instead. So full-bleed blocks can break out cleanly, and
+  // rendering stays consistent in stories.
   return (
     <article>
       {hasHeader && (

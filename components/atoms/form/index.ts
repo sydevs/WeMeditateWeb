@@ -1,8 +1,8 @@
 /**
- * Form Inputs - Atomic form-control elements
+ * Form Inputs are atomic form-control elements.
  *
- * Barrel export for the form-input atoms grouped under `atoms/form/`.
- * Re-exported by the parent `components/atoms` barrel.
+ * This is a barrel export for the form-input atoms grouped under
+ * `atoms/form/`. The parent `components/atoms` barrel re-exports it.
  */
 
 export { Input } from './Input'

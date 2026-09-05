@@ -23,7 +23,7 @@ export interface ColumnProps {
   imageAlt?: string
 
   /**
-   * Optional link URL - makes the title clickable
+   * Optional link URL. Makes the title clickable.
    */
   href?: string
 

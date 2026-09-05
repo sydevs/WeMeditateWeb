@@ -64,8 +64,8 @@ describe('buildSitemapXml', () => {
   })
 
   it('escapes a URL containing an ampersand rather than emitting broken XML', () => {
-    // Unescaped, this yields a document no parser accepts — a silently empty
-    // sitemap rather than a loud failure.
+    // Unescaped, this yields a document no parser accepts. It fails
+    // silently, as an empty sitemap, instead of loudly.
     const xml = buildSitemapXml([{ loc: 'https://a.test/x?a=1&b=2' }])
 
     expect(xml).toContain('https://a.test/x?a=1&amp;b=2')

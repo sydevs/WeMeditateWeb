@@ -23,12 +23,13 @@ export interface PageMetaLike {
 }
 
 /**
- * Resolve a `meta.image` relationship to a single absolute og:image URL.
+ * Resolves a `meta.image` relationship to a single absolute og:image URL.
  *
- * og:image needs one large landscape render, so Cloudflare Images URLs get a
- * `video` (16:9) variant appended — a bare imagedelivery.net URL doesn't
- * resolve without one. Returns null when the image is missing or unpopulated
- * (a bare id) so the tag is simply omitted.
+ * og:image needs one large landscape render, so this function appends a
+ * `video` (16:9) variant to a Cloudflare Images URL. A bare
+ * imagedelivery.net URL does not resolve without one. Returns null when
+ * the image is missing or unpopulated (a bare id), so the tag is simply
+ * omitted.
  */
 export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
   const url = populatedImageUrl(image)
@@ -41,11 +42,11 @@ export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
 }
 
 /**
- * Set the page's SEO head tags from CMS meta, during render.
+ * Sets the page's SEO head tags from CMS meta, during render.
  *
- * Must be called unconditionally from a component (it's a hook). Falls back to
- * the page title when `meta.title` is absent; omits any tag whose value is
- * missing so the global defaults in `pages/+config.ts` apply.
+ * This is a hook, so call it unconditionally from a component. It falls
+ * back to the page title when `meta.title` is absent. It omits any tag
+ * whose value is missing, so the global defaults in `pages/+config.ts` apply.
  */
 export function usePageHead(options: {
   meta?: PageMetaLike | null

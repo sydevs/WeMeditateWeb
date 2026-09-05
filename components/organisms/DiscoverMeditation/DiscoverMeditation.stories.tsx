@@ -6,8 +6,9 @@ export default {
 } satisfies StoryDefault;
 
 /**
- * DiscoverMeditation component - Full-height call-to-action section encouraging
- * users to discover meditation through online meditation or local classes.
+ * DiscoverMeditation is a component: a full-height call-to-action section
+ * that encourages users to discover meditation, through online meditation
+ * or local classes.
  */
 export const Default: Story = () => (
   <>

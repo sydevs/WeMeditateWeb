@@ -12,10 +12,11 @@ import { Lightbox } from './index'
 /**
  * A single lightbox slide.
  *
- * Structurally a subset of the library's `SlideImage` (plus the Captions
- * plugin's `description`), but defined here — in a library-free module — so the
- * provider and the `Image` atom can build/collect slides without ever importing
- * the browser-only lightbox package. Only the lazy {@link Lightbox} impl does.
+ * This is structurally a subset of the library's `SlideImage`, plus the
+ * Captions plugin's `description`. It is defined here, in a library-free
+ * module, so the provider and the `Image` atom can build and collect
+ * slides without ever importing the browser-only lightbox package. Only
+ * the lazy {@link Lightbox} implementation does.
  */
 export interface LightboxSlide {
   /** Full-resolution image URL (largest Cloudflare variant for CMS images). */
@@ -61,17 +62,19 @@ function orderedSlides(slides: GroupSlides | undefined): LightboxSlide[] {
 }
 
 /**
- * Collects lightbox slides registered by descendant `Image`s (grouped by a
- * caller-provided key, positioned by an explicit index) and renders a single
- * client-only overlay for whichever group is open. Centralizing the state here
- * means each surface (gallery, inline upload) opts in with just a `lightboxGroup`
- * (+ `lightboxIndex`) prop and shares one overlay and one library load.
+ * This collects lightbox slides registered by descendant `Image`s, grouped
+ * by a caller-provided key and positioned by an explicit index, and renders
+ * a single client-only overlay for whichever group is open. Centralizing
+ * the state here means each surface, a gallery or an inline upload, opts in
+ * with just a `lightboxGroup` prop, plus `lightboxIndex`, and shares one
+ * overlay and one library load.
  *
- * Registration is keyed by index rather than mount order, so it's idempotent and
- * order-stable across re-renders/remounts (StrictMode, Fast Refresh): clicking an
- * image always opens its own slide. The overlay only mounts once a group is open
- * (always after a client-side click), so the lightbox library stays in a lazy
- * client chunk and never enters the SSR / Workers bundle.
+ * Registration is keyed by index rather than mount order, so it is
+ * idempotent and order-stable across re-renders and remounts (StrictMode,
+ * Fast Refresh): clicking an image always opens its own slide. The overlay
+ * mounts only once a group is open, always after a client-side click, so
+ * the lightbox library stays in a lazy client chunk and never enters the
+ * SSR or Workers bundle.
  */
 export function LightboxProvider({ children }: LightboxProviderProps) {
   const [groups, setGroups] = useState<Record<string, GroupSlides>>({})
@@ -122,9 +125,9 @@ export function LightboxProvider({ children }: LightboxProviderProps) {
   const value = useMemo(() => ({ register, unregister, openAt }), [register, unregister, openAt])
 
   const slides = active ? orderedSlides(groups[active.group]) : []
-  // If the active group lost images while open (e.g. a live-preview edit), clamp
-  // the position and drop the overlay once empty, so the library never receives
-  // an out-of-range index.
+  // If the active group lost images while open, for example from a
+  // live-preview edit, clamp the position and drop the overlay once empty,
+  // so the library never receives an out-of-range index.
   const position = Math.min(active?.position ?? 0, Math.max(slides.length - 1, 0))
 
   return (

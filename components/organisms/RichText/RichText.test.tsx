@@ -346,7 +346,7 @@ describe('<RichText>', () => {
       />,
     )
 
-    // One trigger per image, each labelled by its alt text; the masonry is intact.
+    // One trigger per image, each labelled by its alt text. The masonry is intact.
     expect((html.match(/aria-label="View image:/g) ?? []).length).toBe(2)
     expect(html).toContain('aria-label="View image: One"')
     expect(html).toContain('aria-label="View image: Two"')
@@ -375,7 +375,7 @@ describe('<RichText>', () => {
       />,
     )
 
-    // The SSR figure + caption still render (the lightbox only adds the trigger).
+    // The SSR figure and caption still render (the lightbox only adds the trigger).
     expect(html).toContain('<figure')
     expect(html).toContain('<figcaption')
     expect(html).toContain('<button')
@@ -433,7 +433,7 @@ describe('<RichText>', () => {
       />,
     )
 
-    // The heading converter emits id="when-to-do-it"; the ToC links to it.
+    // The heading converter emits id="when-to-do-it". The ToC links to it.
     expect(html).toContain('id="when-to-do-it"')
     expect(html).toContain('href="#when-to-do-it"')
     expect(html).toContain('Explore below')

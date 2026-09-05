@@ -1,8 +1,8 @@
 /**
- * Templates - Page layout structures following Atomic Design
+ * Templates are page layout structures, following Atomic Design.
  *
- * Templates represent page-level layouts without real content.
- * They combine organisms, molecules, and atoms into complete page structures.
+ * Templates represent page-level layouts without real content. They
+ * combine organisms, molecules, and atoms into complete page structures.
  */
 
 export { PageTemplate } from './PageTemplate'

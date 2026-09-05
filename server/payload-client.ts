@@ -1,11 +1,11 @@
 /**
- * PayloadCMS REST API client using @payloadcms/sdk.
+ * PayloadCMS REST API client, using @payloadcms/sdk.
  *
- * IMPORTANT: Always create a new client instance per request when using
- * Cloudflare Workers. This ensures proper I/O context isolation.
+ * Important: on Cloudflare Workers, always create a new client instance
+ * per request. This keeps I/O context isolation correct.
  *
- * Known SDK Issue: @payloadcms/sdk returns `undefined` on error instead of
- * throwing (GitHub issue #14495). All query functions must handle this.
+ * Known SDK issue: @payloadcms/sdk returns `undefined` on error, instead
+ * of throwing (GitHub issue #14495). Every query function must handle this.
  */
 
 import { PayloadSDK } from '@payloadcms/sdk'
@@ -16,12 +16,12 @@ import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
  * Configuration for creating a PayloadCMS SDK client.
- * All fields are optional - defaults come from CMS context/environment.
+ * Every field is optional. Defaults come from the CMS context or environment.
  */
 export interface PayloadClientConfig {
-  /** PayloadCMS API key (optional - falls back to context/env) */
+  /** PayloadCMS API key (optional, falls back to context or env). */
   apiKey?: string
-  /** Base URL for the PayloadCMS API (optional - falls back to context/env) */
+  /** Base URL for the PayloadCMS API (optional, falls back to context or env). */
   baseURL?: string
   /** Enable preview mode for draft content requests */
   preview?: boolean
@@ -83,11 +83,11 @@ export function validatePayloadConfig(config: { apiKey?: string; baseURL?: strin
 }
 
 /**
- * Custom fetch wrapper that captures HTTP error details.
+ * A custom fetch wrapper that captures HTTP error details.
  *
- * The PayloadCMS SDK's findByID method swallows HTTP status codes and response
- * bodies, replacing them with a generic error message. This wrapper logs the
- * actual error details before the SDK discards them.
+ * The PayloadCMS SDK's findByID method swallows HTTP status codes and
+ * response bodies. It replaces them with a generic error message. This
+ * wrapper logs the actual error details before the SDK discards them.
  *
  * @see https://github.com/payloadcms/payload/issues/14495
  */
@@ -97,10 +97,10 @@ async function fetchWithErrorDetails(
 ): Promise<Response> {
   const response = await fetch(input, init)
 
-  // Log all API requests for debugging
+  // Log every API request, for debugging.
   console.log(`[PayloadCMS] ${init?.method || 'GET'} ${input} → ${response.status}`)
 
-  // If not OK, log the actual error details before SDK swallows them
+  // If not OK, log the actual error details before the SDK swallows them.
   if (!response.ok) {
     const clonedResponse = response.clone()
     try {
@@ -124,25 +124,20 @@ async function fetchWithErrorDetails(
 }
 
 /**
- * Creates a new PayloadCMS SDK client instance.
+ * Creates a new PayloadCMS SDK client instance. See the file header for
+ * why a fresh instance is required per request.
  *
- * IMPORTANT: Always create a new client instance per request when using
- * Cloudflare Workers to ensure proper I/O context isolation.
- *
- * @param config - Optional client configuration. Defaults come from CMS context/environment.
+ * @param config - Optional client configuration. Defaults come from the CMS context or environment.
  * @returns Configured PayloadSDK instance
  * @throws PayloadConfigError if configuration is invalid (missing API key, malformed URL)
  */
 export function createPayloadClient(config: PayloadClientConfig = {}) {
-  // Get defaults from CMS context if not provided in config
   const cmsContext = getCmsContext()
 
   const apiKey = config.apiKey ?? cmsContext.apiKey
   const baseURL = config.baseURL ?? cmsContext.baseURL
   const previewSecret = config.preview ? config.previewSecret : undefined
 
-  // Validate configuration before creating client
-  // This provides clear error messages for common misconfiguration issues
   validatePayloadConfig({ apiKey, baseURL })
 
   const headers: Record<string, string> = {
@@ -168,11 +163,9 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
 export type PayloadClient = ReturnType<typeof createPayloadClient>
 
 /**
- * Validates SDK response and throws if undefined/null.
- *
- * The PayloadCMS SDK has a known bug where it returns undefined on error
- * instead of throwing (GitHub issue #14495). This wrapper ensures errors
- * are properly thrown for retry logic to work correctly.
+ * Validates an SDK response, and throws if it is undefined or null. See
+ * the file header for the SDK bug this guards against (GitHub issue
+ * #14495): this wrapper makes sure retry logic sees a real thrown error.
  *
  * @param result - The result from an SDK call
  * @param context - Description of the operation for error messages

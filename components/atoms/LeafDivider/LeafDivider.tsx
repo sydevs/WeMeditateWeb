@@ -11,8 +11,8 @@ export interface LeafDividerProps {
 }
 
 /**
- * LeafDivider component provides a decorative divider with leaf ornaments.
- * Used to separate content sections with an elegant botanical accent.
+ * LeafDivider is a decorative divider with leaf ornaments.
+ * Use it to separate content sections with a botanical accent.
  *
  * @example
  * ```tsx

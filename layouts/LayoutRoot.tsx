@@ -6,24 +6,26 @@ import { ErrorFallback } from '../components/molecules'
 import { ROUTE_ANNOUNCER_ID } from '../lib/route-announcer'
 
 /**
- * LayoutRoot — the global layout applied to every route.
+ * LayoutRoot — the global layout for every route.
  *
- * It owns the things that must apply to ALL pages, including bare embed routes:
+ * It owns the things that must apply to every page, including bare embed
+ * routes:
  * - the global stylesheets (fonts, base styles, Tailwind)
  * - the Sentry error boundary
- * - the route announcer (see `lib/route-announcer.ts`) — here rather than in
- *   LayoutChrome so an embed route, which opts into no chrome, still announces
+ * - the route announcer (see `lib/route-announcer.ts`) — placed here, not in
+ *   LayoutChrome, so an embed route, which opts into no chrome, still
+ *   announces
  *
- * The announcer is rendered ONCE and persists across client-side navigations.
- * A live region only announces content inserted into a region the screen reader
- * was already observing, so one created at the same moment as its text says
- * nothing.
+ * This layout renders the announcer once. It persists across client-side
+ * navigations. A live region announces only content inserted into a region
+ * the screen reader is already observing, so one created at the same
+ * moment as its text says nothing.
  *
- * It renders no site chrome. Routes that want the Header/Footer/nav opt in by
- * also setting `Layout: LayoutChrome` in their `+config.ts`; Vike nests the two
- * (the `Layout` setting is cumulative). Embed routes set nothing extra and stay
- * bare by construction — chrome is never coupled to whether `settings` was
- * fetched.
+ * It renders no site chrome. A route that wants the Header, Footer, and nav
+ * opts in by also setting `Layout: LayoutChrome` in its `+config.ts`. Vike
+ * nests the two layouts, because the `Layout` setting is cumulative. Embed
+ * routes set nothing extra, and stay bare by construction. Chrome is never
+ * tied to whether `settings` was fetched.
  */
 export default function LayoutRoot({ children }: { children: React.ReactNode }) {
   return (

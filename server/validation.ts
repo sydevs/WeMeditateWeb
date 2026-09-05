@@ -31,7 +31,8 @@ export const slugSchema = z
 
 /**
  * Schema for validating numeric IDs.
- * Coerces string to number, validates, transforms back to string for API compatibility.
+ * Coerces a string to a number, validates it, then transforms it back to
+ * a string, for API compatibility.
  */
 export const idSchema = z.coerce
   .number({ message: 'ID must be a number' })

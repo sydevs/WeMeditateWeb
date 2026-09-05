@@ -20,7 +20,7 @@ export type DropdownSide = 'top' | 'bottom' | 'left' | 'right'
 
 /**
  * Alignment of the panel along the chosen side. `'left'`/`'right'` are kept as
- * aliases for `'start'`/`'end'` so existing callers don't have to change.
+ * aliases for `'start'`/`'end'`, so existing callers do not have to change.
  */
 export type DropdownAlign = 'start' | 'center' | 'end' | 'left' | 'right'
 
@@ -54,15 +54,15 @@ export interface DropdownProps {
    */
   role?: DropdownRole
   /**
-   * Accessible name for the panel. Recommended for `role="dialog"` panels so the
-   * popover is announced (e.g. "Audio settings").
+   * Accessible name for the panel. Use it for `role="dialog"` panels, so
+   * assistive tech announces the popover, for example "Audio settings".
    */
   ariaLabel?: string
   /** Size variant controlling the panel's minimum width */
   size?: 'sm' | 'md' | 'lg'
   /** Additional CSS classes for the trigger wrapper */
   className?: string
-  /** Controlled open state (optional - if not provided, uses internal state) */
+  /** Controlled open state. Optional: without it, the dropdown uses internal state. */
   isOpen?: boolean
   /** Callback when open state changes (for controlled mode) */
   onOpenChange?: (isOpen: boolean) => void
@@ -78,7 +78,7 @@ export interface DropdownProps {
  * Props for the DropdownItem component
  */
 export interface DropdownItemProps extends ComponentProps<'a'> {
-  /** Size variant - inherited from parent Dropdown if not specified */
+  /** Size variant. Defaults to the parent Dropdown's size when omitted. */
   size?: 'sm' | 'md' | 'lg'
   /** Additional CSS classes */
   className?: string
@@ -116,7 +116,7 @@ const sizeWidthStyles = {
   lg: 'min-w-72', // 288px (18rem)
 }
 
-/** Map the friendly `side` + `align` props to a Floating UI placement. */
+/** Map the friendly `side` and `align` props to a Floating UI placement. */
 function toPlacement(side: DropdownSide, align: DropdownAlign): Placement {
   const alignment = align === 'left' ? 'start' : align === 'right' ? 'end' : align
 
@@ -124,16 +124,16 @@ function toPlacement(side: DropdownSide, align: DropdownAlign): Placement {
 }
 
 /**
- * A generic popover/dropdown with viewport-aware placement, keyboard
- * accessibility, and click-outside / Escape dismissal.
+ * A generic dropdown panel with viewport-aware placement, keyboard
+ * accessibility, and click-outside or Escape dismissal.
  *
- * Positioning is handled by Floating UI: the panel opens on `side`, automatically
- * **flips** to the opposite side when there isn't room, and **shifts** along the
- * cross-axis to stay on screen. The panel is rendered in a portal, so it is never
- * clipped by an ancestor's `overflow` or `@container`/transform context.
+ * Floating UI handles positioning: the panel opens on `side`, automatically
+ * **flips** to the opposite side when there is no room, and **shifts** along
+ * the cross-axis to stay on screen. The panel renders in a portal, so an
+ * ancestor's `overflow` or a `@container` or transform context never clips it.
  *
- * Supports both click-to-open (default) and focus-to-open (`openOnFocus`, for
- * autocomplete) modes, and controlled or uncontrolled open state.
+ * It supports both click-to-open (default) and focus-to-open (`openOnFocus`,
+ * for autocomplete), and both controlled and uncontrolled open state.
  *
  * @example
  * // Uncontrolled menu (default)
@@ -178,7 +178,7 @@ export function Dropdown({
 }: DropdownProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
 
-  // Use controlled state if provided, otherwise internal state.
+  // Use controlled state when provided. Otherwise use internal state.
   const isControlled = controlledIsOpen !== undefined
   const isOpen = isControlled ? controlledIsOpen : internalIsOpen
   const setIsOpen = (value: boolean) => {
@@ -198,7 +198,7 @@ export function Dropdown({
       offset(8),
       flip({ padding: 8 }),
       shift({ padding: 8 }),
-      // Match the panel width to the trigger (e.g. autocomplete under an input).
+      // Match the panel width to the trigger, for example autocomplete under an input.
       ...(fullWidth
         ? [
             size({
@@ -211,10 +211,11 @@ export function Dropdown({
     ],
   })
 
-  // Click-to-open for the default mode. Focus-to-open is handled with React's
-  // (bubbling) onFocus/onBlur below, because Floating UI's useFocus binds native
-  // focus on the reference element, which does not fire when a *child* of the
-  // trigger (e.g. an autocomplete <input/>) is focused.
+  // Click-to-open is the default mode. React's bubbling onFocus and onBlur
+  // handlers below implement focus-to-open instead, because Floating UI's
+  // useFocus binds native focus on the reference element, and that does not
+  // fire when a *child* of the trigger, for example an autocomplete
+  // <input/>, gets focus.
   const click = useClick(context, { enabled: !openOnFocus })
   const dismiss = useDismiss(context)
   const role = useRole(context, { role: roleProp })
@@ -228,12 +229,13 @@ export function Dropdown({
           if (!closeOnBlur) return
           const next = event.relatedTarget as Node | null
 
-          // Only close on a *real* focus-out to an element outside both the
-          // trigger and the (portaled) panel — i.e. tab/focus moving away. A null
-          // relatedTarget means focus didn't land on a focusable element (e.g. a
-          // mouse press on non-focusable panel chrome, or a press on a suggestion
-          // before it focuses); that's not a focus-out, so leave dismissal of true
-          // outside presses to useDismiss and keep the panel open here.
+          // Only close on a *real* focus-out: focus moving, by tab or by
+          // click, to an element outside both the trigger and the portaled
+          // panel. A null relatedTarget means focus did not land on a
+          // focusable element — for example a mouse press on non-focusable
+          // panel chrome, or a press on a suggestion before it gets focus.
+          // That case is not a focus-out. So leave dismissal of a true
+          // outside press to useDismiss, and keep the panel open here.
           if (!next) return
           if (refs.floating.current?.contains(next)) return
           if (refs.domReference.current?.contains(next)) return
@@ -250,7 +252,7 @@ export function Dropdown({
           ...focusProps,
           // In click mode the wrapper is the focusable button (callers may keep
           // their inner control out of the tab order). In focus mode the inner
-          // control (e.g. an Input) owns focus, so the wrapper stays transparent.
+          // control, for example an Input, owns focus, so the wrapper stays transparent.
           ...(openOnFocus ? {} : { role: 'button', tabIndex: 0 }),
         })}
         className={`${fullWidth ? 'w-full' : 'inline-block'} ${
@@ -264,11 +266,13 @@ export function Dropdown({
         <FloatingPortal>
           <FloatingFocusManager
             context={context}
-            // Non-modal so the background stays interactive, and initialFocus={-1}
-            // so opening never pulls focus into the panel (preserves autocomplete
-            // typing). Keeping it enabled in focus mode inserts focus guards so Tab
-            // still flows from the trigger into the portaled panel. Don't return
-            // focus in focus mode — the trigger's own control already owns it.
+            // This stays non-modal, so the background stays interactive.
+            // initialFocus={-1} means opening never pulls focus into the
+            // panel, which preserves autocomplete typing. Keeping
+            // FloatingFocusManager enabled in focus mode still inserts focus
+            // guards, so Tab flows from the trigger into the portaled panel.
+            // Do not return focus in focus mode: the trigger's own control
+            // already owns it.
             initialFocus={-1}
             modal={false}
             returnFocus={!openOnFocus}

@@ -6,7 +6,7 @@ export default {
   title: 'Molecules',
 } satisfies StoryDefault
 
-// Sample meditation data - with play button, duration, title, and optional category badges (no description)
+// Sample meditation data, with a play button, duration, title, and optional category badges. No description.
 const meditationItems = [
   {
     title: 'Inner Peace',
@@ -66,7 +66,7 @@ const meditationItems = [
   },
 ]
 
-// Sample article data - with title, description, varied aspect ratios, and category badges (no play button or duration)
+// Sample article data, with title, description, varied aspect ratios, and category badges. No play button or duration.
 const articleItems = [
   {
     title: 'What is Meditation?',
@@ -119,7 +119,7 @@ const articleItems = [
   },
 ]
 
-// Mixed content - combination of meditations and articles with varied aspect ratios
+// Mixed content: meditations and articles, with varied aspect ratios
 const mixedItems = [
   meditationItems[0],
   articleItems[0],

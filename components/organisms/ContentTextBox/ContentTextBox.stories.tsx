@@ -7,9 +7,9 @@ export default {
 } satisfies StoryDefault
 
 /**
- * ContentTextBox organism showcasing a white content box that overlaps a tall
- * feature image (left/right layouts). For text-over-image use ContentOverlay;
- * for the ornate treatment use OrnateTextBox.
+ * ContentTextBox is an organism that shows a white content box, overlapping
+ * a tall feature image, in a left or right layout. For text-over-image,
+ * use ContentOverlay. For the ornate treatment, use OrnateTextBox.
  */
 export const Default: Story = () => (
   <StoryWrapper>

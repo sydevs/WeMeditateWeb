@@ -53,7 +53,7 @@ export const Default: Story = () => (
         ]}
         logoHref="/"
         navItems={[
-          // `active` marks the current page — a persistent tint + aria-current.
+          // `active` marks the current page, with a persistent tint and aria-current.
           { label: 'Meditate Now', href: '/meditate', active: true },
           { label: 'Music for Meditation', href: '/music' },
           { label: 'Inspiration', href: '/inspiration' },
@@ -101,7 +101,7 @@ export const Default: Story = () => (
         ]}
         logoHref="/"
         navItems={[
-          // `active` marks the current page — a persistent tint + aria-current.
+          // `active` marks the current page, with a persistent tint and aria-current.
           { label: 'Meditate Now', href: '/meditate', active: true },
           { label: 'Music for Meditation', href: '/music' },
           { label: 'Inspiration', href: '/inspiration' },

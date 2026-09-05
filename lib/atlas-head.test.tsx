@@ -114,8 +114,8 @@ describe('AtlasHeadTags', () => {
       ['a raw closing script tag', '{"name":"</script><img src=x onerror=alert(1)>"}'],
       ['a raw comment opener', '{"name":"<!--"}'],
     ])('drops the block entirely on %s', (_label, jsonLd) => {
-      // Fail closed. Reaching here means upstream escaping regressed; a page
-      // that is merely less richly described beats one that executes CMS text.
+      // Fail closed. Reaching here means upstream escaping regressed. A
+      // page that is merely less richly described beats one that executes CMS text.
       const html = render(regionSeo({ jsonLd }))
 
       expect(html).not.toContain('application/ld+json')

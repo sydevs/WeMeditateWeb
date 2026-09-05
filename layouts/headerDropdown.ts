@@ -14,8 +14,8 @@ export function pageToLink(page: Page): HeaderDropdownLink {
 
 /**
  * A page → a featured-article card. Resolves the page's `meta.image`
- * relationship to a URL (empty string when none is populated — the article is
- * still linkable), and falls back to the page title for alt text.
+ * relationship to a URL (empty string when none is populated — the article
+ * is still linkable). Falls back to the page title for alt text.
  */
 export function pageToArticle(page: Page): HeaderDropdownArticle {
   return {
@@ -27,11 +27,12 @@ export function pageToArticle(page: Page): HeaderDropdownArticle {
 }
 
 /**
- * Pick `count` pages at random from the curated `featured` list (the CMS
- * `featuredArticles`, which may hold more than `count`), falling back to
- * `fallback` (knowledge pages) when `featured` is empty. Returns all available
- * pages when fewer than `count` exist. Pure: input arrays are not mutated and
- * `random` is injectable for deterministic tests.
+ * Picks `count` pages at random from the curated `featured` list (the CMS
+ * `featuredArticles`, which may hold more than `count`). Falls back to
+ * `fallback` (knowledge pages) when `featured` is empty. Returns all
+ * available pages when fewer than `count` exist. This function is pure: it
+ * does not mutate input arrays, and `random` is injectable for
+ * deterministic tests.
  */
 export function pickFeaturedArticles(
   featured: Page[],

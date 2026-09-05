@@ -1,9 +1,10 @@
 /**
- * Graphics - Brand & visual atoms
+ * Graphics are brand and visual atoms.
  *
- * Barrel export for the brand/identity and decorative graphic atoms grouped
- * under `atoms/graphics/` (Logo, LanguageFlag, SocialIcon, and the svgs).
- * Re-exported by the parent `components/atoms` barrel.
+ * This is a barrel export for the brand-and-identity and decorative
+ * graphic atoms grouped under `atoms/graphics/` (Logo, LanguageFlag,
+ * SocialIcon, and the svgs). The parent `components/atoms` barrel
+ * re-exports it.
  */
 
 export { Logo } from './Logo'

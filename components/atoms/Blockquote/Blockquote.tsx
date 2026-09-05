@@ -5,17 +5,17 @@ export interface BlockquoteProps {
   text: string
   /** Optional credit/attribution for the quote */
   credit?: string
-  /** Alignment of the blockquote - affects gradient direction and text alignment */
+  /** Alignment of the blockquote. Affects gradient direction and text alignment. */
   align?: 'left' | 'right'
   /** Additional CSS classes */
   className?: string
 }
 
 /**
- * Blockquote atom - A floating quote component with gradient background
+ * Blockquote is an atom: a floating quote component with a gradient background.
  *
- * Typography atom for displaying quotes with optional attribution.
- * Features semi-transparent gradient backgrounds that adapt to alignment.
+ * It is a typography atom for displaying quotes with optional attribution.
+ * It features semi-transparent gradient backgrounds that adapt to alignment.
  *
  * @example
  * ```tsx

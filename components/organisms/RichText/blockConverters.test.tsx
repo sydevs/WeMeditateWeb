@@ -177,8 +177,8 @@ describe('content-index block converter — dispatch', () => {
       ],
     })
 
-    // Inspect the element tree rather than rendering the whole MusicLibrary /
-    // AudioPlayer subtree — this test only asserts the dispatch + filter derivation.
+    // Inspect the element tree rather than rendering the whole MusicLibrary
+    // and AudioPlayer subtree. This test only asserts the dispatch and filter derivation.
     const wrapper = el as ReactElement<{
       children: ReactElement<{ tracks: Track[]; filters: MusicFilter[] }>
     }>

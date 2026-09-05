@@ -1,13 +1,13 @@
 /**
- * LectureTemplate - Template for rendering a lecture.
+ * LectureTemplate renders a lecture.
  *
- * Used by both the lecture routes (/lectures/:id, /lectures/:id/embed) and the live-preview
- * route so rendering stays consistent. Following Atomic Design, templates
- * represent page-level layout structures.
+ * Both the lecture routes (/lectures/:id, /lectures/:id/embed) and the
+ * live-preview route use it, so rendering stays consistent. Following
+ * Atomic Design, templates represent page-level layout structures.
  *
- * Consumes a normalized `ResolvedLecture` (see lib/lecture-shape.ts), so it never
- * branches on full vs clip: a clip already carries its inherited HLS source and
- * its `[startTime, stopTime]` playback window.
+ * It consumes a normalized `ResolvedLecture` (see lib/lecture-shape.ts), so
+ * it never branches on full or clip: a clip already carries its inherited
+ * HLS source and its `[startTime, stopTime]` playback window.
  *
  * @example
  * <LectureTemplate lecture={resolvedLecture} locale="en" />
@@ -21,17 +21,17 @@ import { RelatedContentLoader } from '../organisms/RelatedContent'
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
-  /** Current locale — selects which subtitle track is the default/active one. */
+  /** Current locale. Selects which subtitle track is the default, active one. */
   locale?: string
   className?: string
 }
 
 /**
- * The bare lecture video player: maps a `ResolvedLecture` to the shared
- * VideoPlayer (HLS, clip window, per-locale subtitles, poster) and degrades to a
- * short message when no HLS source resolves. Rendered standalone by the embed
- * route (`/lectures/:id/embed`) and wrapped with a title + duration by LectureTemplate, so
- * the player wiring stays identical in both.
+ * The bare lecture video player. It maps a `ResolvedLecture` to the shared
+ * VideoPlayer (HLS, clip window, per-locale subtitles, poster), and it
+ * degrades to a short message when no HLS source resolves. The embed route
+ * (`/lectures/:id/embed`) renders it standalone, and LectureTemplate wraps
+ * it with a title and duration, so the player wiring stays identical in both.
  */
 export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
   if (!lecture.hlsUrl) {
@@ -60,7 +60,7 @@ export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps
 export interface LectureTemplateProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
-  /** Current locale — selects which subtitle track is the default/active one. */
+  /** Current locale. Selects which subtitle track is the default, active one. */
   locale?: string
   /**
    * Whether to show the Embed button (copy an iframe snippet for this lecture).
@@ -68,15 +68,15 @@ export interface LectureTemplateProps {
    */
   showEmbedButton?: boolean
   /**
-   * Whether to render the "Related meditations" section below the player (loaded
-   * client-side by RelatedContentLoader). The bare embed route uses LecturePlayer
-   * (not this template), so it's unaffected regardless.
+   * Whether to render the "Related meditations" section below the player,
+   * loaded client-side by RelatedContentLoader. The bare embed route uses
+   * LecturePlayer, not this template, so this setting does not affect it.
    * @default false
    */
   showRelated?: boolean
 }
 
-/** Format a length in seconds as a duration label ("40 sec" / "20 min"). */
+/** Format a length in seconds as a duration label, for example "40 sec" or "20 min". */
 function formatLength(seconds: number): string {
   const total = Math.max(0, Math.round(seconds))
 
@@ -89,7 +89,7 @@ export function LectureTemplate({
   showEmbedButton = true,
   showRelated = false,
 }: LectureTemplateProps) {
-  // A clip shows its playable window length; a full lecture shows the whole
+  // A clip shows its playable window length. A full lecture shows the whole
   // source duration.
   const windowSeconds =
     lecture.startTime != null && lecture.stopTime != null && lecture.stopTime > lecture.startTime
@@ -97,8 +97,9 @@ export function LectureTemplate({
       : null
   const displaySeconds = windowSeconds ?? lecture.duration ?? 0
 
-  // A lecture with no resolvable HLS source can't render a player (e.g. a clip
-  // whose parent metadata hasn't synced yet) — degrade gracefully.
+  // A lecture with no resolvable HLS source cannot render a player. This
+  // can happen for a clip whose parent metadata has not synced yet.
+  // Degrade gracefully.
   if (!lecture.hlsUrl) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -132,9 +133,10 @@ export function LectureTemplate({
         ) : null}
       </div>
 
-      {/* Related meditations (SahajCloud cross-type mirror), loaded client-side
-          so the slow ranking endpoint never blocks SSR. The bare embed route
-          uses LecturePlayer (not this template), so it's unaffected regardless. */}
+      {/* Related meditations (a SahajCloud cross-type mirror), loaded
+          client-side, so the slow ranking endpoint never blocks SSR. The
+          bare embed route uses LecturePlayer, not this template, so this
+          setting does not affect it. */}
       {showRelated ? (
         <RelatedContentLoader
           anchorId={lecture.id}

@@ -1,8 +1,9 @@
 /**
- * Meditation Preview Component
+ * Meditation preview component.
  *
- * Preview component for Meditation content type using PayloadCMS live preview messages.
- * Includes playback time sync to send updates back to SahajCloud admin for frame highlighting.
+ * Preview component for the Meditation content type, using PayloadCMS
+ * live preview messages. Includes playback-time sync, to send updates
+ * back to SahajCloud admin for frame highlighting.
  */
 
 'use client'
@@ -22,9 +23,11 @@ export interface MeditationPreviewProps {
    */
   musicTracks?: MeditationSong[]
   /**
-   * Whether the underlying template shows the Embed button — also gates the
-   * client-loaded related-content section, since both are full-chrome features
-   * shown in the full preview but not the bare embed preview. @default true
+   * Whether the underlying template shows the Embed button. This also
+   * gates the client-loaded related-content section, because both are
+   * full-chrome features. They show in the full preview, but not in the
+   * bare embed preview.
+   * @default true
    */
   showEmbedButton?: boolean
 }
@@ -49,7 +52,7 @@ function getSahajCloudOrigin(): string {
 
     return origin
   } catch (err) {
-    // Explicit error variable for compatibility
+    // Named catch variable, for compatibility
     console.warn('[MeditationPreview] Invalid PUBLIC__SAHAJCLOUD_URL:', url, 'error:', err)
 
     return '*'
@@ -136,7 +139,7 @@ export function MeditationPreview({
 
   // Send playback time updates to SahajCloud admin for frame highlighting
   const handlePlaybackTimeUpdate = useCallback((currentTime: number) => {
-    // Only send messages if we're in an iframe (window.parent exists and differs from window)
+    // Only send messages when the page is in an iframe (window.parent exists and differs from window)
     if (window.parent && window.parent !== window) {
       try {
         // Use SahajCloud URL as target origin for security

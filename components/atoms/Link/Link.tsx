@@ -49,10 +49,10 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
 }
 
 /**
- * Link component with automatic locale prefixing.
+ * Link renders with automatic locale prefixing.
  *
- * Handles internal navigation with locale awareness.
- * English locale (en) omits prefix, other locales add prefix (e.g., /es/path).
+ * It handles internal navigation with locale awareness. The English locale
+ * (en) omits the prefix. Other locales add a prefix, for example /es/path.
  *
  * @example
  * <Link href="/meditations">Meditations</Link>
@@ -71,12 +71,12 @@ export function Link({
   children,
   ...props
 }: LinkProps) {
-  // Safely access pageContext - it may not exist in isolated environments like Ladle
+  // Safely access pageContext. It might not exist in isolated environments like Ladle.
   let pageContext
   try {
     pageContext = usePageContext()
   } catch (e) {
-    // PageContext not available (e.g., in Ladle/Storybook)
+    // PageContext not available, for example in Ladle or Storybook
     pageContext = null
   }
 

@@ -40,30 +40,30 @@ export interface AudioPlayerControls {
   unmute: () => void
   /**
    * Load a new audio URL with options.
-   * Use this for dynamic loading (e.g., playlists) instead of the url option.
+   * Use this for dynamic loading (for example, playlists), instead of the url option.
    */
   load: (url: string, options?: { autoplay?: boolean; onEnd?: () => void }) => void
 }
 
 /**
- * Core audio player hook that wraps react-use-audio-player.
- * Provides time polling, seek with callbacks, and track loading.
+ * Core audio player hook. Wraps react-use-audio-player.
+ * Adds time polling, seek with callbacks, and track loading.
  *
- * This hook shadows the library's useAudioPlayer with additional features:
- * - Automatic time polling (100ms interval when playing)
- * - Callbacks for play/pause/end/time updates
- * - Clean state/controls return tuple
- * - Flexible loading (via url option or controls.load)
+ * This hook shadows the library's useAudioPlayer, and adds:
+ * - Automatic time polling (100ms interval while playing)
+ * - Callbacks for play, pause, end, and time updates
+ * - A clean state/controls return tuple
+ * - Flexible loading, with the url option or controls.load
  *
  * @example
- * // Basic usage with URL option (auto-loads)
+ * // Basic usage with the url option (auto-loads)
  * const [state, controls] = useAudioPlayer({
  *   url: '/audio/track.mp3',
  *   onPlaybackTimeUpdate: (time) => console.log(`At ${time}s`)
  * })
  *
  * @example
- * // Dynamic loading (for playlists)
+ * // Dynamic loading, for playlists
  * const [state, controls] = useAudioPlayer({
  *   onPlaybackTimeUpdate: (time) => updateProgress(time)
  * })
@@ -81,11 +81,11 @@ export function useAudioPlayer({
   // Library hook for audio control
   const player = useAudioPlayerLib()
 
-  // Local state for current time (updated via polling)
+  // Local state for current time (updated through polling)
   const [currentTime, setCurrentTime] = useState(0)
   const soundIdRef = useRef<number | null>(null)
 
-  // Effect Events - always access latest props/state, not dependencies
+  // Effect Events always read the latest props and state, not dependencies
   const updateTime = useEffectEvent(() => {
     const howl = player.player
     const time =
@@ -97,7 +97,7 @@ export function useAudioPlayer({
     onPlaybackTimeUpdate?.(time)
   })
 
-  // Effect Events for callbacks - always access latest props, avoid stale closures
+  // Effect Events for callbacks: always read the latest props and avoid stale closures
   const handleOnPlay = useEffectEvent((soundId?: number) => {
     if (typeof soundId === 'number') {
       soundIdRef.current = soundId
@@ -114,7 +114,7 @@ export function useAudioPlayer({
     onEnd?.()
   })
 
-  // Seek handler - simplified since html5 mode is disabled
+  // Seek handler, simplified because html5 mode is disabled
   const seekTo = useEffectEvent((time: number) => {
     const howl = player.player
 
@@ -127,8 +127,8 @@ export function useAudioPlayer({
     onPlaybackTimeUpdate?.(time)
   })
 
-  // Load track via URL option (when provided)
-  // Note: Only re-loads when URL changes. Callbacks use useEffectEvent to always get latest values.
+  // Load track with the url option, when provided
+  // Note: This only reloads when url changes. Callbacks use useEffectEvent, so they always read the latest values.
   useEffect(() => {
     if (url) {
       soundIdRef.current = null

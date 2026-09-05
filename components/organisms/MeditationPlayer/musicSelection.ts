@@ -1,8 +1,9 @@
 /**
  * Pure helpers for choosing which background-music track plays in the
- * MeditationPlayer. Kept separate from the component so the random-pick and
- * no-immediate-repeat logic can be unit-tested deterministically (the optional
- * `rng` defaults to `Math.random` but is injected as a stub in tests).
+ * MeditationPlayer. This file stays separate from the component, so the
+ * random-pick and no-immediate-repeat logic can be unit-tested
+ * deterministically. The optional `rng` defaults to `Math.random`, but
+ * tests inject it as a stub.
  *
  * `rng` must return a value in [0, 1) — the same contract as `Math.random`.
  */

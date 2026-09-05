@@ -1,13 +1,14 @@
 /**
  * Smoke specs for the Ladle design-system (component library) preview.
  *
- * Ladle's static build is a client-rendered SPA — there's no server or CMS to
- * exercise — so a generic HTML fetch tells us little. But the build emits
- * `/meta.json` (the story manifest), which is a strong, server-free signal that
- * the component library actually compiled and serves: it lists every story with
- * its name, level path, and source file. No Playwright needed.
+ * Ladle's static build is a client-rendered SPA. There is no server or
+ * CMS to exercise, so a generic HTML fetch tells us little. But the
+ * build emits `/meta.json` (the story manifest), which is a strong,
+ * server-free signal that the component library compiled and serves. It
+ * lists every story with its name, level path, and source file. No
+ * Playwright needed.
  *
- * PREVIEW_URL is set by CI to the Ladle preview URL (see the smoke-ladle job).
+ * CI sets PREVIEW_URL to the Ladle preview URL (see the smoke-ladle job).
  */
 import { describe, it, expect } from 'vitest'
 import { fetchPage } from '../_helpers/preview'
@@ -40,14 +41,15 @@ describe('ladle preview', () => {
 
     const ids = Object.keys(meta.stories ?? {})
 
-    // The library has 20+ atom stories plus molecules/organisms; guard against an
-    // empty/partial build without being brittle about the exact count.
+    // The library has 20 or more atom stories, plus molecules and
+    // organisms. This guards against an empty or partial build, without
+    // being brittle about the exact count.
     expect(
       ids.length,
       `expected a healthy number of stories, got ${ids.length}`,
     ).toBeGreaterThanOrEqual(15)
 
-    // Entries should look like real stories (a name + a .stories source file).
+    // Entries should look like real stories (a name and a .stories source file).
     const sample = meta.stories![ids[0]]
 
     expect(sample?.name, 'story entries should have a name').toBeTruthy()

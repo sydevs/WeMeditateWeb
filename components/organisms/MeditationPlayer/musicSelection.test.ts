@@ -46,7 +46,7 @@ describe('pickNextRandomIndex', () => {
   })
 
   it('skips past the current index deterministically', () => {
-    // length 3, current 1 → candidates {0, 2}; offsets {0, 1} map around current.
+    // length 3, current 1 → candidates {0, 2}. Offsets {0, 1} map around current.
     expect(pickNextRandomIndex(3, 1, () => 0)).toBe(0)
     expect(pickNextRandomIndex(3, 1, () => 0.99)).toBe(2)
     // current 0 → offsets shift up to {1, 2}, never 0.

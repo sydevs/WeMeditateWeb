@@ -1,8 +1,8 @@
 /**
- * Named without the `+` its subject carries: Vike loads every `+`-prefixed file
- * under `pages/` as a config file and rejects one that exports no `route` /
- * `default`, which fails the build rather than the test run. Co-located all the
- * same.
+ * Named without the `+` its subject carries. Vike loads every `+`-prefixed
+ * file under `pages/` as a config file, and rejects one that exports no
+ * `route` and no `default`. That failure shows up in the build, not the
+ * test run. This test still lives next to its subject.
  */
 import { describe, it, expect } from 'vitest'
 import route from './+route'
@@ -27,10 +27,10 @@ describe('the [slug] page matcher', () => {
     expect(match(pathname)).toBe(false)
   })
 
-  // ⚠ Regression guard for the trap in #62: this matcher takes any single
-  // segment, so before the exclusion `/map` resolved to the Pages renderer and
-  // rendered "page not found" for a route that exists. It would not announce
-  // itself — nothing errors, the wrong page just renders.
+  // ⚠ Regression guard for the trap in #62. This matcher takes any single
+  // segment. Before the exclusion, `/map` resolved to the Pages renderer
+  // and rendered "page not found" for a route that exists. Nothing errors.
+  // The wrong page just renders, with no warning.
   it('leaves /map to the atlas route function', () => {
     expect(match('/map')).toBe(false)
     expect(match('/map/')).toBe(false)

@@ -1,15 +1,16 @@
 /**
- * Live Preview Page for SahajCloud
+ * Live preview page for SahajCloud.
  *
- * This page displays live preview of draft content from SahajCloud (PayloadCMS)
- * using LayoutChrome (full chrome with Header/Footer).
+ * Displays a live preview of draft content from SahajCloud (PayloadCMS),
+ * with LayoutChrome (full chrome, with Header and Footer).
  *
- * Uses window.postMessage to receive real-time updates as editors make changes.
+ * Uses window.postMessage to receive real-time updates as editors make
+ * changes.
  *
- * URL Parameters from SahajCloud:
- * - collection: The collection name (e.g., "pages", "meditations")
- * - id: Document ID
- * - locale: Content locale (optional, defaults to 'en')
+ * URL parameters from SahajCloud:
+ * - collection: the collection name (for example, "pages", "meditations")
+ * - id: document ID
+ * - locale: content locale (optional, defaults to 'en')
  */
 
 'use client'

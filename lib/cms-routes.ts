@@ -1,18 +1,20 @@
 /**
  * Single source of truth for the web app's document routes, in both directions:
- * - building a path from a collection + document ({@link cmsHref}), and
+ * - building a path from a collection and a document ({@link cmsHref}), and
  * - matching an incoming URL back to its route params ({@link matchDocumentRoute}).
  *
- * `cmsHref` is used by the RichText renderer (internal links + inline relationship
- * nodes) and reused by the `showcase` and `content-index` blocks. `matchDocumentRoute`
- * is used by the meditation/lecture `+route.ts` files. Keeping the mapping in one
- * place means new routes (e.g. lectures, albums) are wired up by editing a single
- * table rather than hunting through converters.
+ * `cmsHref` is used by the RichText renderer (internal links and inline
+ * relationship nodes), and reused by the `showcase` and `content-index`
+ * blocks. `matchDocumentRoute` is used by the meditation and lecture
+ * `+route.ts` files. Keeping the mapping in one place means a new route
+ * (for example, lectures, albums) gets wired up by editing a single
+ * table, instead of hunting through converters.
  *
- * Collections without a public web route (forms, app-cards) — or documents that
- * lack the field needed to build a link (an unpublished page comes back as a
- * bare id with no slug) — return `null`. Callers degrade gracefully: render the
- * link text unwrapped instead of emitting a dead `/undefined`.
+ * A collection with no public web route (forms, app-cards), or a
+ * document that lacks the field needed to build a link (an unpublished
+ * page returns as a bare id with no slug), returns `null`. Callers
+ * degrade gracefully: they render the link text unwrapped, instead of
+ * emitting a dead `/undefined`.
  */
 
 import { isPopulated } from './cms-relationships'
@@ -67,12 +69,12 @@ const ROUTE_BUILDERS: Record<
 }
 
 /**
- * Resolve a CMS collection + document reference to a web path.
+ * Resolves a CMS collection and document reference to a web path.
  *
  * @param relationTo - The collection slug (e.g. `pages`, `meditations`)
  * @param value - The relationship value (populated document or bare id)
- * @returns The web path, or `null` if the collection has no public route or the
- *   reference can't be resolved to a valid link.
+ * @returns The web path, or `null` if the collection has no public route,
+ *   or the reference cannot resolve to a valid link.
  */
 export function cmsHref(
   relationTo: string,
@@ -88,15 +90,17 @@ export function cmsHref(
 }
 
 /**
- * Match an incoming URL path against a collection's document route, returning the
- * Vike route params (`{ id }`) or `false`. The matching inverse of {@link cmsHref}
- * for the full and embed routes, so the path shapes live in one tested place:
+ * Matches an incoming URL path against a collection's document route, and
+ * returns the Vike route params (`{ id }`), or `false`. The matching
+ * inverse of {@link cmsHref} for the full and embed routes, so the path
+ * shapes live in one tested place:
  *
- * - full:  `/meditations/:id`        (+ optional `/:locale` prefix)
- * - embed: `/meditations/:id/embed`  (+ optional `/:locale` prefix)
+ * - full:  `/meditations/:id`        (plus an optional `/:locale` prefix)
+ * - embed: `/meditations/:id/embed`  (plus an optional `/:locale` prefix)
  *
- * The id is a single path segment (`[^/]+`), so the full matcher never swallows
- * the embed route, and the embed matcher requires the trailing `/embed`.
+ * The id is a single path segment (`[^/]+`), so the full matcher never
+ * swallows the embed route, and the embed matcher requires the trailing
+ * `/embed`.
  */
 export function matchDocumentRoute(
   collection: string,

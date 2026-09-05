@@ -1,15 +1,16 @@
 /**
  * Pure, framework-agnostic normalization for the Lecture content type.
  *
- * A Lecture is either a `full` lecture (carrying its own `metadata`, synced from
- * the Nirmala Vidya API) or a `clip` excerpted from a parent full lecture. Clips
- * have `metadata = null` and must read their playback source (HLS URL,
- * thumbnail, duration, base subtitles) from the parent via `fullLecture`.
+ * A Lecture is either a `full` lecture (carrying its own `metadata`,
+ * synced from the Nirmala Vidya API), or a `clip` excerpted from a parent
+ * full lecture. A clip has `metadata = null`, and must read its playback
+ * source (HLS URL, thumbnail, duration, base subtitles) from the parent
+ * through `fullLecture`.
  *
- * `resolveLecture` collapses both cases into a single `ResolvedLecture` view
- * model so the template and player never branch on full vs clip. The same
- * function runs server-side (`getLecture`) and client-side (live preview), so it
- * must stay free of server-only dependencies.
+ * `resolveLecture` collapses both cases into a single `ResolvedLecture`
+ * view model, so the template and player never branch on full versus
+ * clip. The same function runs on the server (`getLecture`) and on the
+ * client (live preview), so it must stay free of server-only dependencies.
  *
  * Mirrors the CMS reference `sy-devs-cms/src/lib/lectures/lectureShape.ts`.
  */
@@ -33,7 +34,7 @@ export interface LectureMetadata {
   hlsUrl?: string
   /** Total source duration, in seconds. */
   duration?: number
-  /** Map of locale code → WebVTT URL. */
+  /** Maps a locale code to a WebVTT URL. */
   subtitles?: Record<string, string>
   lastSyncedAt?: string
 }
@@ -58,7 +59,7 @@ export interface ResolvedLecture {
   subtitles: LectureSubtitleTrack[]
 }
 
-/** True for a non-empty string — the shape every URL/text field must have. */
+/** True for a non-empty string, the shape every URL or text field must have. */
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0
 }
@@ -71,7 +72,7 @@ function asFiniteNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
-/** Defensively read the untyped CMS `metadata` json into a `LectureMetadata`. */
+/** Reads the untyped CMS `metadata` json defensively into a `LectureMetadata`. */
 export function parseLectureMetadata(value: unknown): LectureMetadata | null {
   if (!isPopulated<Record<string, unknown>>(value) || Array.isArray(value)) {
     return null
@@ -101,10 +102,11 @@ export function parseLectureMetadata(value: unknown): LectureMetadata | null {
 }
 
 /**
- * Merge subtitle sources: start from the parent's API subtitle map, then apply
- * per-locale clip overrides — a clip track replaces the parent track for that
- * locale, or adds a new one. Empty URLs are dropped; the result is locale-sorted
- * for deterministic output. Mirrors the CMS reference `mergeSubtitles`.
+ * Merges subtitle sources. Starts from the parent's API subtitle map,
+ * then applies per-locale clip overrides: a clip track replaces the
+ * parent track for that locale, or adds a new one. Drops empty URLs. The
+ * result is locale-sorted for deterministic output. Mirrors the CMS
+ * reference `mergeSubtitles`.
  */
 export function mergeSubtitles(
   parentSubtitles: Record<string, string> | undefined,
@@ -130,14 +132,16 @@ export function mergeSubtitles(
 }
 
 /**
- * Collapse a raw Lecture (full or clip) into a flat `ResolvedLecture`. For clips,
- * the playback source (HLS, duration, base subtitles, thumbnail fallback) comes
- * from the populated `fullLecture` parent; the clip contributes its window
- * (`startTime`/`stopTime`), its own thumbnail override, and subtitle overrides.
+ * Collapses a raw Lecture (full or clip) into a flat `ResolvedLecture`.
+ * For a clip, the playback source (HLS, duration, base subtitles,
+ * thumbnail fallback) comes from the populated `fullLecture` parent. The
+ * clip contributes its window (`startTime` and `stopTime`), its own
+ * thumbnail override, and subtitle overrides.
  *
- * If a clip's `fullLecture` is unpopulated (a bare id — e.g. live preview at
- * insufficient depth), the source metadata is simply absent and `hlsUrl` is
- * null; the template degrades to a "no video" state rather than throwing.
+ * If a clip's `fullLecture` is unpopulated (a bare id, for example at an
+ * insufficient live-preview depth), the source metadata is simply
+ * absent, and `hlsUrl` is null. The template degrades to a "no video"
+ * state, instead of throwing.
  */
 export function resolveLecture(lecture: Lecture): ResolvedLecture {
   const isClip = lecture.type === 'clip'

@@ -1,15 +1,16 @@
 /**
- * Cloudflare KV cache utilities for GraphQL responses.
+ * Cloudflare KV cache for REST API responses.
  *
- * This module provides a caching layer for GraphQL queries using Cloudflare KV.
- * It handles cache key generation, TTL management, and graceful fallback when KV is unavailable.
+ * This module caches CMS REST query results in Cloudflare KV. It handles
+ * cache key generation, TTL, and graceful fallback when KV is unavailable.
  *
- * Cache Strategy:
- * - Pages: 1 hour TTL (frequently updated content)
- * - Settings: 24 hours TTL (rarely updated global config)
- * - Lists: 30 minutes TTL (dynamic content like tags)
- * - Preview mode: Cache bypass flag available (always fetch fresh data when enabled)
- * - Retry: Automatic retry with exponential backoff for network/server errors
+ * Cache strategy:
+ * - Pages: 1 hour TTL (frequently updated content).
+ * - Settings: 24 hours TTL (rarely updated global config).
+ * - Lists: 30 minutes TTL (dynamic content, like tags).
+ * - Preview mode: an optional bypass flag always fetches fresh data.
+ * - Retry: automatic retry with exponential backoff for network and server
+ *   errors.
  */
 
 import { KVNamespace } from '@cloudflare/workers-types'
@@ -74,14 +75,13 @@ export function generateCacheKey(
 }
 
 /**
- * Retrieves a cached GraphQL response from Cloudflare KV.
+ * Gets a cached response from Cloudflare KV.
  *
  * @param kv - Cloudflare KV namespace (optional, returns null if not provided)
  * @param key - Cache key to retrieve
- * @returns Parsed cached data or null if not found/expired/unavailable
+ * @returns Parsed cached data, or null if not found, expired, or unavailable
  */
 async function getCachedResponse<T>(kv: KVNamespace | undefined, key: string): Promise<T | null> {
-  // Graceful fallback: if KV is not available, skip caching
   if (!kv) {
     return null
   }
@@ -91,7 +91,8 @@ async function getCachedResponse<T>(kv: KVNamespace | undefined, key: string): P
 
     return cached as T | null
   } catch (error) {
-    // Log error to Sentry and console but don't throw - graceful degradation
+    // Log the error. Do not throw, so a cache read failure never blocks
+    // the request.
     console.error('KV cache read error:', error)
     Sentry.captureException(error, {
       tags: { cache_operation: 'read' },
@@ -103,7 +104,7 @@ async function getCachedResponse<T>(kv: KVNamespace | undefined, key: string): P
 }
 
 /**
- * Stores a GraphQL response in Cloudflare KV with TTL.
+ * Stores a response in Cloudflare KV, with a TTL.
  *
  * @param kv - Cloudflare KV namespace (optional, does nothing if not provided)
  * @param key - Cache key to store under
@@ -116,7 +117,6 @@ async function setCachedResponse<T>(
   data: T,
   ttl: number,
 ): Promise<void> {
-  // Graceful fallback: if KV is not available, skip caching
   if (!kv) {
     return
   }
@@ -126,7 +126,7 @@ async function setCachedResponse<T>(
       expirationTtl: ttl,
     })
   } catch (error) {
-    // Log error to Sentry and console but don't throw - caching is not critical
+    // Log the error. Do not throw: caching is not critical.
     console.error('KV cache write error:', error)
     Sentry.captureException(error, {
       tags: { cache_operation: 'write' },
@@ -136,8 +136,8 @@ async function setCachedResponse<T>(
 }
 
 /**
- * Default retry configuration for network/server errors.
- * These values provide a good balance between resilience and latency.
+ * Default retry configuration for network and server errors.
+ * These values balance resilience against latency.
  */
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
   /** Maximum number of retry attempts (1 initial + 2 retries) */
@@ -147,45 +147,46 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 }
 
 /**
- * Wrapper for caching GraphQL query results with automatic retry.
+ * Wraps a query function with a read-through cache and automatic retry.
  *
- * This function implements a read-through cache pattern with retry logic:
- * 1. Check cache first (unless bypassCache is true)
- * 2. If cache miss, execute the query function with automatic retry
- * 3. Store result in cache before returning (unless bypassCache is true)
- * 4. Return the result
+ * Read-through cache pattern:
+ * 1. Check the cache first, unless `bypassCache` is true.
+ * 2. On a cache miss, run the query function, with automatic retry.
+ * 3. Store the result in the cache, unless `bypassCache` is true.
+ * 4. Return the result.
  *
- * Retry behavior:
- * - Automatically retries network and server errors (not client errors like 404)
- * - Uses exponential backoff with jitter (1s, 2s, 4s)
- * - Override defaults via retryConfig parameter if needed
+ * Retry behavior: this function retries network and server errors
+ * automatically, but not client errors like 404. It uses exponential
+ * backoff with jitter (1s, 2s, 4s). Pass `retryConfig` to override the
+ * defaults.
  *
- * Errors during cache operations are logged to Sentry but do not interrupt the request.
- * If caching fails, the query function is executed and the result is returned without caching.
+ * A cache-operation error is logged to Sentry and never interrupts the
+ * request: this function still runs the query and returns its result
+ * without caching it.
  *
  * @param options - Cache configuration options
  * @param options.cacheKey - Cache key to use
  * @param options.ttl - Time to live in seconds
  * @param options.fetchFn - Async function that executes the query
- * @param options.bypassCache - If true, skip cache read/write (useful for preview mode)
- * @param options.retryConfig - Optional retry configuration (overrides env defaults)
- * @returns The query result (either from cache or fresh)
+ * @param options.bypassCache - If true, skip the cache read and write (for preview mode)
+ * @param options.retryConfig - Optional retry configuration (overrides the defaults)
+ * @returns The query result, from the cache or freshly fetched
  *
  * @example
  * ```typescript
- * // KV is automatically retrieved from context:
+ * // KV comes from context automatically.
  * const page = await withCache({
  *   cacheKey: generateCacheKey('page', { slug: 'home', locale: 'en' }),
  *   ttl: CacheTTL.PAGE,
- *   fetchFn: async () => await client.request(query, variables)
+ *   fetchFn: async () => await getPageBySlug({ slug: 'home', locale: 'en' }),
  * })
  *
- * // For preview mode (bypass cache and retries, fail fast):
+ * // Preview mode: skip the cache and retries, and fail fast.
  * const previewPage = await withCache({
  *   cacheKey: generateCacheKey('page', { id: '123', locale: 'en' }),
  *   ttl: CacheTTL.PAGE,
- *   fetchFn: async () => await client.request(query, variables),
- *   bypassCache: true
+ *   fetchFn: async () => await getDocumentById({ collection: 'pages', id: '123', locale: 'en' }),
+ *   bypassCache: true,
  * })
  * ```
  */
@@ -198,29 +199,27 @@ export async function withCache<T>(options: {
 }): Promise<T> {
   const { cacheKey, ttl, fetchFn, bypassCache = false, retryConfig } = options
 
-  // Get KV from CMS context (may be undefined in local dev)
+  // KV comes from the CMS context. It may be undefined in local dev.
   const { kv } = getCmsContext()
 
-  // Get retry configuration (use provided config or defaults)
   const finalRetryConfig = retryConfig || DEFAULT_RETRY_CONFIG
 
-  // Preview/bypass mode: fail fast so editors see errors immediately rather
-  // than waiting through ~7s of exponential backoff.
+  // Preview mode fails fast, so editors see errors immediately, instead of
+  // waiting through about 7s of exponential backoff.
   if (bypassCache) {
     return await fetchFn()
   }
 
-  // Try to get from cache first
   const cached = await getCachedResponse<T>(kv, cacheKey)
 
   if (cached !== null) {
     return cached
   }
 
-  // Cache miss - execute the query with retry logic
+  // Cache miss. Run the query, with retry.
   const result = await withRetry(fetchFn, finalRetryConfig)
 
-  // Store in cache for next time (fire and forget)
+  // Store the result for next time. Do not wait for this to finish.
   void setCachedResponse(kv, cacheKey, result, ttl)
 
   return result

@@ -9,7 +9,7 @@ concurrency:
 permissions:
   contents: read
   pull-requests: read # primary: Cloudflare posts the preview URL in a PR comment
-  issues: read # PR comments are read via the issues/{n}/comments endpoint
+  issues: read # needed: GitHub serves PR comments through the issues/{n}/comments endpoint
   checks: read # fallback: Cloudflare preview URL in the "Cloudflare Pages" check-run output
   deployments: read # fallback: a Workers-Builds-style deployment environment_url
   statuses: read # fallback: a preview URL posted as a commit status
@@ -31,12 +31,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test:run # unit only — smoke specs are excluded in vitest.config.ts
+      - run: pnpm test:run # unit tests only. vitest.config.ts excludes smoke specs.
 
-  # This repo has TWO Cloudflare previews per PR, distinguished by URL host:
+  # This repo has two Cloudflare previews per PR. The URL host tells them apart:
   #   - web   → the Vike app, Workers Builds  (…-wemeditate-web.<acct>.workers.dev)
   #   - ladle → the design system, Pages       (…wm-design.pages.dev)
-  # One matrix smoke job per target; CF_PROJECT_MATCH selects the right one.
+  # One matrix smoke job runs per target. CF_PROJECT_MATCH selects the right one.
   smoke:
     name: Smoke (${{ matrix.target }})
     runs-on: ubuntu-latest
@@ -62,10 +62,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # Discover this target's preview URL from the GitHub API (Cloudflare posts
-      # it in the bot PR comment; check-run output / deployments are fallbacks)
-      # and wait until it's reachable. Skips gracefully when the preview isn't
-      # posted (e.g. a forked PR without permissions) so the job stays green.
+      # Find this target's preview URL through the GitHub API. Cloudflare posts
+      # it in the bot's PR comment. Check-run output and deployment data are
+      # fallbacks. This step waits until the preview responds. It skips
+      # gracefully when no preview is posted (for example, a forked PR
+      # without permissions), so the job still passes.
       - name: Discover ${{ matrix.target }} preview URL
         id: preview
         env:
@@ -79,6 +80,6 @@ jobs:
         if: ${{ steps.preview.outputs.preview_url != '' }}
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
-          # Web specs use this to discover a real CMS page/meditation; harmless for ladle.
+          # Web specs use this key to find a real CMS page or meditation. It has no effect for ladle.
           SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
         run: pnpm ${{ matrix.script }}

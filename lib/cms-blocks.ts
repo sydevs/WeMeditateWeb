@@ -2,13 +2,14 @@
  * App-side types and pure helpers for the custom Lexical blocks embedded in
  * `pages.content`.
  *
- * The block field shapes are NOT in the generated `payload-types.ts` (the editor
- * stores them loosely as `[k: string]: unknown` inside the lexical tree), so the
- * interfaces here are authored from the upstream SahajCloud block definitions
- * (`src/lib/richEditor/blocks/*`). Keep them in sync with that source.
+ * The block field shapes are not in the generated `payload-types.ts`. The
+ * editor stores them loosely, as `[k: string]: unknown`, inside the
+ * lexical tree. So the interfaces here are authored from the upstream
+ * SahajCloud block definitions (`src/lib/richEditor/blocks/*`). Keep them
+ * in sync with that source.
  *
- * Helpers that turn block fields into component props live here (not in the
- * converters) so they can be unit-tested without rendering.
+ * Helpers that turn block fields into component props live here, not in
+ * the converters, so they stay unit-testable without rendering.
  */
 
 import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
@@ -20,7 +21,7 @@ import { cmsHref, type RelationValue } from './cms-routes'
 import { isPopulated } from './cms-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
-/** A relationship/upload field: a populated document or a bare id. */
+/** A relationship or upload field: a populated document or a bare ID. */
 export type Ref<T> = number | T
 
 // ============================================================================
@@ -99,9 +100,9 @@ export interface SplashBlockFields {
   actionText?: string | null
   actionURL?: string | null
   /**
-   * Describes the *text* color (dark/light), mirroring the `textbox` overlay
-   * convention. Not yet authored in the CMS (see SahajCloud ticket) — absent is
-   * treated as light text on a dark hero (`theme: 'dark'`).
+   * Describes the text color (dark or light), mirroring the `textbox`
+   * overlay convention. Not yet authored in the CMS (see SahajCloud
+   * ticket). Absent is treated as light text on a dark hero (`theme: 'dark'`).
    */
   textColor?: 'dark' | 'light' | null
 }
@@ -140,8 +141,8 @@ export interface TableOfContentsBlockFields {
 /** The `pages` collection's tag enum (drives page content-index facets). */
 export type PageTag = NonNullable<Page['tags']>[number]
 
-/** Display labels for page tags. Localizing these (via wm-web-translations) is
- * a follow-up; the enum values are the stable identifiers used for filtering. */
+/** Display labels for page tags. Localizing these (via wm-web-translations)
+ * is a follow-up. The enum values are the stable identifiers used for filtering. */
 export const PAGE_TAG_LABELS: Record<PageTag, string> = {
   wisdom: 'Wisdom',
   lifestyle: 'Lifestyle',
@@ -150,22 +151,23 @@ export const PAGE_TAG_LABELS: Record<PageTag, string> = {
   technique: 'Technique',
 }
 
-/** `content-index` — ContentIndexBlock. `resolvedItems`/`resolvedTracks` are
- * attached by the server-side pre-resolve pass in `+data`; the editor never
- * stores them. The `*Filters` fields mirror the CMS schema but are unused for
- * rendering — facets are derived from the resolved items' own `tags` instead. */
+/** `content-index` — ContentIndexBlock. `resolvedItems` and
+ * `resolvedTracks` are attached by the server-side pre-resolve pass in
+ * `+data`. The editor never stores them. The `*Filters` fields mirror the
+ * CMS schema, but rendering does not use them: facets come from the
+ * resolved items' own `tags` instead. */
 export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
   limit: number
-  /** Configured page-tag filters (CMS schema mirror; facets come from items). */
+  /** Configured page-tag filters (CMS schema mirror). Facets come from items. */
   pageFilters?: PageTag[] | null
-  /** Configured user-choice filters (CMS schema mirror; facets come from items). */
+  /** Configured user-choice filters (CMS schema mirror). Facets come from items. */
   userChoiceFilters?: (number | UserChoice)[] | null
-  /** Configured song-tag filters (CMS schema mirror; facets come from tracks). */
+  /** Configured song-tag filters (CMS schema mirror). Facets come from tracks. */
   songFilters?: (number | SongTag)[] | null
-  /** Virtual field computed by the CMS (path + filters + limit). */
+  /** Virtual field computed by the CMS (path, filters, and limit). */
   apiEndpoint?: string | null
-  /** Cards for pages/lectures/meditations (attached in +data). */
+  /** Cards for pages, lectures, and meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
   resolvedTracks?: Track[] | null
@@ -175,10 +177,10 @@ export interface ContentIndexBlockFields {
 // Shared card shape + helpers
 // ============================================================================
 
-/** A grid/card item shape, structurally compatible with `ContentGridItem`.
+/** A grid or card item shape, structurally compatible with `ContentGridItem`.
  * `tags` are the item's own facets (page-tag enum, or lecture user-choices),
- * used by `ContentIndex` for client-side filter pills — strip before spreading
- * onto `ContentCard`, which forwards unknown props to the DOM. */
+ * used by `ContentIndex` for client-side filter pills. Strip `tags` before
+ * spreading onto `ContentCard`, which forwards unknown props to the DOM. */
 export interface ResolvedCardItem {
   id: string | number
   title: string
@@ -202,7 +204,7 @@ export interface PopulatedImage {
   aspectRatio: AspectRatio
 }
 
-/** Resolve an upload/relationship ref to image fields, or `null` if unpopulated. */
+/** Resolves an upload or relationship ref to image fields, or `null` if unpopulated. */
 export function populatedImage(ref: unknown): PopulatedImage | null {
   if (!isPopulated<Image>(ref) || typeof ref.url !== 'string' || ref.url.length === 0) {
     return null
@@ -217,7 +219,7 @@ export function populatedImage(ref: unknown): PopulatedImage | null {
   }
 }
 
-/** Resolve the uploads of an `image-gallery` block to renderable images. */
+/** Resolves the uploads of an `image-gallery` block to renderable images. */
 export function galleryImages(images: ImageGalleryBlockFields['items']): PopulatedImage[] {
   const result: PopulatedImage[] = []
 
@@ -233,10 +235,11 @@ export function galleryImages(images: ImageGalleryBlockFields['items']): Populat
 }
 
 /**
- * Invert a CMS `textColor` (which describes the *text*: dark/light) into a
- * background-context `theme` — light text implies a dark background, and vice
- * versa. When `textColor` is absent, fall back to `fallback`. Shared by the
- * splash hero and the `textbox` overlay, which use this same inversion but
+ * Inverts a CMS `textColor` (which describes the text: dark or light)
+ * into a background-context `theme`. Light text implies a dark
+ * background, and dark text implies a light one. When `textColor` is
+ * absent, this function falls back to `fallback`. Shared by the splash
+ * hero and the `textbox` overlay, which use this same inversion but
  * differ only in their default.
  */
 export function textColorToTheme(
@@ -250,18 +253,19 @@ export function textColorToTheme(
 }
 
 /**
- * Derive a Splash background-context theme from its `textColor` field. Defaults
- * to `'dark'` (light text over a dark hero) when the field is absent — the
- * splash's historical hardcoded treatment.
+ * Derives a Splash background-context theme from its `textColor` field.
+ * Defaults to `'dark'` (light text over a dark hero) when the field is
+ * absent. This matches the splash's historical hardcoded treatment.
  */
 export function splashTheme(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
   return textColorToTheme(textColor, 'dark')
 }
 
 /**
- * When a page's content leads with a `splash` block, return its background-context
- * theme; otherwise `null`. Shared by the layout (header overlay theme), the page
- * wrappers (flush-to-top spacing) and PageTemplate (skipping the duplicate title).
+ * Returns a page's background-context theme when its content leads with
+ * a `splash` block, or `null` otherwise. Shared by the layout (header
+ * overlay theme), the page wrappers (flush-to-top spacing), and
+ * PageTemplate (skipping the duplicate title).
  */
 export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dark' } | null {
   const first = content?.root?.children?.[0] as
@@ -276,11 +280,12 @@ export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dar
 }
 
 /**
- * Resolve the lead splash from a layout route's data, whose shape differs by route:
- * content routes ([slug]) carry the page as `page`; the live-preview route (/preview)
- * carries the previewed document as `initialData` — only a `pages` preview has
- * splash-leading content (meditation/lecture previews never do). Lets LayoutChrome
- * apply the same overlaid-header treatment in preview as on the published page.
+ * Resolves the lead splash from a layout route's data, whose shape
+ * differs by route. A content route ([slug]) carries the page as `page`.
+ * The live-preview route (/preview) carries the previewed document as
+ * `initialData`. Only a `pages` preview has splash-leading content
+ * (meditation and lecture previews never do). Lets LayoutChrome apply the
+ * same overlaid-header treatment in preview as on the published page.
  */
 export function leadSplashFromRouteData(
   data:
@@ -298,13 +303,13 @@ export function leadSplashFromRouteData(
   return getLeadSplash(content)
 }
 
-/** Coerce a possibly-null/absent CMS text field to a string. */
+/** Coerces a possibly null or absent CMS text field to a string. */
 function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
 /** First available card thumbnail across the collections' image fields:
- * `thumbnail` (meditations/lectures), `meta.image` (pages), `album.artwork` (songs). */
+ * `thumbnail` (meditations, lectures), `meta.image` (pages), `album.artwork` (songs). */
 function cardImage(doc: Record<string, unknown>): PopulatedImage | null {
   const meta = doc.meta as { image?: unknown } | null | undefined
   const album = doc.album as { artwork?: unknown } | null | undefined
@@ -315,8 +320,9 @@ function cardImage(doc: Record<string, unknown>): PopulatedImage | null {
 }
 
 /**
- * Map one populated showcase relationship to a card, or `null` when it can't be
- * linked or has no thumbnail (degrade rather than render a dead/empty card).
+ * Maps one populated showcase relationship to a card, or `null` when it
+ * cannot be linked or has no thumbnail. This degrades, instead of
+ * rendering a dead or empty card.
  */
 function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   const { relationTo, value } = item
@@ -326,8 +332,8 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   }
   const href = cmsHref(relationTo, value as RelationValue)
 
-  // Collections without a public web route (app-cards) resolve to null —
-  // skip rather than emit a dead link.
+  // Collections without a public web route (app-cards) resolve to null.
+  // Skip, instead of emitting a dead link.
   if (!href) {
     return null
   }
@@ -337,9 +343,9 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   if (!img) {
     return null
   }
-  // Accessor view over the populated doc (the union of card-bearing collections
-  // shares these optional fields; an intersection of the generated interfaces
-  // would collapse to `never`).
+  // Accessor view over the populated doc. The union of card-bearing
+  // collections shares these optional fields. An intersection of the
+  // generated interfaces would collapse to `never`.
   const doc = value as { id?: number | string; title?: unknown; durationMinutes?: number | null }
   const title = asText(doc.title)
 
@@ -358,7 +364,7 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   }
 }
 
-/** Map showcase relationships to cards; drops unresolvable/thumbnail-less refs. */
+/** Maps showcase relationships to cards. Drops unresolvable or thumbnail-less refs. */
 export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCardItem[] {
   const cards: ResolvedCardItem[] = []
 
@@ -373,7 +379,7 @@ export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCard
   return cards
 }
 
-/** CMS field name → SVG node id consumed by the `SubtleSystem` organism. */
+/** Maps a CMS field name to the SVG node ID the `SubtleSystem` organism consumes. */
 const SUBTLE_SYSTEM_NODE_IDS: Record<string, string> = {
   left: 'channel_left',
   right: 'channel_right',
@@ -398,9 +404,10 @@ export interface SubtleSystemNodeItem {
 }
 
 /**
- * Resolve the 12 `subtle-system` page relationships into SubtleSystem items,
- * keyed by the SVG node id each maps to. Unpublished/unroutable pages (bare ids
- * or missing slugs) are dropped so the chart never links to `/undefined`.
+ * Resolves the 12 `subtle-system` page relationships into SubtleSystem
+ * items, keyed by the SVG node ID each maps to. Drops unpublished or
+ * unroutable pages (bare IDs or missing slugs), so the chart never links
+ * to `/undefined`.
  */
 export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystemNodeItem[] {
   const items: SubtleSystemNodeItem[] = []
@@ -434,9 +441,10 @@ export function isExternalUrl(url: string): boolean {
 }
 
 /**
- * Filter facets for a content-index card: page-tag enum labels (`pages`) or
- * populated user-choice titles (`lectures`). Other types carry no card-level
- * facets. Returns `undefined` (not `[]`) when empty so the field is omitted.
+ * Filter facets for a content-index card: page-tag enum labels
+ * (`pages`), or populated user-choice titles (`lectures`). Other types
+ * carry no card-level facets. Returns `undefined`, not `[]`, when empty,
+ * so the field is omitted.
  */
 function contentIndexCardTags(
   doc: Record<string, unknown>,
@@ -467,8 +475,8 @@ function contentIndexCardTags(
   return undefined
 }
 
-/** Web path for a content-index card by type: meditations route by id, pages by
- * slug, lectures by id; other types have no public route (`null`). */
+/** Web path for a content-index card by type: meditations route by ID,
+ * pages by slug, lectures by ID. Other types have no public route (`null`). */
 function cardHref(
   type: ContentIndexBlockFields['type'],
   doc: Record<string, unknown>,
@@ -484,7 +492,7 @@ function cardHref(
   return null
 }
 
-/** Map a content-index API document to a card for the given content type. */
+/** Maps a content-index API document to a card for the given content type. */
 export function contentIndexCard(
   doc: Record<string, unknown>,
   type: ContentIndexBlockFields['type'],
@@ -529,10 +537,10 @@ const USER_CHOICE_MEDITATION_SLOTS = [
   'nightMeditation',
 ] as const
 
-/** Card duration (minutes) for a populated meditation: the explicit
- * `durationMinutes`, else derived from `duration` (seconds), else omitted. A
- * value below 1 (sub-minute duration or `0`) is omitted — a "0 min" badge is
- * meaningless. */
+/** Card duration, in minutes, for a populated meditation: the explicit
+ * `durationMinutes`, else derived from `duration` (seconds), else omitted.
+ * A value below 1 (a sub-minute duration, or `0`) is omitted, since a
+ * "0 min" badge is meaningless. */
 function meditationDurationMinutes(med: {
   durationMinutes?: number | null
   duration?: number | null
@@ -548,15 +556,17 @@ function meditationDurationMinutes(med: {
 }
 
 /**
- * Flatten a `meditations` content-index into a deduped grid of meditation cards.
+ * Flattens a `meditations` content-index into a deduped grid of
+ * meditation cards.
  *
- * The block's endpoint resolves to user-choice *categories* (e.g. the "5 min" /
- * "5-10 min" duration picker), each referencing up to four meditations
- * (morning/afternoon/evening/night). We merge every referenced meditation into a
- * single card list and tag each card with the user-choice(s) that reference it,
- * so `ContentIndex` renders the meditations as a grid with the user-choices as
- * filter pills. A meditation shared across choices appears once, carrying all its
- * facets. Unpopulated slots and unidentifiable docs are skipped.
+ * The block's endpoint resolves to user-choice categories (for example,
+ * the "5 min" or "5-10 min" duration picker), each referencing up to four
+ * meditations (morning, afternoon, evening, night). This function merges
+ * every referenced meditation into a single card list, and tags each
+ * card with the user choices that reference it. `ContentIndex` then
+ * renders the meditations as a grid, with the user choices as filter
+ * pills. A meditation shared across choices appears once, carrying all
+ * its facets. Unpopulated slots and unidentifiable docs are skipped.
  */
 export function meditationCardsFromUserChoices(
   docs: Record<string, unknown>[],
@@ -581,7 +591,7 @@ export function meditationCardsFromUserChoices(
       const existing = byId.get(med.id)
 
       if (existing) {
-        // Referenced by more than one choice — add the facet (deduped).
+        // Referenced by more than one choice. Add the facet, deduped.
         if (!existing.tags?.some((t) => t.id === facet.id)) {
           existing.tags = [...(existing.tags ?? []), facet]
         }
@@ -595,8 +605,8 @@ export function meditationCardsFromUserChoices(
         title: medTitle,
         href: `/meditations/${med.id}`,
         thumbnailSrc: img?.url ?? '',
-        // Meditation thumbnails are populated without `alt`; fall back to the
-        // title (`||`, so an empty alt still falls through).
+        // Meditation thumbnails are populated without `alt`. Fall back to
+        // the title (`||`, so an empty alt still falls through).
         thumbnailAlt: img?.alt || medTitle,
         aspectRatio: img?.aspectRatio,
         playButton: true,
@@ -610,11 +620,11 @@ export function meditationCardsFromUserChoices(
 }
 
 /**
- * Map a content-index `songs` API document to a playable {@link Track} for the
- * MusicLibrary organism. Songs without a playable URL are skipped. `duration` is
- * `0` — the Song CMS type has no duration field, so AudioPlayer derives it from
- * the audio element at load. `tags` are the populated SongTag slugs, matched
- * against MusicLibrary's filter ids.
+ * Maps a content-index `songs` API document to a playable {@link Track}
+ * for the MusicLibrary organism. Songs with no playable URL are skipped.
+ * `duration` is `0`: the Song CMS type has no duration field, so
+ * AudioPlayer derives it from the audio element at load. `tags` are the
+ * populated SongTag slugs, matched against MusicLibrary's filter IDs.
  */
 export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
   const url = typeof doc.url === 'string' ? doc.url : ''
@@ -624,8 +634,8 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
   }
   const album = isPopulated<Album>(doc.album) ? doc.album : null
   const artwork = album ? populatedImage(album.artwork) : null
-  // Prefer the album cover; fall back to the song's own thumbnail when the album
-  // has no artwork (or is an unpublished/bare-id relationship).
+  // Prefer the album cover. Fall back to the song's own thumbnail when
+  // the album has no artwork, or is an unpublished or bare-id relationship.
   const songThumbnail = typeof doc.thumbnailURL === 'string' ? doc.thumbnailURL : ''
   const tags = (Array.isArray(doc.tags) ? doc.tags : [])
     .map((tag) => (isPopulated<SongTag>(tag) && typeof tag.slug === 'string' ? tag.slug : null))

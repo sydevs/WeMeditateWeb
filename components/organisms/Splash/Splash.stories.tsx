@@ -9,8 +9,8 @@ export default {
 } satisfies StoryDefault
 
 /**
- * Splash component - Full-screen hero section with background image, centered content,
- * and decorative leaf ornaments around the call-to-action.
+ * Splash is a component: a full-screen hero section with a background
+ * image, centered content, and decorative leaf ornaments around the call-to-action.
  */
 export const Default: Story = () => {
   // Create a countdown target 24 hours from now

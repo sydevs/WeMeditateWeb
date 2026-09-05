@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Script to launch Chrome with remote debugging enabled for Puppeteer MCP
+# Launches Chrome with remote debugging enabled, for Puppeteer MCP.
 # Usage: ./scripts/chrome-debug.sh [port]
 
 PORT=${1:-9222}
 DEBUG_PROFILE="/tmp/chrome-debug-profile"
 
-# Try to find Chrome installation
+# Find the Chrome executable
 if [ -f "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]; then
     CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 elif [ -f "$HOME/.cache/puppeteer/chrome/mac_arm-131.0.6778.204/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" ]; then
@@ -18,7 +18,7 @@ fi
 
 echo "🔍 Checking if Chrome is already running on port $PORT..."
 
-# Check if port is already in use
+# Check whether the port is already in use
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
     echo "✅ Chrome is already running on port $PORT"
     echo "🌐 Debug endpoint: http://localhost:$PORT"
@@ -34,7 +34,7 @@ echo ""
 pkill -f "Google Chrome" 2>/dev/null
 pkill -f "Chrome for Testing" 2>/dev/null
 
-# Wait a moment for processes to clean up
+# Wait a moment for old processes to exit
 sleep 1
 
 # Launch Chrome with debugging enabled
@@ -47,7 +47,7 @@ sleep 1
 
 CHROME_PID=$!
 
-# Wait for Chrome to start and debugging port to be available
+# Wait for Chrome to start and the debugging port to open
 echo "⏳ Waiting for Chrome to start..."
 for i in {1..10}; do
     sleep 1

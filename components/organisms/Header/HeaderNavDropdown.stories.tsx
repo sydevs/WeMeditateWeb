@@ -33,12 +33,12 @@ const sampleDropdown = {
 }
 
 /**
- * Header mega-menu wrapper: a nav item that opens a {@link HeaderDropdown} panel
- * on hover or click, positioned with Floating UI and rendered in a portal.
+ * A header mega-menu wrapper: a nav item that opens a {@link HeaderDropdown}
+ * panel on hover or click, positioned with Floating UI and rendered in a portal.
  *
- * Hover or click "About Meditation" to open the panel; move the cursor onto it
- * (safePolygon keeps it open), or press Escape / click outside to close. The
- * trigger is keyboard-focusable and opens on Enter/Space.
+ * Hover or click "About Meditation" to open the panel. Move the cursor onto
+ * it, and safePolygon keeps it open, or press Escape or click outside to
+ * close. The trigger is keyboard-focusable and opens on Enter or Space.
  */
 export const Default: Story = () => (
   <StoryWrapper>

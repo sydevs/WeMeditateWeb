@@ -8,9 +8,9 @@ export default defineConfig(({ command }) => ({
   plugins: [
     vike(),
     react(),
-    // Sentry only uploads source maps during production builds; skip it on the
-    // dev server (`command === 'serve'`) so it doesn't initialize once per Vite
-    // environment and slow cold start (see the workerd↔Node RPC warning).
+    // Sentry uploads source maps only for production builds. Skip it in the
+    // dev server (`command === 'serve'`). This avoids one Sentry init per
+    // Vite environment and a slower cold start (see the workerd-Node RPC warning).
     ...(command === 'build'
       ? [
           sentryVitePlugin({
@@ -26,6 +26,6 @@ export default defineConfig(({ command }) => ({
     target: 'es2022',
     sourcemap: true,
   },
-  // Make PUBLIC__ prefixed environment variables available
+  // Expose PUBLIC__-prefixed environment variables to the browser build.
   envPrefix: 'PUBLIC__',
 }))

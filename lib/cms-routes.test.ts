@@ -40,8 +40,8 @@ describe('cmsHref', () => {
   })
 
   it('returns null for a page reference with no slug (unpublished / bare id)', () => {
-    // A published page populates into an object with a slug; an unpublished one
-    // comes back as a bare id and must not render a dead /undefined link.
+    // A published page populates into an object with a slug. An
+    // unpublished one returns as a bare id and must not render a dead /undefined link.
     expect(cmsHref('pages', 99)).toBeNull()
     expect(cmsHref('pages', { id: 99 })).toBeNull()
   })

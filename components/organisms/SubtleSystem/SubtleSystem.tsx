@@ -19,7 +19,7 @@ const NESTED_CHAKRAS = {
  * Article preview item for SubtleSystem component
  */
 export interface SubtleSystemItem {
-  /** Unique identifier matching SVG element ID (e.g., 'chakra_1', 'channel_left') */
+  /** Unique identifier matching an SVG element ID, for example 'chakra_1' or 'channel_left' */
   id: string
   /** Display title for the preview */
   title: string
@@ -155,9 +155,10 @@ export function SubtleSystem({
    * Handle fullscreen toggle
    */
   const handleFullscreenToggle = useCallback(async () => {
-    // Support the WebKit-prefixed Fullscreen API (Safari < 16.4) alongside the
-    // standard one; without the fallback the request throws and is swallowed by
-    // the catch, so the button silently does nothing in those browsers.
+    // Support the WebKit-prefixed Fullscreen API (Safari < 16.4) alongside
+    // the standard one. Without the fallback, the request throws, and the
+    // catch block swallows it, so the button silently does nothing in those
+    // browsers.
     const el = containerRef.current as
       | (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> })
       | null

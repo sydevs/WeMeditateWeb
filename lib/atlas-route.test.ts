@@ -1,11 +1,12 @@
 /**
  * These cases are mirrored from SahajCloud's own `tests/unit/atlas-seo-route.spec.ts`.
  *
- * That is the point of the file: `parseAtlasRoute` here is a port, and a port
- * that drifts is worse than no port — the page's canonical would describe a
- * different document than its body. Keeping the two tables identical means a
- * divergence shows up as a failing test rather than as a wrong canonical in
- * production. When the upstream rule changes, change both tables together.
+ * That is the point of the file. `parseAtlasRoute` here is a port, and a
+ * port that drifts is worse than no port: the page's canonical would
+ * describe a different document than its body. Keeping the two tables
+ * identical means a divergence shows up as a failing test, instead of a
+ * wrong canonical in production. When the upstream rule changes, change
+ * both tables together.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -87,8 +88,8 @@ describe('parseAtlasRoute', () => {
       ['a bare filters view', '/filters'],
       ['nothing but legacy prefixes', '/events/areas'],
     ])('returns null for %s', (_label, route) => {
-      // Not a failure: we own our own landing page's metadata, and there is no
-      // document upstream to describe it with.
+      // Not a failure. This site owns its own landing page's metadata,
+      // and there is no document upstream to describe it with.
       expect(parseAtlasRoute(route)).toBeNull()
     })
 

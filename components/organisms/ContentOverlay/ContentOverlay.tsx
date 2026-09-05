@@ -81,10 +81,11 @@ export function ContentOverlay({
   className = '',
   ...props
 }: ContentOverlayProps) {
-  // Theme-based text colors - light theme only on desktop (md+), white on mobile
+  // Theme-based text colors: the light theme applies only on desktop
+  // (md and up), and white applies on mobile.
   const textColorClass = theme === 'dark' ? 'text-white' : 'text-[#444]'
 
-  // Text glow/halo shadows - applied to all variants for better readability
+  // Text shadow for a glow-and-halo effect, applied to all variants for better readability.
   const textShadowClass = theme === 'dark' ? 'text-glow-dark' : 'text-glow-light'
 
   // Blend mode for high contrast images
@@ -95,7 +96,7 @@ export function ContentOverlay({
         : 'brightness-130 contrast-70'
       : ''
 
-  // Box variant styling - border matches text color, subtle blur
+  // Box variant styling: the border matches the text color, with a subtle blur.
   const boxClasses =
     variant === 'box'
       ? theme === 'dark'
@@ -132,8 +133,9 @@ export function ContentOverlay({
   // Position the readable Container within the zone to match the alignment.
   const innerAlign = { left: '', right: 'md:ml-auto', center: 'md:mx-auto' }[align]
 
-  // Desktop overlay content (header + body + CTA). Reused inside the readable
-  // Container for non-box variants, or directly for `box` (already a card).
+  // Desktop overlay content: header, body, and CTA. This is reused inside
+  // the readable Container for non-box variants, or directly for `box`,
+  // which is already a card.
   const desktopContent = (
     <>
       <div className="mb-7 flex flex-col gap-1.5">

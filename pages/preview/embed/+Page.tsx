@@ -1,16 +1,17 @@
 /**
- * Embed Live Preview Page for SahajCloud
+ * Embed live preview page for SahajCloud.
  *
- * This page displays live preview of draft content with no site chrome: it sets
- * no Layout, so it inherits only the global LayoutRoot (no Header/Footer) — for
- * previewing how an embedded player will look.
+ * Displays a live preview of draft content with no site chrome. It sets
+ * no Layout, so it inherits only the global LayoutRoot (no Header or
+ * Footer). This previews how an embedded player will look.
  *
- * Uses window.postMessage to receive real-time updates as editors make changes.
+ * Uses window.postMessage to receive real-time updates as editors make
+ * changes.
  *
- * URL Parameters from SahajCloud:
- * - collection: The collection name (e.g., "pages", "meditations")
- * - id: Document ID
- * - locale: Content locale (optional, defaults to 'en')
+ * URL parameters from SahajCloud:
+ * - collection: the collection name (for example, "pages", "meditations")
+ * - id: document ID
+ * - locale: content locale (optional, defaults to 'en')
  */
 
 'use client'

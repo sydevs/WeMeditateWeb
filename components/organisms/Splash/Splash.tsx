@@ -43,7 +43,7 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   theme?: 'light' | 'dark'
   /** Whether the CTA should pulsate */
   pulsate?: boolean
-  /** Optional content to display between subtitle and CTA (e.g., countdown timer, search input) */
+  /** Optional content to display between subtitle and CTA, for example a countdown timer or search input */
   children?: ReactNode
 }
 
@@ -115,7 +115,7 @@ export function Splash({
             </p>
           )}
 
-          {/* Optional content (e.g., countdown, buttons, search input) */}
+          {/* Optional content, for example countdown, buttons, or search input */}
           {children && <div className="mb-20">{children}</div>}
 
           {/* Call-to-Action with Decorative Leaves */}

@@ -132,9 +132,9 @@ export interface FormBuilderProps {
   className?: string
 
   /**
-   * Optional Zod schema for form validation.
-   * When provided, uses zodResolver for type-safe validation.
-   * Falls back to react-hook-form's built-in validation when not provided.
+   * Optional Zod schema for form validation. When set, the form uses
+   * zodResolver for type-safe validation. Otherwise it falls back to
+   * react-hook-form's built-in validation.
    *
    * @example
    * import { z } from 'zod'
@@ -156,7 +156,7 @@ function renderField(
   variant: 'default' | 'minimal',
   fieldError?: string
 ) {
-  // Filter defaultValue to only allow string/number for non-checkbox fields
+  // Filter defaultValue to allow only a string or number for non-checkbox fields
   const getDefaultValue = () => {
     if (field.blockType === 'checkbox') return undefined
     if (typeof field.defaultValue === 'boolean') return undefined
@@ -237,10 +237,12 @@ function renderField(
 }
 
 /**
- * FormBuilder organism component that dynamically renders forms from PayloadCMS form builder plugin.
+ * FormBuilder is an organism that dynamically renders forms from the
+ * PayloadCMS form builder plugin.
  *
- * Supports all standard field types (text, textarea, select, email, checkbox, number, message)
- * and handles form submission, validation, confirmation messages, and redirects.
+ * It supports all standard field types (text, textarea, select, email,
+ * checkbox, number, message), and it handles form submission, validation,
+ * confirmation messages, and redirects.
  *
  * @example
  * <FormBuilder
@@ -389,7 +391,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
               )
             }
 
-            // For minimal variant, render without FormField wrapper (uses placeholders instead)
+            // For minimal variant, render without FormField wrapper. It uses placeholders instead.
             if (variant === 'minimal') {
               return (
                 <div key={field.name} className={field.width || 'w-full'}>

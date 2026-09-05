@@ -1,10 +1,11 @@
 /**
- * Regression test: an incomplete WebConfig (e.g. missing featuredPages) must NOT
- * crash the layout. It previously threw via assertSettingsConfigured() outside the
- * error boundary, which surfaced as a 500 on every rendered page (incl. the homepage).
+ * Regression test: an incomplete WebConfig (for example, missing
+ * featuredPages) must not crash the layout. It previously threw through
+ * assertSettingsConfigured() outside the error boundary, which surfaced as
+ * a 500 on every rendered page, including the homepage.
  *
- * Heavy organism imports are mocked so the test exercises LayoutChrome's own
- * settings handling, not the full component tree.
+ * Heavy organism imports are mocked, so the test exercises LayoutChrome's
+ * own settings handling, not the full component tree.
  */
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'

@@ -1,12 +1,12 @@
 /**
- * CMS configuration context using Hono's Context Storage.
+ * CMS configuration context, using Hono's Context Storage.
  *
- * This module provides request-scoped access to CMS configuration
- * (apiKey, baseURL, kv) without requiring explicit parameter passing.
+ * This module gives request-scoped access to CMS configuration (apiKey,
+ * baseURL, kv). A caller does not pass these values explicitly.
  *
  * Usage:
- * - In server/entry.ts: Register contextStorage() middleware
- * - In CMS client functions: Call getCmsContext() to access config
+ * - In server/entry.ts, register the contextStorage() middleware.
+ * - In CMS client functions, call getCmsContext() to read the config.
  */
 
 import { getContext } from 'hono/context-storage'
@@ -16,11 +16,11 @@ import { z } from 'zod'
 import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
- * Hono environment type definition for Cloudflare Workers bindings
+ * Hono environment type for Cloudflare Workers bindings.
  *
- * Note: Only runtime bindings are defined here.
- * PUBLIC__* variables are build-time (embedded by Vite from .env.production)
- * and accessed via import.meta.env, not context.env.
+ * This defines only runtime bindings. `PUBLIC__*` variables are
+ * build-time: Vite embeds them from `.env.production`, and code reads
+ * them through `import.meta.env`, not `context.env`.
  */
 export type CmsEnv = {
   Bindings: {
@@ -48,15 +48,14 @@ const cmsContextSchema = z.object({
 })
 
 /**
- * Attempts to get the Hono context, returning undefined if not available.
- * This handles the case where code runs outside of a request context
- * (e.g., during local development without Workers runtime).
+ * Gets the Hono context, or returns undefined when none is available.
+ * This handles code that runs outside a request context, for example
+ * local development without the Workers runtime.
  */
 function tryGetContext(): Context<CmsEnv> | undefined {
   try {
     return getContext<CmsEnv>()
   } catch {
-    // Context not available (running outside request context)
     return undefined
   }
 }
@@ -74,16 +73,12 @@ function tryGetContext(): Context<CmsEnv> | undefined {
  * @throws Error if configuration validation fails
  */
 export function getCmsContext(): CmsContext {
-  // Try to get context from Hono's AsyncLocalStorage
   const context = tryGetContext()
 
-  // Get apiKey: first from Cloudflare Workers context (secrets), then import.meta.env (dev)
   const apiKey = context?.env?.SAHAJCLOUD_API_KEY || import.meta.env.SAHAJCLOUD_API_KEY
 
-  // Get baseURL from build-time env (Vite embeds from .env.production or .env.local)
   const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
 
-  // Validate with Zod - provides consistent error messages
   const result = cmsContextSchema.safeParse({ apiKey, baseURL })
 
   if (!result.success) {
@@ -91,7 +86,6 @@ export function getCmsContext(): CmsContext {
     throw new Error(`CMS context validation failed: ${errorMessage}`)
   }
 
-  // Get KV from context bindings (undefined in dev or when context unavailable)
   const kv = context?.env?.WEMEDITATE_CACHE
 
   return {
@@ -102,8 +96,8 @@ export function getCmsContext(): CmsContext {
 }
 
 /**
- * Checks if CMS context is currently available within a request.
- * Useful for conditional logic in code paths that may run outside request context.
+ * Checks whether CMS context is available in the current request.
+ * Useful for conditional logic in code that may run outside a request.
  */
 export function hasCmsContext(): boolean {
   return tryGetContext() !== undefined

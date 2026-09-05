@@ -33,28 +33,28 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   shape?: 'square' | 'circular'
 
   /**
-   * Optional icon (Heroicons component)
-   * For icon-only buttons, don't provide children
-   * For buttons with icon + text, provide both icon and children
+   * Optional icon (Heroicons component).
+   * For icon-only buttons, do not provide children.
+   * For buttons with icon and text, provide both icon and children.
    *
    * @example
    * import { PlayIcon } from '@heroicons/react/24/outline'
    * <Button icon={PlayIcon} aria-label="Play" /> // Icon only
-   * <Button icon={PlayIcon}>Play Video</Button> // Icon + text
+   * <Button icon={PlayIcon}>Play Video</Button> // Icon and text
    */
   icon?: HeroIcon
 
   /**
-   * Loading state - disables button and shows spinner
+   * Loading state. Disables the button and shows a spinner.
    * @default false
    */
   isLoading?: boolean
 
   /**
-   * Active/current state for navigation links. When true, the button renders
-   * with a persistent tinted fill (reusing the ghost hover fill, so it's
-   * theme-aware) and carries `aria-current="page"`. Intended for the current
-   * page's link in a nav.
+   * Active state for the current-page navigation link. When true, the
+   * button renders with a persistent tinted fill, reusing the ghost hover
+   * fill so it stays theme-aware, and it carries `aria-current="page"`. Use
+   * it for the current page's link in a nav.
    * @default false
    */
   isActive?: boolean
@@ -94,7 +94,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  * Supports:
  * - Text-only buttons
  * - Icon-only buttons (circular or square)
- * - Icon + text buttons
+ * - Icon-and-text buttons
  * - Multiple variants: primary, secondary, outline, ghost
  * - Loading states with spinner
  * - Different sizes and shapes
@@ -103,14 +103,14 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  * // Text button
  * <Button variant="primary">Click me</Button>
  *
- * // Icon-only button (square - default)
+ * // Icon-only button (square, the default)
  * import { PlayIcon } from '@heroicons/react/24/outline'
  * <Button icon={PlayIcon} aria-label="Play" />
  *
  * // Icon-only button (circular)
  * <Button icon={PlayIcon} shape="circular" aria-label="Play" />
  *
- * // Icon + text button
+ * // Icon and text button
  * <Button icon={PlayIcon}>Play Video</Button>
  *
  * // Loading state
@@ -137,15 +137,16 @@ export function Button({
   // Determine if this is an icon-only button
   const isIconOnly = icon && !children
 
-  // Styles for animated hover effect (wemeditate.com center-to-edges animation)
-  // Uses ::after pseudo-element that scales from center on hover
-  // Only applied to text buttons, not icon-only buttons.
+  // Styles for the animated hover effect (the wemeditate.com
+  // center-to-edges animation). This uses an ::after pseudo-element that
+  // scales from the center on hover. It applies only to text buttons, not
+  // icon-only buttons.
   //
-  // When `isActive`, the same ::after fill is shown permanently (scaled/opaque
-  // instead of hover-triggered) so the current-page nav link keeps a persistent,
-  // theme-aware tint. It reuses each variant's `after:bg-*` colour (ghost →
-  // gray-100 on light, white/20 on dark), so no separate `bg-*` override is
-  // needed and there's no Tailwind class-order conflict.
+  // When `isActive`, the same ::after fill shows permanently, scaled and
+  // opaque instead of hover-triggered, so the current-page nav link keeps a
+  // persistent, theme-aware tint. It reuses each variant's `after:bg-*`
+  // color (ghost → gray-100 on light, white/20 on dark), so this needs no
+  // separate `bg-*` override, and there is no Tailwind class-order conflict.
   const animatedBase = 'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10'
   const animatedHoverEffect = isActive
     ? `${animatedBase} after:scale-x-100 after:opacity-100`

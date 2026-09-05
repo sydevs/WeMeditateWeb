@@ -1,8 +1,8 @@
 /**
- * Named without the `+` its subject carries: Vike loads every `+`-prefixed file
- * under `pages/` as a config file and rejects one that exports no `route` /
- * `default`, which fails the build rather than the test run. Co-located all the
- * same.
+ * Named without the `+` its subject carries. Vike loads every `+`-prefixed
+ * file under `pages/` as a config file, and rejects one that exports no
+ * `route` and no `default`. That failure shows up in the build, not the
+ * test run. This test still lives next to its subject.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -58,26 +58,27 @@ afterEach(() => {
 
 describe('the atlas page', () => {
   it('renders the content as children of <sahaj-atlas>', () => {
-    // The whole architecture: the loader adopts this element and React's own
-    // createRoot replaces its children when the widget mounts, so a crawler
-    // reads real content in the real document at the real URL.
+    // The whole architecture: the loader adopts this element, and React's
+    // own createRoot replaces its children when the widget mounts. A
+    // crawler reads real content in the real document, at the real URL.
     const html = render({})
 
     expect(html).toMatch(/<sahaj-atlas[^>]*>.*London.*<\/sahaj-atlas>/s)
   })
 
   it('sizes the element so the widget contains its map instead of taking the viewport', () => {
-    // The opt-in for contained map mode (SahajAtlasWeb#170). Without a definite
-    // height the map is `position: fixed` over the whole window and the site's
-    // sticky nav paints on top of it.
+    // The opt-in for contained map mode (SahajAtlasWeb#170). Without a
+    // definite height, the map becomes `position: fixed` over the whole
+    // window. The site's sticky nav then paints on top of it.
     const html = render({})
     const tag = html.match(/<sahaj-atlas[^>]*>/)?.[0] ?? ''
 
     expect(tag).toContain('block')
-    // A `height`, never a `min-height`: a min-height box engages containment but
-    // then resolves to zero, and the widget refuses and renders uncontained.
-    // The definite value comes from LayoutMap (`h-dvh` column, `flex-1 min-h-0`
-    // main), so `h-full` here resolves rather than falling back to auto.
+    // Use `height`, never `min-height`. A min-height box engages
+    // containment, but then resolves to zero, and the widget refuses and
+    // renders uncontained. The definite value comes from LayoutMap
+    // (`h-dvh` column, `flex-1 min-h-0` main), so `h-full` here resolves,
+    // instead of falling back to auto.
     expect(tag).toContain('h-full')
     expect(tag).not.toContain('min-h-')
   })
@@ -126,9 +127,10 @@ describe('the atlas page', () => {
 
     it('passes Head as an array, which vike-react spreads', () => {
       // Regression: `Head` is a cumulative config that vike-react spreads
-      // (`...configViaHook.Head ?? []`), so a bare element throws
-      // "is not iterable" and 500s every page that has a document. Its own
-      // types accept the singular form, so only a runtime render catches it.
+      // (`...configViaHook.Head ?? []`). A bare element throws "is not
+      // iterable", and causes a 500 on every page that has a document. Its
+      // own types accept the singular form, so only a runtime render
+      // catches this bug.
       render({})
 
       expect(Array.isArray(configCalls[0].Head)).toBe(true)
