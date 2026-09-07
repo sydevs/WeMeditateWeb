@@ -13,7 +13,6 @@ import type { Page } from './cms-types'
 // fetch function runs synchronously, without KV.
 vi.mock('./payload-client', () => ({
   createPayloadClient: vi.fn(),
-  validateSDKResponse: (value: unknown) => value,
 }))
 // The shaped nested-route fetchers (related-*) read apiKey and baseURL from context.
 vi.mock('./cms-context', () => ({

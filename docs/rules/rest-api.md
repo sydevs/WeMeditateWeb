@@ -34,11 +34,15 @@ paths:
            depth: 2,
          })
 
-         return validateSDKResponse(result.docs[0], `getNewContent(${options.slug})`)
+         return result.docs[0] ?? null
        },
      })
    }
    ```
+
+   Let SDK errors propagate. `@payloadcms/sdk` throws a `PayloadSDKError` carrying the HTTP
+   status, which [server/error-utils.ts](../../server/error-utils.ts) classifies and retries.
+   Return `null` (or an empty array) only for an empty result, never for a failure.
 
 ## Update PayloadCMS types
 
