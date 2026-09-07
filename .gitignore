@@ -150,3 +150,6 @@ cdk.out
 
 # OpenAPI for SahajCloud
 sahajcloud-api.json
+
+# Worktrees from /implement-issue — a second checkout of this repo, never source
+.claude/worktrees/
