@@ -14,8 +14,8 @@
  * - List queries (getPagesByTags, getSongsByTags) return an empty array for
  *   an empty result, then let errors propagate.
  *
- * error-utils.ts detects native errors (TypeError for network, Error for
- * SDK) by matching the error message.
+ * error-utils.ts classifies by HTTP status where the error carries one, and
+ * falls back to message patterns for errors that do not (a network TypeError).
  */
 
 import { createPayloadClient } from './payload-client'
