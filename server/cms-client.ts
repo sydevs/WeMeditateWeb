@@ -9,16 +9,16 @@
  * Errors propagate so error-utils.ts can retry them:
  * - Single-item queries (getPageBySlug, getDocumentById) return null for an
  *   empty result, then let errors propagate.
- * - The global query (getWebConfig) calls validateSDKResponse(), because the
- *   config must exist. This also works around an SDK undefined bug.
+ * - The global query (getWebConfig) lets errors propagate. The SDK throws a
+ *   PayloadSDKError carrying the status, so error-utils.ts classifies it.
  * - List queries (getPagesByTags, getSongsByTags) return an empty array for
  *   an empty result, then let errors propagate.
  *
- * error-utils.ts detects native errors (TypeError for network, Error for
- * SDK) by matching the error message.
+ * error-utils.ts classifies by HTTP status where the error carries one, and
+ * falls back to message patterns for errors that do not (a network TypeError).
  */
 
-import { createPayloadClient, validateSDKResponse } from './payload-client'
+import { createPayloadClient } from './payload-client'
 import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
 import { getCmsContext } from './cms-context'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
@@ -506,7 +506,7 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
     fetchFn: async () => {
       const client = createPayloadClient()
 
-      const result = await client.findGlobal({
+      const config = await client.findGlobal({
         slug: 'wm-web-config',
         depth: 2,
         locale: options.locale,
@@ -514,18 +514,16 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
         populate: WEB_CONFIG_POPULATE,
       })
 
-      const validated = validateSDKResponse(result, 'WmWebConfig')
-
       // Drop unresolved (believed-unpublished) page references, so the
       // layout never renders a dead `/undefined` link.
-      const featured = partitionPublishedPages(validated.featuredPages)
-      const featuredArticles = partitionPublishedPages(validated.featuredArticles)
-      const classPages = partitionPublishedPages(validated.classPages)
-      const knowledgePages = partitionPublishedPages(validated.knowledgePages)
-      const infoPages = partitionPublishedPages(validated.infoPages)
+      const featured = partitionPublishedPages(config.featuredPages)
+      const featuredArticles = partitionPublishedPages(config.featuredArticles)
+      const classPages = partitionPublishedPages(config.classPages)
+      const knowledgePages = partitionPublishedPages(config.knowledgePages)
+      const infoPages = partitionPublishedPages(config.infoPages)
 
       const unresolved = [
-        ...(typeof validated.homePage === 'number' ? [`homePage id:${validated.homePage}`] : []),
+        ...(typeof config.homePage === 'number' ? [`homePage id:${config.homePage}`] : []),
         ...featured.unresolved.map((u) => `featuredPages ${u}`),
         ...featuredArticles.unresolved.map((u) => `featuredArticles ${u}`),
         ...classPages.unresolved.map((u) => `classPages ${u}`),
@@ -547,7 +545,7 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
       }
 
       return {
-        ...validated,
+        ...config,
         featuredPages: featured.published,
         featuredArticles: featuredArticles.published,
         classPages: classPages.published,

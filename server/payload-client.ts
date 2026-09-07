@@ -3,9 +3,6 @@
  *
  * Important: on Cloudflare Workers, always create a new client instance
  * per request. This keeps I/O context isolation correct.
- *
- * Known SDK issue: @payloadcms/sdk returns `undefined` on error, instead
- * of throwing (GitHub issue #14495). Every query function must handle this.
  */
 
 import { PayloadSDK } from '@payloadcms/sdk'
@@ -25,7 +22,7 @@ export interface PayloadClientConfig {
   baseURL?: string
   /** Enable preview mode for draft content requests */
   preview?: boolean
-  /** Preview secret for authenticating draft requests (passed via URL parameter) */
+  /** Preview secret for authenticating draft requests (sent as the x-sahajcloud-preview-secret header) */
   previewSecret?: string
 }
 
@@ -83,13 +80,13 @@ export function validatePayloadConfig(config: { apiKey?: string; baseURL?: strin
 }
 
 /**
- * A custom fetch wrapper that captures HTTP error details.
+ * A custom fetch wrapper that logs every CMS request and error body.
  *
- * The PayloadCMS SDK's findByID method swallows HTTP status codes and
- * response bodies. It replaces them with a generic error message. This
- * wrapper logs the actual error details before the SDK discards them.
- *
- * @see https://github.com/payloadcms/payload/issues/14495
+ * The SDK throws a `PayloadSDKError` on a non-OK response, carrying the
+ * status and the first error message only. This wrapper writes the full
+ * response body to the log first, so a 400 says which field it objected
+ * to. It also emits the `[PayloadCMS] <method> <url> → <status>` line the
+ * debugging workflow in AGENTS.md reads.
  */
 async function fetchWithErrorDetails(
   input: RequestInfo | URL,
@@ -161,23 +158,3 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
  * Type-safe helper for PayloadCMS SDK client
  */
 export type PayloadClient = ReturnType<typeof createPayloadClient>
-
-/**
- * Validates an SDK response, and throws if it is undefined or null. See
- * the file header for the SDK bug this guards against (GitHub issue
- * #14495): this wrapper makes sure retry logic sees a real thrown error.
- *
- * @param result - The result from an SDK call
- * @param context - Description of the operation for error messages
- * @throws Error if result is undefined or null
- * @returns The validated result
- */
-export function validateSDKResponse<T>(
-  result: T | undefined | null,
-  context: string
-): T {
-  if (result === undefined || result === null) {
-    throw new Error(`PayloadCMS SDK returned undefined: ${context}`)
-  }
-  return result
-}
