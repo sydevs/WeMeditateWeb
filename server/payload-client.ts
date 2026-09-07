@@ -22,7 +22,7 @@ export interface PayloadClientConfig {
   baseURL?: string
   /** Enable preview mode for draft content requests */
   preview?: boolean
-  /** Preview secret for authenticating draft requests (passed via URL parameter) */
+  /** Preview secret for authenticating draft requests (sent as the x-sahajcloud-preview-secret header) */
   previewSecret?: string
 }
 
