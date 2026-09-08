@@ -4,6 +4,8 @@
  * as onBeforeRoute.
  */
 
+import type { KVNamespace } from '@cloudflare/workers-types'
+
 import type { Locale } from '../server/cms-types'
 
 /**
