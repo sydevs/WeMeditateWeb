@@ -22,7 +22,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track1/200/200',
     duration: 196,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
@@ -31,7 +31,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track2/200/200',
     duration: 242,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
@@ -40,7 +40,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track3/200/200',
     duration: 318,
-    tags: ['vocal'],
+    tags: [{ id: 'vocal', label: 'Vocal' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
@@ -49,7 +49,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track4/200/200',
     duration: 281,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
@@ -58,7 +58,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track5/200/200',
     duration: 224,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
 ]
 
@@ -72,7 +72,7 @@ const extendedTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track6/200/200',
     duration: 267,
-    tags: ['vocal'],
+    tags: [{ id: 'vocal', label: 'Vocal' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
@@ -81,7 +81,7 @@ const extendedTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track7/200/200',
     duration: 193,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
@@ -90,7 +90,7 @@ const extendedTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track8/200/200',
     duration: 305,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
 ]
 

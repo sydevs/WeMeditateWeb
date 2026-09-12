@@ -3,6 +3,7 @@ import chartSvg from '../../../assets/chart.svg?raw'
 import { Button } from '../../atoms/Button'
 import { ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline'
 import './SubtleSystem.css'
+import { useT } from '../../../hooks/useT'
 
 // Constants
 const NESTED_HOVER_DELAY = 100 // ms - delay for nested chakra hover
@@ -56,6 +57,7 @@ export function SubtleSystem({
   className = '',
   ...props
 }: SubtleSystemProps) {
+  const t = useT()
   const [activeView, setActiveView] = useState<'chakras' | 'channels'>(defaultView)
   const [activeNode, setActiveNode] = useState<string | null>(null)
   const [isAnimated, setIsAnimated] = useState(true)
@@ -272,7 +274,7 @@ export function SubtleSystem({
           }`}
           onClick={() => handleViewToggle('chakras')}
         >
-          Chakras
+          {t('blocks.general.chakras')}
         </button>
         <span className="px-1">|</span>
         <button
@@ -282,7 +284,7 @@ export function SubtleSystem({
           }`}
           onClick={() => handleViewToggle('channels')}
         >
-          Channels
+          {t('blocks.general.channels')}
         </button>
       </div>
 
@@ -298,7 +300,9 @@ export function SubtleSystem({
         {/* Fullscreen Button */}
         <div className="absolute top-4 right-4">
           <Button
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            aria-label={
+              isFullscreen ? t('blocks.a11y.exit_fullscreen') : t('blocks.a11y.enter_fullscreen')
+            }
             icon={isFullscreen ? ArrowsPointingInIcon : ArrowsPointingOutIcon}
             size="sm"
             variant="outline"
@@ -324,11 +328,11 @@ export function SubtleSystem({
                 <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
                 <p className="text-base mb-4 text-gray-700">{item.description}</p>
                 <a
-                  aria-label={`Learn more about ${item.title}`}
+                  aria-label={t('blocks.a11y.learn_more_about', { title: item.title })}
                   className="inline-block text-teal-600 hover:text-teal-700 font-medium transition-colors"
                   href={item.linkHref}
                 >
-                  Learn More →
+                  {t('blocks.general.learn_more')}
                 </a>
               </div>
             )

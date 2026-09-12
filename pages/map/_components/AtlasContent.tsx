@@ -21,6 +21,8 @@ import type {
   AtlasSeoResponse,
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
+import { useT, useLocale } from '../../../hooks/useT'
+import { formatList } from '../../../lib/locale-names'
 
 /**
  * Where a region or class link should point.
@@ -42,12 +44,14 @@ export function atlasHref(link: { route: string | null; url: string | null }): s
 
 /** Region ancestry, root first. The final rung is the current page, so it is not a link. */
 function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
+  const t = useT()
+
   if (trail.length < 2) {
     return null
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4 text-sm text-gray-600">
+    <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-600">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {trail.map((rung, index) => {
           const href = atlasHref(rung)
@@ -73,6 +77,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
 
 /** One class in a region's listing. */
 function EventCard({ card }: { card: AtlasSeoEventCard }) {
+  const t = useT()
   const href = atlasHref(card)
 
   return (
@@ -89,7 +94,7 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
       {card.schedule && <p className="mt-1 text-sm text-gray-600">{card.schedule}</p>}
       {/* Empty for an online class, which says so instead. */}
       {card.online ? (
-        <p className="mt-1 text-sm text-gray-600">Online</p>
+        <p className="mt-1 text-sm text-gray-600">{t('map.general.online')}</p>
       ) : (
         card.address && <p className="mt-1 text-sm text-gray-600">{card.address}</p>
       )}
@@ -105,6 +110,7 @@ function RegionContent({
   content: AtlasSeoRegionContent
   breadcrumbs: AtlasSeoBreadcrumb[]
 }) {
+  const t = useT()
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Breadcrumbs trail={breadcrumbs} />
@@ -114,7 +120,7 @@ function RegionContent({
 
       {content.events.length > 0 ? (
         <section className="mt-8">
-          <h2 className="sr-only">Meditation classes</h2>
+          <h2 className="sr-only">{t('map.a11y.classes_heading')}</h2>
           <ul className="list-none">
             {content.events.map((card) => (
               <EventCard key={card.id} card={card} />
@@ -124,12 +130,15 @@ function RegionContent({
               total, so a partial page never reads as a complete one. */}
           {content.eventCount > content.events.length && (
             <p className="mt-4 text-sm text-gray-600">
-              Showing {content.events.length} of {content.eventCount} classes.
+              {t('map.general.classes_shown', {
+                shown: content.events.length,
+                count: content.eventCount,
+              })}
             </p>
           )}
         </section>
       ) : (
-        <p className="mt-8 text-gray-600">No meditation classes are listed here yet.</p>
+        <p className="mt-8 text-gray-600">{t('map.general.no_classes')}</p>
       )}
     </div>
   )
@@ -143,6 +152,8 @@ function EventContent({
   content: AtlasSeoEventContent
   breadcrumbs: AtlasSeoBreadcrumb[]
 }) {
+  const t = useT()
+  const locale = useLocale()
   // Defensive reads throughout this component. `AtlasSeoResponse` is
   // hand-mirrored from upstream (see server/atlas-types.ts). If a field
   // silently stops arriving, this avoids a 500 on the page. It falls
@@ -168,20 +179,20 @@ function EventContent({
       <dl className="mt-4 flex flex-col gap-2 text-gray-700">
         {content.schedule?.oneLine && (
           <div>
-            <dt className="sr-only">When</dt>
+            <dt className="sr-only">{t('map.a11y.when')}</dt>
             <dd>{content.schedule.oneLine}</dd>
           </div>
         )}
         {content.address?.oneLine && (
           <div>
-            <dt className="sr-only">Where</dt>
+            <dt className="sr-only">{t('map.a11y.where')}</dt>
             <dd>{content.address.oneLine}</dd>
           </div>
         )}
         {languages.length > 0 && (
           <div>
-            <dt className="sr-only">Languages</dt>
-            <dd className="text-sm text-gray-600">{languages.join(', ')}</dd>
+            <dt className="sr-only">{t('map.a11y.languages')}</dt>
+            <dd className="text-sm text-gray-600">{formatList(languages, locale)}</dd>
           </div>
         )}
       </dl>
@@ -205,7 +216,7 @@ function EventContent({
       {linkUrl && (
         <p className="mt-6">
           <a className="text-teal-600 hover:text-teal-700" href={linkUrl} rel="noopener noreferrer">
-            {joinUrl ? 'Join online' : 'Visit the website'}
+            {joinUrl ? t('map.general.join_online') : t('map.general.visit_website')}
           </a>
         </p>
       )}

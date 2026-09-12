@@ -8,6 +8,8 @@ import { Select } from '../../atoms/form/Select'
 import { Checkbox } from '../../atoms/form/Checkbox'
 import { Button } from '../../atoms/Button'
 import { FormField } from '../../molecules/FormField'
+import { useT } from '../../../hooks/useT'
+import type { TFunction } from '../../../lib/i18n'
 
 /**
  * PayloadCMS Form Builder field configuration
@@ -154,6 +156,9 @@ function renderField(
   field: FormBuilderField,
   register: UseFormRegister<any>,
   variant: 'default' | 'minimal',
+  // A plain function, not a component, so the accessor is passed in
+  // rather than read from a hook.
+  t: TFunction,
   fieldError?: string
 ) {
   // Filter defaultValue to allow only a string or number for non-checkbox fields
@@ -174,7 +179,9 @@ function renderField(
     state: state as 'default' | 'error',
     'aria-invalid': !!fieldError,
     ...register(field.name, {
-      required: field.required ? `${field.label} is required` : false,
+      required: field.required
+        ? t('forms.general.field_required', { field: field.label })
+        : false,
     }),
   }
 
@@ -201,7 +208,11 @@ function renderField(
       return (
         <Select
           {...commonProps}
-          placeholder={variant === 'minimal' ? field.label : (field.placeholder || 'Select an option')}
+          placeholder={
+            variant === 'minimal'
+              ? field.label
+              : field.placeholder || t('forms.general.select_placeholder')
+          }
           fullWidth
         >
           {field.options?.map((option) => (
@@ -257,6 +268,7 @@ function renderField(
  * />
  */
 export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left', className = '', schema }: FormBuilderProps) {
+  const t = useT()
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string>('')
@@ -318,7 +330,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
       }
     } catch (error) {
       // Handle unexpected errors
-      setFormError('An unexpected error occurred. Please try again.')
+      setFormError(t('forms.general.submit_error'))
       console.error('Form submission error:', error)
     }
   }
@@ -332,10 +344,10 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
         aria-live="polite"
       >
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-          Thank You!
+          {t('forms.general.thank_you')}
         </h3>
         <p className="text-sm sm:text-base text-gray-700">
-          {form.confirmationMessage || 'Your form has been submitted successfully.'}
+          {form.confirmationMessage || t('forms.general.submitted')}
         </p>
       </div>
     )
@@ -372,7 +384,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
             if (field.blockType === 'checkbox') {
               return (
                 <div key={field.name} className={field.width || 'w-full'}>
-                  {renderField(field, register, variant, fieldError)}
+                  {renderField(field, register, variant, t, fieldError)}
                   {fieldError && (
                     <p className="mt-1 text-sm text-error" role="alert">
                       {fieldError}
@@ -386,7 +398,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
             if (field.blockType === 'message') {
               return (
                 <div key={field.name} className={field.width || 'w-full'}>
-                  {renderField(field, register, variant)}
+                  {renderField(field, register, variant, t)}
                 </div>
               )
             }
@@ -395,7 +407,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
             if (variant === 'minimal') {
               return (
                 <div key={field.name} className={field.width || 'w-full'}>
-                  {renderField(field, register, variant, fieldError)}
+                  {renderField(field, register, variant, t, fieldError)}
                   {fieldError && (
                     <p className="mt-1 text-sm text-error" role="alert">
                       {fieldError}
@@ -415,7 +427,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
                   error={fieldError}
                   disabled={isSubmitting}
                 >
-                  {renderField(field, register, variant, fieldError)}
+                  {renderField(field, register, variant, t, fieldError)}
                 </FormField>
               </div>
             )
@@ -431,14 +443,14 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
             disabled={isSubmitting}
             className="min-w-32"
           >
-            {form.submitButtonLabel || 'Submit'}
+            {form.submitButtonLabel || t('forms.general.submit')}
           </Button>
         </div>
 
         {/* Screen reader announcement for loading state */}
         {isSubmitting && (
           <div className="sr-only" role="status" aria-live="assertive">
-            Submitting form, please wait...
+            {t('forms.a11y.submitting')}
           </div>
         )}
       </form>

@@ -1,6 +1,6 @@
 import type { PageContextServer } from 'vike/types'
 import type { WebConfig } from '../../../../server/cms-types'
-import { getWebConfig } from '../../../../server/cms-client'
+import { loadSiteContext } from '../../../../server/site-context'
 import { loadMeditation, type MeditationData } from '../_meditation'
 
 export interface MeditationPageData extends MeditationData {
@@ -17,10 +17,7 @@ export interface MeditationPageData extends MeditationData {
  * (RelatedContentLoader, through the template's showRelated flag).
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationPageData> {
-  const [base, settings] = await Promise.all([
-    loadMeditation(pageContext),
-    getWebConfig({ locale: pageContext.locale }),
-  ])
+  const [base, site] = await Promise.all([loadMeditation(pageContext), loadSiteContext(pageContext)])
 
-  return { ...base, settings }
+  return { ...base, settings: site.settings }
 }

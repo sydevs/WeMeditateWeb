@@ -6,7 +6,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   detectErrorType,
   ErrorType,
-  getUserFriendlyErrorMessage,
   isSafeHttpUrl,
   withRetry,
 } from './error-utils'
@@ -122,37 +121,6 @@ describe('detectErrorType', () => {
     it('should return UNKNOWN for non-numeric status', () => {
       expect(detectErrorType({ response: { status: 'oops' } })).toBe(ErrorType.UNKNOWN)
     })
-  })
-})
-
-describe('getUserFriendlyErrorMessage', () => {
-  it('returns network error message', () => {
-    const message = getUserFriendlyErrorMessage(new Error('fetch failed'))
-    expect(message).toContain('Unable to connect')
-    expect(message).toContain('internet connection')
-  })
-
-  it('returns server error message', () => {
-    const message = getUserFriendlyErrorMessage({ response: { status: 500 } })
-    expect(message).toContain('servers are experiencing issues')
-  })
-
-  it('returns client error message', () => {
-    const message = getUserFriendlyErrorMessage({ response: { status: 404 } })
-    expect(message).toContain('not available')
-    expect(message).toContain('moved or deleted')
-  })
-
-  it('returns generic error message for unknown errors', () => {
-    const message = getUserFriendlyErrorMessage(new Error('Unexpected error'))
-    expect(message).toContain('Something went wrong')
-    expect(message).toContain('try again')
-  })
-
-  it('never embeds HTML (messages are plain text)', () => {
-    const message = getUserFriendlyErrorMessage({ response: { status: 500 } })
-    expect(message).not.toContain('<')
-    expect(message).not.toContain('href=')
   })
 })
 

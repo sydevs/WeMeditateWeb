@@ -12,6 +12,7 @@ import {
 import { Button, Image } from '../../atoms'
 import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import type { Track } from './types'
+import { useT } from '../../../hooks/useT'
 
 export type { Track } from './types'
 
@@ -68,6 +69,7 @@ function AudioPlayerInner({
   className = '',
   ...props
 }: AudioPlayerProps) {
+  const t = useT()
   const [state, playerControls] = usePlaylistAudioPlayer({
     tracks,
     shuffle,
@@ -155,7 +157,7 @@ function AudioPlayerInner({
               variant="ghost"
               size="md"
               onClick={playerControls.previous}
-              aria-label="Previous track"
+              aria-label={t('media.a11y.previous_track')}
             />
           )}
 
@@ -165,7 +167,7 @@ function AudioPlayerInner({
             shape="circular"
             size="md"
             onClick={playerControls.togglePlayPause}
-            aria-label={state.isPlaying ? 'Pause' : 'Play'}
+            aria-label={state.isPlaying ? t('media.a11y.pause') : t('media.a11y.play')}
           />
 
           {hasControl('skip') && (
@@ -174,7 +176,7 @@ function AudioPlayerInner({
               variant="ghost"
               size="md"
               onClick={playerControls.next}
-              aria-label="Next track"
+              aria-label={t('media.a11y.next_track')}
             />
           )}
 
@@ -184,7 +186,7 @@ function AudioPlayerInner({
               variant="ghost"
               size="md"
               onClick={playerControls.toggleShuffle}
-              aria-label="Toggle shuffle"
+              aria-label={t('media.a11y.toggle_shuffle')}
               aria-pressed={state.isShuffleOn}
               className={state.isShuffleOn ? 'text-teal-600 hover:text-teal-700' : ''}
             />
@@ -199,7 +201,7 @@ function AudioPlayerInner({
               variant="ghost"
               size="md"
               onClick={playerControls.toggleMute}
-              aria-label={state.isMuted ? 'Unmute' : 'Mute'}
+              aria-label={state.isMuted ? t('media.a11y.unmute') : t('media.a11y.mute')}
             />
             <input
               type="range"
@@ -209,7 +211,7 @@ function AudioPlayerInner({
               value={state.isMuted ? 0 : state.volume}
               onChange={(e) => playerControls.setVolume(parseFloat(e.target.value))}
               className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
-              aria-label="Volume"
+              aria-label={t('media.a11y.volume')}
             />
           </div>
         )}

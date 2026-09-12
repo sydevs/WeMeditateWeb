@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
-import { SocialIcon } from '../../atoms/graphics/SocialIcon'
+import { SocialIcon, socialPlatformLabel } from '../../atoms/graphics/SocialIcon'
+import { useT } from '../../../hooks/useT'
 
 export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**
@@ -74,6 +75,7 @@ export function SocialShare({
   className = '',
   ...props
 }: SocialShareProps) {
+  const t = useT()
   const encodedUrl = encodeURIComponent(url)
   const encodedTitle = encodeURIComponent(title)
   const encodedText = encodedTitle ? `${encodedTitle}%20${encodedUrl}` : encodedUrl
@@ -91,7 +93,7 @@ export function SocialShare({
     <div
       className={`flex items-center gap-3 ${className}`}
       role="region"
-      aria-label="Social media sharing options"
+      aria-label={t('blocks.a11y.share_region')}
       {...props}
     >
       {label && (
@@ -99,7 +101,7 @@ export function SocialShare({
           {label}
         </span>
       )}
-      <div className="flex items-center gap-2" role="group" aria-label="Share on social media">
+      <div className="flex items-center gap-2" role="group" aria-label={t('blocks.a11y.share_group')}>
         {platforms.sort().map((platform) => (
           <SocialIcon
             key={platform}
@@ -107,7 +109,7 @@ export function SocialShare({
             href={shareUrls[platform]}
             size={size}
             color={color}
-            aria-label={`Share on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`}
+            aria-label={t('blocks.a11y.share_on', { platform: socialPlatformLabel(platform) })}
           />
         ))}
       </div>

@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import { Avatar } from '../../atoms/Avatar/Avatar'
+import { useT } from '../../../hooks/useT'
 
 export interface AuthorProps {
   /**
@@ -102,6 +103,7 @@ export function Author({
   align = 'left',
   className = '',
 }: AuthorProps) {
+  const t = useT()
   const isMini = variant === 'mini'
   const isHero = variant === 'hero'
   const isRight = align === 'right'
@@ -116,9 +118,23 @@ export function Author({
     />
   )
 
-  const nameWithCountry = countryCode ? `${name}, ${countryCode}` : name
-  const meditationText = meditationYears ? `Meditating for ${meditationYears} year${meditationYears === 1 ? '' : 's'}` : null
-  const readingTimeText = readingTime ? `${readingTime} minute read` : null
+  const nameWithCountry = countryCode
+    ? t('article.general.name_with_country', { name, country: countryCode })
+    : name
+  const nameNode = (
+    <em key="name" className="not-italic font-normal">
+      {name}
+    </em>
+  )
+  const emphasisedName = countryCode
+    ? t.rich('article.general.name_with_country', { name: nameNode, country: countryCode })
+    : nameNode
+  const meditationText = meditationYears
+    ? t('article.general.meditating_years', { count: meditationYears })
+    : null
+  const readingTimeText = readingTime
+    ? t('article.general.reading_time', { count: readingTime })
+    : null
 
   if (isMini) {
     const textAlign = isRight ? 'text-right' : 'text-left'
@@ -135,8 +151,10 @@ export function Author({
           )}
         </div>
         <div className="text-sm sm:text-base font-light leading-tight">
-          Written by <em className="not-italic font-normal">{name}</em>
-          {countryCode && `, ${countryCode}`}
+          {/* The name is emphasised, so the byline is composed from nodes
+              rather than text: `name_with_country` supplies the separator
+              its own locale uses, and `written_by` the sentence around it. */}
+          {t.rich('article.general.written_by', { name: emphasisedName })}
         </div>
         {meditationText && (
           <div className="text-sm font-light leading-tight">
@@ -160,7 +178,7 @@ export function Author({
     return (
       <div className={`text-gray-700 ${className}`}>
         <h2 className={`text-xl font-semibold text-gray-700 mb-5 ${titleAlign}`}>
-          About the author
+          {t('article.general.about_the_author')}
         </h2>
         <div className={`flex flex-col ${orderClasses} gap-8`}>
           <div className={`flex flex-col items-center ${metaAlign} text-center w-full md:w-48 shrink-0`}>

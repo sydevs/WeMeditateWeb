@@ -17,6 +17,7 @@ import type {
   SongTag,
   Lecture,
   WmWebConfig,
+  WmWebTranslation,
 } from './payload-types'
 
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
@@ -34,8 +35,19 @@ export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../
  */
 export interface WebConfig extends Omit<
   WmWebConfig,
-  'homePage' | 'featuredPages' | 'featuredArticles' | 'classPages' | 'knowledgePages' | 'infoPages'
+  | 'homePage'
+  | 'featuredPages'
+  | 'featuredArticles'
+  | 'classPages'
+  | 'knowledgePages'
+  | 'infoPages'
+  | 'availableLocales'
 > {
+  /**
+   * The locales the site offers, never empty: `getWebConfig` normalises an
+   * unconfigured CMS row to `['en']`. A locale prefix outside this set 404s.
+   */
+  availableLocales: Locale[]
   homePage: Page
   featuredPages: Page[]
   featuredArticles: Page[]
@@ -46,9 +58,87 @@ export interface WebConfig extends Omit<
 
 /**
  * Available locales extracted from PayloadCMS Config.
- * Uses hyphen format (e.g., 'pt-br') matching PayloadCMS and URL patterns.
+ *
+ * Codes match PayloadCMS and the URL prefix exactly, region included and
+ * cased as the CMS stores it (`pt-BR`, `en-AU`). A route or query that
+ * lowercases the region will not resolve.
  */
 export type Locale = Config['locale']
+
+/**
+ * Every locale the CMS defines, as a lookup. Derived from `Locale`, so a
+ * locale added upstream becomes a compile error here until it is listed.
+ *
+ * This is the set of codes that may appear as a URL prefix. It is not the
+ * set the site offers — that is `WebConfig.availableLocales`, which an
+ * editor controls per project.
+ */
+export const KNOWN_LOCALES: Record<Locale, true> = {
+  en: true,
+  es: true,
+  de: true,
+  it: true,
+  fr: true,
+  ru: true,
+  ro: true,
+  cs: true,
+  uk: true,
+  el: true,
+  hy: true,
+  pl: true,
+  'pt-BR': true,
+  fa: true,
+  bg: true,
+  tr: true,
+  'en-AU': true,
+  hu: true,
+  nl: true,
+}
+
+/** Every known locale code, as an array. */
+export const LOCALES = Object.keys(KNOWN_LOCALES) as Locale[]
+
+/** Narrows an arbitrary string to a known locale code. */
+export function isLocale(value: string): value is Locale {
+  return Object.prototype.hasOwnProperty.call(KNOWN_LOCALES, value)
+}
+
+/** The locale every other one falls back to. Always offered. */
+export const DEFAULT_LOCALE: Locale = 'en'
+
+/** Locales that read right-to-left. Drives `<html dir>`. */
+const RTL_LOCALES: ReadonlySet<string> = new Set(['fa'])
+
+/** Text direction for a locale, for `<html dir>`. */
+export function localeDirection(locale: Locale): 'ltr' | 'rtl' {
+  return RTL_LOCALES.has(locale) ? 'rtl' : 'ltr'
+}
+
+/**
+ * The CMS UI strings, with every group required.
+ *
+ * The generated `WmWebTranslation` marks each group optional, because a
+ * locale may be saved partially. Every group still arrives, from Payload's
+ * own locale fallback: `buildPayloadLocales` gives each non-English locale
+ * `fallbackLocale: 'en'`, so a tab nobody has translated reads as English.
+ * SahajCloud #705 fills a blank or missing key from English on every
+ * API-client read, but only inside a group the document already carries.
+ * Individual keys stay optional: a key added to the schema but not yet
+ * translated anywhere is still absent, and `createT` resolves it to its
+ * key path.
+ */
+type RequiredGroups<T> = {
+  [K in keyof T]-?: NonNullable<T[K]> extends string
+    ? string | undefined
+    : RequiredGroups<NonNullable<T[K]>>
+}
+
+export type WebTranslations = RequiredGroups<
+  Omit<WmWebTranslation, 'id' | '_status' | 'updatedAt' | 'createdAt'>
+>
+
+/** One translations tab — `common`, `navigation`, … */
+export type TranslationsTab = keyof WebTranslations
 
 /**
  * Page status enum

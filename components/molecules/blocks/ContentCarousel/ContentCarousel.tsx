@@ -3,6 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ContentCard, ContentCardProps } from '../../ContentCard/ContentCard'
 import { Button } from '../../../atoms/Button/Button'
+import { useT } from '../../../../hooks/useT'
 
 /** Carousel size variant. */
 export type ContentCarouselSize = 'sm' | 'md' | 'lg'
@@ -81,6 +82,7 @@ export function ContentCarousel({
   className = '',
   ...props
 }: ContentCarouselProps) {
+  const t = useT()
   const { imageHeight, card, slideGap } = CAROUSEL_SIZES[size]
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -157,7 +159,7 @@ export function ContentCarousel({
         >
           <Button
             aria-hidden={!canScrollPrev}
-            aria-label="Previous slide"
+            aria-label={t('blocks.a11y.previous_slide')}
             className={`-translate-x-1/2 shadow-lg hover:shadow-xl transition duration-200 ${
               canScrollPrev ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
             }`}
@@ -170,7 +172,7 @@ export function ContentCarousel({
           />
           <Button
             aria-hidden={!canScrollNext}
-            aria-label="Next slide"
+            aria-label={t('blocks.a11y.next_slide')}
             className={`translate-x-1/2 shadow-lg hover:shadow-xl transition duration-200 ${
               canScrollNext ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
             }`}

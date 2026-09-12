@@ -42,14 +42,18 @@ check-run output).
   non-empty `/meta.json` story manifest. The static SPA needs no Playwright. Run with
   `pnpm test:smoke:ladle`.
 - `discoverFromCms()` in `tests/smoke/_helpers/preview.ts` queries the production CMS (needs the
-  `SAHAJCLOUD_API_KEY` Actions secret) to pick a real page or meditation. Without that secret, the
-  specs call `ctx.skip`.
+  `SAHAJCLOUD_API_KEY` Actions secret) to pick a real page or meditation, and to read
+  `wm-web-config.availableLocales`. Without that secret, the specs call `ctx.skip`.
 
 ## Conventions the web specs rely on
 
 Each fact below matches the deployed Worker's real behavior.
 
 - A locale root has no trailing slash: `/es/` redirects (301) to `/es`.
+- Only a locale in `wm-web-config.availableLocales` resolves. Any other prefix returns 404, so the
+  non-English spec picks its locale from that field rather than hardcoding one — a spec pinned to
+  `/es` would report an editor's config change as a broken deploy.
 - The router strips the default locale: `/en` redirects (301) to `/index`.
 - An unknown path returns 404 and renders the ErrorFallback title "Content Not Found" — not "Page
-  Not Found".
+  Not Found". The spec reads that title from `lib/translations.en.json` rather than duplicating it,
+  so rewording it in the CMS cannot leave the markers matching nothing.

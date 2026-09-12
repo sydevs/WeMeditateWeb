@@ -6,7 +6,7 @@
 
 import type { KVNamespace } from '@cloudflare/workers-types'
 
-import type { Locale } from '../server/cms-types'
+import type { Locale, WebTranslations } from '../server/cms-types'
 
 /**
  * Typed environment variables from import.meta.env.
@@ -61,6 +61,13 @@ declare global {
     interface PageContext {
       /** Current locale (added by onBeforeRoute hook) */
       locale: Locale
+
+      /**
+       * The locale's UI strings, from the CMS `wm-web-translations`
+       * global. Added by `pages/+onBeforeRender.ts` and carried to the
+       * client by `passToClient`. Read it through `useT()`, never directly.
+       */
+      translations: WebTranslations
 
       /** Cloudflare Workers runtime context */
       cloudflare?: {

@@ -22,6 +22,8 @@ describe('the [slug] page matcher', () => {
   it.each([
     ['the homepage', '/'],
     ['a locale-prefixed path', '/de/about'],
+    ['a compound-locale-prefixed path', '/pt-BR/about'],
+    ['an en-AU-prefixed path', '/en-AU/about'],
     ['a nested path', '/meditations/142'],
   ])('does not match %s', (_label, pathname) => {
     expect(match(pathname)).toBe(false)

@@ -166,7 +166,7 @@ describe('resolveContentIndexTracks', () => {
           title: 'Raga',
           url: 'https://cdn/audio.mp3',
           album: { id: 1, artist: 'Nightingale', artwork: { id: 2, url: 'https://cdn/art.jpg' } },
-          tags: [{ id: 5, slug: 'strings' }],
+          tags: [{ id: 5, slug: 'strings', title: 'Strings' }],
         },
       ]),
     )
@@ -184,7 +184,7 @@ describe('resolveContentIndexTracks', () => {
         creditURL: '',
         thumbnailURL: 'https://cdn/art.jpg',
         duration: 0,
-        tags: ['strings'],
+        tags: [{ id: 'strings', label: 'Strings' }],
       },
     ])
 

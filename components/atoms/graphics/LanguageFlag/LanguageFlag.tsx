@@ -1,10 +1,12 @@
 import { ComponentProps } from 'react'
+import type { Locale } from '../../../../server/cms-types'
+import { localeEndonym } from '../../../../lib/locale-names'
 
 export interface LanguageFlagProps extends ComponentProps<'span'> {
   /**
-   * Language code (ISO 639-1)
+   * Locale code, exactly as the CMS stores it (`en`, `pt-BR`, `en-AU`).
    */
-  language: 'en' | 'es' | 'de' | 'it' | 'fr' | 'ru' | 'ro' | 'cs' | 'uk' | 'bg'
+  language: Locale
 
   /**
    * Flag size
@@ -20,15 +22,48 @@ export interface LanguageFlagProps extends ComponentProps<'span'> {
 }
 
 /**
+ * The flag shown for each locale the CMS offers.
+ *
+ * A flag stands for a language here, not a country, so the mapping is a
+ * deliberate editorial choice rather than a derivation from the region
+ * subtag: `en` flies the Union Jack, `en-AU` the Australian flag, `hy`
+ * Armenia's. Every locale in `KNOWN_LOCALES` needs an entry — the
+ * `Record<Locale, string>` type makes a new upstream locale a compile
+ * error here.
+ */
+const FLAG_BY_LOCALE: Record<Locale, string> = {
+  en: '🇬🇧',
+  es: '🇪🇸',
+  de: '🇩🇪',
+  it: '🇮🇹',
+  fr: '🇫🇷',
+  ru: '🇷🇺',
+  ro: '🇷🇴',
+  cs: '🇨🇿',
+  uk: '🇺🇦',
+  el: '🇬🇷',
+  hy: '🇦🇲',
+  pl: '🇵🇱',
+  'pt-BR': '🇧🇷',
+  fa: '🇮🇷',
+  bg: '🇧🇬',
+  tr: '🇹🇷',
+  'en-AU': '🇦🇺',
+  hu: '🇭🇺',
+  nl: '🇳🇱',
+}
+
+/**
  * LanguageFlag component for displaying country/language flags.
  *
- * Shows flag emoji or icon for supported languages.
- * Optionally displays language label alongside flag.
+ * The label is the language's endonym — its name in itself — from
+ * `Intl.DisplayNames`, so it is never a translated string and never needs
+ * a CMS key.
  *
  * @example
  * <LanguageFlag language="en" />
  * <LanguageFlag language="es" size="md" showLabel />
- * <LanguageFlag language="fr" size="lg" />
+ * <LanguageFlag language="pt-BR" size="lg" />
  */
 export function LanguageFlag({
   language,
@@ -37,20 +72,8 @@ export function LanguageFlag({
   className = '',
   ...props
 }: LanguageFlagProps) {
-  const languageConfig = {
-    en: { flag: '🇬🇧', label: 'English' },
-    es: { flag: '🇪🇸', label: 'Español' },
-    de: { flag: '🇩🇪', label: 'Deutsch' },
-    it: { flag: '🇮🇹', label: 'Italiano' },
-    fr: { flag: '🇫🇷', label: 'Français' },
-    ru: { flag: '🇷🇺', label: 'Русский' },
-    ro: { flag: '🇷🇴', label: 'Română' },
-    cs: { flag: '🇨🇿', label: 'Čeština' },
-    uk: { flag: '🇺🇦', label: 'Українська' },
-    bg: { flag: '🇧🇬', label: 'Български' },
-  }
-
-  const { flag, label } = languageConfig[language]
+  const flag = FLAG_BY_LOCALE[language]
+  const label = localeEndonym(language)
 
   const sizeStyles = {
     xs: 'text-sm',

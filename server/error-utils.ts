@@ -103,24 +103,6 @@ export function detectErrorType(error: unknown): ErrorType {
 }
 
 /**
- * Returns a plain-text, user-friendly message for an error.
- * Callers that want to surface a status page link should render it separately
- * as a React element — never interpolate URLs into HTML here.
- */
-export function getUserFriendlyErrorMessage(error: unknown): string {
-  switch (detectErrorType(error)) {
-    case ErrorType.NETWORK:
-      return 'Unable to connect to our content servers. Please check your internet connection and try again.'
-    case ErrorType.SERVER:
-      return "Our content servers are experiencing issues. We're working to resolve this."
-    case ErrorType.CLIENT:
-      return 'This content is not available. It may have been moved or deleted.'
-    default:
-      return 'Something went wrong while loading this page. Please try again.'
-  }
-}
-
-/**
  * True if the URL parses and uses an http(s) scheme. Gates the rendering
  * of externally configured status-page links, to block `javascript:` and
  * `data:` XSS.

@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Column, ColumnProps } from '../Column'
+import { useT } from '../../../hooks/useT'
 
 export interface ColumnCarouselProps {
   /**
@@ -31,7 +32,12 @@ interface CarouselNavButtonProps {
  */
 function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
   const isPrev = direction === 'prev'
-  const ariaLabel = column ? `${isPrev ? 'Previous' : 'Next'}: ${column.title}` : direction === 'prev' ? 'Previous' : 'Next'
+  const t = useT()
+  const ariaLabel = column
+    ? t(isPrev ? 'blocks.a11y.previous_column' : 'blocks.a11y.next_column', {
+        title: column.title,
+      })
+    : t(isPrev ? 'common.a11y.previous' : 'common.a11y.next')
 
   return (
     <button
@@ -80,6 +86,7 @@ export function ColumnCarousel({
   columns: rawColumns,
   className = '',
 }: ColumnCarouselProps) {
+  const t = useT()
   // Enforce maximum of 5 columns
   const columns = rawColumns.slice(0, MAX_COLUMNS)
 
@@ -170,7 +177,10 @@ export function ColumnCarousel({
                 <button
                   key={index}
                   onClick={() => scrollTo(index)}
-                  aria-label={`Go to column ${index + 1}: ${columns[index].title}`}
+                  aria-label={t('blocks.a11y.go_to_column', {
+                    number: index + 1,
+                    title: columns[index].title,
+                  })}
                   className={`w-2 h-2 rounded-full transition-colors ${
                     index === selectedIndex
                       ? 'bg-teal-600'

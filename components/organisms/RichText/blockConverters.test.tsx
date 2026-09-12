@@ -172,7 +172,9 @@ describe('content-index block converter — dispatch', () => {
           creditURL: '',
           thumbnailURL: '',
           duration: 0,
-          tags: ['vocals'],
+          // The label is the SongTag's CMS `title`, localized, not the
+          // slug title-cased.
+          tags: [{ id: 'vocals', label: 'Vocals' }],
         },
       ],
     })

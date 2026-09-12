@@ -1,0 +1,212 @@
+{
+  "article": {
+    "a11y": {
+      "filter_label": "Filter content by tag"
+    },
+    "general": {
+      "about_the_author": "About the author",
+      "filter_all": "All",
+      "meditating_years_one": "Meditating for %{count} year",
+      "meditating_years_other": "Meditating for %{count} years",
+      "name_with_country": "%{name}, %{country}",
+      "reading_time_one": "%{count} minute read",
+      "reading_time_other": "%{count} minute read",
+      "tag_creativity": "Creativity",
+      "tag_event": "Event",
+      "tag_lifestyle": "Lifestyle",
+      "tag_technique": "Technique",
+      "tag_wisdom": "Wisdom",
+      "written_by": "Written by %{name}"
+    }
+  },
+  "blocks": {
+    "a11y": {
+      "enter_fullscreen": "Enter fullscreen",
+      "exit_fullscreen": "Exit fullscreen",
+      "go_to_column": "Go to column %{number}: %{title}",
+      "learn_more_about": "Learn more about %{title}",
+      "next_column": "Next: %{title}",
+      "next_slide": "Next slide",
+      "previous_column": "Previous: %{title}",
+      "previous_slide": "Previous slide",
+      "quote": "Quote",
+      "share_group": "Share on social media",
+      "share_on": "Share on %{platform}",
+      "share_region": "Social media sharing options",
+      "table_of_contents": "Table of contents"
+    },
+    "general": {
+      "chakras": "Chakras",
+      "channels": "Channels",
+      "hours": "Hours",
+      "learn_more": "Learn More →",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    }
+  },
+  "common": {
+    "a11y": {
+      "breadcrumb": "Breadcrumb",
+      "close": "Close",
+      "dismiss": "Dismiss",
+      "next": "Next",
+      "opens_in_new_tab": "%{label} (opens in new tab)",
+      "previous": "Previous",
+      "show_more_items_one": "Show %{count} more item",
+      "show_more_items_other": "Show %{count} more items"
+    },
+    "general": {
+      "loading": "Loading...",
+      "show_more": "Show More",
+      "site_description": "Discover free guided meditations, music, and articles to learn and deepen your meditation practice.",
+      "site_title": "We Meditate"
+    }
+  },
+  "errors": {
+    "a11y": {
+      "error_icon": "Error"
+    },
+    "general": {
+      "back_to_home": "Back to Home",
+      "heading": "Error",
+      "network_message": "Unable to connect to our content servers. Please check your internet connection and try again.",
+      "network_title": "Connection Issue",
+      "not_found_message": "This content is not available. It may have been moved or deleted.",
+      "not_found_title": "Content Not Found",
+      "server_message": "Our content servers are experiencing issues. We're working to resolve this.",
+      "server_title": "Service Temporarily Unavailable",
+      "status_page_hint": "Check our %{link} for updates.",
+      "status_page_link": "status page",
+      "try_again": "Try Again",
+      "unknown_message": "Something went wrong while loading this page. Please try again.",
+      "unknown_title": "Oops! Something went wrong"
+    }
+  },
+  "footer": {
+    "copyright": "© WeMeditate, %{year}",
+    "info": "Info",
+    "languages": "Languages"
+  },
+  "forms": {
+    "a11y": {
+      "required_marker": "required",
+      "submitting": "Submitting form, please wait..."
+    },
+    "general": {
+      "field_required": "%{field} is required",
+      "select_placeholder": "Select an option",
+      "submit": "Submit",
+      "submit_error": "An unexpected error occurred. Please try again.",
+      "submitted": "Your form has been submitted successfully.",
+      "thank_you": "Thank You!"
+    }
+  },
+  "lecture": {
+    "a11y": {
+      "related_meditations_loading": "Loading related meditations"
+    },
+    "general": {
+      "missing_video": "This lecture is missing a playable video source.",
+      "related_meditations": "Related meditations"
+    }
+  },
+  "location": {
+    "a11y": {
+      "change_label": "Change location",
+      "search_label": "Search for a location",
+      "selected_label": "Selected location"
+    },
+    "general": {
+      "change": "Change",
+      "coordinates_failed": "Failed to retrieve location coordinates",
+      "current_location": "Current Location",
+      "geolocation_unsupported": "Geolocation is not supported by your browser",
+      "getting_coordinates": "Getting coordinates...",
+      "getting_location": "Getting location...",
+      "location_failed": "Unable to retrieve location",
+      "nearby": "Nearby",
+      "no_results": "No results found",
+      "permission_denied": "Location access denied",
+      "position_unavailable": "Location unavailable",
+      "search_placeholder": "Search for a location...",
+      "searching": "Searching...",
+      "suggestions_failed": "Failed to fetch location suggestions",
+      "timed_out": "Location request timed out",
+      "type_to_search": "Type to search for a location"
+    }
+  },
+  "map": {
+    "a11y": {
+      "classes_heading": "Meditation classes",
+      "languages": "Languages",
+      "when": "When",
+      "where": "Where"
+    },
+    "general": {
+      "classes_shown_one": "Showing %{shown} of %{count} class.",
+      "classes_shown_other": "Showing %{shown} of %{count} classes.",
+      "join_online": "Join online",
+      "no_classes": "No meditation classes are listed here yet.",
+      "online": "Online",
+      "visit_website": "Visit the website"
+    }
+  },
+  "media": {
+    "a11y": {
+      "embed_code": "Embed code",
+      "mute": "Mute",
+      "next_track": "Next track",
+      "pause": "Pause",
+      "play": "Play",
+      "play_item": "Play %{title}",
+      "previous_track": "Previous track",
+      "toggle_shuffle": "Toggle shuffle",
+      "unmute": "Unmute",
+      "view_image": "View image",
+      "view_image_alt": "View image: %{alt}",
+      "volume": "Volume",
+      "zoom_in": "Zoom in",
+      "zoom_out": "Zoom out"
+    },
+    "general": {
+      "copied": "Copied!",
+      "copy": "Copy",
+      "duration_minutes_one": "%{count} min",
+      "duration_minutes_other": "%{count} min",
+      "duration_seconds_one": "%{count} sec",
+      "duration_seconds_other": "%{count} sec",
+      "embed": "Embed",
+      "embed_player": "Embed this player",
+      "embed_title": "Embed “%{title}”",
+      "playlist": "Playlist"
+    }
+  },
+  "meditation": {
+    "a11y": {
+      "audio_settings": "Audio settings",
+      "music_volume": "Music volume",
+      "mute_music": "Mute music",
+      "mute_voice": "Mute voice",
+      "related_lectures_loading": "Loading related lectures",
+      "shuffle_music": "Shuffle music track",
+      "unmute_music": "Unmute music",
+      "unmute_voice": "Unmute voice",
+      "voice_volume": "Voice volume"
+    },
+    "general": {
+      "change_music": "Change background music track",
+      "founder_name": "Shri Mataji Nirmala Devi",
+      "founder_role": "founder",
+      "label": "Meditation",
+      "missing_audio": "This meditation is missing a required audio URL.",
+      "music": "Music",
+      "related_lectures": "Related lectures",
+      "untitled": "Untitled Meditation",
+      "voice": "Voice"
+    }
+  },
+  "navigation": {
+    "about_meditation": "About Meditation",
+    "featured_caption": "Inspiration comes from within"
+  }
+}

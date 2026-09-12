@@ -1,4 +1,6 @@
 import { Dropdown } from '../../atoms/Dropdown'
+import type { Locale } from '../../../server/cms-types'
+import { useT } from '../../../hooks/useT'
 import { LanguageFlag } from '../../atoms/graphics/LanguageFlag'
 import { Link } from '../../atoms/Link'
 import { GlobeAltIcon, CheckIcon } from '@heroicons/react/24/outline'
@@ -9,10 +11,14 @@ import { Icon } from '../../atoms/Icon'
  */
 export interface LanguageOption {
   /** Language code (ISO 639-1) */
-  code: 'en' | 'es' | 'de' | 'it' | 'fr' | 'ru' | 'ro' | 'cs' | 'uk' | 'bg'
+  code: Locale
   /** Display label for the language */
   label: string
-  /** URL to navigate to when language is selected */
+  /**
+   * Path to navigate to, WITHOUT a locale prefix. `Link` adds the prefix
+   * for the option's own `code`, so the "English is served bare" rule has
+   * one owner.
+   */
   href: string
 }
 
@@ -21,7 +27,7 @@ export interface LanguageOption {
  */
 export interface LanguageDropdownProps {
   /** Currently selected language code */
-  currentLanguage: 'en' | 'es' | 'de' | 'it' | 'fr' | 'ru' | 'ro' | 'cs' | 'uk' | 'bg'
+  currentLanguage: Locale
   /** Array of available language options */
   languages: LanguageOption[]
   /** Alignment of the dropdown */
@@ -54,11 +60,13 @@ export function LanguageDropdown({
   align = 'left',
   className = '',
 }: LanguageDropdownProps) {
+  const t = useT()
+
   return (
     <Dropdown
       trigger={
         <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
-          <span className="text-sm font-light">Languages</span>
+          <span className="text-sm font-light">{t('footer.languages')}</span>
           <Icon icon={GlobeAltIcon} size="sm" />
         </button>
       }
@@ -70,6 +78,7 @@ export function LanguageDropdown({
           <Link
             key={language.code}
             href={language.href}
+            locale={language.code}
             className={`px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 ${
               language.code === currentLanguage ? 'bg-gray-50' : ''
             }`}

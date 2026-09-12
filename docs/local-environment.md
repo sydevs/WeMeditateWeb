@@ -1,5 +1,5 @@
 ---
-description: Local environment gotchas — CMS API key (403 vs 400) and getWebConfig caching.
+description: Local environment gotchas — CMS API key (403 vs 400) and the site globals’ KV caching.
 globs:
   - "**"
 alwaysApply: false
@@ -36,11 +36,18 @@ So the atlas surface 403s locally by design, even with a valid key. `GET /api/at
 Verify which case applies with `GET /api/clients/me` — it returns the record and its roles —
 before you rotate a key that is not the problem. Tracked in sydevs/WeMeditateWeb#62.
 
-## `getWebConfig` is not KV-cached
+## The two site globals are KV-cached for 24 hours
 
-`getWebConfig()` calls `withCache` without a `kv` binding, so it fetches fresh from the CMS on
-every request. Nothing goes stale here. Newly published CMS content appears immediately on the
-deploy.
+`getWebConfig()` and `getWebTranslations()` both go through `withCache` at `CacheTTL.SETTINGS`,
+so an edit to the nav, the locale set, or any UI string can take up to a day to appear on a
+deployed preview. It is not stale code — wait out the TTL, or purge the KV entry.
+
+Locally there is no `WEMEDITATE_CACHE` binding under `pnpm dev`, so both fetch fresh on every
+request. That difference is why a change looks instant locally and does not on the preview.
+
+`loadSiteContext()` memoizes both reads per request, so a page issues one config read and one
+translations read however many components ask for them. The dev log shows each once. Two of
+either means something bypassed `loadSiteContext`.
 
 ## The dev server can serve stale modules
 

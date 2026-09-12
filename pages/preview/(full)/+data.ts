@@ -19,7 +19,9 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { getDocumentById, getMeditationSongs, getWebConfig } from '../../../server/cms-client'
+import { getDocumentById, getMeditationSongs } from '../../../server/cms-client'
+import { loadSiteContext } from '../../../server/site-context'
+import { pageTagLabels } from '../../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../../server/content-index'
 import { render } from 'vike/abort'
 import { type CollectionType, type FullPreviewData } from '../_components'
@@ -70,7 +72,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
   }
 
   // Fetch WeMeditateWebSettings (required for LayoutChrome with Header/Footer)
-  const settings = await getWebConfig({ locale })
+  const { settings, t } = await loadSiteContext(pageContext)
 
   // Fetch content with the generic document fetcher.
   // Always bypass the cache in preview mode, for fresh data.
@@ -96,6 +98,7 @@ export async function data(pageContext: PageContextServer): Promise<PreviewPageD
       locale,
       preview: true,
       audiences: settings.audiences,
+      pageTagLabels: pageTagLabels(t),
     })
   }
 

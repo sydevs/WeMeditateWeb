@@ -7,6 +7,9 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
+import { ErrorType } from '../../../server/error-utils'
+import { errorTitleKey } from '../../../lib/error-keys'
+import { enT } from '../../../lib/i18n'
 
 /** Resolved base URL of the preview (or fallback) to smoke-test against. */
 export function getBaseUrl(): string {
@@ -54,16 +57,41 @@ export async function fetchPage(
 
 /**
  * Error-page and error-boundary titles that ErrorFallback and the _error
- * route render. Copied verbatim from
- * components/molecules/ErrorFallback/ErrorFallback.tsx (TITLE_BY_TYPE). A
- * real content page must contain none of these.
+ * route render. A real content page must contain none of these.
+ *
+ * Read from the committed English snapshot rather than copied, so an editor
+ * who rewords "Content Not Found" in the CMS cannot leave these markers
+ * matching nothing — a smoke suite that silently stops detecting error
+ * pages would pass on a completely broken preview.
+ *
+ * The preview is served in English, so the English snapshot is the right
+ * source here.
  */
 export const ERROR_MARKERS = [
-  'Service Temporarily Unavailable', // ErrorType.SERVER (500)
-  'Content Not Found', // ErrorType.CLIENT (404)
-  'Connection Issue', // ErrorType.NETWORK
-  'Oops! Something went wrong', // ErrorType.UNKNOWN
+  enT(errorTitleKey(ErrorType.SERVER)),
+  enT(errorTitleKey(ErrorType.CLIENT)),
+  enT(errorTitleKey(ErrorType.NETWORK)),
+  enT(errorTitleKey(ErrorType.UNKNOWN)),
 ] as const
+
+/** The 404 page's heading, for a suite asserting that page specifically. */
+export const NOT_FOUND_MARKER = enT(errorTitleKey(ErrorType.CLIENT))
+
+/**
+ * The document with every <script> block dropped, that is, the markup the
+ * reader actually sees.
+ *
+ * Every page now serializes the whole translations object into
+ * `<script id="vike_pageContext" type="application/json">`, and that object
+ * carries `errors.general.server_title` and its three siblings — the exact
+ * strings ERROR_MARKERS is built from. Matching a marker against the raw
+ * body therefore reports "rendered the error page" on every healthy page,
+ * and makes the 404 spec's positive assertion pass on any page at all.
+ * Match the rendered markup instead, so a marker means a rendered title.
+ */
+export function renderedHtml(html: string): string {
+  return html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
+}
 
 /**
  * Assert the response is a real rendered HTML page: 200, text/html, has a
@@ -77,8 +105,10 @@ export function expectRenders(page: PageResult, path: string): void {
 
   expect(title, `${path} should render a non-empty <title>`).toBeTruthy()
 
+  const rendered = renderedHtml(page.html)
+
   for (const marker of ERROR_MARKERS) {
-    expect(page.html.includes(marker), `${path} rendered the error page ("${marker}")`).toBe(false)
+    expect(rendered.includes(marker), `${path} rendered the error page ("${marker}")`).toBe(false)
   }
 }
 
@@ -158,6 +188,16 @@ export function headTags(html: string): {
 export interface CmsSamples {
   pageSlug: string | null
   meditationId: string | null
+  /**
+   * The locales the site offers, from `wm-web-config.availableLocales`.
+   *
+   * The non-English spec used to hardcode `/es`. That asserted a CMS
+   * setting an editor controls, so it would fail the day Spanish stopped
+   * being offered — and it fails today on a site whose `availableLocales`
+   * is still empty. Reading the real set makes the spec test the site's
+   * own configuration instead of an assumption about it.
+   */
+  availableLocales: string[]
 }
 
 /**
@@ -207,6 +247,28 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
   )
   const headers = { Authorization: `clients API-Key ${apiKey}` }
 
+  /** A single JSON document, or null with the reason logged. */
+  const getJson = async (path: string): Promise<Record<string, unknown> | null> => {
+    try {
+      const res = await fetch(`${base}/api/${path}`, {
+        headers,
+        signal: AbortSignal.timeout(15_000),
+      })
+
+      if (!res.ok) {
+        console.warn(`[discoverFromCms] GET /api/${path.split('?')[0]} → HTTP ${res.status}`)
+
+        return null
+      }
+
+      return (await res.json()) as Record<string, unknown>
+    } catch (err) {
+      console.warn(`[discoverFromCms] GET /api/${path.split('?')[0]} → ${(err as Error).message}`)
+
+      return null
+    }
+  }
+
   const firstDoc = async (path: string): Promise<Record<string, unknown> | null> => {
     const collection = path.split('?')[0]
 
@@ -253,9 +315,12 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
   })
   const page = await firstDoc(`pages?${pageQuery}`)
   const meditation = await firstDoc(`meditations?${meditationQuery}`)
+  const config = await getJson('globals/wm-web-config?depth=0&select[availableLocales]=true')
+  const locales = config?.availableLocales
 
   return {
     pageSlug: typeof page?.slug === 'string' ? page.slug : null,
     meditationId: meditation?.id != null ? String(meditation.id) : null,
+    availableLocales: Array.isArray(locales) ? locales.filter((l) => typeof l === 'string') : [],
   }
 }

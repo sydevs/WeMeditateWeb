@@ -13,6 +13,7 @@
 import { useConfig } from 'vike-react/useConfig'
 import { getImageURL, getVariantName, isCloudflareImageURL } from './cloudflare-images'
 import { populatedImageUrl } from './cms-relationships'
+import { useT } from '../hooks/useT'
 
 /** Minimal shape of a page's `meta` field (a subset of the CMS Page meta). */
 export interface PageMetaLike {
@@ -44,19 +45,25 @@ export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
 /**
  * Sets the page's SEO head tags from CMS meta, during render.
  *
- * This is a hook, so call it unconditionally from a component. It falls
- * back to the page title when `meta.title` is absent. It omits any tag
- * whose value is missing, so the global defaults in `pages/+config.ts` apply.
+ * This is a hook, so call it unconditionally from a component.
+ *
+ * Each tag falls through three levels: the page's own CMS `meta`, then the
+ * site defaults from the CMS (`common.general.site_title` /
+ * `site_description`, in the page's locale), then the English literals in
+ * `pages/+config.ts`. Before the middle level existed, a French page with
+ * no meta of its own advertised itself in English to search engines and
+ * social previews.
  */
 export function usePageHead(options: {
   meta?: PageMetaLike | null
   fallbackTitle?: string | null
 }): void {
   const config = useConfig()
+  const t = useT()
   const { meta, fallbackTitle } = options
 
-  const title = meta?.title || fallbackTitle || undefined
-  const description = meta?.description || undefined
+  const title = meta?.title || fallbackTitle || t('common.general.site_title') || undefined
+  const description = meta?.description || t('common.general.site_description') || undefined
   const image = resolveOgImageUrl(meta?.image) || undefined
 
   config({

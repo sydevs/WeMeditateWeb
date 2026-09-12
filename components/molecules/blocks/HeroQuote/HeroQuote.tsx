@@ -1,5 +1,6 @@
 import React from 'react'
 import { LeafDivider } from '../../../atoms/LeafDivider/LeafDivider'
+import { useT } from '../../../../hooks/useT'
 
 export interface HeroQuoteProps {
   /** The main quote text (required) */
@@ -54,6 +55,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
   size = 'lg',
   className = '',
 }) => {
+  const t = useT()
   const alignmentClass = align === 'center' ? 'text-center' : 'text-left'
 
   // Size-specific styling
@@ -69,7 +71,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
 
   return (
     <blockquote
-      aria-label={title || 'Quote'}
+      aria-label={title || t('blocks.a11y.quote')}
       className={`${blockquoteMaxWidth} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
       role="region"
     >

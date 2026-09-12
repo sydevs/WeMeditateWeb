@@ -14,12 +14,9 @@
 
 import { ExclamationCircleIcon, WifiIcon, ServerIcon } from '@heroicons/react/24/outline'
 import { Icon, Heading, Button } from '../../atoms'
-import {
-  detectErrorType,
-  ErrorType,
-  getUserFriendlyErrorMessage,
-  isSafeHttpUrl,
-} from '../../../server/error-utils'
+import { detectErrorType, ErrorType, isSafeHttpUrl } from '../../../server/error-utils'
+import { errorMessageKey, errorTitleKey } from '../../../lib/error-keys'
+import { useT } from '../../../hooks/useT'
 
 export interface ErrorFallbackProps {
   /** The Error object that was thrown */
@@ -45,13 +42,6 @@ const ICON_BY_TYPE = {
   [ErrorType.UNKNOWN]: ExclamationCircleIcon,
 }
 
-const TITLE_BY_TYPE = {
-  [ErrorType.NETWORK]: 'Connection Issue',
-  [ErrorType.SERVER]: 'Service Temporarily Unavailable',
-  [ErrorType.CLIENT]: 'Content Not Found',
-  [ErrorType.UNKNOWN]: 'Oops! Something went wrong',
-}
-
 export function ErrorFallback({
   error,
   errorType,
@@ -59,8 +49,11 @@ export function ErrorFallback({
   showDetails = false,
   statusPageUrl,
 }: ErrorFallbackProps) {
+  const t = useT()
   const resolvedType = errorType ?? detectErrorType(error)
-  const userMessage = getUserFriendlyErrorMessage(error)
+  // Both the title and the body come from the same resolved category, so a
+  // 404 can no longer show the UNKNOWN body under "Content Not Found".
+  const userMessage = t(errorMessageKey(resolvedType))
   const showStatusLink = resolvedType === ErrorType.SERVER && !!statusPageUrl && isSafeHttpUrl(statusPageUrl)
 
   return (
@@ -70,11 +63,11 @@ export function ErrorFallback({
         size="2xl"
         color="secondary"
         className="mb-6"
-        aria-label="Error"
+        aria-label={t('errors.a11y.error_icon')}
       />
 
       <Heading level="h3" className="mb-2">
-        {TITLE_BY_TYPE[resolvedType]}
+        {t(errorTitleKey(resolvedType))}
       </Heading>
 
       <p
@@ -87,16 +80,19 @@ export function ErrorFallback({
 
       {showStatusLink && (
         <p className="text-base sm:text-lg font-light text-gray-700 mb-6 max-w-md">
-          Check our{' '}
-          <a
-            href={statusPageUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-teal-600 hover:text-teal-700 underline"
-          >
-            status page
-          </a>{' '}
-          for updates.
+          {t.rich('errors.general.status_page_hint', {
+            link: (
+              <a
+                key="status-page"
+                href={statusPageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-teal-600 hover:text-teal-700 underline"
+              >
+                {t('errors.general.status_page_link')}
+              </a>
+            ),
+          })}
         </p>
       )}
 
@@ -118,10 +114,10 @@ export function ErrorFallback({
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Button onClick={resetError} variant="secondary" size="md">
-          Try Again
+          {t('errors.general.try_again')}
         </Button>
         <Button href="/" variant="outline" size="md">
-          Back to Home
+          {t('errors.general.back_to_home')}
         </Button>
       </div>
     </div>

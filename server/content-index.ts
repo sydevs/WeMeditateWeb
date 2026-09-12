@@ -26,6 +26,7 @@ import {
   meditationCardsFromUserChoices,
   type ContentIndexBlockFields,
   type ResolvedCardItem,
+  type PageTagLabels,
 } from '../lib/cms-blocks'
 import { audienceIdList } from './cms-client'
 // Type-only import (erased at build): the songs index resolves to MusicLibrary tracks.
@@ -76,7 +77,9 @@ const QUERY_BY_TYPE: Record<
     select:
       'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true&select[filename]=true',
     populate:
-      'populate[albums][artist]=true&populate[albums][artistUrl]=true&populate[albums][artwork]=true&populate[song-tags][slug]=true&populate[images][url]=true&populate[images][filename]=true',
+      // `song-tags[title]` is what the filter pills show. Without it the
+      // label had to be title-cased from the slug, which was English-only.
+      'populate[albums][artist]=true&populate[albums][artistUrl]=true&populate[albums][artwork]=true&populate[song-tags][slug]=true&populate[song-tags][title]=true&populate[images][url]=true&populate[images][filename]=true',
     depth: 2,
   },
 }
@@ -88,6 +91,12 @@ interface ResolveOptions {
   /** The site's fixed audiences (WmWebConfig.audiences), passed to the lectures
    * `/for-audience` feed so it resolves server-side. */
   audiences?: (number | Audience)[]
+  /**
+   * Visible labels for the page-tag facets, from the CMS
+   * (`article.general.tag_*`). `lib/cms-blocks.ts` stays free of the
+   * translations layer: it takes the resolved map, not the accessor.
+   */
+  pageTagLabels?: PageTagLabels
 }
 
 /**
@@ -219,7 +228,7 @@ export function resolveContentIndexItems(
       ? meditationCardsFromUserChoices
       : (docs: Record<string, unknown>[]) =>
           docs
-            .map((doc) => contentIndexCard(doc, fields.type))
+            .map((doc) => contentIndexCard(doc, fields.type, options.pageTagLabels))
             .filter((card): card is ResolvedCardItem => card !== null)
 
   return resolveContentIndex(fields, options, transform)

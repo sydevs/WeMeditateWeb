@@ -10,6 +10,7 @@ import { useState } from 'react'
 import type { WebConfig } from '../server/cms-types'
 import type { NavItem } from '../components/organisms'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
+import { useT } from '../hooks/useT'
 
 export interface SiteNav {
   navItems: NavItem[]
@@ -34,6 +35,7 @@ export function useSiteNav(settings: WebConfig, activeSlug?: string): SiteNav {
   const knowledgePages = settings.knowledgePages ?? []
   const classPages = settings.classPages ?? []
   const featuredArticles = settings.featuredArticles ?? []
+  const t = useT()
 
   const [articlePicks] = useState(() => pickFeaturedArticles(featuredArticles, knowledgePages))
 
@@ -44,11 +46,7 @@ export function useSiteNav(settings: WebConfig, activeSlug?: string): SiteNav {
   }))
 
   if (knowledgePages.length > 0) {
-    // TODO: Source this label from WmWebTranslations.navigation, once that
-    // global is configured in the CMS. For now, use the knowledge group's
-    // first page title. This matches how the footer labels the same group
-    // (localized either way).
-    const knowledgeLabel = knowledgePages[0].title
+    const knowledgeLabel = t('navigation.about_meditation')
 
     navItems.push({
       label: knowledgeLabel,

@@ -1,6 +1,7 @@
 import { redirect } from 'vike/abort';
 import { modifyUrl } from 'vike/modifyUrl'
 import { PageContext } from 'vike/types'
+import { isLocale } from '../server/cms-types'
 
 export function onBeforeRoute(pageContext: PageContext) {
   const { locale, urlWithoutLocale } = extractLocale(pageContext.urlParsed)
@@ -25,7 +26,11 @@ function extractLocale(url: PageContext['urlParsed']) {
   let locale = 'en'; // Default locale
   let pathWithoutLocale = pathname === '/' ? '/index' : pathname;
 
-  if (match) {
+  // A segment shaped like a locale but not one the CMS defines is a normal
+  // path segment, not a locale. `/status/` must reach the Pages route, not
+  // become locale `st`. An unknown code then 404s naturally, through the
+  // route it really matched.
+  if (match && isLocale(match[1])) {
     locale = match[1];
     pathWithoutLocale = match[2] ? `/${match[2]}` : '/index';
 

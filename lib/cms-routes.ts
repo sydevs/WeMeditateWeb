@@ -123,7 +123,10 @@ function documentRoutePattern(collection: string, embed: boolean): RegExp {
   let pattern = DOCUMENT_ROUTE_PATTERNS.get(key)
 
   if (!pattern) {
-    pattern = new RegExp(`^(?:/[a-z]{2})?/${collection}/([^/]+)${suffix}/?$`)
+    // The optional locale prefix carries a region for a compound code
+    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as the CMS
+    // stores it: `/pt-br/...` is not a locale prefix.
+    pattern = new RegExp(`^(?:/[a-z]{2}(?:-[A-Z]{2})?)?/${collection}/([^/]+)${suffix}/?$`)
     DOCUMENT_ROUTE_PATTERNS.set(key, pattern)
   }
 

@@ -1,6 +1,7 @@
 import { ComponentProps, ReactNode, useState } from 'react'
 import Masonry from 'react-masonry-css'
 import { Button, Link } from '../../atoms'
+import { useT } from '../../../hooks/useT'
 
 export interface MasonryGridItem {
   /** Unique identifier for the item */
@@ -41,6 +42,7 @@ export function MasonryGrid({
   className = '',
   ...props
 }: MasonryGridProps) {
+  const t = useT()
   const [showAll, setShowAll] = useState(false)
 
   // Determine which items to display
@@ -83,9 +85,11 @@ export function MasonryGrid({
           <Button
             variant="outline"
             onClick={() => setShowAll(true)}
-            aria-label={`Show ${items.length - initialItemCount} more items`}
+            aria-label={t('common.a11y.show_more_items', {
+              count: items.length - initialItemCount,
+            })}
           >
-            Show More
+            {t('common.general.show_more')}
           </Button>
         </div>
       )}

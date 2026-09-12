@@ -185,12 +185,28 @@ describe('contentIndexCard', () => {
     const card = contentIndexCard(
       { id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom', 'technique', 'bogus'] },
       'pages',
+      { wisdom: 'Wisdom', technique: 'Technique' },
     )
 
     expect(card?.tags).toEqual([
       { id: 'wisdom', label: 'Wisdom' },
       { id: 'technique', label: 'Technique' },
     ])
+  })
+
+  it('falls back to the enum value when a page-tag label is missing', () => {
+    // A CMS gap must show the identifier, not an empty pill.
+    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages')
+
+    expect(card?.tags).toEqual([{ id: 'wisdom', label: 'wisdom' }])
+  })
+
+  it('labels page-tag facets from the CMS, in the page locale', () => {
+    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages', {
+      wisdom: 'Sagesse',
+    })
+
+    expect(card?.tags).toEqual([{ id: 'wisdom', label: 'Sagesse' }])
   })
 
   it('attaches lecture facets from populated user-choices (dropping bare ids / empty titles)', () => {
@@ -222,13 +238,17 @@ describe('contentIndexTrack', () => {
     ...over,
   })
 
-  it('maps a song doc to a playable Track (duration 0, tags as songTag slugs)', () => {
+  it('maps a song doc to a playable Track (duration 0, tags as id/label facets)', () => {
     const track = contentIndexTrack({
       id: 10,
       title: 'Raga',
       url: 'https://cdn/audio.mp3',
       album: album(),
-      tags: [{ id: 1, slug: 'strings' }, 42, { id: 2, slug: 'vocal' }],
+      tags: [
+        { id: 1, slug: 'strings', title: 'Strings' },
+        42,
+        { id: 2, slug: 'vocal', title: 'Vocal' },
+      ],
     })
 
     expect(track).toEqual({
@@ -238,8 +258,30 @@ describe('contentIndexTrack', () => {
       creditURL: 'https://example.com/artist',
       thumbnailURL: 'https://imagedelivery.net/acct/img/',
       duration: 0,
-      tags: ['strings', 'vocal'],
+      tags: [
+        { id: 'strings', label: 'Strings' },
+        { id: 'vocal', label: 'Vocal' },
+      ],
     })
+  })
+
+  it('labels a song tag from its CMS title, falling back to the slug', () => {
+    // The label used to be title-cased from the slug, which only ever
+    // produced English. An untitled tag now shows its slug instead.
+    const track = contentIndexTrack({
+      id: 10,
+      title: 'Raga',
+      url: 'https://cdn/audio.mp3',
+      tags: [
+        { id: 1, slug: 'wind-instruments', title: 'Instruments à vent' },
+        { id: 2, slug: 'vocal' },
+      ],
+    })
+
+    expect(track?.tags).toEqual([
+      { id: 'wind-instruments', label: 'Instruments à vent' },
+      { id: 'vocal', label: 'vocal' },
+    ])
   })
 
   it('returns null for a song with no playable url', () => {

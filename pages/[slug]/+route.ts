@@ -28,8 +28,9 @@ export default function route(pageContext: { urlPathname: string }) {
     return false
   }
 
-  // Do not match locale-prefixed routes (handled by [locale]/[slug])
-  if (urlPathname.match(/^\/[a-z]{2}\//)) {
+  // Do not match locale-prefixed routes (handled by [locale]/[slug]).
+  // A compound code carries an upper-case region (`/pt-BR/`, `/en-AU/`).
+  if (urlPathname.match(/^\/[a-z]{2}(-[A-Z]{2})?\//)) {
     return false
   }
 

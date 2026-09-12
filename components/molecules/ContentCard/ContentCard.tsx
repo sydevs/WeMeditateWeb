@@ -4,6 +4,7 @@ import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../atoms/Link'
 import { Button } from '../../atoms/Button/Button'
 import { Badge } from '../../atoms/Badge/Badge'
+import { useT } from '../../../hooks/useT'
 import { Placeholder } from '../../atoms/Placeholder/Placeholder'
 import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
@@ -154,6 +155,7 @@ export function ContentCard({
   className = '',
   ...props
 }: ContentCardProps) {
+  const t = useT()
   // A card with no loadable image renders a placeholder, not an <img>. Its
   // onLoad event never fires, so fadeInOnLoad would leave the card stuck at
   // opacity-0. Start "loaded" when there is no image src to wait for.
@@ -210,7 +212,7 @@ export function ContentCard({
         {showPlayButton && (
           <div className="absolute inset-0 flex items-center justify-center">
             <Button
-              aria-label={`Play ${title}`}
+              aria-label={t('media.a11y.play_item', { title })}
               className="shadow-lg transition-transform duration-200 group-hover:scale-110"
               href={href}
               icon={PlayIcon}
@@ -227,7 +229,7 @@ export function ContentCard({
           <div className="absolute bottom-2 left-2 flex gap-2">
             {durationMinutes !== undefined && (
               <Badge color="primary" shape="circular">
-                {durationMinutes} min
+                {t('media.general.duration_minutes', { count: durationMinutes })}
               </Badge>
             )}
             {badge && (

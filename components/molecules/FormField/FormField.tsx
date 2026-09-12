@@ -1,4 +1,5 @@
 import { ComponentProps, ReactNode } from 'react'
+import { useT } from '../../../hooks/useT'
 
 export interface FormFieldProps {
   /**
@@ -85,6 +86,8 @@ export function FormField({
   disabled = false,
   align = 'left',
 }: FormFieldProps) {
+  const t = useT()
+
   const alignStyles = align === 'center' ? 'text-center' : 'text-left'
   const labelStyles = 'block text-sm font-medium text-gray-900 mb-1'
   const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : ''
@@ -106,7 +109,7 @@ export function FormField({
       >
         {label}
         {required && (
-          <span className="text-error ml-1" aria-label="required">
+          <span className="text-error ml-1" aria-label={t('forms.a11y.required_marker')}>
             *
           </span>
         )}

@@ -7,6 +7,8 @@ import { leadSplashFromRouteData } from '../lib/cms-blocks'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
+import { localeEndonym } from '../lib/locale-names'
+import { useT } from '../hooks/useT'
 
 /**
  * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
@@ -22,7 +24,8 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     collection?: string
     initialData?: Page
   }>()
-  const { locale } = usePageContext()
+  const { locale, urlPathname } = usePageContext()
+  const t = useT()
   const settings = data?.settings
 
   // When the page leads with a Splash, overlay the header on it: transparent,
@@ -74,7 +77,7 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
 
   if (knowledgePages.length > 0) {
     footerSections.push({
-      title: knowledgePages[0].title,
+      title: t('navigation.about_meditation'),
       links: knowledgePages.map((page) => ({
         text: page.title,
         href: '/' + page.slug,
@@ -84,7 +87,7 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
 
   if (infoPages.length > 0) {
     footerSections.push({
-      title: 'Info',
+      title: t('footer.info'),
       links: infoPages.map((page) => ({
         text: page.title,
         href: '/' + page.slug,
@@ -99,15 +102,18 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     { platform: 'youtube' as const, href: 'https://youtube.com/wemeditate' },
   ]
 
-  // TODO: Configure languages from settings when available
-  // TODO: Update hrefs to switch to the current page in the selected language
-  const languages = [
-    { code: 'en' as const, label: 'English', flagCode: 'gb', href: '/' },
-    { code: 'es' as const, label: 'Español', flagCode: 'es', href: '/es' },
-    { code: 'de' as const, label: 'Deutsch', flagCode: 'de', href: '/de' },
-    { code: 'it' as const, label: 'Italiano', flagCode: 'it', href: '/it' },
-    { code: 'fr' as const, label: 'Français', flagCode: 'fr', href: '/fr' },
-  ]
+  // The locales the CMS says this site offers, each linking to the current
+  // page in that language rather than to its home page. `urlPathname` is
+  // already stripped of the locale prefix by +onBeforeRoute, and `/index`
+  // is its spelling of `/`. Adding the prefix back is `Link`'s job — the
+  // dropdown passes each option's own `locale` — so "English is served
+  // bare" keeps one owner.
+  const pathWithoutLocale = urlPathname === '/index' ? '/' : urlPathname
+  const languages = (settings.availableLocales ?? []).map((code) => ({
+    code,
+    label: localeEndonym(code),
+    href: pathWithoutLocale,
+  }))
 
   const header = (
     <div className="max-w-7xl mx-auto px-6 w-full">
@@ -153,8 +159,8 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
       </main>
 
       <Footer
-        copyrightText={`© WeMeditate, ${new Date().getFullYear()}`}
-        currentLanguage={locale as any}
+        copyrightText={t('footer.copyright', { year: new Date().getFullYear() })}
+        currentLanguage={locale}
         heroLinks={footerHeroLinks}
         languages={languages}
         locale={locale}

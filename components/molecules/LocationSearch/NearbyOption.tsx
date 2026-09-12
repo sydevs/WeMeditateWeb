@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Spinner } from '../../atoms'
+import { useT } from '../../../hooks/useT'
 
 /**
  * Geolocation state
@@ -27,6 +28,7 @@ interface NearbyOptionProps {
  * current location from the browser's Geolocation API.
  */
 export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProps) {
+  const t = useT()
   const [geolocationState, setGeolocationState] = useState<GeolocationState>('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
 
@@ -39,7 +41,7 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
   const handleNearbyClick = () => {
     if (!navigator.geolocation) {
       setGeolocationState('error')
-      setErrorMessage('Geolocation is not supported by your browser')
+      setErrorMessage(t('location.general.geolocation_unsupported'))
       return
     }
 
@@ -51,7 +53,7 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
       (position) => {
         setGeolocationState('idle')
         onLocationSelect({
-          name: 'Current Location',
+          name: t('location.general.current_location'),
           coordinates: {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -64,16 +66,16 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            setErrorMessage('Location access denied')
+            setErrorMessage(t('location.general.permission_denied'))
             break
           case error.POSITION_UNAVAILABLE:
-            setErrorMessage('Location unavailable')
+            setErrorMessage(t('location.general.position_unavailable'))
             break
           case error.TIMEOUT:
-            setErrorMessage('Location request timed out')
+            setErrorMessage(t('location.general.timed_out'))
             break
           default:
-            setErrorMessage('Unable to retrieve location')
+            setErrorMessage(t('location.general.location_failed'))
         }
       }
     )
@@ -91,13 +93,13 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
       {geolocationState === 'loading' ? (
         <>
           <Spinner size="xs" color="currentColor" />
-          <span>Getting location...</span>
+          <span>{t('location.general.getting_location')}</span>
         </>
       ) : (
         <>
           <MapPinIcon className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">
-            <div>Nearby</div>
+            <div>{t('location.general.nearby')}</div>
             {geolocationState === 'error' && errorMessage && (
               <div className="text-xs text-error mt-0.5">{errorMessage}</div>
             )}

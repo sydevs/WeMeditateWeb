@@ -20,7 +20,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track1/800/800',
     duration: 196,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
@@ -29,7 +29,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track2/800/800',
     duration: 242,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
@@ -38,7 +38,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track3/800/800',
     duration: 318,
-    tags: ['vocal'],
+    tags: [{ id: 'vocal', label: 'Vocal' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
@@ -47,7 +47,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track4/800/800',
     duration: 281,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
@@ -56,7 +56,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track5/800/800',
     duration: 224,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
@@ -65,7 +65,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track6/800/800',
     duration: 267,
-    tags: ['vocal'],
+    tags: [{ id: 'vocal', label: 'Vocal' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
@@ -74,7 +74,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track7/800/800',
     duration: 193,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
@@ -83,7 +83,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track8/800/800',
     duration: 305,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
@@ -92,7 +92,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track9/800/800',
     duration: 289,
-    tags: ['vocal'],
+    tags: [{ id: 'vocal', label: 'Vocal' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
@@ -101,7 +101,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track10/800/800',
     duration: 254,
-    tags: ['strings'],
+    tags: [{ id: 'strings', label: 'Strings' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3',
@@ -110,7 +110,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track11/800/800',
     duration: 276,
-    tags: ['wind'],
+    tags: [{ id: 'wind', label: 'Wind' }],
   },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3',
@@ -119,7 +119,7 @@ const sampleTracks: Track[] = [
     creditURL: '#',
     thumbnailURL: 'https://picsum.photos/seed/track12/800/800',
     duration: 312,
-    tags: ['vocal'],
+    tags: [{ id: 'vocal', label: 'Vocal' }],
   },
 ]
 

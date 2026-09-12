@@ -1,5 +1,6 @@
 import { ComponentProps, useState } from 'react'
 import { AudioPlayer, Playlist, Track, MusicFilter } from '../../molecules'
+import { useT } from '../../../hooks/useT'
 import { Image } from '../../atoms'
 
 export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children'> {
@@ -41,6 +42,7 @@ export function MusicLibrary({
   className = '',
   ...props
 }: MusicLibraryProps) {
+  const t = useT()
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
 
@@ -111,7 +113,7 @@ export function MusicLibrary({
               currentTrackIndex={currentTrackIndex}
               filters={filters}
               selectedFilter={selectedFilter}
-              title="Playlist"
+              title={t('media.general.playlist')}
               tracks={tracks}
               onFilterChange={handleFilterClick}
               onTrackClick={handleTrackClick}

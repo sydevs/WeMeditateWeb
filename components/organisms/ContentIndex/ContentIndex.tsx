@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '../../atoms'
 import { ContentGrid } from '../../molecules'
 import type { ResolvedCardItem } from '../../../lib/cms-blocks'
+import { useT } from '../../../hooks/useT'
 
 export interface ContentIndexProps {
   /** Server-resolved cards. Each item's `tags` drive the filter pills. */
@@ -82,14 +83,16 @@ function Pill({
  * consumer appears.
  */
 function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) {
+  const t = useT()
+
   return (
     <div
-      aria-label="Filter content by tag"
+      aria-label={t('article.a11y.filter_label')}
       className="flex flex-wrap justify-center gap-2 mb-6"
       role="group"
     >
       <Pill active={selected.size === 0} onClick={onClear}>
-        All
+        {t('article.general.filter_all')}
       </Pill>
       {facets.map((facet) => (
         <Pill key={facet.id} active={selected.has(facet.id)} onClick={() => onToggle(facet.id)}>

@@ -138,7 +138,7 @@ export function Playlist({
 }: PlaylistProps) {
   // Filter tracks based on selected filter using tags
   const filteredTracks = selectedFilter
-    ? tracks.filter((track) => track.tags?.includes(selectedFilter))
+    ? tracks.filter((track) => track.tags?.some((tag) => tag.id === selectedFilter))
     : tracks
 
   return (
