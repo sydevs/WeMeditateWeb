@@ -21,7 +21,7 @@ import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './cms-client'
 import type { Locale, WebConfig, WebTranslations } from './cms-types'
-import { createT, EN_TRANSLATIONS, type TFunction } from '../lib/i18n'
+import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
 export interface SiteContext {
   settings: WebConfig
@@ -128,5 +128,7 @@ async function load(pageContext: PageContextServer): Promise<SiteContext> {
     throw render(404, `Locale "${locale}" is not available.`)
   }
 
-  return { settings, translations, locale, t: createT(translations, locale) }
+  // `getT`, not `createT`: `useT()` builds the component tree's accessor the
+  // same way, so both sides of a render share one closure pair per request.
+  return { settings, translations, locale, t: getT(translations, locale) }
 }
