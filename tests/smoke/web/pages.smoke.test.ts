@@ -49,11 +49,32 @@ describe('web preview pages', () => {
     expectRenders(page, `/${slug}`)
   })
 
-  it('a non-English locale homepage renders', async () => {
-    // Locale roots live without a trailing slash ("/es/" 301s to "/es").
-    const es = await fetchPage('/es')
+  it('a non-English locale homepage renders', async (ctx) => {
+    // Ask the CMS which locales the site offers rather than hardcoding one.
+    // A prefix outside `availableLocales` now 404s by design, so a spec
+    // pinned to "/es" would fail the day an editor stops offering Spanish —
+    // and reports that as a broken deploy rather than a config change.
+    const offered = (await discoverFromCms())?.availableLocales ?? []
+    const locale = offered.find((code) => code !== 'en')
 
-    expectRenders(es, '/es')
+    ctx.skip(
+      !locale,
+      'the site offers English only (or no CMS key); nothing to check for a non-English locale',
+    )
+
+    // Locale roots live without a trailing slash ("/es/" 301s to "/es").
+    const page = await fetchPage(`/${locale}`)
+
+    expectRenders(page, `/${locale}`)
+  })
+
+  it('a locale the site does not offer returns 404', async () => {
+    // `availableLocales` is the whole locale set: a prefix outside it is
+    // not a page. "zz" is not a CMS locale at all, so it can never be
+    // offered, whatever an editor configures.
+    const res = await fetchPage('/zz/about')
+
+    expect(res.status, 'an unoffered locale prefix should 404').toBe(404)
   })
 
   it('canonicalizes the default (en) locale away via a 301 redirect', async () => {

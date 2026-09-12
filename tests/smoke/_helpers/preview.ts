@@ -170,6 +170,16 @@ export function headTags(html: string): {
 export interface CmsSamples {
   pageSlug: string | null
   meditationId: string | null
+  /**
+   * The locales the site offers, from `wm-web-config.availableLocales`.
+   *
+   * The non-English spec used to hardcode `/es`. That asserted a CMS
+   * setting an editor controls, so it would fail the day Spanish stopped
+   * being offered — and it fails today on a site whose `availableLocales`
+   * is still empty. Reading the real set makes the spec test the site's
+   * own configuration instead of an assumption about it.
+   */
+  availableLocales: string[]
 }
 
 /**
@@ -219,6 +229,28 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
   )
   const headers = { Authorization: `clients API-Key ${apiKey}` }
 
+  /** A single JSON document, or null with the reason logged. */
+  const getJson = async (path: string): Promise<Record<string, unknown> | null> => {
+    try {
+      const res = await fetch(`${base}/api/${path}`, {
+        headers,
+        signal: AbortSignal.timeout(15_000),
+      })
+
+      if (!res.ok) {
+        console.warn(`[discoverFromCms] GET /api/${path.split('?')[0]} → HTTP ${res.status}`)
+
+        return null
+      }
+
+      return (await res.json()) as Record<string, unknown>
+    } catch (err) {
+      console.warn(`[discoverFromCms] GET /api/${path.split('?')[0]} → ${(err as Error).message}`)
+
+      return null
+    }
+  }
+
   const firstDoc = async (path: string): Promise<Record<string, unknown> | null> => {
     const collection = path.split('?')[0]
 
@@ -265,9 +297,12 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
   })
   const page = await firstDoc(`pages?${pageQuery}`)
   const meditation = await firstDoc(`meditations?${meditationQuery}`)
+  const config = await getJson('globals/wm-web-config?depth=0&select[availableLocales]=true')
+  const locales = config?.availableLocales
 
   return {
     pageSlug: typeof page?.slug === 'string' ? page.slug : null,
     meditationId: meditation?.id != null ? String(meditation.id) : null,
+    availableLocales: Array.isArray(locales) ? locales.filter((l) => typeof l === 'string') : [],
   }
 }
