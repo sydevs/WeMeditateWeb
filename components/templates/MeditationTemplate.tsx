@@ -19,6 +19,7 @@ import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationP
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/cms-relationships'
+import { useT } from '../../hooks/useT'
 
 export interface MeditationTemplateProps {
   /**
@@ -70,6 +71,7 @@ export function MeditationTemplate({
   showEmbedButton = true,
   showRelated = false,
 }: MeditationTemplateProps) {
+  const t = useT()
   // Get CMS base URL for building full frame URLs
   const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
   const resolveMediaUrl = (url: string): string => {
@@ -158,8 +160,8 @@ export function MeditationTemplate({
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-900 mb-2">Error</h2>
-          <p className="text-red-700">This meditation is missing a required audio URL.</p>
+          <h2 className="text-xl font-bold text-red-900 mb-2">{t('errors.general.heading')}</h2>
+          <p className="text-red-700">{t('meditation.general.missing_audio')}</p>
         </div>
       </div>
     )
@@ -186,7 +188,7 @@ export function MeditationTemplate({
           timeDisplay={timeDisplay}
           track={{
             url: meditation.url,
-            title: meditation.title || 'Untitled Meditation',
+            title: meditation.title || t('meditation.general.untitled'),
             credit: '',
             creditURL: '',
             thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
@@ -205,7 +207,8 @@ export function MeditationTemplate({
         <RelatedContentLoader
           anchorId={meditation.id}
           kind="related-lectures"
-          title="Related lectures"
+          loadingLabel={t('meditation.a11y.related_lectures_loading')}
+          title={t('meditation.general.related_lectures')}
         />
       ) : null}
     </>

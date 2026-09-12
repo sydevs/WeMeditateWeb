@@ -2,6 +2,7 @@ import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/o
 import { usePageContext } from 'vike-react/usePageContext'
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
+import { useT } from '../../../hooks/useT'
 
 /** Fixed iframe geometry and permissions for the generated embed snippet. */
 const IFRAME_WIDTH = 560
@@ -58,6 +59,7 @@ export function EmbedButton({
   origin,
   className = '',
 }: EmbedButtonProps) {
+  const t = useT()
   // Resolve locale in this order: the locale prop, then page context, then
   // 'en'. This tolerates environments, for example Ladle, that have no page
   // context, the same approach as Link.
@@ -90,17 +92,17 @@ export function EmbedButton({
           tabIndex={-1}
           variant="ghost"
         >
-          Embed
+          {t('media.general.embed')}
         </Button>
       }
     >
       <div className="flex flex-col gap-3 p-4">
         <p className="text-sm font-medium text-gray-700">
-          {title ? `Embed “${title}”` : 'Embed this player'}
+          {title ? t('media.general.embed_title', { title }) : t('media.general.embed_player')}
         </p>
         <textarea
           readOnly
-          aria-label="Embed code"
+          aria-label={t('media.a11y.embed_code')}
           className="w-full resize-none border border-gray-200 bg-gray-50 p-2 font-mono text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
           rows={3}
           value={snippet}
@@ -111,7 +113,7 @@ export function EmbedButton({
           size="sm"
           onClick={() => void copy(snippet)}
         >
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? t('media.general.copied') : t('media.general.copy')}
         </Button>
       </div>
     </Dropdown>

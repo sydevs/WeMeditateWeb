@@ -11,6 +11,7 @@ import {
   isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
 import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
+import { useT } from '../../../hooks/useT'
 
 const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px'
 
@@ -183,6 +184,7 @@ export function Image({
   onError,
   ...props
 }: ImageProps) {
+  const t = useT()
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -354,7 +356,7 @@ export function Image({
     return (
       <button
         aria-haspopup="dialog"
-        aria-label={alt ? `View image: ${alt}` : 'View image'}
+        aria-label={alt ? t('media.a11y.view_image_alt', { alt }) : t('media.a11y.view_image')}
         className={`${containerClasses} block w-full cursor-zoom-in appearance-none border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2`}
         type="button"
         onClick={() => lightbox.openAt(lightboxGroup, lightboxIndex)}

@@ -10,6 +10,12 @@ export interface RelatedContentLoaderProps {
   /** Section heading, for example "Related meditations" or "Related lectures". */
   title: string
   /**
+   * Screen-reader label for the loading spinner. Supplied rather than
+   * derived from `title`: lowercasing a heading to build "Loading related
+   * meditations" only composes a sentence in English.
+   */
+  loadingLabel: string
+  /**
    * Which same-origin JSON route to load (see server/api-routes.ts):
    * - `related-meditations` for a lecture anchor
    * - `related-lectures` for a meditation anchor
@@ -37,6 +43,7 @@ export interface RelatedContentLoaderProps {
  */
 export function RelatedContentLoader({
   title,
+  loadingLabel,
   kind,
   anchorId,
   className,
@@ -77,7 +84,7 @@ export function RelatedContentLoader({
       <section aria-busy className={`mt-10 sm:mt-12 ${className ?? ''}`}>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">{title}</h2>
         <div className="flex justify-center py-8">
-          <Spinner label={`Loading ${title.toLowerCase()}`} size="lg" />
+          <Spinner label={loadingLabel} size="lg" />
         </div>
       </section>
     )

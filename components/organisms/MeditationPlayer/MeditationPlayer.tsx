@@ -25,6 +25,7 @@ import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
 import type { MeditationSong } from '../../../server/cms-types'
 import founderImage from '../../../assets/smnd.webp'
+import { useT } from '../../../hooks/useT'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
 
@@ -138,8 +139,14 @@ export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'titl
 }
 
 interface VolumeRowProps {
-  /** Visible label, for example "Voice" or "Music". Also names the control aria-labels. */
+  /** Visible label, for example "Voice" or "Music". */
   label: string
+  /** Screen-reader label for the mute button while unmuted. */
+  muteLabel: string
+  /** Screen-reader label for the mute button while muted. */
+  unmuteLabel: string
+  /** Screen-reader label for the volume slider. */
+  volumeLabel: string
   /** Optional secondary text next to the label, for example the music track title. */
   sublabel?: string
   /** Current volume, 0 to 1. */
@@ -159,6 +166,9 @@ interface VolumeRowProps {
  */
 function VolumeRow({
   label,
+  muteLabel,
+  unmuteLabel,
+  volumeLabel,
   sublabel,
   volume,
   muted,
@@ -166,7 +176,6 @@ function VolumeRow({
   onToggleMute,
   action,
 }: VolumeRowProps) {
-  const labelLower = label.toLowerCase()
 
   return (
     <div className="flex flex-col gap-1">
@@ -178,14 +187,14 @@ function VolumeRow({
       </p>
       <div className="flex items-center gap-2">
         <Button
-          aria-label={muted ? `Unmute ${labelLower}` : `Mute ${labelLower}`}
+          aria-label={muted ? unmuteLabel : muteLabel}
           icon={muted ? SpeakerXMarkIcon : SpeakerWaveIcon}
           size="md"
           variant="ghost"
           onClick={onToggleMute}
         />
         <input
-          aria-label={`${label} volume`}
+          aria-label={volumeLabel}
           className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-300 accent-teal-600"
           max="1"
           min="0"
@@ -240,15 +249,16 @@ function AudioControls({
   onToggleMusicMute,
   onShuffle,
 }: AudioControlsProps) {
+  const t = useT()
   return (
     <Dropdown
       align="center"
-      ariaLabel="Audio settings"
+      ariaLabel={t('meditation.a11y.audio_settings')}
       role="dialog"
       side="top"
       trigger={
         <Button
-          aria-label="Audio settings"
+          aria-label={t('meditation.a11y.audio_settings')}
           icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
           size="lg"
           variant="ghost"
@@ -260,7 +270,10 @@ function AudioControls({
     >
       <div className="flex w-64 flex-col gap-4 p-4 text-left">
         <VolumeRow
-          label="Voice"
+          label={t('meditation.general.voice')}
+          muteLabel={t('meditation.a11y.mute_voice')}
+          unmuteLabel={t('meditation.a11y.unmute_voice')}
+          volumeLabel={t('meditation.a11y.voice_volume')}
           muted={voiceMuted}
           volume={voiceVolume}
           onToggleMute={onToggleVoiceMute}
@@ -271,9 +284,9 @@ function AudioControls({
           <VolumeRow
             action={
               canShuffle ? (
-                <Tooltip label="Change background music track">
+                <Tooltip label={t('meditation.general.change_music')}>
                   <Button
-                    aria-label="Shuffle music track"
+                    aria-label={t('meditation.a11y.shuffle_music')}
                     icon={ArrowPathRoundedSquareIcon}
                     size="md"
                     variant="ghost"
@@ -282,7 +295,10 @@ function AudioControls({
                 </Tooltip>
               ) : undefined
             }
-            label="Music"
+            label={t('meditation.general.music')}
+            muteLabel={t('meditation.a11y.mute_music')}
+            unmuteLabel={t('meditation.a11y.unmute_music')}
+            volumeLabel={t('meditation.a11y.music_volume')}
             muted={musicMuted}
             sublabel={musicTrackTitle}
             volume={musicVolume}
@@ -353,6 +369,7 @@ function MeditationPlayerInner({
   className = '',
   ...props
 }: MeditationPlayerProps) {
+  const t = useT()
   // react-use-audio-player caches Howl instances in a module-global map,
   // keyed by `src`. So multiple players on one page that share a track URL,
   // for example the Ladle story, would drive one shared audio instance:
@@ -630,12 +647,12 @@ function MeditationPlayerInner({
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
               <p className="text-xs sm:text-sm tracking-widest text-gray-600 uppercase">
-                Meditation
+                {t('meditation.general.label')}
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
               <Avatar
-                alt="Shri Mataji Nirmala Devi"
+                alt={t('meditation.general.founder_name')}
                 className="@4xl:w-32 @4xl:h-32"
                 shape="circle"
                 size="xl"
@@ -643,11 +660,11 @@ function MeditationPlayerInner({
               />
               <div className="text-right">
                 <p className="text-xs @4xl:text-sm font-medium text-gray-800">
-                  Shri Mataji
-                  <br />
-                  Nirmala Devi
+                  {t('meditation.general.founder_name')}
                 </p>
-                <p className="text-xs @4xl:text-sm italic text-gray-600">founder</p>
+                <p className="text-xs @4xl:text-sm italic text-gray-600">
+                  {t('meditation.general.founder_role')}
+                </p>
               </div>
             </div>
           </div>
@@ -700,7 +717,7 @@ function MeditationPlayerInner({
                     className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}
                   >
                     <Button
-                      aria-label={state.isPlaying ? 'Pause' : 'Play'}
+                      aria-label={state.isPlaying ? t('media.a11y.pause') : t('media.a11y.play')}
                       className="border-0 shadow-2xl"
                       icon={state.isPlaying ? PauseIcon : PlayIcon}
                       isLoading={state.isLoading}
@@ -778,7 +795,7 @@ function MeditationPlayerInner({
           <div className="text-center @4xl:text-left @4xl:col-span-3 @4xl:order-1 @4xl:space-y-6">
             {/* Label - hidden on narrow, visible on wide */}
             <p className="hidden @4xl:block text-sm tracking-widest text-gray-600 uppercase mb-8">
-              Meditation
+              {t('meditation.general.label')}
             </p>
 
             {subtitle && (

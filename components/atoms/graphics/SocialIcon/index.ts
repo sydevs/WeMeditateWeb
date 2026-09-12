@@ -1,2 +1,2 @@
-export { SocialIcon } from './SocialIcon'
-export type { SocialIconProps } from './SocialIcon'
+export { SocialIcon, socialPlatformLabel } from './SocialIcon'
+export type { SocialIconProps, SocialPlatform } from './SocialIcon'

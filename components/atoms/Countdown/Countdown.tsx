@@ -1,4 +1,5 @@
 import { ComponentProps, useState, useEffect } from 'react'
+import { useT } from '../../../hooks/useT'
 
 export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Target date/time to count down to (ISO string or Date) */
@@ -83,6 +84,7 @@ export function Countdown({
   className = '',
   ...props
 }: CountdownProps) {
+  const t = useT()
   const timeRemaining = useCountdown(targetDate, onComplete)
   const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
 
@@ -113,7 +115,7 @@ export function Countdown({
             {String(timeRemaining.hours).padStart(2, '0')}
           </span>
           <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-            Hours
+            {t('blocks.general.hours')}
           </span>
         </div>
 
@@ -126,7 +128,7 @@ export function Countdown({
             {String(timeRemaining.minutes).padStart(2, '0')}
           </span>
           <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-            Minutes
+            {t('blocks.general.minutes')}
           </span>
         </div>
 
@@ -139,7 +141,7 @@ export function Countdown({
             {String(timeRemaining.seconds).padStart(2, '0')}
           </span>
           <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-            Seconds
+            {t('blocks.general.seconds')}
           </span>
         </div>
       </div>

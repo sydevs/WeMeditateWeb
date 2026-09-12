@@ -1,6 +1,7 @@
 import { Link } from '../../../atoms'
 import { slugify } from '../../../../lib/slugify'
 import type { TocHeading } from '../../../../lib/cms-blocks'
+import { useT } from '../../../../hooks/useT'
 
 export interface TableOfContentsProps {
   /** Optional heading shown above the list (for example "In this article"). */
@@ -23,6 +24,7 @@ const INDENT_CLASSES = ['pl-0', 'pl-4', 'pl-8', 'pl-12'] as const
  * indented by their level, relative to the shallowest one in the list.
  */
 export function TableOfContents({ title, headings, className = '' }: TableOfContentsProps) {
+  const t = useT()
   const valid = headings.filter((h) => h.text?.trim())
 
   if (valid.length === 0) {
@@ -32,7 +34,7 @@ export function TableOfContents({ title, headings, className = '' }: TableOfCont
 
   return (
     <nav
-      aria-label={title || 'Table of contents'}
+      aria-label={title || t('blocks.a11y.table_of_contents')}
       className={`not-prose my-8 rounded-lg border border-gray-200 bg-gray-50 p-6 ${className}`}
     >
       {title && (

@@ -17,6 +17,8 @@ import type { ResolvedLecture } from '../../server/cms-types'
 import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
+import { useT } from '../../hooks/useT'
+import type { TFunction } from '../../lib/i18n'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -34,10 +36,12 @@ export interface LecturePlayerProps {
  * it with a title and duration, so the player wiring stays identical in both.
  */
 export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
+  const t = useT()
+
   if (!lecture.hlsUrl) {
     return (
       <p className="p-6 text-center text-gray-500">
-        This lecture is missing a playable video source.
+        {t('lecture.general.missing_video')}
       </p>
     )
   }
@@ -76,11 +80,18 @@ export interface LectureTemplateProps {
   showRelated?: boolean
 }
 
-/** Format a length in seconds as a duration label, for example "40 sec" or "20 min". */
-function formatLength(seconds: number): string {
+/**
+ * Format a length in seconds as a duration label, for example "40 sec" or
+ * "20 min". Both keys are plural families, so a locale that inflects the
+ * unit gets the right form. A plain function, not a component, so the
+ * accessor is passed in.
+ */
+function formatLength(seconds: number, t: TFunction): string {
   const total = Math.max(0, Math.round(seconds))
 
-  return total < 60 ? `${total} sec` : `${Math.floor(total / 60)} min`
+  return total < 60
+    ? t('media.general.duration_seconds', { count: total })
+    : t('media.general.duration_minutes', { count: Math.floor(total / 60) })
 }
 
 export function LectureTemplate({
@@ -89,6 +100,7 @@ export function LectureTemplate({
   showEmbedButton = true,
   showRelated = false,
 }: LectureTemplateProps) {
+  const t = useT()
   // A clip shows its playable window length. A full lecture shows the whole
   // source duration.
   const windowSeconds =
@@ -104,8 +116,8 @@ export function LectureTemplate({
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-900 mb-2">Error</h2>
-          <p className="text-red-700">This lecture is missing a playable video source.</p>
+          <h2 className="text-xl font-bold text-red-900 mb-2">{t('errors.general.heading')}</h2>
+          <p className="text-red-700">{t('lecture.general.missing_video')}</p>
         </div>
       </div>
     )
@@ -120,7 +132,7 @@ export function LectureTemplate({
       <div className="flex items-center gap-3">
         {displaySeconds > 0 ? (
           <Badge color="primary" shape="circular">
-            {formatLength(displaySeconds)}
+            {formatLength(displaySeconds, t)}
           </Badge>
         ) : null}
         {showEmbedButton ? (
@@ -141,7 +153,8 @@ export function LectureTemplate({
         <RelatedContentLoader
           anchorId={lecture.id}
           kind="related-meditations"
-          title="Related meditations"
+          loadingLabel={t('lecture.a11y.related_meditations_loading')}
+          title={t('lecture.general.related_meditations')}
         />
       ) : null}
     </article>
