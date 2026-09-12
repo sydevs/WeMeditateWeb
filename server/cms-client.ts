@@ -36,6 +36,7 @@ import type {
   AuthorsSelect,
   VideosSelect,
   WmWebConfigSelect,
+  WmWebTranslationsSelect,
   Audience,
 } from './payload-types'
 import type {
@@ -43,11 +44,13 @@ import type {
   Page,
   Song,
   WebConfig,
+  WebTranslations,
   PageListItem,
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
 } from './cms-types'
+import { DEFAULT_LOCALE, isLocale } from './cms-types'
 
 // ============================================================================
 // Common Options Interfaces
@@ -176,6 +179,7 @@ const PAGE_POPULATE = {
 /** Global config fields: `pages` relationships the layout + home page need, plus
  * `audiences` (the site's fixed audience set the lectures /for-audience feed uses). */
 const WEB_CONFIG_SELECT = {
+  availableLocales: true,
   homePage: true,
   featuredPages: true,
   featuredArticles: true,
@@ -544,14 +548,86 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
         })
       }
 
+      // An unconfigured global offers English only. Never return an empty
+      // set: `loadSiteContext` 404s any locale outside it, so an empty
+      // array would 404 the whole site, English included.
+      const availableLocales = (config.availableLocales ?? []).filter(isLocale)
+
       return {
         ...config,
+        availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
         featuredPages: featured.published,
         featuredArticles: featuredArticles.published,
         classPages: classPages.published,
         knowledgePages: knowledgePages.published,
         infoPages: infoPages.published,
       } as WebConfig
+    },
+  })
+}
+
+/**
+ * Every translations tab the site renders. Typed against the generated
+ * select interface, so a tab renamed upstream is a compile error here
+ * rather than a silent group of missing strings.
+ */
+const WEB_TRANSLATIONS_SELECT = {
+  common: true,
+  navigation: true,
+  footer: true,
+  errors: true,
+  article: true,
+  meditation: true,
+  lecture: true,
+  map: true,
+  forms: true,
+  media: true,
+  location: true,
+  blocks: true,
+} satisfies WmWebTranslationsSelect<true>
+
+/**
+ * Gets the UI strings for a locale, from the `wm-web-translations` global.
+ *
+ * The CMS fills a blank or missing key from English on every API-client
+ * read (SahajCloud #705), so the site does no merge of its own: what comes
+ * back is already complete for the locale.
+ *
+ * Cached at `CacheTTL.SETTINGS`, the same 24 h window as the config, since
+ * the two are read together on every request. Preview bypasses the cache.
+ * Errors propagate; `loadSiteContext` degrades to the committed English
+ * snapshot rather than failing the page.
+ *
+ * @param options.locale - The locale to retrieve strings in
+ * @param options.preview - If true, fetch with preview credentials and bypass the cache
+ */
+export async function getWebTranslations(options: {
+  locale: Locale
+  preview?: boolean
+  previewSecret?: string
+}): Promise<WebTranslations> {
+  const isPreview = options.preview === true
+  const cacheKey = generateCacheKey('web-translations', { locale: options.locale })
+
+  return withCache({
+    cacheKey,
+    ttl: CacheTTL.SETTINGS,
+    bypassCache: isPreview,
+    fetchFn: async () => {
+      const client = createPayloadClient({
+        preview: isPreview,
+        previewSecret: options.previewSecret,
+      })
+
+      const translations = await client.findGlobal({
+        slug: 'wm-web-translations',
+        // The groups hold plain strings. Nothing to populate.
+        depth: 0,
+        locale: options.locale,
+        select: WEB_TRANSLATIONS_SELECT,
+      })
+
+      return translations as WebTranslations
     },
   })
 }

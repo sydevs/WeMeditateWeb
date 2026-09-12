@@ -23,6 +23,12 @@ export default {
   description:
     'Discover free guided meditations, music, and articles to learn and deepen your meditation practice.',
 
+  // `translations` is filled by +onBeforeRender from the CMS. The client
+  // needs it so `useT()` resolves the same strings during hydration as the
+  // server rendered. `locale` already reaches the client through vike-react.
+  // https://vike.dev/passToClient
+  passToClient: ['translations'],
+
   extends: [vikeReact, vikePhoton],
   port: 5173,
 

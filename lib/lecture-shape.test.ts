@@ -128,7 +128,7 @@ describe('resolveLecture', () => {
       id: 2,
       type: 'clip',
       title: 'A Clip',
-      metadata: null,
+      metadata: undefined,
       startTime: 60,
       stopTime: 180,
       fullLecture: makeLecture({ id: 1, type: 'full', metadata: FULL_METADATA }),
@@ -152,7 +152,7 @@ describe('resolveLecture', () => {
     const clip = makeLecture({
       id: 3,
       type: 'clip',
-      metadata: null,
+      metadata: undefined,
       subtitles: [{ locale: 'fr', url: 'https://clip/fr.vtt' }],
       fullLecture: makeLecture({ id: 1, type: 'full', metadata: FULL_METADATA }),
     })
@@ -167,7 +167,7 @@ describe('resolveLecture', () => {
     const clip = makeLecture({
       id: 4,
       type: 'clip',
-      metadata: null,
+      metadata: undefined,
       fullLecture: 99, // bare id (e.g. preview at insufficient depth)
     })
 
