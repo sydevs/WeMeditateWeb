@@ -99,12 +99,12 @@ export function pluralize(
 export type TranslationKey = {
   [Tab in keyof WebTranslations]: WebTranslations[Tab] extends Record<string, unknown>
     ? {
-        [Sub in keyof WebTranslations[Tab]]: WebTranslations[Tab][Sub] extends
-          | string
-          | undefined
+        [Sub in keyof WebTranslations[Tab]]: WebTranslations[Tab][Sub] extends string | undefined
           ? `${Tab & string}.${StripPlural<Sub & string>}`
           : {
-              [Key in keyof WebTranslations[Tab][Sub]]: `${Tab & string}.${Sub & string}.${StripPlural<Key & string>}`
+              [
+                Key in keyof WebTranslations[Tab][Sub]
+              ]: `${Tab & string}.${Sub & string}.${StripPlural<Key & string>}`
             }[keyof WebTranslations[Tab][Sub]]
       }[keyof WebTranslations[Tab]]
     : never
@@ -194,7 +194,11 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
 
     RICH_PLACEHOLDER.lastIndex = 0
 
-    for (let match = RICH_PLACEHOLDER.exec(template); match; match = RICH_PLACEHOLDER.exec(template)) {
+    for (
+      let match = RICH_PLACEHOLDER.exec(template);
+      match;
+      match = RICH_PLACEHOLDER.exec(template)
+    ) {
       if (match.index > lastIndex) parts.push(template.slice(lastIndex, match.index))
       parts.push(match[1] in nodes ? nodes[match[1]] : match[0])
       lastIndex = match.index + match[0].length

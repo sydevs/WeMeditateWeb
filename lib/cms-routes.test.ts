@@ -84,6 +84,17 @@ describe('matchDocumentRoute', () => {
       })
     })
 
+    it('matches a compound locale prefix, region included', () => {
+      // `pt-BR` and `en-AU` carry an upper-case region, exactly as the CMS
+      // stores them. A lower-cased region is not a locale prefix.
+      expect(matchDocumentRoute('meditations', '/pt-BR/meditations/123')).toEqual({
+        routeParams: { id: '123' },
+      })
+      expect(matchDocumentRoute('meditations', '/en-AU/meditations/123')).toEqual({
+        routeParams: { id: '123' },
+      })
+    })
+
     it('tolerates a trailing slash', () => {
       expect(matchDocumentRoute('meditations', '/meditations/123/')).toEqual({
         routeParams: { id: '123' },

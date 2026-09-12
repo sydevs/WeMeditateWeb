@@ -7,6 +7,9 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
+import { ErrorType } from '../../../server/error-utils'
+import { errorTitleKey } from '../../../lib/error-keys'
+import { enT } from '../../../lib/i18n'
 
 /** Resolved base URL of the preview (or fallback) to smoke-test against. */
 export function getBaseUrl(): string {
@@ -54,16 +57,25 @@ export async function fetchPage(
 
 /**
  * Error-page and error-boundary titles that ErrorFallback and the _error
- * route render. Copied verbatim from
- * components/molecules/ErrorFallback/ErrorFallback.tsx (TITLE_BY_TYPE). A
- * real content page must contain none of these.
+ * route render. A real content page must contain none of these.
+ *
+ * Read from the committed English snapshot rather than copied, so an editor
+ * who rewords "Content Not Found" in the CMS cannot leave these markers
+ * matching nothing — a smoke suite that silently stops detecting error
+ * pages would pass on a completely broken preview.
+ *
+ * The preview is served in English, so the English snapshot is the right
+ * source here.
  */
 export const ERROR_MARKERS = [
-  'Service Temporarily Unavailable', // ErrorType.SERVER (500)
-  'Content Not Found', // ErrorType.CLIENT (404)
-  'Connection Issue', // ErrorType.NETWORK
-  'Oops! Something went wrong', // ErrorType.UNKNOWN
+  enT(errorTitleKey(ErrorType.SERVER)),
+  enT(errorTitleKey(ErrorType.CLIENT)),
+  enT(errorTitleKey(ErrorType.NETWORK)),
+  enT(errorTitleKey(ErrorType.UNKNOWN)),
 ] as const
+
+/** The 404 page's heading, for a suite asserting that page specifically. */
+export const NOT_FOUND_MARKER = enT(errorTitleKey(ErrorType.CLIENT))
 
 /**
  * Assert the response is a real rendered HTML page: 200, text/html, has a

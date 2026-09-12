@@ -2,6 +2,7 @@ import { Suspense, type CSSProperties } from 'react'
 import type { GlobalProvider } from '@ladle/react'
 import { VikeReactProviderPageContext } from 'vike-react/usePageContext'
 import type { PageContext } from 'vike/types'
+import { EN_TRANSLATIONS } from '../lib/i18n'
 import '../layouts/fonts.css'
 import '../layouts/style.css'
 import '../layouts/tailwind.css'
@@ -14,7 +15,14 @@ import './story-overrides.css'
 // `pageContext.isClientSide`, and a lazy child suspends with no boundary.
 // This code supplies a minimal client-side pageContext and a Suspense
 // boundary, to mirror what Vike provides at runtime.
-const ladlePageContext = { isClientSide: true, locale: 'en' } as unknown as PageContext
+// `translations` is what `useT()` reads. Ladle has no CMS, so stories render
+// the committed English snapshot — the same fixture the unit suite uses.
+const ladlePageContext = {
+  isClientSide: true,
+  locale: 'en',
+  urlPathname: '/index',
+  translations: EN_TRANSLATIONS,
+} as unknown as PageContext
 
 // The inline-size container makes `full-bleed` blocks resolve against the
 // Ladle story area, not the whole window, so they do not overflow under the
