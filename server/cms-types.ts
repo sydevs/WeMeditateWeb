@@ -118,11 +118,14 @@ export function localeDirection(locale: Locale): 'ltr' | 'rtl' {
  * The CMS UI strings, with every group required.
  *
  * The generated `WmWebTranslation` marks each group optional, because a
- * locale may be saved partially. The CMS fills blank and missing keys from
- * English on every API-client read (SahajCloud #705), so what actually
- * arrives here always carries every group. Individual keys stay optional:
- * a key added to the schema but not yet translated anywhere is still
- * absent, and `createT` resolves it to its key path.
+ * locale may be saved partially. Every group still arrives, from Payload's
+ * own locale fallback: `buildPayloadLocales` gives each non-English locale
+ * `fallbackLocale: 'en'`, so a tab nobody has translated reads as English.
+ * SahajCloud #705 fills a blank or missing key from English on every
+ * API-client read, but only inside a group the document already carries.
+ * Individual keys stay optional: a key added to the schema but not yet
+ * translated anywhere is still absent, and `createT` resolves it to its
+ * key path.
  */
 type RequiredGroups<T> = {
   [K in keyof T]-?: NonNullable<T[K]> extends string
