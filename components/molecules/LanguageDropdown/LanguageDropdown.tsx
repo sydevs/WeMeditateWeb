@@ -14,7 +14,11 @@ export interface LanguageOption {
   code: Locale
   /** Display label for the language */
   label: string
-  /** URL to navigate to when language is selected */
+  /**
+   * Path to navigate to, WITHOUT a locale prefix. `Link` adds the prefix
+   * for the option's own `code`, so the "English is served bare" rule has
+   * one owner.
+   */
   href: string
 }
 
@@ -74,6 +78,7 @@ export function LanguageDropdown({
           <Link
             key={language.code}
             href={language.href}
+            locale={language.code}
             className={`px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 ${
               language.code === currentLanguage ? 'bg-gray-50' : ''
             }`}

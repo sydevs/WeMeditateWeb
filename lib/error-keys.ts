@@ -14,26 +14,24 @@
 import { ErrorType } from '../server/error-utils'
 import type { TranslationKey } from './i18n'
 
-const TITLE_KEY_BY_TYPE: Record<ErrorType, TranslationKey> = {
-  [ErrorType.NETWORK]: 'errors.general.network_title',
-  [ErrorType.SERVER]: 'errors.general.server_title',
-  [ErrorType.CLIENT]: 'errors.general.not_found_title',
-  [ErrorType.UNKNOWN]: 'errors.general.unknown_title',
-}
-
-const MESSAGE_KEY_BY_TYPE: Record<ErrorType, TranslationKey> = {
-  [ErrorType.NETWORK]: 'errors.general.network_message',
-  [ErrorType.SERVER]: 'errors.general.server_message',
-  [ErrorType.CLIENT]: 'errors.general.not_found_message',
-  [ErrorType.UNKNOWN]: 'errors.general.unknown_message',
-}
+/**
+ * The key stem each category uses. One map, not two: a title and its body
+ * falling out of sync is the failure this module exists to prevent, so
+ * they are built from the same stem rather than listed separately.
+ */
+const STEM_BY_TYPE = {
+  [ErrorType.NETWORK]: 'network',
+  [ErrorType.SERVER]: 'server',
+  [ErrorType.CLIENT]: 'not_found',
+  [ErrorType.UNKNOWN]: 'unknown',
+} as const satisfies Record<ErrorType, string>
 
 /** The heading key for an error category. */
 export function errorTitleKey(type: ErrorType): TranslationKey {
-  return TITLE_KEY_BY_TYPE[type]
+  return `errors.general.${STEM_BY_TYPE[type]}_title`
 }
 
 /** The body-copy key for an error category. */
 export function errorMessageKey(type: ErrorType): TranslationKey {
-  return MESSAGE_KEY_BY_TYPE[type]
+  return `errors.general.${STEM_BY_TYPE[type]}_message`
 }

@@ -11,36 +11,37 @@
  */
 
 import { usePageContext } from 'vike-react/usePageContext'
-import { useMemo } from 'react'
+import type { PageContext } from 'vike/types'
 import type { Locale, WebTranslations } from '../server/cms-types'
-import { createT, EN_TRANSLATIONS, type TFunction } from '../lib/i18n'
+import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
+
+/**
+ * `pageContext`, or `null` where there is none.
+ *
+ * `usePageContext()` throws outside a Vike app. Ladle and the unit suite
+ * both render components bare, so every consumer needs this guard — see
+ * the same shape in `components/atoms/Link/Link.tsx:75-81`.
+ */
+export function useOptionalPageContext(): PageContext | null {
+  try {
+    return usePageContext()
+  } catch {
+    return null
+  }
+}
 
 export function useT(): TFunction {
-  let pageContext
-
-  try {
-    pageContext = usePageContext()
-  } catch {
-    // No pageContext: Ladle, or a component rendered outside the app.
-    pageContext = null
-  }
-
+  const pageContext = useOptionalPageContext()
   const locale: Locale = pageContext?.locale ?? 'en'
   const translations: WebTranslations =
     (pageContext?.translations as WebTranslations | undefined) ?? EN_TRANSLATIONS
 
-  return useMemo(() => createT(translations, locale), [translations, locale])
+  // `getT` memoizes per (translations, locale), so the whole tree shares
+  // one accessor rather than allocating one per component instance.
+  return getT(translations, locale)
 }
 
 /** The current locale, for `Intl` formatters. Falls back to `en`. */
 export function useLocale(): Locale {
-  let pageContext
-
-  try {
-    pageContext = usePageContext()
-  } catch {
-    pageContext = null
-  }
-
-  return pageContext?.locale ?? 'en'
+  return useOptionalPageContext()?.locale ?? 'en'
 }

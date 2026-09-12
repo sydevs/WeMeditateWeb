@@ -207,8 +207,6 @@ export function MeditationTemplate({
         <RelatedContentLoader
           anchorId={meditation.id}
           kind="related-lectures"
-          loadingLabel={t('meditation.a11y.related_lectures_loading')}
-          title={t('meditation.general.related_lectures')}
         />
       ) : null}
     </>

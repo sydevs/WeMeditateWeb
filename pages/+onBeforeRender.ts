@@ -13,18 +13,21 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { loadSiteContext } from '../server/site-context'
+import { loadTranslations } from '../server/site-context'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   try {
-    const { translations } = await loadSiteContext(pageContext)
-
-    return { pageContext: { translations } }
+    // Translations only, never the config. This hook runs for every route,
+    // and the embed routes deliberately fetch no config — "there is no nav
+    // to populate" — so loading both here would make every iframe embed pay
+    // for a populated config read it never renders. On a chromed route the
+    // data function has already loaded both, and this is a memo read.
+    return { pageContext: { translations: await loadTranslations(pageContext) } }
   } catch {
-    // Includes the `render(404)` a disabled locale throws: by the time the
-    // error page renders, it still needs strings. The data function already
-    // turned that abort into the 404 response.
+    // `loadTranslations` already degrades to the snapshot, so this only
+    // catches something unforeseen. An error page that cannot render its
+    // own error message is a blank screen.
     return { pageContext: { translations: EN_TRANSLATIONS } }
   }
 }

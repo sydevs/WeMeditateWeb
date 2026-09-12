@@ -7,15 +7,11 @@
  * filter matches on.
  */
 
-import { PAGE_TAGS, type PageTagLabels } from './cms-blocks'
+import { PAGE_TAG_KEYS, type PageTagLabels } from './cms-blocks'
 import type { TFunction } from './i18n'
 
 export function pageTagLabels(t: TFunction): PageTagLabels {
-  return {
-    wisdom: t('article.general.tag_wisdom'),
-    lifestyle: t('article.general.tag_lifestyle'),
-    creativity: t('article.general.tag_creativity'),
-    event: t('article.general.tag_event'),
-    technique: t('article.general.tag_technique'),
-  } satisfies Record<(typeof PAGE_TAGS)[number], string>
+  return Object.fromEntries(
+    Object.entries(PAGE_TAG_KEYS).map(([tag, key]) => [tag, t(key)]),
+  ) as PageTagLabels
 }

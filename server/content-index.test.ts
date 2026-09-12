@@ -184,8 +184,7 @@ describe('resolveContentIndexTracks', () => {
         creditURL: '',
         thumbnailURL: 'https://cdn/art.jpg',
         duration: 0,
-        tags: ['strings'],
-        tagLabels: { strings: 'Strings' },
+        tags: [{ id: 'strings', label: 'Strings' }],
       },
     ])
 

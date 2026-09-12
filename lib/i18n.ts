@@ -33,6 +33,25 @@ type PluralSuffix = (typeof PLURAL_SUFFIXES)[number]
 export type TranslationParams = Record<string, string | number>
 
 /**
+ * `Intl.PluralRules` per locale.
+ *
+ * An `Intl` constructor is among the most expensive calls in a Worker
+ * isolate, and a plural key can render once per card in a grid. The rules
+ * depend only on the locale, so one instance serves the whole request.
+ */
+const PLURAL_RULES = new Map<string, Intl.PluralRules>()
+
+function pluralRules(locale: string): Intl.PluralRules {
+  const existing = PLURAL_RULES.get(locale)
+  if (existing) return existing
+
+  const rules = new Intl.PluralRules(locale)
+  PLURAL_RULES.set(locale, rules)
+
+  return rules
+}
+
+/**
  * Replaces every `%{name}` placeholder with its parameter.
  *
  * An unmatched placeholder is left in place rather than blanked, so a
@@ -60,23 +79,17 @@ export function pluralize(
   count: number,
   locale: string,
 ): string | undefined {
-  let category: string = 'other'
+  let category = 'other'
 
   try {
-    category = new Intl.PluralRules(locale).select(count)
+    category = pluralRules(locale).select(count)
   } catch {
     // An unknown locale tag falls back to the `other` form.
   }
 
-  const ordered: PluralSuffix[] = [
-    ...(PLURAL_SUFFIXES.includes(category as PluralSuffix) ? [category as PluralSuffix] : []),
-    'other',
-    'one',
-    'few',
-    'many',
-  ]
-
-  for (const suffix of ordered) {
+  // The selected category first, then `other`, then anything populated. A
+  // category the CMS does not store simply misses and falls through.
+  for (const suffix of [category as PluralSuffix, 'other' as const, ...PLURAL_SUFFIXES]) {
     const form = forms[suffix]
     if (typeof form === 'string' && form.length > 0) return form
   }
@@ -129,8 +142,12 @@ function readPath(source: unknown, path: readonly string[]): unknown {
 // createT
 // ============================================================================
 
-/** Splits `%{link}` out of a template, for `t.rich`. */
-const RICH_PLACEHOLDER = /%\{(\w+)\}/g
+/**
+ * Splits a template into alternating text and placeholder-name parts, for
+ * `t.rich`. A capturing group makes `String.split` keep the names, so the
+ * odd indices are the placeholders.
+ */
+const RICH_PLACEHOLDER = /%\{(\w+)\}/
 
 export interface TFunction {
   (key: TranslationKey, params?: TranslationParams): string
@@ -185,32 +202,49 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
     return String(key)
   }
 
-  const t = ((key, params) => lookup(key, params)) as TFunction
+  const t = lookup as TFunction
 
-  t.rich = (key, nodes) => {
-    const template = lookup(key)
-    const parts: ReactNode[] = []
-    let lastIndex = 0
+  t.rich = (key, nodes) =>
+    lookup(key)
+      // Odd indices are the captured placeholder names; even ones are the
+      // literal text between them. A name with no node stays as written, so
+      // a missing node is visible rather than a silent gap.
+      .split(RICH_PLACEHOLDER)
+      .map((part, index) =>
+        index % 2 === 0 ? part : part in nodes ? nodes[part] : `%{${part}}`,
+      )
+      .filter((part) => part !== '')
 
-    RICH_PLACEHOLDER.lastIndex = 0
+  return t
+}
 
-    for (
-      let match = RICH_PLACEHOLDER.exec(template);
-      match;
-      match = RICH_PLACEHOLDER.exec(template)
-    ) {
-      if (match.index > lastIndex) parts.push(template.slice(lastIndex, match.index))
-      parts.push(match[1] in nodes ? nodes[match[1]] : match[0])
-      lastIndex = match.index + match[0].length
-    }
+/**
+ * One accessor per (translations, locale) pair.
+ *
+ * `useT()` is called by more than forty components, and `ContentCard`
+ * renders once per card in a grid, so building an accessor per component
+ * instance allocated a closure pair per card. The translations object is
+ * stable for a request, so the whole tree shares one accessor. The outer
+ * map is weak, so a request's entry goes when its translations do.
+ */
+const ACCESSORS = new WeakMap<WebTranslations, Map<Locale, TFunction>>()
 
-    if (lastIndex < template.length) parts.push(template.slice(lastIndex))
+export function getT(translations: WebTranslations, locale: Locale): TFunction {
+  let byLocale = ACCESSORS.get(translations)
 
-    return parts
+  if (!byLocale) {
+    byLocale = new Map()
+    ACCESSORS.set(translations, byLocale)
   }
+  const existing = byLocale.get(locale)
+
+  if (existing) return existing
+
+  const t = createT(translations, locale)
+  byLocale.set(locale, t)
 
   return t
 }
 
 /** The accessor bound to the committed English snapshot. */
-export const enT = createT(EN_TRANSLATIONS, 'en')
+export const enT = getT(EN_TRANSLATIONS, 'en')

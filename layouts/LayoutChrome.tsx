@@ -105,12 +105,14 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // The locales the CMS says this site offers, each linking to the current
   // page in that language rather than to its home page. `urlPathname` is
   // already stripped of the locale prefix by +onBeforeRoute, and `/index`
-  // is its spelling of `/`. English is served bare, with no prefix.
+  // is its spelling of `/`. Adding the prefix back is `Link`'s job — the
+  // dropdown passes each option's own `locale` — so "English is served
+  // bare" keeps one owner.
   const pathWithoutLocale = urlPathname === '/index' ? '/' : urlPathname
   const languages = (settings.availableLocales ?? []).map((code) => ({
     code,
     label: localeEndonym(code),
-    href: code === 'en' ? pathWithoutLocale : `/${code}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`,
+    href: pathWithoutLocale,
   }))
 
   const header = (

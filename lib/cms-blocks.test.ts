@@ -238,7 +238,7 @@ describe('contentIndexTrack', () => {
     ...over,
   })
 
-  it('maps a song doc to a playable Track (duration 0, tags as songTag slugs)', () => {
+  it('maps a song doc to a playable Track (duration 0, tags as id/label facets)', () => {
     const track = contentIndexTrack({
       id: 10,
       title: 'Raga',
@@ -258,8 +258,10 @@ describe('contentIndexTrack', () => {
       creditURL: 'https://example.com/artist',
       thumbnailURL: 'https://imagedelivery.net/acct/img/',
       duration: 0,
-      tags: ['strings', 'vocal'],
-      tagLabels: { strings: 'Strings', vocal: 'Vocal' },
+      tags: [
+        { id: 'strings', label: 'Strings' },
+        { id: 'vocal', label: 'Vocal' },
+      ],
     })
   })
 
@@ -276,10 +278,10 @@ describe('contentIndexTrack', () => {
       ],
     })
 
-    expect(track?.tagLabels).toEqual({
-      'wind-instruments': 'Instruments à vent',
-      vocal: 'vocal',
-    })
+    expect(track?.tags).toEqual([
+      { id: 'wind-instruments', label: 'Instruments à vent' },
+      { id: 'vocal', label: 'vocal' },
+    ])
   })
 
   it('returns null for a song with no playable url', () => {

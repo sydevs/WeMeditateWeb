@@ -18,6 +18,7 @@ import type { Meditation, Page } from '../server/cms-types'
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '../components/molecules/AudioPlayer/types'
 import { cmsHref, type RelationValue } from './cms-routes'
+import type { TranslationKey } from './i18n'
 import { isPopulated } from './cms-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
@@ -146,13 +147,15 @@ export type PageTag = NonNullable<Page['tags']>[number]
  * filter IDs; their visible labels come from the CMS
  * (`article.general.tag_*`), supplied as `pageTagLabels`.
  */
-export const PAGE_TAGS: readonly PageTag[] = [
-  'wisdom',
-  'lifestyle',
-  'creativity',
-  'event',
-  'technique',
-]
+export const PAGE_TAG_KEYS = {
+  wisdom: 'article.general.tag_wisdom',
+  lifestyle: 'article.general.tag_lifestyle',
+  creativity: 'article.general.tag_creativity',
+  event: 'article.general.tag_event',
+  technique: 'article.general.tag_technique',
+} as const satisfies Record<PageTag, TranslationKey>
+
+export const PAGE_TAGS = Object.keys(PAGE_TAG_KEYS) as PageTag[]
 
 /** Visible label per page tag, resolved from the CMS by the caller. */
 export type PageTagLabels = Partial<Record<PageTag, string>>
@@ -650,16 +653,13 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
   const populatedTags = (Array.isArray(doc.tags) ? doc.tags : []).filter(
     (tag): tag is SongTag => isPopulated<SongTag>(tag) && typeof tag.slug === 'string',
   )
-  const tags = populatedTags.map((tag) => tag.slug as string)
-  // The slug is the filter ID; the CMS `title` is what the pill shows. A
+  // The slug is the filter id; the CMS `title` is what the pill shows. A
   // tag with no title falls back to its slug rather than to title-casing,
   // so a CMS gap is visible instead of silently rendering English.
-  const tagLabels = Object.fromEntries(
-    populatedTags.map((tag) => [
-      tag.slug as string,
-      typeof tag.title === 'string' && tag.title.length > 0 ? tag.title : (tag.slug as string),
-    ]),
-  )
+  const tags = populatedTags.map((tag) => ({
+    id: tag.slug as string,
+    label: typeof tag.title === 'string' && tag.title.length > 0 ? tag.title : (tag.slug as string),
+  }))
 
   return {
     url,
@@ -669,6 +669,5 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
     thumbnailURL: artwork?.url ?? songThumbnail,
     duration: 0,
     tags,
-    tagLabels,
   }
 }

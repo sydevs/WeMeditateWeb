@@ -20,7 +20,15 @@ import type { Locale } from '../server/cms-types'
  * Falls back to the raw code if the runtime has no name for it, which is
  * still a usable picker entry.
  */
+const ENDONYMS = new Map<Locale, string>()
+
 export function localeEndonym(locale: Locale): string {
+  // The site chrome maps this over every offered locale on every page, and
+  // each flag calls it again. An endonym is a constant for its locale, and
+  // `Intl.DisplayNames` is expensive to construct, so cache the result.
+  const cached = ENDONYMS.get(locale)
+  if (cached) return cached
+
   let name: string | undefined
 
   try {
@@ -29,7 +37,27 @@ export function localeEndonym(locale: Locale): string {
     name = undefined
   }
 
-  if (!name) return locale
+  const endonym = name ? name.charAt(0).toLocaleUpperCase(locale) + name.slice(1) : locale
 
-  return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1)
+  ENDONYMS.set(locale, endonym)
+
+  return endonym
+}
+
+/** `Intl.ListFormat` per locale, for the same reason. */
+const LIST_FORMATS = new Map<string, Intl.ListFormat>()
+
+/**
+ * Joins a list the way the locale joins one — a comma is not universal,
+ * and the final conjunction differs by language.
+ */
+export function formatList(items: string[], locale: Locale): string {
+  let formatter = LIST_FORMATS.get(locale)
+
+  if (!formatter) {
+    formatter = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' })
+    LIST_FORMATS.set(locale, formatter)
+  }
+
+  return formatter.format(items)
 }

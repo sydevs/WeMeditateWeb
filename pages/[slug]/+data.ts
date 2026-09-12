@@ -6,7 +6,6 @@ import type { PageContextServer } from 'vike/types'
 import type { Page, WebConfig } from '../../server/cms-types'
 import { getPageBySlug } from '../../server/cms-client'
 import { loadSiteContext } from '../../server/site-context'
-import { createT } from '../../lib/i18n'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
@@ -34,7 +33,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   // Homepage (slug "index") uses homePage from WebConfig directly.
   // The onBeforeRoute hook converts "/" to "/index", so this is the homepage path.
   if (slug === 'index') {
-    const { settings, translations } = await loadSiteContext(pageContext)
+    const { settings, t } = await loadSiteContext(pageContext)
 
     if (!settings.homePage) {
       throw render(404, 'Homepage not configured.')
@@ -42,14 +41,14 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     const content = await resolveContentIndexBlocks(settings.homePage.content, {
       locale,
       audiences: settings.audiences,
-      pageTagLabels: pageTagLabels(createT(translations, locale)),
+      pageTagLabels: pageTagLabels(t),
     })
 
     return { page: { ...settings.homePage, content }, locale, slug, settings }
   }
 
   // Non-homepage: fetch WebConfig and page by slug in parallel
-  const [{ settings, translations }, page] = await Promise.all([
+  const [{ settings, t }, page] = await Promise.all([
     loadSiteContext(pageContext),
     getPageBySlug({ slug, locale }),
   ])
@@ -62,7 +61,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   const content = await resolveContentIndexBlocks(page.content, {
     locale,
     audiences: settings.audiences,
-    pageTagLabels: pageTagLabels(createT(translations, locale)),
+    pageTagLabels: pageTagLabels(t),
   })
 
   return { page: { ...page, content }, locale, slug, settings }

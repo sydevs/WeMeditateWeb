@@ -14,17 +14,17 @@ export interface Track {
   thumbnailURL: string
   /** Duration in seconds */
   duration: number
-  /** Optional tag slugs for filtering in playlists. These are the stable
-   * filter IDs, never shown to a visitor. */
-  tags?: string[]
   /**
-   * Display label per tag slug, localized by the CMS.
+   * Optional filter facets. `id` is the tag slug — the stable filter id,
+   * never shown — and `label` is the SongTag's CMS `title`, so the pill
+   * reads in the visitor's language. Filter pills used to title-case the
+   * slug ('wind-instruments' → 'Wind Instruments'), which only ever
+   * produced English.
    *
-   * Filter pills used to title-case the slug ('wind-instruments' → 'Wind
-   * Instruments'), which only ever produced English. The label is the
-   * SongTag's own `title`, so it arrives in the visitor's language.
+   * Same shape as `ResolvedCardItem.tags` and `MusicFilter`, so a consumer
+   * does not have to learn which of three shapes it was handed.
    */
-  tagLabels?: Record<string, string>
+  tags?: { id: string; label: string }[]
 }
 
 /**

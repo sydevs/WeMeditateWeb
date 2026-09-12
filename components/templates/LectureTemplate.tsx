@@ -153,8 +153,6 @@ export function LectureTemplate({
         <RelatedContentLoader
           anchorId={lecture.id}
           kind="related-meditations"
-          loadingLabel={t('lecture.a11y.related_meditations_loading')}
-          title={t('lecture.general.related_meditations')}
         />
       ) : null}
     </article>

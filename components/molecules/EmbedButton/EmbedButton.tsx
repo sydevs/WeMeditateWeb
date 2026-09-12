@@ -1,8 +1,7 @@
 import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/outline'
-import { usePageContext } from 'vike-react/usePageContext'
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
-import { useT } from '../../../hooks/useT'
+import { useT, useLocale } from '../../../hooks/useT'
 
 /** Fixed iframe geometry and permissions for the generated embed snippet. */
 const IFRAME_WIDTH = 560
@@ -60,17 +59,10 @@ export function EmbedButton({
   className = '',
 }: EmbedButtonProps) {
   const t = useT()
-  // Resolve locale in this order: the locale prop, then page context, then
-  // 'en'. This tolerates environments, for example Ladle, that have no page
-  // context, the same approach as Link.
-  let pageContext
-
-  try {
-    pageContext = usePageContext()
-  } catch {
-    pageContext = null
-  }
-  const resolvedLocale = (locale ?? pageContext?.locale) || 'en'
+  // The locale prop wins; otherwise the page's, or 'en' outside Vike.
+  // `useLocale` owns the no-pageContext guard (Ladle, unit tests).
+  const pageLocale = useLocale()
+  const resolvedLocale = locale || pageLocale
 
   const resolvedOrigin = origin ?? (typeof window !== 'undefined' ? window.location.origin : '')
 

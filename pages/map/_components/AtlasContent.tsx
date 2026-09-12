@@ -22,6 +22,7 @@ import type {
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT, useLocale } from '../../../hooks/useT'
+import { formatList } from '../../../lib/locale-names'
 
 /**
  * Where a region or class link should point.
@@ -160,10 +161,6 @@ function EventContent({
   const paragraphs = content.paragraphs ?? []
   const languages = content.languages ?? []
   const lead = content.images?.[0]
-  // A comma is not how every language joins a list. `Intl.ListFormat`
-  // knows each locale's own conjunction and separator, so this needs no
-  // CMS key.
-  const languageList = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' })
 
   // `||`, not `??`: upstream uses the empty string for "absent" elsewhere
   // in this contract (`address.oneLine`, `schedule.oneLine`). So an empty
@@ -195,7 +192,7 @@ function EventContent({
         {languages.length > 0 && (
           <div>
             <dt className="sr-only">{t('map.a11y.languages')}</dt>
-            <dd className="text-sm text-gray-600">{languageList.format(languages)}</dd>
+            <dd className="text-sm text-gray-600">{formatList(languages, locale)}</dd>
           </div>
         )}
       </dl>

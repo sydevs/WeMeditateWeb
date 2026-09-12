@@ -82,10 +82,10 @@ function songMusicFilters(tracks: Track[]): MusicFilter[] {
   const filters: MusicFilter[] = []
 
   for (const track of tracks) {
-    for (const slug of track.tags ?? []) {
-      if (!seen.has(slug)) {
-        seen.add(slug)
-        filters.push({ id: slug, label: track.tagLabels?.[slug] ?? slug, icon: MusicalNoteIcon })
+    for (const tag of track.tags ?? []) {
+      if (!seen.has(tag.id)) {
+        seen.add(tag.id)
+        filters.push({ id: tag.id, label: tag.label, icon: MusicalNoteIcon })
       }
     }
   }

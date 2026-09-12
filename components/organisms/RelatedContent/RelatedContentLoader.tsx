@@ -5,22 +5,41 @@ import { usePageContext } from 'vike-react/usePageContext'
 import type { ResolvedCardItem } from '../../../lib/cms-blocks'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
+import { useT } from '../../../hooks/useT'
+import type { TranslationKey } from '../../../lib/i18n'
+
+/**
+ * Which same-origin JSON route to load (see server/api-routes.ts):
+ * `related-meditations` for a lecture anchor, `related-lectures` for a
+ * meditation anchor.
+ */
+export type RelatedContentKind = 'related-meditations' | 'related-lectures'
+
+/**
+ * The heading and the spinner's screen-reader label, per feed.
+ *
+ * Both used to be props, which let a caller pass a heading and a loading
+ * label describing different feeds — nothing checked they agreed. They are
+ * fully determined by `kind`, so the component owns them. The keys stay
+ * literal, so `TranslationKey` and the key guard still see them.
+ *
+ * The loading label is not derived from the heading: lowercasing "Related
+ * meditations" into "Loading related meditations" composes a sentence only
+ * English composes that way.
+ */
+export const RELATED_CONTENT_KEYS = {
+  'related-meditations': {
+    title: 'lecture.general.related_meditations',
+    loading: 'lecture.a11y.related_meditations_loading',
+  },
+  'related-lectures': {
+    title: 'meditation.general.related_lectures',
+    loading: 'meditation.a11y.related_lectures_loading',
+  },
+} as const satisfies Record<RelatedContentKind, { title: TranslationKey; loading: TranslationKey }>
 
 export interface RelatedContentLoaderProps {
-  /** Section heading, for example "Related meditations" or "Related lectures". */
-  title: string
-  /**
-   * Screen-reader label for the loading spinner. Supplied rather than
-   * derived from `title`: lowercasing a heading to build "Loading related
-   * meditations" only composes a sentence in English.
-   */
-  loadingLabel: string
-  /**
-   * Which same-origin JSON route to load (see server/api-routes.ts):
-   * - `related-meditations` for a lecture anchor
-   * - `related-lectures` for a meditation anchor
-   */
-  kind: 'related-meditations' | 'related-lectures'
+  kind: RelatedContentKind
   /** The anchor document id (the lecture/meditation the page is about). */
   anchorId: string | number
   className?: string
@@ -41,14 +60,10 @@ export interface RelatedContentLoaderProps {
  * locale. SSR and the first client render both show the loading state, so
  * there is no hydration mismatch.
  */
-export function RelatedContentLoader({
-  title,
-  loadingLabel,
-  kind,
-  anchorId,
-  className,
-}: RelatedContentLoaderProps) {
+export function RelatedContentLoader({ kind, anchorId, className }: RelatedContentLoaderProps) {
+  const t = useT()
   const { locale } = usePageContext()
+  const title = t(RELATED_CONTENT_KEYS[kind].title)
   // null → loading (fetch in flight). [] → loaded but empty. [...] → loaded.
   const [items, setItems] = useState<ResolvedCardItem[] | null>(null)
 
@@ -84,7 +99,7 @@ export function RelatedContentLoader({
       <section aria-busy className={`mt-10 sm:mt-12 ${className ?? ''}`}>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">{title}</h2>
         <div className="flex justify-center py-8">
-          <Spinner label={loadingLabel} size="lg" />
+          <Spinner label={t(RELATED_CONTENT_KEYS[kind].loading)} size="lg" />
         </div>
       </section>
     )

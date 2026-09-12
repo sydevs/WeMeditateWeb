@@ -8,23 +8,23 @@ export default {
 
 const sampleLanguages = [
   { code: 'en' as const, label: 'English', href: '/about' },
-  { code: 'es' as const, label: 'Español', href: '/es/about' },
-  { code: 'de' as const, label: 'Deutsch', href: '/de/about' },
-  { code: 'it' as const, label: 'Italiano', href: '/it/about' },
-  { code: 'fr' as const, label: 'Français', href: '/fr/about' },
+  { code: 'es' as const, label: 'Español', href: '/about' },
+  { code: 'de' as const, label: 'Deutsch', href: '/about' },
+  { code: 'it' as const, label: 'Italiano', href: '/about' },
+  { code: 'fr' as const, label: 'Français', href: '/about' },
 ]
 
 const allLanguages = [
   { code: 'en' as const, label: 'English', href: '/about' },
-  { code: 'es' as const, label: 'Español', href: '/es/about' },
-  { code: 'de' as const, label: 'Deutsch', href: '/de/about' },
-  { code: 'it' as const, label: 'Italiano', href: '/it/about' },
-  { code: 'fr' as const, label: 'Français', href: '/fr/about' },
-  { code: 'ru' as const, label: 'Русский', href: '/ru/about' },
-  { code: 'ro' as const, label: 'Română', href: '/ro/about' },
-  { code: 'cs' as const, label: 'Čeština', href: '/cs/about' },
-  { code: 'uk' as const, label: 'Українська', href: '/uk/about' },
-  { code: 'bg' as const, label: 'Български', href: '/bg/about' },
+  { code: 'es' as const, label: 'Español', href: '/about' },
+  { code: 'de' as const, label: 'Deutsch', href: '/about' },
+  { code: 'it' as const, label: 'Italiano', href: '/about' },
+  { code: 'fr' as const, label: 'Français', href: '/about' },
+  { code: 'ru' as const, label: 'Русский', href: '/about' },
+  { code: 'ro' as const, label: 'Română', href: '/about' },
+  { code: 'cs' as const, label: 'Čeština', href: '/about' },
+  { code: 'uk' as const, label: 'Українська', href: '/about' },
+  { code: 'bg' as const, label: 'Български', href: '/about' },
 ]
 
 /**
@@ -39,7 +39,7 @@ export const Default: Story = () => (
             currentLanguage="en"
             languages={[
               { code: 'en', label: 'English', href: '/about' },
-              { code: 'es', label: 'Español', href: '/es/about' },
+              { code: 'es', label: 'Español', href: '/about' },
             ]}
           />
         </StorySection>

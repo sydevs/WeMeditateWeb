@@ -13,12 +13,13 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { globSync, readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { dirname, join, relative } from 'node:path'
-import snapshot from '../../lib/translations.en.json'
-
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+import { relative } from 'node:path'
+import { lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
+import { enT, type TranslationKey } from '../../lib/i18n'
+import { ErrorType } from '../../server/error-utils'
+import { errorMessageKey, errorTitleKey } from '../../lib/error-keys'
+import { PAGE_TAG_KEYS } from '../../lib/cms-blocks'
+import { RELATED_CONTENT_KEYS } from '../../components/organisms/RelatedContent/RelatedContentLoader'
 
 const SOURCE_GLOBS = [
   'components/**/*.{ts,tsx}',
@@ -32,59 +33,26 @@ const SOURCE_GLOBS = [
 /** `t('a.b.c')` and `t.rich('a.b.c')`, single or double quoted. */
 const CALL_PATTERN = /\bt(?:\.rich)?\(\s*(['"])([a-z0-9_]+(?:\.[a-z0-9_]+)+)\1/gi
 
-/** CLDR suffixes a plural key is stored under. */
-const PLURAL_SUFFIXES = ['one', 'few', 'many', 'other']
-
-function readPath(path: string): unknown {
-  let node: unknown = snapshot
-
-  for (const segment of path.split('.')) {
-    if (node === null || typeof node !== 'object') return undefined
-    node = (node as Record<string, unknown>)[segment]
-  }
-
-  return node
-}
-
-/** True when the key resolves to a string, or to a populated plural family. */
-function resolves(key: string): boolean {
-  if (typeof readPath(key) === 'string') return true
-
-  // A plural key is stored expanded. English fills `_one` and `_other`.
-  return (
-    typeof readPath(`${key}_other`) === 'string' &&
-    PLURAL_SUFFIXES.some((suffix) => typeof readPath(`${key}_${suffix}`) === 'string')
-  )
-}
-
 /**
- * Blanks comments, keeping every newline, so reported line numbers still
- * point at the real line. A `t('tab.sub.key')` in a JSDoc example is
- * documentation, not a call site.
+ * True when the key resolves to real copy.
+ *
+ * This asks the runtime accessor rather than re-walking the snapshot, so
+ * the guard cannot drift from what `createT` actually does — including its
+ * plural-family fallback, which `count` exercises. `createT` returns the
+ * key path itself when it finds nothing, which is the failure being
+ * detected.
  */
-function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' '))
-    .replace(
-      /(^|[^:])\/\/[^\n]*/g,
-      (match, lead: string) => lead + ' '.repeat(match.length - lead.length),
-    )
-}
-
-function sourceFiles(): string[] {
-  return SOURCE_GLOBS.flatMap((pattern) =>
-    globSync(pattern, { cwd: repoRoot })
-      .map((file) => join(repoRoot, file))
-      .filter((file) => !file.endsWith('.stories.tsx') && !/\.test\.tsx?$/.test(file)),
-  )
+function resolves(key: string): boolean {
+  return enT(key as TranslationKey, { count: 1 }) !== key
 }
 
 describe('translation keys', () => {
   it('finds call sites to check (the guard is not silently empty)', () => {
-    const hits = sourceFiles().filter((file) =>
-      CALL_PATTERN.test(stripComments(readFileSync(file, 'utf8'))),
-    )
-    CALL_PATTERN.lastIndex = 0
+    const hits = sourceFiles(SOURCE_GLOBS).filter((file) => {
+      CALL_PATTERN.lastIndex = 0
+
+      return CALL_PATTERN.test(readSource(file))
+    })
 
     expect(hits.length).toBeGreaterThan(20)
   })
@@ -92,17 +60,15 @@ describe('translation keys', () => {
   it('every t() and t.rich() key exists in the English snapshot', () => {
     const missing: string[] = []
 
-    for (const file of sourceFiles()) {
-      const source = stripComments(readFileSync(file, 'utf8'))
+    for (const file of sourceFiles(SOURCE_GLOBS)) {
+      const source = readSource(file)
 
       CALL_PATTERN.lastIndex = 0
       for (let match = CALL_PATTERN.exec(source); match; match = CALL_PATTERN.exec(source)) {
         const key = match[2]
 
         if (!resolves(key)) {
-          const line = source.slice(0, match.index).split('\n').length
-
-          missing.push(`${relative(repoRoot, file)}:${line} → ${key}`)
+          missing.push(`${relative(repoRoot, file)}:${lineAt(source, match.index)} → ${key}`)
         }
       }
     }
@@ -110,24 +76,23 @@ describe('translation keys', () => {
     expect(missing).toEqual([])
   })
 
-  it('every error-category key exists', async () => {
-    // These are reached through a lookup table, not a literal at the call
-    // site, so the scan above cannot see them.
-    const { ErrorType } = await import('../../server/error-utils')
-    const { errorTitleKey, errorMessageKey } = await import('../../lib/error-keys')
+  it('every key reached through a lookup table exists', () => {
+    // A key indexed out of a table is invisible to the source scan above.
+    // Each table here is a `Record<…, TranslationKey>`, so adding one means
+    // adding it to this list.
+    const tabled: TranslationKey[] = [
+      ...Object.values(ErrorType).flatMap((type) => [errorTitleKey(type), errorMessageKey(type)]),
+      ...Object.values(PAGE_TAG_KEYS),
+      ...Object.values(RELATED_CONTENT_KEYS).flatMap((pair) => [pair.title, pair.loading]),
+    ]
 
-    const missing = Object.values(ErrorType).flatMap((type) =>
-      [errorTitleKey(type), errorMessageKey(type)].filter((key) => !resolves(key)),
-    )
-
-    expect(missing).toEqual([])
+    expect(tabled.filter((key) => !resolves(key))).toEqual([])
   })
 
-  it('every page-tag facet label exists', async () => {
-    const { PAGE_TAGS } = await import('../../lib/cms-blocks')
-
-    const missing = PAGE_TAGS.filter((tag) => !resolves(`article.general.tag_${tag}`))
-
-    expect(missing).toEqual([])
+  it('reports a key it cannot resolve', () => {
+    // Proves `resolves` actually discriminates — without this, a change to
+    // createT's fallback could make the guard pass on everything.
+    expect(resolves('common.general.loading')).toBe(true)
+    expect(resolves('common.general.no_such_key')).toBe(false)
   })
 })
