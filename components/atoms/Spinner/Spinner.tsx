@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 import { AnimatedLogoSvg } from '../graphics/svgs'
+import { useT } from '../../../hooks/useT'
 
 export interface SpinnerProps extends ComponentProps<'div'> {
   /**
@@ -57,10 +58,14 @@ export function Spinner({
   size = 'md',
   color = 'primary',
   theme = 'light',
-  label = 'Loading...',
+  label,
   className = '',
   ...props
 }: SpinnerProps) {
+  const t = useT()
+  // Default through the CMS, not a literal: a spinner rendered without an
+  // explicit label still announces in the visitor's language.
+  const resolvedLabel = label ?? t('common.general.loading')
   // Logo variant sizes
   const logoSizeStyles = {
     xs: 'w-6 h-6',
@@ -105,12 +110,12 @@ export function Spinner({
       <div
         role="status"
         aria-live="polite"
-        aria-label={label}
+        aria-label={resolvedLabel}
         className={`inline-block ${className}`}
         {...props}
       >
         <AnimatedLogoSvg className={`${logoSizeStyles[size]} ${logoColorClass}`} />
-        <span className="sr-only">{label}</span>
+        <span className="sr-only">{resolvedLabel}</span>
       </div>
     )
   }
@@ -119,14 +124,14 @@ export function Spinner({
     <div
       role="status"
       aria-live="polite"
-      aria-label={label}
+      aria-label={resolvedLabel}
       className={`inline-block ${className}`}
       {...props}
     >
       <div
         className={`animate-spin rounded-full ${defaultSizeStyles[size]} ${colorStyles[color]}`}
       />
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{resolvedLabel}</span>
     </div>
   )
 }

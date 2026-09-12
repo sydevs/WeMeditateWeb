@@ -141,15 +141,21 @@ export interface TableOfContentsBlockFields {
 /** The `pages` collection's tag enum (drives page content-index facets). */
 export type PageTag = NonNullable<Page['tags']>[number]
 
-/** Display labels for page tags. Localizing these (via wm-web-translations)
- * is a follow-up. The enum values are the stable identifiers used for filtering. */
-export const PAGE_TAG_LABELS: Record<PageTag, string> = {
-  wisdom: 'Wisdom',
-  lifestyle: 'Lifestyle',
-  creativity: 'Creativity',
-  event: 'Event',
-  technique: 'Technique',
-}
+/**
+ * Every page-tag enum value, in schema order. The values are the stable
+ * filter IDs; their visible labels come from the CMS
+ * (`article.general.tag_*`), supplied as `pageTagLabels`.
+ */
+export const PAGE_TAGS: readonly PageTag[] = [
+  'wisdom',
+  'lifestyle',
+  'creativity',
+  'event',
+  'technique',
+]
+
+/** Visible label per page tag, resolved from the CMS by the caller. */
+export type PageTagLabels = Partial<Record<PageTag, string>>
 
 /** `content-index` — ContentIndexBlock. `resolvedItems` and
  * `resolvedTracks` are attached by the server-side pre-resolve pass in
@@ -449,12 +455,15 @@ export function isExternalUrl(url: string): boolean {
 function contentIndexCardTags(
   doc: Record<string, unknown>,
   type: ContentIndexBlockFields['type'],
+  pageTagLabels: PageTagLabels = {},
 ): ResolvedCardItem['tags'] {
   if (type === 'pages') {
     const raw = Array.isArray(doc.tags) ? doc.tags : []
     const facets = raw
-      .filter((t): t is PageTag => typeof t === 'string' && t in PAGE_TAG_LABELS)
-      .map((t) => ({ id: t, label: PAGE_TAG_LABELS[t] }))
+      .filter((t): t is PageTag => typeof t === 'string' && PAGE_TAGS.includes(t as PageTag))
+      // A label the caller did not supply falls back to the enum value, so
+      // a CMS gap shows the identifier instead of an empty pill.
+      .map((t) => ({ id: t, label: pageTagLabels[t] ?? t }))
 
     return facets.length > 0 ? facets : undefined
   }
@@ -496,6 +505,7 @@ function cardHref(
 export function contentIndexCard(
   doc: Record<string, unknown>,
   type: ContentIndexBlockFields['type'],
+  pageTagLabels: PageTagLabels = {},
 ): ResolvedCardItem | null {
   const id = doc.id as string | number | undefined
 
@@ -525,7 +535,7 @@ export function contentIndexCard(
       type === 'meditations' && typeof doc.durationMinutes === 'number'
         ? doc.durationMinutes
         : undefined,
-    tags: contentIndexCardTags(doc, type),
+    tags: contentIndexCardTags(doc, type, pageTagLabels),
   }
 }
 
@@ -637,9 +647,19 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
   // Prefer the album cover. Fall back to the song's own thumbnail when
   // the album has no artwork, or is an unpublished or bare-id relationship.
   const songThumbnail = typeof doc.thumbnailURL === 'string' ? doc.thumbnailURL : ''
-  const tags = (Array.isArray(doc.tags) ? doc.tags : [])
-    .map((tag) => (isPopulated<SongTag>(tag) && typeof tag.slug === 'string' ? tag.slug : null))
-    .filter((slug): slug is string => slug !== null)
+  const populatedTags = (Array.isArray(doc.tags) ? doc.tags : []).filter(
+    (tag): tag is SongTag => isPopulated<SongTag>(tag) && typeof tag.slug === 'string',
+  )
+  const tags = populatedTags.map((tag) => tag.slug as string)
+  // The slug is the filter ID; the CMS `title` is what the pill shows. A
+  // tag with no title falls back to its slug rather than to title-casing,
+  // so a CMS gap is visible instead of silently rendering English.
+  const tagLabels = Object.fromEntries(
+    populatedTags.map((tag) => [
+      tag.slug as string,
+      typeof tag.title === 'string' && tag.title.length > 0 ? tag.title : (tag.slug as string),
+    ]),
+  )
 
   return {
     url,
@@ -649,5 +669,6 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
     thumbnailURL: artwork?.url ?? songThumbnail,
     duration: 0,
     tags,
+    tagLabels,
   }
 }

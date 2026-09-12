@@ -8,6 +8,7 @@ import 'yet-another-react-lightbox/styles.css'
 import 'yet-another-react-lightbox/plugins/captions.css'
 import 'yet-another-react-lightbox/plugins/thumbnails.css'
 import type { LightboxSlide } from './LightboxProvider'
+import { useT } from '../../../hooks/useT'
 
 export interface LightboxImplProps {
   /** Slides to display, in navigation order. */
@@ -32,6 +33,7 @@ export interface LightboxImplProps {
  * carousel matter only for multi-slide groups, so they drop for a single slide.
  */
 export function Lightbox({ slides, open, index, close }: LightboxImplProps) {
+  const t = useT()
   const single = slides.length <= 1
   const plugins = single ? [Captions, Zoom] : [Captions, Thumbnails, Zoom]
 
@@ -39,6 +41,16 @@ export function Lightbox({ slides, open, index, close }: LightboxImplProps) {
     <YARLightbox
       close={close}
       index={index}
+      // The library renders its own controls, so its English defaults are
+      // the only strings on this overlay a screen reader would otherwise
+      // read. Its `labels` map is keyed by those defaults.
+      labels={{
+        Previous: t('common.a11y.previous'),
+        Next: t('common.a11y.next'),
+        Close: t('common.a11y.close'),
+        'Zoom in': t('media.a11y.zoom_in'),
+        'Zoom out': t('media.a11y.zoom_out'),
+      }}
       open={open}
       plugins={plugins}
       // A single slide has nowhere to navigate, so this drops the previous

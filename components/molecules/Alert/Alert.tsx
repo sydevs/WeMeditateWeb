@@ -7,6 +7,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { Icon, type HeroIcon } from '../../atoms/Icon'
+import { useT } from '../../../hooks/useT'
 
 export type AlertVariant = 'info' | 'success' | 'warning' | 'error'
 
@@ -70,6 +71,8 @@ export function Alert({
   children,
   ...props
 }: AlertProps) {
+  const t = useT()
+
   const styles = VARIANT_STYLES[variant]
   const IconComponent = icon ?? styles.icon
 
@@ -92,7 +95,7 @@ export function Alert({
       </div>
       {onDismiss ? (
         <button
-          aria-label="Dismiss"
+          aria-label={t('common.a11y.dismiss')}
           className="shrink-0 rounded transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-current"
           type="button"
           onClick={onDismiss}

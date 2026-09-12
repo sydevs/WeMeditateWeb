@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 import { Link } from '../Link'
+import { useT } from '../../../hooks/useT'
 
 export interface BreadcrumbItem {
   /** Label to display for the breadcrumb */
@@ -30,6 +31,8 @@ export function Breadcrumbs({
   className = '',
   ...props
 }: BreadcrumbsProps) {
+  const t = useT()
+
   if (!items || items.length === 0) {
     return null
   }
@@ -39,7 +42,7 @@ export function Breadcrumbs({
 
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={t('common.a11y.breadcrumb')}
       className={`flex items-center gap-2 text-xs ${className}`}
       {...props}
     >

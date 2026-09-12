@@ -72,15 +72,6 @@ export const BLOCK_SPACING = 'mx-auto my-6 clear-both'
 export const FULL_BLEED_BLOCK = 'full-bleed my-6 clear-both'
 export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
 
-/** Title-case a song-tag slug for a filter label ('wind-instruments' → 'Wind Instruments'). */
-function humanizeSlug(slug: string): string {
-  return slug
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
-
 /**
  * Build MusicLibrary filters from the unique song-tag slugs across the tracks.
  * SongTag carries no icon, so every filter uses a single music glyph (the
@@ -94,7 +85,7 @@ function songMusicFilters(tracks: Track[]): MusicFilter[] {
     for (const slug of track.tags ?? []) {
       if (!seen.has(slug)) {
         seen.add(slug)
-        filters.push({ id: slug, label: humanizeSlug(slug), icon: MusicalNoteIcon })
+        filters.push({ id: slug, label: track.tagLabels?.[slug] ?? slug, icon: MusicalNoteIcon })
       }
     }
   }
