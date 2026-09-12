@@ -7,6 +7,7 @@ import type {
 } from '@mapbox/search-js-core'
 import { Input, Dropdown, Spinner } from '../../atoms'
 import { NearbyOption } from './NearbyOption'
+import { useT } from '../../../hooks/useT'
 
 /**
  * Selected location data
@@ -76,11 +77,16 @@ export interface LocationSearchProps {
 export function LocationSearch({
   onLocationSelect,
   accessToken = import.meta.env.PUBLIC__MAPBOX_ACCESS_TOKEN,
-  placeholder = 'Search for a location...',
+  placeholder,
   defaultValue = '',
   className = '',
   proximity,
 }: LocationSearchProps) {
+  const t = useT()
+  // Default through the CMS, so an unset prop still reads in the
+  // visitor's language.
+  const resolvedPlaceholder = placeholder ?? t('location.general.search_placeholder')
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(null)
   const [inputValue, setInputValue] = useState(defaultValue)
@@ -143,7 +149,7 @@ export function LocationSearch({
         setSuggestions(response.suggestions)
       } catch (err) {
         console.error('Error fetching suggestions:', err)
-        setError('Failed to fetch location suggestions')
+        setError(t('location.general.suggestions_failed'))
         setSuggestions([])
       } finally {
         setIsLoadingSuggestions(false)
@@ -191,7 +197,7 @@ export function LocationSearch({
       setIsDropdownOpen(false)
       onLocationSelect(location)
     } catch (err) {
-      setError('Failed to retrieve location coordinates')
+      setError(t('location.general.coordinates_failed'))
       console.error('Error retrieving coordinates:', err)
     } finally {
       setIsLoadingCoordinates(false)
@@ -237,15 +243,15 @@ export function LocationSearch({
           readOnly
           disabled
           className="flex-1"
-          aria-label="Selected location"
+          aria-label={t('location.a11y.selected_label')}
         />
         <button
           onClick={handleChange}
           className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
           type="button"
-          aria-label="Change location"
+          aria-label={t('location.a11y.change_label')}
         >
-          Change
+          {t('location.general.change')}
         </button>
       </div>
     )
@@ -263,9 +269,9 @@ export function LocationSearch({
           value={inputValue}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           disabled={!isReady}
-          aria-label="Search for a location"
+          aria-label={t('location.a11y.search_label')}
           aria-autocomplete="list"
           aria-controls="location-search-listbox"
           aria-expanded={shouldShowDropdown}
@@ -284,7 +290,7 @@ export function LocationSearch({
         {isLoadingCoordinates && (
           <div className="px-5 py-4 text-center text-gray-500">
             <Spinner size="sm" color="currentColor" className="mx-auto mb-2" />
-            <div className="text-sm">Getting coordinates...</div>
+            <div className="text-sm">{t('location.general.getting_coordinates')}</div>
           </div>
         )}
 
@@ -299,14 +305,14 @@ export function LocationSearch({
         {isLoadingSuggestions ? (
           <div className="px-5 py-4 text-center text-gray-500">
             <Spinner size="sm" color="currentColor" className="mx-auto mb-2" />
-            <div className="text-sm">Searching...</div>
+            <div className="text-sm">{t('location.general.searching')}</div>
           </div>
         ) : !inputValue ? (
           <div className="px-5 py-4 text-sm text-gray-500 text-center">
-            Type to search for a location
+            {t('location.general.type_to_search')}
           </div>
         ) : suggestions.length === 0 && !error ? (
-          <div className="px-5 py-4 text-sm text-gray-500 text-center">No results found</div>
+          <div className="px-5 py-4 text-sm text-gray-500 text-center">{t('location.general.no_results')}</div>
         ) : null}
 
         {/* Suggestions List */}
