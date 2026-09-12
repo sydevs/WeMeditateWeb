@@ -9,11 +9,14 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { EN_TRANSLATIONS } from '../lib/i18n'
 
 const ctx: { settings: unknown } = { settings: undefined }
 
 vi.mock('vike-react/useData', () => ({ useData: () => ({ settings: ctx.settings }) }))
-vi.mock('vike-react/usePageContext', () => ({ usePageContext: () => ({ locale: 'en' }) }))
+vi.mock('vike-react/usePageContext', () => ({
+  usePageContext: () => ({ locale: 'en', urlPathname: '/index', translations: EN_TRANSLATIONS }),
+}))
 vi.mock('../components/organisms/Header', () => ({
   Header: ({ navItems }: { navItems: { label: string; dropdown?: unknown }[] }) => (
     <nav>{navItems.map((n) => `${n.label}${n.dropdown ? '[dropdown]' : ''}`).join(',')}</nav>

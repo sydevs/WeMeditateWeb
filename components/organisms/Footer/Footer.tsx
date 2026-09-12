@@ -1,5 +1,6 @@
 import { FooterLinkList, FooterLink } from '../../molecules/FooterLinkList'
 import { LanguageDropdown, LanguageOption } from '../../molecules/LanguageDropdown'
+import type { Locale } from '../../../server/cms-types'
 import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 import { FloralDividerSvg } from '../../atoms/graphics/svgs'
 
@@ -34,7 +35,7 @@ export interface FooterProps {
   /** Social media links */
   socialLinks: SocialLink[]
   /** Current language code */
-  currentLanguage: 'en' | 'es' | 'de' | 'it' | 'fr' | 'ru' | 'ro' | 'cs' | 'uk' | 'bg'
+  currentLanguage: Locale
   /** Available language options */
   languages: LanguageOption[]
   /** Copyright text */

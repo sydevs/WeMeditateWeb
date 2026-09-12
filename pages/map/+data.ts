@@ -1,7 +1,7 @@
 import type { PageContextServer } from 'vike/types'
 import type { WebConfig } from '../../server/cms-types'
 import type { AtlasSeoResponse } from '../../server/atlas-types'
-import { getWebConfig } from '../../server/cms-client'
+import { loadSiteContext } from '../../server/site-context'
 import { getAtlasSeo } from '../../server/atlas-client'
 
 export interface MapPageData {
@@ -33,10 +33,10 @@ export interface MapPageData {
 export async function data(pageContext: PageContextServer): Promise<MapPageData> {
   const atlasRoute = pageContext.routeParams.atlasRoute ?? '/'
 
-  const [seo, settings] = await Promise.all([
+  const [seo, site] = await Promise.all([
     getAtlasSeo({ route: atlasRoute, locale: pageContext.locale }),
-    getWebConfig({ locale: pageContext.locale }),
+    loadSiteContext(pageContext),
   ])
 
-  return { atlasRoute, seo, settings }
+  return { atlasRoute, seo, settings: site.settings }
 }

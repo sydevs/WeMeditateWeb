@@ -21,10 +21,11 @@ import { getRelatedMeditations, getRelatedLectures, getWebConfig } from './cms-c
 import { relatedMeditationsToCards, relatedLecturesToCards } from '../lib/related-content'
 import { idSchema } from './validation'
 import type { Locale } from './cms-types'
+import { isLocale } from './cms-types'
 
-/** Constrain the locale query param to the safe URL charset (default `en`). */
+/** Accept only a locale the CMS defines. Anything else reads as `en`. */
 function parseLocale(raw: string | undefined): Locale {
-  return (raw && /^[a-z]{2}(-[a-z]{2})?$/i.test(raw) ? raw : 'en') as Locale
+  return raw && isLocale(raw) ? raw : 'en'
 }
 
 /** Cache the JSON briefly in the browser and CDN. The heavy work is
