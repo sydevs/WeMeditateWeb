@@ -19,6 +19,7 @@ import {
   expectNoChrome,
   expectNoBrokenLinks,
   discoverFromCms,
+  renderedHtml,
   NOT_FOUND_MARKER,
 } from '../_helpers/preview'
 
@@ -89,8 +90,10 @@ describe('web preview pages', () => {
     const res = await fetchPage('/__smoke_does_not_exist__')
 
     expect(res.status, 'unknown path should return 404').toBe(404)
-    // ErrorType.CLIENT title from ErrorFallback (see ERROR_MARKERS).
-    expect(res.html, '404 should render the Content Not Found page').toContain(
+    // ErrorType.CLIENT title from ErrorFallback (see ERROR_MARKERS). Match
+    // the rendered markup: every page embeds the translations payload, which
+    // carries this title too, so the raw body would match on any page.
+    expect(renderedHtml(res.html), '404 should render the Content Not Found page').toContain(
       NOT_FOUND_MARKER,
     )
     // The error page carries no settings, so LayoutChrome falls back to bare —

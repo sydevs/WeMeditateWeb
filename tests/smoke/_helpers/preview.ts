@@ -78,6 +78,22 @@ export const ERROR_MARKERS = [
 export const NOT_FOUND_MARKER = enT(errorTitleKey(ErrorType.CLIENT))
 
 /**
+ * The document with every <script> block dropped, that is, the markup the
+ * reader actually sees.
+ *
+ * Every page now serializes the whole translations object into
+ * `<script id="vike_pageContext" type="application/json">`, and that object
+ * carries `errors.general.server_title` and its three siblings — the exact
+ * strings ERROR_MARKERS is built from. Matching a marker against the raw
+ * body therefore reports "rendered the error page" on every healthy page,
+ * and makes the 404 spec's positive assertion pass on any page at all.
+ * Match the rendered markup instead, so a marker means a rendered title.
+ */
+export function renderedHtml(html: string): string {
+  return html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
+}
+
+/**
  * Assert the response is a real rendered HTML page: 200, text/html, has a
  * non-empty <title>, and shows none of the error-boundary titles.
  */
@@ -89,8 +105,10 @@ export function expectRenders(page: PageResult, path: string): void {
 
   expect(title, `${path} should render a non-empty <title>`).toBeTruthy()
 
+  const rendered = renderedHtml(page.html)
+
   for (const marker of ERROR_MARKERS) {
-    expect(page.html.includes(marker), `${path} rendered the error page ("${marker}")`).toBe(false)
+    expect(rendered.includes(marker), `${path} rendered the error page ("${marker}")`).toBe(false)
   }
 }
 
