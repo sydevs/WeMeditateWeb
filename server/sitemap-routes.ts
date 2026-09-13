@@ -146,10 +146,21 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
       buildAlternates({ origin, path, locales: advertisedLocales(status, offered) })
 
     return [
-      { loc: `${origin}/`, alternates: cluster('/', home?._status) },
+      {
+        loc: `${origin}/`,
+        lastmod: home ? lastmodOf(home) : null,
+        alternates: cluster('/', home?._status),
+      },
       // An unpublished page returns with no slug. It has no URL to list.
+      //
+      // The home document is listed once, as `/`. `pages/[slug]/+route.ts`
+      // also serves it at `/${homeSlug}`, and listing both would offer a
+      // crawler two self-canonical URLs for one document, each carrying its
+      // own cluster — the duplicate-content shape this annotation exists to
+      // avoid. The `/` row above is the one that keeps its `hreflang` rows.
       ...docs.pages
         .filter((doc) => typeof doc.slug === 'string' && doc.slug.length > 0)
+        .filter((doc) => doc !== home)
         .map((doc) => ({
           loc: `${origin}/${doc.slug}`,
           lastmod: lastmodOf(doc),

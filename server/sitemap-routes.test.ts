@@ -198,6 +198,36 @@ describe('/sitemap.xml', () => {
       )
     })
 
+    it('lists the home document once, as /, and not again at its own slug', async () => {
+      // `pages/[slug]/+route.ts` serves `/home` too. Listing both offers a
+      // crawler two self-canonical URLs for one document, each with its own
+      // cluster — the duplicate-content shape this annotation avoids.
+      stubConfig({
+        availableLocales: ['en', 'fr'],
+        homePage: { id: 9, slug: 'home', title: 'Home' },
+      })
+      stubCollections({
+        pages: [
+          {
+            id: 9,
+            slug: 'home',
+            updatedAt: '2026-08-03T00:00:00.000Z',
+            _status: { en: 'published', fr: 'published' },
+          },
+          { id: 1, slug: 'about', _status: { en: 'published' } },
+        ],
+      })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).not.toContain('<loc>https://wemeditate.com/home</loc>')
+      expect(xml).toContain('<loc>https://wemeditate.com/about</loc>')
+      // `/` carries the document's own lastmod, which the read already held.
+      expect(xml).toContain(
+        '<url><loc>https://wemeditate.com/</loc><lastmod>2026-08-03T00:00:00.000Z</lastmod>',
+      )
+    })
+
     it('leaves meditations and lectures unannotated', async () => {
       // Neither collection opts into per-locale publish state upstream, so
       // neither has a per-document translation claim to make.
