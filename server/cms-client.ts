@@ -42,6 +42,7 @@ import type {
 import type {
   Locale,
   Page,
+  PageStatus,
   Song,
   WebConfig,
   WebTranslations,
@@ -375,8 +376,17 @@ export async function getPageBySlug(
  * Degrades to `{}` on failure, after a single attempt. The page content is
  * already in hand by then, and retrying for seconds to decorate the head
  * would cost more than the decoration is worth.
+ *
+ * The one cast sits here, at the boundary where `locale: 'all'` is applied:
+ * the generated `Page._status` spells the field as the plain string a
+ * single-locale read returns, and this is the only read that asks for the
+ * map. `advertisedLocales` keeps its own runtime guard regardless — the
+ * sitemap hands it a `_status` straight off a generated document type, and
+ * meditations and lectures really do return a string or nothing there.
  */
-export async function getPageLocaleStatus(options: { slug: string }): Promise<unknown> {
+export async function getPageLocaleStatus(options: {
+  slug: string
+}): Promise<Partial<Record<Locale, PageStatus>>> {
   try {
     return await withCache({
       cacheKey: generateCacheKey('page-status', { slug: options.slug }),
@@ -394,7 +404,7 @@ export async function getPageLocaleStatus(options: { slug: string }): Promise<un
           select: PAGE_STATUS_SELECT,
         })
 
-        return (result?.docs?.[0]?._status ?? {}) as unknown
+        return (result?.docs?.[0]?._status ?? {}) as Partial<Record<Locale, PageStatus>>
       },
     })
   } catch (error) {

@@ -8,7 +8,7 @@ import {
   getRelatedLectures,
 } from './cms-client'
 import { createPayloadClient } from './payload-client'
-import type { Page } from './cms-types'
+import type { Locale, Page, PageStatus } from './cms-types'
 
 // Stub the SDK factory to capture the query. Stub the cache so the
 // fetch function runs synchronously, without KV.
@@ -135,6 +135,14 @@ describe('getPageLocaleStatus', () => {
     expect(args).toMatchObject({ collection: 'pages', locale: 'all', depth: 0, limit: 1 })
     expect(args.select).toEqual({ _status: true })
     expect(result).toEqual(status)
+
+    // The signature, not only the value. A `Promise<unknown>` here pushed
+    // the shape check downstream, into a caller that already had to guard
+    // a generated document type for a different reason. `tsc` fails this
+    // line if the return type loosens again.
+    const typed: Partial<Record<Locale, PageStatus>> = result
+
+    expect(typed.en).toBe('published')
   })
 
   it('degrades to an empty map rather than failing the page', async () => {
