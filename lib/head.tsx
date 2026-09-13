@@ -19,12 +19,8 @@ import { useConfig } from 'vike-react/useConfig'
 import { getImageURL, getVariantName, isCloudflareImageURL } from './cloudflare-images'
 import { populatedImageUrl } from './cms-relationships'
 import { useOptionalPageContext, useT } from '../hooks/useT'
-import {
-  buildAlternates,
-  normalizeContentPath,
-  localeUrl,
-  type Alternate,
-} from './hreflang'
+import { buildAlternates, type Alternate } from './hreflang'
+import { localeUrl, normalizeContentPath } from './urls'
 import type { Locale } from '../server/cms-types'
 
 /** Minimal shape of a page's `meta` field (a subset of the CMS Page meta). */

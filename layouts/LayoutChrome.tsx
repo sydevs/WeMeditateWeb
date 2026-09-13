@@ -8,7 +8,7 @@ import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 import { localeEndonym } from '../lib/locale-names'
-import { normalizeContentPath } from '../lib/hreflang'
+import { normalizeContentPath } from '../lib/urls'
 import { useT } from '../hooks/useT'
 
 /**

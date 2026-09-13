@@ -11,10 +11,15 @@
  * the site's locale set. A page's slug is not localized upstream, and
  * meditations and lectures are addressed by numeric id, so an alternate is
  * a string operation on a path the caller already holds.
+ *
+ * How a URL is spelled is not this module's business. `lib/urls.ts` owns
+ * that, because the language dropdown and the canonical need the same rule
+ * and neither has anything to do with `hreflang`.
  */
 
 import type { Locale } from '../server/cms-types'
 import { DEFAULT_LOCALE } from '../server/cms-types'
+import { localeUrl, normalizeContentPath } from './urls'
 
 /** One `rel="alternate"` row: a language code and the URL it points at. */
 export interface Alternate {
@@ -27,43 +32,6 @@ export interface Alternate {
  * locale matches the reader.
  */
 export const X_DEFAULT = 'x-default'
-
-/**
- * The locale-free path, in the spelling the URL builders below expect.
- *
- * `+onBeforeRoute` rewrites `/` to `/index` before routing, and
- * `pageContext.urlPathname` carries that spelling through to the render.
- * `/index` is not a URL anyone should be pointed at. A trailing slash goes
- * too, so `/about/` and `/about` are not two URLs each claiming to be the
- * other's canonical.
- */
-export function normalizeContentPath(pathname: string | null | undefined): string {
-  if (!pathname || pathname === '/index') {
-    return '/'
-  }
-
-  return pathname.replace(/\/+$/, '') || '/'
-}
-
-/**
- * The absolute URL a locale serves an already-normalized path at.
- *
- * English is served bare, because `+onBeforeRoute` 301s `/en/x` to `/x`.
- * Advertising `/en/x` would advertise a redirect, which is the one thing a
- * canonical must never be.
- *
- * Pass a path from `normalizeContentPath`. This does not re-normalize: it
- * runs once per locale, and the path is the same on every one of them.
- */
-export function localeUrl(origin: string, locale: Locale, path: string): string {
-  if (locale === DEFAULT_LOCALE) {
-    return `${origin}${path}`
-  }
-
-  // `/fr` rather than `/fr/`: `+onBeforeRoute`'s pattern matches a bare
-  // prefix and resolves it to the home page.
-  return path === '/' ? `${origin}/${locale}` : `${origin}/${locale}${path}`
-}
 
 /**
  * The locales one document may advertise: published in the CMS **and**
