@@ -58,24 +58,42 @@ function lastmodOf(doc: { updatedAt?: string | null }): string | null {
  * What the sitemap needs from the site config: the locales it offers, and
  * which page `/` serves.
  *
- * This is the one read the annotation adds. It is cheap in practice:
- * `getWebConfig` is KV-cached for 24 h and every page render reads it too,
- * so this shares one entry with them rather than adding load. A failure
- * degrades to an English-only cluster and an unannotated `/`, which is
- * never wrong — only less complete.
+ * The one read the annotation adds, and cheap in practice: `getWebConfig`
+ * is KV-cached for 24 h and every page render reads it too, so this shares
+ * one entry with them rather than adding load. A failure degrades to an
+ * English-only cluster and an unannotated `/` — never wrong, only less
+ * complete.
  */
 async function getSiteAnnotation(): Promise<{ offered: Locale[]; homeSlug: string | null }> {
   try {
     const settings = await getWebConfig({ locale: DEFAULT_LOCALE })
 
-    return {
-      offered: settings.availableLocales,
-      homeSlug: typeof settings.homePage?.slug === 'string' ? settings.homePage.slug : null,
-    }
+    return { offered: settings.availableLocales, homeSlug: settings.homePage?.slug ?? null }
   } catch (error) {
     console.warn('[getSiteAnnotation] falling back to English-only alternates:', error)
 
     return { offered: [DEFAULT_LOCALE], homeSlug: null }
+  }
+}
+
+/** The three content reads, cached as the documents they return. */
+async function readContentDocs() {
+  const client = createPayloadClient()
+  const read = { limit: CONTENT_READ_LIMIT, depth: 0, locale: 'en' as const }
+
+  const [pages, meditations, lectures] = await Promise.all([
+    // `locale: 'all'` makes `_status` arrive as a per-locale map, and adds
+    // no query: `slug` and `updatedAt` are not localized, so they come back
+    // as plain values in the same response.
+    client.find({ collection: 'pages', ...read, locale: 'all', select: PAGE_SITEMAP_SELECT }),
+    client.find({ collection: 'meditations', ...read, select: MEDITATION_SITEMAP_SELECT }),
+    client.find({ collection: 'lectures', ...read, select: LECTURE_SITEMAP_SELECT }),
+  ])
+
+  return {
+    pages: pages?.docs ?? [],
+    meditations: meditations?.docs ?? [],
+    lectures: lectures?.docs ?? [],
   }
 }
 
@@ -91,89 +109,58 @@ async function getSiteAnnotation(): Promise<{ offered: Locale[]; homeSlug: strin
  * row per locale variant. That is what the alternates annotation is for,
  * and the `<head>` of every variant carries the full reciprocal cluster.
  *
- * The pages read is the one that changed: `locale: 'all'` makes `_status`
- * arrive as a per-locale map. It adds no query — `slug` and `updatedAt`
- * are not localized, so they come back as plain values in the same
- * response. Meditations and lectures stay on the default locale: neither
- * collection opts into per-locale publish state upstream, so neither has a
- * per-document translation claim to make, and both list a bare URL.
+ * Meditations and lectures list a bare URL: neither collection opts into
+ * per-locale publish state upstream, so neither has a per-document
+ * translation claim to make.
+ *
+ * The cache holds the **documents**, keyed on the origin alone. The
+ * annotation runs after the cache, so a change to `availableLocales` or to
+ * the home page takes effect on the next request instead of orphaning a
+ * 500-document read.
  */
-async function getContentSitemapUrls(
-  origin: string,
-  annotation: { offered: Locale[]; homeSlug: string | null },
-): Promise<SitemapUrl[]> {
-  const { offered, homeSlug } = annotation
-
+async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
-    return await withCache({
-      cacheKey: generateCacheKey('content-sitemap', {
-        origin,
-        offered: offered.join(','),
-        homeSlug: homeSlug ?? '',
+    const [{ offered, homeSlug }, docs] = await Promise.all([
+      getSiteAnnotation(),
+      withCache({
+        cacheKey: generateCacheKey('content-sitemap', { origin }),
+        ttl: CacheTTL.LIST,
+        fetchFn: readContentDocs,
       }),
-      ttl: CacheTTL.LIST,
-      fetchFn: async () => {
-        const client = createPayloadClient()
-        const read = { limit: CONTENT_READ_LIMIT, depth: 0, locale: 'en' as const }
+    ])
 
-        const [pages, meditations, lectures] = await Promise.all([
-          client.find({
-            collection: 'pages',
-            limit: CONTENT_READ_LIMIT,
-            depth: 0,
-            // See `getPageAdvertisedLocales`: `all` asks for the per-locale
-            // `_status` map. `slug` and `updatedAt` are not localized, so
-            // this stays one query returning plain values for both.
-            locale: 'all' as unknown as Locale,
-            select: PAGE_SITEMAP_SELECT,
-          }),
-          client.find({ collection: 'meditations', ...read, select: MEDITATION_SITEMAP_SELECT }),
-          client.find({ collection: 'lectures', ...read, select: LECTURE_SITEMAP_SELECT }),
-        ])
+    // `/` serves the config's `homePage`, so it advertises that page's
+    // locales. Its `_status` is already in the list read above — there is
+    // no second read for the home page.
+    const home = homeSlug ? docs.pages.find((doc) => doc.slug === homeSlug) : undefined
+    const cluster = (path: string, status: unknown) =>
+      buildAlternates({ origin, path, locales: advertisedLocales(status, offered) })
 
-        const pageDocs = pages?.docs ?? []
-        // `/` serves the config's `homePage`, so it advertises that page's
-        // locales. Its `_status` is already in the list read above — there
-        // is no second read for the home page.
-        const home = pageDocs.find((doc) => homeSlug !== null && doc.slug === homeSlug)
-
-        return [
-          {
-            loc: `${origin}/`,
-            alternates: buildAlternates({
-              origin,
-              path: '/',
-              locales: home ? advertisedLocales(home._status, offered) : [],
-            }),
-          },
-          // An unpublished page returns with no slug. It has no URL to list.
-          ...pageDocs
-            .filter((doc) => typeof doc.slug === 'string' && doc.slug.length > 0)
-            .map((doc) => ({
-              loc: `${origin}/${doc.slug}`,
-              lastmod: lastmodOf(doc),
-              alternates: buildAlternates({
-                origin,
-                path: `/${doc.slug}`,
-                locales: advertisedLocales(doc._status, offered),
-              }),
-            })),
-          ...(meditations?.docs ?? []).map((doc) => ({
-            loc: `${origin}/meditations/${doc.id}`,
-            lastmod: lastmodOf(doc),
-          })),
-          ...(lectures?.docs ?? []).map((doc) => ({
-            loc: `${origin}/lectures/${doc.id}`,
-            lastmod: lastmodOf(doc),
-          })),
-        ]
-      },
-    })
+    return [
+      { loc: `${origin}/`, alternates: cluster('/', home?._status) },
+      // An unpublished page returns with no slug. It has no URL to list.
+      ...docs.pages
+        .filter((doc) => typeof doc.slug === 'string' && doc.slug.length > 0)
+        .map((doc) => ({
+          loc: `${origin}/${doc.slug}`,
+          lastmod: lastmodOf(doc),
+          alternates: cluster(`/${doc.slug}`, doc._status),
+        })),
+      ...docs.meditations.map((doc) => ({
+        loc: `${origin}/meditations/${doc.id}`,
+        lastmod: lastmodOf(doc),
+      })),
+      ...docs.lectures.map((doc) => ({
+        loc: `${origin}/lectures/${doc.id}`,
+        lastmod: lastmodOf(doc),
+      })),
+    ]
   } catch (error) {
-    // A sitemap that lists less than everything still helps. One that 500s does not.
+    // A sitemap that lists less than everything still helps. One that 500s
+    // does not — and the home page is listable without reading anything.
     console.warn('[getContentSitemapUrls] omitting site content from the sitemap:', error)
 
-    return []
+    return [{ loc: `${origin}/` }]
   }
 }
 
@@ -198,19 +185,14 @@ export function registerSitemapRoutes(app: Hono<CmsEnv>): void {
       return c.body(buildSitemapXml([]))
     }
 
-    // The content read needs the locale set to filter each document's
-    // cluster with, so it waits on the config. The atlas read does not, and
-    // still runs alongside it.
-    const [annotation, atlas] = await Promise.all([getSiteAnnotation(), getAtlasSitemapUrls(origin)])
-    const content = await getContentSitemapUrls(origin, annotation)
+    const [content, atlas] = await Promise.all([
+      getContentSitemapUrls(origin),
+      getAtlasSitemapUrls(origin),
+    ])
 
     c.header('Content-Type', 'application/xml; charset=utf-8')
     c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
 
-    // `/` last, not first: `getContentSitemapUrls` returns an annotated `/`
-    // row of its own, `buildSitemapXml` keeps the first occurrence of a
-    // URL, and so this bare row survives only when the content read
-    // degraded to nothing. The home page stays listed either way.
-    return c.body(buildSitemapXml([...content, ...atlas, { loc: `${origin}/` }]))
+    return c.body(buildSitemapXml([...content, ...atlas]))
   })
 }

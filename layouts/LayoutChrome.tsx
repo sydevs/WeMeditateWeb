@@ -8,6 +8,7 @@ import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 import { localeEndonym } from '../lib/locale-names'
+import { normalizeContentPath } from '../lib/hreflang'
 import { useT } from '../hooks/useT'
 
 /**
@@ -104,11 +105,13 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
 
   // The locales the CMS says this site offers, each linking to the current
   // page in that language rather than to its home page. `urlPathname` is
-  // already stripped of the locale prefix by +onBeforeRoute, and `/index`
-  // is its spelling of `/`. Adding the prefix back is `Link`'s job — the
-  // dropdown passes each option's own `locale` — so "English is served
-  // bare" keeps one owner.
-  const pathWithoutLocale = urlPathname === '/index' ? '/' : urlPathname
+  // already stripped of the locale prefix by +onBeforeRoute;
+  // `normalizeContentPath` undoes its `/index` spelling of `/`, and the
+  // hreflang cluster uses the same function, so the dropdown and the
+  // `<head>` cannot disagree about where a locale switch leads. Adding the
+  // prefix back is `Link`'s job — the dropdown passes each option's own
+  // `locale` — so "English is served bare" keeps one owner.
+  const pathWithoutLocale = normalizeContentPath(urlPathname)
   const languages = (settings.availableLocales ?? []).map((code) => ({
     code,
     label: localeEndonym(code),

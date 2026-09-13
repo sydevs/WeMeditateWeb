@@ -51,7 +51,6 @@ import type {
   RelatedLectureCard,
 } from './cms-types'
 import { DEFAULT_LOCALE, isLocale } from './cms-types'
-import { advertisedLocales } from '../lib/hreflang'
 
 // ============================================================================
 // Common Options Interfaces
@@ -358,58 +357,55 @@ export async function getPageBySlug(
 }
 
 /**
- * The locales one page is published in, for its `hreflang` cluster.
+ * One page's per-locale publish state, `{ en: 'published', de: 'draft' }`,
+ * for `advertisedLocales` to turn into an `hreflang` cluster.
  *
  * A **second, locale-agnostic read** beside the content read, not a
- * replacement for it. `?locale=all` turns every localized field into a
+ * replacement for it. `locale: 'all'` turns every localized field into a
  * `{ locale: value }` map, which every consumer of `Page` would have to
  * unpick; this read selects `_status` alone, so the content read keeps its
- * ordinary single-locale shape. It costs one extra query per page render,
- * and its cache key carries no locale — every locale of a page shares one
- * entry, so it is one read per page per TTL, not one per locale.
+ * ordinary single-locale shape. Its cache key carries no locale, so every
+ * locale of a page shares one entry: one read per page per TTL, not one
+ * per locale.
  *
- * Degrades to `[]` on failure. A page with no cluster is a page that
- * advertises no translations; a page that 500s is worse than that. The
- * warning keeps the gap visible.
+ * Returns `{}` — never `null` — for a page that is missing or has no
+ * status. `withCache` reads a stored `null` as a miss, so a `null` answer
+ * would re-query on every render (see `server/AGENTS.md`).
+ *
+ * Degrades to `{}` on failure, after a single attempt. The page content is
+ * already in hand by then, and retrying for seconds to decorate the head
+ * would cost more than the decoration is worth.
  */
-export async function getPageAdvertisedLocales(options: {
-  slug: string
-  offered: readonly Locale[]
-}): Promise<Locale[]> {
+export async function getPageLocaleStatus(options: { slug: string }): Promise<unknown> {
   try {
-    const status = await withCache({
+    return await withCache({
       cacheKey: generateCacheKey('page-status', { slug: options.slug }),
       ttl: CacheTTL.PAGE,
+      retryConfig: { maxAttempts: 1 },
       fetchFn: async () => {
         const client = createPayloadClient()
 
         const result = await client.find({
           collection: 'pages',
           where: { slug: { equals: options.slug } },
-          // `all` is outside the generated `Locale` union, and is exactly
-          // the point: it asks for the per-locale map instead of one
-          // locale's value. SahajCloud#718 documents it on the `locale`
-          // parameter.
-          locale: 'all' as unknown as Locale,
+          locale: 'all',
           limit: 1,
           depth: 0,
           select: PAGE_STATUS_SELECT,
         })
 
-        return (result?.docs?.[0]?._status ?? null) as unknown
+        return (result?.docs?.[0]?._status ?? {}) as unknown
       },
     })
-
-    return advertisedLocales(status, options.offered)
   } catch (error) {
-    console.warn(`[getPageAdvertisedLocales] no cluster for "${options.slug}":`, error)
+    console.warn(`[getPageLocaleStatus] no cluster for "${options.slug}":`, error)
     Sentry.captureMessage('Per-locale publish state read failed; emitting no hreflang cluster', {
       level: 'warning',
-      tags: { source: 'getPageAdvertisedLocales' },
+      tags: { source: 'getPageLocaleStatus' },
       extra: { slug: options.slug },
     })
 
-    return []
+    return {}
   }
 }
 

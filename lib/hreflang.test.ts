@@ -46,8 +46,8 @@ describe('localeUrl', () => {
   })
 
   it('renders the home page as a bare prefix, which the router resolves', () => {
-    expect(localeUrl(ORIGIN, 'en', '/index')).toBe('https://wemeditate.com/')
-    expect(localeUrl(ORIGIN, 'fr', '/index')).toBe('https://wemeditate.com/fr')
+    expect(localeUrl(ORIGIN, 'en', '/')).toBe('https://wemeditate.com/')
+    expect(localeUrl(ORIGIN, 'fr', '/')).toBe('https://wemeditate.com/fr')
   })
 })
 
@@ -111,12 +111,6 @@ describe('buildAlternates', () => {
     ])
   })
 
-  it('points x-default at the bare English URL', () => {
-    const alternates = buildAlternates({ origin: ORIGIN, path: '/index', locales: ['en', 'de'] })
-
-    expect(alternates.at(-1)).toEqual({ hreflang: X_DEFAULT, href: 'https://wemeditate.com/' })
-  })
-
   it('omits x-default where English is not advertised', () => {
     // getPageBySlug drops a draft, so the bare URL 404s. Pointing the
     // fallback at a 404 is worse than having no fallback.
@@ -129,14 +123,30 @@ describe('buildAlternates', () => {
     expect(buildAlternates({ origin: ORIGIN, path: '/meditations/1', locales: [] })).toEqual([])
   })
 
-  it('renders every member of a cluster with the same cluster', () => {
-    // Reciprocity: /about and /fr/about carry identical annotations, so
-    // each lists itself and its sibling without knowing which it is.
-    const locales: Locale[] = ['en', 'fr']
-    const bare = buildAlternates({ origin: ORIGIN, path: '/about', locales })
-    const prefixed = buildAlternates({ origin: ORIGIN, path: '/about', locales })
+  it('lists every member of a cluster, so each member points at the others', () => {
+    // Reciprocity: the cluster depends only on the document, never on which
+    // of its URLs is being rendered, so /about and /fr/about carry the same
+    // rows and each names itself and its sibling.
+    const hrefs = buildAlternates({
+      origin: ORIGIN,
+      path: '/about',
+      locales: ['en', 'fr'],
+    }).map((alternate) => alternate.href)
 
-    expect(prefixed).toEqual(bare)
-    expect(bare.map((a) => a.href)).toContain('https://wemeditate.com/fr/about')
+    expect(hrefs).toContain('https://wemeditate.com/about')
+    expect(hrefs).toContain('https://wemeditate.com/fr/about')
+  })
+
+  it('accepts the routing spelling of the home page', () => {
+    // The page head passes `urlPathname`, which is `/index` on `/`.
+    const hrefs = buildAlternates({ origin: ORIGIN, path: '/index', locales: ['en', 'fr'] }).map(
+      (alternate) => alternate.href,
+    )
+
+    expect(hrefs).toEqual([
+      'https://wemeditate.com/',
+      'https://wemeditate.com/fr',
+      'https://wemeditate.com/',
+    ])
   })
 })

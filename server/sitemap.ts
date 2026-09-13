@@ -7,6 +7,8 @@
  * `sitemap-routes.ts`.
  */
 
+import type { Alternate } from '../lib/hreflang'
+
 /** One `<url>` entry. */
 export interface SitemapUrl {
   loc: string
@@ -15,11 +17,11 @@ export interface SitemapUrl {
   /**
    * The URL's `hreflang` cluster, as `xhtml:link` children.
    *
-   * Built by `lib/hreflang.ts`, the same function the page `<head>` uses,
+   * Built by `buildAlternates`, the same function the page `<head>` uses,
    * so the two annotations of one URL cannot disagree. Omitted or empty
    * means the document advertises no translations.
    */
-  alternates?: { hreflang: string; href: string }[]
+  alternates?: readonly Alternate[]
 }
 
 /**

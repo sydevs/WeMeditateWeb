@@ -38,17 +38,13 @@ describe('ContentHeadTags', () => {
       />,
     )
 
-  it('emits a self-referential canonical', () => {
-    expect(cluster([])).toContain('<link href="https://wemeditate.com/about" rel="canonical"/>')
-  })
-
-  it('emits the canonical even where there is no cluster', () => {
+  it('emits the canonical alone where there is no cluster', () => {
     // A meditation or a lecture carries no per-locale publish state. It
     // still needs a canonical — and an hreflang cluster whose members are
     // not self-canonical is one Google discards, so these ship together.
     const html = cluster([])
 
-    expect(html).toContain('rel="canonical"')
+    expect(html).toContain('<link href="https://wemeditate.com/about" rel="canonical"/>')
     expect(html).not.toContain('rel="alternate"')
   })
 
@@ -73,12 +69,4 @@ describe('ContentHeadTags', () => {
     expect(html).not.toContain('hrefLang=')
   })
 
-  it('never advertises a locale the document is not published in', () => {
-    // The end-to-end shape of the criterion `advertisedLocales` enforces:
-    // a page published only in English advertises only English, whatever
-    // the site's own locale set says.
-    const html = cluster(['en'])
-
-    expect(html).not.toContain('/fr/about')
-  })
 })

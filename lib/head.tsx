@@ -86,34 +86,26 @@ export function usePageHead(options: {
 }
 
 /**
- * The `<link>` tags a content URL contributes: its own canonical, then one
- * `rel="alternate"` row per advertised locale.
+ * One `<link rel="alternate" hreflang>` per row of a cluster.
+ *
+ * The single owner of how an alternate is spelled, used by the content
+ * pages here and by `/map` in `lib/atlas-head.tsx`. The two clusters are
+ * built very differently — content alternates are path prefixes, atlas
+ * alternates are `?locale=` query variants — but they are rendered
+ * identically, and a spelling that drifted between them would annotate
+ * half the site one way and half the other.
  *
  * Rendered as a component, instead of assembled as strings, so React does
- * the ordinary attribute escaping on every value — the same reason
- * `AtlasHeadTags` is one.
- *
- * The canonical comes first and is always emitted. An `hreflang` cluster
- * whose members are not self-canonical is one Google discards, so the two
- * belong in the same array and ship together.
+ * the ordinary attribute escaping on every value.
  */
-export function ContentHeadTags({
-  canonical,
-  alternates,
-}: {
-  canonical: string
-  alternates: Alternate[]
-}) {
+export function HreflangLinks({ alternates }: { alternates: readonly Alternate[] }) {
   return (
     <>
-      <link href={canonical} rel="canonical" />
-
       {alternates.map((alternate) => (
-        // The lowercase spelling is spread in deliberately. React emits
-        // the `hrefLang` prop as authored, and while an HTML parser
-        // lowercases attribute names anyway, these tags exist for other
-        // crawlers to read, and some of them pattern-match instead of
-        // parsing. Same reasoning as `lib/atlas-head.tsx:74-78`.
+        // The lowercase spelling is spread in deliberately. React emits the
+        // `hrefLang` prop as authored, and while an HTML parser lowercases
+        // attribute names anyway, these tags exist for other crawlers to
+        // read, and some of them pattern-match instead of parsing.
         <link
           key={alternate.hreflang}
           rel="alternate"
@@ -126,51 +118,64 @@ export function ContentHeadTags({
 }
 
 /**
- * Sets a content URL's canonical and `hreflang` cluster during render.
+ * The `<link>` tags a content URL contributes: its own canonical, then its
+ * cluster.
  *
- * This is a hook, so call it unconditionally from a component. Call it from
- * the route's `+Page.tsx`, never from a template: the templates are shared
- * with the `embed` routes and the live preview, and neither of those is a
- * URL a crawler should be pointed at.
- *
- * `alternateLocales` is the set the document may advertise — see
- * `advertisedLocales`. An empty set (the default) emits the canonical
- * alone, which is the honest annotation for a document with no per-locale
- * publish state.
- *
- * Contributes nothing at all when the origin is unknown, which is the case
- * outside a Vike app (Ladle, a bare unit render). A guessed canonical is
- * worse than none.
+ * The canonical is always emitted. An `hreflang` cluster whose members are
+ * not self-canonical is one Google discards, so the two ship together.
  */
-export function useContentHead(options: { alternateLocales?: readonly Locale[] } = {}): void {
-  const config = useConfig()
-  const pageContext = useOptionalPageContext()
+export function ContentHeadTags({
+  canonical,
+  alternates,
+}: {
+  canonical: string
+  alternates: readonly Alternate[]
+}) {
+  return (
+    <>
+      <link href={canonical} rel="canonical" />
+      <HreflangLinks alternates={alternates} />
+    </>
+  )
+}
 
+/**
+ * The canonical and `hreflang` cluster for whichever content route is
+ * rendering. Declared as `Head: ContentHead` in a route's `+config.ts`,
+ * beside its `Layout: LayoutChrome`.
+ *
+ * That is the level this belongs at. "This route is an indexable content
+ * URL" is route identity, exactly like "this route wears the site chrome",
+ * and a new content route opts in with one declarative line instead of
+ * remembering a hook call. It is also why this is not set from a template:
+ * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared
+ * with the `embed` routes and the live preview, and none of those is a URL
+ * to point a crawler at.
+ *
+ * `alternateLocales` comes off the route's data (`pages/[slug]/+data.ts`).
+ * A route that publishes none — a meditation or a lecture, neither of which
+ * carries per-locale publish state upstream — advertises nothing and gets
+ * its canonical alone.
+ *
+ * Renders nothing at all when the origin is unknown, which is the case
+ * outside a Vike app. A guessed canonical is worse than none.
+ */
+export function ContentHead() {
+  const pageContext = useOptionalPageContext()
   const origin = pageContext?.urlParsed?.origin
-  const locale = (pageContext?.locale ?? 'en') as Locale
 
   if (!origin) {
-    return
+    return null
   }
 
-  const path = normalizeContentPath(pageContext?.urlPathname)
-  const alternates = buildAlternates({
-    origin,
-    path,
-    locales: options.alternateLocales ?? [],
-  })
+  const path = normalizeContentPath(pageContext.urlPathname)
+  const locale = (pageContext.locale ?? 'en') as Locale
+  const { alternateLocales } = (pageContext.data ?? {}) as { alternateLocales?: readonly Locale[] }
 
-  config({
-    // ⚠ An array, even for one element — `Head` is a cumulative config and
-    // vike-react spreads it at render time. A bare element throws
-    // `((intermediate value) ?? []) is not iterable` and 500s the page.
-    // See the full note in `lib/atlas-head.tsx`.
-    Head: [
-      <ContentHeadTags
-        alternates={alternates}
-        canonical={localeUrl(origin, locale, path)}
-        key="content-head"
-      />,
-    ],
-  })
+  return (
+    <ContentHeadTags
+      alternates={buildAlternates({ origin, path, locales: alternateLocales ?? [] })}
+      canonical={localeUrl(origin, locale, path)}
+    />
+  )
 }

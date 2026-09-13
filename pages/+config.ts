@@ -16,7 +16,7 @@ export default {
   Layout,
 
   // Default <head> tags. Content pages override these per page with
-  // usePageHead (lib/head.ts), using their CMS meta. These defaults apply
+  // usePageHead (lib/head.tsx), using their CMS meta. These defaults apply
   // only where meta is absent.
   // https://vike.dev/head-tags
   title: 'We Meditate',
