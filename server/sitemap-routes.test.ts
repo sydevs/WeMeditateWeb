@@ -10,10 +10,20 @@ vi.mock('./cms-context', () => ({
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
+/** Every key this route asks the cache for, in call order. */
+const { cacheKeys } = vi.hoisted(() => ({ cacheKeys: [] as string[] }))
+
 vi.mock('./kv-cache', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./kv-cache')>()
 
-  return { ...actual, withCache: (opts: { fetchFn: () => unknown }) => opts.fetchFn() }
+  return {
+    ...actual,
+    withCache: (opts: { cacheKey: string; fetchFn: () => unknown }) => {
+      cacheKeys.push(opts.cacheKey)
+
+      return opts.fetchFn()
+    },
+  }
 })
 
 const { registerSitemapRoutes } = await import('./sitemap-routes')
@@ -51,6 +61,7 @@ function stubConfig(config: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
+  cacheKeys.length = 0
   find.mockReset()
   findGlobal.mockReset()
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -110,6 +121,18 @@ describe('/sitemap.xml', () => {
 
     expect(xml).toContain('/contact')
     expect(xml).not.toContain('<loc>https://wemeditate.com/null</loc>')
+  })
+
+  it('caches the documents under a prefix of their own, not the old URL list one', async () => {
+    await get('/sitemap.xml')
+
+    // This entry holds `{ pages, meditations, lectures }`. The
+    // `content-sitemap` prefix holds the `SitemapUrl[]` this route cached
+    // before the alternates work, and `getCachedResponse` returns stored
+    // JSON without a shape check. Reading one as the other drops every
+    // content URL from the sitemap for a whole TTL after the deploy.
+    expect(cacheKeys).toContain('content-sitemap-docs:origin=https://wemeditate.com')
+    expect(cacheKeys).not.toContain('content-sitemap:origin=https://wemeditate.com')
   })
 
   describe('hreflang alternates', () => {

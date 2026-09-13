@@ -117,13 +117,22 @@ async function readContentDocs() {
  * annotation runs after the cache, so a change to `availableLocales` or to
  * the home page takes effect on the next request instead of orphaning a
  * 500-document read.
+ *
+ * ⚠ The key prefix is `content-sitemap-docs`, not `content-sitemap`. The
+ * older prefix holds a `SitemapUrl[]`, the shape this function used to
+ * cache. `getCachedResponse` returns stored JSON without a shape check, so
+ * reusing the prefix would hand this code an array for up to
+ * `CacheTTL.LIST` after the deploy, `docs.pages` would be `undefined`, and
+ * every content URL would drop out of the sitemap until the entry expired.
+ * A new prefix lets the old entries expire unread. **Bump it again on the
+ * next shape change.**
  */
 async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     const [{ offered, homeSlug }, docs] = await Promise.all([
       getSiteAnnotation(),
       withCache({
-        cacheKey: generateCacheKey('content-sitemap', { origin }),
+        cacheKey: generateCacheKey('content-sitemap-docs', { origin }),
         ttl: CacheTTL.LIST,
         fetchFn: readContentDocs,
       }),
