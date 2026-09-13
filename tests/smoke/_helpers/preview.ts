@@ -7,6 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
+import { DEFAULT_LOCALE } from '../../../server/cms-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
 import { enT } from '../../../lib/i18n'
@@ -189,13 +190,21 @@ export interface CmsSamples {
   pageSlug: string | null
   meditationId: string | null
   /**
-   * The locales the site offers, from `wm-web-config.availableLocales`.
+   * The locales the site offers, from `wm-web-config.availableLocales`,
+   * normalised the way `getWebConfig` normalises it.
    *
    * The non-English spec used to hardcode `/es`. That asserted a CMS
    * setting an editor controls, so it would fail the day Spanish stopped
    * being offered — and it fails today on a site whose `availableLocales`
    * is still empty. Reading the real set makes the spec test the site's
    * own configuration instead of an assumption about it.
+   *
+   * An empty array is production's value today, and it does **not** mean
+   * the site offers nothing: `getWebConfig` reads it as English only,
+   * because `loadSiteContext` 404s every locale outside the set and an
+   * empty one would 404 the whole site. A spec that compared a rendered
+   * page against the raw array would read the English the Worker serves
+   * as a locale the site does not offer.
    */
   availableLocales: string[]
 }
@@ -317,10 +326,13 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
   const meditation = await firstDoc(`meditations?${meditationQuery}`)
   const config = await getJson('globals/wm-web-config?depth=0&select[availableLocales]=true')
   const locales = config?.availableLocales
+  const offered = Array.isArray(locales) ? locales.filter((l) => typeof l === 'string') : []
 
   return {
     pageSlug: typeof page?.slug === 'string' ? page.slug : null,
     meditationId: meditation?.id != null ? String(meditation.id) : null,
-    availableLocales: Array.isArray(locales) ? locales.filter((l) => typeof l === 'string') : [],
+    // Same normalisation as `getWebConfig`: an unconfigured global offers
+    // the default locale, and that is the locale set the Worker serves.
+    availableLocales: offered.length > 0 ? offered : [DEFAULT_LOCALE],
   }
 }
