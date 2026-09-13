@@ -3,8 +3,8 @@
  *
  * Verifies the Worker loads real content from the production CMS: the
  * homepage, a real CMS page, a non-English locale homepage, the
- * default-locale canonical redirect, and the 404 path. These are
- * always-present surfaces. They should never silently break.
+ * default-locale canonical redirect, the SEO head tags, and the 404 path.
+ * These are always-present surfaces. They should never silently break.
  *
  * Conventions confirmed against the deployed Worker:
  *  - A locale root has no trailing slash. "/es/" 301s to "/es".
@@ -84,6 +84,48 @@ describe('web preview pages', () => {
     expect(res.status, '/en should 301 to the de-localized path').toBe(301)
     expect(res.location, '/en redirect should set a Location header').toBeTruthy()
     expect(res.location, 'redirect target should drop the /en prefix').not.toMatch(/\/en(\/|$)/)
+  })
+
+  it('a content page carries a self-referential canonical', async (ctx) => {
+    const slug = (await discoverFromCms())?.pageSlug
+
+    ctx.skip(!slug, 'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret')
+
+    const page = await fetchPage(`/${slug}`)
+    const origin = new URL(page.finalUrl).origin
+
+    // The canonical is what makes the hreflang cluster count: Google
+    // discards a cluster whose members are not self-canonical.
+    expect(page.html, 'a content page should declare its own canonical').toContain(
+      `<link href="${origin}/${slug}" rel="canonical"/>`,
+    )
+  })
+
+  it('a content page advertises only locales it is published in', async (ctx) => {
+    const discovered = await discoverFromCms()
+    const slug = discovered?.pageSlug
+
+    ctx.skip(!slug, 'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret')
+
+    const page = await fetchPage(`/${slug}`)
+    const origin = new URL(page.finalUrl).origin
+    const advertised = [...page.html.matchAll(/rel="alternate" hreflang="([^"]+)"/g)].map(
+      (match) => match[1],
+    )
+
+    // English is served bare, and x-default points at that same URL.
+    expect(advertised, 'the cluster should name the bare English URL').toContain('en')
+    expect(page.html).toContain(
+      `<link rel="alternate" hreflang="x-default" href="${origin}/${slug}"/>`,
+    )
+    // The site's locale set is a filter on the cluster, never the cluster
+    // itself: a locale this page is not published in must not appear.
+    const offered = new Set([...(discovered?.availableLocales ?? []), 'x-default'])
+
+    expect(
+      advertised.filter((code) => !offered.has(code)),
+      'no advertised locale should sit outside availableLocales',
+    ).toEqual([])
   })
 
   it('returns a 404 page for unknown paths', async () => {
