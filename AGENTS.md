@@ -165,6 +165,15 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **A string composed in English is still an English string.** `` `Mute ${label.toLowerCase()}` ``
   and `` `Loading ${title.toLowerCase()}` `` build a sentence only English builds that way. Take
   the finished label as a prop or a key, never assemble one from a visible label.
+- **An indexable content route declares `Head: ContentHead` in its `+config.ts`**, beside its
+  `Layout: LayoutChrome`. `ContentHead` ([lib/head.tsx](lib/head.tsx)) emits the canonical and the
+  `hreflang` cluster; `useConfig` cannot emit a `<link>`, so this goes through vike-react's `Head`.
+  Never set it from a template: `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are
+  shared with the `embed` routes and the live preview, and none of those is a URL to point a
+  crawler at. A URL advertises only the locales its own document is published in —
+  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
+  `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
+  set, never the set itself.
 - **UI must be mobile-first and meet WCAG 2.1 AA.** See
   [design-system](docs/rules/design-system.md) for the full rules, including breakpoints and
   touch-target sizes.
