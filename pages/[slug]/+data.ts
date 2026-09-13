@@ -3,8 +3,8 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import type { Page, WebConfig } from '../../server/cms-types'
-import { getPageBySlug } from '../../server/cms-client'
+import type { Locale, Page, WebConfig } from '../../server/cms-types'
+import { getPageBySlug, getPageAdvertisedLocales } from '../../server/cms-client'
 import { loadSiteContext } from '../../server/site-context'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
@@ -16,6 +16,12 @@ export interface PageData {
   settings: WebConfig
   locale: string
   slug: string
+  /**
+   * The locales this page advertises in its `hreflang` cluster: published
+   * in the CMS and offered by the site. Empty means "no translations", and
+   * the page then emits its canonical alone.
+   */
+  alternateLocales: Locale[]
 }
 
 export async function data(pageContext: PageContextServer): Promise<PageData> {
@@ -38,13 +44,21 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     if (!settings.homePage) {
       throw render(404, 'Homepage not configured.')
     }
-    const content = await resolveContentIndexBlocks(settings.homePage.content, {
-      locale,
-      audiences: settings.audiences,
-      pageTagLabels: pageTagLabels(t),
-    })
+    // The home page advertises the locales of the document behind it, not
+    // of the `/index` route.
+    const [content, alternateLocales] = await Promise.all([
+      resolveContentIndexBlocks(settings.homePage.content, {
+        locale,
+        audiences: settings.audiences,
+        pageTagLabels: pageTagLabels(t),
+      }),
+      getPageAdvertisedLocales({
+        slug: settings.homePage.slug,
+        offered: settings.availableLocales,
+      }),
+    ])
 
-    return { page: { ...settings.homePage, content }, locale, slug, settings }
+    return { page: { ...settings.homePage, content }, locale, slug, settings, alternateLocales }
   }
 
   // Non-homepage: fetch WebConfig and page by slug in parallel
@@ -57,12 +71,17 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     // Page not found. This is a valid 404 state, not an error.
     throw render(404, 'Page not found.')
   }
-  // Resolve any content-index blocks' live lists for SSR.
-  const content = await resolveContentIndexBlocks(page.content, {
-    locale,
-    audiences: settings.audiences,
-    pageTagLabels: pageTagLabels(t),
-  })
+  // Resolve any content-index blocks' live lists for SSR, and read which
+  // locales this page is published in. The `hreflang` read is the one read
+  // this annotation adds, and it runs alongside work already happening.
+  const [content, alternateLocales] = await Promise.all([
+    resolveContentIndexBlocks(page.content, {
+      locale,
+      audiences: settings.audiences,
+      pageTagLabels: pageTagLabels(t),
+    }),
+    getPageAdvertisedLocales({ slug, offered: settings.availableLocales }),
+  ])
 
-  return { page: { ...page, content }, locale, slug, settings }
+  return { page: { ...page, content }, locale, slug, settings, alternateLocales }
 }

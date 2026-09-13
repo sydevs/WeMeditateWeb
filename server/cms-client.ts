@@ -51,6 +51,7 @@ import type {
   RelatedLectureCard,
 } from './cms-types'
 import { DEFAULT_LOCALE, isLocale } from './cms-types'
+import { advertisedLocales } from '../lib/hreflang'
 
 // ============================================================================
 // Common Options Interfaces
@@ -97,6 +98,16 @@ const PAGE_SELECT = {
   featuredVideo: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
+
+/**
+ * The one field the `hreflang` read needs.
+ *
+ * Read with `locale: 'all'`, so `_status` comes back as a per-locale map
+ * rather than one locale's value. `pages` opts into
+ * `versions.drafts.localizeStatus` upstream (SahajCloud#718), which is what
+ * makes that map exist.
+ */
+const PAGE_STATUS_SELECT = { _status: true } satisfies PagesSelect<true>
 
 /** Author fields the byline renders (photo populates via `images` at depth 2). */
 const AUTHOR_POPULATE = {
@@ -344,6 +355,62 @@ export async function getPageBySlug(
       return page
     },
   })
+}
+
+/**
+ * The locales one page is published in, for its `hreflang` cluster.
+ *
+ * A **second, locale-agnostic read** beside the content read, not a
+ * replacement for it. `?locale=all` turns every localized field into a
+ * `{ locale: value }` map, which every consumer of `Page` would have to
+ * unpick; this read selects `_status` alone, so the content read keeps its
+ * ordinary single-locale shape. It costs one extra query per page render,
+ * and its cache key carries no locale — every locale of a page shares one
+ * entry, so it is one read per page per TTL, not one per locale.
+ *
+ * Degrades to `[]` on failure. A page with no cluster is a page that
+ * advertises no translations; a page that 500s is worse than that. The
+ * warning keeps the gap visible.
+ */
+export async function getPageAdvertisedLocales(options: {
+  slug: string
+  offered: readonly Locale[]
+}): Promise<Locale[]> {
+  try {
+    const status = await withCache({
+      cacheKey: generateCacheKey('page-status', { slug: options.slug }),
+      ttl: CacheTTL.PAGE,
+      fetchFn: async () => {
+        const client = createPayloadClient()
+
+        const result = await client.find({
+          collection: 'pages',
+          where: { slug: { equals: options.slug } },
+          // `all` is outside the generated `Locale` union, and is exactly
+          // the point: it asks for the per-locale map instead of one
+          // locale's value. SahajCloud#718 documents it on the `locale`
+          // parameter.
+          locale: 'all' as unknown as Locale,
+          limit: 1,
+          depth: 0,
+          select: PAGE_STATUS_SELECT,
+        })
+
+        return (result?.docs?.[0]?._status ?? null) as unknown
+      },
+    })
+
+    return advertisedLocales(status, options.offered)
+  } catch (error) {
+    console.warn(`[getPageAdvertisedLocales] no cluster for "${options.slug}":`, error)
+    Sentry.captureMessage('Per-locale publish state read failed; emitting no hreflang cluster', {
+      level: 'warning',
+      tags: { source: 'getPageAdvertisedLocales' },
+      extra: { slug: options.slug },
+    })
+
+    return []
+  }
 }
 
 /**

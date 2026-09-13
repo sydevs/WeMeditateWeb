@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getPageBySlug,
+  getPageAdvertisedLocales,
   getWebConfig,
   partitionPublishedPages,
   getRelatedMeditations,
@@ -104,6 +105,60 @@ describe('getPageBySlug query shape', () => {
     // The embedded page select also omits the heavy `content` field.
     expect(args.populate.pages.slug).toBe(true)
     expect(args.populate.pages.content).toBeUndefined()
+  })
+})
+
+describe('getPageAdvertisedLocales', () => {
+  it('asks for the per-locale status map in one locale-agnostic read', async () => {
+    const find = vi.fn().mockResolvedValue({
+      docs: [{ id: 1, _status: { en: 'published', fr: 'published', de: 'draft' } }],
+    })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    const locales = await getPageAdvertisedLocales({
+      slug: 'about',
+      offered: ['en', 'fr', 'de'],
+    })
+
+    const args = find.mock.calls[0][0]
+
+    // One read, not one per locale: `all` returns every locale's status in
+    // a single query.
+    expect(find).toHaveBeenCalledTimes(1)
+    expect(args).toMatchObject({ collection: 'pages', locale: 'all', depth: 0, limit: 1 })
+    expect(args.select).toEqual({ _status: true })
+    expect(locales).toEqual(['en', 'fr'])
+  })
+
+  it('never advertises a locale the site does not offer', async () => {
+    const find = vi.fn().mockResolvedValue({
+      docs: [{ id: 1, _status: { en: 'published', ru: 'published' } }],
+    })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    // `/ru/about` 404s while `ru` is switched off (server/site-context.ts).
+    await expect(getPageAdvertisedLocales({ slug: 'about', offered: ['en'] })).resolves.toEqual([
+      'en',
+    ])
+  })
+
+  it('degrades to no cluster rather than failing the page', async () => {
+    const find = vi.fn().mockRejectedValue(new Error('CMS unavailable'))
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    await expect(getPageAdvertisedLocales({ slug: 'about', offered: ['en'] })).resolves.toEqual([])
+  })
+
+  it('makes no claim when the page is missing', async () => {
+    const find = vi.fn().mockResolvedValue({ docs: [] })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    await expect(getPageAdvertisedLocales({ slug: 'gone', offered: ['en'] })).resolves.toEqual([])
   })
 })
 

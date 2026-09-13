@@ -7,9 +7,14 @@ import { PageData } from './+data'
 import { PageTemplate } from '../../components/templates'
 import { getLeadSplash } from '../../lib/cms-blocks'
 import { isFeaturedNavPage } from '../../lib/featured-nav'
+import { useContentHead } from '../../lib/head'
 
 export function Page() {
-  const { page, settings } = useData<PageData>()
+  const { page, settings, alternateLocales } = useData<PageData>()
+  // Canonical and the hreflang cluster. Set here rather than in
+  // PageTemplate: the live preview renders the same template, and a draft
+  // preview is not a URL to point a crawler at.
+  useContentHead({ alternateLocales })
   // Drop the top padding when the page leads with a splash. This lets the
   // full-bleed hero sit flush at the top, under the overlaid header (see
   // LayoutChrome).
