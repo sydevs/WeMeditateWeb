@@ -174,6 +174,11 @@ These rules apply whether or not the matching rule file or skill is loaded.
   [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
   `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
   set, never the set itself.
+- **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.**
+  `normalizeContentPath` undoes `+onBeforeRoute`'s `/index` spelling of `/`, and `localeUrl`
+  serves English bare because `/en/x` 301s to `/x`. The language dropdown, the canonical and the
+  `hreflang` cluster all read the same answer from there. Never restate either rule at a call
+  site.
 - **UI must be mobile-first and meet WCAG 2.1 AA.** See
   [design-system](docs/rules/design-system.md) for the full rules, including breakpoints and
   touch-target sizes.
