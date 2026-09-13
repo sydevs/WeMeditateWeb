@@ -3,12 +3,13 @@ import { Hono } from 'hono'
 import type { CmsEnv } from './cms-context'
 
 const find = vi.fn()
+const findGlobal = vi.fn()
 
 vi.mock('./cms-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
-vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find }) }))
+vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
 vi.mock('./kv-cache', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./kv-cache')>()
 
@@ -35,10 +36,26 @@ function stubCollections(docs: Record<string, unknown[]>) {
   }))
 }
 
+/** The `wm-web-config` global, which supplies the locale set and `/`'s page. */
+function stubConfig(config: Record<string, unknown> = {}) {
+  findGlobal.mockResolvedValue({
+    availableLocales: ['en'],
+    homePage: null,
+    featuredPages: [],
+    featuredArticles: [],
+    classPages: [],
+    knowledgePages: [],
+    infoPages: [],
+    ...config,
+  })
+}
+
 beforeEach(() => {
   find.mockReset()
+  findGlobal.mockReset()
   vi.spyOn(console, 'warn').mockImplementation(() => {})
   stubCollections({})
+  stubConfig()
 })
 
 describe('/robots.txt', () => {
@@ -93,6 +110,103 @@ describe('/sitemap.xml', () => {
 
     expect(xml).toContain('/contact')
     expect(xml).not.toContain('<loc>https://wemeditate.com/null</loc>')
+  })
+
+  describe('hreflang alternates', () => {
+    it('annotates a page with the locales it is published in', async () => {
+      stubConfig({ availableLocales: ['en', 'fr', 'de'] })
+      stubCollections({
+        pages: [{ id: 1, slug: 'about', _status: { en: 'published', fr: 'published' } }],
+      })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('hreflang="en" href="https://wemeditate.com/about"')
+      expect(xml).toContain('hreflang="fr" href="https://wemeditate.com/fr/about"')
+      expect(xml).toContain('hreflang="x-default" href="https://wemeditate.com/about"')
+    })
+
+    it('omits a locale the page is not published in, though the site offers it', async () => {
+      // The criterion the ticket's whole investigation was about: using
+      // availableLocales here would declare a French translation that does
+      // not exist, and Google drops the cluster.
+      stubConfig({ availableLocales: ['en', 'fr', 'de'] })
+      stubCollections({
+        pages: [{ id: 1, slug: 'about', _status: { en: 'published', fr: 'draft' } }],
+      })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).not.toContain('/fr/about')
+      expect(xml).not.toContain('/de/about')
+    })
+
+    it('reads the whole status map in the page list read, adding no query', async () => {
+      stubConfig({ availableLocales: ['en', 'fr'] })
+      stubCollections({ pages: [{ id: 1, slug: 'about', _status: { en: 'published' } }] })
+
+      await (await get('/sitemap.xml')).text()
+
+      // One read per collection — three content, two atlas — exactly as
+      // before this annotation. The per-locale map rides along on the pages
+      // read, and `getSiteAnnotation` is a global read, not a find.
+      const pageReads = find.mock.calls.filter(([args]) => args.collection === 'pages')
+
+      expect(find).toHaveBeenCalledTimes(5)
+      expect(pageReads).toHaveLength(1)
+      expect(pageReads[0][0]).toMatchObject({ locale: 'all' })
+      // The one read this annotation adds, shared with every page render.
+      expect(findGlobal).toHaveBeenCalledTimes(1)
+    })
+
+    it('annotates / with the home page document, not with the route', async () => {
+      stubConfig({
+        availableLocales: ['en', 'fr'],
+        homePage: { id: 9, slug: 'home', title: 'Home' },
+      })
+      stubCollections({
+        pages: [{ id: 9, slug: 'home', _status: { en: 'published', fr: 'published' } }],
+      })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain(
+        '<url><loc>https://wemeditate.com/</loc><xhtml:link rel="alternate" hreflang="en" href="https://wemeditate.com/"/><xhtml:link rel="alternate" hreflang="fr" href="https://wemeditate.com/fr"/>',
+      )
+    })
+
+    it('leaves meditations and lectures unannotated', async () => {
+      // Neither collection opts into per-locale publish state upstream, so
+      // neither has a per-document translation claim to make.
+      stubConfig({ availableLocales: ['en', 'fr'] })
+      stubCollections({
+        meditations: [{ id: 142, updatedAt: null }],
+        lectures: [{ id: 163, updatedAt: null }],
+      })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<url><loc>https://wemeditate.com/meditations/142</loc></url>')
+      expect(xml).toContain('<url><loc>https://wemeditate.com/lectures/163</loc></url>')
+    })
+
+    it('still lists the home page when the config read fails', async () => {
+      findGlobal.mockRejectedValue(new Error('CMS unavailable'))
+      stubCollections({ pages: [{ id: 1, slug: 'about', _status: { en: 'published' } }] })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/</loc>')
+      expect(xml).toContain('<loc>https://wemeditate.com/about</loc>')
+    })
+
+    it('still lists the home page when the content reads fail', async () => {
+      find.mockRejectedValue(new Error('CMS unavailable'))
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<url><loc>https://wemeditate.com/</loc></url>')
+    })
   })
 
   describe('the atlas half', () => {
