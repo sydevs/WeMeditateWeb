@@ -3,9 +3,10 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import type { Page, WebConfig } from '../../server/cms-types'
-import { getPageBySlug } from '../../server/cms-client'
+import type { Locale, Page, WebConfig } from '../../server/cms-types'
+import { getPageBySlug, getPageLocaleStatus } from '../../server/cms-client'
 import { loadSiteContext } from '../../server/site-context'
+import { advertisedLocales } from '../../lib/hreflang'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
@@ -16,6 +17,12 @@ export interface PageData {
   settings: WebConfig
   locale: string
   slug: string
+  /**
+   * The locales this page advertises in its `hreflang` cluster: published
+   * in the CMS and offered by the site. Empty means "no translations", and
+   * the page then emits its canonical alone.
+   */
+  alternateLocales: Locale[]
 }
 
 export async function data(pageContext: PageContextServer): Promise<PageData> {
@@ -38,19 +45,33 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     if (!settings.homePage) {
       throw render(404, 'Homepage not configured.')
     }
-    const content = await resolveContentIndexBlocks(settings.homePage.content, {
-      locale,
-      audiences: settings.audiences,
-      pageTagLabels: pageTagLabels(t),
-    })
+    // The home page advertises the locales of the document behind it, not
+    // of the `/index` route.
+    const [content, status] = await Promise.all([
+      resolveContentIndexBlocks(settings.homePage.content, {
+        locale,
+        audiences: settings.audiences,
+        pageTagLabels: pageTagLabels(t),
+      }),
+      getPageLocaleStatus({ slug: settings.homePage.slug }),
+    ])
 
-    return { page: { ...settings.homePage, content }, locale, slug, settings }
+    return {
+      page: { ...settings.homePage, content },
+      locale,
+      slug,
+      settings,
+      alternateLocales: advertisedLocales(status, settings.availableLocales),
+    }
   }
 
-  // Non-homepage: fetch WebConfig and page by slug in parallel
-  const [{ settings, t }, page] = await Promise.all([
+  // Fetch the config, the page, and its per-locale publish state together.
+  // The status read needs only the slug, so making it wait on the other two
+  // would add a round trip to TTFB for a `<head>` annotation.
+  const [{ settings, t }, page, status] = await Promise.all([
     loadSiteContext(pageContext),
     getPageBySlug({ slug, locale }),
+    getPageLocaleStatus({ slug }),
   ])
 
   if (!page) {
@@ -64,5 +85,11 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     pageTagLabels: pageTagLabels(t),
   })
 
-  return { page: { ...page, content }, locale, slug, settings }
+  return {
+    page: { ...page, content },
+    locale,
+    slug,
+    settings,
+    alternateLocales: advertisedLocales(status, settings.availableLocales),
+  }
 }

@@ -17,6 +17,7 @@
 
 import { useConfig } from 'vike-react/useConfig'
 import type { AtlasSeoResponse } from '../server/atlas-types'
+import { HreflangLinks } from './head'
 
 /**
  * Open Graph properties vike-react already emits from `title`,
@@ -68,20 +69,10 @@ export function AtlasHeadTags({ seo }: { seo: AtlasSeoResponse }) {
       {/* One row per enabled atlas locale, plus x-default. The canonical
           is locale-free by design. Nothing in the atlas is translated, so
           the locales differ only in the widget's UI language, which the
-          endpoint carries as `?locale=`. */}
-      {seo.alternates.map((alternate) => (
-        // The lowercase spelling is spread in deliberately. React emits
-        // the `hrefLang` prop as authored, and while an HTML parser
-        // lowercases attribute names anyway, these tags exist for other
-        // crawlers to read, and some of them pattern-match instead of
-        // parsing.
-        <link
-          key={alternate.hreflang}
-          rel="alternate"
-          {...{ hreflang: alternate.hreflang }}
-          href={alternate.href}
-        />
-      ))}
+          endpoint carries as `?locale=` — unlike a content page's cluster,
+          whose members are path prefixes. The two clusters must not be
+          merged, but they are spelled by one component. */}
+      <HreflangLinks alternates={seo.alternates} />
 
       {Object.entries(seo.openGraph)
         .filter(([property]) => !OG_EMITTED_BY_CONFIG.has(property))

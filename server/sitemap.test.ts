@@ -87,4 +87,64 @@ describe('buildSitemapXml', () => {
     expect(xml).toContain('<urlset')
     expect(xml).toContain('</urlset>')
   })
+
+  describe('hreflang alternates', () => {
+    it('declares the xhtml namespace, even with no alternates to carry', () => {
+      // An `xhtml:link` under an undeclared prefix makes the whole document
+      // invalid, and Search Console then rejects every URL in it. Declaring
+      // it unconditionally removes the ordering hazard.
+      const xml = buildSitemapXml([{ loc: 'https://a.test/1' }])
+
+      expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"')
+    })
+
+    it('emits one xhtml:link per alternate, inside the url entry', () => {
+      const xml = buildSitemapXml([
+        {
+          loc: 'https://a.test/about',
+          alternates: [
+            { hreflang: 'en', href: 'https://a.test/about' },
+            { hreflang: 'fr', href: 'https://a.test/fr/about' },
+            { hreflang: 'x-default', href: 'https://a.test/about' },
+          ],
+        },
+      ])
+
+      expect(xml).toContain(
+        '<url><loc>https://a.test/about</loc><xhtml:link rel="alternate" hreflang="en" href="https://a.test/about"/><xhtml:link rel="alternate" hreflang="fr" href="https://a.test/fr/about"/><xhtml:link rel="alternate" hreflang="x-default" href="https://a.test/about"/></url>',
+      )
+    })
+
+    it('keeps an entry with no alternates exactly as it was', () => {
+      expect(buildSitemapXml([{ loc: 'https://a.test/1', alternates: [] }])).toContain(
+        '<url><loc>https://a.test/1</loc></url>',
+      )
+    })
+
+    it('escapes an alternate href, so one bad URL cannot invalidate the file', () => {
+      const xml = buildSitemapXml([
+        {
+          loc: 'https://a.test/x',
+          alternates: [{ hreflang: 'fr', href: 'https://a.test/fr/x?a=1&b=2' }],
+        },
+      ])
+
+      expect(xml).toContain('href="https://a.test/fr/x?a=1&amp;b=2"')
+    })
+
+    it('keeps loc and lastmod contiguous, with the alternates after them', () => {
+      // The sitemaps namespace declares `<url>` as a sequence. Keeping its
+      // own elements together, and the foreign-namespace children after
+      // them, is what a validator that skips extensions expects.
+      const xml = buildSitemapXml([
+        {
+          loc: 'https://a.test/x',
+          lastmod: '2026-08-25T10:00:00.000Z',
+          alternates: [{ hreflang: 'en', href: 'https://a.test/x' }],
+        },
+      ])
+
+      expect(xml.indexOf('<lastmod>')).toBeLessThan(xml.indexOf('<xhtml:link'))
+    })
+  })
 })

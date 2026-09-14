@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getPageBySlug,
+  getPageLocaleStatus,
   getWebConfig,
   partitionPublishedPages,
   getRelatedMeditations,
   getRelatedLectures,
 } from './cms-client'
 import { createPayloadClient } from './payload-client'
-import type { Page } from './cms-types'
+import type { Locale, Page, PageStatus } from './cms-types'
 
 // Stub the SDK factory to capture the query. Stub the cache so the
 // fetch function runs synchronously, without KV.
@@ -20,10 +21,21 @@ vi.mock('./cms-context', () => ({
 }))
 // Silence the Sentry warning emitted on unresolved page references.
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+// The stub runs fetchFn directly, so it also swallows the retry policy.
+// `withCacheSpy` keeps the options visible to a test that asserts one.
+const { withCacheSpy } = vi.hoisted(() => ({ withCacheSpy: vi.fn() }))
+
 vi.mock('./kv-cache', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./kv-cache')>()
 
-  return { ...actual, withCache: (opts: { fetchFn: () => unknown }) => opts.fetchFn() }
+  return {
+    ...actual,
+    withCache: (opts: { fetchFn: () => unknown }) => {
+      withCacheSpy(opts)
+
+      return opts.fetchFn()
+    },
+  }
 })
 
 /** Builds a fetch Response stub for the given status and JSON body. */
@@ -104,6 +116,66 @@ describe('getPageBySlug query shape', () => {
     // The embedded page select also omits the heavy `content` field.
     expect(args.populate.pages.slug).toBe(true)
     expect(args.populate.pages.content).toBeUndefined()
+  })
+})
+
+describe('getPageLocaleStatus', () => {
+  it('asks for the per-locale status map in one locale-agnostic read', async () => {
+    const status = { en: 'published', fr: 'published', de: 'draft' }
+    const find = vi.fn().mockResolvedValue({ docs: [{ id: 1, _status: status }] })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    const result = await getPageLocaleStatus({ slug: 'about' })
+    const args = find.mock.calls[0][0]
+
+    // One read, not one per locale: `all` returns every locale's status in
+    // a single query, and nothing but `_status` comes back.
+    expect(find).toHaveBeenCalledTimes(1)
+    expect(args).toMatchObject({ collection: 'pages', locale: 'all', depth: 0, limit: 1 })
+    expect(args.select).toEqual({ _status: true })
+    expect(result).toEqual(status)
+
+    // The signature, not only the value. A `Promise<unknown>` here pushed
+    // the shape check downstream, into a caller that already had to guard
+    // a generated document type for a different reason. `tsc` fails this
+    // line if the return type loosens again.
+    const typed: Partial<Record<Locale, PageStatus>> = result
+
+    expect(typed.en).toBe('published')
+  })
+
+  it('degrades to an empty map rather than failing the page', async () => {
+    const find = vi.fn().mockRejectedValue(new Error('CMS unavailable'))
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    await expect(getPageLocaleStatus({ slug: 'about' })).resolves.toEqual({})
+  })
+
+  it('returns an empty map, never null, for a missing page', async () => {
+    // `withCache` reads a stored `null` as a miss, so a `null` answer would
+    // re-query the CMS on every render of that page.
+    const find = vi.fn().mockResolvedValue({ docs: [] })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    await expect(getPageLocaleStatus({ slug: 'gone' })).resolves.toEqual({})
+  })
+
+  it('tries once, instead of retrying for seconds to decorate the head', async () => {
+    // The default is 3 attempts with 1s and 2s backoff. The page content is
+    // already in hand when this read fails, so retrying would stall TTFB
+    // for an annotation the page renders fine without.
+    const find = vi.fn().mockResolvedValue({ docs: [] })
+
+    withCacheSpy.mockClear()
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    await getPageLocaleStatus({ slug: 'about' })
+
+    expect(withCacheSpy.mock.calls[0][0]).toMatchObject({ retryConfig: { maxAttempts: 1 } })
   })
 })
 

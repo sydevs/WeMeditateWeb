@@ -48,3 +48,31 @@ A read whose *response type* is hand-mirrored from SahajCloud (for example
 `server/atlas-types.ts`, mirroring its `responseTypes.ts`) is not covered by `pnpm types:cms`,
 which generates collection types only. Render these fields defensively: a missing field should
 degrade, not throw.
+
+## `locale=all` returns a per-locale map, not a value
+
+A read with `locale: 'all'` returns every **localized** field as
+`{ locale: value }`, and every unlocalized field as a plain value. So a read that needs one
+document in one language must never use it — every consumer of `Page` would have to unpick the
+maps.
+
+Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
+`pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
+`?locale=all&select[_status]=true` answers that in a single query. `lib/hreflang.ts` turns the map
+into a locale list, and `getPageLocaleStatus` in `server/cms-client.ts` is the only single-document
+read that sends `all`.
+
+Three things follow, all load-bearing:
+
+- **It is a second read, beside the content read, not a replacement for it.** Its cache key carries
+  no locale, so every locale of a page shares one entry.
+- **It returns `{}`, never `null`, and retries once.** `withCache` reads a stored `null` as a miss,
+  so a `null` answer would re-query on every render; and the page content is already in hand when
+  this read fails, so the default 3-attempt backoff would stall TTFB to decorate a `<head>`.
+- **Only `pages` (and `app-cards`) carry the map.** `meditations` returns `_status` as a plain
+  string and `lectures` omits it. Neither makes a per-locale claim, and
+  `advertisedLocales` returns an empty list for both rather than guessing.
+
+The API also enforces this: a read at a locale the page is not published in returns **zero docs**,
+not a fallback copy. So a page always renders in a locale it is published in, and its canonical is
+always self-referential.

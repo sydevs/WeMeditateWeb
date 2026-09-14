@@ -42,6 +42,7 @@ import type {
 import type {
   Locale,
   Page,
+  PageStatus,
   Song,
   WebConfig,
   WebTranslations,
@@ -97,6 +98,16 @@ const PAGE_SELECT = {
   featuredVideo: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
+
+/**
+ * The one field the `hreflang` read needs.
+ *
+ * Read with `locale: 'all'`, so `_status` comes back as a per-locale map
+ * rather than one locale's value. `pages` opts into
+ * `versions.drafts.localizeStatus` upstream (SahajCloud#718), which is what
+ * makes that map exist.
+ */
+const PAGE_STATUS_SELECT = { _status: true } satisfies PagesSelect<true>
 
 /** Author fields the byline renders (photo populates via `images` at depth 2). */
 const AUTHOR_POPULATE = {
@@ -344,6 +355,68 @@ export async function getPageBySlug(
       return page
     },
   })
+}
+
+/**
+ * One page's per-locale publish state, `{ en: 'published', de: 'draft' }`,
+ * for `advertisedLocales` to turn into an `hreflang` cluster.
+ *
+ * A **second, locale-agnostic read** beside the content read, not a
+ * replacement for it. `locale: 'all'` turns every localized field into a
+ * `{ locale: value }` map, which every consumer of `Page` would have to
+ * unpick; this read selects `_status` alone, so the content read keeps its
+ * ordinary single-locale shape. Its cache key carries no locale, so every
+ * locale of a page shares one entry: one read per page per TTL, not one
+ * per locale.
+ *
+ * Returns `{}` — never `null` — for a page that is missing or has no
+ * status. `withCache` reads a stored `null` as a miss, so a `null` answer
+ * would re-query on every render (see `server/AGENTS.md`).
+ *
+ * Degrades to `{}` on failure, after a single attempt. The page content is
+ * already in hand by then, and retrying for seconds to decorate the head
+ * would cost more than the decoration is worth.
+ *
+ * The one cast sits here, at the boundary where `locale: 'all'` is applied:
+ * the generated `Page._status` spells the field as the plain string a
+ * single-locale read returns, and this is the only read that asks for the
+ * map. `advertisedLocales` keeps its own runtime guard regardless — the
+ * sitemap hands it a `_status` straight off a generated document type, and
+ * meditations and lectures really do return a string or nothing there.
+ */
+export async function getPageLocaleStatus(options: {
+  slug: string
+}): Promise<Partial<Record<Locale, PageStatus>>> {
+  try {
+    return await withCache({
+      cacheKey: generateCacheKey('page-status', { slug: options.slug }),
+      ttl: CacheTTL.PAGE,
+      retryConfig: { maxAttempts: 1 },
+      fetchFn: async () => {
+        const client = createPayloadClient()
+
+        const result = await client.find({
+          collection: 'pages',
+          where: { slug: { equals: options.slug } },
+          locale: 'all',
+          limit: 1,
+          depth: 0,
+          select: PAGE_STATUS_SELECT,
+        })
+
+        return (result?.docs?.[0]?._status ?? {}) as Partial<Record<Locale, PageStatus>>
+      },
+    })
+  } catch (error) {
+    console.warn(`[getPageLocaleStatus] no cluster for "${options.slug}":`, error)
+    Sentry.captureMessage('Per-locale publish state read failed; emitting no hreflang cluster', {
+      level: 'warning',
+      tags: { source: 'getPageLocaleStatus' },
+      extra: { slug: options.slug },
+    })
+
+    return {}
+  }
 }
 
 /**

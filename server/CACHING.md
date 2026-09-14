@@ -45,6 +45,17 @@ web-config:locale=en
 pages-by-tags:limit=100:locale=en:tags=lifestyle,wisdom
 ```
 
+### Change the cached shape, change the prefix
+
+`getCachedResponse` returns stored JSON as-is, with no shape check. A deploy that changes what a
+key holds therefore hands the new code an old value for a whole TTL, and the failure surfaces as
+a degraded response rather than an error. `/sitemap.xml` hit this: the `content-sitemap` entry
+held a `SitemapUrl[]` and came to hold `{ pages, meditations, lectures }`, which would have
+emptied the sitemap for 30 minutes per origin.
+
+Rename the prefix (`content-sitemap` → `content-sitemap-docs`) in the same commit that changes
+the shape. The stale entries then expire unread. There is no cache-invalidation step to run.
+
 ## Cached functions
 
 Every function below lives in [cms-client.ts](./cms-client.ts), unless noted.
@@ -53,6 +64,9 @@ Every function below lives in [cms-client.ts](./cms-client.ts), unless noted.
 - `getDocumentById()` — cached per collection (`CacheTTL.PAGE`, `.MEDITATION`, or `.LECTURE`).
   Pass `preview: true` to skip the cache and fetch draft content.
 - `getLecture()` — wraps `getDocumentById()`, and inherits its cache behavior.
+- `getPageLocaleStatus()` — cached, `CacheTTL.PAGE`, keyed on the slug alone, so every locale of
+  a page shares one entry. Retries once, and degrades to `{}` — never `null`, which `withCache`
+  reads as a miss.
 - `getWebConfig()` — cached, `CacheTTL.SETTINGS`.
 - `getPagesByTags()` — cached, `CacheTTL.LIST`.
 - `getSongsByTags()` — cached, `CacheTTL.SONG`.
