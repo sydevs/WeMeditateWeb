@@ -37,8 +37,19 @@ export const LIVE_PREVIEW_PARAM = 'live-preview'
 /** The query parameter naming what the admin panel is editing. */
 export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
 
-/** This site's audience claim. A token minted for the atlas must not work here. */
-const AUDIENCE = 'wm-web'
+/**
+ * The API-client role this site's key holds.
+ *
+ * A token names the role that may redeem it, and SahajCloud checks that claim
+ * against the roles on the authenticated key. Checking it here too means a
+ * token minted for the atlas never even opens a session on this site.
+ *
+ * ⚠ The claim used to name the *site* (`wm-web`). Only the consumers checked
+ * that, each against a constant it hardcoded, while the CMS accepted either —
+ * so one leaked token unlocked drafts on both surfaces. A role is matched
+ * against something the request proves.
+ */
+const CLIENT_ROLE = 'wemeditate-web-client'
 
 /**
  * What the panel is editing, when it is not the route's own document.
@@ -65,8 +76,10 @@ export const LIVE_PREVIEW_OFF: LivePreviewState = { active: false, scope: null }
 
 function base64UrlDecode(value: string): Uint8Array | null {
   const padded = value.replace(/-/g, '+').replace(/_/g, '/')
+
   try {
     const binary = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='))
+
     return Uint8Array.from(binary, (char) => char.charCodeAt(0))
   } catch {
     return null
@@ -92,14 +105,17 @@ export async function verifyLivePreviewToken(
   if (!verifyKeyBase64) return false
 
   const [body, signature] = token.split('.')
+
   if (!body || !signature) return false
 
   const keyBytes = base64UrlDecode(verifyKeyBase64.replace(/\s/g, ''))
   const signatureBytes = base64UrlDecode(signature)
   const claimsBytes = base64UrlDecode(body)
+
   if (!keyBytes || !signatureBytes || !claimsBytes) return false
 
   let key: CryptoKey
+
   try {
     key = await crypto.subtle.importKey('raw', keyBytes as BufferSource, 'Ed25519', false, [
       'verify',
@@ -114,18 +130,20 @@ export async function verifyLivePreviewToken(
     signatureBytes as BufferSource,
     new TextEncoder().encode(body) as BufferSource,
   )
+
   if (!valid) return false
 
   // Parsed only after the signature holds, so nothing downstream ever reads
   // unauthenticated JSON.
-  let claims: { aud?: unknown; exp?: unknown }
+  let claims: { role?: unknown; exp?: unknown }
+
   try {
     claims = JSON.parse(new TextDecoder().decode(claimsBytes)) as typeof claims
   } catch {
     return false
   }
 
-  if (claims.aud !== AUDIENCE) return false
+  if (claims.role !== CLIENT_ROLE) return false
   if (typeof claims.exp !== 'number' || claims.exp <= nowSeconds) return false
 
   return true
@@ -157,9 +175,11 @@ const cache = new WeakMap<object, Promise<LivePreviewState>>()
 
 export function loadLivePreview(pageContext: PageContextServer): Promise<LivePreviewState> {
   const existing = cache.get(pageContext)
+
   if (existing) return existing
 
   const loading = readLivePreviewState(pageContext).catch(() => LIVE_PREVIEW_OFF)
+
   cache.set(pageContext, loading)
 
   return loading
@@ -176,12 +196,14 @@ export async function readLivePreviewState(
 ): Promise<LivePreviewState> {
   const search = pageContext.urlParsed?.search as Record<string, string | undefined> | undefined
   const token = search?.[LIVE_PREVIEW_PARAM]
+
   if (!token) return LIVE_PREVIEW_OFF
 
   const verified = await verifyLivePreviewToken(
     token,
     import.meta.env.PUBLIC__LIVE_PREVIEW_VERIFY_KEY,
   )
+
   if (!verified) return LIVE_PREVIEW_OFF
 
   return { active: true, scope: readLivePreviewScope(search?.[LIVE_PREVIEW_SCOPE_PARAM]) }
