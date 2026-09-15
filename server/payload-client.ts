@@ -23,9 +23,17 @@ export interface PayloadClientConfig {
   /** Enable preview mode for draft content requests */
   preview?: boolean
   /** Preview secret for authenticating draft requests (sent as the x-sahajcloud-preview-secret header) */
-  previewSecret?: string
+  previewToken?: string
 }
 
+/**
+ * The header a live-preview token rides back to the CMS in.
+ *
+ * ⚠ The NAME is unchanged and the CONTENTS are not. It used to carry
+ * `SAHAJCLOUD_PREVIEW_SECRET` verbatim; it now carries a short-lived signed
+ * token. The name stayed because SahajCloud's Cloudflare Cache Rule matches on
+ * it and its CORS allowlist names it, and neither cares what the value means.
+ */
 const PREVIEW_SECRET_HEADER = 'x-sahajcloud-preview-secret'
 
 /**
@@ -133,7 +141,7 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
 
   const apiKey = config.apiKey ?? cmsContext.apiKey
   const baseURL = config.baseURL ?? cmsContext.baseURL
-  const previewSecret = config.preview ? config.previewSecret : undefined
+  const previewToken = config.preview ? config.previewToken : undefined
 
   validatePayloadConfig({ apiKey, baseURL })
 
@@ -141,8 +149,8 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
     Authorization: `clients API-Key ${apiKey}`,
   }
 
-  if (previewSecret) {
-    headers[PREVIEW_SECRET_HEADER] = previewSecret
+  if (previewToken) {
+    headers[PREVIEW_SECRET_HEADER] = previewToken
   }
 
   return new PayloadSDK<Config>({

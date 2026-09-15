@@ -164,6 +164,22 @@ export function ContentHead() {
     return null
   }
 
+  // ⚠ A live preview is not a URL to point a crawler at — the repo convention
+  // that kept `ContentHead` out of the templates in the first place, because
+  // they are shared with the `embed` routes and with preview.
+  //
+  // Preview used to be its own route, which declared no `Head` at all. Now it
+  // is the real route with a token on it, so the suppression has to happen
+  // here instead. Without it, previewing a DRAFT page emits a canonical and a
+  // full hreflang cluster pointing at a URL that 404s publicly — and under
+  // `draft: true` the alternates would advertise unpublished locales too.
+  //
+  // `X-Robots-Tag: noindex` also rides the response, but a canonical is a
+  // claim about another URL and is worth not making at all.
+  if (pageContext.livePreview?.active) {
+    return null
+  }
+
   const path = normalizeContentPath(pageContext.urlPathname)
   const locale = (pageContext.locale ?? 'en') as Locale
   const { alternateLocales } = (pageContext.data ?? {}) as { alternateLocales?: readonly Locale[] }

@@ -3,6 +3,7 @@ import './style.css'
 import './tailwind.css'
 import * as Sentry from '@sentry/react'
 import { ErrorFallback } from '../components/molecules'
+import { LivePreview } from '../components/organisms/LivePreview'
 import { ROUTE_ANNOUNCER_ID } from '../lib/route-announcer'
 
 /**
@@ -41,6 +42,7 @@ export default function LayoutRoot({ children }: { children: React.ReactNode }) 
         console.error('[ErrorBoundary] Caught error:', { error, eventId })
       }}
     >
+      <LivePreview />
       {children}
       <div
         aria-atomic="true"

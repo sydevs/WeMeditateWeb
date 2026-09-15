@@ -63,8 +63,12 @@ export type LivePreviewScope = 'wm-web-translations' | 'wm-web-config'
 const SCOPES: ReadonlySet<string> = new Set(['wm-web-translations', 'wm-web-config'])
 
 /**
- * The verdict for one request. This, never the token, is what reaches
- * `pageContext` and the browser.
+ * The verdict for one request, as the BROWSER sees it.
+ *
+ * ⚠ **This shape is in `passToClient`, so everything on it is public.** The
+ * token is deliberately absent: the client needs to know it is in a preview so
+ * the link guard mounts and the message listener subscribes, and it must never
+ * learn the credential that unlocked it.
  */
 export interface LivePreviewState {
   active: boolean
@@ -72,7 +76,24 @@ export interface LivePreviewState {
   scope: LivePreviewScope | null
 }
 
-export const LIVE_PREVIEW_OFF: LivePreviewState = { active: false, scope: null }
+/**
+ * The same verdict plus the credential, for server-side fetchers.
+ *
+ * Returned only by {@link loadLivePreview}, which is server-only by virtue of
+ * living under `server/` and being called from `data()` and `+onBeforeRender`.
+ * `toClientState` is the one way this becomes something `passToClient` carries.
+ */
+export interface LivePreviewSession extends LivePreviewState {
+  /** The verified token, to forward to the CMS. Never leaves the server. */
+  token: string | null
+}
+
+export const LIVE_PREVIEW_OFF: LivePreviewSession = { active: false, scope: null, token: null }
+
+/** Strips the credential, leaving what the browser may see. */
+export function toClientState(session: LivePreviewSession): LivePreviewState {
+  return { active: session.active, scope: session.scope }
+}
 
 function base64UrlDecode(value: string): Uint8Array | null {
   const padded = value.replace(/-/g, '+').replace(/_/g, '/')
@@ -171,9 +192,9 @@ export function readLivePreviewScope(raw: string | undefined): LivePreviewScope 
  * is async. `data()` runs before `onBeforeRender`, so the verdict cannot be set
  * there either — hence a memo both can call.
  */
-const cache = new WeakMap<object, Promise<LivePreviewState>>()
+const cache = new WeakMap<object, Promise<LivePreviewSession>>()
 
-export function loadLivePreview(pageContext: PageContextServer): Promise<LivePreviewState> {
+export function loadLivePreview(pageContext: PageContextServer): Promise<LivePreviewSession> {
   const existing = cache.get(pageContext)
 
   if (existing) return existing
@@ -193,7 +214,7 @@ export function loadLivePreview(pageContext: PageContextServer): Promise<LivePre
  */
 export async function readLivePreviewState(
   pageContext: PageContextServer,
-): Promise<LivePreviewState> {
+): Promise<LivePreviewSession> {
   const search = pageContext.urlParsed?.search as Record<string, string | undefined> | undefined
   const token = search?.[LIVE_PREVIEW_PARAM]
 
@@ -206,5 +227,9 @@ export async function readLivePreviewState(
 
   if (!verified) return LIVE_PREVIEW_OFF
 
-  return { active: true, scope: readLivePreviewScope(search?.[LIVE_PREVIEW_SCOPE_PARAM]) }
+  return {
+    active: true,
+    scope: readLivePreviewScope(search?.[LIVE_PREVIEW_SCOPE_PARAM]),
+    token,
+  }
 }

@@ -3,6 +3,7 @@ import { render } from 'vike/abort'
 import type { Meditation, MeditationSong } from '../../../server/cms-types'
 import { getDocumentById, getMeditationSongs } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
+import { loadLivePreview } from '../../../server/live-preview'
 
 export interface MeditationData {
   meditation: Meditation
@@ -33,8 +34,19 @@ export async function loadMeditation(pageContext: PageContextServer): Promise<Me
 
   // Fetch the meditation and its background-music tracks in parallel. Both the
   // full and embed routes call this, so music reaches both.
+  // ⚠ Without this the panel 404s on every draft. `getDocumentById` rejects a
+  // draft outright unless asked for one, so an editor previewing unpublished
+  // work would see the error page, not their document.
+  const preview = await loadLivePreview(pageContext)
+
   const [meditation, musicTracks] = await Promise.all([
-    getDocumentById({ collection: 'meditations', id, locale }),
+    getDocumentById({
+      collection: 'meditations',
+      id,
+      locale,
+      preview: preview.active && preview.scope === null,
+      previewToken: preview.token ?? undefined,
+    }),
     getMeditationSongs({ id, locale }),
   ])
 

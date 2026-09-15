@@ -3,6 +3,7 @@ import { render } from 'vike/abort'
 import type { ResolvedLecture } from '../../../server/cms-types'
 import { getLecture } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
+import { loadLivePreview } from '../../../server/live-preview'
 
 export interface LectureData {
   lecture: ResolvedLecture
@@ -27,7 +28,16 @@ export async function loadLecture(pageContext: PageContextServer): Promise<Lectu
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  const lecture = await getLecture({ id, locale })
+  // Lectures carry no drafts, so this unlocks nothing — but it bypasses the
+  // cache, which is what lets an editor see a save they just made.
+  const preview = await loadLivePreview(pageContext)
+
+  const lecture = await getLecture({
+    id,
+    locale,
+    preview: preview.active && preview.scope === null,
+    previewToken: preview.token ?? undefined,
+  })
 
   if (!lecture) {
     throw render(404, `Lecture with ID "${id}" not found.`)

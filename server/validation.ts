@@ -40,12 +40,6 @@ export const idSchema = z.coerce
   .positive('ID must be positive')
   .transform(String)
 
-/**
- * Schema for validating collection types in preview routes.
- * The CollectionType is defined in pages/preview/_components/types.ts
- */
-export const collectionSchema = z.enum(['pages', 'meditations', 'lectures'])
-
 // ===== Configuration Schemas =====
 
 /**

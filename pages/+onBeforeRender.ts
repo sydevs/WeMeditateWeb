@@ -13,7 +13,7 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { LIVE_PREVIEW_OFF, loadLivePreview } from '../server/live-preview'
+import { LIVE_PREVIEW_OFF, loadLivePreview, toClientState } from '../server/live-preview'
 import { loadTranslations } from '../server/site-context'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
@@ -32,11 +32,13 @@ export async function onBeforeRender(pageContext: PageContextServer) {
       loadLivePreview(pageContext),
     ])
 
-    return { pageContext: { translations, livePreview } }
+    // `toClientState`, never the session itself: `passToClient` serialises
+    // whatever this returns into the page, and the session carries the token.
+    return { pageContext: { translations, livePreview: toClientState(livePreview) } }
   } catch {
     // `loadTranslations` already degrades to the snapshot, so this only
     // catches something unforeseen. An error page that cannot render its
     // own error message is a blank screen.
-    return { pageContext: { translations: EN_TRANSLATIONS, livePreview: LIVE_PREVIEW_OFF } }
+    return { pageContext: { translations: EN_TRANSLATIONS, livePreview: toClientState(LIVE_PREVIEW_OFF) } }
   }
 }

@@ -1,10 +1,14 @@
 /**
  * Live-preview navigation guard.
  *
- * Preview routes (/preview and /preview/embed) render the real site
- * components, so every link on screen is genuine navigation. When an
- * editor clicks one inside the SahajCloud live-preview iframe, the iframe
- * leaves the document being edited, and the live-preview session breaks.
+ * ⚠ **Preview is no longer a route.** Any page renders drafts when the URL
+ * carries a valid token, so this guard now attaches on every page and decides
+ * from the session rather than from where it was mounted.
+ *
+ * Every link on screen is genuine navigation. When an editor clicks one inside
+ * the SahajCloud live-preview iframe, the iframe leaves the document being
+ * edited, and the session breaks — and the token has been scrubbed from the
+ * address bar by then, so there is no going back without reopening the panel.
  *
  * This guard makes links inert without threading a "disabled" prop
  * through every component (Link atom, Button-as-link, Breadcrumbs, cards,
@@ -52,12 +56,16 @@ export function shouldBlockPreviewLink(rawHref: string | null | undefined): bool
  * This also covers `auxclick`, because that is where browsers fire
  * middle-click "open in new tab". Only `<a>` is touched, so `<button>`
  * and media controls (play/pause, captions, the embed dropdown) keep
- * working. The `message`-based live-preview content updates and seek
- * sync stay untouched. The listener mounts only while a preview route
- * renders `<Preview>`, so the normal site navigates exactly as before.
+ * working. The `message`-based live-preview content updates and seek sync stay
+ * untouched.
+ *
+ * @param active - whether a live-preview session is open. The listener is not
+ *   attached at all when false, so the ordinary site navigates exactly as
+ *   before — this runs on every page now, and must cost nothing off-preview.
  */
-export function usePreviewLinkGuard(): void {
+export function useLivePreviewLinkGuard(active: boolean): void {
   useEffect(() => {
+    if (!active) return
     const blockAnchorNavigation = (event: MouseEvent) => {
       const target = event.target
 
@@ -85,5 +93,5 @@ export function usePreviewLinkGuard(): void {
       window.removeEventListener('click', blockAnchorNavigation, true)
       window.removeEventListener('auxclick', blockAnchorNavigation, true)
     }
-  }, [])
+  }, [active])
 }
