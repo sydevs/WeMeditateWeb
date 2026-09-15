@@ -7,6 +7,7 @@
 import type { KVNamespace } from '@cloudflare/workers-types'
 
 import type { Locale, WebTranslations } from '../server/cms-types'
+import type { LivePreviewState } from '../server/live-preview'
 
 /**
  * Typed environment variables from import.meta.env.
@@ -41,6 +42,17 @@ interface ImportMetaEnv {
   /** Optional external status page URL shown during errors */
   readonly PUBLIC__STATUS_PAGE_URL?: string
 
+  /**
+   * Ed25519 **public** key (base64) that verifies live-preview tokens minted
+   * by SahajCloud.
+   *
+   * Not a secret, which is the point: a verification key cannot mint, so
+   * publishing it costs nothing, and there is no second copy of a shared
+   * secret to keep in sync with the CMS. Unset, live preview is simply not
+   * available and every request renders published content.
+   */
+  readonly PUBLIC__LIVE_PREVIEW_VERIFY_KEY?: string
+
   // ===== Server-side environment variables =====
   // Server code only. In dev, these come from .env.local. In production,
   // they come from Cloudflare Workers context.env.
@@ -61,6 +73,12 @@ declare global {
     interface PageContext {
       /** Current locale (added by onBeforeRoute hook) */
       locale: Locale
+
+      /**
+       * The live-preview verdict for this request, set by `onBeforeRoute`.
+       * Carries the verdict and the scope — never the token itself.
+       */
+      livePreview: LivePreviewState
 
       /**
        * The locale's UI strings, from the CMS `wm-web-translations`

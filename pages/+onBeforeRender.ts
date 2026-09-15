@@ -13,6 +13,7 @@
  */
 
 import type { PageContextServer } from 'vike/types'
+import { LIVE_PREVIEW_OFF, loadLivePreview } from '../server/live-preview'
 import { loadTranslations } from '../server/site-context'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
@@ -23,11 +24,19 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     // to populate" — so loading both here would make every iframe embed pay
     // for a populated config read it never renders. On a chromed route the
     // data function has already loaded both, and this is a memo read.
-    return { pageContext: { translations: await loadTranslations(pageContext) } }
+    // Both are memo reads on a normal page: `data()` has already asked for the
+    // live-preview verdict and the globals. This hook exists so both reach the
+    // browser, where `useT()` and the preview chrome need them during hydration.
+    const [translations, livePreview] = await Promise.all([
+      loadTranslations(pageContext),
+      loadLivePreview(pageContext),
+    ])
+
+    return { pageContext: { translations, livePreview } }
   } catch {
     // `loadTranslations` already degrades to the snapshot, so this only
     // catches something unforeseen. An error page that cannot render its
     // own error message is a blank screen.
-    return { pageContext: { translations: EN_TRANSLATIONS } }
+    return { pageContext: { translations: EN_TRANSLATIONS, livePreview: LIVE_PREVIEW_OFF } }
   }
 }
