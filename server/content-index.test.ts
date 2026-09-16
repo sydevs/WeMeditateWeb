@@ -1,15 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Provide CMS config without a request context, run the fetch synchronously
-// (no KV), and silence Sentry warnings on the degrade paths.
+// Provide CMS config without a request context, and silence Sentry
+// warnings on the degrade paths.
 vi.mock('./cms-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
-vi.mock('./kv-cache', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./kv-cache')>()
-
-  return { ...actual, withCache: (opts: { fetchFn: () => unknown }) => opts.fetchFn() }
-})
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
 import {
