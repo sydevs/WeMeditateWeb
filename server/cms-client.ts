@@ -26,7 +26,7 @@
  */
 
 import { createPayloadClient } from './payload-client'
-import { withRetry, type RetryConfig } from './error-utils'
+import { withRetry } from './error-utils'
 import { getCmsContext } from './cms-context'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
@@ -72,11 +72,8 @@ interface LocalizedQueryOptions {
  * Preview reads skip the retry on purpose. An editor watching their own
  * edit needs the error now, not after about 7s of backoff.
  */
-function readCms<T>(
-  fetchFn: () => Promise<T>,
-  options: { preview?: boolean; retry?: RetryConfig } = {},
-): Promise<T> {
-  return options.preview === true ? fetchFn() : withRetry(fetchFn, options.retry)
+function readCms<T>(fetchFn: () => Promise<T>, options: { preview?: boolean } = {}): Promise<T> {
+  return options.preview === true ? fetchFn() : withRetry(fetchFn)
 }
 
 // ============================================================================
@@ -446,7 +443,7 @@ export async function getPageLocaleStatus(options: {
   slug: string
 }): Promise<Partial<Record<Locale, PageStatus>>> {
   try {
-    return await readCms(
+    return await withRetry(
       async () => {
         const client = createPayloadClient()
 
@@ -461,7 +458,9 @@ export async function getPageLocaleStatus(options: {
 
         return (result?.docs?.[0]?._status ?? {}) as Partial<Record<Locale, PageStatus>>
       },
-      { retry: { maxAttempts: 1 } },
+      // The page content is already in hand when this read fails, so the
+      // default 3-attempt backoff would stall TTFB to decorate a `<head>`.
+      { maxAttempts: 1 },
     )
   } catch (error) {
     console.warn(`[getPageLocaleStatus] no cluster for "${options.slug}":`, error)
