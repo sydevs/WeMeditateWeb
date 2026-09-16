@@ -185,6 +185,13 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **Test a batch edit on one file before running it everywhere.** Pipe the substitution through
   `diff` against a single file first. Run `perl -i` on the full set only after you confirm the
   `diff` output.
+- **A `console.log` that ships carries an `eslint-disable-next-line no-console` and a reason.**
+  `no-console` is a *warning* repo-wide and `eslint .` exits 0 on warnings, so
+  [eslint.config.js](eslint.config.js) raises it to an **error** under `components/`, `hooks/`,
+  `layouts/`, `lib/` and `pages/` — the tree a visitor's console sees. `console.error` and
+  `console.warn` are allowed there; a story stays at `warn`. `server/` stays at `warn` too: its
+  `[PayloadCMS] GET … → …` lines are the request log
+  [Debugging](#debugging-confirm-with-evidence-before-concluding) tells you to read.
 - **Never stop a Chrome debugging process (port 9222), or any process you did not start.** Other
   Claude instances may share this Chrome debugging session.
 - **Mapbox is the preferred mapping provider for this project.**
