@@ -19,9 +19,7 @@ export type { Track } from './types'
 export type AudioControl = 'skip' | 'shuffle' | 'volume' | 'progress' | 'trackInfo'
 
 export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /**
-   * Array of audio tracks to play
-   */
+  /** Array of audio tracks to play */
   tracks: Track[]
 
   /**
@@ -42,9 +40,7 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
    */
   disabledControls?: AudioControl[]
 
-  /**
-   * Callback when track changes
-   */
+  /** Callback when track changes */
   onTrackChange?: (trackIndex: number) => void
 }
 
@@ -220,9 +216,7 @@ function AudioPlayerInner({
   )
 }
 
-/**
- * AudioPlayer with AudioPlayerProvider context wrapper
- */
+/** AudioPlayer with AudioPlayerProvider context wrapper */
 export function AudioPlayer(props: AudioPlayerProps) {
   return (
     <AudioPlayerProvider>

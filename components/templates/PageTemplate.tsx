@@ -20,9 +20,7 @@ import { isPopulated, populatedImageUrl } from '../../lib/cms-relationships'
 import { getLeadSplash } from '../../lib/cms-blocks'
 
 export interface PageTemplateProps {
-  /**
-   * Page data from PayloadCMS
-   */
+  /** Page data from PayloadCMS */
   page: Page
 
   /**

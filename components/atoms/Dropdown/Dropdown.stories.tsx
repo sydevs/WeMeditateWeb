@@ -16,9 +16,7 @@ export default {
   title: 'Atoms',
 } satisfies StoryDefault
 
-/**
- * Dropdown component for creating accessible dropdown menus with keyboard support.
- */
+/** Dropdown component for creating accessible dropdown menus with keyboard support. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Sizes">

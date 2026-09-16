@@ -27,9 +27,7 @@ export type DropdownAlign = 'start' | 'center' | 'end' | 'left' | 'right'
 /** ARIA role applied to the panel (and wired into the trigger). */
 export type DropdownRole = 'menu' | 'dialog' | 'listbox'
 
-/**
- * Props for the Dropdown component
- */
+/** Props for the Dropdown component */
 export interface DropdownProps {
   /** The trigger element that opens/closes the dropdown */
   trigger: ReactNode
@@ -74,9 +72,7 @@ export interface DropdownProps {
   fullWidth?: boolean
 }
 
-/**
- * Props for the DropdownItem component
- */
+/** Props for the DropdownItem component */
 export interface DropdownItemProps extends ComponentProps<'a'> {
   /** Size variant. Defaults to the parent Dropdown's size when omitted. */
   size?: 'sm' | 'md' | 'lg'

@@ -3,9 +3,7 @@ import type { Locale } from '../../../../server/cms-types'
 import { localeEndonym } from '../../../../lib/locale-names'
 
 export interface LanguageFlagProps extends ComponentProps<'span'> {
-  /**
-   * Locale code, exactly as the CMS stores it (`en`, `pt-BR`, `en-AU`).
-   */
+  /** Locale code, exactly as the CMS stores it (`en`, `pt-BR`, `en-AU`). */
   language: Locale
 
   /**

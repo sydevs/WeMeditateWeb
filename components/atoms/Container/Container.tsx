@@ -21,14 +21,10 @@ export interface ContainerProps {
    */
   center?: boolean
 
-  /**
-   * Additional CSS classes
-   */
+  /** Additional CSS classes */
   className?: string
 
-  /**
-   * Container content
-   */
+  /** Container content */
   children: ReactNode
 }
 

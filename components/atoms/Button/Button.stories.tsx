@@ -30,9 +30,7 @@ export default {
   title: 'Atoms',
 } satisfies StoryDefault
 
-/**
- * Unified Button component showcasing all variants, sizes, shapes, and use cases.
- */
+/** Unified Button component showcasing all variants, sizes, shapes, and use cases. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Variants">

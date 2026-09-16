@@ -1,8 +1,6 @@
 import { Link } from '../../atoms'
 
-/**
- * A single link item
- */
+/** A single link item */
 export interface FooterLink {
   /** Link text */
   text: string
@@ -10,9 +8,7 @@ export interface FooterLink {
   href: string
 }
 
-/**
- * Props for the FooterLinkList component
- */
+/** Props for the FooterLinkList component */
 export interface FooterLinkListProps {
   /** Optional title for the link section */
   title?: string

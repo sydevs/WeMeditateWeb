@@ -9,21 +9,15 @@ import { Input, Dropdown, Spinner } from '../../atoms'
 import { NearbyOption } from './NearbyOption'
 import { useT } from '../../../hooks/useT'
 
-/**
- * Selected location data
- */
+/** Selected location data */
 export interface SelectedLocation {
   name: string
   coordinates: { lat: number; lng: number }
 }
 
-/**
- * Props for LocationSearch component
- */
+/** Props for LocationSearch component */
 export interface LocationSearchProps {
-  /**
-   * Callback fired when a location is selected
-   */
+  /** Callback fired when a location is selected */
   onLocationSelect: (location: SelectedLocation) => void
 
   /**
@@ -38,14 +32,10 @@ export interface LocationSearchProps {
    */
   placeholder?: string
 
-  /**
-   * Initial value for the input
-   */
+  /** Initial value for the input */
   defaultValue?: string
 
-  /**
-   * Additional CSS classes
-   */
+  /** Additional CSS classes */
   className?: string
 
   /**

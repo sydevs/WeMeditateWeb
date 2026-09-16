@@ -6,9 +6,7 @@ export default {
   title: "Atoms"
 } satisfies StoryDefault;
 
-/**
- * Breadcrumbs component showcasing navigation path patterns.
- */
+/** Breadcrumbs component showcasing navigation path patterns. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">

@@ -16,9 +16,7 @@ export const StoryGrid = ({ children }: StoryGridProps) => (
   </div>
 );
 
-/**
- * StoryGridHeader component for table headers.
- */
+/** StoryGridHeader component for table headers. */
 export interface StoryGridHeaderProps {
   children: ReactNode;
 }
@@ -29,9 +27,7 @@ export const StoryGridHeader = ({ children }: StoryGridHeaderProps) => (
   </thead>
 );
 
-/**
- * StoryGridHeaderRow component for header rows.
- */
+/** StoryGridHeaderRow component for header rows. */
 export interface StoryGridHeaderRowProps {
   children: ReactNode;
 }
@@ -42,9 +38,7 @@ export const StoryGridHeaderRow = ({ children }: StoryGridHeaderRowProps) => (
   </tr>
 );
 
-/**
- * StoryGridHeaderCell component for individual header cells.
- */
+/** StoryGridHeaderCell component for individual header cells. */
 export interface StoryGridHeaderCellProps {
   children?: ReactNode;
   colSpan?: number;
@@ -68,9 +62,7 @@ export const StoryGridHeaderCell = ({
   );
 };
 
-/**
- * StoryGridBody component for table body.
- */
+/** StoryGridBody component for table body. */
 export interface StoryGridBodyProps {
   children: ReactNode;
 }
@@ -81,9 +73,7 @@ export const StoryGridBody = ({ children }: StoryGridBodyProps) => (
   </tbody>
 );
 
-/**
- * StoryGridRow component for body rows.
- */
+/** StoryGridRow component for body rows. */
 export interface StoryGridRowProps {
   children: ReactNode;
 }
@@ -94,9 +84,7 @@ export const StoryGridRow = ({ children }: StoryGridRowProps) => (
   </tr>
 );
 
-/**
- * StoryGridCell component for body cells.
- */
+/** StoryGridCell component for body cells. */
 export interface StoryGridCellProps {
   children?: ReactNode;
   /** Whether this is a row label cell */

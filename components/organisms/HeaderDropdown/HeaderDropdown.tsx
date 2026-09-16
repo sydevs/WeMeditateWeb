@@ -15,19 +15,13 @@ export interface HeaderDropdownArticle {
 }
 
 export interface HeaderDropdownProps extends ComponentProps<'div'> {
-  /**
-   * Dropdown section title
-   */
+  /** Dropdown section title */
   title: string
 
-  /**
-   * Navigation links displayed in the left column
-   */
+  /** Navigation links displayed in the left column */
   links: HeaderDropdownLink[]
 
-  /**
-   * Featured articles displayed on the right with thumbnails
-   */
+  /** Featured articles displayed on the right with thumbnails */
   featuredArticles: HeaderDropdownArticle[]
 }
 
@@ -107,9 +101,7 @@ export function HeaderDropdown({
   )
 }
 
-/**
- * Featured article column with title and thumbnail
- */
+/** Featured article column with title and thumbnail */
 interface FeaturedArticleColumnProps {
   article: HeaderDropdownArticle
   className?: string

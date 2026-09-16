@@ -15,9 +15,7 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
    */
   subtitle?: string
 
-  /**
-   * Current locale for link prefixing
-   */
+  /** Current locale for link prefixing */
   locale?: string
 }
 
@@ -100,9 +98,7 @@ export function DiscoverMeditation({
   )
 }
 
-/**
- * Individual action item with icon, title, and subtitle
- */
+/** Individual action item with icon, title, and subtitle */
 interface ActionItemProps {
   href: string
   locale?: string

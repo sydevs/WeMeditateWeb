@@ -173,9 +173,7 @@ export const Default: Story = () => (
 
 Default.storyName = "Splash Loader"
 
-/**
- * Interactive component to demonstrate loading state transitions
- */
+/** Interactive component to demonstrate loading state transitions */
 function InteractiveSplashLoader() {
   const [isLoading, setIsLoading] = useState(true);
 

@@ -16,14 +16,10 @@ import { useT } from '../../../hooks/useT'
 const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px'
 
 export interface ImageProps extends ComponentProps<'img'> {
-  /**
-   * Image source URL
-   */
+  /** Image source URL */
   src: string
 
-  /**
-   * Alternative text for accessibility
-   */
+  /** Alternative text for accessibility */
   alt: string
 
   /**

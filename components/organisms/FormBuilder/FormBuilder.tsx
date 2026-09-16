@@ -11,9 +11,7 @@ import { FormField } from '../../molecules/FormField'
 import { useT } from '../../../hooks/useT'
 import type { TFunction } from '../../../lib/i18n'
 
-/**
- * PayloadCMS Form Builder field configuration
- */
+/** PayloadCMS Form Builder field configuration */
 export interface FormBuilderField {
   /** Unique field identifier */
   name: string
@@ -46,9 +44,7 @@ export interface FormBuilderField {
   message?: string
 }
 
-/**
- * PayloadCMS Form Builder configuration
- */
+/** PayloadCMS Form Builder configuration */
 export interface FormBuilderConfig {
   /** Unique form identifier */
   id: string
@@ -71,9 +67,7 @@ export interface FormBuilderConfig {
   }
 }
 
-/**
- * Form submission data structure expected by PayloadCMS
- */
+/** Form submission data structure expected by PayloadCMS */
 export interface FormBuilderSubmission {
   form: string
   submissionData: Array<{
@@ -82,9 +76,7 @@ export interface FormBuilderSubmission {
   }>
 }
 
-/**
- * API error response with field-level errors
- */
+/** API error response with field-level errors */
 export interface FormBuilderApiError {
   message: string
   errors?: Array<{
@@ -93,9 +85,7 @@ export interface FormBuilderApiError {
   }>
 }
 
-/**
- * FormBuilder organism component props
- */
+/** FormBuilder organism component props */
 export interface FormBuilderProps {
   /** Form configuration from PayloadCMS */
   form: FormBuilderConfig
@@ -128,9 +118,7 @@ export interface FormBuilderProps {
    */
   align?: 'left' | 'center'
 
-  /**
-   * Additional CSS classes for the form wrapper
-   */
+  /** Additional CSS classes for the form wrapper */
   className?: string
 
   /**
@@ -149,9 +137,7 @@ export interface FormBuilderProps {
   schema?: ZodObject<ZodRawShape>
 }
 
-/**
- * Renders a form field based on its type
- */
+/** Renders a form field based on its type */
 function renderField(
   field: FormBuilderField,
   register: UseFormRegister<any>,
@@ -282,9 +268,7 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
     resolver: schema ? zodResolver(schema) : undefined,
   })
 
-  /**
-   * Handle form submission
-   */
+  /** Handle form submission */
   const handleFormSubmit = async (data: Record<string, any>) => {
     // Clear previous errors
     setApiErrors({})

@@ -17,9 +17,7 @@ export default {
   title: "Atoms"
 } satisfies StoryDefault;
 
-/**
- * Badge component showcasing all color variants, shapes, and usage examples.
- */
+/** Badge component showcasing all color variants, shapes, and usage examples. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Shapes × Colors">

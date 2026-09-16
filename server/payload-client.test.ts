@@ -1,6 +1,4 @@
-/**
- * Tests for PayloadCMS REST API client utilities
- */
+/** Tests for PayloadCMS REST API client utilities */
 
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { PayloadSDKError } from '@payloadcms/sdk'

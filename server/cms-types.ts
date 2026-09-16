@@ -140,32 +140,24 @@ export type WebTranslations = RequiredGroups<
 /** One translations tab — `common`, `navigation`, … */
 export type TranslationsTab = keyof WebTranslations
 
-/**
- * Page status enum
- */
+/** Page status enum */
 export type PageStatus = 'draft' | 'published'
 
-/**
- * Simplified page reference, used in WebConfig navigation.
- */
+/** Simplified page reference, used in WebConfig navigation. */
 export interface PageReference {
   id: string | number
   title: string
   slug: string
 }
 
-/**
- * Page meta information
- */
+/** Page meta information */
 export interface PageMeta {
   title: string | null
   description: string | null
   image: import('./payload-types').Image | null
 }
 
-/**
- * Minimal page data for lists (id, title, and meta image).
- */
+/** Minimal page data for lists (id, title, and meta image). */
 export interface PageListItem {
   id: string | number
   title: string | null
@@ -174,9 +166,7 @@ export interface PageListItem {
   } | null
 }
 
-/**
- * Minimal meditation data for lists (id, title, thumbnail)
- */
+/** Minimal meditation data for lists (id, title, thumbnail) */
 export interface MeditationListItem {
   id: string | number
   title: string | null

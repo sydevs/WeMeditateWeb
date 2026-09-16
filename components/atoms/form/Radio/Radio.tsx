@@ -1,9 +1,7 @@
 import { ComponentProps, forwardRef, useId } from 'react'
 
 export interface RadioProps extends Omit<ComponentProps<'input'>, 'type'> {
-  /**
-   * Radio button label text
-   */
+  /** Radio button label text */
   label?: string
 
   /**

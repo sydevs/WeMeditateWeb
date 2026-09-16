@@ -29,9 +29,7 @@ export type CmsEnv = {
   }
 }
 
-/**
- * CMS configuration returned by getCmsContext()
- */
+/** CMS configuration returned by getCmsContext() */
 export interface CmsContext {
   apiKey: string
   baseURL: string

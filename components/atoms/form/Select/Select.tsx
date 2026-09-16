@@ -19,9 +19,7 @@ export interface SelectProps extends ComponentProps<'select'> {
    */
   fullWidth?: boolean
 
-  /**
-   * Placeholder text shown when no value is selected
-   */
+  /** Placeholder text shown when no value is selected */
   placeholder?: string
 }
 

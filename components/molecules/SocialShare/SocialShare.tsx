@@ -3,14 +3,10 @@ import { SocialIcon, socialPlatformLabel } from '../../atoms/graphics/SocialIcon
 import { useT } from '../../../hooks/useT'
 
 export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /**
-   * The URL to share (current page URL)
-   */
+  /** The URL to share (current page URL) */
   url: string
 
-  /**
-   * Optional title/text to include with the share
-   */
+  /** Optional title/text to include with the share */
   title?: string
 
   /**

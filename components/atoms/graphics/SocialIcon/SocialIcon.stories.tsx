@@ -16,9 +16,7 @@ export default {
   title: "Atoms / Graphics"
 } satisfies StoryDefault;
 
-/**
- * SocialIcon component showcasing all platforms, variants, sizes, and usage in context.
- */
+/** SocialIcon component showcasing all platforms, variants, sizes, and usage in context. */
 export const Default: Story = () => {
   const platforms = ['facebook', 'instagram', 'bluesky', 'youtube', 'linkedin', 'whatsapp', 'pinterest', 'yandex', 'telegram', 'wechat'] as const
   const colors = ['gray', 'brand', 'primary', 'secondary'] as const

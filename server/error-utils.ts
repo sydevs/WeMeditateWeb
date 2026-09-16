@@ -39,9 +39,7 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
   },
 }
 
-/**
- * Shape of an HTTP-like error this module can read a status code from.
- */
+/** Shape of an HTTP-like error this module can read a status code from. */
 interface HttpErrorLike {
   response?: { status?: unknown }
   status?: unknown
@@ -73,9 +71,7 @@ const NETWORK_PHRASE_PATTERN = /\b(fetch failed|network error|connection refused
 
 const SERVER_PHRASE_PATTERN = /\b(internal server error|bad gateway|service unavailable|gateway timeout|50[0-9])\b/i
 
-/**
- * Classifies an error as NETWORK, SERVER, CLIENT, or UNKNOWN.
- */
+/** Classifies an error as NETWORK, SERVER, CLIENT, or UNKNOWN. */
 export function detectErrorType(error: unknown): ErrorType {
   if (!error) return ErrorType.UNKNOWN
 

@@ -7,9 +7,7 @@ export default {
   title: "Atoms"
 } satisfies StoryDefault;
 
-/**
- * Heading component showcasing all semantic levels, styling options, and usage in context.
- */
+/** Heading component showcasing all semantic levels, styling options, and usage in context. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Sizes">

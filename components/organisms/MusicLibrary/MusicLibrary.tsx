@@ -4,19 +4,13 @@ import { useT } from '../../../hooks/useT'
 import { Image } from '../../atoms'
 
 export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /**
-   * Array of audio tracks
-   */
+  /** Array of audio tracks */
   tracks: Track[]
 
-  /**
-   * Array of filter categories
-   */
+  /** Array of filter categories */
   filters: MusicFilter[]
 
-  /**
-   * Callback when filter changes
-   */
+  /** Callback when filter changes */
   onFilterChange?: (filterId: string | null) => void
 }
 

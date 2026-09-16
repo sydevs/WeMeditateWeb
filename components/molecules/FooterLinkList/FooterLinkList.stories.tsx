@@ -19,9 +19,7 @@ const heroLinks = [
   { text: 'Inspiration', href: '/inspiration' },
 ]
 
-/**
- * FooterLinkList molecule for displaying lists of footer links with optional title.
- */
+/** FooterLinkList molecule for displaying lists of footer links with optional title. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Default Variant">

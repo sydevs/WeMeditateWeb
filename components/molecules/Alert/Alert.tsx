@@ -18,14 +18,10 @@ export interface AlertProps extends Omit<ComponentProps<'div'>, 'title'> {
    */
   variant?: AlertVariant
 
-  /**
-   * Optional bold heading shown above the message.
-   */
+  /** Optional bold heading shown above the message. */
   title?: ReactNode
 
-  /**
-   * Override the default variant icon (a Heroicon component).
-   */
+  /** Override the default variant icon (a Heroicon component). */
   icon?: HeroIcon
 
   /**
@@ -34,9 +30,7 @@ export interface AlertProps extends Omit<ComponentProps<'div'>, 'title'> {
    */
   onDismiss?: () => void
 
-  /**
-   * Alert message.
-   */
+  /** Alert message. */
   children: ReactNode
 }
 

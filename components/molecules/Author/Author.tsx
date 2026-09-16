@@ -3,49 +3,31 @@ import { Avatar } from '../../atoms/Avatar/Avatar'
 import { useT } from '../../../hooks/useT'
 
 export interface AuthorProps {
-  /**
-   * Display variant
-   */
+  /** Display variant */
   variant: 'mini' | 'hero'
 
-  /**
-   * Author's name
-   */
+  /** Author's name */
   name: string
 
-  /**
-   * Country code, for example "FI" or "US"
-   */
+  /** Country code, for example "FI" or "US" */
   countryCode?: string
 
-  /**
-   * Author's profile image URL
-   */
+  /** Author's profile image URL */
   imageUrl?: string
 
-  /**
-   * How long the author has been meditating
-   */
+  /** How long the author has been meditating */
   meditationYears?: number
 
-  /**
-   * Author's title or credentials (hero variant only)
-   */
+  /** Author's title or credentials (hero variant only) */
   title?: string
 
-  /**
-   * Estimated reading time in minutes (mini variant only)
-   */
+  /** Estimated reading time in minutes (mini variant only) */
   readingTime?: number
 
-  /**
-   * Author's bio or description (hero variant only)
-   */
+  /** Author's bio or description (hero variant only) */
   description?: ReactNode
 
-  /**
-   * Link to author's profile page
-   */
+  /** Link to author's profile page */
   href?: string
 
   /**
@@ -54,9 +36,7 @@ export interface AuthorProps {
    */
   align?: 'left' | 'right'
 
-  /**
-   * Additional CSS classes
-   */
+  /** Additional CSS classes */
   className?: string
 }
 

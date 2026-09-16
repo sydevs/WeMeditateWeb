@@ -6,9 +6,7 @@ export default {
   title: 'Atoms'
 } satisfies StoryDefault
 
-/**
- * LeafDivider component provides a decorative divider with leaf ornaments.
- */
+/** LeafDivider component provides a decorative divider with leaf ornaments. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="With Line">

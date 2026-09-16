@@ -44,9 +44,7 @@ export default {
   title: 'Atoms / Graphics',
 } satisfies StoryDefault
 
-/**
- * Icon component showcasing all sizes, colors, common icons, and usage in context.
- */
+/** Icon component showcasing all sizes, colors, common icons, and usage in context. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Sizes">

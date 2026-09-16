@@ -2,39 +2,25 @@ import { ComponentProps } from 'react'
 import { Button, Heading, Image } from '../../atoms'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
-  /**
-   * Card number displayed above the content, for example "01", "02", "03"
-   */
+  /** Card number displayed above the content, for example "01", "02", "03" */
   number: string
 
-  /**
-   * Main heading of the technique
-   */
+  /** Main heading of the technique */
   title: string
 
-  /**
-   * Description text explaining the technique
-   */
+  /** Description text explaining the technique */
   description: string
 
-  /**
-   * URL for the technique image
-   */
+  /** URL for the technique image */
   imageSrc: string
 
-  /**
-   * Alt text for the image
-   */
+  /** Alt text for the image */
   imageAlt: string
 
-  /**
-   * Link destination for "Learn more" button
-   */
+  /** Link destination for "Learn more" button */
   href: string
 
-  /**
-   * Button text
-   */
+  /** Button text */
   buttonText: string
 
   /**

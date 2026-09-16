@@ -71,9 +71,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    */
   href?: string
 
-  /**
-   * Locale for the link (only used when href is provided)
-   */
+  /** Locale for the link (only used when href is provided) */
   locale?: string
 
   /**
@@ -82,9 +80,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    */
   type?: 'button' | 'submit' | 'reset'
 
-  /**
-   * Accessible label (required for icon-only buttons without text)
-   */
+  /** Accessible label (required for icon-only buttons without text) */
   'aria-label'?: string
 }
 

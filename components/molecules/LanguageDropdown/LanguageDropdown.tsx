@@ -6,9 +6,7 @@ import { Link } from '../../atoms/Link'
 import { GlobeAltIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { Icon } from '../../atoms/Icon'
 
-/**
- * A single language option
- */
+/** A single language option */
 export interface LanguageOption {
   /** Language code (ISO 639-1) */
   code: Locale
@@ -22,9 +20,7 @@ export interface LanguageOption {
   href: string
 }
 
-/**
- * Props for the LanguageDropdown component
- */
+/** Props for the LanguageDropdown component */
 export interface LanguageDropdownProps {
   /** Currently selected language code */
   currentLanguage: Locale

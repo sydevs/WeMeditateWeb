@@ -93,9 +93,7 @@ const linkedItems: MasonryGridItem[] = [
   }
 ];
 
-/**
- * MasonryGrid component showcasing responsive masonry layout with "Show More" functionality.
- */
+/** MasonryGrid component showcasing responsive masonry layout with "Show More" functionality. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Example">

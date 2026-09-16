@@ -6,9 +6,7 @@ export default {
   title: 'Organisms',
 } satisfies StoryDefault
 
-/**
- * ContentOverlay component showcasing all themes, alignments, and contrast variants.
- */
+/** ContentOverlay component showcasing all themes, alignments, and contrast variants. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Dark Theme">

@@ -15,14 +15,10 @@ export type SocialPlatform =
   | 'wechat'
 
 export interface SocialIconProps extends Omit<ComponentProps<'a'>, 'children'> {
-  /**
-   * Social media platform
-   */
+  /** Social media platform */
   platform: SocialPlatform
 
-  /**
-   * Profile/page URL (optional for stories/demos)
-   */
+  /** Profile/page URL (optional for stories/demos) */
   href?: string
 
   /**

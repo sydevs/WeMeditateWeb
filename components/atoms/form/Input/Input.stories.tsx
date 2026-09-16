@@ -17,9 +17,7 @@ export default {
   title: "Atoms / Form"
 } satisfies StoryDefault;
 
-/**
- * Input component showcasing all types, width options, and validation states.
- */
+/** Input component showcasing all types, width options, and validation states. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Input Types">

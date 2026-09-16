@@ -36,9 +36,7 @@ const payloadConfigSchema = z.object({
   baseURL: baseUrlSchema.optional(),
 })
 
-/**
- * Zod issue structure for error reporting
- */
+/** Zod issue structure for error reporting */
 interface ValidationIssue {
   path: PropertyKey[]
   message: string
@@ -153,7 +151,5 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
   })
 }
 
-/**
- * Type-safe helper for PayloadCMS SDK client
- */
+/** Type-safe helper for PayloadCMS SDK client */
 export type PayloadClient = ReturnType<typeof createPayloadClient>

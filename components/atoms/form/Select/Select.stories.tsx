@@ -16,9 +16,7 @@ export default {
   title: "Atoms / Form"
 } satisfies StoryDefault;
 
-/**
- * Select component showcasing all options, optgroups, validation states, and usage in context.
- */
+/** Select component showcasing all options, optgroups, validation states, and usage in context. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">

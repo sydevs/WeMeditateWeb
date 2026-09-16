@@ -6,9 +6,7 @@ export default {
   title: "Atoms / Graphics"
 } satisfies StoryDefault;
 
-/**
- * Logo component showcasing all variants, sizes, and alignment options.
- */
+/** Logo component showcasing all variants, sizes, and alignment options. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Variants">

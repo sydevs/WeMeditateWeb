@@ -50,9 +50,7 @@ const languages = [
   { code: 'bg' as const, label: 'Български', href: '/about' },
 ]
 
-/**
- * Footer is an organism: the complete website footer, based on the wemeditate.com design.
- */
+/** Footer is an organism: the complete website footer, based on the wemeditate.com design. */
 export const Default: Story = () => (
   <Footer
     heroLinks={heroLinks}
