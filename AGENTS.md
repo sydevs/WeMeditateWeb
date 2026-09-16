@@ -120,9 +120,9 @@ request handler. [wrangler.toml](wrangler.toml) sets the Worker name, the `nodej
 and the `WEMEDITATE_CACHE` KV binding.
 
 CMS reads are cached by the **Cloudflare edge in front of SahajCloud**, which purges by
-`Cache-Tag` on every write. Nothing in this repo caches them. The `WEMEDITATE_CACHE` KV layer is
-left for three atlas and sitemap reads only, and nothing invalidates it. See
-[server/CACHING.md](server/CACHING.md) before you add a read.
+`Cache-Tag` on every write. Nothing in this repo caches them. See
+[server/CACHING.md](server/CACHING.md) before you add a read, or touch the `WEMEDITATE_CACHE` KV
+layer it still describes.
 
 ### Keep client-only heavy deps out of the Worker bundle
 

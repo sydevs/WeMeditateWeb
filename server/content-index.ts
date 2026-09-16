@@ -173,50 +173,32 @@ async function fetchContentIndexDocs(
   }
 }
 
-/**
- * Gets a content-index block's list, and runs `transform` over the raw
- * docs. This takes a `transform`, not a per-doc mapper, because the
- * meditations type maps one doc to many cards (a user-choice category
- * expands into its meditations), while cards and tracks map one to one.
- */
-async function resolveContentIndex<T>(
-  fields: ContentIndexBlockFields,
-  options: ResolveOptions,
-  transform: (docs: Record<string, unknown>[]) => T[],
-): Promise<T[]> {
-  if (!fields.apiEndpoint) {
-    return []
-  }
-
-  return transform(await fetchContentIndexDocs(fields, options))
-}
-
 /** Gets and maps a content-index block's list to cards (pages, lectures, meditations). */
-export function resolveContentIndexItems(
+export async function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
+  const docs = await fetchContentIndexDocs(fields, options)
+
   // Meditations resolve to user-choice categories, then flatten into a
   // deduped, facet-tagged grid. Pages and lectures map one card per doc.
-  const transform =
-    fields.type === 'meditations'
-      ? meditationCardsFromUserChoices
-      : (docs: Record<string, unknown>[]) =>
-          docs
-            .map((doc) => contentIndexCard(doc, fields.type, options.pageTagLabels))
-            .filter((card): card is ResolvedCardItem => card !== null)
+  if (fields.type === 'meditations') {
+    return meditationCardsFromUserChoices(docs)
+  }
 
-  return resolveContentIndex(fields, options, transform)
+  return docs
+    .map((doc) => contentIndexCard(doc, fields.type, options.pageTagLabels))
+    .filter((card): card is ResolvedCardItem => card !== null)
 }
 
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
-export function resolveContentIndexTracks(
+export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  return resolveContentIndex(fields, options, (docs) =>
-    docs.map(contentIndexTrack).filter((track): track is Track => track !== null),
-  )
+  const docs = await fetchContentIndexDocs(fields, options)
+
+  return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
 
 /** Recursively collect every `content-index` block's `fields` object. */

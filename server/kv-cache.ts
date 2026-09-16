@@ -4,23 +4,14 @@
  * It handles cache key generation, TTL, and graceful fallback when KV is
  * unavailable.
  *
- * ⚠ **Three callers are left**: `getAtlasSeo`, `getAtlasSitemapUrls`
- * (`atlas-client.ts`) and `getContentSitemapUrls` (`sitemap-routes.ts`).
- * Every CMS collection and global read moved to the Cloudflare edge cache,
- * which SahajCloud purges on write; nothing purges this one (#98). Do not
- * wrap a new read here — see `server/CACHING.md`.
+ * ⚠ Nothing invalidates this cache. `server/CACHING.md` lists the reads
+ * still on it and says why no new read joins them (#98).
  */
 
 import { KVNamespace } from '@cloudflare/workers-types'
 import * as Sentry from '@sentry/react'
-import { withRetry, type RetryConfig } from './error-utils'
+import { withRetry } from './error-utils'
 import { getCmsContext } from './cms-context'
-
-/** Default TTL values in seconds. `AtlasCacheTTL` in `atlas-client.ts` holds the atlas ones. */
-export const CacheTTL = {
-  /** List queries cache duration (30 minutes) */
-  LIST: 1800,
-} as const
 
 /**
  * Generates a consistent cache key from query parameters.
@@ -37,7 +28,7 @@ export const CacheTTL = {
  */
 export function generateCacheKey(
   prefix: string,
-  params: Record<string, string | string[] | number | undefined>,
+  params: Record<string, string | number | undefined>,
 ): string {
   const parts: string[] = [prefix]
 
@@ -48,12 +39,7 @@ export function generateCacheKey(
     const value = params[key]
 
     if (value !== undefined) {
-      // Handle arrays (e.g., tag IDs)
-      if (Array.isArray(value)) {
-        parts.push(`${key}=${value.sort().join(',')}`)
-      } else {
-        parts.push(`${key}=${value}`)
-      }
+      parts.push(`${key}=${value}`)
     }
   }
 
@@ -122,29 +108,17 @@ async function setCachedResponse<T>(
 }
 
 /**
- * Default retry configuration for network and server errors.
- * These values balance resilience against latency.
- */
-const DEFAULT_RETRY_CONFIG: RetryConfig = {
-  /** Maximum number of retry attempts (1 initial + 2 retries) */
-  maxAttempts: 3,
-  /** Base delay for exponential backoff (1s, 2s, 4s) */
-  baseDelayMs: 1000,
-}
-
-/**
  * Wraps a query function with a read-through cache and automatic retry.
  *
  * Read-through cache pattern:
- * 1. Check the cache first, unless `bypassCache` is true.
+ * 1. Check the cache first.
  * 2. On a cache miss, run the query function, with automatic retry.
- * 3. Store the result in the cache, unless `bypassCache` is true.
+ * 3. Store the result in the cache.
  * 4. Return the result.
  *
  * Retry behavior: this function retries network and server errors
  * automatically, but not client errors like 404. It uses exponential
- * backoff with jitter (1s, 2s, 4s). Pass `retryConfig` to override the
- * defaults.
+ * backoff with jitter (1s, 2s, 4s).
  *
  * A cache-operation error is logged to Sentry and never interrupts the
  * request: this function still runs the query and returns its result
@@ -154,8 +128,6 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
  * @param options.cacheKey - Cache key to use
  * @param options.ttl - Time to live in seconds
  * @param options.fetchFn - Async function that executes the query
- * @param options.bypassCache - If true, skip the cache read and write (for preview mode)
- * @param options.retryConfig - Optional retry configuration (overrides the defaults)
  * @returns The query result, from the cache or freshly fetched
  *
  * @example
@@ -172,21 +144,11 @@ export async function withCache<T>(options: {
   cacheKey: string
   ttl: number
   fetchFn: () => Promise<T>
-  bypassCache?: boolean
-  retryConfig?: RetryConfig
 }): Promise<T> {
-  const { cacheKey, ttl, fetchFn, bypassCache = false, retryConfig } = options
+  const { cacheKey, ttl, fetchFn } = options
 
   // KV comes from the CMS context. It may be undefined in local dev.
   const { kv } = getCmsContext()
-
-  const finalRetryConfig = retryConfig || DEFAULT_RETRY_CONFIG
-
-  // Preview mode fails fast, so editors see errors immediately, instead of
-  // waiting through about 7s of exponential backoff.
-  if (bypassCache) {
-    return await fetchFn()
-  }
 
   const cached = await getCachedResponse<T>(kv, cacheKey)
 
@@ -195,7 +157,7 @@ export async function withCache<T>(options: {
   }
 
   // Cache miss. Run the query, with retry.
-  const result = await withRetry(fetchFn, finalRetryConfig)
+  const result = await withRetry(fetchFn)
 
   // Store the result for next time. Do not wait for this to finish.
   void setCachedResponse(kv, cacheKey, result, ttl)

@@ -620,70 +620,70 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  * the layout never renders a dead `/undefined` link, and reports each drop
  * to Sentry so the underlying CMS data gap stays visible.
  *
+ * This global has no drafts, so there is no preview variant to read. It
+ * carried a `preview` flag only to bypass a 24 h KV entry; the edge cache
+ * that replaced it is purged on write, so an editor sees a nav or home-page
+ * change without one.
+ *
  * @returns The web configuration with populated page relationships
  */
-export async function getWebConfig(
-  options: { locale?: Locale; preview?: boolean } = {},
-): Promise<WebConfig> {
-  return readCms(
-    async () => {
-      const client = createPayloadClient()
+export async function getWebConfig(options: { locale?: Locale } = {}): Promise<WebConfig> {
+  return readCms(async () => {
+    const client = createPayloadClient()
 
-      const config = await client.findGlobal({
-        slug: 'wm-web-config',
-        depth: 2,
-        locale: options.locale,
-        select: WEB_CONFIG_SELECT,
-        populate: WEB_CONFIG_POPULATE,
+    const config = await client.findGlobal({
+      slug: 'wm-web-config',
+      depth: 2,
+      locale: options.locale,
+      select: WEB_CONFIG_SELECT,
+      populate: WEB_CONFIG_POPULATE,
+    })
+
+    // Drop unresolved (believed-unpublished) page references, so the
+    // layout never renders a dead `/undefined` link.
+    const featured = partitionPublishedPages(config.featuredPages)
+    const featuredArticles = partitionPublishedPages(config.featuredArticles)
+    const classPages = partitionPublishedPages(config.classPages)
+    const knowledgePages = partitionPublishedPages(config.knowledgePages)
+    const infoPages = partitionPublishedPages(config.infoPages)
+
+    const unresolved = [
+      ...(typeof config.homePage === 'number' ? [`homePage id:${config.homePage}`] : []),
+      ...featured.unresolved.map((u) => `featuredPages ${u}`),
+      ...featuredArticles.unresolved.map((u) => `featuredArticles ${u}`),
+      ...classPages.unresolved.map((u) => `classPages ${u}`),
+      ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
+      ...infoPages.unresolved.map((u) => `infoPages ${u}`),
+    ]
+
+    // Report the data gap to Sentry without breaking the page. A published
+    // page populates. An unpublished one returns as a bare id.
+    if (unresolved.length > 0) {
+      console.warn(
+        `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
+      )
+      Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
+        level: 'warning',
+        tags: { source: 'getWebConfig' },
+        extra: { unresolved, locale: options.locale ?? null },
       })
+    }
 
-      // Drop unresolved (believed-unpublished) page references, so the
-      // layout never renders a dead `/undefined` link.
-      const featured = partitionPublishedPages(config.featuredPages)
-      const featuredArticles = partitionPublishedPages(config.featuredArticles)
-      const classPages = partitionPublishedPages(config.classPages)
-      const knowledgePages = partitionPublishedPages(config.knowledgePages)
-      const infoPages = partitionPublishedPages(config.infoPages)
+    // An unconfigured global offers English only. Never return an empty
+    // set: `loadSiteContext` 404s any locale outside it, so an empty
+    // array would 404 the whole site, English included.
+    const availableLocales = (config.availableLocales ?? []).filter(isLocale)
 
-      const unresolved = [
-        ...(typeof config.homePage === 'number' ? [`homePage id:${config.homePage}`] : []),
-        ...featured.unresolved.map((u) => `featuredPages ${u}`),
-        ...featuredArticles.unresolved.map((u) => `featuredArticles ${u}`),
-        ...classPages.unresolved.map((u) => `classPages ${u}`),
-        ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
-        ...infoPages.unresolved.map((u) => `infoPages ${u}`),
-      ]
-
-      // Report the data gap to Sentry without breaking the page. A published
-      // page populates. An unpublished one returns as a bare id.
-      if (unresolved.length > 0) {
-        console.warn(
-          `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
-        )
-        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
-          level: 'warning',
-          tags: { source: 'getWebConfig' },
-          extra: { unresolved, locale: options.locale ?? null },
-        })
-      }
-
-      // An unconfigured global offers English only. Never return an empty
-      // set: `loadSiteContext` 404s any locale outside it, so an empty
-      // array would 404 the whole site, English included.
-      const availableLocales = (config.availableLocales ?? []).filter(isLocale)
-
-      return {
-        ...config,
-        availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
-        featuredPages: featured.published,
-        featuredArticles: featuredArticles.published,
-        classPages: classPages.published,
-        knowledgePages: knowledgePages.published,
-        infoPages: infoPages.published,
-      } as WebConfig
-    },
-    { preview: options.preview === true },
-  )
+    return {
+      ...config,
+      availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
+      featuredPages: featured.published,
+      featuredArticles: featuredArticles.published,
+      classPages: classPages.published,
+      knowledgePages: knowledgePages.published,
+      infoPages: infoPages.published,
+    } as WebConfig
+  })
 }
 
 /**

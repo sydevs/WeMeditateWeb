@@ -37,10 +37,8 @@ Two rules still apply:
 
 - **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
   `server/atlas-client.ts`.
-  ⚠ The atlas endpoints are the last three reads still wrapped in `withCache`, and nothing
-  invalidates KV. Do not add a fourth — `server/CACHING.md` explains what replaced it. `withCache`
-  also reads a stored `null` as a cache miss, so a `null` answer (a 404) is re-fetched every
-  request. Fine for rare paths, never a way to absorb real load.
+  ⚠ A new read is never wrapped in `withCache`. [CACHING.md](./CACHING.md) says what caches it
+  instead, and lists the reads still on KV.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See

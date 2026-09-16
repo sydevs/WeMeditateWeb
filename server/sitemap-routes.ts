@@ -21,13 +21,16 @@ import { createPayloadClient } from './payload-client'
 import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './cms-client'
 import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
-import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import { generateCacheKey, withCache } from './kv-cache'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './cms-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
 /** Bounded for the same reason as the atlas read: this runs in a Worker request. */
 const CONTENT_READ_LIMIT = 500
+
+/** How long the KV entry behind `getContentSitemapUrls` lives (30 minutes). */
+const SITEMAP_DOCS_TTL = 1800
 
 /**
  * Field selections for the sitemap reads.
@@ -46,7 +49,7 @@ const PAGE_SITEMAP_SELECT = {
 const MEDITATION_SITEMAP_SELECT = { updatedAt: true } satisfies MeditationsSelect<true>
 const LECTURE_SITEMAP_SELECT = { updatedAt: true } satisfies LecturesSelect<true>
 
-/** Cache the rendered documents at the edge. The reads behind them are KV-cached too. */
+/** Cache the rendered documents at our own edge, for an hour. */
 const SITEMAP_CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400'
 
 /** `updatedAt` as a `<lastmod>` value, or null when the row has none. */
@@ -58,9 +61,9 @@ function lastmodOf(doc: { updatedAt?: string | null }): string | null {
  * What the sitemap needs from the site config: the locales it offers, and
  * which page `/` serves.
  *
- * The one read the annotation adds, and cheap in practice: `getWebConfig`
- * is KV-cached for 24 h and every page render reads it too, so this shares
- * one entry with them rather than adding load. A failure degrades to an
+ * The one read the annotation adds, and cheap in practice: the rendered
+ * sitemap carries an hour of `max-age`, and the config read behind it is
+ * edge-cached and shared with every page render. A failure degrades to an
  * English-only cluster and an unannotated `/` — never wrong, only less
  * complete.
  */
@@ -122,8 +125,8 @@ async function readContentDocs() {
  * older prefix holds a `SitemapUrl[]`, the shape this function used to
  * cache. `getCachedResponse` returns stored JSON without a shape check, so
  * reusing the prefix would hand this code an array for up to
- * `CacheTTL.LIST` after the deploy, `docs.pages` would be `undefined`, and
- * every content URL would drop out of the sitemap until the entry expired.
+ * `SITEMAP_DOCS_TTL` after the deploy, `docs.pages` would be `undefined`,
+ * and every content URL would drop out of the sitemap until it expired.
  * A new prefix lets the old entries expire unread. **Bump it again on the
  * next shape change.**
  */
@@ -133,7 +136,7 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
       getSiteAnnotation(),
       withCache({
         cacheKey: generateCacheKey('content-sitemap-docs', { origin }),
-        ttl: CacheTTL.LIST,
+        ttl: SITEMAP_DOCS_TTL,
         fetchFn: readContentDocs,
       }),
     ])

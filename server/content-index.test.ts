@@ -221,7 +221,7 @@ describe('resolveContentIndexBlocks', () => {
 
     const resolved = await resolveContentIndexBlocks(content, { locale: 'en' })
 
-    // The original (cached) object is never mutated.
+    // The caller's own object is never mutated.
     const original = content.root.children[0].fields as ContentIndexBlockFields
 
     expect(original.resolvedItems).toBeUndefined()
