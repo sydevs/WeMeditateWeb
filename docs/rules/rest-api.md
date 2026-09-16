@@ -34,8 +34,9 @@ paths:
    ```
 
    No cache key, no TTL, and no purge step. The Cloudflare edge in front of SahajCloud caches the
-   subrequest and purges it on write — see [server/CACHING.md](../../server/CACHING.md). A new
-   path caches only once SahajCloud's Cache Rule covers it.
+   subrequest for 600s — see [server/CACHING.md](../../server/CACHING.md), which also says why the
+   purge on write is not a guarantee. A new path caches only once SahajCloud's Cache Rule covers
+   it.
 
    `readCms` supplies the retry: three attempts for a public read, none for a preview read, which
    must fail fast. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`

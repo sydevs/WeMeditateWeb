@@ -40,7 +40,7 @@ WeMeditateWeb is a server-rendered web application. It uses Vike (a full-stack f
 React 19, and TypeScript. It deploys to Cloudflare Workers.
 
 It fetches content from a PayloadCMS backend through the REST API, which the Cloudflare edge in
-front of that backend caches and purges on write.
+front of that backend caches for 600s.
 
 **Stack**: Vike + React + TypeScript + Hono + Tailwind CSS + Cloudflare Workers + PayloadCMS REST API
 
@@ -119,8 +119,8 @@ The app runs on Cloudflare Workers with server-side rendering.
 request handler. [wrangler.toml](wrangler.toml) sets the Worker name, the `nodejs_compat` flag,
 and the `WEMEDITATE_CACHE` KV binding.
 
-CMS reads are cached by the **Cloudflare edge in front of SahajCloud**, which purges by
-`Cache-Tag` on every write. Nothing in this repo caches them. See
+CMS reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
+`Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
 [server/CACHING.md](server/CACHING.md) before you add a read, or touch the `WEMEDITATE_CACHE` KV
 layer it still describes.
 

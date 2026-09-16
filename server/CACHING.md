@@ -6,8 +6,12 @@ A Worker's `fetch()` to a hostname on a **different** Cloudflare zone
 [reads through that zone's cache](https://developers.cloudflare.com/workers/reference/how-the-cache-works/).
 Every read in [cms-client.ts](./cms-client.ts) and [content-index.ts](./content-index.ts) goes to
 `cloud.sydevelopers.com`, so that is exactly what they do. SahajCloud sets `s-maxage=600` and a
-`Cache-Tag` on each cacheable path, and purges the tag on **every write**, so an editor's save
-reaches this site within the edge TTL.
+`Cache-Tag` on each cacheable path, so an editor's save reaches this site within 600s.
+
+⚠ **The 600s TTL is the guarantee. The purge is not.** SahajCloud purges the `Cache-Tag` on write
+only when `CLOUDFLARE_ZONE_ID` and `CLOUDFLARE_CACHE_PURGE_TOKEN` are set on its Railway service;
+unset, every purge is a silent no-op and nothing warns (`DEPLOYMENT.md` §Edge Cache in
+`sydevs/SahajCloud`). Quote 600s as the worst case for any read here, never "immediate".
 
 There is no second cache in front of these reads, and that is the point. A tag purge cannot reach
 another Worker's KV, so a KV copy here would be a cache nobody could invalidate (#98). The cost

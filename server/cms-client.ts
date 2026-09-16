@@ -621,8 +621,9 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  *
  * This global has no drafts, so there is no preview variant to read. It
  * carried a `preview` flag only to bypass a 24 h KV entry; the edge cache
- * that replaced it is purged on write, so an editor sees a nav or home-page
- * change without one.
+ * that replaced it expires within 600s on its own, so an editor sees a nav
+ * or home-page change without one. The upstream purge-on-write only
+ * shortens that wait — see CACHING.md, it is best-effort.
  *
  * @returns The web configuration with populated page relationships
  */
