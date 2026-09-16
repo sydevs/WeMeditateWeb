@@ -51,9 +51,7 @@ const PLACEHOLDER_IMAGE =
   </svg>
 `)
 
-/**
- * Format time in seconds to MM:SS format
- */
+/** Format time in seconds to MM:SS format */
 function formatTime(seconds: number): string {
   if (!isFinite(seconds)) return '0:00'
   const mins = Math.floor(seconds / 60)
@@ -63,13 +61,9 @@ function formatTime(seconds: number): string {
 }
 
 export interface MeditationFrame {
-  /**
-   * Timestamp in seconds when this frame should be displayed
-   */
+  /** Timestamp in seconds when this frame should be displayed */
   timestamp: number
-  /**
-   * Media to display (image or video)
-   */
+  /** Media to display (image or video) */
   media: {
     type: 'image' | 'video'
     src: string
@@ -77,25 +71,17 @@ export interface MeditationFrame {
      * Optional fallback source, for example MP4, for when the browser does not support the primary HLS source.
      */
     fallbackSrc?: string
-    /**
-     * Optional duration (seconds) from CMS metadata.
-     */
+    /** Optional duration (seconds) from CMS metadata. */
     duration?: number
   }
 }
 
 export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'title'> {
-  /**
-   * Audio track to play
-   */
+  /** Audio track to play */
   track: Track
-  /**
-   * Optional subtitle
-   */
+  /** Optional subtitle */
   subtitle?: string
-  /**
-   * Array of frames that change based on playback time
-   */
+  /** Array of frames that change based on playback time */
   frames: MeditationFrame[]
   /**
    * Background-music tracks layered under the guided voice. The player picks
@@ -112,13 +98,9 @@ export interface MeditationPlayerProps extends Omit<ComponentProps<'div'>, 'titl
    * - undefined: no upsell shown
    */
   upsell?: 'web' | 'app'
-  /**
-   * Callback that fires when playback starts.
-   */
+  /** Callback that fires when playback starts. */
   onPlay?: () => void
-  /**
-   * Callback that fires when playback pauses.
-   */
+  /** Callback that fires when playback pauses. */
   onPause?: () => void
   /**
    * Callback that fires every 100ms during playback, with the current time
@@ -858,9 +840,7 @@ function MeditationPlayerInner({
   )
 }
 
-/**
- * MeditationPlayer with AudioPlayerProvider context wrapper
- */
+/** MeditationPlayer with AudioPlayerProvider context wrapper */
 export function MeditationPlayer(props: MeditationPlayerProps) {
   return (
     <AudioPlayerProvider>

@@ -57,9 +57,7 @@ export const Default: Story = () => {
 
 Default.storyName = 'Error Fallback'
 
-/**
- * Helper component that throws an error when clicked
- */
+/** Helper component that throws an error when clicked */
 function ThrowErrorButton() {
   const [shouldThrow, setShouldThrow] = React.useState(false)
 

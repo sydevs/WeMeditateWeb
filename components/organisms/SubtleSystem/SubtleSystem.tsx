@@ -16,9 +16,7 @@ const NESTED_CHAKRAS = {
   chakra_3: ['chakra_3b'],
 } as const
 
-/**
- * Article preview item for SubtleSystem component
- */
+/** Article preview item for SubtleSystem component */
 export interface SubtleSystemItem {
   /** Unique identifier matching an SVG element ID, for example 'chakra_1' or 'channel_left' */
   id: string
@@ -67,9 +65,7 @@ export function SubtleSystem({
   const svgRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  /**
-   * Check if target node is nested within current node
-   */
+  /** Check if target node is nested within current node */
   const isNested = useCallback((current: string | null, target: string) => {
     if (!current) return false
     const nestedGroup = NESTED_CHAKRAS[target as keyof typeof NESTED_CHAKRAS] as
@@ -79,9 +75,7 @@ export function SubtleSystem({
     return nestedGroup?.includes(current) ?? false
   }, [])
 
-  /**
-   * Scroll to preview on mobile
-   */
+  /** Scroll to preview on mobile */
   const scrollToPreview = useCallback((nodeId: string) => {
     if (window.innerWidth > MOBILE_BREAKPOINT) return
 
@@ -92,9 +86,7 @@ export function SubtleSystem({
     }
   }, [])
 
-  /**
-   * Handle node hover with timing delay for nested elements
-   */
+  /** Handle node hover with timing delay for nested elements */
   const handleNodeHover = useCallback(
     (nodeId: string) => {
       if (nodeId === activeNode) return
@@ -116,9 +108,7 @@ export function SubtleSystem({
     [activeNode, onNodeSelect, isNested],
   )
 
-  /**
-   * Handle node hover end
-   */
+  /** Handle node hover end */
   const handleNodeHoverEnd = useCallback(() => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current)
@@ -126,9 +116,7 @@ export function SubtleSystem({
     }
   }, [])
 
-  /**
-   * Handle node click
-   */
+  /** Handle node click */
   const handleNodeClick = useCallback(
     (nodeId: string) => {
       setActiveNode(nodeId)
@@ -138,9 +126,7 @@ export function SubtleSystem({
     [onNodeSelect, scrollToPreview],
   )
 
-  /**
-   * Handle view toggle
-   */
+  /** Handle view toggle */
   const handleViewToggle = useCallback(
     (view: 'chakras' | 'channels') => {
       if (view === activeView) return
@@ -153,9 +139,7 @@ export function SubtleSystem({
     [activeView, onNodeSelect],
   )
 
-  /**
-   * Handle fullscreen toggle
-   */
+  /** Handle fullscreen toggle */
   const handleFullscreenToggle = useCallback(async () => {
     // Support the WebKit-prefixed Fullscreen API (Safari < 16.4) alongside
     // the standard one. Without the fallback, the request throws, and the
@@ -180,9 +164,7 @@ export function SubtleSystem({
     }
   }, [isFullscreen])
 
-  /**
-   * Listen for fullscreen change events (standard + WebKit-prefixed)
-   */
+  /** Listen for fullscreen change events (standard + WebKit-prefixed) */
   useEffect(() => {
     const doc = document as Document & { webkitFullscreenElement?: Element | null }
     const handleFullscreenChange = () => {
@@ -198,9 +180,7 @@ export function SubtleSystem({
     }
   }, [])
 
-  /**
-   * Setup SVG hover listeners and update active classes
-   */
+  /** Setup SVG hover listeners and update active classes */
   useEffect(() => {
     if (!svgRef.current) return
 

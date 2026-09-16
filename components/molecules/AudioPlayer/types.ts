@@ -1,6 +1,4 @@
-/**
- * Represents an audio track with metadata for display and playback
- */
+/** Represents an audio track with metadata for display and playback */
 export interface Track {
   /** Audio file URL (MP3, etc.) */
   url: string
@@ -27,9 +25,7 @@ export interface Track {
   tags?: { id: string; label: string }[]
 }
 
-/**
- * State returned by usePlaylistAudioPlayer hook
- */
+/** State returned by usePlaylistAudioPlayer hook */
 export interface PlaylistAudioPlayerState {
   /** Current track index in the tracks array */
   currentTrackIndex: number
@@ -53,9 +49,7 @@ export interface PlaylistAudioPlayerState {
   hasEnded: boolean
 }
 
-/**
- * Controls returned by usePlaylistAudioPlayer hook
- */
+/** Controls returned by usePlaylistAudioPlayer hook */
 export interface PlaylistAudioPlayerControls {
   /** Start playback */
   play: () => void

@@ -3,14 +3,10 @@ import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Spinner } from '../../atoms'
 import { useT } from '../../../hooks/useT'
 
-/**
- * Geolocation state
- */
+/** Geolocation state */
 type GeolocationState = 'idle' | 'loading' | 'error'
 
-/**
- * Props for NearbyOption subcomponent
- */
+/** Props for NearbyOption subcomponent */
 interface NearbyOptionProps {
   /** Callback fired when location is successfully retrieved */
   onLocationSelect: (location: {

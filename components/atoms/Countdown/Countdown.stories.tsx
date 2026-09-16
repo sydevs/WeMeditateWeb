@@ -6,9 +6,7 @@ export default {
   title: "Atoms"
 } satisfies StoryDefault;
 
-/**
- * Countdown component showcasing various timing durations and sizes.
- */
+/** Countdown component showcasing various timing durations and sizes. */
 export const Default: Story = () => {
   // Helper function to create countdown targets
   const createTarget = (seconds: number) => new Date(Date.now() + seconds * 1000);

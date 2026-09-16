@@ -12,9 +12,7 @@ export default {
 // Sample author image URL (same as Avatar stories)
 const authorImage = 'https://picsum.photos/id/64/200/200'
 
-/**
- * Author molecule for displaying author information in mini (byline) or hero (bio) formats.
- */
+/** Author molecule for displaying author information in mini (byline) or hero (bio) formats. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Mini Variant">

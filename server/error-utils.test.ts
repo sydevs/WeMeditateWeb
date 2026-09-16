@@ -1,6 +1,4 @@
-/**
- * Tests for error handling utilities
- */
+/** Tests for error handling utilities */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {

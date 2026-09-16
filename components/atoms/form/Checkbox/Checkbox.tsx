@@ -1,9 +1,7 @@
 import { ComponentProps, forwardRef, useId } from 'react'
 
 export interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
-  /**
-   * Checkbox label text
-   */
+  /** Checkbox label text */
   label?: string
 
   /**

@@ -1,14 +1,10 @@
 import { ComponentProps, useState } from 'react'
 
 export interface AvatarProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /**
-   * Image source URL
-   */
+  /** Image source URL */
   src?: string
 
-  /**
-   * Alternative text for the image
-   */
+  /** Alternative text for the image */
   alt: string
 
   /**
@@ -29,9 +25,7 @@ export interface AvatarProps extends Omit<ComponentProps<'div'>, 'children'> {
    */
   color?: 'primary' | 'secondary' | 'neutral'
 
-  /**
-   * Fallback initials when image is not available
-   */
+  /** Fallback initials when image is not available */
   initials?: string
 }
 

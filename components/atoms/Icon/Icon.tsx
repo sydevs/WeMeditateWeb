@@ -38,9 +38,7 @@ export interface IconProps extends Omit<ComponentProps<'span'>, 'children'> {
    */
   theme?: 'light' | 'dark'
 
-  /**
-   * Accessible label for the icon (important for screen readers when icon has semantic meaning)
-   */
+  /** Accessible label for the icon (important for screen readers when icon has semantic meaning) */
   'aria-label'?: string
 }
 

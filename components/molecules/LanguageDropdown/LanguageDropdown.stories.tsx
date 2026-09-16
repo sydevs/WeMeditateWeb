@@ -27,9 +27,7 @@ const allLanguages = [
   { code: 'bg' as const, label: 'Български', href: '/about' },
 ]
 
-/**
- * LanguageDropdown molecule for selecting website language with flags.
- */
+/** LanguageDropdown molecule for selecting website language with flags. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Usage">

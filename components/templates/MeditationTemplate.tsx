@@ -22,9 +22,7 @@ import { populatedImageUrl } from '../../lib/cms-relationships'
 import { useT } from '../../hooks/useT'
 
 export interface MeditationTemplateProps {
-  /**
-   * Meditation data from SahajCloud (PayloadCMS)
-   */
+  /** Meditation data from SahajCloud (PayloadCMS) */
   meditation: Meditation
   /**
    * Background-music tracks for this meditation (from the `/songs` endpoint),

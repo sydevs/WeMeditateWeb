@@ -53,9 +53,7 @@ import type {
 } from './cms-types'
 import { DEFAULT_LOCALE, isLocale } from './cms-types'
 
-// ============================================================================
-// Common Options Interfaces
-// ============================================================================
+// --- Common Options Interfaces ---
 
 interface LocalizedQueryOptions {
   locale: Locale
@@ -340,9 +338,7 @@ export function documentReadArgs(collection: FindByIdCollection): {
   }
 }
 
-// ============================================================================
-// Single Item Queries
-// ============================================================================
+// --- Single Item Queries ---
 
 /**
  * Retrieves a specific page by slug and locale.
@@ -590,9 +586,7 @@ export async function getLecture(
   return resolved
 }
 
-// ============================================================================
-// Global Settings
-// ============================================================================
+// --- Global Settings ---
 
 /**
  * Splits a page-relationship array into published, linkable pages (populated
@@ -774,9 +768,7 @@ export async function getWebTranslations(options: {
   })
 }
 
-// ============================================================================
-// List Queries (filtered by tags)
-// ============================================================================
+// --- List Queries (filtered by tags) ---
 
 /**
  * Retrieves a list of pages filtered by tags (minimal data: id, title, thumbnail).

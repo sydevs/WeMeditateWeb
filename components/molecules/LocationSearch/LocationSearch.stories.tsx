@@ -6,9 +6,7 @@ export default {
   title: 'Molecules',
 } satisfies StoryDefault
 
-/**
- * LocationSearch component for Mapbox Search Box API with geolocation support.
- */
+/** LocationSearch component for Mapbox Search Box API with geolocation support. */
 export const Default: Story = () => {
   const handleLocationSelect = (location: {
     name: string

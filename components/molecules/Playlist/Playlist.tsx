@@ -4,62 +4,40 @@ import type { Track } from '../AudioPlayer/types'
 import type { HeroIcon } from '../../atoms/Icon/Icon'
 
 export interface MusicFilter {
-  /**
-   * Filter identifier, for example 'strings', 'vocal', 'wind'
-   */
+  /** Filter identifier, for example 'strings', 'vocal', 'wind' */
   id: string
 
-  /**
-   * Display label for the filter
-   */
+  /** Display label for the filter */
   label: string
 
-  /**
-   * Icon component from Heroicons
-   */
+  /** Icon component from Heroicons */
   icon: HeroIcon
 }
 
 export interface PlaylistProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /**
-   * Playlist title
-   */
+  /** Playlist title */
   title: string
 
-  /**
-   * Array of audio tracks
-   */
+  /** Array of audio tracks */
   tracks: Track[]
 
-  /**
-   * Index of the currently playing track
-   */
+  /** Index of the currently playing track */
   currentTrackIndex: number
 
-  /**
-   * Callback when a track is clicked
-   */
+  /** Callback when a track is clicked */
   onTrackClick: (index: number) => void
 
-  /**
-   * Optional array of filter categories
-   */
+  /** Optional array of filter categories */
   filters?: MusicFilter[]
 
-  /**
-   * Currently selected filter ID
-   */
+  /** Currently selected filter ID */
   selectedFilter?: string | null
 
-  /**
-   * Callback when filter changes
-   */
+  /** Callback when filter changes */
   onFilterChange?: (filterId: string) => void
 }
 
-/**
- * PlaylistItem is a subcomponent: an individual track item in the playlist.
- */
+/** PlaylistItem is a subcomponent: an individual track item in the playlist. */
 interface PlaylistItemProps {
   track: Track
   index: number

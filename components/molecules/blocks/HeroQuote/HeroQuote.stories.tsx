@@ -6,9 +6,7 @@ export default {
   title: 'Molecules'
 } satisfies StoryDefault
 
-/**
- * HeroQuote component displays a prominent quote block with decorative leaf dividers.
- */
+/** HeroQuote component displays a prominent quote block with decorative leaf dividers. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Large Size (Default)">

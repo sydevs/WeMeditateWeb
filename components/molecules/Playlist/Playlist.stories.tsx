@@ -113,9 +113,7 @@ const musicFilters: MusicFilter[] = [
   },
 ]
 
-/**
- * Playlist molecule showcasing track list with filters and current track highlighting.
- */
+/** Playlist molecule showcasing track list with filters and current track highlighting. */
 export const Default: Story = () => {
   const [currentTrack, setCurrentTrack] = useState(0)
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null)

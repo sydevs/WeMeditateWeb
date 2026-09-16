@@ -16,9 +16,7 @@ export default {
   title: "Atoms / Form"
 } satisfies StoryDefault;
 
-/**
- * Checkbox component showcasing all variants and states.
- */
+/** Checkbox component showcasing all variants and states. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Variants">

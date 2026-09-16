@@ -7,9 +7,7 @@ export default {
   title: "Organisms"
 } satisfies StoryDefault;
 
-/**
- * Realistic article data for chakras and channels
- */
+/** Realistic article data for chakras and channels */
 const storyItems: SubtleSystemItem[] = [
   // Chakras (8 items)
   {

@@ -2,34 +2,22 @@ import { ReactNode } from 'react'
 import { Image, Link } from '../../atoms'
 
 export interface ColumnProps {
-  /**
-   * Column title
-   */
+  /** Column title */
   title: string
 
-  /**
-   * Column description content
-   */
+  /** Column description content */
   description: ReactNode
 
-  /**
-   * Optional image URL
-   */
+  /** Optional image URL */
   imageUrl?: string
 
-  /**
-   * Alt text for the image
-   */
+  /** Alt text for the image */
   imageAlt?: string
 
-  /**
-   * Optional link URL. Makes the title clickable.
-   */
+  /** Optional link URL. Makes the title clickable. */
   href?: string
 
-  /**
-   * Additional CSS classes
-   */
+  /** Additional CSS classes */
   className?: string
 }
 

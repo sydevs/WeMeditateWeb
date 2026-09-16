@@ -19,14 +19,10 @@ export interface BadgeProps extends ComponentProps<'span'> {
    */
   size?: 'sm' | 'md' | 'lg'
 
-  /**
-   * Optional href to render badge as a link
-   */
+  /** Optional href to render badge as a link */
   href?: string
 
-  /**
-   * Badge content (text or number)
-   */
+  /** Badge content (text or number) */
   children: React.ReactNode
 }
 

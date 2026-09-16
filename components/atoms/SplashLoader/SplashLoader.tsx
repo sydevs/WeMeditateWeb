@@ -46,14 +46,10 @@ export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> 
    */
   imageSize?: ImageSize
 
-  /**
-   * When true, triggers the fade-out animation and removes the component.
-   */
+  /** When true, triggers the fade-out animation and removes the component. */
   isLoading?: boolean
 
-  /**
-   * Optional text to display below the animated logo.
-   */
+  /** Optional text to display below the animated logo. */
   text?: string
 }
 

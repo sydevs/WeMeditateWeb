@@ -21,9 +21,7 @@ export default {
   title: "Molecules"
 } satisfies StoryDefault;
 
-/**
- * FormField molecule combining label, input, optional error message, and optional description.
- */
+/** FormField molecule combining label, input, optional error message, and optional description. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">

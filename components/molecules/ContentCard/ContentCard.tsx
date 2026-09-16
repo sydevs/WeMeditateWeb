@@ -10,29 +10,19 @@ import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
-  /**
-   * Card title.
-   */
+  /** Card title. */
   title: string
 
-  /**
-   * URL for the content. The title and play button link here.
-   */
+  /** URL for the content. The title and play button link here. */
   href: string
 
-  /**
-   * Thumbnail image URL.
-   */
+  /** Thumbnail image URL. */
   thumbnailSrc: string
 
-  /**
-   * Thumbnail alt text. Defaults to the title.
-   */
+  /** Thumbnail alt text. Defaults to the title. */
   thumbnailAlt?: string
 
-  /**
-   * Optional description text.
-   */
+  /** Optional description text. */
   description?: string
 
   /**
@@ -63,24 +53,16 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
    */
   playButton?: boolean
 
-  /**
-   * Optional duration in minutes. Shows in the bottom-left corner of the thumbnail.
-   */
+  /** Optional duration in minutes. Shows in the bottom-left corner of the thumbnail. */
   durationMinutes?: number
 
-  /**
-   * Optional badge text, for example a category name. Shows next to the duration badge.
-   */
+  /** Optional badge text, for example a category name. Shows next to the duration badge. */
   badge?: string
 
-  /**
-   * Optional URL for the badge link.
-   */
+  /** Optional URL for the badge link. */
   badgeUrl?: string
 
-  /**
-   * Locale for the link. Defaults to the current page locale from context.
-   */
+  /** Locale for the link. Defaults to the current page locale from context. */
   locale?: string
 
   /**
@@ -89,9 +71,7 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
    */
   fadeInOnLoad?: boolean
 
-  /**
-   * Custom class name for the card container.
-   */
+  /** Custom class name for the card container. */
   className?: string
 }
 

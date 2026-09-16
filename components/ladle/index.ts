@@ -1,6 +1,4 @@
-/**
- * Ladle story utilities for consistent story structure and layout.
- */
+/** Ladle story utilities for consistent story structure and layout. */
 
 export { StoryWrapper } from './StoryWrapper';
 export type { StoryWrapperProps } from './StoryWrapper';

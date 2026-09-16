@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react'
 
 export interface StoryWrapperProps {
-  /**
-   * Story content to wrap
-   */
+  /** Story content to wrap */
   children: ReactNode
 }
 

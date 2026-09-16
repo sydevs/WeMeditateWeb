@@ -37,9 +37,7 @@ const sampleShortData = {
   thumbnailSrc: "https://picsum.photos/seed/meditation2/800/800",
 };
 
-/**
- * ContentCard molecule showcasing all configurations for content preview display.
- */
+/** ContentCard molecule showcasing all configurations for content preview display. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">

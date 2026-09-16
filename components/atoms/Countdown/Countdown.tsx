@@ -24,9 +24,7 @@ interface TimeRemaining {
   isExpired: boolean
 }
 
-/**
- * Calculate time remaining until target date
- */
+/** Calculate time remaining until target date */
 function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeRemaining {
   const calculateTimeRemaining = (): TimeRemaining => {
     const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate

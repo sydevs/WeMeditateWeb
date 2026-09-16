@@ -37,14 +37,10 @@ export interface BoxProps {
    */
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
 
-  /**
-   * Additional CSS classes
-   */
+  /** Additional CSS classes */
   className?: string
 
-  /**
-   * Box content
-   */
+  /** Box content */
   children: ReactNode
 }
 

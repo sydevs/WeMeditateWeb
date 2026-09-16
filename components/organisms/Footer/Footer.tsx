@@ -4,9 +4,7 @@ import type { Locale } from '../../../server/cms-types'
 import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 import { FloralDividerSvg } from '../../atoms/graphics/svgs'
 
-/**
- * A footer section with title and links
- */
+/** A footer section with title and links */
 export interface FooterSection {
   /** Section title */
   title: string
@@ -14,9 +12,7 @@ export interface FooterSection {
   links: FooterLink[]
 }
 
-/**
- * A social media link
- */
+/** A social media link */
 export interface SocialLink {
   /** Social media platform */
   platform: 'facebook' | 'instagram' | 'bluesky' | 'youtube' | 'pinterest' | 'whatsapp' | 'linkedin' | 'yandex' | 'telegram' | 'wechat'
@@ -24,9 +20,7 @@ export interface SocialLink {
   href: string
 }
 
-/**
- * Props for the Footer component
- */
+/** Props for the Footer component */
 export interface FooterProps {
   /** Hero links (larger, no title) for primary navigation */
   heroLinks: FooterLink[]

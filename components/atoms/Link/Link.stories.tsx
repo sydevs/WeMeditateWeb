@@ -6,9 +6,7 @@ export default {
   title: "Atoms"
 } satisfies StoryDefault;
 
-/**
- * Link component showcasing all variants, sizes, and locale handling.
- */
+/** Link component showcasing all variants, sizes, and locale handling. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Variants">

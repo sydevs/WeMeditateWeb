@@ -328,7 +328,6 @@ const pageContent = editorState(
       caption: 'Public Program, London, 1978',
     }),
 
-    // Image gallery
     block('image-gallery', {
       items: [
         imageRef('g1', 'Gallery one', 800, 600),

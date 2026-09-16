@@ -1,6 +1,4 @@
-/**
- * Page component for default locale (English) pages.
- */
+/** Page component for default locale (English) pages. */
 
 import { useData } from 'vike-react/useData'
 import { PageData } from './+data'

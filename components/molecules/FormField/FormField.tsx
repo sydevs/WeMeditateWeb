@@ -8,9 +8,7 @@ export interface FormFieldProps {
    */
   id: string
 
-  /**
-   * Label text for the field
-   */
+  /** Label text for the field */
   label: string
 
   /**
@@ -25,9 +23,7 @@ export interface FormFieldProps {
    */
   error?: string
 
-  /**
-   * Optional description or help text
-   */
+  /** Optional description or help text */
   description?: string
 
   /**
@@ -36,9 +32,7 @@ export interface FormFieldProps {
    */
   children: ReactNode
 
-  /**
-   * Additional CSS classes for the wrapper
-   */
+  /** Additional CSS classes for the wrapper */
   className?: string
 
   /**

@@ -12,9 +12,7 @@ export default {
   title: "Atoms / Graphics"
 } satisfies StoryDefault;
 
-/**
- * Comprehensive showcase of all SVG icons and illustrations used throughout the application.
- */
+/** Comprehensive showcase of all SVG icons and illustrations used throughout the application. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Brand Icons" description="Core brand identity SVG icons">

@@ -18,9 +18,7 @@ import * as Sentry from '@sentry/react'
 import { withRetry, type RetryConfig } from './error-utils'
 import { getCmsContext } from './cms-context'
 
-/**
- * Default TTL values in seconds
- */
+/** Default TTL values in seconds */
 export const CacheTTL = {
   /** Page content cache duration (1 hour) */
   PAGE: 3600,

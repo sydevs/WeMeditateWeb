@@ -3,9 +3,7 @@ import { Button, Image } from '../../atoms'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
-  /**
-   * Main heading.
-   */
+  /** Main heading. */
   title: string
 
   /**
@@ -14,29 +12,19 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
    */
   subtitle?: string
 
-  /**
-   * Description text content
-   */
+  /** Description text content */
   description: string
 
-  /**
-   * Call-to-action button text. When omitted, no CTA button is rendered.
-   */
+  /** Call-to-action button text. When omitted, no CTA button is rendered. */
   ctaText?: string
 
-  /**
-   * Call-to-action button destination URL (used when `ctaText` is set).
-   */
+  /** Call-to-action button destination URL (used when `ctaText` is set). */
   ctaHref?: string
 
-  /**
-   * Feature image source URL
-   */
+  /** Feature image source URL */
   imageSrc: string
 
-  /**
-   * Image alternative text for accessibility
-   */
+  /** Image alternative text for accessibility */
   imageAlt: string
 
   /**

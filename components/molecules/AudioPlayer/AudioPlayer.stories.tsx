@@ -44,9 +44,7 @@ const sampleTracks: Track[] = [
   },
 ]
 
-/**
- * AudioPlayer component showcasing audio playback controls and playlist management.
- */
+/** AudioPlayer component showcasing audio playback controls and playlist management. */
 export const Default: Story = () => {
   const [disabledControls, setDisabledControls] = useState<AudioControl[]>([])
 

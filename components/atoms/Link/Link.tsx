@@ -2,14 +2,10 @@ import { ComponentProps } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
-  /**
-   * Link destination (will be locale-prefixed automatically)
-   */
+  /** Link destination (will be locale-prefixed automatically) */
   href: string
 
-  /**
-   * Locale for the link (defaults to current page locale)
-   */
+  /** Locale for the link (defaults to current page locale) */
   locale?: string
 
   /**

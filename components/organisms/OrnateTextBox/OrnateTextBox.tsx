@@ -4,14 +4,10 @@ import type { AspectRatio } from '../../../lib/cloudflare-images'
 import ornateBackground from '../../../assets/ornate.svg'
 
 export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
-  /**
-   * Main heading.
-   */
+  /** Main heading. */
   title: string
 
-  /**
-   * Secondary line rendered directly below the title (faded but legible).
-   */
+  /** Secondary line rendered directly below the title (faded but legible). */
   subtitle?: string
 
   /**
@@ -20,34 +16,22 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
    */
   description: string
 
-  /**
-   * Call-to-action button text. When omitted, no CTA button is rendered.
-   */
+  /** Call-to-action button text. When omitted, no CTA button is rendered. */
   ctaText?: string
 
-  /**
-   * Call-to-action button destination URL (used when `ctaText` is set).
-   */
+  /** Call-to-action button destination URL (used when `ctaText` is set). */
   ctaHref?: string
 
-  /**
-   * Feature image source URL
-   */
+  /** Feature image source URL */
   imageSrc: string
 
-  /**
-   * Image alternative text for accessibility
-   */
+  /** Image alternative text for accessibility */
   imageAlt: string
 
-  /**
-   * Image width in pixels, optional. Together with imageHeight, this prevents layout shift.
-   */
+  /** Image width in pixels, optional. Together with imageHeight, this prevents layout shift. */
   imageWidth?: number
 
-  /**
-   * Image height in pixels, optional. Together with imageWidth, this prevents layout shift.
-   */
+  /** Image height in pixels, optional. Together with imageWidth, this prevents layout shift. */
   imageHeight?: number
 
   /**

@@ -14,9 +14,7 @@ export interface AccordionItemData {
 }
 
 export interface AccordionProps {
-  /**
-   * Array of accordion items to display
-   */
+  /** Array of accordion items to display */
   items: AccordionItemData[]
 
   /**
@@ -31,14 +29,10 @@ export interface AccordionProps {
    */
   defaultOpenItems?: string[]
 
-  /**
-   * Callback when an item is toggled
-   */
+  /** Callback when an item is toggled */
   onToggle?: (itemId: string, isOpen: boolean) => void
 
-  /**
-   * Additional CSS classes for the accordion container
-   */
+  /** Additional CSS classes for the accordion container */
   className?: string
 }
 

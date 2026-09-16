@@ -24,14 +24,10 @@ const CAROUSEL_SIZES: Record<
 }
 
 export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title'> {
-  /**
-   * Array of content items to display in the carousel
-   */
+  /** Array of content items to display in the carousel */
   items: Omit<ContentCardProps, 'variant'>[]
 
-  /**
-   * Optional heading for the carousel section
-   */
+  /** Optional heading for the carousel section */
   title?: string
 
   /**
@@ -44,9 +40,7 @@ export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title
    */
   size?: ContentCarouselSize
 
-  /**
-   * Custom class name for the carousel container
-   */
+  /** Custom class name for the carousel container */
   className?: string
 }
 

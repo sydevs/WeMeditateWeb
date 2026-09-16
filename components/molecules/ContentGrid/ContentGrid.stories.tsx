@@ -6,9 +6,7 @@ export default {
   title: "Molecules"
 } satisfies StoryDefault;
 
-/**
- * ContentGrid component showcasing content cards in responsive masonry layouts.
- */
+/** ContentGrid component showcasing content cards in responsive masonry layouts. */
 export const Default: Story = () => {
   // Mixed content with various aspect ratios
   const mixedContent = [

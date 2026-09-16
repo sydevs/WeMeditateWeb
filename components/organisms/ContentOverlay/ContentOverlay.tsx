@@ -2,9 +2,7 @@ import { ComponentProps } from 'react'
 import { Button, Container, Image } from '../../atoms'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /**
-   * Main heading text
-   */
+  /** Main heading text */
   title: string
 
   /**
@@ -13,29 +11,19 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
    */
   subtitle?: string
 
-  /**
-   * Body text content (can be string or array of paragraphs)
-   */
+  /** Body text content (can be string or array of paragraphs) */
   text: string | string[]
 
-  /**
-   * Background image URL
-   */
+  /** Background image URL */
   imageSrc: string
 
-  /**
-   * Alt text for background image
-   */
+  /** Alt text for background image */
   imageAlt?: string
 
-  /**
-   * Call-to-action button text
-   */
+  /** Call-to-action button text */
   ctaText?: string
 
-  /**
-   * Call-to-action button link
-   */
+  /** Call-to-action button link */
   ctaHref?: string
 
   /**

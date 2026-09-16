@@ -5,14 +5,10 @@ import { Column, ColumnProps } from '../Column'
 import { useT } from '../../../hooks/useT'
 
 export interface ColumnCarouselProps {
-  /**
-   * Array of column data to display (maximum 5 columns)
-   */
+  /** Array of column data to display (maximum 5 columns) */
   columns: ColumnProps[]
 
-  /**
-   * Additional CSS classes
-   */
+  /** Additional CSS classes */
   className?: string
 }
 
@@ -27,9 +23,7 @@ interface CarouselNavButtonProps {
   disabled: boolean
 }
 
-/**
- * Navigation button for the carousel. Displays a chevron and the adjacent column title.
- */
+/** Navigation button for the carousel. Displays a chevron and the adjacent column title. */
 function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
   const isPrev = direction === 'prev'
   const t = useT()
