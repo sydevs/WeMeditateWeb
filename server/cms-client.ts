@@ -299,6 +299,47 @@ const COLLECTION_BY_ID_CONFIG = {
 
 type FindByIdCollection = keyof typeof COLLECTION_BY_ID_CONFIG
 
+/**
+ * The depth every single-document read asks for, and the one live preview's
+ * populate proxy has to repeat.
+ *
+ * Named rather than written twice because a third caller now depends on the
+ * number: `/api/live-preview/populate` re-runs this read shape against the
+ * unsaved document, and a proxy reading shallower than the render would drop
+ * exactly the relationships an editor is watching.
+ */
+const DOCUMENT_READ_DEPTH = 3
+
+/** True for a collection `documentReadArgs` can answer for. */
+export function isDocumentCollection(value: string): value is FindByIdCollection {
+  return Object.hasOwn(COLLECTION_BY_ID_CONFIG, value)
+}
+
+/**
+ * The depth / select / populate one document read sends, for a caller that is
+ * not `getDocumentById`.
+ *
+ * Only live preview's populate proxy is such a caller. SahajCloud rejects an
+ * API-client read with no `select` (400) and a depth > 1 read with no
+ * `populate` (400, both verified against production), so the round trip cannot
+ * simply forward what Payload's SDK sends. It also PRUNES the answer to
+ * `select`, so a shape that disagreed with the render would hand the template
+ * a document missing the fields it renders.
+ */
+export function documentReadArgs(collection: FindByIdCollection): {
+  depth: number
+  select: Record<string, unknown>
+  populate: Record<string, unknown>
+} {
+  const config = COLLECTION_BY_ID_CONFIG[collection]
+
+  return {
+    depth: DOCUMENT_READ_DEPTH,
+    select: config.select,
+    populate: config.populate,
+  }
+}
+
 // ============================================================================
 // Single Item Queries
 // ============================================================================
@@ -347,10 +388,10 @@ export async function getPageBySlug(
         // and the site share one composer.
         draft: isPreview,
         limit: 1,
-        // depth 3 so relationships embedded in `content` blocks (showcase,
+        // Depth 3 so relationships embedded in `content` blocks (showcase,
         // subtle-system) resolve their own thumbnails. The narrow
         // per-collection selects in PAGE_POPULATE keep this small.
-        depth: 3,
+        depth: DOCUMENT_READ_DEPTH,
         select: PAGE_SELECT,
         populate: PAGE_POPULATE,
       })
@@ -478,9 +519,9 @@ export async function getDocumentById<C extends FindByIdCollection>(
         collection: options.collection,
         id: options.id,
         locale: options.locale,
-        // depth 3 to resolve relationships embedded in `content` blocks (see
+        // Depth 3 to resolve relationships embedded in `content` blocks (see
         // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
-        depth: 3,
+        depth: DOCUMENT_READ_DEPTH,
         draft: isPreview,
         // select/populate are validated per-collection at their definitions above
         // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot

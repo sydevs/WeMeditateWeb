@@ -9,6 +9,7 @@ import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
 import { getCmsContext } from './cms-context'
+import { LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
@@ -25,16 +26,6 @@ export interface PayloadClientConfig {
   /** Preview secret for authenticating draft requests (sent as the x-sahajcloud-preview-secret header) */
   previewToken?: string
 }
-
-/**
- * The header a live-preview token rides back to the CMS in.
- *
- * ⚠ The NAME is unchanged and the CONTENTS are not. It used to carry
- * `SAHAJCLOUD_PREVIEW_SECRET` verbatim; it now carries a short-lived signed
- * token. The name stayed because SahajCloud's Cloudflare Cache Rule matches on
- * it and its CORS allowlist names it, and neither cares what the value means.
- */
-const PREVIEW_SECRET_HEADER = 'x-sahajcloud-preview-secret'
 
 /**
  * Zod schema for PayloadCMS client configuration.
@@ -150,7 +141,7 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
   }
 
   if (previewToken) {
-    headers[PREVIEW_SECRET_HEADER] = previewToken
+    headers[LIVE_PREVIEW_TOKEN_HEADER] = previewToken
   }
 
   return new PayloadSDK<Config>({

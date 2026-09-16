@@ -13,7 +13,7 @@
  * A token expires in under an hour, which bounds the damage but does not make
  * it acceptable in a third party's logs.
  *
- * ## Two functions, and the difference is the return type
+ * ## Three functions, and the differences are the return types
  *
  * `stripLivePreviewToken` is pure: a URL in, a URL out, nothing touched. It is
  * called on every value Sentry is about to send, over and over.
@@ -21,9 +21,17 @@
  * `scrubAddressBar` takes nothing and returns nothing. It is a side effect on
  * `window.history`, called exactly once, from the client entry. It uses the
  * pure one; it is not a variant of it.
+ *
+ * `livePreviewToken` reads what the scrub caught on its way past. The token is
+ * deliberately absent from `passToClient` (see `protocol.ts`), so the URL the
+ * iframe was opened with is the only copy the browser ever has, and the scrub
+ * is the last moment it exists.
  */
 
 import { LIVE_PREVIEW_PARAM } from './protocol'
+
+/** The token this page was opened with. Module state, never `pageContext`. */
+let sessionToken: string | null = null
 
 /** Removes the token from a URL string, leaving everything else untouched. */
 export function stripLivePreviewToken(url: string): string {
@@ -64,5 +72,25 @@ export function scrubAddressBar(): void {
 
   if (scrubbed === window.location.href) return
 
+  // Caught on the way past, because after the next line there is nowhere left
+  // to read it from. See `livePreviewToken` below.
+  sessionToken = new URL(window.location.href).searchParams.get(LIVE_PREVIEW_PARAM)
+
   window.history.replaceState(window.history.state, '', scrubbed)
+}
+
+/**
+ * The token this preview session was opened with, held in memory only.
+ *
+ * `null` on the server, and on every page opened without one — which is every
+ * ordinary page view.
+ *
+ * ⚠ **A caller must not treat this as proof of anything.** It is whatever was
+ * in the address bar, and the address bar is the visitor's. The populate proxy
+ * (`server/api-routes.ts`) re-verifies the signature before it spends the
+ * server's API key, so a browser holding a forged or expired value gets a 403,
+ * not draft content.
+ */
+export function livePreviewToken(): string | null {
+  return sessionToken
 }

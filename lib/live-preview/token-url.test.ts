@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { stripLivePreviewToken } from './token-url'
+import { livePreviewToken, scrubAddressBar, stripLivePreviewToken } from './token-url'
 
 /**
  * ⚠ The token rides in a query string because an iframe navigation cannot
@@ -39,5 +39,35 @@ describe('stripLivePreviewToken', () => {
     for (const value of ['', '/about', 'navigation', 'not a url']) {
       expect(stripLivePreviewToken(value)).toBe(value)
     }
+  })
+})
+
+/**
+ * The token is deliberately absent from `passToClient`, so after the scrub the
+ * URL it arrived in is gone and there is no second copy. The populate proxy
+ * needs one, so the scrub catches it on the way past — in module state, never
+ * in the page source.
+ */
+describe('livePreviewToken', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('is null before any scrub, which is every ordinary page view', () => {
+    expect(livePreviewToken()).toBeNull()
+  })
+
+  it('catches what the scrub is about to erase', () => {
+    const replaceState = vi.fn()
+
+    vi.stubGlobal('window', {
+      history: { replaceState, state: null },
+      location: { href: 'https://x.test/about?live-preview=a.b.c&scope=wm-web-config' },
+    })
+
+    scrubAddressBar()
+
+    expect(livePreviewToken()).toBe('a.b.c')
+    expect(replaceState).toHaveBeenCalledWith(null, '', 'https://x.test/about?scope=wm-web-config')
   })
 })
