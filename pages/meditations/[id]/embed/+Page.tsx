@@ -2,8 +2,8 @@ import { useData } from 'vike-react/useData'
 
 import type { MeditationEmbedPageData } from './+data'
 import { MeditationTemplate } from '../../../../components/templates'
+import { LivePreviewDocument } from '../../../../lib/live-preview/document'
 import { useFrameEditorChannel } from '../../../../lib/live-preview/frame-editor'
-import { useLivePreviewMessages } from '../../../../lib/live-preview/messages'
 import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-preview/session'
 
 /**
@@ -18,7 +18,7 @@ import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-previe
  * to this one. Two `postMessage` channels run on this page while a preview
  * session is open, and neither belongs inline here:
  *
- * - `useLivePreviewMessages` — Payload's unsaved-edit stream for the document
+ * - `LivePreviewDocument` — Payload's unsaved-edit stream for the document
  * - `useFrameEditorChannel` — SahajCloud's own seek/playhead channel, which is
  *   what lets an editor click a frame thumbnail and read back the timestamp a
  *   new frame is written at
@@ -28,26 +28,26 @@ import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-previe
 export function Page() {
   const { meditation: initialMeditation, musicTracks } = useData<MeditationEmbedPageData>()
 
-  const origin = cmsOrigin()
   const previewingThisMeditation = useDocumentPreviewActive()
-
-  const meditation = useLivePreviewMessages({
-    initialData: initialMeditation,
-    serverOrigin: origin,
-    slug: 'meditations',
-    active: previewingThisMeditation,
-  })
-
-  const { seekTo, onPlaybackTimeUpdate } = useFrameEditorChannel(previewingThisMeditation, origin)
+  // The frame channel is not Payload's, and not the document stream's to gate:
+  // it is a hook on this page either way, enabled or inert.
+  const { seekTo, onPlaybackTimeUpdate } = useFrameEditorChannel(
+    previewingThisMeditation,
+    cmsOrigin(),
+  )
 
   return (
-    <MeditationTemplate
-      meditation={meditation}
-      musicTracks={musicTracks}
-      seekTo={seekTo}
-      showEmbedButton={false}
-      timeDisplay={previewingThisMeditation ? 'elapsed' : undefined}
-      onPlaybackTimeUpdate={previewingThisMeditation ? onPlaybackTimeUpdate : undefined}
-    />
+    <LivePreviewDocument initialData={initialMeditation} slug="meditations">
+      {(meditation) => (
+        <MeditationTemplate
+          meditation={meditation}
+          musicTracks={musicTracks}
+          seekTo={seekTo}
+          showEmbedButton={false}
+          timeDisplay={previewingThisMeditation ? 'elapsed' : undefined}
+          onPlaybackTimeUpdate={previewingThisMeditation ? onPlaybackTimeUpdate : undefined}
+        />
+      )}
+    </LivePreviewDocument>
   )
 }
