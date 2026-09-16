@@ -26,8 +26,11 @@ importers:
       '@mapbox/search-js-web':
         specifier: ^1.6.0
         version: 1.6.0(mapbox-gl@3.16.0)
-      '@payloadcms/live-preview-react':
+      '@payloadcms/live-preview':
         specifier: ^3.88.0
+        version: 3.88.0
+      '@payloadcms/live-preview-react':
+        specifier: 3.88.0
         version: 3.88.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@payloadcms/richtext-lexical':
         specifier: ^3.88.0
@@ -62,6 +65,9 @@ importers:
       hono:
         specifier: ^4.13.7
         version: 4.13.7
+      jose:
+        specifier: 5.10.0
+        version: 5.10.0
       react:
         specifier: ^19.2.8
         version: 19.2.8

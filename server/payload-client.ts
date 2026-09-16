@@ -9,6 +9,7 @@ import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
 import { getCmsContext } from './cms-context'
+import { LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
@@ -23,10 +24,8 @@ export interface PayloadClientConfig {
   /** Enable preview mode for draft content requests */
   preview?: boolean
   /** Preview secret for authenticating draft requests (sent as the x-sahajcloud-preview-secret header) */
-  previewSecret?: string
+  previewToken?: string
 }
-
-const PREVIEW_SECRET_HEADER = 'x-sahajcloud-preview-secret'
 
 /**
  * Zod schema for PayloadCMS client configuration.
@@ -133,7 +132,7 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
 
   const apiKey = config.apiKey ?? cmsContext.apiKey
   const baseURL = config.baseURL ?? cmsContext.baseURL
-  const previewSecret = config.preview ? config.previewSecret : undefined
+  const previewToken = config.preview ? config.previewToken : undefined
 
   validatePayloadConfig({ apiKey, baseURL })
 
@@ -141,8 +140,8 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
     Authorization: `clients API-Key ${apiKey}`,
   }
 
-  if (previewSecret) {
-    headers[PREVIEW_SECRET_HEADER] = previewSecret
+  if (previewToken) {
+    headers[LIVE_PREVIEW_TOKEN_HEADER] = previewToken
   }
 
   return new PayloadSDK<Config>({
