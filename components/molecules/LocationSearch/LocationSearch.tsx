@@ -85,7 +85,6 @@ export function LocationSearch({
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [error, setError] = useState<string>('')
 
-  // Debounce timer ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   console.log("access token", accessToken)
 
@@ -147,7 +146,6 @@ export function LocationSearch({
     }, 300) // 300ms debounce
   }
 
-  // Handle input focus
   const handleInputFocus = () => {
     setIsDropdownOpen(true)
   }
