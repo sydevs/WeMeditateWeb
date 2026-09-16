@@ -184,7 +184,7 @@ These rules apply whether or not the matching rule file or skill is loaded.
   touch-target sizes.
 - **Test a batch edit on one file before running it everywhere.** Pipe the substitution through
   `diff` against a single file first. Run `perl -i` on the full set only after you confirm the
-  `diff` output. See the `batch-refactoring` skill.
+  `diff` output.
 - **Never stop a Chrome debugging process (port 9222), or any process you did not start.** Other
   Claude instances may share this Chrome debugging session.
 - **Mapbox is the preferred mapping provider for this project.**
@@ -292,9 +292,6 @@ skill relevant.
 | `component-development` | Building a new component end to end: classify, implement, export, story, confirm |
 | `design-extraction` | Recreating a component from a live design — Puppeteer extraction, mapping to Tailwind tokens |
 | `ladle-processes` | Ladle/dev-server restarts, HMR not seeing new files, port conflicts, background-process hygiene |
-| `batch-refactoring` | One textual change across many files: `find` + `perl -i`, verification, rollback |
-| `dependency-updates` | Phased dependency bumps with a build and test step between groups |
-| `git-push-troubleshooting` | A push or remote operation that hangs or blocks on authentication |
 | `pr-prep` | `check.sh` runs the lean gate: lint, `tsc --noEmit`, `test:run`. `--full` adds `pnpm build` |
 
 **Reference docs** are long-form. Read one when the rule or skill that cites it tells you to:
