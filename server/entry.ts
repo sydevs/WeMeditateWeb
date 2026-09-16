@@ -4,7 +4,7 @@ import { contextStorage } from 'hono/context-storage'
 import type { CmsEnv } from './cms-context'
 import { registerApiRoutes } from './api-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
-import { LIVE_PREVIEW_PARAM } from './live-preview'
+import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 

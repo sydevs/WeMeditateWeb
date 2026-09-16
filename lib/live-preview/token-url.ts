@@ -1,5 +1,5 @@
 /**
- * Removing the live-preview token from anything that records a URL.
+ * Live preview: keeping the token out of anything that records a URL.
  *
  * The token rides in the query string, because an iframe navigation cannot
  * carry a header. That puts it everywhere a URL is read:
@@ -12,13 +12,21 @@
  *
  * A token expires in under an hour, which bounds the damage but does not make
  * it acceptable in a third party's logs.
+ *
+ * ## Two functions, and the difference is the return type
+ *
+ * `stripLivePreviewToken` is pure: a URL in, a URL out, nothing touched. It is
+ * called on every value Sentry is about to send, over and over.
+ *
+ * `scrubAddressBar` takes nothing and returns nothing. It is a side effect on
+ * `window.history`, called exactly once, from the client entry. It uses the
+ * pure one; it is not a variant of it.
  */
 
-/** The query parameter carrying the token. Mirrors `server/live-preview.ts`. */
-const LIVE_PREVIEW_PARAM = 'live-preview'
+import { LIVE_PREVIEW_PARAM } from './protocol'
 
-/** Strips the token from a URL string, leaving everything else untouched. */
-export function scrubLivePreviewUrl(url: string): string {
+/** Removes the token from a URL string, leaving everything else untouched. */
+export function stripLivePreviewToken(url: string): string {
   try {
     const parsed = new URL(url)
 
@@ -36,7 +44,7 @@ export function scrubLivePreviewUrl(url: string): string {
 }
 
 /**
- * Rewrites the address bar so the token is not in it.
+ * Rewrites the address bar in place so the token is not in it. Runs once.
  *
  * ⚠ **Must run before Plausible reads `location.href`.** It is a `defer`red
  * script, so it executes after the document parses — this runs at module
@@ -49,10 +57,10 @@ export function scrubLivePreviewUrl(url: string): string {
  * all stay — the scope parameter is not a credential, and dropping the hash
  * would silently break an in-page anchor an editor was looking at.
  */
-export function scrubLivePreviewFromAddressBar(): void {
+export function scrubAddressBar(): void {
   if (typeof window === 'undefined') return
 
-  const scrubbed = scrubLivePreviewUrl(window.location.href)
+  const scrubbed = stripLivePreviewToken(window.location.href)
 
   if (scrubbed === window.location.href) return
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { scrubLivePreviewUrl } from './scrub-live-preview'
+import { stripLivePreviewToken } from './token-url'
 
 /**
  * ⚠ The token rides in a query string because an iframe navigation cannot
@@ -8,9 +8,9 @@ import { scrubLivePreviewUrl } from './scrub-live-preview'
  * `Referer`, Sentry replay, and Plausible, which reads `location.href` in JS
  * and posts it where no response header can reach.
  */
-describe('scrubLivePreviewUrl', () => {
+describe('stripLivePreviewToken', () => {
   it('removes the token', () => {
-    expect(scrubLivePreviewUrl('https://x.test/about?live-preview=a.b')).toBe(
+    expect(stripLivePreviewToken('https://x.test/about?live-preview=a.b')).toBe(
       'https://x.test/about',
     )
   })
@@ -18,7 +18,7 @@ describe('scrubLivePreviewUrl', () => {
   it('keeps every other parameter, and the hash', () => {
     // The scope is not a credential, and dropping the hash would silently move
     // an editor away from the anchor they were looking at.
-    const scrubbed = scrubLivePreviewUrl(
+    const scrubbed = stripLivePreviewToken(
       'https://x.test/fr/about?live-preview=a.b&scope=wm-web-translations&q=1#section',
     )
 
@@ -30,14 +30,14 @@ describe('scrubLivePreviewUrl', () => {
     // decide whether to touch history at all.
     const url = 'https://x.test/about?q=1'
 
-    expect(scrubLivePreviewUrl(url)).toBe(url)
+    expect(stripLivePreviewToken(url)).toBe(url)
   })
 
   it('returns unparseable input unchanged rather than mangling it', () => {
     // Sentry hands breadcrumb values that are sometimes a bare path or a
     // label. Losing those protects nothing and discards information.
     for (const value of ['', '/about', 'navigation', 'not a url']) {
-      expect(scrubLivePreviewUrl(value)).toBe(value)
+      expect(stripLivePreviewToken(value)).toBe(value)
     }
   })
 })

@@ -5,7 +5,7 @@
 import type { PageContextServer } from 'vike/types'
 import type { Locale, Page, WebConfig } from '../../server/cms-types'
 import { getPageBySlug, getPageLocaleStatus } from '../../server/cms-client'
-import { loadLivePreview } from '../../server/live-preview'
+import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
 import { advertisedLocales } from '../../lib/hreflang'
 import { pageTagLabels } from '../../lib/page-tag-labels'
@@ -73,15 +73,7 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
 
   const [{ settings, t }, page, status] = await Promise.all([
     loadSiteContext(pageContext),
-    // No scope named means "this route's own document", which is this page.
-    // A translations preview leaves the page published, so a translator sees
-    // their strings on the real article rather than on someone's draft.
-    getPageBySlug({
-      slug,
-      locale,
-      preview: preview.active && preview.scope === null,
-      previewToken: preview.token ?? undefined,
-    }),
+    getPageBySlug({ slug, locale, ...previewArgs(preview) }),
     getPageLocaleStatus({ slug }),
   ])
 

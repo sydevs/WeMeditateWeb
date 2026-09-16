@@ -7,7 +7,7 @@
 import type { KVNamespace } from '@cloudflare/workers-types'
 
 import type { Locale, WebTranslations } from '../server/cms-types'
-import type { LivePreviewState } from '../server/live-preview'
+import type { LivePreviewState } from '../lib/live-preview/protocol'
 
 /**
  * Typed environment variables from import.meta.env.

@@ -1,5 +1,14 @@
 import type { PageContextServer } from 'vike/types'
 
+import {
+  LIVE_PREVIEW_INACTIVE,
+  LIVE_PREVIEW_PARAM,
+  LIVE_PREVIEW_SCOPE_PARAM,
+  readLivePreviewScope,
+  type LivePreviewScope,
+  type LivePreviewState,
+} from '../lib/live-preview/protocol'
+
 /**
  * Live preview: reading and verifying the credential on a preview URL.
  *
@@ -29,13 +38,13 @@ import type { PageContextServer } from 'vike/types'
  * opens no session, so an invalid value renders the published page with a
  * `200`, indistinguishable from an ordinary request. Nothing tells a caller
  * whether they guessed correctly.
+ *
+ * ## The other half
+ *
+ * The browser's side of live preview is `lib/live-preview/`, and the two meet
+ * at `lib/live-preview/protocol.ts`, which both import. Nothing in this file
+ * may be imported from there: it reads the token.
  */
-
-/** The query parameter carrying the token. Matches SahajAtlasWeb's spelling. */
-export const LIVE_PREVIEW_PARAM = 'live-preview'
-
-/** The query parameter naming what the admin panel is editing. */
-export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
 
 /**
  * The API-client role this site's key holds.
@@ -52,32 +61,7 @@ export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
 const CLIENT_ROLE = 'wemeditate-web-client'
 
 /**
- * What the panel is editing, when it is not the route's own document.
- *
- * A closed set: an unrecognised value falls back to the default rather than
- * widening what reads drafts. Every value here is emitted by exactly one
- * `livePreview.url` in SahajCloud.
- */
-export type LivePreviewScope = 'wm-web-translations' | 'wm-web-config'
-
-const SCOPES: ReadonlySet<string> = new Set(['wm-web-translations', 'wm-web-config'])
-
-/**
- * The verdict for one request, as the BROWSER sees it.
- *
- * ⚠ **This shape is in `passToClient`, so everything on it is public.** The
- * token is deliberately absent: the client needs to know it is in a preview so
- * the link guard mounts and the message listener subscribes, and it must never
- * learn the credential that unlocked it.
- */
-export interface LivePreviewState {
-  active: boolean
-  /** `null` means the route's own primary document reads drafts. */
-  scope: LivePreviewScope | null
-}
-
-/**
- * The same verdict plus the credential, for server-side fetchers.
+ * The verdict plus the credential, for server-side fetchers.
  *
  * Returned only by {@link loadLivePreview}, which is server-only by virtue of
  * living under `server/` and being called from `data()` and `+onBeforeRender`.
@@ -88,11 +72,37 @@ export interface LivePreviewSession extends LivePreviewState {
   token: string | null
 }
 
-export const LIVE_PREVIEW_OFF: LivePreviewSession = { active: false, scope: null, token: null }
+export const LIVE_PREVIEW_OFF: LivePreviewSession = { ...LIVE_PREVIEW_INACTIVE, token: null }
 
 /** Strips the credential, leaving what the browser may see. */
 export function toClientState(session: LivePreviewSession): LivePreviewState {
   return { active: session.active, scope: session.scope }
+}
+
+/**
+ * The `preview` / `previewToken` pair for one CMS read.
+ *
+ * Three `data()` functions and the translations read each spelled this out,
+ * and the condition has a meaning that the spelling does not show: **a read
+ * asks for drafts only when the panel is editing the thing being read.** A
+ * page preview must not hand drafts to the translations read, and a
+ * translations preview must leave the page itself published — otherwise a
+ * translator checking their strings would see them on someone's unsaved draft.
+ *
+ * The token goes only where `preview` is true. `createPayloadClient` already
+ * drops it otherwise (`server/payload-client.ts`), so this changes nothing at
+ * the wire; it means a reader does not have to go and check that it does.
+ *
+ * @param scope - what this read is fetching. The default, `null`, is the
+ *   route's own primary document.
+ */
+export function previewArgs(
+  session: LivePreviewSession,
+  scope: LivePreviewScope | null = null,
+): { preview: boolean; previewToken: string | undefined } {
+  const preview = session.active && session.scope === scope
+
+  return { preview, previewToken: preview ? (session.token ?? undefined) : undefined }
 }
 
 function base64UrlDecode(value: string): Uint8Array | null {
@@ -168,11 +178,6 @@ export async function verifyLivePreviewToken(
   if (typeof claims.exp !== 'number' || claims.exp <= nowSeconds) return false
 
   return true
-}
-
-/** Narrows a raw `scope` parameter to the closed set, or `null`. */
-export function readLivePreviewScope(raw: string | undefined): LivePreviewScope | null {
-  return raw && SCOPES.has(raw) ? (raw as LivePreviewScope) : null
 }
 
 /**

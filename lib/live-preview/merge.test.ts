@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergePreviewData } from './merge-preview-data'
+import { mergePreviewData } from './merge'
 
 interface PreviewShape {
   id: number

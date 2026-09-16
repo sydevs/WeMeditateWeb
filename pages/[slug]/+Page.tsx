@@ -3,16 +3,16 @@
  */
 
 import { useData } from 'vike-react/useData'
-import { usePageContext } from 'vike-react/usePageContext'
 import { PageData } from './+data'
 import { PageTemplate } from '../../components/templates'
 import { getLeadSplash } from '../../lib/cms-blocks'
 import { isFeaturedNavPage } from '../../lib/featured-nav'
-import { cmsOrigin, useLivePreviewMessages } from '../../hooks/useLivePreviewMessages'
+import { useLivePreviewMessages } from '../../lib/live-preview/messages'
+import { cmsOrigin, useDocumentPreviewActive } from '../../lib/live-preview/session'
 
 export function Page() {
   const { page: initialPage, settings } = useData<PageData>()
-  const pageContext = usePageContext()
+  const previewingThisPage = useDocumentPreviewActive()
 
   // Unsaved edits, streamed from the admin. Off-preview this returns
   // `initialPage` unchanged and attaches no listener.
@@ -20,7 +20,7 @@ export function Page() {
     initialData: initialPage,
     serverOrigin: cmsOrigin(),
     slug: 'pages',
-    active: pageContext.livePreview?.active === true && pageContext.livePreview.scope === null,
+    active: previewingThisPage,
   })
   // Drop the top padding when the page leads with a splash. This lets the
   // full-bleed hero sit flush at the top, under the overlaid header (see

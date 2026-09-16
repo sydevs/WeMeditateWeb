@@ -3,7 +3,7 @@ import { render } from 'vike/abort'
 import type { Meditation, MeditationSong } from '../../../server/cms-types'
 import { getDocumentById, getMeditationSongs } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
-import { loadLivePreview } from '../../../server/live-preview'
+import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface MeditationData {
   meditation: Meditation
@@ -40,13 +40,7 @@ export async function loadMeditation(pageContext: PageContextServer): Promise<Me
   const preview = await loadLivePreview(pageContext)
 
   const [meditation, musicTracks] = await Promise.all([
-    getDocumentById({
-      collection: 'meditations',
-      id,
-      locale,
-      preview: preview.active && preview.scope === null,
-      previewToken: preview.token ?? undefined,
-    }),
+    getDocumentById({ collection: 'meditations', id, locale, ...previewArgs(preview) }),
     getMeditationSongs({ id, locale }),
   ])
 

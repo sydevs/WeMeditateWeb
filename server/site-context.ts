@@ -20,7 +20,7 @@ import { render } from 'vike/abort'
 import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './cms-client'
-import { loadLivePreview } from './live-preview'
+import { loadLivePreview, previewArgs } from './live-preview'
 import type { Locale, WebConfig, WebTranslations } from './cms-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
@@ -69,14 +69,10 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
   const locale = pageContext.locale
   const loading = loadLivePreview(pageContext)
     .then((preview) =>
-      getWebTranslations({
-        locale,
-        // Only under the `wm-web-translations` scope: a preview of a PAGE
-        // should render that page's draft inside the published chrome an
-        // ordinary visitor sees, not a second document's unsaved edits.
-        preview: preview.active && preview.scope === 'wm-web-translations',
-        previewToken: preview.token ?? undefined,
-      }),
+      // Only under the `wm-web-translations` scope: a preview of a PAGE
+      // should render that page's draft inside the published chrome an
+      // ordinary visitor sees, not a second document's unsaved edits.
+      getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
     )
     .then((translations) => {
       if (!isEmpty(translations)) return translations

@@ -39,6 +39,8 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     // `loadTranslations` already degrades to the snapshot, so this only
     // catches something unforeseen. An error page that cannot render its
     // own error message is a blank screen.
-    return { pageContext: { translations: EN_TRANSLATIONS, livePreview: toClientState(LIVE_PREVIEW_OFF) } }
+    return {
+      pageContext: { translations: EN_TRANSLATIONS, livePreview: toClientState(LIVE_PREVIEW_OFF) },
+    }
   }
 }

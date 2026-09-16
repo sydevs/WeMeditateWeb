@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react'
 
-import { scrubLivePreviewUrl } from './lib/scrub-live-preview'
+import { stripLivePreviewToken } from './lib/live-preview/token-url'
 
 export const sentryBrowserConfig = () => {
   import.meta.env.PROD === true &&
@@ -18,14 +18,14 @@ export const sentryBrowserConfig = () => {
       // is a separate field and the one that would otherwise carry it.
       beforeSend(event) {
         if (event.request?.url) {
-          event.request.url = scrubLivePreviewUrl(event.request.url)
+          event.request.url = stripLivePreviewToken(event.request.url)
         }
 
         return event
       },
       beforeBreadcrumb(breadcrumb) {
         if (typeof breadcrumb.data?.url === 'string') {
-          breadcrumb.data.url = scrubLivePreviewUrl(breadcrumb.data.url)
+          breadcrumb.data.url = stripLivePreviewToken(breadcrumb.data.url)
         }
 
         return breadcrumb

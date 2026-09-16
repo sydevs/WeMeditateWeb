@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldBlockPreviewLink } from './preview-navigation'
+import { shouldBlockPreviewLink } from './navigation'
 
 describe('shouldBlockPreviewLink', () => {
   it('blocks internal route links so the iframe stays on the previewed document', () => {

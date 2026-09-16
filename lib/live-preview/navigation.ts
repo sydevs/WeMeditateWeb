@@ -1,23 +1,31 @@
 /**
- * Live-preview navigation guard.
+ * Live preview: making links inert while the panel is open.
  *
  * ⚠ **Preview is no longer a route.** Any page renders drafts when the URL
- * carries a valid token, so this guard now attaches on every page and decides
- * from the session rather than from where it was mounted.
+ * carries a valid token, so this attaches on every page and decides from the
+ * session rather than from where it was mounted.
  *
  * Every link on screen is genuine navigation. When an editor clicks one inside
  * the SahajCloud live-preview iframe, the iframe leaves the document being
- * edited, and the session breaks — and the token has been scrubbed from the
+ * edited and the session breaks — and the token has been scrubbed from the
  * address bar by then, so there is no going back without reopening the panel.
  *
- * This guard makes links inert without threading a "disabled" prop
- * through every component (Link atom, Button-as-link, Breadcrumbs, cards,
- * nav, footer). A single capture-phase click interceptor blocks anchor
- * navigation across the whole preview tree, including the Header/Footer
- * chrome that LayoutChrome renders outside `<Preview>`.
+ * This guard makes links inert without threading a "disabled" prop through
+ * every component (Link atom, Button-as-link, Breadcrumbs, cards, nav,
+ * footer). A single capture-phase click interceptor blocks anchor navigation
+ * across the whole tree, including the Header/Footer chrome.
+ *
+ * ## Why a hook and not a component
+ *
+ * This was briefly `components/organisms/LivePreview`, which rendered `null`.
+ * It is behaviour, not UI: nothing to look at, no markup, no props, no story,
+ * nothing atomic design has a shelf for. `LayoutRoot` calls it directly, the
+ * way `lib/route-announcer.ts` is called from `pages/+onPageTransitionEnd.ts`.
  */
 
 import { useEffect } from 'react'
+
+import { useLivePreviewState } from './session'
 
 /**
  * Whether to block a click on an in-preview anchor.
@@ -42,8 +50,8 @@ export function shouldBlockPreviewLink(rawHref: string | null | undefined): bool
 }
 
 /**
- * Make every link in the live-preview routes inert, so editors can read
- * and scroll without the iframe navigating away from the document being
+ * Make every link inert while a live-preview session is open, so editors can
+ * read and scroll without the iframe navigating away from the document being
  * edited.
  *
  * Mechanism: a capture-phase listener on `window`, which fires before
@@ -56,14 +64,15 @@ export function shouldBlockPreviewLink(rawHref: string | null | undefined): bool
  * This also covers `auxclick`, because that is where browsers fire
  * middle-click "open in new tab". Only `<a>` is touched, so `<button>`
  * and media controls (play/pause, captions, the embed dropdown) keep
- * working. The `message`-based live-preview content updates and seek sync stay
- * untouched.
+ * working. The `message`-based content updates and seek sync stay untouched.
  *
- * @param active - whether a live-preview session is open. The listener is not
- *   attached at all when false, so the ordinary site navigates exactly as
- *   before — this runs on every page now, and must cost nothing off-preview.
+ * Any open session guards, scoped or not: a translations preview is still an
+ * iframe that must not navigate away. Off-preview no listener is attached at
+ * all, so the ordinary site pays nothing — this runs on every page now.
  */
-export function useLivePreviewLinkGuard(active: boolean): void {
+export function useLivePreviewLinkGuard(): void {
+  const { active } = useLivePreviewState()
+
   useEffect(() => {
     if (!active) return
     const blockAnchorNavigation = (event: MouseEvent) => {

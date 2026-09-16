@@ -3,7 +3,7 @@ import { render } from 'vike/abort'
 import type { ResolvedLecture } from '../../../server/cms-types'
 import { getLecture } from '../../../server/cms-client'
 import { idSchema } from '../../../server/validation'
-import { loadLivePreview } from '../../../server/live-preview'
+import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface LectureData {
   lecture: ResolvedLecture
@@ -32,12 +32,7 @@ export async function loadLecture(pageContext: PageContextServer): Promise<Lectu
   // cache, which is what lets an editor see a save they just made.
   const preview = await loadLivePreview(pageContext)
 
-  const lecture = await getLecture({
-    id,
-    locale,
-    preview: preview.active && preview.scope === null,
-    previewToken: preview.token ?? undefined,
-  })
+  const lecture = await getLecture({ id, locale, ...previewArgs(preview) })
 
   if (!lecture) {
     throw render(404, `Lecture with ID "${id}" not found.`)

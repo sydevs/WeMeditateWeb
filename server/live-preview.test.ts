@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 
-import { readLivePreviewScope, verifyLivePreviewToken } from './live-preview'
+import { previewArgs, verifyLivePreviewToken, type LivePreviewSession } from './live-preview'
 
 /**
  * The consumer half of a cross-repo format.
@@ -103,16 +103,47 @@ describe('verifyLivePreviewToken', () => {
   })
 })
 
-describe('readLivePreviewScope', () => {
-  it('accepts the two scopes the CMS emits', () => {
-    expect(readLivePreviewScope('wm-web-translations')).toBe('wm-web-translations')
-    expect(readLivePreviewScope('wm-web-config')).toBe('wm-web-config')
+describe('previewArgs', () => {
+  const session = (over: Partial<LivePreviewSession> = {}): LivePreviewSession => ({
+    active: true,
+    scope: null,
+    token: 'tok',
+    ...over,
   })
 
-  it('falls back to the default rather than widening', () => {
-    // An unrecognised scope must never mean "everything reads drafts".
-    expect(readLivePreviewScope('everything')).toBeNull()
-    expect(readLivePreviewScope('all')).toBeNull()
-    expect(readLivePreviewScope(undefined)).toBeNull()
+  it('asks for drafts when the panel is editing this read', () => {
+    expect(previewArgs(session())).toEqual({ preview: true, previewToken: 'tok' })
+    expect(previewArgs(session({ scope: 'wm-web-translations' }), 'wm-web-translations')).toEqual({
+      preview: true,
+      previewToken: 'tok',
+    })
+  })
+
+  /**
+   * ⚠ The whole reason the scope exists. A translations preview must leave the
+   * page itself PUBLISHED, so a translator sees their strings on the real
+   * article rather than on someone else's unsaved draft — and a page preview
+   * must not hand drafts to the translations read either.
+   */
+  it('refuses when the panel is editing something else', () => {
+    expect(previewArgs(session({ scope: 'wm-web-translations' }))).toEqual({
+      preview: false,
+      previewToken: undefined,
+    })
+    expect(previewArgs(session(), 'wm-web-translations')).toEqual({
+      preview: false,
+      previewToken: undefined,
+    })
+  })
+
+  it('sends no token off-preview, and none where preview is refused', () => {
+    expect(previewArgs(session({ active: false }))).toEqual({
+      preview: false,
+      previewToken: undefined,
+    })
+    expect(previewArgs(session({ token: null }))).toEqual({
+      preview: true,
+      previewToken: undefined,
+    })
   })
 })
