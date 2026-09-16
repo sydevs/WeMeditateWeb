@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react'
 
-import { scrubAddressBar, stripLivePreviewToken } from './lib/live-preview/token-url'
+import { scrubAddressBar } from './lib/live-preview/token-url'
 
 export const sentryBrowserConfig = () => {
   // ⚠ **First statement, and deliberately outside the PROD check.** Sentry
@@ -12,6 +12,11 @@ export const sentryBrowserConfig = () => {
   // which any import-sorting rule would have undone with no test failing.
   // There is no cross-module order left to preserve, and `scrubAddressBar`
   // early-returns on a URL with no token, so the entry calling it too is free.
+  //
+  // This is also why there is no `beforeSend` or `beforeBreadcrumb` here.
+  // Both used to strip the token from every URL Sentry was about to send.
+  // With the scrub guaranteed above, Sentry starts against an already-clean
+  // URL and there is nothing for either hook to find.
   scrubAddressBar()
 
   import.meta.env.PROD === true &&
@@ -23,23 +28,5 @@ export const sentryBrowserConfig = () => {
       tracePropagationTargets: [/^\//, /^https:\/\/yourserver\.io\/api/],
       replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
-      // The live-preview token rides in the query string, and replay records
-      // request URLs. Both hooks are needed: `beforeSend` covers the event's
-      // own URL and `beforeBreadcrumb` the navigation and fetch trail, which
-      // is a separate field and the one that would otherwise carry it.
-      beforeSend(event) {
-        if (event.request?.url) {
-          event.request.url = stripLivePreviewToken(event.request.url)
-        }
-
-        return event
-      },
-      beforeBreadcrumb(breadcrumb) {
-        if (typeof breadcrumb.data?.url === 'string') {
-          breadcrumb.data.url = stripLivePreviewToken(breadcrumb.data.url)
-        }
-
-        return breadcrumb
-      },
     })
 }
