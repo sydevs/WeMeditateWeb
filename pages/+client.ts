@@ -13,12 +13,12 @@
  * this file is written in ordinary order and nothing breaks if it is shuffled.
  *
  * The call below is still the one that must not be deleted: it is what scrubs
- * when Sentry is not what reads the URL. `scrubAddressBar` early-returns on a
- * URL with no token, so calling it here and again from Sentry costs nothing.
+ * when Sentry is not what reads the URL. `scrubTokenFromLocation` early-returns
+ * on a URL with no token, so calling it here and again from Sentry is free.
  */
 
-import { scrubAddressBar } from '../lib/live-preview/token-url'
+import { scrubTokenFromLocation } from '../lib/live-preview/token-url'
 import { sentryBrowserConfig } from '../sentry.browser.config'
 
-scrubAddressBar()
+scrubTokenFromLocation()
 sentryBrowserConfig()

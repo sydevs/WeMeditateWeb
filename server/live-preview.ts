@@ -25,15 +25,23 @@ import {
  *
  * ## Why a token and not the shared secret
  *
- * The credential rides in a URL, and a URL is read by browser history, the
- * `Referer` header, Sentry's session replay, and the analytics script in
- * `pages/+Head.tsx`, which posts `location.href`. Neither `Referrer-Policy`
- * nor a Sentry `beforeSend` stops that last one.
+ * The credential rides in a URL, and `location.href` is read by in-page
+ * third-party JavaScript — Sentry's session replay, and the analytics script
+ * in `pages/+Head.tsx`, which posts it with every pageview. `Referrer-Policy`
+ * governs what the browser sends, not what a script reads, so it reaches
+ * neither. The browser-side answer is in `lib/live-preview/token-url.ts`.
  *
  * So the CMS signs a short-lived Ed25519 token and this site verifies it with a
  * **public** key. The key is committed, not a secret: a verification key being
  * published costs nothing, and there is no second copy of a secret to keep in
  * sync with SahajCloud.
+ *
+ * ⚠ **A leaked token grants nothing on its own.** SahajCloud's
+ * `createAccessConfig` runs `hasPermission` first, and lifts its published-only
+ * clause only for a request already authenticated as a `clients` user. What
+ * would be worth something is a leaked token combined with an API key, and the
+ * atlas ships a browser-usable one. That is what bounds the risk, and what
+ * makes a 45–90 minute verify-only token the right size of credential.
  *
  * ⚠ **Verification is the whole gate.** A forged or expired `?live-preview=`
  * opens no session, so an invalid value renders the published page with a

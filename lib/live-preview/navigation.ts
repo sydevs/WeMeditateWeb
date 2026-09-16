@@ -7,8 +7,9 @@
  *
  * Every link on screen is genuine navigation. When an editor clicks one inside
  * the SahajCloud live-preview iframe, the iframe leaves the document being
- * edited and the session breaks — and the token has been scrubbed from the
- * address bar by then, so there is no going back without reopening the panel.
+ * edited and the session breaks — and the token has been scrubbed out of
+ * `location.href` by then, so there is no going back without reopening the
+ * panel.
  *
  * This guard makes links inert without threading a "disabled" prop through
  * every component (Link atom, Button-as-link, Breadcrumbs, cards, nav,

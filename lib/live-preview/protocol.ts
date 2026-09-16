@@ -7,7 +7,7 @@
  *   the request, verifies the Ed25519 signature against a committed public
  *   key, and holds the token. It is never bundled for the browser.
  * - **`lib/live-preview/*` — the browser behaviours.** The unsaved-edit
- *   stream, the link guard, the address-bar scrub and the meditation frame
+ *   stream, the link guard, the `location.href` scrub and the meditation frame
  *   channel. These are bundled for the browser, and so are never allowed to
  *   see the token.
  *

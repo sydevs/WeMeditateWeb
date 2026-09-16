@@ -6,8 +6,8 @@ import { useOptionalPageContext } from '../hooks/useT'
 
 export default function HeadDefault() {
   // ⚠ **The analytics script is omitted entirely under a live preview**, and
-  // this is what keeps the token out of Plausible — not the address-bar scrub,
-  // which cannot win the race.
+  // this is what keeps the token out of Plausible — not the `location.href`
+  // scrub, which cannot win the race.
   //
   // Measured on the deployed preview: this `defer` tag is the FIRST script in
   // the document, so it executes the moment parsing ends. Vike's client entry

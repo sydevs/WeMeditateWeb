@@ -19,7 +19,7 @@ describe('readLivePreviewScope', () => {
 describe('the shared vocabulary', () => {
   it('spells the parameter the way SahajCloud and SahajAtlasWeb do', () => {
     // Both halves import this one constant. It was spelled twice before, in
-    // the server module and in the address-bar scrub, with a comment asking
+    // the server module and in the browser-side scrub, with a comment asking
     // the two to stay in step.
     expect(LIVE_PREVIEW_PARAM).toBe('live-preview')
   })

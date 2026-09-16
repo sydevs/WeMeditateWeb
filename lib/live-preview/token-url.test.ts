@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { livePreviewToken, scrubAddressBar, stripLivePreviewToken } from './token-url'
+import { livePreviewToken, scrubTokenFromLocation, stripLivePreviewToken } from './token-url'
 
 /**
  * ⚠ The token rides in a query string because an iframe navigation cannot
- * carry a header — so it lands everywhere a URL is recorded: the address bar,
- * `Referer`, Sentry replay, and Plausible, which reads `location.href` in JS
- * and posts it where no response header can reach.
+ * carry a header — so it lands in `location.href`, which in-page third-party
+ * JavaScript reads: Plausible posts it with every pageview, and Sentry replay
+ * records request URLs. Not the address bar: a preview is an iframe inside the
+ * CMS admin, and its URL is never displayed.
  */
 describe('stripLivePreviewToken', () => {
   it('removes the token', () => {
@@ -26,16 +27,17 @@ describe('stripLivePreviewToken', () => {
   })
 
   it('leaves a URL without a token exactly as it was', () => {
-    // Identity matters: the address-bar scrub compares against the original to
-    // decide whether to touch history at all.
+    // Identity matters: `scrubTokenFromLocation` compares against the original
+    // to decide whether to touch history at all, which is what makes it
+    // idempotent and so safe to call from more than one place.
     const url = 'https://x.test/about?q=1'
 
     expect(stripLivePreviewToken(url)).toBe(url)
   })
 
   it('returns unparseable input unchanged rather than mangling it', () => {
-    // Sentry hands breadcrumb values that are sometimes a bare path or a
-    // label. Losing those protects nothing and discards information.
+    // A caller passes values that are sometimes a bare path or a label.
+    // Losing those protects nothing and discards information.
     for (const value of ['', '/about', 'navigation', 'not a url']) {
       expect(stripLivePreviewToken(value)).toBe(value)
     }
@@ -65,7 +67,7 @@ describe('livePreviewToken', () => {
       location: { href: 'https://x.test/about?live-preview=a.b.c&scope=wm-web-config' },
     })
 
-    scrubAddressBar()
+    scrubTokenFromLocation()
 
     expect(livePreviewToken()).toBe('a.b.c')
     expect(replaceState).toHaveBeenCalledWith(null, '', 'https://x.test/about?scope=wm-web-config')

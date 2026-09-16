@@ -8,7 +8,7 @@ import type { LivePreviewState } from '../lib/live-preview/protocol'
  * The other half of keeping the token out of third-party hands.
  *
  * Plausible reads `location.href` in JS and posts it, where no response header
- * reaches. The address-bar scrub cannot get there first: measured on the
+ * reaches. The `location.href` scrub cannot get there first: measured on the
  * deployed preview, this `defer` tag is the first script in the document and
  * runs the moment parsing ends, while Vike's client entry is an `async` module
  * at the end of `<body>` whose body dynamically `import()`s a hashed chunk.
