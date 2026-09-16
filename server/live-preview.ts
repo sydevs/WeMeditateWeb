@@ -1,3 +1,4 @@
+import { jwtVerify } from 'jose'
 import type { PageContextServer } from 'vike/types'
 
 import {
@@ -47,20 +48,6 @@ import {
  */
 
 /**
- * The API-client role this site's key holds.
- *
- * A token names the role that may redeem it, and SahajCloud checks that claim
- * against the roles on the authenticated key. Checking it here too means a
- * token minted for the atlas never even opens a session on this site.
- *
- * ⚠ The claim used to name the *site* (`wm-web`). Only the consumers checked
- * that, each against a constant it hardcoded, while the CMS accepted either —
- * so one leaked token unlocked drafts on both surfaces. A role is matched
- * against something the request proves.
- */
-const CLIENT_ROLE = 'wemeditate-web-client'
-
-/**
  * The verdict plus the credential, for server-side fetchers.
  *
  * Returned only by {@link loadLivePreview}, which is server-only by virtue of
@@ -105,79 +92,46 @@ export function previewArgs(
   return { preview, previewToken: preview ? (session.token ?? undefined) : undefined }
 }
 
-function base64UrlDecode(value: string): Uint8Array | null {
-  const padded = value.replace(/-/g, '+').replace(/_/g, '/')
-
-  try {
-    const binary = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='))
-
-    return Uint8Array.from(binary, (char) => char.charCodeAt(0))
-  } catch {
-    return null
-  }
-}
-
 /**
- * Verifies a token minted by SahajCloud's `mintLivePreviewToken`.
+ * Verifies a token minted by SahajCloud.
  *
- * Deliberately a copy of that check rather than a shared import — this repo
- * does not depend on the CMS's source. SahajCloud's
- * `tests/unit/live-preview-token.spec.ts` is the reference for the format;
- * `server/live-preview.test.ts` here pins the same cases against a locally
- * minted token, so a drift breaks a test rather than live preview.
+ * The token is a standard EdDSA compact JWS carrying only `exp`. `jose` does
+ * the parsing, the signature and the expiry; pinning `algorithms` is what
+ * stops a token that nominates its own weaker algorithm.
  *
- * Returns false for every failure and never reports which.
+ * `server/live-preview.test.ts` mints with the same construction the CMS uses,
+ * so a format drift breaks a test here rather than live preview in production.
+ *
+ * Returns false for every failure and never reports which — a caller learning
+ * WHY its token was refused learns how to forge a better one.
  */
 export async function verifyLivePreviewToken(
   token: string,
   verifyKeyBase64: string | undefined,
-  nowSeconds: number = Math.floor(Date.now() / 1000),
+  nowSeconds?: number,
 ): Promise<boolean> {
   if (!verifyKeyBase64) return false
 
-  const [body, signature] = token.split('.')
-
-  if (!body || !signature) return false
-
-  const keyBytes = base64UrlDecode(verifyKeyBase64.replace(/\s/g, ''))
-  const signatureBytes = base64UrlDecode(signature)
-  const claimsBytes = base64UrlDecode(body)
-
-  if (!keyBytes || !signatureBytes || !claimsBytes) return false
-
-  let key: CryptoKey
-
   try {
-    key = await crypto.subtle.importKey('raw', keyBytes as BufferSource, 'Ed25519', false, [
-      'verify',
-    ])
+    const key = await crypto.subtle.importKey(
+      'raw',
+      Buffer.from(verifyKeyBase64.replace(/\s/g, ''), 'base64') as unknown as BufferSource,
+      'Ed25519',
+      false,
+      ['verify'],
+    )
+
+    await jwtVerify(token, key, {
+      algorithms: ['EdDSA'],
+      // `jose` reads the clock itself; the parameter exists so a spec can pin
+      // a moment rather than racing a real one.
+      ...(nowSeconds === undefined ? {} : { currentDate: new Date(nowSeconds * 1000) }),
+    })
+
+    return true
   } catch {
     return false
   }
-
-  const valid = await crypto.subtle.verify(
-    'Ed25519',
-    key,
-    signatureBytes as BufferSource,
-    new TextEncoder().encode(body) as BufferSource,
-  )
-
-  if (!valid) return false
-
-  // Parsed only after the signature holds, so nothing downstream ever reads
-  // unauthenticated JSON.
-  let claims: { role?: unknown; exp?: unknown }
-
-  try {
-    claims = JSON.parse(new TextDecoder().decode(claimsBytes)) as typeof claims
-  } catch {
-    return false
-  }
-
-  if (claims.role !== CLIENT_ROLE) return false
-  if (typeof claims.exp !== 'number' || claims.exp <= nowSeconds) return false
-
-  return true
 }
 
 /**
