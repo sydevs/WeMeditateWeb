@@ -1,16 +1,14 @@
 /**
- * Cloudflare KV cache for REST API responses.
+ * Cloudflare KV cache for the atlas and sitemap reads.
  *
- * This module caches CMS REST query results in Cloudflare KV. It handles
- * cache key generation, TTL, and graceful fallback when KV is unavailable.
+ * It handles cache key generation, TTL, and graceful fallback when KV is
+ * unavailable.
  *
- * Cache strategy:
- * - Pages: 1 hour TTL (frequently updated content).
- * - Settings: 24 hours TTL (rarely updated global config).
- * - Lists: 30 minutes TTL (dynamic content, like tags).
- * - Preview mode: an optional bypass flag always fetches fresh data.
- * - Retry: automatic retry with exponential backoff for network and server
- *   errors.
+ * ⚠ **Three callers are left**: `getAtlasSeo`, `getAtlasSitemapUrls`
+ * (`atlas-client.ts`) and `getContentSitemapUrls` (`sitemap-routes.ts`).
+ * Every CMS collection and global read moved to the Cloudflare edge cache,
+ * which SahajCloud purges on write; nothing purges this one (#98). Do not
+ * wrap a new read here — see `server/CACHING.md`.
  */
 
 import { KVNamespace } from '@cloudflare/workers-types'
@@ -18,33 +16,23 @@ import * as Sentry from '@sentry/react'
 import { withRetry, type RetryConfig } from './error-utils'
 import { getCmsContext } from './cms-context'
 
-/** Default TTL values in seconds */
+/** Default TTL values in seconds. `AtlasCacheTTL` in `atlas-client.ts` holds the atlas ones. */
 export const CacheTTL = {
-  /** Page content cache duration (1 hour) */
-  PAGE: 3600,
-  /** Web settings cache duration (24 hours) */
-  SETTINGS: 86400,
   /** List queries cache duration (30 minutes) */
   LIST: 1800,
-  /** Meditation content cache duration (1 hour) */
-  MEDITATION: 3600,
-  /** Lecture content cache duration (1 hour) */
-  LECTURE: 3600,
-  /** Song content cache duration (1 hour) */
-  SONG: 3600,
 } as const
 
 /**
  * Generates a consistent cache key from query parameters.
  *
- * @param prefix - Cache key prefix (e.g., 'page', 'meditation', 'settings')
+ * @param prefix - Cache key prefix (e.g., 'atlas-seo', 'content-sitemap-docs')
  * @param params - Key-value parameters to include in the cache key
  * @returns A consistent, URL-safe cache key
  *
  * @example
  * ```typescript
- * const key = generateCacheKey('page', { slug: 'home', locale: 'en' })
- * // Returns: "page:slug=home:locale=en"
+ * const key = generateCacheKey('atlas-seo', { target: 'region:london', locale: 'en' })
+ * // Returns: "atlas-seo:locale=en:target=region:london"
  * ```
  */
 export function generateCacheKey(
@@ -173,18 +161,10 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
  * @example
  * ```typescript
  * // KV comes from context automatically.
- * const page = await withCache({
- *   cacheKey: generateCacheKey('page', { slug: 'home', locale: 'en' }),
- *   ttl: CacheTTL.PAGE,
- *   fetchFn: async () => await getPageBySlug({ slug: 'home', locale: 'en' }),
- * })
- *
- * // Preview mode: skip the cache and retries, and fail fast.
- * const previewPage = await withCache({
- *   cacheKey: generateCacheKey('page', { id: '123', locale: 'en' }),
- *   ttl: CacheTTL.PAGE,
- *   fetchFn: async () => await getDocumentById({ collection: 'pages', id: '123', locale: 'en' }),
- *   bypassCache: true,
+ * const urls = await withCache({
+ *   cacheKey: generateCacheKey('atlas-sitemap', { origin }),
+ *   ttl: AtlasCacheTTL.REGION,
+ *   fetchFn: async () => await readEveryAtlasUrl(origin),
  * })
  * ```
  */

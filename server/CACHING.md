@@ -1,124 +1,75 @@
-# REST API Caching with Cloudflare KV
+# Caching CMS reads
 
-This document explains how [cms-client.ts](./cms-client.ts) caches PayloadCMS REST reads in
-Cloudflare KV.
+## The edge is the cache
 
-## Overview
+A Worker's `fetch()` to a hostname on a **different** Cloudflare zone
+[reads through that zone's cache](https://developers.cloudflare.com/workers/reference/how-the-cache-works/).
+Every read in [cms-client.ts](./cms-client.ts) and [content-index.ts](./content-index.ts) goes to
+`cloud.sydevelopers.com`, so that is exactly what they do. SahajCloud sets `s-maxage=600` and a
+`Cache-Tag` on each cacheable path, and purges the tag on **every write**, so an editor's save
+reaches this site within the edge TTL.
 
-The app uses a read-through cache, in [kv-cache.ts](./kv-cache.ts). This cuts load on the
-PayloadCMS backend, and speeds up responses.
+There is no second cache in front of these reads, and that is the point. A tag purge cannot reach
+another Worker's KV, so a KV copy here would be a cache nobody could invalidate (#98). The cost
+paid for that is a Railway round trip every 600s per colo, instead of once per TTL globally.
 
-## How it works
+Two things follow for anyone adding a read:
 
-`withCache()` wraps a query function:
+- **A new slug caches only once SahajCloud's Cache Rule covers its path.** The rule enumerates
+  paths with `eq`/`starts_with` — see `DEPLOYMENT.md` in `sydevs/SahajCloud`. A path outside it is
+  `DYNAMIC` at the edge, which means no cache at all, not a slower one.
+- **Nothing in this repo needs a TTL, a cache key, or a purge step.** Add the query function and
+  stop. `docs/rules/rest-api.md` shows the shape.
 
-1. It checks the cache first, unless `bypassCache` is true.
-2. On a cache miss, it runs the query function, with automatic retry.
-3. It stores the result in the cache, unless `bypassCache` is true.
-4. It returns the result.
+## Retry, which is not caching
 
-KV comes from the request context automatically, through `getCmsContext()`. A caller does not
-pass a KV namespace.
+`readCms` in [cms-client.ts](./cms-client.ts) wraps a public read in `withRetry`
+([error-utils.ts](./error-utils.ts)): three attempts, exponential backoff with jitter, network and
+5xx errors only. A **preview** read skips it deliberately — an editor watching their own edit needs
+the error now, not after about 7s of backoff.
 
-A cache-read or cache-write error never fails the request. `kv-cache.ts` logs the error to
-console and Sentry, then continues without the cache.
+`content-index.ts` needs no wrapper. `fetchContentIndexDocs` degrades to `[]` and reports to
+Sentry, so nothing throws past it.
 
-## TTL table
+## What still uses KV
 
-| Constant | Seconds | Used for |
-|---|---|---|
-| `CacheTTL.PAGE` | 3600 (1 hour) | Pages |
-| `CacheTTL.SETTINGS` | 86400 (24 hours) | The WebConfig global |
-| `CacheTTL.LIST` | 1800 (30 minutes) | Tag-filtered lists, related content |
-| `CacheTTL.MEDITATION` | 3600 (1 hour) | Meditations |
-| `CacheTTL.LECTURE` | 3600 (1 hour) | Lectures |
-| `CacheTTL.SONG` | 3600 (1 hour) | Songs, and meditation background music |
+Three reads keep the read-through layer in [kv-cache.ts](./kv-cache.ts), bound as
+`WEMEDITATE_CACHE` in [wrangler.toml](../wrangler.toml):
 
-## Cache key format
+| Function | File | TTL |
+| --- | --- | --- |
+| `getAtlasSeo()` | [atlas-client.ts](./atlas-client.ts) | `AtlasCacheTTL.EVENT` 900s / `AtlasCacheTTL.REGION` 3600s |
+| `getAtlasSitemapUrls()` | [atlas-client.ts](./atlas-client.ts) | `AtlasCacheTTL.REGION` |
+| `getContentSitemapUrls()` | [sitemap-routes.ts](./sitemap-routes.ts) | `CacheTTL.LIST` |
 
-`generateCacheKey(prefix, params)` builds `prefix:key1=val1:key2=val2`, with keys sorted
-alphabetically. Examples:
+⚠ **These carry the same no-invalidation problem the CMS reads just shed.** #98 held them back on
+purpose: `getAtlasSeo`'s 900s event window is *longer* than the edge's 600s, so dropping its KV
+shortens the window rather than only removing a stale read, and that trade needs its own argument.
+Until that argument is made, an atlas edit is visible here only when the entry expires.
 
-```
-page:locale=en:slug=home
-web-config:locale=en
-pages-by-tags:limit=100:locale=en:tags=lifestyle,wisdom
-```
+`withCache` details that still apply to those three:
 
-### Change the cached shape, change the prefix
+- KV arrives through `getCmsContext()`. A caller passes no namespace, and there is none under
+  `pnpm dev`, so local reads always miss.
+- A read or write error never fails the request — `kv-cache.ts` logs to console and Sentry and
+  continues uncached.
+- **A stored `null` reads back as a miss.** A `null` answer is therefore re-fetched on every
+  request. Fine for a dead atlas route; never rely on it to absorb load.
+- **Change the cached shape, change the key prefix.** `getCachedResponse` returns stored JSON with
+  no shape check, so a deploy that changes what a key holds hands the new code an old value for a
+  whole TTL. `/sitemap.xml` hit this: `content-sitemap` held a `SitemapUrl[]` and came to hold
+  `{ pages, meditations, lectures }`, which would have emptied the sitemap for 30 minutes per
+  origin. Renaming it to `content-sitemap-docs` let the stale entries expire unread.
 
-`getCachedResponse` returns stored JSON as-is, with no shape check. A deploy that changes what a
-key holds therefore hands the new code an old value for a whole TTL, and the failure surfaces as
-a degraded response rather than an error. `/sitemap.xml` hit this: the `content-sitemap` entry
-held a `SitemapUrl[]` and came to hold `{ pages, meditations, lectures }`, which would have
-emptied the sitemap for 30 minutes per origin.
+### Inspecting the remaining entries
 
-Rename the prefix (`content-sitemap` → `content-sitemap-docs`) in the same commit that changes
-the shape. The stale entries then expire unread. There is no cache-invalidation step to run.
-
-## Cached functions
-
-Every function below lives in [cms-client.ts](./cms-client.ts), unless noted.
-
-- `getPageBySlug()` — cached, `CacheTTL.PAGE`.
-- `getDocumentById()` — cached per collection (`CacheTTL.PAGE`, `.MEDITATION`, or `.LECTURE`).
-  Pass `preview: true` to skip the cache and fetch draft content.
-- `getLecture()` — wraps `getDocumentById()`, and inherits its cache behavior.
-- `getPageLocaleStatus()` — cached, `CacheTTL.PAGE`, keyed on the slug alone, so every locale of
-  a page shares one entry. Retries once, and degrades to `{}` — never `null`, which `withCache`
-  reads as a miss.
-- `getWebConfig()` — cached, `CacheTTL.SETTINGS`.
-- `getPagesByTags()` — cached, `CacheTTL.LIST`.
-- `getSongsByTags()` — cached, `CacheTTL.SONG`.
-- `getMeditationSongs()` — cached, `CacheTTL.SONG`. Degrades to `[]` on failure.
-- `getRelatedMeditations()` and `getRelatedLectures()` — cached, `CacheTTL.LIST`. Degrade to `[]`
-  on failure.
-- `getAtlasSeo()` and `getAtlasSitemapUrls()`, in [atlas-client.ts](./atlas-client.ts) — cached
-  with their own TTLs (`AtlasCacheTTL`). See that file.
-
-## Preview mode
-
-Pass `preview: true` to `getDocumentById()` (and to `getLecture()`, which wraps it) to skip the
-cache, and fetch draft content with trusted preview credentials:
-
-```typescript
-const previewPage = await getDocumentById({
-  collection: 'pages',
-  id: '123',
-  locale: 'en',
-  preview: true,
-})
-```
-
-Preview mode also skips retry. An editor then sees an error immediately, instead of waiting
-through several seconds of backoff.
-
-## Managing the KV store with Wrangler
-
-Run these commands against the preview namespace during development. Drop `--preview` for
-production.
+Run these against the preview namespace during development. Drop `--preview` for production.
 
 ```bash
-# List keys
 pnpm wrangler kv key list --binding WEMEDITATE_CACHE --preview
-
-# Read one entry
-pnpm wrangler kv key get "page:locale=en:slug=home" --binding WEMEDITATE_CACHE --preview
-
-# Delete one entry
-pnpm wrangler kv key delete "page:locale=en:slug=home" --binding WEMEDITATE_CACHE --preview
-
-# Delete every entry (use with caution)
-pnpm wrangler kv key list --binding WEMEDITATE_CACHE --preview | \
-  jq -r '.[].name' | xargs -I {} pnpm wrangler kv key delete {} --binding WEMEDITATE_CACHE --preview
+pnpm wrangler kv key get "atlas-seo:locale=en:target=region:london" --binding WEMEDITATE_CACHE --preview
+pnpm wrangler kv key delete "atlas-seo:locale=en:target=region:london" --binding WEMEDITATE_CACHE --preview
 ```
 
-Cache entries expire on their own, by TTL. Manual deletion is rarely needed: use it only right
-after a content update you need to see immediately.
-
-The KV namespace itself is configured in [wrangler.toml](../wrangler.toml), under
-`[[kv_namespaces]]`, bound as `WEMEDITATE_CACHE`.
-
-## Adjusting a TTL
-
-Edit the `CacheTTL` constants in [kv-cache.ts](./kv-cache.ts).
+Entries expire by TTL on their own. Delete one only when you need a content change visible
+immediately.

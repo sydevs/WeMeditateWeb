@@ -15,17 +15,9 @@ paths:
 3. Add the query function to [server/cms-client.ts](../../server/cms-client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
-     return withCache({
-       cacheKey: generateCacheKey('new-content', { slug: options.slug, locale: options.locale }),
-       ttl: CacheTTL.PAGE,
-       kv: options.kv,
-       bypassCache: options.preview === true,
-       fetchFn: async () => {
-         const client = createPayloadClient({
-           apiKey: options.apiKey,
-           baseURL: options.baseURL,
-           preview: options.preview === true,
-         })
+     return readCms(
+       async () => {
+         const client = createPayloadClient({ preview: options.preview === true })
 
          const result = await client.find({
            collection: 'content',
@@ -36,13 +28,19 @@ paths:
 
          return result.docs[0] ?? null
        },
-     })
+       { preview: options.preview === true },
+     )
    }
    ```
 
-   Let SDK errors propagate. `@payloadcms/sdk` throws a `PayloadSDKError` carrying the HTTP
-   status, which [server/error-utils.ts](../../server/error-utils.ts) classifies and retries.
-   Return `null` (or an empty array) only for an empty result, never for a failure.
+   No cache key, no TTL, and no purge step. The Cloudflare edge in front of SahajCloud caches the
+   subrequest and purges it on write — see [server/CACHING.md](../../server/CACHING.md). A new
+   path caches only once SahajCloud's Cache Rule covers it.
+
+   `readCms` supplies the retry: three attempts for a public read, none for a preview read, which
+   must fail fast. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
+   carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
+   classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
 
 ## Read a global, and share it across the request
 
