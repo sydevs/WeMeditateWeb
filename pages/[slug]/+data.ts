@@ -5,6 +5,7 @@
 import type { PageContextServer } from 'vike/types'
 import type { Locale, Page, WebConfig } from '../../server/cms-types'
 import { getPageBySlug, getPageLocaleStatus } from '../../server/cms-client'
+import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
 import { advertisedLocales } from '../../lib/hreflang'
 import { pageTagLabels } from '../../lib/page-tag-labels'
@@ -68,9 +69,11 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   // Fetch the config, the page, and its per-locale publish state together.
   // The status read needs only the slug, so making it wait on the other two
   // would add a round trip to TTFB for a `<head>` annotation.
+  const preview = await loadLivePreview(pageContext)
+
   const [{ settings, t }, page, status] = await Promise.all([
     loadSiteContext(pageContext),
-    getPageBySlug({ slug, locale }),
+    getPageBySlug({ slug, locale, ...previewArgs(preview) }),
     getPageLocaleStatus({ slug }),
   ])
 

@@ -20,6 +20,7 @@ import { render } from 'vike/abort'
 import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './cms-client'
+import { loadLivePreview, previewArgs } from './live-preview'
 import type { Locale, WebConfig, WebTranslations } from './cms-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
@@ -62,10 +63,17 @@ function isEmpty(translations: WebTranslations): boolean {
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const existing = translationsCache.get(pageContext)
+
   if (existing) return existing
 
   const locale = pageContext.locale
-  const loading = getWebTranslations({ locale })
+  const loading = loadLivePreview(pageContext)
+    .then((preview) =>
+      // Only under the `wm-web-translations` scope: a preview of a PAGE
+      // should render that page's draft inside the published chrome an
+      // ordinary visitor sees, not a second document's unsaved edits.
+      getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
+    )
     .then((translations) => {
       if (!isEmpty(translations)) return translations
 
@@ -106,9 +114,11 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
  */
 export function loadSiteContext(pageContext: PageContextServer): Promise<SiteContext> {
   const existing = contextCache.get(pageContext)
+
   if (existing) return existing
 
   const loading = load(pageContext)
+
   contextCache.set(pageContext, loading)
 
   return loading
@@ -117,14 +127,22 @@ export function loadSiteContext(pageContext: PageContextServer): Promise<SiteCon
 async function load(pageContext: PageContextServer): Promise<SiteContext> {
   const locale = pageContext.locale
 
+  const preview = await loadLivePreview(pageContext)
+
   const [settings, translations] = await Promise.all([
-    getWebConfig({ locale }),
+    getWebConfig({ locale, preview: preview.active }),
     loadTranslations(pageContext),
   ])
 
   // A locale prefix the site does not offer is not a page. 404 rather than
   // rendering English under a French URL.
-  if (!settings.availableLocales.includes(locale)) {
+  //
+  // ⚠ **Except under preview.** `availableLocales` is gated on translations
+  // being PUBLISHED, so a translator working on a brand-new locale would 404
+  // before rendering a single string — the one case they most need to see.
+  // The gate exists to stop the PUBLIC meeting a half-translated site; an
+  // authenticated preview is precisely who it should not apply to.
+  if (!preview.active && !settings.availableLocales.includes(locale)) {
     throw render(404, `Locale "${locale}" is not available.`)
   }
 

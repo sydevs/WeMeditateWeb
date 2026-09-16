@@ -9,10 +9,7 @@
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    !(value instanceof Date)
+    typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Date)
   )
 }
 
@@ -21,11 +18,7 @@ function isRelationReference(value: unknown): value is string | number {
 }
 
 function isPopulatedRelation(value: unknown): value is { id: string | number } {
-  return (
-    isPlainObject(value) &&
-    'id' in value &&
-    isRelationReference(value.id)
-  )
+  return isPlainObject(value) && 'id' in value && isRelationReference(value.id)
 }
 
 export function mergePreviewData<T>(
@@ -75,11 +68,7 @@ function mergeRecursive(
       continue
     }
 
-    if (
-      isPlainObject(baseValue) &&
-      isPlainObject(overlayValue) &&
-      currentDepth < maxDepth
-    ) {
+    if (isPlainObject(baseValue) && isPlainObject(overlayValue) && currentDepth < maxDepth) {
       result[key] = mergeRecursive(baseValue, overlayValue, currentDepth + 1, maxDepth)
       continue
     }

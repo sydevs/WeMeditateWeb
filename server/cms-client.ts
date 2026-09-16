@@ -314,8 +314,11 @@ type FindByIdCollection = keyof typeof COLLECTION_BY_ID_CONFIG
 export async function getPageBySlug(
   options: LocalizedQueryOptions & {
     slug: string
+    preview?: boolean
+    previewToken?: string
   },
 ): Promise<Page | null> {
+  const isPreview = options.preview === true
   const cacheKey = generateCacheKey('page', {
     slug: options.slug,
     locale: options.locale,
@@ -324,8 +327,12 @@ export async function getPageBySlug(
   return withCache({
     cacheKey,
     ttl: CacheTTL.PAGE,
+    bypassCache: isPreview,
     fetchFn: async () => {
-      const client = createPayloadClient()
+      const client = createPayloadClient({
+        preview: isPreview,
+        previewToken: options.previewToken,
+      })
 
       const result = await client.find({
         collection: 'pages',
@@ -333,6 +340,12 @@ export async function getPageBySlug(
           slug: { equals: options.slug },
         },
         locale: options.locale,
+        // ⚠ Under `draft: true` Payload matches the DRAFT version's slug, so a
+        // draft that renames its slug is reachable at its new URL — which is
+        // exactly the URL SahajCloud's `buildPageWebPath` composes for the
+        // panel. The two agreeing is not a coincidence; it is why the panel
+        // and the site share one composer.
+        draft: isPreview,
         limit: 1,
         // depth 3 so relationships embedded in `content` blocks (showcase,
         // subtle-system) resolve their own thumbnails. The narrow
@@ -348,7 +361,10 @@ export async function getPageBySlug(
 
       const page = result.docs[0] as Page
 
-      if (page._status === 'draft') {
+      // Belt and braces for the public path: an API key cannot read drafts
+      // without a live-preview credential, so this should be unreachable. Under
+      // preview it is exactly what we asked for.
+      if (!isPreview && page._status === 'draft') {
         return null
       }
 
@@ -438,7 +454,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
     collection: C
     id: string
     preview?: boolean
-    previewSecret?: string
+    previewToken?: string
   },
 ): Promise<Config['collections'][C] | null> {
   const config = COLLECTION_BY_ID_CONFIG[options.collection]
@@ -455,7 +471,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
     fetchFn: async () => {
       const client = createPayloadClient({
         preview: isPreview,
-        previewSecret: options.previewSecret,
+        previewToken: options.previewToken,
       })
 
       const found = await client.findByID({
@@ -505,7 +521,7 @@ export async function getLecture(
   options: LocalizedQueryOptions & {
     id: string
     preview?: boolean
-    previewSecret?: string
+    previewToken?: string
   },
 ): Promise<ResolvedLecture | null> {
   const lecture = await getDocumentById({ collection: 'lectures', ...options })
@@ -574,12 +590,19 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  *
  * @returns The web configuration with populated page relationships
  */
-export async function getWebConfig(options: { locale?: Locale } = {}): Promise<WebConfig> {
+export async function getWebConfig(
+  options: { locale?: Locale; preview?: boolean } = {},
+): Promise<WebConfig> {
   const cacheKey = generateCacheKey('web-config', { locale: options.locale })
 
   return withCache({
     cacheKey,
     ttl: CacheTTL.SETTINGS,
+    // This global has no drafts, so there is nothing to unlock — but it is
+    // cached for 24h, and an editor who just changed the nav or the home page
+    // should see it. `availableLocales` lives here too, and a locale added
+    // minutes ago is exactly what a translator is previewing.
+    bypassCache: options.preview === true,
     fetchFn: async () => {
       const client = createPayloadClient()
 
@@ -677,7 +700,7 @@ const WEB_TRANSLATIONS_SELECT = {
 export async function getWebTranslations(options: {
   locale: Locale
   preview?: boolean
-  previewSecret?: string
+  previewToken?: string
 }): Promise<WebTranslations> {
   const isPreview = options.preview === true
   const cacheKey = generateCacheKey('web-translations', { locale: options.locale })
@@ -689,7 +712,7 @@ export async function getWebTranslations(options: {
     fetchFn: async () => {
       const client = createPayloadClient({
         preview: isPreview,
-        previewSecret: options.previewSecret,
+        previewToken: options.previewToken,
       })
 
       const translations = await client.findGlobal({
@@ -697,6 +720,11 @@ export async function getWebTranslations(options: {
         // The groups hold plain strings. Nothing to populate.
         depth: 0,
         locale: options.locale,
+        // ⚠ Load-bearing, and it was missing: the header alone unlocks the
+        // right to read a draft, it does not ASK for one. Without this a
+        // translator previewing their own edit saw published copy, which is
+        // the whole defect SahajCloud#776 was filed about.
+        draft: isPreview,
         select: WEB_TRANSLATIONS_SELECT,
       })
 

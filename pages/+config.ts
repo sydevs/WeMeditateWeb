@@ -27,7 +27,10 @@ export default {
   // needs it so `useT()` resolves the same strings during hydration as the
   // server rendered. `locale` already reaches the client through vike-react.
   // https://vike.dev/passToClient
-  passToClient: ['translations'],
+  // `livePreview` carries the verdict and the scope, never the token: the
+  // browser needs to know it is in a preview so the link guard mounts and the
+  // unsaved-edit listener subscribes, and it must not learn the credential.
+  passToClient: ['translations', 'livePreview'],
 
   extends: [vikeReact, vikePhoton],
   port: 5173,
