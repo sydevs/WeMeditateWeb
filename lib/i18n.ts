@@ -97,9 +97,7 @@ export function pluralize(
   return undefined
 }
 
-// ============================================================================
-// Key paths
-// ============================================================================
+// --- Key paths ---
 
 /**
  * Every addressable key path, derived from the CMS shape.
@@ -138,9 +136,7 @@ function readPath(source: unknown, path: readonly string[]): unknown {
   return node
 }
 
-// ============================================================================
-// createT
-// ============================================================================
+// --- createT ---
 
 /**
  * Splits a template into alternating text and placeholder-name parts, for

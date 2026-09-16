@@ -25,9 +25,7 @@ import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 /** A relationship or upload field: a populated document or a bare ID. */
 export type Ref<T> = number | T
 
-// ============================================================================
-// Field shapes (mirror sy-devs SahajCloud `richEditor/blocks/*`)
-// ============================================================================
+// --- Field shapes (mirror sy-devs SahajCloud `richEditor/blocks/*`) ---
 
 /** `textbox` — TextBoxBlock. */
 export interface TextBoxBlockFields {
@@ -182,9 +180,7 @@ export interface ContentIndexBlockFields {
   resolvedTracks?: Track[] | null
 }
 
-// ============================================================================
-// Shared card shape + helpers
-// ============================================================================
+// --- Shared card shape + helpers ---
 
 /** A grid or card item shape, structurally compatible with `ContentGridItem`.
  * `tags` are the item's own facets (page-tag enum, or lecture user-choices),
