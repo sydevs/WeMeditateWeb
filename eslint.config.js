@@ -141,4 +141,26 @@ export default [
       ],
     },
   },
+  // `no-console` is a warning everywhere, and `eslint .` exits 0 on warnings —
+  // which is how a `console.log` of the Mapbox token survived in a shipped
+  // component (#105). Raise it to an error for the tree a visitor's console
+  // sees, so a stray debug log fails the gate instead of joining the backlog.
+  // `server/` stays a warning on purpose: its `[PayloadCMS] GET … → …` lines
+  // are the request log AGENTS.md tells you to read when debugging.
+  {
+    files: ['components/**', 'hooks/**', 'layouts/**', 'lib/**', 'pages/**'],
+    rules: {
+      // `error` and `warn` report a real failure to whoever opens the console.
+      'no-console': ['error', { allow: ['error', 'warn'] }],
+    },
+  },
+  {
+    // Neither a story nor a test reaches a visitor. A story logs a callback's
+    // payload to show what the callback receives, and a test is where someone
+    // debugging reaches for a log first.
+    files: ['**/*.stories.tsx', '**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      'no-console': 'warn',
+    },
+  },
 ]
