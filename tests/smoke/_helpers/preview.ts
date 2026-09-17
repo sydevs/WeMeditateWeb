@@ -239,26 +239,14 @@ const IMAGE_POPULATE = {
   images: { url: true, filename: true, alt: true, width: true, height: true },
 }
 
-let discovery: Promise<CmsSamples | null> | undefined
-
-/**
- * Optionally pull deterministic sample content from the production CMS,
- * so ID-specific specs (meditations, lectures) always have a target.
- * Requires the SAHAJCLOUD_API_KEY secret. Returns null when the secret is
- * absent, so callers can call test.skip.
- *
- * Memoised: the answer is the same for every spec in a run, and each call
- * costs three sequential CMS round trips.
- */
-export function discoverFromCms(): Promise<CmsSamples | null> {
-  discovery ??= loadCmsSamples()
-
-  return discovery
-}
-
 /**
  * A locale the site offers other than English, or null. The prefix specs
  * need one, and which one is an editor's choice.
+ *
+ * ⚠ Not memoised, and neither is `discoverFromCms`. A failed CMS read
+ * degrades to `availableLocales: ['en']`, which is also production's real
+ * value, so a cached answer cannot be told from a flake — and caching one
+ * would skip every later locale spec in the run on a single timeout.
  */
 export async function nonEnglishLocale(): Promise<Locale | null> {
   const offered = (await discoverFromCms())?.availableLocales ?? []
@@ -271,7 +259,13 @@ export function htmlTag(html: string): string {
   return html.match(/<html[^>]*>/i)?.[0] ?? ''
 }
 
-async function loadCmsSamples(): Promise<CmsSamples | null> {
+/**
+ * Optionally pull deterministic sample content from the production CMS,
+ * so ID-specific specs (meditations, lectures) always have a target.
+ * Requires the SAHAJCLOUD_API_KEY secret. Returns null when the secret is
+ * absent, so callers can call test.skip.
+ */
+export async function discoverFromCms(): Promise<CmsSamples | null> {
   const apiKey = process.env.SAHAJCLOUD_API_KEY
 
   if (!apiKey) return null
