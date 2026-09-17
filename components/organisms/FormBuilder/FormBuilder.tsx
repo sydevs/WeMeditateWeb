@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ZodObject, ZodRawShape } from 'zod'
@@ -135,6 +135,20 @@ export interface FormBuilderProps {
    * <FormBuilder form={formConfig} onSubmit={handleSubmit} schema={schema} />
    */
   schema?: ZodObject<ZodRawShape>
+
+  /**
+   * Rendered inside the `<form>`, between the fields and the submit button.
+   * The slot a captcha goes in — see `CmsForm`, which puts Turnstile here.
+   * Kept as a slot so this component stays free of any one provider.
+   */
+  captcha?: ReactNode
+
+  /**
+   * Block submission even when the fields validate. A captcha still waiting
+   * on its token is the case this exists for.
+   * @default false
+   */
+  submitDisabled?: boolean
 }
 
 /** Renders a form field based on its type */
@@ -241,11 +255,15 @@ function renderField(
  * checkbox, number, message), and it handles form submission, validation,
  * confirmation messages, and redirects.
  *
+ * Submission is the caller's: this component formats the answers and reports
+ * the outcome. `CmsForm` is the wiring for an authored CMS form, including the
+ * captcha and the intake's error codes.
+ *
  * @example
  * <FormBuilder
  *   form={formConfig}
  *   onSubmit={async (data) => {
- *     const response = await fetch('/api/form-submissions', {
+ *     const response = await fetch('/api/submissions', {
  *       method: 'POST',
  *       body: JSON.stringify(data),
  *     })
@@ -253,7 +271,16 @@ function renderField(
  *   }}
  * />
  */
-export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left', className = '', schema }: FormBuilderProps) {
+export function FormBuilder({
+  form,
+  onSubmit,
+  variant = 'default',
+  align = 'left',
+  className = '',
+  schema,
+  captcha,
+  submitDisabled = false,
+}: FormBuilderProps) {
   const t = useT()
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({})
@@ -418,13 +445,15 @@ export function FormBuilder({ form, onSubmit, variant = 'default', align = 'left
           })}
         </div>
 
+        {captcha && <div className={`mt-6 ${align === 'center' ? 'flex justify-center' : ''}`}>{captcha}</div>}
+
         {/* Submit button */}
         <div className={`mt-8 ${align === 'center' ? 'flex justify-center' : ''}`}>
           <Button
             type="submit"
             variant={variant === 'minimal' ? 'outline' : 'primary'}
             isLoading={isSubmitting}
-            disabled={isSubmitting}
+            disabled={isSubmitting || submitDisabled}
             className="min-w-32"
           >
             {form.submitButtonLabel || t('forms.general.submit')}
