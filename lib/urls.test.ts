@@ -56,9 +56,11 @@ describe('isSafeNavigationUrl', () => {
     expect(isSafeNavigationUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
   })
 
-  it('refuses a protocol-relative URL, which reads like a path and is not one', () => {
-    // The one spelling a bare startsWith('/') would let through.
-    expect(isSafeNavigationUrl('//evil.example/thanks')).toBe(false)
+  it('accepts an off-site URL, however it is spelled', () => {
+    // An editor may send a visitor elsewhere, so `//host` and the `/\host`
+    // browsers fold into it are the plain absolute URL by another name.
+    expect(isSafeNavigationUrl('//other.example/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('/\\other.example/thanks')).toBe(true)
   })
 
   it('refuses anything that is neither', () => {

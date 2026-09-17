@@ -46,15 +46,13 @@ export function isSafeHttpUrl(url: string): boolean {
  * Wider than {@link isSafeHttpUrl} by exactly one case, and an editor's most
  * likely one — `/thank-you` is a path, which `new URL` alone cannot parse.
  *
- * ⚠ `//host` is excluded deliberately. It reads like a path and behaves like
- * an absolute URL, inheriting the page's scheme and leaving the site, so it
- * is the one spelling that would sneak past a bare `startsWith('/')`.
+ * ⚠ **This gates the scheme, not the destination.** An editor is allowed to
+ * send a visitor to another site, so an off-site URL passes. Anything that
+ * tries to read as a path and leave anyway — `//host`, or `/\host`, which
+ * browsers fold to `//host` — is therefore not a case worth excluding: the
+ * plain spelling of the same destination is already allowed.
  */
 export function isSafeNavigationUrl(url: string): boolean {
-  if (url.startsWith('//')) {
-    return false
-  }
-
   return url.startsWith('/') || isSafeHttpUrl(url)
 }
 
