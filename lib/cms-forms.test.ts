@@ -106,14 +106,9 @@ describe('cmsFormConfig', () => {
     // FormBuilder assigns this to `window.location.href`, and
     // `forms.redirect.url` is a plain CMS text field with no upstream
     // validation. A refused URL leaves the form showing its confirmation
-    // message. `//evil.example` is in the list because it reads like a path
-    // and behaves like an absolute URL.
-    const refused = [
-      'javascript:alert(1)',
-      'data:text/html,<script>x</script>',
-      '//evil.example/thanks',
-      'not a url',
-    ]
+    // message. The gate is the scheme — an editor may send a visitor
+    // off-site, but not run code in this origin.
+    const refused = ['javascript:alert(1)', 'data:text/html,<script>x</script>', 'not a url']
 
     for (const url of refused) {
       const config = cmsFormConfig({

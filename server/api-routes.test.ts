@@ -326,15 +326,16 @@ describe('POST /api/submissions — the body gate', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses an oversized body on its declared length, without reading it', async () => {
-    const app = new Hono<CmsEnv>()
-
-    registerApiRoutes(app)
-
-    const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': String(1024 * 1024) },
-      body: JSON.stringify({ form: 12, type: 'contact', submissionData: [] }),
+  it('refuses a body past what submissionSchema allows', async () => {
+    const response = await submit({
+      body: {
+        form: 12,
+        type: 'contact',
+        submissionData: Array.from({ length: 41 }, (_, index) => ({
+          field: `f${index}`,
+          value: 'x',
+        })),
+      },
     })
 
     expect(response.status).toBe(400)
