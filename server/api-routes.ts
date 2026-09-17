@@ -197,13 +197,6 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
 }
 
 /**
- * The ceiling on a submission body, generous against what `submissionSchema`
- * allows: 40 pairs at 5000 characters is roughly 200 kB of text before keys
- * and JSON punctuation.
- */
-const MAX_SUBMISSION_BYTES = 256 * 1024
-
-/**
  * The public intake, proxied same-origin.
  *
  * The browser cannot post to `POST /api/user-submissions` itself: the create
@@ -224,14 +217,6 @@ const MAX_SUBMISSION_BYTES = 256 * 1024
 function registerSubmissions(app: Hono<CmsEnv>): void {
   app.post(SUBMISSION_PATH, async (c) => {
     c.header('Cache-Control', 'no-store')
-
-    // Refused on the declared length, before the body is read. `submissionSchema`
-    // bounds what a real submission can be (40 pairs, 5000 characters each), so
-    // anything past this ceiling is not one, and parsing it to find that out is
-    // work an unauthenticated caller gets to ask for.
-    if (Number(c.req.header('content-length') ?? 0) > MAX_SUBMISSION_BYTES) {
-      return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
-    }
 
     const body = submissionSchema.safeParse(await c.req.json().catch(() => null))
 
