@@ -1,7 +1,9 @@
 import { SignJWT } from 'jose'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
-import { verifyLivePreviewToken } from './live-preview'
+import type { PageContextServer } from 'vike/types'
+import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
+import { loadLivePreview, verifyLivePreviewToken } from './live-preview'
 
 /**
  * The consumer half of a cross-repo format.
@@ -98,5 +100,63 @@ describe('verifyLivePreviewToken', () => {
     for (const bad of ['', '.', 'nodot', 'a.b', 'a.b.c', '....', 'YQ.YQ.YQ']) {
       expect(await verifyLivePreviewToken(bad, verifyKeyBase64, NOW)).toBe(false)
     }
+  })
+})
+
+/**
+ * One verification per request, across hooks that are handed different objects.
+ *
+ * `data()` and `+onBeforeRender` never share a `pageContext`: vike wraps the
+ * request's object in a fresh proxy for each. Keying the memo on the argument
+ * therefore verified the token twice on every preview render (#108). Counting
+ * `importKey` is what measures it — the memo's point is that the crypto does
+ * not run again, and that the two hooks cannot reach different verdicts.
+ */
+describe('loadLivePreview', () => {
+  /** One request carrying a preview token, as vike's two hooks see it. */
+  function hookViews(token: string) {
+    const request = { urlParsed: { search: { [LIVE_PREVIEW_PARAM]: token } } }
+    const asHook = () =>
+      new Proxy(request, {
+        get: (target, prop) => (prop === '_originalObject' ? target : target[prop as 'urlParsed']),
+      }) as unknown as PageContextServer
+
+    return { inData: asHook(), inOnBeforeRender: asHook() }
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllEnvs()
+  })
+
+  it('verifies the token once across two hooks of one request', async () => {
+    vi.stubEnv('PUBLIC__LIVE_PREVIEW_VERIFY_KEY', verifyKeyBase64)
+    const importKey = vi.spyOn(crypto.subtle, 'importKey')
+    const { inData, inOnBeforeRender } = hookViews(await sign(NOW + 600))
+
+    const first = await loadLivePreview(inData)
+    const second = await loadLivePreview(inOnBeforeRender)
+
+    expect(first.active).toBe(true)
+    expect(second).toBe(first)
+    expect(importKey).toHaveBeenCalledTimes(1)
+  })
+
+  it('verifies again for a second request', async () => {
+    vi.stubEnv('PUBLIC__LIVE_PREVIEW_VERIFY_KEY', verifyKeyBase64)
+    const importKey = vi.spyOn(crypto.subtle, 'importKey')
+    const token = await sign(NOW + 600)
+
+    await loadLivePreview(hookViews(token).inData)
+    await loadLivePreview(hookViews(token).inOnBeforeRender)
+
+    expect(importKey).toHaveBeenCalledTimes(2)
+  })
+
+  it('still memoises when `pageContext` is not a proxy', async () => {
+    // What a unit test and Ladle pass. `_originalObject` is absent there.
+    const plain = { urlParsed: { search: {} } } as unknown as PageContextServer
+
+    expect(await loadLivePreview(plain)).toBe(await loadLivePreview(plain))
   })
 })
