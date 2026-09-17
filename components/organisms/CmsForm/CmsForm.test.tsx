@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { CmsForm } from './CmsForm'
 import type { EmbeddedForm } from '../../../server/cms-types'
@@ -27,6 +27,13 @@ const form = {
     { blockType: 'textarea', name: 'message', label: 'Message', required: true },
   ],
 } satisfies EmbeddedForm
+
+// `siteKey` defaults to `PUBLIC__TURNSTILE_SITE_KEY`, and `.env.example` tells
+// a developer to set it. So the unconfigured case is stubbed rather than
+// assumed, or the assertion below passes or fails by whose machine it runs on.
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe('CmsForm', () => {
   it('renders the authored title, fields and button label', () => {
@@ -58,6 +65,8 @@ describe('CmsForm', () => {
     // refuses the write instead, which is visible rather than silent.
     // `disabled:` appears in the button's Tailwind classes, so the attribute
     // is what to match, not the word.
+    vi.stubEnv('PUBLIC__TURNSTILE_SITE_KEY', '')
+
     const html = renderToStaticMarkup(<CmsForm form={form} />)
 
     expect(html).not.toContain('disabled=""')

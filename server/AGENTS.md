@@ -25,7 +25,22 @@ Every contact and subscribe form posts to `POST /api/submissions`
 `submissionData` is the flat `[{ field, value }]` remainder, and the collection accepts only the
 keys it allows per type: the base context set (`name`, `locale`, `path`, `hostUrl`, `userAgent`,
 `error`), the type's own, and whatever the form's author declared. An invented key comes back as a
-400 naming it. `lib/cms-forms.ts` owns that body; nothing else composes one.
+400 naming it, and so does a repeated one. `lib/cms-forms.ts` owns that body; nothing else
+composes one.
+
+Two things about `form` and the visitor's IP that only bite in production:
+
+- **`form` is a number.** SahajCloud resolves the relationship with `relationId()`, which answers
+  `null` for a string. A quoted id is accepted and then leaves the intake unable to load the form,
+  which empties the authored-field allow-list — so every field the editor named is refused as
+  unknown, while the base keys still pass. `submissionSchema` refuses a string at the edge so this
+  cannot ship again.
+- ⚠ **The CMS sees this Worker's IP, not the visitor's.** It reads `cf-connecting-ip` off its own
+  request for Turnstile's `remoteip`, and a proxied submission carries ours. Cloudflare validates
+  `remoteip` against the address that solved the challenge, so this needs an end-to-end test
+  before anyone trusts it, and a forwarded-IP contract upstream if it refuses
+  (sydevs/SahajCloud#808). The same substitution puts every submission in one edge rate-limit
+  bucket.
 
 ## Always send `select`, `populate` at depth > 1, and `locale`
 

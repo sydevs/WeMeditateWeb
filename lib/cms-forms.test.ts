@@ -127,8 +127,10 @@ describe('submissionBody', () => {
     expect(result.submissionData.map((pair) => pair.field)).not.toContain('email')
   })
 
-  it('sends the form id and the action type as the submission type', () => {
-    expect(body({ email: 'ada@example.org' })).toMatchObject({ form: '12', type: 'contact' })
+  it('sends the form id as a number, and the action type as the submission type', () => {
+    // A quoted id reaches the intake as an unresolvable relationship, which
+    // silently empties the authored-field allow-list.
+    expect(body({ email: 'ada@example.org' })).toMatchObject({ form: 12, type: 'contact' })
   })
 
   it('stringifies a checkbox, because the stored value is text', () => {
@@ -149,6 +151,27 @@ describe('submissionBody', () => {
 
     expect(pairs).toContainEqual({ field: 'locale', value: 'es' })
     expect(pairs).toContainEqual({ field: 'path', value: '/es/contacto' })
+  })
+
+  it('lets an author who named a field `locale` or `path` keep their answer', () => {
+    // A repeated key is a 400 at the collection, so the context pairs must
+    // never collide with an authored field name.
+    const collidingForm = {
+      ...contactForm,
+      fields: [
+        { blockType: 'text', name: 'locale', label: 'Which language?' },
+        { blockType: 'text', name: 'path', label: 'Which route?' },
+      ],
+    } satisfies EmbeddedForm
+    const pairs = body(
+      { locale: 'Spanish', path: 'the mountain one' },
+      collidingForm,
+    ).submissionData
+
+    expect(pairs).toEqual([
+      { field: 'locale', value: 'Spanish' },
+      { field: 'path', value: 'the mountain one' },
+    ])
   })
 
   it('omits senderEmail when the form has no email field', () => {

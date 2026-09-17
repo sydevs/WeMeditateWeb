@@ -45,9 +45,18 @@ export interface SubmissionPair {
   value: string
 }
 
-/** The body `POST /api/user-submissions` accepts for a form-backed intake. */
+/**
+ * The body `POST /api/user-submissions` accepts for a form-backed intake.
+ *
+ * ⚠ `form` is a **number**, and the string a JSON body makes so easy is not
+ * interchangeable. SahajCloud reads the relationship with `relationId()`,
+ * which answers `null` for a string — so a quoted id leaves the intake unable
+ * to load the form, which silently empties the authored-field allow-list
+ * (every field the author named is then refused as unknown), skips the
+ * `actionType`-versus-`type` guard, and blanks the admin subject line.
+ */
 export interface SubmissionBody {
-  form: string
+  form: number
   type: EmbeddedForm['actionType']
   senderEmail?: string
   submissionData: SubmissionPair[]
@@ -192,6 +201,7 @@ export function submissionBody({
 }): SubmissionBody {
   const emailField = emailFieldName(form)
   const pairs: SubmissionPair[] = []
+  const authored = new Set<string>()
   let senderEmail: string | undefined
 
   for (const { field, value } of submission.submissionData) {
@@ -204,15 +214,20 @@ export function submissionBody({
       continue
     }
 
+    authored.add(field)
     pairs.push({ field, value: text })
   }
 
-  pairs.push({ field: 'locale', value: locale })
+  // The author's own field wins a name collision. A repeated key is a 400 at
+  // the collection, so an author who names a field `locale` or `path` must not
+  // have their form broken by the context we add.
+  if (!authored.has('locale')) pairs.push({ field: 'locale', value: locale })
 
-  if (path) pairs.push({ field: 'path', value: path })
+  if (path && !authored.has('path')) pairs.push({ field: 'path', value: path })
 
   return {
-    form: submission.form,
+    // The form's own numeric id, never the string FormBuilder echoes back.
+    form: form.id,
     type: form.actionType,
     ...(senderEmail ? { senderEmail } : {}),
     submissionData: pairs,

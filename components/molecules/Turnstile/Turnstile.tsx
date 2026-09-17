@@ -13,8 +13,9 @@ import { useEffect, useRef } from 'react'
  * auto-rendered widget appears on a full page load and never again. Explicit
  * render is tied to this component's own lifecycle instead.
  *
- * It renders no copy of its own, so it needs no translations: the challenge
- * text inside the iframe is Cloudflare's, localized from the page's `lang`.
+ * It renders no copy of its own, so it needs no translations from the CMS: the
+ * challenge text inside the iframe is Cloudflare's, in the language the
+ * `language` prop names.
  */
 
 /** The narrow slice of Cloudflare's global API this component calls. */
@@ -27,6 +28,7 @@ interface TurnstileApi {
       'error-callback': () => void
       'expired-callback': () => void
       theme?: 'light' | 'dark' | 'auto'
+      language?: string
     },
   ) => string | undefined
   remove: (widgetId: string) => void
@@ -46,6 +48,11 @@ const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render
  * Module scope, so two forms in one article do not each inject the script.
  * `turnstile` is set on `window` before the script's `load` fires, so a later
  * mount resolves immediately off the cached promise.
+ *
+ * ⚠ A rejection clears the cache. Keeping a rejected promise here would make
+ * one blocked request permanent for the rest of the session: Vike never
+ * reloads the document, so every later form in the visit would come up
+ * captcha-less and stay unsubmittable.
  */
 let scriptLoad: Promise<void> | undefined
 
@@ -60,6 +67,10 @@ function loadTurnstile(): Promise<void> {
     script.src = SCRIPT_SRC
     script.async = true
     document.head.appendChild(script)
+  }).catch((error: unknown) => {
+    scriptLoad = undefined
+
+    throw error
   })
 
   return scriptLoad
@@ -78,11 +89,25 @@ export interface TurnstileProps {
   /** Cloudflare's widget theme. @default 'light' */
   theme?: 'light' | 'dark' | 'auto'
 
+  /**
+   * The language the challenge is shown in, as a two-letter code. Cloudflare's
+   * own default follows the **browser's** language, not the page's, so a
+   * visitor reading the Spanish site in a English-configured browser would get
+   * an English challenge in the middle of a Spanish form. Pass the page locale.
+   */
+  language?: string
+
   /** Additional CSS classes for the widget container. */
   className?: string
 }
 
-export function Turnstile({ siteKey, onToken, theme = 'light', className = '' }: TurnstileProps) {
+export function Turnstile({
+  siteKey,
+  onToken,
+  theme = 'light',
+  language,
+  className = '',
+}: TurnstileProps) {
   const container = useRef<HTMLDivElement>(null)
   // The callback identity changes on every parent render, and re-rendering the
   // widget would throw away a solved challenge. So it stays out of the effect's
@@ -105,6 +130,7 @@ export function Turnstile({ siteKey, onToken, theme = 'light', className = '' }:
           'error-callback': () => latestOnToken.current(null),
           'expired-callback': () => latestOnToken.current(null),
           theme,
+          ...(language ? { language } : {}),
         })
       })
       .catch(() => {
@@ -119,7 +145,7 @@ export function Turnstile({ siteKey, onToken, theme = 'light', className = '' }:
 
       if (widgetId) window.turnstile?.remove(widgetId)
     }
-  }, [siteKey, theme])
+  }, [siteKey, theme, language])
 
   return <div ref={container} className={className} />
 }

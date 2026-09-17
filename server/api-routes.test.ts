@@ -234,7 +234,7 @@ function submit(options: { body?: unknown; token?: string } = {}) {
     },
     body: JSON.stringify(
       options.body ?? {
-        form: '12',
+        form: 12,
         type: 'contact',
         senderEmail: 'ada@example.org',
         submissionData: [{ field: 'message', value: 'Hello' }],
@@ -264,7 +264,20 @@ describe('POST /api/submissions — the forward', () => {
 
     expect(sent.method).toBe('POST')
     expect(sent.path).toBe('/user-submissions')
-    expect(sent.json).toMatchObject({ form: '12', type: 'contact' })
+    expect(sent.json).toMatchObject({ form: 12, type: 'contact' })
+  })
+
+  it('refuses a quoted form id, which the intake cannot resolve', async () => {
+    // SahajCloud reads the relationship with `relationId()`, which answers
+    // `null` for a string — so a quoted id would be accepted and then silently
+    // refuse every authored field. See `SubmissionBody` in lib/cms-forms.ts.
+    const response = await submit({
+      body: { form: '12', type: 'contact', submissionData: [] },
+      token: 'turnstile-token',
+    })
+
+    expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
   })
 
   it('forwards the captcha token, and no other browser header', async () => {
@@ -306,7 +319,22 @@ describe('POST /api/submissions — the body gate', () => {
     // Registrations and proposals are the atlas widget's, and name an event
     // rather than a form.
     const response = await submit({
-      body: { form: '12', type: 'registration', submissionData: [] },
+      body: { form: 12, type: 'registration', submissionData: [] },
+    })
+
+    expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('refuses an oversized body on its declared length, without reading it', async () => {
+    const app = new Hono<CmsEnv>()
+
+    registerApiRoutes(app)
+
+    const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': String(1024 * 1024) },
+      body: JSON.stringify({ form: 12, type: 'contact', submissionData: [] }),
     })
 
     expect(response.status).toBe(400)

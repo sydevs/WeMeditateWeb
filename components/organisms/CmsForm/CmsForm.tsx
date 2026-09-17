@@ -8,6 +8,7 @@ import {
   SUBMISSION_PATH,
   TURNSTILE_TOKEN_HEADER,
 } from '../../../lib/cms-forms'
+import { normalizeContentPath } from '../../../lib/urls'
 import type { EmbeddedForm } from '../../../server/cms-types'
 
 /**
@@ -54,8 +55,10 @@ export function CmsForm({
   const t = useT()
   const locale = useLocale()
   // The page this form sits on, from the same object the locale comes from, so
-  // the two `submissionData` pairs cannot disagree.
-  const path = useOptionalPageContext()?.urlPathname
+  // the two `submissionData` pairs cannot disagree. Spelled the way every
+  // other consumer spells a path — `urlPathname` still carries
+  // `+onBeforeRoute`'s `/index` for the home page.
+  const path = normalizeContentPath(useOptionalPageContext()?.urlPathname)
   const config = useMemo(() => cmsFormConfig(form), [form])
   const [token, setToken] = useState<string | null>(null)
   // Bumped on every refusal, and used as the widget's key: a Turnstile token
@@ -68,19 +71,29 @@ export function CmsForm({
   if (!config) return null
 
   const handleSubmit = async (submission: FormBuilderSubmission) => {
-    const response = await fetch(SUBMISSION_PATH, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
-      },
-      body: JSON.stringify(submissionBody({ form, submission, locale, path })),
-    })
+    let response: Response
 
-    if (response.ok) {
-      return { success: true }
+    try {
+      response = await fetch(SUBMISSION_PATH, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
+        },
+        body: JSON.stringify(submissionBody({ form, submission, locale, path })),
+      })
+    } catch {
+      // A dropped connection may still have reached the CMS and spent the
+      // token, so this re-challenges like any other failure rather than
+      // letting FormBuilder catch the throw with the token intact.
+      return refuse()
     }
 
+    return response.ok ? { success: true } : refuse()
+  }
+
+  /** Every failure looks the same to the visitor, and costs a fresh challenge. */
+  function refuse() {
     setToken(null)
     setAttempt((previous) => previous + 1)
 
@@ -90,7 +103,9 @@ export function CmsForm({
   return (
     <FormBuilder
       captcha={
-        siteKey ? <Turnstile key={attempt} siteKey={siteKey} onToken={setToken} /> : undefined
+        siteKey ? (
+          <Turnstile key={attempt} language={locale} siteKey={siteKey} onToken={setToken} />
+        ) : undefined
       }
       className={className}
       form={config}
