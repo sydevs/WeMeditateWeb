@@ -98,11 +98,6 @@ export function detectErrorType(error: unknown): ErrorType {
   return ErrorType.UNKNOWN
 }
 
-// Re-exported so existing importers keep working. The rule moved to
-// `lib/urls.ts`, which owns how a URL is spelled, once a second caller needed
-// it — an authored form's redirect, which reaches `window.location.href`.
-export { isSafeHttpUrl } from '../lib/urls'
-
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }

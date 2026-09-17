@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isSafeNavigationUrl, localeUrl, normalizeContentPath } from './urls'
+import { isSafeHttpUrl, isSafeNavigationUrl, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -41,6 +41,24 @@ describe('localeUrl', () => {
   it('renders the home page as a bare prefix, which the router resolves', () => {
     expect(localeUrl(ORIGIN, 'en', '/')).toBe('https://wemeditate.com/')
     expect(localeUrl(ORIGIN, 'fr', '/')).toBe('https://wemeditate.com/fr')
+  })
+})
+
+describe('isSafeHttpUrl', () => {
+  it('accepts an http(s) URL', () => {
+    expect(isSafeHttpUrl('https://status.example.com')).toBe(true)
+    expect(isSafeHttpUrl('http://status.example.com')).toBe(true)
+  })
+
+  it('refuses every other scheme', () => {
+    expect(isSafeHttpUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
+  })
+
+  it('refuses what does not parse', () => {
+    expect(isSafeHttpUrl('not a url')).toBe(false)
+    expect(isSafeHttpUrl('')).toBe(false)
   })
 })
 

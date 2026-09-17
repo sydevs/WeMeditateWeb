@@ -26,8 +26,7 @@ import { DEFAULT_LOCALE } from '../server/cms-types'
  * which reaches `window.location.href` on a successful submission.
  *
  * It lives here because a scheme is how a URL is spelled, which this module
- * owns. `server/error-utils` re-exports it for the callers that found it
- * there first.
+ * owns.
  */
 export function isSafeHttpUrl(url: string): boolean {
   try {
