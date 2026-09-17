@@ -72,10 +72,9 @@ declare global {
   namespace Vike {
     interface PageContext {
       /**
-       * Current locale. Set by `pages/+onBeforeRoute.ts` wherever routing
-       * runs, and by `pages/+onCreatePageContext.server.ts` on the error
-       * page, which Vike renders without re-routing. Non-optional because
-       * those two together cover every render path.
+       * Current locale. Non-optional because two hooks cover every render
+       * path between them: `+onBeforeRoute` wherever routing runs, and
+       * `+onCreatePageContext` on the error page, which skips routing.
        */
       locale: Locale
 

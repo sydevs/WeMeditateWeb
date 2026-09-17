@@ -5,8 +5,6 @@ const ORIGIN = 'https://wemeditate.com'
 
 describe('localeFromPath', () => {
   it('defaults to English with no prefix, and says the prefix was absent', () => {
-    // `prefixed` is what tells `/about` from `/en/about`: both are English
-    // on `/about`, and only the second one 301s.
     expect(localeFromPath('/about')).toEqual({
       locale: 'en',
       pathWithoutLocale: '/about',

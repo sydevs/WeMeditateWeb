@@ -21,20 +21,17 @@ export interface PathLocale {
   locale: Locale
   /** The path with the prefix removed, in the `/index` spelling of `/`. */
   pathWithoutLocale: string
-  /**
-   * Whether the path really carried a prefix. `/about` and `/en/about` both
-   * resolve to English on `/about`, and only the second one 301s.
-   */
+  /** Whether a prefix was there to remove. `/about` and `/en/about` agree on
+   * everything above, and only the second one 301s. */
   prefixed: boolean
 }
 
 /**
  * The locale a path is served in, and the path underneath it.
  *
- * Two hooks derive this: `+onBeforeRoute` on the nominal path, and
- * `+onCreatePageContext` on the error page, which Vike renders from the
- * pre-routing pageContext. Sharing one function is what keeps a 404 in the
- * same language as the URL that produced it.
+ * `+onBeforeRoute` reads it on the nominal path and `+onCreatePageContext` on
+ * the error page, which Vike renders without re-routing. One function is what
+ * keeps a 404 in the language of the URL that produced it.
  */
 export function localeFromPath(pathname: string): PathLocale {
   const match = pathname.match(/^\/([a-z]{2}(?:-[A-Z]{2})?)(?:\/(.*))?$/)

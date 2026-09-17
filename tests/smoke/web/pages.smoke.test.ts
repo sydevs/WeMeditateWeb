@@ -19,14 +19,12 @@ import {
   expectNoChrome,
   expectNoBrokenLinks,
   discoverFromCms,
+  nonEnglishLocale,
+  htmlTag,
   renderedHtml,
   NOT_FOUND_MARKER,
 } from '../_helpers/preview'
-
-/** The opening `<html>` tag, which carries `lang` and `dir`. */
-function htmlTag(html: string): string {
-  return html.match(/<html[^>]*>/i)?.[0] ?? ''
-}
+import { localeDirection } from '../../../server/cms-types'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {
@@ -60,8 +58,7 @@ describe('web preview pages', () => {
     // A prefix outside `availableLocales` now 404s by design, so a spec
     // pinned to "/es" would fail the day an editor stops offering Spanish —
     // and reports that as a broken deploy rather than a config change.
-    const offered = (await discoverFromCms())?.availableLocales ?? []
-    const locale = offered.find((code) => code !== 'en')
+    const locale = await nonEnglishLocale()
 
     ctx.skip(
       !locale,
@@ -94,8 +91,7 @@ describe('web preview pages', () => {
     // pageContext — the one +onBeforeRoute never touched. Missing the
     // locale there drops <html lang> and reads the translations global
     // with no locale, which then caches under a key every locale shares.
-    const offered = (await discoverFromCms())?.availableLocales ?? []
-    const locale = offered.find((code) => code !== 'en')
+    const locale = await nonEnglishLocale()
 
     ctx.skip(!locale, 'the site offers English only (or no CMS key); no prefix to check')
 
@@ -105,9 +101,9 @@ describe('web preview pages', () => {
     expect(htmlTag(res.html), 'the error page should carry the URL locale').toContain(
       `lang="${locale}"`,
     )
-    // Persian is the only RTL locale the CMS defines, so `dir` only proves
-    // the point when the site happens to offer it.
-    expect(htmlTag(res.html)).toContain(`dir="${locale === 'fa' ? 'rtl' : 'ltr'}"`)
+    // `localeDirection` is what `+htmlAttributes` calls, so this catches the
+    // day the error page stops asking it rather than restating its answer.
+    expect(htmlTag(res.html)).toContain(`dir="${localeDirection(locale!)}"`)
   })
 
   it('canonicalizes the default (en) locale away via a 301 redirect', async () => {

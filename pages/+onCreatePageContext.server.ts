@@ -1,12 +1,9 @@
 /**
  * Guarantees `pageContext.locale` on the error page.
  *
- * A thrown `render(<status>)` forks the **pre-routing** pageContext and calls
- * the render directly, so `+onBeforeRoute` never runs for that render and its
- * `locale` is missing. Vike runs this hook on that fork too, before `data()`
- * and `+onBeforeRender`. Without it a 404 under `/fa/…` loses `<html lang>`,
- * flips to `dir="ltr"`, and reads the translations global with no `locale` —
- * which then caches in KV under a key every locale shares.
+ * A thrown `render(<status>)` forks the pre-routing pageContext, so
+ * `+onBeforeRoute` never runs for that render and its `locale` is missing.
+ * Vike runs this hook on that fork too, before `data()`.
  *
  * ⚠ Derive from `urlOriginal`, never `urlParsed`. On the nominal path
  * `+onBeforeRoute` has already stripped the prefix, so `urlParsed.pathname`
@@ -14,7 +11,7 @@
  *
  * `.server.ts` on purpose: Vike re-runs `+onBeforeRoute` in the browser on
  * hydration and on every client-side navigation, so the client already has
- * the locale and a second writer there would be dead weight.
+ * the locale.
  *
  * https://vike.dev/onCreatePageContext
  */
@@ -26,6 +23,8 @@ export function onCreatePageContext(pageContext: PageContextServer) {
   // `+onBeforeRoute` stays the single writer wherever routing ran.
   if (pageContext.locale) return
 
+  // Vike's own runtime parses `urlOriginal` this way: it may be a path or an
+  // absolute URL, depending on the server adapter.
   const { pathname } = new URL(pageContext.urlOriginal, 'http://localhost')
 
   pageContext.locale = localeFromPath(pathname).locale

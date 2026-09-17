@@ -7,7 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
-import { DEFAULT_LOCALE } from '../../../server/cms-types'
+import { DEFAULT_LOCALE, type Locale } from '../../../server/cms-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
 import { enT } from '../../../lib/i18n'
@@ -239,13 +239,39 @@ const IMAGE_POPULATE = {
   images: { url: true, filename: true, alt: true, width: true, height: true },
 }
 
+let discovery: Promise<CmsSamples | null> | undefined
+
 /**
  * Optionally pull deterministic sample content from the production CMS,
  * so ID-specific specs (meditations, lectures) always have a target.
  * Requires the SAHAJCLOUD_API_KEY secret. Returns null when the secret is
  * absent, so callers can call test.skip.
+ *
+ * Memoised: the answer is the same for every spec in a run, and each call
+ * costs three sequential CMS round trips.
  */
-export async function discoverFromCms(): Promise<CmsSamples | null> {
+export function discoverFromCms(): Promise<CmsSamples | null> {
+  discovery ??= loadCmsSamples()
+
+  return discovery
+}
+
+/**
+ * A locale the site offers other than English, or null. The prefix specs
+ * need one, and which one is an editor's choice.
+ */
+export async function nonEnglishLocale(): Promise<Locale | null> {
+  const offered = (await discoverFromCms())?.availableLocales ?? []
+
+  return (offered.find((code) => code !== DEFAULT_LOCALE) as Locale | undefined) ?? null
+}
+
+/** The opening `<html>` tag, which carries `lang` and `dir`. */
+export function htmlTag(html: string): string {
+  return html.match(/<html[^>]*>/i)?.[0] ?? ''
+}
+
+async function loadCmsSamples(): Promise<CmsSamples | null> {
   const apiKey = process.env.SAHAJCLOUD_API_KEY
 
   if (!apiKey) return null
