@@ -60,21 +60,18 @@ describe('CmsForm', () => {
     expect(html).toContain('grid-cols-1')
   })
 
-  it('leaves submit enabled when no captcha is configured', () => {
-    // An unconfigured site must not present a form nobody can send. The CMS
-    // refuses the write instead, which is visible rather than silent.
-    // `disabled:` appears in the button's Tailwind classes, so the attribute
-    // is what to match, not the word.
+  it('leaves submit enabled with an unsolved captcha, and with none', () => {
+    // A blocked or unreachable challenge.cloudflare.com never yields a token,
+    // so a button that waited for one would dead-end with nothing saying why.
+    // The refusal path shows the error instead. `disabled:` appears in the
+    // button's Tailwind classes, so the attribute is what to match.
     vi.stubEnv('PUBLIC__TURNSTILE_SITE_KEY', '')
+    expect(renderToStaticMarkup(<CmsForm form={form} />)).not.toContain('disabled=""')
 
-    const html = renderToStaticMarkup(<CmsForm form={form} />)
+    const withCaptcha = renderToStaticMarkup(
+      <CmsForm form={form} siteKey="1x00000000000000000000AA" />
+    )
 
-    expect(html).not.toContain('disabled=""')
-  })
-
-  it('holds submit until the captcha is solved when a site key is configured', () => {
-    const html = renderToStaticMarkup(<CmsForm form={form} siteKey="1x00000000000000000000AA" />)
-
-    expect(html).toContain('disabled=""')
+    expect(withCaptcha).not.toContain('disabled=""')
   })
 })

@@ -109,10 +109,6 @@ export function CmsForm({
       }
       className={className}
       form={config}
-      // Until the challenge is solved the CMS would refuse the write, so the
-      // button waits rather than spending a round trip to say so. With no site
-      // key configured there is nothing to wait for.
-      submitDisabled={Boolean(siteKey) && token == null}
       onSubmit={handleSubmit}
     />
   )

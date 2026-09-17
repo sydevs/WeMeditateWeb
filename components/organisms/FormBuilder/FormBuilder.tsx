@@ -156,13 +156,6 @@ export interface FormBuilderProps {
    * Kept as a slot so this component stays free of any one provider.
    */
   captcha?: ReactNode
-
-  /**
-   * Block submission even when the fields validate. A captcha still waiting
-   * on its token is the case this exists for.
-   * @default false
-   */
-  submitDisabled?: boolean
 }
 
 /**
@@ -332,7 +325,6 @@ export function FormBuilder({
   className = '',
   schema,
   captcha,
-  submitDisabled = false,
 }: FormBuilderProps) {
   const t = useT()
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -513,7 +505,7 @@ export function FormBuilder({
             type="submit"
             variant={variant === 'minimal' ? 'outline' : 'primary'}
             isLoading={isSubmitting}
-            disabled={isSubmitting || submitDisabled}
+            disabled={isSubmitting}
             className="min-w-32"
           >
             {form.submitButtonLabel || t('forms.general.submit')}

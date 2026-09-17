@@ -62,7 +62,6 @@ successful submission instead of displaying the confirmation message.
 | `className` | `string` | No | Extra classes for the form wrapper. |
 | `schema` | `ZodObject` | No | Validates with `zodResolver` instead of react-hook-form's own rules. |
 | `captcha` | `ReactNode` | No | Rendered between the fields and the submit button. Kept a slot so this component knows no captcha provider. |
-| `submitDisabled` | `boolean` | No | Blocks submission even when the fields validate — a captcha still waiting on its token. |
 
 ```typescript
 interface FormBuilderConfig {
