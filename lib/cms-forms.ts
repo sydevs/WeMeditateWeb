@@ -165,7 +165,15 @@ export function cmsFormConfig(form: EmbeddedForm): FormBuilderConfig | null {
   }
 }
 
-/** The authored field whose answer becomes the `senderEmail` column. */
+/**
+ * The authored field whose answer becomes the `senderEmail` column.
+ *
+ * ⚠ The sender's name is not matched this way. `prepareUserSubmission`
+ * upstream reads the literal key `name`, and the plugin has no name block
+ * type to match on instead — so a field called `fullName` leaves the `users`
+ * row named off the email's local part, on first contact and for good.
+ * Documented for authors in `components/organisms/FormBuilder/README.md`.
+ */
 function emailFieldName(form: EmbeddedForm): string | undefined {
   return form.fields?.find((field) => field.blockType === 'email')?.name
 }

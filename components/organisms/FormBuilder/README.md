@@ -138,6 +138,16 @@ instead.
 pass `isSafeNavigationUrl` (`lib/urls.ts`) first — `cmsFormConfig` does this for the CMS's
 authored value, and drops the redirect when it fails.
 
+## Authoring a CMS form: name the name field `name`
+
+⚠ **Call the sender's name field exactly `name`.** The intake creates a `users` row for each
+sender, and it takes that row's name from the submission pair keyed `name` — matched on the key,
+not on a block type, because the plugin has no name block. A field called `fullName` or
+`your-name` gets the address's local part instead (`jo.smith@…` → "jo smith"), and the row is
+written on first contact and reused after, so a later correction does not reach it.
+
+The email field is matched on its block type, so that one can be called anything.
+
 ## Accessibility
 
 Uses `<form>` and `<label>` with a correct heading hierarchy. Sets `aria-invalid`,
