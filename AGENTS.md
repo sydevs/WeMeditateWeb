@@ -184,7 +184,10 @@ These rules apply whether or not the matching rule file or skill is loaded.
   `normalizeContentPath` undoes `+onBeforeRoute`'s `/index` spelling of `/`, and `localeUrl`
   serves English bare because `/en/x` 301s to `/x`. The language dropdown, the canonical and the
   `hreflang` cluster all read the same answer from there. Never restate either rule at a call
-  site.
+  site. A **scheme** is part of that spelling: `isSafeHttpUrl` and `isSafeNavigationUrl` live
+  there too, and any URL the site did not author itself passes one of them before it reaches an
+  `href` or `window.location` — they are what stops a configured `javascript:` value running in
+  our origin.
 - **UI must be mobile-first and meet WCAG 2.1 AA.** See
   [design-system](docs/rules/design-system.md) for the full rules, including breakpoints and
   touch-target sizes.

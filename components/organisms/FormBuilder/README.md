@@ -134,6 +134,11 @@ Without `form.redirect`, a successful submission replaces the form with
 `form.confirmationMessage`. With `form.redirect.url` set, FormBuilder redirects the user there
 instead.
 
+⚠ **The caller owns the scheme.** The URL is assigned to `window.location.href`, so a
+`javascript:` value would execute in this origin. Any URL the caller did not author itself must
+pass `isSafeNavigationUrl` (`lib/urls.ts`) first — `cmsFormConfig` does this for the CMS's
+authored value, and drops the redirect when it fails.
+
 ## Accessibility
 
 Uses `<form>` and `<label>` with a correct heading hierarchy. Sets `aria-invalid`,
