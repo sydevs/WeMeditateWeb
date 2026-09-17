@@ -1,10 +1,10 @@
 /**
- * How this site spells a URL: the locale-free path, and the absolute URL a
- * given locale serves that path at.
+ * How this site spells a URL: which locale a path is served in, the
+ * locale-free path, and the absolute URL a given locale serves that path at.
  *
- * Both rules belong to routing, not to any one consumer. `+onBeforeRoute`
- * creates the `/index` spelling and 301s `/en/x` to `/x`, and these two
- * functions are the inverse of what it does. The language dropdown
+ * These rules belong to routing, not to any one consumer. `+onBeforeRoute`
+ * creates the `/index` spelling and 301s `/en/x` to `/x`, out of the same
+ * derivation the read side inverts here. The language dropdown
  * (`layouts/LayoutChrome.tsx`), the canonical (`lib/head.tsx`) and the
  * `hreflang` cluster (`lib/hreflang.ts`) all need the same answer, so they
  * read it from here rather than each restating the routing rule.
@@ -14,7 +14,49 @@
  */
 
 import type { Locale } from '../server/cms-types'
-import { DEFAULT_LOCALE } from '../server/cms-types'
+import { DEFAULT_LOCALE, isLocale } from '../server/cms-types'
+
+/** What a path's leading segment says about the locale. */
+export interface PathLocale {
+  locale: Locale
+  /** The path with the prefix removed, in the `/index` spelling of `/`. */
+  pathWithoutLocale: string
+  /**
+   * Whether the path really carried a prefix. `/about` and `/en/about` both
+   * resolve to English on `/about`, and only the second one 301s.
+   */
+  prefixed: boolean
+}
+
+/**
+ * The locale a path is served in, and the path underneath it.
+ *
+ * Two hooks derive this: `+onBeforeRoute` on the nominal path, and
+ * `+onCreatePageContext` on the error page, which Vike renders from the
+ * pre-routing pageContext. Sharing one function is what keeps a 404 in the
+ * same language as the URL that produced it.
+ */
+export function localeFromPath(pathname: string): PathLocale {
+  const match = pathname.match(/^\/([a-z]{2}(?:-[A-Z]{2})?)(?:\/(.*))?$/)
+
+  // A segment shaped like a locale but not one the CMS defines is a normal
+  // path segment, not a locale. `/status/` must reach the Pages route, not
+  // become locale `st`. An unknown code then 404s naturally, through the
+  // route it really matched.
+  if (match && isLocale(match[1])) {
+    return {
+      locale: match[1],
+      pathWithoutLocale: match[2] ? `/${match[2]}` : '/index',
+      prefixed: true,
+    }
+  }
+
+  return {
+    locale: DEFAULT_LOCALE,
+    pathWithoutLocale: pathname === '/' ? '/index' : pathname,
+    prefixed: false,
+  }
+}
 
 /**
  * The locale-free path, in the spelling the URL builders below expect.
