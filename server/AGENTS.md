@@ -2,6 +2,31 @@
 
 The SahajCloud (PayloadCMS) API validates every API-client read. Follow these rules.
 
+## The one write: a public submission, proxied same-origin
+
+Every contact and subscribe form posts to `POST /api/submissions`
+([server/api-routes.ts](api-routes.ts)), which forwards one
+`POST /api/user-submissions` create to the CMS. Four things hold, and all four are load-bearing:
+
+- **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
+  and SahajCloud answers a wildcard CORS origin with no credentials.
+- **A captcha token is required on every public write**, as the `x-turnstile-token` header, not
+  as document data. It is the only browser header the proxy forwards: `Origin` and `Referer` must
+  not cross over, because a server-to-server call is deliberately exempt from the client's
+  `allowedDomains` allowlist, which the API key stands in for.
+- **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape
+  (`captcha_failed`, `disposable_email`, `urls_not_allowed`, `submission_data_invalid`, …). The
+  code is forwarded to the browser and the message never is: it is the CMS's English, written for
+  a log, while the visitor's copy is CMS-owned and rendered from a translation key.
+- **`select` is not required here.** The CMS's query-validation hook gates reads only, so a create
+  needs neither `select` nor `populate`. Nothing of the created row is echoed back either — an API
+  client holds create and no read on `user-submissions`.
+
+`submissionData` is the flat `[{ field, value }]` remainder, and the collection accepts only the
+keys it allows per type: the base context set (`name`, `locale`, `path`, `hostUrl`, `userAgent`,
+`error`), the type's own, and whatever the form's author declared. An invented key comes back as a
+400 naming it. `lib/cms-forms.ts` owns that body; nothing else composes one.
+
 ## Always send `select`, `populate` at depth > 1, and `locale`
 
 - **`select`** is required on collection reads. Without it, the API returns **HTTP 400**, not

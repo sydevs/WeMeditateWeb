@@ -28,17 +28,21 @@ using our atom components — no developer change needed per form.
 
 ## Usage
 
+**For a CMS form, use [`CmsForm`](../CmsForm/CmsForm.tsx) instead.** It is the wiring for an
+authored `forms` document: the field mapping, the Turnstile captcha, and the submit to the
+unified intake. This component is the renderer underneath it, and takes any form.
+
 ```tsx
 import { FormBuilder } from '..'
 
 async function handleSubmit(data) {
-  const response = await fetch('/api/form-submissions', {
+  const response = await fetch('/api/submissions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify(body(data)),
   })
   if (response.ok) return { success: true }
-  return { success: false, error: await response.json() }
+  return { success: false, error: { message: t('forms.general.submit_error') } }
 }
 
 <FormBuilder form={formConfig} onSubmit={handleSubmit} />
@@ -56,6 +60,9 @@ successful submission instead of displaying the confirmation message.
 | `variant` | `'default' \| 'minimal'` | No | `default` displays labels and borders with the primary button. `minimal` displays placeholders instead of labels, with the outline button. |
 | `align` | `'left' \| 'center'` | No | Aligns the title and submit button. Fields stay left-aligned either way. Defaults to `left`. |
 | `className` | `string` | No | Extra classes for the form wrapper. |
+| `schema` | `ZodObject` | No | Validates with `zodResolver` instead of react-hook-form's own rules. |
+| `captcha` | `ReactNode` | No | Rendered between the fields and the submit button. Kept a slot so this component knows no captcha provider. |
+| `submitDisabled` | `boolean` | No | Blocks submission even when the fields validate — a captcha still waiting on its token. |
 
 ```typescript
 interface FormBuilderConfig {
@@ -92,7 +99,9 @@ interface FormBuilderField {
 }
 ```
 
-Fetch `formConfig` in the page's `+data.ts` with `getFormById({ id, locale, apiKey, kv })`.
+A CMS form needs no separate read: an embedded `forms` relationship is populated by the page read
+(`EMBEDDED_FORM_SELECT` in `server/cms-client.ts`), and `cmsFormSpec` in `lib/cms-forms.ts` turns
+that document into a `FormBuilderConfig`.
 
 ## Validation
 

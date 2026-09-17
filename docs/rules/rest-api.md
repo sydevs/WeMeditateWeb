@@ -86,3 +86,11 @@ It downloads the latest `payload-types.ts` from SahajCloud.
 
 Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
 factory adds this header for you.
+
+## A public write is a proxy, not a query function
+
+Contact and subscribe submissions do not go through `cms-client.ts`. They post to the same-origin
+`POST /api/submissions`, which forwards one create to the CMS's `user-submissions` collection —
+the captcha header, the refusal envelope, and why the browser cannot make the call itself all
+live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a submission is a
+write.
