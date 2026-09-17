@@ -158,43 +158,25 @@ export interface FormBuilderProps {
   captcha?: ReactNode
 }
 
+const FIELD_GRID_COLUMNS = 12
+
 /**
  * The authored percentage width, as a column span in the fields grid.
  *
- * ⚠ **Every class is written out, and that is the point.** Tailwind scans
- * source text, so an interpolated `sm:col-span-${n}` or `w-[${width}%]`
- * produces no CSS at all and the field silently renders full width. Twelve
- * literals cannot be missed by the scanner, and they keep the editor's
- * fidelity where a handful of buckets would round a 40 and a 60 to the same
- * thing.
+ * ⚠ **The class is interpolated, so the scanner never sees it.**
+ * `@source inline("sm:col-span-{1..12}")` in `layouts/tailwind.css` is what
+ * emits the CSS; without that line every field silently renders full width.
  *
  * Mobile-first: the grid is one column below `sm`, so the span applies only
  * once there is room for it.
  */
-const FIELD_SPAN_CLASS = [
-  'sm:col-span-1',
-  'sm:col-span-2',
-  'sm:col-span-3',
-  'sm:col-span-4',
-  'sm:col-span-5',
-  'sm:col-span-6',
-  'sm:col-span-7',
-  'sm:col-span-8',
-  'sm:col-span-9',
-  'sm:col-span-10',
-  'sm:col-span-11',
-  'sm:col-span-12',
-] as const
-
-const FIELD_GRID_COLUMNS = FIELD_SPAN_CLASS.length
-
 function fieldSpanClass(width?: number): string {
   if (width == null || !Number.isFinite(width)) {
-    return FIELD_SPAN_CLASS[FIELD_GRID_COLUMNS - 1]
+    return `sm:col-span-${FIELD_GRID_COLUMNS}`
   }
   const span = Math.round((width / 100) * FIELD_GRID_COLUMNS)
 
-  return FIELD_SPAN_CLASS[Math.min(FIELD_GRID_COLUMNS, Math.max(1, span)) - 1]
+  return `sm:col-span-${Math.min(FIELD_GRID_COLUMNS, Math.max(1, span))}`
 }
 
 /** Renders a form field based on its type */
