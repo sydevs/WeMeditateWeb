@@ -12,10 +12,8 @@
  * together would have made every iframe embed pay for a populated config read
  * it never renders.
  *
- * Both key on `memoKey`, never on the argument — see `server/request-memo.ts`
- * for why the argument is a different object in every hook. Vike builds that
- * key's object per request, so `WeakMap` entries cannot leak between requests
- * and the maps need no clearing.
+ * Both go through `perRequest` (`server/request-memo.ts`), which owns the
+ * keying and the lifetime.
  */
 
 import { render } from 'vike/abort'
@@ -23,7 +21,7 @@ import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './cms-client'
 import { loadLivePreview, previewArgs } from './live-preview'
-import { memoKey } from './request-memo'
+import { perRequest } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './cms-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
@@ -65,45 +63,41 @@ function isEmpty(translations: WebTranslations): boolean {
  * Both paths log a Sentry warning, so the gap stays visible.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
-  const key = memoKey(pageContext)
-  const existing = translationsCache.get(key)
-
-  if (existing) return existing
-
   const locale = pageContext.locale
-  const loading = loadLivePreview(pageContext)
-    .then((preview) =>
-      // Only under the `wm-web-translations` scope: a preview of a PAGE
-      // should render that page's draft inside the published chrome an
-      // ordinary visitor sees, not a second document's unsaved edits.
-      getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
-    )
-    .then((translations) => {
-      if (!isEmpty(translations)) return translations
 
-      console.warn(`[loadTranslations] "${locale}" returned no strings; using the English snapshot`)
-      Sentry.captureMessage('Translations global is empty; rendering the English snapshot', {
-        level: 'warning',
-        tags: { source: 'loadTranslations' },
-        extra: { locale },
+  return perRequest(translationsCache, pageContext, () =>
+    loadLivePreview(pageContext)
+      .then((preview) =>
+        // Only under the `wm-web-translations` scope: a preview of a PAGE
+        // should render that page's draft inside the published chrome an
+        // ordinary visitor sees, not a second document's unsaved edits.
+        getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
+      )
+      .then((translations) => {
+        if (!isEmpty(translations)) return translations
+
+        console.warn(
+          `[loadTranslations] "${locale}" returned no strings; using the English snapshot`,
+        )
+        Sentry.captureMessage('Translations global is empty; rendering the English snapshot', {
+          level: 'warning',
+          tags: { source: 'loadTranslations' },
+          extra: { locale },
+        })
+
+        return EN_TRANSLATIONS
       })
+      .catch((error: unknown) => {
+        console.warn(`[loadTranslations] read failed for "${locale}":`, error)
+        Sentry.captureMessage('Translations read failed; rendering the English snapshot', {
+          level: 'warning',
+          tags: { source: 'loadTranslations' },
+          extra: { locale },
+        })
 
-      return EN_TRANSLATIONS
-    })
-    .catch((error: unknown) => {
-      console.warn(`[loadTranslations] read failed for "${locale}":`, error)
-      Sentry.captureMessage('Translations read failed; rendering the English snapshot', {
-        level: 'warning',
-        tags: { source: 'loadTranslations' },
-        extra: { locale },
-      })
-
-      return EN_TRANSLATIONS
-    })
-
-  translationsCache.set(key, loading)
-
-  return loading
+        return EN_TRANSLATIONS
+      }),
+  )
 }
 
 /**
@@ -117,16 +111,7 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
  * navigation and no home page, so the error page is the honest answer.
  */
 export function loadSiteContext(pageContext: PageContextServer): Promise<SiteContext> {
-  const key = memoKey(pageContext)
-  const existing = contextCache.get(key)
-
-  if (existing) return existing
-
-  const loading = load(pageContext)
-
-  contextCache.set(key, loading)
-
-  return loading
+  return perRequest(contextCache, pageContext, () => load(pageContext))
 }
 
 async function load(pageContext: PageContextServer): Promise<SiteContext> {

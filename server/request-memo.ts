@@ -1,28 +1,44 @@
 /**
- * The key a per-request memo stores under.
+ * Per-request memoisation for anything a vike hook asks for.
  *
- * Vike builds a fresh public `Proxy` over `pageContext` for every hook call, so
- * a memo keyed on the argument is written by `data()` and missed by
- * `+onBeforeRender`. The proxy's target is one object for the whole request:
- * vike's own `execHookDataAndOnBeforeRender` runs `Object.assign` on it between
- * those two hooks, and `getPageContextPublicShared` asserts `_isOriginalObject`
- * before wrapping, "to ensure we preserve the original object reference".
+ * Vike wraps `pageContext` in a fresh public proxy for every hook call — one
+ * request's `data()` and `+onBeforeRender` receive two different objects over
+ * one target — so a memo keyed on the argument is written by the first and
+ * missed by the second (#108).
  *
- * Its own module because `server/site-context.ts` imports `server/live-preview.ts`
- * and both memoise. The other direction would be a cycle.
+ * `perRequest` owns the `WeakMap` dance so no memo keys on the argument by
+ * accident. Reach for it, not a bare `WeakMap`, for a new per-request read.
  */
 
 import type { PageContextServer } from 'vike/types'
 
 /**
- * ⚠ `_originalObject` is a vike internal, with no public equivalent. It reads
- * clean rather than warning only because vike passes `skipOnInternalProp: true`
- * when it wraps a `pageContext` (`getPageContextPublicShared`); the warning in
- * `getPublicProxy`'s `onInternalProp` is what a future version would restore.
- * `server/request-memo.test.ts` fails if either half of that stops holding.
+ * ⚠ `_originalObject` is a vike internal. `dangerouslyUseInternals` is the
+ * access vike documents and types for one (https://vike.dev/warning/internals),
+ * and reaching it that way cannot emit vike's internal-property warning — a
+ * bare `_originalObject` read stays quiet only while whoever built the proxy
+ * passes `skipOnInternalProp`.
  *
  * The fallback is what keeps a plain object — a unit test, Ladle — memoising.
  */
 export function memoKey(pageContext: PageContextServer): object {
-  return (pageContext as { _originalObject?: object })._originalObject ?? pageContext
+  return pageContext.dangerouslyUseInternals?._originalObject ?? pageContext
+}
+
+/** Runs `load` once per request, however many hooks ask for it. */
+export function perRequest<T>(
+  cache: WeakMap<object, Promise<T>>,
+  pageContext: PageContextServer,
+  load: () => Promise<T>,
+): Promise<T> {
+  const key = memoKey(pageContext)
+  const existing = cache.get(key)
+
+  if (existing) return existing
+
+  const loading = load()
+
+  cache.set(key, loading)
+
+  return loading
 }

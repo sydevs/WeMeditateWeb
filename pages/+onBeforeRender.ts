@@ -9,10 +9,11 @@
  * This hook never throws. Vike runs it for `_error` too, and an error page
  * that cannot render its own error message is a blank screen.
  *
- * `data()` runs first, so on a normal page both reads below are memo hits
- * rather than second fetches. That holds only because the memos key on
- * `server/request-memo.ts` — vike hands this hook a different `pageContext`
- * object than it handed `data()`, and keying on the argument missed (#108).
+ * `data()` runs first, so on a chromed route both reads below are memo hits
+ * rather than second fetches — `perRequest` is what makes that true across two
+ * hooks (`server/request-memo.ts`). On an embed route the translations read is
+ * genuinely the first: those `data()` functions ask only for the preview
+ * verdict.
  */
 
 import type { PageContextServer } from 'vike/types'
