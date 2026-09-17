@@ -715,6 +715,7 @@ const WEB_TRANSLATIONS_SELECT = {
   media: true,
   location: true,
   blocks: true,
+  video: true,
 } satisfies WmWebTranslationsSelect<true>
 
 /**
