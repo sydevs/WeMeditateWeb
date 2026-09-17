@@ -40,6 +40,9 @@ export type {
   FormBuilderApiError,
 } from './FormBuilder'
 
+export { CmsForm } from './CmsForm'
+export type { CmsFormProps } from './CmsForm'
+
 export { SubtleSystem } from './SubtleSystem'
 export type { SubtleSystemProps, SubtleSystemItem } from './SubtleSystem'
 

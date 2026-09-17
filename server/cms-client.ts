@@ -31,6 +31,7 @@ import type {
   SongsSelect,
   AlbumsSelect,
   AppCardsSelect,
+  FormsSelect,
   SongTagsSelect,
   ImagesSelect,
   AuthorsSelect,
@@ -167,6 +168,26 @@ const EMBEDDED_APP_CARD_SELECT = {
 } satisfies AppCardsSelect<true>
 
 /**
+ * A form embedded in page content, as `CmsForm` renders and submits it.
+ *
+ * ⚠ **Narrow on purpose, not for payload size.** A collection absent from
+ * `populate` comes back fully populated, and a form's `recipient` is a
+ * relationship to `managers` — so omitting this entry serializes a manager's
+ * record into the page's hydration payload. `actionType` is what the
+ * submission's `type` comes from; who a message is delivered to is the CMS's
+ * business and never the browser's.
+ */
+const EMBEDDED_FORM_SELECT = {
+  title: true,
+  fields: true,
+  submitButtonLabel: true,
+  confirmationType: true,
+  confirmationMessage: true,
+  redirect: true,
+  actionType: true,
+} satisfies FormsSelect<true>
+
+/**
  * Populate map for a full Page read (depth 3). The backend rejects a
  * depth > 1 read without `populate`. Each entry both enables a relationship
  * to populate and restricts it to the fields the frontend renders. Beyond
@@ -183,6 +204,7 @@ const PAGE_POPULATE = {
   lectures: EMBEDDED_LECTURE_SELECT,
   albums: EMBEDDED_ALBUM_SELECT,
   'app-cards': EMBEDDED_APP_CARD_SELECT,
+  forms: EMBEDDED_FORM_SELECT,
 }
 
 /** Global config fields: `pages` relationships the layout + home page need, plus

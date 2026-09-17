@@ -204,6 +204,44 @@ describe('<RichText>', () => {
     expect(html).not.toContain('<a')
   })
 
+  it('renders an embedded form, rather than linking to it', () => {
+    // A `forms` reference is the one relationship that is content: the editor
+    // embedded it to be filled in, and it has no page of its own to link to.
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'relationship',
+            relationTo: 'forms',
+            value: {
+              id: 9,
+              title: 'Write to us',
+              actionType: 'contact',
+              submitButtonLabel: 'Send message',
+              fields: [{ blockType: 'email', name: 'email', label: 'Your email', required: true }],
+            },
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+    expect(html).toContain('<form')
+    expect(html).toContain('Your email')
+    expect(html).toContain('Send message')
+    expect(html).not.toContain('<a')
+  })
+
+  it('renders nothing for an embedded form that came back as a bare id', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([{ type: 'relationship', relationTo: 'forms', value: 9, version: 1 }])}
+      />,
+    )
+
+    expect(html).not.toContain('<form')
+  })
+
   it('renders an upload image in a <figure> with a Cloudflare variant, caption and alignment', () => {
     const html = renderToStaticMarkup(
       <RichText
