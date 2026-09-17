@@ -20,6 +20,13 @@ import type { PageContextServer } from 'vike/types'
  * passes `skipOnInternalProp`.
  *
  * The fallback is what keeps a plain object — a unit test, Ladle — memoising.
+ *
+ * Not a plain `pageContext` property, which does reach both hooks — the public
+ * proxy traps only `get`. But vike merges the route's result and every hook's
+ * return value onto that one flat namespace through `Object.defineProperties`,
+ * with no collision guard, so a clash overwrites the memo silently. The slot
+ * would also need declaring in `types/vike.d.ts`, on every `pageContext` in the
+ * app.
  */
 export function memoKey(pageContext: PageContextServer): object {
   return pageContext.dangerouslyUseInternals?._originalObject ?? pageContext
