@@ -66,7 +66,16 @@ export interface FormBuilderConfig {
   /** Confirmation message after successful submission */
   confirmationMessage?: string
 
-  /** Redirect URL after successful submission */
+  /**
+   * Where to send the visitor after a successful submission, instead of
+   * showing the confirmation message.
+   *
+   * ⚠ **The caller owns the scheme.** This is assigned to
+   * `window.location.href`, so a `javascript:` URL would run in this origin.
+   * A URL the caller did not author itself must pass `isSafeNavigationUrl`
+   * (`lib/urls.ts`) before it arrives here — see `cmsFormConfig`, which gates
+   * the CMS's authored value.
+   */
   redirect?: {
     url: string
   }

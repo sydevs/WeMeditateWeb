@@ -19,6 +19,7 @@
  */
 
 import { lexicalDocumentText } from './lexical-text'
+import { isSafeNavigationUrl } from './urls'
 import type { EmbeddedForm } from '../server/cms-types'
 import type {
   FormBuilderConfig,
@@ -145,6 +146,14 @@ export function cmsFormConfig(form: EmbeddedForm): FormBuilderConfig | null {
   if (fields.length === 0) return null
 
   const redirectUrl = form.confirmationType === 'redirect' ? form.redirect?.url : undefined
+  // ⚠ The scheme is checked here, and nowhere else on the path.
+  // `FormBuilder` assigns this to `window.location.href`, so an authored
+  // `javascript:` URL would run in our origin on every successful
+  // submission. `forms.redirect.url` is a plain CMS text field with no
+  // upstream validation. A refused URL simply leaves the form showing its
+  // confirmation message instead.
+  const redirect =
+    redirectUrl && isSafeNavigationUrl(redirectUrl) ? { url: redirectUrl } : undefined
 
   return {
     id: String(form.id),
@@ -152,7 +161,7 @@ export function cmsFormConfig(form: EmbeddedForm): FormBuilderConfig | null {
     fields,
     submitButtonLabel: form.submitButtonLabel ?? undefined,
     confirmationMessage: lexicalDocumentText(form.confirmationMessage),
-    ...(redirectUrl ? { redirect: { url: redirectUrl } } : {}),
+    ...(redirect ? { redirect } : {}),
   }
 }
 

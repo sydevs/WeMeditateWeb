@@ -102,6 +102,42 @@ describe('cmsFormConfig', () => {
     expect(messaging?.redirect).toBeUndefined()
   })
 
+  it('refuses a redirect the browser must not be sent to, whatever the CMS authored', () => {
+    // FormBuilder assigns this to `window.location.href`, and
+    // `forms.redirect.url` is a plain CMS text field with no upstream
+    // validation. A refused URL leaves the form showing its confirmation
+    // message. `//evil.example` is in the list because it reads like a path
+    // and behaves like an absolute URL.
+    const refused = [
+      'javascript:alert(1)',
+      'data:text/html,<script>x</script>',
+      '//evil.example/thanks',
+      'not a url',
+    ]
+
+    for (const url of refused) {
+      const config = cmsFormConfig({
+        ...contactForm,
+        confirmationType: 'redirect',
+        redirect: { url },
+      })
+
+      expect(config?.redirect, url).toBeUndefined()
+    }
+  })
+
+  it('keeps a redirect an editor would actually write', () => {
+    for (const url of ['/thank-you', 'https://wemeditate.com/thanks']) {
+      const config = cmsFormConfig({
+        ...contactForm,
+        confirmationType: 'redirect',
+        redirect: { url },
+      })
+
+      expect(config?.redirect, url).toEqual({ url })
+    }
+  })
+
   it('returns null for a form with no fields, so the caller degrades', () => {
     expect(cmsFormConfig({ ...contactForm, fields: [] })).toBeNull()
   })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { localeUrl, normalizeContentPath } from './urls'
+import { isSafeNavigationUrl, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -41,5 +41,28 @@ describe('localeUrl', () => {
   it('renders the home page as a bare prefix, which the router resolves', () => {
     expect(localeUrl(ORIGIN, 'en', '/')).toBe('https://wemeditate.com/')
     expect(localeUrl(ORIGIN, 'fr', '/')).toBe('https://wemeditate.com/fr')
+  })
+})
+
+describe('isSafeNavigationUrl', () => {
+  it('accepts a root-relative path and an http(s) URL', () => {
+    expect(isSafeNavigationUrl('/thank-you')).toBe(true)
+    expect(isSafeNavigationUrl('https://wemeditate.com/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('http://wemeditate.com/thanks')).toBe(true)
+  })
+
+  it('refuses a scheme that would execute rather than navigate', () => {
+    expect(isSafeNavigationUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeNavigationUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+  })
+
+  it('refuses a protocol-relative URL, which reads like a path and is not one', () => {
+    // The one spelling a bare startsWith('/') would let through.
+    expect(isSafeNavigationUrl('//evil.example/thanks')).toBe(false)
+  })
+
+  it('refuses anything that is neither', () => {
+    expect(isSafeNavigationUrl('not a url')).toBe(false)
+    expect(isSafeNavigationUrl('')).toBe(false)
   })
 })

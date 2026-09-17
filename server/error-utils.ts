@@ -98,19 +98,10 @@ export function detectErrorType(error: unknown): ErrorType {
   return ErrorType.UNKNOWN
 }
 
-/**
- * True if the URL parses and uses an http(s) scheme. Gates the rendering
- * of externally configured status-page links, to block `javascript:` and
- * `data:` XSS.
- */
-export function isSafeHttpUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
+// Re-exported so existing importers keep working. The rule moved to
+// `lib/urls.ts`, which owns how a URL is spelled, once a second caller needed
+// it — an authored form's redirect, which reaches `window.location.href`.
+export { isSafeHttpUrl } from '../lib/urls'
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))

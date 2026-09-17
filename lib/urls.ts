@@ -17,6 +17,48 @@ import type { Locale } from '../server/cms-types'
 import { DEFAULT_LOCALE } from '../server/cms-types'
 
 /**
+ * True if the URL parses and uses an http(s) scheme.
+ *
+ * ⚠ **The gate on any URL this site did not author itself**, and the only
+ * thing standing between a configured value and `javascript:` or `data:`
+ * running in our origin. Two values need it today: the status-page link
+ * (`ErrorFallback`) and an authored form's redirect (`lib/cms-forms.ts`),
+ * which reaches `window.location.href` on a successful submission.
+ *
+ * It lives here because a scheme is how a URL is spelled, which this module
+ * owns. `server/error-utils` re-exports it for the callers that found it
+ * there first.
+ */
+export function isSafeHttpUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * True if the URL is safe to navigate the browser to: an http(s) URL, or a
+ * root-relative path on this site.
+ *
+ * Wider than {@link isSafeHttpUrl} by exactly one case, and an editor's most
+ * likely one — `/thank-you` is a path, which `new URL` alone cannot parse.
+ *
+ * ⚠ `//host` is excluded deliberately. It reads like a path and behaves like
+ * an absolute URL, inheriting the page's scheme and leaving the site, so it
+ * is the one spelling that would sneak past a bare `startsWith('/')`.
+ */
+export function isSafeNavigationUrl(url: string): boolean {
+  if (url.startsWith('//')) {
+    return false
+  }
+
+  return url.startsWith('/') || isSafeHttpUrl(url)
+}
+
+/**
  * The locale-free path, in the spelling the URL builders below expect.
  *
  * `+onBeforeRoute` rewrites `/` to `/index` before routing, and
