@@ -25,6 +25,25 @@ import type {
   FormBuilderSubmission,
 } from '../components/organisms/FormBuilder'
 
+/**
+ * The same-origin route a form posts to. The browser cannot post to the CMS
+ * itself: the create needs `SAHAJCLOUD_API_KEY`, a server-only secret.
+ */
+export const SUBMISSION_PATH = '/api/submissions'
+
+/**
+ * ⚠ The captcha token travels as a header, not as document data, because the
+ * CMS write guard reads it off the request (`x-turnstile-token`) on the
+ * built-in create endpoint. Renaming it here breaks every submission.
+ */
+export const TURNSTILE_TOKEN_HEADER = 'x-turnstile-token'
+
+/** What the same-origin route answers. `code` is the intake's refusal code. */
+export interface SubmissionResult {
+  ok: boolean
+  code?: string
+}
+
 /** One `[{ field, value }]` pair, as the collection stores it. */
 export interface SubmissionPair {
   field: string

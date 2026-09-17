@@ -445,7 +445,9 @@ export function FormBuilder({
           })}
         </div>
 
-        {captcha && <div className={`mt-6 ${align === 'center' ? 'flex justify-center' : ''}`}>{captcha}</div>}
+        {captcha && (
+          <div className={`mt-6 ${align === 'center' ? 'flex justify-center' : ''}`}>{captcha}</div>
+        )}
 
         {/* Submit button */}
         <div className={`mt-8 ${align === 'center' ? 'flex justify-center' : ''}`}>
