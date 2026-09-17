@@ -1,56 +1,32 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { memoKey } from './request-memo'
+import type { PageContextServer } from 'vike/types'
+import { hookViews } from '../tests/_helpers/page-context'
+import { memoKey, perRequest } from './request-memo'
 
 /**
  * The vike-internal half of a memo that has already broken once (#108).
  *
- * `memoKey` reads `pageContext._originalObject`, which vike documents nowhere
- * and warns about in general. These cases pin the two properties that make the
- * read correct and quiet, against the resolved `vike` in `node_modules` rather
- * than against a description of it. A vike upgrade that drops either one fails
- * here, instead of silently restoring the duplicate CMS read.
- *
- * The deep imports bypass vike's `exports` map on purpose — these are its
- * internals, and there is no public path to them. An import that throws is
- * itself the signal to go and re-read `memoKey`.
+ * `memoKey` rides on an internal vike documents but does not support, so these
+ * cases pin it against the resolved `vike` in `node_modules`. A vike upgrade
+ * that moves it fails here, rather than silently restoring the duplicate read.
  */
 
-const vikeInternal = (file: string) =>
-  import(/* @vite-ignore */ new URL(`../node_modules/vike/dist/${file}`, import.meta.url).href)
-
-/** The minimum vike's `assert` calls accept. Both flags are its own guard that
- *  the object it wraps is the original reference — the fact `memoKey` rides. */
-const fakePageContext = () => ({
-  _isOriginalObject: true,
-  _globalContext: { _isOriginalObject: true },
-  pageProps: {},
-})
-
 describe('memoKey', () => {
-  it('collapses the distinct proxies vike builds for two hooks onto one key', async () => {
-    const { getPageContextPublicShared } = await vikeInternal(
-      'shared-server-client/getPageContextPublicShared.js',
-    )
-    const request = fakePageContext()
-
-    // What `data()` and `+onBeforeRender` each receive: vike wraps per call.
-    const inData = getPageContextPublicShared(request)
-    const inOnBeforeRender = getPageContextPublicShared(request)
+  it('collapses the two objects vike hands one request onto one key', async () => {
+    const { target, inData, inOnBeforeRender } = await hookViews({ locale: 'en' })
 
     expect(inData).not.toBe(inOnBeforeRender)
-    expect(memoKey(inData)).toBe(request)
-    expect(memoKey(inData)).toBe(memoKey(inOnBeforeRender))
+    expect(memoKey(inData)).toBe(target)
+    expect(memoKey(inOnBeforeRender)).toBe(target)
   })
 
-  it('reads `_originalObject` without tripping vike’s internal-property warning', async () => {
-    const { getPageContextPublicShared } = await vikeInternal(
-      'shared-server-client/getPageContextPublicShared.js',
-    )
+  it('reads through vike’s escape hatch without its internal-property warning', async () => {
+    const { inData } = await hookViews({ locale: 'en' })
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     try {
-      memoKey(getPageContextPublicShared(fakePageContext()))
+      memoKey(inData)
 
       expect(warn).not.toHaveBeenCalled()
     } finally {
@@ -58,26 +34,46 @@ describe('memoKey', () => {
     }
   })
 
-  it('warns when vike does not skip internal properties, so the case above is live', async () => {
-    // Without this, the silence above would also pass if vike stopped warning
-    // at all, and the previous case would stop guarding anything.
-    const { getPublicProxy } = await vikeInternal('shared-server-client/getPublicProxy.js')
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    try {
-      void getPublicProxy(fakePageContext(), 'pageContext', false)._originalObject
-
-      // vike hands `console.warn` an Error, for the stack trace.
-      expect(String(warn.mock.calls[0]?.[0])).toContain('_originalObject')
-    } finally {
-      warn.mockRestore()
-    }
-  })
-
   it('falls back to the argument when it is not a proxy', () => {
     // Unit tests and Ladle pass a plain object. They must still memoise.
-    const plain = { locale: 'en' } as never
+    const plain = { locale: 'en' } as unknown as PageContextServer
 
     expect(memoKey(plain)).toBe(plain)
+  })
+})
+
+describe('perRequest', () => {
+  it('runs the loader once across both of a request’s hooks', async () => {
+    const cache = new WeakMap<object, Promise<number>>()
+    const load = vi.fn().mockResolvedValue(1)
+    const { inData, inOnBeforeRender } = await hookViews({ locale: 'en' })
+
+    const first = await perRequest(cache, inData, load)
+    const second = await perRequest(cache, inOnBeforeRender, load)
+
+    expect(load).toHaveBeenCalledTimes(1)
+    expect(second).toBe(first)
+  })
+
+  it('shares one in-flight promise rather than racing two loads', async () => {
+    // Both hooks can ask concurrently — `pages/+onBeforeRender.ts` does.
+    // Storing the promise, not the value, is what keeps that a single read.
+    const cache = new WeakMap<object, Promise<number>>()
+    const load = vi.fn().mockResolvedValue(1)
+    const { inData, inOnBeforeRender } = await hookViews({ locale: 'en' })
+
+    await Promise.all([perRequest(cache, inData, load), perRequest(cache, inOnBeforeRender, load)])
+
+    expect(load).toHaveBeenCalledTimes(1)
+  })
+
+  it('runs the loader again for a second request', async () => {
+    const cache = new WeakMap<object, Promise<number>>()
+    const load = vi.fn().mockResolvedValue(1)
+
+    await perRequest(cache, (await hookViews({ locale: 'en' })).inData, load)
+    await perRequest(cache, (await hookViews({ locale: 'en' })).inData, load)
+
+    expect(load).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,8 +1,9 @@
 import { SignJWT } from 'jose'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PageContextServer } from 'vike/types'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
+import { hookViews } from '../tests/_helpers/page-context'
 import { loadLivePreview, verifyLivePreviewToken } from './live-preview'
 
 /**
@@ -113,26 +114,30 @@ describe('verifyLivePreviewToken', () => {
  * not run again, and that the two hooks cannot reach different verdicts.
  */
 describe('loadLivePreview', () => {
-  /** One request carrying a preview token, as vike's two hooks see it. */
-  function hookViews(token: string) {
-    const request = { urlParsed: { search: { [LIVE_PREVIEW_PARAM]: token } } }
-    const asHook = () =>
-      new Proxy(request, {
-        get: (target, prop) => (prop === '_originalObject' ? target : target[prop as 'urlParsed']),
-      }) as unknown as PageContextServer
+  /** One request carrying a preview token, as vike's two hooks see it.
+   *
+   *  ⚠ `loadLivePreview` passes no `nowSeconds`, so `jose` reads the real
+   *  clock. Minting against `NOW` here would turn this suite red on its own
+   *  once that date passes, with a message about the memo rather than expiry. */
+  const request = async () =>
+    hookViews({
+      urlParsed: { search: { [LIVE_PREVIEW_PARAM]: await sign(nowSeconds() + 600) } },
+    })
 
-    return { inData: asHook(), inOnBeforeRender: asHook() }
-  }
+  const nowSeconds = () => Math.floor(Date.now() / 1000)
+
+  beforeEach(() => {
+    vi.stubEnv('PUBLIC__LIVE_PREVIEW_VERIFY_KEY', verifyKeyBase64)
+  })
 
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllEnvs()
   })
 
-  it('verifies the token once across two hooks of one request', async () => {
-    vi.stubEnv('PUBLIC__LIVE_PREVIEW_VERIFY_KEY', verifyKeyBase64)
+  it('verifies the token once across both hooks of one request', async () => {
     const importKey = vi.spyOn(crypto.subtle, 'importKey')
-    const { inData, inOnBeforeRender } = hookViews(await sign(NOW + 600))
+    const { inData, inOnBeforeRender } = await request()
 
     const first = await loadLivePreview(inData)
     const second = await loadLivePreview(inOnBeforeRender)
@@ -143,18 +148,16 @@ describe('loadLivePreview', () => {
   })
 
   it('verifies again for a second request', async () => {
-    vi.stubEnv('PUBLIC__LIVE_PREVIEW_VERIFY_KEY', verifyKeyBase64)
     const importKey = vi.spyOn(crypto.subtle, 'importKey')
-    const token = await sign(NOW + 600)
 
-    await loadLivePreview(hookViews(token).inData)
-    await loadLivePreview(hookViews(token).inOnBeforeRender)
+    await loadLivePreview((await request()).inData)
+    await loadLivePreview((await request()).inData)
 
     expect(importKey).toHaveBeenCalledTimes(2)
   })
 
   it('still memoises when `pageContext` is not a proxy', async () => {
-    // What a unit test and Ladle pass. `_originalObject` is absent there.
+    // What a unit test and Ladle pass. The escape hatch is absent there.
     const plain = { urlParsed: { search: {} } } as unknown as PageContextServer
 
     expect(await loadLivePreview(plain)).toBe(await loadLivePreview(plain))
