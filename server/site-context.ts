@@ -6,14 +6,16 @@
  * locale set). Each `+data.ts` used to call `getWebConfig` itself, so
  * adding a second global would have doubled the per-request reads.
  *
- * The two globals are memoised **separately**, both keyed on the
- * `pageContext` object. That split matters: `+onBeforeRender` runs for
- * every route including the embed ones, which deliberately fetch no config
- * ("there is no nav to populate"). Loading them together would have made
- * every iframe embed pay for a populated config read it never renders.
+ * The two globals are memoised **separately**. That split matters:
+ * `+onBeforeRender` runs for every route including the embed ones, which
+ * deliberately fetch no config ("there is no nav to populate"). Loading them
+ * together would have made every iframe embed pay for a populated config read
+ * it never renders.
  *
- * Vike creates a fresh `pageContext` per request, so `WeakMap` entries
- * cannot leak between requests and the maps need no clearing.
+ * Both key on `memoKey`, never on the argument — see `server/request-memo.ts`
+ * for why the argument is a different object in every hook. Vike builds that
+ * key's object per request, so `WeakMap` entries cannot leak between requests
+ * and the maps need no clearing.
  */
 
 import { render } from 'vike/abort'
@@ -21,6 +23,7 @@ import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './cms-client'
 import { loadLivePreview, previewArgs } from './live-preview'
+import { memoKey } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './cms-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
@@ -62,7 +65,8 @@ function isEmpty(translations: WebTranslations): boolean {
  * Both paths log a Sentry warning, so the gap stays visible.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
-  const existing = translationsCache.get(pageContext)
+  const key = memoKey(pageContext)
+  const existing = translationsCache.get(key)
 
   if (existing) return existing
 
@@ -97,7 +101,7 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
       return EN_TRANSLATIONS
     })
 
-  translationsCache.set(pageContext, loading)
+  translationsCache.set(key, loading)
 
   return loading
 }
@@ -113,13 +117,14 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
  * navigation and no home page, so the error page is the honest answer.
  */
 export function loadSiteContext(pageContext: PageContextServer): Promise<SiteContext> {
-  const existing = contextCache.get(pageContext)
+  const key = memoKey(pageContext)
+  const existing = contextCache.get(key)
 
   if (existing) return existing
 
   const loading = load(pageContext)
 
-  contextCache.set(pageContext, loading)
+  contextCache.set(key, loading)
 
   return loading
 }

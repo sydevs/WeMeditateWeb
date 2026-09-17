@@ -7,9 +7,12 @@
  * hydration.
  *
  * This hook never throws. Vike runs it for `_error` too, and an error page
- * that cannot render its own error message is a blank screen. The data
- * function runs first, so on a normal page the globals are already loaded
- * and this is a memo read, not a second fetch.
+ * that cannot render its own error message is a blank screen.
+ *
+ * `data()` runs first, so on a normal page both reads below are memo hits
+ * rather than second fetches. That holds only because the memos key on
+ * `server/request-memo.ts` — vike hands this hook a different `pageContext`
+ * object than it handed `data()`, and keying on the argument missed (#108).
  */
 
 import type { PageContextServer } from 'vike/types'
@@ -22,11 +25,7 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     // Translations only, never the config. This hook runs for every route,
     // and the embed routes deliberately fetch no config — "there is no nav
     // to populate" — so loading both here would make every iframe embed pay
-    // for a populated config read it never renders. On a chromed route the
-    // data function has already loaded both, and this is a memo read.
-    // Both are memo reads on a normal page: `data()` has already asked for the
-    // live-preview verdict and the globals. This hook exists so both reach the
-    // browser, where `useT()` and the preview chrome need them during hydration.
+    // for a populated config read it never renders.
     const [translations, livePreview] = await Promise.all([
       loadTranslations(pageContext),
       loadLivePreview(pageContext),
