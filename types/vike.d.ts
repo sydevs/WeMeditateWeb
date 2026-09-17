@@ -1,7 +1,7 @@
 /**
  * Global type extensions for Vike's PageContext and environment variables.
- * Adds Cloudflare Workers bindings and custom properties set by hooks such
- * as onBeforeRoute.
+ * Adds Cloudflare Workers bindings and custom properties set by the hooks
+ * under `pages/`.
  */
 
 import type { KVNamespace } from '@cloudflare/workers-types'
@@ -71,12 +71,18 @@ interface ImportMeta {
 declare global {
   namespace Vike {
     interface PageContext {
-      /** Current locale (added by onBeforeRoute hook) */
+      /**
+       * Current locale. Set by `pages/+onBeforeRoute.ts` wherever routing
+       * runs, and by `pages/+onCreatePageContext.server.ts` on the error
+       * page, which Vike renders without re-routing. Non-optional because
+       * those two together cover every render path.
+       */
       locale: Locale
 
       /**
-       * The live-preview verdict for this request, set by `onBeforeRoute`.
-       * Carries the verdict and the scope — never the token itself.
+       * The live-preview verdict for this request, set by
+       * `pages/+onBeforeRender.ts`. Carries the verdict and the scope —
+       * never the token itself.
        */
       livePreview: LivePreviewState
 
