@@ -86,7 +86,6 @@ export function LocationSearch({
   const [error, setError] = useState<string>('')
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
-  console.log("access token", accessToken)
 
   // Initialize Mapbox Search Box Core
   const searchBoxCore = useSearchBoxCore({

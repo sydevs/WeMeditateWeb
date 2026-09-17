@@ -14,6 +14,7 @@ export default function ReactSentryErrorPage() {
       dsn_missing: (options?.dsn?.length ?? 0) < 2,
       enabled: options?.enabled ?? true,
     });
+    // eslint-disable-next-line no-console -- this page exists to report the resolved Sentry config
     console.log("Sentry DSN: ", options?.dsn);
   }, []);
 
