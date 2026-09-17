@@ -41,6 +41,7 @@ import type {
   Audience,
 } from './payload-types'
 import type {
+  EmbeddedFormSelect,
   Locale,
   Page,
   PageStatus,
@@ -176,6 +177,10 @@ const EMBEDDED_APP_CARD_SELECT = {
  * record into the page's hydration payload. `actionType` is what the
  * submission's `type` comes from; who a message is delivered to is the CMS's
  * business and never the browser's.
+ *
+ * `EmbeddedFormSelect` is what ties this list to the `EmbeddedForm` type its
+ * consumers read, so neither can lose a key without the other failing to
+ * compile.
  */
 const EMBEDDED_FORM_SELECT = {
   title: true,
@@ -185,7 +190,7 @@ const EMBEDDED_FORM_SELECT = {
   confirmationMessage: true,
   redirect: true,
   actionType: true,
-} satisfies FormsSelect<true>
+} satisfies FormsSelect<true> & EmbeddedFormSelect
 
 /**
  * Populate map for a full Page read (depth 3). The backend rejects a

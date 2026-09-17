@@ -5,9 +5,9 @@
  * Two shapes meet here and neither is negotiable. The CMS side is the
  * form-builder plugin's: localized labels, a percentage `width`, a Lexical
  * document for a `message` block, and `actionType` deciding delivery. The
- * component side is `FormBuilderConfig`: a flat field list with Tailwind
- * widths and plain strings. Everything pure lives here so the whole matrix is
- * testable without rendering.
+ * component side is `FormBuilderConfig`: a flat field list of plain values.
+ * Everything pure lives here so the whole matrix is testable without
+ * rendering.
  *
  * The wire contract is SahajCloud's `user-submissions` create
  * (sydevs/SahajCloud#695): `type` comes from the form's `actionType`,
@@ -18,12 +18,13 @@
  * pair invented here comes back as a 400 naming the key.
  */
 
-import type { Form } from '../server/payload-types'
+import { lexicalDocumentText } from './lexical-text'
+import type { EmbeddedForm } from '../server/cms-types'
 import type {
   FormBuilderConfig,
   FormBuilderField,
   FormBuilderSubmission,
-} from '../components/organisms/FormBuilder'
+} from '../components/organisms/FormBuilder/FormBuilder'
 
 /**
  * The same-origin route a form posts to. The browser cannot post to the CMS
@@ -38,12 +39,6 @@ export const SUBMISSION_PATH = '/api/submissions'
  */
 export const TURNSTILE_TOKEN_HEADER = 'x-turnstile-token'
 
-/** What the same-origin route answers. `code` is the intake's refusal code. */
-export interface SubmissionResult {
-  ok: boolean
-  code?: string
-}
-
 /** One `[{ field, value }]` pair, as the collection stores it. */
 export interface SubmissionPair {
   field: string
@@ -53,53 +48,37 @@ export interface SubmissionPair {
 /** The body `POST /api/user-submissions` accepts for a form-backed intake. */
 export interface SubmissionBody {
   form: string
-  type: Form['actionType']
+  type: EmbeddedForm['actionType']
   senderEmail?: string
   submissionData: SubmissionPair[]
 }
 
 /**
- * An authored form, ready to render and to submit.
+ * What the same-origin route answers.
  *
- * `actionType` and `emailField` travel beside the render config because the
- * submit body needs both and neither belongs in `FormBuilderConfig` — the
- * component renders forms that have nothing to do with this CMS.
+ * `code` is the intake's own refusal code, forwarded for a developer reading
+ * the network tab. **The form deliberately does not branch on it.** Whether
+ * the captcha token was spent depends on where upstream refused — the write
+ * guard verifies it after the cheap content checks and before the collection's
+ * own — so re-challenging on every refusal is the only rule that cannot be
+ * wrong, and it costs one invisible challenge.
  */
-export interface CmsFormSpec {
-  config: FormBuilderConfig
-  actionType: Form['actionType']
-  /** The authored field whose value becomes the `senderEmail` column. */
-  emailField: string | null
+export interface SubmissionResult {
+  ok: boolean
+  code?: string
 }
-
-/** A Lexical document as the CMS stores a `message` block or a confirmation. */
-type LexicalDocument = { root?: { children?: unknown[] } } | null | undefined
 
 /** One entry of the plugin's authored field list. */
-type FormField = NonNullable<Form['fields']>[number]
-
-/**
- * Tailwind widths for the plugin's percentage `width`, in buckets.
- *
- * Tailwind scans source text, so `w-[${width}%]` produces no class at all —
- * the bucket is what makes an authored width render. Every bucket is full
- * width on mobile and narrows from `sm` up.
- */
-function fieldWidth(width?: number | null): string {
-  if (width == null || width >= 100) return 'w-full'
-  if (width <= 33) return 'w-full sm:w-1/3'
-  if (width <= 50) return 'w-full sm:w-1/2'
-
-  return 'w-full sm:w-2/3'
-}
+type FormField = NonNullable<EmbeddedForm['fields']>[number]
 
 /**
  * The `FormBuilder` block type for an authored one.
  *
  * `country` and `state` render as text inputs. The plugin picks them from its
- * own bundled option lists, which this repo does not mirror; a typed answer
- * still submits the pair the collection expects, where rendering nothing would
- * drop a required field and fail the submission server-side.
+ * own bundled option lists, which this repo does not mirror and the API read
+ * does not return; a typed answer still submits the pair the collection
+ * expects, where rendering nothing would drop a required field and fail the
+ * submission server-side.
  */
 function blockTypeOf(field: FormField): FormBuilderField['blockType'] {
   switch (field.blockType) {
@@ -111,30 +90,8 @@ function blockTypeOf(field: FormField): FormBuilderField['blockType'] {
   }
 }
 
-/** The plain text of a Lexical document, or `undefined` when it has none. */
-export function lexicalText(document: LexicalDocument): string | undefined {
-  const text = collectText(document?.root?.children).replace(/\s+/g, ' ').trim()
-
-  return text.length > 0 ? text : undefined
-}
-
-function collectText(nodes: unknown): string {
-  if (!Array.isArray(nodes)) return ''
-
-  return nodes
-    .map((node) => {
-      if (node == null || typeof node !== 'object') return ''
-      const candidate = node as { text?: unknown; children?: unknown }
-
-      if (typeof candidate.text === 'string') return candidate.text
-
-      return `${collectText(candidate.children)} `
-    })
-    .join('')
-}
-
 /** The authored field list, as `FormBuilder` takes it. */
-function formFields(form: Form): FormBuilderField[] {
+function formFields(form: EmbeddedForm): FormBuilderField[] {
   return (form.fields ?? []).map((field) => {
     if (field.blockType === 'message') {
       return {
@@ -143,7 +100,7 @@ function formFields(form: Form): FormBuilderField[] {
         name: field.id ?? 'message',
         blockType: 'message',
         label: '',
-        message: lexicalText(field.message),
+        message: lexicalDocumentText(field.message),
       }
     }
 
@@ -158,7 +115,7 @@ function formFields(form: Form): FormBuilderField[] {
       // the only other thing they wrote.
       label: field.label ?? field.name,
       required: field.required ?? undefined,
-      width: fieldWidth(field.width),
+      ...(field.width != null ? { width: field.width } : {}),
       ...(defaultValue != null ? { defaultValue } : {}),
       ...(placeholder ? { placeholder } : {}),
       ...(options ? { options: options.map(({ label, value }) => ({ label, value })) } : {}),
@@ -167,13 +124,13 @@ function formFields(form: Form): FormBuilderField[] {
 }
 
 /**
- * The authored form as a renderable spec, or `null` when it has no fields.
+ * The authored form as a `FormBuilder` config, or `null` when it has no
+ * fields.
  *
- * A bare relationship id (an unpublished or unresolvable reference) never
- * reaches here — the caller degrades first, the way every other embedded
- * document does.
+ * A bare relationship id (an unresolvable reference) never reaches here — the
+ * caller degrades first, the way every other embedded document does.
  */
-export function cmsFormSpec(form: Form): CmsFormSpec | null {
+export function cmsFormConfig(form: EmbeddedForm): FormBuilderConfig | null {
   const fields = formFields(form)
 
   if (fields.length === 0) return null
@@ -181,17 +138,18 @@ export function cmsFormSpec(form: Form): CmsFormSpec | null {
   const redirectUrl = form.confirmationType === 'redirect' ? form.redirect?.url : undefined
 
   return {
-    config: {
-      id: String(form.id),
-      title: form.title,
-      fields,
-      submitButtonLabel: form.submitButtonLabel ?? undefined,
-      confirmationMessage: lexicalText(form.confirmationMessage),
-      ...(redirectUrl ? { redirect: { url: redirectUrl } } : {}),
-    },
-    actionType: form.actionType,
-    emailField: form.fields?.find((field) => field.blockType === 'email')?.name ?? null,
+    id: String(form.id),
+    title: form.title,
+    fields,
+    submitButtonLabel: form.submitButtonLabel ?? undefined,
+    confirmationMessage: lexicalDocumentText(form.confirmationMessage),
+    ...(redirectUrl ? { redirect: { url: redirectUrl } } : {}),
   }
+}
+
+/** The authored field whose answer becomes the `senderEmail` column. */
+function emailFieldName(form: EmbeddedForm): string | undefined {
+  return form.fields?.find((field) => field.blockType === 'email')?.name
 }
 
 /**
@@ -202,12 +160,11 @@ export function cmsFormSpec(form: Form): CmsFormSpec | null {
  * than stored as a blank pair, which keeps the entry count under the
  * collection's cap and the admin list readable.
  */
-function pairValue(value: unknown): string | null {
-  if (typeof value === 'boolean') return String(value)
-  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : null
-  if (typeof value !== 'string') return null
+function pairValue(value: string | boolean | number): string | null {
+  if (typeof value === 'number' && !Number.isFinite(value)) return null
+  const text = String(value)
 
-  return value.length > 0 ? value : null
+  return text.length > 0 ? text : null
 }
 
 /**
@@ -219,20 +176,21 @@ function pairValue(value: unknown): string | null {
  * places that can disagree.
  *
  * `locale` and `path` are two of the base keys every type accepts, and both are
- * exempt from the collection's URL scan — a form on `/en/contact` legitimately
- * names the page it was sent from.
+ * exempt from the collection's URL scan — a form on `/en/contact`
+ * legitimately names the page it was sent from.
  */
 export function submissionBody({
-  spec,
+  form,
   submission,
   locale,
   path,
 }: {
-  spec: CmsFormSpec
+  form: EmbeddedForm
   submission: FormBuilderSubmission
   locale: string
   path?: string
 }): SubmissionBody {
+  const emailField = emailFieldName(form)
   const pairs: SubmissionPair[] = []
   let senderEmail: string | undefined
 
@@ -241,7 +199,7 @@ export function submissionBody({
 
     if (text == null) continue
 
-    if (field === spec.emailField) {
+    if (field === emailField) {
       senderEmail = text
       continue
     }
@@ -255,7 +213,7 @@ export function submissionBody({
 
   return {
     form: submission.form,
-    type: spec.actionType,
+    type: form.actionType,
     ...(senderEmail ? { senderEmail } : {}),
     submissionData: pairs,
   }

@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react'
-import { FormBuilder, type FormBuilderSubmission } from '../FormBuilder'
+import { FormBuilder, type FormBuilderSubmission } from '../FormBuilder/FormBuilder'
 import { Turnstile } from '../../molecules/Turnstile'
-import { useLocale, useT } from '../../../hooks/useT'
+import { useLocale, useOptionalPageContext, useT } from '../../../hooks/useT'
 import {
-  cmsFormSpec,
+  cmsFormConfig,
   submissionBody,
   SUBMISSION_PATH,
   TURNSTILE_TOKEN_HEADER,
-  type SubmissionResult,
 } from '../../../lib/cms-forms'
-import type { Form } from '../../../server/payload-types'
+import type { EmbeddedForm } from '../../../server/cms-types'
 
 /**
  * An authored CMS form, rendered and wired to the unified intake.
@@ -19,56 +18,66 @@ import type { Form } from '../../../server/payload-types'
  * them with the captcha and the submit call. The RichText `relationship`
  * converter renders it for a `forms` node embedded in page content.
  *
- * **Every refusal shows one message.** The intake distinguishes a failed
- * captcha from a disposable address from a key the form never declared, but
- * this site has one CMS-owned string for a failed send
+ * **Every refusal shows one message, and re-challenges.** The intake
+ * distinguishes a failed captcha from a disposable address from a key the form
+ * never declared, but this site has one CMS-owned string for a failed send
  * (`forms.general.submit_error`) and a translation cannot be invented here —
- * the keys come from the CMS schema. So the code is used to decide whether to
- * re-challenge, never to pick the copy.
+ * the keys come from the CMS schema. Re-challenging regardless is deliberate
+ * too: see `SubmissionResult`.
+ *
+ * ⚠ Imported through `../FormBuilder/FormBuilder`, not the barrel, and this
+ * module is itself loaded only in the browser (see `index.tsx`). Reaching it
+ * through `components/organisms` would pull every other organism into the
+ * code-split chunk.
  */
 
 export interface CmsFormProps {
   /** The `forms` document, populated by the page read. */
-  form: Form
+  form: EmbeddedForm
+
+  /**
+   * The Turnstile **site** key. Unset, no captcha renders and the CMS refuses
+   * the submission — which is the honest outcome of an unconfigured site.
+   * @default import.meta.env.PUBLIC__TURNSTILE_SITE_KEY
+   */
+  siteKey?: string
 
   /** Additional CSS classes for the form wrapper. */
   className?: string
 }
 
-export function CmsForm({ form, className }: CmsFormProps) {
+export function CmsForm({
+  form,
+  siteKey = import.meta.env.PUBLIC__TURNSTILE_SITE_KEY,
+  className,
+}: CmsFormProps) {
   const t = useT()
   const locale = useLocale()
-  const spec = useMemo(() => cmsFormSpec(form), [form])
+  // The page this form sits on, from the same object the locale comes from, so
+  // the two `submissionData` pairs cannot disagree.
+  const path = useOptionalPageContext()?.urlPathname
+  const config = useMemo(() => cmsFormConfig(form), [form])
   const [token, setToken] = useState<string | null>(null)
   // Bumped on every refusal, and used as the widget's key: a Turnstile token
   // is single-use, so a second attempt needs a fresh widget rather than the
   // spent token the first attempt sent.
   const [attempt, setAttempt] = useState(0)
-  const siteKey = import.meta.env.PUBLIC__TURNSTILE_SITE_KEY
 
   // A form with no fields renders nothing, the way every other embedded
   // document degrades rather than showing an empty shell.
-  if (!spec) return null
+  if (!config) return null
 
   const handleSubmit = async (submission: FormBuilderSubmission) => {
-    const body = submissionBody({
-      spec,
-      submission,
-      locale,
-      path: typeof window === 'undefined' ? undefined : window.location.pathname,
-    })
-
     const response = await fetch(SUBMISSION_PATH, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(submissionBody({ form, submission, locale, path })),
     })
-    const result = (await response.json().catch(() => null)) as SubmissionResult | null
 
-    if (response.ok && result?.ok) {
+    if (response.ok) {
       return { success: true }
     }
 
@@ -81,10 +90,10 @@ export function CmsForm({ form, className }: CmsFormProps) {
   return (
     <FormBuilder
       captcha={
-        siteKey ? <Turnstile key={attempt} onToken={setToken} siteKey={siteKey} /> : undefined
+        siteKey ? <Turnstile key={attempt} siteKey={siteKey} onToken={setToken} /> : undefined
       }
       className={className}
-      form={spec.config}
+      form={config}
       // Until the challenge is solved the CMS would refuse the write, so the
       // button waits rather than spending a round trip to say so. With no site
       // key configured there is nothing to wait for.

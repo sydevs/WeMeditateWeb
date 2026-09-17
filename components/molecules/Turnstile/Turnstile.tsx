@@ -53,17 +53,13 @@ function loadTurnstile(): Promise<void> {
   if (window.turnstile) return Promise.resolve()
 
   scriptLoad ??= new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`)
-    const script = existing ?? document.createElement('script')
+    const script = document.createElement('script')
 
     script.addEventListener('load', () => resolve())
     script.addEventListener('error', () => reject(new Error('Turnstile failed to load')))
-
-    if (!existing) {
-      script.src = SCRIPT_SRC
-      script.async = true
-      document.head.appendChild(script)
-    }
+    script.src = SCRIPT_SRC
+    script.async = true
+    document.head.appendChild(script)
   })
 
   return scriptLoad
@@ -89,8 +85,8 @@ export interface TurnstileProps {
 export function Turnstile({ siteKey, onToken, theme = 'light', className = '' }: TurnstileProps) {
   const container = useRef<HTMLDivElement>(null)
   // The callback identity changes on every parent render, and re-rendering the
-  // widget would throw away a solved challenge. So the effect depends on the
-  // site key alone and reads the current callback through this ref.
+  // widget would throw away a solved challenge. So it stays out of the effect's
+  // dependencies and is read through this ref instead.
   const latestOnToken = useRef(onToken)
 
   latestOnToken.current = onToken

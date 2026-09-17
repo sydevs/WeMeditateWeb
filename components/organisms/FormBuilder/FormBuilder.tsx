@@ -28,8 +28,13 @@ export interface FormBuilderField {
   /** Default value */
   defaultValue?: string | boolean | number
 
-  /** Field width (CSS class or percentage) */
-  width?: string
+  /**
+   * How much of the row this field takes, as a percentage from 1 to 100. It
+   * is the plugin's own unit, and the editor's: a 50 beside a 50 is a
+   * two-column pair. See {@link fieldSpanClass} for how it is rendered, and
+   * why it is not a class name.
+   */
+  width?: number
 
   /** Placeholder text */
   placeholder?: string
@@ -149,6 +154,45 @@ export interface FormBuilderProps {
    * @default false
    */
   submitDisabled?: boolean
+}
+
+/**
+ * The authored percentage width, as a column span in the fields grid.
+ *
+ * ⚠ **Every class is written out, and that is the point.** Tailwind scans
+ * source text, so an interpolated `sm:col-span-${n}` or `w-[${width}%]`
+ * produces no CSS at all and the field silently renders full width. Twelve
+ * literals cannot be missed by the scanner, and they keep the editor's
+ * fidelity where a handful of buckets would round a 40 and a 60 to the same
+ * thing.
+ *
+ * Mobile-first: the grid is one column below `sm`, so the span applies only
+ * once there is room for it.
+ */
+const FIELD_SPAN_CLASS = [
+  'sm:col-span-1',
+  'sm:col-span-2',
+  'sm:col-span-3',
+  'sm:col-span-4',
+  'sm:col-span-5',
+  'sm:col-span-6',
+  'sm:col-span-7',
+  'sm:col-span-8',
+  'sm:col-span-9',
+  'sm:col-span-10',
+  'sm:col-span-11',
+  'sm:col-span-12',
+] as const
+
+const FIELD_GRID_COLUMNS = FIELD_SPAN_CLASS.length
+
+function fieldSpanClass(width?: number): string {
+  if (width == null || !Number.isFinite(width)) {
+    return FIELD_SPAN_CLASS[FIELD_GRID_COLUMNS - 1]
+  }
+  const span = Math.round((width / 100) * FIELD_GRID_COLUMNS)
+
+  return FIELD_SPAN_CLASS[Math.min(FIELD_GRID_COLUMNS, Math.max(1, span)) - 1]
 }
 
 /** Renders a form field based on its type */
@@ -364,6 +408,10 @@ export function FormBuilder({
     )
   }
 
+  // The captcha slot and the submit button share the title's alignment. The
+  // fields never centre: a centred label column is unreadable.
+  const rowAlign = align === 'center' ? 'flex justify-center' : ''
+
   return (
     <div className={className}>
       {form.title && (
@@ -384,8 +432,9 @@ export function FormBuilder({
           </div>
         )}
 
-        {/* Render form fields */}
-        <div className="flex flex-col gap-6">
+        {/* Render form fields. One column below `sm`, twelve above, so an
+            authored width can place two fields side by side. */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-12">
           {form.fields.map((field) => {
             // Get error message from either react-hook-form validation or API errors
             const fieldError =
@@ -394,7 +443,7 @@ export function FormBuilder({
             // For checkbox fields, render without FormField wrapper
             if (field.blockType === 'checkbox') {
               return (
-                <div key={field.name} className={field.width || 'w-full'}>
+                <div key={field.name} className={fieldSpanClass(field.width)}>
                   {renderField(field, register, variant, t, fieldError)}
                   {fieldError && (
                     <p className="mt-1 text-sm text-error" role="alert">
@@ -408,7 +457,7 @@ export function FormBuilder({
             // For message fields, render without FormField wrapper
             if (field.blockType === 'message') {
               return (
-                <div key={field.name} className={field.width || 'w-full'}>
+                <div key={field.name} className={fieldSpanClass(field.width)}>
                   {renderField(field, register, variant, t)}
                 </div>
               )
@@ -417,7 +466,7 @@ export function FormBuilder({
             // For minimal variant, render without FormField wrapper. It uses placeholders instead.
             if (variant === 'minimal') {
               return (
-                <div key={field.name} className={field.width || 'w-full'}>
+                <div key={field.name} className={fieldSpanClass(field.width)}>
                   {renderField(field, register, variant, t, fieldError)}
                   {fieldError && (
                     <p className="mt-1 text-sm text-error" role="alert">
@@ -430,7 +479,7 @@ export function FormBuilder({
 
             // For default variant, wrap in FormField
             return (
-              <div key={field.name} className={field.width || 'w-full'}>
+              <div key={field.name} className={fieldSpanClass(field.width)}>
                 <FormField
                   id={field.name}
                   label={field.label}
@@ -446,11 +495,11 @@ export function FormBuilder({
         </div>
 
         {captcha && (
-          <div className={`mt-6 ${align === 'center' ? 'flex justify-center' : ''}`}>{captcha}</div>
+          <div className={`mt-6 ${rowAlign}`}>{captcha}</div>
         )}
 
         {/* Submit button */}
-        <div className={`mt-8 ${align === 'center' ? 'flex justify-center' : ''}`}>
+        <div className={`mt-8 ${rowAlign}`}>
           <Button
             type="submit"
             variant={variant === 'minimal' ? 'outline' : 'primary'}

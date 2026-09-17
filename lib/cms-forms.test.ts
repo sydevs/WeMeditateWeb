@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { cmsFormSpec, lexicalText, submissionBody } from './cms-forms'
-import type { Form } from '../server/payload-types'
+import { cmsFormConfig, submissionBody } from './cms-forms'
+import type { EmbeddedForm } from '../server/cms-types'
 
 /**
- * The fixture is typed `satisfies Form`, so it is checked against the
- * generated CMS types rather than against an idea of them — a field renamed
- * upstream fails `tsc` here instead of passing a test that describes a form
- * the CMS no longer produces.
+ * The fixture is typed `satisfies EmbeddedForm`, so it is checked against the
+ * fields an embedded `forms` relationship actually returns — which is tied to
+ * `EMBEDDED_FORM_SELECT` in `server/cms-client.ts`. A field renamed upstream,
+ * or dropped from that select, fails `tsc` here instead of passing a test that
+ * describes a form the read no longer produces.
  */
 
 /** A Lexical document holding one paragraph of text. */
@@ -14,13 +15,7 @@ function lexical(text: string) {
   return {
     root: {
       type: 'root',
-      children: [
-        {
-          type: 'paragraph',
-          version: 1,
-          children: [{ type: 'text', version: 1, text }],
-        },
-      ],
+      children: [{ type: 'paragraph', version: 1, children: [{ type: 'text', version: 1, text }] }],
       direction: 'ltr' as const,
       format: '' as const,
       indent: 0,
@@ -54,91 +49,68 @@ const contactForm = {
     { blockType: 'message', id: 'block-1', message: lexical('We reply within a week.') },
     { blockType: 'textarea', name: 'message', label: 'Message', required: true },
   ],
-  updatedAt: '2026-09-01T00:00:00.000Z',
-  createdAt: '2026-09-01T00:00:00.000Z',
-} satisfies Form
+} satisfies EmbeddedForm
 
-describe('lexicalText', () => {
-  it('flattens a Lexical document to one line of text', () => {
-    expect(lexicalText(lexical('Thank you.'))).toBe('Thank you.')
-  })
+function field(form: EmbeddedForm, name: string) {
+  return cmsFormConfig(form)?.fields.find((candidate) => candidate.name === name)
+}
 
-  it('returns undefined for an empty or missing document', () => {
-    expect(lexicalText(null)).toBeUndefined()
-    expect(lexicalText(lexical('   '))).toBeUndefined()
-  })
-})
-
-describe('cmsFormSpec', () => {
-  it('carries the action type and the email field beside the render config', () => {
-    const spec = cmsFormSpec(contactForm)
-
-    expect(spec?.actionType).toBe('contact')
-    expect(spec?.emailField).toBe('email')
-  })
-
+describe('cmsFormConfig', () => {
   it('renders country as a text input, because the option list is not mirrored here', () => {
-    const country = cmsFormSpec(contactForm)?.config.fields.find((f) => f.name === 'country')
-
-    expect(country?.blockType).toBe('text')
+    expect(field(contactForm, 'country')?.blockType).toBe('text')
   })
 
-  it('buckets the authored percentage width into a mobile-first Tailwind class', () => {
-    const fields = cmsFormSpec(contactForm)?.config.fields ?? []
-
-    expect(fields.find((f) => f.name === 'name')?.width).toBe('w-full sm:w-1/2')
-    // An unset width is full width, not a missing class.
-    expect(fields.find((f) => f.name === 'message')?.width).toBe('w-full')
+  it('passes the authored percentage width through as a number', () => {
+    // The percentage is the editor's unit. Turning it into a layout class is
+    // FormBuilder's business, not this module's.
+    expect(field(contactForm, 'name')?.width).toBe(50)
+    expect(field(contactForm, 'message')?.width).toBeUndefined()
   })
 
   it('flattens the message block and the confirmation to plain text', () => {
-    const spec = cmsFormSpec(contactForm)
+    const config = cmsFormConfig(contactForm)
 
-    expect(spec?.config.confirmationMessage).toBe('We will be in touch.')
-    expect(spec?.config.fields.find((f) => f.blockType === 'message')?.message).toBe(
+    expect(config?.confirmationMessage).toBe('We will be in touch.')
+    expect(config?.fields.find((f) => f.blockType === 'message')?.message).toBe(
       'We reply within a week.',
     )
   })
 
-  it('keeps the authored select options', () => {
-    const topic = cmsFormSpec(contactForm)?.config.fields.find((f) => f.name === 'topic')
-
-    expect(topic?.options).toEqual([
+  it('keeps the authored select options and placeholder', () => {
+    expect(field(contactForm, 'topic')?.options).toEqual([
       { label: 'Classes', value: 'classes' },
       { label: 'Other', value: 'other' },
     ])
-    expect(topic?.placeholder).toBe('Pick one')
+    expect(field(contactForm, 'topic')?.placeholder).toBe('Pick one')
   })
 
   it('falls back to the field name when the author left the label blank', () => {
-    const spec = cmsFormSpec({ ...contactForm, fields: [{ blockType: 'text', name: 'city' }] })
+    const config = cmsFormConfig({ ...contactForm, fields: [{ blockType: 'text', name: 'city' }] })
 
-    expect(spec?.config.fields[0].label).toBe('city')
+    expect(config?.fields[0].label).toBe('city')
   })
 
   it('takes a redirect only when the form confirms by redirecting', () => {
-    const redirecting = cmsFormSpec({
+    const redirecting = cmsFormConfig({
       ...contactForm,
       confirmationType: 'redirect',
       redirect: { url: '/thanks' },
     })
-    const messaging = cmsFormSpec({ ...contactForm, redirect: { url: '/thanks' } })
+    const messaging = cmsFormConfig({ ...contactForm, redirect: { url: '/thanks' } })
 
-    expect(redirecting?.config.redirect).toEqual({ url: '/thanks' })
-    expect(messaging?.config.redirect).toBeUndefined()
+    expect(redirecting?.redirect).toEqual({ url: '/thanks' })
+    expect(messaging?.redirect).toBeUndefined()
   })
 
   it('returns null for a form with no fields, so the caller degrades', () => {
-    expect(cmsFormSpec({ ...contactForm, fields: [] })).toBeNull()
+    expect(cmsFormConfig({ ...contactForm, fields: [] })).toBeNull()
   })
 })
 
 describe('submissionBody', () => {
-  const spec = cmsFormSpec(contactForm)!
-
-  function body(data: Record<string, string | boolean | number>) {
+  function body(data: Record<string, string | boolean | number>, form: EmbeddedForm = contactForm) {
     return submissionBody({
-      spec,
+      form,
       submission: {
         form: '12',
         submissionData: Object.entries(data).map(([field, value]) => ({ field, value })),
@@ -160,9 +132,10 @@ describe('submissionBody', () => {
   })
 
   it('stringifies a checkbox, because the stored value is text', () => {
-    const pairs = body({ newsletter: true, message: 'Hi' }).submissionData
-
-    expect(pairs).toContainEqual({ field: 'newsletter', value: 'true' })
+    expect(body({ newsletter: true, message: 'Hi' }).submissionData).toContainEqual({
+      field: 'newsletter',
+      value: 'true',
+    })
   })
 
   it('drops an empty answer rather than storing a blank pair', () => {
@@ -179,16 +152,12 @@ describe('submissionBody', () => {
   })
 
   it('omits senderEmail when the form has no email field', () => {
-    const noEmail = cmsFormSpec({
+    const subscribeForm = {
       ...contactForm,
       actionType: 'subscribe',
       fields: [{ blockType: 'text', name: 'name', label: 'Name' }],
-    })!
-    const result = submissionBody({
-      spec: noEmail,
-      submission: { form: '12', submissionData: [{ field: 'name', value: 'Ada' }] },
-      locale: 'en',
-    })
+    } satisfies EmbeddedForm
+    const result = body({ name: 'Ada' }, subscribeForm)
 
     expect(result.senderEmail).toBeUndefined()
     expect(result.type).toBe('subscribe')

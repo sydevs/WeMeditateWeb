@@ -18,7 +18,7 @@ import { CmsForm } from '../CmsForm'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
-import type { Form } from '../../../server/payload-types'
+import type { EmbeddedForm } from '../../../server/cms-types'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
@@ -163,8 +163,8 @@ const CONVERTERS: JSXConverters = {
   // other collection with no public route degrades to its plain label.
   relationship: ({ node }) => {
     if (node.relationTo === 'forms') {
-      return isPopulated(node.value) ? (
-        <CmsForm className={BLOCK_SPACING} form={node.value as unknown as Form} />
+      return isPopulated<EmbeddedForm>(node.value) ? (
+        <CmsForm className={BLOCK_SPACING} form={node.value} />
       ) : null
     }
     const label = relationshipLabel(node.value)

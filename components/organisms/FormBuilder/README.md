@@ -92,7 +92,7 @@ interface FormBuilderField {
   label: string
   required?: boolean
   defaultValue?: string | boolean
-  width?: string                  // Any CSS width class, for example 'w-full', 'w-1/2'
+  width?: number                  // Percentage of the row, 1–100. The plugin's own unit.
   placeholder?: string
   options?: Array<{ label: string; value: string }>  // Required for select
   message?: string                // Required for message fields
@@ -102,6 +102,16 @@ interface FormBuilderField {
 A CMS form needs no separate read: an embedded `forms` relationship is populated by the page read
 (`EMBEDDED_FORM_SELECT` in `server/cms-client.ts`), and `cmsFormSpec` in `lib/cms-forms.ts` turns
 that document into a `FormBuilderConfig`.
+
+## Field width
+
+The fields sit in a 12-column grid, single-column below the `sm` breakpoint. A field's `width` is
+a percentage, rounded to the nearest column span, so a 50 beside a 50 is a two-column pair from
+`sm` up and two stacked full-width fields on a phone.
+
+⚠ The span classes are written out one per column in `FormBuilder.tsx`, and must stay that way.
+Tailwind scans source text, so an interpolated `sm:col-span-${n}` or `w-[${width}%]` produces no
+CSS at all and the field silently renders full width.
 
 ## Validation
 

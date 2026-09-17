@@ -1,6 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { RichText } from './RichText'
+
+// An embedded form is client-only (components/organisms/CmsForm/index.tsx), and
+// vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
+// Stubbing it to its fallback is what the server render does anyway, so the
+// forms assertions below check exactly what a crawler receives.
+vi.mock('vike-react/ClientOnly', () => ({
+  ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
+}))
+
+const { RichText } = await import('./RichText')
 
 /** Wrap top-level nodes in a serialized Lexical editor state. */
 function editorState(children: unknown[]) {
@@ -207,6 +217,9 @@ describe('<RichText>', () => {
   it('renders an embedded form, rather than linking to it', () => {
     // A `forms` reference is the one relationship that is content: the editor
     // embedded it to be filled in, and it has no page of its own to link to.
+    // The form itself is client-only, so the server render is its fallback —
+    // the heading, and a box reserving its height. The fields are asserted in
+    // CmsForm.test.tsx.
     const html = renderToStaticMarkup(
       <RichText
         content={editorState([
@@ -226,10 +239,10 @@ describe('<RichText>', () => {
       />,
     )
 
-    expect(html).toContain('<form')
-    expect(html).toContain('Your email')
-    expect(html).toContain('Send message')
+    expect(html).toContain('Write to us')
     expect(html).not.toContain('<a')
+    // No react-hook-form on the server: the form arrives with hydration.
+    expect(html).not.toContain('<form')
   })
 
   it('renders nothing for an embedded form that came back as a bare id', () => {
@@ -239,7 +252,7 @@ describe('<RichText>', () => {
       />,
     )
 
-    expect(html).not.toContain('<form')
+    expect(html).not.toContain('animate-pulse')
   })
 
   it('renders an upload image in a <figure> with a Cloudflare variant, caption and alignment', () => {

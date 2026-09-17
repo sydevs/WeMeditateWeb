@@ -31,7 +31,7 @@ import {
 } from './cms-client'
 import { relatedMeditationsToCards, relatedLecturesToCards } from '../lib/related-content'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/cms-forms'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER, type SubmissionResult } from '../lib/cms-forms'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
 import { idSchema, submissionSchema } from './validation'
@@ -216,10 +216,12 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
  */
 function registerSubmissions(app: Hono<CmsEnv>): void {
   app.post(SUBMISSION_PATH, async (c) => {
+    c.header('Cache-Control', 'no-store')
+
     const body = submissionSchema.safeParse(await c.req.json().catch(() => null))
 
     if (!body.success) {
-      return c.json({ ok: false, code: 'invalid_request' }, 400)
+      return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
     }
     const token = c.req.header(TURNSTILE_TOKEN_HEADER)
 
@@ -235,15 +237,14 @@ function registerSubmissions(app: Hono<CmsEnv>): void {
         init: { headers: token ? { [TURNSTILE_TOKEN_HEADER]: token } : {} },
       })
 
-      c.header('Cache-Control', 'no-store')
-
-      return c.json({ ok: true })
+      return c.json<SubmissionResult>({ ok: true })
     } catch (error) {
       const failure = submissionFailure(error)
 
-      c.header('Cache-Control', 'no-store')
-
-      return c.json({ ok: false, ...(failure.code ? { code: failure.code } : {}) }, failure.status)
+      return c.json<SubmissionResult>(
+        { ok: false, ...(failure.code ? { code: failure.code } : {}) },
+        failure.status,
+      )
     }
   })
 }

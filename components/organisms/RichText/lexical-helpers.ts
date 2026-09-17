@@ -10,32 +10,11 @@ import { isPopulated } from '../../../lib/cms-relationships'
 // implementation so anchors and heading ids never drift apart.
 export { slugify } from '../../../lib/slugify'
 
-/**
- * Recursively collect the plain-text content of a list of Lexical nodes.
- * Used to derive heading anchor ids (the converter only receives rendered React
- * children, not the raw text).
- */
-export function getNodeText(nodes: unknown): string {
-  if (!Array.isArray(nodes)) {
-    return ''
-  }
-
-  return nodes
-    .map((n) => {
-      if (!isPopulated(n)) {
-        return ''
-      }
-      if (typeof n.text === 'string') {
-        return n.text
-      }
-      if (Array.isArray(n.children)) {
-        return getNodeText(n.children)
-      }
-
-      return ''
-    })
-    .join('')
-}
+// Same reason, for the text walk: the heading converter, which needs the raw
+// text the converter never receives, and the authored-form flattener in
+// `lib/cms-forms` share one implementation. It lives in `lib/` because `lib/`
+// may not import from `components/`.
+export { lexicalNodeText as getNodeText } from '../../../lib/lexical-text'
 
 /**
  * Best-effort human label for an inline relationship target. Returns null for
