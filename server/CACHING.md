@@ -27,7 +27,7 @@ Two things follow for anyone adding a read:
 
 ## Retry, which is not caching
 
-`readCms` in [cms-client.ts](./cms-client.ts) wraps a public read in `withRetry`
+`withRetryUnlessPreview` in [cms-client.ts](./cms-client.ts) wraps a public read in `withRetry`
 ([error-utils.ts](./error-utils.ts)): three attempts, exponential backoff with jitter, network and
 5xx errors only. A **preview** read skips it deliberately — an editor watching their own edit needs
 the error now, not after about 7s of backoff.

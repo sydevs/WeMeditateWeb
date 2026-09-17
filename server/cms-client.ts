@@ -67,12 +67,13 @@ interface LocalizedQueryOptions {
 }
 
 /**
- * Runs one read under the shared retry policy.
- *
- * Preview reads skip the retry on purpose. An editor watching their own
+ * A preview read skips the retry on purpose. An editor watching their own
  * edit needs the error now, not after about 7s of backoff.
  */
-function readCms<T>(fetchFn: () => Promise<T>, options: { preview?: boolean } = {}): Promise<T> {
+function withRetryUnlessPreview<T>(
+  fetchFn: () => Promise<T>,
+  options: { preview?: boolean } = {},
+): Promise<T> {
   return options.preview === true ? fetchFn() : withRetry(fetchFn)
 }
 
@@ -367,7 +368,7 @@ export async function getPageBySlug(
 ): Promise<Page | null> {
   const isPreview = options.preview === true
 
-  return readCms(
+  return withRetryUnlessPreview(
     async () => {
       const client = createPayloadClient({
         preview: isPreview,
@@ -499,7 +500,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
   const config = COLLECTION_BY_ID_CONFIG[options.collection]
   const isPreview = options.preview === true
 
-  return readCms(
+  return withRetryUnlessPreview(
     async () => {
       const client = createPayloadClient({
         preview: isPreview,
@@ -628,7 +629,7 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  * @returns The web configuration with populated page relationships
  */
 export async function getWebConfig(options: { locale?: Locale } = {}): Promise<WebConfig> {
-  return readCms(async () => {
+  return withRetryUnlessPreview(async () => {
     const client = createPayloadClient()
 
     const config = await client.findGlobal({
@@ -726,7 +727,7 @@ export async function getWebTranslations(options: {
 }): Promise<WebTranslations> {
   const isPreview = options.preview === true
 
-  return readCms(
+  return withRetryUnlessPreview(
     async () => {
       const client = createPayloadClient({
         preview: isPreview,
@@ -771,7 +772,7 @@ export async function getPagesByTags(
 ): Promise<PageListItem[]> {
   const limit = options.limit || 100
 
-  return readCms(async () => {
+  return withRetryUnlessPreview(async () => {
     const client = createPayloadClient()
 
     const result = await client.find({
@@ -811,7 +812,7 @@ export async function getSongsByTags(
 ): Promise<Song[]> {
   const limit = options.limit || 100
 
-  return readCms(async () => {
+  return withRetryUnlessPreview(async () => {
     const client = createPayloadClient()
 
     const result = await client.find({
@@ -859,7 +860,7 @@ export async function getMeditationSongs(
   },
 ): Promise<MeditationSong[]> {
   try {
-    return await readCms(async () => {
+    return await withRetryUnlessPreview(async () => {
       const { apiKey, baseURL } = getCmsContext()
       const url = `${baseURL}/api/meditations/${encodeURIComponent(
         options.id,
@@ -954,7 +955,7 @@ export async function getRelatedMeditations(
   const limit = options.limit ?? 8
 
   try {
-    return await readCms(async () => {
+    return await withRetryUnlessPreview(async () => {
       const { apiKey, baseURL } = getCmsContext()
       const url =
         `${baseURL}/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
@@ -1051,7 +1052,7 @@ export async function getRelatedLectures(
   const limit = options.limit ?? 8
 
   try {
-    return await readCms(async () => {
+    return await withRetryUnlessPreview(async () => {
       const { apiKey, baseURL } = getCmsContext()
       const url =
         `${baseURL}/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +

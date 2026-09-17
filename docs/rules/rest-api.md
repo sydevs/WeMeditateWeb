@@ -15,7 +15,7 @@ paths:
 3. Add the query function to [server/cms-client.ts](../../server/cms-client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
-     return readCms(
+     return withRetryUnlessPreview(
        async () => {
          const client = createPayloadClient({ preview: options.preview === true })
 
@@ -38,8 +38,8 @@ paths:
    purge on write is not a guarantee. A new path caches only once SahajCloud's Cache Rule covers
    it.
 
-   `readCms` supplies the retry: three attempts for a public read, none for a preview read, which
-   must fail fast. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
+   `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
+   preview read, which must fail fast. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
    classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
 
