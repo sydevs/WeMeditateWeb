@@ -92,7 +92,7 @@ export interface FormBuilderProps {
 
   /**
    * Callback fired on form submission
-   * Should handle POST request to PayloadCMS form submissions API
+   * Should handle POST request to PayloadCMS user submissions API
    *
    * @param data - Formatted submission data
    * @returns Promise resolving to success or error
