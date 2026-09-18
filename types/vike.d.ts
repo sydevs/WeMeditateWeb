@@ -1,10 +1,7 @@
 /**
  * Global type extensions for Vike's PageContext and environment variables.
- * Adds Cloudflare Workers bindings and custom properties set by hooks such
- * as onBeforeRoute.
+ * Adds the custom properties set by hooks such as onBeforeRoute.
  */
-
-import type { KVNamespace } from '@cloudflare/workers-types'
 
 import type { Locale, WebTranslations } from '../server/cms-types'
 import type { LivePreviewState } from '../lib/live-preview/protocol'
@@ -86,14 +83,6 @@ declare global {
        * client by `passToClient`. Read it through `useT()`, never directly.
        */
       translations: WebTranslations
-
-      /** Cloudflare Workers runtime context */
-      cloudflare?: {
-        env?: {
-          /** Cloudflare KV namespace that caches API responses */
-          WEMEDITATE_CACHE?: KVNamespace
-        }
-      }
     }
   }
 }

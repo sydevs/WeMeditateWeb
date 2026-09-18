@@ -7,8 +7,8 @@
  *
  * Registered beside `registerApiRoutes`, and, like it, inside the
  * `contextStorage()` middleware, so `getCmsContext()` resolves the API
- * key and KV binding normally. Both routes are declared before Vike's
- * handler, so they win over the page catch-all.
+ * key normally. Both routes are declared before Vike's handler, so they
+ * win over the page catch-all.
  *
  * Every read here degrades to empty, instead of failing the response. A
  * partial sitemap is still useful, and some crawlers read a 500 on
@@ -18,19 +18,16 @@
 import type { Hono } from 'hono'
 import type { CmsEnv } from './cms-context'
 import { createPayloadClient } from './payload-client'
+import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './cms-client'
 import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
-import { generateCacheKey, withCache } from './kv-cache'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './cms-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
 /** Bounded for the same reason as the atlas read: this runs in a Worker request. */
 const CONTENT_READ_LIMIT = 500
-
-/** How long the KV entry behind `getContentSitemapUrls` lives (30 minutes). */
-const SITEMAP_DOCS_TTL = 1800
 
 /**
  * Field selections for the sitemap reads.
@@ -115,30 +112,12 @@ async function readContentDocs() {
  * Meditations and lectures list a bare URL: neither collection opts into
  * per-locale publish state upstream, so neither has a per-document
  * translation claim to make.
- *
- * The cache holds the **documents**, keyed on the origin alone. The
- * annotation runs after the cache, so a change to `availableLocales` or to
- * the home page takes effect on the next request instead of orphaning a
- * 500-document read.
- *
- * ⚠ The key prefix is `content-sitemap-docs`, not `content-sitemap`. The
- * older prefix holds a `SitemapUrl[]`, the shape this function used to
- * cache. `getCachedResponse` returns stored JSON without a shape check, so
- * reusing the prefix would hand this code an array for up to
- * `SITEMAP_DOCS_TTL` after the deploy, `docs.pages` would be `undefined`,
- * and every content URL would drop out of the sitemap until it expired.
- * A new prefix lets the old entries expire unread. **Bump it again on the
- * next shape change.**
  */
 async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     const [{ offered, homeSlug }, docs] = await Promise.all([
       getSiteAnnotation(),
-      withCache({
-        cacheKey: generateCacheKey('content-sitemap-docs', { origin }),
-        ttl: SITEMAP_DOCS_TTL,
-        fetchFn: readContentDocs,
-      }),
+      withRetry(readContentDocs),
     ])
 
     // `/` serves the config's `homePage`, so it advertises that page's

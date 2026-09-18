@@ -1,24 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getAtlasSeo, AtlasCacheTTL } from './atlas-client'
+import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
 import * as Sentry from '@sentry/react'
 
 vi.mock('./cms-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
-/** Records what the read asked the cache for, then runs the fetch uncached. */
-const cacheCalls: Array<{ cacheKey: string; ttl: number }> = []
+const find = vi.fn()
 
-vi.mock('./kv-cache', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./kv-cache')>()
+vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find }) }))
+
+// The stub runs the read once, so no test waits on real backoff.
+// `retrySpy` keeps the call visible to the tests that assert one.
+// error-utils.test.ts covers what withRetry itself does.
+const { retrySpy } = vi.hoisted(() => ({ retrySpy: vi.fn() }))
+
+vi.mock('./error-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./error-utils')>()
 
   return {
     ...actual,
-    withCache: (opts: { cacheKey: string; ttl: number; fetchFn: () => unknown }) => {
-      cacheCalls.push({ cacheKey: opts.cacheKey, ttl: opts.ttl })
+    withRetry: (fn: () => unknown, config?: unknown) => {
+      retrySpy(config)
 
-      return opts.fetchFn()
+      return fn()
     },
   }
 })
@@ -31,7 +37,8 @@ function fetchResponse(status: number, body: unknown) {
 const regionAnswer = { type: 'region', id: 5, route: '/gb/london', title: 'London' }
 
 beforeEach(() => {
-  cacheCalls.length = 0
+  retrySpy.mockClear()
+  find.mockReset()
   vi.restoreAllMocks()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -65,49 +72,30 @@ describe('getAtlasSeo', () => {
     expect(vi.mocked(globalThis.fetch).mock.calls[0][0]).toContain('&locale=nl')
   })
 
-  describe('cache policy', () => {
-    it('caches a region for an hour and a class for fifteen minutes', async () => {
+  describe('retry policy', () => {
+    it('retries a failing read, since the KV layer used to supply that', async () => {
+      // `withCache` ran `withRetry` on every miss (#98). Dropping the cache
+      // must not drop the resilience with it: this read degrades to `null`,
+      // so an unretried blip silently costs the page its server-rendered half.
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(
         fetchResponse(200, regionAnswer) as unknown as Response,
       )
 
       await getAtlasSeo({ route: '/gb/london', locale: 'en' })
-      await getAtlasSeo({ route: '/gb/london/1204', locale: 'en' })
 
-      expect(cacheCalls.map((call) => call.ttl)).toEqual([
-        AtlasCacheTTL.REGION,
-        AtlasCacheTTL.EVENT,
-      ])
+      expect(retrySpy).toHaveBeenCalledTimes(1)
+      expect(retrySpy.mock.calls[0][0]).toBeUndefined()
     })
 
-    it('collapses every URL naming one document onto a single cache entry', async () => {
+    it('does not spend the retry ladder on a 404', async () => {
+      // A dead route is an answer, not a fault. It returns rather than
+      // throws, so `withRetry` resolves on the first attempt.
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fetchResponse(200, regionAnswer) as unknown as Response,
+        fetchResponse(404, { errors: [] }) as unknown as Response,
       )
 
-      // Legacy prefix, stale ancestry and a view segment all name London.
-      for (const route of [
-        '/gb/london',
-        '/regions/gb/london',
-        '/wrong/chain/london',
-        '/gb/london/calendar',
-      ]) {
-        await getAtlasSeo({ route, locale: 'en' })
-      }
-
-      expect(new Set(cacheCalls.map((call) => call.cacheKey)).size).toBe(1)
-    })
-
-    it('keys a class separately from its region, and a locale from its siblings', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fetchResponse(200, regionAnswer) as unknown as Response,
-      )
-
-      await getAtlasSeo({ route: '/gb/london', locale: 'en' })
-      await getAtlasSeo({ route: '/gb/london/1204', locale: 'en' })
-      await getAtlasSeo({ route: '/gb/london', locale: 'fr' })
-
-      expect(new Set(cacheCalls.map((call) => call.cacheKey)).size).toBe(3)
+      expect(await getAtlasSeo({ route: '/gb/gone', locale: 'en' })).toBeNull()
+      expect(vi.mocked(globalThis.fetch)).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -161,5 +149,51 @@ describe('getAtlasSeo', () => {
       expect(await getAtlasSeo({ route: '/gb/london', locale: 'en' })).toBeNull()
       expect(Sentry.captureMessage).toHaveBeenCalled()
     })
+  })
+})
+
+describe('getAtlasSitemapUrls', () => {
+  it('lists only the URLs this origin is the canonical home of', async () => {
+    // Atlas ownership works per subtree: most regions canonicalize to the
+    // national site that owns them (#640). Listing those would ask a
+    // crawler to index URLs this site itself marks non-canonical.
+    find.mockImplementation(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'regions'
+          ? [
+              { webUrl: 'https://wemeditate.com/map/gb/london', updatedAt: '2026-01-01' },
+              { webUrl: 'https://sahajayoga.nl/map/nl/amsterdam', updatedAt: '2026-01-02' },
+            ]
+          : [{ webUrl: 'https://wemeditate.com/map/gb/london/1204', updatedAt: '2026-01-03' }],
+      hasNextPage: false,
+    }))
+
+    const urls = await getAtlasSitemapUrls('https://wemeditate.com')
+
+    expect(urls.map((url) => url.loc)).toEqual([
+      'https://wemeditate.com/map/gb/london',
+      'https://wemeditate.com/map/gb/london/1204',
+    ])
+  })
+
+  it('retries a failing read, since the KV layer used to supply that', async () => {
+    // This read degrades to `[]`, so an unretried blip costs the sitemap
+    // its atlas half with nothing visible in the response (#98).
+    find.mockResolvedValue({ docs: [], hasNextPage: false })
+
+    await getAtlasSitemapUrls('https://wemeditate.com')
+
+    expect(retrySpy).toHaveBeenCalledTimes(1)
+    expect(retrySpy.mock.calls[0][0]).toBeUndefined()
+  })
+
+  it('degrades to an empty list rather than failing the sitemap', async () => {
+    find.mockRejectedValue(new Error('upstream is down'))
+
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('getAtlasSitemapUrls failed'),
+      expect.objectContaining({ level: 'warning' }),
+    )
   })
 })
