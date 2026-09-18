@@ -133,8 +133,13 @@ type RequiredGroups<T> = {
     : RequiredGroups<NonNullable<T[K]>>
 }
 
+/**
+ * `video` is excluded because `WEB_TRANSLATIONS_SELECT` does not fetch it. Typing it
+ * present would admit `t('video.…')` keys that the snapshot cannot resolve, so they
+ * would render as their own key path.
+ */
 export type WebTranslations = RequiredGroups<
-  Omit<WmWebTranslation, 'id' | '_status' | 'updatedAt' | 'createdAt'>
+  Omit<WmWebTranslation, 'id' | '_status' | 'updatedAt' | 'createdAt' | 'video'>
 >
 
 /** One translations tab — `common`, `navigation`, … */
