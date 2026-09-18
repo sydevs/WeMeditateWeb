@@ -183,8 +183,12 @@ function renderField(
  * the keys come from the CMS schema. Re-challenging regardless is deliberate
  * too: see `SubmissionResult` in `lib/submissions.ts`.
  *
- * ⚠ **Import this through `./index`, never directly.** That barrel is what
- * keeps `react-hook-form` and this whole tree out of the SSR graph.
+ * ⚠ **This server-renders, and its libraries are in the Worker on purpose.**
+ * `RichText` renders on every page, so `react-hook-form` and
+ * `@marsidev/react-turnstile` reach every route's chunk and `dist/server`
+ * (2.53 MB → 2.63 MB, measured). Fields that a crawler and a reader on a slow
+ * connection both get were judged worth that, so do not put this back behind
+ * `ClientOnly` and `React.lazy` to reclaim it.
  */
 export function FormBuilder({
   form,

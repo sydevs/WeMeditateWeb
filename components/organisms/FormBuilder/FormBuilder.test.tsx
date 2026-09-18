@@ -4,10 +4,6 @@ import { FormBuilder } from './FormBuilder'
 import type { EmbeddedForm } from '../../../server/cms-types'
 
 /**
- * The implementation, not the barrel. `index.tsx` wraps this in `ClientOnly`,
- * so the markup below is what a visitor gets after hydration; the barrel's
- * server-side fallback is asserted in `RichText.test.tsx`.
- *
  * `useEffect` does not run under `renderToStaticMarkup`, so the captcha here
  * is an empty container — which is exactly the unsolved state the submit gate
  * keys on.
