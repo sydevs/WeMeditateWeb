@@ -48,7 +48,14 @@ edge-cached at all. That difference is why a change looks instant locally.
 
 `loadSiteContext()` memoizes both reads per request, so a page issues one config read and one
 translations read however many components ask for them. The dev log shows each once. Two of
-either means something bypassed `loadSiteContext`.
+either means something bypassed `loadSiteContext`, or the memo key stopped matching — see
+`perRequest` in [server/request-memo.ts](../server/request-memo.ts), which is what makes the two
+hooks agree (#108).
+
+⚠ **Count on a warm server only.** While Vite is still optimizing dependencies it logs
+`[vite] program reload` and rebuilds the SSR module graph mid-request. That resets every
+module-level memo, so a cold first render shows duplicate reads that a warm one does not. Request
+the page twice and count the second.
 
 ## The dev server can serve stale modules
 

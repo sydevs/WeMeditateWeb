@@ -1,6 +1,7 @@
 import { jwtVerify } from 'jose'
 import type { PageContextServer } from 'vike/types'
 
+import { perRequest } from './request-memo'
 import {
   LIVE_PREVIEW_INACTIVE,
   LIVE_PREVIEW_PARAM,
@@ -145,14 +146,10 @@ export async function verifyLivePreviewToken(
 /**
  * The live-preview verdict for this request, computed once.
  *
- * Memoised on the `pageContext` object, the same way `site-context.ts` memoises
- * its global reads. Verification is a signature check, so it is cheap — but
- * several `data()` functions plus `onBeforeRender` all ask, and they must agree.
- * A second call that disagreed would render a draft body inside published
- * chrome, or the reverse, with nothing to show for it.
- *
- * Vike builds a fresh `pageContext` per request, so entries cannot leak between
- * requests and the map needs no clearing.
+ * Verification is a signature check, so it is cheap — but several `data()`
+ * functions plus `onBeforeRender` all ask, and they must agree. A second call
+ * that disagreed would render a draft body inside published chrome, or the
+ * reverse, with nothing to show for it.
  *
  * ⚠ **Not `+onBeforeRoute`**, which is where `locale` is derived: that hook is
  * synchronous and runs on the client during client-side routing, and this check
@@ -162,15 +159,9 @@ export async function verifyLivePreviewToken(
 const cache = new WeakMap<object, Promise<LivePreviewSession>>()
 
 export function loadLivePreview(pageContext: PageContextServer): Promise<LivePreviewSession> {
-  const existing = cache.get(pageContext)
-
-  if (existing) return existing
-
-  const loading = readLivePreviewState(pageContext).catch(() => LIVE_PREVIEW_OFF)
-
-  cache.set(pageContext, loading)
-
-  return loading
+  return perRequest(cache, pageContext, () =>
+    readLivePreviewState(pageContext).catch(() => LIVE_PREVIEW_OFF),
+  )
 }
 
 /**

@@ -55,8 +55,9 @@ per call site multiplies the per-request work. Go through
 const { settings, translations } = await loadSiteContext(pageContext)
 ```
 
-`loadSiteContext` fetches both in parallel, memoizes the promise on the `pageContext` object, and
-404s a URL whose locale is not in `settings.availableLocales`. Adding a third global means adding
+`loadSiteContext` fetches both in parallel, memoizes the promise for the request through
+`perRequest` ([server/request-memo.ts](../../server/request-memo.ts)), and 404s a URL whose locale
+is not in `settings.availableLocales`. Adding a third global means adding
 it there, not adding a seventh call site. `server/api-routes.ts` is the exception — it has no
 `pageContext` — and calls `getWebConfig` directly.
 
