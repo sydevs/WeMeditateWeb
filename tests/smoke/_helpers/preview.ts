@@ -7,7 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
-import { DEFAULT_LOCALE } from '../../../server/cms-types'
+import { DEFAULT_LOCALE, type Locale } from '../../../server/cms-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
 import { enT } from '../../../lib/i18n'
@@ -237,6 +237,26 @@ const PAGE_SELECT = {
 const MEDITATION_SELECT = { title: true, thumbnail: true, _status: true }
 const IMAGE_POPULATE = {
   images: { url: true, filename: true, alt: true, width: true, height: true },
+}
+
+/**
+ * A locale the site offers other than English, or null. The prefix specs
+ * need one, and which one is an editor's choice.
+ *
+ * ⚠ Not memoised, and neither is `discoverFromCms`. A failed CMS read
+ * degrades to `availableLocales: ['en']`, which is also production's real
+ * value, so a cached answer cannot be told from a flake — and caching one
+ * would skip every later locale spec in the run on a single timeout.
+ */
+export async function nonEnglishLocale(): Promise<Locale | null> {
+  const offered = (await discoverFromCms())?.availableLocales ?? []
+
+  return (offered.find((code) => code !== DEFAULT_LOCALE) as Locale | undefined) ?? null
+}
+
+/** The opening `<html>` tag, which carries `lang` and `dir`. */
+export function htmlTag(html: string): string {
+  return html.match(/<html[^>]*>/i)?.[0] ?? ''
 }
 
 /**

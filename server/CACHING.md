@@ -1,124 +1,60 @@
-# REST API Caching with Cloudflare KV
+# Caching CMS reads
 
-This document explains how [cms-client.ts](./cms-client.ts) caches PayloadCMS REST reads in
-Cloudflare KV.
+## The edge is the cache
 
-## Overview
+A Worker's `fetch()` to a hostname on a **different** Cloudflare zone
+[reads through that zone's cache](https://developers.cloudflare.com/workers/reference/how-the-cache-works/).
+Every CMS read in this Worker goes to `cloud.sydevelopers.com`, so that is exactly what they do.
+SahajCloud sets `s-maxage=600` and a `Cache-Tag` on each cacheable path, so an editor's save
+reaches this site within 600s.
 
-The app uses a read-through cache, in [kv-cache.ts](./kv-cache.ts). This cuts load on the
-PayloadCMS backend, and speeds up responses.
+⚠ **The 600s TTL is the guarantee. The purge is not.** SahajCloud purges the `Cache-Tag` on write
+only when `CLOUDFLARE_ZONE_ID` and `CLOUDFLARE_CACHE_PURGE_TOKEN` are set on its Railway service;
+unset, every purge is a silent no-op and nothing warns (`DEPLOYMENT.md` §Edge Cache in
+`sydevs/SahajCloud`). Quote 600s as the worst case for any read here, never "immediate".
 
-## How it works
+There is no second cache anywhere in this repo, and that is the point. A tag purge cannot reach
+another Worker's KV, so a KV copy here would be a cache nobody could invalidate (#98). The cost
+paid for that is a Railway round trip every 600s per colo, instead of once per TTL globally.
 
-`withCache()` wraps a query function:
+Two things follow for anyone adding a read:
 
-1. It checks the cache first, unless `bypassCache` is true.
-2. On a cache miss, it runs the query function, with automatic retry.
-3. It stores the result in the cache, unless `bypassCache` is true.
-4. It returns the result.
+- **A new slug caches only once SahajCloud's Cache Rule covers its path.** The rule enumerates
+  paths with `eq`/`starts_with` — see `DEPLOYMENT.md` in `sydevs/SahajCloud`. A path outside it is
+  `DYNAMIC` at the edge, which means no cache at all, not a slower one.
+- **Nothing in this repo needs a TTL, a cache key, or a purge step.** Add the query function and
+  stop. `docs/rules/rest-api.md` shows the shape.
 
-KV comes from the request context automatically, through `getCmsContext()`. A caller does not
-pass a KV namespace.
+## Retry, which is not caching
 
-A cache-read or cache-write error never fails the request. `kv-cache.ts` logs the error to
-console and Sentry, then continues without the cache.
+`withRetry` ([error-utils.ts](./error-utils.ts)) is three attempts with exponential backoff and
+jitter, on network and 5xx errors only. `withCache` used to run it on every miss, so every read it
+wrapped keeps it now that the cache is gone.
 
-## TTL table
+`withRetryUnlessPreview` in [cms-client.ts](./cms-client.ts) adds the one exception: a **preview**
+read skips the retry, because an editor watching their own edit needs the error now, not after
+about 7s of backoff.
 
-| Constant | Seconds | Used for |
-|---|---|---|
-| `CacheTTL.PAGE` | 3600 (1 hour) | Pages |
-| `CacheTTL.SETTINGS` | 86400 (24 hours) | The WebConfig global |
-| `CacheTTL.LIST` | 1800 (30 minutes) | Tag-filtered lists, related content |
-| `CacheTTL.MEDITATION` | 3600 (1 hour) | Meditations |
-| `CacheTTL.LECTURE` | 3600 (1 hour) | Lectures |
-| `CacheTTL.SONG` | 3600 (1 hour) | Songs, and meditation background music |
+⚠ **A read that degrades silently needs the retry most, not least.** `getAtlasSeo` returns `null`
+and both sitemap halves return `[]` on failure, in a response that still answers 200. Without the
+retry, one upstream blip costs an atlas page its server-rendered half, or the sitemap a whole
+section, with nothing in the output to say so. [atlas-client.ts](./atlas-client.ts) and
+[sitemap-routes.ts](./sitemap-routes.ts) call `withRetry` directly for that reason, and their
+tests pin the call.
 
-## Cache key format
+`content-index.ts` needs no wrapper. `fetchContentIndexDocs` degrades to `[]` and reports to
+Sentry, so nothing throws past it.
 
-`generateCacheKey(prefix, params)` builds `prefix:key1=val1:key2=val2`, with keys sorted
-alphabetically. Examples:
+## The KV layer that used to sit here
 
-```
-page:locale=en:slug=home
-web-config:locale=en
-pages-by-tags:limit=100:locale=en:tags=lifestyle,wisdom
-```
+`server/kv-cache.ts` and the `WEMEDITATE_CACHE` binding are gone (#98), and with them
+`AtlasCacheTTL` and the `content-sitemap-docs` key prefix. `getAtlasSeo`, `getAtlasSitemapUrls`
+and `getContentSitemapUrls` held out one round longer than the CMS reads; they read through the
+edge now too.
 
-### Change the cached shape, change the prefix
+Every window that removal touched got shorter, none longer: a region 3600s → 600s, a class
+900s → 600s, the atlas sitemap 3600s → 600s, the content sitemap 1800s → 600s.
 
-`getCachedResponse` returns stored JSON as-is, with no shape check. A deploy that changes what a
-key holds therefore hands the new code an old value for a whole TTL, and the failure surfaces as
-a degraded response rather than an error. `/sitemap.xml` hit this: the `content-sitemap` entry
-held a `SitemapUrl[]` and came to hold `{ pages, meditations, lectures }`, which would have
-emptied the sitemap for 30 minutes per origin.
-
-Rename the prefix (`content-sitemap` → `content-sitemap-docs`) in the same commit that changes
-the shape. The stale entries then expire unread. There is no cache-invalidation step to run.
-
-## Cached functions
-
-Every function below lives in [cms-client.ts](./cms-client.ts), unless noted.
-
-- `getPageBySlug()` — cached, `CacheTTL.PAGE`.
-- `getDocumentById()` — cached per collection (`CacheTTL.PAGE`, `.MEDITATION`, or `.LECTURE`).
-  Pass `preview: true` to skip the cache and fetch draft content.
-- `getLecture()` — wraps `getDocumentById()`, and inherits its cache behavior.
-- `getPageLocaleStatus()` — cached, `CacheTTL.PAGE`, keyed on the slug alone, so every locale of
-  a page shares one entry. Retries once, and degrades to `{}` — never `null`, which `withCache`
-  reads as a miss.
-- `getWebConfig()` — cached, `CacheTTL.SETTINGS`.
-- `getPagesByTags()` — cached, `CacheTTL.LIST`.
-- `getSongsByTags()` — cached, `CacheTTL.SONG`.
-- `getMeditationSongs()` — cached, `CacheTTL.SONG`. Degrades to `[]` on failure.
-- `getRelatedMeditations()` and `getRelatedLectures()` — cached, `CacheTTL.LIST`. Degrade to `[]`
-  on failure.
-- `getAtlasSeo()` and `getAtlasSitemapUrls()`, in [atlas-client.ts](./atlas-client.ts) — cached
-  with their own TTLs (`AtlasCacheTTL`). See that file.
-
-## Preview mode
-
-Pass `preview: true` to `getDocumentById()` (and to `getLecture()`, which wraps it) to skip the
-cache, and fetch draft content with trusted preview credentials:
-
-```typescript
-const previewPage = await getDocumentById({
-  collection: 'pages',
-  id: '123',
-  locale: 'en',
-  preview: true,
-})
-```
-
-Preview mode also skips retry. An editor then sees an error immediately, instead of waiting
-through several seconds of backoff.
-
-## Managing the KV store with Wrangler
-
-Run these commands against the preview namespace during development. Drop `--preview` for
-production.
-
-```bash
-# List keys
-pnpm wrangler kv key list --binding WEMEDITATE_CACHE --preview
-
-# Read one entry
-pnpm wrangler kv key get "page:locale=en:slug=home" --binding WEMEDITATE_CACHE --preview
-
-# Delete one entry
-pnpm wrangler kv key delete "page:locale=en:slug=home" --binding WEMEDITATE_CACHE --preview
-
-# Delete every entry (use with caution)
-pnpm wrangler kv key list --binding WEMEDITATE_CACHE --preview | \
-  jq -r '.[].name' | xargs -I {} pnpm wrangler kv key delete {} --binding WEMEDITATE_CACHE --preview
-```
-
-Cache entries expire on their own, by TTL. Manual deletion is rarely needed: use it only right
-after a content update you need to see immediately.
-
-The KV namespace itself is configured in [wrangler.toml](../wrangler.toml), under
-`[[kv_namespaces]]`, bound as `WEMEDITATE_CACHE`.
-
-## Adjusting a TTL
-
-Edit the `CacheTTL` constants in [kv-cache.ts](./kv-cache.ts).
+⚠ **This Worker now holds no persistent state at all.** There is no namespace to inspect, no key
+to purge, and no `wrangler kv` step in any runbook here. To force a content change through, purge
+the `Cache-Tag` upstream in SahajCloud.

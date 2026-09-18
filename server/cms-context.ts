@@ -2,7 +2,7 @@
  * CMS configuration context, using Hono's Context Storage.
  *
  * This module gives request-scoped access to CMS configuration (apiKey,
- * baseURL, kv). A caller does not pass these values explicitly.
+ * baseURL). A caller does not pass these values explicitly.
  *
  * Usage:
  * - In server/entry.ts, register the contextStorage() middleware.
@@ -11,7 +11,6 @@
 
 import { getContext } from 'hono/context-storage'
 import type { Context } from 'hono'
-import type { KVNamespace } from '@cloudflare/workers-types'
 import { z } from 'zod'
 import { apiKeySchema, baseUrlSchema } from './validation'
 
@@ -25,7 +24,6 @@ import { apiKeySchema, baseUrlSchema } from './validation'
 export type CmsEnv = {
   Bindings: {
     SAHAJCLOUD_API_KEY?: string
-    WEMEDITATE_CACHE?: KVNamespace
   }
 }
 
@@ -33,7 +31,6 @@ export type CmsEnv = {
 export interface CmsContext {
   apiKey: string
   baseURL: string
-  kv: KVNamespace | undefined
 }
 
 /**
@@ -65,9 +62,8 @@ function tryGetContext(): Context<CmsEnv> | undefined {
  * Configuration sources:
  * - apiKey: Cloudflare Workers context (runtime secret) or import.meta.env (dev)
  * - baseURL: import.meta.env (build-time, from .env.production or .env.local)
- * - kv: Cloudflare Workers context bindings (undefined in dev)
  *
- * @returns CMS configuration with apiKey, baseURL, and optional kv
+ * @returns CMS configuration with apiKey and baseURL
  * @throws Error if configuration validation fails
  */
 export function getCmsContext(): CmsContext {
@@ -84,12 +80,9 @@ export function getCmsContext(): CmsContext {
     throw new Error(`CMS context validation failed: ${errorMessage}`)
   }
 
-  const kv = context?.env?.WEMEDITATE_CACHE
-
   return {
     apiKey: result.data.apiKey,
     baseURL: result.data.baseURL,
-    kv,
   }
 }
 

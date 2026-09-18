@@ -120,7 +120,7 @@ async function load(pageContext: PageContextServer): Promise<SiteContext> {
   const preview = await loadLivePreview(pageContext)
 
   const [settings, translations] = await Promise.all([
-    getWebConfig({ locale, preview: preview.active }),
+    getWebConfig({ locale }),
     loadTranslations(pageContext),
   ])
 
