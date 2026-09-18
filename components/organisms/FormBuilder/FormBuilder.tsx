@@ -245,9 +245,10 @@ function renderField(
  * <FormBuilder
  *   form={formConfig}
  *   onSubmit={async (data) => {
- *     const response = await fetch('/api/form-submissions', {
+ *     const response = await fetch('/api/user-submissions', {
  *       method: 'POST',
- *       body: JSON.stringify(data),
+ *       headers: { 'Content-Type': 'application/json' },
+ *       body: JSON.stringify({ type: 'contact', ...data }),
  *     })
  *     return { success: response.ok }
  *   }}

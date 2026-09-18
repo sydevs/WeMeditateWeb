@@ -32,10 +32,10 @@ using our atom components — no developer change needed per form.
 import { FormBuilder } from '..'
 
 async function handleSubmit(data) {
-  const response = await fetch('/api/form-submissions', {
+  const response = await fetch('/api/user-submissions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ type: 'contact', ...data }),
   })
   if (response.ok) return { success: true }
   return { success: false, error: await response.json() }
