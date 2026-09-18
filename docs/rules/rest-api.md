@@ -64,6 +64,16 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
+`WEB_TRANSLATIONS_SELECT` lives in [server/cms-types.ts](../../server/cms-types.ts), beside the
+`WebTranslations` type that derives from it. Add a group there and it is both fetched and
+typed. Listing the groups anywhere else lets the query and the type disagree.
+
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
+cannot import that constant: it is plain node with no TypeScript loader. It keeps every response
+key outside `NON_GROUP_KEYS`, so the snapshot mirrors groups the site never fetches. Those cost
+bytes in `lib/translations.en.json` and nothing more — `WebTranslations` derives from the select,
+so an unfetched group never becomes addressable through `useT()`.
+
 ## Translations are CMS-owned
 
 Every UI string comes from `wm-web-translations`, through `useT()`. See the "Translations are
