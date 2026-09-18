@@ -135,11 +135,10 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
       },
       // An unpublished page returns with no slug. It has no URL to list.
       //
-      // The home document is listed once, as `/`. `pages/[slug]/+route.ts`
-      // also serves it at `/${homeSlug}`, and listing both would offer a
-      // crawler two self-canonical URLs for one document, each carrying its
-      // own cluster — the duplicate-content shape this annotation exists to
-      // avoid. The `/` row above is the one that keeps its `hreflang` rows.
+      // The home document is listed once, as `/`. `pages/[slug]/+data.ts`
+      // 302s `/${homeSlug}` there, and a sitemap that listed a redirect
+      // would hand a crawler two URLs for one document — the
+      // duplicate-content shape this annotation exists to avoid.
       ...docs.pages
         .filter((doc) => typeof doc.slug === 'string' && doc.slug.length > 0)
         .filter((doc) => doc !== home)

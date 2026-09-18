@@ -24,7 +24,13 @@ export interface PathLocale {
   /** Whether a prefix was there to remove. `/about` and `/en/about` agree on
    * everything above, and only the second one 301s. */
   prefixed: boolean
+  /** Whether the path spelled `/index` itself. Only a request can: a bare root
+   * is given that spelling here, and `+onBeforeRoute` 301s a request away. */
+  requestedIndex: boolean
 }
+
+/** The routing spelling of a home page, which is never a URL. */
+const INDEX_PATH = /^\/index\/?$/
 
 /**
  * The locale a path is served in, and the path underneath it.
@@ -41,10 +47,13 @@ export function localeFromPath(pathname: string): PathLocale {
   // become locale `st`. An unknown code then 404s naturally, through the
   // route it really matched.
   if (match && isLocale(match[1])) {
+    const underneath = match[2] ? `/${match[2]}` : ''
+
     return {
       locale: match[1],
-      pathWithoutLocale: match[2] ? `/${match[2]}` : '/index',
+      pathWithoutLocale: underneath || '/index',
       prefixed: true,
+      requestedIndex: INDEX_PATH.test(underneath),
     }
   }
 
@@ -52,6 +61,7 @@ export function localeFromPath(pathname: string): PathLocale {
     locale: DEFAULT_LOCALE,
     pathWithoutLocale: pathname === '/' ? '/index' : pathname,
     prefixed: false,
+    requestedIndex: INDEX_PATH.test(pathname),
   }
 }
 
@@ -104,7 +114,7 @@ export function isSafeNavigationUrl(url: string): boolean {
  * other's canonical.
  */
 export function normalizeContentPath(pathname: string | null | undefined): string {
-  if (!pathname || pathname === '/index') {
+  if (!pathname || INDEX_PATH.test(pathname)) {
     return '/'
   }
 
