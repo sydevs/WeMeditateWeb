@@ -73,21 +73,33 @@ export function normalizeContentPath(pathname: string | null | undefined): strin
 }
 
 /**
- * The absolute URL a locale serves an already-normalized path at.
+ * The path a locale serves an already-normalized path at, origin-relative.
  *
  * English is served bare, because `+onBeforeRoute` 301s `/en/x` to `/x`.
  * Advertising `/en/x` would advertise a redirect, which is the one thing a
  * canonical must never be.
  *
  * Pass a path from `normalizeContentPath`. This does not re-normalize: it
- * runs once per locale, and the path is the same on every one of them.
+ * runs once per locale, and the path is the same on every one of them. It
+ * also does not judge whether the string is a site path at all — an
+ * external URL or an `#anchor` is the caller's to filter out first.
  */
-export function localeUrl(origin: string, locale: Locale, path: string): string {
+export function localePath(locale: Locale, path: string): string {
   if (locale === DEFAULT_LOCALE) {
-    return `${origin}${path}`
+    return path
   }
 
   // `/fr` rather than `/fr/`: `+onBeforeRoute`'s pattern matches a bare
   // prefix and resolves it to the home page.
-  return path === '/' ? `${origin}/${locale}` : `${origin}/${locale}${path}`
+  return path === '/' ? `/${locale}` : `/${locale}${path}`
+}
+
+/**
+ * The absolute URL a locale serves an already-normalized path at.
+ *
+ * The prefix rule lives in `localePath`, so the relative and absolute forms
+ * cannot drift apart.
+ */
+export function localeUrl(origin: string, locale: Locale, path: string): string {
+  return `${origin}${localePath(locale, path)}`
 }

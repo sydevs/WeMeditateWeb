@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { localeFromPath, localeUrl, normalizeContentPath } from './urls'
+import { localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -88,5 +88,32 @@ describe('localeUrl', () => {
   it('renders the home page as a bare prefix, which the router resolves', () => {
     expect(localeUrl(ORIGIN, 'en', '/')).toBe('https://wemeditate.com/')
     expect(localeUrl(ORIGIN, 'fr', '/')).toBe('https://wemeditate.com/fr')
+  })
+})
+
+describe('localePath', () => {
+  it('serves English bare, because /en/x 301s to /x', () => {
+    expect(localePath('en', '/about')).toBe('/about')
+    expect(localePath('en', '/')).toBe('/')
+  })
+
+  it('prefixes every other locale', () => {
+    expect(localePath('fr', '/about')).toBe('/fr/about')
+    expect(localePath('pt-BR', '/about')).toBe('/pt-BR/about')
+  })
+
+  it('spells the home page /fr, not /fr/', () => {
+    // `+onBeforeRoute`'s pattern matches the bare prefix and resolves it to
+    // the home page, so the trailing slash buys nothing and spells the same
+    // page a second way.
+    expect(localePath('fr', '/')).toBe('/fr')
+  })
+
+  it('is the relative half of localeUrl, so the two cannot disagree', () => {
+    for (const path of ['/', '/about', '/meditations/1']) {
+      for (const locale of ['en', 'fr', 'pt-BR'] as const) {
+        expect(localeUrl(ORIGIN, locale, path)).toBe(ORIGIN + localePath(locale, path))
+      }
+    }
   })
 })
