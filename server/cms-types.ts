@@ -18,6 +18,7 @@ import type {
   Lecture,
   WmWebConfig,
   WmWebTranslation,
+  WmWebTranslationsSelect,
 } from './payload-types'
 
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
@@ -134,12 +135,28 @@ type RequiredGroups<T> = {
 }
 
 /**
- * `video` is excluded because `WEB_TRANSLATIONS_SELECT` does not fetch it. Typing it
- * present would admit `t('video.…')` keys that the snapshot cannot resolve, so they
- * would render as their own key path.
+ * Every translations tab the site renders. Typed against the generated
+ * select interface, so a tab renamed upstream is a compile error here
+ * rather than a silent group of missing strings. `WebTranslations` derives
+ * from it, so the query and the type cannot disagree.
  */
+export const WEB_TRANSLATIONS_SELECT = {
+  common: true,
+  navigation: true,
+  footer: true,
+  errors: true,
+  article: true,
+  meditation: true,
+  lecture: true,
+  map: true,
+  forms: true,
+  media: true,
+  location: true,
+  blocks: true,
+} satisfies WmWebTranslationsSelect<true>
+
 export type WebTranslations = RequiredGroups<
-  Omit<WmWebTranslation, 'id' | '_status' | 'updatedAt' | 'createdAt' | 'video'>
+  Pick<WmWebTranslation, keyof typeof WEB_TRANSLATIONS_SELECT>
 >
 
 /** One translations tab — `common`, `navigation`, … */
