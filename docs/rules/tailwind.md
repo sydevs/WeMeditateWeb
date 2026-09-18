@@ -17,6 +17,18 @@ the `@theme` directive:
 In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailwind.config.ts`.
 `tailwind.config.ts` only lists content paths for class detection.
 
+**A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
+scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a CMS-authored
+width — produces no CSS and the rule silently does nothing. Declare the range in
+[layouts/tailwind.css](../../layouts/tailwind.css), beside the `@source` paths:
+
+```css
+@source inline("sm:col-span-{1..12}");
+```
+
+Scanner configuration belongs in the CSS. Writing the twelve variants out in the component to
+keep them scannable puts a CSS concern in a `.tsx` file, and the next person must guess why.
+
 **Fonts**: [layouts/fonts.css](../../layouts/fonts.css) loads the web fonts:
 - Raleway, weights 200–700 — the primary font family
 - Futura Book, weight 400 — the secondary font family

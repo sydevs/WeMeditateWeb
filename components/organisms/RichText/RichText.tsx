@@ -14,11 +14,13 @@ import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/r
 import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
+import { FormBuilder } from '../FormBuilder'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
+import type { EmbeddedForm } from '../../../server/cms-types'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
-import { blockConverters, type BlockConverters } from './blockConverters'
+import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
@@ -155,8 +157,16 @@ const CONVERTERS: JSXConverters = {
     )
   },
 
-  // Inline relationship nodes link to the referenced document through the mapper.
+  // A relationship node links to the referenced document through the mapper,
+  // with one exception: a `forms` reference is the form itself, embedded by
+  // the editor to be filled in, so it renders rather than linking. Every
+  // other collection with no public route degrades to its plain label.
   relationship: ({ node }) => {
+    if (node.relationTo === 'forms') {
+      return isPopulated<EmbeddedForm>(node.value) ? (
+        <FormBuilder className={BLOCK_SPACING} form={node.value} />
+      ) : null
+    }
     const label = relationshipLabel(node.value)
 
     if (!label) {

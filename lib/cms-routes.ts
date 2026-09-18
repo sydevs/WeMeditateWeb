@@ -15,6 +15,10 @@
  * page returns as a bare id with no slug), returns `null`. Callers
  * degrade gracefully: they render the link text unwrapped, instead of
  * emitting a dead `/undefined`.
+ *
+ * A `forms` reference never becomes a path, and it is not a degraded link
+ * either: RichText renders the form inline through `FormBuilder`, which is why
+ * that reference is handled before this mapper is consulted.
  */
 
 import { isPopulated } from './cms-relationships'
@@ -65,6 +69,7 @@ const ROUTE_BUILDERS: Record<
   albums: () => null,
   // App-only / embedded content with no standalone web route.
   'app-cards': () => null,
+  // A form is rendered where it is embedded, never linked to.
   forms: () => null,
 }
 

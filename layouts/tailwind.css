@@ -15,6 +15,10 @@
 @source "../pages";
 @source "../layouts";
 
+/* A CMS author picks a form field's width, so the span is computed at runtime
+   and the scanner never sees the class in any source file. */
+@source inline("sm:col-span-{1..12}");
+
 @theme {
   /* Primary brand colors (Teal) */
   --color-teal-50: #ebf4f3;

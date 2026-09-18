@@ -3,6 +3,7 @@ import { SignJWT } from 'jose'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
 import type { CmsEnv } from './cms-context'
 
 /**
@@ -207,5 +208,189 @@ describe('POST /api/live-preview/populate — the forward', () => {
 
     expect(response.status).toBe(400)
     expect(request).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * ⚠ `/api/submissions` attaches `SAHAJCLOUD_API_KEY` on our side, so what it
+ * forwards and what it hands back are both part of the gate. Every case below
+ * asserts one of three things: the body is re-validated before the CMS is
+ * called at all, exactly one browser header crosses over, and a refusal
+ * carries the intake's code and never its prose.
+ */
+
+function submit(options: { body?: unknown; token?: string } = {}) {
+  const app = new Hono<CmsEnv>()
+
+  registerApiRoutes(app)
+
+  return app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: 'https://wemeditate.com',
+      Referer: 'https://wemeditate.com/contact',
+      ...(options.token ? { [TURNSTILE_TOKEN_HEADER]: options.token } : {}),
+    },
+    body: JSON.stringify(
+      options.body ?? {
+        form: 12,
+        type: 'contact',
+        senderEmail: 'ada@example.org',
+        submissionData: [{ field: 'message', value: 'Hello' }],
+      },
+    ),
+  })
+}
+
+/** The refusal shape `@payloadcms/sdk` rethrows, as the CMS composes it. */
+function sdkError(status: number, code?: string) {
+  return Object.assign(new Error('refused'), {
+    status,
+    errors: [
+      { message: 'The captcha could not be verified.', ...(code ? { data: { code } } : {}) },
+    ],
+  })
+}
+
+describe('POST /api/submissions — the forward', () => {
+  it('creates a user-submission from the validated body', async () => {
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true })
+
+    const sent = request.mock.calls[0][0]
+
+    expect(sent.method).toBe('POST')
+    expect(sent.path).toBe('/user-submissions')
+    expect(sent.json).toMatchObject({ form: 12, type: 'contact' })
+  })
+
+  it('refuses a quoted form id, which the intake cannot resolve', async () => {
+    // SahajCloud reads the relationship with `relationId()`, which answers
+    // `null` for a string — so a quoted id would be accepted and then silently
+    // refuse every authored field. See `SubmissionBody` in lib/submissions.ts.
+    const response = await submit({
+      body: { form: '12', type: 'contact', submissionData: [] },
+      token: 'turnstile-token',
+    })
+
+    expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('forwards the captcha token, and no other browser header', async () => {
+    // Origin and Referer must not cross over: a server-to-server call is
+    // exempt from the client's allowedDomains allowlist, and forwarding the
+    // browser's host would put this site through it.
+    await submit({ token: 'turnstile-token' })
+
+    expect(request.mock.calls[0][0].init.headers).toEqual({
+      [TURNSTILE_TOKEN_HEADER]: 'turnstile-token',
+    })
+  })
+
+  it('asks the CMS to populate nothing, since nothing reads the response', async () => {
+    await submit({ token: 'turnstile-token' })
+
+    expect(request.mock.calls[0][0].args).toEqual({ depth: 0 })
+  })
+
+  it('echoes none of the created row back', async () => {
+    request.mockResolvedValue(new Response(JSON.stringify({ doc: { id: 5, uuid: 'secret' } })))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(await response.text()).toBe('{"ok":true}')
+  })
+})
+
+describe('POST /api/submissions — the body gate', () => {
+  it('refuses a body the schema rejects, without calling the CMS', async () => {
+    const response = await submit({ body: { form: 'contact-form', type: 'contact' } })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ ok: false, code: 'invalid_request' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('refuses a type this site does not submit, without calling the CMS', async () => {
+    // Registrations and proposals are the atlas widget's, and name an event
+    // rather than a form.
+    const response = await submit({
+      body: { form: 12, type: 'registration', submissionData: [] },
+    })
+
+    expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('refuses a body past what submissionSchema allows', async () => {
+    const response = await submit({
+      body: {
+        form: 12,
+        type: 'contact',
+        submissionData: Array.from({ length: 41 }, (_, index) => ({
+          field: `f${index}`,
+          value: 'x',
+        })),
+      },
+    })
+
+    expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('refuses a non-JSON body, without calling the CMS', async () => {
+    const app = new Hono<CmsEnv>()
+
+    registerApiRoutes(app)
+
+    const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
+      method: 'POST',
+      body: 'not json',
+    })
+
+    expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
+  })
+})
+
+describe('POST /api/submissions — a refusal', () => {
+  it('passes the intake code through, and never its message', async () => {
+    request.mockRejectedValue(sdkError(403, 'captcha_failed'))
+
+    const response = await submit({ token: 'stale' })
+
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({ ok: false, code: 'captcha_failed' })
+  })
+
+  it('keeps a 400 a 400, so a refused pair still reads as the caller’s fault', async () => {
+    request.mockRejectedValue(sdkError(400, 'submission_data_invalid'))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ ok: false, code: 'submission_data_invalid' })
+  })
+
+  it('reads a CMS fault as 502, not as the browser sending a bad request', async () => {
+    request.mockRejectedValue(sdkError(500, 'internal'))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(502)
+    expect(await response.json()).toEqual({ ok: false })
+  })
+
+  it('reads an unreachable CMS as 502', async () => {
+    request.mockRejectedValue(new Error('fetch failed'))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(502)
+    expect(await response.json()).toEqual({ ok: false })
   })
 })

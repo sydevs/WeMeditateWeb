@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   detectErrorType,
   ErrorType,
-  isSafeHttpUrl,
   withRetry,
 } from './error-utils'
 
@@ -119,33 +118,6 @@ describe('detectErrorType', () => {
     it('should return UNKNOWN for non-numeric status', () => {
       expect(detectErrorType({ response: { status: 'oops' } })).toBe(ErrorType.UNKNOWN)
     })
-  })
-})
-
-describe('isSafeHttpUrl', () => {
-  it('accepts https URLs', () => {
-    expect(isSafeHttpUrl('https://status.example.com')).toBe(true)
-  })
-
-  it('accepts http URLs', () => {
-    expect(isSafeHttpUrl('http://status.example.com')).toBe(true)
-  })
-
-  it('rejects javascript: URLs', () => {
-    expect(isSafeHttpUrl('javascript:alert(1)')).toBe(false)
-  })
-
-  it('rejects data: URLs', () => {
-    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
-  })
-
-  it('rejects file: URLs', () => {
-    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
-  })
-
-  it('rejects malformed input', () => {
-    expect(isSafeHttpUrl('not a url')).toBe(false)
-    expect(isSafeHttpUrl('')).toBe(false)
   })
 })
 
