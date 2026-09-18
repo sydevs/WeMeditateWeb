@@ -1,8 +1,15 @@
 /**
  * CMS query functions for the PayloadCMS REST API.
  *
- * Each function gets its config (apiKey, baseURL, kv) from the request
- * context. Callers do not pass these values.
+ * Each function gets its config (apiKey, baseURL) from the request context.
+ * Callers do not pass these values.
+ *
+ * ## Caching
+ *
+ * None here. A subrequest to `cloud.sydevelopers.com` is a read through
+ * that zone's Cloudflare cache, which SahajCloud purges by `Cache-Tag` on
+ * every write. That is the only cache these reads have, and the only one
+ * an editor's save can reach (#98).
  *
  * ## Error handling
  *
@@ -19,7 +26,7 @@
  */
 
 import { createPayloadClient } from './payload-client'
-import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
+import { withRetry } from './error-utils'
 import { getCmsContext } from './cms-context'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
@@ -57,6 +64,17 @@ import { DEFAULT_LOCALE, isLocale } from './cms-types'
 
 interface LocalizedQueryOptions {
   locale: Locale
+}
+
+/**
+ * A preview read skips the retry on purpose. An editor watching their own
+ * edit needs the error now, not after about 7s of backoff.
+ */
+function withRetryUnlessPreview<T>(
+  fetchFn: () => Promise<T>,
+  options: { preview?: boolean } = {},
+): Promise<T> {
+  return options.preview === true ? fetchFn() : withRetry(fetchFn)
 }
 
 // ============================================================================
@@ -131,8 +149,7 @@ const VIDEO_POPULATE = {
 // cards, subtle-system nodes, content-index lists). Each select omits the
 // collection's `content` and other heavy fields. This keeps a depth-3 page
 // read small. A collection missing from `populate` returns fully
-// populated, including its own `content`, which would inflate the response
-// and the KV cache entry.
+// populated, including its own `content`, which would inflate the response.
 // ----------------------------------------------------------------------------
 
 /** Narrow page fields for pages embedded in another page's content. */
@@ -271,25 +288,19 @@ const SONG_POPULATE = {
 
 /**
  * Configuration for collections that support findById queries.
- * Maps PayloadCMS collection slugs to their cache prefix, TTL, and the
- * select/populate shapes required by the backend query-validation hook.
+ * Maps PayloadCMS collection slugs to the select/populate shapes required
+ * by the backend query-validation hook.
  */
 const COLLECTION_BY_ID_CONFIG = {
   pages: {
-    cachePrefix: 'page',
-    ttl: CacheTTL.PAGE,
     select: PAGE_SELECT,
     populate: PAGE_POPULATE,
   },
   meditations: {
-    cachePrefix: 'meditation',
-    ttl: CacheTTL.MEDITATION,
     select: MEDITATION_SELECT,
     populate: IMAGE_POPULATE,
   },
   lectures: {
-    cachePrefix: 'lecture',
-    ttl: CacheTTL.LECTURE,
     select: LECTURE_SELECT,
     populate: LECTURE_POPULATE,
   },
@@ -356,16 +367,9 @@ export async function getPageBySlug(
   },
 ): Promise<Page | null> {
   const isPreview = options.preview === true
-  const cacheKey = generateCacheKey('page', {
-    slug: options.slug,
-    locale: options.locale,
-  })
 
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.PAGE,
-    bypassCache: isPreview,
-    fetchFn: async () => {
+  return withRetryUnlessPreview(
+    async () => {
       const client = createPayloadClient({
         preview: isPreview,
         previewToken: options.previewToken,
@@ -407,7 +411,8 @@ export async function getPageBySlug(
 
       return page
     },
-  })
+    { preview: isPreview },
+  )
 }
 
 /**
@@ -418,13 +423,11 @@ export async function getPageBySlug(
  * replacement for it. `locale: 'all'` turns every localized field into a
  * `{ locale: value }` map, which every consumer of `Page` would have to
  * unpick; this read selects `_status` alone, so the content read keeps its
- * ordinary single-locale shape. Its cache key carries no locale, so every
- * locale of a page shares one entry: one read per page per TTL, not one
- * per locale.
+ * ordinary single-locale shape. It sends no locale, so every locale of a
+ * page issues the same URL and shares one edge entry.
  *
  * Returns `{}` — never `null` — for a page that is missing or has no
- * status. `withCache` reads a stored `null` as a miss, so a `null` answer
- * would re-query on every render (see `server/AGENTS.md`).
+ * status, so `advertisedLocales` has a map to walk either way.
  *
  * Degrades to `{}` on failure, after a single attempt. The page content is
  * already in hand by then, and retrying for seconds to decorate the head
@@ -441,11 +444,8 @@ export async function getPageLocaleStatus(options: {
   slug: string
 }): Promise<Partial<Record<Locale, PageStatus>>> {
   try {
-    return await withCache({
-      cacheKey: generateCacheKey('page-status', { slug: options.slug }),
-      ttl: CacheTTL.PAGE,
-      retryConfig: { maxAttempts: 1 },
-      fetchFn: async () => {
+    return await withRetry(
+      async () => {
         const client = createPayloadClient()
 
         const result = await client.find({
@@ -459,7 +459,10 @@ export async function getPageLocaleStatus(options: {
 
         return (result?.docs?.[0]?._status ?? {}) as Partial<Record<Locale, PageStatus>>
       },
-    })
+      // The page content is already in hand when this read fails, so the
+      // default 3-attempt backoff would stall TTFB to decorate a `<head>`.
+      { maxAttempts: 1 },
+    )
   } catch (error) {
     console.warn(`[getPageLocaleStatus] no cluster for "${options.slug}":`, error)
     Sentry.captureMessage('Per-locale publish state read failed; emitting no hreflang cluster', {
@@ -483,7 +486,7 @@ export async function getPageLocaleStatus(options: {
  * @param options.collection - The PayloadCMS collection slug
  * @param options.id - The document ID to retrieve
  * @param options.locale - The locale to retrieve the document in
- * @param options.preview - If true, fetch draft data with trusted preview credentials and bypass cache
+ * @param options.preview - If true, fetch draft data with trusted preview credentials
  * @returns The document data or null if not found
  */
 export async function getDocumentById<C extends FindByIdCollection>(
@@ -496,16 +499,9 @@ export async function getDocumentById<C extends FindByIdCollection>(
 ): Promise<Config['collections'][C] | null> {
   const config = COLLECTION_BY_ID_CONFIG[options.collection]
   const isPreview = options.preview === true
-  const cacheKey = generateCacheKey(config.cachePrefix, {
-    id: options.id,
-    locale: options.locale,
-  })
 
-  return withCache({
-    cacheKey,
-    ttl: config.ttl,
-    bypassCache: isPreview,
-    fetchFn: async () => {
+  return withRetryUnlessPreview(
+    async () => {
       const client = createPayloadClient({
         preview: isPreview,
         previewToken: options.previewToken,
@@ -539,7 +535,8 @@ export async function getDocumentById<C extends FindByIdCollection>(
 
       return result
     },
-  })
+    { preview: isPreview },
+  )
 }
 
 /**
@@ -551,7 +548,7 @@ export async function getDocumentById<C extends FindByIdCollection>(
  *
  * @param options.id - The lecture document ID
  * @param options.locale - The locale to retrieve the lecture in
- * @param options.preview - If true, fetch draft data and bypass the cache
+ * @param options.preview - If true, fetch draft data
  * @returns The normalized lecture or null if not found
  */
 export async function getLecture(
@@ -623,77 +620,70 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  * the layout never renders a dead `/undefined` link, and reports each drop
  * to Sentry so the underlying CMS data gap stays visible.
  *
+ * This global has no drafts, so there is no preview variant to read. It
+ * carried a `preview` flag only to bypass a 24 h KV entry; the edge cache
+ * that replaced it expires within 600s on its own, so an editor sees a nav
+ * or home-page change without one. The upstream purge-on-write only
+ * shortens that wait — see CACHING.md, it is best-effort.
+ *
  * @returns The web configuration with populated page relationships
  */
-export async function getWebConfig(
-  options: { locale?: Locale; preview?: boolean } = {},
-): Promise<WebConfig> {
-  const cacheKey = generateCacheKey('web-config', { locale: options.locale })
+export async function getWebConfig(options: { locale?: Locale } = {}): Promise<WebConfig> {
+  return withRetryUnlessPreview(async () => {
+    const client = createPayloadClient()
 
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.SETTINGS,
-    // This global has no drafts, so there is nothing to unlock — but it is
-    // cached for 24h, and an editor who just changed the nav or the home page
-    // should see it. `availableLocales` lives here too, and a locale added
-    // minutes ago is exactly what a translator is previewing.
-    bypassCache: options.preview === true,
-    fetchFn: async () => {
-      const client = createPayloadClient()
+    const config = await client.findGlobal({
+      slug: 'wm-web-config',
+      depth: 2,
+      locale: options.locale,
+      select: WEB_CONFIG_SELECT,
+      populate: WEB_CONFIG_POPULATE,
+    })
 
-      const config = await client.findGlobal({
-        slug: 'wm-web-config',
-        depth: 2,
-        locale: options.locale,
-        select: WEB_CONFIG_SELECT,
-        populate: WEB_CONFIG_POPULATE,
+    // Drop unresolved (believed-unpublished) page references, so the
+    // layout never renders a dead `/undefined` link.
+    const featured = partitionPublishedPages(config.featuredPages)
+    const featuredArticles = partitionPublishedPages(config.featuredArticles)
+    const classPages = partitionPublishedPages(config.classPages)
+    const knowledgePages = partitionPublishedPages(config.knowledgePages)
+    const infoPages = partitionPublishedPages(config.infoPages)
+
+    const unresolved = [
+      ...(typeof config.homePage === 'number' ? [`homePage id:${config.homePage}`] : []),
+      ...featured.unresolved.map((u) => `featuredPages ${u}`),
+      ...featuredArticles.unresolved.map((u) => `featuredArticles ${u}`),
+      ...classPages.unresolved.map((u) => `classPages ${u}`),
+      ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
+      ...infoPages.unresolved.map((u) => `infoPages ${u}`),
+    ]
+
+    // Report the data gap to Sentry without breaking the page. A published
+    // page populates. An unpublished one returns as a bare id.
+    if (unresolved.length > 0) {
+      console.warn(
+        `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
+      )
+      Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
+        level: 'warning',
+        tags: { source: 'getWebConfig' },
+        extra: { unresolved, locale: options.locale ?? null },
       })
+    }
 
-      // Drop unresolved (believed-unpublished) page references, so the
-      // layout never renders a dead `/undefined` link.
-      const featured = partitionPublishedPages(config.featuredPages)
-      const featuredArticles = partitionPublishedPages(config.featuredArticles)
-      const classPages = partitionPublishedPages(config.classPages)
-      const knowledgePages = partitionPublishedPages(config.knowledgePages)
-      const infoPages = partitionPublishedPages(config.infoPages)
+    // An unconfigured global offers English only. Never return an empty
+    // set: `loadSiteContext` 404s any locale outside it, so an empty
+    // array would 404 the whole site, English included.
+    const availableLocales = (config.availableLocales ?? []).filter(isLocale)
 
-      const unresolved = [
-        ...(typeof config.homePage === 'number' ? [`homePage id:${config.homePage}`] : []),
-        ...featured.unresolved.map((u) => `featuredPages ${u}`),
-        ...featuredArticles.unresolved.map((u) => `featuredArticles ${u}`),
-        ...classPages.unresolved.map((u) => `classPages ${u}`),
-        ...knowledgePages.unresolved.map((u) => `knowledgePages ${u}`),
-        ...infoPages.unresolved.map((u) => `infoPages ${u}`),
-      ]
-
-      // Report the data gap to Sentry without breaking the page. A published
-      // page populates. An unpublished one returns as a bare id.
-      if (unresolved.length > 0) {
-        console.warn(
-          `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
-        )
-        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
-          level: 'warning',
-          tags: { source: 'getWebConfig' },
-          extra: { unresolved, locale: options.locale ?? null },
-        })
-      }
-
-      // An unconfigured global offers English only. Never return an empty
-      // set: `loadSiteContext` 404s any locale outside it, so an empty
-      // array would 404 the whole site, English included.
-      const availableLocales = (config.availableLocales ?? []).filter(isLocale)
-
-      return {
-        ...config,
-        availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
-        featuredPages: featured.published,
-        featuredArticles: featuredArticles.published,
-        classPages: classPages.published,
-        knowledgePages: knowledgePages.published,
-        infoPages: infoPages.published,
-      } as WebConfig
-    },
+    return {
+      ...config,
+      availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
+      featuredPages: featured.published,
+      featuredArticles: featuredArticles.published,
+      classPages: classPages.published,
+      knowledgePages: knowledgePages.published,
+      infoPages: infoPages.published,
+    } as WebConfig
   })
 }
 
@@ -724,13 +714,11 @@ const WEB_TRANSLATIONS_SELECT = {
  * read (SahajCloud #705), so the site does no merge of its own: what comes
  * back is already complete for the locale.
  *
- * Cached at `CacheTTL.SETTINGS`, the same 24 h window as the config, since
- * the two are read together on every request. Preview bypasses the cache.
  * Errors propagate; `loadSiteContext` degrades to the committed English
  * snapshot rather than failing the page.
  *
  * @param options.locale - The locale to retrieve strings in
- * @param options.preview - If true, fetch with preview credentials and bypass the cache
+ * @param options.preview - If true, fetch with preview credentials
  */
 export async function getWebTranslations(options: {
   locale: Locale
@@ -738,13 +726,9 @@ export async function getWebTranslations(options: {
   previewToken?: string
 }): Promise<WebTranslations> {
   const isPreview = options.preview === true
-  const cacheKey = generateCacheKey('web-translations', { locale: options.locale })
 
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.SETTINGS,
-    bypassCache: isPreview,
-    fetchFn: async () => {
+  return withRetryUnlessPreview(
+    async () => {
       const client = createPayloadClient({
         preview: isPreview,
         previewToken: options.previewToken,
@@ -765,7 +749,8 @@ export async function getWebTranslations(options: {
 
       return translations as WebTranslations
     },
-  })
+    { preview: isPreview },
+  )
 }
 
 // --- List Queries (filtered by tags) ---
@@ -787,36 +772,26 @@ export async function getPagesByTags(
 ): Promise<PageListItem[]> {
   const limit = options.limit || 100
 
-  const cacheKey = generateCacheKey('pages-by-tags', {
-    tags: options.tags,
-    locale: options.locale,
-    limit,
-  })
+  return withRetryUnlessPreview(async () => {
+    const client = createPayloadClient()
 
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.LIST,
-    fetchFn: async () => {
-      const client = createPayloadClient()
+    const result = await client.find({
+      collection: 'pages',
+      where: { tags: { in: options.tags } },
+      locale: options.locale,
+      limit,
+      depth: 2,
+      select: PAGE_LIST_SELECT,
+      populate: IMAGE_POPULATE,
+    })
 
-      const result = await client.find({
-        collection: 'pages',
-        where: { tags: { in: options.tags } },
-        locale: options.locale,
-        limit,
-        depth: 2,
-        select: PAGE_LIST_SELECT,
-        populate: IMAGE_POPULATE,
-      })
+    if (!result?.docs) return []
 
-      if (!result?.docs) return []
-
-      return result.docs.map((page) => ({
-        id: page.id,
-        title: page.title ?? null,
-        meta: page.meta ? { image: page.meta.image ?? null } : null,
-      })) as PageListItem[]
-    },
+    return result.docs.map((page) => ({
+      id: page.id,
+      title: page.title ?? null,
+      meta: page.meta ? { image: page.meta.image ?? null } : null,
+    })) as PageListItem[]
   })
 }
 
@@ -837,32 +812,22 @@ export async function getSongsByTags(
 ): Promise<Song[]> {
   const limit = options.limit || 100
 
-  const cacheKey = generateCacheKey('songs-by-tags', {
-    tagIds: options.tagIds,
-    locale: options.locale,
-    limit,
-  })
+  return withRetryUnlessPreview(async () => {
+    const client = createPayloadClient()
 
-  return withCache({
-    cacheKey,
-    ttl: CacheTTL.SONG,
-    fetchFn: async () => {
-      const client = createPayloadClient()
+    const result = await client.find({
+      collection: 'songs',
+      where: { tags: { in: options.tagIds } },
+      locale: options.locale,
+      limit,
+      depth: 2,
+      select: SONG_SELECT,
+      populate: SONG_POPULATE,
+    })
 
-      const result = await client.find({
-        collection: 'songs',
-        where: { tags: { in: options.tagIds } },
-        locale: options.locale,
-        limit,
-        depth: 2,
-        select: SONG_SELECT,
-        populate: SONG_POPULATE,
-      })
+    if (!result?.docs) return []
 
-      if (!result?.docs) return []
-
-      return result.docs as Song[]
-    },
+    return result.docs as Song[]
   })
 }
 
@@ -876,11 +841,11 @@ export async function getSongsByTags(
  * `select`, and it ignores `populate`, `depth`, and `limit` (it does honor
  * `locale`). This is not a collection `find`, so the PayloadCMS SDK cannot
  * model it. This function instead issues a raw authenticated fetch, with the
- * same `clients API-Key` header the SDK sends, wrapped in the shared cache
- * and retry layer.
+ * same `clients API-Key` header the SDK sends, wrapped in the shared retry
+ * layer.
  *
  * The endpoint returns songs in a random order on every request. Callers
- * pick a track on the client, so a list cached per TTL window is fine. The
+ * pick a track on the client, so a list held at the edge is fine. The
  * function returns an empty list when a meditation has no eligible songs
  * (HTTP 200, `{ docs: [] }`) and for an unknown ID (HTTP 404), so the player
  * simply renders voice-only.
@@ -894,55 +859,45 @@ export async function getMeditationSongs(
     id: string
   },
 ): Promise<MeditationSong[]> {
-  const cacheKey = generateCacheKey('meditation-songs', {
-    id: options.id,
-    locale: options.locale,
-  })
-
   try {
-    return await withCache({
-      cacheKey,
-      ttl: CacheTTL.SONG,
-      fetchFn: async () => {
-        const { apiKey, baseURL } = getCmsContext()
-        const url = `${baseURL}/api/meditations/${encodeURIComponent(
-          options.id,
-        )}/songs?locale=${encodeURIComponent(options.locale)}`
+    return await withRetryUnlessPreview(async () => {
+      const { apiKey, baseURL } = getCmsContext()
+      const url = `${baseURL}/api/meditations/${encodeURIComponent(
+        options.id,
+      )}/songs?locale=${encodeURIComponent(options.locale)}`
 
-        const response = await fetch(url, {
-          headers: { Authorization: `clients API-Key ${apiKey}` },
-        })
+      const response = await fetch(url, {
+        headers: { Authorization: `clients API-Key ${apiKey}` },
+      })
 
-        // Mirror the SDK's request logging, so the dev request log stays complete.
-        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      // Mirror the SDK's request logging, so the dev request log stays complete.
+      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-        // An unknown meditation ID, or no songs route, means no music. This
-        // is not an error.
-        if (response.status === 404) return []
+      // An unknown meditation ID, or no songs route, means no music. This
+      // is not an error.
+      if (response.status === 404) return []
 
-        // Let server and network errors propagate, so withCache's retry runs.
-        if (!response.ok) {
-          throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
-        }
+      // Let server and network errors propagate, so the retry runs.
+      if (!response.ok) {
+        throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
+      }
 
-        const body = (await response.json()) as {
-          docs?: Array<{ id: number; title?: string | null; url?: string | null }>
-        }
-        const docs = Array.isArray(body.docs) ? body.docs : []
+      const body = (await response.json()) as {
+        docs?: Array<{ id: number; title?: string | null; url?: string | null }>
+      }
+      const docs = Array.isArray(body.docs) ? body.docs : []
 
-        // Keep only playable tracks. The player needs a real URL. The
-        // endpoint omits duration, artwork, and credit, so title and url are
-        // all this function returns.
-        return docs
-          .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
-          .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
-      },
+      // Keep only playable tracks. The player needs a real URL. The
+      // endpoint omits duration, artwork, and credit, so title and url are
+      // all this function returns.
+      return docs
+        .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
+        .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
     })
   } catch (error) {
     // Background music is supplementary. A failure to load it, even after
-    // withCache's retries, must never break the meditation page. Degrade to
-    // voice-only and report the gap to Sentry. This function does not cache
-    // the failed result, so the next request retries.
+    // the retries, must never break the meditation page. Degrade to
+    // voice-only and report the gap to Sentry.
     console.warn(
       `[getMeditationSongs] degrading to voice-only for meditation ${options.id}:`,
       error,
@@ -978,7 +933,7 @@ export function audienceIdList(audiences: (number | Audience)[] | null | undefin
  * and returns a fixed card projection. It ignores `select`, `populate`, and
  * `depth` (it does honor `locale` and `limit`). The SDK cannot model it, so
  * this function issues a raw authenticated fetch, wrapped in the shared
- * cache and retry layer.
+ * retry layer.
  *
  * The endpoint drops any card with no public title, duration, or thumbnail,
  * so the internal `label` never leaks. Meditation titles are not localized,
@@ -998,60 +953,51 @@ export async function getRelatedMeditations(
   },
 ): Promise<RelatedMeditationCard[]> {
   const limit = options.limit ?? 8
-  const cacheKey = generateCacheKey('related-meditations', {
-    id: options.id,
-    locale: options.locale,
-    limit,
-  })
 
   try {
-    return await withCache({
-      cacheKey,
-      ttl: CacheTTL.LIST,
-      fetchFn: async () => {
-        const { apiKey, baseURL } = getCmsContext()
-        const url =
-          `${baseURL}/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
-          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`
+    return await withRetryUnlessPreview(async () => {
+      const { apiKey, baseURL } = getCmsContext()
+      const url =
+        `${baseURL}/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
+        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`
 
-        const response = await fetch(url, {
-          headers: { Authorization: `clients API-Key ${apiKey}` },
-        })
+      const response = await fetch(url, {
+        headers: { Authorization: `clients API-Key ${apiKey}` },
+      })
 
-        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-        // An unknown lecture ID, or no related route, means no related content.
-        if (response.status === 404) return []
+      // An unknown lecture ID, or no related route, means no related content.
+      if (response.status === 404) return []
 
-        if (!response.ok) {
-          throw new Error(`getRelatedMeditations(${options.id}) failed: ${response.status}`)
-        }
+      if (!response.ok) {
+        throw new Error(`getRelatedMeditations(${options.id}) failed: ${response.status}`)
+      }
 
-        const body = (await response.json()) as {
-          docs?: Array<Record<string, unknown>>
-        }
-        const docs = Array.isArray(body.docs) ? body.docs : []
+      const body = (await response.json()) as {
+        docs?: Array<Record<string, unknown>>
+      }
+      const docs = Array.isArray(body.docs) ? body.docs : []
 
-        // The endpoint already shapes cards. Still guard the rendered
-        // fields, so a partial doc can never produce a blank card or a
-        // broken thumbnail.
-        return docs
-          .filter(
-            (doc): doc is Record<string, unknown> =>
-              typeof doc.id === 'number' &&
-              typeof doc.title === 'string' &&
-              doc.title.length > 0 &&
-              typeof doc.thumbnailUrl === 'string' &&
-              doc.thumbnailUrl.length > 0,
-          )
-          .map((doc) => ({
-            id: doc.id as number,
-            title: doc.title as string,
-            durationMinutes: typeof doc.durationMinutes === 'number' ? doc.durationMinutes : 0,
-            thumbnailUrl: doc.thumbnailUrl as string,
-            narratorName: typeof doc.narratorName === 'string' ? doc.narratorName : '',
-          }))
-      },
+      // The endpoint already shapes cards. Still guard the rendered
+      // fields, so a partial doc can never produce a blank card or a
+      // broken thumbnail.
+      return docs
+        .filter(
+          (doc): doc is Record<string, unknown> =>
+            typeof doc.id === 'number' &&
+            typeof doc.title === 'string' &&
+            doc.title.length > 0 &&
+            typeof doc.thumbnailUrl === 'string' &&
+            doc.thumbnailUrl.length > 0,
+        )
+        .map((doc) => ({
+          id: doc.id as number,
+          title: doc.title as string,
+          durationMinutes: typeof doc.durationMinutes === 'number' ? doc.durationMinutes : 0,
+          thumbnailUrl: doc.thumbnailUrl as string,
+          narratorName: typeof doc.narratorName === 'string' ? doc.narratorName : '',
+        }))
     })
   } catch (error) {
     // Related content is supplementary. A failure to load it must never
@@ -1104,60 +1050,47 @@ export async function getRelatedLectures(
     return []
   }
   const limit = options.limit ?? 8
-  const cacheKey = generateCacheKey('related-lectures', {
-    id: options.id,
-    locale: options.locale,
-    limit,
-    // Add audiences to the key, so a config change cannot serve a stale
-    // list. Pass a copy. generateCacheKey sorts array values in place, and
-    // the URL below reuses `audiences`, so the key build must not mutate it.
-    audiences: [...audiences],
-  })
 
   try {
-    return await withCache({
-      cacheKey,
-      ttl: CacheTTL.LIST,
-      fetchFn: async () => {
-        const { apiKey, baseURL } = getCmsContext()
-        const url =
-          `${baseURL}/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
-          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
-          `&audiences=${audiences.join(',')}`
+    return await withRetryUnlessPreview(async () => {
+      const { apiKey, baseURL } = getCmsContext()
+      const url =
+        `${baseURL}/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
+        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
+        `&audiences=${audiences.join(',')}`
 
-        const response = await fetch(url, {
-          headers: { Authorization: `clients API-Key ${apiKey}` },
-        })
+      const response = await fetch(url, {
+        headers: { Authorization: `clients API-Key ${apiKey}` },
+      })
 
-        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-        if (response.status === 404) return []
+      if (response.status === 404) return []
 
-        if (!response.ok) {
-          throw new Error(`getRelatedLectures(${options.id}) failed: ${response.status}`)
-        }
+      if (!response.ok) {
+        throw new Error(`getRelatedLectures(${options.id}) failed: ${response.status}`)
+      }
 
-        const body = (await response.json()) as {
-          docs?: Array<Record<string, unknown>>
-        }
-        const docs = Array.isArray(body.docs) ? body.docs : []
+      const body = (await response.json()) as {
+        docs?: Array<Record<string, unknown>>
+      }
+      const docs = Array.isArray(body.docs) ? body.docs : []
 
-        return docs
-          .filter(
-            (doc): doc is Record<string, unknown> =>
-              typeof doc.id === 'number' &&
-              typeof doc.title === 'string' &&
-              doc.title.length > 0 &&
-              typeof doc.thumbnailUrl === 'string' &&
-              doc.thumbnailUrl.length > 0,
-          )
-          .map((doc) => ({
-            id: doc.id as number,
-            title: doc.title as string,
-            durationSeconds: typeof doc.duration === 'number' ? doc.duration : 0,
-            thumbnailUrl: doc.thumbnailUrl as string,
-          }))
-      },
+      return docs
+        .filter(
+          (doc): doc is Record<string, unknown> =>
+            typeof doc.id === 'number' &&
+            typeof doc.title === 'string' &&
+            doc.title.length > 0 &&
+            typeof doc.thumbnailUrl === 'string' &&
+            doc.thumbnailUrl.length > 0,
+        )
+        .map((doc) => ({
+          id: doc.id as number,
+          title: doc.title as string,
+          durationSeconds: typeof doc.duration === 'number' ? doc.duration : 0,
+          thumbnailUrl: doc.thumbnailUrl as string,
+        }))
     })
   } catch (error) {
     console.warn(`[getRelatedLectures] degrading to none for meditation ${options.id}:`, error)

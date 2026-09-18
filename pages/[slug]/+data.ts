@@ -1,4 +1,4 @@
-/** Data fetching for pages in default locale (English) with Cloudflare KV caching. */
+/** Data fetching for pages in default locale (English). */
 
 import type { PageContextServer } from 'vike/types'
 import type { Locale, Page, WebConfig } from '../../server/cms-types'

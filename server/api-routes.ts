@@ -2,13 +2,13 @@
  * Same-origin JSON API routes for client-loaded content.
  *
  * The related-content endpoints (SahajCloud #523) rank by subtle-system-node
- * overlap on the server, and are slow (about 5 to 12 seconds, not cached
- * upstream). Fetching them inside a Vike `data()` hook blocks SSR and trips
- * Vike's slow-hook warning. So instead, the player pages render
- * immediately, and load related content on the client from these routes
- * (see RelatedContentLoader). The routes wrap the same KV-cached fetchers,
- * so the slow upstream call happens at most once per cache window. The
- * browser just waits for it asynchronously.
+ * overlap on the server, and a cold one is slow (about 5 to 12 seconds).
+ * Fetching them inside a Vike `data()` hook blocks SSR and trips Vike's
+ * slow-hook warning. So instead, the player pages render immediately, and
+ * load related content on the client from these routes (see
+ * RelatedContentLoader). SahajCloud marks those endpoints edge-cacheable
+ * (`publicReadCacheHeaders`), so the slow call is paid once per colo per
+ * window. The browser just waits for it asynchronously.
  *
  * `/api/live-preview/populate` is here for an unrelated reason: it is the one
  * CMS call the browser is not allowed to make itself. See its own docblock.
@@ -40,9 +40,8 @@ function parseLocale(raw: string | undefined): Locale {
   return raw && isLocale(raw) ? raw : 'en'
 }
 
-/** Cache the JSON briefly in the browser and CDN. The heavy work is
- * already KV-cached on the server. stale-while-revalidate keeps repeat
- * views instant. */
+/** Cache the JSON briefly in the browser and CDN. The heavy work is already
+ * edge-cached upstream. stale-while-revalidate keeps repeat views instant. */
 const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=1800'
 
 /** Turns Payload's POST body into the GET the CMS actually answers. */

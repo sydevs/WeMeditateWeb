@@ -10,30 +10,30 @@ import {
 import { createPayloadClient } from './payload-client'
 import type { Locale, Page, PageStatus } from './cms-types'
 
-// Stub the SDK factory to capture the query. Stub the cache so the
-// fetch function runs synchronously, without KV.
+// Stub the SDK factory to capture the query.
 vi.mock('./payload-client', () => ({
   createPayloadClient: vi.fn(),
 }))
 // The shaped nested-route fetchers (related-*) read apiKey and baseURL from context.
 vi.mock('./cms-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 // Silence the Sentry warning emitted on unresolved page references.
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
-// The stub runs fetchFn directly, so it also swallows the retry policy.
-// `withCacheSpy` keeps the options visible to a test that asserts one.
-const { withCacheSpy } = vi.hoisted(() => ({ withCacheSpy: vi.fn() }))
+// The stub runs the read once, so no test waits on real backoff.
+// `retrySpy` keeps the config visible to the tests that assert one.
+// error-utils.test.ts covers what withRetry itself does.
+const { retrySpy } = vi.hoisted(() => ({ retrySpy: vi.fn() }))
 
-vi.mock('./kv-cache', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./kv-cache')>()
+vi.mock('./error-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./error-utils')>()
 
   return {
     ...actual,
-    withCache: (opts: { fetchFn: () => unknown }) => {
-      withCacheSpy(opts)
+    withRetry: (fn: () => unknown, config?: unknown) => {
+      retrySpy(config)
 
-      return opts.fetchFn()
+      return fn()
     },
   }
 })
@@ -155,8 +155,8 @@ describe('getPageLocaleStatus', () => {
   })
 
   it('returns an empty map, never null, for a missing page', async () => {
-    // `withCache` reads a stored `null` as a miss, so a `null` answer would
-    // re-query the CMS on every render of that page.
+    // `advertisedLocales` walks the map either way, so the caller never has
+    // to distinguish "no page" from "no per-locale status".
     const find = vi.fn().mockResolvedValue({ docs: [] })
 
     vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
@@ -170,12 +170,37 @@ describe('getPageLocaleStatus', () => {
     // for an annotation the page renders fine without.
     const find = vi.fn().mockResolvedValue({ docs: [] })
 
-    withCacheSpy.mockClear()
+    retrySpy.mockClear()
     vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
 
     await getPageLocaleStatus({ slug: 'about' })
 
-    expect(withCacheSpy.mock.calls[0][0]).toMatchObject({ retryConfig: { maxAttempts: 1 } })
+    expect(retrySpy.mock.calls[0][0]).toMatchObject({ maxAttempts: 1 })
+  })
+})
+
+describe('retry policy', () => {
+  beforeEach(() => {
+    retrySpy.mockClear()
+    vi.mocked(createPayloadClient).mockReturnValue({
+      find: vi.fn().mockResolvedValue({ docs: [{ id: 1, slug: 'about', _status: 'published' }] }),
+    } as never)
+  })
+
+  it('retries a public read, so a transient CMS fault does not reach the visitor', async () => {
+    // The KV layer this read used to sit behind supplied the retry (#98).
+    // Dropping the cache must not drop the resilience with it.
+    await getPageBySlug({ slug: 'about', locale: 'en' })
+
+    expect(retrySpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not retry a preview read', async () => {
+    // An editor watching their own edit needs the error now, not after
+    // about 7s of backoff.
+    await getPageBySlug({ slug: 'about', locale: 'en', preview: true, previewToken: 't' })
+
+    expect(retrySpy).not.toHaveBeenCalled()
   })
 })
 
