@@ -64,6 +64,10 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
+`WEB_TRANSLATIONS_SELECT` lives in [server/cms-types.ts](../../server/cms-types.ts), beside the
+`WebTranslations` type that derives from it. Add a group there and it is both fetched and
+typed. Listing the groups anywhere else lets the query and the type disagree.
+
 ## Translations are CMS-owned
 
 Every UI string comes from `wm-web-translations`, through `useT()`. See the "Translations are
