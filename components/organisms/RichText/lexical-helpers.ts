@@ -10,10 +10,17 @@ import { isPopulated } from '../../../lib/cms-relationships'
 // implementation so anchors and heading ids never drift apart.
 export { slugify } from '../../../lib/slugify'
 
+/** One Lexical node, as far as text extraction cares. */
+interface TextualNode {
+  text?: unknown
+  children?: unknown
+}
+
 /**
- * Recursively collect the plain-text content of a list of Lexical nodes.
- * Used to derive heading anchor ids (the converter only receives rendered React
- * children, not the raw text).
+ * The plain text of a list of Lexical nodes, concatenated.
+ *
+ * The heading converter builds an anchor id from one block's leaves and never
+ * receives the raw text, so nothing is inserted between them.
  */
 export function getNodeText(nodes: unknown): string {
   if (!Array.isArray(nodes)) {
@@ -21,18 +28,15 @@ export function getNodeText(nodes: unknown): string {
   }
 
   return nodes
-    .map((n) => {
-      if (!isPopulated(n)) {
+    .map((node) => {
+      if (!isPopulated<TextualNode>(node)) {
         return ''
       }
-      if (typeof n.text === 'string') {
-        return n.text
-      }
-      if (Array.isArray(n.children)) {
-        return getNodeText(n.children)
+      if (typeof node.text === 'string') {
+        return node.text
       }
 
-      return ''
+      return getNodeText(node.children)
     })
     .join('')
 }

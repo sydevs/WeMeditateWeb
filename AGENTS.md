@@ -133,6 +133,11 @@ Vike's SSR build still bundles a dynamically imported module into `dist/server`.
 `import('hls.js')` once left the ~1.1 MB library in the Worker, even though it never ran on the
 server.
 
+This is about *browser-only* libraries, not about bundle size on its own. `FormBuilder` sits on
+the RichText path that every page renders, and it still server-renders: its fields are worth more
+than the `react-hook-form` and Turnstile weight they add to every route. Price the trade, and say
+which side you took.
+
 The pattern (see
 [components/molecules/LocationSearch/index.tsx](components/molecules/LocationSearch/index.tsx)
 and [components/molecules/VideoPlayer/index.tsx](components/molecules/VideoPlayer/index.tsx)):
@@ -179,7 +184,10 @@ These rules apply whether or not the matching rule file or skill is loaded.
   itself, `normalizeContentPath` undoes `+onBeforeRoute`'s `/index` spelling of `/`, and
   `localePath` serves English bare because `/en/x` 301s to `/x` — `localeUrl` is that with an
   origin in front. The language dropdown, the canonical and the `hreflang` cluster all read the
-  same answer from there. Never restate one of these rules at a call site.
+  same answer from there. Never restate one of these rules at a call site. A **scheme** is part
+  of that spelling: `isSafeHttpUrl` and `isSafeNavigationUrl` live there too, and any URL the
+  site did not author itself passes one of them before it reaches an `href` or
+  `window.location` — they are what stops a configured `javascript:` value running in our origin.
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.

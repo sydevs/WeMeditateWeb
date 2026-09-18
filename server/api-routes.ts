@@ -10,8 +10,10 @@
  * (`publicReadCacheHeaders`), so the slow call is paid once per colo per
  * window. The browser just waits for it asynchronously.
  *
- * `/api/live-preview/populate` is here for an unrelated reason: it is the one
- * CMS call the browser is not allowed to make itself. See its own docblock.
+ * `/api/live-preview/populate` and `/api/submissions` are here for an
+ * unrelated reason: they are the CMS calls the browser is not allowed to make
+ * itself, one a draft read and one the public intake write. See their own
+ * docblocks.
  *
  * These routes run inside the `contextStorage()` middleware (registered
  * first in entry.ts), so `getCmsContext()` resolves the API key and KV
@@ -29,9 +31,10 @@ import {
 } from './cms-client'
 import { relatedMeditationsToCards, relatedLecturesToCards } from '../lib/related-content'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER, type SubmissionResult } from '../lib/submissions'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
-import { idSchema } from './validation'
+import { idSchema, submissionSchema } from './validation'
 import type { Locale } from './cms-types'
 import { isLocale } from './cms-types'
 
@@ -163,8 +166,91 @@ function registerLivePreviewPopulate(app: Hono<CmsEnv>): void {
   })
 }
 
+/**
+ * A refused submission, as one code and one status the browser may see.
+ *
+ * The CMS answers a refusal with `{ errors: [{ message, data: { code } }] }`
+ * and `@payloadcms/sdk` rethrows that array on its error. The **code** is
+ * forwarded and the **message** is not: the message is the CMS's own English,
+ * written for an integrator reading a log, while the visitor's copy is
+ * CMS-owned and rendered from a translation key.
+ *
+ * A client error (a failed captcha, a disposable address, a key the form never
+ * declared) is the caller's and keeps its status. Anything else — a 500, an
+ * unreachable CMS, a thrown non-SDK error — is ours, and reads as 502 so a
+ * browser never sees our upstream's fault as its own bad request.
+ */
+function submissionFailure(error: unknown): { code?: string; status: 400 | 403 | 429 | 502 } {
+  const { errors, status } = (error ?? {}) as {
+    errors?: { data?: { code?: unknown } }[]
+    status?: unknown
+  }
+  const raw = errors?.[0]?.data?.code
+  const code = typeof raw === 'string' ? raw : undefined
+
+  if (status === 403 || status === 429 || status === 400) {
+    return { code, status }
+  }
+
+  return { status: 502 }
+}
+
+/**
+ * The public intake, proxied same-origin.
+ *
+ * The browser cannot post to `POST /api/user-submissions` itself: the create
+ * is authenticated with `SAHAJCLOUD_API_KEY`, a server-only secret, and
+ * SahajCloud answers a wildcard CORS origin with no credentials
+ * (see the live-preview proxy above for the same pairing).
+ *
+ * ⚠ **Exactly one header crosses over: the captcha token.** Forwarding the
+ * browser's `Origin` or `Referer` would put this site's own host through the
+ * client's `allowedDomains` allowlist, which a server-to-server call is
+ * deliberately exempt from — the API key is the gate there. Everything else
+ * in the body is re-validated by the collection per type.
+ *
+ * Nothing of the created row is echoed back. An API client holds create and
+ * no read on `user-submissions` on purpose, and the browser needs only
+ * whether it landed.
+ */
+function registerSubmissions(app: Hono<CmsEnv>): void {
+  app.post(SUBMISSION_PATH, async (c) => {
+    c.header('Cache-Control', 'no-store')
+
+    const body = submissionSchema.safeParse(await c.req.json().catch(() => null))
+
+    if (!body.success) {
+      return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
+    }
+    const token = c.req.header(TURNSTILE_TOKEN_HEADER)
+
+    try {
+      const client = createPayloadClient()
+
+      await client.request({
+        method: 'POST',
+        path: '/user-submissions',
+        // Nothing reads the response, so ask the CMS to populate nothing.
+        args: { depth: 0 },
+        json: body.data,
+        init: { headers: token ? { [TURNSTILE_TOKEN_HEADER]: token } : {} },
+      })
+
+      return c.json<SubmissionResult>({ ok: true })
+    } catch (error) {
+      const failure = submissionFailure(error)
+
+      return c.json<SubmissionResult>(
+        { ok: false, ...(failure.code ? { code: failure.code } : {}) },
+        failure.status,
+      )
+    }
+  })
+}
+
 export function registerApiRoutes(app: Hono<CmsEnv>): void {
   registerLivePreviewPopulate(app)
+  registerSubmissions(app)
   // Meditations related to a lecture (not audience-gated).
   app.get('/api/related-meditations/:lectureId', async (c) => {
     let id: string

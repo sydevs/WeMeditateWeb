@@ -1,340 +1,118 @@
 import type { Story, StoryDefault } from '@ladle/react'
-import { FormBuilder, FormBuilderConfig, FormBuilderSubmission } from './FormBuilder'
+import { FormBuilder } from './FormBuilder'
+import { submissionBody } from '../../../lib/submissions'
 import { StoryWrapper, StorySection } from '../../ladle'
+import type { EmbeddedForm } from '../../../server/cms-types'
 
 export default {
   title: 'Organisms',
 } satisfies StoryDefault
 
 /**
- * FormBuilder component showcasing dynamic form rendering from PayloadCMS form builder plugin.
- *
- * Demonstrates all supported field types, variants, alignment options, validation, submission handling, and confirmation messages.
+ * Cloudflare's published always-solves test site key. It never reaches a real
+ * challenge, so the story can show the captcha gate without a configured site.
  */
-export const Default: Story = () => {
-  // Mock submission handler that simulates API call
-  const handleSubmit = async (data: FormBuilderSubmission) => {
-    console.log('Form submitted:', data)
+const TEST_SITE_KEY = '1x00000000000000000000AA'
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Simulate success
-    return { success: true }
+/** A Lexical document holding one paragraph. */
+function lexical(text: string) {
+  return {
+    root: {
+      type: 'root',
+      children: [{ type: 'paragraph', version: 1, children: [{ type: 'text', version: 1, text }] }],
+      direction: 'ltr' as const,
+      format: '' as const,
+      indent: 0,
+      version: 1,
+    },
   }
-
-  // Mock submission handler that simulates validation errors
-  const handleSubmitWithErrors = async (data: FormBuilderSubmission) => {
-    console.log('Form submitted with errors:', data)
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Simulate validation errors
-    return {
-      success: false,
-      error: {
-        message: 'Please correct the errors below',
-        errors: [
-          { field: 'email', message: 'This email address is already registered' },
-          { field: 'message', message: 'Message must be at least 20 characters long' },
-        ],
-      },
-    }
-  }
-
-  // Simple contact form for variant demonstration
-  const variantDemoForm: FormBuilderConfig = {
-    id: 'variant-demo-form',
-    title: 'Get in Touch',
-    fields: [
-      {
-        name: 'name',
-        blockType: 'text',
-        label: 'Your Name',
-        required: true,
-        placeholder: 'John Doe',
-      },
-      {
-        name: 'email',
-        blockType: 'email',
-        label: 'Email Address',
-        required: true,
-        placeholder: 'your@email.com',
-      },
-      {
-        name: 'message',
-        blockType: 'textarea',
-        label: 'Message',
-        required: true,
-        placeholder: 'How can we help you?',
-      },
-    ],
-    submitButtonLabel: 'Send',
-  }
-
-  // Contact form configuration
-  const contactForm: FormBuilderConfig = {
-    id: 'contact-form',
-    title: 'Contact Us',
-    fields: [
-      {
-        name: 'name',
-        blockType: 'text',
-        label: 'Full Name',
-        required: true,
-        placeholder: 'John Doe',
-      },
-      {
-        name: 'email',
-        blockType: 'email',
-        label: 'Email Address',
-        required: true,
-        placeholder: 'your@email.com',
-      },
-      {
-        name: 'subject',
-        blockType: 'select',
-        label: 'Subject',
-        required: true,
-        options: [
-          { label: 'General Inquiry', value: 'general' },
-          { label: 'Technical Support', value: 'support' },
-          { label: 'Feedback', value: 'feedback' },
-          { label: 'Partnership', value: 'partnership' },
-        ],
-      },
-      {
-        name: 'message',
-        blockType: 'textarea',
-        label: 'Message',
-        required: true,
-        placeholder: 'Tell us how we can help...',
-      },
-      {
-        name: 'contactNewsletter',
-        blockType: 'checkbox',
-        label: 'Subscribe to our newsletter',
-      },
-    ],
-    submitButtonLabel: 'Send Message',
-    confirmationMessage: "Thank you for contacting us! We'll get back to you soon.",
-  }
-
-  // Registration form with all field types
-  const registrationForm: FormBuilderConfig = {
-    id: 'registration-form',
-    title: 'Create Account',
-    fields: [
-      {
-        name: 'intro',
-        blockType: 'message',
-        label: '',
-        message:
-          'Welcome! Please fill out the form below to create your meditation account.',
-      },
-      {
-        name: 'fullName',
-        blockType: 'text',
-        label: 'Full Name',
-        required: true,
-        placeholder: 'Enter your full name',
-      },
-      {
-        name: 'regEmail',
-        blockType: 'email',
-        label: 'Email',
-        required: true,
-        placeholder: 'your@email.com',
-      },
-      {
-        name: 'age',
-        blockType: 'number',
-        label: 'Age',
-        required: false,
-        placeholder: '18',
-      },
-      {
-        name: 'experience',
-        blockType: 'select',
-        label: 'Meditation Experience',
-        required: true,
-        placeholder: 'Select your experience level',
-        options: [
-          { label: 'Beginner', value: 'beginner' },
-          { label: 'Intermediate', value: 'intermediate' },
-          { label: 'Advanced', value: 'advanced' },
-        ],
-      },
-      {
-        name: 'bio',
-        blockType: 'textarea',
-        label: 'Tell us about yourself',
-        required: false,
-        placeholder: 'Optional: Share your meditation journey...',
-      },
-      {
-        name: 'terms',
-        blockType: 'checkbox',
-        label: 'I agree to the Terms and Conditions',
-        required: true,
-      },
-      {
-        name: 'regNewsletter',
-        blockType: 'checkbox',
-        label: 'Send me weekly meditation tips',
-      },
-    ],
-    submitButtonLabel: 'Create Account',
-    confirmationMessage: 'Your account has been created successfully! Welcome to our community.',
-  }
-
-  // Simple newsletter form
-  const newsletterForm: FormBuilderConfig = {
-    id: 'newsletter-form',
-    fields: [
-      {
-        name: 'newsletterEmail',
-        blockType: 'email',
-        label: 'Email Address',
-        required: true,
-        placeholder: 'Enter your email',
-      },
-    ],
-    submitButtonLabel: 'Subscribe',
-    confirmationMessage: 'Thank you for subscribing! Check your email to confirm.',
-  }
-
-  // Form with validation errors
-  const errorForm: FormBuilderConfig = {
-    id: 'error-form',
-    title: 'Form with Validation Errors',
-    fields: [
-      {
-        name: 'errorEmail',
-        blockType: 'email',
-        label: 'Email',
-        required: true,
-        placeholder: 'Try submitting to see server-side errors',
-      },
-      {
-        name: 'errorMessage',
-        blockType: 'textarea',
-        label: 'Message',
-        required: true,
-        placeholder: 'This will also show a validation error',
-      },
-    ],
-    submitButtonLabel: 'Submit (Will Show Errors)',
-  }
-
-  return (
-    <StoryWrapper>
-      <StorySection title="Variants">
-        <div className="flex flex-wrap gap-8">
-          <div className="min-w-2/5">
-            <StorySection title="Default Variant" variant="subsection">
-              <p className="text-sm text-gray-600 mb-4">
-                Uses default input variants with labels above fields and primary button
-              </p>
-              <div className="max-w-md">
-                <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} variant="default" />
-              </div>
-            </StorySection>
-          </div>
-
-          <div className="min-w-2/5">
-            <StorySection title="Minimal Variant" variant="subsection">
-              <p className="text-sm text-gray-600 mb-4">
-                Uses minimal input variants with placeholders instead of labels and outline button
-              </p>
-              <div className="max-w-md">
-                <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} variant="minimal" />
-              </div>
-            </StorySection>
-          </div>
-        </div>
-      </StorySection>
-
-      <StorySection title="Alignments">
-        <div className="flex flex-col gap-8">
-          <StorySection title="Left Aligned (Default)" variant="subsection">
-            <div className="max-w-md">
-              <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} align="left" />
-            </div>
-          </StorySection>
-
-          <StorySection title="Center Aligned" variant="subsection">
-            <div className="max-w-md mx-auto">
-              <FormBuilder form={variantDemoForm} onSubmit={handleSubmit} align="center" />
-            </div>
-          </StorySection>
-        </div>
-      </StorySection>
-
-      <StorySection title="Contact Form" inContext={true}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="max-w-2xl">
-            <FormBuilder form={contactForm} onSubmit={handleSubmit} />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
-              {JSON.stringify(contactForm, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </StorySection>
-
-      <StorySection title="Registration Form (All Field Types)" inContext={true}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="max-w-2xl">
-            <FormBuilder form={registrationForm} onSubmit={handleSubmit} />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
-              {JSON.stringify(registrationForm, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </StorySection>
-
-      <StorySection title="Simple Newsletter Form" inContext={true}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="max-w-md">
-            <FormBuilder form={newsletterForm} onSubmit={handleSubmit} />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
-              {JSON.stringify(newsletterForm, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </StorySection>
-
-      <StorySection title="Form with Server-Side Validation Errors" inContext={true}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="max-w-2xl">
-            <p className="text-sm text-gray-600 mb-4">
-              This form simulates server-side validation errors. Try submitting the form to see
-              how field-level errors are displayed.
-            </p>
-            <FormBuilder form={errorForm} onSubmit={handleSubmitWithErrors} />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Configuration JSON</h4>
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-x-auto max-h-96">
-              {JSON.stringify(errorForm, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </StorySection>
-
-      <div />
-    </StoryWrapper>
-  )
 }
+
+/** Both fixtures are `satisfies EmbeddedForm`, so they cannot drift from the read. */
+const contactForm = {
+  id: 1,
+  title: 'Write to us',
+  actionType: 'contact',
+  submitButtonLabel: 'Send message',
+  confirmationType: 'message',
+  confirmationMessage: lexical('Thank you — we read every message.'),
+  fields: [
+    { blockType: 'text', name: 'name', label: 'Your name', required: true, width: 50 },
+    { blockType: 'email', name: 'email', label: 'Your email', required: true, width: 50 },
+    { blockType: 'message', id: 'note', message: lexical('We usually reply within a week.') },
+    { blockType: 'textarea', name: 'message', label: 'Message', required: true },
+  ],
+} satisfies EmbeddedForm
+
+const subscribeForm = {
+  id: 2,
+  title: 'Monthly letter',
+  actionType: 'subscribe',
+  confirmationType: 'message',
+  confirmationMessage: lexical('Check your inbox to confirm.'),
+  fields: [{ blockType: 'email', name: 'email', label: 'Email address', required: true }],
+} satisfies EmbeddedForm
+
+/**
+ * An authored form, rendered and wired to the unified intake.
+ *
+ * This is what the RichText renderer puts in place of a `forms` relationship
+ * node. Submitting here posts to `/api/submissions`, which Ladle does not
+ * serve — so these forms show the captcha gate and the error state, never the
+ * confirmation.
+ *
+ * The first two forms pass Cloudflare's test key, so the captcha renders and
+ * the submit button unlocks once it solves. The third passes none, which is
+ * what an unconfigured site looks like: no captcha, an enabled button, and a
+ * submission the CMS refuses.
+ */
+export const Default: Story = () => (
+  <StoryWrapper>
+    <StorySection
+      description="A contact form: the answers travel as text pairs, the email address as a column. The two 50% fields pair up from sm."
+      title="Basic Examples"
+    >
+      <div className="max-w-2xl">
+        <FormBuilder form={contactForm} siteKey={TEST_SITE_KEY} />
+      </div>
+    </StorySection>
+
+    <StorySection
+      description="A subscribe form is the same renderer. Only actionType, and so delivery, differs."
+      title="Variants"
+    >
+      <div className="max-w-md">
+        <FormBuilder form={subscribeForm} siteKey={TEST_SITE_KEY} />
+      </div>
+    </StorySection>
+
+    <StorySection
+      description="No site key configured: no captcha renders, and the CMS refuses the submission."
+      title="States"
+    >
+      <div className="max-w-md">
+        <FormBuilder form={subscribeForm} />
+      </div>
+    </StorySection>
+
+    <StorySection inContext={true} title="Examples">
+      <div className="max-w-2xl">
+        <h4 className="mb-2 text-sm font-semibold text-gray-900">Create body</h4>
+        <pre className="max-h-96 overflow-x-auto rounded bg-gray-900 p-4 text-xs text-gray-100">
+          {JSON.stringify(
+            submissionBody({
+              form: contactForm,
+              answers: { name: 'Ada', email: 'ada@example.org', message: 'Hello' },
+              locale: 'en',
+              path: '/contact',
+            }),
+            null,
+            2,
+          )}
+        </pre>
+      </div>
+    </StorySection>
+  </StoryWrapper>
+)
 
 Default.storyName = 'Form Builder'

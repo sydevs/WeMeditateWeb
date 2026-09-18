@@ -50,6 +50,19 @@ interface ImportMetaEnv {
    */
   readonly PUBLIC__LIVE_PREVIEW_VERIFY_KEY?: string
 
+  /**
+   * Cloudflare Turnstile **site** key for the captcha on every authored form.
+   *
+   * Public by design: Cloudflare's widget reads it from the page. The secret
+   * half lives in the CMS, which verifies the token this key produces, so the
+   * pair must belong to one Turnstile widget — a key from another widget
+   * yields tokens `siteverify` refuses.
+   *
+   * Unset, the captcha does not render and every submission is refused with
+   * `captcha_failed`: the CMS requires a token on every public write.
+   */
+  readonly PUBLIC__TURNSTILE_SITE_KEY?: string
+
   // ===== Server-side environment variables =====
   // Server code only. In dev, these come from .env.local. In production,
   // they come from Cloudflare Workers context.env.
