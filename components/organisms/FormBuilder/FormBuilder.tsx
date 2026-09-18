@@ -91,8 +91,8 @@ export interface FormBuilderProps {
   form: FormBuilderConfig
 
   /**
-   * Callback fired on form submission
-   * Should handle POST request to PayloadCMS user submissions API
+   * Callback fired on form submission. Posts to a server route that forwards
+   * to the CMS, because the browser cannot hold the API key.
    *
    * @param data - Formatted submission data
    * @returns Promise resolving to success or error
@@ -241,11 +241,16 @@ function renderField(
  * checkbox, number, message), and it handles form submission, validation,
  * confirmation messages, and redirects.
  *
+ * The CMS grants `user-submissions` create to the `wemeditate-web-client` key
+ * alone, and that key is server-side only, so `onSubmit` posts to a route this
+ * app owns and that route forwards the submission. `server/api-routes.ts`
+ * would own it; none is registered today.
+ *
  * @example
  * <FormBuilder
  *   form={formConfig}
  *   onSubmit={async (data) => {
- *     const response = await fetch('/api/user-submissions', {
+ *     const response = await fetch('/api/submissions', {
  *       method: 'POST',
  *       headers: { 'Content-Type': 'application/json' },
  *       body: JSON.stringify({ type: 'contact', ...data }),

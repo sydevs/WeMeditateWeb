@@ -28,11 +28,15 @@ using our atom components — no developer change needed per form.
 
 ## Usage
 
+The CMS grants `user-submissions` create to the `wemeditate-web-client` key alone, and that key
+is server-side only. So `onSubmit` posts to a route this app owns, and that route forwards the
+submission. `server/api-routes.ts` would own it; none is registered today.
+
 ```tsx
 import { FormBuilder } from '..'
 
 async function handleSubmit(data) {
-  const response = await fetch('/api/user-submissions', {
+  const response = await fetch('/api/submissions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'contact', ...data }),
@@ -52,7 +56,7 @@ successful submission instead of displaying the confirmation message.
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
 | `form` | `FormBuilderConfig` | Yes | The form configuration from PayloadCMS. |
-| `onSubmit` | `(data: FormBuilderSubmission) => Promise<{ success: boolean; error?: {...} }>` | Yes | Handles the submission. Returns success or an error. |
+| `onSubmit` | `(data: FormBuilderSubmission) => Promise<{ success: boolean; error?: {...} }>` | Yes | Handles the submission through a server route. Returns success or an error. |
 | `variant` | `'default' \| 'minimal'` | No | `default` displays labels and borders with the primary button. `minimal` displays placeholders instead of labels, with the outline button. |
 | `align` | `'left' \| 'center'` | No | Aligns the title and submit button. Fields stay left-aligned either way. Defaults to `left`. |
 | `className` | `string` | No | Extra classes for the form wrapper. |
