@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isIndexPath, localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
+import { localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -9,6 +9,7 @@ describe('localeFromPath', () => {
       locale: 'en',
       pathWithoutLocale: '/about',
       prefixed: false,
+      requestedIndex: false,
     })
   })
 
@@ -23,6 +24,7 @@ describe('localeFromPath', () => {
       locale: 'fa',
       pathWithoutLocale: '/meditations/1',
       prefixed: true,
+      requestedIndex: false,
     })
   })
 
@@ -36,6 +38,7 @@ describe('localeFromPath', () => {
       locale: 'en',
       pathWithoutLocale: '/about',
       prefixed: true,
+      requestedIndex: false,
     })
   })
 
@@ -48,20 +51,21 @@ describe('localeFromPath', () => {
     })
     expect(localeFromPath('/pt-br/about')).toMatchObject({ locale: 'en', prefixed: false })
   })
-})
 
-describe('isIndexPath', () => {
-  it('recognizes the routing spelling, slash or no slash', () => {
-    expect(isIndexPath('/index')).toBe(true)
-    expect(isIndexPath('/index/')).toBe(true)
+  it('tells a requested /index from the spelling it invents for a bare root', () => {
+    // +onBeforeRoute 301s the first and routes the second, and both arrive
+    // here as pathWithoutLocale `/index`.
+    expect(localeFromPath('/index')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/index/')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/fr/index')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/fr')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/fr/')).toMatchObject({ requestedIndex: false })
   })
 
-  it('rejects a real path that merely ends in index', () => {
-    // +onBeforeRoute 301s what this matches, so a page really named
-    // `/about/index` must not disappear behind the router's own spelling.
-    expect(isIndexPath('/about/index')).toBe(false)
-    expect(isIndexPath('/indexes')).toBe(false)
-    expect(isIndexPath('/')).toBe(false)
+  it('leaves a deeper path that merely ends in index alone', () => {
+    expect(localeFromPath('/about/index')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/indexes')).toMatchObject({ requestedIndex: false })
   })
 })
 
@@ -76,6 +80,9 @@ describe('normalizeContentPath', () => {
 
   it('drops a trailing slash, so a page is not its own duplicate', () => {
     expect(normalizeContentPath('/about/')).toBe('/about')
+    // Not `/index`: stripping the slash first would leave the spelling the
+    // router uses, which +onBeforeRoute redirects away from.
+    expect(normalizeContentPath('/index/')).toBe('/')
   })
 
   it('falls back to the root for a missing path', () => {

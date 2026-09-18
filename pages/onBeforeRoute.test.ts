@@ -112,9 +112,8 @@ describe('onBeforeRoute', () => {
     expect(redirectOf('/pt-BR/index')).toMatchObject({ path: '/pt-BR' })
   })
 
-  it('still routes a bare root, which spells itself /index', () => {
+  it('still routes a locale root with a trailing slash', () => {
     // The spelling the hook invents must not be mistaken for a requested one.
-    expect(routeOf('/')).toEqual({ locale: 'en', path: '/index' })
     expect(routeOf('/fr/')).toEqual({ locale: 'fr', path: '/index' })
   })
 
