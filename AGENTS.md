@@ -180,10 +180,9 @@ These rules apply whether or not the matching rule file or skill is loaded.
   `localePath` serves English bare because `/en/x` 301s to `/x` — `localeUrl` is that with an
   origin in front. The language dropdown, the canonical and the `hreflang` cluster all read the
   same answer from there. Never restate one of these rules at a call site.
-- **`/index` is routing-internal, never a URL.** `+onBeforeRoute` gives the home page that
-  spelling so `pages/[slug]/+route.ts` can match it, and 301s a request that asks for it by name
-  to the home page of its locale. A redirect target, a canonical and an `hreflang` href all go
-  through `normalizeContentPath` for that reason.
+- **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
+  href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
+  locale's home page.
 - **Two hooks write `pageContext.locale`, and only these two.** `pages/+onBeforeRoute.ts` sets it
   wherever routing runs. A thrown `render(<status>)` renders the error page from the pre-routing
   pageContext, so routing never happens there — `pages/+onCreatePageContext.server.ts` covers
