@@ -14,7 +14,7 @@ using our atom components — no developer change needed per form.
 - Displays a confirmation message, or redirects, after a successful submission.
 - Meets WCAG 2.1 Level AA, with the right ARIA attributes.
 - Uses `react-hook-form` (^7.53.2) for form state, and `@marsidev/react-turnstile` for the
-  captcha — both only in the browser, through the `index.tsx` barrel.
+  captcha. Both server-render: the fields arrive in the HTML, the challenge on hydration.
 
 ## Supported field types
 
@@ -40,9 +40,10 @@ import { FormBuilder } from './FormBuilder'
 <FormBuilder form={page.form} className="my-8" />
 ```
 
-⚠ **Import it through the directory, never `./FormBuilder` directly.** `index.tsx` is a
-`ClientOnly` + `React.lazy` barrel, and it is what keeps `react-hook-form` and the captcha out of
-the Worker bundle and out of every route's eager chunk.
+⚠ **It server-renders, and that is a priced decision.** `RichText` renders on every page, so
+`react-hook-form` and `@marsidev/react-turnstile` are in every route's chunk and in `dist/server`
+(2.53 MB → 2.63 MB). Server-rendered fields were judged worth that. Do not reclaim it by moving
+the component behind `ClientOnly` and `React.lazy`.
 
 ## Props
 

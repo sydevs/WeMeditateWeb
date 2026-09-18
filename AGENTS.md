@@ -133,11 +133,10 @@ Vike's SSR build still bundles a dynamically imported module into `dist/server`.
 `import('hls.js')` once left the ~1.1 MB library in the Worker, even though it never ran on the
 server.
 
-The same rule covers a dep that is merely *ordinary* when the component sits on a path every page
-renders. `FormBuilder` is reached from the RichText converter, so importing it statically put
-`react-hook-form` in the eager chunk of every route and in the Worker — for a component almost no
-page contains. See
-[components/organisms/FormBuilder/index.tsx](components/organisms/FormBuilder/index.tsx).
+This is about *browser-only* libraries, not about bundle size on its own. `FormBuilder` sits on
+the RichText path that every page renders, and it still server-renders: its fields are worth more
+than the `react-hook-form` and Turnstile weight they add to every route. Price the trade, and say
+which side you took.
 
 The pattern (see
 [components/molecules/LocationSearch/index.tsx](components/molecules/LocationSearch/index.tsx)
