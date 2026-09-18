@@ -92,8 +92,9 @@ describe('onBeforeRoute', () => {
   })
 
   it('drops a trailing slash from the redirect target', () => {
-    // /about/ and /about both render, and /about is the canonical, so the
-    // 301 must not land on the duplicate.
+    // Vike 301s a trailing slash before routing, so a server request never
+    // reaches the hook carrying one. This pins the hook's own answer to
+    // /about rather than the /about/ duplicate.
     expect(redirectOf('/en/about/')).toMatchObject({ path: '/about' })
   })
 
