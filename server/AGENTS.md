@@ -75,10 +75,10 @@ header, and shape their own response. `select` and `populate` do not apply here.
 
 Two rules still apply:
 
-- **Cache the response, and degrade on failure.** Wrap the call in `withCache` and catch errors.
-  See `getAtlasSeo` in `server/atlas-client.ts`.
-  ⚠ `withCache` reads a stored `null` as a cache miss. It fetches a `null` answer (a 404) again on
-  every request. This is fine for rare paths. Do not rely on it to absorb real load.
+- **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
+  `server/atlas-client.ts`.
+  ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
+  A read that degrades silently still needs `withRetry`, which the cache used to supply.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See
@@ -104,11 +104,11 @@ read that sends `all`.
 
 Three things follow, all load-bearing:
 
-- **It is a second read, beside the content read, not a replacement for it.** Its cache key carries
-  no locale, so every locale of a page shares one entry.
-- **It returns `{}`, never `null`, and retries once.** `withCache` reads a stored `null` as a miss,
-  so a `null` answer would re-query on every render; and the page content is already in hand when
-  this read fails, so the default 3-attempt backoff would stall TTFB to decorate a `<head>`.
+- **It is a second read, beside the content read, not a replacement for it.** It sends no locale,
+  so every locale of a page issues the same URL and shares one edge entry.
+- **It returns `{}`, never `null`, and retries once.** `advertisedLocales` walks the map either
+  way; and the page content is already in hand when this read fails, so the default 3-attempt
+  backoff would stall TTFB to decorate a `<head>`.
 - **Only `pages` (and `app-cards`) carry the map.** `meditations` returns `_status` as a plain
   string and `lectures` omits it. Neither makes a per-locale claim, and
   `advertisedLocales` returns an empty list for both rather than guessing.

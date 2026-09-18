@@ -7,8 +7,8 @@
  * requires `select`, and the lectures `/for-audience` endpoint needs
  * runtime audience context. So this module takes the computed endpoint,
  * appends the `select`, `locale`, and `depth` the backend requires,
- * fetches it (cached), and attaches the resulting cards to the block. The
- * renderer can then display them synchronously during SSR.
+ * fetches it, and attaches the resulting cards to the block. The renderer
+ * can then display them synchronously during SSR.
  *
  * Anything this module cannot resolve (lectures with no audiences, a
  * failed fetch) degrades to an empty list. The block then renders nothing,
@@ -17,7 +17,6 @@
 
 import * as Sentry from '@sentry/react'
 import { getCmsContext } from './cms-context'
-import { withCache, generateCacheKey, CacheTTL } from './kv-cache'
 import type { Audience } from './payload-types'
 import type { Locale } from './cms-types'
 import {
@@ -86,8 +85,6 @@ const QUERY_BY_TYPE: Record<
 
 interface ResolveOptions {
   locale?: Locale
-  /** Bypass the KV cache (live preview). */
-  preview?: boolean
   /** The site's fixed audiences (WmWebConfig.audiences), passed to the lectures
    * `/for-audience` feed so it resolves server-side. */
   audiences?: (number | Audience)[]
@@ -111,23 +108,6 @@ function stripQueryParam(endpoint: string, key: string): string {
   const kept = query.split('&').filter((part) => part !== '' && part.split('=')[0] !== key)
 
   return kept.length > 0 ? `${path}?${kept.join('&')}` : path
-}
-
-/**
- * Cache key for a content-index resolve. Audience IDs are folded in for
- * lectures, so a WmWebConfig audience change cannot serve a stale
- * `/for-audience` list.
- */
-function contentIndexCacheKey(fields: ContentIndexBlockFields, options: ResolveOptions): string {
-  return generateCacheKey('content-index', {
-    endpoint: fields.apiEndpoint ?? undefined,
-    // Fold in the type, so two blocks that share an endpoint and locale
-    // cannot collide and return the wrong shape from cache (a songs
-    // Track[] vs a card list).
-    type: fields.type,
-    locale: options.locale,
-    audiences: fields.type === 'lectures' ? audienceIdList(options.audiences) : undefined,
-  })
 }
 
 /**
@@ -193,55 +173,32 @@ async function fetchContentIndexDocs(
   }
 }
 
-/**
- * Gets a content-index block's list (cached), and runs `transform` over
- * the raw docs. This takes a `transform`, not a per-doc mapper, because the
- * meditations type maps one doc to many cards (a user-choice category
- * expands into its meditations), while cards and tracks map one to one.
- */
-async function resolveContentIndex<T>(
-  fields: ContentIndexBlockFields,
-  options: ResolveOptions,
-  transform: (docs: Record<string, unknown>[]) => T[],
-): Promise<T[]> {
-  if (!fields.apiEndpoint) {
-    return []
-  }
-
-  return withCache({
-    cacheKey: contentIndexCacheKey(fields, options),
-    ttl: CacheTTL.LIST,
-    bypassCache: options.preview === true,
-    fetchFn: async () => transform(await fetchContentIndexDocs(fields, options)),
-  })
-}
-
 /** Gets and maps a content-index block's list to cards (pages, lectures, meditations). */
-export function resolveContentIndexItems(
+export async function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
+  const docs = await fetchContentIndexDocs(fields, options)
+
   // Meditations resolve to user-choice categories, then flatten into a
   // deduped, facet-tagged grid. Pages and lectures map one card per doc.
-  const transform =
-    fields.type === 'meditations'
-      ? meditationCardsFromUserChoices
-      : (docs: Record<string, unknown>[]) =>
-          docs
-            .map((doc) => contentIndexCard(doc, fields.type, options.pageTagLabels))
-            .filter((card): card is ResolvedCardItem => card !== null)
+  if (fields.type === 'meditations') {
+    return meditationCardsFromUserChoices(docs)
+  }
 
-  return resolveContentIndex(fields, options, transform)
+  return docs
+    .map((doc) => contentIndexCard(doc, fields.type, options.pageTagLabels))
+    .filter((card): card is ResolvedCardItem => card !== null)
 }
 
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
-export function resolveContentIndexTracks(
+export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  return resolveContentIndex(fields, options, (docs) =>
-    docs.map(contentIndexTrack).filter((track): track is Track => track !== null),
-  )
+  const docs = await fetchContentIndexDocs(fields, options)
+
+  return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
 
 /** Recursively collect every `content-index` block's `fields` object. */
@@ -287,7 +244,7 @@ function hasContentIndexBlock(node: unknown): boolean {
 /**
  * Walks a page's lexical `content`, resolves every `content-index` block's
  * list, and returns content with `resolvedItems` attached. The input stays
- * untouched: this function never mutates the cached page object. It
+ * untouched: this function never mutates the page object it is handed. It
  * returns a structural clone only when there is at least one
  * content-index block to resolve.
  */
@@ -298,8 +255,8 @@ export async function resolveContentIndexBlocks<T>(
   if (!content || typeof content !== 'object' || !hasContentIndexBlock(content)) {
     return content
   }
-  // Clone so the cached input is never mutated. Reached only when there is
-  // at least one content-index block to resolve.
+  // Clone so the caller's document is never mutated. Reached only when
+  // there is at least one content-index block to resolve.
   const cloned = structuredClone(content)
   const targets: ContentIndexBlockFields[] = []
 

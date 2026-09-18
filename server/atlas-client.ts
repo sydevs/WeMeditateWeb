@@ -25,30 +25,13 @@
 
 import * as Sentry from '@sentry/react'
 import { getCmsContext } from './cms-context'
-import { generateCacheKey, withCache } from './kv-cache'
+import { withRetry } from './error-utils'
 import { createPayloadClient } from './payload-client'
 import type { Locale } from './cms-types'
 import type { AtlasSeoResponse } from './atlas-types'
 import type { SitemapUrl } from './sitemap'
 import type { RegionsSelect, EventsSelect } from './payload-types'
 import { parseAtlasRoute } from '../lib/atlas-route'
-
-/**
- * Cache lifetimes, set by the ticket.
- *
- * A region's identity (its name, its place in the tree, its canonical)
- * barely changes. Its listing is already capped and sorted upstream, so the
- * body stays byte-stable. A class's schedule, address, and dormancy change
- * far more often. A stale class produces the failure a seeker actually
- * feels: arriving at a class that has moved. This is why events get the
- * shorter window.
- */
-export const AtlasCacheTTL = {
-  /** Region routes (1 hour). */
-  REGION: 3600,
-  /** Event routes (15 minutes). */
-  EVENT: 900,
-} as const
 
 /**
  * Gets the SEO document for one atlas route, or `null` when there is
@@ -83,53 +66,31 @@ export async function getAtlasSeo(options: {
     return null
   }
 
-  const ttl = target.kind === 'event' ? AtlasCacheTTL.EVENT : AtlasCacheTTL.REGION
-
-  // Keyed on the parsed target, not the raw route. Many URLs can name one
-  // document (`/gb/london`, `/regions/gb/london`, `/wrong/chain/london`,
-  // `/gb/london/calendar`). They then share a single cache entry, instead
-  // of one each.
-  const cacheKey = generateCacheKey('atlas-seo', {
-    target: target.kind === 'event' ? `event:${target.id}` : `region:${target.slug}`,
-    locale: options.locale,
-  })
-
   try {
-    return await withCache({
-      cacheKey,
-      ttl,
-      fetchFn: async () => {
-        const { apiKey, baseURL } = getCmsContext()
-        const url =
-          `${baseURL}/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
-          `&locale=${encodeURIComponent(options.locale)}`
+    return await withRetry(async () => {
+      const { apiKey, baseURL } = getCmsContext()
+      const url =
+        `${baseURL}/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
+        `&locale=${encodeURIComponent(options.locale)}`
 
-        const response = await fetch(url, {
-          headers: { Authorization: `clients API-Key ${apiKey}` },
-        })
+      const response = await fetch(url, {
+        headers: { Authorization: `clients API-Key ${apiKey}` },
+      })
 
-        console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-        // The route named nothing upstream: a stale inbound link, or a
-        // region that has since been unpublished.
-        //
-        // ⚠ This answer is not effectively cached. `withCache` stores it,
-        // but reads a stored `null` back as a cache miss, so every request
-        // for a dead route re-queries the CMS. This is acceptable: a 404
-        // costs one cheap upstream read, and dead atlas routes are rare.
-        // But it does not take the cached path the successful branch takes,
-        // and a crawler that grinds through stale links reaches the CMS
-        // every time.
-        if (response.status === 404) {
-          return null
-        }
+      // The route named nothing upstream: a stale inbound link, or a
+      // region that has since been unpublished. Returned rather than
+      // thrown, so it never costs the retry ladder.
+      if (response.status === 404) {
+        return null
+      }
 
-        if (!response.ok) {
-          throw new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`)
-        }
+      if (!response.ok) {
+        throw new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`)
+      }
 
-        return (await response.json()) as AtlasSeoResponse
-      },
+      return (await response.json()) as AtlasSeoResponse
     })
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
@@ -199,27 +160,23 @@ type SitemapDoc = { webUrl?: string | null; updatedAt?: string | null }
  */
 export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
-    return await withCache({
-      cacheKey: generateCacheKey('atlas-sitemap', { origin }),
-      ttl: AtlasCacheTTL.REGION,
-      fetchFn: async () => {
-        const client = createPayloadClient()
+    return await withRetry(async () => {
+      const client = createPayloadClient()
 
-        const found = await Promise.all([
-          readAllPages(client, 'regions'),
-          readAllPages(client, 'events'),
-        ])
+      const found = await Promise.all([
+        readAllPages(client, 'regions'),
+        readAllPages(client, 'events'),
+      ])
 
-        const prefix = `${origin.replace(/\/$/, '')}/`
+      const prefix = `${origin.replace(/\/$/, '')}/`
 
-        return found
-          .flat()
-          .filter(
-            (doc): doc is SitemapDoc & { webUrl: string } =>
-              typeof doc.webUrl === 'string' && doc.webUrl.startsWith(prefix),
-          )
-          .map((doc) => ({ loc: doc.webUrl, lastmod: doc.updatedAt ?? null }))
-      },
+      return found
+        .flat()
+        .filter(
+          (doc): doc is SitemapDoc & { webUrl: string } =>
+            typeof doc.webUrl === 'string' && doc.webUrl.startsWith(prefix),
+        )
+        .map((doc) => ({ loc: doc.webUrl, lastmod: doc.updatedAt ?? null }))
     })
   } catch (error) {
     console.warn('[getAtlasSitemapUrls] omitting the atlas half of the sitemap:', error)

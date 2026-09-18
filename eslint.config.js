@@ -104,7 +104,10 @@ export default [
       prettier,
     },
     rules: {
-      'no-console': 'warn',
+      // `eslint .` exits 0 on warnings, which is how a `console.log` of the
+      // Mapbox token survived in a shipped component (#105). `error` and `warn`
+      // stay allowed: they report a real failure to whoever opens the console.
+      'no-console': ['error', { allow: ['error', 'warn'] }],
       'react/prop-types': 'off',
       'react/jsx-uses-react': 'off',
       'react/no-unescaped-entities': 'off',
@@ -139,6 +142,26 @@ export default [
           next: ['const', 'let', 'var'],
         },
       ],
+    },
+  },
+  {
+    // Nothing below reaches a visitor's console, so a bare log stays a warning
+    // here. `server/` logs `[PayloadCMS] GET … → …`, the request log AGENTS.md
+    // tells you to read when debugging; a story logs a callback's payload to
+    // show what the callback receives; a test is where someone debugging
+    // reaches for a log first. Naming the exceptions rather than the covered
+    // tree is deliberate — a new top-level directory is covered the day it
+    // appears.
+    files: [
+      'server/**',
+      'scripts/**',
+      'tests/**',
+      '**/*.stories.tsx',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'no-console': 'warn',
     },
   },
 ]

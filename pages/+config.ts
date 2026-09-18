@@ -25,7 +25,8 @@ export default {
 
   // `translations` is filled by +onBeforeRender from the CMS. The client
   // needs it so `useT()` resolves the same strings during hydration as the
-  // server rendered. `locale` already reaches the client through vike-react.
+  // server rendered. `locale` needs no entry: Vike re-runs +onBeforeRoute in
+  // the browser, on hydration and on every client-side navigation.
   // https://vike.dev/passToClient
   // `livePreview` carries the verdict and the scope, never the token: the
   // browser needs to know it is in a preview so the link guard mounts and the

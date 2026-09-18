@@ -181,7 +181,7 @@ export function ContentHead() {
   }
 
   const path = normalizeContentPath(pageContext.urlPathname)
-  const locale = (pageContext.locale ?? 'en') as Locale
+  const { locale } = pageContext
   const { alternateLocales } = (pageContext.data ?? {}) as { alternateLocales?: readonly Locale[] }
 
   return (

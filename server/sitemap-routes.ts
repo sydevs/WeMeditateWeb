@@ -7,8 +7,8 @@
  *
  * Registered beside `registerApiRoutes`, and, like it, inside the
  * `contextStorage()` middleware, so `getCmsContext()` resolves the API
- * key and KV binding normally. Both routes are declared before Vike's
- * handler, so they win over the page catch-all.
+ * key normally. Both routes are declared before Vike's handler, so they
+ * win over the page catch-all.
  *
  * Every read here degrades to empty, instead of failing the response. A
  * partial sitemap is still useful, and some crawlers read a 500 on
@@ -18,10 +18,10 @@
 import type { Hono } from 'hono'
 import type { CmsEnv } from './cms-context'
 import { createPayloadClient } from './payload-client'
+import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './cms-client'
 import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
-import { generateCacheKey, withCache, CacheTTL } from './kv-cache'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './cms-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
@@ -46,7 +46,7 @@ const PAGE_SITEMAP_SELECT = {
 const MEDITATION_SITEMAP_SELECT = { updatedAt: true } satisfies MeditationsSelect<true>
 const LECTURE_SITEMAP_SELECT = { updatedAt: true } satisfies LecturesSelect<true>
 
-/** Cache the rendered documents at the edge. The reads behind them are KV-cached too. */
+/** Cache the rendered documents at our own edge, for an hour. */
 const SITEMAP_CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400'
 
 /** `updatedAt` as a `<lastmod>` value, or null when the row has none. */
@@ -58,9 +58,9 @@ function lastmodOf(doc: { updatedAt?: string | null }): string | null {
  * What the sitemap needs from the site config: the locales it offers, and
  * which page `/` serves.
  *
- * The one read the annotation adds, and cheap in practice: `getWebConfig`
- * is KV-cached for 24 h and every page render reads it too, so this shares
- * one entry with them rather than adding load. A failure degrades to an
+ * The one read the annotation adds, and cheap in practice: the rendered
+ * sitemap carries an hour of `max-age`, and the config read behind it is
+ * edge-cached and shared with every page render. A failure degrades to an
  * English-only cluster and an unannotated `/` — never wrong, only less
  * complete.
  */
@@ -112,30 +112,12 @@ async function readContentDocs() {
  * Meditations and lectures list a bare URL: neither collection opts into
  * per-locale publish state upstream, so neither has a per-document
  * translation claim to make.
- *
- * The cache holds the **documents**, keyed on the origin alone. The
- * annotation runs after the cache, so a change to `availableLocales` or to
- * the home page takes effect on the next request instead of orphaning a
- * 500-document read.
- *
- * ⚠ The key prefix is `content-sitemap-docs`, not `content-sitemap`. The
- * older prefix holds a `SitemapUrl[]`, the shape this function used to
- * cache. `getCachedResponse` returns stored JSON without a shape check, so
- * reusing the prefix would hand this code an array for up to
- * `CacheTTL.LIST` after the deploy, `docs.pages` would be `undefined`, and
- * every content URL would drop out of the sitemap until the entry expired.
- * A new prefix lets the old entries expire unread. **Bump it again on the
- * next shape change.**
  */
 async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     const [{ offered, homeSlug }, docs] = await Promise.all([
       getSiteAnnotation(),
-      withCache({
-        cacheKey: generateCacheKey('content-sitemap-docs', { origin }),
-        ttl: CacheTTL.LIST,
-        fetchFn: readContentDocs,
-      }),
+      withRetry(readContentDocs),
     ])
 
     // `/` serves the config's `homePage`, so it advertises that page's

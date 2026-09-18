@@ -1,7 +1,54 @@
 import { describe, it, expect } from 'vitest'
-import { isSafeHttpUrl, isSafeNavigationUrl, localeUrl, normalizeContentPath } from './urls'
+import { isSafeHttpUrl, isSafeNavigationUrl, localeFromPath, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
+
+describe('localeFromPath', () => {
+  it('defaults to English with no prefix, and says the prefix was absent', () => {
+    expect(localeFromPath('/about')).toEqual({
+      locale: 'en',
+      pathWithoutLocale: '/about',
+      prefixed: false,
+    })
+  })
+
+  it('maps the bare root to the routing spelling of the home page', () => {
+    expect(localeFromPath('/')).toMatchObject({ locale: 'en', pathWithoutLocale: '/index' })
+    expect(localeFromPath('/fr')).toMatchObject({ locale: 'fr', pathWithoutLocale: '/index' })
+    expect(localeFromPath('/fr/')).toMatchObject({ locale: 'fr', pathWithoutLocale: '/index' })
+  })
+
+  it('strips a locale prefix off the path', () => {
+    expect(localeFromPath('/fa/meditations/1')).toEqual({
+      locale: 'fa',
+      pathWithoutLocale: '/meditations/1',
+      prefixed: true,
+    })
+  })
+
+  it('keeps a region-cased code exactly as the CMS stores it', () => {
+    expect(localeFromPath('/pt-BR/about')).toMatchObject({ locale: 'pt-BR' })
+    expect(localeFromPath('/en-AU/about')).toMatchObject({ locale: 'en-AU' })
+  })
+
+  it('reports an explicit /en prefix, which the router turns into a 301', () => {
+    expect(localeFromPath('/en/about')).toEqual({
+      locale: 'en',
+      pathWithoutLocale: '/about',
+      prefixed: true,
+    })
+  })
+
+  it('leaves a segment that only looks like a locale alone', () => {
+    // `st` is not a CMS locale, so /status/page is a path, not a prefix.
+    expect(localeFromPath('/status/page')).toMatchObject({
+      locale: 'en',
+      pathWithoutLocale: '/status/page',
+      prefixed: false,
+    })
+    expect(localeFromPath('/pt-br/about')).toMatchObject({ locale: 'en', prefixed: false })
+  })
+})
 
 describe('normalizeContentPath', () => {
   it('collapses the routing spelling of the home page back to a URL', () => {

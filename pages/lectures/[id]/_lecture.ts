@@ -28,8 +28,9 @@ export async function loadLecture(pageContext: PageContextServer): Promise<Lectu
     throw render(404, error instanceof Error ? error.message : 'Invalid ID')
   }
 
-  // Lectures carry no drafts, so this unlocks nothing — but it bypasses the
-  // cache, which is what lets an editor see a save they just made.
+  // Lectures carry no drafts, so this unlocks nothing — but the preview
+  // header keeps the read out of the edge cache, which is what lets an
+  // editor see a save they just made.
   const preview = await loadLivePreview(pageContext)
 
   const lecture = await getLecture({ id, locale, ...previewArgs(preview) })
