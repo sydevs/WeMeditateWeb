@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { useForm, type UseFormRegister } from 'react-hook-form'
 import { Input } from '../../atoms/form/Input'
 import { Textarea } from '../../atoms/form/Textarea'
@@ -7,7 +8,6 @@ import { Checkbox } from '../../atoms/form/Checkbox'
 import { Button } from '../../atoms/Button'
 import { FormField } from '../../molecules/FormField'
 import { RichText } from '../RichText/RichText'
-import { Turnstile } from '../../molecules/Turnstile'
 import { useLocale, useOptionalPageContext, useT } from '../../../hooks/useT'
 import {
   submissionBody,
@@ -364,7 +364,26 @@ export function FormBuilder({
 
         {siteKey && (
           <div className={`mt-6 ${rowAlign}`}>
-            <Turnstile key={attempt} language={locale} siteKey={siteKey} onToken={setToken} />
+            <Turnstile
+              key={attempt}
+              siteKey={siteKey}
+              onSuccess={setToken}
+              // A failed, expired or unreachable challenge all leave the form
+              // without a token. The CMS refuses that submission, which is the
+              // same outcome as an unsolved challenge — nothing to recover.
+              onError={() => setToken(null)}
+              onExpire={() => setToken(null)}
+              // ⚠ `execution: 'render'` is what survives a client-side
+              // navigation. Cloudflare's automatic scan runs once per document
+              // load, and Vike swaps the page under `<main>` without reloading,
+              // so a scanned widget would appear on a full load and never
+              // again. This ties the challenge to this component's lifecycle.
+              //
+              // Cloudflare's own language default follows the *browser*, so a
+              // visitor reading the Spanish site in an English browser would
+              // get an English challenge mid-form. Pass the page locale.
+              options={{ execution: 'render', theme: 'light', language: locale }}
+            />
           </div>
         )}
 
