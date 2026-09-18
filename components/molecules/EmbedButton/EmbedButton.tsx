@@ -2,7 +2,7 @@ import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/o
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
 import { useT, useLocale } from '../../../hooks/useT'
-import { localePath } from '../../../lib/urls'
+import { isSitePath, localePath } from '../../../lib/urls'
 import type { Locale } from '../../../server/cms-types'
 
 /** Fixed iframe geometry and permissions for the generated embed snippet. */
@@ -18,8 +18,7 @@ const IFRAME_ALLOW = 'autoplay; fullscreen; encrypted-media; picture-in-picture'
  * origin-injectable, so it is unit-testable and deterministic in stories.
  */
 export function buildEmbedSnippet(embedPath: string, locale: Locale, origin: string): string {
-  // A path that is not site-absolute is not ours to prefix.
-  const src = embedPath.startsWith('/') ? localePath(locale, embedPath) : embedPath
+  const src = isSitePath(embedPath) ? localePath(locale, embedPath) : embedPath
 
   return `<iframe src="${origin}${src}" width="${IFRAME_WIDTH}" height="${IFRAME_HEIGHT}" frameborder="0" allow="${IFRAME_ALLOW}" allowfullscreen></iframe>`
 }

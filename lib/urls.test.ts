@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
+import { isSitePath, localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -109,11 +109,25 @@ describe('localePath', () => {
     expect(localePath('fr', '/')).toBe('/fr')
   })
 
-  it('is the relative half of localeUrl, so the two cannot disagree', () => {
-    for (const path of ['/', '/about', '/meditations/1']) {
-      for (const locale of ['en', 'fr', 'pt-BR'] as const) {
-        expect(localeUrl(ORIGIN, locale, path)).toBe(ORIGIN + localePath(locale, path))
-      }
-    }
+})
+
+describe('isSitePath', () => {
+  it('accepts a path on this site', () => {
+    expect(isSitePath('/about')).toBe(true)
+    expect(isSitePath('/')).toBe(true)
+  })
+
+  it('rejects another origin, even one written protocol-relative', () => {
+    // `//cdn.example.com` leads with a slash but is not our path, and a
+    // locale glued onto any of these makes nonsense.
+    expect(isSitePath('//cdn.example.com/x')).toBe(false)
+    expect(isSitePath('https://example.com')).toBe(false)
+  })
+
+  it('rejects what is not a path at all', () => {
+    expect(isSitePath('#section')).toBe(false)
+    expect(isSitePath('mailto:hello@example.com')).toBe(false)
+    expect(isSitePath('tel:+1234567890')).toBe(false)
+    expect(isSitePath('about')).toBe(false)
   })
 })

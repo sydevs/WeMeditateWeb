@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
-import { useOptionalPageContext } from '../../../hooks/useT'
-import { localePath } from '../../../lib/urls'
-import { DEFAULT_LOCALE, type Locale } from '../../../server/cms-types'
+import { useLocale } from '../../../hooks/useT'
+import { isSitePath, localePath } from '../../../lib/urls'
+import type { Locale } from '../../../server/cms-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   /** Link destination (will be locale-prefixed automatically) */
@@ -69,18 +69,11 @@ export function Link({
   children,
   ...props
 }: LinkProps) {
-  const pageContext = useOptionalPageContext()
+  // `useLocale` owns the fallback for Ladle and a bare unit render, where
+  // there is no `pageContext` at all and an href would become `/undefined/x`.
+  const pageLocale = useLocale()
 
-  // Ladle and a bare unit render have no `pageContext`, so `pageContext?.locale`
-  // is `undefined` there. Without the fallback an href becomes `/undefined/about`.
-  const resolvedLocale: Locale = (locale ?? pageContext?.locale) || DEFAULT_LOCALE
-
-  // `localePath` owns the prefix rule. An external URL and an in-page anchor
-  // are not site paths, so neither reaches it.
-  const finalHref =
-    href.startsWith('http') || href.startsWith('#')
-      ? href
-      : localePath(resolvedLocale, href)
+  const finalHref = isSitePath(href) ? localePath(locale ?? pageLocale, href) : href
 
   const baseStyles = 'transition-colors duration-200'
 

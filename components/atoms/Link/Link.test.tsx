@@ -61,6 +61,19 @@ describe('<Link> locale prefixing', () => {
     expect(html).not.toContain('/fr')
   })
 
+  it('leaves an href that is not a path on this site alone', () => {
+    // Each of these once had a locale glued on: `/frmailto:…`, `/fr//cdn…`.
+    for (const href of ['mailto:hello@example.com', 'tel:+1234567890', '//cdn.example.com/x']) {
+      const html = renderToStaticMarkup(
+        <Link href={href} locale="fr">
+          x
+        </Link>,
+      )
+
+      expect(html).toContain(`href="${href}"`)
+    }
+  })
+
   it('falls back to the default locale with no pageContext', () => {
     // Without the fallback this renders `/undefined/about`. The deployed site
     // is guarded against that shape by tests/smoke/web/pages.smoke.test.ts.

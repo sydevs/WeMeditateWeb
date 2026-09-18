@@ -19,8 +19,7 @@ import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
  * `pageContext`, or `null` where there is none.
  *
  * `usePageContext()` throws outside a Vike app. Ladle and the unit suite
- * both render components bare, so every consumer needs this guard. `Link`
- * calls it for exactly that reason.
+ * both render components bare, so every consumer needs this guard.
  */
 export function useOptionalPageContext(): PageContext | null {
   try {
