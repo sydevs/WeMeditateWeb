@@ -9,7 +9,8 @@ import { advertisedLocales } from '../../lib/hreflang'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
-import { render } from 'vike/abort'
+import { localePath } from '../../lib/urls'
+import { redirect, render } from 'vike/abort'
 
 export interface PageData {
   page: Page
@@ -74,6 +75,16 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     getPageBySlug({ slug, locale, ...previewArgs(preview) }),
     getPageLocaleStatus({ slug }),
   ])
+
+  // `homePage` is served at `/`, so its own slug is a second URL for one
+  // document. That slug is empty today, but an editor can fill it in, so the
+  // answer comes from the config rather than from the emptiness holding.
+  //
+  // 302, not `/index`'s 301: a routing spelling is permanent, an editor's
+  // slug is not, and a cached 301 would outlive a `homePage` change.
+  if (settings.homePage?.slug && slug === settings.homePage.slug) {
+    throw redirect(localePath(locale, '/'), 302)
+  }
 
   if (!page) {
     // Page not found. This is a valid 404 state, not an error.
