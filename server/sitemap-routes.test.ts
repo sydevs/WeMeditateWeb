@@ -6,22 +6,24 @@ const find = vi.fn()
 const findGlobal = vi.fn()
 
 vi.mock('./cms-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
-/** Every key this route asks the cache for, in call order. */
-const { cacheKeys } = vi.hoisted(() => ({ cacheKeys: [] as string[] }))
+// The stub runs the read once, so no test waits on real backoff.
+// `retrySpy` keeps the call visible to the tests that assert one.
+// error-utils.test.ts covers what withRetry itself does.
+const { retrySpy } = vi.hoisted(() => ({ retrySpy: vi.fn() }))
 
-vi.mock('./kv-cache', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./kv-cache')>()
+vi.mock('./error-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./error-utils')>()
 
   return {
     ...actual,
-    withCache: (opts: { cacheKey: string; fetchFn: () => unknown }) => {
-      cacheKeys.push(opts.cacheKey)
+    withRetry: (fn: () => unknown, config?: unknown) => {
+      retrySpy(config)
 
-      return opts.fetchFn()
+      return fn()
     },
   }
 })
@@ -61,7 +63,7 @@ function stubConfig(config: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
-  cacheKeys.length = 0
+  retrySpy.mockClear()
   find.mockReset()
   findGlobal.mockReset()
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -123,16 +125,14 @@ describe('/sitemap.xml', () => {
     expect(xml).not.toContain('<loc>https://wemeditate.com/null</loc>')
   })
 
-  it('caches the documents under a prefix of their own, not the old URL list one', async () => {
+  it('retries every read behind it, since the KV layer used to supply that', async () => {
     await get('/sitemap.xml')
 
-    // This entry holds `{ pages, meditations, lectures }`. The
-    // `content-sitemap` prefix holds the `SitemapUrl[]` this route cached
-    // before the alternates work, and `getCachedResponse` returns stored
-    // JSON without a shape check. Reading one as the other drops every
-    // content URL from the sitemap for a whole TTL after the deploy.
-    expect(cacheKeys).toContain('content-sitemap-docs:origin=https://wemeditate.com')
-    expect(cacheKeys).not.toContain('content-sitemap:origin=https://wemeditate.com')
+    // The config read, the content documents, and the atlas half. Each
+    // degrades quietly (#98), so an unretried blip drops a whole section
+    // from a response that still answers 200.
+    expect(retrySpy).toHaveBeenCalledTimes(3)
+    expect(retrySpy.mock.calls.every(([config]) => config === undefined)).toBe(true)
   })
 
   describe('hreflang alternates', () => {

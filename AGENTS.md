@@ -39,8 +39,8 @@ quick experiment over reasoning from source code alone.
 WeMeditateWeb is a server-rendered web application. It uses Vike (a full-stack framework),
 React 19, and TypeScript. It deploys to Cloudflare Workers.
 
-It fetches content from a PayloadCMS backend through the REST API. It caches content at the edge
-with Cloudflare KV.
+It fetches content from a PayloadCMS backend through the REST API, which the Cloudflare edge in
+front of that backend caches for 600s.
 
 **Stack**: Vike + React + TypeScript + Hono + Tailwind CSS + Cloudflare Workers + PayloadCMS REST API
 
@@ -116,12 +116,12 @@ public. Tokens like `PUBLIC__MAPBOX_ACCESS_TOKEN` stay secret. Restrict them by 
 
 The app runs on Cloudflare Workers with server-side rendering.
 [server/entry.ts](server/entry.ts) uses `@photonjs/hono` to build a Hono server with the Vike
-request handler. [wrangler.toml](wrangler.toml) sets the Worker name, the `nodejs_compat` flag,
-and the `WEMEDITATE_CACHE` KV binding.
+request handler. [wrangler.toml](wrangler.toml) sets the Worker name and the `nodejs_compat` flag.
+The Worker holds no bindings and no persistent state.
 
-Caching is a read-through KV layer. It is optional by design: the code catches and logs every
-cache error, and the request never fails because of a cache error. See
-[server/CACHING.md](server/CACHING.md).
+CMS reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
+`Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
+[server/CACHING.md](server/CACHING.md) before you add a read.
 
 ### Keep client-only heavy deps out of the Worker bundle
 
@@ -192,9 +192,8 @@ These rules apply whether or not the matching rule file or skill is loaded.
   variant name in the form `{aspectRatio}-{width}`. The list of variants lives in
   `SIZE_WIDTH_MAP` in [lib/cloudflare-images.ts](lib/cloudflare-images.ts). Adding a variant there
   is not enough. You must also configure it in the Cloudflare dashboard.
-- **`pageContext` carries the locale and the KV binding.** [types/vike.d.ts](types/vike.d.ts)
-  extends Vike's `PageContext` with `locale: Locale` and `cloudflare.env.WEMEDITATE_CACHE`. Both
-  fields stay type-safe in every data function and component.
+- **`pageContext` carries the locale.** [types/vike.d.ts](types/vike.d.ts) extends Vike's
+  `PageContext` with `locale: Locale`, which stays type-safe in every data function and component.
 
 ## Sentry Error Tracking
 
