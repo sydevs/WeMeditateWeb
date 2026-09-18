@@ -58,5 +58,7 @@ export type { ContentGridProps, ContentGridItem } from './ContentGrid'
 export { MasonryGrid } from './MasonryGrid'
 export type { MasonryGridProps, MasonryGridItem } from './MasonryGrid'
 
-export { Turnstile } from './Turnstile'
+// Not exported here on purpose: the barrel is reached from SSR modules, and
+// `@marsidev/react-turnstile` belongs only in the browser chunk `FormBuilder`
+// is code-split into. Import it from './Turnstile' directly.
 export type { TurnstileProps } from './Turnstile'
