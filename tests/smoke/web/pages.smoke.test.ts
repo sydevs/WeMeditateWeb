@@ -8,7 +8,8 @@
  *
  * Conventions confirmed against the deployed Worker:
  *  - A locale root has no trailing slash. "/es/" 301s to "/es".
- *  - The default locale is stripped. "/en" 301s to "/index" (the homepage).
+ *  - The default locale is stripped. "/en" 301s to "/", the homepage itself.
+ *  - "/index" is the router's own spelling of "/", not a URL. It 301s to "/".
  *  - An unknown path returns a real 404 (the ErrorFallback "Content Not Found" page).
  */
 import { describe, it, expect } from 'vitest'
@@ -111,7 +112,17 @@ describe('web preview pages', () => {
 
     expect(res.status, '/en should 301 to the de-localized path').toBe(301)
     expect(res.location, '/en redirect should set a Location header').toBeTruthy()
-    expect(res.location, 'redirect target should drop the /en prefix').not.toMatch(/\/en(\/|$)/)
+    // "/index" is the routing spelling of the home page, and renders it a
+    // second time at 200. Asserting only the absence of "/en" passes either
+    // way, so assert the target instead.
+    expect(new URL(res.location!).pathname, '/en should land on the home page').toBe('/')
+  })
+
+  it('301s the routing spelling of the home page rather than serving it', async () => {
+    const res = await fetchPage('/index', { redirect: 'manual' })
+
+    expect(res.status, '/index should not be a second home page').toBe(301)
+    expect(new URL(res.location!).pathname, '/index should land on /').toBe('/')
   })
 
   it('a content page carries a self-referential canonical', async (ctx) => {
