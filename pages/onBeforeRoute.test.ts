@@ -98,9 +98,11 @@ describe('onBeforeRoute', () => {
     expect(redirectOf('/en/about/')).toMatchObject({ path: '/about' })
   })
 
-  it('sends /en to the home page in one hop, not to /index', () => {
+  it('sends /en to the home page, not to /index', () => {
     // /index is the routing spelling below. It renders the home page at a
     // second URL, whose own canonical is /, so a 301 must never point there.
+    // /en/ costs a hop before this one: Vike normalizes the trailing slash
+    // ahead of routing, so these targets are not #114's one-hop criterion.
     expect(redirectOf('/en')).toMatchObject({ path: '/' })
     expect(redirectOf('/en/')).toMatchObject({ path: '/' })
     expect(redirectOf('/en/index')).toMatchObject({ path: '/' })
