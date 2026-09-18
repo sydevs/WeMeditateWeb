@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { PageContextServer } from 'vike/types'
-import { hookViews } from '../tests/_helpers/page-context'
+import { abortForkViews, hookViews } from '../tests/_helpers/page-context'
 import { memoKey, perRequest } from './request-memo'
 
 /**
@@ -65,6 +65,23 @@ describe('perRequest', () => {
     await Promise.all([perRequest(cache, inData, load), perRequest(cache, inOnBeforeRender, load)])
 
     expect(load).toHaveBeenCalledTimes(1)
+  })
+
+  it('misses on the pageContext vike forks for an abort', async () => {
+    // `throw render(404)` inside a loader forks the context and re-renders. A
+    // memo the fork could reach would hand the error page back the promise that
+    // rejected with the abort, and re-throw it. A slot on `pageContext` cannot
+    // do this: `forkPageContext` copies every own descriptor, symbols included.
+    const cache = new WeakMap<object, Promise<number>>()
+    const load = vi.fn().mockResolvedValue(1)
+    const request = await hookViews({ locale: 'en' })
+    const errorPage = await abortForkViews(request.target)
+
+    await perRequest(cache, request.inData, load)
+    await perRequest(cache, errorPage.inData, load)
+
+    expect(memoKey(errorPage.inData)).not.toBe(request.target)
+    expect(load).toHaveBeenCalledTimes(2)
   })
 
   it('runs the loader again for a second request', async () => {

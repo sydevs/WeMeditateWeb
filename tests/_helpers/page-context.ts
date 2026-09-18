@@ -55,19 +55,38 @@ export interface HookViews<T> {
   inOnBeforeRender: PageContextServer
 }
 
-export async function hookViews<T extends Wrappable>(request: T): Promise<HookViews<T>> {
+async function viewsOf<T extends Wrappable>(target: T): Promise<HookViews<T>> {
   const { getPageContextPublicShared } = await vikeInternal<{
     getPageContextPublicShared: (pageContext: Wrappable) => PageContextServer
   }>('shared-server-client/getPageContextPublicShared.js')
-
-  const target = Object.assign(request, {
-    _isOriginalObject: true,
-    _globalContext: { _isOriginalObject: true },
-  })
 
   return {
     target,
     inData: getPageContextPublicShared(target),
     inOnBeforeRender: getPageContextPublicShared(target),
   }
+}
+
+export async function hookViews<T extends Wrappable>(request: T): Promise<HookViews<T>> {
+  return viewsOf(
+    Object.assign(request, {
+      _isOriginalObject: true,
+      _globalContext: { _isOriginalObject: true },
+    }),
+  )
+}
+
+/**
+ * The hook views of the `pageContext` vike forks on an abort.
+ *
+ * vike's own `forkPageContext`, never a copy of what it does: it carries every
+ * own property descriptor over, symbols included, so only the object identity
+ * tells the error page's context apart from the one that aborted.
+ */
+export async function abortForkViews<T extends Wrappable>(target: T): Promise<HookViews<T>> {
+  const { forkPageContext } = await vikeInternal<{
+    forkPageContext: (pageContext: Wrappable) => T
+  }>('shared-server-client/forkPageContext.js')
+
+  return viewsOf(forkPageContext(target))
 }

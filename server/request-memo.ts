@@ -27,6 +27,12 @@ import type { PageContextServer } from 'vike/types'
  * with no collision guard, so a clash overwrites the memo silently. The slot
  * would also need declaring in `types/vike.d.ts`, on every `pageContext` in the
  * app.
+ *
+ * Nor a slot under a module-local symbol, which answers both of those. vike's
+ * `forkPageContext` copies every own descriptor, symbols included, so the memo
+ * would survive the fork an abort renders the error page with — handing it back
+ * the promise that rejected with that abort. Keying on the object is what makes
+ * the error page and the preview token re-verification fail closed.
  */
 export function memoKey(pageContext: PageContextServer): object {
   return pageContext.dangerouslyUseInternals?._originalObject ?? pageContext
