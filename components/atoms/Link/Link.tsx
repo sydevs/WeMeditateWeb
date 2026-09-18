@@ -1,12 +1,14 @@
 import { ComponentProps } from 'react'
-import { usePageContext } from 'vike-react/usePageContext'
+import { useOptionalPageContext } from '../../../hooks/useT'
+import { localePath } from '../../../lib/urls'
+import { DEFAULT_LOCALE, type Locale } from '../../../server/cms-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   /** Link destination (will be locale-prefixed automatically) */
   href: string
 
   /** Locale for the link (defaults to current page locale) */
-  locale?: string
+  locale?: Locale
 
   /**
    * Visual style variant
@@ -67,23 +69,18 @@ export function Link({
   children,
   ...props
 }: LinkProps) {
-  // Safely access pageContext. It might not exist in isolated environments like Ladle.
-  let pageContext
-  try {
-    pageContext = usePageContext()
-  } catch (e) {
-    // PageContext not available, for example in Ladle or Storybook
-    pageContext = null
-  }
+  const pageContext = useOptionalPageContext()
 
-  locale = (locale ?? pageContext?.locale) || 'en'
+  // Ladle and a bare unit render have no `pageContext`, so `pageContext?.locale`
+  // is `undefined` there. Without the fallback an href becomes `/undefined/about`.
+  const resolvedLocale: Locale = (locale ?? pageContext?.locale) || DEFAULT_LOCALE
 
-  // Add locale prefix for non-English locales
-  // Skip for external URLs (http/https) and anchor links (#)
-  let finalHref = href
-  if (locale !== 'en' && !href.startsWith('http') && !href.startsWith('#')) {
-    finalHref = '/' + locale + href
-  }
+  // `localePath` owns the prefix rule. An external URL and an in-page anchor
+  // are not site paths, so neither reaches it.
+  const finalHref =
+    href.startsWith('http') || href.startsWith('#')
+      ? href
+      : localePath(resolvedLocale, href)
 
   const baseStyles = 'transition-colors duration-200'
 
