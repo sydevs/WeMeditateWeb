@@ -4,16 +4,16 @@
 
 A Worker's `fetch()` to a hostname on a **different** Cloudflare zone
 [reads through that zone's cache](https://developers.cloudflare.com/workers/reference/how-the-cache-works/).
-Every read in [cms-client.ts](./cms-client.ts) and [content-index.ts](./content-index.ts) goes to
-`cloud.sydevelopers.com`, so that is exactly what they do. SahajCloud sets `s-maxage=600` and a
-`Cache-Tag` on each cacheable path, so an editor's save reaches this site within 600s.
+Every CMS read in this Worker goes to `cloud.sydevelopers.com`, so that is exactly what they do.
+SahajCloud sets `s-maxage=600` and a `Cache-Tag` on each cacheable path, so an editor's save
+reaches this site within 600s.
 
 ⚠ **The 600s TTL is the guarantee. The purge is not.** SahajCloud purges the `Cache-Tag` on write
 only when `CLOUDFLARE_ZONE_ID` and `CLOUDFLARE_CACHE_PURGE_TOKEN` are set on its Railway service;
 unset, every purge is a silent no-op and nothing warns (`DEPLOYMENT.md` §Edge Cache in
 `sydevs/SahajCloud`). Quote 600s as the worst case for any read here, never "immediate".
 
-There is no second cache in front of these reads, and that is the point. A tag purge cannot reach
+There is no second cache anywhere in this repo, and that is the point. A tag purge cannot reach
 another Worker's KV, so a KV copy here would be a cache nobody could invalidate (#98). The cost
 paid for that is a Railway round trip every 600s per colo, instead of once per TTL globally.
 
@@ -27,53 +27,34 @@ Two things follow for anyone adding a read:
 
 ## Retry, which is not caching
 
-`withRetryUnlessPreview` in [cms-client.ts](./cms-client.ts) wraps a public read in `withRetry`
-([error-utils.ts](./error-utils.ts)): three attempts, exponential backoff with jitter, network and
-5xx errors only. A **preview** read skips it deliberately — an editor watching their own edit needs
-the error now, not after about 7s of backoff.
+`withRetry` ([error-utils.ts](./error-utils.ts)) is three attempts with exponential backoff and
+jitter, on network and 5xx errors only. `withCache` used to run it on every miss, so every read it
+wrapped keeps it now that the cache is gone.
+
+`withRetryUnlessPreview` in [cms-client.ts](./cms-client.ts) adds the one exception: a **preview**
+read skips the retry, because an editor watching their own edit needs the error now, not after
+about 7s of backoff.
+
+⚠ **A read that degrades silently needs the retry most, not least.** `getAtlasSeo` returns `null`
+and both sitemap halves return `[]` on failure, in a response that still answers 200. Without the
+retry, one upstream blip costs an atlas page its server-rendered half, or the sitemap a whole
+section, with nothing in the output to say so. [atlas-client.ts](./atlas-client.ts) and
+[sitemap-routes.ts](./sitemap-routes.ts) call `withRetry` directly for that reason, and their
+tests pin the call.
 
 `content-index.ts` needs no wrapper. `fetchContentIndexDocs` degrades to `[]` and reports to
 Sentry, so nothing throws past it.
 
-## What still uses KV
+## The KV layer that used to sit here
 
-Three reads keep the read-through layer in [kv-cache.ts](./kv-cache.ts), bound as
-`WEMEDITATE_CACHE` in [wrangler.toml](../wrangler.toml):
+`server/kv-cache.ts` and the `WEMEDITATE_CACHE` binding are gone (#98), and with them
+`AtlasCacheTTL` and the `content-sitemap-docs` key prefix. `getAtlasSeo`, `getAtlasSitemapUrls`
+and `getContentSitemapUrls` held out one round longer than the CMS reads; they read through the
+edge now too.
 
-| Function | File | TTL |
-| --- | --- | --- |
-| `getAtlasSeo()` | [atlas-client.ts](./atlas-client.ts) | `AtlasCacheTTL.EVENT` 900s / `AtlasCacheTTL.REGION` 3600s |
-| `getAtlasSitemapUrls()` | [atlas-client.ts](./atlas-client.ts) | `AtlasCacheTTL.REGION` |
-| `getContentSitemapUrls()` | [sitemap-routes.ts](./sitemap-routes.ts) | `CacheTTL.LIST` |
+Every window that removal touched got shorter, none longer: a region 3600s → 600s, a class
+900s → 600s, the atlas sitemap 3600s → 600s, the content sitemap 1800s → 600s.
 
-⚠ **These carry the same no-invalidation problem the CMS reads just shed.** #98 held them back on
-purpose: `getAtlasSeo`'s 900s event window is *longer* than the edge's 600s, so dropping its KV
-shortens the window rather than only removing a stale read, and that trade needs its own argument.
-Until that argument is made, an atlas edit is visible here only when the entry expires.
-
-`withCache` details that still apply to those three:
-
-- KV arrives through `getCmsContext()`. A caller passes no namespace, and there is none under
-  `pnpm dev`, so local reads always miss.
-- A read or write error never fails the request — `kv-cache.ts` logs to console and Sentry and
-  continues uncached.
-- **A stored `null` reads back as a miss.** A `null` answer is therefore re-fetched on every
-  request. Fine for a dead atlas route; never rely on it to absorb load.
-- **Change the cached shape, change the key prefix.** `getCachedResponse` returns stored JSON with
-  no shape check, so a deploy that changes what a key holds hands the new code an old value for a
-  whole TTL. `/sitemap.xml` hit this: `content-sitemap` held a `SitemapUrl[]` and came to hold
-  `{ pages, meditations, lectures }`, which would have emptied the sitemap for 30 minutes per
-  origin. Renaming it to `content-sitemap-docs` let the stale entries expire unread.
-
-### Inspecting the remaining entries
-
-Run these against the preview namespace during development. Drop `--preview` for production.
-
-```bash
-pnpm wrangler kv key list --binding WEMEDITATE_CACHE --preview
-pnpm wrangler kv key get "atlas-seo:locale=en:target=region:london" --binding WEMEDITATE_CACHE --preview
-pnpm wrangler kv key delete "atlas-seo:locale=en:target=region:london" --binding WEMEDITATE_CACHE --preview
-```
-
-Entries expire by TTL on their own. Delete one only when you need a content change visible
-immediately.
+⚠ **This Worker now holds no persistent state at all.** There is no namespace to inspect, no key
+to purge, and no `wrangler kv` step in any runbook here. To force a content change through, purge
+the `Cache-Tag` upstream in SahajCloud.

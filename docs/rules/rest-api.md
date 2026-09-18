@@ -39,7 +39,9 @@ paths:
    it.
 
    `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
-   preview read, which must fail fast. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
+   preview read, which must fail fast. A read outside `cms-client.ts` has no preview variant and
+   calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because it degrades
+   quietly; that is the case that needs it most. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
    classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
 
