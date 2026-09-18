@@ -168,7 +168,7 @@ function renderField(
 }
 
 /**
- * Renders an authored CMS form and submits it to the unified intake.
+ * Renders an authored form and submits it to the unified intake.
  *
  * It takes the `forms` document the page read returns, so there is no second
  * shape to keep in step: the plugin's field list, its localized labels, its

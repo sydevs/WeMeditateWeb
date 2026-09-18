@@ -51,7 +51,7 @@ interface ImportMetaEnv {
   readonly PUBLIC__LIVE_PREVIEW_VERIFY_KEY?: string
 
   /**
-   * Cloudflare Turnstile **site** key for the captcha on every CMS form.
+   * Cloudflare Turnstile **site** key for the captcha on every authored form.
    *
    * Public by design: Cloudflare's widget reads it from the page. The secret
    * half lives in the CMS, which verifies the token this key produces, so the

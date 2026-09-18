@@ -106,12 +106,11 @@ Without `form.redirect`, a successful submission replaces the form with
 `form.confirmationMessage`. With `form.redirect.url` set, FormBuilder redirects the user there
 instead.
 
-⚠ **The caller owns the scheme.** The URL is assigned to `window.location.href`, so a
-`javascript:` value would execute in this origin. Any URL the caller did not author itself must
-pass `isSafeNavigationUrl` (`lib/urls.ts`) first — `cmsFormConfig` does this for the CMS's
-authored value, and drops the redirect when it fails.
+⚠ **The authored URL is untrusted.** It is assigned to `window.location.href`, so a
+`javascript:` value would execute in this origin. FormBuilder passes it through
+`isSafeNavigationUrl` (`lib/urls.ts`) and drops the redirect when it fails.
 
-## Authoring a CMS form: name the name field `name`
+## Authoring a form: name the name field `name`
 
 ⚠ **Call the sender's name field exactly `name`.** The intake creates a `users` row for each
 sender, and it takes that row's name from the submission pair keyed `name` — matched on the key,

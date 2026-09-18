@@ -61,7 +61,7 @@ a validation error — an invalid slug or id means the resource does not exist.
    }
    ```
 
-## A CMS form is not validated with Zod here
+## An authored form is not validated with Zod here
 
 `FormBuilder` takes no schema, and there is no prop to pass one. The rules a submission must meet
 are the form author's (`required` on a field) and the CMS's (per-type allowed keys, length bounds,

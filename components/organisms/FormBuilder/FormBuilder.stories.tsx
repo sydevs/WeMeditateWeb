@@ -54,12 +54,12 @@ const subscribeForm = {
 } satisfies EmbeddedForm
 
 /**
- * An authored CMS form, rendered and wired to the unified intake.
+ * An authored form, rendered and wired to the unified intake.
  *
  * This is what the RichText renderer puts in place of a `forms` relationship
  * node. Submitting here posts to `/api/submissions`, which Ladle does not
- * serve — so these forms show the captcha gate and the error state, and the
- * confirmation state lives in the FormBuilder story.
+ * serve — so these forms show the captcha gate and the error state, never the
+ * confirmation.
  *
  * The first two forms pass Cloudflare's test key, so the captcha renders and
  * the submit button unlocks once it solves. The third passes none, which is
@@ -115,4 +115,4 @@ export const Default: Story = () => (
   </StoryWrapper>
 )
 
-Default.storyName = 'CMS Form'
+Default.storyName = 'Form Builder'
