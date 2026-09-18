@@ -64,6 +64,16 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
+`WEB_TRANSLATIONS_SELECT` lives in [server/cms-types.ts](../../server/cms-types.ts), beside the
+`WebTranslations` type that derives from it. Add a group there and it is both fetched and
+typed. Listing the groups anywhere else lets the query and the type disagree.
+
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
+cannot import that constant: it is plain node with no TypeScript loader. It keeps every response
+key outside `NON_GROUP_KEYS`, so the snapshot mirrors groups the site never fetches. Those cost
+bytes in `lib/translations.en.json` and nothing more — `WebTranslations` derives from the select,
+so an unfetched group never becomes addressable through `useT()`.
+
 ## Translations are CMS-owned
 
 Every UI string comes from `wm-web-translations`, through `useT()`. See the "Translations are
@@ -87,3 +97,11 @@ It downloads the latest `payload-types.ts` from SahajCloud.
 
 Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
 factory adds this header for you.
+
+## A public write is a proxy, not a query function
+
+Contact and subscribe submissions do not go through `cms-client.ts`. They post to the same-origin
+`POST /api/submissions`, which forwards one create to the CMS's `user-submissions` collection —
+the captcha header, the refusal envelope, and why the browser cannot make the call itself all
+live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a submission is a
+write.

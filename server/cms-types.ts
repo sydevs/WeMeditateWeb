@@ -8,6 +8,7 @@
 
 import type {
   Config,
+  Form,
   Page,
   Meditation,
   Song,
@@ -18,9 +19,36 @@ import type {
   Lecture,
   WmWebConfig,
   WmWebTranslation,
+  WmWebTranslationsSelect,
 } from './payload-types'
 
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
+
+/**
+ * A form as an embedded relationship returns it: the fields `FormBuilder` renders
+ * and submits with, and nothing else.
+ *
+ * Not `Form`. A narrow `select` returns none of a form's other columns — not
+ * even `createdAt` — so asserting the full document would be asserting
+ * something false, and would let the select and its renderer drift silently.
+ * `EMBEDDED_FORM_SELECT` in [cms-client.ts](cms-client.ts) is checked against
+ * `EmbeddedFormSelect` below, so dropping a key from either one is a compile
+ * error in the other.
+ */
+export type EmbeddedForm = Pick<
+  Form,
+  | 'id'
+  | 'title'
+  | 'fields'
+  | 'submitButtonLabel'
+  | 'confirmationType'
+  | 'confirmationMessage'
+  | 'redirect'
+  | 'actionType'
+>
+
+/** The `select` shape that returns exactly an {@link EmbeddedForm}. `id` always comes back. */
+export type EmbeddedFormSelect = { [K in Exclude<keyof EmbeddedForm, 'id'>]: true }
 
 // Re-exports the normalized Lecture view model and its pieces. This pure
 // module is shared by the server fetcher and the client live preview.
@@ -133,8 +161,29 @@ type RequiredGroups<T> = {
     : RequiredGroups<NonNullable<T[K]>>
 }
 
+/**
+ * Every translations tab the site renders. Typed against the generated
+ * select interface, so a tab renamed upstream is a compile error here
+ * rather than a silent group of missing strings. `WebTranslations` derives
+ * from it, so the query and the type cannot disagree.
+ */
+export const WEB_TRANSLATIONS_SELECT = {
+  common: true,
+  navigation: true,
+  footer: true,
+  errors: true,
+  article: true,
+  meditation: true,
+  lecture: true,
+  map: true,
+  forms: true,
+  media: true,
+  location: true,
+  blocks: true,
+} satisfies WmWebTranslationsSelect<true>
+
 export type WebTranslations = RequiredGroups<
-  Omit<WmWebTranslation, 'id' | '_status' | 'updatedAt' | 'createdAt'>
+  Pick<WmWebTranslation, keyof typeof WEB_TRANSLATIONS_SELECT>
 >
 
 /** One translations tab — `common`, `navigation`, … */

@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { isSitePath, localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
+import {
+  isSafeHttpUrl,
+  isSafeNavigationUrl,
+  isSitePath,
+  localeFromPath,
+  localePath,
+  localeUrl,
+  normalizeContentPath,
+} from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -129,5 +137,48 @@ describe('isSitePath', () => {
     expect(isSitePath('mailto:hello@example.com')).toBe(false)
     expect(isSitePath('tel:+1234567890')).toBe(false)
     expect(isSitePath('about')).toBe(false)
+  })
+})
+
+describe('isSafeHttpUrl', () => {
+  it('accepts an http(s) URL', () => {
+    expect(isSafeHttpUrl('https://status.example.com')).toBe(true)
+    expect(isSafeHttpUrl('http://status.example.com')).toBe(true)
+  })
+
+  it('refuses every other scheme', () => {
+    expect(isSafeHttpUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
+  })
+
+  it('refuses what does not parse', () => {
+    expect(isSafeHttpUrl('not a url')).toBe(false)
+    expect(isSafeHttpUrl('')).toBe(false)
+  })
+})
+
+describe('isSafeNavigationUrl', () => {
+  it('accepts a root-relative path and an http(s) URL', () => {
+    expect(isSafeNavigationUrl('/thank-you')).toBe(true)
+    expect(isSafeNavigationUrl('https://wemeditate.com/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('http://wemeditate.com/thanks')).toBe(true)
+  })
+
+  it('refuses a scheme that would execute rather than navigate', () => {
+    expect(isSafeNavigationUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeNavigationUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+  })
+
+  it('accepts an off-site URL, however it is spelled', () => {
+    // An editor may send a visitor elsewhere, so `//host` and the `/\host`
+    // browsers fold into it are the plain absolute URL by another name.
+    expect(isSafeNavigationUrl('//other.example/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('/\\other.example/thanks')).toBe(true)
+  })
+
+  it('refuses anything that is neither', () => {
+    expect(isSafeNavigationUrl('not a url')).toBe(false)
+    expect(isSafeNavigationUrl('')).toBe(false)
   })
 })

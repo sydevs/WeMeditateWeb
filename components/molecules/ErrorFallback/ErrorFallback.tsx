@@ -14,7 +14,8 @@
 
 import { ExclamationCircleIcon, WifiIcon, ServerIcon } from '@heroicons/react/24/outline'
 import { Icon, Heading, Button } from '../../atoms'
-import { detectErrorType, ErrorType, isSafeHttpUrl } from '../../../server/error-utils'
+import { detectErrorType, ErrorType } from '../../../server/error-utils'
+import { isSafeHttpUrl } from '../../../lib/urls'
 import { errorMessageKey, errorTitleKey } from '../../../lib/error-keys'
 import { useT } from '../../../hooks/useT'
 
