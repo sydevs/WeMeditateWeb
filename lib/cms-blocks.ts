@@ -440,11 +440,6 @@ export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystem
   return items
 }
 
-/** True for absolute http(s) URLs (rendered as external links). */
-export function isExternalUrl(url: string): boolean {
-  return /^https?:\/\//i.test(url)
-}
-
 /**
  * Filter facets for a content-index card: page-tag enum labels
  * (`pages`), or populated user-choice titles (`lectures`). Other types

@@ -5,7 +5,6 @@ import {
   galleryImages,
   getLeadSplash,
   leadSplashFromRouteData,
-  isExternalUrl,
   meditationCardsFromUserChoices,
   populatedImage,
   showcaseItems,
@@ -387,15 +386,6 @@ describe('meditationCardsFromUserChoices', () => {
         { id: 27, title: '10-15 min', morningMeditation: 500 }, // bare-id slot
       ]),
     ).toEqual([])
-  })
-})
-
-describe('isExternalUrl', () => {
-  it('detects absolute http(s) urls only', () => {
-    expect(isExternalUrl('https://example.com')).toBe(true)
-    expect(isExternalUrl('http://example.com')).toBe(true)
-    expect(isExternalUrl('/about')).toBe(false)
-    expect(isExternalUrl('#anchor')).toBe(false)
   })
 })
 
