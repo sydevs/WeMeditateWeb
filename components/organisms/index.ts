@@ -32,16 +32,7 @@ export { OrnateTextBox } from './OrnateTextBox'
 export type { OrnateTextBoxProps } from './OrnateTextBox'
 
 export { FormBuilder } from './FormBuilder'
-export type {
-  FormBuilderProps,
-  FormBuilderConfig,
-  FormBuilderField,
-  FormBuilderSubmission,
-  FormBuilderApiError,
-} from './FormBuilder'
-
-export { CmsForm } from './CmsForm'
-export type { CmsFormProps } from './CmsForm'
+export type { FormBuilderProps } from './FormBuilder'
 
 export { SubtleSystem } from './SubtleSystem'
 export type { SubtleSystemProps, SubtleSystemItem } from './SubtleSystem'

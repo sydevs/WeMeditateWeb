@@ -3,7 +3,7 @@ import { SignJWT } from 'jose'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/cms-forms'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
 import type { CmsEnv } from './cms-context'
 
 /**
@@ -270,7 +270,7 @@ describe('POST /api/submissions — the forward', () => {
   it('refuses a quoted form id, which the intake cannot resolve', async () => {
     // SahajCloud reads the relationship with `relationId()`, which answers
     // `null` for a string — so a quoted id would be accepted and then silently
-    // refuse every authored field. See `SubmissionBody` in lib/cms-forms.ts.
+    // refuse every authored field. See `SubmissionBody` in lib/submissions.ts.
     const response = await submit({
       body: { form: '12', type: 'contact', submissionData: [] },
       token: 'turnstile-token',

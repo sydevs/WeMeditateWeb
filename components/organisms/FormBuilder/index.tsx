@@ -1,9 +1,10 @@
 import React from 'react'
 import { ClientOnly } from 'vike-react/ClientOnly'
-import { cmsFormConfig } from '../../../lib/cms-forms'
-import type { CmsFormProps } from './CmsForm'
+import type { FormBuilderProps } from './FormBuilder'
 
-const CmsFormLazy = React.lazy(() => import('./CmsForm').then((mod) => ({ default: mod.CmsForm })))
+const FormBuilderLazy = React.lazy(() =>
+  import('./FormBuilder').then((mod) => ({ default: mod.FormBuilder }))
+)
 
 /**
  * The SSR-and-hydration fallback: the form's heading over a reserved box.
@@ -16,7 +17,7 @@ const CmsFormLazy = React.lazy(() => import('./CmsForm').then((mod) => ({ defaul
  * The heading classes are copied from `FormBuilder`, deliberately: importing
  * it here is the one thing this wrapper exists to avoid.
  */
-function CmsFormFallback({ title, className }: { title?: string; className?: string }) {
+function FormBuilderFallback({ title, className }: { title?: string; className?: string }) {
   return (
     <div className={className}>
       {title && (
@@ -30,7 +31,7 @@ function CmsFormFallback({ title, className }: { title?: string; className?: str
 }
 
 /**
- * Client-only wrapper around the CMS form.
+ * Client-only wrapper around the authored CMS form.
  *
  * ⚠ **`RichText` renders on every page, so a static import here is a static
  * import everywhere.** Reaching `FormBuilder` from the rich-text converter put
@@ -45,21 +46,21 @@ function CmsFormFallback({ title, className }: { title?: string; className?: str
  * `fetch`, so it never worked without JavaScript, and its heading still
  * renders in the fallback.
  */
-export function CmsForm(props: CmsFormProps) {
-  // Reading the config here costs one pure walk and lets the fallback carry
-  // the title. It also keeps the "no fields renders nothing" rule true on the
-  // server, rather than only after hydration.
-  const config = cmsFormConfig(props.form)
-
-  if (!config) {
+export function FormBuilder(props: FormBuilderProps) {
+  // A form with no fields renders nothing, the way every other embedded
+  // document degrades rather than showing an empty shell. Deciding it here
+  // keeps the rule true on the server, rather than only after hydration.
+  if ((props.form.fields ?? []).length === 0) {
     return null
   }
 
   return (
-    <ClientOnly fallback={<CmsFormFallback className={props.className} title={config.title} />}>
-      <CmsFormLazy {...props} />
+    <ClientOnly
+      fallback={<FormBuilderFallback className={props.className} title={props.form.title} />}
+    >
+      <FormBuilderLazy {...props} />
     </ClientOnly>
   )
 }
 
-export type { CmsFormProps } from './CmsForm'
+export type { FormBuilderProps } from './FormBuilder'

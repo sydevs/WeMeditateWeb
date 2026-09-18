@@ -61,7 +61,7 @@ export function localeFromPath(pathname: string): PathLocale {
  * ⚠ **The gate on any URL this site did not author itself**, and the only
  * thing standing between a configured value and `javascript:` or `data:`
  * running in our origin. Two values need it today: the status-page link
- * (`ErrorFallback`) and an authored form's redirect (`lib/cms-forms.ts`),
+ * (`ErrorFallback`) and an authored form's redirect (`lib/submissions.ts`),
  * which reaches `window.location.href` on a successful submission.
  *
  * It lives here because a scheme is how a URL is spelled, which this module

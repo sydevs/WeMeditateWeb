@@ -1,120 +1,36 @@
-import { useState, type ReactNode } from 'react'
-import { useForm, UseFormRegister } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import type { ZodObject, ZodRawShape } from 'zod'
+import { useState } from 'react'
+import { useForm, type UseFormRegister } from 'react-hook-form'
 import { Input } from '../../atoms/form/Input'
 import { Textarea } from '../../atoms/form/Textarea'
 import { Select } from '../../atoms/form/Select'
 import { Checkbox } from '../../atoms/form/Checkbox'
 import { Button } from '../../atoms/Button'
 import { FormField } from '../../molecules/FormField'
-import { useT } from '../../../hooks/useT'
+import { RichText } from '../RichText/RichText'
+import { Turnstile } from '../../molecules/Turnstile'
+import { useLocale, useOptionalPageContext, useT } from '../../../hooks/useT'
+import {
+  submissionBody,
+  SUBMISSION_PATH,
+  TURNSTILE_TOKEN_HEADER,
+} from '../../../lib/submissions'
+import { isSafeNavigationUrl, normalizeContentPath } from '../../../lib/urls'
 import type { TFunction } from '../../../lib/i18n'
+import type { EmbeddedForm } from '../../../server/cms-types'
 
-/** PayloadCMS Form Builder field configuration */
-export interface FormBuilderField {
-  /** Unique field identifier */
-  name: string
+/** One entry of the plugin's authored field list. */
+type AuthoredField = NonNullable<EmbeddedForm['fields']>[number]
 
-  /** Field type from PayloadCMS form builder */
-  blockType: 'text' | 'textarea' | 'select' | 'email' | 'checkbox' | 'number' | 'message'
-
-  /** Field label (localized from PayloadCMS) */
-  label: string
-
-  /** Whether field is required */
-  required?: boolean
-
-  /** Default value */
-  defaultValue?: string | boolean | number
-
-  /**
-   * How much of the row this field takes, as a percentage from 1 to 100. It
-   * is the plugin's own unit, and the editor's: a 50 beside a 50 is a
-   * two-column pair. See {@link fieldSpanClass} for how it is rendered, and
-   * why it is not a class name.
-   */
-  width?: number
-
-  /** Placeholder text */
-  placeholder?: string
-
-  /** Select/Radio options */
-  options?: Array<{
-    label: string
-    value: string
-  }>
-
-  /** Message field content (for blockType: 'message') */
-  message?: string
-}
-
-/** PayloadCMS Form Builder configuration */
-export interface FormBuilderConfig {
-  /** Unique form identifier */
-  id: string
-
-  /** Form title */
-  title?: string
-
-  /** Array of form fields */
-  fields: FormBuilderField[]
-
-  /** Submit button text */
-  submitButtonLabel?: string
-
-  /** Confirmation message after successful submission */
-  confirmationMessage?: string
-
-  /**
-   * Where to send the visitor after a successful submission, instead of
-   * showing the confirmation message.
-   *
-   * ⚠ **The caller owns the scheme.** This is assigned to
-   * `window.location.href`, so a `javascript:` URL would run in this origin.
-   * A URL the caller did not author itself must pass `isSafeNavigationUrl`
-   * (`lib/urls.ts`) before it arrives here — see `cmsFormConfig`, which gates
-   * the CMS's authored value.
-   */
-  redirect?: {
-    url: string
-  }
-}
-
-/** Form submission data structure expected by PayloadCMS */
-export interface FormBuilderSubmission {
-  form: string
-  submissionData: Array<{
-    field: string
-    value: string | boolean | number
-  }>
-}
-
-/** API error response with field-level errors */
-export interface FormBuilderApiError {
-  message: string
-  errors?: Array<{
-    field: string
-    message: string
-  }>
-}
-
-/** FormBuilder organism component props */
 export interface FormBuilderProps {
-  /** Form configuration from PayloadCMS */
-  form: FormBuilderConfig
+  /** The authored `forms` document, populated by the page read. */
+  form: EmbeddedForm
 
   /**
-   * Callback fired on form submission
-   * Should handle POST request to PayloadCMS form submissions API
-   *
-   * @param data - Formatted submission data
-   * @returns Promise resolving to success or error
+   * The Turnstile **site** key. Unset, no captcha renders and the CMS refuses
+   * the submission — which is the honest outcome of an unconfigured site.
+   * @default import.meta.env.PUBLIC__TURNSTILE_SITE_KEY
    */
-  onSubmit: (data: FormBuilderSubmission) => Promise<{
-    success: boolean
-    error?: FormBuilderApiError
-  }>
+  siteKey?: string
 
   /**
    * Visual variant for the form
@@ -134,28 +50,6 @@ export interface FormBuilderProps {
 
   /** Additional CSS classes for the form wrapper */
   className?: string
-
-  /**
-   * Optional Zod schema for form validation. When set, the form uses
-   * zodResolver for type-safe validation. Otherwise it falls back to
-   * react-hook-form's built-in validation.
-   *
-   * @example
-   * import { z } from 'zod'
-   * const schema = z.object({
-   *   email: z.string().email('Invalid email'),
-   *   name: z.string().min(1, 'Name is required'),
-   * })
-   * <FormBuilder form={formConfig} onSubmit={handleSubmit} schema={schema} />
-   */
-  schema?: ZodObject<ZodRawShape>
-
-  /**
-   * Rendered inside the `<form>`, between the fields and the submit button.
-   * The slot a captcha goes in — see `CmsForm`, which puts Turnstile here.
-   * Kept as a slot so this component stays free of any one provider.
-   */
-  captcha?: ReactNode
 }
 
 const FIELD_GRID_COLUMNS = 12
@@ -170,7 +64,7 @@ const FIELD_GRID_COLUMNS = 12
  * Mobile-first: the grid is one column below `sm`, so the span applies only
  * once there is room for it.
  */
-function fieldSpanClass(width?: number): string {
+function fieldSpanClass(width?: number | null): string {
   if (width == null || !Number.isFinite(width)) {
     return `sm:col-span-${FIELD_GRID_COLUMNS}`
   }
@@ -179,58 +73,75 @@ function fieldSpanClass(width?: number): string {
   return `sm:col-span-${Math.min(FIELD_GRID_COLUMNS, Math.max(1, span))}`
 }
 
-/** Renders a form field based on its type */
+/**
+ * The input type for an authored block.
+ *
+ * `country` and `state` render as text inputs. The plugin picks them from its
+ * own bundled option lists, which this repo does not mirror and the API read
+ * does not return; a typed answer still submits the pair the collection
+ * expects, where rendering nothing would drop a required field and fail the
+ * submission server-side.
+ */
+function inputTypeOf(blockType: AuthoredField['blockType']): string {
+  switch (blockType) {
+    case 'country':
+    case 'state':
+      return 'text'
+    default:
+      return blockType
+  }
+}
+
+/** Renders one authored field. */
 function renderField(
-  field: FormBuilderField,
-  register: UseFormRegister<any>,
+  field: AuthoredField,
+  register: UseFormRegister<Record<string, unknown>>,
   variant: 'default' | 'minimal',
   // A plain function, not a component, so the accessor is passed in
   // rather than read from a hook.
   t: TFunction,
   fieldError?: string
 ) {
-  // Filter defaultValue to allow only a string or number for non-checkbox fields
-  const getDefaultValue = () => {
-    if (field.blockType === 'checkbox') return undefined
-    if (typeof field.defaultValue === 'boolean') return undefined
-    return field.defaultValue
+  if (field.blockType === 'message') {
+    return <RichText className="text-sm sm:text-base text-gray-600 leading-relaxed" content={field.message} />
   }
 
-  // Determine state based on error
-  const state = fieldError ? 'error' : 'default'
+  const label = field.label ?? field.name
+  const options = 'options' in field ? field.options : null
+  const placeholder = 'placeholder' in field ? field.placeholder : null
+  const defaultValue = 'defaultValue' in field ? field.defaultValue : null
+
+  if (field.blockType === 'checkbox') {
+    return (
+      <Checkbox
+        {...register(field.name)}
+        id={field.name}
+        label={label}
+        defaultChecked={defaultValue === true}
+        hasError={!!fieldError}
+        aria-invalid={!!fieldError}
+      />
+    )
+  }
 
   const commonProps = {
     id: field.name,
-    placeholder: variant === 'minimal' ? field.label : field.placeholder,
-    defaultValue: getDefaultValue(),
-    variant: variant,
-    state: state as 'default' | 'error',
+    placeholder: (variant === 'minimal' ? label : placeholder) ?? undefined,
+    defaultValue: typeof defaultValue === 'boolean' ? undefined : (defaultValue ?? undefined),
+    variant,
+    state: (fieldError ? 'error' : 'default') as 'default' | 'error',
     'aria-invalid': !!fieldError,
     ...register(field.name, {
-      required: field.required
-        ? t('forms.general.field_required', { field: field.label })
-        : false,
+      required: field.required ? t('forms.general.field_required', { field: label }) : false,
     }),
   }
 
   switch (field.blockType) {
-    case 'text':
-      return <Input {...commonProps} type="text" />
-
-    case 'email':
-      return <Input {...commonProps} type="email" />
-
-    case 'number':
-      return (
-        <Input
-          {...commonProps}
-          type="number"
-          step="any"
-        />
-      )
-
     case 'textarea':
       return <Textarea {...commonProps} rows={4} />
+
+    case 'number':
+      return <Input {...commonProps} type="number" step="any" />
 
     case 'select':
       return (
@@ -238,12 +149,12 @@ function renderField(
           {...commonProps}
           placeholder={
             variant === 'minimal'
-              ? field.label
-              : field.placeholder || t('forms.general.select_placeholder')
+              ? label
+              : placeholder || t('forms.general.select_placeholder')
           }
           fullWidth
         >
-          {field.options?.map((option) => (
+          {options?.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -251,130 +162,113 @@ function renderField(
         </Select>
       )
 
-    case 'checkbox':
-      return (
-        <Checkbox
-          {...register(field.name)}
-          id={field.name}
-          label={field.label}
-          defaultChecked={field.defaultValue === true}
-          hasError={!!fieldError}
-          aria-invalid={!!fieldError}
-        />
-      )
-
-    case 'message':
-      return (
-        <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-          {field.message}
-        </p>
-      )
-
     default:
-      return null
+      return <Input {...commonProps} type={inputTypeOf(field.blockType)} />
   }
 }
 
 /**
- * FormBuilder is an organism that dynamically renders forms from the
- * PayloadCMS form builder plugin.
+ * Renders an authored CMS form and submits it to the unified intake.
  *
- * It supports all standard field types (text, textarea, select, email,
- * checkbox, number, message), and it handles form submission, validation,
- * confirmation messages, and redirects.
+ * It takes the `forms` document the page read returns, so there is no second
+ * shape to keep in step: the plugin's field list, its localized labels, its
+ * percentage widths and its Lexical blocks all render from the document
+ * itself. The RichText `relationship` converter renders this for a `forms`
+ * node embedded in page content.
  *
- * Submission is the caller's: this component formats the answers and reports
- * the outcome. `CmsForm` is the wiring for an authored CMS form, including the
- * captcha and the intake's error codes.
+ * **Every refusal shows one message, and re-challenges.** The intake
+ * distinguishes a failed captcha from a disposable address from a key the form
+ * never declared, but this site has one CMS-owned string for a failed send
+ * (`forms.general.submit_error`) and a translation cannot be invented here —
+ * the keys come from the CMS schema. Re-challenging regardless is deliberate
+ * too: see `SubmissionResult` in `lib/submissions.ts`.
  *
- * @example
- * <FormBuilder
- *   form={formConfig}
- *   onSubmit={async (data) => {
- *     const response = await fetch('/api/submissions', {
- *       method: 'POST',
- *       body: JSON.stringify(data),
- *     })
- *     return { success: response.ok }
- *   }}
- * />
+ * ⚠ **Import this through `./index`, never directly.** That barrel is what
+ * keeps `react-hook-form` and this whole tree out of the SSR graph.
  */
 export function FormBuilder({
   form,
-  onSubmit,
+  siteKey = import.meta.env.PUBLIC__TURNSTILE_SITE_KEY,
   variant = 'default',
   align = 'left',
   className = '',
-  schema,
-  captcha,
 }: FormBuilderProps) {
   const t = useT()
+  const locale = useLocale()
+  // The page this form sits on, from the same object the locale comes from, so
+  // the two `submissionData` pairs cannot disagree. Spelled the way every
+  // other consumer spells a path — `urlPathname` still carries
+  // `+onBeforeRoute`'s `/index` for the home page.
+  const path = normalizeContentPath(useOptionalPageContext()?.urlPathname)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [apiErrors, setApiErrors] = useState<Record<string, string>>({})
-  const [formError, setFormError] = useState<string>('')
+  const [formError, setFormError] = useState('')
+  const [token, setToken] = useState<string | null>(null)
+  // Bumped on every refusal, and used as the widget's key: a Turnstile token
+  // is single-use, so a second attempt needs a fresh widget rather than the
+  // spent token the first attempt sent.
+  const [attempt, setAttempt] = useState(0)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
-    mode: 'onSubmit',
-    resolver: schema ? zodResolver(schema) : undefined,
-  })
+  } = useForm({ mode: 'onSubmit' })
 
-  /** Handle form submission */
-  const handleFormSubmit = async (data: Record<string, any>) => {
-    // Clear previous errors
-    setApiErrors({})
+  const fields = form.fields ?? []
+
+  // ⚠ The scheme is checked here, and nowhere else on the path. The URL is
+  // assigned to `window.location.href`, so an authored `javascript:` value
+  // would run in our origin on every successful submission.
+  // `forms.redirect.url` is a plain CMS text field with no upstream
+  // validation. A refused URL simply leaves the form showing its confirmation
+  // message instead.
+  const redirectUrl = form.confirmationType === 'redirect' ? form.redirect?.url : undefined
+  const redirect = redirectUrl && isSafeNavigationUrl(redirectUrl) ? redirectUrl : undefined
+
+  /** Every failure looks the same to the visitor, and costs a fresh challenge. */
+  const refuse = () => {
+    setToken(null)
+    setAttempt((previous) => previous + 1)
+    setFormError(t('forms.general.submit_error'))
+  }
+
+  const onSubmit = async (answers: Record<string, string | boolean | number>) => {
     setFormError('')
 
-    // Format data for PayloadCMS
-    const submissionData: FormBuilderSubmission = {
-      form: form.id,
-      submissionData: Object.entries(data).map(([field, value]) => ({
-        field,
-        value,
-      })),
-    }
+    let response: Response
 
     try {
-      // Call parent onSubmit
-      const result = await onSubmit(submissionData)
+      response = await fetch(SUBMISSION_PATH, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
+        },
+        body: JSON.stringify(submissionBody({ form, answers, locale, path })),
+      })
+    } catch {
+      // A dropped connection may still have reached the CMS and spent the
+      // token, so this re-challenges like any other failure.
+      return refuse()
+    }
 
-      if (result.success) {
-        setIsSubmitted(true)
+    if (!response.ok) return refuse()
 
-        // Handle redirect
-        if (form.redirect?.url) {
-          // Small delay to allow user to see the submission happened
-          setTimeout(() => {
-            window.location.href = form.redirect!.url
-          }, 300)
-        }
-      } else if (result.error) {
-        // Set form-level error
-        if (result.error.message) {
-          setFormError(result.error.message)
-        }
+    setIsSubmitted(true)
 
-        // Map API errors to fields
-        if (result.error.errors) {
-          const errors: Record<string, string> = {}
-          result.error.errors.forEach((err) => {
-            errors[err.field] = err.message
-          })
-          setApiErrors(errors)
-        }
-      }
-    } catch (error) {
-      // Handle unexpected errors
-      setFormError(t('forms.general.submit_error'))
-      console.error('Form submission error:', error)
+    if (redirect) {
+      // Small delay to allow user to see the submission happened
+      setTimeout(() => {
+        window.location.href = redirect
+      }, 300)
     }
   }
 
-  // Show confirmation message if submitted and no redirect
-  if (isSubmitted && !form.redirect) {
+  // A form with no fields renders nothing, the way every other embedded
+  // document degrades rather than showing an empty shell.
+  if (fields.length === 0) return null
+
+  if (isSubmitted && !redirect) {
     return (
       <div
         className={`p-6 sm:p-8 bg-teal-50 rounded-lg text-center ${className}`}
@@ -384,15 +278,17 @@ export function FormBuilder({
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
           {t('forms.general.thank_you')}
         </h3>
-        <p className="text-sm sm:text-base text-gray-700">
-          {form.confirmationMessage || t('forms.general.submitted')}
-        </p>
+        {form.confirmationMessage ? (
+          <RichText className="text-sm sm:text-base text-gray-700" content={form.confirmationMessage} />
+        ) : (
+          <p className="text-sm sm:text-base text-gray-700">{t('forms.general.submitted')}</p>
+        )}
       </div>
     )
   }
 
-  // The captcha slot and the submit button share the title's alignment. The
-  // fields never centre: a centred label column is unreadable.
+  // The captcha and the submit button share the title's alignment. The fields
+  // never centre: a centred label column is unreadable.
   const rowAlign = align === 'center' ? 'flex justify-center' : ''
 
   return (
@@ -403,8 +299,7 @@ export function FormBuilder({
         </h2>
       )}
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
-        {/* Form-level error message */}
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {formError && (
           <div
             className="mb-6 p-4 bg-error/10 border border-error rounded text-error text-sm"
@@ -415,41 +310,32 @@ export function FormBuilder({
           </div>
         )}
 
-        {/* Render form fields. One column below `sm`, twelve above, so an
-            authored width can place two fields side by side. */}
+        {/* One column below `sm`, twelve above, so an authored width can place
+            two fields side by side. */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-12">
-          {form.fields.map((field) => {
-            // Get error message from either react-hook-form validation or API errors
+          {fields.map((field) => {
+            // A message block carries no `name`, so the list key falls back to
+            // the block's own id.
+            const key = field.blockType === 'message' ? (field.id ?? 'message') : field.name
             const fieldError =
-              (errors[field.name]?.message as string) || apiErrors[field.name]
+              field.blockType === 'message'
+                ? undefined
+                : (errors[field.name]?.message as string | undefined)
+            const span = fieldSpanClass('width' in field ? field.width : null)
 
-            // For checkbox fields, render without FormField wrapper
-            if (field.blockType === 'checkbox') {
-              return (
-                <div key={field.name} className={fieldSpanClass(field.width)}>
-                  {renderField(field, register, variant, t, fieldError)}
-                  {fieldError && (
-                    <p className="mt-1 text-sm text-error" role="alert">
-                      {fieldError}
-                    </p>
-                  )}
-                </div>
-              )
-            }
-
-            // For message fields, render without FormField wrapper
             if (field.blockType === 'message') {
               return (
-                <div key={field.name} className={fieldSpanClass(field.width)}>
+                <div key={key} className={span}>
                   {renderField(field, register, variant, t)}
                 </div>
               )
             }
 
-            // For minimal variant, render without FormField wrapper. It uses placeholders instead.
-            if (variant === 'minimal') {
+            // Checkbox carries its own label, and the minimal variant uses
+            // placeholders, so neither wants the FormField wrapper.
+            if (field.blockType === 'checkbox' || variant === 'minimal') {
               return (
-                <div key={field.name} className={fieldSpanClass(field.width)}>
+                <div key={key} className={span}>
                   {renderField(field, register, variant, t, fieldError)}
                   {fieldError && (
                     <p className="mt-1 text-sm text-error" role="alert">
@@ -460,13 +346,12 @@ export function FormBuilder({
               )
             }
 
-            // For default variant, wrap in FormField
             return (
-              <div key={field.name} className={fieldSpanClass(field.width)}>
+              <div key={key} className={span}>
                 <FormField
                   id={field.name}
-                  label={field.label}
-                  required={field.required}
+                  label={field.label ?? field.name}
+                  required={field.required ?? undefined}
                   error={fieldError}
                   disabled={isSubmitting}
                 >
@@ -477,11 +362,12 @@ export function FormBuilder({
           })}
         </div>
 
-        {captcha && (
-          <div className={`mt-6 ${rowAlign}`}>{captcha}</div>
+        {siteKey && (
+          <div className={`mt-6 ${rowAlign}`}>
+            <Turnstile key={attempt} language={locale} siteKey={siteKey} onToken={setToken} />
+          </div>
         )}
 
-        {/* Submit button */}
         <div className={`mt-8 ${rowAlign}`}>
           <Button
             type="submit"
@@ -494,7 +380,6 @@ export function FormBuilder({
           </Button>
         </div>
 
-        {/* Screen reader announcement for loading state */}
         {isSubmitting && (
           <div className="sr-only" role="status" aria-live="assertive">
             {t('forms.a11y.submitting')}

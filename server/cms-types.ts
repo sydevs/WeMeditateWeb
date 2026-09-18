@@ -24,7 +24,7 @@ import type {
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
 
 /**
- * A form as an embedded relationship returns it: the fields `CmsForm` renders
+ * A form as an embedded relationship returns it: the fields `FormBuilder` renders
  * and submits with, and nothing else.
  *
  * Not `Form`. A narrow `select` returns none of a form's other columns — not

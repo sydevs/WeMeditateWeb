@@ -1,6 +1,6 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { CmsForm } from './CmsForm'
+import { FormBuilder } from './FormBuilder'
 import type { EmbeddedForm } from '../../../server/cms-types'
 
 /**
@@ -35,9 +35,9 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-describe('CmsForm', () => {
+describe('FormBuilder', () => {
   it('renders the authored title, fields and button label', () => {
-    const html = renderToStaticMarkup(<CmsForm form={form} />)
+    const html = renderToStaticMarkup(<FormBuilder form={form} />)
 
     expect(html).toContain('Write to us')
     expect(html).toContain('Your email')
@@ -47,12 +47,12 @@ describe('CmsForm', () => {
   })
 
   it('renders nothing for a form with no fields', () => {
-    expect(renderToStaticMarkup(<CmsForm form={{ ...form, fields: [] }} />)).toBe('')
+    expect(renderToStaticMarkup(<FormBuilder form={{ ...form, fields: [] }} />)).toBe('')
   })
 
   it('spans an authored width from sm up, and full width below it', () => {
     const wide = { ...form, fields: [{ ...form.fields[0], width: 50 }] } satisfies EmbeddedForm
-    const html = renderToStaticMarkup(<CmsForm form={wide} />)
+    const html = renderToStaticMarkup(<FormBuilder form={wide} />)
 
     // A literal class, so Tailwind's scanner emits the CSS. The grid itself is
     // single-column until sm.
@@ -66,10 +66,10 @@ describe('CmsForm', () => {
     // The refusal path shows the error instead. `disabled:` appears in the
     // button's Tailwind classes, so the attribute is what to match.
     vi.stubEnv('PUBLIC__TURNSTILE_SITE_KEY', '')
-    expect(renderToStaticMarkup(<CmsForm form={form} />)).not.toContain('disabled=""')
+    expect(renderToStaticMarkup(<FormBuilder form={form} />)).not.toContain('disabled=""')
 
     const withCaptcha = renderToStaticMarkup(
-      <CmsForm form={form} siteKey="1x00000000000000000000AA" />
+      <FormBuilder form={form} siteKey="1x00000000000000000000AA" />
     )
 
     expect(withCaptcha).not.toContain('disabled=""')

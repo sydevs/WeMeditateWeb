@@ -12,7 +12,7 @@ export default {
  * client-side navigation.
  *
  * Every public write to the CMS needs the token this produces, so a form that
- * does not mount it cannot submit at all. `CmsForm` is the real consumer.
+ * does not mount it cannot submit at all. `FormBuilder` is the real consumer.
  *
  * The keys below are Cloudflare's own published test keys, which never reach
  * a real challenge: `1x…AA` always solves, `2x…AB` always blocks. The widget

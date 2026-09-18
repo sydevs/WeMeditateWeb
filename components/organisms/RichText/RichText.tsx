@@ -14,7 +14,7 @@ import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/r
 import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
-import { CmsForm } from '../CmsForm'
+import { FormBuilder } from '../FormBuilder'
 import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
 import { isPopulated } from '../../../lib/cms-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
@@ -164,7 +164,7 @@ const CONVERTERS: JSXConverters = {
   relationship: ({ node }) => {
     if (node.relationTo === 'forms') {
       return isPopulated<EmbeddedForm>(node.value) ? (
-        <CmsForm className={BLOCK_SPACING} form={node.value} />
+        <FormBuilder className={BLOCK_SPACING} form={node.value} />
       ) : null
     }
     const label = relationshipLabel(node.value)

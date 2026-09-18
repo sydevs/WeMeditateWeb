@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-// An embedded form is client-only (components/organisms/CmsForm/index.tsx), and
+// An embedded form is client-only (components/organisms/FormBuilder/index.tsx), and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
 // Stubbing it to its fallback is what the server render does anyway, so the
 // forms assertions below check exactly what a crawler receives.
@@ -219,7 +219,7 @@ describe('<RichText>', () => {
     // embedded it to be filled in, and it has no page of its own to link to.
     // The form itself is client-only, so the server render is its fallback —
     // the heading, and a box reserving its height. The fields are asserted in
-    // CmsForm.test.tsx.
+    // FormBuilder.test.tsx.
     const html = renderToStaticMarkup(
       <RichText
         content={editorState([

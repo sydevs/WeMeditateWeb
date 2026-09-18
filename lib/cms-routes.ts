@@ -17,7 +17,7 @@
  * emitting a dead `/undefined`.
  *
  * A `forms` reference never becomes a path, and it is not a degraded link
- * either: RichText renders the form inline through `CmsForm`, which is why
+ * either: RichText renders the form inline through `FormBuilder`, which is why
  * that reference is handled before this mapper is consulted.
  */
 

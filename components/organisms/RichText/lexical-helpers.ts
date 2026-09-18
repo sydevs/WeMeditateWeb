@@ -10,11 +10,36 @@ import { isPopulated } from '../../../lib/cms-relationships'
 // implementation so anchors and heading ids never drift apart.
 export { slugify } from '../../../lib/slugify'
 
-// Same reason, for the text walk: the heading converter, which needs the raw
-// text the converter never receives, and the authored-form flattener in
-// `lib/cms-forms` share one implementation. It lives in `lib/` because `lib/`
-// may not import from `components/`.
-export { lexicalNodeText as getNodeText } from '../../../lib/lexical-text'
+/** One Lexical node, as far as text extraction cares. */
+interface TextualNode {
+  text?: unknown
+  children?: unknown
+}
+
+/**
+ * The plain text of a list of Lexical nodes, concatenated.
+ *
+ * The heading converter builds an anchor id from one block's leaves and never
+ * receives the raw text, so nothing is inserted between them.
+ */
+export function getNodeText(nodes: unknown): string {
+  if (!Array.isArray(nodes)) {
+    return ''
+  }
+
+  return nodes
+    .map((node) => {
+      if (!isPopulated<TextualNode>(node)) {
+        return ''
+      }
+      if (typeof node.text === 'string') {
+        return node.text
+      }
+
+      return getNodeText(node.children)
+    })
+    .join('')
+}
 
 /**
  * Best-effort human label for an inline relationship target. Returns null for

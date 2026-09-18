@@ -52,7 +52,7 @@ export const idSchema = z.coerce
  * key, against the fields the form's author declared, which only it knows.
  *
  * ⚠ `form` is a **number**. A quoted id reaches the intake as an unresolvable
- * relationship; `SubmissionBody` in `lib/cms-forms.ts` states what that costs.
+ * relationship; `SubmissionBody` in `lib/submissions.ts` states what that costs.
  *
  * `type` is narrowed to the two form-backed intakes. Registrations and event
  * proposals are the atlas widget's, and neither carries a `form`.

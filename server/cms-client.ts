@@ -186,7 +186,7 @@ const EMBEDDED_APP_CARD_SELECT = {
 } satisfies AppCardsSelect<true>
 
 /**
- * A form embedded in page content, as `CmsForm` renders and submits it.
+ * A form embedded in page content, as `FormBuilder` renders and submits it.
  *
  * ⚠ **Narrow on purpose, not for payload size.** A collection absent from
  * `populate` comes back fully populated, and a form's `recipient` is a
