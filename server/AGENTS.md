@@ -25,7 +25,7 @@ Every contact and subscribe form posts to `POST /api/submissions`
 `submissionData` is the flat `[{ field, value }]` remainder, and the collection accepts only the
 keys it allows per type: the base context set (`name`, `locale`, `path`, `hostUrl`, `userAgent`,
 `error`), the type's own, and whatever the form's author declared. An invented key comes back as a
-400 naming it, and so does a repeated one. `lib/cms-forms.ts` owns that body; nothing else
+400 naming it, and so does a repeated one. `lib/submissions.ts` owns that body; nothing else
 composes one.
 
 Two things about `form` and the visitor's IP that only bite in production:

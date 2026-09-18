@@ -9,10 +9,12 @@ using our atom components — no developer change needed per form.
 - Renders every field type the plugin supports: text, email, number, textarea, select, checkbox,
   and message (display-only text).
 - Validates with native HTML5 validation, plus server-side error display.
-- Handles submission through a caller-supplied callback, with a loading state.
+- Submits to the unified `user-submissions` intake through the same-origin proxy, behind a
+  Cloudflare Turnstile challenge, with a loading state.
 - Displays a confirmation message, or redirects, after a successful submission.
 - Meets WCAG 2.1 Level AA, with the right ARIA attributes.
-- Uses `react-hook-form` (^7.53.2) for form state.
+- Uses `react-hook-form` (^7.53.2) for form state, and `@marsidev/react-turnstile` for the
+  captcha — both only in the browser, through the `index.tsx` barrel.
 
 ## Supported field types
 
@@ -28,79 +30,49 @@ using our atom components — no developer change needed per form.
 
 ## Usage
 
-**For a CMS form, use [`CmsForm`](../CmsForm/CmsForm.tsx) instead.** It is the wiring for an
-authored `forms` document: the field mapping, the Turnstile captcha, and the submit to the
-unified intake. This component is the renderer underneath it, and takes any form.
+It takes the authored `forms` document itself, so there is no second shape to keep in step. The
+RichText `relationship` converter renders it for a `forms` node embedded in page content, and
+nothing else needs to call it.
 
 ```tsx
-import { FormBuilder } from '..'
+import { FormBuilder } from './FormBuilder'
 
-async function handleSubmit(data) {
-  const response = await fetch('/api/submissions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body(data)),
-  })
-  if (response.ok) return { success: true }
-  return { success: false, error: { message: t('forms.general.submit_error') } }
-}
-
-<FormBuilder form={formConfig} onSubmit={handleSubmit} />
+<FormBuilder form={page.form} className="my-8" />
 ```
 
-Pass `className` to style the form wrapper. Pass `form.redirect.url` to redirect after a
-successful submission instead of displaying the confirmation message.
+⚠ **Import it through the directory, never `./FormBuilder` directly.** `index.tsx` is a
+`ClientOnly` + `React.lazy` barrel, and it is what keeps `react-hook-form` and the captcha out of
+the Worker bundle and out of every route's eager chunk.
 
 ## Props
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
-| `form` | `FormBuilderConfig` | Yes | The form configuration from PayloadCMS. |
-| `onSubmit` | `(data: FormBuilderSubmission) => Promise<{ success: boolean; error?: {...} }>` | Yes | Handles the submission. Returns success or an error. |
+| `form` | `EmbeddedForm` | Yes | The authored `forms` document, populated by the page read. |
+| `siteKey` | `string` | No | The Turnstile **site** key. Defaults to `PUBLIC__TURNSTILE_SITE_KEY`. Unset, no captcha renders and the CMS refuses the submission. |
 | `variant` | `'default' \| 'minimal'` | No | `default` displays labels and borders with the primary button. `minimal` displays placeholders instead of labels, with the outline button. |
 | `align` | `'left' \| 'center'` | No | Aligns the title and submit button. Fields stay left-aligned either way. Defaults to `left`. |
 | `className` | `string` | No | Extra classes for the form wrapper. |
-| `schema` | `ZodObject` | No | Validates with `zodResolver` instead of react-hook-form's own rules. |
-| `captcha` | `ReactNode` | No | Rendered between the fields and the submit button. Kept a slot so this component knows no captcha provider. |
 
-```typescript
-interface FormBuilderConfig {
-  id: string
-  title?: string
-  fields: FormBuilderField[]
-  submitButtonLabel?: string
-  confirmationMessage?: string
-  redirect?: { url: string }
-}
-```
+A form with no fields renders nothing, the way every other embedded document degrades.
 
-**Submission data** sent to `onSubmit`:
-```typescript
-{
-  form: "form-id",
-  submissionData: [{ field: "name", value: "John Doe" }, ...]
-}
-```
+## The wire contract
+
+`lib/submissions.ts` turns the document plus the answers into the `user-submissions` create body,
+and owns every decision about it. An embedded `forms` relationship needs no separate read: the
+page read populates it through `EMBEDDED_FORM_SELECT` in `server/cms-client.ts`.
+
+⚠ **An author must call the sender's name field exactly `name`.** `prepareUserSubmission`
+upstream matches it on that literal key, not on a block type, and the `users` row is written on
+first contact and never revisited — so a field called `fullName` names that row off the email's
+local part, permanently.
 
 ## Field configuration
 
-```typescript
-interface FormBuilderField {
-  name: string                    // Unique field id
-  blockType: FieldType            // text, email, select, ...
-  label: string
-  required?: boolean
-  defaultValue?: string | boolean
-  width?: number                  // Percentage of the row, 1–100. The plugin's own unit.
-  placeholder?: string
-  options?: Array<{ label: string; value: string }>  // Required for select
-  message?: string                // Required for message fields
-}
-```
-
-A CMS form needs no separate read: an embedded `forms` relationship is populated by the page read
-(`EMBEDDED_FORM_SELECT` in `server/cms-client.ts`), and `cmsFormSpec` in `lib/cms-forms.ts` turns
-that document into a `FormBuilderConfig`.
+Fields are the plugin's own blocks, typed as `EmbeddedForm['fields']` — there is no parallel
+interface here. `country` and `state` render as text inputs: the plugin picks them from bundled
+option lists this repo does not mirror and the read does not return, and a typed answer still
+submits the pair the collection expects.
 
 ## Field width
 
@@ -108,9 +80,9 @@ The fields sit in a 12-column grid, single-column below the `sm` breakpoint. A f
 a percentage, rounded to the nearest column span, so a 50 beside a 50 is a two-column pair from
 `sm` up and two stacked full-width fields on a phone.
 
-⚠ The span classes are written out one per column in `FormBuilder.tsx`, and must stay that way.
-Tailwind scans source text, so an interpolated `sm:col-span-${n}` or `w-[${width}%]` produces no
-CSS at all and the field silently renders full width.
+⚠ The span class is interpolated, so Tailwind's scanner never sees it.
+`@source inline("sm:col-span-{1..12}")` in `layouts/tailwind.css` is what emits the CSS; without
+that line every field silently renders full width.
 
 ## Validation
 

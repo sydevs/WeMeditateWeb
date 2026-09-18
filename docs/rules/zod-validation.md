@@ -63,27 +63,12 @@ a validation error — an invalid slug or id means the resource does not exist.
 
 ## A CMS form is not validated with Zod here
 
-`CmsForm` passes no `schema`. The rules a submission must meet are the form author's (`required`
-on a field) and the CMS's (per-type allowed keys, length bounds, the captcha), and neither is
-knowable from this side — an author adds a field whenever they like. So the fields validate
-through react-hook-form's own `required`, `submissionSchema` bounds the proxied body, and the
-collection is the authority. Adding a Zod schema mirroring the CMS's rules would be a second copy
-to keep in step.
-
-## FormBuilder with Zod
-
-`FormBuilder` accepts an optional `schema` prop for Zod validation:
-
-```typescript
-import { z } from 'zod'
-
-const contactSchema = z.object({
-  email: z.string().email('Invalid email'),
-  name: z.string().min(1, 'Name is required'),
-})
-
-<FormBuilder form={formConfig} onSubmit={handleSubmit} schema={contactSchema} />
-```
+`FormBuilder` takes no schema, and there is no prop to pass one. The rules a submission must meet
+are the form author's (`required` on a field) and the CMS's (per-type allowed keys, length bounds,
+the captcha), and neither is knowable from this side — an author adds a field whenever they like.
+So the fields validate through react-hook-form's own `required`, `submissionSchema` bounds the
+proxied body, and the collection is the authority. A Zod schema mirroring the CMS's rules would be
+a second copy to keep in step.
 
 ## Zod 4 syntax notes
 
