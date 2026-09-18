@@ -1,6 +1,6 @@
 /**
  * Global type extensions for Vike's PageContext and environment variables.
- * Adds the custom properties set by hooks such as onBeforeRoute.
+ * Adds the custom properties set by the hooks under `pages/`.
  */
 
 import type { Locale, WebTranslations } from '../server/cms-types'
@@ -68,12 +68,17 @@ interface ImportMeta {
 declare global {
   namespace Vike {
     interface PageContext {
-      /** Current locale (added by onBeforeRoute hook) */
+      /**
+       * Current locale. Non-optional because two hooks cover every render
+       * path between them: `+onBeforeRoute` wherever routing runs, and
+       * `+onCreatePageContext` on the error page, which skips routing.
+       */
       locale: Locale
 
       /**
-       * The live-preview verdict for this request, set by `onBeforeRoute`.
-       * Carries the verdict and the scope — never the token itself.
+       * The live-preview verdict for this request, set by
+       * `pages/+onBeforeRender.ts`. Carries the verdict and the scope —
+       * never the token itself.
        */
       livePreview: LivePreviewState
 

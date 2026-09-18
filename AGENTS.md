@@ -175,10 +175,15 @@ These rules apply whether or not the matching rule file or skill is loaded.
   `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
   set, never the set itself.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.**
-  `normalizeContentPath` undoes `+onBeforeRoute`'s `/index` spelling of `/`, and `localeUrl`
-  serves English bare because `/en/x` 301s to `/x`. The language dropdown, the canonical and the
-  `hreflang` cluster all read the same answer from there. Never restate either rule at a call
-  site.
+  `localeFromPath` reads the locale off a path, `normalizeContentPath` undoes `+onBeforeRoute`'s
+  `/index` spelling of `/`, and `localeUrl` serves English bare because `/en/x` 301s to `/x`. The
+  language dropdown, the canonical and the `hreflang` cluster all read the same answer from
+  there. Never restate one of these rules at a call site.
+- **Two hooks write `pageContext.locale`, and only these two.** `pages/+onBeforeRoute.ts` sets it
+  wherever routing runs. A thrown `render(<status>)` renders the error page from the pre-routing
+  pageContext, so routing never happens there — `pages/+onCreatePageContext.server.ts` covers
+  that one path, and only when `locale` is still absent. Never guard a consumer against an
+  undefined locale; the type says `Locale` and those two make it true.
 - **UI must be mobile-first and meet WCAG 2.1 AA.** See
   [design-system](docs/rules/design-system.md) for the full rules, including breakpoints and
   touch-target sizes.

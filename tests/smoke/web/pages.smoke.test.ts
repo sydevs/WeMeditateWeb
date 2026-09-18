@@ -19,9 +19,12 @@ import {
   expectNoChrome,
   expectNoBrokenLinks,
   discoverFromCms,
+  nonEnglishLocale,
+  htmlTag,
   renderedHtml,
   NOT_FOUND_MARKER,
 } from '../_helpers/preview'
+import { localeDirection } from '../../../server/cms-types'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {
@@ -55,8 +58,7 @@ describe('web preview pages', () => {
     // A prefix outside `availableLocales` now 404s by design, so a spec
     // pinned to "/es" would fail the day an editor stops offering Spanish —
     // and reports that as a broken deploy rather than a config change.
-    const offered = (await discoverFromCms())?.availableLocales ?? []
-    const locale = offered.find((code) => code !== 'en')
+    const locale = await nonEnglishLocale()
 
     ctx.skip(
       !locale,
@@ -76,6 +78,32 @@ describe('web preview pages', () => {
     const res = await fetchPage('/zz/about')
 
     expect(res.status, 'an unoffered locale prefix should 404').toBe(404)
+    // No route matches "/zz/about", so Vike renders the error page from the
+    // already-routed pageContext. This flavour keeps its locale, and "zz" is
+    // not one, so English is the right answer. It is the control for the
+    // thrown-render() flavour below.
+    expect(htmlTag(res.html), 'a no-route-matched 404 should stay English').toContain('lang="en"')
+  })
+
+  it('a 404 thrown from a data hook keeps the locale of its URL', async (ctx) => {
+    // The affected flavour: the route matches, the data hook throws
+    // `render(404)`, and Vike renders the error page from the PRE-routing
+    // pageContext — the one +onBeforeRoute never touched. Missing the
+    // locale there drops <html lang> and reads the translations global
+    // with no locale, which then caches under a key every locale shares.
+    const locale = await nonEnglishLocale()
+
+    ctx.skip(!locale, 'the site offers English only (or no CMS key); no prefix to check')
+
+    const res = await fetchPage(`/${locale}/__smoke_does_not_exist__`)
+
+    expect(res.status, 'an unknown slug under a locale should 404').toBe(404)
+    expect(htmlTag(res.html), 'the error page should carry the URL locale').toContain(
+      `lang="${locale}"`,
+    )
+    // `localeDirection` is what `+htmlAttributes` calls, so this catches the
+    // day the error page stops asking it rather than restating its answer.
+    expect(htmlTag(res.html)).toContain(`dir="${localeDirection(locale!)}"`)
   })
 
   it('canonicalizes the default (en) locale away via a 301 redirect', async () => {
