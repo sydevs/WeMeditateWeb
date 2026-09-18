@@ -8,6 +8,7 @@ import { useT } from '../../../hooks/useT'
 import { Placeholder } from '../../atoms/Placeholder/Placeholder'
 import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
+import type { Locale } from '../../../server/cms-types'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /** Card title. */
@@ -63,7 +64,7 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
   badgeUrl?: string
 
   /** Locale for the link. Defaults to the current page locale from context. */
-  locale?: string
+  locale?: Locale
 
   /**
    * Fade the image in when it loads.

@@ -1,4 +1,5 @@
 import { Link } from '../../atoms'
+import type { Locale } from '../../../server/cms-types'
 
 /** A single link item */
 export interface FooterLink {
@@ -17,7 +18,7 @@ export interface FooterLinkListProps {
   /** Visual variant of the link list */
   variant?: 'default' | 'hero'
   /** Current locale for locale-aware links */
-  locale?: string
+  locale?: Locale
 }
 
 /**

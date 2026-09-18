@@ -122,11 +122,26 @@ export function normalizeContentPath(pathname: string | null | undefined): strin
 }
 
 /**
- * The path a locale serves an already-normalized path at.
+ * Whether an href is a path on this site, and so ours to locale-prefix.
+ *
+ * A protocol-relative `//cdn.example.com` is another origin despite the
+ * leading slash, and `mailto:`, `tel:` and a bare relative `about` are not
+ * paths at all. Every one of them becomes nonsense with a locale glued on.
+ */
+export function isSitePath(href: string): boolean {
+  return href.startsWith('/') && !href.startsWith('//')
+}
+
+/**
+ * The path a locale serves an already-normalized path at, origin-relative.
  *
  * English is served bare, because `+onBeforeRoute` 301s `/en/x` to `/x`.
  * Advertising `/en/x` would advertise a redirect, which is the one thing a
  * canonical must never be.
+ *
+ * Pass a path from `normalizeContentPath`. This does not re-normalize, and
+ * it prefixes whatever it is given — a caller holding arbitrary hrefs filters
+ * them through `isSitePath` first, because only it knows that it might.
  */
 export function localePath(locale: Locale, path: string): string {
   if (locale === DEFAULT_LOCALE) {
@@ -138,12 +153,7 @@ export function localePath(locale: Locale, path: string): string {
   return path === '/' ? `/${locale}` : `/${locale}${path}`
 }
 
-/**
- * The absolute URL a locale serves an already-normalized path at.
- *
- * Pass a path from `normalizeContentPath`. This does not re-normalize: it
- * runs once per locale, and the path is the same on every one of them.
- */
+/** The absolute URL a locale serves an already-normalized path at. */
 export function localeUrl(origin: string, locale: Locale, path: string): string {
   return `${origin}${localePath(locale, path)}`
 }

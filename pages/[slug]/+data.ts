@@ -15,7 +15,7 @@ import { redirect, render } from 'vike/abort'
 export interface PageData {
   page: Page
   settings: WebConfig
-  locale: string
+  locale: Locale
   slug: string
   /**
    * The locales this page advertises in its `hreflang` cluster: published

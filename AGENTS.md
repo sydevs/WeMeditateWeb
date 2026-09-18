@@ -182,12 +182,19 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.**
   `localeFromPath` reads the locale off a path and reports whether that path spelled `/index`
   itself, `normalizeContentPath` undoes `+onBeforeRoute`'s `/index` spelling of `/`, and
-  `localePath` serves English bare because `/en/x` 301s to `/x` — `localeUrl` is that with an
-  origin in front. The language dropdown, the canonical and the `hreflang` cluster all read the
-  same answer from there. Never restate one of these rules at a call site. A **scheme** is part
-  of that spelling: `isSafeHttpUrl` and `isSafeNavigationUrl` live there too, and any URL the
-  site did not author itself passes one of them before it reaches an `href` or
-  `window.location` — they are what stops a configured `javascript:` value running in our origin.
+  `localePath` prefixes a path with a locale — serving English bare because `/en/x` 301s to `/x`,
+  and spelling the home page `/fr` rather than `/fr/`. `localeUrl` is its absolute form and
+  nothing else, so the two cannot disagree. `Link`, `EmbedButton`, the language dropdown, the
+  canonical and the `hreflang` cluster all read the same answer from there. Never restate one of
+  these rules at a call site. A **scheme** is part of that spelling: `isSafeHttpUrl` and
+  `isSafeNavigationUrl` live there too, and any URL the site did not author itself passes one of
+  them before it reaches an `href` or `window.location` — they are what stops a configured
+  `javascript:` value running in our origin.
+
+  `localePath` prefixes whatever it is handed. A caller holding arbitrary hrefs — `Link` takes
+  any `href` a component writes — filters them through `isSitePath` first, which is why that
+  predicate lives beside the rule rather than in either caller. Anything else (`mailto:`, an
+  `#anchor`, `//another-origin`) is not ours to spell.
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.

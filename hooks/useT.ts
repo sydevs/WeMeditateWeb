@@ -7,20 +7,19 @@
  *
  * Outside a Vike app — Ladle, a unit test rendering a component bare —
  * there is no `pageContext`, so this falls back to the committed English
- * snapshot rather than throwing. That mirrors `Link.tsx:75-81`.
+ * snapshot rather than throwing.
  */
 
 import { usePageContext } from 'vike-react/usePageContext'
 import type { PageContext } from 'vike/types'
-import type { Locale, WebTranslations } from '../server/cms-types'
+import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/cms-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
 /**
  * `pageContext`, or `null` where there is none.
  *
  * `usePageContext()` throws outside a Vike app. Ladle and the unit suite
- * both render components bare, so every consumer needs this guard — see
- * the same shape in `components/atoms/Link/Link.tsx:75-81`.
+ * both render components bare, so every consumer needs this guard.
  */
 export function useOptionalPageContext(): PageContext | null {
   try {
@@ -32,7 +31,7 @@ export function useOptionalPageContext(): PageContext | null {
 
 export function useT(): TFunction {
   const pageContext = useOptionalPageContext()
-  const locale: Locale = pageContext?.locale ?? 'en'
+  const locale: Locale = pageContext?.locale ?? DEFAULT_LOCALE
   const translations: WebTranslations =
     (pageContext?.translations as WebTranslations | undefined) ?? EN_TRANSLATIONS
 
@@ -41,7 +40,7 @@ export function useT(): TFunction {
   return getT(translations, locale)
 }
 
-/** The current locale, for `Intl` formatters. Falls back to `en`. */
+/** The current locale, for `Intl` formatters. Falls back to the default. */
 export function useLocale(): Locale {
-  return useOptionalPageContext()?.locale ?? 'en'
+  return useOptionalPageContext()?.locale ?? DEFAULT_LOCALE
 }

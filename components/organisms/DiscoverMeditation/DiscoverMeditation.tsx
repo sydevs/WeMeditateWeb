@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
 import { Link } from '../../atoms'
 import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
+import type { Locale } from '../../../server/cms-types'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /**
@@ -16,7 +17,7 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   subtitle?: string
 
   /** Current locale for link prefixing */
-  locale?: string
+  locale?: Locale
 }
 
 /**
@@ -101,7 +102,7 @@ export function DiscoverMeditation({
 /** Individual action item with icon, title, and subtitle */
 interface ActionItemProps {
   href: string
-  locale?: string
+  locale?: Locale
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   title: string
   subtitle: string

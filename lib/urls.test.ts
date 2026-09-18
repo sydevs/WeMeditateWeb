@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   isSafeHttpUrl,
   isSafeNavigationUrl,
+  isSitePath,
   localeFromPath,
   localePath,
   localeUrl,
@@ -131,6 +132,47 @@ describe('localeUrl', () => {
   it('renders the home page as a bare prefix, which the router resolves', () => {
     expect(localeUrl(ORIGIN, 'en', '/')).toBe('https://wemeditate.com/')
     expect(localeUrl(ORIGIN, 'fr', '/')).toBe('https://wemeditate.com/fr')
+  })
+})
+
+describe('localePath', () => {
+  it('serves English bare, because /en/x 301s to /x', () => {
+    expect(localePath('en', '/about')).toBe('/about')
+    expect(localePath('en', '/')).toBe('/')
+  })
+
+  it('prefixes every other locale', () => {
+    expect(localePath('fr', '/about')).toBe('/fr/about')
+    expect(localePath('pt-BR', '/about')).toBe('/pt-BR/about')
+  })
+
+  it('spells the home page /fr, not /fr/', () => {
+    // `+onBeforeRoute`'s pattern matches the bare prefix and resolves it to
+    // the home page, so the trailing slash buys nothing and spells the same
+    // page a second way.
+    expect(localePath('fr', '/')).toBe('/fr')
+  })
+
+})
+
+describe('isSitePath', () => {
+  it('accepts a path on this site', () => {
+    expect(isSitePath('/about')).toBe(true)
+    expect(isSitePath('/')).toBe(true)
+  })
+
+  it('rejects another origin, even one written protocol-relative', () => {
+    // `//cdn.example.com` leads with a slash but is not our path, and a
+    // locale glued onto any of these makes nonsense.
+    expect(isSitePath('//cdn.example.com/x')).toBe(false)
+    expect(isSitePath('https://example.com')).toBe(false)
+  })
+
+  it('rejects what is not a path at all', () => {
+    expect(isSitePath('#section')).toBe(false)
+    expect(isSitePath('mailto:hello@example.com')).toBe(false)
+    expect(isSitePath('tel:+1234567890')).toBe(false)
+    expect(isSitePath('about')).toBe(false)
   })
 })
 
