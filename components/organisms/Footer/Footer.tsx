@@ -35,7 +35,7 @@ export interface FooterProps {
   /** Copyright text */
   copyrightText: string
   /** Current locale for locale-aware links */
-  locale?: string
+  locale?: Locale
 }
 
 

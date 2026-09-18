@@ -33,6 +33,13 @@ describe('buildEmbedSnippet', () => {
     )
   })
 
+  it('passes a path that is not site-absolute through unprefixed', () => {
+    // `localePath` prefixes whatever it is given, so the guard stays here.
+    expect(buildEmbedSnippet('meditations/123/embed', 'fr', '')).toContain(
+      'src="meditations/123/embed"',
+    )
+  })
+
   it('emits a bare path when origin is empty (SSR / no window)', () => {
     expect(buildEmbedSnippet('/meditations/123/embed', 'en', '')).toContain(
       'src="/meditations/123/embed"',

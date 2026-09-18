@@ -181,12 +181,19 @@ These rules apply whether or not the matching rule file or skill is loaded.
   set, never the set itself.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.**
   `localeFromPath` reads the locale off a path, `normalizeContentPath` undoes `+onBeforeRoute`'s
-  `/index` spelling of `/`, and `localeUrl` serves English bare because `/en/x` 301s to `/x`. The
+  `/index` spelling of `/`, and `localePath` prefixes a path with a locale — serving English bare
+  because `/en/x` 301s to `/x`, and spelling the home page `/fr` rather than `/fr/`. `localeUrl`
+  is its absolute form and nothing else, so the two cannot disagree. `Link`, `EmbedButton`, the
   language dropdown, the canonical and the `hreflang` cluster all read the same answer from
   there. Never restate one of these rules at a call site. A **scheme** is part of that spelling:
   `isSafeHttpUrl` and `isSafeNavigationUrl` live there too, and any URL the site did not author
   itself passes one of them before it reaches an `href` or `window.location` — they are what
   stops a configured `javascript:` value running in our origin.
+
+  `localePath` prefixes whatever it is handed. A caller holding arbitrary hrefs — `Link` takes
+  any `href` a component writes — filters them through `isSitePath` first, which is why that
+  predicate lives beside the rule rather than in either caller. Anything else (`mailto:`, an
+  `#anchor`, `//another-origin`) is not ours to spell.
 - **Two hooks write `pageContext.locale`, and only these two.** `pages/+onBeforeRoute.ts` sets it
   wherever routing runs. A thrown `render(<status>)` renders the error page from the pre-routing
   pageContext, so routing never happens there — `pages/+onCreatePageContext.server.ts` covers
