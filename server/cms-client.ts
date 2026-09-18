@@ -43,7 +43,6 @@ import type {
   AuthorsSelect,
   VideosSelect,
   WmWebConfigSelect,
-  WmWebTranslationsSelect,
   Audience,
 } from './payload-types'
 import type {
@@ -58,7 +57,7 @@ import type {
   RelatedMeditationCard,
   RelatedLectureCard,
 } from './cms-types'
-import { DEFAULT_LOCALE, isLocale } from './cms-types'
+import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './cms-types'
 
 // --- Common Options Interfaces ---
 
@@ -686,26 +685,6 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
     } as WebConfig
   })
 }
-
-/**
- * Every translations tab the site renders. Typed against the generated
- * select interface, so a tab renamed upstream is a compile error here
- * rather than a silent group of missing strings.
- */
-const WEB_TRANSLATIONS_SELECT = {
-  common: true,
-  navigation: true,
-  footer: true,
-  errors: true,
-  article: true,
-  meditation: true,
-  lecture: true,
-  map: true,
-  forms: true,
-  media: true,
-  location: true,
-  blocks: true,
-} satisfies WmWebTranslationsSelect<true>
 
 /**
  * Gets the UI strings for a locale, from the `wm-web-translations` global.
