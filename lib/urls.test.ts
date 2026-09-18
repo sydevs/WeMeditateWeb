@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { localeFromPath, localeUrl, normalizeContentPath } from './urls'
+import { isIndexPath, localeFromPath, localePath, localeUrl, normalizeContentPath } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -50,6 +50,21 @@ describe('localeFromPath', () => {
   })
 })
 
+describe('isIndexPath', () => {
+  it('recognizes the routing spelling, slash or no slash', () => {
+    expect(isIndexPath('/index')).toBe(true)
+    expect(isIndexPath('/index/')).toBe(true)
+  })
+
+  it('rejects a real path that merely ends in index', () => {
+    // +onBeforeRoute 301s what this matches, so a page really named
+    // `/about/index` must not disappear behind the router's own spelling.
+    expect(isIndexPath('/about/index')).toBe(false)
+    expect(isIndexPath('/indexes')).toBe(false)
+    expect(isIndexPath('/')).toBe(false)
+  })
+})
+
 describe('normalizeContentPath', () => {
   it('collapses the routing spelling of the home page back to a URL', () => {
     // +onBeforeRoute rewrites `/` to `/index` before routing, and
@@ -67,6 +82,20 @@ describe('normalizeContentPath', () => {
     expect(normalizeContentPath(null)).toBe('/')
     expect(normalizeContentPath(undefined)).toBe('/')
     expect(normalizeContentPath('')).toBe('/')
+  })
+})
+
+describe('localePath', () => {
+  it('serves English bare, and prefixes every other locale', () => {
+    expect(localePath('en', '/about')).toBe('/about')
+    expect(localePath('fr', '/about')).toBe('/fr/about')
+  })
+
+  it('spells a locale home page as the bare prefix', () => {
+    // +onBeforeRoute redirects a requested /index here, so /fr/ would be a
+    // redirect to a redirect.
+    expect(localePath('en', '/')).toBe('/')
+    expect(localePath('fr', '/')).toBe('/fr')
   })
 })
 

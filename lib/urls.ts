@@ -55,6 +55,11 @@ export function localeFromPath(pathname: string): PathLocale {
   }
 }
 
+/** Whether a path is the router's own `/index` spelling of a home page. */
+export function isIndexPath(pathname: string): boolean {
+  return /^\/index\/?$/.test(pathname)
+}
+
 /**
  * The locale-free path, in the spelling the URL builders below expect.
  *
@@ -73,21 +78,28 @@ export function normalizeContentPath(pathname: string | null | undefined): strin
 }
 
 /**
- * The absolute URL a locale serves an already-normalized path at.
+ * The path a locale serves an already-normalized path at.
  *
  * English is served bare, because `+onBeforeRoute` 301s `/en/x` to `/x`.
  * Advertising `/en/x` would advertise a redirect, which is the one thing a
  * canonical must never be.
+ */
+export function localePath(locale: Locale, path: string): string {
+  if (locale === DEFAULT_LOCALE) {
+    return path
+  }
+
+  // `/fr` rather than `/fr/`: `+onBeforeRoute`'s pattern matches a bare
+  // prefix and resolves it to the home page.
+  return path === '/' ? `/${locale}` : `/${locale}${path}`
+}
+
+/**
+ * The absolute URL a locale serves an already-normalized path at.
  *
  * Pass a path from `normalizeContentPath`. This does not re-normalize: it
  * runs once per locale, and the path is the same on every one of them.
  */
 export function localeUrl(origin: string, locale: Locale, path: string): string {
-  if (locale === DEFAULT_LOCALE) {
-    return `${origin}${path}`
-  }
-
-  // `/fr` rather than `/fr/`: `+onBeforeRoute`'s pattern matches a bare
-  // prefix and resolves it to the home page.
-  return path === '/' ? `${origin}/${locale}` : `${origin}/${locale}${path}`
+  return `${origin}${localePath(locale, path)}`
 }
