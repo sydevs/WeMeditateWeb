@@ -41,6 +41,9 @@ describe('<Link> locale prefixing', () => {
         </Link>,
       ),
     ).toContain('href="/about"')
+
+    // And with no locale prop at all, which is how most call sites render.
+    expect(renderToStaticMarkup(<Link href="/about/">x</Link>)).toContain('href="/about"')
   })
 
   it('prefixes a content path, and serves English bare', () => {
@@ -103,9 +106,6 @@ describe('<Link> locale prefixing', () => {
 
     expect(html).toContain('href="/about"')
     expect(html).not.toContain('undefined')
-
-    // The trailing slash is normalized with no locale prop either.
-    expect(renderToStaticMarkup(<Link href="/about/">x</Link>)).toContain('href="/about"')
   })
 
   it('keeps a region-cased locale exactly as the CMS stores it', () => {

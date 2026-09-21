@@ -159,19 +159,16 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
 }
 
 /**
- * The path this site serves, for an href a component or an editor wrote.
+ * The path this site serves, for an href a component or an editor wrote —
+ * the one entry point for a caller that cannot promise `localePath`'s
+ * already-normalized input.
  *
- * `localePath` requires an already-normalized path, which a caller taking
- * arbitrary hrefs cannot promise. Composing the two here is what stops
- * `<Link href="/about/">` spelling a page the canonical spells `/about`.
- *
- * Normalize inside the `isSitePath` branch, never before it:
- * `normalizeContentPath('')` returns `/`, so an empty href would otherwise
- * become a link to the home page.
+ * ⚠ **The predicate runs on the href as written.** Classify first, transform
+ * second: `normalizeContentPath('')` is `/`, so normalizing ahead of the guard
+ * would turn an unset href into a link to the home page.
  *
  * A trailing slash before a `?` or a `#` survives, because
- * `normalizeContentPath` strips only a final slash: `/about/#section` stays as
- * written.
+ * `normalizeContentPath` strips only a final slash.
  */
 export function sitePath(locale: Locale, href: string): string {
   return isSitePath(href) ? localePath(locale, normalizeContentPath(href)) : href

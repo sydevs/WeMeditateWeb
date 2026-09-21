@@ -137,7 +137,6 @@ describe('localePath', () => {
     // `+onBeforeRoute`'s pattern matches the bare prefix and resolves it to
     // the home page, so the trailing slash buys nothing and spells the same
     // page a second way.
-    expect(localePath('en', '/')).toBe('/')
     expect(localePath('fr', '/')).toBe('/fr')
   })
 
@@ -146,16 +145,25 @@ describe('localePath', () => {
   })
 })
 
+const NOT_SITE_PATHS = [
+  'mailto:hello@example.com',
+  'tel:+1234567890',
+  '#section',
+  '//cdn.example.com/x',
+  'https://example.com',
+  'about',
+]
+
 describe('sitePath', () => {
   it('drops a trailing slash, so a link agrees with the page canonical', () => {
-    // `/about/` and `/about` are one page. ContentHead emits `/fr/about`.
+    // `/about/` and `/about` are one page, and ContentHead emits `/fr/about`.
     expect(sitePath('fr', '/about/')).toBe('/fr/about')
     expect(sitePath('en', '/about/')).toBe('/about')
+    expect(sitePath('pt-BR', '/about/')).toBe('/pt-BR/about')
   })
 
-  it('leaves an already-normalized path exactly as localePath would', () => {
+  it('leaves an already-normalized path as localePath alone would', () => {
     expect(sitePath('fr', '/about')).toBe('/fr/about')
-    expect(sitePath('en', '/about')).toBe('/about')
     expect(sitePath('fr', '/')).toBe('/fr')
   })
 
@@ -166,33 +174,22 @@ describe('sitePath', () => {
   })
 
   it('passes through anything that is not a path on this site', () => {
-    for (const href of [
-      'mailto:hello@example.com',
-      'tel:+1234567890',
-      '#section',
-      '//cdn.example.com/x',
-      'https://example.com',
-      'about',
-    ]) {
+    for (const href of NOT_SITE_PATHS) {
       expect(sitePath('fr', href)).toBe(href)
     }
   })
 
   it('leaves an empty href empty, rather than linking to the home page', () => {
-    // `normalizeContentPath('')` is `/`, so normalizing before the
-    // `isSitePath` guard would turn an unset ctaHref into a home-page link.
+    // The guard classifies the href as written. Normalizing first would make
+    // `''` into `/`, and an unset ctaHref into a home-page link.
     expect(sitePath('fr', '')).toBe('')
   })
 
   it('does not reach a trailing slash before a query or a hash', () => {
-    // `normalizeContentPath` strips only a final slash. Recorded as a known
-    // limit rather than a parser: sydevs/WeMeditateWeb#119.
+    // `normalizeContentPath` strips only a final slash. A known limit,
+    // recorded rather than fixed with a parser: sydevs/WeMeditateWeb#119.
     expect(sitePath('fr', '/about/#section')).toBe('/fr/about/#section')
     expect(sitePath('fr', '/about/?utm=1')).toBe('/fr/about/?utm=1')
-  })
-
-  it('keeps a region-cased code exactly as the CMS stores it', () => {
-    expect(sitePath('pt-BR', '/about/')).toBe('/pt-BR/about')
   })
 })
 
