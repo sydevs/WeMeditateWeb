@@ -133,6 +133,37 @@ export function isSitePath(href: string): boolean {
 }
 
 /**
+ * The path underneath an absolute URL, when that URL is on this origin.
+ *
+ * `null` for anything this site does not serve — another origin, a
+ * non-http(s) scheme, an unparseable string — and for an unknown `origin`,
+ * which is the case outside a Vike app. A caller holding a URL it did not
+ * build gets back either a path it may locale-prefix or nothing, and never
+ * has to compare origins itself.
+ *
+ * The path comes back exactly as the URL spelled it. A canonical from
+ * upstream is that document's own claim about itself, so re-spelling it is
+ * not this function's business.
+ */
+export function sitePathFromUrl(url: string, origin: string | null | undefined): string | null {
+  if (!origin) {
+    return null
+  }
+
+  try {
+    const parsed = new URL(url)
+
+    if (!isSafeHttpUrl(url) || parsed.origin !== origin) {
+      return null
+    }
+
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`
+  } catch {
+    return null
+  }
+}
+
+/**
  * The path a locale serves an already-normalized path at, origin-relative.
  *
  * English is served bare, because `+onBeforeRoute` 301s `/en/x` to `/x`.

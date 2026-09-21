@@ -7,6 +7,7 @@ import {
   localePath,
   localeUrl,
   normalizeContentPath,
+  sitePathFromUrl,
 } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -216,5 +217,44 @@ describe('isSafeNavigationUrl', () => {
   it('refuses anything that is neither', () => {
     expect(isSafeNavigationUrl('not a url')).toBe(false)
     expect(isSafeNavigationUrl('')).toBe(false)
+  })
+})
+
+describe('sitePathFromUrl', () => {
+  it('returns the path under a URL this origin serves', () => {
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb/london`, ORIGIN)).toBe('/map/gb/london')
+    expect(sitePathFromUrl(`${ORIGIN}/`, ORIGIN)).toBe('/')
+  })
+
+  it('keeps the query and fragment, which name a different document', () => {
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb?locale=fr#events`, ORIGIN)).toBe(
+      '/map/gb?locale=fr#events',
+    )
+  })
+
+  it('refuses another origin, including a port or scheme that only looks like ours', () => {
+    expect(sitePathFromUrl('https://other.org/map/gb', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('http://wemeditate.com/map/gb', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('https://wemeditate.com:8443/map/gb', ORIGIN)).toBeNull()
+  })
+
+  it('refuses a scheme that would execute rather than navigate', () => {
+    // `new URL` parses these happily, and their `origin` is `null` — which
+    // compares unequal here, but the scheme gate is what says so on purpose.
+    expect(sitePathFromUrl('javascript:alert(1)', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('data:text/html,<script>alert(1)</script>', ORIGIN)).toBeNull()
+  })
+
+  it('refuses what does not parse, and a relative path, which has no origin', () => {
+    expect(sitePathFromUrl('not a url', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('/map/gb', ORIGIN)).toBeNull()
+  })
+
+  it('refuses everything when the origin is unknown', () => {
+    // Outside a Vike app there is no request to compare against, and a
+    // guessed relativization would point at a URL we cannot confirm we serve.
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb`, null)).toBeNull()
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb`, undefined)).toBeNull()
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb`, '')).toBeNull()
   })
 })
