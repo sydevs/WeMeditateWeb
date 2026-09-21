@@ -17,6 +17,7 @@ describe('localeFromPath', () => {
       locale: 'en',
       pathWithoutLocale: '/about',
       prefixed: false,
+      requestedIndex: false,
     })
   })
 
@@ -31,6 +32,7 @@ describe('localeFromPath', () => {
       locale: 'fa',
       pathWithoutLocale: '/meditations/1',
       prefixed: true,
+      requestedIndex: false,
     })
   })
 
@@ -44,6 +46,7 @@ describe('localeFromPath', () => {
       locale: 'en',
       pathWithoutLocale: '/about',
       prefixed: true,
+      requestedIndex: false,
     })
   })
 
@@ -55,6 +58,22 @@ describe('localeFromPath', () => {
       prefixed: false,
     })
     expect(localeFromPath('/pt-br/about')).toMatchObject({ locale: 'en', prefixed: false })
+  })
+
+  it('tells a requested /index from the spelling it invents for a bare root', () => {
+    // +onBeforeRoute 301s the first and routes the second, and both arrive
+    // here as pathWithoutLocale `/index`.
+    expect(localeFromPath('/index')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/index/')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/fr/index')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/fr')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/fr/')).toMatchObject({ requestedIndex: false })
+  })
+
+  it('leaves a deeper path that merely ends in index alone', () => {
+    expect(localeFromPath('/about/index')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/indexes')).toMatchObject({ requestedIndex: false })
   })
 })
 
@@ -69,12 +88,29 @@ describe('normalizeContentPath', () => {
 
   it('drops a trailing slash, so a page is not its own duplicate', () => {
     expect(normalizeContentPath('/about/')).toBe('/about')
+    // Not `/index`: stripping the slash first would leave the spelling the
+    // router uses, which +onBeforeRoute redirects away from.
+    expect(normalizeContentPath('/index/')).toBe('/')
   })
 
   it('falls back to the root for a missing path', () => {
     expect(normalizeContentPath(null)).toBe('/')
     expect(normalizeContentPath(undefined)).toBe('/')
     expect(normalizeContentPath('')).toBe('/')
+  })
+})
+
+describe('localePath', () => {
+  it('serves English bare, and prefixes every other locale', () => {
+    expect(localePath('en', '/about')).toBe('/about')
+    expect(localePath('fr', '/about')).toBe('/fr/about')
+  })
+
+  it('spells a locale home page as the bare prefix', () => {
+    // +onBeforeRoute redirects a requested /index here, so /fr/ would be a
+    // redirect to a redirect.
+    expect(localePath('en', '/')).toBe('/')
+    expect(localePath('fr', '/')).toBe('/fr')
   })
 })
 

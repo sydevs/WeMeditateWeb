@@ -2,15 +2,21 @@ import { redirect } from 'vike/abort';
 import { modifyUrl } from 'vike/modifyUrl'
 import { PageContext } from 'vike/types'
 import { DEFAULT_LOCALE } from '../server/cms-types'
-import { localeFromPath } from '../lib/urls'
+import { localeFromPath, localePath, normalizeContentPath } from '../lib/urls'
 
 export function onBeforeRoute(pageContext: PageContext) {
   const { href, pathname } = pageContext.urlParsed
-  const { locale, pathWithoutLocale, prefixed } = localeFromPath(pathname)
+  const { locale, pathWithoutLocale, prefixed, requestedIndex } = localeFromPath(pathname)
 
+  // A redirect target is a URL, never a spelling only the router uses:
+  // `normalizeContentPath` undoes the `/index` below, so `/en` lands on the
+  // home page instead of its 200 duplicate.
   if (prefixed && locale === DEFAULT_LOCALE) {
-    // Preserve query parameters when redirecting
-    throw redirect(modifyUrl(href, { pathname: pathWithoutLocale }), 301)
+    throw redirect(modifyUrl(href, { pathname: normalizeContentPath(pathWithoutLocale) }), 301)
+  }
+
+  if (requestedIndex) {
+    throw redirect(modifyUrl(href, { pathname: localePath(locale, '/') }), 301)
   }
 
   return {

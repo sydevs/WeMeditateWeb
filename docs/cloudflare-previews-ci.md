@@ -36,7 +36,7 @@ check-run output).
   Ladle project (`wm-design`/`wemeditate-design`). It treats any HTTP response as "reachable," so
   a 500 is caught by the smoke specs, not by discovery.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage
-  and its content, a CMS page, a non-English locale, the `/en` → `/index` redirect, the 404 page,
+  and its content, a CMS page, a non-English locale, the `/en` → `/` redirect, the 404 page,
   and a meditation in full and embed form. Run with `pnpm test:smoke` and `PREVIEW_URL` set.
 - [tests/smoke/ladle/](../tests/smoke/ladle/) holds fetch-based Ladle specs: the app shell and a
   non-empty `/meta.json` story manifest. The static SPA needs no Playwright. Run with
@@ -53,7 +53,9 @@ Each fact below matches the deployed Worker's real behavior.
 - Only a locale in `wm-web-config.availableLocales` resolves. Any other prefix returns 404, so the
   non-English spec picks its locale from that field rather than hardcoding one — a spec pinned to
   `/es` would report an editor's config change as a broken deploy.
-- The router strips the default locale: `/en` redirects (301) to `/index`.
+- The router strips the default locale: `/en` redirects (301) to `/`.
+- `/index` is the router's own spelling of the home page, never a URL. A request for it
+  redirects (301) to `/`, and `/<locale>/index` to `/<locale>`.
 - An unknown path returns 404 and renders the ErrorFallback title "Content Not Found" — not "Page
   Not Found". The spec reads that title from `lib/translations.en.json` rather than duplicating it,
   so rewording it in the CMS cannot leave the markers matching nothing.
