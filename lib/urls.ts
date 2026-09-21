@@ -157,7 +157,13 @@ export function sitePathFromUrl(url: string, origin: string | null | undefined):
       return null
     }
 
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`
+    const path = `${parsed.pathname}${parsed.search}${parsed.hash}`
+
+    // ⚠ `https://wemeditate.com//evil.com` is on this origin and relativizes
+    // to `//evil.com`, which is another host again. Every caller hands the
+    // result to something that trusts a path, so the absolute URL — same
+    // origin, and harmless — is the safe answer here.
+    return isSitePath(path) ? path : null
   } catch {
     return null
   }

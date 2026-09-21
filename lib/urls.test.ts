@@ -245,6 +245,13 @@ describe('sitePathFromUrl', () => {
     expect(sitePathFromUrl('data:text/html,<script>alert(1)</script>', ORIGIN)).toBeNull()
   })
 
+  it('refuses a same-origin path that would read as another host', () => {
+    // `//evil.com` is a path by origin and a host by spelling. `Link` would
+    // emit it untouched, so the absolute URL is the safer answer.
+    expect(sitePathFromUrl(`${ORIGIN}//evil.com`, ORIGIN)).toBeNull()
+    expect(sitePathFromUrl(`${ORIGIN}//evil.com/map/gb`, ORIGIN)).toBeNull()
+  })
+
   it('refuses what does not parse, and a relative path, which has no origin', () => {
     expect(sitePathFromUrl('not a url', ORIGIN)).toBeNull()
     expect(sitePathFromUrl('/map/gb', ORIGIN)).toBeNull()
