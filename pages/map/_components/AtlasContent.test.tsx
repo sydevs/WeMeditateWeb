@@ -124,6 +124,9 @@ describe('a region page', () => {
     expect(html).toContain('Saturday morning meditation')
     expect(html).toContain('Every week on Saturday at 9:30 AM')
     expect(html).toContain('12 Beethoven Street, London')
+    // Absolute because there is no `pageContext` here, so no origin to
+    // recognise the canonical as ours. A served page relativizes it and
+    // carries the visitor's locale — see the `.locale` and `.english` suites.
     expect(html).toContain('href="https://wemeditate.com/map/gb/london/1204"')
   })
 

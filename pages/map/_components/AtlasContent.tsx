@@ -21,8 +21,10 @@ import type {
   AtlasSeoResponse,
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
-import { useT, useLocale } from '../../../hooks/useT'
+import { useT, useLocale, useOptionalPageContext } from '../../../hooks/useT'
 import { formatList } from '../../../lib/locale-names'
+import { sitePathFromUrl } from '../../../lib/urls'
+import { Link } from '../../../components/atoms/Link'
 
 /**
  * Where a region or class link should point.
@@ -33,18 +35,33 @@ import { formatList } from '../../../lib/locale-names'
  * this app itself declares non-canonical. The `/map` path is the
  * fallback. It keeps a region with no publishable owner reachable,
  * instead of rendering dead text.
+ *
+ * A canonical we serve ourselves comes back as its path, so `Link` can
+ * carry the visitor's locale onto it. The absolute form cannot: it is one
+ * URL, and the atlas publishes it locale-free, which would drop a French
+ * visitor into English on every rung. `origin` is unknown outside a Vike
+ * app, and then the canonical stands as upstream spelled it.
  */
-export function atlasHref(link: { route: string | null; url: string | null }): string | null {
+export function atlasHref(
+  link: { route: string | null; url: string | null },
+  origin?: string | null,
+): string | null {
   if (link.url) {
-    return link.url
+    return sitePathFromUrl(link.url, origin) ?? link.url
   }
 
   return link.route ? `${MAP_PREFIX}${link.route}` : null
 }
 
+/** The origin this response is being served from, or `null` off a request. */
+function useOrigin(): string | null {
+  return useOptionalPageContext()?.urlParsed?.origin ?? null
+}
+
 /** Region ancestry, root first. The final rung is the current page, so it is not a link. */
 function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
   const t = useT()
+  const origin = useOrigin()
 
   if (trail.length < 2) {
     return null
@@ -54,7 +71,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
     <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-600">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {trail.map((rung, index) => {
-          const href = atlasHref(rung)
+          const href = atlasHref(rung, origin)
           const isCurrent = index === trail.length - 1
 
           return (
@@ -63,9 +80,9 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
               {isCurrent || !href ? (
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
-                <a className="hover:text-teal-600" href={href}>
+                <Link className="hover:text-teal-600" href={href} variant="unstyled">
                   {rung.name}
-                </a>
+                </Link>
               )}
             </li>
           )
@@ -78,15 +95,16 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
 /** One class in a region's listing. */
 function EventCard({ card }: { card: AtlasSeoEventCard }) {
   const t = useT()
-  const href = atlasHref(card)
+  const origin = useOrigin()
+  const href = atlasHref(card, origin)
 
   return (
     <li className="border-t border-gray-200 py-4">
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
-          <a className="hover:text-teal-600" href={href}>
+          <Link className="hover:text-teal-600" href={href} variant="unstyled">
             {card.title}
-          </a>
+          </Link>
         ) : (
           card.title
         )}
