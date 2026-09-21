@@ -116,11 +116,8 @@ export async function fetchWithErrorDetails(
  * @param path - Path and query from the leading slash, e.g. `/api/atlas/seo?route=…`
  */
 export async function cmsFetch(path: string): Promise<Response> {
-  // The path is concatenated, not resolved, so `baseURL` fixes the authority —
-  // with one exception: a path starting `@` makes the host userinfo and sends
-  // the API key to whatever follows it. `content-index.ts` passes an endpoint
-  // the CMS computed rather than one this repo wrote, so the one chokepoint
-  // every custom-endpoint read now shares checks instead of trusting.
+  // The path is concatenated, not resolved, so an `@` or `//` prefix moves the
+  // authority — and the API key goes with it.
   if (!path.startsWith('/') || path.startsWith('//')) {
     throw new Error(`cmsFetch needs a site-relative path, got: ${path}`)
   }
