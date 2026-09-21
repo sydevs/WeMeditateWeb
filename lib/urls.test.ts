@@ -231,6 +231,12 @@ describe('sitePathFromUrl', () => {
     )
   })
 
+  it('normalizes the path, so one page cannot yield two locale URLs', () => {
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb/`, ORIGIN)).toBe('/map/gb')
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb/?locale=fr`, ORIGIN)).toBe('/map/gb?locale=fr')
+    expect(sitePathFromUrl(`${ORIGIN}/index`, ORIGIN)).toBe('/')
+  })
+
   it('refuses another origin, including a port or scheme that only looks like ours', () => {
     expect(sitePathFromUrl('https://other.org/map/gb', ORIGIN)).toBeNull()
     expect(sitePathFromUrl('http://wemeditate.com/map/gb', ORIGIN)).toBeNull()

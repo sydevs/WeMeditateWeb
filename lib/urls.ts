@@ -140,8 +140,10 @@ export function isSitePath(href: string): boolean {
  * compares origins itself. `null` covers an unknown `origin` too, which is
  * the case outside a Vike app.
  *
- * The path comes back exactly as the URL spelled it. An upstream canonical
- * is that document's own claim about itself, not ours to re-spell.
+ * The path comes back in `normalizeContentPath`'s spelling. Every caller
+ * hands this to `localePath`, which re-normalizes nothing, so a canonical
+ * spelled `/map/gb/` would otherwise yield a second `/fr/map/gb/`. The query
+ * and fragment survive: they name a different document, not a respelling.
  */
 export function sitePathFromUrl(url: string, origin: string | null | undefined): string | null {
   if (!origin) {
@@ -162,7 +164,7 @@ export function sitePathFromUrl(url: string, origin: string | null | undefined):
       return null
     }
 
-    const path = `${parsed.pathname}${parsed.search}${parsed.hash}`
+    const path = `${normalizeContentPath(parsed.pathname)}${parsed.search}${parsed.hash}`
 
     // ⚠ `https://wemeditate.com//evil.com` is same-origin yet reads as a
     // host, and every caller hands this result to something trusting a path.
