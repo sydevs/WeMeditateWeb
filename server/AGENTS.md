@@ -73,8 +73,9 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 belong to no collection, so the Payload SDK cannot express them. Every one reads through
 `cmsFetch` ([cms-fetch.ts](cms-fetch.ts)), which resolves the base URL, sends the
 `Authorization: clients API-Key` header, logs the request, and dumps the CMS error body on a
-non-OK response. Hand it a path, never a URL, and shape the response yourself. `select` and
-`populate` do not apply here.
+non-OK response. Hand it a path, never a URL — it refuses anything that is not site-relative, so
+a CMS-computed endpoint cannot move the request off the CMS origin — and shape the response
+yourself. `select` and `populate` do not apply here.
 
 Three rules still apply:
 
@@ -83,10 +84,11 @@ Three rules still apply:
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).
-- **Throw a `CmsResponseError`, never a plain `Error`.** `detectErrorType` reads `.status`
-  structurally, and otherwise falls back to matching `50[0-9]` in the message. A plain error
+- **Throw through `throwIfNotOk`, after your own 404 branch.** `detectErrorType` reads `.status`
+  structurally, and otherwise falls back to matching `50[0-9]` in the message. A plain `Error`
   therefore classifies a Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` refuses
-  the one shape a Railway restart behind the edge produces.
+  the one shape a Railway restart behind the edge produces. A 404 is an answer, not a fault: it
+  returns, so it never spends the retry ladder, and `cmsFetch` logs it without dumping a body.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See
