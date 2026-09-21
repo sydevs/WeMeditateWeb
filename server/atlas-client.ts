@@ -113,12 +113,11 @@ export async function getAtlasSeo(options: {
 /**
  * The most atlas URLs one sitemap carries.
  *
- * The upstream answer is unpaginated and this runs inside a Worker request,
- * so something has to bound it. 50,000 URLs is the sitemap spec's own
- * per-file limit and the document would breach that before the Worker ran
- * out of memory; the margin leaves room for the content half, which shares
- * the file. Crossing the cap is reported rather than silent — an unnoticed
- * truncation is the whole of #123.
+ * This bounds the document, not the Worker: `response.json()` has already
+ * materialised every row by the time the cap applies. 50,000 URLs is the
+ * sitemap spec's own per-file limit, and the margin leaves room for the
+ * content half, which shares the file. Crossing the cap is reported rather
+ * than silent — an unnoticed truncation is the whole of #123.
  */
 const SITEMAP_URL_CAP = 45_000
 

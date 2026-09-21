@@ -232,8 +232,8 @@ describe('getAtlasSitemapUrls', () => {
   })
 
   it('caps the list and reports the truncation rather than hiding it', async () => {
-    // The upstream answer is unpaginated, so the cap is what keeps one
-    // Worker request bounded. A silent cut is what #123 was.
+    // The cap holds the document to the sitemap spec's 50,000-URL limit,
+    // not the Worker request. A silent cut is what #123 was.
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       sitemapResponse(
         Array.from({ length: 45_010 }, (_, index) => ({
