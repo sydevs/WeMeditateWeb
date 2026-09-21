@@ -305,14 +305,6 @@ describe('getRelatedMeditations', () => {
 
     expect(await getRelatedMeditations({ id: '163', locale: 'en' })).toEqual([])
   })
-
-  it('throws a 522 the retry ladder classifies as SERVER, not UNKNOWN', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(522, {})))
-
-    await getRelatedMeditations({ id: '163', locale: 'en' })
-
-    expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
-  })
 })
 
 describe('getRelatedLectures', () => {
@@ -383,14 +375,6 @@ describe('getRelatedLectures', () => {
 
     expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })).toEqual([])
   })
-
-  it('throws a 522 the retry ladder classifies as SERVER, not UNKNOWN', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(522, {})))
-
-    await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })
-
-    expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
-  })
 })
 
 describe('getMeditationSongs', () => {
@@ -419,11 +403,22 @@ describe('getMeditationSongs', () => {
 
     expect(await getMeditationSongs({ id: '999999', locale: 'en' })).toEqual([])
   })
+})
 
-  it('throws a 522 the retry ladder classifies as SERVER, not UNKNOWN', async () => {
+describe('every custom-endpoint read', () => {
+  beforeEach(resetReadState)
+
+  it.each([
+    ['getMeditationSongs', () => getMeditationSongs({ id: '77', locale: 'en' })],
+    ['getRelatedMeditations', () => getRelatedMeditations({ id: '163', locale: 'en' })],
+    ['getRelatedLectures', () => getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })],
+  ])('hands %s a 522 the retry ladder classifies as SERVER, not UNKNOWN', async (_label, read) => {
+    // `detectErrorType` falls back to matching `50[0-9]` in the message, which
+    // a Cloudflare-origin 5xx never contains. Only the status on the error
+    // keeps it retryable.
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(522, {})))
 
-    await getMeditationSongs({ id: '77', locale: 'en' })
+    await read()
 
     expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
   })

@@ -27,7 +27,7 @@
 
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
-import { cmsFetch, CmsResponseError } from './cms-fetch'
+import { cmsFetch, throwIfNotOk } from './cms-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
 import type {
@@ -876,12 +876,7 @@ export async function getMeditationSongs(
       if (response.status === 404) return []
 
       // Let server and network errors propagate, so the retry runs.
-      if (!response.ok) {
-        throw new CmsResponseError(
-          `getMeditationSongs(${options.id}) failed: ${response.status}`,
-          response.status,
-        )
-      }
+      throwIfNotOk(response, `getMeditationSongs(${options.id})`)
 
       const body = (await response.json()) as {
         docs?: Array<{ id: number; title?: string | null; url?: string | null }>
@@ -965,12 +960,7 @@ export async function getRelatedMeditations(
       // An unknown lecture ID, or no related route, means no related content.
       if (response.status === 404) return []
 
-      if (!response.ok) {
-        throw new CmsResponseError(
-          `getRelatedMeditations(${options.id}) failed: ${response.status}`,
-          response.status,
-        )
-      }
+      throwIfNotOk(response, `getRelatedMeditations(${options.id})`)
 
       const body = (await response.json()) as {
         docs?: Array<Record<string, unknown>>
@@ -1059,12 +1049,7 @@ export async function getRelatedLectures(
 
       if (response.status === 404) return []
 
-      if (!response.ok) {
-        throw new CmsResponseError(
-          `getRelatedLectures(${options.id}) failed: ${response.status}`,
-          response.status,
-        )
-      }
+      throwIfNotOk(response, `getRelatedLectures(${options.id})`)
 
       const body = (await response.json()) as {
         docs?: Array<Record<string, unknown>>

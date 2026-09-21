@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { cmsFetch, CmsResponseError } from './cms-fetch'
+import { cmsFetch, CmsResponseError, throwIfNotOk } from './cms-fetch'
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./cms-context', () => ({
@@ -55,6 +55,53 @@ describe('cmsFetch', () => {
       '[PayloadCMS] Error response:',
       expect.objectContaining({ body: { errors: [{ message: 'select is required' }] } }),
     )
+  })
+
+  it.each(['@evil.example/api/pages', '//evil.example/api/pages', 'api/pages'])(
+    'refuses %s rather than sign a request it cannot place on the CMS origin',
+    async (path) => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+      // `https://cms.test` + `@evil.example/…` parses with `cms.test` as
+      // userinfo and `evil.example` as the host, which would hand the API key
+      // to whoever answers there.
+      await expect(cmsFetch(path)).rejects.toThrow('site-relative path')
+      expect(fetchSpy).not.toHaveBeenCalled()
+    },
+  )
+
+  it('stays quiet on a 404, which every caller treats as an answer', async () => {
+    const errorSpy = vi.spyOn(console, 'error')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ errors: [] }), { status: 404 }),
+    )
+
+    await cmsFetch('/api/meditations/999/songs')
+
+    // The request line still records it. Dumping a body here would buffer one
+    // on a hot path and make an ordinary stale link look like a fault.
+    expect(errorSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('throwIfNotOk', () => {
+  it('passes an OK response through', () => {
+    expect(() => throwIfNotOk(new Response('{}', { status: 200 }), 'read')).not.toThrow()
+  })
+
+  it('names what failed and carries the status', () => {
+    const error = (() => {
+      try {
+        throwIfNotOk(new Response('{}', { status: 522 }), 'getAtlasSeo(/gb/london)')
+      } catch (thrown) {
+        return thrown
+      }
+    })()
+
+    expect(error).toBeInstanceOf(CmsResponseError)
+    expect((error as CmsResponseError).message).toBe('getAtlasSeo(/gb/london) failed: 522')
+    expect((error as CmsResponseError).status).toBe(522)
   })
 })
 

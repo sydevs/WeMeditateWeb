@@ -24,7 +24,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { cmsFetch, CmsResponseError } from './cms-fetch'
+import { cmsFetch, throwIfNotOk } from './cms-fetch'
 import { withRetry } from './error-utils'
 import { createPayloadClient } from './payload-client'
 import type { Locale } from './cms-types'
@@ -80,12 +80,7 @@ export async function getAtlasSeo(options: {
         return null
       }
 
-      if (!response.ok) {
-        throw new CmsResponseError(
-          `getAtlasSeo(${options.route}) failed: ${response.status}`,
-          response.status,
-        )
-      }
+      throwIfNotOk(response, `getAtlasSeo(${options.route})`)
 
       return (await response.json()) as AtlasSeoResponse
     })
