@@ -21,7 +21,8 @@ import type {
   AtlasSeoResponse,
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
-import { useT, useLocale, useOrigin } from '../../../hooks/useT'
+import { useT } from '../../../hooks/useT'
+import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
 import { sitePathFromUrl } from '../../../lib/urls'
 import { Link } from '../../../components/atoms/Link'

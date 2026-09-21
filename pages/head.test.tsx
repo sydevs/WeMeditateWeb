@@ -21,7 +21,7 @@ const { livePreview } = vi.hoisted(() => ({
   livePreview: { state: null as LivePreviewState | null },
 }))
 
-vi.mock('../hooks/useT', () => ({
+vi.mock('../hooks/usePageContext', () => ({
   useOptionalPageContext: () => ({ livePreview: livePreview.state }),
 }))
 

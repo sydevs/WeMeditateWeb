@@ -8,7 +8,8 @@ import { Checkbox } from '../../atoms/form/Checkbox'
 import { Button } from '../../atoms/Button'
 import { FormField } from '../../molecules/FormField'
 import { RichText } from '../RichText/RichText'
-import { useLocale, useOptionalPageContext, useT } from '../../../hooks/useT'
+import { useT } from '../../../hooks/useT'
+import { useLocale, useOptionalPageContext } from '../../../hooks/usePageContext'
 import {
   submissionBody,
   SUBMISSION_PATH,

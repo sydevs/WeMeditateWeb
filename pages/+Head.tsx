@@ -2,7 +2,7 @@
 
 //# BATI.has("mantine")
 import logoUrl from '../assets/logo.svg'
-import { useOptionalPageContext } from '../hooks/useT'
+import { useOptionalPageContext } from '../hooks/usePageContext'
 
 export default function HeadDefault() {
   // ⚠ **The analytics script is omitted entirely under a live preview**, and
