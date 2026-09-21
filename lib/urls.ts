@@ -144,7 +144,7 @@ export function isSitePath(href: string): boolean {
  *
  * Pass a path from `normalizeContentPath`. This does not re-normalize, and it
  * prefixes whatever it is given, so a caller holding arbitrary hrefs calls
- * {@link sitePath} instead.
+ * {@link localeHref} instead.
  */
 export function localePath(locale: Locale, path: string): string {
   if (locale === DEFAULT_LOCALE) {
@@ -162,8 +162,8 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
 }
 
 /**
- * The path this site serves, for an href a component or an editor wrote —
- * the one entry point for a caller that cannot promise `localePath`'s
+ * The href to render for whatever a component or an editor wrote — the one
+ * entry point for a caller that cannot promise `localePath`'s
  * already-normalized input.
  *
  * ⚠ **`isSitePath` reads the href as written.** Classify first, transform
@@ -174,7 +174,7 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
  * because a slash inside one is content — `?url=https://example.com/` is a
  * value, not a path that ends in a separator.
  */
-export function sitePath(locale: Locale, href: string): string {
+export function localeHref(locale: Locale, href: string): string {
   if (!isSitePath(href)) {
     return href
   }

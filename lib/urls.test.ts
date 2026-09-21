@@ -7,7 +7,7 @@ import {
   localePath,
   localeUrl,
   normalizeContentPath,
-  sitePath,
+  localeHref,
 } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -140,7 +140,7 @@ describe('localePath', () => {
     expect(localePath('fr', '/')).toBe('/fr')
   })
 
-  it('does not normalize what it is handed, which is why sitePath exists', () => {
+  it('does not normalize what it is handed, which is why localeHref exists', () => {
     expect(localePath('fr', '/about/')).toBe('/fr/about/')
   })
 })
@@ -154,57 +154,57 @@ const NOT_SITE_PATHS = [
   'about',
 ]
 
-describe('sitePath', () => {
+describe('localeHref', () => {
   it('drops a trailing slash, so a link agrees with the page canonical', () => {
     // `/about/` and `/about` are one page, and ContentHead emits `/fr/about`.
-    expect(sitePath('fr', '/about/')).toBe('/fr/about')
-    expect(sitePath('en', '/about/')).toBe('/about')
-    expect(sitePath('pt-BR', '/about/')).toBe('/pt-BR/about')
+    expect(localeHref('fr', '/about/')).toBe('/fr/about')
+    expect(localeHref('en', '/about/')).toBe('/about')
+    expect(localeHref('pt-BR', '/about/')).toBe('/pt-BR/about')
   })
 
   it('leaves an already-normalized path as localePath alone would', () => {
-    expect(sitePath('fr', '/about')).toBe('/fr/about')
-    expect(sitePath('fr', '/')).toBe('/fr')
+    expect(localeHref('fr', '/about')).toBe('/fr/about')
+    expect(localeHref('fr', '/')).toBe('/fr')
   })
 
   it('collapses the routing spelling of the home page', () => {
     // Nothing hands `/index` to a link today, but it is never a URL.
-    expect(sitePath('fr', '/index')).toBe('/fr')
-    expect(sitePath('en', '/index')).toBe('/')
+    expect(localeHref('fr', '/index')).toBe('/fr')
+    expect(localeHref('en', '/index')).toBe('/')
   })
 
   it('passes through anything that is not a path on this site', () => {
     for (const href of NOT_SITE_PATHS) {
-      expect(sitePath('fr', href)).toBe(href)
+      expect(localeHref('fr', href)).toBe(href)
     }
   })
 
   it('leaves an empty href empty, rather than linking to the home page', () => {
     // The guard classifies the href as written. Normalizing first would make
     // `''` into `/`, and an unset ctaHref into a home-page link.
-    expect(sitePath('fr', '')).toBe('')
+    expect(localeHref('fr', '')).toBe('')
   })
 
   it('normalizes the path ahead of a query or a fragment', () => {
-    expect(sitePath('fr', '/about/#section')).toBe('/fr/about#section')
-    expect(sitePath('fr', '/about/?utm=1')).toBe('/fr/about?utm=1')
-    expect(sitePath('en', '/about/#section')).toBe('/about#section')
+    expect(localeHref('fr', '/about/#section')).toBe('/fr/about#section')
+    expect(localeHref('fr', '/about/?utm=1')).toBe('/fr/about?utm=1')
+    expect(localeHref('en', '/about/#section')).toBe('/about#section')
   })
 
   it('never edits a slash that is content inside a query or a fragment', () => {
     // `normalizeContentPath` strips a final slash off whatever it is handed,
     // so handing it a whole href would rewrite the query's own value.
-    expect(sitePath('fr', '/share?url=https://example.com/')).toBe(
+    expect(localeHref('fr', '/share?url=https://example.com/')).toBe(
       '/fr/share?url=https://example.com/',
     )
-    expect(sitePath('fr', '/search?q=a/b/')).toBe('/fr/search?q=a/b/')
-    expect(sitePath('fr', '/about#heading/')).toBe('/fr/about#heading/')
+    expect(localeHref('fr', '/search?q=a/b/')).toBe('/fr/search?q=a/b/')
+    expect(localeHref('fr', '/about#heading/')).toBe('/fr/about#heading/')
   })
 
   it('keeps the routing-internal /index out of an href that carries a query', () => {
-    expect(sitePath('fr', '/index?x=1')).toBe('/fr?x=1')
-    expect(sitePath('fr', '/?utm=1')).toBe('/fr?utm=1')
-    expect(sitePath('en', '/index#top')).toBe('/#top')
+    expect(localeHref('fr', '/index?x=1')).toBe('/fr?x=1')
+    expect(localeHref('fr', '/?utm=1')).toBe('/fr?utm=1')
+    expect(localeHref('en', '/index#top')).toBe('/#top')
   })
 })
 

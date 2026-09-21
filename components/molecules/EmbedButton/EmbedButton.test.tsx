@@ -34,7 +34,7 @@ describe('buildEmbedSnippet', () => {
   })
 
   it('passes a path that is not site-absolute through unprefixed', () => {
-    // `sitePath` owns the guard, so a path that is not ours stays as written.
+    // `localeHref` owns the guard, so a path that is not ours stays as written.
     expect(buildEmbedSnippet('meditations/123/embed', 'fr', '')).toContain(
       'src="meditations/123/embed"',
     )

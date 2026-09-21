@@ -193,7 +193,7 @@ These rules apply whether or not the matching rule file or skill is loaded.
 
   `localePath` prefixes whatever it is handed, and does not normalize it. A caller holding
   arbitrary hrefs — `Link` takes any `href` a component writes, and `RichText` hands it a URL an
-  editor typed — calls `sitePath` instead, which pairs `normalizeContentPath` with `localePath`
+  editor typed — calls `localeHref` instead, which pairs `normalizeContentPath` with `localePath`
   behind one `isSitePath` guard. That is what stops `href="/about/"` rendering `/fr/about/`
   against a canonical of `/fr/about`. It normalizes the path only, and puts a query or a fragment
   back untouched, because a slash inside one is content rather than a separator. Anything else
