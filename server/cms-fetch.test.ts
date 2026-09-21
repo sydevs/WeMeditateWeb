@@ -90,10 +90,13 @@ describe('fetchWithErrorDetails', () => {
     const errorSpy = vi.spyOn(console, 'error')
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ errors: [{ message: 'The requested resource was not found.' }] }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      new Response(
+        JSON.stringify({ errors: [{ message: 'The requested resource was not found.' }] }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
     )
 
     // Only `cmsFetch` asks for a quiet 404. A collection read reaching this
