@@ -32,8 +32,9 @@ describe('cmsOrigin', () => {
  * The accessors read `pageContext`, which vike-react publishes through a React
  * context. Outside a Vike render — Ladle, and every SSR-string test in this
  * repo, including `layouts/LayoutRoot.test.tsx` — there is no provider, and
- * `usePageContext` throws. Taking the root layout down over a preview flag
- * would be a poor trade, so these report "not a preview" instead.
+ * `usePageContext` returns `undefined`. Taking the root layout down over a
+ * preview flag would be a poor trade, so these report "not a preview"
+ * instead.
  */
 describe('the live-preview accessors, with no Vike provider', () => {
   function Probe() {

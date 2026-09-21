@@ -1,4 +1,4 @@
-import { useOptionalPageContext } from '../../hooks/useT'
+import { useOptionalPageContext } from '../../hooks/usePageContext'
 import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
 
 /**
@@ -30,10 +30,11 @@ import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
 
 /** The live-preview verdict for this page, or the inactive one off-preview. */
 export function useLivePreviewState(): LivePreviewState {
-  // `useOptionalPageContext`, the same accessor `useT` uses: this is read from
+  // `useOptionalPageContext` is the guarded accessor: this is read from
   // `LayoutRoot`, which also renders in Ladle and in SSR-string tests where no
-  // Vike provider exists. `usePageContext` throws there, and taking the root
-  // layout down over a preview flag would be a poor trade.
+  // Vike provider exists. `usePageContext` hands back `undefined` there while
+  // claiming otherwise, and taking the root layout down over a preview flag
+  // would be a poor trade.
   return useOptionalPageContext()?.livePreview ?? LIVE_PREVIEW_INACTIVE
 }
 

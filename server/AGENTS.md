@@ -69,13 +69,21 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 ## Custom root endpoints are not collection reads
 
-`GET /api/atlas/seo`, the `related-*` endpoints, and a content-index block's computed endpoint
-belong to no collection, so the Payload SDK cannot express them. Every one reads through
-`sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends
-the `Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
+`GET /api/atlas/seo`, `GET /api/atlas/sitemap`, the `related-*` endpoints, and a content-index
+block's computed endpoint belong to no collection, so the Payload SDK cannot express them. Every
+one but the sitemap reads through `sahajCloudFetch`
+([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends the
+`Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
 non-OK response, and returns the parsed body. Hand it a path, never a URL — it refuses anything
 that is not site-relative, so a computed endpoint cannot move the request off the SahajCloud
-origin — and type the body yourself. `select` and `populate` do not apply here.
+origin — and type the body yourself. `getAtlasSitemapUrls` still assembles its own `fetch`, and is
+not yet converted. `select` and `populate` do not apply here.
+
+⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
+URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
+`getAtlasSitemapUrls` must never go back to reading `regions` and `events` and filtering them
+here (#123). **An empty `urls` list is an answer, not a failure**: a client that owns no subtree
+legitimately has nothing to list.
 
 Three rules still apply:
 
