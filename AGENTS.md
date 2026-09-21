@@ -197,8 +197,9 @@ These rules apply whether or not the matching rule file or skill is loaded.
   `#anchor`, `//another-origin`) is not ours to spell.
 
   An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it.
-  `sitePathFromUrl` is that case: it hands back the path under such a URL, so the caller can
-  locale-prefix it, and `null` for every other URL and for an unknown origin. Upstream canonicals
+  `sitePathFromUrl` is that case: it hands back the path under such a URL in
+  `normalizeContentPath`'s spelling, ready for the caller to locale-prefix, and `null` for every
+  other URL and for an unknown origin. Upstream canonicals
   arrive this way. `atlasHref` calls it today; whether `Link` should call it for every consumer is
   #124.
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
