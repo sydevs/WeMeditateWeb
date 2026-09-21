@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { cmsFetch, cmsFetchOptional, CmsResponseError, fetchWithErrorDetails } from './cms-fetch'
+import {
+  sahajCloudFetch,
+  sahajCloudFetchOptional,
+  SahajCloudResponseError,
+  fetchWithErrorDetails,
+} from './sahajcloud-fetch'
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./cms-context', () => ({
@@ -12,13 +17,13 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
-describe('cmsFetch', () => {
+describe('sahajCloudFetch', () => {
   it('resolves the path against the CMS base URL and signs the request', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('{}', { status: 200 }))
 
-    await cmsFetch('/api/atlas/seo?route=%2Fgb', 'getAtlasSeo(/gb)')
+    await sahajCloudFetch('/api/atlas/seo?route=%2Fgb', 'getAtlasSeo(/gb)')
 
     const [url, init] = fetchSpy.mock.calls[0]
 
@@ -31,7 +36,7 @@ describe('cmsFetch', () => {
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 200 }))
 
-    await cmsFetch('/api/pages?limit=1', 'read')
+    await sahajCloudFetch('/api/pages?limit=1', 'read')
 
     expect(logSpy).toHaveBeenCalledWith('[PayloadCMS] GET https://cms.test/api/pages?limit=1 → 200')
   })
@@ -41,10 +46,10 @@ describe('cmsFetch', () => {
       new Response(JSON.stringify({ docs: [{ id: 1 }] }), { status: 200 }),
     )
 
-    expect(await cmsFetch('/api/pages', 'read')).toEqual({ docs: [{ id: 1 }] })
+    expect(await sahajCloudFetch('/api/pages', 'read')).toEqual({ docs: [{ id: 1 }] })
   })
 
-  it('throws a labelled CmsResponseError on a non-OK response, and dumps the body', async () => {
+  it('throws a labelled SahajCloudResponseError on a non-OK response, and dumps the body', async () => {
     const errorSpy = vi.spyOn(console, 'error')
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -54,11 +59,11 @@ describe('cmsFetch', () => {
       }),
     )
 
-    const error = await cmsFetch('/api/pages', 'getPages()').catch((thrown) => thrown)
+    const error = await sahajCloudFetch('/api/pages', 'getPages()').catch((thrown) => thrown)
 
-    expect(error).toBeInstanceOf(CmsResponseError)
-    expect((error as CmsResponseError).message).toBe('getPages() failed: 400')
-    expect((error as CmsResponseError).status).toBe(400)
+    expect(error).toBeInstanceOf(SahajCloudResponseError)
+    expect((error as SahajCloudResponseError).message).toBe('getPages() failed: 400')
+    expect((error as SahajCloudResponseError).status).toBe(400)
     expect(errorSpy).toHaveBeenCalledWith(
       '[PayloadCMS] Error response:',
       expect.objectContaining({ body: { errors: [{ message: 'select is required' }] } }),
@@ -72,8 +77,8 @@ describe('cmsFetch', () => {
       new Response(JSON.stringify({ errors: [] }), { status: 404 }),
     )
 
-    await expect(cmsFetch('/api/pages?where=…', 'contentIndex')).rejects.toBeInstanceOf(
-      CmsResponseError,
+    await expect(sahajCloudFetch('/api/pages?where=…', 'contentIndex')).rejects.toBeInstanceOf(
+      SahajCloudResponseError,
     )
     expect(errorSpy).toHaveBeenCalled()
   })
@@ -86,13 +91,13 @@ describe('cmsFetch', () => {
       // `https://cms.test` + `@evil.example/…` parses with `cms.test` as
       // userinfo and `evil.example` as the host, which would hand the API key
       // to whoever answers there.
-      await expect(cmsFetch(path, 'read')).rejects.toThrow('site-relative path')
+      await expect(sahajCloudFetch(path, 'read')).rejects.toThrow('site-relative path')
       expect(fetchSpy).not.toHaveBeenCalled()
     },
   )
 })
 
-describe('cmsFetchOptional', () => {
+describe('sahajCloudFetchOptional', () => {
   it('answers a 404 with null, and stays quiet, because the caller treats one as an answer', async () => {
     const errorSpy = vi.spyOn(console, 'error')
 
@@ -100,9 +105,9 @@ describe('cmsFetchOptional', () => {
       new Response(JSON.stringify({ errors: [] }), { status: 404 }),
     )
 
-    expect(await cmsFetchOptional('/api/meditations/999/songs', 'getMeditationSongs(999)')).toBe(
-      null,
-    )
+    expect(
+      await sahajCloudFetchOptional('/api/meditations/999/songs', 'getMeditationSongs(999)'),
+    ).toBe(null)
 
     // The request line still records it. Dumping a body here would buffer one
     // on a hot path and make an ordinary stale link look like a fault.
@@ -112,12 +117,12 @@ describe('cmsFetchOptional', () => {
   it('still throws every other non-OK response, so the retry ladder runs', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 522 }))
 
-    const error = await cmsFetchOptional('/api/atlas/seo', 'getAtlasSeo(/gb)').catch(
+    const error = await sahajCloudFetchOptional('/api/atlas/seo', 'getAtlasSeo(/gb)').catch(
       (thrown) => thrown,
     )
 
-    expect(error).toBeInstanceOf(CmsResponseError)
-    expect((error as CmsResponseError).status).toBe(522)
+    expect(error).toBeInstanceOf(SahajCloudResponseError)
+    expect((error as SahajCloudResponseError).status).toBe(522)
   })
 
   it('returns the parsed body on an OK response', async () => {
@@ -125,7 +130,7 @@ describe('cmsFetchOptional', () => {
       new Response(JSON.stringify({ id: 5 }), { status: 200 }),
     )
 
-    expect(await cmsFetchOptional('/api/atlas/seo', 'getAtlasSeo(/gb)')).toEqual({ id: 5 })
+    expect(await sahajCloudFetchOptional('/api/atlas/seo', 'getAtlasSeo(/gb)')).toEqual({ id: 5 })
   })
 })
 
@@ -143,7 +148,7 @@ describe('fetchWithErrorDetails', () => {
       ),
     )
 
-    // Only `cmsFetchOptional` asks for a quiet 404. A collection read reaching this
+    // Only `sahajCloudFetchOptional` asks for a quiet 404. A collection read reaching this
     // wrapper through the SDK has no caller-side 404 policy, so its body is
     // the only record of which read missed.
     await fetchWithErrorDetails('https://cms.test/api/pages/missing')
@@ -157,13 +162,17 @@ describe('fetchWithErrorDetails', () => {
   })
 })
 
-describe('CmsResponseError', () => {
+describe('SahajCloudResponseError', () => {
   it('keeps a Cloudflare-origin 522 retryable, which a plain Error does not', async () => {
-    expect(detectErrorType(new CmsResponseError('read failed: 522', 522))).toBe(ErrorType.SERVER)
+    expect(detectErrorType(new SahajCloudResponseError('read failed: 522', 522))).toBe(
+      ErrorType.SERVER,
+    )
     expect(detectErrorType(new Error('read failed: 522'))).toBe(ErrorType.UNKNOWN)
   })
 
   it('classifies a 4xx as CLIENT, so a 403 never spends the retry ladder', async () => {
-    expect(detectErrorType(new CmsResponseError('read failed: 403', 403))).toBe(ErrorType.CLIENT)
+    expect(detectErrorType(new SahajCloudResponseError('read failed: 403', 403))).toBe(
+      ErrorType.CLIENT,
+    )
   })
 })

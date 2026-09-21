@@ -16,7 +16,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { cmsFetch, CmsResponseError } from './cms-fetch'
+import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './cms-types'
 import {
@@ -143,9 +143,9 @@ async function fetchContentIndexDocs(
   const path = `${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
 
   try {
-    // `cmsFetch`, not `cmsFetchOptional`: this endpoint is one the CMS computed
+    // `sahajCloudFetch`, not `sahajCloudFetchOptional`: this endpoint is one the CMS computed
     // for the block, so a 404 is a data gap rather than an answer.
-    const json = await cmsFetch<{ docs?: Record<string, unknown>[] }>(
+    const json = await sahajCloudFetch<{ docs?: Record<string, unknown>[] }>(
       path,
       `fetchContentIndexDocs(${type})`,
     )
@@ -159,7 +159,7 @@ async function fetchContentIndexDocs(
       tags: { source: 'fetchContentIndexDocs' },
       extra: {
         type,
-        status: error instanceof CmsResponseError ? error.status : undefined,
+        status: error instanceof SahajCloudResponseError ? error.status : undefined,
         error: error instanceof Error ? error.message : String(error),
       },
     })

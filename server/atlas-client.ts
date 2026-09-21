@@ -5,7 +5,7 @@
  * already about 950 lines, and holds only collection reads through the
  * Payload SDK. This file has one custom root endpoint,
  * `GET /api/atlas/seo`, which belongs to no collection, so the SDK cannot
- * express it. It reads through `cmsFetch` (`server/cms-fetch.ts`), the one
+ * express it. It reads through `sahajCloudFetch` (`server/sahajcloud-fetch.ts`), the one
  * helper every custom-endpoint read shares.
  *
  * ## Access
@@ -24,7 +24,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { cmsFetchOptional } from './cms-fetch'
+import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
 import { createPayloadClient } from './payload-client'
 import type { Locale } from './cms-types'
@@ -68,10 +68,10 @@ export async function getAtlasSeo(options: {
 
   try {
     // A 404 means the route named nothing upstream: a stale inbound link, or
-    // a region that has since been unpublished. `cmsFetchOptional` answers it
+    // a region that has since been unpublished. `sahajCloudFetchOptional` answers it
     // with `null`, which reads the same as the no-target case above.
     return await withRetry(() =>
-      cmsFetchOptional<AtlasSeoResponse>(
+      sahajCloudFetchOptional<AtlasSeoResponse>(
         `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
           `&locale=${encodeURIComponent(options.locale)}`,
         `getAtlasSeo(${options.route})`,

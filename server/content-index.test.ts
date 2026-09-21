@@ -17,7 +17,7 @@ import type { ContentIndexBlockFields } from '../lib/cms-blocks'
 const jsonResponse = (docs: unknown[]) =>
   ({ ok: true, status: 200, json: async () => ({ docs }) }) as never
 
-/** A non-OK stub. `clone` is what cmsFetch calls to dump the CMS error body. */
+/** A non-OK stub. `clone` is what sahajCloudFetch calls to dump the CMS error body. */
 const errorResponse = (status: number) => {
   const response = { ok: false, status, statusText: '', json: async () => ({ errors: [] }) }
 

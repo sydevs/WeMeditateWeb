@@ -71,11 +71,11 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 `GET /api/atlas/seo`, the `related-*` endpoints, and a content-index block's computed endpoint
 belong to no collection, so the Payload SDK cannot express them. Every one reads through
-`cmsFetch` ([cms-fetch.ts](cms-fetch.ts)), which resolves the base URL, sends the
-`Authorization: clients API-Key` header, logs the request, dumps the CMS error body on a non-OK
-response, and returns the parsed body. Hand it a path, never a URL — it refuses anything that is
-not site-relative, so a CMS-computed endpoint cannot move the request off the CMS origin — and
-type the body yourself. `select` and `populate` do not apply here.
+`sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends
+the `Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
+non-OK response, and returns the parsed body. Hand it a path, never a URL — it refuses anything
+that is not site-relative, so a computed endpoint cannot move the request off the SahajCloud
+origin — and type the body yourself. `select` and `populate` do not apply here.
 
 Three rules still apply:
 
@@ -84,13 +84,13 @@ Three rules still apply:
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).
-- **Never branch on a status. Pick the reader that matches the read.** `cmsFetch` throws a
-  `CmsResponseError` on every non-OK response. `cmsFetchOptional` is the same read where a 404 is
-  an answer — an unknown id, a stale inbound link, no songs route — and resolves to `null`
-  instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
+- **Never branch on a status. Pick the reader that matches the read.** `sahajCloudFetch` throws a
+  `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
+  where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
+  `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
   without a body dump. Four of the five reads take the optional form; `fetchContentIndexDocs`
-  takes `cmsFetch`, because its endpoint is one the CMS computed and nothing answering it is a
-  data gap. The status rides on the error because `detectErrorType` reads it structurally and
+  takes `sahajCloudFetch`, because its endpoint is one SahajCloud computed and nothing answering it
+  is a data gap. The status rides on the error because `detectErrorType` reads it structurally and
   otherwise falls back to matching `50[0-9]` in the message — a plain `Error` classifies a
   Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one shape a
   Railway restart behind the edge produces.

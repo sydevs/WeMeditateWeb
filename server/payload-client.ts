@@ -9,7 +9,7 @@ import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
 import { getCmsContext } from './cms-context'
-import { cmsAuthHeaders, fetchWithErrorDetails } from './cms-fetch'
+import { sahajCloudAuthHeaders, fetchWithErrorDetails } from './sahajcloud-fetch'
 import { LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { apiKeySchema, baseUrlSchema } from './validation'
 
@@ -94,7 +94,7 @@ export function createPayloadClient(config: PayloadClientConfig = {}) {
 
   validatePayloadConfig({ apiKey, baseURL })
 
-  const headers: Record<string, string> = cmsAuthHeaders(apiKey)
+  const headers: Record<string, string> = sahajCloudAuthHeaders(apiKey)
 
   if (previewToken) {
     headers[LIVE_PREVIEW_TOKEN_HEADER] = previewToken

@@ -27,7 +27,7 @@
 
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
-import { cmsFetchOptional } from './cms-fetch'
+import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
 import type {
@@ -846,7 +846,7 @@ export async function getSongsByTags(
  * fixed minimal projection (`{ id, title, url, tags }`). It does not accept
  * `select`, and it ignores `populate`, `depth`, and `limit` (it does honor
  * `locale`). This is not a collection `find`, so the PayloadCMS SDK cannot
- * model it. This function instead reads through `cmsFetchOptional`, wrapped
+ * model it. This function instead reads through `sahajCloudFetchOptional`, wrapped
  * in the shared retry layer.
  *
  * The endpoint returns songs in a random order on every request. Callers
@@ -868,7 +868,7 @@ export async function getMeditationSongs(
     return await withRetryUnlessPreview(async () => {
       // A 404 — an unknown meditation ID, or no songs route — means no music,
       // and arrives as `null`. Every other non-OK throws, so the retry runs.
-      const body = await cmsFetchOptional<{
+      const body = await sahajCloudFetchOptional<{
         docs?: Array<{ id: number; title?: string | null; url?: string | null }>
       }>(
         `/api/meditations/${encodeURIComponent(options.id)}/songs` +
@@ -948,7 +948,7 @@ export async function getRelatedMeditations(
     return await withRetryUnlessPreview(async () => {
       // A 404 — an unknown lecture ID, or no related route — means no related
       // content, and arrives as `null`.
-      const body = await cmsFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
+      const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
         `/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
           `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`,
         `getRelatedMeditations(${options.id})`,
@@ -1029,7 +1029,7 @@ export async function getRelatedLectures(
 
   try {
     return await withRetryUnlessPreview(async () => {
-      const body = await cmsFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
+      const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
         `/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
           `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
           `&audiences=${audiences.join(',')}`,

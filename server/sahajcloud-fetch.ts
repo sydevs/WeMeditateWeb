@@ -1,5 +1,5 @@
 /**
- * The one read path for CMS endpoints the Payload SDK cannot express.
+ * The one read path for SahajCloud endpoints the Payload SDK cannot express.
  *
  * The SDK covers collection reads. Custom root endpoints — `/api/atlas/seo`,
  * the `related-*` feeds, a content-index block's computed endpoint — belong to
@@ -19,7 +19,7 @@
 import { getCmsContext } from './cms-context'
 
 /**
- * A non-OK CMS response, as an error carrying its status.
+ * A non-OK SahajCloud response, as an error carrying its status.
  *
  * The status rides on the error because `detectErrorType` reads it
  * structurally and otherwise falls back to matching `50[0-9]` in the message.
@@ -27,23 +27,23 @@ import { getCmsContext } from './cms-context'
  * UNKNOWN, and `withRetry` refuses it — exactly the shape a Railway restart
  * behind the edge produces.
  */
-export class CmsResponseError extends Error {
+export class SahajCloudResponseError extends Error {
   public readonly status: number
 
   constructor(message: string, status: number) {
     super(message)
-    this.name = 'CmsResponseError'
+    this.name = 'SahajCloudResponseError'
     this.status = status
   }
 }
 
-/** The `Authorization` header every CMS call carries, SDK and custom endpoint alike. */
-export function cmsAuthHeaders(apiKey: string): Record<string, string> {
+/** The `Authorization` header every SahajCloud call carries, SDK and custom endpoint alike. */
+export function sahajCloudAuthHeaders(apiKey: string): Record<string, string> {
   return { Authorization: `clients API-Key ${apiKey}` }
 }
 
 /**
- * A custom fetch wrapper that logs every CMS request and error body.
+ * A custom fetch wrapper that logs every SahajCloud request and error body.
  *
  * The SDK throws a `PayloadSDKError` on a non-OK response, carrying the
  * status and the first error message only. This wrapper writes the full
@@ -93,30 +93,33 @@ export async function fetchWithErrorDetails(
  * Sends the request. Takes a path, not a URL: resolving the base URL here is
  * what removes `getCmsContext()` from every call site.
  */
-async function requestCms(path: string, quietStatuses: readonly number[]): Promise<Response> {
+async function requestSahajCloud(
+  path: string,
+  quietStatuses: readonly number[],
+): Promise<Response> {
   // The path is concatenated, not resolved, so an `@` or `//` prefix moves the
   // authority — and the API key goes with it.
   if (!path.startsWith('/') || path.startsWith('//')) {
-    throw new Error(`cmsFetch needs a site-relative path, got: ${path}`)
+    throw new Error(`sahajCloudFetch needs a site-relative path, got: ${path}`)
   }
 
   const { apiKey, baseURL } = getCmsContext()
 
   return fetchWithErrorDetails(
     `${baseURL}${path}`,
-    { headers: cmsAuthHeaders(apiKey) },
+    { headers: sahajCloudAuthHeaders(apiKey) },
     quietStatuses,
   )
 }
 
 function throwIfNotOk(response: Response, label: string): void {
   if (!response.ok) {
-    throw new CmsResponseError(`${label} failed: ${response.status}`, response.status)
+    throw new SahajCloudResponseError(`${label} failed: ${response.status}`, response.status)
   }
 }
 
 /**
- * Reads a CMS endpoint the SDK cannot express, and returns its parsed body.
+ * Reads a SahajCloud endpoint the SDK cannot express, and returns its parsed body.
  *
  * Every non-OK response throws, so a caller never branches on a status. Wrap
  * the call in the read's retry policy and catch there.
@@ -124,8 +127,8 @@ function throwIfNotOk(response: Response, label: string): void {
  * @param path - Path and query from the leading slash, e.g. `/api/atlas/seo?route=…`
  * @param label - What failed, e.g. `getAtlasSeo(/gb/london)`
  */
-export async function cmsFetch<T>(path: string, label: string): Promise<T> {
-  const response = await requestCms(path, [])
+export async function sahajCloudFetch<T>(path: string, label: string): Promise<T> {
+  const response = await requestSahajCloud(path, [])
 
   throwIfNotOk(response, label)
 
@@ -141,8 +144,8 @@ export async function cmsFetch<T>(path: string, label: string): Promise<T> {
  * a dump for the same reason — it carries none of the field-level detail the
  * dump exists for, and the request line still records it.
  */
-export async function cmsFetchOptional<T>(path: string, label: string): Promise<T | null> {
-  const response = await requestCms(path, [404])
+export async function sahajCloudFetchOptional<T>(path: string, label: string): Promise<T | null> {
+  const response = await requestSahajCloud(path, [404])
 
   if (response.status === 404) {
     return null

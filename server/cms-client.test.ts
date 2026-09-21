@@ -59,7 +59,7 @@ function fetchResponse(status: number, body: unknown) {
     json: async () => body,
   }
 
-  // cmsFetch clones a non-OK response to dump the CMS error body.
+  // sahajCloudFetch clones a non-OK response to dump the CMS error body.
   return { ...response, clone: () => response }
 }
 
