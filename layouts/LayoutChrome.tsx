@@ -108,10 +108,10 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // already stripped of the locale prefix by +onBeforeRoute;
   // `normalizeContentPath` undoes its `/index` spelling of `/`, and the
   // hreflang cluster uses the same function, so the dropdown and the
-  // `<head>` cannot disagree about where a locale switch leads. This call
-  // stays because `urlPathname` may be nullish, which `sitePath` does not
-  // take; `Link` normalizes again and adds the prefix, from each option's own
-  // `locale`, so "English is served bare" keeps one owner.
+  // `<head>` cannot disagree about where a locale switch leads. `Link`
+  // normalizes again — harmlessly, the function is idempotent — and adds the
+  // prefix from each option's own `locale`, so "English is served bare" keeps
+  // one owner.
   const pathWithoutLocale = normalizeContentPath(urlPathname)
   const languages = (settings.availableLocales ?? []).map((code) => ({
     code,

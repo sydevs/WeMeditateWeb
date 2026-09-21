@@ -185,21 +185,26 @@ describe('sitePath', () => {
     expect(sitePath('fr', '')).toBe('')
   })
 
-  it('does not reach a trailing slash before a query or a hash', () => {
-    // A known limit, recorded rather than fixed with a URL parser:
-    // sydevs/WeMeditateWeb#119.
-    expect(sitePath('fr', '/about/#section')).toBe('/fr/about/#section')
-    expect(sitePath('fr', '/about/?utm=1')).toBe('/fr/about/?utm=1')
+  it('normalizes the path ahead of a query or a fragment', () => {
+    expect(sitePath('fr', '/about/#section')).toBe('/fr/about#section')
+    expect(sitePath('fr', '/about/?utm=1')).toBe('/fr/about?utm=1')
+    expect(sitePath('en', '/about/#section')).toBe('/about#section')
   })
 
   it('never edits a slash that is content inside a query or a fragment', () => {
-    // `normalizeContentPath` strips a final slash off the whole string, so
-    // running it on an href with a query would rewrite the query's value.
+    // `normalizeContentPath` strips a final slash off whatever it is handed,
+    // so handing it a whole href would rewrite the query's own value.
     expect(sitePath('fr', '/share?url=https://example.com/')).toBe(
       '/fr/share?url=https://example.com/',
     )
     expect(sitePath('fr', '/search?q=a/b/')).toBe('/fr/search?q=a/b/')
     expect(sitePath('fr', '/about#heading/')).toBe('/fr/about#heading/')
+  })
+
+  it('keeps the routing-internal /index out of an href that carries a query', () => {
+    expect(sitePath('fr', '/index?x=1')).toBe('/fr?x=1')
+    expect(sitePath('fr', '/?utm=1')).toBe('/fr?utm=1')
+    expect(sitePath('en', '/index#top')).toBe('/#top')
   })
 })
 

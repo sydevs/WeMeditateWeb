@@ -166,20 +166,22 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
  * the one entry point for a caller that cannot promise `localePath`'s
  * already-normalized input.
  *
- * ⚠ **Both tests read the href as written.** Classify first, transform
- * second: `normalizeContentPath('')` is `/`, so normalizing ahead of the
- * `isSitePath` guard would turn an unset href into a link to the home page.
+ * ⚠ **`isSitePath` reads the href as written.** Classify first, transform
+ * second: `normalizeContentPath('')` is `/`, so normalizing ahead of the guard
+ * would turn an unset href into a link to the home page.
  *
- * An href carrying a query or a fragment is left alone, because
- * `normalizeContentPath` strips a final slash off the whole string and inside
- * those a slash is content — `?url=https://example.com/` is a value, not a
- * path. So `/about/#section` keeps its slash, and the duplicate spelling this
- * function exists to stop survives in that one shape.
+ * Only the path is normalized. A query and a fragment go back on untouched,
+ * because a slash inside one is content — `?url=https://example.com/` is a
+ * value, not a path that ends in a separator.
  */
 export function sitePath(locale: Locale, href: string): string {
   if (!isSitePath(href)) {
     return href
   }
 
-  return localePath(locale, HAS_QUERY_OR_HASH.test(href) ? href : normalizeContentPath(href))
+  const suffixAt = href.search(HAS_QUERY_OR_HASH)
+  const path = suffixAt === -1 ? href : href.slice(0, suffixAt)
+  const suffix = suffixAt === -1 ? '' : href.slice(suffixAt)
+
+  return localePath(locale, normalizeContentPath(path)) + suffix
 }
