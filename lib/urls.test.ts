@@ -153,7 +153,6 @@ describe('localePath', () => {
     // page a second way.
     expect(localePath('fr', '/')).toBe('/fr')
   })
-
 })
 
 describe('isSitePath', () => {

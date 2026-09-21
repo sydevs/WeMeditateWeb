@@ -44,3 +44,13 @@ export function useT(): TFunction {
 export function useLocale(): Locale {
   return useOptionalPageContext()?.locale ?? DEFAULT_LOCALE
 }
+
+/**
+ * The origin serving this render, or `null` where there is no request.
+ *
+ * Unlike the locale, this has no sensible default: a guessed origin names a
+ * site we may not be. A consumer gets `null` and declines to answer instead.
+ */
+export function useOrigin(): string | null {
+  return useOptionalPageContext()?.urlParsed?.origin ?? null
+}

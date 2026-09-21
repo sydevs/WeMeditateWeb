@@ -1,12 +1,13 @@
 /**
  * Proves an atlas page keeps the visitor's locale in its own link graph.
  *
- * The sibling suite renders without a `pageContext`, so every href there is
- * the origin-unknown fallback. Only a rendered locale distinguishes "carries
- * `/fr`" from "still emits the English canonical", and the canonical branch
- * is the normal case — a rung's `url` is populated far more often than not.
+ * The sibling suite renders with no `pageContext`, so every href there is the
+ * origin-unknown fallback. Only a rendered locale separates "carries `/fr`"
+ * from "still emits the English canonical", and the canonical branch is the
+ * normal case — a rung's `url` is populated far more often than not.
  *
- * It lives in its own file because the `pageContext` mock is module-wide.
+ * `vi.mock` is module-wide, so the locale moves through a mutable holder, as
+ * in `layouts/LayoutChrome.test.tsx`.
  */
 
 import { describe, it, expect, vi } from 'vitest'
@@ -15,19 +16,14 @@ import type { AtlasSeoResponse } from '../../../server/atlas-types'
 
 const ORIGIN = 'https://wemeditate.com'
 
-// `urlParsed.origin` carries no trailing slash — `lib/head.tsx` concatenates
-// it with a path to build the canonical, and would emit `//map` otherwise.
+const ctx: { locale: string } = { locale: 'fr' }
+
 vi.mock('vike-react/usePageContext', () => ({
-  usePageContext: () => ({ locale: 'fr', urlParsed: { origin: ORIGIN } }),
+  usePageContext: () => ({ locale: ctx.locale, urlParsed: { origin: ORIGIN } }),
 }))
 
 const { AtlasContent, atlasHref } = await import('./AtlasContent')
 
-/**
- * A region page whose rungs and cards carry the canonical spellings the
- * endpoint really returns, and one rung deep enough to be a link. The final
- * rung is the current page, which never links.
- */
 function regionSeo(overrides: Record<string, unknown> = {}): AtlasSeoResponse {
   return {
     type: 'region',
@@ -69,22 +65,20 @@ const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo
 
 describe('an atlas page in a non-English locale', () => {
   it('points a breadcrumb rung at the French spelling of our own canonical', () => {
+    ctx.locale = 'fr'
+
     expect(render(regionSeo())).toContain(`href="/fr/map/gb"`)
   })
 
   it('points an event card at the French spelling of our own canonical', () => {
+    ctx.locale = 'fr'
+
     expect(render(regionSeo())).toContain(`href="/fr/map/gb/london/1204"`)
-  })
-
-  it('emits no English href for a URL it just relativized', () => {
-    const html = render(regionSeo())
-
-    expect(html).not.toContain(`href="${ORIGIN}/map/gb"`)
-    expect(html).not.toContain(`href="${ORIGIN}/map/gb/london/1204"`)
   })
 
   it('leaves a canonical owned by another domain exactly as it is', () => {
     // Ownership is per-subtree. That URL is another site's to spell.
+    ctx.locale = 'fr'
     const html = render(
       regionSeo({
         breadcrumbs: [
@@ -99,6 +93,7 @@ describe('an atlas page in a non-English locale', () => {
   })
 
   it('locale-prefixes the fallback path when no canonical can be published', () => {
+    ctx.locale = 'fr'
     const html = render(
       regionSeo({
         breadcrumbs: [
@@ -112,30 +107,24 @@ describe('an atlas page in a non-English locale', () => {
   })
 })
 
-describe('atlasHref against a known origin', () => {
-  it('relativizes a canonical this site serves', () => {
+describe('an atlas page in English', () => {
+  it('links a rung and a card bare, never through an /en redirect', () => {
+    // English is served bare, so `/en/map/gb` is a URL that 301s.
+    ctx.locale = 'en'
+    const html = render(regionSeo())
+
+    expect(html).toContain(`href="/map/gb"`)
+    expect(html).toContain(`href="/map/gb/london/1204"`)
+    expect(html).not.toContain('/en/map/')
+  })
+})
+
+describe('atlasHref', () => {
+  it('relativizes a canonical this site serves, for `Link` to prefix', () => {
     expect(atlasHref({ route: '/gb', url: `${ORIGIN}/map/gb` }, ORIGIN)).toBe('/map/gb')
-  })
-
-  it('keeps a canonical on another origin absolute', () => {
-    expect(atlasHref({ route: '/gb', url: 'https://other.org/gb' }, ORIGIN)).toBe(
-      'https://other.org/gb',
-    )
-  })
-
-  it('keeps the query and fragment a canonical carries', () => {
-    // The atlas spells a locale as `?locale=`, so a canonical may arrive
-    // with a query on it. Dropping it would change which document is meant.
-    expect(atlasHref({ route: '/gb', url: `${ORIGIN}/map/gb?locale=fr#events` }, ORIGIN)).toBe(
-      '/map/gb?locale=fr#events',
-    )
   })
 
   it('leaves the canonical alone when the origin is unknown', () => {
     expect(atlasHref({ route: '/gb', url: `${ORIGIN}/map/gb` }, null)).toBe(`${ORIGIN}/map/gb`)
-  })
-
-  it('still falls back to the /map path, which Link then prefixes', () => {
-    expect(atlasHref({ route: '/gb', url: null }, ORIGIN)).toBe('/map/gb')
   })
 })

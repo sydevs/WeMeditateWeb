@@ -21,7 +21,7 @@ import type {
   AtlasSeoResponse,
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
-import { useT, useLocale, useOptionalPageContext } from '../../../hooks/useT'
+import { useT, useLocale, useOrigin } from '../../../hooks/useT'
 import { formatList } from '../../../lib/locale-names'
 import { sitePathFromUrl } from '../../../lib/urls'
 import { Link } from '../../../components/atoms/Link'
@@ -39,23 +39,22 @@ import { Link } from '../../../components/atoms/Link'
  * A canonical we serve ourselves comes back as its path, so `Link` can
  * carry the visitor's locale onto it. The absolute form cannot: it is one
  * URL, and the atlas publishes it locale-free, which would drop a French
- * visitor into English on every rung. `origin` is unknown outside a Vike
- * app, and then the canonical stands as upstream spelled it.
+ * visitor into English on every rung.
+ *
+ * TODO: this belongs in `Link`, which asks the same question one line from
+ * the answer. Moving it rewrites every editor-pasted href and collides with
+ * `external` (`MeditationPlayer` links `wemeditate.com` that way), so it is
+ * a decision of its own — sydevs/WeMeditateWeb#124. Do not copy this shape.
  */
 export function atlasHref(
   link: { route: string | null; url: string | null },
-  origin?: string | null,
+  origin: string | null,
 ): string | null {
   if (link.url) {
     return sitePathFromUrl(link.url, origin) ?? link.url
   }
 
   return link.route ? `${MAP_PREFIX}${link.route}` : null
-}
-
-/** The origin this response is being served from, or `null` off a request. */
-function useOrigin(): string | null {
-  return useOptionalPageContext()?.urlParsed?.origin ?? null
 }
 
 /** Region ancestry, root first. The final rung is the current page, so it is not a link. */
@@ -71,8 +70,9 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
     <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-600">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {trail.map((rung, index) => {
-          const href = atlasHref(rung, origin)
           const isCurrent = index === trail.length - 1
+          // The current page is a span, so its canonical is never parsed.
+          const href = isCurrent ? null : atlasHref(rung, origin)
 
           return (
             <li key={`${rung.route ?? rung.name}-${index}`} className="flex items-center gap-x-2">

@@ -135,15 +135,13 @@ export function isSitePath(href: string): boolean {
 /**
  * The path underneath an absolute URL, when that URL is on this origin.
  *
- * `null` for anything this site does not serve — another origin, a
- * non-http(s) scheme, an unparseable string — and for an unknown `origin`,
- * which is the case outside a Vike app. A caller holding a URL it did not
- * build gets back either a path it may locale-prefix or nothing, and never
- * has to compare origins itself.
+ * A caller holding a URL it did not build — an upstream canonical, most of
+ * all — gets back either a path it may locale-prefix or `null`, and never
+ * compares origins itself. `null` covers an unknown `origin` too, which is
+ * the case outside a Vike app.
  *
- * The path comes back exactly as the URL spelled it. A canonical from
- * upstream is that document's own claim about itself, so re-spelling it is
- * not this function's business.
+ * The path comes back exactly as the URL spelled it. An upstream canonical
+ * is that document's own claim about itself, not ours to re-spell.
  */
 export function sitePathFromUrl(url: string, origin: string | null | undefined): string | null {
   if (!origin) {
@@ -153,16 +151,21 @@ export function sitePathFromUrl(url: string, origin: string | null | undefined):
   try {
     const parsed = new URL(url)
 
-    if (!isSafeHttpUrl(url) || parsed.origin !== origin) {
+    // {@link isSafeHttpUrl}'s test, on the URL already parsed. Comparing
+    // origins would reject another scheme anyway, but only incidentally,
+    // and this is not a gate to leave resting on an accident.
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return null
+    }
+
+    if (parsed.origin !== origin) {
       return null
     }
 
     const path = `${parsed.pathname}${parsed.search}${parsed.hash}`
 
-    // ⚠ `https://wemeditate.com//evil.com` is on this origin and relativizes
-    // to `//evil.com`, which is another host again. Every caller hands the
-    // result to something that trusts a path, so the absolute URL — same
-    // origin, and harmless — is the safe answer here.
+    // ⚠ `https://wemeditate.com//evil.com` is same-origin yet reads as a
+    // host, and every caller hands this result to something trusting a path.
     return isSitePath(path) ? path : null
   } catch {
     return null
