@@ -86,7 +86,12 @@ export async function getAtlasSeo(options: {
       }
 
       if (!response.ok) {
-        throw new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`)
+        // `detectErrorType` reads the status structurally, and its message
+        // fallback matches only `50[0-9]`. Without this, a Cloudflare-origin
+        // 520, 522 or 524 classifies UNKNOWN and loses its retry.
+        throw Object.assign(new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`), {
+          status: response.status,
+        })
       }
 
       return (await response.json()) as AtlasSeoResponse

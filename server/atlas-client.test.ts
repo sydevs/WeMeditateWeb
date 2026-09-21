@@ -107,6 +107,19 @@ describe('getAtlasSeo', () => {
       expect(await getAtlasSeo({ route: '/gb/gone', locale: 'en' })).toBeNull()
       expect(vi.mocked(globalThis.fetch)).toHaveBeenCalledTimes(1)
     })
+
+    it('carries the status so a Cloudflare 5xx still classifies as retryable', async () => {
+      // 520/522/524 come from the edge in front of SahajCloud. They reach
+      // `detectErrorType` only as a structured status — the message fallback
+      // matches `50[0-9]` and would call them UNKNOWN, dropping the retry.
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        fetchResponse(522, {}) as unknown as Response,
+      )
+
+      await getAtlasSeo({ route: '/gb/london', locale: 'en' })
+
+      expect(detectErrorType(thrownSpy.mock.calls[0][0])).toBe(ErrorType.SERVER)
+    })
   })
 
   describe('routes that name no document', () => {
