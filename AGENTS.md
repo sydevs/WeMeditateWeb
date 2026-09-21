@@ -191,14 +191,9 @@ These rules apply whether or not the matching rule file or skill is loaded.
   them before it reaches an `href` or `window.location` — they are what stops a configured
   `javascript:` value running in our origin.
 
-  `localePath` prefixes whatever it is handed, and does not normalize it. A caller holding
-  arbitrary hrefs — `Link` takes any `href` a component writes, and `RichText` hands it a URL an
-  editor typed — calls `localeHref` instead, which pairs `normalizeContentPath` with `localePath`
-  behind one `isSitePath` guard. That is what stops `href="/about/"` rendering `/fr/about/`
-  against a canonical of `/fr/about`. It normalizes the path only, and puts a query or a fragment
-  back untouched, because a slash inside one is content rather than a separator. Anything else
-  (`mailto:`, an `#anchor`, `//another-origin`) is not ours to spell, and passes through
-  untouched.
+  `localePath` prefixes whatever it is handed and does not normalize it. A caller holding
+  arbitrary hrefs — `Link` takes any `href` a component writes — calls `localeHref` instead.
+  Anything else (`mailto:`, an `#anchor`, `//another-origin`) is not ours to spell.
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.
