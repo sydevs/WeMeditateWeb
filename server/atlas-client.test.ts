@@ -7,10 +7,6 @@ vi.mock('./cms-context', () => ({
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
-const find = vi.fn()
-
-vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find }) }))
-
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one.
 // error-utils.test.ts covers what withRetry itself does.
@@ -38,7 +34,10 @@ const regionAnswer = { type: 'region', id: 5, route: '/gb/london', title: 'Londo
 
 beforeEach(() => {
   retrySpy.mockClear()
-  find.mockReset()
+  // `restoreAllMocks` restores spies, and leaves a module mock's recorded
+  // calls in place — so without this a test cannot assert Sentry stayed
+  // silent.
+  vi.mocked(Sentry.captureMessage).mockClear()
   vi.restoreAllMocks()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -153,33 +152,101 @@ describe('getAtlasSeo', () => {
 })
 
 describe('getAtlasSitemapUrls', () => {
-  it('lists only the URLs this origin is the canonical home of', async () => {
-    // Atlas ownership works per subtree: most regions canonicalize to the
-    // national site that owns them (#640). Listing those would ask a
-    // crawler to index URLs this site itself marks non-canonical.
-    find.mockImplementation(async ({ collection }: { collection: string }) => ({
-      docs:
-        collection === 'regions'
-          ? [
-              { webUrl: 'https://wemeditate.com/map/gb/london', updatedAt: '2026-01-01' },
-              { webUrl: 'https://sahajayoga.nl/map/nl/amsterdam', updatedAt: '2026-01-02' },
-            ]
-          : [{ webUrl: 'https://wemeditate.com/map/gb/london/1204', updatedAt: '2026-01-03' }],
-      hasNextPage: false,
-    }))
+  /**
+   * A `GET /api/atlas/sitemap` body.
+   *
+   * Shape mirrored from SahajCloud's `src/endpoints/responseTypes.ts` and
+   * built by `src/endpoints/atlas/sitemap/sitemapUrls.ts`: `loc` is the
+   * document's own `webUrl`, so it is absolute and carries the client's
+   * `/map` mount, and every row has a `lastmod` and a `route`.
+   */
+  function sitemapResponse(urls: { loc: string; lastmod?: string }[]) {
+    return fetchResponse(200, {
+      generated: '2026-09-21T00:00:00.000Z',
+      urls: urls.map((url, index) => ({
+        lastmod: '2026-01-01T00:00:00.000Z',
+        route: `/r${index}`,
+        ...url,
+      })),
+    }) as unknown as Response
+  }
+
+  it('asks the client-scoped endpoint, not the collections', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        sitemapResponse([{ loc: 'https://wemeditate.com/map/gb/london', lastmod: '2026-01-01' }]),
+      )
 
     const urls = await getAtlasSitemapUrls('https://wemeditate.com')
 
-    expect(urls.map((url) => url.loc)).toEqual([
-      'https://wemeditate.com/map/gb/london',
-      'https://wemeditate.com/map/gb/london/1204',
-    ])
+    expect(urls).toEqual([{ loc: 'https://wemeditate.com/map/gb/london', lastmod: '2026-01-01' }])
+
+    const [url, init] = fetchSpy.mock.calls[0]
+
+    expect(url).toBe('https://cms.test/api/atlas/sitemap')
+    expect((init as RequestInit).headers).toEqual({
+      Authorization: 'clients API-Key test-key',
+    })
+  })
+
+  it('keeps every URL past the old 2,000-document ceiling', async () => {
+    // The read this replaced walked 500 × 4 documents per collection and
+    // filtered to this origin only afterwards, so growth anywhere in the
+    // atlas truncated this site's half of the sitemap (#123). Bulk event
+    // import by country puts the corpus well past that (SahajCloud #828).
+    const events = Array.from({ length: 2_500 }, (_, index) => ({
+      loc: `https://wemeditate.com/map/gb/london/${index}`,
+    }))
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(sitemapResponse(events))
+
+    const urls = await getAtlasSitemapUrls('https://wemeditate.com')
+
+    expect(urls).toHaveLength(2_500)
+    expect(urls.at(-1)?.loc).toBe('https://wemeditate.com/map/gb/london/2499')
+  })
+
+  it('drops a URL that is not on the origin being served', async () => {
+    // Upstream scopes to what this client owns, so this is a guard against
+    // a key whose canonical domain is not the host serving the request.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      sitemapResponse([
+        { loc: 'https://wemeditate.com/map/gb/london' },
+        { loc: 'https://sahajayoga.nl/map/nl/amsterdam' },
+      ]),
+    )
+
+    const urls = await getAtlasSitemapUrls('https://wemeditate.com')
+
+    expect(urls.map((url) => url.loc)).toEqual(['https://wemeditate.com/map/gb/london'])
+  })
+
+  it('reports a sitemap the origin guard emptied completely', async () => {
+    // In the response this is indistinguishable from a client that owns no
+    // subtree, so Sentry is the only place it can surface.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      sitemapResponse([{ loc: 'https://sahajayoga.nl/map/nl/amsterdam' }]),
+    )
+
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('off-origin'),
+      expect.objectContaining({ level: 'warning' }),
+    )
+  })
+
+  it('stays quiet when the client legitimately owns nothing', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(sitemapResponse([]))
+
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })
 
   it('retries a failing read, since the KV layer used to supply that', async () => {
     // This read degrades to `[]`, so an unretried blip costs the sitemap
     // its atlas half with nothing visible in the response (#98).
-    find.mockResolvedValue({ docs: [], hasNextPage: false })
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(sitemapResponse([]))
 
     await getAtlasSitemapUrls('https://wemeditate.com')
 
@@ -188,12 +255,20 @@ describe('getAtlasSitemapUrls', () => {
   })
 
   it('degrades to an empty list rather than failing the sitemap', async () => {
-    find.mockRejectedValue(new Error('upstream is down'))
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('upstream is down'))
 
     expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       expect.stringContaining('getAtlasSitemapUrls failed'),
       expect.objectContaining({ level: 'warning' }),
     )
+  })
+
+  it('degrades on a refusal, the shape local dev sees', async () => {
+    // The atlas endpoints require the `sahaj-atlas-client` role, which the
+    // LOCAL client lacks. A 403 costs the atlas half, never the route.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchResponse(403, {}) as unknown as Response)
+
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
   })
 })
