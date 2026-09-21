@@ -1,13 +1,15 @@
 /**
- * `useT()` — the component-side translation accessor.
+ * The component-side readers of `pageContext`: `useT`, `useLocale`,
+ * `useOrigin`.
  *
- * Reads `translations` and `locale` off `pageContext`, which
- * `pages/+onBeforeRender.ts` fills from the CMS and `passToClient` carries
- * into the browser.
+ * `pages/+onBeforeRender.ts` fills `translations` from the CMS and
+ * `passToClient` carries them into the browser, beside the locale and the
+ * parsed URL Vike supplies itself.
  *
  * Outside a Vike app — Ladle, a unit test rendering a component bare —
- * there is no `pageContext`, so this falls back to the committed English
- * snapshot rather than throwing.
+ * there is no `pageContext`, so each reader falls back rather than throwing:
+ * to the committed English snapshot, to the default locale, and, where no
+ * default could be honest about which site we are, to `null`.
  */
 
 import { usePageContext } from 'vike-react/usePageContext'
