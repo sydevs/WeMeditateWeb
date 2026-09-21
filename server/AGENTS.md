@@ -69,9 +69,16 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 ## Custom root endpoints are not collection reads
 
-`GET /api/atlas/seo` and the `related-*` endpoints belong to no collection, so the Payload SDK
-cannot express them. They use plain `fetch` calls with an `Authorization: clients API-Key`
-header, and shape their own response. `select` and `populate` do not apply here.
+`GET /api/atlas/seo`, `GET /api/atlas/sitemap` and the `related-*` endpoints belong to no
+collection, so the Payload SDK cannot express them. They use plain `fetch` calls with an
+`Authorization: clients API-Key` header, and shape their own response. `select` and `populate`
+do not apply here.
+
+⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
+URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
+`getAtlasSitemapUrls` must never go back to reading `regions` and `events` and filtering them
+here (#123). **An empty `urls` list is an answer, not a failure**: a client that owns no subtree
+legitimately has nothing to list.
 
 Two rules still apply:
 

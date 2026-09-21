@@ -4,6 +4,11 @@ import type { CmsEnv } from './cms-context'
 
 const find = vi.fn()
 const findGlobal = vi.fn()
+// The atlas half is one custom-endpoint read, so it goes through `fetch`
+// rather than the SDK client the content half uses.
+const fetchMock = vi.fn()
+
+vi.stubGlobal('fetch', fetchMock)
 
 vi.mock('./cms-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
@@ -62,13 +67,41 @@ function stubConfig(config: Record<string, unknown> = {}) {
   })
 }
 
+/**
+ * `GET /api/atlas/sitemap` — the client-scoped read behind the atlas half.
+ *
+ * Shape mirrored from SahajCloud's `src/endpoints/responseTypes.ts`. Every
+ * `loc` is the document's own `webUrl`, so it arrives absolute and already
+ * narrowed to the regions this API key's client owns.
+ */
+function stubAtlas(urls: { loc: string; lastmod?: string }[], status = 200) {
+  fetchMock.mockResolvedValue({
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => ({
+      generated: '2026-09-21T00:00:00.000Z',
+      // Upstream drops any document without an `updatedAt`, so every row it
+      // sends carries a `lastmod`. A null here would model a body the CMS
+      // cannot produce.
+      urls: urls.map((url, index) => ({
+        lastmod: '2026-01-01T00:00:00.000Z',
+        route: `/r${index}`,
+        ...url,
+      })),
+    }),
+  })
+}
+
 beforeEach(() => {
   retrySpy.mockClear()
   find.mockReset()
   findGlobal.mockReset()
+  fetchMock.mockReset()
   vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'log').mockImplementation(() => {})
   stubCollections({})
   stubConfig()
+  stubAtlas([])
 })
 
 describe('/robots.txt', () => {
@@ -170,12 +203,13 @@ describe('/sitemap.xml', () => {
 
       await (await get('/sitemap.xml')).text()
 
-      // One read per collection — three content, two atlas — exactly as
-      // before this annotation. The per-locale map rides along on the pages
-      // read, and `getSiteAnnotation` is a global read, not a find.
+      // One read per content collection. The per-locale map rides along on
+      // the pages read, `getSiteAnnotation` is a global read rather than a
+      // find, and the atlas half is a single `fetch` to its own endpoint.
       const pageReads = find.mock.calls.filter(([args]) => args.collection === 'pages')
 
-      expect(find).toHaveBeenCalledTimes(5)
+      expect(find).toHaveBeenCalledTimes(3)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(pageReads).toHaveLength(1)
       expect(pageReads[0][0]).toMatchObject({ locale: 'all' })
       // The one read this annotation adds, shared with every page render.
@@ -264,18 +298,14 @@ describe('/sitemap.xml', () => {
 
   describe('the atlas half', () => {
     it('lists only atlas URLs this origin is the canonical home of', async () => {
-      // Ownership is per-subtree. Most regions canonicalize to the
-      // national site that owns them. Listing those would ask a crawler to
-      // index URLs this site itself marks non-canonical.
-      stubCollections({
-        regions: [
-          { id: 1, webUrl: 'https://wemeditate.com/map/gb/london', updatedAt: null },
-          { id: 2, webUrl: 'https://sahaja.nl/kaart/nl/amsterdam', updatedAt: null },
-        ],
-        events: [
-          { id: 1204, webUrl: 'https://wemeditate.com/map/gb/london/1204', updatedAt: null },
-        ],
-      })
+      // Ownership is per-subtree, and resolved upstream. The off-origin row
+      // is the guard's case: a key whose client canonicalizes elsewhere
+      // must not publish that site's URLs here.
+      stubAtlas([
+        { loc: 'https://wemeditate.com/map/gb/london' },
+        { loc: 'https://sahaja.nl/kaart/nl/amsterdam' },
+        { loc: 'https://wemeditate.com/map/gb/london/1204' },
+      ])
 
       const xml = await (await get('/sitemap.xml')).text()
 
@@ -283,19 +313,26 @@ describe('/sitemap.xml', () => {
       expect(xml).toContain('<loc>https://wemeditate.com/map/gb/london/1204</loc>')
       expect(xml).not.toContain('sahaja.nl')
     })
+
+    it('carries an atlas corpus past the ceiling the collection reads had', async () => {
+      // 500 × 4 per collection used to cap this before the origin filter
+      // even ran, so atlas growth anywhere truncated the sitemap (#123).
+      stubAtlas(
+        Array.from({ length: 2_500 }, (_, index) => ({
+          loc: `https://wemeditate.com/map/gb/london/${index}`,
+        })),
+      )
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/map/gb/london/2499</loc>')
+    })
   })
 
   describe('degradation', () => {
     it('still serves the atlas half when the content reads fail', async () => {
-      find.mockImplementation(async ({ collection }: { collection: string }) => {
-        if (collection === 'regions' || collection === 'events') {
-          return {
-            docs: [{ id: 1, webUrl: 'https://wemeditate.com/map/gb', updatedAt: null }],
-            hasNextPage: false,
-          }
-        }
-        throw new Error('CMS unavailable')
-      })
+      find.mockRejectedValue(new Error('CMS unavailable'))
+      stubAtlas([{ loc: 'https://wemeditate.com/map/gb' }])
 
       const response = await get('/sitemap.xml')
 
@@ -303,15 +340,10 @@ describe('/sitemap.xml', () => {
       await expect(response.text()).resolves.toContain('/map/gb')
     })
 
-    it('still serves the content half when the atlas reads are refused', async () => {
+    it('still serves the content half when the atlas read is refused', async () => {
       // Exactly what a client without the `sahaj-atlas-client` role gets.
-      find.mockImplementation(async ({ collection }: { collection: string }) => {
-        if (collection === 'regions' || collection === 'events') {
-          throw new Error('403 Forbidden')
-        }
-
-        return { docs: [{ id: 1, slug: 'about', updatedAt: null }], hasNextPage: false }
-      })
+      stubAtlas([], 403)
+      stubCollections({ pages: [{ id: 1, slug: 'about', updatedAt: null }] })
 
       const response = await get('/sitemap.xml')
 
@@ -328,6 +360,7 @@ describe('/sitemap.xml', () => {
       expect(xml).not.toContain('<url>')
       // No need to read the CMS for a document this response will not fill.
       expect(find).not.toHaveBeenCalled()
+      expect(fetchMock).not.toHaveBeenCalled()
     })
   })
 })

@@ -26,7 +26,7 @@ import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './cms-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
-/** Bounded for the same reason as the atlas read: this runs in a Worker request. */
+/** Bounded because this runs in a Worker request. */
 const CONTENT_READ_LIMIT = 500
 
 /**
