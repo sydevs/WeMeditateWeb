@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
+import { detectErrorType, ErrorType } from './error-utils'
 import * as Sentry from '@sentry/react'
 
 vi.mock('./cms-context', () => ({
@@ -10,7 +11,10 @@ vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one.
 // error-utils.test.ts covers what withRetry itself does.
-const { retrySpy } = vi.hoisted(() => ({ retrySpy: vi.fn() }))
+// `thrownSpy` captures what the read threw. The stub is what makes the
+// retry ladder unobservable otherwise, and whether an error is classified
+// retryable is behaviour worth pinning.
+const { retrySpy, thrownSpy } = vi.hoisted(() => ({ retrySpy: vi.fn(), thrownSpy: vi.fn() }))
 
 vi.mock('./error-utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./error-utils')>()
@@ -20,7 +24,13 @@ vi.mock('./error-utils', async (importOriginal) => {
     withRetry: (fn: () => unknown, config?: unknown) => {
       retrySpy(config)
 
-      return fn()
+      return Promise.resolve()
+        .then(fn)
+        .catch((error: unknown) => {
+          thrownSpy(error)
+
+          throw error
+        })
     },
   }
 })
@@ -34,6 +44,7 @@ const regionAnswer = { type: 'region', id: 5, route: '/gb/london', title: 'Londo
 
 beforeEach(() => {
   retrySpy.mockClear()
+  thrownSpy.mockClear()
   // `restoreAllMocks` restores spies, and leaves a module mock's recorded
   // calls in place — so without this a test cannot assert Sentry stayed
   // silent.
@@ -207,6 +218,24 @@ describe('getAtlasSitemapUrls', () => {
     expect(urls.at(-1)?.loc).toBe('https://wemeditate.com/map/gb/london/2499')
   })
 
+  it('caps the list and reports the truncation rather than hiding it', async () => {
+    // The upstream answer is unpaginated, so the cap is what keeps one
+    // Worker request bounded. A silent cut is what #123 was.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      sitemapResponse(
+        Array.from({ length: 45_010 }, (_, index) => ({
+          loc: `https://wemeditate.com/map/gb/london/${index}`,
+        })),
+      ),
+    )
+
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toHaveLength(45_000)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('truncated'),
+      expect.objectContaining({ level: 'warning' }),
+    )
+  })
+
   it('drops a URL that is not on the origin being served', async () => {
     // Upstream scopes to what this client owns, so this is a guard against
     // a key whose canonical domain is not the host serving the request.
@@ -243,7 +272,7 @@ describe('getAtlasSitemapUrls', () => {
     expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })
 
-  it('retries a failing read, since the KV layer used to supply that', async () => {
+  it('wraps the read in withRetry, since the KV layer used to supply that', async () => {
     // This read degrades to `[]`, so an unretried blip costs the sitemap
     // its atlas half with nothing visible in the response (#98).
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(sitemapResponse([]))
@@ -252,6 +281,33 @@ describe('getAtlasSitemapUrls', () => {
 
     expect(retrySpy).toHaveBeenCalledTimes(1)
     expect(retrySpy.mock.calls[0][0]).toBeUndefined()
+  })
+
+  it('carries the status so a Cloudflare 5xx still classifies as retryable', async () => {
+    // 520/522/524 come from the edge in front of SahajCloud. They reach
+    // `detectErrorType` only as a structured status — the message fallback
+    // matches `50[0-9]` and would call them UNKNOWN, dropping the retry.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      fetchResponse(522, {}) as unknown as Response,
+    )
+
+    await getAtlasSitemapUrls('https://wemeditate.com')
+
+    expect(detectErrorType(thrownSpy.mock.calls[0][0])).toBe(ErrorType.SERVER)
+  })
+
+  it('treats a 200 whose body lost its urls array as a failure, not as empty', async () => {
+    // Hand-mirrored types, so an upstream rename compiles and passes. Left
+    // as `[]` it would empty the atlas half with nothing logged.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      fetchResponse(200, { generated: '2026-09-21T00:00:00.000Z' }) as unknown as Response,
+    )
+
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('getAtlasSitemapUrls failed'),
+      expect.objectContaining({ level: 'warning' }),
+    )
   })
 
   it('degrades to an empty list rather than failing the sitemap', async () => {
@@ -270,5 +326,12 @@ describe('getAtlasSitemapUrls', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchResponse(403, {}) as unknown as Response)
 
     expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
+    // A refusal that degrades without a trace is the failure this whole
+    // file guards against, so the warning is part of the contract.
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('getAtlasSitemapUrls failed'),
+      expect.objectContaining({ level: 'warning' }),
+    )
+    expect(detectErrorType(thrownSpy.mock.calls[0][0])).toBe(ErrorType.CLIENT)
   })
 })

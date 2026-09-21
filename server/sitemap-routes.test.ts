@@ -74,13 +74,20 @@ function stubConfig(config: Record<string, unknown> = {}) {
  * `loc` is the document's own `webUrl`, so it arrives absolute and already
  * narrowed to the regions this API key's client owns.
  */
-function stubAtlas(urls: { loc: string; lastmod?: string | null }[], status = 200) {
+function stubAtlas(urls: { loc: string; lastmod?: string }[], status = 200) {
   fetchMock.mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
     json: async () => ({
       generated: '2026-09-21T00:00:00.000Z',
-      urls: urls.map((url, index) => ({ lastmod: null, route: `/r${index}`, ...url })),
+      // Upstream drops any document without an `updatedAt`, so every row it
+      // sends carries a `lastmod`. A null here would model a body the CMS
+      // cannot produce.
+      urls: urls.map((url, index) => ({
+        lastmod: '2026-01-01T00:00:00.000Z',
+        route: `/r${index}`,
+        ...url,
+      })),
     }),
   })
 }

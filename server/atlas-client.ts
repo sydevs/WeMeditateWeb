@@ -3,10 +3,11 @@
  *
  * This file is deliberately not part of `cms-client.ts`. That module is
  * already about 950 lines, and holds only collection reads through the
- * Payload SDK. This file has one custom root endpoint,
- * `GET /api/atlas/seo`, which belongs to no collection, so the SDK cannot
- * express it. It uses a plain `fetch`, the same pattern the related-content
- * readers in `cms-client.ts` use for custom endpoints.
+ * Payload SDK. This file has two custom root endpoints,
+ * `GET /api/atlas/seo` and `GET /api/atlas/sitemap`, which belong to no
+ * collection, so the SDK cannot express them. Both use a plain `fetch`, the
+ * same pattern the related-content readers in `cms-client.ts` use for
+ * custom endpoints.
  *
  * ## Access
  *
@@ -105,29 +106,28 @@ export async function getAtlasSeo(options: {
 }
 
 /**
+ * The most atlas URLs one sitemap carries.
+ *
+ * The upstream answer is unpaginated and this runs inside a Worker request,
+ * so something has to bound it. 50,000 URLs is the sitemap spec's own
+ * per-file limit and the document would breach that before the Worker ran
+ * out of memory; the margin leaves room for the content half, which shares
+ * the file. Crossing the cap is reported rather than silent — an unnoticed
+ * truncation is the whole of #123.
+ */
+const SITEMAP_URL_CAP = 45_000
+
+/**
  * Every atlas URL this site is the canonical home of.
  *
- * A sitemap lists the URLs a site claims. Atlas ownership works per
- * subtree: most regions canonicalize to the national site that owns them
- * (#640). Listing those would ask a crawler to index URLs this site itself
- * marks non-canonical.
+ * Ownership is resolved upstream. `GET /api/atlas/sitemap` answers with the
+ * URLs the calling API key's client owns, so the nearest-ancestor walk stays
+ * in its single implementation (#640, #650) and this Worker no longer reads
+ * documents in order to discard them (#123).
  *
- * **Ownership is resolved upstream, not here.** `GET /api/atlas/sitemap`
- * answers with the URLs the calling API key's client owns, so the one
- * implementation of the ownership walk stays the one in SahajCloud
- * (#650), and `loc` is the document's own `webUrl` — byte-identical to the
- * `canonical` each page's `<head>` gets from `/api/atlas/seo`.
- *
- * This replaced two paginated collection reads that walked at most 2,000
- * documents each and only then discarded everything off-origin, so growth
- * anywhere in the atlas silently truncated this site's half of the sitemap
- * (#123). One request now, bounded by the answer's own size rather than by
- * a page ceiling that had to guess at the corpus.
- *
- * The origin check that remains is a **guard, not the selection**: it
- * holds the sitemap to URLs on the host actually serving the request, so a
- * key whose client canonicalizes elsewhere cannot publish another site's
- * URLs here.
+ * The origin check is a guard, not the selection: it holds the sitemap to
+ * the host actually serving the request, so a key whose client canonicalizes
+ * elsewhere cannot publish that site's URLs here.
  *
  * Degrades to `[]` on any failure. A sitemap missing its atlas half still
  * serves the rest of the site.
@@ -147,14 +147,28 @@ export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]>
       console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
       if (!response.ok) {
-        throw new Error(`getAtlasSitemapUrls failed: ${response.status}`)
+        // The status rides on the error because `detectErrorType` reads it
+        // structurally and only falls back to matching `50[0-9]` in the
+        // message. A Cloudflare-origin 5xx — 520, 522, 524 — would otherwise
+        // classify as UNKNOWN and lose the retry it most needs.
+        throw Object.assign(new Error(`getAtlasSitemapUrls failed: ${response.status}`), {
+          status: response.status,
+        })
       }
 
       const body = (await response.json()) as AtlasSitemapResponse
-      const rows = Array.isArray(body?.urls) ? body.urls : []
-      const prefix = `${origin.replace(/\/$/, '')}/`
+
+      // A 200 whose shape drifted reads exactly like a client that owns no
+      // subtree, so it would empty the atlas half with nothing logged. These
+      // types are hand-mirrored, which is precisely what `pnpm types:cms`
+      // cannot catch.
+      if (!Array.isArray(body?.urls)) {
+        throw new Error('getAtlasSitemapUrls: the response carried no urls array')
+      }
+
+      const rows = body.urls
       const owned = rows.filter(
-        (row) => typeof row?.loc === 'string' && row.loc.startsWith(prefix),
+        (row) => typeof row?.loc === 'string' && row.loc.startsWith(`${origin}/`),
       )
 
       // Upstream named URLs and the guard rejected every one: this key's
@@ -168,7 +182,17 @@ export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]>
         })
       }
 
-      return owned.map((row) => ({ loc: row.loc, lastmod: row.lastmod ?? null }))
+      if (owned.length > SITEMAP_URL_CAP) {
+        Sentry.captureMessage('getAtlasSitemapUrls hit the sitemap cap; atlas URLs are truncated', {
+          level: 'warning',
+          tags: { source: 'getAtlasSitemapUrls' },
+          extra: { origin, owned: owned.length, cap: SITEMAP_URL_CAP },
+        })
+      }
+
+      return owned
+        .slice(0, SITEMAP_URL_CAP)
+        .map((row) => ({ loc: row.loc, lastmod: row.lastmod ?? null }))
     })
   } catch (error) {
     console.warn('[getAtlasSitemapUrls] omitting the atlas half of the sitemap:', error)
