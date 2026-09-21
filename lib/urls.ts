@@ -136,6 +136,48 @@ export function isSitePath(href: string): boolean {
 }
 
 /**
+ * The path underneath an absolute URL, when that URL is on this origin.
+ *
+ * A caller holding a URL it did not build — an upstream canonical, most of
+ * all — gets back either a path it may locale-prefix or `null`, and never
+ * compares origins itself. `null` covers an unknown `origin` too, which is
+ * the case outside a Vike app.
+ *
+ * The path comes back in `normalizeContentPath`'s spelling, so it meets
+ * {@link localePath}'s precondition whether or not the caller reaches it
+ * through {@link localeHref}. The query and fragment survive: they name a
+ * different document, not a respelling.
+ */
+export function sitePathFromUrl(url: string, origin: string | null | undefined): string | null {
+  if (!origin) {
+    return null
+  }
+
+  try {
+    const parsed = new URL(url)
+
+    // {@link isSafeHttpUrl}'s test, on the URL already parsed. Comparing
+    // origins would reject another scheme anyway, but only incidentally,
+    // and this is not a gate to leave resting on an accident.
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return null
+    }
+
+    if (parsed.origin !== origin) {
+      return null
+    }
+
+    const path = `${normalizeContentPath(parsed.pathname)}${parsed.search}${parsed.hash}`
+
+    // ⚠ `https://wemeditate.com//evil.com` is same-origin yet reads as a
+    // host, and every caller hands this result to something trusting a path.
+    return isSitePath(path) ? path : null
+  } catch {
+    return null
+  }
+}
+
+/**
  * The path a locale serves an already-normalized path at, origin-relative.
  *
  * English is served bare, because `+onBeforeRoute` 301s `/en/x` to `/x`.

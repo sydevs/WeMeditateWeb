@@ -1,7 +1,8 @@
 import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/outline'
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
-import { useT, useLocale } from '../../../hooks/useT'
+import { useT } from '../../../hooks/useT'
+import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
 import type { Locale } from '../../../server/cms-types'
 

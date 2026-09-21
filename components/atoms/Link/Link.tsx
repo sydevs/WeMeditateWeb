@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { useLocale } from '../../../hooks/useT'
+import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
 import type { Locale } from '../../../server/cms-types'
 
