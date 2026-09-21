@@ -46,6 +46,18 @@ describe('<Link> locale prefixing', () => {
     expect(renderToStaticMarkup(<Link href="/about/">x</Link>)).toContain('href="/about"')
   })
 
+  it('leaves a slash alone inside a query or a fragment', () => {
+    // An editor can type either into the rich-text link dialog, and there a
+    // trailing slash belongs to the value, not to the path.
+    expect(
+      renderToStaticMarkup(
+        <Link href="/share?url=https://example.com/" locale="fr">
+          x
+        </Link>,
+      ),
+    ).toContain('href="/fr/share?url=https://example.com/"')
+  })
+
   it('prefixes a content path, and serves English bare', () => {
     expect(
       renderToStaticMarkup(

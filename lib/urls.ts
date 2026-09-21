@@ -32,6 +32,9 @@ export interface PathLocale {
 /** The routing spelling of a home page, which is never a URL. */
 const INDEX_PATH = /^\/index\/?$/
 
+/** Where a path stops and a slash becomes content rather than a separator. */
+const HAS_QUERY_OR_HASH = /[?#]/
+
 /**
  * The locale a path is served in, and the path underneath it.
  *
@@ -163,13 +166,20 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
  * the one entry point for a caller that cannot promise `localePath`'s
  * already-normalized input.
  *
- * ⚠ **The predicate runs on the href as written.** Classify first, transform
- * second: `normalizeContentPath('')` is `/`, so normalizing ahead of the guard
- * would turn an unset href into a link to the home page.
+ * ⚠ **Both tests read the href as written.** Classify first, transform
+ * second: `normalizeContentPath('')` is `/`, so normalizing ahead of the
+ * `isSitePath` guard would turn an unset href into a link to the home page.
  *
- * A trailing slash before a `?` or a `#` survives, because
- * `normalizeContentPath` strips only a final slash.
+ * An href carrying a query or a fragment is left alone, because
+ * `normalizeContentPath` strips a final slash off the whole string and inside
+ * those a slash is content — `?url=https://example.com/` is a value, not a
+ * path. So `/about/#section` keeps its slash, and the duplicate spelling this
+ * function exists to stop survives in that one shape.
  */
 export function sitePath(locale: Locale, href: string): string {
-  return isSitePath(href) ? localePath(locale, normalizeContentPath(href)) : href
+  if (!isSitePath(href)) {
+    return href
+  }
+
+  return localePath(locale, HAS_QUERY_OR_HASH.test(href) ? href : normalizeContentPath(href))
 }

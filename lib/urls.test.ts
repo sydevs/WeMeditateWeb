@@ -186,10 +186,20 @@ describe('sitePath', () => {
   })
 
   it('does not reach a trailing slash before a query or a hash', () => {
-    // `normalizeContentPath` strips only a final slash. A known limit,
-    // recorded rather than fixed with a parser: sydevs/WeMeditateWeb#119.
+    // A known limit, recorded rather than fixed with a URL parser:
+    // sydevs/WeMeditateWeb#119.
     expect(sitePath('fr', '/about/#section')).toBe('/fr/about/#section')
     expect(sitePath('fr', '/about/?utm=1')).toBe('/fr/about/?utm=1')
+  })
+
+  it('never edits a slash that is content inside a query or a fragment', () => {
+    // `normalizeContentPath` strips a final slash off the whole string, so
+    // running it on an href with a query would rewrite the query's value.
+    expect(sitePath('fr', '/share?url=https://example.com/')).toBe(
+      '/fr/share?url=https://example.com/',
+    )
+    expect(sitePath('fr', '/search?q=a/b/')).toBe('/fr/search?q=a/b/')
+    expect(sitePath('fr', '/about#heading/')).toBe('/fr/about#heading/')
   })
 })
 
