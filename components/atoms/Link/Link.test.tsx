@@ -21,6 +21,43 @@ describe('<Link> locale prefixing', () => {
     expect(html).not.toContain('href="/fr/"')
   })
 
+  it('drops a trailing slash, in every locale', () => {
+    // `RichText` hands `Link` the URL an editor types in the link dialog, so
+    // `/about/` is reachable without any hand-written JSX. The canonical for
+    // that page is `/fr/about`, and one document may not spell it two ways.
+    expect(
+      renderToStaticMarkup(
+        <Link href="/about/" locale="fr">
+          x
+        </Link>,
+      ),
+    ).toContain('href="/fr/about"')
+
+    // English is affected too: `localePath` passes the path through unprefixed.
+    expect(
+      renderToStaticMarkup(
+        <Link href="/about/" locale="en">
+          x
+        </Link>,
+      ),
+    ).toContain('href="/about"')
+
+    // And with no locale prop at all, which is how most call sites render.
+    expect(renderToStaticMarkup(<Link href="/about/">x</Link>)).toContain('href="/about"')
+  })
+
+  it('leaves a slash alone inside a query or a fragment', () => {
+    // An editor can type either into the rich-text link dialog, and there a
+    // trailing slash belongs to the value, not to the path.
+    expect(
+      renderToStaticMarkup(
+        <Link href="/share?url=https://example.com/" locale="fr">
+          x
+        </Link>,
+      ),
+    ).toContain('href="/fr/share?url=https://example.com/"')
+  })
+
   it('prefixes a content path, and serves English bare', () => {
     expect(
       renderToStaticMarkup(
@@ -63,7 +100,7 @@ describe('<Link> locale prefixing', () => {
 
   it('leaves an href that is not a path on this site alone', () => {
     // Each of these once had a locale glued on: `/frmailto:…`, `/fr//cdn…`.
-    for (const href of ['mailto:hello@example.com', 'tel:+1234567890', '//cdn.example.com/x']) {
+    for (const href of ['mailto:hello@example.com', 'tel:+1234567890', '//cdn.example.com/x', '']) {
       const html = renderToStaticMarkup(
         <Link href={href} locale="fr">
           x

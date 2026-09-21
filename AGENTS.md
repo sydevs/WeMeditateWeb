@@ -191,17 +191,15 @@ These rules apply whether or not the matching rule file or skill is loaded.
   them before it reaches an `href` or `window.location` — they are what stops a configured
   `javascript:` value running in our origin.
 
-  `localePath` prefixes whatever it is handed. A caller holding arbitrary hrefs — `Link` takes
-  any `href` a component writes — filters them through `isSitePath` first, which is why that
-  predicate lives beside the rule rather than in either caller. Anything else (`mailto:`, an
-  `#anchor`, `//another-origin`) is not ours to spell.
+  `localePath` prefixes whatever it is handed and does not normalize it. A caller holding
+  arbitrary hrefs — `Link` takes any `href` a component writes — calls `localeHref` instead.
+  Anything else (`mailto:`, an `#anchor`, `//another-origin`) is not ours to spell.
 
-  An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it.
-  `sitePathFromUrl` is that case: it hands back the path under such a URL in
-  `normalizeContentPath`'s spelling, ready for the caller to locale-prefix, and `null` for every
-  other URL and for an unknown origin. Upstream canonicals
-  arrive this way. `atlasHref` calls it today; whether `Link` should call it for every consumer is
-  #124.
+  An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it, so
+  `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path
+  under such a URL in `normalizeContentPath`'s spelling, ready for the caller to locale-prefix,
+  and `null` for every other URL and for an unknown origin. Upstream canonicals arrive this way.
+  `atlasHref` calls it today; whether `Link` should call it for every consumer is #124.
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.

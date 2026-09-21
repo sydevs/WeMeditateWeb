@@ -7,6 +7,7 @@ import {
   localePath,
   localeUrl,
   normalizeContentPath,
+  localeHref,
   sitePathFromUrl,
 } from './urls'
 
@@ -101,20 +102,6 @@ describe('normalizeContentPath', () => {
   })
 })
 
-describe('localePath', () => {
-  it('serves English bare, and prefixes every other locale', () => {
-    expect(localePath('en', '/about')).toBe('/about')
-    expect(localePath('fr', '/about')).toBe('/fr/about')
-  })
-
-  it('spells a locale home page as the bare prefix', () => {
-    // +onBeforeRoute redirects a requested /index here, so /fr/ would be a
-    // redirect to a redirect.
-    expect(localePath('en', '/')).toBe('/')
-    expect(localePath('fr', '/')).toBe('/fr')
-  })
-})
-
 describe('localeUrl', () => {
   it('serves English bare, because /en/x 301s to /x', () => {
     // Advertising /en/about would advertise a redirect, which is the one
@@ -152,6 +139,73 @@ describe('localePath', () => {
     // the home page, so the trailing slash buys nothing and spells the same
     // page a second way.
     expect(localePath('fr', '/')).toBe('/fr')
+  })
+
+  it('does not normalize what it is handed, which is why localeHref exists', () => {
+    expect(localePath('fr', '/about/')).toBe('/fr/about/')
+  })
+})
+
+const NOT_SITE_PATHS = [
+  'mailto:hello@example.com',
+  'tel:+1234567890',
+  '#section',
+  '//cdn.example.com/x',
+  'https://example.com',
+  'about',
+]
+
+describe('localeHref', () => {
+  it('drops a trailing slash, so a link agrees with the page canonical', () => {
+    // `/about/` and `/about` are one page, and ContentHead emits `/fr/about`.
+    expect(localeHref('fr', '/about/')).toBe('/fr/about')
+    expect(localeHref('en', '/about/')).toBe('/about')
+    expect(localeHref('pt-BR', '/about/')).toBe('/pt-BR/about')
+  })
+
+  it('leaves an already-normalized path as localePath alone would', () => {
+    expect(localeHref('fr', '/about')).toBe('/fr/about')
+    expect(localeHref('fr', '/')).toBe('/fr')
+  })
+
+  it('collapses the routing spelling of the home page', () => {
+    // Nothing hands `/index` to a link today, but it is never a URL.
+    expect(localeHref('fr', '/index')).toBe('/fr')
+    expect(localeHref('en', '/index')).toBe('/')
+  })
+
+  it('passes through anything that is not a path on this site', () => {
+    for (const href of NOT_SITE_PATHS) {
+      expect(localeHref('fr', href)).toBe(href)
+    }
+  })
+
+  it('leaves an empty href empty, rather than linking to the home page', () => {
+    // The guard classifies the href as written. Normalizing first would make
+    // `''` into `/`, and an unset ctaHref into a home-page link.
+    expect(localeHref('fr', '')).toBe('')
+  })
+
+  it('normalizes the path ahead of a query or a fragment', () => {
+    expect(localeHref('fr', '/about/#section')).toBe('/fr/about#section')
+    expect(localeHref('fr', '/about/?utm=1')).toBe('/fr/about?utm=1')
+    expect(localeHref('en', '/about/#section')).toBe('/about#section')
+  })
+
+  it('never edits a slash that is content inside a query or a fragment', () => {
+    // `normalizeContentPath` strips a final slash off whatever it is handed,
+    // so handing it a whole href would rewrite the query's own value.
+    expect(localeHref('fr', '/share?url=https://example.com/')).toBe(
+      '/fr/share?url=https://example.com/',
+    )
+    expect(localeHref('fr', '/search?q=a/b/')).toBe('/fr/search?q=a/b/')
+    expect(localeHref('fr', '/about#heading/')).toBe('/fr/about#heading/')
+  })
+
+  it('keeps the routing-internal /index out of an href that carries a query', () => {
+    expect(localeHref('fr', '/index?x=1')).toBe('/fr?x=1')
+    expect(localeHref('fr', '/?utm=1')).toBe('/fr?utm=1')
+    expect(localeHref('en', '/index#top')).toBe('/#top')
   })
 })
 

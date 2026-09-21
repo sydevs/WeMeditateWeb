@@ -22,7 +22,11 @@ vi.mock('../components/organisms/Header', () => ({
     <nav>{navItems.map((n) => `${n.label}${n.dropdown ? '[dropdown]' : ''}`).join(',')}</nav>
   ),
 }))
-vi.mock('../components/organisms/Footer', () => ({ Footer: () => <footer /> }))
+vi.mock('../components/organisms/Footer', () => ({
+  Footer: ({ languages }: { languages: { code: string; href: string }[] }) => (
+    <footer>{languages.map((l) => `${l.code}:${l.href}`).join(',')}</footer>
+  ),
+}))
 
 const { default: LayoutChrome } = await import('./LayoutChrome')
 
@@ -79,6 +83,22 @@ describe('LayoutChrome', () => {
     expect(html).toContain('Meditate,')
     expect(html).not.toContain('Meditate[dropdown]')
     expect(html).not.toContain('Music[dropdown]')
+  })
+
+  it('hands the language dropdown the raw pathname, for Link to spell', () => {
+    // `/index` is routing-internal, and the dropdown hands it on as written:
+    // `Link` is what resolves it, to `/` for English and `/fr` for French.
+    ctx.settings = {
+      availableLocales: ['en', 'fr'],
+      featuredPages: [],
+      knowledgePages: [],
+      featuredArticles: [],
+      classPages: [],
+      infoPages: [],
+    }
+    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
+
+    expect(html).toContain('en:/index,fr:/index')
   })
 
   it('omits the dropdown item entirely when there are no knowledge pages', () => {
