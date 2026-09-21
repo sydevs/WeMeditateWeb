@@ -96,8 +96,9 @@ It downloads the latest `payload-types.ts` from SahajCloud.
 ## API authentication
 
 Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
-factory adds this header for you, and [server/cms-fetch.ts](../../server/cms-fetch.ts) adds it to
-every read of a custom root endpoint. Nothing else composes that header.
+factory adds this header for you, and
+[server/sahajcloud-fetch.ts](../../server/sahajcloud-fetch.ts) adds it to every read of a custom
+root endpoint. Nothing else composes that header.
 
 ## A public write is a proxy, not a query function
 
