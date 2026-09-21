@@ -32,6 +32,9 @@ export interface PathLocale {
 /** The routing spelling of a home page, which is never a URL. */
 const INDEX_PATH = /^\/index\/?$/
 
+/** Where a path stops and a slash becomes content rather than a separator. */
+const HAS_QUERY_OR_HASH = /[?#]/
+
 /**
  * The locale a path is served in, and the path underneath it.
  *
@@ -139,9 +142,9 @@ export function isSitePath(href: string): boolean {
  * Advertising `/en/x` would advertise a redirect, which is the one thing a
  * canonical must never be.
  *
- * Pass a path from `normalizeContentPath`. This does not re-normalize, and
- * it prefixes whatever it is given — a caller holding arbitrary hrefs filters
- * them through `isSitePath` first, because only it knows that it might.
+ * Pass a path from `normalizeContentPath`. This does not re-normalize, and it
+ * prefixes whatever it is given, so a caller holding arbitrary hrefs calls
+ * {@link localeHref} instead.
  */
 export function localePath(locale: Locale, path: string): string {
   if (locale === DEFAULT_LOCALE) {
@@ -156,4 +159,29 @@ export function localePath(locale: Locale, path: string): string {
 /** The absolute URL a locale serves an already-normalized path at. */
 export function localeUrl(origin: string, locale: Locale, path: string): string {
   return `${origin}${localePath(locale, path)}`
+}
+
+/**
+ * The href to render for whatever a component or an editor wrote — the one
+ * entry point for a caller that cannot promise `localePath`'s
+ * already-normalized input.
+ *
+ * ⚠ **`isSitePath` reads the href as written.** Classify first, transform
+ * second: `normalizeContentPath('')` is `/`, so normalizing ahead of the guard
+ * would turn an unset href into a link to the home page.
+ *
+ * Only the path is normalized. A query and a fragment go back on untouched,
+ * because a slash inside one is content — `?url=https://example.com/` is a
+ * value, not a path that ends in a separator.
+ */
+export function localeHref(locale: Locale, href: string): string {
+  if (!isSitePath(href)) {
+    return href
+  }
+
+  const suffixAt = href.search(HAS_QUERY_OR_HASH)
+  const path = suffixAt === -1 ? href : href.slice(0, suffixAt)
+  const suffix = suffixAt === -1 ? '' : href.slice(suffixAt)
+
+  return localePath(locale, normalizeContentPath(path)) + suffix
 }
