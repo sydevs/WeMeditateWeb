@@ -2,7 +2,7 @@ import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/o
 import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
 import { useT, useLocale } from '../../../hooks/useT'
-import { isSitePath, localePath } from '../../../lib/urls'
+import { sitePath } from '../../../lib/urls'
 import type { Locale } from '../../../server/cms-types'
 
 /** Fixed iframe geometry and permissions for the generated embed snippet. */
@@ -13,12 +13,12 @@ const IFRAME_ALLOW = 'autoplay; fullscreen; encrypted-media; picture-in-picture'
 /**
  * Build the ready-to-paste `<iframe>` snippet for an embed path.
  *
- * The locale prefix comes from `localePath`, the same rule `Link` uses. Then
- * it prepends `origin`, so the `src` is absolute. The function stays pure and
+ * The path comes from `sitePath`, the same rule `Link` uses. Then it prepends
+ * `origin`, so the `src` is absolute. The function stays pure and
  * origin-injectable, so it is unit-testable and deterministic in stories.
  */
 export function buildEmbedSnippet(embedPath: string, locale: Locale, origin: string): string {
-  const src = isSitePath(embedPath) ? localePath(locale, embedPath) : embedPath
+  const src = sitePath(locale, embedPath)
 
   return `<iframe src="${origin}${src}" width="${IFRAME_WIDTH}" height="${IFRAME_HEIGHT}" frameborder="0" allow="${IFRAME_ALLOW}" allowfullscreen></iframe>`
 }

@@ -7,6 +7,7 @@ import {
   localePath,
   localeUrl,
   normalizeContentPath,
+  sitePath,
 } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -100,20 +101,6 @@ describe('normalizeContentPath', () => {
   })
 })
 
-describe('localePath', () => {
-  it('serves English bare, and prefixes every other locale', () => {
-    expect(localePath('en', '/about')).toBe('/about')
-    expect(localePath('fr', '/about')).toBe('/fr/about')
-  })
-
-  it('spells a locale home page as the bare prefix', () => {
-    // +onBeforeRoute redirects a requested /index here, so /fr/ would be a
-    // redirect to a redirect.
-    expect(localePath('en', '/')).toBe('/')
-    expect(localePath('fr', '/')).toBe('/fr')
-  })
-})
-
 describe('localeUrl', () => {
   it('serves English bare, because /en/x 301s to /x', () => {
     // Advertising /en/about would advertise a redirect, which is the one
@@ -150,9 +137,63 @@ describe('localePath', () => {
     // `+onBeforeRoute`'s pattern matches the bare prefix and resolves it to
     // the home page, so the trailing slash buys nothing and spells the same
     // page a second way.
+    expect(localePath('en', '/')).toBe('/')
     expect(localePath('fr', '/')).toBe('/fr')
   })
 
+  it('does not normalize what it is handed, which is why sitePath exists', () => {
+    expect(localePath('fr', '/about/')).toBe('/fr/about/')
+  })
+})
+
+describe('sitePath', () => {
+  it('drops a trailing slash, so a link agrees with the page canonical', () => {
+    // `/about/` and `/about` are one page. ContentHead emits `/fr/about`.
+    expect(sitePath('fr', '/about/')).toBe('/fr/about')
+    expect(sitePath('en', '/about/')).toBe('/about')
+  })
+
+  it('leaves an already-normalized path exactly as localePath would', () => {
+    expect(sitePath('fr', '/about')).toBe('/fr/about')
+    expect(sitePath('en', '/about')).toBe('/about')
+    expect(sitePath('fr', '/')).toBe('/fr')
+  })
+
+  it('collapses the routing spelling of the home page', () => {
+    // Nothing hands `/index` to a link today, but it is never a URL.
+    expect(sitePath('fr', '/index')).toBe('/fr')
+    expect(sitePath('en', '/index')).toBe('/')
+  })
+
+  it('passes through anything that is not a path on this site', () => {
+    for (const href of [
+      'mailto:hello@example.com',
+      'tel:+1234567890',
+      '#section',
+      '//cdn.example.com/x',
+      'https://example.com',
+      'about',
+    ]) {
+      expect(sitePath('fr', href)).toBe(href)
+    }
+  })
+
+  it('leaves an empty href empty, rather than linking to the home page', () => {
+    // `normalizeContentPath('')` is `/`, so normalizing before the
+    // `isSitePath` guard would turn an unset ctaHref into a home-page link.
+    expect(sitePath('fr', '')).toBe('')
+  })
+
+  it('does not reach a trailing slash before a query or a hash', () => {
+    // `normalizeContentPath` strips only a final slash. Recorded as a known
+    // limit rather than a parser: sydevs/WeMeditateWeb#119.
+    expect(sitePath('fr', '/about/#section')).toBe('/fr/about/#section')
+    expect(sitePath('fr', '/about/?utm=1')).toBe('/fr/about/?utm=1')
+  })
+
+  it('keeps a region-cased code exactly as the CMS stores it', () => {
+    expect(sitePath('pt-BR', '/about/')).toBe('/pt-BR/about')
+  })
 })
 
 describe('isSitePath', () => {

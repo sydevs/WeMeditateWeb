@@ -34,9 +34,20 @@ describe('buildEmbedSnippet', () => {
   })
 
   it('passes a path that is not site-absolute through unprefixed', () => {
-    // `localePath` prefixes whatever it is given, so the guard stays here.
+    // `sitePath` owns the guard, so a path that is not ours stays as written.
     expect(buildEmbedSnippet('meditations/123/embed', 'fr', '')).toContain(
       'src="meditations/123/embed"',
+    )
+  })
+
+  it('drops a trailing slash off the embed path', () => {
+    // An embedPath built by concatenation can carry one, and `/embed/` and
+    // `/embed` are one route.
+    expect(buildEmbedSnippet('/meditations/1/embed/', 'fr', '')).toContain(
+      'src="/fr/meditations/1/embed"',
+    )
+    expect(buildEmbedSnippet('/meditations/1/embed/', 'en', '')).toContain(
+      'src="/meditations/1/embed"',
     )
   })
 

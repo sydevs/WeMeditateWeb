@@ -139,9 +139,9 @@ export function isSitePath(href: string): boolean {
  * Advertising `/en/x` would advertise a redirect, which is the one thing a
  * canonical must never be.
  *
- * Pass a path from `normalizeContentPath`. This does not re-normalize, and
- * it prefixes whatever it is given — a caller holding arbitrary hrefs filters
- * them through `isSitePath` first, because only it knows that it might.
+ * Pass a path from `normalizeContentPath`. This does not re-normalize, and it
+ * prefixes whatever it is given, so a caller holding arbitrary hrefs calls
+ * {@link sitePath} instead.
  */
 export function localePath(locale: Locale, path: string): string {
   if (locale === DEFAULT_LOCALE) {
@@ -156,4 +156,23 @@ export function localePath(locale: Locale, path: string): string {
 /** The absolute URL a locale serves an already-normalized path at. */
 export function localeUrl(origin: string, locale: Locale, path: string): string {
   return `${origin}${localePath(locale, path)}`
+}
+
+/**
+ * The path this site serves, for an href a component or an editor wrote.
+ *
+ * `localePath` requires an already-normalized path, which a caller taking
+ * arbitrary hrefs cannot promise. Composing the two here is what stops
+ * `<Link href="/about/">` spelling a page the canonical spells `/about`.
+ *
+ * Normalize inside the `isSitePath` branch, never before it:
+ * `normalizeContentPath('')` returns `/`, so an empty href would otherwise
+ * become a link to the home page.
+ *
+ * A trailing slash before a `?` or a `#` survives, because
+ * `normalizeContentPath` strips only a final slash: `/about/#section` stays as
+ * written.
+ */
+export function sitePath(locale: Locale, href: string): string {
+  return isSitePath(href) ? localePath(locale, normalizeContentPath(href)) : href
 }

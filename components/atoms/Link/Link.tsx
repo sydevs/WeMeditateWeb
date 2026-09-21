@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
 import { useLocale } from '../../../hooks/useT'
-import { isSitePath, localePath } from '../../../lib/urls'
+import { sitePath } from '../../../lib/urls'
 import type { Locale } from '../../../server/cms-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
@@ -73,7 +73,7 @@ export function Link({
   // there is no `pageContext` at all and an href would become `/undefined/x`.
   const pageLocale = useLocale()
 
-  const finalHref = isSitePath(href) ? localePath(locale ?? pageLocale, href) : href
+  const finalHref = sitePath(locale ?? pageLocale, href)
 
   const baseStyles = 'transition-colors duration-200'
 
