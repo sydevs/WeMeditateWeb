@@ -64,10 +64,14 @@ export function cmsAuthHeaders(apiKey: string): Record<string, string> {
  * response body to the log first, so a 400 says which field it objected
  * to. It also emits the `[PayloadCMS] <method> <url> → <status>` line the
  * debugging workflow in AGENTS.md reads.
+ *
+ * @param quietStatuses - Statuses to log without their body. Only a caller
+ *   that answers a status itself can say it carries nothing worth dumping.
  */
 export async function fetchWithErrorDetails(
   input: RequestInfo | URL,
   init?: RequestInit,
+  quietStatuses: readonly number[] = [],
 ): Promise<Response> {
   const response = await fetch(input, init)
 
@@ -75,12 +79,7 @@ export async function fetchWithErrorDetails(
   console.log(`[PayloadCMS] ${init?.method || 'GET'} ${input} → ${response.status}`)
 
   // If not OK, log the actual error details before the SDK swallows them.
-  //
-  // A 404 is exempt. It is an answer at every custom-endpoint read — an
-  // unknown id, a stale inbound link, no songs route — and it carries no
-  // field-level detail, which is the whole point of the dump. Logging one at
-  // error level would buffer a body on a hot path and drown real faults.
-  if (!response.ok && response.status !== 404) {
+  if (!response.ok && !quietStatuses.includes(response.status)) {
     const clonedResponse = response.clone()
 
     try {
@@ -128,5 +127,8 @@ export async function cmsFetch(path: string): Promise<Response> {
 
   const { apiKey, baseURL } = getCmsContext()
 
-  return fetchWithErrorDetails(`${baseURL}${path}`, { headers: cmsAuthHeaders(apiKey) })
+  // A 404 is an answer at every read here — an unknown id, a stale inbound
+  // link, no songs route — and carries none of the field-level detail the dump
+  // exists for. Through the SDK it is a fault, so only this path asks for quiet.
+  return fetchWithErrorDetails(`${baseURL}${path}`, { headers: cmsAuthHeaders(apiKey) }, [404])
 }

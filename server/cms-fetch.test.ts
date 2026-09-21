@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { cmsFetch, CmsResponseError, throwIfNotOk } from './cms-fetch'
+import { cmsFetch, CmsResponseError, fetchWithErrorDetails, throwIfNotOk } from './cms-fetch'
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./cms-context', () => ({
@@ -82,6 +82,31 @@ describe('cmsFetch', () => {
     // The request line still records it. Dumping a body here would buffer one
     // on a hot path and make an ordinary stale link look like a fault.
     expect(errorSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('fetchWithErrorDetails', () => {
+  it('dumps a 404 body by default, which is how the SDK collection reads see one', async () => {
+    const errorSpy = vi.spyOn(console, 'error')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ errors: [{ message: 'The requested resource was not found.' }] }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    // Only `cmsFetch` asks for a quiet 404. A collection read reaching this
+    // wrapper through the SDK has no caller-side 404 policy, so its body is
+    // the only record of which read missed.
+    await fetchWithErrorDetails('https://cms.test/api/pages/missing')
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[PayloadCMS] Error response:',
+      expect.objectContaining({
+        body: { errors: [{ message: 'The requested resource was not found.' }] },
+      }),
+    )
   })
 })
 
