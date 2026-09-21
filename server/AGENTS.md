@@ -77,9 +77,8 @@ do not apply here.
 ⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
 URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
 `getAtlasSitemapUrls` must never go back to reading `regions` and `events` and filtering them
-here — that ceiling counted documents this site does not publish, and truncated the sitemap as
-the atlas grew (#123). **An empty `urls` list is an answer, not a failure**: a client that owns
-no subtree legitimately has nothing to list.
+here (#123). **An empty `urls` list is an answer, not a failure**: a client that owns no subtree
+legitimately has nothing to list.
 
 Two rules still apply:
 

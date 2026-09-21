@@ -126,8 +126,8 @@ const SITEMAP_URL_CAP = 45_000
  *
  * Ownership is resolved upstream. `GET /api/atlas/sitemap` answers with the
  * URLs the calling API key's client owns, so the nearest-ancestor walk stays
- * in its single implementation (#640, #650) and this Worker no longer reads
- * documents in order to discard them (#123).
+ * in its single implementation (#640, #650) and this Worker reads no
+ * document it will discard (#123).
  *
  * The origin check is a guard, not the selection: it holds the sitemap to
  * the host actually serving the request, so a key whose client canonicalizes
