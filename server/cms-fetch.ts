@@ -1,5 +1,5 @@
 /**
- * The one fetch for CMS endpoints the Payload SDK cannot express.
+ * The one read path for CMS endpoints the Payload SDK cannot express.
  *
  * The SDK covers collection reads. Custom root endpoints — `/api/atlas/seo`,
  * the `related-*` feeds, a content-index block's computed endpoint — belong to
@@ -7,8 +7,9 @@
  * drifted: one lost its request log, and a status-less throw cost a
  * Cloudflare-origin 5xx its retry (#127).
  *
- * This module owns the preamble only. A caller keeps its own retry wrapper and
- * its own non-OK policy, because those genuinely differ per read.
+ * Every read resolves its base URL, signs, logs, and answers a non-OK response
+ * the same way here. A caller keeps only its own retry wrapper and its own
+ * degrade value, because those genuinely differ per read.
  *
  * It sits outside `payload-client.ts` because `cms-client.test.ts` and
  * `atlas-client.test.ts` replace that module wholesale, so anything exported
@@ -25,8 +26,6 @@ import { getCmsContext } from './cms-context'
  * A plain `Error` therefore classifies a Cloudflare-origin 520, 522 or 524 as
  * UNKNOWN, and `withRetry` refuses it — exactly the shape a Railway restart
  * behind the edge produces.
- *
- * Construct it through {@link throwIfNotOk}, so no read can forget the status.
  */
 export class CmsResponseError extends Error {
   public readonly status: number
@@ -36,19 +35,6 @@ export class CmsResponseError extends Error {
     this.name = 'CmsResponseError'
     this.status = status
   }
-}
-
-/**
- * Throws unless the response is OK, after the caller has answered its own 404.
- *
- * @param label - What failed, e.g. `getAtlasSeo(/gb/london)`
- */
-export function throwIfNotOk(response: Response, label: string): void {
-  if (response.ok) {
-    return
-  }
-
-  throw new CmsResponseError(`${label} failed: ${response.status}`, response.status)
 }
 
 /** The `Authorization` header every CMS call carries, SDK and custom endpoint alike. */
@@ -104,18 +90,10 @@ export async function fetchWithErrorDetails(
 }
 
 /**
- * Reads a CMS endpoint the SDK cannot express.
- *
- * Takes a path, not a URL. Resolving the base URL here is what removes
- * `getCmsContext()` from every call site; handed a URL, each site would still
- * have to build one.
- *
- * A path that is not site-relative rejects rather than throwing synchronously,
- * so a caller sees the refusal exactly where it sees a network fault.
- *
- * @param path - Path and query from the leading slash, e.g. `/api/atlas/seo?route=…`
+ * Sends the request. Takes a path, not a URL: resolving the base URL here is
+ * what removes `getCmsContext()` from every call site.
  */
-export async function cmsFetch(path: string): Promise<Response> {
+async function requestCms(path: string, quietStatuses: readonly number[]): Promise<Response> {
   // The path is concatenated, not resolved, so an `@` or `//` prefix moves the
   // authority — and the API key goes with it.
   if (!path.startsWith('/') || path.startsWith('//')) {
@@ -124,8 +102,53 @@ export async function cmsFetch(path: string): Promise<Response> {
 
   const { apiKey, baseURL } = getCmsContext()
 
-  // A 404 is an answer at every read here — an unknown id, a stale inbound
-  // link, no songs route — and carries none of the field-level detail the dump
-  // exists for. Through the SDK it is a fault, so only this path asks for quiet.
-  return fetchWithErrorDetails(`${baseURL}${path}`, { headers: cmsAuthHeaders(apiKey) }, [404])
+  return fetchWithErrorDetails(
+    `${baseURL}${path}`,
+    { headers: cmsAuthHeaders(apiKey) },
+    quietStatuses,
+  )
+}
+
+function throwIfNotOk(response: Response, label: string): void {
+  if (!response.ok) {
+    throw new CmsResponseError(`${label} failed: ${response.status}`, response.status)
+  }
+}
+
+/**
+ * Reads a CMS endpoint the SDK cannot express, and returns its parsed body.
+ *
+ * Every non-OK response throws, so a caller never branches on a status. Wrap
+ * the call in the read's retry policy and catch there.
+ *
+ * @param path - Path and query from the leading slash, e.g. `/api/atlas/seo?route=…`
+ * @param label - What failed, e.g. `getAtlasSeo(/gb/london)`
+ */
+export async function cmsFetch<T>(path: string, label: string): Promise<T> {
+  const response = await requestCms(path, [])
+
+  throwIfNotOk(response, label)
+
+  return (await response.json()) as T
+}
+
+/**
+ * The same read, where a 404 is an answer rather than a fault: an unknown id,
+ * a stale inbound link, no songs route.
+ *
+ * It resolves to `null` instead of throwing, so it never spends the retry
+ * ladder and never reaches Sentry as an exception. Its body is logged without
+ * a dump for the same reason — it carries none of the field-level detail the
+ * dump exists for, and the request line still records it.
+ */
+export async function cmsFetchOptional<T>(path: string, label: string): Promise<T | null> {
+  const response = await requestCms(path, [404])
+
+  if (response.status === 404) {
+    return null
+  }
+
+  throwIfNotOk(response, label)
+
+  return (await response.json()) as T
 }

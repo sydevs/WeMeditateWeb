@@ -24,7 +24,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { cmsFetch, throwIfNotOk } from './cms-fetch'
+import { cmsFetchOptional } from './cms-fetch'
 import { withRetry } from './error-utils'
 import { createPayloadClient } from './payload-client'
 import type { Locale } from './cms-types'
@@ -67,23 +67,16 @@ export async function getAtlasSeo(options: {
   }
 
   try {
-    return await withRetry(async () => {
-      const response = await cmsFetch(
+    // A 404 means the route named nothing upstream: a stale inbound link, or
+    // a region that has since been unpublished. `cmsFetchOptional` answers it
+    // with `null`, which reads the same as the no-target case above.
+    return await withRetry(() =>
+      cmsFetchOptional<AtlasSeoResponse>(
         `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
           `&locale=${encodeURIComponent(options.locale)}`,
-      )
-
-      // The route named nothing upstream: a stale inbound link, or a
-      // region that has since been unpublished. Returned rather than
-      // thrown, so it never costs the retry ladder.
-      if (response.status === 404) {
-        return null
-      }
-
-      throwIfNotOk(response, `getAtlasSeo(${options.route})`)
-
-      return (await response.json()) as AtlasSeoResponse
-    })
+        `getAtlasSeo(${options.route})`,
+      ),
+    )
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
     // widget still works without it. Losing it must not take the page down.

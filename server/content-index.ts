@@ -16,7 +16,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { cmsFetch } from './cms-fetch'
+import { cmsFetch, CmsResponseError } from './cms-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './cms-types'
 import {
@@ -143,18 +143,12 @@ async function fetchContentIndexDocs(
   const path = `${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
 
   try {
-    const response = await cmsFetch(path)
-
-    if (!response.ok) {
-      Sentry.captureMessage('content-index endpoint not resolvable', {
-        level: 'warning',
-        tags: { source: 'fetchContentIndexDocs' },
-        extra: { type, status: response.status },
-      })
-
-      return []
-    }
-    const json = (await response.json()) as { docs?: Record<string, unknown>[] }
+    // `cmsFetch`, not `cmsFetchOptional`: this endpoint is one the CMS computed
+    // for the block, so a 404 is a data gap rather than an answer.
+    const json = await cmsFetch<{ docs?: Record<string, unknown>[] }>(
+      path,
+      `fetchContentIndexDocs(${type})`,
+    )
     const docs = json.docs ?? []
     const cap = typeof limit === 'number' ? limit : docs.length
 
@@ -163,7 +157,11 @@ async function fetchContentIndexDocs(
     Sentry.captureMessage('content-index fetch failed', {
       level: 'warning',
       tags: { source: 'fetchContentIndexDocs' },
-      extra: { type, error: error instanceof Error ? error.message : String(error) },
+      extra: {
+        type,
+        status: error instanceof CmsResponseError ? error.status : undefined,
+        error: error instanceof Error ? error.message : String(error),
+      },
     })
 
     return []
