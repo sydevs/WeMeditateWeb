@@ -41,8 +41,8 @@ describe('buildEmbedSnippet', () => {
   })
 
   it('drops a trailing slash off the embed path', () => {
-    // An embedPath built by concatenation can carry one, and `/embed/` and
-    // `/embed` are one route.
+    // Both templates build `embedPath` without one, so this guards the prop
+    // rather than a shape a caller produces today.
     expect(buildEmbedSnippet('/meditations/1/embed/', 'fr', '')).toContain(
       'src="/fr/meditations/1/embed"',
     )
