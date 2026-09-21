@@ -2,10 +2,12 @@
  * The component-side readers of `pageContext`: the guarded accessor, and the
  * two values a component reads often enough to deserve a name.
  *
- * `usePageContext()` throws outside a Vike app, and Ladle and the unit suite
- * both render components bare. So every reader here falls back rather than
- * throwing: to the default locale, and — where no default could be honest
- * about which site we are — to `null`.
+ * Ladle and the unit suite both render components bare, with no Vike
+ * provider. `usePageContext()` is declared `PageContext` but returns
+ * `undefined` there, so a direct caller gets a value the type checker swears
+ * is populated. That is what this module is for: each reader states the
+ * absent case and falls back to the default locale, or — where no default
+ * could be honest about which site we are — to `null`.
  */
 
 import { usePageContext } from 'vike-react/usePageContext'
@@ -14,8 +16,10 @@ import { DEFAULT_LOCALE, type Locale } from '../server/cms-types'
 
 /** `pageContext`, or `null` where there is none. */
 export function useOptionalPageContext(): PageContext | null {
+  // vike-react 0.6.26 returns `undefined` off-provider rather than throwing.
+  // The `catch` is what keeps Ladle and the suite alive if that changes.
   try {
-    return usePageContext()
+    return usePageContext() ?? null
   } catch {
     return null
   }

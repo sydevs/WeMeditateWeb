@@ -4,8 +4,8 @@ import { Link } from './Link'
 
 /**
  * These render bare, with no Vike app around them, so `usePageContext()`
- * throws and `useOptionalPageContext()` returns null — the same shape Ladle
- * renders in.
+ * returns `undefined` and `useOptionalPageContext()` returns null — the same
+ * shape Ladle renders in.
  */
 describe('<Link> locale prefixing', () => {
   it('spells the home page /fr, not /fr/', () => {
