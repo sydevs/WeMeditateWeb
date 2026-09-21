@@ -27,7 +27,7 @@
 
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
-import { getCmsContext } from './cms-context'
+import { cmsFetch, CmsResponseError } from './cms-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
 import type {
@@ -846,9 +846,8 @@ export async function getSongsByTags(
  * fixed minimal projection (`{ id, title, url, tags }`). It does not accept
  * `select`, and it ignores `populate`, `depth`, and `limit` (it does honor
  * `locale`). This is not a collection `find`, so the PayloadCMS SDK cannot
- * model it. This function instead issues a raw authenticated fetch, with the
- * same `clients API-Key` header the SDK sends, wrapped in the shared retry
- * layer.
+ * model it. This function instead reads through `cmsFetch`, wrapped in the
+ * shared retry layer.
  *
  * The endpoint returns songs in a random order on every request. Callers
  * pick a track on the client, so a list held at the edge is fine. The
@@ -867,17 +866,10 @@ export async function getMeditationSongs(
 ): Promise<MeditationSong[]> {
   try {
     return await withRetryUnlessPreview(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url = `${baseURL}/api/meditations/${encodeURIComponent(
-        options.id,
-      )}/songs?locale=${encodeURIComponent(options.locale)}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      // Mirror the SDK's request logging, so the dev request log stays complete.
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      const response = await cmsFetch(
+        `/api/meditations/${encodeURIComponent(options.id)}/songs` +
+          `?locale=${encodeURIComponent(options.locale)}`,
+      )
 
       // An unknown meditation ID, or no songs route, means no music. This
       // is not an error.
@@ -885,7 +877,10 @@ export async function getMeditationSongs(
 
       // Let server and network errors propagate, so the retry runs.
       if (!response.ok) {
-        throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
+        throw new CmsResponseError(
+          `getMeditationSongs(${options.id}) failed: ${response.status}`,
+          response.status,
+        )
       }
 
       const body = (await response.json()) as {
@@ -962,22 +957,19 @@ export async function getRelatedMeditations(
 
   try {
     return await withRetryUnlessPreview(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
-        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      const response = await cmsFetch(
+        `/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
+          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`,
+      )
 
       // An unknown lecture ID, or no related route, means no related content.
       if (response.status === 404) return []
 
       if (!response.ok) {
-        throw new Error(`getRelatedMeditations(${options.id}) failed: ${response.status}`)
+        throw new CmsResponseError(
+          `getRelatedMeditations(${options.id}) failed: ${response.status}`,
+          response.status,
+        )
       }
 
       const body = (await response.json()) as {
@@ -1059,22 +1051,19 @@ export async function getRelatedLectures(
 
   try {
     return await withRetryUnlessPreview(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
-        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
-        `&audiences=${audiences.join(',')}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      const response = await cmsFetch(
+        `/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
+          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
+          `&audiences=${audiences.join(',')}`,
+      )
 
       if (response.status === 404) return []
 
       if (!response.ok) {
-        throw new Error(`getRelatedLectures(${options.id}) failed: ${response.status}`)
+        throw new CmsResponseError(
+          `getRelatedLectures(${options.id}) failed: ${response.status}`,
+          response.status,
+        )
       }
 
       const body = (await response.json()) as {

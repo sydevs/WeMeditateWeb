@@ -5,8 +5,8 @@
  * already about 950 lines, and holds only collection reads through the
  * Payload SDK. This file has one custom root endpoint,
  * `GET /api/atlas/seo`, which belongs to no collection, so the SDK cannot
- * express it. It uses a plain `fetch`, the same pattern the related-content
- * readers in `cms-client.ts` use for custom endpoints.
+ * express it. It reads through `cmsFetch` (`server/cms-fetch.ts`), the one
+ * helper every custom-endpoint read shares.
  *
  * ## Access
  *
@@ -24,7 +24,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './cms-context'
+import { cmsFetch, CmsResponseError } from './cms-fetch'
 import { withRetry } from './error-utils'
 import { createPayloadClient } from './payload-client'
 import type { Locale } from './cms-types'
@@ -68,16 +68,10 @@ export async function getAtlasSeo(options: {
 
   try {
     return await withRetry(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
-        `&locale=${encodeURIComponent(options.locale)}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
+      const response = await cmsFetch(
+        `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
+          `&locale=${encodeURIComponent(options.locale)}`,
+      )
 
       // The route named nothing upstream: a stale inbound link, or a
       // region that has since been unpublished. Returned rather than
@@ -87,7 +81,10 @@ export async function getAtlasSeo(options: {
       }
 
       if (!response.ok) {
-        throw new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`)
+        throw new CmsResponseError(
+          `getAtlasSeo(${options.route}) failed: ${response.status}`,
+          response.status,
+        )
       }
 
       return (await response.json()) as AtlasSeoResponse

@@ -14,10 +14,20 @@ import {
 } from './content-index'
 import type { ContentIndexBlockFields } from '../lib/cms-blocks'
 
-const jsonResponse = (docs: unknown[]) => ({ ok: true, json: async () => ({ docs }) }) as never
+const jsonResponse = (docs: unknown[]) =>
+  ({ ok: true, status: 200, json: async () => ({ docs }) }) as never
+
+/** A non-OK stub. `clone` is what cmsFetch calls to dump the CMS error body. */
+const errorResponse = (status: number) => {
+  const response = { ok: false, status, statusText: '', json: async () => ({ errors: [] }) }
+
+  return { ...response, clone: () => response } as never
+}
 
 beforeEach(() => {
   vi.restoreAllMocks()
+  vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 describe('resolveContentIndexItems', () => {
@@ -44,6 +54,29 @@ describe('resolveContentIndexItems', () => {
     const auth = (init.headers as Record<string, string>).Authorization
 
     expect(auth).toContain('API-Key test-key')
+  })
+
+  it('logs the request, so this read appears in the dev request log like every other', async () => {
+    // It was the one CMS read with no `[PayloadCMS]` line, which the
+    // debugging workflow in AGENTS.md is written around (#127).
+    const logSpy = vi.spyOn(console, 'log')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse([{ id: 2, slug: 'about', title: 'About' }]),
+    )
+
+    await resolveContentIndexItems(
+      { type: 'pages', limit: 10, apiEndpoint: '/api/pages?limit=10' },
+      { locale: 'en' },
+    )
+
+    const lines = logSpy.mock.calls
+      .map(([first]) => first)
+      .filter((line): line is string => typeof line === 'string' && line.startsWith('[PayloadCMS]'))
+
+    expect(lines).toHaveLength(1)
+    expect(lines[0]).toContain('GET https://cms.test/api/pages?limit=10')
+    expect(lines[0]).toMatch(/→ 200$/)
   })
 
   it('resolves a meditations block via user-choice categories (single depth, flattened + tagged)', async () => {
@@ -125,7 +158,7 @@ describe('resolveContentIndexItems', () => {
   })
 
   it('degrades to [] on a non-200 (e.g. a malformed endpoint)', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false, status: 400 } as never)
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(400))
 
     const items = await resolveContentIndexItems(
       { type: 'lectures', limit: 100, apiEndpoint: '/api/lectures/for-audience?limit=100' },

@@ -16,7 +16,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './cms-context'
+import { cmsFetch } from './cms-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './cms-types'
 import {
@@ -133,7 +133,6 @@ async function fetchContentIndexDocs(
   if (type === 'lectures' && audiences.length === 0) {
     return []
   }
-  const { apiKey, baseURL } = getCmsContext()
   const { select, populate, depth } = QUERY_BY_TYPE[type]
   // Strip any depth the CMS baked into the endpoint so ours is the only one.
   const endpoint = stripQueryParam(apiEndpoint, 'depth')
@@ -141,12 +140,10 @@ async function fetchContentIndexDocs(
   const populateParam = populate ? `&${populate}` : ''
   const localeParam = options.locale ? `&locale=${options.locale}` : ''
   const audiencesParam = audiences.length > 0 ? `&audiences=${audiences.join(',')}` : ''
-  const url = `${baseURL}${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
+  const path = `${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
 
   try {
-    const response = await fetch(url, {
-      headers: { Authorization: `clients API-Key ${apiKey}` },
-    })
+    const response = await cmsFetch(path)
 
     if (!response.ok) {
       Sentry.captureMessage('content-index endpoint not resolvable', {

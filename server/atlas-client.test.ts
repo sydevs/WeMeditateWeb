@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
 import * as Sentry from '@sentry/react'
+import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./cms-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
@@ -12,36 +13,56 @@ const find = vi.fn()
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find }) }))
 
 // The stub runs the read once, so no test waits on real backoff.
-// `retrySpy` keeps the call visible to the tests that assert one.
+// `retrySpy` keeps the call visible to the tests that assert one, and
+// `retried.error` the error the ladder was handed, which is what decides
+// whether a real withRetry would try again.
 // error-utils.test.ts covers what withRetry itself does.
-const { retrySpy } = vi.hoisted(() => ({ retrySpy: vi.fn() }))
+const { retrySpy, retried } = vi.hoisted(() => ({
+  retrySpy: vi.fn(),
+  retried: { error: undefined as unknown },
+}))
 
 vi.mock('./error-utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./error-utils')>()
 
   return {
     ...actual,
-    withRetry: (fn: () => unknown, config?: unknown) => {
+    withRetry: async (fn: () => unknown, config?: unknown) => {
       retrySpy(config)
 
-      return fn()
+      try {
+        return await fn()
+      } catch (error) {
+        retried.error = error
+        throw error
+      }
     },
   }
 })
 
 /** Builds a fetch Response stub for the given status and JSON body. */
 function fetchResponse(status: number, body: unknown) {
-  return { ok: status >= 200 && status < 300, status, json: async () => body }
+  const response = {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: '',
+    json: async () => body,
+  }
+
+  // cmsFetch clones a non-OK response to dump the CMS error body.
+  return { ...response, clone: () => response }
 }
 
 const regionAnswer = { type: 'region', id: 5, route: '/gb/london', title: 'London' }
 
 beforeEach(() => {
   retrySpy.mockClear()
+  retried.error = undefined
   find.mockReset()
   vi.restoreAllMocks()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 describe('getAtlasSeo', () => {
@@ -141,6 +162,19 @@ describe('getAtlasSeo', () => {
         expect.stringContaining('getAtlasSeo failed'),
         expect.objectContaining({ level: 'warning' }),
       )
+    })
+
+    it('throws a 522 the retry ladder classifies as SERVER, not UNKNOWN', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        fetchResponse(522, { errors: [] }) as unknown as Response,
+      )
+
+      await getAtlasSeo({ route: '/gb/london', locale: 'en' })
+
+      // `detectErrorType` falls back to matching `50[0-9]` in the message,
+      // which a Cloudflare-origin 5xx never contains. Only the status on the
+      // error keeps it retryable.
+      expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
     })
 
     it('degrades on a network fault rather than throwing into the render', async () => {
