@@ -69,16 +69,24 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 ## Custom root endpoints are not collection reads
 
-`GET /api/atlas/seo` and the `related-*` endpoints belong to no collection, so the Payload SDK
-cannot express them. They use plain `fetch` calls with an `Authorization: clients API-Key`
-header, and shape their own response. `select` and `populate` do not apply here.
+`GET /api/atlas/seo`, the `related-*` endpoints, and a content-index block's computed endpoint
+belong to no collection, so the Payload SDK cannot express them. Every one reads through
+`cmsFetch` ([cms-fetch.ts](cms-fetch.ts)), which resolves the base URL, sends the
+`Authorization: clients API-Key` header, logs the request, and dumps the CMS error body on a
+non-OK response. Hand it a path, never a URL, and shape the response yourself. `select` and
+`populate` do not apply here.
 
-Two rules still apply:
+Three rules still apply:
 
 - **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
   `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
+  `fetchContentIndexDocs` is the one read still missing it (#128).
+- **Throw a `CmsResponseError`, never a plain `Error`.** `detectErrorType` reads `.status`
+  structurally, and otherwise falls back to matching `50[0-9]` in the message. A plain error
+  therefore classifies a Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` refuses
+  the one shape a Railway restart behind the edge produces.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See
