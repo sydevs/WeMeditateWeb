@@ -25,7 +25,7 @@ export const LIVE_PREVIEW_PARAM = 'live-preview'
 export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
 
 /**
- * The header a live-preview token rides in, on its way back to the CMS.
+ * The header a live-preview token rides in, on its way back to SahajCloud.
  *
  * ⚠ The NAME is unchanged and the CONTENTS are not. It used to carry
  * `SAHAJCLOUD_PREVIEW_SECRET` verbatim; it now carries a short-lived signed
@@ -33,7 +33,7 @@ export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
  * it and its CORS allowlist names it, and neither cares what the value means.
  *
  * Two senders spell it, which is why it is here rather than in either of them:
- * `server/payload-client.ts` attaches it to every CMS read, and the browser
+ * `server/payload-client.ts` attaches it to every SahajCloud read, and the browser
  * attaches it to {@link LIVE_PREVIEW_POPULATE_PATH}.
  */
 export const LIVE_PREVIEW_TOKEN_HEADER = 'x-sahajcloud-preview-secret'
@@ -41,7 +41,7 @@ export const LIVE_PREVIEW_TOKEN_HEADER = 'x-sahajcloud-preview-secret'
 /**
  * The same-origin route that runs Payload's population round trip.
  *
- * The browser cannot call the CMS for it: the API key that unlocks a draft
+ * The browser cannot call SahajCloud for it: the API key that unlocks a draft
  * read is a server-only secret, and SahajCloud answers
  * `Access-Control-Allow-Origin: *` with no `Allow-Credentials`, which is the
  * pairing browsers refuse. So the request comes here instead, and

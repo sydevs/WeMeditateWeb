@@ -40,11 +40,42 @@ export const idSchema = z.coerce
   .positive('ID must be positive')
   .transform(String)
 
+// ===== Submission Schemas =====
+
+/**
+ * One submission the same-origin forms route will forward to SahajCloud.
+ *
+ * ⚠ The bounds are the loosest SahajCloud allows (`src/collections/
+ * UserSubmissions/submissionData.ts`: 40 entries, 100-character keys, and
+ * 5000 for its longest-valued key). They are a cheap refusal at the edge,
+ * never the enforcement — the collection re-checks every one per type, per
+ * key, against the fields the form's author declared, which only it knows.
+ *
+ * ⚠ `form` is a **number**. A quoted id reaches the intake as an unresolvable
+ * relationship; `SubmissionBody` in `lib/submissions.ts` states what that costs.
+ *
+ * `type` is narrowed to the two form-backed intakes. Registrations and event
+ * proposals are the atlas widget's, and neither carries a `form`.
+ */
+export const submissionSchema = z.object({
+  form: z.number().int().positive('Form must be a document id'),
+  type: z.enum(['contact', 'subscribe']),
+  senderEmail: z.email('Sender email must be an email address').max(254).optional(),
+  submissionData: z
+    .array(
+      z.object({
+        field: z.string().min(1).max(100),
+        value: z.string().max(5000),
+      }),
+    )
+    .max(40),
+})
+
 // ===== Configuration Schemas =====
 
 /**
  * Schema for validating API keys.
- * Used by both cms-context.ts and payload-client.ts for consistent validation.
+ * Used by both sahajcloud-context.ts and payload-client.ts for consistent validation.
  */
 export const apiKeySchema = z
   .string()
@@ -53,6 +84,6 @@ export const apiKeySchema = z
 
 /**
  * Schema for validating base URLs.
- * Used for CMS API endpoint validation.
+ * Used for SahajCloud API endpoint validation.
  */
 export const baseUrlSchema = z.url('Base URL must be a valid URL')

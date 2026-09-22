@@ -11,7 +11,7 @@ const { livePreview, subscribed } = vi.hoisted(() => ({
 }))
 
 // The real `useDocumentPreviewActive` runs; only its source of truth is stubbed.
-vi.mock('../../hooks/useT', () => ({
+vi.mock('../../hooks/usePageContext', () => ({
   useOptionalPageContext: () => ({ livePreview: livePreview.state }),
 }))
 
@@ -40,7 +40,7 @@ afterEach(() => {
  *
  * `useLivePreview` cannot be told which document a page shows, so it merges any
  * message carrying either slug. What keeps that safe is that a subscriber
- * exists at all only for an UNSCOPED session: the CMS emits
+ * exists at all only for an UNSCOPED session: SahajCloud emits
  * `scope=wm-web-config` / `scope=wm-web-translations` when the panel is editing
  * a global, and a globals preview must leave the page itself published.
  *
@@ -82,7 +82,7 @@ describe('LivePreviewDocument', () => {
     expect(subscribed).not.toHaveBeenCalled()
   })
 
-  it('does not subscribe when the CMS origin is unset', () => {
+  it('does not subscribe when the SahajCloud origin is unset', () => {
     // Fails CLOSED: `isLivePreviewEvent` compares `event.origin` for equality
     // and `ready()` posts to the same value.
     vi.stubEnv('PUBLIC__SAHAJCLOUD_URL', '')
@@ -134,7 +134,7 @@ describe('createPopulateRequestHandler', () => {
     return fetchMock
   }
 
-  it('populates the document, and answers with what the CMS returned', async () => {
+  it('populates the document, and answers with what SahajCloud returned', async () => {
     const fetchMock = stubFetch(new Response(JSON.stringify(POPULATED)))
 
     const response = await call(handler(), 'pages/1')

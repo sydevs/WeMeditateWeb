@@ -16,14 +16,14 @@ export default {
   Layout,
 
   // Default <head> tags. Content pages override these per page with
-  // usePageHead (lib/head.tsx), using their CMS meta. These defaults apply
+  // usePageHead (lib/head.tsx), using their SahajCloud meta. These defaults apply
   // only where meta is absent.
   // https://vike.dev/head-tags
   title: 'We Meditate',
   description:
     'Discover free guided meditations, music, and articles to learn and deepen your meditation practice.',
 
-  // `translations` is filled by +onBeforeRender from the CMS. The client
+  // `translations` is filled by +onBeforeRender from SahajCloud. The client
   // needs it so `useT()` resolves the same strings during hydration as the
   // server rendered. `locale` needs no entry: Vike re-runs +onBeforeRoute in
   // the browser, on hydration and on every client-side navigation.

@@ -92,7 +92,7 @@ function safeDecode(segment: string): string {
  * unparseable.
  *
  * `null` is a real answer, not a failure. It means "this is the atlas
- * landing page," and this site owns the metadata for it, because no CMS
+ * landing page," and this site owns the metadata for it, because no SahajCloud
  * document describes it.
  */
 export function parseAtlasRoute(route: string): AtlasRouteTarget | null {

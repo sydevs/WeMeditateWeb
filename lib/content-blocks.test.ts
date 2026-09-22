@@ -5,7 +5,6 @@ import {
   galleryImages,
   getLeadSplash,
   leadSplashFromRouteData,
-  isExternalUrl,
   meditationCardsFromUserChoices,
   populatedImage,
   showcaseItems,
@@ -13,8 +12,8 @@ import {
   subtleSystemItems,
   textColorToTheme,
   type ShowcaseItem,
-} from './cms-blocks'
-import type { Page } from '../server/cms-types'
+} from './content-blocks'
+import type { Page } from '../server/sahajcloud-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
 const leadContent = (firstBlock?: Record<string, unknown>) =>
@@ -123,7 +122,7 @@ describe('showcaseItems', () => {
 })
 
 describe('subtleSystemItems', () => {
-  it('maps CMS field names to SVG node ids, dropping unpublished refs', () => {
+  it('maps SahajCloud field names to SVG node ids, dropping unpublished refs', () => {
     const items = subtleSystemItems({
       left: page(61, 'left-channel', 'Left Channel', 'The left side') as never,
       mooladhara: page(52, 'mooladhara-chakra', 'Mooladhara') as never,
@@ -195,13 +194,13 @@ describe('contentIndexCard', () => {
   })
 
   it('falls back to the enum value when a page-tag label is missing', () => {
-    // A CMS gap must show the identifier, not an empty pill.
+    // A SahajCloud gap must show the identifier, not an empty pill.
     const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages')
 
     expect(card?.tags).toEqual([{ id: 'wisdom', label: 'wisdom' }])
   })
 
-  it('labels page-tag facets from the CMS, in the page locale', () => {
+  it('labels page-tag facets from SahajCloud, in the page locale', () => {
     const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages', {
       wisdom: 'Sagesse',
     })
@@ -265,7 +264,7 @@ describe('contentIndexTrack', () => {
     })
   })
 
-  it('labels a song tag from its CMS title, falling back to the slug', () => {
+  it('labels a song tag from its SahajCloud title, falling back to the slug', () => {
     // The label used to be title-cased from the slug, which only ever
     // produced English. An untitled tag now shows its slug instead.
     const track = contentIndexTrack({
@@ -387,15 +386,6 @@ describe('meditationCardsFromUserChoices', () => {
         { id: 27, title: '10-15 min', morningMeditation: 500 }, // bare-id slot
       ]),
     ).toEqual([])
-  })
-})
-
-describe('isExternalUrl', () => {
-  it('detects absolute http(s) urls only', () => {
-    expect(isExternalUrl('https://example.com')).toBe(true)
-    expect(isExternalUrl('http://example.com')).toBe(true)
-    expect(isExternalUrl('/about')).toBe(false)
-    expect(isExternalUrl('#anchor')).toBe(false)
   })
 })
 

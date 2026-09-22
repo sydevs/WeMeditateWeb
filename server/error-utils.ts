@@ -1,5 +1,5 @@
 /**
- * Error handling utilities for graceful degradation when CMS is unreachable.
+ * Error handling utilities for graceful degradation when SahajCloud is unreachable.
  *
  * Provides error type detection, retry logic with exponential backoff,
  * and user-friendly message generation.
@@ -96,20 +96,6 @@ export function detectErrorType(error: unknown): ErrorType {
   }
 
   return ErrorType.UNKNOWN
-}
-
-/**
- * True if the URL parses and uses an http(s) scheme. Gates the rendering
- * of externally configured status-page links, to block `javascript:` and
- * `data:` XSS.
- */
-export function isSafeHttpUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
 }
 
 function sleep(ms: number): Promise<void> {

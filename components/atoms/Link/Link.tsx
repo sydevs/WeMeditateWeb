@@ -1,12 +1,14 @@
 import { ComponentProps } from 'react'
-import { usePageContext } from 'vike-react/usePageContext'
+import { useLocale } from '../../../hooks/usePageContext'
+import { localeHref } from '../../../lib/urls'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   /** Link destination (will be locale-prefixed automatically) */
   href: string
 
   /** Locale for the link (defaults to current page locale) */
-  locale?: string
+  locale?: Locale
 
   /**
    * Visual style variant
@@ -67,23 +69,11 @@ export function Link({
   children,
   ...props
 }: LinkProps) {
-  // Safely access pageContext. It might not exist in isolated environments like Ladle.
-  let pageContext
-  try {
-    pageContext = usePageContext()
-  } catch (e) {
-    // PageContext not available, for example in Ladle or Storybook
-    pageContext = null
-  }
+  // `useLocale` owns the fallback for Ladle and a bare unit render, where
+  // there is no `pageContext` at all and an href would become `/undefined/x`.
+  const pageLocale = useLocale()
 
-  locale = (locale ?? pageContext?.locale) || 'en'
-
-  // Add locale prefix for non-English locales
-  // Skip for external URLs (http/https) and anchor links (#)
-  let finalHref = href
-  if (locale !== 'en' && !href.startsWith('http') && !href.startsWith('#')) {
-    finalHref = '/' + locale + href
-  }
+  const finalHref = localeHref(locale ?? pageLocale, href)
 
   const baseStyles = 'transition-colors duration-200'
 

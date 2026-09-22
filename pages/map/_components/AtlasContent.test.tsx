@@ -95,17 +95,17 @@ describe('atlasHref', () => {
   it('prefers the canonical, which may live on another owner’s domain', () => {
     // Ownership is per-subtree, so linking anywhere else would build a
     // link graph pointing at URLs this app itself declares non-canonical.
-    expect(atlasHref({ route: '/gb/london', url: 'https://other.org/classes/gb/london' })).toBe(
-      'https://other.org/classes/gb/london',
-    )
+    expect(
+      atlasHref({ route: '/gb/london', url: 'https://other.org/classes/gb/london' }, null),
+    ).toBe('https://other.org/classes/gb/london')
   })
 
   it('falls back to our own /map path when no owner can publish one', () => {
-    expect(atlasHref({ route: '/gb/london', url: null })).toBe('/map/gb/london')
+    expect(atlasHref({ route: '/gb/london', url: null }, null)).toBe('/map/gb/london')
   })
 
   it('returns null when there is neither, so nothing renders a dead link', () => {
-    expect(atlasHref({ route: null, url: null })).toBeNull()
+    expect(atlasHref({ route: null, url: null }, null)).toBeNull()
   })
 })
 
@@ -124,6 +124,8 @@ describe('a region page', () => {
     expect(html).toContain('Saturday morning meditation')
     expect(html).toContain('Every week on Saturday at 9:30 AM')
     expect(html).toContain('12 Beethoven Street, London')
+    // No `pageContext` here, so no origin to recognise the canonical as
+    // ours. A served page relativizes it and keeps the visitor's locale.
     expect(html).toContain('href="https://wemeditate.com/map/gb/london/1204"')
   })
 

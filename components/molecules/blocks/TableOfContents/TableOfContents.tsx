@@ -1,12 +1,12 @@
 import { Link } from '../../../atoms'
 import { slugify } from '../../../../lib/slugify'
-import type { TocHeading } from '../../../../lib/cms-blocks'
+import type { TocHeading } from '../../../../lib/content-blocks'
 import { useT } from '../../../../hooks/useT'
 
 export interface TableOfContentsProps {
   /** Optional heading shown above the list (for example "In this article"). */
   title?: string
-  /** Enabled headings, in document order, as stored by the CMS block. */
+  /** Enabled headings, in document order, as stored by the SahajCloud block. */
   headings: TocHeading[]
   /** Additional CSS classes. */
   className?: string
@@ -20,7 +20,7 @@ const INDENT_CLASSES = ['pl-0', 'pl-4', 'pl-8', 'pl-12'] as const
  *
  * This uses the same `slugify` function as the RichText heading converter,
  * so the anchors always match the `id` emitted on each heading. The stored
- * `slug` may differ, if the CMS uses a different slugifier. Headings are
+ * `slug` may differ, if SahajCloud uses a different slugifier. Headings are
  * indented by their level, relative to the shallowest one in the list.
  */
 export function TableOfContents({ title, headings, className = '' }: TableOfContentsProps) {

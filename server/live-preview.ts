@@ -20,7 +20,7 @@ import {
  *
  *     /<any path>?live-preview=<token>[&scope=<slug>]
  *
- * There are no preview-specific routes. The CMS points its Live Preview panel
+ * There are no preview-specific routes. SahajCloud points its Live Preview panel
  * at the real page, so what an editor sees is the page, not a second renderer
  * kept approximately equal to it.
  *
@@ -32,7 +32,7 @@ import {
  * governs what the browser sends, not what a script reads, so it reaches
  * neither. The browser-side answer is in `lib/live-preview/token-url.ts`.
  *
- * So the CMS signs a short-lived Ed25519 token and this site verifies it with a
+ * So SahajCloud signs a short-lived Ed25519 token and this site verifies it with a
  * **public** key. The key is committed, not a secret: a verification key being
  * published costs nothing, and there is no second copy of a secret to keep in
  * sync with SahajCloud.
@@ -64,7 +64,7 @@ import {
  * `toClientState` is the one way this becomes something `passToClient` carries.
  */
 export interface LivePreviewSession extends LivePreviewState {
-  /** The verified token, to forward to the CMS. Never leaves the server. */
+  /** The verified token, to forward to SahajCloud. Never leaves the server. */
   token: string | null
 }
 
@@ -76,7 +76,7 @@ export function toClientState(session: LivePreviewSession): LivePreviewState {
 }
 
 /**
- * The `preview` / `previewToken` pair for one CMS read.
+ * The `preview` / `previewToken` pair for one SahajCloud read.
  *
  * Three `data()` functions and the translations read each spelled this out,
  * and the condition has a meaning that the spelling does not show: **a read
@@ -108,7 +108,7 @@ export function previewArgs(
  * the parsing, the signature and the expiry; pinning `algorithms` is what
  * stops a token that nominates its own weaker algorithm.
  *
- * `server/live-preview.test.ts` mints with the same construction the CMS uses,
+ * `server/live-preview.test.ts` mints with the same construction SahajCloud uses,
  * so a format drift breaks a test here rather than live preview in production.
  *
  * Returns false for every failure and never reports which — a caller learning

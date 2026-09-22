@@ -36,7 +36,7 @@ export interface SocialIconProps extends Omit<ComponentProps<'a'>, 'children'> {
 
 /**
  * Each platform's own name and glyph. The name is a brand, so it is the
- * same in every language and never becomes a CMS key (SahajCloud #707,
+ * same in every language and never becomes a SahajCloud key (SahajCloud #707,
  * "Excluded"). `SocialShare` reads it for its share labels.
  */
 const PLATFORM_CONFIG: Record<SocialPlatform, { label: string; icon: string }> = {

@@ -19,10 +19,10 @@
 import { render } from 'vike/abort'
 import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
-import { getWebConfig, getWebTranslations } from './cms-client'
+import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
-import type { Locale, WebConfig, WebTranslations } from './cms-types'
+import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
 export interface SiteContext {
@@ -56,7 +56,7 @@ function isEmpty(translations: WebTranslations): boolean {
  *
  * - the read fails, and
  * - the read succeeds but the global is empty, which is what an unseeded
- *   CMS returns. Per-key gaps are not this function's business — the CMS
+ *   SahajCloud returns. Per-key gaps are not this function's business — SahajCloud
  *   fills a blank key from English on every API-client read (SahajCloud
  *   #705) — but a global with nothing in it is not usable at all.
  *

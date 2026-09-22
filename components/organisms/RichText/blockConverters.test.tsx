@@ -80,7 +80,7 @@ describe('textbox block converter — routing', () => {
   })
 })
 
-// Every block defined for `pages.content` upstream. Adding a block in the CMS
+// Every block defined for `pages.content` upstream. Adding a block in SahajCloud
 // without a converter here should fail this test rather than silently fall
 // through to RichText's `unknown` fallback at runtime.
 const KNOWN_BLOCK_TYPES = [
@@ -172,7 +172,7 @@ describe('content-index block converter — dispatch', () => {
           creditURL: '',
           thumbnailURL: '',
           duration: 0,
-          // The label is the SongTag's CMS `title`, localized, not the
+          // The label is the SongTag's SahajCloud `title`, localized, not the
           // slug title-cased.
           tags: [{ id: 'vocals', label: 'Vocals' }],
         },

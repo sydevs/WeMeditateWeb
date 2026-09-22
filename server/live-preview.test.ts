@@ -11,7 +11,7 @@ import { loadLivePreview, verifyLivePreviewToken } from './live-preview'
  *
  * SahajCloud mints these tokens; this repo verifies them and imports nothing
  * from there. So the format is written twice, and these cases mint with the
- * **same construction** the CMS's `mintLivePreviewToken` uses — an EdDSA
+ * **same construction** SahajCloud's `mintLivePreviewToken` uses — an EdDSA
  * compact JWS carrying only `exp`, with no `iat`. A change on either side
  * fails here before it breaks live preview in production.
  */
@@ -48,7 +48,7 @@ beforeAll(async () => {
 })
 
 describe('verifyLivePreviewToken', () => {
-  it('accepts a token the CMS would mint', async () => {
+  it('accepts a token SahajCloud would mint', async () => {
     expect(await verifyLivePreviewToken(await sign(NOW + 600), verifyKeyBase64, NOW)).toBe(true)
   })
 

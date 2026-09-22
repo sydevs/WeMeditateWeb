@@ -1,5 +1,5 @@
 /**
- * Application-specific type definitions for CMS content.
+ * Application-specific type definitions for SahajCloud content.
  *
  * These types give the application a stable API, independent of the
  * auto-generated PayloadCMS types. They add app-specific conveniences,
@@ -8,6 +8,7 @@
 
 import type {
   Config,
+  Form,
   Page,
   Meditation,
   Song,
@@ -18,9 +19,36 @@ import type {
   Lecture,
   WmWebConfig,
   WmWebTranslation,
+  WmWebTranslationsSelect,
 } from './payload-types'
 
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
+
+/**
+ * A form as an embedded relationship returns it: the fields `FormBuilder` renders
+ * and submits with, and nothing else.
+ *
+ * Not `Form`. A narrow `select` returns none of a form's other columns — not
+ * even `createdAt` — so asserting the full document would be asserting
+ * something false, and would let the select and its renderer drift silently.
+ * `EMBEDDED_FORM_SELECT` in [sahajcloud-client.ts](sahajcloud-client.ts) is checked against
+ * `EmbeddedFormSelect` below, so dropping a key from either one is a compile
+ * error in the other.
+ */
+export type EmbeddedForm = Pick<
+  Form,
+  | 'id'
+  | 'title'
+  | 'fields'
+  | 'submitButtonLabel'
+  | 'confirmationType'
+  | 'confirmationMessage'
+  | 'redirect'
+  | 'actionType'
+>
+
+/** The `select` shape that returns exactly an {@link EmbeddedForm}. `id` always comes back. */
+export type EmbeddedFormSelect = { [K in Exclude<keyof EmbeddedForm, 'id'>]: true }
 
 // Re-exports the normalized Lecture view model and its pieces. This pure
 // module is shared by the server fetcher and the client live preview.
@@ -45,7 +73,7 @@ export interface WebConfig extends Omit<
 > {
   /**
    * The locales the site offers, never empty: `getWebConfig` normalises an
-   * unconfigured CMS row to `['en']`. A locale prefix outside this set 404s.
+   * unconfigured SahajCloud row to `['en']`. A locale prefix outside this set 404s.
    */
   availableLocales: Locale[]
   homePage: Page
@@ -60,13 +88,13 @@ export interface WebConfig extends Omit<
  * Available locales extracted from PayloadCMS Config.
  *
  * Codes match PayloadCMS and the URL prefix exactly, region included and
- * cased as the CMS stores it (`pt-BR`, `en-AU`). A route or query that
+ * cased as SahajCloud stores it (`pt-BR`, `en-AU`). A route or query that
  * lowercases the region will not resolve.
  */
 export type Locale = Config['locale']
 
 /**
- * Every locale the CMS defines, as a lookup. Derived from `Locale`, so a
+ * Every locale SahajCloud defines, as a lookup. Derived from `Locale`, so a
  * locale added upstream becomes a compile error here until it is listed.
  *
  * This is the set of codes that may appear as a URL prefix. It is not the
@@ -115,7 +143,7 @@ export function localeDirection(locale: Locale): 'ltr' | 'rtl' {
 }
 
 /**
- * The CMS UI strings, with every group required.
+ * The SahajCloud UI strings, with every group required.
  *
  * The generated `WmWebTranslation` marks each group optional, because a
  * locale may be saved partially. Every group still arrives, from Payload's
@@ -133,8 +161,29 @@ type RequiredGroups<T> = {
     : RequiredGroups<NonNullable<T[K]>>
 }
 
+/**
+ * Every translations tab the site renders. Typed against the generated
+ * select interface, so a tab renamed upstream is a compile error here
+ * rather than a silent group of missing strings. `WebTranslations` derives
+ * from it, so the query and the type cannot disagree.
+ */
+export const WEB_TRANSLATIONS_SELECT = {
+  common: true,
+  navigation: true,
+  footer: true,
+  errors: true,
+  article: true,
+  meditation: true,
+  lecture: true,
+  map: true,
+  forms: true,
+  media: true,
+  location: true,
+  blocks: true,
+} satisfies WmWebTranslationsSelect<true>
+
 export type WebTranslations = RequiredGroups<
-  Omit<WmWebTranslation, 'id' | '_status' | 'updatedAt' | 'createdAt'>
+  Pick<WmWebTranslation, keyof typeof WEB_TRANSLATIONS_SELECT>
 >
 
 /** One translations tab — `common`, `navigation`, … */
@@ -181,7 +230,7 @@ export interface MeditationListItem {
  * duration, or credit. It does the songTag and `includeForMeditations`
  * selection on the server. The player layers one of these under the
  * guided voice, and needs only a playable URL and a title. See
- * `getMeditationSongs` in cms-client.
+ * `getMeditationSongs` in sahajcloud-client.
  */
 export interface MeditationSong {
   id: number
@@ -200,7 +249,7 @@ export interface MeditationSong {
  * displayable. The grid is English-only in practice: meditation titles
  * are not localized, so the endpoint returns an empty list for a
  * non-English locale (a hidden section, not an error). See
- * `getRelatedMeditations` in cms-client.
+ * `getRelatedMeditations` in sahajcloud-client.
  */
 export interface RelatedMeditationCard {
   id: number

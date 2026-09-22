@@ -12,11 +12,11 @@
  * clip. The same function runs on the server (`getLecture`) and on the
  * client (live preview), so it must stay free of server-only dependencies.
  *
- * Mirrors the CMS reference `sy-devs-cms/src/lib/lectures/lectureShape.ts`.
+ * Mirrors the SahajCloud reference `SahajCloud/src/lib/lectures/lectureShape.ts`.
  */
 
 import type { Lecture } from '../server/payload-types'
-import { isPopulated, populatedImageUrl } from './cms-relationships'
+import { isPopulated, populatedImageUrl } from './payload-relationships'
 
 /** A resolved subtitle track: a locale code and an external WebVTT URL. */
 export interface LectureSubtitleTrack {
@@ -26,7 +26,7 @@ export interface LectureSubtitleTrack {
 
 /**
  * The JSON `metadata` populated from the Nirmala Vidya API. Stored untyped on
- * the CMS (`metadata` is a generic json field), so it is parsed defensively.
+ * SahajCloud (`metadata` is a generic json field), so it is parsed defensively.
  */
 export interface LectureMetadata {
   title?: string
@@ -72,7 +72,7 @@ function asFiniteNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
-/** Reads the untyped CMS `metadata` json defensively into a `LectureMetadata`. */
+/** Reads the untyped SahajCloud `metadata` json defensively into a `LectureMetadata`. */
 export function parseLectureMetadata(value: unknown): LectureMetadata | null {
   if (!isPopulated<Record<string, unknown>>(value) || Array.isArray(value)) {
     return null
@@ -105,7 +105,7 @@ export function parseLectureMetadata(value: unknown): LectureMetadata | null {
  * Merges subtitle sources. Starts from the parent's API subtitle map,
  * then applies per-locale clip overrides: a clip track replaces the
  * parent track for that locale, or adds a new one. Drops empty URLs. The
- * result is locale-sorted for deterministic output. Mirrors the CMS
+ * result is locale-sorted for deterministic output. Mirrors the SahajCloud
  * reference `mergeSubtitles`.
  */
 export function mergeSubtitles(

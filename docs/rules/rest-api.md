@@ -1,7 +1,7 @@
 ---
 paths:
-  - "server/cms-client.ts"
-  - "server/cms-types.ts"
+  - "server/sahajcloud-client.ts"
+  - "server/sahajcloud-types.ts"
   - "server/payload-client.ts"
   - "server/atlas-client.ts"
 ---
@@ -11,8 +11,9 @@ paths:
 ## Add a new query function
 
 1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts).
-2. Add app-specific types to [server/cms-types.ts](../../server/cms-types.ts) if needed.
-3. Add the query function to [server/cms-client.ts](../../server/cms-client.ts):
+2. Add app-specific types to [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts) if
+   needed.
+3. Add the query function to [server/sahajcloud-client.ts](../../server/sahajcloud-client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
      return withRetryUnlessPreview(
@@ -39,9 +40,10 @@ paths:
    it.
 
    `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
-   preview read, which must fail fast. A read outside `cms-client.ts` has no preview variant and
-   calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because it degrades
-   quietly; that is the case that needs it most. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
+   preview read, which must fail fast. A read outside `sahajcloud-client.ts` has no preview
+   variant and calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because
+   it degrades quietly; that is the case that needs it most. Let SDK errors propagate into it.
+   `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
    classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
 
@@ -65,20 +67,30 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
-## Translations are CMS-owned
+`WEB_TRANSLATIONS_SELECT` lives in [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts),
+beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
+and typed. Listing the groups anywhere else lets the query and the type disagree.
+
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
+cannot import that constant: it is plain node with no TypeScript loader. It keeps every response
+key outside `NON_GROUP_KEYS`, so the snapshot mirrors groups the site never fetches. Those cost
+bytes in `lib/translations.en.json` and nothing more — `WebTranslations` derives from the select,
+so an unfetched group never becomes addressable through `useT()`.
+
+## Translations are SahajCloud-owned
 
 Every UI string comes from `wm-web-translations`, through `useT()`. See the "Translations are
-CMS-owned" section of [AGENTS.md](../../AGENTS.md) for the rule and
+SahajCloud-owned" section of [AGENTS.md](../../AGENTS.md) for the rule and
 [scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) for the snapshot.
 
-Run `pnpm sync:translations` after the CMS English copy changes, and commit the diff. It needs
-both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin, and
-it prints the API client the key belongs to before writing — a snapshot silently taken from a
-local CMS would commit placeholder English. It is not run in CI.
+Run `pnpm sync:translations` after the SahajCloud English copy changes, and commit the diff. It
+needs both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin,
+and it prints the API client the key belongs to before writing — a snapshot silently taken from a
+local SahajCloud would commit placeholder English. It is not run in CI.
 
 ## Update PayloadCMS types
 
-Run this command when the CMS schema changes:
+Run this command when the SahajCloud schema changes:
 ```bash
 pnpm types:cms
 ```
@@ -87,4 +99,14 @@ It downloads the latest `payload-types.ts` from SahajCloud.
 ## API authentication
 
 Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
-factory adds this header for you.
+factory adds this header for you, and
+[server/sahajcloud-fetch.ts](../../server/sahajcloud-fetch.ts) adds it to every read of a custom
+root endpoint. Nothing else composes that header.
+
+## A public write is a proxy, not a query function
+
+Contact and subscribe submissions do not go through `sahajcloud-client.ts`. They post to the
+same-origin `POST /api/submissions`, which forwards one create to SahajCloud's `user-submissions`
+collection — the captcha header, the refusal envelope, and why the browser cannot make the call
+itself all live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a
+submission is a write.

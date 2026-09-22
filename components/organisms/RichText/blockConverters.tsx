@@ -4,7 +4,7 @@
  * the `blocks` key, keyed by each block's `blockType` slug.
  *
  * Each converter reads the loosely-typed `node.fields`, casts it to the
- * matching interface from `lib/cms-blocks`, and renders an existing
+ * matching interface from `lib/content-blocks`, and renders an existing
  * component. A block that cannot render meaningfully — a missing required
  * field, an empty relationship — returns `null` and degrades silently.
  */
@@ -43,7 +43,7 @@ import {
   type SubtleSystemBlockFields,
   type TableOfContentsBlockFields,
   type TextBoxBlockFields,
-} from '../../../lib/cms-blocks'
+} from '../../../lib/content-blocks'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -111,7 +111,7 @@ export const blockConverters: BlockConverters = {
     const title = fields.title ?? ''
     const description = fields.text ?? ''
 
-    // Overlay: text sits over the image. The CMS `textColor` describes the
+    // Overlay: text sits over the image. The SahajCloud `textColor` describes the
     // *text* (dark or light), while `theme` describes the *background
     // context* (Splash convention). So they invert: light text → dark theme.
     if (fields.imagePosition === 'overlay') {

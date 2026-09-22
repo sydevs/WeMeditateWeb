@@ -1,7 +1,7 @@
 /**
- * Every key a call site asks for must exist in the CMS.
+ * Every key a call site asks for must exist in SahajCloud.
  *
- * `TranslationKey` is derived from the generated CMS types, so `tsc` already
+ * `TranslationKey` is derived from the generated SahajCloud types, so `tsc` already
  * rejects a key that is not in the schema. This guard checks the other half:
  * that the key is actually *populated* in the committed English snapshot.
  * A key declared upstream but never filled in resolves to its own key path
@@ -18,7 +18,7 @@ import { lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
 import { enT, type TranslationKey } from '../../lib/i18n'
 import { ErrorType } from '../../server/error-utils'
 import { errorMessageKey, errorTitleKey } from '../../lib/error-keys'
-import { PAGE_TAG_KEYS } from '../../lib/cms-blocks'
+import { PAGE_TAG_KEYS } from '../../lib/content-blocks'
 import { RELATED_CONTENT_KEYS } from '../../components/organisms/RelatedContent/RelatedContentLoader'
 
 const SOURCE_GLOBS = [

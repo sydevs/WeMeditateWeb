@@ -1,6 +1,15 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { RichText } from './RichText'
+
+// RichText mounts the lightbox provider, whose barrel is client-only, and
+// vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
+// Stubbing it to its fallback is what the server render does anyway.
+vi.mock('vike-react/ClientOnly', () => ({
+  ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
+}))
+
+const { RichText } = await import('./RichText')
 
 /** Wrap top-level nodes in a serialized Lexical editor state. */
 function editorState(children: unknown[]) {
@@ -202,6 +211,47 @@ describe('<RichText>', () => {
 
     expect(html).toContain('An App Card')
     expect(html).not.toContain('<a')
+  })
+
+  it('renders an embedded form, rather than linking to it', () => {
+    // A `forms` reference is the one relationship that is content: the editor
+    // embedded it to be filled in, and it has no page of its own to link to.
+    // The fields are asserted in FormBuilder.test.tsx.
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'relationship',
+            relationTo: 'forms',
+            value: {
+              id: 9,
+              title: 'Write to us',
+              actionType: 'contact',
+              submitButtonLabel: 'Send message',
+              fields: [{ blockType: 'email', name: 'email', label: 'Your email', required: true }],
+            },
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Write to us')
+    expect(html).not.toContain('<a')
+    // The fields server-render, so a crawler and a reader without JS both get
+    // them. Losing this means the component went back behind ClientOnly.
+    expect(html).toContain('<form')
+    expect(html).toContain('name="email"')
+  })
+
+  it('renders nothing for an embedded form that came back as a bare id', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([{ type: 'relationship', relationTo: 'forms', value: 9, version: 1 }])}
+      />,
+    )
+
+    expect(html).not.toContain('<form')
   })
 
   it('renders an upload image in a <figure> with a Cloudflare variant, caption and alignment', () => {

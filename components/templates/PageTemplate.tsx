@@ -5,19 +5,19 @@
  * rendering stays consistent. Following Atomic Design, templates represent
  * page layout structures. It composes the article chrome: featured video,
  * title, author byline, rich-text body, and SEO `<head>` tags from the
- * page's CMS meta.
+ * page's SahajCloud meta.
  *
  * @example
  * <PageTemplate page={pageData} />
  */
 
-import type { Page, Author, Video } from '../../server/cms-types'
+import type { Page, Author, Video } from '../../server/sahajcloud-types'
 import { RichText } from '../organisms'
 import { VideoPlayer, Author as AuthorByline } from '../molecules'
 import { Container, PageTitle } from '../atoms'
 import { usePageHead } from '../../lib/head'
-import { isPopulated, populatedImageUrl } from '../../lib/cms-relationships'
-import { getLeadSplash } from '../../lib/cms-blocks'
+import { isPopulated, populatedImageUrl } from '../../lib/payload-relationships'
+import { getLeadSplash } from '../../lib/content-blocks'
 
 export interface PageTemplateProps {
   /** Page data from PayloadCMS */
@@ -33,7 +33,7 @@ export interface PageTemplateProps {
 }
 
 export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
-  // Set <title>/description/og:image from CMS meta (must run unconditionally).
+  // Set <title>/description/og:image from SahajCloud meta (must run unconditionally).
   usePageHead({ meta: page.meta, fallbackTitle: page.title })
 
   const author = isPopulated<Author>(page.author) ? page.author : null

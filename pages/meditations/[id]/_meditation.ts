@@ -1,7 +1,7 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Meditation, MeditationSong } from '../../../server/cms-types'
-import { getDocumentById, getMeditationSongs } from '../../../server/cms-client'
+import type { Locale, Meditation, MeditationSong } from '../../../server/sahajcloud-types'
+import { getDocumentById, getMeditationSongs } from '../../../server/sahajcloud-client'
 import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
@@ -12,7 +12,7 @@ export interface MeditationData {
    * when the meditation has no eligible songs (the player renders voice-only).
    */
   musicTracks: MeditationSong[]
-  locale: string
+  locale: Locale
   id: string
 }
 

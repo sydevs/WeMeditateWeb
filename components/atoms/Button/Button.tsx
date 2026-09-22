@@ -2,6 +2,7 @@ import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
 import { Link } from '../Link'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   /**
@@ -72,7 +73,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   href?: string
 
   /** Locale for the link (only used when href is provided) */
-  locale?: string
+  locale?: Locale
 
   /**
    * Button type (only used when href is not provided)

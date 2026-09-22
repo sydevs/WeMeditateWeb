@@ -19,7 +19,7 @@ import { Lightbox } from './index'
  * the lazy {@link Lightbox} implementation does.
  */
 export interface LightboxSlide {
-  /** Full-resolution image URL (largest Cloudflare variant for CMS images). */
+  /** Full-resolution image URL (largest Cloudflare variant for SahajCloud images). */
   src: string
   /** Accessible alt text, mirrored into the caption. */
   alt?: string

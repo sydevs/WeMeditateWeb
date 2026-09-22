@@ -32,9 +32,10 @@ TODOs are fine and need no issue ID. A TODO is a marker, not a substitute for th
 
 ## Carve-outs for this repo
 
-- **Sync pointers to SahajCloud's API shape are load-bearing.** `server/cms-client.ts` explains that
-  a read without `select` returns `url: null` on an upload, and that the CMS query-validation hook
-  400s without it. Delete that and the file's whole structure becomes inexplicable.
+- **Sync pointers to SahajCloud's API shape are load-bearing.** `server/sahajcloud-client.ts`
+  explains that a read without `select` returns `url: null` on an upload, and that the SahajCloud
+  query-validation hook 400s without it. Delete that and the file's whole structure becomes
+  inexplicable.
 - **Component stories**: Ladle renders a story's leading JSDoc as its description. Collapsing one is
   a silent docs-UI regression, not a test failure.
 

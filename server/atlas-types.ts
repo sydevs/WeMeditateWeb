@@ -170,3 +170,38 @@ interface AtlasSeoBase {
 export type AtlasSeoResponse =
   | (AtlasSeoBase & { type: 'region'; id: number; content: AtlasSeoRegionContent })
   | (AtlasSeoBase & { type: 'event'; id: number; content: AtlasSeoEventContent })
+
+/** One `<url>` row from `GET /api/atlas/sitemap`. */
+export interface AtlasSitemapUrl {
+  /**
+   * The canonical URL to publish, byte-identical to the `canonical` that
+   * `GET /api/atlas/seo?route=…` returns for the `route` beside it. Both are
+   * the document's own `webUrl`, read upstream rather than recomposed, so a
+   * sitemap entry and that page's `<link rel="canonical">` cannot disagree.
+   */
+  loc: string
+  /** ISO 8601 instant the document was last edited — `<lastmod>`. */
+  lastmod: string
+  /** The atlas route this URL is of, e.g. `/gb/london/1204`. */
+  route: string
+}
+
+/**
+ * `GET /api/atlas/sitemap` success body.
+ *
+ * Every entry is a URL **the calling API key's client owns**. Ownership runs
+ * per subtree with the nearest declaring ancestor winning, so the answer has
+ * already dropped the regions another national site canonicalizes (#640).
+ *
+ * A client owning no subtree gets `urls: []`. That is an answer, not an
+ * error, so an empty list must never be reported as a failure.
+ *
+ * Unpaginated. Bounding the corpus is upstream's call, since only upstream
+ * knows how large it is.
+ */
+export interface AtlasSitemapResponse {
+  /** ISO 8601 instant this answer was built. */
+  generated: string
+  /** Ascending by `route`, so unchanged ownership yields an unchanged list. */
+  urls: AtlasSitemapUrl[]
+}

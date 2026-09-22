@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
-import type { Page } from '../server/cms-types'
+import type { Page } from '../server/sahajcloud-types'
 
 const page = (over: Partial<Page>): Page => ({ id: 1, slug: 's', title: 'T', ...over }) as Page
 

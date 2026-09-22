@@ -10,32 +10,35 @@
  * (`publicReadCacheHeaders`), so the slow call is paid once per colo per
  * window. The browser just waits for it asynchronously.
  *
- * `/api/live-preview/populate` is here for an unrelated reason: it is the one
- * CMS call the browser is not allowed to make itself. See its own docblock.
+ * `/api/live-preview/populate` and `/api/submissions` are here for an
+ * unrelated reason: they are SahajCloud calls the browser is not allowed to make
+ * itself, one a draft read and one the public intake write. See their own
+ * docblocks.
  *
  * These routes run inside the `contextStorage()` middleware (registered
- * first in entry.ts), so `getCmsContext()` resolves the API key and KV
+ * first in entry.ts), so `getSahajCloudContext()` resolves the API key and KV
  * binding normally.
  */
 
 import type { Hono } from 'hono'
-import type { CmsEnv } from './cms-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 import {
   documentReadArgs,
   getRelatedMeditations,
   getRelatedLectures,
   getWebConfig,
   isDocumentCollection,
-} from './cms-client'
+} from './sahajcloud-client'
 import { relatedMeditationsToCards, relatedLecturesToCards } from '../lib/related-content'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER, type SubmissionResult } from '../lib/submissions'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
-import { idSchema } from './validation'
-import type { Locale } from './cms-types'
-import { isLocale } from './cms-types'
+import { idSchema, submissionSchema } from './validation'
+import type { Locale } from './sahajcloud-types'
+import { isLocale } from './sahajcloud-types'
 
-/** Accept only a locale the CMS defines. Anything else reads as `en`. */
+/** Accept only a locale SahajCloud defines. Anything else reads as `en`. */
 function parseLocale(raw: string | undefined): Locale {
   return raw && isLocale(raw) ? raw : 'en'
 }
@@ -44,7 +47,7 @@ function parseLocale(raw: string | undefined): Locale {
  * edge-cached upstream. stale-while-revalidate keeps repeat views instant. */
 const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=1800'
 
-/** Turns Payload's POST body into the GET the CMS actually answers. */
+/** Turns Payload's POST body into the GET SahajCloud actually answers. */
 const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'
 
 /**
@@ -55,7 +58,7 @@ const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'
  * accepted, which is a closed list rather than a shape test: it rules out a
  * traversal, an unrelated collection, and every global at once.
  *
- * Globals are refused on purpose and nothing is lost by it. The CMS emits
+ * Globals are refused on purpose and nothing is lost by it. SahajCloud emits
  * `scope=` for a global preview, `useDocumentPreviewActive()` is false under a
  * scope, and so no subscriber for a global is ever mounted (see
  * `lib/live-preview/document.tsx`).
@@ -81,11 +84,11 @@ function parsePopulateEndpoint(raw: string | undefined) {
  *
  * A live-preview message carries the admin form's unsaved document, in which
  * every relationship is a bare id. `mergeData` sends that document back to the
- * CMS to have the relationships populated, and the answer is what the page
+ * SahajCloud to have the relationships populated, and the answer is what the page
  * renders. Two things stop the browser doing it directly:
  *
  * - **the credential.** `SAHAJCLOUD_API_KEY` is a server-only secret, and the
- *   CMS answers an unauthenticated read with a 403 (verified against
+ *   SahajCloud answers an unauthenticated read with a 403 (verified against
  *   production).
  * - **CORS.** The SDK's default handler POSTs with `credentials: 'include'`
  *   while SahajCloud answers `Access-Control-Allow-Origin: *` with no
@@ -100,19 +103,19 @@ function parsePopulateEndpoint(raw: string | undefined) {
  *
  * ⚠ **The token is re-verified here, and nothing else guards this route.**
  * The API key is attached on OUR side, so a caller who reaches the forward has
- * the CMS's unpublished content. A refusal is a bare 403 with no body: a
+ * SahajCloud's unpublished content. A refusal is a bare 403 with no body: a
  * caller learns that it was refused, never why, and never whether the document
  * they named exists.
  *
  * ## The read shape
  *
- * `documentReadArgs` repeats what the server render asked for. The CMS
+ * `documentReadArgs` repeats what the server render asked for. SahajCloud
  * requires `select` from an API client and `populate` at depth > 1, and prunes
  * its answer to `select` — all three verified against production. The shape
  * goes in the BODY, not the query string: under the method override the body
  * wins, so a `depth` in the query would be silently overridden by Payload's.
  */
-function registerLivePreviewPopulate(app: Hono<CmsEnv>): void {
+function registerLivePreviewPopulate(app: Hono<SahajCloudEnv>): void {
   app.post(LIVE_PREVIEW_POPULATE_PATH, async (c) => {
     const token = c.req.header(LIVE_PREVIEW_TOKEN_HEADER)
 
@@ -163,8 +166,91 @@ function registerLivePreviewPopulate(app: Hono<CmsEnv>): void {
   })
 }
 
-export function registerApiRoutes(app: Hono<CmsEnv>): void {
+/**
+ * A refused submission, as one code and one status the browser may see.
+ *
+ * SahajCloud answers a refusal with `{ errors: [{ message, data: { code } }] }`
+ * and `@payloadcms/sdk` rethrows that array on its error. The **code** is
+ * forwarded and the **message** is not: the message is SahajCloud's own English,
+ * written for an integrator reading a log, while the visitor's copy is
+ * SahajCloud-owned and rendered from a translation key.
+ *
+ * A client error (a failed captcha, a disposable address, a key the form never
+ * declared) is the caller's and keeps its status. Anything else — a 500, an
+ * unreachable SahajCloud, a thrown non-SDK error — is ours, and reads as 502 so a
+ * browser never sees our upstream's fault as its own bad request.
+ */
+function submissionFailure(error: unknown): { code?: string; status: 400 | 403 | 429 | 502 } {
+  const { errors, status } = (error ?? {}) as {
+    errors?: { data?: { code?: unknown } }[]
+    status?: unknown
+  }
+  const raw = errors?.[0]?.data?.code
+  const code = typeof raw === 'string' ? raw : undefined
+
+  if (status === 403 || status === 429 || status === 400) {
+    return { code, status }
+  }
+
+  return { status: 502 }
+}
+
+/**
+ * The public intake, proxied same-origin.
+ *
+ * The browser cannot post to `POST /api/user-submissions` itself: the create
+ * is authenticated with `SAHAJCLOUD_API_KEY`, a server-only secret, and
+ * SahajCloud answers a wildcard CORS origin with no credentials
+ * (see the live-preview proxy above for the same pairing).
+ *
+ * ⚠ **Exactly one header crosses over: the captcha token.** Forwarding the
+ * browser's `Origin` or `Referer` would put this site's own host through the
+ * client's `allowedDomains` allowlist, which a server-to-server call is
+ * deliberately exempt from — the API key is the gate there. Everything else
+ * in the body is re-validated by the collection per type.
+ *
+ * Nothing of the created row is echoed back. An API client holds create and
+ * no read on `user-submissions` on purpose, and the browser needs only
+ * whether it landed.
+ */
+function registerSubmissions(app: Hono<SahajCloudEnv>): void {
+  app.post(SUBMISSION_PATH, async (c) => {
+    c.header('Cache-Control', 'no-store')
+
+    const body = submissionSchema.safeParse(await c.req.json().catch(() => null))
+
+    if (!body.success) {
+      return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
+    }
+    const token = c.req.header(TURNSTILE_TOKEN_HEADER)
+
+    try {
+      const client = createPayloadClient()
+
+      await client.request({
+        method: 'POST',
+        path: '/user-submissions',
+        // Nothing reads the response, so ask SahajCloud to populate nothing.
+        args: { depth: 0 },
+        json: body.data,
+        init: { headers: token ? { [TURNSTILE_TOKEN_HEADER]: token } : {} },
+      })
+
+      return c.json<SubmissionResult>({ ok: true })
+    } catch (error) {
+      const failure = submissionFailure(error)
+
+      return c.json<SubmissionResult>(
+        { ok: false, ...(failure.code ? { code: failure.code } : {}) },
+        failure.status,
+      )
+    }
+  })
+}
+
+export function registerApiRoutes(app: Hono<SahajCloudEnv>): void {
   registerLivePreviewPopulate(app)
+  registerSubmissions(app)
   // Meditations related to a lecture (not audience-gated).
   app.get('/api/related-meditations/:lectureId', async (c) => {
     let id: string

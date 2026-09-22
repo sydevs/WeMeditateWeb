@@ -2,7 +2,7 @@
  * SEO `<head>` helpers for content pages.
  *
  * Uses vike-react's `useConfig` to set `title` / `description` / `image` from a
- * page's CMS `meta`. Vike turns these into the corresponding tags:
+ * page's SahajCloud `meta`. Vike turns these into the corresponding tags:
  *   title       → <title>, <meta property="og:title">
  *   description → <meta name="description">, <meta property="og:description">
  *   image       → <meta property="og:image">, <meta name="twitter:card">
@@ -17,13 +17,14 @@
 
 import { useConfig } from 'vike-react/useConfig'
 import { getImageURL, getVariantName, isCloudflareImageURL } from './cloudflare-images'
-import { populatedImageUrl } from './cms-relationships'
-import { useOptionalPageContext, useT } from '../hooks/useT'
+import { populatedImageUrl } from './payload-relationships'
+import { useT } from '../hooks/useT'
+import { useOptionalPageContext } from '../hooks/usePageContext'
 import { buildAlternates, type Alternate } from './hreflang'
 import { localeUrl, normalizeContentPath } from './urls'
-import type { Locale } from '../server/cms-types'
+import type { Locale } from '../server/sahajcloud-types'
 
-/** Minimal shape of a page's `meta` field (a subset of the CMS Page meta). */
+/** Minimal shape of a page's `meta` field (a subset of the SahajCloud Page meta). */
 export interface PageMetaLike {
   title?: string | null
   description?: string | null
@@ -51,12 +52,12 @@ export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
 }
 
 /**
- * Sets the page's SEO head tags from CMS meta, during render.
+ * Sets the page's SEO head tags from SahajCloud meta, during render.
  *
  * This is a hook, so call it unconditionally from a component.
  *
- * Each tag falls through three levels: the page's own CMS `meta`, then the
- * site defaults from the CMS (`common.general.site_title` /
+ * Each tag falls through three levels: the page's own SahajCloud `meta`, then the
+ * site defaults from SahajCloud (`common.general.site_title` /
  * `site_description`, in the page's locale), then the English literals in
  * `pages/+config.ts`. Before the middle level existed, a French page with
  * no meta of its own advertised itself in English to search engines and

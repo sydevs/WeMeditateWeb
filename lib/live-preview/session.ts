@@ -1,4 +1,4 @@
-import { useOptionalPageContext } from '../../hooks/useT'
+import { useOptionalPageContext } from '../../hooks/usePageContext'
 import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
 
 /**
@@ -21,7 +21,7 @@ import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
  *
  * ## Why the server half cannot use a provider at all
  *
- * The `+data.ts` functions thread `preview`/`previewToken` into each CMS read.
+ * The `+data.ts` functions thread `preview`/`previewToken` into each SahajCloud read.
  * No React context can reach them: they run on the server before any component
  * renders, and the token they pass is the one thing `passToClient` must never
  * carry. `previewArgs` in `server/live-preview.ts` is the equivalent there —
@@ -30,10 +30,11 @@ import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
 
 /** The live-preview verdict for this page, or the inactive one off-preview. */
 export function useLivePreviewState(): LivePreviewState {
-  // `useOptionalPageContext`, the same accessor `useT` uses: this is read from
+  // `useOptionalPageContext` is the guarded accessor: this is read from
   // `LayoutRoot`, which also renders in Ladle and in SSR-string tests where no
-  // Vike provider exists. `usePageContext` throws there, and taking the root
-  // layout down over a preview flag would be a poor trade.
+  // Vike provider exists. `usePageContext` hands back `undefined` there while
+  // claiming otherwise, and taking the root layout down over a preview flag
+  // would be a poor trade.
   return useOptionalPageContext()?.livePreview ?? LIVE_PREVIEW_INACTIVE
 }
 
@@ -53,14 +54,14 @@ export function useDocumentPreviewActive(): boolean {
 }
 
 /**
- * The CMS origin `postMessage` traffic is accepted from and sent to.
+ * The SahajCloud origin `postMessage` traffic is accepted from and sent to.
  *
  * ⚠ **`undefined` when `PUBLIC__SAHAJCLOUD_URL` is unset or unparseable, and
  * every caller must fail CLOSED on that.** An earlier version fell back to
  * `'*'`, which turned the meditation seek channel into one any page could
  * drive.
  */
-export function cmsOrigin(): string | undefined {
+export function sahajCloudOrigin(): string | undefined {
   const url = import.meta.env.PUBLIC__SAHAJCLOUD_URL
 
   if (!url) return undefined

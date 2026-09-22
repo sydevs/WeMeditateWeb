@@ -1,6 +1,6 @@
 import { FooterLinkList, FooterLink } from '../../molecules/FooterLinkList'
 import { LanguageDropdown, LanguageOption } from '../../molecules/LanguageDropdown'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 import { FloralDividerSvg } from '../../atoms/graphics/svgs'
 
@@ -35,7 +35,7 @@ export interface FooterProps {
   /** Copyright text */
   copyrightText: string
   /** Current locale for locale-aware links */
-  locale?: string
+  locale?: Locale
 }
 
 

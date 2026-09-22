@@ -1,5 +1,5 @@
 /**
- * The site's primary navigation, built from the CMS config.
+ * The site's primary navigation, built from the SahajCloud config.
  *
  * Extracted from LayoutChrome so the map layout can render the same nav,
  * without duplicating its construction. Two copies would drift, and the nav
@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react'
-import type { WebConfig } from '../server/cms-types'
+import type { WebConfig } from '../server/sahajcloud-types'
 import type { NavItem } from '../components/organisms'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 import { useT } from '../hooks/useT'
@@ -27,7 +27,7 @@ export interface SiteNav {
  * panel stays closed during SSR, so the picks never enter the server HTML.
  * This is what makes the randomness hydration-safe.
  *
- * @param settings - The CMS web config
+ * @param settings - The SahajCloud web config
  * @param activeSlug - Slug of the current page, to highlight its nav link
  */
 export function useSiteNav(settings: WebConfig, activeSlug?: string): SiteNav {

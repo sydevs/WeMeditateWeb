@@ -8,6 +8,7 @@ import { useT } from '../../../hooks/useT'
 import { Placeholder } from '../../atoms/Placeholder/Placeholder'
 import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /** Card title. */
@@ -63,7 +64,7 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
   badgeUrl?: string
 
   /** Locale for the link. Defaults to the current page locale from context. */
-  locale?: string
+  locale?: Locale
 
   /**
    * Fade the image in when it loads.
@@ -179,7 +180,7 @@ export function ContentCard({
             onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
           />
         ) : (
-          // No CMS thumbnail. Show a branded, non-animated fallback in a
+          // No SahajCloud thumbnail. Show a branded, non-animated fallback in a
           // fixed 16:9 box, so imageless cards look consistent in the grid.
           <div className="relative aspect-video overflow-hidden rounded-xs">
             <Placeholder animate={false} variant="primary">

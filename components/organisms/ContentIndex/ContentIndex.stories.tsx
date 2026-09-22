@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { ContentIndex } from './ContentIndex'
-import type { ResolvedCardItem } from '../../../lib/cms-blocks'
+import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {

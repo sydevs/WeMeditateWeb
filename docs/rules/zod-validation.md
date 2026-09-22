@@ -17,6 +17,11 @@ The project uses Zod 4 for runtime schema validation at critical data boundaries
 - `idSchema` — a numeric id. It coerces the value to a number, validates it, then returns a string
 - `collectionSchema` — a preview collection type (pages, meditations)
 
+**Request bodies** ([server/validation.ts](../../server/validation.ts)):
+- `submissionSchema` — one form submission the same-origin proxy will forward. Its bounds mirror
+  SahajCloud's own, and are a cheap refusal at the edge rather than the enforcement: the
+  collection re-checks every one per type, against the keys the form's author declared.
+
 **API configuration** ([server/payload-client.ts](../../server/payload-client.ts)):
 - `payloadConfigSchema` — validates the API key and base URL
 - `PayloadConfigError` — an error class that carries the Zod issues
@@ -56,20 +61,14 @@ a validation error — an invalid slug or id means the resource does not exist.
    }
    ```
 
-## FormBuilder with Zod
+## An authored form is not validated with Zod here
 
-`FormBuilder` accepts an optional `schema` prop for Zod validation:
-
-```typescript
-import { z } from 'zod'
-
-const contactSchema = z.object({
-  email: z.string().email('Invalid email'),
-  name: z.string().min(1, 'Name is required'),
-})
-
-<FormBuilder form={formConfig} onSubmit={handleSubmit} schema={contactSchema} />
-```
+`FormBuilder` takes no schema, and there is no prop to pass one. The rules a submission must meet
+are the form author's (`required` on a field) and SahajCloud's (per-type allowed keys, length
+bounds, the captcha), and neither is knowable from this side — an author adds a field whenever
+they like. So the fields validate through react-hook-form's own `required`, `submissionSchema`
+bounds the proxied body, and the collection is the authority. A Zod schema mirroring SahajCloud's
+rules would be a second copy to keep in step.
 
 ## Zod 4 syntax notes
 

@@ -367,7 +367,7 @@ Before you mark a component complete, check it:
 - [AGENTS.md](./AGENTS.md) — project overview, repo-wide conventions, and the rule map
 - [docs/rules/design-system.md](./docs/rules/design-system.md) — the `components/**` rule that
   points here, plus Icon/Button/Link/Divider conventions this guide does not cover
-- [server/CACHING.md](./server/CACHING.md) — the CMS caching strategy
+- [server/CACHING.md](./server/CACHING.md) — the SahajCloud caching strategy
 - [Atomic Design Methodology](https://atomicdesign.bradfrost.com/chapter-2/) — Brad Frost's
   original methodology
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)

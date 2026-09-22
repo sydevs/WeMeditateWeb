@@ -1,13 +1,13 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { ResolvedLecture } from '../../../server/cms-types'
-import { getLecture } from '../../../server/cms-client'
+import type { Locale, ResolvedLecture } from '../../../server/sahajcloud-types'
+import { getLecture } from '../../../server/sahajcloud-client'
 import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface LectureData {
   lecture: ResolvedLecture
-  locale: string
+  locale: Locale
   id: string
 }
 

@@ -1,6 +1,46 @@
-# CMS API-client reads (`server/cms-client.ts`)
+# SahajCloud API-client reads (`server/sahajcloud-client.ts`)
 
 The SahajCloud (PayloadCMS) API validates every API-client read. Follow these rules.
+
+## The one write: a public submission, proxied same-origin
+
+Every contact and subscribe form posts to `POST /api/submissions`
+([server/api-routes.ts](api-routes.ts)), which forwards one
+`POST /api/user-submissions` create to SahajCloud. Four things hold, and all four are load-bearing:
+
+- **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
+  and SahajCloud answers a wildcard CORS origin with no credentials.
+- **A captcha token is required on every public write**, as the `x-turnstile-token` header, not
+  as document data. It is the only browser header the proxy forwards: `Origin` and `Referer` must
+  not cross over, because a server-to-server call is deliberately exempt from the client's
+  `allowedDomains` allowlist, which the API key stands in for.
+- **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape
+  (`captcha_failed`, `disposable_email`, `urls_not_allowed`, `submission_data_invalid`, …). The
+  code is forwarded to the browser and the message never is: it is SahajCloud's English, written for
+  a log, while the visitor's copy is SahajCloud-owned and rendered from a translation key.
+- **`select` is not required here.** SahajCloud's query-validation hook gates reads only, so a
+  create needs neither `select` nor `populate`. Nothing of the created row is echoed back either
+  — an API client holds create and no read on `user-submissions`.
+
+`submissionData` is the flat `[{ field, value }]` remainder, and the collection accepts only the
+keys it allows per type: the base context set (`name`, `locale`, `path`, `hostUrl`, `userAgent`,
+`error`), the type's own, and whatever the form's author declared. An invented key comes back as a
+400 naming it, and so does a repeated one. `lib/submissions.ts` owns that body; nothing else
+composes one.
+
+Two things about `form` and the visitor's IP that only bite in production:
+
+- **`form` is a number.** SahajCloud resolves the relationship with `relationId()`, which answers
+  `null` for a string. A quoted id is accepted and then leaves the intake unable to load the form,
+  which empties the authored-field allow-list — so every field the editor named is refused as
+  unknown, while the base keys still pass. `submissionSchema` refuses a string at the edge so this
+  cannot ship again.
+- ⚠ **SahajCloud sees this Worker's IP, not the visitor's.** It reads `cf-connecting-ip` off its own
+  request for Turnstile's `remoteip`, and a proxied submission carries ours. Cloudflare validates
+  `remoteip` against the address that solved the challenge, so this needs an end-to-end test
+  before anyone trusts it, and a forwarded-IP contract upstream if it refuses
+  (sydevs/SahajCloud#808). The same substitution puts every submission in one edge rate-limit
+  bucket.
 
 ## Always send `select`, `populate` at depth > 1, and `locale`
 
@@ -15,7 +55,7 @@ The SahajCloud (PayloadCMS) API validates every API-client read. Follow these ru
 - Type the `select`/`populate` constants against the generated `*Select` interfaces
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
-  `server/cms-client.ts`.
+  `server/sahajcloud-client.ts`.
 
 ## Treat a bare id as unpublished — degrade, do not break
 
@@ -23,22 +63,46 @@ A published page populates into an object. The API returns an unpublished or tra
 bare numeric id instead. Rendering that id as a link produces a dead `/undefined`.
 
 - Filter relationship arrays down to populated objects with a non-empty slug, before you build
-  any links. See `partitionPublishedPages` in `server/cms-client.ts`.
+  any links. See `partitionPublishedPages` in `server/sahajcloud-client.ts`.
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
-  dropped. This keeps the CMS data gap visible. Do not hide it silently, and do not throw a 500.
+  dropped. This keeps the SahajCloud data gap visible. Do not hide it silently, and do not throw
+  a 500.
 
 ## Custom root endpoints are not collection reads
 
-`GET /api/atlas/seo` and the `related-*` endpoints belong to no collection, so the Payload SDK
-cannot express them. They use plain `fetch` calls with an `Authorization: clients API-Key`
-header, and shape their own response. `select` and `populate` do not apply here.
+`GET /api/atlas/seo`, `GET /api/atlas/sitemap`, the `related-*` endpoints, and a content-index
+block's computed endpoint belong to no collection, so the Payload SDK cannot express them. Every
+one but the sitemap reads through `sahajCloudFetch`
+([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends the
+`Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
+non-OK response, and returns the parsed body. Hand it a path, never a URL — it refuses anything
+that is not site-relative, so a computed endpoint cannot move the request off the SahajCloud
+origin — and type the body yourself. `getAtlasSitemapUrls` still assembles its own `fetch`, and is
+not yet converted. `select` and `populate` do not apply here.
 
-Two rules still apply:
+⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
+URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
+`getAtlasSitemapUrls` must never go back to reading `regions` and `events` and filtering them
+here (#123). **An empty `urls` list is an answer, not a failure**: a client that owns no subtree
+legitimately has nothing to list.
+
+Three rules still apply:
 
 - **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
   `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
+  `fetchContentIndexDocs` is the one read still missing it (#128).
+- **Never branch on a status. Pick the reader that matches the read.** `sahajCloudFetch` throws a
+  `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
+  where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
+  `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
+  without a body dump. Four of the five reads take the optional form; `fetchContentIndexDocs`
+  takes `sahajCloudFetch`, because its endpoint is one SahajCloud computed and nothing answering it
+  is a data gap. The status rides on the error because `detectErrorType` reads it structurally and
+  otherwise falls back to matching `50[0-9]` in the message — a plain `Error` classifies a
+  Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one shape a
+  Railway restart behind the edge produces.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See
@@ -59,8 +123,8 @@ maps.
 Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
 `pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
 `?locale=all&select[_status]=true` answers that in a single query. `lib/hreflang.ts` turns the map
-into a locale list, and `getPageLocaleStatus` in `server/cms-client.ts` is the only single-document
-read that sends `all`.
+into a locale list, and `getPageLocaleStatus` in `server/sahajcloud-client.ts` is the only
+single-document read that sends `all`.
 
 Three things follow, all load-bearing:
 

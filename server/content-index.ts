@@ -1,7 +1,7 @@
 /**
  * Server-side pre-resolution for `content-index` blocks.
  *
- * A `content-index` block carries a CMS-computed virtual `apiEndpoint`
+ * A `content-index` block carries a SahajCloud-computed virtual `apiEndpoint`
  * (path, filters, and limit) that describes the live list it should show.
  * An API client cannot fetch that endpoint as-is: a collection read
  * requires `select`, and the lectures `/for-audience` endpoint needs
@@ -16,9 +16,9 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './cms-context'
+import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
-import type { Locale } from './cms-types'
+import type { Locale } from './sahajcloud-types'
 import {
   contentIndexCard,
   contentIndexTrack,
@@ -26,13 +26,13 @@ import {
   type ContentIndexBlockFields,
   type ResolvedCardItem,
   type PageTagLabels,
-} from '../lib/cms-blocks'
-import { audienceIdList } from './cms-client'
+} from '../lib/content-blocks'
+import { audienceIdList } from './sahajcloud-client'
 // Type-only import (erased at build): the songs index resolves to MusicLibrary tracks.
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
 /**
- * Per-type query fragments, appended to the CMS-computed endpoint:
+ * Per-type query fragments, appended to the SahajCloud-computed endpoint:
  * - `select` is mandatory. The backend rejects an API-client read without it.
  * - `populate` returns the fields of related docs a card or track needs:
  *   song album credit, artwork, and tags, or lecture user-choice titles.
@@ -89,8 +89,8 @@ interface ResolveOptions {
    * `/for-audience` feed so it resolves server-side. */
   audiences?: (number | Audience)[]
   /**
-   * Visible labels for the page-tag facets, from the CMS
-   * (`article.general.tag_*`). `lib/cms-blocks.ts` stays free of the
+   * Visible labels for the page-tag facets, from SahajCloud
+   * (`article.general.tag_*`). `lib/content-blocks.ts` stays free of the
    * translations layer: it takes the resolved map, not the accessor.
    */
   pageTagLabels?: PageTagLabels
@@ -98,7 +98,7 @@ interface ResolveOptions {
 
 /**
  * Drops every `key=…` param from a path-and-query string. The
- * CMS-computed endpoint sometimes bakes in its own `depth` (for example,
+ * SahajCloud-computed endpoint sometimes bakes in its own `depth` (for example,
  * the meditations user-choices feed). The per-type `depth` here must be
  * the only one: a duplicate `depth` param parses to an array, and the
  * backend then 400s ("populate required when depth > 1").
@@ -133,31 +133,22 @@ async function fetchContentIndexDocs(
   if (type === 'lectures' && audiences.length === 0) {
     return []
   }
-  const { apiKey, baseURL } = getCmsContext()
   const { select, populate, depth } = QUERY_BY_TYPE[type]
-  // Strip any depth the CMS baked into the endpoint so ours is the only one.
+  // Strip any depth SahajCloud baked into the endpoint so ours is the only one.
   const endpoint = stripQueryParam(apiEndpoint, 'depth')
   const separator = endpoint.includes('?') ? '&' : '?'
   const populateParam = populate ? `&${populate}` : ''
   const localeParam = options.locale ? `&locale=${options.locale}` : ''
   const audiencesParam = audiences.length > 0 ? `&audiences=${audiences.join(',')}` : ''
-  const url = `${baseURL}${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
+  const path = `${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
 
   try {
-    const response = await fetch(url, {
-      headers: { Authorization: `clients API-Key ${apiKey}` },
-    })
-
-    if (!response.ok) {
-      Sentry.captureMessage('content-index endpoint not resolvable', {
-        level: 'warning',
-        tags: { source: 'fetchContentIndexDocs' },
-        extra: { type, status: response.status },
-      })
-
-      return []
-    }
-    const json = (await response.json()) as { docs?: Record<string, unknown>[] }
+    // `sahajCloudFetch`, not `sahajCloudFetchOptional`: this endpoint is one SahajCloud computed
+    // for the block, so a 404 is a data gap rather than an answer.
+    const json = await sahajCloudFetch<{ docs?: Record<string, unknown>[] }>(
+      path,
+      `fetchContentIndexDocs(${type})`,
+    )
     const docs = json.docs ?? []
     const cap = typeof limit === 'number' ? limit : docs.length
 
@@ -166,7 +157,11 @@ async function fetchContentIndexDocs(
     Sentry.captureMessage('content-index fetch failed', {
       level: 'warning',
       tags: { source: 'fetchContentIndexDocs' },
-      extra: { type, error: error instanceof Error ? error.message : String(error) },
+      extra: {
+        type,
+        status: error instanceof SahajCloudResponseError ? error.status : undefined,
+        error: error instanceof Error ? error.message : String(error),
+      },
     })
 
     return []

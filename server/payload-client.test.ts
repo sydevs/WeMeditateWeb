@@ -6,9 +6,13 @@ import { createPayloadClient, validatePayloadConfig, PayloadConfigError } from '
 import { detectErrorType, ErrorType } from './error-utils'
 
 // createPayloadClient reads its defaults from the request context, which does
-// not exist under Vitest. Shape checked against server/cms-context.ts.
-vi.mock('./cms-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+// not exist under Vitest. Shape checked against server/sahajcloud-context.ts.
+vi.mock('./sahajcloud-context', () => ({
+  getSahajCloudContext: () => ({
+    apiKey: 'test-key',
+    baseURL: 'https://sahajcloud.test',
+    kv: undefined,
+  }),
 }))
 
 /**
@@ -16,14 +20,14 @@ vi.mock('./cms-context', () => ({
  * a non-OK response instead of resolving `undefined`. The repo carried a
  * `validateSDKResponse` guard for the era when it did not (payload#14495).
  */
-describe('a non-OK CMS response', () => {
+describe('a non-OK SahajCloud response', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
   /** Stubs global fetch with one non-OK JSON response, and silences the client's logging. */
-  function stubCmsResponse(status: number, body: unknown) {
+  function stubSahajCloudResponse(status: number, body: unknown) {
     vi.spyOn(console, 'log').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.stubGlobal(
@@ -39,7 +43,7 @@ describe('a non-OK CMS response', () => {
   }
 
   it('rejects with a PayloadSDKError instead of resolving undefined', async () => {
-    stubCmsResponse(400, { errors: [{ message: 'The following field is invalid: select' }] })
+    stubSahajCloudResponse(400, { errors: [{ message: 'The following field is invalid: select' }] })
 
     const client = createPayloadClient()
     const read = client.findGlobal({ slug: 'wm-web-config' })
@@ -49,7 +53,7 @@ describe('a non-OK CMS response', () => {
   })
 
   it('carries the HTTP status, so error-utils classifies it', async () => {
-    stubCmsResponse(503, { errors: [{ message: 'Service Unavailable' }] })
+    stubSahajCloudResponse(503, { errors: [{ message: 'Service Unavailable' }] })
 
     const client = createPayloadClient()
     const error = await client.findGlobal({ slug: 'wm-web-config' }).catch((e: unknown) => e)
@@ -95,7 +99,7 @@ describe('validatePayloadConfig', () => {
 
   it('should throw with 400 status for invalid URL format', () => {
     try {
-      validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'cms.example.com' })
+      validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'sahajcloud.example.com' })
       expect.fail('Should have thrown')
     } catch (error) {
       expect(error).toBeInstanceOf(PayloadConfigError)
@@ -107,7 +111,7 @@ describe('validatePayloadConfig', () => {
   it('should accept valid configuration', () => {
     expect(() => validatePayloadConfig({
       apiKey: 'valid-key',
-      baseURL: 'https://cms.example.com'
+      baseURL: 'https://sahajcloud.example.com'
     })).not.toThrow()
   })
 })

@@ -1,5 +1,5 @@
 import type { PageContextServer } from 'vike/types'
-import type { WebConfig } from '../../../../server/cms-types'
+import type { WebConfig } from '../../../../server/sahajcloud-types'
 import { loadSiteContext } from '../../../../server/site-context'
 import { loadLecture, type LectureData } from '../_lecture'
 

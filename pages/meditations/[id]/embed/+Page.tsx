@@ -4,7 +4,7 @@ import type { MeditationEmbedPageData } from './+data'
 import { MeditationTemplate } from '../../../../components/templates'
 import { LivePreviewDocument } from '../../../../lib/live-preview/document'
 import { useFrameEditorChannel } from '../../../../lib/live-preview/frame-editor'
-import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-preview/session'
+import { sahajCloudOrigin, useDocumentPreviewActive } from '../../../../lib/live-preview/session'
 
 /**
  * Meditation embed page (/meditations/:id/embed) — designed for iframe
@@ -12,7 +12,7 @@ import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-previe
  * global LayoutRoot (no Header/Footer/nav). It hides the Embed button, because
  * it is already inside an iframe, to avoid embed-in-embed.
  *
- * ## It is also what the CMS frame editor points at
+ * ## It is also what the SahajCloud frame editor points at
  *
  * This used to be `/preview/embed`, a second renderer kept approximately equal
  * to this one. Two `postMessage` channels run on this page while a preview
@@ -23,7 +23,7 @@ import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-previe
  *   what lets an editor click a frame thumbnail and read back the timestamp a
  *   new frame is written at
  *
- * Both are gated on the CMS origin and both fail CLOSED when it is unset.
+ * Both are gated on the SahajCloud origin and both fail CLOSED when it is unset.
  */
 export function Page() {
   const { meditation: initialMeditation, musicTracks } = useData<MeditationEmbedPageData>()
@@ -33,7 +33,7 @@ export function Page() {
   // it is a hook on this page either way, enabled or inert.
   const { seekTo, onPlaybackTimeUpdate } = useFrameEditorChannel(
     previewingThisMeditation,
-    cmsOrigin(),
+    sahajCloudOrigin(),
   )
 
   return (

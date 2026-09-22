@@ -1,5 +1,5 @@
 /**
- * CMS query functions for the PayloadCMS REST API.
+ * SahajCloud query functions for the PayloadCMS REST API.
  *
  * Each function gets its config (apiKey, baseURL) from the request context.
  * Callers do not pass these values.
@@ -27,7 +27,7 @@
 
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
-import { getCmsContext } from './cms-context'
+import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/react'
 import type {
@@ -38,15 +38,16 @@ import type {
   SongsSelect,
   AlbumsSelect,
   AppCardsSelect,
+  FormsSelect,
   SongTagsSelect,
   ImagesSelect,
   AuthorsSelect,
   VideosSelect,
   WmWebConfigSelect,
-  WmWebTranslationsSelect,
   Audience,
 } from './payload-types'
 import type {
+  EmbeddedFormSelect,
   Locale,
   Page,
   PageStatus,
@@ -57,8 +58,8 @@ import type {
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
-} from './cms-types'
-import { DEFAULT_LOCALE, isLocale } from './cms-types'
+} from './sahajcloud-types'
+import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './sahajcloud-types'
 
 // --- Common Options Interfaces ---
 
@@ -83,7 +84,7 @@ function withRetryUnlessPreview<T>(
 // The backend rejects a read that omits `select`. It also rejects depth > 1
 // without `populate`. Each query below selects only the fields the frontend
 // renders. Each select constant is typed against a generated *Select
-// interface. This turns a CMS schema change (pulled by `pnpm types:cms`)
+// interface. This turns a SahajCloud schema change (pulled by `pnpm types:cms`)
 // into a compile error here, instead of a silent 400 or a missing field at
 // runtime.
 //
@@ -184,6 +185,30 @@ const EMBEDDED_APP_CARD_SELECT = {
 } satisfies AppCardsSelect<true>
 
 /**
+ * A form embedded in page content, as `FormBuilder` renders and submits it.
+ *
+ * ⚠ **Narrow on purpose, not for payload size.** A collection absent from
+ * `populate` comes back fully populated, and a form's `recipient` is a
+ * relationship to `managers` — so omitting this entry serializes a manager's
+ * record into the page's hydration payload. `actionType` is what the
+ * submission's `type` comes from; who a message is delivered to is SahajCloud's
+ * business and never the browser's.
+ *
+ * `EmbeddedFormSelect` is what ties this list to the `EmbeddedForm` type its
+ * consumers read, so neither can lose a key without the other failing to
+ * compile.
+ */
+const EMBEDDED_FORM_SELECT = {
+  title: true,
+  fields: true,
+  submitButtonLabel: true,
+  confirmationType: true,
+  confirmationMessage: true,
+  redirect: true,
+  actionType: true,
+} satisfies FormsSelect<true> & EmbeddedFormSelect
+
+/**
  * Populate map for a full Page read (depth 3). The backend rejects a
  * depth > 1 read without `populate`. Each entry both enables a relationship
  * to populate and restricts it to the fields the frontend renders. Beyond
@@ -200,6 +225,7 @@ const PAGE_POPULATE = {
   lectures: EMBEDDED_LECTURE_SELECT,
   albums: EMBEDDED_ALBUM_SELECT,
   'app-cards': EMBEDDED_APP_CARD_SELECT,
+  forms: EMBEDDED_FORM_SELECT,
 }
 
 /** Global config fields: `pages` relationships the layout + home page need, plus
@@ -567,7 +593,7 @@ export async function getLecture(
   // A clip with no resolvable HLS source means its parent `fullLecture`
   // returned unpopulated (a bare id, believed unpublished or trashed), or has
   // not synced its Nirmala Vidya metadata. The template degrades to an error
-  // state. Report the CMS data gap to Sentry, per the cms-api-reads rule, so
+  // state. Report the SahajCloud data gap to Sentry, per `server/AGENTS.md`, so
   // it stays visible.
   if (!options.preview && resolved.type === 'clip' && !resolved.hlsUrl) {
     console.warn(
@@ -618,7 +644,7 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  *
  * This function drops unresolved page references (believed unpublished), so
  * the layout never renders a dead `/undefined` link, and reports each drop
- * to Sentry so the underlying CMS data gap stays visible.
+ * to Sentry so the underlying SahajCloud data gap stays visible.
  *
  * This global has no drafts, so there is no preview variant to read. It
  * carried a `preview` flag only to bypass a 24 h KV entry; the edge cache
@@ -688,29 +714,9 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
 }
 
 /**
- * Every translations tab the site renders. Typed against the generated
- * select interface, so a tab renamed upstream is a compile error here
- * rather than a silent group of missing strings.
- */
-const WEB_TRANSLATIONS_SELECT = {
-  common: true,
-  navigation: true,
-  footer: true,
-  errors: true,
-  article: true,
-  meditation: true,
-  lecture: true,
-  map: true,
-  forms: true,
-  media: true,
-  location: true,
-  blocks: true,
-} satisfies WmWebTranslationsSelect<true>
-
-/**
  * Gets the UI strings for a locale, from the `wm-web-translations` global.
  *
- * The CMS fills a blank or missing key from English on every API-client
+ * SahajCloud fills a blank or missing key from English on every API-client
  * read (SahajCloud #705), so the site does no merge of its own: what comes
  * back is already complete for the locale.
  *
@@ -840,9 +846,8 @@ export async function getSongsByTags(
  * fixed minimal projection (`{ id, title, url, tags }`). It does not accept
  * `select`, and it ignores `populate`, `depth`, and `limit` (it does honor
  * `locale`). This is not a collection `find`, so the PayloadCMS SDK cannot
- * model it. This function instead issues a raw authenticated fetch, with the
- * same `clients API-Key` header the SDK sends, wrapped in the shared retry
- * layer.
+ * model it. This function instead reads through `sahajCloudFetchOptional`, wrapped
+ * in the shared retry layer.
  *
  * The endpoint returns songs in a random order on every request. Callers
  * pick a track on the client, so a list held at the edge is fine. The
@@ -861,31 +866,16 @@ export async function getMeditationSongs(
 ): Promise<MeditationSong[]> {
   try {
     return await withRetryUnlessPreview(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url = `${baseURL}/api/meditations/${encodeURIComponent(
-        options.id,
-      )}/songs?locale=${encodeURIComponent(options.locale)}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      // Mirror the SDK's request logging, so the dev request log stays complete.
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
-
-      // An unknown meditation ID, or no songs route, means no music. This
-      // is not an error.
-      if (response.status === 404) return []
-
-      // Let server and network errors propagate, so the retry runs.
-      if (!response.ok) {
-        throw new Error(`getMeditationSongs(${options.id}) failed: ${response.status}`)
-      }
-
-      const body = (await response.json()) as {
+      // A 404 — an unknown meditation ID, or no songs route — means no music,
+      // and arrives as `null`. Every other non-OK throws, so the retry runs.
+      const body = await sahajCloudFetchOptional<{
         docs?: Array<{ id: number; title?: string | null; url?: string | null }>
-      }
-      const docs = Array.isArray(body.docs) ? body.docs : []
+      }>(
+        `/api/meditations/${encodeURIComponent(options.id)}/songs` +
+          `?locale=${encodeURIComponent(options.locale)}`,
+        `getMeditationSongs(${options.id})`,
+      )
+      const docs = Array.isArray(body?.docs) ? body.docs : []
 
       // Keep only playable tracks. The player needs a real URL. The
       // endpoint omits duration, artwork, and credit, so title and url are
@@ -956,28 +946,14 @@ export async function getRelatedMeditations(
 
   try {
     return await withRetryUnlessPreview(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
-        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
-
-      // An unknown lecture ID, or no related route, means no related content.
-      if (response.status === 404) return []
-
-      if (!response.ok) {
-        throw new Error(`getRelatedMeditations(${options.id}) failed: ${response.status}`)
-      }
-
-      const body = (await response.json()) as {
-        docs?: Array<Record<string, unknown>>
-      }
-      const docs = Array.isArray(body.docs) ? body.docs : []
+      // A 404 — an unknown lecture ID, or no related route — means no related
+      // content, and arrives as `null`.
+      const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
+        `/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
+          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`,
+        `getRelatedMeditations(${options.id})`,
+      )
+      const docs = Array.isArray(body?.docs) ? body.docs : []
 
       // The endpoint already shapes cards. Still guard the rendered
       // fields, so a partial doc can never produce a blank card or a
@@ -1053,28 +1029,13 @@ export async function getRelatedLectures(
 
   try {
     return await withRetryUnlessPreview(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
-        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
-        `&audiences=${audiences.join(',')}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
-
-      if (response.status === 404) return []
-
-      if (!response.ok) {
-        throw new Error(`getRelatedLectures(${options.id}) failed: ${response.status}`)
-      }
-
-      const body = (await response.json()) as {
-        docs?: Array<Record<string, unknown>>
-      }
-      const docs = Array.isArray(body.docs) ? body.docs : []
+      const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
+        `/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
+          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
+          `&audiences=${audiences.join(',')}`,
+        `getRelatedLectures(${options.id})`,
+      )
+      const docs = Array.isArray(body?.docs) ? body.docs : []
 
       return docs
         .filter(

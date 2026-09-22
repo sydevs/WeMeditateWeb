@@ -35,7 +35,7 @@ import { ROUTE_ANNOUNCER_ID } from '../lib/route-announcer'
  */
 export default function LayoutRoot({ children }: { children: React.ReactNode }) {
   // Behaviour, not markup: a hook rather than a component that returns `null`.
-  // No banner goes with it — the panel sits inside the CMS admin, whose own
+  // No banner goes with it — the panel sits inside the SahajCloud admin, whose own
   // chrome already says Live Preview, and a fixed bar would overlap the site
   // header and eat the top of a 375x667 meditation embed.
   useLivePreviewLinkGuard()

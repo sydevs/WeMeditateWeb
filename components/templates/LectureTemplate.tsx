@@ -13,7 +13,7 @@
  * <LectureTemplate lecture={resolvedLecture} locale="en" />
  */
 
-import type { ResolvedLecture } from '../../server/cms-types'
+import type { Locale, ResolvedLecture } from '../../server/sahajcloud-types'
 import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
@@ -24,7 +24,7 @@ export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
   /** Current locale. Selects which subtitle track is the default, active one. */
-  locale?: string
+  locale?: Locale
   className?: string
 }
 
@@ -65,7 +65,7 @@ export interface LectureTemplateProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
   /** Current locale. Selects which subtitle track is the default, active one. */
-  locale?: string
+  locale?: Locale
   /**
    * Whether to show the Embed button (copy an iframe snippet for this lecture).
    * @default true

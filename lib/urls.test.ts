@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { localeFromPath, localeUrl, normalizeContentPath } from './urls'
+import {
+  isSafeHttpUrl,
+  isSafeNavigationUrl,
+  isSitePath,
+  localeFromPath,
+  localePath,
+  localeUrl,
+  normalizeContentPath,
+  localeHref,
+  sitePathFromUrl,
+} from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -9,6 +19,7 @@ describe('localeFromPath', () => {
       locale: 'en',
       pathWithoutLocale: '/about',
       prefixed: false,
+      requestedIndex: false,
     })
   })
 
@@ -23,10 +34,11 @@ describe('localeFromPath', () => {
       locale: 'fa',
       pathWithoutLocale: '/meditations/1',
       prefixed: true,
+      requestedIndex: false,
     })
   })
 
-  it('keeps a region-cased code exactly as the CMS stores it', () => {
+  it('keeps a region-cased code exactly as SahajCloud stores it', () => {
     expect(localeFromPath('/pt-BR/about')).toMatchObject({ locale: 'pt-BR' })
     expect(localeFromPath('/en-AU/about')).toMatchObject({ locale: 'en-AU' })
   })
@@ -36,17 +48,34 @@ describe('localeFromPath', () => {
       locale: 'en',
       pathWithoutLocale: '/about',
       prefixed: true,
+      requestedIndex: false,
     })
   })
 
   it('leaves a segment that only looks like a locale alone', () => {
-    // `st` is not a CMS locale, so /status/page is a path, not a prefix.
+    // `st` is not a SahajCloud locale, so /status/page is a path, not a prefix.
     expect(localeFromPath('/status/page')).toMatchObject({
       locale: 'en',
       pathWithoutLocale: '/status/page',
       prefixed: false,
     })
     expect(localeFromPath('/pt-br/about')).toMatchObject({ locale: 'en', prefixed: false })
+  })
+
+  it('tells a requested /index from the spelling it invents for a bare root', () => {
+    // +onBeforeRoute 301s the first and routes the second, and both arrive
+    // here as pathWithoutLocale `/index`.
+    expect(localeFromPath('/index')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/index/')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/fr/index')).toMatchObject({ requestedIndex: true })
+    expect(localeFromPath('/')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/fr')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/fr/')).toMatchObject({ requestedIndex: false })
+  })
+
+  it('leaves a deeper path that merely ends in index alone', () => {
+    expect(localeFromPath('/about/index')).toMatchObject({ requestedIndex: false })
+    expect(localeFromPath('/indexes')).toMatchObject({ requestedIndex: false })
   })
 })
 
@@ -61,6 +90,9 @@ describe('normalizeContentPath', () => {
 
   it('drops a trailing slash, so a page is not its own duplicate', () => {
     expect(normalizeContentPath('/about/')).toBe('/about')
+    // Not `/index`: stripping the slash first would leave the spelling the
+    // router uses, which +onBeforeRoute redirects away from.
+    expect(normalizeContentPath('/index/')).toBe('/')
   })
 
   it('falls back to the root for a missing path', () => {
@@ -81,12 +113,214 @@ describe('localeUrl', () => {
     expect(localeUrl(ORIGIN, 'fr', '/about')).toBe('https://wemeditate.com/fr/about')
   })
 
-  it('keeps a region-cased code exactly as the CMS stores it', () => {
+  it('keeps a region-cased code exactly as SahajCloud stores it', () => {
     expect(localeUrl(ORIGIN, 'pt-BR', '/about')).toBe('https://wemeditate.com/pt-BR/about')
   })
 
   it('renders the home page as a bare prefix, which the router resolves', () => {
     expect(localeUrl(ORIGIN, 'en', '/')).toBe('https://wemeditate.com/')
     expect(localeUrl(ORIGIN, 'fr', '/')).toBe('https://wemeditate.com/fr')
+  })
+})
+
+describe('localePath', () => {
+  it('serves English bare, because /en/x 301s to /x', () => {
+    expect(localePath('en', '/about')).toBe('/about')
+    expect(localePath('en', '/')).toBe('/')
+  })
+
+  it('prefixes every other locale', () => {
+    expect(localePath('fr', '/about')).toBe('/fr/about')
+    expect(localePath('pt-BR', '/about')).toBe('/pt-BR/about')
+  })
+
+  it('spells the home page /fr, not /fr/', () => {
+    // `+onBeforeRoute`'s pattern matches the bare prefix and resolves it to
+    // the home page, so the trailing slash buys nothing and spells the same
+    // page a second way.
+    expect(localePath('fr', '/')).toBe('/fr')
+  })
+
+  it('does not normalize what it is handed, which is why localeHref exists', () => {
+    expect(localePath('fr', '/about/')).toBe('/fr/about/')
+  })
+})
+
+const NOT_SITE_PATHS = [
+  'mailto:hello@example.com',
+  'tel:+1234567890',
+  '#section',
+  '//cdn.example.com/x',
+  'https://example.com',
+  'about',
+]
+
+describe('localeHref', () => {
+  it('drops a trailing slash, so a link agrees with the page canonical', () => {
+    // `/about/` and `/about` are one page, and ContentHead emits `/fr/about`.
+    expect(localeHref('fr', '/about/')).toBe('/fr/about')
+    expect(localeHref('en', '/about/')).toBe('/about')
+    expect(localeHref('pt-BR', '/about/')).toBe('/pt-BR/about')
+  })
+
+  it('leaves an already-normalized path as localePath alone would', () => {
+    expect(localeHref('fr', '/about')).toBe('/fr/about')
+    expect(localeHref('fr', '/')).toBe('/fr')
+  })
+
+  it('collapses the routing spelling of the home page', () => {
+    // Nothing hands `/index` to a link today, but it is never a URL.
+    expect(localeHref('fr', '/index')).toBe('/fr')
+    expect(localeHref('en', '/index')).toBe('/')
+  })
+
+  it('passes through anything that is not a path on this site', () => {
+    for (const href of NOT_SITE_PATHS) {
+      expect(localeHref('fr', href)).toBe(href)
+    }
+  })
+
+  it('leaves an empty href empty, rather than linking to the home page', () => {
+    // The guard classifies the href as written. Normalizing first would make
+    // `''` into `/`, and an unset ctaHref into a home-page link.
+    expect(localeHref('fr', '')).toBe('')
+  })
+
+  it('normalizes the path ahead of a query or a fragment', () => {
+    expect(localeHref('fr', '/about/#section')).toBe('/fr/about#section')
+    expect(localeHref('fr', '/about/?utm=1')).toBe('/fr/about?utm=1')
+    expect(localeHref('en', '/about/#section')).toBe('/about#section')
+  })
+
+  it('never edits a slash that is content inside a query or a fragment', () => {
+    // `normalizeContentPath` strips a final slash off whatever it is handed,
+    // so handing it a whole href would rewrite the query's own value.
+    expect(localeHref('fr', '/share?url=https://example.com/')).toBe(
+      '/fr/share?url=https://example.com/',
+    )
+    expect(localeHref('fr', '/search?q=a/b/')).toBe('/fr/search?q=a/b/')
+    expect(localeHref('fr', '/about#heading/')).toBe('/fr/about#heading/')
+  })
+
+  it('keeps the routing-internal /index out of an href that carries a query', () => {
+    expect(localeHref('fr', '/index?x=1')).toBe('/fr?x=1')
+    expect(localeHref('fr', '/?utm=1')).toBe('/fr?utm=1')
+    expect(localeHref('en', '/index#top')).toBe('/#top')
+  })
+})
+
+describe('isSitePath', () => {
+  it('accepts a path on this site', () => {
+    expect(isSitePath('/about')).toBe(true)
+    expect(isSitePath('/')).toBe(true)
+  })
+
+  it('rejects another origin, even one written protocol-relative', () => {
+    // `//cdn.example.com` leads with a slash but is not our path, and a
+    // locale glued onto any of these makes nonsense.
+    expect(isSitePath('//cdn.example.com/x')).toBe(false)
+    expect(isSitePath('https://example.com')).toBe(false)
+  })
+
+  it('rejects what is not a path at all', () => {
+    expect(isSitePath('#section')).toBe(false)
+    expect(isSitePath('mailto:hello@example.com')).toBe(false)
+    expect(isSitePath('tel:+1234567890')).toBe(false)
+    expect(isSitePath('about')).toBe(false)
+  })
+})
+
+describe('isSafeHttpUrl', () => {
+  it('accepts an http(s) URL', () => {
+    expect(isSafeHttpUrl('https://status.example.com')).toBe(true)
+    expect(isSafeHttpUrl('http://status.example.com')).toBe(true)
+  })
+
+  it('refuses every other scheme', () => {
+    expect(isSafeHttpUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
+  })
+
+  it('refuses what does not parse', () => {
+    expect(isSafeHttpUrl('not a url')).toBe(false)
+    expect(isSafeHttpUrl('')).toBe(false)
+  })
+})
+
+describe('isSafeNavigationUrl', () => {
+  it('accepts a root-relative path and an http(s) URL', () => {
+    expect(isSafeNavigationUrl('/thank-you')).toBe(true)
+    expect(isSafeNavigationUrl('https://wemeditate.com/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('http://wemeditate.com/thanks')).toBe(true)
+  })
+
+  it('refuses a scheme that would execute rather than navigate', () => {
+    expect(isSafeNavigationUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeNavigationUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+  })
+
+  it('accepts an off-site URL, however it is spelled', () => {
+    // An editor may send a visitor elsewhere, so `//host` and the `/\host`
+    // browsers fold into it are the plain absolute URL by another name.
+    expect(isSafeNavigationUrl('//other.example/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('/\\other.example/thanks')).toBe(true)
+  })
+
+  it('refuses anything that is neither', () => {
+    expect(isSafeNavigationUrl('not a url')).toBe(false)
+    expect(isSafeNavigationUrl('')).toBe(false)
+  })
+})
+
+describe('sitePathFromUrl', () => {
+  it('returns the path under a URL this origin serves', () => {
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb/london`, ORIGIN)).toBe('/map/gb/london')
+    expect(sitePathFromUrl(`${ORIGIN}/`, ORIGIN)).toBe('/')
+  })
+
+  it('keeps the query and fragment, which name a different document', () => {
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb?locale=fr#events`, ORIGIN)).toBe(
+      '/map/gb?locale=fr#events',
+    )
+  })
+
+  it('normalizes the path, so one page cannot yield two locale URLs', () => {
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb/`, ORIGIN)).toBe('/map/gb')
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb/?locale=fr`, ORIGIN)).toBe('/map/gb?locale=fr')
+    expect(sitePathFromUrl(`${ORIGIN}/index`, ORIGIN)).toBe('/')
+  })
+
+  it('refuses another origin, including a port or scheme that only looks like ours', () => {
+    expect(sitePathFromUrl('https://other.org/map/gb', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('http://wemeditate.com/map/gb', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('https://wemeditate.com:8443/map/gb', ORIGIN)).toBeNull()
+  })
+
+  it('refuses a scheme that would execute rather than navigate', () => {
+    // `new URL` parses these happily, and their `origin` is `null` — which
+    // compares unequal here, but the scheme gate is what says so on purpose.
+    expect(sitePathFromUrl('javascript:alert(1)', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('data:text/html,<script>alert(1)</script>', ORIGIN)).toBeNull()
+  })
+
+  it('refuses a same-origin path that would read as another host', () => {
+    // `//evil.com` is a path by origin and a host by spelling. `Link` would
+    // emit it untouched, so the absolute URL is the safer answer.
+    expect(sitePathFromUrl(`${ORIGIN}//evil.com`, ORIGIN)).toBeNull()
+    expect(sitePathFromUrl(`${ORIGIN}//evil.com/map/gb`, ORIGIN)).toBeNull()
+  })
+
+  it('refuses what does not parse, and a relative path, which has no origin', () => {
+    expect(sitePathFromUrl('not a url', ORIGIN)).toBeNull()
+    expect(sitePathFromUrl('/map/gb', ORIGIN)).toBeNull()
+  })
+
+  it('refuses everything when the origin is unknown', () => {
+    // Outside a Vike app there is no request to compare against, and a
+    // guessed relativization would point at a URL we cannot confirm we serve.
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb`, null)).toBeNull()
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb`, undefined)).toBeNull()
+    expect(sitePathFromUrl(`${ORIGIN}/map/gb`, '')).toBeNull()
   })
 })

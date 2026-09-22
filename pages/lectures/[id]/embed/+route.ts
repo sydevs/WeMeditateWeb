@@ -1,4 +1,4 @@
-import { matchDocumentRoute } from '../../../../lib/cms-routes'
+import { matchDocumentRoute } from '../../../../lib/document-routes'
 
 /**
  * /lectures/:id/embed — the bare iframe player (and an optional /:locale

@@ -8,13 +8,14 @@
 import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
-import { getCmsContext } from './cms-context'
+import { getSahajCloudContext } from './sahajcloud-context'
+import { sahajCloudAuthHeaders, fetchWithErrorDetails } from './sahajcloud-fetch'
 import { LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
  * Configuration for creating a PayloadCMS SDK client.
- * Every field is optional. Defaults come from the CMS context or environment.
+ * Every field is optional. Defaults come from the SahajCloud context or environment.
  */
 export interface PayloadClientConfig {
   /** PayloadCMS API key (optional, falls back to context or env). */
@@ -77,66 +78,24 @@ export function validatePayloadConfig(config: { apiKey?: string; baseURL?: strin
 }
 
 /**
- * A custom fetch wrapper that logs every CMS request and error body.
- *
- * The SDK throws a `PayloadSDKError` on a non-OK response, carrying the
- * status and the first error message only. This wrapper writes the full
- * response body to the log first, so a 400 says which field it objected
- * to. It also emits the `[PayloadCMS] <method> <url> → <status>` line the
- * debugging workflow in AGENTS.md reads.
- */
-async function fetchWithErrorDetails(
-  input: RequestInfo | URL,
-  init?: RequestInit
-): Promise<Response> {
-  const response = await fetch(input, init)
-
-  // Log every API request, for debugging.
-  console.log(`[PayloadCMS] ${init?.method || 'GET'} ${input} → ${response.status}`)
-
-  // If not OK, log the actual error details before the SDK swallows them.
-  if (!response.ok) {
-    const clonedResponse = response.clone()
-    try {
-      const errorBody = await clonedResponse.json()
-      console.error(`[PayloadCMS] Error response:`, {
-        status: response.status,
-        statusText: response.statusText,
-        url: input.toString(),
-        body: errorBody,
-      })
-    } catch {
-      console.error(`[PayloadCMS] Error response (non-JSON):`, {
-        status: response.status,
-        statusText: response.statusText,
-        url: input.toString(),
-      })
-    }
-  }
-
-  return response
-}
-
-/**
  * Creates a new PayloadCMS SDK client instance. See the file header for
  * why a fresh instance is required per request.
  *
- * @param config - Optional client configuration. Defaults come from the CMS context or environment.
+ * @param config - Optional client configuration. Defaults come from the SahajCloud context or
+ * environment.
  * @returns Configured PayloadSDK instance
  * @throws PayloadConfigError if configuration is invalid (missing API key, malformed URL)
  */
 export function createPayloadClient(config: PayloadClientConfig = {}) {
-  const cmsContext = getCmsContext()
+  const sahajCloudContext = getSahajCloudContext()
 
-  const apiKey = config.apiKey ?? cmsContext.apiKey
-  const baseURL = config.baseURL ?? cmsContext.baseURL
+  const apiKey = config.apiKey ?? sahajCloudContext.apiKey
+  const baseURL = config.baseURL ?? sahajCloudContext.baseURL
   const previewToken = config.preview ? config.previewToken : undefined
 
   validatePayloadConfig({ apiKey, baseURL })
 
-  const headers: Record<string, string> = {
-    Authorization: `clients API-Key ${apiKey}`,
-  }
+  const headers: Record<string, string> = sahajCloudAuthHeaders(apiKey)
 
   if (previewToken) {
     headers[LIVE_PREVIEW_TOKEN_HEADER] = previewToken

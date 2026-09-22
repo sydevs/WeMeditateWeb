@@ -33,6 +33,24 @@ describe('buildEmbedSnippet', () => {
     )
   })
 
+  it('passes a path that is not site-absolute through unprefixed', () => {
+    // `localeHref` owns the guard, so a path that is not ours stays as written.
+    expect(buildEmbedSnippet('meditations/123/embed', 'fr', '')).toContain(
+      'src="meditations/123/embed"',
+    )
+  })
+
+  it('drops a trailing slash off the embed path', () => {
+    // Both templates build `embedPath` without one, so this guards the prop
+    // rather than a shape a caller produces today.
+    expect(buildEmbedSnippet('/meditations/1/embed/', 'fr', '')).toContain(
+      'src="/fr/meditations/1/embed"',
+    )
+    expect(buildEmbedSnippet('/meditations/1/embed/', 'en', '')).toContain(
+      'src="/meditations/1/embed"',
+    )
+  })
+
   it('emits a bare path when origin is empty (SSR / no window)', () => {
     expect(buildEmbedSnippet('/meditations/123/embed', 'en', '')).toContain(
       'src="/meditations/123/embed"',

@@ -1,12 +1,14 @@
 /**
  * Reads for the atlas SSR routes under `/map` (issue #62, stage C4).
  *
- * This file is deliberately not part of `cms-client.ts`. That module is
+ * This file is deliberately not part of `sahajcloud-client.ts`. That module is
  * already about 950 lines, and holds only collection reads through the
- * Payload SDK. This file has one custom root endpoint,
- * `GET /api/atlas/seo`, which belongs to no collection, so the SDK cannot
- * express it. It uses a plain `fetch`, the same pattern the related-content
- * readers in `cms-client.ts` use for custom endpoints.
+ * Payload SDK. This file has two custom root endpoints,
+ * `GET /api/atlas/seo` and `GET /api/atlas/sitemap`, which belong to no
+ * collection, so the SDK cannot express them. The seo read goes through
+ * `sahajCloudFetch` (`server/sahajcloud-fetch.ts`), the one helper every
+ * custom-endpoint read shares. The sitemap read still assembles its own,
+ * and is not yet converted.
  *
  * ## Access
  *
@@ -24,13 +26,12 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './cms-context'
+import { getSahajCloudContext } from './sahajcloud-context'
+import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
-import { createPayloadClient } from './payload-client'
-import type { Locale } from './cms-types'
-import type { AtlasSeoResponse } from './atlas-types'
+import type { Locale } from './sahajcloud-types'
+import type { AtlasSeoResponse, AtlasSitemapResponse } from './atlas-types'
 import type { SitemapUrl } from './sitemap'
-import type { RegionsSelect, EventsSelect } from './payload-types'
 import { parseAtlasRoute } from '../lib/atlas-route'
 
 /**
@@ -67,31 +68,16 @@ export async function getAtlasSeo(options: {
   }
 
   try {
-    return await withRetry(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
-        `&locale=${encodeURIComponent(options.locale)}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
-
-      // The route named nothing upstream: a stale inbound link, or a
-      // region that has since been unpublished. Returned rather than
-      // thrown, so it never costs the retry ladder.
-      if (response.status === 404) {
-        return null
-      }
-
-      if (!response.ok) {
-        throw new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`)
-      }
-
-      return (await response.json()) as AtlasSeoResponse
-    })
+    // A 404 means the route named nothing upstream: a stale inbound link, or
+    // a region that has since been unpublished. `sahajCloudFetchOptional` answers it
+    // with `null`, which reads the same as the no-target case above.
+    return await withRetry(() =>
+      sahajCloudFetchOptional<AtlasSeoResponse>(
+        `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
+          `&locale=${encodeURIComponent(options.locale)}`,
+        `getAtlasSeo(${options.route})`,
+      ),
+    )
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
     // widget still works without it. Losing it must not take the page down.
@@ -107,51 +93,27 @@ export async function getAtlasSeo(options: {
 }
 
 /**
- * How many documents a sitemap read walks before it stops.
+ * The most atlas URLs one sitemap carries.
  *
- * The atlas holds about 600 regions and about 650 classes, so this gives
- * roughly threefold headroom. This limit exists because the read runs
- * inside a Worker request. An unbounded paginated read is one CMS data
- * change away from a timeout. A sitemap missing its tail is far better than
- * a route that hangs.
+ * This bounds the document, not the Worker: `response.json()` has already
+ * materialised every row by the time the cap applies. 50,000 URLs is the
+ * sitemap spec's own per-file limit, and the margin leaves room for the
+ * content half, which shares the file. Crossing the cap is reported rather
+ * than silent — an unnoticed truncation is the whole of #123.
  */
-const SITEMAP_READ_LIMIT = 500
-const SITEMAP_MAX_PAGES = 4
-
-/**
- * Field selections for the atlas sitemap reads.
- *
- * Typed against the generated `*Select` interfaces, per
- * `server/AGENTS.md`: `select` is mandatory for API clients. Typing it
- * turns a CMS schema change into a compile error here, instead of a silent
- * 400. The two selects are structurally identical today. They stay
- * declared separately because they answer to different collections.
- *
- * `webUrl` is a virtual field, derived from the document ID alone. Nothing
- * extra needs selecting for it to resolve.
- */
-const SITEMAP_SELECTS = {
-  regions: { webUrl: true, updatedAt: true } satisfies RegionsSelect<true>,
-  events: { webUrl: true, updatedAt: true } satisfies EventsSelect<true>,
-}
-
-/** A row either sitemap read can yield. */
-type SitemapDoc = { webUrl?: string | null; updatedAt?: string | null }
+const SITEMAP_URL_CAP = 45_000
 
 /**
  * Every atlas URL this site is the canonical home of.
  *
- * Filtered to this site's own origin, on purpose. A sitemap lists the URLs
- * a site claims. Atlas ownership works per subtree: most regions
- * canonicalize to the national site that owns them (#640). Listing those
- * would ask a crawler to index URLs this site itself marks non-canonical.
- * So this function returns only the `webUrl` values already on this
- * origin: the regions and classes that fall back to the We Meditate
- * surface. This is exactly the set these routes exist to serve as a safety
- * net for.
+ * Ownership is resolved upstream. `GET /api/atlas/sitemap` answers with the
+ * URLs the calling API key's client owns, so the nearest-ancestor walk stays
+ * in its single implementation (#640, #650) and this Worker reads no
+ * document it will discard (#123).
  *
- * This also makes the answer self-adjusting. On a preview origin, and
- * before the wemeditate.com cutover, the list is legitimately empty.
+ * The origin check is a guard, not the selection: it holds the sitemap to
+ * the host actually serving the request, so a key whose client canonicalizes
+ * elsewhere cannot publish that site's URLs here.
  *
  * Degrades to `[]` on any failure. A sitemap missing its atlas half still
  * serves the rest of the site.
@@ -161,22 +123,62 @@ type SitemapDoc = { webUrl?: string | null; updatedAt?: string | null }
 export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     return await withRetry(async () => {
-      const client = createPayloadClient()
+      const { apiKey, baseURL } = getSahajCloudContext()
+      const url = `${baseURL}/api/atlas/sitemap`
 
-      const found = await Promise.all([
-        readAllPages(client, 'regions'),
-        readAllPages(client, 'events'),
-      ])
+      const response = await fetch(url, {
+        headers: { Authorization: `clients API-Key ${apiKey}` },
+      })
 
-      const prefix = `${origin.replace(/\/$/, '')}/`
+      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
 
-      return found
-        .flat()
-        .filter(
-          (doc): doc is SitemapDoc & { webUrl: string } =>
-            typeof doc.webUrl === 'string' && doc.webUrl.startsWith(prefix),
-        )
-        .map((doc) => ({ loc: doc.webUrl, lastmod: doc.updatedAt ?? null }))
+      if (!response.ok) {
+        // The status rides on the error because `detectErrorType` reads it
+        // structurally and only falls back to matching `50[0-9]` in the
+        // message. A Cloudflare-origin 5xx — 520, 522, 524 — would otherwise
+        // classify as UNKNOWN and lose the retry it most needs.
+        throw Object.assign(new Error(`getAtlasSitemapUrls failed: ${response.status}`), {
+          status: response.status,
+        })
+      }
+
+      const body = (await response.json()) as AtlasSitemapResponse
+
+      // A 200 whose shape drifted reads exactly like a client that owns no
+      // subtree, so it would empty the atlas half with nothing logged. These
+      // types are hand-mirrored, which is precisely what `pnpm types:cms`
+      // cannot catch.
+      if (!Array.isArray(body?.urls)) {
+        throw new Error('getAtlasSitemapUrls: the response carried no urls array')
+      }
+
+      const rows = body.urls
+      const owned = rows.filter(
+        (row) => typeof row?.loc === 'string' && row.loc.startsWith(`${origin}/`),
+      )
+
+      // Upstream named URLs and the guard rejected every one: this key's
+      // client canonicalizes to some other host. Left silent it is an empty
+      // atlas section, which reads exactly like owning nothing.
+      if (rows.length > 0 && owned.length === 0) {
+        Sentry.captureMessage('getAtlasSitemapUrls dropped every URL as off-origin', {
+          level: 'warning',
+          tags: { source: 'getAtlasSitemapUrls' },
+          extra: { origin, returned: rows.length, sample: rows[0]?.loc ?? null },
+        })
+      }
+
+      if (owned.length > SITEMAP_URL_CAP) {
+        Sentry.captureMessage('getAtlasSitemapUrls hit the sitemap cap; atlas URLs are truncated', {
+          level: 'warning',
+          tags: { source: 'getAtlasSitemapUrls' },
+          extra: { origin, owned: owned.length, cap: SITEMAP_URL_CAP },
+        })
+      }
+
+      return owned
+        .slice(0, SITEMAP_URL_CAP)
+        .map((row) => ({ loc: row.loc, lastmod: row.lastmod ?? null }))
     })
   } catch (error) {
     console.warn('[getAtlasSitemapUrls] omitting the atlas half of the sitemap:', error)
@@ -188,33 +190,4 @@ export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]>
 
     return []
   }
-}
-
-/**
- * Walks a collection's pages up to the read ceiling. See SITEMAP_READ_LIMIT
- * for why the ceiling exists.
- */
-async function readAllPages(
-  client: ReturnType<typeof createPayloadClient>,
-  collection: keyof typeof SITEMAP_SELECTS,
-): Promise<SitemapDoc[]> {
-  const docs: SitemapDoc[] = []
-
-  for (let page = 1; page <= SITEMAP_MAX_PAGES; page++) {
-    const result = await client.find({
-      collection,
-      limit: SITEMAP_READ_LIMIT,
-      page,
-      depth: 0,
-      select: SITEMAP_SELECTS[collection],
-    })
-
-    docs.push(...((result?.docs ?? []) as SitemapDoc[]))
-
-    if (!result?.hasNextPage) {
-      break
-    }
-  }
-
-  return docs
 }

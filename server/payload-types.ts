@@ -602,6 +602,42 @@ export type SupportedTimezones =
   | 'Etc/GMT+11'
   | 'Etc/GMT+12';
 export type ScheduleUpcomingDates = string[];
+/**
+ * @maxItems 500
+ */
+export type ActivityLog = {
+  /**
+   * ISO 8601. The first column, and the sort key.
+   */
+  at?: string;
+  /**
+   * Stable slug — matched by jobs, never shown.
+   */
+  type?: string;
+  /**
+   * Exactly-once key, scoped to `type`.
+   */
+  key?: string;
+  /**
+   * What the columns read. Everything outside this is machine data.
+   */
+  cells?: {
+    [k: string]:
+      | string
+      | {
+          /**
+           * Muted, inline before the text.
+           */
+          label?: string;
+          text: string;
+          /**
+           * Muted line beneath the text.
+           */
+          sub?: string;
+        };
+  };
+  [k: string]: unknown;
+}[];
 export type EventQualityReport =
   | {
       skipped: true;
@@ -704,12 +740,9 @@ export interface Config {
     'app-cards': AppCard;
     regions: Region;
     events: Event;
-    'event-submissions': EventSubmission;
-    registrations: Registration;
     users: User;
-    'user-messages': UserMessage;
     forms: Form;
-    'form-submissions': FormSubmission;
+    'user-submissions': UserSubmission;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -754,10 +787,10 @@ export interface Config {
       childrenVenues: 'regions';
     };
     events: {
-      registrations: 'registrations';
+      registrations: 'user-submissions';
     };
     users: {
-      registrations: 'registrations';
+      submissions: 'user-submissions';
       submittedEvents: 'events';
     };
   };
@@ -783,12 +816,9 @@ export interface Config {
     'app-cards': AppCardsSelect<false> | AppCardsSelect<true>;
     regions: RegionsSelect<false> | RegionsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
-    'event-submissions': EventSubmissionsSelect<false> | EventSubmissionsSelect<true>;
-    registrations: RegistrationsSelect<false> | RegistrationsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
-    'user-messages': UserMessagesSelect<false> | UserMessagesSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
-    'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
+    'user-submissions': UserSubmissionsSelect<false> | UserSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -891,10 +921,10 @@ export interface Config {
   jobs: {
     tasks: {
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
+      deliverSubmission: TaskDeliverSubmission;
       expireEvents: TaskExpireEvents;
-      purgeUserMessages: TaskPurgeUserMessages;
-      screenEventSubmission: TaskScreenEventSubmission;
-      screenUserMessage: TaskScreenUserMessage;
+      purgeSubmissions: TaskPurgeSubmissions;
+      screenSubmission: TaskScreenSubmission;
       sendPostEventFollowUps: TaskSendPostEventFollowUps;
       sendRegistrationDigests: TaskSendRegistrationDigests;
       sendSessionReminders: TaskSendSessionReminders;
@@ -1822,7 +1852,7 @@ export interface Event {
     questions?: boolean | null;
   };
   registrations?: {
-    docs?: (number | Registration)[];
+    docs?: (number | UserSubmission)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -1839,18 +1869,7 @@ export interface Event {
     | 'urgent'
     | 'expired'
     | 'finished';
-  /**
-   * Current verification cycle — the verification that opened it plus each reminder sent. Reset on every verification. Keeps the most recent 50 entries.
-   */
-  activityLog?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  activityLog?: ActivityLog;
   /**
    * How strongly attendees confirm this event is real (0–1). Rises with confirmations, falls with denials, and stays cautious while there are few votes — the Atlas map ranks unverified listings by it. Blank until the first vote.
    */
@@ -1894,73 +1913,43 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "registrations".
+ * via the `definition` "user-submissions".
  */
-export interface Registration {
+export interface UserSubmission {
   id: number;
-  event: number | Event;
+  type: 'contact' | 'subscribe' | 'registration' | 'proposal';
   /**
-   * The registrant.
+   * Composed when the submission arrives.
    */
-  user: number | User;
+  subject?: string | null;
+  form?: (number | null) | Form;
+  submissionData?:
+    | {
+        field: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
   /**
-   * When the registrant is attending.
+   * Who sent this. Normalized.
+   */
+  senderEmail?: string | null;
+  status: 'pending' | 'accepted' | 'rejected' | 'spam' | 'failed';
+  /**
+   * The event this registration attends, this proposal targets, or this subscription came from.
+   */
+  event?: (number | null) | Event;
+  /**
+   * Which occurrence the registrant is attending.
    */
   startingAt?: string | null;
   startingAt_tz?: SupportedTimezones;
   /**
-   * The client service this registration came through. Brands and localizes the emails sent about it.
-   */
-  client?: (number | null) | Client;
-  /**
-   * The registrant's language. Emails about this registration are rendered in it.
-   */
-  locale?:
-    | (
-        | 'en'
-        | 'es'
-        | 'de'
-        | 'it'
-        | 'fr'
-        | 'ru'
-        | 'ro'
-        | 'cs'
-        | 'uk'
-        | 'el'
-        | 'hy'
-        | 'pl'
-        | 'pt-BR'
-        | 'fa'
-        | 'bg'
-        | 'tr'
-        | 'en-AU'
-        | 'hu'
-        | 'nl'
-      )
-    | null;
-  questions?: RegistrationQuestions;
-  uuid: string;
-  mailingListSubscribedAt?: string | null;
-  remindersUnsubscribedAt?: string | null;
-  /**
-   * Everything recorded about this registration, newest first. Keeps the most recent 50 entries.
-   */
-  activityLog?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
    * Registrant’s verdict on an unverified event.
    */
   eventFeedback?: ('confirmed' | 'denied') | null;
-  followUpSentAt?: string | null;
-  legacyId?: number | null;
-  legacyData?:
+  proposed?: SubmissionProposal;
+  proposedChanges?:
     | {
         [k: string]: unknown;
       }
@@ -1969,37 +1958,182 @@ export interface Registration {
     | number
     | boolean
     | null;
+  previewEvent?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Optional. The manager who will look after this event. Assign one to publish it as verified; leave blank and it goes on the map as unverified until a manager takes it on.
+   */
+  manager?: (number | null) | Manager;
+  /**
+   * The city or venue this event belongs to. Resolved by screening — correct it here if it came back empty or wrong.
+   */
+  region?: (number | null) | Region;
+  screeningResult?: SubmissionScreeningResult;
+  activityLog?: ActivityLog;
+  uuid?: string | null;
+  client?: (number | null) | Client;
+  user?: (number | null) | User;
+  unsubscribedAt?: string | null;
+  regionHint?: SubmissionRegionHint;
+  followUpSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "forms".
  */
-export interface User {
+export interface Form {
   id: number;
-  name: string;
-  email: string;
-  registrations?: {
-    docs?: (number | Registration)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  submittedEvents?: {
-    docs?: (number | Event)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  legacyId?: number | null;
-  legacyData?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
+  title: string;
+  fields?:
+    | (
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'checkbox';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'country';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'email';
+          }
+        | {
+            message?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'message';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'number';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'select';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'state';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textarea';
+          }
+      )[]
     | null;
+  submitButtonLabel?: string | null;
+  confirmationType?: ('message' | 'redirect') | null;
+  confirmationMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  redirect?: {
+    url: string;
+  };
+  /**
+   * Contact forms deliver the message to a recipient. Subscribe forms add the sender to a client’s mailing list.
+   */
+  actionType: 'contact' | 'subscribe';
+  /**
+   * Who receives messages from this form. Leave blank to send to contact@sydevelopers.com.
+   */
+  recipient?: (number | null) | Manager;
+  /**
+   * Whose mailing list a subscriber joins.
+   */
+  client?: (number | null) | Client;
   updatedAt: string;
   createdAt: string;
 }
@@ -2236,6 +2370,25 @@ export interface Client {
    */
   region?: (number | null) | Region;
   /**
+   * Where subscribe submissions relayed by this service are delivered. Off by default, and nothing is pushed anywhere until it is switched on.
+   */
+  mailingList?: {
+    enabled?: boolean | null;
+    provider?: ('mailchimp' | 'brevo' | 'klaviyo') | null;
+    /**
+     * Mailchimp’s Audience ID, Brevo’s numeric list id, or Klaviyo’s List ID.
+     */
+    listId?: string | null;
+    /**
+     * The provider secret. Checked against the provider when you save, and never readable by an API client.
+     */
+    apiKey?: string | null;
+    /**
+     * Mailchimp adds the address as `pending` and emails it a confirmation link.
+     */
+    doubleOptIn?: boolean | null;
+  };
+  /**
    * Declares that this service owns the canonical Atlas URLs for its region. Off by default, and nothing resolves differently until it is switched on.
    */
   canonical?: {
@@ -2248,6 +2401,10 @@ export interface Client {
      */
     embed?: string | null;
     verification?: ClientCanonicalVerification;
+    /**
+     * Derived, never chosen: “Path segment” once the CMS has seen this host serve the atlas under the embed’s own subtree, “Query parameter” otherwise.
+     */
+    routing?: ('query' | 'path') | null;
     nextVerifyAt?: string | null;
   };
   embedMetadata?: ClientEmbedMetadata;
@@ -2331,11 +2488,16 @@ export interface ClientCanonicalVerification {
   verified: {
     domain: string;
     mount: string;
-    routing: 'query' | 'path';
+    routing?: 'query' | 'path';
     widgetVersion: number;
     at: string;
   } | null;
   failureCount: number;
+  routingProbe?: {
+    at: string;
+    verdict: 'query' | 'path';
+    failedAttempts: number;
+  };
   attempts: {
     at: string;
     status: 'verified' | 'failed' | 'inconclusive';
@@ -2376,23 +2538,67 @@ export interface ClientAbuseScore {
     current: number;
   };
 }
-export interface RegistrationQuestions {
+export interface SubmissionProposal {
+  [k: string]: unknown;
+}
+export interface SubmissionScreeningResult {
   /**
-   * Have you practised Sahaja Yoga meditation before?
+   * `ok`, or the first check that refused this submission.
    */
-  experience?: string;
+  verdict:
+    | 'ok'
+    | 'disposable_email'
+    | 'invalid_email'
+    | 'no_mx_records'
+    | 'repeat_sender'
+    | 'duplicate_body'
+    | 'content_rejected';
   /**
-   * How did you hear about this event?
+   * Everything an admin needs, as complete sentences: what happened and what follows from it. An accepted submission normally has none.
    */
-  referral?: string;
+  notes?: string[];
   /**
-   * What are you hoping to get out of this?
+   * A technical detail kept for triage and NOT rendered — an inconclusive MX lookup, or a transport’s own error string.
    */
-  aspirations?: string;
+  diagnostic?: string;
   /**
-   * Do you have any questions for us?
+   * When screening reached this verdict (ISO 8601).
    */
-  questions?: string;
+  screenedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  submissions?: {
+    docs?: (number | UserSubmission)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  submittedEvents?: {
+    docs?: (number | Event)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  legacyId?: number | null;
+  legacyData?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface SubmissionRegionHint {
+  [k: string]: unknown;
 }
 export interface EventSystemMeta {
   communityFeedback?: {
@@ -3498,340 +3704,6 @@ export interface Frame {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "event-submissions".
- */
-export interface EventSubmission {
-  id: number;
-  screeningResult?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  submitterInfo?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  proposedChanges?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  previewEvent?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * The event this submission proposes changes to. After acceptance it links the created event.
-   */
-  event?: (number | null) | Event;
-  /**
-   * Optional. The manager who will look after this event. Assign one to publish it as verified; leave blank and it goes on the map as unverified until a manager takes it on.
-   */
-  manager?: (number | null) | Manager;
-  /**
-   * The city or venue this event belongs to. Resolved by screening — correct it here if it came back empty or wrong.
-   */
-  region?: (number | null) | Region;
-  /**
-   * Generated from the proposal when the submission arrives.
-   */
-  title?: string | null;
-  /**
-   * The proposed Events field patch, exactly as submitted.
-   */
-  proposed?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  status: 'screening' | 'pending' | 'spam' | 'created' | 'updated' | 'rejected';
-  submitter?: (number | null) | User;
-  /**
-   * Region targeting as submitted (country / state / anchor).
-   */
-  regionHint?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  reviewedBy?: (number | null) | Manager;
-  reviewedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "user-messages".
- */
-export interface UserMessage {
-  id: number;
-  screeningResult?: UserMessageScreeningResult;
-  subject?: string | null;
-  message: string;
-  /**
-   * Optional. Becomes the Reply-To of the message we email out.
-   */
-  senderEmail?: string | null;
-  context?: UserMessageContext;
-  client?: (number | null) | Client;
-  user?: (number | null) | User;
-  status: 'screening' | 'delivered' | 'spam' | 'failed';
-  bodyHash?: string | null;
-  deliveredAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-export interface UserMessageScreeningResult {
-  /**
-   * `ok`, or why the message was classified spam.
-   */
-  verdict: 'ok' | 'disposable_email' | 'invalid_email' | 'no_mx_records' | 'repeat_sender' | 'duplicate_body';
-  /**
-   * Everything an admin needs, as complete sentences. Each says what happened and what follows from it. A delivered message normally has none.
-   */
-  notes?: string[];
-  /**
-   * A technical detail kept for triage and NOT rendered — an MX lookup that came back inconclusive, or the mail transport’s own error string. Discarding it would leave nothing to look at when delivery goes wrong.
-   */
-  diagnostic?: string;
-  /**
-   * When screening reached this verdict (ISO 8601).
-   */
-  screenedAt: string;
-}
-export interface UserMessageContext {
-  /**
-   * Route the sender was on, e.g. `/events/london-meetup`.
-   */
-  path?: string;
-  /**
-   * Absolute URL of the host page embedding the widget.
-   */
-  hostUrl?: string;
-  /**
-   * Locale the sender was browsing in.
-   */
-  locale?: string;
-  /**
-   * Error text/stack the sender was reporting, when the message is a crash report.
-   */
-  error?: string;
-  /**
-   * The sender's user-agent string.
-   */
-  userAgent?: string;
-  [k: string]: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms".
- */
-export interface Form {
-  id: number;
-  title: string;
-  fields?:
-    | (
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            defaultValue?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'checkbox';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'country';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'email';
-          }
-        | {
-            message?: {
-              root: {
-                type: string;
-                children: {
-                  type: any;
-                  version: number;
-                  [k: string]: unknown;
-                }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                indent: number;
-                version: number;
-              };
-              [k: string]: unknown;
-            } | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'message';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'number';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            placeholder?: string | null;
-            options?:
-              | {
-                  label: string;
-                  value: string;
-                  id?: string | null;
-                }[]
-              | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'select';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'state';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'text';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'textarea';
-          }
-      )[]
-    | null;
-  submitButtonLabel?: string | null;
-  confirmationType?: ('message' | 'redirect') | null;
-  confirmationMessage?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  redirect?: {
-    url: string;
-  };
-  emails?:
-    | {
-        emailTo?: string | null;
-        cc?: string | null;
-        bcc?: string | null;
-        replyTo?: string | null;
-        emailFrom?: string | null;
-        subject: string;
-        message?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions".
- */
-export interface FormSubmission {
-  id: number;
-  form: number | Form;
-  submissionData?:
-    | {
-        field: string;
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -3902,10 +3774,10 @@ export interface PayloadJob {
         taskSlug:
           | 'inline'
           | 'cleanupOrphanedMedia'
+          | 'deliverSubmission'
           | 'expireEvents'
-          | 'purgeUserMessages'
-          | 'screenEventSubmission'
-          | 'screenUserMessage'
+          | 'purgeSubmissions'
+          | 'screenSubmission'
           | 'sendPostEventFollowUps'
           | 'sendRegistrationDigests'
           | 'sendSessionReminders'
@@ -3949,10 +3821,10 @@ export interface PayloadJob {
     | (
         | 'inline'
         | 'cleanupOrphanedMedia'
+        | 'deliverSubmission'
         | 'expireEvents'
-        | 'purgeUserMessages'
-        | 'screenEventSubmission'
-        | 'screenUserMessage'
+        | 'purgeSubmissions'
+        | 'screenSubmission'
         | 'sendPostEventFollowUps'
         | 'sendRegistrationDigests'
         | 'sendSessionReminders'
@@ -4073,28 +3945,16 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
-        relationTo: 'event-submissions';
-        value: number | EventSubmission;
-      } | null)
-    | ({
-        relationTo: 'registrations';
-        value: number | Registration;
-      } | null)
-    | ({
         relationTo: 'users';
         value: number | User;
-      } | null)
-    | ({
-        relationTo: 'user-messages';
-        value: number | UserMessage;
       } | null)
     | ({
         relationTo: 'forms';
         value: number | Form;
       } | null)
     | ({
-        relationTo: 'form-submissions';
-        value: number | FormSubmission;
+        relationTo: 'user-submissions';
+        value: number | UserSubmission;
       } | null);
   globalSlug?: string | null;
   user:
@@ -4593,12 +4453,22 @@ export interface ClientsSelect<T extends boolean = true> {
   supportEmail?: T;
   locale?: T;
   region?: T;
+  mailingList?:
+    | T
+    | {
+        enabled?: T;
+        provider?: T;
+        listId?: T;
+        apiKey?: T;
+        doubleOptIn?: T;
+      };
   canonical?:
     | T
     | {
         enabled?: T;
         embed?: T;
         verification?: T;
+        routing?: T;
         nextVerifyAt?: T;
       };
   embedMetadata?: T;
@@ -4860,78 +4730,15 @@ export interface EventsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "event-submissions_select".
- */
-export interface EventSubmissionsSelect<T extends boolean = true> {
-  screeningResult?: T;
-  submitterInfo?: T;
-  proposedChanges?: T;
-  previewEvent?: T;
-  event?: T;
-  manager?: T;
-  region?: T;
-  title?: T;
-  proposed?: T;
-  status?: T;
-  submitter?: T;
-  regionHint?: T;
-  reviewedBy?: T;
-  reviewedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "registrations_select".
- */
-export interface RegistrationsSelect<T extends boolean = true> {
-  event?: T;
-  user?: T;
-  startingAt?: T;
-  startingAt_tz?: T;
-  client?: T;
-  locale?: T;
-  questions?: T;
-  uuid?: T;
-  mailingListSubscribedAt?: T;
-  remindersUnsubscribedAt?: T;
-  activityLog?: T;
-  eventFeedback?: T;
-  followUpSentAt?: T;
-  legacyId?: T;
-  legacyData?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   email?: T;
-  registrations?: T;
+  submissions?: T;
   submittedEvents?: T;
   legacyId?: T;
   legacyData?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "user-messages_select".
- */
-export interface UserMessagesSelect<T extends boolean = true> {
-  screeningResult?: T;
-  subject?: T;
-  message?: T;
-  senderEmail?: T;
-  context?: T;
-  client?: T;
-  user?: T;
-  status?: T;
-  bodyHash?: T;
-  deliveredAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -5053,26 +4860,19 @@ export interface FormsSelect<T extends boolean = true> {
     | {
         url?: T;
       };
-  emails?:
-    | T
-    | {
-        emailTo?: T;
-        cc?: T;
-        bcc?: T;
-        replyTo?: T;
-        emailFrom?: T;
-        subject?: T;
-        message?: T;
-        id?: T;
-      };
+  actionType?: T;
+  recipient?: T;
+  client?: T;
   updatedAt?: T;
   createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions_select".
+ * via the `definition` "user-submissions_select".
  */
-export interface FormSubmissionsSelect<T extends boolean = true> {
+export interface UserSubmissionsSelect<T extends boolean = true> {
+  type?: T;
+  subject?: T;
   form?: T;
   submissionData?:
     | T
@@ -5081,6 +4881,25 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
         value?: T;
         id?: T;
       };
+  senderEmail?: T;
+  status?: T;
+  event?: T;
+  startingAt?: T;
+  startingAt_tz?: T;
+  eventFeedback?: T;
+  proposed?: T;
+  proposedChanges?: T;
+  previewEvent?: T;
+  manager?: T;
+  region?: T;
+  screeningResult?: T;
+  activityLog?: T;
+  uuid?: T;
+  client?: T;
+  user?: T;
+  unsubscribedAt?: T;
+  regionHint?: T;
+  followUpSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -5254,6 +5073,10 @@ export interface WmWebTranslation {
   media?: {
     general?: WmWebTranslationsMediaGeneralStrings;
     a11y?: WmWebTranslationsMediaA11YStrings;
+  };
+  video?: {
+    general?: WmWebTranslationsVideoGeneralStrings;
+    a11y?: WmWebTranslationsVideoA11YStrings;
   };
   location?: {
     general?: WmWebTranslationsLocationGeneralStrings;
@@ -5782,6 +5605,174 @@ export interface WmWebTranslationsMediaA11YStrings {
    * Not shown on screen; read by screen readers. Names the button that shrinks an image in the full-screen viewer.
    */
   zoom_out?: string;
+}
+export interface WmWebTranslationsVideoGeneralStrings {
+  /**
+   * Tooltip on the video player's play button while the video is paused. It also names that button for screen readers.
+   */
+  play?: string;
+  /**
+   * Tooltip on the same button while the video is playing.
+   */
+  pause?: string;
+  /**
+   * Tooltip on the video player's sound button while the video can be heard. It also names that button for screen readers.
+   */
+  mute?: string;
+  /**
+   * Tooltip on the same button while the video is silenced.
+   */
+  unmute?: string;
+  /**
+   * Tooltip on the video player's settings button, which opens the gear menu.
+   */
+  settings?: string;
+  /**
+   * Tooltip on the video player's subtitles button while subtitles are showing.
+   */
+  closed_captions_on?: string;
+  /**
+   * Tooltip on the same button while subtitles are hidden.
+   */
+  closed_captions_off?: string;
+  /**
+   * Tooltip on the video player's button that jumps forward a few seconds.
+   */
+  seek_forward?: string;
+  /**
+   * Tooltip on the video player's button that jumps back a few seconds.
+   */
+  seek_backward?: string;
+  /**
+   * Tooltip on the video player's button that pops the video out into a small floating window.
+   */
+  enter_pip?: string;
+  /**
+   * Tooltip on the same button while the video already plays in that floating window.
+   */
+  exit_pip?: string;
+  /**
+   * Tooltip on the video player's button that makes the video fill the screen.
+   */
+  enter_fullscreen?: string;
+  /**
+   * Tooltip on the same button while the video already fills the screen.
+   */
+  exit_fullscreen?: string;
+  /**
+   * Video settings menu: the row that lists the subtitle tracks this video offers.
+   */
+  captions?: string;
+  /**
+   * Video settings menu: the row that lists the picture qualities this video offers.
+   */
+  quality?: string;
+  /**
+   * Video settings menu: the row that sets how fast the video plays.
+   */
+  speed?: string;
+  /**
+   * Video settings menu: the row holding the sound options.
+   */
+  audio?: string;
+  /**
+   * Video settings menu: the row that lists the audio tracks this video offers.
+   */
+  track?: string;
+  /**
+   * Video settings menu: the slider that raises the volume past its normal maximum.
+   */
+  boost?: string;
+  /**
+   * Video settings menu: the row holding the screen-reader and keyboard options.
+   */
+  accessibility?: string;
+  /**
+   * Video settings menu: the switch that lets a screen reader announce playback changes.
+   */
+  announcements?: string;
+  /**
+   * Video settings menu: the switch that flashes an icon when a keyboard shortcut fires.
+   */
+  keyboard_animations?: string;
+  /**
+   * Video settings menu: the quality option that lets the player choose for itself.
+   */
+  auto?: string;
+  /**
+   * Video settings menu: the audio track the video ships with.
+   */
+  default?: string;
+  /**
+   * Video settings menu: the speed option that plays the video as recorded.
+   */
+  normal?: string;
+  /**
+   * Video settings menu: the subtitle option that shows no subtitles.
+   */
+  off?: string;
+  /**
+   * Video settings menu: the row that opens the subtitle appearance options.
+   */
+  caption_styles?: string;
+  /**
+   * Sample sentence in the subtitle appearance options, so the viewer sees each choice applied.
+   */
+  captions_look_like_this?: string;
+  /**
+   * Subtitle appearance options: the heading above the lettering choices.
+   */
+  font?: string;
+  /**
+   * Subtitle appearance options: the typeface the subtitles use.
+   */
+  family?: string;
+  /**
+   * Subtitle appearance options: how large the subtitle lettering is.
+   */
+  size?: string;
+  /**
+   * Subtitle appearance options: the heading above the subtitle lettering's own colour and opacity.
+   */
+  text?: string;
+  /**
+   * Subtitle appearance options: the heading above the band drawn behind the lettering.
+   */
+  text_background?: string;
+  /**
+   * Subtitle appearance options: the heading above the panel drawn behind the whole subtitle area.
+   */
+  display_background?: string;
+  /**
+   * Subtitle appearance options: the colour of the part its heading names. It appears under three headings.
+   */
+  color?: string;
+  /**
+   * Subtitle appearance options: how see-through the part its heading names is. It appears under three headings.
+   */
+  opacity?: string;
+  /**
+   * Subtitle appearance options: the shadow drawn behind the subtitle lettering.
+   */
+  shadow?: string;
+  /**
+   * Button that puts every subtitle appearance option back to its starting value.
+   */
+  reset?: string;
+}
+export interface WmWebTranslationsVideoA11YStrings {
+  /**
+   * Not shown on screen; read by screen readers. Names the video player's fullscreen button.
+   */
+  fullscreen?: string;
+  /**
+   * Not shown on screen; read by screen readers. Names the video player's button that pops the video into a small floating window.
+   */
+  pip?: string;
+  /**
+   * Not shown on screen; read by screen readers. Names the video player's progress bar, which scrubs through the video.
+   */
+  seek?: string;
 }
 export interface WmWebTranslationsLocationGeneralStrings {
   /**
@@ -9575,7 +9566,7 @@ export interface SyAtlasTranslationsSeoStrings {
    */
   root_title?: string;
   /**
-   * `<meta name="description">` for the atlas landing page — one or two sentences about what a visitor finds there. Left blank, the endpoint sends no description in this locale rather than an English one, and the host writes its own.
+   * `<meta name="description">` for the atlas landing page — one or two sentences about what a visitor finds there. Seeded in all ten locales. Blank in a locale, the endpoint sends no description there rather than an English one, and the host writes its own.
    */
   root_description?: string;
 }
@@ -9810,6 +9801,12 @@ export interface WmWebTranslationsSelect<T extends boolean = true> {
         a11y?: T;
       };
   media?:
+    | T
+    | {
+        general?: T;
+        a11y?: T;
+      };
+  video?:
     | T
     | {
         general?: T;
@@ -10098,6 +10095,18 @@ export interface TaskCleanupOrphanedMedia {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskDeliverSubmission".
+ */
+export interface TaskDeliverSubmission {
+  input: {
+    submissionId: number;
+  };
+  output: {
+    status: string;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskExpireEvents".
  */
 export interface TaskExpireEvents {
@@ -10113,38 +10122,28 @@ export interface TaskExpireEvents {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskPurgeUserMessages".
+ * via the `definition` "TaskPurgeSubmissions".
  */
-export interface TaskPurgeUserMessages {
+export interface TaskPurgeSubmissions {
   input: {
     now?: string | null;
+    dryRun?: boolean | null;
   };
   output: {
-    deletedDelivered: number;
-    deletedSpam: number;
+    deletedSubmissions: number;
+    deletedUsers: number;
   };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskScreenEventSubmission".
+ * via the `definition` "TaskScreenSubmission".
  */
-export interface TaskScreenEventSubmission {
+export interface TaskScreenSubmission {
   input: {
     submissionId: number;
   };
   output: {
-    status: string;
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskScreenUserMessage".
- */
-export interface TaskScreenUserMessage {
-  input: {
-    messageId: number;
-  };
-  output: {
+    verdict: string;
     status: string;
   };
 }
@@ -10213,6 +10212,8 @@ export interface TaskVerifyEmbeds {
     failed: number;
     inconclusive: number;
     disabled: number;
+    pathPromoted: number;
+    pathDemoted: number;
   };
 }
 /**

@@ -3,18 +3,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PageContextServer } from 'vike/types'
 import { hookViews } from '../tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
-import { getWebConfig, getWebTranslations } from './cms-client'
-import type { WebConfig, WebTranslations } from './cms-types'
+import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import type { WebConfig, WebTranslations } from './sahajcloud-types'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
-vi.mock('./cms-client', () => ({
+vi.mock('./sahajcloud-client', () => ({
   getWebTranslations: vi.fn(),
   getWebConfig: vi.fn(),
 }))
 
 /**
- * One CMS read per request, across the two objects vike hands one request.
+ * One SahajCloud read per request, across the two objects vike hands one request.
  *
  * Keying the memos on the argument read `wm-web-translations` twice per chromed
  * render (#108). `hookViews` builds the pair with vike's own wrapper.
@@ -58,14 +58,14 @@ describe('loadTranslations', () => {
   })
 
   it('degrades to the English snapshot when the global is empty', async () => {
-    // What an unseeded CMS returns. Rendering it would print every key path.
+    // What an unseeded SahajCloud returns. Rendering it would print every key path.
     vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
 
     expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toBe(EN_TRANSLATIONS)
   })
 
   it('degrades to the English snapshot when the read fails', async () => {
-    vi.mocked(getWebTranslations).mockRejectedValue(new Error('CMS down'))
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
 
     expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toBe(EN_TRANSLATIONS)
   })

@@ -1,4 +1,4 @@
-import type { ResolvedCardItem } from '../../../lib/cms-blocks'
+import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { ContentCarousel } from '../../molecules/blocks/ContentCarousel/ContentCarousel'
 
 export interface RelatedContentProps {

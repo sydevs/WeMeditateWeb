@@ -3,7 +3,7 @@
  * preview.
  *
  * Targets a real meditation id. This is discovered from the production
- * CMS when the SAHAJCLOUD_API_KEY secret is set, otherwise crawled from
+ * SahajCloud when the SAHAJCLOUD_API_KEY secret is set, otherwise crawled from
  * the homepage links. Skips cleanly when no id is discoverable (for
  * example, a forked PR without the secret and no meditation linked from
  * home), instead of failing.
@@ -19,13 +19,13 @@ import {
   expectChrome,
   expectNoChrome,
   internalLinks,
-  discoverFromCms,
+  discoverFromSahajCloud,
 } from '../_helpers/preview'
 
 async function discoverMeditationId(): Promise<string | null> {
-  const cms = await discoverFromCms()
+  const samples = await discoverFromSahajCloud()
 
-  if (cms?.meditationId) return cms.meditationId
+  if (samples?.meditationId) return samples.meditationId
 
   const home = await fetchPage('/')
 

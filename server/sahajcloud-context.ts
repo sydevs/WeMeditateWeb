@@ -1,12 +1,12 @@
 /**
- * CMS configuration context, using Hono's Context Storage.
+ * SahajCloud configuration context, using Hono's Context Storage.
  *
- * This module gives request-scoped access to CMS configuration (apiKey,
+ * This module gives request-scoped access to SahajCloud configuration (apiKey,
  * baseURL). A caller does not pass these values explicitly.
  *
  * Usage:
  * - In server/entry.ts, register the contextStorage() middleware.
- * - In CMS client functions, call getCmsContext() to read the config.
+ * - In SahajCloud client functions, call getSahajCloudContext() to read the config.
  */
 
 import { getContext } from 'hono/context-storage'
@@ -21,23 +21,23 @@ import { apiKeySchema, baseUrlSchema } from './validation'
  * build-time: Vite embeds them from `.env.production`, and code reads
  * them through `import.meta.env`, not `context.env`.
  */
-export type CmsEnv = {
+export type SahajCloudEnv = {
   Bindings: {
     SAHAJCLOUD_API_KEY?: string
   }
 }
 
-/** CMS configuration returned by getCmsContext() */
-export interface CmsContext {
+/** SahajCloud configuration returned by getSahajCloudContext() */
+export interface SahajCloudContext {
   apiKey: string
   baseURL: string
 }
 
 /**
- * Zod schema for validating CMS context configuration.
+ * Zod schema for validating SahajCloud context configuration.
  * Uses shared schemas from validation.ts for consistency.
  */
-const cmsContextSchema = z.object({
+const sahajCloudContextSchema = z.object({
   apiKey: apiKeySchema,
   baseURL: baseUrlSchema,
 })
@@ -47,37 +47,37 @@ const cmsContextSchema = z.object({
  * This handles code that runs outside a request context, for example
  * local development without the Workers runtime.
  */
-function tryGetContext(): Context<CmsEnv> | undefined {
+function tryGetContext(): Context<SahajCloudEnv> | undefined {
   try {
-    return getContext<CmsEnv>()
+    return getContext<SahajCloudEnv>()
   } catch {
     return undefined
   }
 }
 
 /**
- * Gets CMS configuration from Hono's context storage.
+ * Gets SahajCloud configuration from Hono's context storage.
  * Uses Zod for validation with clear error messages.
  *
  * Configuration sources:
  * - apiKey: Cloudflare Workers context (runtime secret) or import.meta.env (dev)
  * - baseURL: import.meta.env (build-time, from .env.production or .env.local)
  *
- * @returns CMS configuration with apiKey and baseURL
+ * @returns SahajCloud configuration with apiKey and baseURL
  * @throws Error if configuration validation fails
  */
-export function getCmsContext(): CmsContext {
+export function getSahajCloudContext(): SahajCloudContext {
   const context = tryGetContext()
 
   const apiKey = context?.env?.SAHAJCLOUD_API_KEY || import.meta.env.SAHAJCLOUD_API_KEY
 
   const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
 
-  const result = cmsContextSchema.safeParse({ apiKey, baseURL })
+  const result = sahajCloudContextSchema.safeParse({ apiKey, baseURL })
 
   if (!result.success) {
     const errorMessage = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-    throw new Error(`CMS context validation failed: ${errorMessage}`)
+    throw new Error(`SahajCloud context validation failed: ${errorMessage}`)
   }
 
   return {
@@ -87,9 +87,9 @@ export function getCmsContext(): CmsContext {
 }
 
 /**
- * Checks whether CMS context is available in the current request.
+ * Checks whether SahajCloud context is available in the current request.
  * Useful for conditional logic in code that may run outside a request.
  */
-export function hasCmsContext(): boolean {
+export function hasSahajCloudContext(): boolean {
   return tryGetContext() !== undefined
 }

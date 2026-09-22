@@ -2,13 +2,12 @@ import { Header } from '../components/organisms/Header'
 import { Footer } from '../components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
-import type { WebConfig, Page } from '../server/cms-types'
-import { leadSplashFromRouteData } from '../lib/cms-blocks'
+import type { WebConfig, Page } from '../server/sahajcloud-types'
+import { leadSplashFromRouteData } from '../lib/content-blocks'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 import { localeEndonym } from '../lib/locale-names'
-import { normalizeContentPath } from '../lib/urls'
 import { useT } from '../hooks/useT'
 
 /**
@@ -36,8 +35,8 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // published layout. See leadSplashFromRouteData.
   const leadSplash = leadSplashFromRouteData(data)
 
-  // CMS-down or error-page fallback. When settings are unavailable (the
-  // _error page carries no data, or the CMS is unreachable), render the
+  // SahajCloud-down or error-page fallback. When settings are unavailable (the
+  // _error page carries no data, or SahajCloud is unreachable), render the
   // content with no chrome, instead of crashing on missing nav config. This
   // is the only remaining use of the settings check. Vike config handles
   // layout selection itself.
@@ -45,7 +44,7 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     return <>{children}</>
   }
 
-  // Degrade gracefully when the CMS config is incomplete. A missing nav group
+  // Degrade gracefully when the SahajCloud config is incomplete. A missing nav group
   // must never take the whole page down with a 500 (an assert used to throw
   // this outside the error boundary). Render whatever is available. The
   // data hooks still return a 404 for genuinely missing pages.
@@ -103,19 +102,15 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     { platform: 'youtube' as const, href: 'https://youtube.com/wemeditate' },
   ]
 
-  // The locales the CMS says this site offers, each linking to the current
-  // page in that language rather than to its home page. `urlPathname` is
-  // already stripped of the locale prefix by +onBeforeRoute;
-  // `normalizeContentPath` undoes its `/index` spelling of `/`, and the
-  // hreflang cluster uses the same function, so the dropdown and the
-  // `<head>` cannot disagree about where a locale switch leads. Adding the
-  // prefix back is `Link`'s job — the dropdown passes each option's own
-  // `locale` — so "English is served bare" keeps one owner.
-  const pathWithoutLocale = normalizeContentPath(urlPathname)
+  // The locales SahajCloud says this site offers, each linking to the current
+  // page in that language rather than to its home page. `Link` spells each
+  // href through `lib/urls.ts`, and so does the hreflang cluster, so the
+  // dropdown and the `<head>` cannot disagree about where a locale switch
+  // leads.
   const languages = (settings.availableLocales ?? []).map((code) => ({
     code,
     label: localeEndonym(code),
-    href: pathWithoutLocale,
+    href: urlPathname,
   }))
 
   const header = (

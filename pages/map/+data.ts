@@ -1,5 +1,5 @@
 import type { PageContextServer } from 'vike/types'
-import type { WebConfig } from '../../server/cms-types'
+import type { WebConfig } from '../../server/sahajcloud-types'
 import type { AtlasSeoResponse } from '../../server/atlas-types'
 import { loadSiteContext } from '../../server/site-context'
 import { getAtlasSeo } from '../../server/atlas-client'
