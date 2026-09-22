@@ -4,7 +4,7 @@ import type { MeditationEmbedPageData } from './+data'
 import { MeditationTemplate } from '../../../../components/templates'
 import { LivePreviewDocument } from '../../../../lib/live-preview/document'
 import { useFrameEditorChannel } from '../../../../lib/live-preview/frame-editor'
-import { cmsOrigin, useDocumentPreviewActive } from '../../../../lib/live-preview/session'
+import { sahajCloudOrigin, useDocumentPreviewActive } from '../../../../lib/live-preview/session'
 
 /**
  * Meditation embed page (/meditations/:id/embed) — designed for iframe
@@ -33,7 +33,7 @@ export function Page() {
   // it is a hook on this page either way, enabled or inert.
   const { seekTo, onPlaybackTimeUpdate } = useFrameEditorChannel(
     previewingThisMeditation,
-    cmsOrigin(),
+    sahajCloudOrigin(),
   )
 
   return (

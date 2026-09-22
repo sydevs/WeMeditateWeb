@@ -41,7 +41,7 @@ check-run output).
 - [tests/smoke/ladle/](../tests/smoke/ladle/) holds fetch-based Ladle specs: the app shell and a
   non-empty `/meta.json` story manifest. The static SPA needs no Playwright. Run with
   `pnpm test:smoke:ladle`.
-- `discoverFromCms()` in `tests/smoke/_helpers/preview.ts` queries the production CMS (needs the
+- `discoverFromSahajCloud()` in `tests/smoke/_helpers/preview.ts` queries the production CMS (needs the
   `SAHAJCLOUD_API_KEY` Actions secret) to pick a real page or meditation, and to read
   `wm-web-config.availableLocales`. Without that secret, the specs call `ctx.skip`.
 

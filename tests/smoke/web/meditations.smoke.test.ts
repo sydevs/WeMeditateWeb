@@ -19,11 +19,11 @@ import {
   expectChrome,
   expectNoChrome,
   internalLinks,
-  discoverFromCms,
+  discoverFromSahajCloud,
 } from '../_helpers/preview'
 
 async function discoverMeditationId(): Promise<string | null> {
-  const cms = await discoverFromCms()
+  const cms = await discoverFromSahajCloud()
 
   if (cms?.meditationId) return cms.meditationId
 

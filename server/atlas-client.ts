@@ -26,7 +26,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './sahajcloud-context'
+import { getSahajCloudContext } from './sahajcloud-context'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
 import type { Locale } from './content-types'
@@ -123,7 +123,7 @@ const SITEMAP_URL_CAP = 45_000
 export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     return await withRetry(async () => {
-      const { apiKey, baseURL } = getCmsContext()
+      const { apiKey, baseURL } = getSahajCloudContext()
       const url = `${baseURL}/api/atlas/sitemap`
 
       const response = await fetch(url, {

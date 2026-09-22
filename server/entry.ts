@@ -1,7 +1,7 @@
 import { apply, serve } from '@photonjs/hono'
 import { Hono } from 'hono'
 import { contextStorage } from 'hono/context-storage'
-import type { CmsEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 import { registerApiRoutes } from './api-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
@@ -11,7 +11,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 export default startServer()
 
 function startServer() {
-  const app = new Hono<CmsEnv>()
+  const app = new Hono<SahajCloudEnv>()
 
   // Enable context storage for AsyncLocalStorage-based config access
   // This MUST be registered before other middleware

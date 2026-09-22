@@ -16,7 +16,7 @@
  * from it is `undefined` in both suites.
  */
 
-import { getCmsContext } from './sahajcloud-context'
+import { getSahajCloudContext } from './sahajcloud-context'
 
 /**
  * A non-OK SahajCloud response, as an error carrying its status.
@@ -91,7 +91,7 @@ export async function fetchWithErrorDetails(
 
 /**
  * Sends the request. Takes a path, not a URL: resolving the base URL here is
- * what removes `getCmsContext()` from every call site.
+ * what removes `getSahajCloudContext()` from every call site.
  */
 async function requestSahajCloud(
   path: string,
@@ -103,7 +103,7 @@ async function requestSahajCloud(
     throw new Error(`sahajCloudFetch needs a site-relative path, got: ${path}`)
   }
 
-  const { apiKey, baseURL } = getCmsContext()
+  const { apiKey, baseURL } = getSahajCloudContext()
 
   return fetchWithErrorDetails(
     `${baseURL}${path}`,

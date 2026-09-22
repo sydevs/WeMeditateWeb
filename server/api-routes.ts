@@ -16,12 +16,12 @@
  * docblocks.
  *
  * These routes run inside the `contextStorage()` middleware (registered
- * first in entry.ts), so `getCmsContext()` resolves the API key and KV
+ * first in entry.ts), so `getSahajCloudContext()` resolves the API key and KV
  * binding normally.
  */
 
 import type { Hono } from 'hono'
-import type { CmsEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 import {
   documentReadArgs,
   getRelatedMeditations,
@@ -115,7 +115,7 @@ function parsePopulateEndpoint(raw: string | undefined) {
  * goes in the BODY, not the query string: under the method override the body
  * wins, so a `depth` in the query would be silently overridden by Payload's.
  */
-function registerLivePreviewPopulate(app: Hono<CmsEnv>): void {
+function registerLivePreviewPopulate(app: Hono<SahajCloudEnv>): void {
   app.post(LIVE_PREVIEW_POPULATE_PATH, async (c) => {
     const token = c.req.header(LIVE_PREVIEW_TOKEN_HEADER)
 
@@ -213,7 +213,7 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
  * no read on `user-submissions` on purpose, and the browser needs only
  * whether it landed.
  */
-function registerSubmissions(app: Hono<CmsEnv>): void {
+function registerSubmissions(app: Hono<SahajCloudEnv>): void {
   app.post(SUBMISSION_PATH, async (c) => {
     c.header('Cache-Control', 'no-store')
 
@@ -248,7 +248,7 @@ function registerSubmissions(app: Hono<CmsEnv>): void {
   })
 }
 
-export function registerApiRoutes(app: Hono<CmsEnv>): void {
+export function registerApiRoutes(app: Hono<SahajCloudEnv>): void {
   registerLivePreviewPopulate(app)
   registerSubmissions(app)
   // Meditations related to a lecture (not audience-gated).

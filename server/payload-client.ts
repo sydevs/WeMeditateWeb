@@ -8,7 +8,7 @@
 import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
-import { getCmsContext } from './sahajcloud-context'
+import { getSahajCloudContext } from './sahajcloud-context'
 import { sahajCloudAuthHeaders, fetchWithErrorDetails } from './sahajcloud-fetch'
 import { LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { apiKeySchema, baseUrlSchema } from './validation'
@@ -86,10 +86,10 @@ export function validatePayloadConfig(config: { apiKey?: string; baseURL?: strin
  * @throws PayloadConfigError if configuration is invalid (missing API key, malformed URL)
  */
 export function createPayloadClient(config: PayloadClientConfig = {}) {
-  const cmsContext = getCmsContext()
+  const sahajCloudContext = getSahajCloudContext()
 
-  const apiKey = config.apiKey ?? cmsContext.apiKey
-  const baseURL = config.baseURL ?? cmsContext.baseURL
+  const apiKey = config.apiKey ?? sahajCloudContext.apiKey
+  const baseURL = config.baseURL ?? sahajCloudContext.baseURL
   const previewToken = config.preview ? config.previewToken : undefined
 
   validatePayloadConfig({ apiKey, baseURL })

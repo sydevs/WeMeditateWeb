@@ -4,7 +4,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
-import type { CmsEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 
 /**
  * ⚠ The gate on `/api/live-preview/populate`, which is new attack surface.
@@ -22,7 +22,7 @@ const { createdWith, request } = vi.hoisted(() => ({
 }))
 
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
 vi.mock('./payload-client', () => ({
@@ -75,7 +75,7 @@ beforeEach(() => {
 })
 
 function populate(options: { token?: string; endpoint?: string; body?: unknown } = {}) {
-  const app = new Hono<CmsEnv>()
+  const app = new Hono<SahajCloudEnv>()
 
   registerApiRoutes(app)
 
@@ -220,7 +220,7 @@ describe('POST /api/live-preview/populate — the forward', () => {
  */
 
 function submit(options: { body?: unknown; token?: string } = {}) {
-  const app = new Hono<CmsEnv>()
+  const app = new Hono<SahajCloudEnv>()
 
   registerApiRoutes(app)
 
@@ -343,7 +343,7 @@ describe('POST /api/submissions — the body gate', () => {
   })
 
   it('refuses a non-JSON body, without calling the CMS', async () => {
-    const app = new Hono<CmsEnv>()
+    const app = new Hono<SahajCloudEnv>()
 
     registerApiRoutes(app)
 

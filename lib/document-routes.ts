@@ -1,9 +1,9 @@
 /**
  * Single source of truth for the web app's document routes, in both directions:
- * - building a path from a collection and a document ({@link cmsHref}), and
+ * - building a path from a collection and a document ({@link documentHref}), and
  * - matching an incoming URL back to its route params ({@link matchDocumentRoute}).
  *
- * `cmsHref` is used by the RichText renderer (internal links and inline
+ * `documentHref` is used by the RichText renderer (internal links and inline
  * relationship nodes), and reused by the `showcase` and `content-index`
  * blocks. `matchDocumentRoute` is used by the meditation and lecture
  * `+route.ts` files. Keeping the mapping in one place means a new route
@@ -81,7 +81,7 @@ const ROUTE_BUILDERS: Record<
  * @returns The web path, or `null` if the collection has no public route,
  *   or the reference cannot resolve to a valid link.
  */
-export function cmsHref(
+export function documentHref(
   relationTo: string,
   value: RelationValue | null | undefined,
 ): string | null {
@@ -97,7 +97,7 @@ export function cmsHref(
 /**
  * Matches an incoming URL path against a collection's document route, and
  * returns the Vike route params (`{ id }`), or `false`. The matching
- * inverse of {@link cmsHref} for the full and embed routes, so the path
+ * inverse of {@link documentHref} for the full and embed routes, so the path
  * shapes live in one tested place:
  *
  * - full:  `/meditations/:id`        (plus an optional `/:locale` prefix)

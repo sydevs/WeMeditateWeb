@@ -186,7 +186,7 @@ export function headTags(html: string): {
   }
 }
 
-export interface CmsSamples {
+export interface SahajCloudSamples {
   pageSlug: string | null
   meditationId: string | null
   /**
@@ -243,13 +243,13 @@ const IMAGE_POPULATE = {
  * A locale the site offers other than English, or null. The prefix specs
  * need one, and which one is an editor's choice.
  *
- * ⚠ Not memoised, and neither is `discoverFromCms`. A failed CMS read
+ * ⚠ Not memoised, and neither is `discoverFromSahajCloud`. A failed CMS read
  * degrades to `availableLocales: ['en']`, which is also production's real
  * value, so a cached answer cannot be told from a flake — and caching one
  * would skip every later locale spec in the run on a single timeout.
  */
 export async function nonEnglishLocale(): Promise<Locale | null> {
-  const offered = (await discoverFromCms())?.availableLocales ?? []
+  const offered = (await discoverFromSahajCloud())?.availableLocales ?? []
 
   return (offered.find((code) => code !== DEFAULT_LOCALE) as Locale | undefined) ?? null
 }
@@ -265,7 +265,7 @@ export function htmlTag(html: string): string {
  * Requires the SAHAJCLOUD_API_KEY secret. Returns null when the secret is
  * absent, so callers can call test.skip.
  */
-export async function discoverFromCms(): Promise<CmsSamples | null> {
+export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null> {
   const apiKey = process.env.SAHAJCLOUD_API_KEY
 
   if (!apiKey) return null
@@ -285,14 +285,14 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
       })
 
       if (!res.ok) {
-        console.warn(`[discoverFromCms] GET /api/${path.split('?')[0]} → HTTP ${res.status}`)
+        console.warn(`[discoverFromSahajCloud] GET /api/${path.split('?')[0]} → HTTP ${res.status}`)
 
         return null
       }
 
       return (await res.json()) as Record<string, unknown>
     } catch (err) {
-      console.warn(`[discoverFromCms] GET /api/${path.split('?')[0]} → ${(err as Error).message}`)
+      console.warn(`[discoverFromSahajCloud] GET /api/${path.split('?')[0]} → ${(err as Error).message}`)
 
       return null
     }
@@ -311,18 +311,18 @@ export async function discoverFromCms(): Promise<CmsSamples | null> {
       // in CI (for example, 403 means an unauthorized key, and 0 docs
       // means no published content).
       if (!res.ok) {
-        console.warn(`[discoverFromCms] GET /api/${collection} → HTTP ${res.status}`)
+        console.warn(`[discoverFromSahajCloud] GET /api/${collection} → HTTP ${res.status}`)
 
         return null
       }
       const body = (await res.json()) as { docs?: Record<string, unknown>[] }
       const doc = body.docs?.[0] ?? null
 
-      if (!doc) console.warn(`[discoverFromCms] GET /api/${collection} → 0 docs`)
+      if (!doc) console.warn(`[discoverFromSahajCloud] GET /api/${collection} → 0 docs`)
 
       return doc
     } catch (err) {
-      console.warn(`[discoverFromCms] GET /api/${collection} → ${(err as Error).message}`)
+      console.warn(`[discoverFromSahajCloud] GET /api/${collection} → ${(err as Error).message}`)
 
       return null
     }

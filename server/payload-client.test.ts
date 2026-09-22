@@ -8,7 +8,7 @@ import { detectErrorType, ErrorType } from './error-utils'
 // createPayloadClient reads its defaults from the request context, which does
 // not exist under Vitest. Shape checked against server/sahajcloud-context.ts.
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
 }))
 
 /**
@@ -23,7 +23,7 @@ describe('a non-OK CMS response', () => {
   })
 
   /** Stubs global fetch with one non-OK JSON response, and silences the client's logging. */
-  function stubCmsResponse(status: number, body: unknown) {
+  function stubSahajCloudResponse(status: number, body: unknown) {
     vi.spyOn(console, 'log').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.stubGlobal(
@@ -39,7 +39,7 @@ describe('a non-OK CMS response', () => {
   }
 
   it('rejects with a PayloadSDKError instead of resolving undefined', async () => {
-    stubCmsResponse(400, { errors: [{ message: 'The following field is invalid: select' }] })
+    stubSahajCloudResponse(400, { errors: [{ message: 'The following field is invalid: select' }] })
 
     const client = createPayloadClient()
     const read = client.findGlobal({ slug: 'wm-web-config' })
@@ -49,7 +49,7 @@ describe('a non-OK CMS response', () => {
   })
 
   it('carries the HTTP status, so error-utils classifies it', async () => {
-    stubCmsResponse(503, { errors: [{ message: 'Service Unavailable' }] })
+    stubSahajCloudResponse(503, { errors: [{ message: 'Service Unavailable' }] })
 
     const client = createPayloadClient()
     const error = await client.findGlobal({ slug: 'wm-web-config' }).catch((e: unknown) => e)

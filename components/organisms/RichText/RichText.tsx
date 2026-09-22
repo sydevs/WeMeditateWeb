@@ -15,7 +15,7 @@ import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
-import { cmsHref, type RelationValue } from '../../../lib/document-routes'
+import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import type { EmbeddedForm } from '../../../server/content-types'
@@ -128,7 +128,7 @@ const CONVERTERS: JSXConverters = {
     const fields = node.fields
 
     if (fields?.linkType === 'internal' && fields.doc) {
-      const href = cmsHref(fields.doc.relationTo ?? '', fields.doc.value as RelationValue)
+      const href = documentHref(fields.doc.relationTo ?? '', fields.doc.value as RelationValue)
 
       return href ? <Link href={href}>{children}</Link> : <>{children}</>
     }
@@ -172,7 +172,7 @@ const CONVERTERS: JSXConverters = {
     if (!label) {
       return null
     }
-    const href = cmsHref(node.relationTo ?? '', node.value as RelationValue)
+    const href = documentHref(node.relationTo ?? '', node.value as RelationValue)
 
     return href ? <Link href={href}>{label}</Link> : <>{label}</>
   },

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Hono } from 'hono'
-import type { CmsEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 
 const find = vi.fn()
 const findGlobal = vi.fn()
@@ -11,7 +11,7 @@ const fetchMock = vi.fn()
 vi.stubGlobal('fetch', fetchMock)
 
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
@@ -36,7 +36,7 @@ vi.mock('./error-utils', async (importOriginal) => {
 const { registerSitemapRoutes } = await import('./sitemap-routes')
 
 function app() {
-  const instance = new Hono<CmsEnv>()
+  const instance = new Hono<SahajCloudEnv>()
 
   registerSitemapRoutes(instance)
 

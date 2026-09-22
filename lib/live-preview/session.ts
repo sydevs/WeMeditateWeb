@@ -61,7 +61,7 @@ export function useDocumentPreviewActive(): boolean {
  * `'*'`, which turned the meditation seek channel into one any page could
  * drive.
  */
-export function cmsOrigin(): string | undefined {
+export function sahajCloudOrigin(): string | undefined {
   const url = import.meta.env.PUBLIC__SAHAJCLOUD_URL
 
   if (!url) return undefined

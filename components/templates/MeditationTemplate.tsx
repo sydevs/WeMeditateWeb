@@ -71,7 +71,7 @@ export function MeditationTemplate({
 }: MeditationTemplateProps) {
   const t = useT()
   // Get CMS base URL for building full frame URLs
-  const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
+  const sahajCloudBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
   const resolveMediaUrl = (url: string): string => {
     if (!url) {
       return url
@@ -82,12 +82,12 @@ export function MeditationTemplate({
       return url
     }
 
-    if (!cmsBaseUrl) {
+    if (!sahajCloudBaseUrl) {
       return url
     }
 
     try {
-      return new URL(url, cmsBaseUrl).toString()
+      return new URL(url, sahajCloudBaseUrl).toString()
     } catch {
       return url
     }

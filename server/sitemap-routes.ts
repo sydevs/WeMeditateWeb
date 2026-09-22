@@ -6,7 +6,7 @@
  * they need a sitemap to be worth adding.
  *
  * Registered beside `registerApiRoutes`, and, like it, inside the
- * `contextStorage()` middleware, so `getCmsContext()` resolves the API
+ * `contextStorage()` middleware, so `getSahajCloudContext()` resolves the API
  * key normally. Both routes are declared before Vike's handler, so they
  * win over the page catch-all.
  *
@@ -16,7 +16,7 @@
  */
 
 import type { Hono } from 'hono'
-import type { CmsEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
@@ -165,7 +165,7 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   }
 }
 
-export function registerSitemapRoutes(app: Hono<CmsEnv>): void {
+export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
   app.get('/robots.txt', (c) => {
     const origin = new URL(c.req.url).origin
 

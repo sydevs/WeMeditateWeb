@@ -18,7 +18,7 @@ vi.mock('./payload-client', () => ({
 }))
 // The shaped nested-route fetchers (related-*) read apiKey and baseURL from context.
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 // Silence the Sentry warning emitted on unresolved page references.
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))

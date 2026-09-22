@@ -8,7 +8,7 @@ import {
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 
 beforeEach(() => {

@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/react'
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 

@@ -17,7 +17,7 @@ import type { Meditation, Page } from '../server/content-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '../components/molecules/AudioPlayer/types'
-import { cmsHref, type RelationValue } from './document-routes'
+import { documentHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
@@ -335,7 +335,7 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   if (!isPopulated(value)) {
     return null
   }
-  const href = cmsHref(relationTo, value as RelationValue)
+  const href = documentHref(relationTo, value as RelationValue)
 
   // Collections without a public web route (app-cards) resolve to null.
   // Skip, instead of emitting a dead link.
@@ -423,7 +423,7 @@ export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystem
     if (!isPopulated<Page>(page)) {
       continue
     }
-    const href = cmsHref('pages', page as RelationValue)
+    const href = documentHref('pages', page as RelationValue)
 
     if (!href) {
       continue
@@ -489,7 +489,7 @@ function cardHref(
     return `/meditations/${id}`
   }
   if (type === 'pages' || type === 'lectures') {
-    return cmsHref(type, doc as RelationValue)
+    return documentHref(type, doc as RelationValue)
   }
 
   return null

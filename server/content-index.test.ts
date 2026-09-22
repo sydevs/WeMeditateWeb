@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Provide CMS config without a request context, and silence Sentry
 // warnings on the degrade paths.
 vi.mock('./sahajcloud-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 

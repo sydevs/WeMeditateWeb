@@ -19,7 +19,7 @@ import {
   expectChrome,
   expectNoChrome,
   expectNoBrokenLinks,
-  discoverFromCms,
+  discoverFromSahajCloud,
   nonEnglishLocale,
   htmlTag,
   renderedHtml,
@@ -42,7 +42,7 @@ describe('web preview pages', () => {
   it('a CMS page renders with real content', async (ctx) => {
     // Discover a real published page slug from the CMS rather than crawling the
     // homepage (nav links may be hydrated client-side, not in the SSR HTML).
-    const slug = (await discoverFromCms())?.pageSlug
+    const slug = (await discoverFromSahajCloud())?.pageSlug
 
     ctx.skip(
       !slug,
@@ -126,7 +126,7 @@ describe('web preview pages', () => {
   })
 
   it('a content page carries a self-referential canonical', async (ctx) => {
-    const slug = (await discoverFromCms())?.pageSlug
+    const slug = (await discoverFromSahajCloud())?.pageSlug
 
     ctx.skip(!slug, 'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret')
 
@@ -141,7 +141,7 @@ describe('web preview pages', () => {
   })
 
   it('a content page advertises only locales it is published in', async (ctx) => {
-    const discovered = await discoverFromCms()
+    const discovered = await discoverFromSahajCloud()
     const slug = discovered?.pageSlug
 
     ctx.skip(!slug, 'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret')

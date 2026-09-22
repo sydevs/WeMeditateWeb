@@ -3,7 +3,7 @@ import { useLivePreview } from '@payloadcms/live-preview-react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from './protocol'
-import { cmsOrigin, useDocumentPreviewActive } from './session'
+import { sahajCloudOrigin, useDocumentPreviewActive } from './session'
 import { livePreviewToken } from './token-url'
 
 /**
@@ -180,7 +180,7 @@ export function LivePreviewDocument<T extends PreviewDocument>({
   slug,
 }: DocumentProps<T>): ReactNode {
   const previewingThisDocument = useDocumentPreviewActive()
-  const serverURL = cmsOrigin()
+  const serverURL = sahajCloudOrigin()
 
   if (!previewingThisDocument || !serverURL) return children(initialData)
 
