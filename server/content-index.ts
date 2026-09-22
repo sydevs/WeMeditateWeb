@@ -18,7 +18,7 @@
 import * as Sentry from '@sentry/react'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
-import type { Locale } from './content-types'
+import type { Locale } from './sahajcloud-types'
 import {
   contentIndexCard,
   contentIndexTrack,

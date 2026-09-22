@@ -1,6 +1,6 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Locale, Meditation, MeditationSong } from '../../../server/content-types'
+import type { Locale, Meditation, MeditationSong } from '../../../server/sahajcloud-types'
 import { getDocumentById, getMeditationSongs } from '../../../server/sahajcloud-client'
 import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'

@@ -10,7 +10,7 @@ import {
 } from './sahajcloud-client'
 import { createPayloadClient } from './payload-client'
 import { detectErrorType, ErrorType } from './error-utils'
-import type { Locale, Page, PageStatus } from './content-types'
+import type { Locale, Page, PageStatus } from './sahajcloud-types'
 
 // Stub the SDK factory to capture the query.
 vi.mock('./payload-client', () => ({

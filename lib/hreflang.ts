@@ -17,8 +17,8 @@
  * and neither has anything to do with `hreflang`.
  */
 
-import type { Locale } from '../server/content-types'
-import { DEFAULT_LOCALE } from '../server/content-types'
+import type { Locale } from '../server/sahajcloud-types'
+import { DEFAULT_LOCALE } from '../server/sahajcloud-types'
 import { localeUrl, normalizeContentPath } from './urls'
 
 /** One `rel="alternate"` row: a language code and the URL it points at. */

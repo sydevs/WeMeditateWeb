@@ -58,8 +58,8 @@ import type {
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
-} from './content-types'
-import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './content-types'
+} from './sahajcloud-types'
+import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './sahajcloud-types'
 
 // --- Common Options Interfaces ---
 

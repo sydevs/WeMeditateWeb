@@ -21,7 +21,7 @@ import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { loadLivePreview, previewArgs } from './live-preview'
-import type { Locale, WebConfig, WebTranslations } from './content-types'
+import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
 export interface SiteContext {

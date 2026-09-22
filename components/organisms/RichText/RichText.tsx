@@ -18,7 +18,7 @@ import { FormBuilder } from '../FormBuilder'
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
-import type { EmbeddedForm } from '../../../server/content-types'
+import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 

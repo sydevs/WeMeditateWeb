@@ -22,7 +22,7 @@ import { useT } from '../hooks/useT'
 import { useOptionalPageContext } from '../hooks/usePageContext'
 import { buildAlternates, type Alternate } from './hreflang'
 import { localeUrl, normalizeContentPath } from './urls'
-import type { Locale } from '../server/content-types'
+import type { Locale } from '../server/sahajcloud-types'
 
 /** Minimal shape of a page's `meta` field (a subset of the SahajCloud Page meta). */
 export interface PageMetaLike {

@@ -25,7 +25,7 @@ import {
   renderedHtml,
   NOT_FOUND_MARKER,
 } from '../_helpers/preview'
-import { localeDirection } from '../../../server/content-types'
+import { localeDirection } from '../../../server/sahajcloud-types'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {

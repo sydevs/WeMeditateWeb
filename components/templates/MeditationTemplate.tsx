@@ -14,7 +14,7 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation, MeditationSong } from '../../server/content-types'
+import type { Meditation, MeditationSong } from '../../server/sahajcloud-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'

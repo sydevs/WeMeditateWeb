@@ -7,7 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
-import { DEFAULT_LOCALE, type Locale } from '../../../server/content-types'
+import { DEFAULT_LOCALE, type Locale } from '../../../server/sahajcloud-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
 import { enT } from '../../../lib/i18n'

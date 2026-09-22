@@ -35,8 +35,8 @@ import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER, type SubmissionResult } from '
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
 import { idSchema, submissionSchema } from './validation'
-import type { Locale } from './content-types'
-import { isLocale } from './content-types'
+import type { Locale } from './sahajcloud-types'
+import { isLocale } from './sahajcloud-types'
 
 /** Accept only a locale SahajCloud defines. Anything else reads as `en`. */
 function parseLocale(raw: string | undefined): Locale {

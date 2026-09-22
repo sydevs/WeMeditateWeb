@@ -13,7 +13,7 @@ import {
   textColorToTheme,
   type ShowcaseItem,
 } from './content-blocks'
-import type { Page } from '../server/content-types'
+import type { Page } from '../server/sahajcloud-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
 const leadContent = (firstBlock?: Record<string, unknown>) =>

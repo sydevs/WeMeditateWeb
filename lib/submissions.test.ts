@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { submissionBody } from './submissions'
-import type { EmbeddedForm } from '../server/content-types'
+import type { EmbeddedForm } from '../server/sahajcloud-types'
 
 /**
  * The fixture is typed `satisfies EmbeddedForm`, so it is checked against the

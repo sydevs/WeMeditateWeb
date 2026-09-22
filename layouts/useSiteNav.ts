@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react'
-import type { WebConfig } from '../server/content-types'
+import type { WebConfig } from '../server/sahajcloud-types'
 import type { NavItem } from '../components/organisms'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 import { useT } from '../hooks/useT'

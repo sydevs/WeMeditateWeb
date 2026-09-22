@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { WebTranslations } from '../../../server/content-types'
+import type { WebTranslations } from '../../../server/sahajcloud-types'
 
 const FRENCH = {
   common: { general: {}, a11y: {} },

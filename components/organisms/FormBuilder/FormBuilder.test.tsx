@@ -1,7 +1,7 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FormBuilder } from './FormBuilder'
-import type { EmbeddedForm } from '../../../server/content-types'
+import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 
 /**
  * `useEffect` does not run under `renderToStaticMarkup`, so the captcha here

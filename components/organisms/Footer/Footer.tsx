@@ -1,6 +1,6 @@
 import { FooterLinkList, FooterLink } from '../../molecules/FooterLinkList'
 import { LanguageDropdown, LanguageOption } from '../../molecules/LanguageDropdown'
-import type { Locale } from '../../../server/content-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 import { FloralDividerSvg } from '../../atoms/graphics/svgs'
 

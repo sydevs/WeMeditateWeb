@@ -9,7 +9,7 @@
  * The other `pageContext` readers live in `hooks/usePageContext.ts`.
  */
 
-import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/content-types'
+import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/sahajcloud-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 import { useOptionalPageContext } from './usePageContext'
 

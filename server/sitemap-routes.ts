@@ -23,7 +23,7 @@ import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './sahajcloud-client'
 import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
-import { DEFAULT_LOCALE, type Locale } from './content-types'
+import { DEFAULT_LOCALE, type Locale } from './sahajcloud-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
 /** Bounded because this runs in a Worker request. */

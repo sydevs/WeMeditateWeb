@@ -13,7 +13,7 @@
  */
 
 import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
-import type { Meditation, Page } from '../server/content-types'
+import type { Meditation, Page } from '../server/sahajcloud-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '../components/molecules/AudioPlayer/types'

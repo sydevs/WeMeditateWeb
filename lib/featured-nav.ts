@@ -10,7 +10,7 @@
  *
  * Kept framework-free, so the rule stays unit-testable without rendering.
  */
-import type { Page, WebConfig } from '../server/content-types'
+import type { Page, WebConfig } from '../server/sahajcloud-types'
 
 /**
  * The slug of the featured nav page for the current page, or `undefined`

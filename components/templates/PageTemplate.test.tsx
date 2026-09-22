@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import type { Page } from '../../server/content-types'
+import type { Page } from '../../server/sahajcloud-types'
 import { PageTemplate } from './PageTemplate'
 
 // PageTemplate calls usePageHead → vike-react's useConfig, which needs vike's

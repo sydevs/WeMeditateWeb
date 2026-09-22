@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import type { Locale } from '../../../../server/content-types'
+import type { Locale } from '../../../../server/sahajcloud-types'
 import { localeEndonym } from '../../../../lib/locale-names'
 
 export interface LanguageFlagProps extends ComponentProps<'span'> {

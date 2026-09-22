@@ -13,8 +13,8 @@
  * already holds.
  */
 
-import type { Locale } from '../server/content-types'
-import { DEFAULT_LOCALE, isLocale } from '../server/content-types'
+import type { Locale } from '../server/sahajcloud-types'
+import { DEFAULT_LOCALE, isLocale } from '../server/sahajcloud-types'
 
 /** What a path's leading segment says about the locale. */
 export interface PathLocale {

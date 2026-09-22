@@ -1,7 +1,7 @@
 ---
 paths:
   - "server/sahajcloud-client.ts"
-  - "server/content-types.ts"
+  - "server/sahajcloud-types.ts"
   - "server/payload-client.ts"
   - "server/atlas-client.ts"
 ---
@@ -11,7 +11,8 @@ paths:
 ## Add a new query function
 
 1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts).
-2. Add app-specific types to [server/content-types.ts](../../server/content-types.ts) if needed.
+2. Add app-specific types to [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts) if
+   needed.
 3. Add the query function to [server/sahajcloud-client.ts](../../server/sahajcloud-client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
@@ -65,9 +66,9 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
-`WEB_TRANSLATIONS_SELECT` lives in [server/content-types.ts](../../server/content-types.ts), beside the
-`WebTranslations` type that derives from it. Add a group there and it is both fetched and
-typed. Listing the groups anywhere else lets the query and the type disagree.
+`WEB_TRANSLATIONS_SELECT` lives in [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts),
+beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
+and typed. Listing the groups anywhere else lets the query and the type disagree.
 
 [scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
 cannot import that constant: it is plain node with no TypeScript loader. It keeps every response

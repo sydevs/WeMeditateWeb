@@ -13,7 +13,7 @@
  * YouTube `mqdefault` (320×180, exactly 16:9).
  */
 
-import type { RelatedMeditationCard, RelatedLectureCard } from '../server/content-types'
+import type { RelatedMeditationCard, RelatedLectureCard } from '../server/sahajcloud-types'
 import type { ResolvedCardItem } from './content-blocks'
 
 /** Minutes badge from a length in seconds: rounded, omitted below 1 minute (a

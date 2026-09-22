@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { Link } from '../../atoms'
 import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
-import type { Locale } from '../../../server/content-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /**

@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import type { WebTranslations } from '../server/content-types'
+import type { WebTranslations } from '../server/sahajcloud-types'
 import { createT, EN_TRANSLATIONS, interpolate, pluralize } from './i18n'
 
 /** A partial translations object, shaped like a SahajCloud read. */

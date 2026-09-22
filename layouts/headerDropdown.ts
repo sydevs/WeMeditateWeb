@@ -3,7 +3,7 @@
  * SahajCloud pages. Kept framework-free so the mapping, image resolution, and random
  * selection can be unit-tested without rendering.
  */
-import type { Page } from '../server/content-types'
+import type { Page } from '../server/sahajcloud-types'
 import { populatedImageUrl } from '../lib/payload-relationships'
 import type { HeaderDropdownArticle, HeaderDropdownLink } from '../components/organisms'
 
