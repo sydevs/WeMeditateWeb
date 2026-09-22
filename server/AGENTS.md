@@ -69,10 +69,15 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 ## Custom root endpoints are not collection reads
 
-`GET /api/atlas/seo`, `GET /api/atlas/sitemap` and the `related-*` endpoints belong to no
-collection, so the Payload SDK cannot express them. They use plain `fetch` calls with an
-`Authorization: clients API-Key` header, and shape their own response. `select` and `populate`
-do not apply here.
+`GET /api/atlas/seo`, `GET /api/atlas/sitemap`, the `related-*` endpoints, and a content-index
+block's computed endpoint belong to no collection, so the Payload SDK cannot express them. Every
+one but the sitemap reads through `sahajCloudFetch`
+([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends the
+`Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
+non-OK response, and returns the parsed body. Hand it a path, never a URL — it refuses anything
+that is not site-relative, so a computed endpoint cannot move the request off the SahajCloud
+origin — and type the body yourself. `getAtlasSitemapUrls` still assembles its own `fetch`, and is
+not yet converted. `select` and `populate` do not apply here.
 
 ⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
 URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
@@ -80,12 +85,23 @@ URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk,
 here (#123). **An empty `urls` list is an answer, not a failure**: a client that owns no subtree
 legitimately has nothing to list.
 
-Two rules still apply:
+Three rules still apply:
 
 - **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
   `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
+  `fetchContentIndexDocs` is the one read still missing it (#128).
+- **Never branch on a status. Pick the reader that matches the read.** `sahajCloudFetch` throws a
+  `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
+  where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
+  `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
+  without a body dump. Four of the five reads take the optional form; `fetchContentIndexDocs`
+  takes `sahajCloudFetch`, because its endpoint is one SahajCloud computed and nothing answering it
+  is a data gap. The status rides on the error because `detectErrorType` reads it structurally and
+  otherwise falls back to matching `50[0-9]` in the message — a plain `Error` classifies a
+  Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one shape a
+  Railway restart behind the edge produces.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See

@@ -5,9 +5,10 @@
  * already about 950 lines, and holds only collection reads through the
  * Payload SDK. This file has two custom root endpoints,
  * `GET /api/atlas/seo` and `GET /api/atlas/sitemap`, which belong to no
- * collection, so the SDK cannot express them. Both use a plain `fetch`, the
- * same pattern the related-content readers in `cms-client.ts` use for
- * custom endpoints.
+ * collection, so the SDK cannot express them. The seo read goes through
+ * `sahajCloudFetch` (`server/sahajcloud-fetch.ts`), the one helper every
+ * custom-endpoint read shares. The sitemap read still assembles its own,
+ * and is not yet converted.
  *
  * ## Access
  *
@@ -26,6 +27,7 @@
 
 import * as Sentry from '@sentry/react'
 import { getCmsContext } from './cms-context'
+import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
 import type { Locale } from './cms-types'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from './atlas-types'
@@ -66,36 +68,16 @@ export async function getAtlasSeo(options: {
   }
 
   try {
-    return await withRetry(async () => {
-      const { apiKey, baseURL } = getCmsContext()
-      const url =
-        `${baseURL}/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
-        `&locale=${encodeURIComponent(options.locale)}`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
-
-      // The route named nothing upstream: a stale inbound link, or a
-      // region that has since been unpublished. Returned rather than
-      // thrown, so it never costs the retry ladder.
-      if (response.status === 404) {
-        return null
-      }
-
-      if (!response.ok) {
-        // `detectErrorType` reads the status structurally, and its message
-        // fallback matches only `50[0-9]`. Without this, a Cloudflare-origin
-        // 520, 522 or 524 classifies UNKNOWN and loses its retry.
-        throw Object.assign(new Error(`getAtlasSeo(${options.route}) failed: ${response.status}`), {
-          status: response.status,
-        })
-      }
-
-      return (await response.json()) as AtlasSeoResponse
-    })
+    // A 404 means the route named nothing upstream: a stale inbound link, or
+    // a region that has since been unpublished. `sahajCloudFetchOptional` answers it
+    // with `null`, which reads the same as the no-target case above.
+    return await withRetry(() =>
+      sahajCloudFetchOptional<AtlasSeoResponse>(
+        `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
+          `&locale=${encodeURIComponent(options.locale)}`,
+        `getAtlasSeo(${options.route})`,
+      ),
+    )
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
     // widget still works without it. Losing it must not take the page down.

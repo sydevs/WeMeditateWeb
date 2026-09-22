@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
+  getMeditationSongs,
   getPageBySlug,
   getPageLocaleStatus,
   getWebConfig,
@@ -8,6 +9,7 @@ import {
   getRelatedLectures,
 } from './cms-client'
 import { createPayloadClient } from './payload-client'
+import { detectErrorType, ErrorType } from './error-utils'
 import type { Locale, Page, PageStatus } from './cms-types'
 
 // Stub the SDK factory to capture the query.
@@ -21,26 +23,53 @@ vi.mock('./cms-context', () => ({
 // Silence the Sentry warning emitted on unresolved page references.
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 // The stub runs the read once, so no test waits on real backoff.
-// `retrySpy` keeps the config visible to the tests that assert one.
+// `retrySpy` keeps the config visible to the tests that assert one, and
+// `retried.error` the error the ladder was handed, which is what decides
+// whether a real withRetry would try again.
 // error-utils.test.ts covers what withRetry itself does.
-const { retrySpy } = vi.hoisted(() => ({ retrySpy: vi.fn() }))
+const { retrySpy, retried } = vi.hoisted(() => ({
+  retrySpy: vi.fn(),
+  retried: { error: undefined as unknown },
+}))
 
 vi.mock('./error-utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./error-utils')>()
 
   return {
     ...actual,
-    withRetry: (fn: () => unknown, config?: unknown) => {
+    withRetry: async (fn: () => unknown, config?: unknown) => {
       retrySpy(config)
 
-      return fn()
+      try {
+        return await fn()
+      } catch (error) {
+        retried.error = error
+        throw error
+      }
     },
   }
 })
 
 /** Builds a fetch Response stub for the given status and JSON body. */
 function fetchResponse(status: number, body: unknown) {
-  return { ok: status >= 200 && status < 300, status, json: async () => body }
+  const response = {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: '',
+    json: async () => body,
+  }
+
+  // sahajCloudFetch clones a non-OK response to dump the CMS error body.
+  return { ...response, clone: () => response }
+}
+
+/** Silences the request log and error dump, and forgets the previous read's error. */
+function resetReadState() {
+  retried.error = undefined
+  vi.restoreAllMocks()
+  vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
 }
 
 const page = (id: number, slug: string): Page => ({ id, slug, title: 'T' }) as unknown as Page
@@ -205,9 +234,7 @@ describe('retry policy', () => {
 })
 
 describe('getRelatedMeditations', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-  })
+  beforeEach(resetReadState)
 
   it('maps shaped docs to cards and requests locale + limit on the lecture route', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
@@ -281,9 +308,7 @@ describe('getRelatedMeditations', () => {
 })
 
 describe('getRelatedLectures', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-  })
+  beforeEach(resetReadState)
 
   it('short-circuits to [] without a request when no audiences are configured', async () => {
     const fetchMock = vi.fn()
@@ -349,5 +374,52 @@ describe('getRelatedLectures', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
 
     expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })).toEqual([])
+  })
+})
+
+describe('getMeditationSongs', () => {
+  beforeEach(resetReadState)
+
+  it('asks the songs route for the locale and keeps only playable tracks', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      fetchResponse(200, {
+        docs: [
+          { id: 9, title: 'Raga', url: 'https://cdn/a.mp3' },
+          { id: 10, title: 'No file', url: '' },
+        ],
+      }),
+    )
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    expect(await getMeditationSongs({ id: '77', locale: 'en' })).toEqual([
+      { id: 9, title: 'Raga', url: 'https://cdn/a.mp3' },
+    ])
+    expect(fetchMock.mock.calls[0][0]).toBe('https://cms.test/api/meditations/77/songs?locale=en')
+  })
+
+  it('degrades to voice-only on an unknown meditation id (404)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(404, {})))
+
+    expect(await getMeditationSongs({ id: '999999', locale: 'en' })).toEqual([])
+  })
+})
+
+describe('every custom-endpoint read', () => {
+  beforeEach(resetReadState)
+
+  it.each([
+    ['getMeditationSongs', () => getMeditationSongs({ id: '77', locale: 'en' })],
+    ['getRelatedMeditations', () => getRelatedMeditations({ id: '163', locale: 'en' })],
+    ['getRelatedLectures', () => getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })],
+  ])('hands %s a 522 the retry ladder classifies as SERVER, not UNKNOWN', async (_label, read) => {
+    // `detectErrorType` falls back to matching `50[0-9]` in the message, which
+    // a Cloudflare-origin 5xx never contains. Only the status on the error
+    // keeps it retryable.
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(522, {})))
+
+    await read()
+
+    expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
   })
 })

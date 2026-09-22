@@ -16,7 +16,7 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './cms-context'
+import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './cms-types'
 import {
@@ -133,7 +133,6 @@ async function fetchContentIndexDocs(
   if (type === 'lectures' && audiences.length === 0) {
     return []
   }
-  const { apiKey, baseURL } = getCmsContext()
   const { select, populate, depth } = QUERY_BY_TYPE[type]
   // Strip any depth the CMS baked into the endpoint so ours is the only one.
   const endpoint = stripQueryParam(apiEndpoint, 'depth')
@@ -141,23 +140,15 @@ async function fetchContentIndexDocs(
   const populateParam = populate ? `&${populate}` : ''
   const localeParam = options.locale ? `&locale=${options.locale}` : ''
   const audiencesParam = audiences.length > 0 ? `&audiences=${audiences.join(',')}` : ''
-  const url = `${baseURL}${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
+  const path = `${endpoint}${separator}${select}${populateParam}&depth=${depth}${localeParam}${audiencesParam}`
 
   try {
-    const response = await fetch(url, {
-      headers: { Authorization: `clients API-Key ${apiKey}` },
-    })
-
-    if (!response.ok) {
-      Sentry.captureMessage('content-index endpoint not resolvable', {
-        level: 'warning',
-        tags: { source: 'fetchContentIndexDocs' },
-        extra: { type, status: response.status },
-      })
-
-      return []
-    }
-    const json = (await response.json()) as { docs?: Record<string, unknown>[] }
+    // `sahajCloudFetch`, not `sahajCloudFetchOptional`: this endpoint is one the CMS computed
+    // for the block, so a 404 is a data gap rather than an answer.
+    const json = await sahajCloudFetch<{ docs?: Record<string, unknown>[] }>(
+      path,
+      `fetchContentIndexDocs(${type})`,
+    )
     const docs = json.docs ?? []
     const cap = typeof limit === 'number' ? limit : docs.length
 
@@ -166,7 +157,11 @@ async function fetchContentIndexDocs(
     Sentry.captureMessage('content-index fetch failed', {
       level: 'warning',
       tags: { source: 'fetchContentIndexDocs' },
-      extra: { type, error: error instanceof Error ? error.message : String(error) },
+      extra: {
+        type,
+        status: error instanceof SahajCloudResponseError ? error.status : undefined,
+        error: error instanceof Error ? error.message : String(error),
+      },
     })
 
     return []

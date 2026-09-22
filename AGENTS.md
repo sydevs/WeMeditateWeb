@@ -217,6 +217,11 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **Never stop a Chrome debugging process (port 9222), or any process you did not start.** Other
   Claude instances may share this Chrome debugging session.
 - **Mapbox is the preferred mapping provider for this project.**
+- **The backend is called SahajCloud, not "the CMS".** New files, symbols and prose spell it
+  `SahajCloud` / `sahajCloud`. `PayloadCMS` and `@payloadcms/sdk` name the product instead, and the
+  `[PayloadCMS] <method> <url> → <status>` log prefix stays as it is. The existing `cms-*` files and
+  identifiers are renamed in #130; until that lands, follow the convention in new code rather than
+  matching a neighbour.
 - **Create each Cloudflare Images variant in the dashboard too.** The `<Image>` atom appends a
   variant name in the form `{aspectRatio}-{width}`. The list of variants lives in
   `SIZE_WIDTH_MAP` in [lib/cloudflare-images.ts](lib/cloudflare-images.ts). Adding a variant there
