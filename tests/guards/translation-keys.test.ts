@@ -18,7 +18,7 @@ import { lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
 import { enT, type TranslationKey } from '../../lib/i18n'
 import { ErrorType } from '../../server/error-utils'
 import { errorMessageKey, errorTitleKey } from '../../lib/error-keys'
-import { PAGE_TAG_KEYS } from '../../lib/cms-blocks'
+import { PAGE_TAG_KEYS } from '../../lib/content-blocks'
 import { RELATED_CONTENT_KEYS } from '../../components/organisms/RelatedContent/RelatedContentLoader'
 
 const SOURCE_GLOBS = [

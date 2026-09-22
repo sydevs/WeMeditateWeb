@@ -14,11 +14,11 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation, MeditationSong } from '../../server/cms-types'
+import type { Meditation, MeditationSong } from '../../server/content-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
-import { populatedImageUrl } from '../../lib/cms-relationships'
+import { populatedImageUrl } from '../../lib/payload-relationships'
 import { useT } from '../../hooks/useT'
 
 export interface MeditationTemplateProps {

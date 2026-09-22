@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Provide CMS config without a request context, and silence Sentry
 // warnings on the degrade paths.
-vi.mock('./cms-context', () => ({
+vi.mock('./sahajcloud-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
@@ -12,7 +12,7 @@ import {
   resolveContentIndexTracks,
   resolveContentIndexBlocks,
 } from './content-index'
-import type { ContentIndexBlockFields } from '../lib/cms-blocks'
+import type { ContentIndexBlockFields } from '../lib/content-blocks'
 
 const jsonResponse = (docs: unknown[]) =>
   ({ ok: true, status: 200, json: async () => ({ docs }) }) as never

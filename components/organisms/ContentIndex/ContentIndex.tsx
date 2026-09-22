@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button } from '../../atoms'
 import { ContentGrid } from '../../molecules'
-import type { ResolvedCardItem } from '../../../lib/cms-blocks'
+import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { useT } from '../../../hooks/useT'
 
 export interface ContentIndexProps {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import type { ResolvedLecture } from '../../server/cms-types'
+import type { ResolvedLecture } from '../../server/content-types'
 import { LectureTemplate, LecturePlayer } from './LectureTemplate'
 
 // VideoPlayer is wrapped in vike-react's ClientOnly, which reads vike's page

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Hono } from 'hono'
-import type { CmsEnv } from './cms-context'
+import type { CmsEnv } from './sahajcloud-context'
 
 const find = vi.fn()
 const findGlobal = vi.fn()
@@ -10,7 +10,7 @@ const fetchMock = vi.fn()
 
 vi.stubGlobal('fetch', fetchMock)
 
-vi.mock('./cms-context', () => ({
+vi.mock('./sahajcloud-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))

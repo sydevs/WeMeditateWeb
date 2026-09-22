@@ -75,7 +75,7 @@ export const submissionSchema = z.object({
 
 /**
  * Schema for validating API keys.
- * Used by both cms-context.ts and payload-client.ts for consistent validation.
+ * Used by both sahajcloud-context.ts and payload-client.ts for consistent validation.
  */
 export const apiKeySchema = z
   .string()

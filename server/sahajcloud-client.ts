@@ -58,8 +58,8 @@ import type {
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
-} from './cms-types'
-import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './cms-types'
+} from './content-types'
+import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './content-types'
 
 // --- Common Options Interfaces ---
 

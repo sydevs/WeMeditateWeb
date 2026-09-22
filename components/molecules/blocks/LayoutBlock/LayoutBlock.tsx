@@ -3,7 +3,7 @@ import { Accordion, type AccordionItemData } from '../../Accordion'
 import { ColumnCarousel } from '../../ColumnCarousel'
 import type { ColumnProps } from '../../Column'
 import { Image, Link } from '../../../atoms'
-import { populatedImage, type LayoutBlockFields, type LayoutItem } from '../../../../lib/cms-blocks'
+import { populatedImage, type LayoutBlockFields, type LayoutItem } from '../../../../lib/content-blocks'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */

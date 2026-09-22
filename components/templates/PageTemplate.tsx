@@ -11,13 +11,13 @@
  * <PageTemplate page={pageData} />
  */
 
-import type { Page, Author, Video } from '../../server/cms-types'
+import type { Page, Author, Video } from '../../server/content-types'
 import { RichText } from '../organisms'
 import { VideoPlayer, Author as AuthorByline } from '../molecules'
 import { Container, PageTitle } from '../atoms'
 import { usePageHead } from '../../lib/head'
-import { isPopulated, populatedImageUrl } from '../../lib/cms-relationships'
-import { getLeadSplash } from '../../lib/cms-blocks'
+import { isPopulated, populatedImageUrl } from '../../lib/payload-relationships'
+import { getLeadSplash } from '../../lib/content-blocks'
 
 export interface PageTemplateProps {
   /** Page data from PayloadCMS */

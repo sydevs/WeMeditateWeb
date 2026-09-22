@@ -31,7 +31,7 @@ Two things follow for anyone adding a read:
 jitter, on network and 5xx errors only. `withCache` used to run it on every miss, so every read it
 wrapped keeps it now that the cache is gone.
 
-`withRetryUnlessPreview` in [cms-client.ts](./cms-client.ts) adds the one exception: a **preview**
+`withRetryUnlessPreview` in [sahajcloud-client.ts](./sahajcloud-client.ts) adds the one exception: a **preview**
 read skips the retry, because an editor watching their own edit needs the error now, not after
 about 7s of backoff.
 

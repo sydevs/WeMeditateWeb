@@ -3,7 +3,7 @@ import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
 import * as Sentry from '@sentry/react'
 import { detectErrorType, ErrorType } from './error-utils'
 
-vi.mock('./cms-context', () => ({
+vi.mock('./sahajcloud-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))

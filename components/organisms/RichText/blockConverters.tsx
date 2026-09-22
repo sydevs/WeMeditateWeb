@@ -4,7 +4,7 @@
  * the `blocks` key, keyed by each block's `blockType` slug.
  *
  * Each converter reads the loosely-typed `node.fields`, casts it to the
- * matching interface from `lib/cms-blocks`, and renders an existing
+ * matching interface from `lib/content-blocks`, and renders an existing
  * component. A block that cannot render meaningfully — a missing required
  * field, an empty relationship — returns `null` and degrades silently.
  */
@@ -43,7 +43,7 @@ import {
   type SubtleSystemBlockFields,
   type TableOfContentsBlockFields,
   type TextBoxBlockFields,
-} from '../../../lib/cms-blocks'
+} from '../../../lib/content-blocks'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>

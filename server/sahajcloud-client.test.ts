@@ -7,17 +7,17 @@ import {
   partitionPublishedPages,
   getRelatedMeditations,
   getRelatedLectures,
-} from './cms-client'
+} from './sahajcloud-client'
 import { createPayloadClient } from './payload-client'
 import { detectErrorType, ErrorType } from './error-utils'
-import type { Locale, Page, PageStatus } from './cms-types'
+import type { Locale, Page, PageStatus } from './content-types'
 
 // Stub the SDK factory to capture the query.
 vi.mock('./payload-client', () => ({
   createPayloadClient: vi.fn(),
 }))
 // The shaped nested-route fetchers (related-*) read apiKey and baseURL from context.
-vi.mock('./cms-context', () => ({
+vi.mock('./sahajcloud-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
 }))
 // Silence the Sentry warning emitted on unresolved page references.

@@ -3,7 +3,7 @@
  * tested directly and reused by the Lexical → React converters.
  */
 
-import { isPopulated } from '../../../lib/cms-relationships'
+import { isPopulated } from '../../../lib/payload-relationships'
 
 // Re-exported so existing importers (`./lexical-helpers`) keep working; the
 // heading converter and the `table-of-contents` block share this one

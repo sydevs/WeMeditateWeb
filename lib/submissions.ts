@@ -12,7 +12,7 @@
  * Pure, so the whole matrix is testable without rendering.
  */
 
-import type { EmbeddedForm } from '../server/cms-types'
+import type { EmbeddedForm } from '../server/content-types'
 
 /**
  * The same-origin route a form posts to. The browser cannot post to the CMS

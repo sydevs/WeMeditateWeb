@@ -1,5 +1,5 @@
 import { Dropdown } from '../../atoms/Dropdown'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/content-types'
 import { useT } from '../../../hooks/useT'
 import { LanguageFlag } from '../../atoms/graphics/LanguageFlag'
 import { Link } from '../../atoms/Link'

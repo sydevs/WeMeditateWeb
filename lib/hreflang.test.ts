@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildAlternates, advertisedLocales, X_DEFAULT } from './hreflang'
-import type { Locale } from '../server/cms-types'
+import type { Locale } from '../server/content-types'
 
 const ORIGIN = 'https://wemeditate.com'
 

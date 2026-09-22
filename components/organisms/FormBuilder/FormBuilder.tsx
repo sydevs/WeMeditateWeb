@@ -17,7 +17,7 @@ import {
 } from '../../../lib/submissions'
 import { isSafeNavigationUrl, normalizeContentPath } from '../../../lib/urls'
 import type { TFunction } from '../../../lib/i18n'
-import type { EmbeddedForm } from '../../../server/cms-types'
+import type { EmbeddedForm } from '../../../server/content-types'
 
 /** One entry of the plugin's authored field list. */
 type AuthoredField = NonNullable<EmbeddedForm['fields']>[number]

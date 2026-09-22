@@ -1,6 +1,6 @@
 import { Header } from '../components/organisms/Header'
 import { useData } from 'vike-react/useData'
-import type { WebConfig } from '../server/cms-types'
+import type { WebConfig } from '../server/content-types'
 import { useSiteNav } from './useSiteNav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 

@@ -12,7 +12,7 @@ const getPageBySlug = vi.fn()
 const getPageLocaleStatus = vi.fn()
 const settings = { homePage: null as { slug: string } | null, availableLocales: ['en'], audiences: [] }
 
-vi.mock('../../server/cms-client', () => ({
+vi.mock('../../server/sahajcloud-client', () => ({
   getPageBySlug: (...args: unknown[]) => getPageBySlug(...args),
   getPageLocaleStatus: (...args: unknown[]) => getPageLocaleStatus(...args),
 }))

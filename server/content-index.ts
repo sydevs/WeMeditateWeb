@@ -18,7 +18,7 @@
 import * as Sentry from '@sentry/react'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
-import type { Locale } from './cms-types'
+import type { Locale } from './content-types'
 import {
   contentIndexCard,
   contentIndexTrack,
@@ -26,8 +26,8 @@ import {
   type ContentIndexBlockFields,
   type ResolvedCardItem,
   type PageTagLabels,
-} from '../lib/cms-blocks'
-import { audienceIdList } from './cms-client'
+} from '../lib/content-blocks'
+import { audienceIdList } from './sahajcloud-client'
 // Type-only import (erased at build): the songs index resolves to MusicLibrary tracks.
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
@@ -90,7 +90,7 @@ interface ResolveOptions {
   audiences?: (number | Audience)[]
   /**
    * Visible labels for the page-tag facets, from the CMS
-   * (`article.general.tag_*`). `lib/cms-blocks.ts` stays free of the
+   * (`article.general.tag_*`). `lib/content-blocks.ts` stays free of the
    * translations layer: it takes the resolved map, not the accessor.
    */
   pageTagLabels?: PageTagLabels

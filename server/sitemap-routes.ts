@@ -16,14 +16,14 @@
  */
 
 import type { Hono } from 'hono'
-import type { CmsEnv } from './cms-context'
+import type { CmsEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
-import { getWebConfig } from './cms-client'
+import { getWebConfig } from './sahajcloud-client'
 import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
-import { DEFAULT_LOCALE, type Locale } from './cms-types'
+import { DEFAULT_LOCALE, type Locale } from './content-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
 /** Bounded because this runs in a Worker request. */
@@ -101,7 +101,7 @@ async function readContentDocs() {
  * Site-content URLs (pages, meditations, and lectures), each annotated with
  * its `hreflang` cluster.
  *
- * The path shapes mirror `ROUTE_BUILDERS` in `lib/cms-routes.ts`, which
+ * The path shapes mirror `ROUTE_BUILDERS` in `lib/document-routes.ts`, which
  * owns the inverse direction (`/:slug`, `/meditations/:id`,
  * `/lectures/:id`).
  *

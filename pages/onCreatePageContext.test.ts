@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from 'vitest'
 import type { PageContextServer } from 'vike/types'
-import type { Locale } from '../server/cms-types'
+import type { Locale } from '../server/content-types'
 import { onCreatePageContext } from './+onCreatePageContext.server'
 
 function localeOf(urlOriginal: string, routed?: Locale): Locale {

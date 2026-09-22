@@ -1,4 +1,4 @@
-# CMS API-client reads (`server/cms-client.ts`)
+# CMS API-client reads (`server/sahajcloud-client.ts`)
 
 The SahajCloud (PayloadCMS) API validates every API-client read. Follow these rules.
 
@@ -55,7 +55,7 @@ Two things about `form` and the visitor's IP that only bite in production:
 - Type the `select`/`populate` constants against the generated `*Select` interfaces
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
-  `server/cms-client.ts`.
+  `server/sahajcloud-client.ts`.
 
 ## Treat a bare id as unpublished — degrade, do not break
 
@@ -63,7 +63,7 @@ A published page populates into an object. The API returns an unpublished or tra
 bare numeric id instead. Rendering that id as a link produces a dead `/undefined`.
 
 - Filter relationship arrays down to populated objects with a non-empty slug, before you build
-  any links. See `partitionPublishedPages` in `server/cms-client.ts`.
+  any links. See `partitionPublishedPages` in `server/sahajcloud-client.ts`.
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
   dropped. This keeps the CMS data gap visible. Do not hide it silently, and do not throw a 500.
 
@@ -122,7 +122,7 @@ maps.
 Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
 `pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
 `?locale=all&select[_status]=true` answers that in a single query. `lib/hreflang.ts` turns the map
-into a locale list, and `getPageLocaleStatus` in `server/cms-client.ts` is the only single-document
+into a locale list, and `getPageLocaleStatus` in `server/sahajcloud-client.ts` is the only single-document
 read that sends `all`.
 
 Three things follow, all load-bearing:

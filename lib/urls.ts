@@ -13,8 +13,8 @@
  * already holds.
  */
 
-import type { Locale } from '../server/cms-types'
-import { DEFAULT_LOCALE, isLocale } from '../server/cms-types'
+import type { Locale } from '../server/content-types'
+import { DEFAULT_LOCALE, isLocale } from '../server/content-types'
 
 /** What a path's leading segment says about the locale. */
 export interface PathLocale {

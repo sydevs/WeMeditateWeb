@@ -23,7 +23,7 @@ import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
 import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
-import type { MeditationSong } from '../../../server/cms-types'
+import type { MeditationSong } from '../../../server/content-types'
 import founderImage from '../../../assets/smnd.webp'
 import { useT } from '../../../hooks/useT'
 

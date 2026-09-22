@@ -6,8 +6,8 @@ import { createPayloadClient, validatePayloadConfig, PayloadConfigError } from '
 import { detectErrorType, ErrorType } from './error-utils'
 
 // createPayloadClient reads its defaults from the request context, which does
-// not exist under Vitest. Shape checked against server/cms-context.ts.
-vi.mock('./cms-context', () => ({
+// not exist under Vitest. Shape checked against server/sahajcloud-context.ts.
+vi.mock('./sahajcloud-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
 }))
 

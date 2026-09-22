@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cmsHref, matchDocumentRoute, refId, refSlug } from './cms-routes'
+import { cmsHref, matchDocumentRoute, refId, refSlug } from './document-routes'
 
 describe('refId', () => {
   it('returns a bare numeric id as a string', () => {

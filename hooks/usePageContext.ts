@@ -12,7 +12,7 @@
 
 import { usePageContext } from 'vike-react/usePageContext'
 import type { PageContext } from 'vike/types'
-import { DEFAULT_LOCALE, type Locale } from '../server/cms-types'
+import { DEFAULT_LOCALE, type Locale } from '../server/content-types'
 
 /** `pageContext`, or `null` where there is none. */
 export function useOptionalPageContext(): PageContext | null {

@@ -13,7 +13,7 @@
  * <LectureTemplate lecture={resolvedLecture} locale="en" />
  */
 
-import type { Locale, ResolvedLecture } from '../../server/cms-types'
+import type { Locale, ResolvedLecture } from '../../server/content-types'
 import { EmbedButton, VideoPlayer } from '../molecules'
 import { Badge, PageTitle } from '../atoms'
 import { RelatedContentLoader } from '../organisms/RelatedContent'

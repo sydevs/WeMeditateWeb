@@ -1,4 +1,4 @@
-import { matchDocumentRoute } from '../../../../lib/cms-routes'
+import { matchDocumentRoute } from '../../../../lib/document-routes'
 
 /**
  * /meditations/:id — the full page with site chrome (and an optional

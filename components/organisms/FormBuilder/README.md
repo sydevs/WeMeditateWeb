@@ -61,7 +61,7 @@ A form with no fields renders nothing, the way every other embedded document deg
 
 `lib/submissions.ts` turns the document plus the answers into the `user-submissions` create body,
 and owns every decision about it. An embedded `forms` relationship needs no separate read: the
-page read populates it through `EMBEDDED_FORM_SELECT` in `server/cms-client.ts`.
+page read populates it through `EMBEDDED_FORM_SELECT` in `server/sahajcloud-client.ts`.
 
 ⚠ **An author must call the sender's name field exactly `name`.** `prepareUserSubmission`
 upstream matches it on that literal key, not on a block type, and the `users` row is written on

@@ -12,8 +12,8 @@ import {
   subtleSystemItems,
   textColorToTheme,
   type ShowcaseItem,
-} from './cms-blocks'
-import type { Page } from '../server/cms-types'
+} from './content-blocks'
+import type { Page } from '../server/content-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
 const leadContent = (firstBlock?: Record<string, unknown>) =>

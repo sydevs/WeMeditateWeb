@@ -1,8 +1,8 @@
 /** Data fetching for pages in default locale (English). */
 
 import type { PageContextServer } from 'vike/types'
-import type { Locale, Page, WebConfig } from '../../server/cms-types'
-import { getPageBySlug, getPageLocaleStatus } from '../../server/cms-client'
+import type { Locale, Page, WebConfig } from '../../server/content-types'
+import { getPageBySlug, getPageLocaleStatus } from '../../server/sahajcloud-client'
 import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
 import { advertisedLocales } from '../../lib/hreflang'

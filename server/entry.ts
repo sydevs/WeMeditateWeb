@@ -1,7 +1,7 @@
 import { apply, serve } from '@photonjs/hono'
 import { Hono } from 'hono'
 import { contextStorage } from 'hono/context-storage'
-import type { CmsEnv } from './cms-context'
+import type { CmsEnv } from './sahajcloud-context'
 import { registerApiRoutes } from './api-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'

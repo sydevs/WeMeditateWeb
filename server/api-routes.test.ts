@@ -4,7 +4,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
-import type { CmsEnv } from './cms-context'
+import type { CmsEnv } from './sahajcloud-context'
 
 /**
  * ⚠ The gate on `/api/live-preview/populate`, which is new attack surface.
@@ -21,7 +21,7 @@ const { createdWith, request } = vi.hoisted(() => ({
   request: vi.fn(),
 }))
 
-vi.mock('./cms-context', () => ({
+vi.mock('./sahajcloud-context', () => ({
   getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))

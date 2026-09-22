@@ -4,7 +4,7 @@ import { useClipboard } from '../../../hooks/useClipboard'
 import { useT } from '../../../hooks/useT'
 import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/content-types'
 
 /** Fixed iframe geometry and permissions for the generated embed snippet. */
 const IFRAME_WIDTH = 560

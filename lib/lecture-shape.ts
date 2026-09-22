@@ -16,7 +16,7 @@
  */
 
 import type { Lecture } from '../server/payload-types'
-import { isPopulated, populatedImageUrl } from './cms-relationships'
+import { isPopulated, populatedImageUrl } from './payload-relationships'
 
 /** A resolved subtitle track: a locale code and an external WebVTT URL. */
 export interface LectureSubtitleTrack {

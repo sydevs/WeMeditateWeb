@@ -1,7 +1,7 @@
 /**
  * Reads for the atlas SSR routes under `/map` (issue #62, stage C4).
  *
- * This file is deliberately not part of `cms-client.ts`. That module is
+ * This file is deliberately not part of `sahajcloud-client.ts`. That module is
  * already about 950 lines, and holds only collection reads through the
  * Payload SDK. This file has two custom root endpoints,
  * `GET /api/atlas/seo` and `GET /api/atlas/sitemap`, which belong to no
@@ -26,10 +26,10 @@
  */
 
 import * as Sentry from '@sentry/react'
-import { getCmsContext } from './cms-context'
+import { getCmsContext } from './sahajcloud-context'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
-import type { Locale } from './cms-types'
+import type { Locale } from './content-types'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from './atlas-types'
 import type { SitemapUrl } from './sitemap'
 import { parseAtlasRoute } from '../lib/atlas-route'

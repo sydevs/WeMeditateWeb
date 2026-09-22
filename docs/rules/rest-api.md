@@ -1,7 +1,7 @@
 ---
 paths:
-  - "server/cms-client.ts"
-  - "server/cms-types.ts"
+  - "server/sahajcloud-client.ts"
+  - "server/content-types.ts"
   - "server/payload-client.ts"
   - "server/atlas-client.ts"
 ---
@@ -11,8 +11,8 @@ paths:
 ## Add a new query function
 
 1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts).
-2. Add app-specific types to [server/cms-types.ts](../../server/cms-types.ts) if needed.
-3. Add the query function to [server/cms-client.ts](../../server/cms-client.ts):
+2. Add app-specific types to [server/content-types.ts](../../server/content-types.ts) if needed.
+3. Add the query function to [server/sahajcloud-client.ts](../../server/sahajcloud-client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
      return withRetryUnlessPreview(
@@ -39,7 +39,7 @@ paths:
    it.
 
    `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
-   preview read, which must fail fast. A read outside `cms-client.ts` has no preview variant and
+   preview read, which must fail fast. A read outside `sahajcloud-client.ts` has no preview variant and
    calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because it degrades
    quietly; that is the case that needs it most. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
@@ -64,7 +64,7 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
-`WEB_TRANSLATIONS_SELECT` lives in [server/cms-types.ts](../../server/cms-types.ts), beside the
+`WEB_TRANSLATIONS_SELECT` lives in [server/content-types.ts](../../server/content-types.ts), beside the
 `WebTranslations` type that derives from it. Add a group there and it is both fetched and
 typed. Listing the groups anywhere else lets the query and the type disagree.
 
@@ -102,7 +102,7 @@ root endpoint. Nothing else composes that header.
 
 ## A public write is a proxy, not a query function
 
-Contact and subscribe submissions do not go through `cms-client.ts`. They post to the same-origin
+Contact and subscribe submissions do not go through `sahajcloud-client.ts`. They post to the same-origin
 `POST /api/submissions`, which forwards one create to the CMS's `user-submissions` collection —
 the captcha header, the refusal envelope, and why the browser cannot make the call itself all
 live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a submission is a

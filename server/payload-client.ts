@@ -8,7 +8,7 @@
 import { PayloadSDK } from '@payloadcms/sdk'
 import { z } from 'zod'
 import type { Config } from './payload-types'
-import { getCmsContext } from './cms-context'
+import { getCmsContext } from './sahajcloud-context'
 import { sahajCloudAuthHeaders, fetchWithErrorDetails } from './sahajcloud-fetch'
 import { LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { apiKeySchema, baseUrlSchema } from './validation'

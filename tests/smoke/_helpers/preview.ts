@@ -7,7 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
-import { DEFAULT_LOCALE, type Locale } from '../../../server/cms-types'
+import { DEFAULT_LOCALE, type Locale } from '../../../server/content-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
 import { enT } from '../../../lib/i18n'
@@ -227,7 +227,7 @@ function toQueryString(params: Record<string, unknown>, prefix = ''): string {
 
 // The CMS enforces select and populate on collection reads, through a
 // query-validation hook (PR #23), so a bare query returns 400. This
-// mirrors the shapes cms-client.ts uses.
+// mirrors the shapes sahajcloud-client.ts uses.
 const PAGE_SELECT = {
   title: true,
   slug: true,

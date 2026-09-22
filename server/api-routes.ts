@@ -21,22 +21,22 @@
  */
 
 import type { Hono } from 'hono'
-import type { CmsEnv } from './cms-context'
+import type { CmsEnv } from './sahajcloud-context'
 import {
   documentReadArgs,
   getRelatedMeditations,
   getRelatedLectures,
   getWebConfig,
   isDocumentCollection,
-} from './cms-client'
+} from './sahajcloud-client'
 import { relatedMeditationsToCards, relatedLecturesToCards } from '../lib/related-content'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER, type SubmissionResult } from '../lib/submissions'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
 import { idSchema, submissionSchema } from './validation'
-import type { Locale } from './cms-types'
-import { isLocale } from './cms-types'
+import type { Locale } from './content-types'
+import { isLocale } from './content-types'
 
 /** Accept only a locale the CMS defines. Anything else reads as `en`. */
 function parseLocale(raw: string | undefined): Locale {

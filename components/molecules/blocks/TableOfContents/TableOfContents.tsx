@@ -1,6 +1,6 @@
 import { Link } from '../../../atoms'
 import { slugify } from '../../../../lib/slugify'
-import type { TocHeading } from '../../../../lib/cms-blocks'
+import type { TocHeading } from '../../../../lib/content-blocks'
 import { useT } from '../../../../hooks/useT'
 
 export interface TableOfContentsProps {

@@ -7,7 +7,7 @@
  * "Excluded").
  */
 
-import type { Locale } from '../server/cms-types'
+import type { Locale } from '../server/content-types'
 
 /**
  * The language's name in itself, capitalised by its own rules.

@@ -3,8 +3,8 @@
  * CMS pages. Kept framework-free so the mapping, image resolution, and random
  * selection can be unit-tested without rendering.
  */
-import type { Page } from '../server/cms-types'
-import { populatedImageUrl } from '../lib/cms-relationships'
+import type { Page } from '../server/content-types'
+import { populatedImageUrl } from '../lib/payload-relationships'
 import type { HeaderDropdownArticle, HeaderDropdownLink } from '../components/organisms'
 
 /** A knowledge page → a left-column nav link (`/<slug>`). */

@@ -21,7 +21,7 @@
  * that reference is handled before this mapper is consulted.
  */
 
-import { isPopulated } from './cms-relationships'
+import { isPopulated } from './payload-relationships'
 
 /** PayloadCMS collection slugs that can be referenced from rich text. */
 export type RelationTo = 'pages' | 'meditations' | 'lectures' | 'albums' | 'app-cards' | 'forms'

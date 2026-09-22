@@ -13,13 +13,13 @@
  */
 
 import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
-import type { Meditation, Page } from '../server/cms-types'
+import type { Meditation, Page } from '../server/content-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '../components/molecules/AudioPlayer/types'
-import { cmsHref, type RelationValue } from './cms-routes'
+import { cmsHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
-import { isPopulated } from './cms-relationships'
+import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
 /** A relationship or upload field: a populated document or a bare ID. */

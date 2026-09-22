@@ -3,7 +3,7 @@
  * Adds the custom properties set by the hooks under `pages/`.
  */
 
-import type { Locale, WebTranslations } from '../server/cms-types'
+import type { Locale, WebTranslations } from '../server/content-types'
 import type { LivePreviewState } from '../lib/live-preview/protocol'
 
 /**

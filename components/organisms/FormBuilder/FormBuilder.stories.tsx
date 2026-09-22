@@ -2,7 +2,7 @@ import type { Story, StoryDefault } from '@ladle/react'
 import { FormBuilder } from './FormBuilder'
 import { submissionBody } from '../../../lib/submissions'
 import { StoryWrapper, StorySection } from '../../ladle'
-import type { EmbeddedForm } from '../../../server/cms-types'
+import type { EmbeddedForm } from '../../../server/content-types'
 
 export default {
   title: 'Organisms',
