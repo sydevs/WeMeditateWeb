@@ -36,7 +36,7 @@ Open `http://localhost:5173`.
 | `pnpm ladle` | Run the component library locally. |
 | `pnpm ladle:build` | Build the component library for static hosting. |
 | `pnpm env:setup` | Copy `.env.example` to `.env.local`. |
-| `pnpm types:cms` | Refresh CMS types from the external Payload repo (needs network access). |
+| `pnpm types:cms` | Refresh SahajCloud types from the upstream Payload repo (needs network). |
 
 ## Project structure
 
@@ -45,7 +45,7 @@ pages/          # Vike pages and routes
 components/     # Reusable UI components
 layouts/        # Layout wrappers
 hooks/          # Shared React hooks
-server/         # Backend logic, caching, CMS integration
+server/         # Backend logic, caching, SahajCloud integration
 public/         # Static assets
 ```
 

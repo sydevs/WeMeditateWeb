@@ -8,7 +8,7 @@ afterEach(() => {
 })
 
 describe('sahajCloudOrigin', () => {
-  it('reduces the configured CMS URL to a bare origin', () => {
+  it('reduces the configured SahajCloud URL to a bare origin', () => {
     vi.stubEnv('PUBLIC__SAHAJCLOUD_URL', 'https://cloud.sydevelopers.com/admin')
 
     expect(sahajCloudOrigin()).toBe('https://cloud.sydevelopers.com')

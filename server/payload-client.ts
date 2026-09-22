@@ -15,7 +15,7 @@ import { apiKeySchema, baseUrlSchema } from './validation'
 
 /**
  * Configuration for creating a PayloadCMS SDK client.
- * Every field is optional. Defaults come from the CMS context or environment.
+ * Every field is optional. Defaults come from the SahajCloud context or environment.
  */
 export interface PayloadClientConfig {
   /** PayloadCMS API key (optional, falls back to context or env). */
@@ -81,7 +81,8 @@ export function validatePayloadConfig(config: { apiKey?: string; baseURL?: strin
  * Creates a new PayloadCMS SDK client instance. See the file header for
  * why a fresh instance is required per request.
  *
- * @param config - Optional client configuration. Defaults come from the CMS context or environment.
+ * @param config - Optional client configuration. Defaults come from the SahajCloud context or
+ * environment.
  * @returns Configured PayloadSDK instance
  * @throws PayloadConfigError if configuration is invalid (missing API key, malformed URL)
  */

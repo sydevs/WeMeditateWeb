@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 /**
- * The two-way channel the CMS meditation frame editor drives.
+ * The two-way channel the SahajCloud meditation frame editor drives.
  *
  * A meditation's "frames" are images pinned to timestamps. The editor shows
  * the real `/meditations/:id/embed` page in its panel and talks to it:
@@ -62,11 +62,11 @@ export interface SeekRequest {
 /**
  * Subscribes to the frame editor's seek requests and reports the playhead back.
  *
- * Both directions are inert unless `enabled` and a parseable CMS origin agree,
+ * Both directions are inert unless `enabled` and a parseable SahajCloud origin agree,
  * so the ordinary public embed attaches no listener and posts nothing.
  *
  * @param enabled - whether a live-preview session for this document is open
- * @param sahajCloudOrigin - the CMS origin, from `sahajCloudOrigin()` in `./session`
+ * @param sahajCloudOrigin - the SahajCloud origin, from `sahajCloudOrigin()` in `./session`
  */
 export function useFrameEditorChannel(
   enabled: boolean,

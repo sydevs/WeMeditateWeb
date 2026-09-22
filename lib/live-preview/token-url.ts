@@ -12,7 +12,7 @@
  *   on 10% of sessions and 100% after an error.
  *
  * ⚠ **Not the address bar, which is what this used to claim.** A preview runs
- * in an iframe inside the CMS admin, so the browser displays
+ * in an iframe inside the SahajCloud admin, so the browser displays
  * `cloud.sydevelopers.com/admin/…` and this page's URL is never shown to
  * anyone. `window.history.replaceState` is not here to change what an editor
  * sees; it is the only way to change `location.href` without navigating.

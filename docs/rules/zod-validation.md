@@ -64,11 +64,11 @@ a validation error — an invalid slug or id means the resource does not exist.
 ## An authored form is not validated with Zod here
 
 `FormBuilder` takes no schema, and there is no prop to pass one. The rules a submission must meet
-are the form author's (`required` on a field) and the CMS's (per-type allowed keys, length bounds,
-the captcha), and neither is knowable from this side — an author adds a field whenever they like.
-So the fields validate through react-hook-form's own `required`, `submissionSchema` bounds the
-proxied body, and the collection is the authority. A Zod schema mirroring the CMS's rules would be
-a second copy to keep in step.
+are the form author's (`required` on a field) and SahajCloud's (per-type allowed keys, length
+bounds, the captcha), and neither is knowable from this side — an author adds a field whenever
+they like. So the fields validate through react-hook-form's own `required`, `submissionSchema`
+bounds the proxied body, and the collection is the authority. A Zod schema mirroring SahajCloud's
+rules would be a second copy to keep in step.
 
 ## Zod 4 syntax notes
 

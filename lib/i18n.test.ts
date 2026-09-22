@@ -10,7 +10,7 @@ import { describe, it, expect } from 'vitest'
 import type { WebTranslations } from '../server/content-types'
 import { createT, EN_TRANSLATIONS, interpolate, pluralize } from './i18n'
 
-/** A partial translations object, shaped like a CMS read. */
+/** A partial translations object, shaped like a SahajCloud read. */
 const fixture = (groups: Record<string, unknown>) => groups as unknown as WebTranslations
 
 describe('interpolate', () => {

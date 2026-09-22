@@ -10,9 +10,9 @@ import type { SahajCloudEnv } from './sahajcloud-context'
  * ⚠ The gate on `/api/live-preview/populate`, which is new attack surface.
  *
  * The route attaches `SAHAJCLOUD_API_KEY` on our side, so without a signature
- * check it is an open proxy handing any caller the CMS's unpublished content.
+ * check it is an open proxy handing any caller SahajCloud's unpublished content.
  * Every case below asserts the same two things together: the status is a bare
- * **403**, and the CMS was **not called at all** — a gate that refuses after
+ * **403**, and SahajCloud was **not called at all** — a gate that refuses after
  * fetching has still leaked the read.
  */
 
@@ -22,7 +22,11 @@ const { createdWith, request } = vi.hoisted(() => ({
 }))
 
 vi.mock('./sahajcloud-context', () => ({
-  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getSahajCloudContext: () => ({
+    apiKey: 'test-key',
+    baseURL: 'https://sahajcloud.test',
+    kv: undefined,
+  }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
 vi.mock('./payload-client', () => ({
@@ -92,21 +96,21 @@ function populate(options: { token?: string; endpoint?: string; body?: unknown }
 }
 
 describe('POST /api/live-preview/populate — the token gate', () => {
-  it('refuses a request with no token, without calling the CMS', async () => {
+  it('refuses a request with no token, without calling SahajCloud', async () => {
     const response = await populate()
 
     expect(response.status).toBe(403)
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses a token signed by another key, without calling the CMS', async () => {
+  it('refuses a token signed by another key, without calling SahajCloud', async () => {
     const response = await populate({ token: await signWithOtherKey(NOW() + 600) })
 
     expect(response.status).toBe(403)
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses an expired token, without calling the CMS', async () => {
+  it('refuses an expired token, without calling SahajCloud', async () => {
     const response = await populate({ token: await sign(NOW() - 10) })
 
     expect(response.status).toBe(403)
@@ -133,7 +137,7 @@ describe('POST /api/live-preview/populate — the token gate', () => {
 })
 
 describe('POST /api/live-preview/populate — the endpoint', () => {
-  it('refuses a collection it does not read, without calling the CMS', async () => {
+  it('refuses a collection it does not read, without calling SahajCloud', async () => {
     const response = await populate({ endpoint: 'users/1', token: await sign(NOW() + 600) })
 
     expect(response.status).toBe(400)
@@ -152,7 +156,7 @@ describe('POST /api/live-preview/populate — the endpoint', () => {
 })
 
 describe('POST /api/live-preview/populate — the forward', () => {
-  it('sends the unsaved document to the CMS with the verified token', async () => {
+  it('sends the unsaved document to SahajCloud with the verified token', async () => {
     const token = await sign(NOW() + 600)
 
     const response = await populate({ token })
@@ -186,10 +190,10 @@ describe('POST /api/live-preview/populate — the forward', () => {
     expect(sent.json.flattenLocales).toBe(false)
   })
 
-  it('degrades rather than 500s when the CMS read fails', async () => {
+  it('degrades rather than 500s when the SahajCloud read fails', async () => {
     // The browser keeps the last good document on screen, so a failure here is
     // a status the handler can read, never an exception that reaches Vike.
-    request.mockRejectedValue(new Error('CMS down'))
+    request.mockRejectedValue(new Error('SahajCloud down'))
 
     const response = await populate({ token: await sign(NOW() + 600) })
 
@@ -214,7 +218,7 @@ describe('POST /api/live-preview/populate — the forward', () => {
 /**
  * ⚠ `/api/submissions` attaches `SAHAJCLOUD_API_KEY` on our side, so what it
  * forwards and what it hands back are both part of the gate. Every case below
- * asserts one of three things: the body is re-validated before the CMS is
+ * asserts one of three things: the body is re-validated before SahajCloud is
  * called at all, exactly one browser header crosses over, and a refusal
  * carries the intake's code and never its prose.
  */
@@ -243,7 +247,7 @@ function submit(options: { body?: unknown; token?: string } = {}) {
   })
 }
 
-/** The refusal shape `@payloadcms/sdk` rethrows, as the CMS composes it. */
+/** The refusal shape `@payloadcms/sdk` rethrows, as SahajCloud composes it. */
 function sdkError(status: number, code?: string) {
   return Object.assign(new Error('refused'), {
     status,
@@ -291,7 +295,7 @@ describe('POST /api/submissions — the forward', () => {
     })
   })
 
-  it('asks the CMS to populate nothing, since nothing reads the response', async () => {
+  it('asks SahajCloud to populate nothing, since nothing reads the response', async () => {
     await submit({ token: 'turnstile-token' })
 
     expect(request.mock.calls[0][0].args).toEqual({ depth: 0 })
@@ -307,7 +311,7 @@ describe('POST /api/submissions — the forward', () => {
 })
 
 describe('POST /api/submissions — the body gate', () => {
-  it('refuses a body the schema rejects, without calling the CMS', async () => {
+  it('refuses a body the schema rejects, without calling SahajCloud', async () => {
     const response = await submit({ body: { form: 'contact-form', type: 'contact' } })
 
     expect(response.status).toBe(400)
@@ -315,7 +319,7 @@ describe('POST /api/submissions — the body gate', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses a type this site does not submit, without calling the CMS', async () => {
+  it('refuses a type this site does not submit, without calling SahajCloud', async () => {
     // Registrations and proposals are the atlas widget's, and name an event
     // rather than a form.
     const response = await submit({
@@ -342,7 +346,7 @@ describe('POST /api/submissions — the body gate', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses a non-JSON body, without calling the CMS', async () => {
+  it('refuses a non-JSON body, without calling SahajCloud', async () => {
     const app = new Hono<SahajCloudEnv>()
 
     registerApiRoutes(app)
@@ -376,7 +380,7 @@ describe('POST /api/submissions — a refusal', () => {
     expect(await response.json()).toEqual({ ok: false, code: 'submission_data_invalid' })
   })
 
-  it('reads a CMS fault as 502, not as the browser sending a bad request', async () => {
+  it('reads a SahajCloud fault as 502, not as the browser sending a bad request', async () => {
     request.mockRejectedValue(sdkError(500, 'internal'))
 
     const response = await submit({ token: 'turnstile-token' })
@@ -385,7 +389,7 @@ describe('POST /api/submissions — a refusal', () => {
     expect(await response.json()).toEqual({ ok: false })
   })
 
-  it('reads an unreachable CMS as 502', async () => {
+  it('reads an unreachable SahajCloud as 502', async () => {
     request.mockRejectedValue(new Error('fetch failed'))
 
     const response = await submit({ token: 'turnstile-token' })

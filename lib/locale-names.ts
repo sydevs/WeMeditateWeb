@@ -1,9 +1,9 @@
 /**
- * Language names, from the platform rather than the CMS.
+ * Language names, from the platform rather than SahajCloud.
  *
  * A language's own name for itself — its endonym — is not a translated
  * string: "Deutsch" is Deutsch in every UI language. `Intl.DisplayNames`
- * knows them all, so these never became CMS keys (SahajCloud #707,
+ * knows them all, so these never became SahajCloud keys (SahajCloud #707,
  * "Excluded").
  */
 

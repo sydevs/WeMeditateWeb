@@ -34,7 +34,7 @@ const CONTENT_READ_LIMIT = 500
  *
  * Typed against the generated `*Select` interfaces, per
  * `server/AGENTS.md`: `select` is mandatory for API clients. Typing it
- * here turns a CMS schema change into a compile error, instead of a
+ * here turns a SahajCloud schema change into a compile error, instead of a
  * silent 400 at runtime. `updatedAt` feeds `<lastmod>`. Every doc carries
  * its id regardless of the selection.
  */

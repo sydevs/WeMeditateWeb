@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Mirrors the CMS `wm-web-translations` English locale into
+ * Mirrors the SahajCloud `wm-web-translations` English locale into
  * `lib/translations.en.json`.
  *
- * That snapshot is the English the site falls back to when the CMS read
+ * That snapshot is the English the site falls back to when the SahajCloud read
  * fails, and the fixture every test and Ladle story renders with. It is
  * committed, and it is never hand-edited: run this script instead.
  *
@@ -11,11 +11,11 @@
  *   PUBLIC__SAHAJCLOUD_URL=… SAHAJCLOUD_API_KEY=… pnpm sync:translations
  *
  * Both variables are required, with no default origin. A snapshot silently
- * taken from a local CMS would commit placeholder English. The script prints
+ * taken from a local SahajCloud would commit placeholder English. The script prints
  * the API client the key belongs to before it writes anything, so a local
  * key pointed at production (or the reverse) is visible in the output.
  *
- * This script is not run in CI. An operator runs it after the CMS English
+ * This script is not run in CI. An operator runs it after the SahajCloud English
  * copy changes, and commits the diff.
  */
 
@@ -53,7 +53,7 @@ function sortDeep(value) {
   )
 }
 
-/** Drops blank strings and empty groups, so a blank CMS key falls through to its key path. */
+/** Drops blank strings and empty groups, so a blank SahajCloud key falls through to its path. */
 function prune(value) {
   if (value === null || typeof value !== 'object') return value
 
@@ -89,7 +89,7 @@ async function getJson(path) {
 async function main() {
   // Name the API client before writing. A stale or wrong-environment key is
   // the failure this catches: the read still succeeds, but against the wrong
-  // CMS.
+  // SahajCloud.
   const me = await getJson('/api/clients/me')
   const client = me?.user?.name ?? me?.user?.email ?? me?.user?.id ?? 'unknown'
   console.log(`Authenticated as API client: ${client}`)
@@ -99,7 +99,7 @@ async function main() {
   if (translations._status !== 'published') {
     console.warn(
       `Warning: ${GLOBAL_SLUG} reports _status "${translations._status}" for English. ` +
-        'Publish the English locale in the CMS before trusting this snapshot.',
+        'Publish the English locale in SahajCloud before trusting this snapshot.',
     )
   }
 

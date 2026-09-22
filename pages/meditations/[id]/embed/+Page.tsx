@@ -12,7 +12,7 @@ import { sahajCloudOrigin, useDocumentPreviewActive } from '../../../../lib/live
  * global LayoutRoot (no Header/Footer/nav). It hides the Embed button, because
  * it is already inside an iframe, to avoid embed-in-embed.
  *
- * ## It is also what the CMS frame editor points at
+ * ## It is also what the SahajCloud frame editor points at
  *
  * This used to be `/preview/embed`, a second renderer kept approximately equal
  * to this one. Two `postMessage` channels run on this page while a preview
@@ -23,7 +23,7 @@ import { sahajCloudOrigin, useDocumentPreviewActive } from '../../../../lib/live
  *   what lets an editor click a frame thumbnail and read back the timestamp a
  *   new frame is written at
  *
- * Both are gated on the CMS origin and both fail CLOSED when it is unset.
+ * Both are gated on the SahajCloud origin and both fail CLOSED when it is unset.
  */
 export function Page() {
   const { meditation: initialMeditation, musicTracks } = useData<MeditationEmbedPageData>()

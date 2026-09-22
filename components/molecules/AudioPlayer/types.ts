@@ -14,7 +14,7 @@ export interface Track {
   duration: number
   /**
    * Optional filter facets. `id` is the tag slug — the stable filter id,
-   * never shown — and `label` is the SongTag's CMS `title`, so the pill
+   * never shown — and `label` is the SongTag's SahajCloud `title`, so the pill
    * reads in the visitor's language. Filter pills used to title-case the
    * slug ('wind-instruments' → 'Wind Instruments'), which only ever
    * produced English.

@@ -18,7 +18,7 @@ vi.mock('./payload-client', () => ({
 }))
 // The shaped nested-route fetchers (related-*) read apiKey and baseURL from context.
 vi.mock('./sahajcloud-context', () => ({
-  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 // Silence the Sentry warning emitted on unresolved page references.
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
@@ -59,7 +59,7 @@ function fetchResponse(status: number, body: unknown) {
     json: async () => body,
   }
 
-  // sahajCloudFetch clones a non-OK response to dump the CMS error body.
+  // sahajCloudFetch clones a non-OK response to dump the SahajCloud error body.
   return { ...response, clone: () => response }
 }
 
@@ -78,7 +78,7 @@ describe('partitionPublishedPages', () => {
   it('keeps published pages with a slug; flags bare IDs (unpublished) and slugless objects', () => {
     const { published, unresolved } = partitionPublishedPages([
       page(10, 'meditate-now'),
-      7, // unpublished page: the CMS returns a bare id instead of a populated object
+      7, // unpublished page: SahajCloud returns a bare id instead of a populated object
       page(99, ''), // populated but no slug: cannot form a link
     ])
 
@@ -175,7 +175,7 @@ describe('getPageLocaleStatus', () => {
   })
 
   it('degrades to an empty map rather than failing the page', async () => {
-    const find = vi.fn().mockRejectedValue(new Error('CMS unavailable'))
+    const find = vi.fn().mockRejectedValue(new Error('SahajCloud unavailable'))
 
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
@@ -216,7 +216,7 @@ describe('retry policy', () => {
     } as never)
   })
 
-  it('retries a public read, so a transient CMS fault does not reach the visitor', async () => {
+  it('retries a public read, so a transient SahajCloud fault never reaches a visitor', async () => {
     // The KV layer this read used to sit behind supplied the retry (#98).
     // Dropping the cache must not drop the resilience with it.
     await getPageBySlug({ slug: 'about', locale: 'en' })
@@ -395,7 +395,9 @@ describe('getMeditationSongs', () => {
     expect(await getMeditationSongs({ id: '77', locale: 'en' })).toEqual([
       { id: 9, title: 'Raga', url: 'https://cdn/a.mp3' },
     ])
-    expect(fetchMock.mock.calls[0][0]).toBe('https://cms.test/api/meditations/77/songs?locale=en')
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'https://sahajcloud.test/api/meditations/77/songs?locale=en',
+    )
   })
 
   it('degrades to voice-only on an unknown meditation id (404)', async () => {

@@ -1,5 +1,5 @@
 /**
- * CMS query functions for the PayloadCMS REST API.
+ * SahajCloud query functions for the PayloadCMS REST API.
  *
  * Each function gets its config (apiKey, baseURL) from the request context.
  * Callers do not pass these values.
@@ -84,7 +84,7 @@ function withRetryUnlessPreview<T>(
 // The backend rejects a read that omits `select`. It also rejects depth > 1
 // without `populate`. Each query below selects only the fields the frontend
 // renders. Each select constant is typed against a generated *Select
-// interface. This turns a CMS schema change (pulled by `pnpm types:cms`)
+// interface. This turns a SahajCloud schema change (pulled by `pnpm types:cms`)
 // into a compile error here, instead of a silent 400 or a missing field at
 // runtime.
 //
@@ -191,7 +191,7 @@ const EMBEDDED_APP_CARD_SELECT = {
  * `populate` comes back fully populated, and a form's `recipient` is a
  * relationship to `managers` — so omitting this entry serializes a manager's
  * record into the page's hydration payload. `actionType` is what the
- * submission's `type` comes from; who a message is delivered to is the CMS's
+ * submission's `type` comes from; who a message is delivered to is SahajCloud's
  * business and never the browser's.
  *
  * `EmbeddedFormSelect` is what ties this list to the `EmbeddedForm` type its
@@ -593,7 +593,7 @@ export async function getLecture(
   // A clip with no resolvable HLS source means its parent `fullLecture`
   // returned unpopulated (a bare id, believed unpublished or trashed), or has
   // not synced its Nirmala Vidya metadata. The template degrades to an error
-  // state. Report the CMS data gap to Sentry, per the cms-api-reads rule, so
+  // state. Report the SahajCloud data gap to Sentry, per `server/AGENTS.md`, so
   // it stays visible.
   if (!options.preview && resolved.type === 'clip' && !resolved.hlsUrl) {
     console.warn(
@@ -644,7 +644,7 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
  *
  * This function drops unresolved page references (believed unpublished), so
  * the layout never renders a dead `/undefined` link, and reports each drop
- * to Sentry so the underlying CMS data gap stays visible.
+ * to Sentry so the underlying SahajCloud data gap stays visible.
  *
  * This global has no drafts, so there is no preview variant to read. It
  * carried a `preview` flag only to bypass a 24 h KV entry; the edge cache
@@ -716,7 +716,7 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
 /**
  * Gets the UI strings for a locale, from the `wm-web-translations` global.
  *
- * The CMS fills a blank or missing key from English on every API-client
+ * SahajCloud fills a blank or missing key from English on every API-client
  * read (SahajCloud #705), so the site does no merge of its own: what comes
  * back is already complete for the locale.
  *

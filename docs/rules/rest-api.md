@@ -39,9 +39,10 @@ paths:
    it.
 
    `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
-   preview read, which must fail fast. A read outside `sahajcloud-client.ts` has no preview variant and
-   calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because it degrades
-   quietly; that is the case that needs it most. Let SDK errors propagate into it. `@payloadcms/sdk` throws a `PayloadSDKError`
+   preview read, which must fail fast. A read outside `sahajcloud-client.ts` has no preview
+   variant and calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because
+   it degrades quietly; that is the case that needs it most. Let SDK errors propagate into it.
+   `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
    classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
 
@@ -74,20 +75,20 @@ key outside `NON_GROUP_KEYS`, so the snapshot mirrors groups the site never fetc
 bytes in `lib/translations.en.json` and nothing more — `WebTranslations` derives from the select,
 so an unfetched group never becomes addressable through `useT()`.
 
-## Translations are CMS-owned
+## Translations are SahajCloud-owned
 
 Every UI string comes from `wm-web-translations`, through `useT()`. See the "Translations are
-CMS-owned" section of [AGENTS.md](../../AGENTS.md) for the rule and
+SahajCloud-owned" section of [AGENTS.md](../../AGENTS.md) for the rule and
 [scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) for the snapshot.
 
-Run `pnpm sync:translations` after the CMS English copy changes, and commit the diff. It needs
-both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin, and
-it prints the API client the key belongs to before writing — a snapshot silently taken from a
-local CMS would commit placeholder English. It is not run in CI.
+Run `pnpm sync:translations` after the SahajCloud English copy changes, and commit the diff. It
+needs both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin,
+and it prints the API client the key belongs to before writing — a snapshot silently taken from a
+local SahajCloud would commit placeholder English. It is not run in CI.
 
 ## Update PayloadCMS types
 
-Run this command when the CMS schema changes:
+Run this command when the SahajCloud schema changes:
 ```bash
 pnpm types:cms
 ```
@@ -102,8 +103,8 @@ root endpoint. Nothing else composes that header.
 
 ## A public write is a proxy, not a query function
 
-Contact and subscribe submissions do not go through `sahajcloud-client.ts`. They post to the same-origin
-`POST /api/submissions`, which forwards one create to the CMS's `user-submissions` collection —
-the captcha header, the refusal envelope, and why the browser cannot make the call itself all
-live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a submission is a
-write.
+Contact and subscribe submissions do not go through `sahajcloud-client.ts`. They post to the
+same-origin `POST /api/submissions`, which forwards one create to SahajCloud's `user-submissions`
+collection — the captcha header, the refusal envelope, and why the browser cannot make the call
+itself all live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a
+submission is a write.

@@ -64,7 +64,7 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
  * creates visual depth. It is responsive: it stacks vertically on mobile,
  * with the overlapping layout on desktop.
  *
- * For text-over-image, the CMS `overlay` position, use `ContentOverlay`.
+ * For text-over-image, the SahajCloud `overlay` position, use `ContentOverlay`.
  * For the ornate "Ancient Wisdom" treatment, use `OrnateTextBox`.
  *
  * @example

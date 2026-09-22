@@ -27,7 +27,7 @@ import { isPopulated } from './payload-relationships'
 export type RelationTo = 'pages' | 'meditations' | 'lectures' | 'albums' | 'app-cards' | 'forms'
 
 /**
- * A CMS relationship value, which may be a fully populated document or a bare
+ * A SahajCloud relationship value, which may be a fully populated document or a bare
  * id (number/string) depending on the read depth and publish state.
  */
 export type RelationValue = number | string | { id?: number | string; slug?: string | null }
@@ -74,7 +74,7 @@ const ROUTE_BUILDERS: Record<
 }
 
 /**
- * Resolves a CMS collection and document reference to a web path.
+ * Resolves a SahajCloud collection and document reference to a web path.
  *
  * @param relationTo - The collection slug (e.g. `pages`, `meditations`)
  * @param value - The relationship value (populated document or bare id)
@@ -129,7 +129,7 @@ function documentRoutePattern(collection: string, embed: boolean): RegExp {
 
   if (!pattern) {
     // The optional locale prefix carries a region for a compound code
-    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as the CMS
+    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as SahajCloud
     // stores it: `/pt-br/...` is not a locale prefix.
     pattern = new RegExp(`^(?:/[a-z]{2}(?:-[A-Z]{2})?)?/${collection}/([^/]+)${suffix}/?$`)
     DOCUMENT_ROUTE_PATTERNS.set(key, pattern)

@@ -1,13 +1,13 @@
 /**
  * The translation accessor.
  *
- * Every UI string the site renders comes from the CMS `wm-web-translations`
+ * Every UI string the site renders comes from the SahajCloud `wm-web-translations`
  * global, threaded through `pageContext.translations`. This module turns
  * that object into `t('tab.sub.key', params)`.
  *
- * English is not special here. It is the CMS `en` locale, mirrored into
+ * English is not special here. It is the SahajCloud `en` locale, mirrored into
  * `lib/translations.en.json` by `pnpm sync:translations` for tests, Ladle,
- * and the CMS-unreachable last resort.
+ * and the SahajCloud-unreachable last resort.
  *
  * `interpolate` and `pluralize` mirror SahajCloud's
  * `src/lib/translations/emailStrings.ts:91-125`, so a string renders the
@@ -19,12 +19,12 @@ import type { Locale, WebTranslations } from '../server/content-types'
 import snapshot from './translations.en.json'
 
 /**
- * The committed English snapshot, used when the CMS read fails and as the
+ * The committed English snapshot, used when the SahajCloud read fails and as the
  * fixture for tests and Ladle. Generated — see `scripts/sync-translations.mjs`.
  */
 export const EN_TRANSLATIONS = snapshot as unknown as WebTranslations
 
-/** CLDR plural categories, in the order the CMS stores them. */
+/** CLDR plural categories, in the order SahajCloud stores them. */
 const PLURAL_SUFFIXES = ['one', 'few', 'many', 'other'] as const
 
 type PluralSuffix = (typeof PLURAL_SUFFIXES)[number]
@@ -69,7 +69,7 @@ export function interpolate(template: string, params?: TranslationParams): strin
 /**
  * Picks the plural form for `count`, by the locale's own CLDR rules.
  *
- * The CMS stores a plural key expanded into its `_one`/`_few`/`_many`/
+ * SahajCloud stores a plural key expanded into its `_one`/`_few`/`_many`/
  * `_other` family. English populates `_one` and `_other` only, so a locale
  * whose rules select `few` falls back to `other`, then to any populated
  * form, before giving up.
@@ -88,7 +88,7 @@ export function pluralize(
   }
 
   // The selected category first, then `other`, then anything populated. A
-  // category the CMS does not store simply misses and falls through.
+  // category SahajCloud does not store simply misses and falls through.
   for (const suffix of [category as PluralSuffix, 'other' as const, ...PLURAL_SUFFIXES]) {
     const form = forms[suffix]
     if (typeof form === 'string' && form.length > 0) return form
@@ -100,7 +100,7 @@ export function pluralize(
 // --- Key paths ---
 
 /**
- * Every addressable key path, derived from the CMS shape.
+ * Every addressable key path, derived from the SahajCloud shape.
  *
  * A nested tab contributes `tab.sub.key`, a flat tab (`navigation`,
  * `footer`) contributes `tab.key`. A plural family collapses to its base:

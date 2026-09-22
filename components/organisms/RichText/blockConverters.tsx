@@ -111,7 +111,7 @@ export const blockConverters: BlockConverters = {
     const title = fields.title ?? ''
     const description = fields.text ?? ''
 
-    // Overlay: text sits over the image. The CMS `textColor` describes the
+    // Overlay: text sits over the image. The SahajCloud `textColor` describes the
     // *text* (dark or light), while `theme` describes the *background
     // context* (Splash convention). So they invert: light text → dark theme.
     if (fields.imagePosition === 'overlay') {

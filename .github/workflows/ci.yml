@@ -83,6 +83,6 @@ jobs:
         if: ${{ steps.preview.outputs.preview_url != '' }}
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
-          # Web specs use this key to find a real CMS page or meditation. It has no effect for ladle.
+          # Web specs use this key to find a real SahajCloud page or meditation. It has no effect for ladle.
           SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
         run: pnpm ${{ matrix.script }}

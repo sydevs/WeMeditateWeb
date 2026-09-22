@@ -11,7 +11,7 @@ const fetchMock = vi.fn()
 vi.stubGlobal('fetch', fetchMock)
 
 vi.mock('./sahajcloud-context', () => ({
-  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
@@ -81,7 +81,7 @@ function stubAtlas(urls: { loc: string; lastmod?: string }[], status = 200) {
     json: async () => ({
       generated: '2026-09-21T00:00:00.000Z',
       // Upstream drops any document without an `updatedAt`, so every row it
-      // sends carries a `lastmod`. A null here would model a body the CMS
+      // sends carries a `lastmod`. A null here would model a body SahajCloud
       // cannot produce.
       urls: urls.map((url, index) => ({
         lastmod: '2026-01-01T00:00:00.000Z',
@@ -278,7 +278,7 @@ describe('/sitemap.xml', () => {
     })
 
     it('still lists the home page when the config read fails', async () => {
-      findGlobal.mockRejectedValue(new Error('CMS unavailable'))
+      findGlobal.mockRejectedValue(new Error('SahajCloud unavailable'))
       stubCollections({ pages: [{ id: 1, slug: 'about', _status: { en: 'published' } }] })
 
       const xml = await (await get('/sitemap.xml')).text()
@@ -288,7 +288,7 @@ describe('/sitemap.xml', () => {
     })
 
     it('still lists the home page when the content reads fail', async () => {
-      find.mockRejectedValue(new Error('CMS unavailable'))
+      find.mockRejectedValue(new Error('SahajCloud unavailable'))
 
       const xml = await (await get('/sitemap.xml')).text()
 
@@ -331,7 +331,7 @@ describe('/sitemap.xml', () => {
 
   describe('degradation', () => {
     it('still serves the atlas half when the content reads fail', async () => {
-      find.mockRejectedValue(new Error('CMS unavailable'))
+      find.mockRejectedValue(new Error('SahajCloud unavailable'))
       stubAtlas([{ loc: 'https://wemeditate.com/map/gb' }])
 
       const response = await get('/sitemap.xml')
@@ -358,7 +358,7 @@ describe('/sitemap.xml', () => {
       expect(response.status).toBe(200)
       expect(xml).toContain('</urlset>')
       expect(xml).not.toContain('<url>')
-      // No need to read the CMS for a document this response will not fill.
+      // No need to read SahajCloud for a document this response will not fill.
       expect(find).not.toHaveBeenCalled()
       expect(fetchMock).not.toHaveBeenCalled()
     })

@@ -34,7 +34,7 @@ export interface Alternate {
 export const X_DEFAULT = 'x-default'
 
 /**
- * The locales one document may advertise: published in the CMS **and**
+ * The locales one document may advertise: published in SahajCloud **and**
  * offered by the site.
  *
  * Both halves are load-bearing, and for different reasons:
@@ -44,7 +44,7 @@ export const X_DEFAULT = 'x-default'
  *   published in declares a translation that does not exist, and Google
  *   drops the cluster.
  * - **Offered.** `server/site-context.ts` 404s a locale outside
- *   `availableLocales`. A locale published in the CMS but switched off for
+ *   `availableLocales`. A locale published in SahajCloud but switched off for
  *   this site has no URL to point at.
  *
  * A collection that does not opt into per-locale status returns `_status`

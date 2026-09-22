@@ -29,7 +29,7 @@ export default function LayoutMap({ children }: { children: React.ReactNode }) {
   const data = useData<{ settings?: WebConfig }>()
   const settings = data?.settings
 
-  // Same degradation as LayoutChrome: a CMS-down render must not take the page
+  // Same degradation as LayoutChrome: a SahajCloud-down render must not take the page
   // down with it. The atlas is client-rendered and works without our nav.
   if (!settings) {
     return <>{children}</>

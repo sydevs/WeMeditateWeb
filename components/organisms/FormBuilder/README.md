@@ -50,7 +50,7 @@ the component behind `ClientOnly` and `React.lazy`.
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
 | `form` | `EmbeddedForm` | Yes | The authored `forms` document, populated by the page read. |
-| `siteKey` | `string` | No | The Turnstile **site** key. Defaults to `PUBLIC__TURNSTILE_SITE_KEY`. Unset, no captcha renders and the CMS refuses the submission. |
+| `siteKey` | `string` | No | The Turnstile **site** key. Defaults to `PUBLIC__TURNSTILE_SITE_KEY`. Unset, no captcha renders and SahajCloud refuses the submission. |
 | `variant` | `'default' \| 'minimal'` | No | `default` displays labels and borders with the primary button. `minimal` displays placeholders instead of labels, with the outline button. |
 | `align` | `'left' \| 'center'` | No | Aligns the title and submit button. Fields stay left-aligned either way. Defaults to `left`. |
 | `className` | `string` | No | Extra classes for the form wrapper. |

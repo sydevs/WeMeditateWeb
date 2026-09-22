@@ -8,7 +8,7 @@ import {
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./sahajcloud-context', () => ({
-  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 
 beforeEach(() => {
@@ -18,7 +18,7 @@ beforeEach(() => {
 })
 
 describe('sahajCloudFetch', () => {
-  it('resolves the path against the CMS base URL and signs the request', async () => {
+  it('resolves the path against the SahajCloud base URL and signs the request', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('{}', { status: 200 }))
@@ -27,7 +27,7 @@ describe('sahajCloudFetch', () => {
 
     const [url, init] = fetchSpy.mock.calls[0]
 
-    expect(url).toBe('https://cms.test/api/atlas/seo?route=%2Fgb')
+    expect(url).toBe('https://sahajcloud.test/api/atlas/seo?route=%2Fgb')
     expect((init as RequestInit).headers).toEqual({ Authorization: 'clients API-Key test-key' })
   })
 
@@ -38,7 +38,9 @@ describe('sahajCloudFetch', () => {
 
     await sahajCloudFetch('/api/pages?limit=1', 'read')
 
-    expect(logSpy).toHaveBeenCalledWith('[PayloadCMS] GET https://cms.test/api/pages?limit=1 → 200')
+    expect(logSpy).toHaveBeenCalledWith(
+      '[PayloadCMS] GET https://sahajcloud.test/api/pages?limit=1 → 200',
+    )
   })
 
   it('returns the parsed body on an OK response', async () => {
@@ -84,11 +86,11 @@ describe('sahajCloudFetch', () => {
   })
 
   it.each(['@evil.example/api/pages', '//evil.example/api/pages', 'api/pages'])(
-    'refuses %s rather than sign a request it cannot place on the CMS origin',
+    'refuses %s rather than sign a request it cannot place on the SahajCloud origin',
     async (path) => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch')
 
-      // `https://cms.test` + `@evil.example/…` parses with `cms.test` as
+      // `https://sahajcloud.test` + `@evil.example/…` parses with `sahajcloud.test` as
       // userinfo and `evil.example` as the host, which would hand the API key
       // to whoever answers there.
       await expect(sahajCloudFetch(path, 'read')).rejects.toThrow('site-relative path')
@@ -151,7 +153,7 @@ describe('fetchWithErrorDetails', () => {
     // Only `sahajCloudFetchOptional` asks for a quiet 404. A collection read reaching this
     // wrapper through the SDK has no caller-side 404 policy, so its body is
     // the only record of which read missed.
-    await fetchWithErrorDetails('https://cms.test/api/pages/missing')
+    await fetchWithErrorDetails('https://sahajcloud.test/api/pages/missing')
 
     expect(errorSpy).toHaveBeenCalledWith(
       '[PayloadCMS] Error response:',

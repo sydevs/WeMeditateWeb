@@ -45,7 +45,7 @@ const OG_EMITTED_BY_CONFIG: ReadonlySet<string> = new Set([
  * makes it safe.
  *
  * This check is the belt to that braces. The sink is a `<script>` block
- * on this page, carrying CMS-authored text, so an upstream regression
+ * on this page, carrying SahajCloud-authored text, so an upstream regression
  * would become an XSS here. Fail closed: drop the block, keeping the
  * page correct but less richly described, instead of trying to repair
  * the string, which would silently emit invalid JSON-LD.

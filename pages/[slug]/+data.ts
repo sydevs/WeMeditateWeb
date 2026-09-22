@@ -19,7 +19,7 @@ export interface PageData {
   slug: string
   /**
    * The locales this page advertises in its `hreflang` cluster: published
-   * in the CMS and offered by the site. Empty means "no translations", and
+   * in SahajCloud and offered by the site. Empty means "no translations", and
    * the page then emits its canonical alone.
    */
   alternateLocales: Locale[]

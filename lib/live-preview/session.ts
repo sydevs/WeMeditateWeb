@@ -21,7 +21,7 @@ import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
  *
  * ## Why the server half cannot use a provider at all
  *
- * The `+data.ts` functions thread `preview`/`previewToken` into each CMS read.
+ * The `+data.ts` functions thread `preview`/`previewToken` into each SahajCloud read.
  * No React context can reach them: they run on the server before any component
  * renders, and the token they pass is the one thing `passToClient` must never
  * carry. `previewArgs` in `server/live-preview.ts` is the equivalent there —
@@ -54,7 +54,7 @@ export function useDocumentPreviewActive(): boolean {
 }
 
 /**
- * The CMS origin `postMessage` traffic is accepted from and sent to.
+ * The SahajCloud origin `postMessage` traffic is accepted from and sent to.
  *
  * ⚠ **`undefined` when `PUBLIC__SAHAJCLOUD_URL` is unset or unparseable, and
  * every caller must fail CLOSED on that.** An earlier version fell back to

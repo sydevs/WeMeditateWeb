@@ -8,7 +8,11 @@ import { detectErrorType, ErrorType } from './error-utils'
 // createPayloadClient reads its defaults from the request context, which does
 // not exist under Vitest. Shape checked against server/sahajcloud-context.ts.
 vi.mock('./sahajcloud-context', () => ({
-  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test', kv: undefined }),
+  getSahajCloudContext: () => ({
+    apiKey: 'test-key',
+    baseURL: 'https://sahajcloud.test',
+    kv: undefined,
+  }),
 }))
 
 /**
@@ -16,7 +20,7 @@ vi.mock('./sahajcloud-context', () => ({
  * a non-OK response instead of resolving `undefined`. The repo carried a
  * `validateSDKResponse` guard for the era when it did not (payload#14495).
  */
-describe('a non-OK CMS response', () => {
+describe('a non-OK SahajCloud response', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
@@ -95,7 +99,7 @@ describe('validatePayloadConfig', () => {
 
   it('should throw with 400 status for invalid URL format', () => {
     try {
-      validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'cms.example.com' })
+      validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'sahajcloud.example.com' })
       expect.fail('Should have thrown')
     } catch (error) {
       expect(error).toBeInstanceOf(PayloadConfigError)
@@ -107,7 +111,7 @@ describe('validatePayloadConfig', () => {
   it('should accept valid configuration', () => {
     expect(() => validatePayloadConfig({
       apiKey: 'valid-key',
-      baseURL: 'https://cms.example.com'
+      baseURL: 'https://sahajcloud.example.com'
     })).not.toThrow()
   })
 })

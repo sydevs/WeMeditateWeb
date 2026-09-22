@@ -15,7 +15,7 @@ import './story-overrides.css'
 // `pageContext.isClientSide`, and a lazy child suspends with no boundary.
 // This code supplies a minimal client-side pageContext and a Suspense
 // boundary, to mirror what Vike provides at runtime.
-// `translations` is what `useT()` reads. Ladle has no CMS, so stories render
+// `translations` is what `useT()` reads. Ladle has no SahajCloud, so stories render
 // the committed English snapshot — the same fixture the unit suite uses.
 const ladlePageContext = {
   isClientSide: true,

@@ -55,7 +55,7 @@ function isEmpty(translations: WebTranslations): boolean {
  *
  * - the read fails, and
  * - the read succeeds but the global is empty, which is what an unseeded
- *   CMS returns. Per-key gaps are not this function's business — the CMS
+ *   SahajCloud returns. Per-key gaps are not this function's business — SahajCloud
  *   fills a blank key from English on every API-client read (SahajCloud
  *   #705) — but a global with nothing in it is not usable at all.
  *

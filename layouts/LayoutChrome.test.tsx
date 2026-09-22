@@ -31,7 +31,7 @@ vi.mock('../components/organisms/Footer', () => ({
 const { default: LayoutChrome } = await import('./LayoutChrome')
 
 describe('LayoutChrome', () => {
-  it('renders only children when settings are absent (error-page / CMS-down path)', () => {
+  it('renders only children when settings are absent (error-page / SahajCloud-down path)', () => {
     ctx.settings = undefined
     const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
 

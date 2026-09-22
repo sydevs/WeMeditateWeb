@@ -3,7 +3,7 @@ import type { Locale } from '../../../../server/content-types'
 import { localeEndonym } from '../../../../lib/locale-names'
 
 export interface LanguageFlagProps extends ComponentProps<'span'> {
-  /** Locale code, exactly as the CMS stores it (`en`, `pt-BR`, `en-AU`). */
+  /** Locale code, exactly as SahajCloud stores it (`en`, `pt-BR`, `en-AU`). */
   language: Locale
 
   /**
@@ -20,7 +20,7 @@ export interface LanguageFlagProps extends ComponentProps<'span'> {
 }
 
 /**
- * The flag shown for each locale the CMS offers.
+ * The flag shown for each locale SahajCloud offers.
  *
  * A flag stands for a language here, not a country, so the mapping is a
  * deliberate editorial choice rather than a derivation from the region
@@ -56,7 +56,7 @@ const FLAG_BY_LOCALE: Record<Locale, string> = {
  *
  * The label is the language's endonym — its name in itself — from
  * `Intl.DisplayNames`, so it is never a translated string and never needs
- * a CMS key.
+ * a SahajCloud key.
  *
  * @example
  * <LanguageFlag language="en" />

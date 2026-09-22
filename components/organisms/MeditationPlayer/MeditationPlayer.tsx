@@ -71,7 +71,7 @@ export interface MeditationFrame {
      * Optional fallback source, for example MP4, for when the browser does not support the primary HLS source.
      */
     fallbackSrc?: string
-    /** Optional duration (seconds) from CMS metadata. */
+    /** Optional duration (seconds) from SahajCloud metadata. */
     duration?: number
   }
 }
@@ -358,7 +358,7 @@ function MeditationPlayerInner({
   // pressing play on one would play them all, and unmounting one would
   // unload the others. Give each player instance a unique audio URL, with an
   // ignored query parameter, so every player owns an isolated Howl instance.
-  // The CMS server ignores the extra parameter. Howler strips the query
+  // The SahajCloud server ignores the extra parameter. Howler strips the query
   // string before codec detection, so playback is not affected. Production
   // has only one player per page, so this adds no real cost there.
   const instanceId = useId()
@@ -498,7 +498,8 @@ function MeditationPlayerInner({
       }
     }
 
-    // Use the placeholder if the frame has no media. This guards against incomplete CMS data.
+    // Use the placeholder if the frame has no media. This guards against incomplete
+    // SahajCloud data.
     return {
       timestamp: currentFrame.timestamp,
       media: currentFrame.media ?? { type: 'image' as const, src: PLACEHOLDER_IMAGE },

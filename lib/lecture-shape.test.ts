@@ -14,7 +14,7 @@ function makeLecture(overrides: Partial<Lecture>): Lecture {
   } as Lecture
 }
 
-// Typed as the CMS `metadata` json (a string-keyed record), so it slots into
+// Typed as the SahajCloud `metadata` json (a string-keyed record), so it slots into
 // `Lecture['metadata']` without a cast.
 const FULL_METADATA: Record<string, unknown> = {
   title: 'The Subtle System',
@@ -183,10 +183,10 @@ describe('resolveLecture', () => {
       makeLecture({
         type: 'full',
         metadata: FULL_METADATA,
-        thumbnail: { id: 5, url: 'https://cms/override.jpg' } as Lecture['thumbnail'],
+        thumbnail: { id: 5, url: 'https://sahajcloud/override.jpg' } as Lecture['thumbnail'],
       }),
     )
 
-    expect(resolved.thumbnailUrl).toBe('https://cms/override.jpg')
+    expect(resolved.thumbnailUrl).toBe('https://sahajcloud/override.jpg')
   })
 })

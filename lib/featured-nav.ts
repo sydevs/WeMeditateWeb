@@ -17,7 +17,7 @@ import type { Page, WebConfig } from '../server/content-types'
  * when the current page is not a featured nav page.
  *
  * `currentSlug` and the featured pages' slugs come from the same-locale
- * CMS fetch (see pages/[slug]/+data), so matching by slug is correct in
+ * SahajCloud fetch (see pages/[slug]/+data), so matching by slug is correct in
  * every locale.
  */
 export function activeFeaturedSlug(

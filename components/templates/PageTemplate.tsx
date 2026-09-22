@@ -5,7 +5,7 @@
  * rendering stays consistent. Following Atomic Design, templates represent
  * page layout structures. It composes the article chrome: featured video,
  * title, author byline, rich-text body, and SEO `<head>` tags from the
- * page's CMS meta.
+ * page's SahajCloud meta.
  *
  * @example
  * <PageTemplate page={pageData} />
@@ -33,7 +33,7 @@ export interface PageTemplateProps {
 }
 
 export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
-  // Set <title>/description/og:image from CMS meta (must run unconditionally).
+  // Set <title>/description/og:image from SahajCloud meta (must run unconditionally).
   usePageHead({ meta: page.meta, fallbackTitle: page.title })
 
   const author = isPopulated<Author>(page.author) ? page.author : null

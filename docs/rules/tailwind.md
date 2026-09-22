@@ -18,8 +18,8 @@ In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailw
 `tailwind.config.ts` only lists content paths for class detection.
 
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
-scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a CMS-authored
-width — produces no CSS and the rule silently does nothing. Declare the range in
+scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a
+SahajCloud-authored width — produces no CSS and the rule silently does nothing. Declare the range in
 [layouts/tailwind.css](../../layouts/tailwind.css), beside the `@source` paths:
 
 ```css

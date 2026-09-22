@@ -36,13 +36,13 @@ check-run output).
   Ladle project (`wm-design`/`wemeditate-design`). It treats any HTTP response as "reachable," so
   a 500 is caught by the smoke specs, not by discovery.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage
-  and its content, a CMS page, a non-English locale, the `/en` → `/` redirect, the 404 page,
-  and a meditation in full and embed form. Run with `pnpm test:smoke` and `PREVIEW_URL` set.
+  and its content, a SahajCloud page, a non-English locale, the `/en` → `/` redirect, the 404
+  page, and a meditation in full and embed form. Run with `pnpm test:smoke` and `PREVIEW_URL` set.
 - [tests/smoke/ladle/](../tests/smoke/ladle/) holds fetch-based Ladle specs: the app shell and a
   non-empty `/meta.json` story manifest. The static SPA needs no Playwright. Run with
   `pnpm test:smoke:ladle`.
-- `discoverFromSahajCloud()` in `tests/smoke/_helpers/preview.ts` queries the production CMS (needs the
-  `SAHAJCLOUD_API_KEY` Actions secret) to pick a real page or meditation, and to read
+- `discoverFromSahajCloud()` in `tests/smoke/_helpers/preview.ts` queries production SahajCloud
+  (needs the `SAHAJCLOUD_API_KEY` Actions secret) to pick a real page or meditation, and to read
   `wm-web-config.availableLocales`. Without that secret, the specs call `ctx.skip`.
 
 ## Conventions the web specs rely on
@@ -58,4 +58,4 @@ Each fact below matches the deployed Worker's real behavior.
   redirects (301) to `/`, and `/<locale>/index` to `/<locale>`.
 - An unknown path returns 404 and renders the ErrorFallback title "Content Not Found" — not "Page
   Not Found". The spec reads that title from `lib/translations.en.json` rather than duplicating it,
-  so rewording it in the CMS cannot leave the markers matching nothing.
+  so rewording it in SahajCloud cannot leave the markers matching nothing.

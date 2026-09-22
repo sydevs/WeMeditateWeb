@@ -85,7 +85,7 @@ describe('matchDocumentRoute', () => {
     })
 
     it('matches a compound locale prefix, region included', () => {
-      // `pt-BR` and `en-AU` carry an upper-case region, exactly as the CMS
+      // `pt-BR` and `en-AU` carry an upper-case region, exactly as SahajCloud
       // stores them. A lower-cased region is not a locale prefix.
       expect(matchDocumentRoute('meditations', '/pt-BR/meditations/123')).toEqual({
         routeParams: { id: '123' },

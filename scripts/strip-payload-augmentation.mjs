@@ -9,7 +9,7 @@
  *       export interface GeneratedTypes extends Config {}
  *     }
  *
- * This Cloudflare Workers frontend talks to the CMS only through
+ * This Cloudflare Workers frontend talks to SahajCloud only through
  * `@payloadcms/sdk` (typed with `new PayloadSDK<Config>()`). It does not
  * depend on the `payload` package. Without `payload`, the augmentation fails
  * to compile (`TS2664: module 'payload' cannot be found`). Removing it does

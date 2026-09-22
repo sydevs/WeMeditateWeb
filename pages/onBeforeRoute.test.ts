@@ -125,7 +125,7 @@ describe('onBeforeRoute', () => {
   })
 
   it('leaves a segment that only looks like a locale alone', () => {
-    // `st` is not a CMS locale, so /status/ is a path, not a prefix. It
+    // `st` is not a SahajCloud locale, so /status/ is a path, not a prefix. It
     // then 404s through the route it really matched, rather than rendering
     // the site under an invented locale.
     expect(routeOf('/status/page')).toEqual({ locale: 'en', path: '/status/page' })

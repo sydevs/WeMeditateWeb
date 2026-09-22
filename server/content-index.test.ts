@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Provide CMS config without a request context, and silence Sentry
+// Provide SahajCloud config without a request context, and silence Sentry
 // warnings on the degrade paths.
 vi.mock('./sahajcloud-context', () => ({
-  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
@@ -17,7 +17,7 @@ import type { ContentIndexBlockFields } from '../lib/content-blocks'
 const jsonResponse = (docs: unknown[]) =>
   ({ ok: true, status: 200, json: async () => ({ docs }) }) as never
 
-/** A non-OK stub. `clone` is what sahajCloudFetch calls to dump the CMS error body. */
+/** A non-OK stub. `clone` is what sahajCloudFetch calls to dump the SahajCloud error body. */
 const errorResponse = (status: number) => {
   const response = { ok: false, status, statusText: '', json: async () => ({ errors: [] }) }
 
@@ -46,7 +46,7 @@ describe('resolveContentIndexItems', () => {
 
     const url = fetchSpy.mock.calls[0][0] as string
 
-    expect(url).toContain('https://cms.test/api/pages?where[tags][in]=wisdom&limit=10')
+    expect(url).toContain('https://sahajcloud.test/api/pages?where[tags][in]=wisdom&limit=10')
     expect(url).toContain('select[title]=true')
     expect(url).toContain('locale=en')
 
@@ -57,7 +57,7 @@ describe('resolveContentIndexItems', () => {
   })
 
   it('logs the request, so this read appears in the dev request log like every other', async () => {
-    // It was the one CMS read with no `[PayloadCMS]` line, which the
+    // It was the one SahajCloud read with no `[PayloadCMS]` line, which the
     // debugging workflow in AGENTS.md is written around (#127).
     const logSpy = vi.spyOn(console, 'log')
 
@@ -75,7 +75,7 @@ describe('resolveContentIndexItems', () => {
       .filter((line): line is string => typeof line === 'string' && line.startsWith('[PayloadCMS]'))
 
     expect(lines).toHaveLength(1)
-    expect(lines[0]).toContain('GET https://cms.test/api/pages?limit=10')
+    expect(lines[0]).toContain('GET https://sahajcloud.test/api/pages?limit=10')
     expect(lines[0]).toMatch(/→ 200$/)
   })
 
@@ -94,7 +94,7 @@ describe('resolveContentIndexItems', () => {
       {
         type: 'meditations',
         limit: 100,
-        // The CMS bakes `depth=1` into the endpoint. The resolver must not
+        // SahajCloud bakes `depth=1` into the endpoint. The resolver must not
         // append a second one (duplicate `depth` params 400 the backend).
         apiEndpoint: '/api/user-choices?where[id][in]=25&depth=1&limit=100',
       },
@@ -115,7 +115,7 @@ describe('resolveContentIndexItems', () => {
     const url = fetchSpy.mock.calls[0][0] as string
 
     // Baked-in depth is stripped. Only the depth=2 above remains.
-    expect(url).toContain('https://cms.test/api/user-choices?where[id][in]=25&limit=100')
+    expect(url).toContain('https://sahajcloud.test/api/user-choices?where[id][in]=25&limit=100')
     expect(url).toContain('depth=2')
     expect(url).not.toContain('depth=1')
     expect(url).toContain('populate[meditations][thumbnail]=true')
@@ -222,7 +222,7 @@ describe('resolveContentIndexTracks', () => {
     expect(url).toContain('populate[albums][artwork]=true')
     expect(url).toContain('depth=2')
     // `url` and `thumbnailURL` are upload virtuals derived from `filename`.
-    // Without it selected, the CMS returns them null, and every track drops.
+    // Without it selected, SahajCloud returns them null, and every track drops.
     expect(url).toContain('select[filename]=true')
     expect(url).toContain('populate[images][filename]=true')
   })

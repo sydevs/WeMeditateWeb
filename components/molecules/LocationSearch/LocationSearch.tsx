@@ -73,7 +73,7 @@ export function LocationSearch({
   proximity,
 }: LocationSearchProps) {
   const t = useT()
-  // Default through the CMS, so an unset prop still reads in the
+  // Default through SahajCloud, so an unset prop still reads in the
   // visitor's language.
   const resolvedPlaceholder = placeholder ?? t('location.general.search_placeholder')
 

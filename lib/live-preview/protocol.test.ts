@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { LIVE_PREVIEW_INACTIVE, LIVE_PREVIEW_PARAM, readLivePreviewScope } from './protocol'
 
 describe('readLivePreviewScope', () => {
-  it('accepts the two scopes the CMS emits', () => {
+  it('accepts the two scopes SahajCloud emits', () => {
     expect(readLivePreviewScope('wm-web-translations')).toBe('wm-web-translations')
     expect(readLivePreviewScope('wm-web-config')).toBe('wm-web-config')
   })

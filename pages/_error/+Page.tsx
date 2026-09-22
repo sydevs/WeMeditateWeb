@@ -4,7 +4,7 @@
  * Renders when:
  * - Page not found (404)
  * - Server error during data fetching (500)
- * - CMS unreachable after retries
+ * - SahajCloud unreachable after retries
  */
 
 import { usePageContext } from 'vike-react/usePageContext'

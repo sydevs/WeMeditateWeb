@@ -102,7 +102,7 @@ describe('AtlasHeadTags', () => {
     })
 
     it('emits upstream-escaped markup without turning it back into a tag', () => {
-      // What `jsonLdEscape()` produces for a CMS description containing
+      // What `jsonLdEscape()` produces for a SahajCloud description containing
       // `</script>` — the escape must survive to the page unchanged.
       const html = render(regionSeo({ jsonLd: '{"name":"\\u003c/script\\u003ealert(1)"}' }))
 
@@ -115,7 +115,7 @@ describe('AtlasHeadTags', () => {
       ['a raw comment opener', '{"name":"<!--"}'],
     ])('drops the block entirely on %s', (_label, jsonLd) => {
       // Fail closed. Reaching here means upstream escaping regressed. A
-      // page that is merely less richly described beats one that executes CMS text.
+      // page that is merely less richly described beats one that executes SahajCloud text.
       const html = render(regionSeo({ jsonLd }))
 
       expect(html).not.toContain('application/ld+json')

@@ -180,7 +180,7 @@ export function ContentCard({
             onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
           />
         ) : (
-          // No CMS thumbnail. Show a branded, non-animated fallback in a
+          // No SahajCloud thumbnail. Show a branded, non-animated fallback in a
           // fixed 16:9 box, so imageless cards look consistent in the grid.
           <div className="relative aspect-video overflow-hidden rounded-xs">
             <Placeholder animate={false} variant="primary">

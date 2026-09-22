@@ -17,7 +17,7 @@ export default function HeadDefault() {
   // already read and posted `location.href`.
   //
   // Not emitting the tag is also correct on its own terms: an editor in the
-  // CMS admin's preview iframe is not a visitor, and their draft URL is not a
+  // SahajCloud admin's preview iframe is not a visitor, and their draft URL is not a
   // pageview anyone wants counted.
   const livePreview = useOptionalPageContext()?.livePreview
 

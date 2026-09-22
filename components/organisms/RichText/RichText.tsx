@@ -178,7 +178,7 @@ const CONVERTERS: JSXConverters = {
   },
 
   // Upload images render through the Cloudflare-aware Image atom, inside a
-  // <figure>. This honors the CMS caption and alignment fields.
+  // <figure>. This honors the SahajCloud caption and alignment fields.
   upload: ({ node }) => {
     const value = node.value
 
@@ -233,7 +233,7 @@ const CONVERTERS: JSXConverters = {
 
     return (
       <Alert title="Unimplemented RichText node" variant="warning">
-        No converter for <code>{label}</code> — implement it or check the CMS content.
+        No converter for <code>{label}</code> — implement it or check the SahajCloud content.
       </Alert>
     )
   },

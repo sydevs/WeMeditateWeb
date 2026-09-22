@@ -1,5 +1,5 @@
 /**
- * Error handling utilities for graceful degradation when CMS is unreachable.
+ * Error handling utilities for graceful degradation when SahajCloud is unreachable.
  *
  * Provides error type detection, retry logic with exponential backoff,
  * and user-friendly message generation.

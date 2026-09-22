@@ -1,12 +1,12 @@
 /**
- * CMS configuration context, using Hono's Context Storage.
+ * SahajCloud configuration context, using Hono's Context Storage.
  *
- * This module gives request-scoped access to CMS configuration (apiKey,
+ * This module gives request-scoped access to SahajCloud configuration (apiKey,
  * baseURL). A caller does not pass these values explicitly.
  *
  * Usage:
  * - In server/entry.ts, register the contextStorage() middleware.
- * - In CMS client functions, call getSahajCloudContext() to read the config.
+ * - In SahajCloud client functions, call getSahajCloudContext() to read the config.
  */
 
 import { getContext } from 'hono/context-storage'
@@ -27,14 +27,14 @@ export type SahajCloudEnv = {
   }
 }
 
-/** CMS configuration returned by getSahajCloudContext() */
+/** SahajCloud configuration returned by getSahajCloudContext() */
 export interface SahajCloudContext {
   apiKey: string
   baseURL: string
 }
 
 /**
- * Zod schema for validating CMS context configuration.
+ * Zod schema for validating SahajCloud context configuration.
  * Uses shared schemas from validation.ts for consistency.
  */
 const sahajCloudContextSchema = z.object({
@@ -56,14 +56,14 @@ function tryGetContext(): Context<SahajCloudEnv> | undefined {
 }
 
 /**
- * Gets CMS configuration from Hono's context storage.
+ * Gets SahajCloud configuration from Hono's context storage.
  * Uses Zod for validation with clear error messages.
  *
  * Configuration sources:
  * - apiKey: Cloudflare Workers context (runtime secret) or import.meta.env (dev)
  * - baseURL: import.meta.env (build-time, from .env.production or .env.local)
  *
- * @returns CMS configuration with apiKey and baseURL
+ * @returns SahajCloud configuration with apiKey and baseURL
  * @throws Error if configuration validation fails
  */
 export function getSahajCloudContext(): SahajCloudContext {
@@ -77,7 +77,7 @@ export function getSahajCloudContext(): SahajCloudContext {
 
   if (!result.success) {
     const errorMessage = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-    throw new Error(`CMS context validation failed: ${errorMessage}`)
+    throw new Error(`SahajCloud context validation failed: ${errorMessage}`)
   }
 
   return {
@@ -87,7 +87,7 @@ export function getSahajCloudContext(): SahajCloudContext {
 }
 
 /**
- * Checks whether CMS context is available in the current request.
+ * Checks whether SahajCloud context is available in the current request.
  * Useful for conditional logic in code that may run outside a request.
  */
 export function hasSahajCloudContext(): boolean {

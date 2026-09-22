@@ -1,5 +1,5 @@
 /**
- * Resolves the page-tag facet labels from the CMS.
+ * Resolves the page-tag facet labels from SahajCloud.
  *
  * `lib/content-blocks.ts` maps a card's tags to `{ id, label }` pairs but stays
  * free of the translations layer, so the caller resolves the labels and

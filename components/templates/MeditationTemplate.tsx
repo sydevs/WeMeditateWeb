@@ -70,7 +70,7 @@ export function MeditationTemplate({
   showRelated = false,
 }: MeditationTemplateProps) {
   const t = useT()
-  // Get CMS base URL for building full frame URLs
+  // Get SahajCloud base URL for building full frame URLs
   const sahajCloudBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
   const resolveMediaUrl = (url: string): string => {
     if (!url) {
@@ -93,7 +93,7 @@ export function MeditationTemplate({
     }
   }
 
-  // Parse and transform frames from CMS format to MeditationPlayer format
+  // Parse and transform frames from SahajCloud format to MeditationPlayer format
   let frames: MeditationFrame[] = []
 
   if (meditation.frames) {
@@ -105,7 +105,7 @@ export function MeditationTemplate({
             ? meditation.frames
             : []
 
-      // Transform CMS frames to MeditationPlayer format
+      // Transform SahajCloud frames to MeditationPlayer format
       frames = rawFrames
         .filter((frame: { url?: string | null }) => frame.url)
         .map(

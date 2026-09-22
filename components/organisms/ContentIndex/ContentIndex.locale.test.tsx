@@ -1,5 +1,5 @@
 /**
- * Proves the CMS strings actually reach the markup.
+ * Proves the SahajCloud strings actually reach the markup.
  *
  * Every other component suite renders with the English snapshot, so they
  * would all still pass if `useT()` silently returned English regardless of
@@ -46,7 +46,7 @@ const items = [
 ]
 
 describe('ContentIndex in a non-English locale', () => {
-  it('renders the CMS French, not the English snapshot', () => {
+  it('renders the SahajCloud French, not the English snapshot', () => {
     const html = renderToStaticMarkup(<ContentIndex items={items} />)
 
     expect(html).toContain('Tout')

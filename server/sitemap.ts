@@ -27,7 +27,7 @@ export interface SitemapUrl {
 /**
  * Escapes a string for XML text content.
  *
- * A sitemap carries CMS-derived URLs. A slug or query string with an `&`
+ * A sitemap carries SahajCloud-derived URLs. A slug or query string with an `&`
  * produces a document no parser accepts. That fails silently, as an empty
  * sitemap, instead of loudly. This is the worst kind of failure. The five
  * predefined entities are all XML has.

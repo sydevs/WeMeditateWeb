@@ -61,7 +61,7 @@ export async function fetchPage(
  * route render. A real content page must contain none of these.
  *
  * Read from the committed English snapshot rather than copied, so an editor
- * who rewords "Content Not Found" in the CMS cannot leave these markers
+ * who rewords "Content Not Found" in SahajCloud cannot leave these markers
  * matching nothing — a smoke suite that silently stops detecting error
  * pages would pass on a completely broken preview.
  *
@@ -142,7 +142,7 @@ export function expectNoChrome(page: PageResult, path: string): void {
  * Assert the HTML has no broken internal links, that is, links to
  * "/undefined" or "/null". These appear when a page fetches a
  * relationship (for example, a nav item) without resolving its slug.
- * This catches under-populated CMS reads that would otherwise render a
+ * This catches under-populated SahajCloud reads that would otherwise render a
  * 200 page with dead navigation.
  */
 export function expectNoBrokenLinks(html: string, path: string): void {
@@ -193,7 +193,7 @@ export interface SahajCloudSamples {
    * The locales the site offers, from `wm-web-config.availableLocales`,
    * normalised the way `getWebConfig` normalises it.
    *
-   * The non-English spec used to hardcode `/es`. That asserted a CMS
+   * The non-English spec used to hardcode `/es`. That asserted a SahajCloud
    * setting an editor controls, so it would fail the day Spanish stopped
    * being offered — and it fails today on a site whose `availableLocales`
    * is still empty. Reading the real set makes the spec test the site's
@@ -225,7 +225,7 @@ function toQueryString(params: Record<string, unknown>, prefix = ''): string {
     .join('&')
 }
 
-// The CMS enforces select and populate on collection reads, through a
+// SahajCloud enforces select and populate on collection reads, through a
 // query-validation hook (PR #23), so a bare query returns 400. This
 // mirrors the shapes sahajcloud-client.ts uses.
 const PAGE_SELECT = {
@@ -243,7 +243,7 @@ const IMAGE_POPULATE = {
  * A locale the site offers other than English, or null. The prefix specs
  * need one, and which one is an editor's choice.
  *
- * ⚠ Not memoised, and neither is `discoverFromSahajCloud`. A failed CMS read
+ * ⚠ Not memoised, and neither is `discoverFromSahajCloud`. A failed SahajCloud read
  * degrades to `availableLocales: ['en']`, which is also production's real
  * value, so a cached answer cannot be told from a flake — and caching one
  * would skip every later locale spec in the run on a single timeout.
@@ -260,7 +260,7 @@ export function htmlTag(html: string): string {
 }
 
 /**
- * Optionally pull deterministic sample content from the production CMS,
+ * Optionally pull deterministic sample content from the production SahajCloud,
  * so ID-specific specs (meditations, lectures) always have a target.
  * Requires the SAHAJCLOUD_API_KEY secret. Returns null when the secret is
  * absent, so callers can call test.skip.

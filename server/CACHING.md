@@ -1,10 +1,11 @@
-# Caching CMS reads
+# Caching SahajCloud reads
 
 ## The edge is the cache
 
 A Worker's `fetch()` to a hostname on a **different** Cloudflare zone
 [reads through that zone's cache](https://developers.cloudflare.com/workers/reference/how-the-cache-works/).
-Every CMS read in this Worker goes to `cloud.sydevelopers.com`, so that is exactly what they do.
+Every SahajCloud read in this Worker goes to `cloud.sydevelopers.com`, so that is exactly what
+they do.
 SahajCloud sets `s-maxage=600` and a `Cache-Tag` on each cacheable path, so an editor's save
 reaches this site within 600s.
 
@@ -31,9 +32,9 @@ Two things follow for anyone adding a read:
 jitter, on network and 5xx errors only. `withCache` used to run it on every miss, so every read it
 wrapped keeps it now that the cache is gone.
 
-`withRetryUnlessPreview` in [sahajcloud-client.ts](./sahajcloud-client.ts) adds the one exception: a **preview**
-read skips the retry, because an editor watching their own edit needs the error now, not after
-about 7s of backoff.
+`withRetryUnlessPreview` in [sahajcloud-client.ts](./sahajcloud-client.ts) adds the one exception:
+a **preview** read skips the retry, because an editor watching their own edit needs the error now,
+not after about 7s of backoff.
 
 ⚠ **A read that degrades silently needs the retry most, not least.** `getAtlasSeo` returns `null`
 and both sitemap halves return `[]` on failure, in a response that still answers 200. Without the
@@ -49,7 +50,7 @@ Sentry, so nothing throws past it.
 
 `server/kv-cache.ts` and the `WEMEDITATE_CACHE` binding are gone (#98), and with them
 `AtlasCacheTTL` and the `content-sitemap-docs` key prefix. `getAtlasSeo`, `getAtlasSitemapUrls`
-and `getContentSitemapUrls` held out one round longer than the CMS reads; they read through the
+and `getContentSitemapUrls` held out one round longer than SahajCloud reads; they read through the
 edge now too.
 
 Every window that removal touched got shorter, none longer: a region 3600s → 600s, a class
