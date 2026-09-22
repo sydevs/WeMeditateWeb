@@ -119,7 +119,7 @@ The app runs on Cloudflare Workers with server-side rendering.
 request handler. [wrangler.toml](wrangler.toml) sets the Worker name and the `nodejs_compat` flag.
 The Worker holds no bindings and no persistent state.
 
-SahajCloud reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
+Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
 `Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
 [server/CACHING.md](server/CACHING.md) before you add a read.
 

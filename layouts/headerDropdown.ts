@@ -27,7 +27,7 @@ export function pageToArticle(page: Page): HeaderDropdownArticle {
 }
 
 /**
- * Picks `count` pages at random from the curated `featured` list (SahajCloud
+ * Picks `count` pages at random from the curated `featured` list (the SahajCloud
  * `featuredArticles`, which may hold more than `count`). Falls back to
  * `fallback` (knowledge pages) when `featured` is empty. Returns all
  * available pages when fewer than `count` exist. This function is pure: it

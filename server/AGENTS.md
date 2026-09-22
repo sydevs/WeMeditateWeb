@@ -1,6 +1,6 @@
 # SahajCloud API-client reads (`server/sahajcloud-client.ts`)
 
-SahajCloud (PayloadCMS) API validates every API-client read. Follow these rules.
+The SahajCloud (PayloadCMS) API validates every API-client read. Follow these rules.
 
 ## The one write: a public submission, proxied same-origin
 
@@ -76,7 +76,7 @@ one but the sitemap reads through `sahajCloudFetch`
 ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends the
 `Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
 non-OK response, and returns the parsed body. Hand it a path, never a URL — it refuses anything
-that is not site-relative, so a computed endpoint cannot move the request off SahajCloud
+that is not site-relative, so a computed endpoint cannot move the request off the SahajCloud
 origin — and type the body yourself. `getAtlasSitemapUrls` still assembles its own `fetch`, and is
 not yet converted. `select` and `populate` do not apply here.
 

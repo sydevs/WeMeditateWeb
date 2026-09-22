@@ -105,7 +105,7 @@ export function parseLectureMetadata(value: unknown): LectureMetadata | null {
  * Merges subtitle sources. Starts from the parent's API subtitle map,
  * then applies per-locale clip overrides: a clip track replaces the
  * parent track for that locale, or adds a new one. Drops empty URLs. The
- * result is locale-sorted for deterministic output. Mirrors SahajCloud
+ * result is locale-sorted for deterministic output. Mirrors the SahajCloud
  * reference `mergeSubtitles`.
  */
 export function mergeSubtitles(
