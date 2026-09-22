@@ -1,9 +1,9 @@
 /**
  * Single source of truth for the web app's document routes, in both directions:
- * - building a path from a collection and a document ({@link cmsHref}), and
+ * - building a path from a collection and a document ({@link documentHref}), and
  * - matching an incoming URL back to its route params ({@link matchDocumentRoute}).
  *
- * `cmsHref` is used by the RichText renderer (internal links and inline
+ * `documentHref` is used by the RichText renderer (internal links and inline
  * relationship nodes), and reused by the `showcase` and `content-index`
  * blocks. `matchDocumentRoute` is used by the meditation and lecture
  * `+route.ts` files. Keeping the mapping in one place means a new route
@@ -21,13 +21,13 @@
  * that reference is handled before this mapper is consulted.
  */
 
-import { isPopulated } from './cms-relationships'
+import { isPopulated } from './payload-relationships'
 
 /** PayloadCMS collection slugs that can be referenced from rich text. */
 export type RelationTo = 'pages' | 'meditations' | 'lectures' | 'albums' | 'app-cards' | 'forms'
 
 /**
- * A CMS relationship value, which may be a fully populated document or a bare
+ * A SahajCloud relationship value, which may be a fully populated document or a bare
  * id (number/string) depending on the read depth and publish state.
  */
 export type RelationValue = number | string | { id?: number | string; slug?: string | null }
@@ -74,14 +74,14 @@ const ROUTE_BUILDERS: Record<
 }
 
 /**
- * Resolves a CMS collection and document reference to a web path.
+ * Resolves a SahajCloud collection and document reference to a web path.
  *
  * @param relationTo - The collection slug (e.g. `pages`, `meditations`)
  * @param value - The relationship value (populated document or bare id)
  * @returns The web path, or `null` if the collection has no public route,
  *   or the reference cannot resolve to a valid link.
  */
-export function cmsHref(
+export function documentHref(
   relationTo: string,
   value: RelationValue | null | undefined,
 ): string | null {
@@ -97,7 +97,7 @@ export function cmsHref(
 /**
  * Matches an incoming URL path against a collection's document route, and
  * returns the Vike route params (`{ id }`), or `false`. The matching
- * inverse of {@link cmsHref} for the full and embed routes, so the path
+ * inverse of {@link documentHref} for the full and embed routes, so the path
  * shapes live in one tested place:
  *
  * - full:  `/meditations/:id`        (plus an optional `/:locale` prefix)
@@ -129,7 +129,7 @@ function documentRoutePattern(collection: string, embed: boolean): RegExp {
 
   if (!pattern) {
     // The optional locale prefix carries a region for a compound code
-    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as the CMS
+    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as SahajCloud
     // stores it: `/pt-br/...` is not a locale prefix.
     pattern = new RegExp(`^(?:/[a-z]{2}(?:-[A-Z]{2})?)?/${collection}/([^/]+)${suffix}/?$`)
     DOCUMENT_ROUTE_PATTERNS.set(key, pattern)

@@ -53,7 +53,7 @@ describe('LanguageDropdown', () => {
     expect(html).not.toContain('/fr/pt-BR/')
   })
 
-  it('labels the trigger from the CMS', () => {
+  it('labels the trigger from SahajCloud', () => {
     const html = renderToStaticMarkup(
       <LanguageDropdown currentLanguage="en" languages={languages} />,
     )

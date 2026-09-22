@@ -3,8 +3,8 @@ import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
 import * as Sentry from '@sentry/react'
 import { detectErrorType, ErrorType } from './error-utils'
 
-vi.mock('./cms-context', () => ({
-  getCmsContext: () => ({ apiKey: 'test-key', baseURL: 'https://cms.test' }),
+vi.mock('./sahajcloud-context', () => ({
+  getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
@@ -43,7 +43,7 @@ function fetchResponse(status: number, body: unknown) {
     json: async () => body,
   }
 
-  // sahajCloudFetch clones a non-OK response to dump the CMS error body.
+  // sahajCloudFetch clones a non-OK response to dump the SahajCloud error body.
   return { ...response, clone: () => response }
 }
 
@@ -74,7 +74,7 @@ describe('getAtlasSeo', () => {
 
     const [url, init] = fetchSpy.mock.calls[0]
 
-    expect(url).toBe('https://cms.test/api/atlas/seo?route=%2Fgb%2Flondon&locale=en')
+    expect(url).toBe('https://sahajcloud.test/api/atlas/seo?route=%2Fgb%2Flondon&locale=en')
     expect((init as RequestInit).headers).toEqual({
       Authorization: 'clients API-Key test-key',
     })
@@ -229,7 +229,7 @@ describe('getAtlasSitemapUrls', () => {
 
     const [url, init] = fetchSpy.mock.calls[0]
 
-    expect(url).toBe('https://cms.test/api/atlas/sitemap')
+    expect(url).toBe('https://sahajcloud.test/api/atlas/sitemap')
     expect((init as RequestInit).headers).toEqual({
       Authorization: 'clients API-Key test-key',
     })

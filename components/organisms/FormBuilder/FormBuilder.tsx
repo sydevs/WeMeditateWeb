@@ -17,7 +17,7 @@ import {
 } from '../../../lib/submissions'
 import { isSafeNavigationUrl, normalizeContentPath } from '../../../lib/urls'
 import type { TFunction } from '../../../lib/i18n'
-import type { EmbeddedForm } from '../../../server/cms-types'
+import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 
 /** One entry of the plugin's authored field list. */
 type AuthoredField = NonNullable<EmbeddedForm['fields']>[number]
@@ -27,7 +27,7 @@ export interface FormBuilderProps {
   form: EmbeddedForm
 
   /**
-   * The Turnstile **site** key. Unset, no captcha renders and the CMS refuses
+   * The Turnstile **site** key. Unset, no captcha renders and SahajCloud refuses
    * the submission — which is the honest outcome of an unconfigured site.
    * @default import.meta.env.PUBLIC__TURNSTILE_SITE_KEY
    */
@@ -179,9 +179,9 @@ function renderField(
  *
  * **Every refusal shows one message, and re-challenges.** The intake
  * distinguishes a failed captcha from a disposable address from a key the form
- * never declared, but this site has one CMS-owned string for a failed send
+ * never declared, but this site has one SahajCloud-owned string for a failed send
  * (`forms.general.submit_error`) and a translation cannot be invented here —
- * the keys come from the CMS schema. Re-challenging regardless is deliberate
+ * the keys come from the SahajCloud schema. Re-challenging regardless is deliberate
  * too: see `SubmissionResult` in `lib/submissions.ts`.
  *
  * ⚠ **This server-renders, and its libraries are in the Worker on purpose.**
@@ -224,7 +224,7 @@ export function FormBuilder({
   // ⚠ The scheme is checked here, and nowhere else on the path. The URL is
   // assigned to `window.location.href`, so an authored `javascript:` value
   // would run in our origin on every successful submission.
-  // `forms.redirect.url` is a plain CMS text field with no upstream
+  // `forms.redirect.url` is a plain SahajCloud text field with no upstream
   // validation. A refused URL simply leaves the form showing its confirmation
   // message instead.
   const redirectUrl = form.confirmationType === 'redirect' ? form.redirect?.url : undefined
@@ -252,7 +252,7 @@ export function FormBuilder({
         body: JSON.stringify(submissionBody({ form, answers, locale, path })),
       })
     } catch {
-      // A dropped connection may still have reached the CMS and spent the
+      // A dropped connection may still have reached SahajCloud and spent the
       // token, so this re-challenges like any other failure.
       return refuse()
     }
@@ -374,7 +374,7 @@ export function FormBuilder({
               siteKey={siteKey}
               onSuccess={setToken}
               // A failed, expired or unreachable challenge all leave the form
-              // without a token. The CMS refuses that submission, which is the
+              // without a token. SahajCloud refuses that submission, which is the
               // same outcome as an unsolved challenge — nothing to recover.
               onError={() => setToken(null)}
               onExpire={() => setToken(null)}

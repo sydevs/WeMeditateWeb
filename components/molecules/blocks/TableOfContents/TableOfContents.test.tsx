@@ -16,7 +16,7 @@ describe('<TableOfContents>', () => {
     )
 
     // Anchor matches what the heading converter emits (slugify of the text),
-    // not the slug the CMS happened to store.
+    // not the slug SahajCloud happened to store.
     expect(html).toContain('href="#when-to-do-it"')
     expect(html).not.toContain('stale-slug')
     expect(html).toContain('When to do it?')

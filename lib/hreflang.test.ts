@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildAlternates, advertisedLocales, X_DEFAULT } from './hreflang'
-import type { Locale } from '../server/cms-types'
+import type { Locale } from '../server/sahajcloud-types'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -26,7 +26,7 @@ describe('advertisedLocales', () => {
 
   it('never advertises a locale the site does not offer', () => {
     // loadSiteContext 404s a locale outside availableLocales, so a locale
-    // published in the CMS but switched off here has no URL to point at.
+    // published in SahajCloud but switched off here has no URL to point at.
     const status = { en: 'published', ru: 'published' }
 
     expect(advertisedLocales(status, OFFERED)).toEqual(['en'])

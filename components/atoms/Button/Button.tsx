@@ -2,7 +2,7 @@ import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
 import { Link } from '../Link'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   /**

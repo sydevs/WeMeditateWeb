@@ -3,7 +3,7 @@
  * tested directly and reused by the Lexical → React converters.
  */
 
-import { isPopulated } from '../../../lib/cms-relationships'
+import { isPopulated } from '../../../lib/payload-relationships'
 
 // Re-exported so existing importers (`./lexical-helpers`) keep working; the
 // heading converter and the `table-of-contents` block share this one
@@ -59,7 +59,7 @@ export function relationshipLabel(value: unknown): string | null {
 }
 
 /**
- * Tailwind classes for an upload `<figure>`, given its CMS alignment. An
+ * Tailwind classes for an upload `<figure>`, given its SahajCloud alignment. An
  * aligned image takes 40% of the column width: left or right floats so
  * text wraps, and center is a centered block. `wide` breaks out of the
  * article column to span the full content container, through the

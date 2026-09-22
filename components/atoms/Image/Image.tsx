@@ -293,7 +293,7 @@ export function Image({
   // An empty `src` must never reach the <img>: the browser treats src=""
   // as a request for the current page URL, which re-downloads the whole
   // document, and React warns about it. This happens when a caller threads
-  // an unpopulated CMS image field straight through, for example a bare or
+  // an unpopulated SahajCloud image field straight through, for example a bare or
   // absent relationship. Treat a blank src as a missing image: skip the
   // <img> and let the placeholder show.
   const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''

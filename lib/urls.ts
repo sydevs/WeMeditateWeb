@@ -13,8 +13,8 @@
  * already holds.
  */
 
-import type { Locale } from '../server/cms-types'
-import { DEFAULT_LOCALE, isLocale } from '../server/cms-types'
+import type { Locale } from '../server/sahajcloud-types'
+import { DEFAULT_LOCALE, isLocale } from '../server/sahajcloud-types'
 
 /** What a path's leading segment says about the locale. */
 export interface PathLocale {
@@ -45,7 +45,7 @@ const HAS_QUERY_OR_HASH = /[?#]/
 export function localeFromPath(pathname: string): PathLocale {
   const match = pathname.match(/^\/([a-z]{2}(?:-[A-Z]{2})?)(?:\/(.*))?$/)
 
-  // A segment shaped like a locale but not one the CMS defines is a normal
+  // A segment shaped like a locale but not one SahajCloud defines is a normal
   // path segment, not a locale. `/status/` must reach the Pages route, not
   // become locale `st`. An unknown code then 404s naturally, through the
   // route it really matched.

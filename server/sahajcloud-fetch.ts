@@ -11,12 +11,12 @@
  * the same way here. A caller keeps only its own retry wrapper and its own
  * degrade value, because those genuinely differ per read.
  *
- * It sits outside `payload-client.ts` because `cms-client.test.ts` and
+ * It sits outside `payload-client.ts` because `sahajcloud-client.test.ts` and
  * `atlas-client.test.ts` replace that module wholesale, so anything exported
  * from it is `undefined` in both suites.
  */
 
-import { getCmsContext } from './cms-context'
+import { getSahajCloudContext } from './sahajcloud-context'
 
 /**
  * A non-OK SahajCloud response, as an error carrying its status.
@@ -91,7 +91,7 @@ export async function fetchWithErrorDetails(
 
 /**
  * Sends the request. Takes a path, not a URL: resolving the base URL here is
- * what removes `getCmsContext()` from every call site.
+ * what removes `getSahajCloudContext()` from every call site.
  */
 async function requestSahajCloud(
   path: string,
@@ -103,7 +103,7 @@ async function requestSahajCloud(
     throw new Error(`sahajCloudFetch needs a site-relative path, got: ${path}`)
   }
 
-  const { apiKey, baseURL } = getCmsContext()
+  const { apiKey, baseURL } = getSahajCloudContext()
 
   return fetchWithErrorDetails(
     `${baseURL}${path}`,

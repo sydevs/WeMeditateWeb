@@ -3,11 +3,11 @@ import { useLivePreview } from '@payloadcms/live-preview-react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from './protocol'
-import { cmsOrigin, useDocumentPreviewActive } from './session'
+import { sahajCloudOrigin, useDocumentPreviewActive } from './session'
 import { livePreviewToken } from './token-url'
 
 /**
- * Unsaved edits, streamed from the CMS admin over `postMessage`.
+ * Unsaved edits, streamed from the SahajCloud admin over `postMessage`.
  *
  * ## The transport is Payload's
  *
@@ -24,7 +24,7 @@ import { livePreviewToken } from './token-url'
  * for the document the URL names:
  *
  * 1. **`useDocumentPreviewActive()`**, below — true only for an unscoped
- *    session. The CMS emits `scope=wm-web-config` / `scope=wm-web-translations`
+ *    session. SahajCloud emits `scope=wm-web-config` / `scope=wm-web-translations`
  *    when the panel is editing a global, so a globals preview mounts no
  *    document subscriber at all.
  * 2. **Two call sites**, on routes that cannot both render.
@@ -38,18 +38,18 @@ import { livePreviewToken } from './token-url'
  *
  * ## Why the handler has to exist
  *
- * `mergeData`'s default handler POSTs to the CMS with `credentials: 'include'`
+ * `mergeData`'s default handler POSTs to SahajCloud with `credentials: 'include'`
  * while SahajCloud answers `Access-Control-Allow-Origin: *` with no
  * `Allow-Credentials`. Browsers refuse that pairing, which is why relationship
  * population never worked here. `requestHandler` is an explicit override
  * point, so the request goes same-origin to `/api/live-preview/populate`
- * instead, and the CMS round trip happens on the server, where the API key is.
+ * instead, and the SahajCloud round trip happens on the server, where the API key is.
  *
  * ## What that round trip buys
  *
  * A relationship pointed at a **newly created** document used to arrive as a
  * bare id and stay unpopulated until save and reload. It no longer does: the
- * CMS populates the unsaved document and answers with the real objects
+ * SahajCloud populates the unsaved document and answers with the real objects
  * (verified against production).
  */
 
@@ -166,7 +166,7 @@ interface DocumentProps<T> {
 /**
  * Renders `children` with the document, live while the panel is editing it.
  *
- * ⚠ **The subscriber mounts only for an unscoped session with a known CMS
+ * ⚠ **The subscriber mounts only for an unscoped session with a known SahajCloud
  * origin.** Both halves fail CLOSED, and neither is a detail of this file:
  * mounting it unconditionally would attach a listener and fire the `ready()`
  * handshake on every ordinary page view, and an unset `PUBLIC__SAHAJCLOUD_URL`
@@ -180,7 +180,7 @@ export function LivePreviewDocument<T extends PreviewDocument>({
   slug,
 }: DocumentProps<T>): ReactNode {
   const previewingThisDocument = useDocumentPreviewActive()
-  const serverURL = cmsOrigin()
+  const serverURL = sahajCloudOrigin()
 
   if (!previewingThisDocument || !serverURL) return children(initialData)
 
@@ -215,7 +215,7 @@ function SubscribedDocument<T extends PreviewDocument>({
   )
 
   // No `depth`: the server decides it, from the same read shape that rendered
-  // this page (`documentReadArgs` in `server/cms-client.ts`).
+  // this page (`documentReadArgs` in `server/sahajcloud-client.ts`).
   const { data } = useLivePreview<T>({ initialData, requestHandler, serverURL })
 
   useEffect(() => {

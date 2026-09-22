@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cmsHref, matchDocumentRoute, refId, refSlug } from './cms-routes'
+import { documentHref, matchDocumentRoute, refId, refSlug } from './document-routes'
 
 describe('refId', () => {
   it('returns a bare numeric id as a string', () => {
@@ -34,36 +34,36 @@ describe('refSlug', () => {
   })
 })
 
-describe('cmsHref', () => {
+describe('documentHref', () => {
   it('builds a page path from a populated page with a slug', () => {
-    expect(cmsHref('pages', { id: 1, slug: 'about' })).toBe('/about')
+    expect(documentHref('pages', { id: 1, slug: 'about' })).toBe('/about')
   })
 
   it('returns null for a page reference with no slug (unpublished / bare id)', () => {
     // A published page populates into an object with a slug. An
     // unpublished one returns as a bare id and must not render a dead /undefined link.
-    expect(cmsHref('pages', 99)).toBeNull()
-    expect(cmsHref('pages', { id: 99 })).toBeNull()
+    expect(documentHref('pages', 99)).toBeNull()
+    expect(documentHref('pages', { id: 99 })).toBeNull()
   })
 
   it('builds a meditation path from an id (bare or populated)', () => {
-    expect(cmsHref('meditations', 12)).toBe('/meditations/12')
-    expect(cmsHref('meditations', { id: 12, slug: null })).toBe('/meditations/12')
+    expect(documentHref('meditations', 12)).toBe('/meditations/12')
+    expect(documentHref('meditations', { id: 12, slug: null })).toBe('/meditations/12')
   })
 
   it('builds a lecture path from an id (bare or populated)', () => {
-    expect(cmsHref('lectures', 7)).toBe('/lectures/7')
-    expect(cmsHref('lectures', { id: 7, slug: null })).toBe('/lectures/7')
+    expect(documentHref('lectures', 7)).toBe('/lectures/7')
+    expect(documentHref('lectures', { id: 7, slug: null })).toBe('/lectures/7')
   })
 
   it('returns null for collections without a public web route', () => {
-    expect(cmsHref('albums', { id: 1 })).toBeNull()
-    expect(cmsHref('app-cards', { id: 1 })).toBeNull()
-    expect(cmsHref('forms', { id: 1 })).toBeNull()
+    expect(documentHref('albums', { id: 1 })).toBeNull()
+    expect(documentHref('app-cards', { id: 1 })).toBeNull()
+    expect(documentHref('forms', { id: 1 })).toBeNull()
   })
 
   it('returns null for an unknown collection slug', () => {
-    expect(cmsHref('something-else', { id: 1, slug: 'x' })).toBeNull()
+    expect(documentHref('something-else', { id: 1, slug: 'x' })).toBeNull()
   })
 })
 
@@ -85,7 +85,7 @@ describe('matchDocumentRoute', () => {
     })
 
     it('matches a compound locale prefix, region included', () => {
-      // `pt-BR` and `en-AU` carry an upper-case region, exactly as the CMS
+      // `pt-BR` and `en-AU` carry an upper-case region, exactly as SahajCloud
       // stores them. A lower-cased region is not a locale prefix.
       expect(matchDocumentRoute('meditations', '/pt-BR/meditations/123')).toEqual({
         routeParams: { id: '123' },

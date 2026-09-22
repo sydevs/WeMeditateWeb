@@ -8,7 +8,7 @@ import { useT } from '../../../hooks/useT'
 import { Placeholder } from '../../atoms/Placeholder/Placeholder'
 import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /** Card title. */
@@ -180,7 +180,7 @@ export function ContentCard({
             onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
           />
         ) : (
-          // No CMS thumbnail. Show a branded, non-animated fallback in a
+          // No SahajCloud thumbnail. Show a branded, non-animated fallback in a
           // fixed 16:9 box, so imageless cards look consistent in the grid.
           <div className="relative aspect-video overflow-hidden rounded-xs">
             <Placeholder animate={false} variant="primary">

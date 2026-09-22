@@ -3,7 +3,7 @@
  * Adds the custom properties set by the hooks under `pages/`.
  */
 
-import type { Locale, WebTranslations } from '../server/cms-types'
+import type { Locale, WebTranslations } from '../server/sahajcloud-types'
 import type { LivePreviewState } from '../lib/live-preview/protocol'
 
 /**
@@ -45,7 +45,7 @@ interface ImportMetaEnv {
    *
    * Not a secret, which is the point: a verification key cannot mint, so
    * publishing it costs nothing, and there is no second copy of a shared
-   * secret to keep in sync with the CMS. Unset, live preview is simply not
+   * secret to keep in sync with SahajCloud. Unset, live preview is simply not
    * available and every request renders published content.
    */
   readonly PUBLIC__LIVE_PREVIEW_VERIFY_KEY?: string
@@ -54,12 +54,12 @@ interface ImportMetaEnv {
    * Cloudflare Turnstile **site** key for the captcha on every authored form.
    *
    * Public by design: Cloudflare's widget reads it from the page. The secret
-   * half lives in the CMS, which verifies the token this key produces, so the
+   * half lives in SahajCloud, which verifies the token this key produces, so the
    * pair must belong to one Turnstile widget — a key from another widget
    * yields tokens `siteverify` refuses.
    *
    * Unset, the captcha does not render and every submission is refused with
-   * `captcha_failed`: the CMS requires a token on every public write.
+   * `captcha_failed`: SahajCloud requires a token on every public write.
    */
   readonly PUBLIC__TURNSTILE_SITE_KEY?: string
 
@@ -96,7 +96,7 @@ declare global {
       livePreview: LivePreviewState
 
       /**
-       * The locale's UI strings, from the CMS `wm-web-translations`
+       * The locale's UI strings, from the SahajCloud `wm-web-translations`
        * global. Added by `pages/+onBeforeRender.ts` and carried to the
        * client by `passToClient`. Read it through `useT()`, never directly.
        */

@@ -63,7 +63,7 @@ export function Spinner({
   ...props
 }: SpinnerProps) {
   const t = useT()
-  // Default through the CMS, not a literal: a spinner rendered without an
+  // Default through SahajCloud, not a literal: a spinner rendered without an
   // explicit label still announces in the visitor's language.
   const resolvedLabel = label ?? t('common.general.loading')
   // Logo variant sizes

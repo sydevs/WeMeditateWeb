@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { submissionBody } from './submissions'
-import type { EmbeddedForm } from '../server/cms-types'
+import type { EmbeddedForm } from '../server/sahajcloud-types'
 
 /**
  * The fixture is typed `satisfies EmbeddedForm`, so it is checked against the
  * fields an embedded `forms` relationship actually returns — which is tied to
- * `EMBEDDED_FORM_SELECT` in `server/cms-client.ts`. A field renamed upstream,
+ * `EMBEDDED_FORM_SELECT` in `server/sahajcloud-client.ts`. A field renamed upstream,
  * or dropped from that select, fails `tsc` here instead of passing a test that
  * describes a form the read no longer produces.
  */

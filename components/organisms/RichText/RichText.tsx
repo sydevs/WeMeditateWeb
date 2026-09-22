@@ -15,10 +15,10 @@ import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
-import { cmsHref, type RelationValue } from '../../../lib/cms-routes'
-import { isPopulated } from '../../../lib/cms-relationships'
+import { documentHref, type RelationValue } from '../../../lib/document-routes'
+import { isPopulated } from '../../../lib/payload-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
-import type { EmbeddedForm } from '../../../server/cms-types'
+import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
@@ -128,7 +128,7 @@ const CONVERTERS: JSXConverters = {
     const fields = node.fields
 
     if (fields?.linkType === 'internal' && fields.doc) {
-      const href = cmsHref(fields.doc.relationTo ?? '', fields.doc.value as RelationValue)
+      const href = documentHref(fields.doc.relationTo ?? '', fields.doc.value as RelationValue)
 
       return href ? <Link href={href}>{children}</Link> : <>{children}</>
     }
@@ -172,13 +172,13 @@ const CONVERTERS: JSXConverters = {
     if (!label) {
       return null
     }
-    const href = cmsHref(node.relationTo ?? '', node.value as RelationValue)
+    const href = documentHref(node.relationTo ?? '', node.value as RelationValue)
 
     return href ? <Link href={href}>{label}</Link> : <>{label}</>
   },
 
   // Upload images render through the Cloudflare-aware Image atom, inside a
-  // <figure>. This honors the CMS caption and alignment fields.
+  // <figure>. This honors the SahajCloud caption and alignment fields.
   upload: ({ node }) => {
     const value = node.value
 
@@ -233,7 +233,7 @@ const CONVERTERS: JSXConverters = {
 
     return (
       <Alert title="Unimplemented RichText node" variant="warning">
-        No converter for <code>{label}</code> — implement it or check the CMS content.
+        No converter for <code>{label}</code> — implement it or check the SahajCloud content.
       </Alert>
     )
   },

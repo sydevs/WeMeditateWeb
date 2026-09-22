@@ -12,17 +12,17 @@
  * Pure, so the whole matrix is testable without rendering.
  */
 
-import type { EmbeddedForm } from '../server/cms-types'
+import type { EmbeddedForm } from '../server/sahajcloud-types'
 
 /**
- * The same-origin route a form posts to. The browser cannot post to the CMS
+ * The same-origin route a form posts to. The browser cannot post to SahajCloud
  * itself: the create needs `SAHAJCLOUD_API_KEY`, a server-only secret.
  */
 export const SUBMISSION_PATH = '/api/submissions'
 
 /**
  * ⚠ The captcha token travels as a header, not as document data, because the
- * CMS write guard reads it off the request (`x-turnstile-token`) on the
+ * SahajCloud write guard reads it off the request (`x-turnstile-token`) on the
  * built-in create endpoint. Renaming it here breaks every submission.
  */
 export const TURNSTILE_TOKEN_HEADER = 'x-turnstile-token'

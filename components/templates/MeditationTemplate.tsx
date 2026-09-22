@@ -14,11 +14,11 @@
  * <MeditationTemplate meditation={meditationData} />
  */
 
-import type { Meditation, MeditationSong } from '../../server/cms-types'
+import type { Meditation, MeditationSong } from '../../server/sahajcloud-types'
 import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
-import { populatedImageUrl } from '../../lib/cms-relationships'
+import { populatedImageUrl } from '../../lib/payload-relationships'
 import { useT } from '../../hooks/useT'
 
 export interface MeditationTemplateProps {
@@ -70,8 +70,8 @@ export function MeditationTemplate({
   showRelated = false,
 }: MeditationTemplateProps) {
   const t = useT()
-  // Get CMS base URL for building full frame URLs
-  const cmsBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
+  // Get SahajCloud base URL for building full frame URLs
+  const sahajCloudBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
   const resolveMediaUrl = (url: string): string => {
     if (!url) {
       return url
@@ -82,18 +82,18 @@ export function MeditationTemplate({
       return url
     }
 
-    if (!cmsBaseUrl) {
+    if (!sahajCloudBaseUrl) {
       return url
     }
 
     try {
-      return new URL(url, cmsBaseUrl).toString()
+      return new URL(url, sahajCloudBaseUrl).toString()
     } catch {
       return url
     }
   }
 
-  // Parse and transform frames from CMS format to MeditationPlayer format
+  // Parse and transform frames from SahajCloud format to MeditationPlayer format
   let frames: MeditationFrame[] = []
 
   if (meditation.frames) {
@@ -105,7 +105,7 @@ export function MeditationTemplate({
             ? meditation.frames
             : []
 
-      // Transform CMS frames to MeditationPlayer format
+      // Transform SahajCloud frames to MeditationPlayer format
       frames = rawFrames
         .filter((frame: { url?: string | null }) => frame.url)
         .map(

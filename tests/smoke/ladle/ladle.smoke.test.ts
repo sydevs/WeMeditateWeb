@@ -2,7 +2,7 @@
  * Smoke specs for the Ladle design-system (component library) preview.
  *
  * Ladle's static build is a client-rendered SPA. There is no server or
- * CMS to exercise, so a generic HTML fetch tells us little. But the
+ * SahajCloud to exercise, so a generic HTML fetch tells us little. But the
  * build emits `/meta.json` (the story manifest), which is a strong,
  * server-free signal that the component library compiled and serves. It
  * lists every story with its name, level path, and source file. No

@@ -38,7 +38,7 @@ describe('localeFromPath', () => {
     })
   })
 
-  it('keeps a region-cased code exactly as the CMS stores it', () => {
+  it('keeps a region-cased code exactly as SahajCloud stores it', () => {
     expect(localeFromPath('/pt-BR/about')).toMatchObject({ locale: 'pt-BR' })
     expect(localeFromPath('/en-AU/about')).toMatchObject({ locale: 'en-AU' })
   })
@@ -53,7 +53,7 @@ describe('localeFromPath', () => {
   })
 
   it('leaves a segment that only looks like a locale alone', () => {
-    // `st` is not a CMS locale, so /status/page is a path, not a prefix.
+    // `st` is not a SahajCloud locale, so /status/page is a path, not a prefix.
     expect(localeFromPath('/status/page')).toMatchObject({
       locale: 'en',
       pathWithoutLocale: '/status/page',
@@ -113,7 +113,7 @@ describe('localeUrl', () => {
     expect(localeUrl(ORIGIN, 'fr', '/about')).toBe('https://wemeditate.com/fr/about')
   })
 
-  it('keeps a region-cased code exactly as the CMS stores it', () => {
+  it('keeps a region-cased code exactly as SahajCloud stores it', () => {
     expect(localeUrl(ORIGIN, 'pt-BR', '/about')).toBe('https://wemeditate.com/pt-BR/about')
   })
 

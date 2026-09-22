@@ -50,7 +50,7 @@ the component behind `ClientOnly` and `React.lazy`.
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
 | `form` | `EmbeddedForm` | Yes | The authored `forms` document, populated by the page read. |
-| `siteKey` | `string` | No | The Turnstile **site** key. Defaults to `PUBLIC__TURNSTILE_SITE_KEY`. Unset, no captcha renders and the CMS refuses the submission. |
+| `siteKey` | `string` | No | The Turnstile **site** key. Defaults to `PUBLIC__TURNSTILE_SITE_KEY`. Unset, no captcha renders and SahajCloud refuses the submission. |
 | `variant` | `'default' \| 'minimal'` | No | `default` displays labels and borders with the primary button. `minimal` displays placeholders instead of labels, with the outline button. |
 | `align` | `'left' \| 'center'` | No | Aligns the title and submit button. Fields stay left-aligned either way. Defaults to `left`. |
 | `className` | `string` | No | Extra classes for the form wrapper. |
@@ -61,7 +61,7 @@ A form with no fields renders nothing, the way every other embedded document deg
 
 `lib/submissions.ts` turns the document plus the answers into the `user-submissions` create body,
 and owns every decision about it. An embedded `forms` relationship needs no separate read: the
-page read populates it through `EMBEDDED_FORM_SELECT` in `server/cms-client.ts`.
+page read populates it through `EMBEDDED_FORM_SELECT` in `server/sahajcloud-client.ts`.
 
 ⚠ **An author must call the sender's name field exactly `name`.** `prepareUserSubmission`
 upstream matches it on that literal key, not on a block type, and the `users` row is written on

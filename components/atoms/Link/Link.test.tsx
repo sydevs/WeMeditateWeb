@@ -120,7 +120,7 @@ describe('<Link> locale prefixing', () => {
     expect(html).not.toContain('undefined')
   })
 
-  it('keeps a region-cased locale exactly as the CMS stores it', () => {
+  it('keeps a region-cased locale exactly as SahajCloud stores it', () => {
     expect(
       renderToStaticMarkup(
         <Link href="/about" locale="pt-BR">

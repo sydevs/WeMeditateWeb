@@ -1,7 +1,7 @@
 /**
  * Replaces the old `getUserFriendlyErrorMessage` suite in
  * `server/error-utils.test.ts`. Same guarantee — each error category
- * produces its own copy — but the copy now comes from the CMS, so the test
+ * produces its own copy — but the copy now comes from SahajCloud, so the test
  * resolves the key through the committed English snapshot.
  */
 

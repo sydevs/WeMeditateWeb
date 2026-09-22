@@ -2,7 +2,7 @@ import type { Story, StoryDefault } from '@ladle/react'
 import { FormBuilder } from './FormBuilder'
 import { submissionBody } from '../../../lib/submissions'
 import { StoryWrapper, StorySection } from '../../ladle'
-import type { EmbeddedForm } from '../../../server/cms-types'
+import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 
 export default {
   title: 'Organisms',
@@ -64,7 +64,7 @@ const subscribeForm = {
  * The first two forms pass Cloudflare's test key, so the captcha renders and
  * the submit button unlocks once it solves. The third passes none, which is
  * what an unconfigured site looks like: no captcha, an enabled button, and a
- * submission the CMS refuses.
+ * submission SahajCloud refuses.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -87,7 +87,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="No site key configured: no captcha renders, and the CMS refuses the submission."
+      description="No site key: no captcha renders, and SahajCloud refuses the submission."
       title="States"
     >
       <div className="max-w-md">

@@ -10,14 +10,14 @@
  *
  * Kept framework-free, so the rule stays unit-testable without rendering.
  */
-import type { Page, WebConfig } from '../server/cms-types'
+import type { Page, WebConfig } from '../server/sahajcloud-types'
 
 /**
  * The slug of the featured nav page for the current page, or `undefined`
  * when the current page is not a featured nav page.
  *
  * `currentSlug` and the featured pages' slugs come from the same-locale
- * CMS fetch (see pages/[slug]/+data), so matching by slug is correct in
+ * SahajCloud fetch (see pages/[slug]/+data), so matching by slug is correct in
  * every locale.
  */
 export function activeFeaturedSlug(

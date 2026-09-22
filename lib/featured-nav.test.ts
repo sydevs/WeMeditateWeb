@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Page, WebConfig } from '../server/cms-types'
+import type { Page, WebConfig } from '../server/sahajcloud-types'
 import { activeFeaturedSlug, isFeaturedNavPage } from './featured-nav'
 
 /** Minimal featured-page list keyed by slug. Only `slug` is read. */

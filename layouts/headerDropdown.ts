@@ -1,10 +1,10 @@
 /**
  * Pure helpers for building the header mega-menu (HeaderDropdown) payload from
- * CMS pages. Kept framework-free so the mapping, image resolution, and random
+ * SahajCloud pages. Kept framework-free so the mapping, image resolution, and random
  * selection can be unit-tested without rendering.
  */
-import type { Page } from '../server/cms-types'
-import { populatedImageUrl } from '../lib/cms-relationships'
+import type { Page } from '../server/sahajcloud-types'
+import { populatedImageUrl } from '../lib/payload-relationships'
 import type { HeaderDropdownArticle, HeaderDropdownLink } from '../components/organisms'
 
 /** A knowledge page → a left-column nav link (`/<slug>`). */
@@ -27,7 +27,7 @@ export function pageToArticle(page: Page): HeaderDropdownArticle {
 }
 
 /**
- * Picks `count` pages at random from the curated `featured` list (the CMS
+ * Picks `count` pages at random from the curated `featured` list (the SahajCloud
  * `featuredArticles`, which may hold more than `count`). Falls back to
  * `fallback` (knowledge pages) when `featured` is empty. Returns all
  * available pages when fewer than `count` exist. This function is pure: it

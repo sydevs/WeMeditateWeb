@@ -5,7 +5,7 @@
  *
  * The endpoints already shape and filter their docs on the server
  * (dropping any card with no public title, duration, or thumbnail), and
- * the cms-client fetchers guard the rendered fields again. So these
+ * the sahajcloud-client fetchers guard the rendered fields again. So these
  * mappers only translate shape, with no further filtering.
  *
  * Both card types use `aspectRatio: 'video'`. Meditation thumbnails are
@@ -13,12 +13,12 @@
  * YouTube `mqdefault` (320×180, exactly 16:9).
  */
 
-import type { RelatedMeditationCard, RelatedLectureCard } from '../server/cms-types'
-import type { ResolvedCardItem } from './cms-blocks'
+import type { RelatedMeditationCard, RelatedLectureCard } from '../server/sahajcloud-types'
+import type { ResolvedCardItem } from './content-blocks'
 
 /** Minutes badge from a length in seconds: rounded, omitted below 1 minute (a
  * "0 min" badge is meaningless). Mirrors `meditationDurationMinutes` in
- * cms-blocks.ts so lecture and meditation cards read consistently. */
+ * content-blocks.ts so lecture and meditation cards read consistently. */
 function minutesFromSeconds(seconds: number): number | undefined {
   const minutes = seconds > 0 ? Math.round(seconds / 60) : 0
 

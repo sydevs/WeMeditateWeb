@@ -1,5 +1,5 @@
 import { Link } from '../../atoms'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 /** A single link item */
 export interface FooterLink {

@@ -13,13 +13,13 @@
  */
 
 import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
-import type { Meditation, Page } from '../server/cms-types'
+import type { Meditation, Page } from '../server/sahajcloud-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '../components/molecules/AudioPlayer/types'
-import { cmsHref, type RelationValue } from './cms-routes'
+import { documentHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
-import { isPopulated } from './cms-relationships'
+import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
 /** A relationship or upload field: a populated document or a bare ID. */
@@ -100,7 +100,7 @@ export interface SplashBlockFields {
   actionURL?: string | null
   /**
    * Describes the text color (dark or light), mirroring the `textbox`
-   * overlay convention. Not yet authored in the CMS (see SahajCloud
+   * overlay convention. Not yet authored in SahajCloud (see SahajCloud
    * ticket). Absent is treated as light text on a dark hero (`theme: 'dark'`).
    */
   textColor?: 'dark' | 'light' | null
@@ -124,7 +124,7 @@ export interface LayoutBlockFields {
   items?: LayoutItem[] | null
 }
 
-/** A single entry in a `table-of-contents` block (matches the CMS field). */
+/** A single entry in a `table-of-contents` block (matches the SahajCloud field). */
 export interface TocHeading {
   slug: string
   text: string
@@ -142,7 +142,7 @@ export type PageTag = NonNullable<Page['tags']>[number]
 
 /**
  * Every page-tag enum value, in schema order. The values are the stable
- * filter IDs; their visible labels come from the CMS
+ * filter IDs; their visible labels come from SahajCloud
  * (`article.general.tag_*`), supplied as `pageTagLabels`.
  */
 export const PAGE_TAG_KEYS = {
@@ -155,24 +155,24 @@ export const PAGE_TAG_KEYS = {
 
 export const PAGE_TAGS = Object.keys(PAGE_TAG_KEYS) as PageTag[]
 
-/** Visible label per page tag, resolved from the CMS by the caller. */
+/** Visible label per page tag, resolved from SahajCloud by the caller. */
 export type PageTagLabels = Partial<Record<PageTag, string>>
 
 /** `content-index` — ContentIndexBlock. `resolvedItems` and
  * `resolvedTracks` are attached by the server-side pre-resolve pass in
  * `+data`. The editor never stores them. The `*Filters` fields mirror the
- * CMS schema, but rendering does not use them: facets come from the
+ * SahajCloud schema, but rendering does not use them: facets come from the
  * resolved items' own `tags` instead. */
 export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
   limit: number
-  /** Configured page-tag filters (CMS schema mirror). Facets come from items. */
+  /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
   pageFilters?: PageTag[] | null
-  /** Configured user-choice filters (CMS schema mirror). Facets come from items. */
+  /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
   userChoiceFilters?: (number | UserChoice)[] | null
-  /** Configured song-tag filters (CMS schema mirror). Facets come from tracks. */
+  /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
   songFilters?: (number | SongTag)[] | null
-  /** Virtual field computed by the CMS (path, filters, and limit). */
+  /** Virtual field computed by SahajCloud (path, filters, and limit). */
   apiEndpoint?: string | null
   /** Cards for pages, lectures, and meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
@@ -240,7 +240,7 @@ export function galleryImages(images: ImageGalleryBlockFields['items']): Populat
 }
 
 /**
- * Inverts a CMS `textColor` (which describes the text: dark or light)
+ * Inverts a SahajCloud `textColor` (which describes the text: dark or light)
  * into a background-context `theme`. Light text implies a dark
  * background, and dark text implies a light one. When `textColor` is
  * absent, this function falls back to `fallback`. Shared by the splash
@@ -308,7 +308,7 @@ export function leadSplashFromRouteData(
   return getLeadSplash(content)
 }
 
-/** Coerces a possibly null or absent CMS text field to a string. */
+/** Coerces a possibly null or absent SahajCloud text field to a string. */
 function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
@@ -335,7 +335,7 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
   if (!isPopulated(value)) {
     return null
   }
-  const href = cmsHref(relationTo, value as RelationValue)
+  const href = documentHref(relationTo, value as RelationValue)
 
   // Collections without a public web route (app-cards) resolve to null.
   // Skip, instead of emitting a dead link.
@@ -384,7 +384,7 @@ export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCard
   return cards
 }
 
-/** Maps a CMS field name to the SVG node ID the `SubtleSystem` organism consumes. */
+/** Maps a SahajCloud field name to the SVG node ID the `SubtleSystem` organism consumes. */
 const SUBTLE_SYSTEM_NODE_IDS: Record<string, string> = {
   left: 'channel_left',
   right: 'channel_right',
@@ -423,7 +423,7 @@ export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystem
     if (!isPopulated<Page>(page)) {
       continue
     }
-    const href = cmsHref('pages', page as RelationValue)
+    const href = documentHref('pages', page as RelationValue)
 
     if (!href) {
       continue
@@ -456,7 +456,7 @@ function contentIndexCardTags(
     const facets = raw
       .filter((t): t is PageTag => typeof t === 'string' && PAGE_TAGS.includes(t as PageTag))
       // A label the caller did not supply falls back to the enum value, so
-      // a CMS gap shows the identifier instead of an empty pill.
+      // a SahajCloud gap shows the identifier instead of an empty pill.
       .map((t) => ({ id: t, label: pageTagLabels[t] ?? t }))
 
     return facets.length > 0 ? facets : undefined
@@ -489,7 +489,7 @@ function cardHref(
     return `/meditations/${id}`
   }
   if (type === 'pages' || type === 'lectures') {
-    return cmsHref(type, doc as RelationValue)
+    return documentHref(type, doc as RelationValue)
   }
 
   return null
@@ -626,7 +626,7 @@ export function meditationCardsFromUserChoices(
 /**
  * Maps a content-index `songs` API document to a playable {@link Track}
  * for the MusicLibrary organism. Songs with no playable URL are skipped.
- * `duration` is `0`: the Song CMS type has no duration field, so
+ * `duration` is `0`: the Song SahajCloud type has no duration field, so
  * AudioPlayer derives it from the audio element at load. `tags` are the
  * populated SongTag slugs, matched against MusicLibrary's filter IDs.
  */
@@ -644,9 +644,9 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
   const populatedTags = (Array.isArray(doc.tags) ? doc.tags : []).filter(
     (tag): tag is SongTag => isPopulated<SongTag>(tag) && typeof tag.slug === 'string',
   )
-  // The slug is the filter id; the CMS `title` is what the pill shows. A
+  // The slug is the filter id; the SahajCloud `title` is what the pill shows. A
   // tag with no title falls back to its slug rather than to title-casing,
-  // so a CMS gap is visible instead of silently rendering English.
+  // so a SahajCloud gap is visible instead of silently rendering English.
   const tags = populatedTags.map((tag) => ({
     id: tag.slug as string,
     label: typeof tag.title === 'string' && tag.title.length > 0 ? tag.title : (tag.slug as string),

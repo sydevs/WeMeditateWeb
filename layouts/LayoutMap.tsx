@@ -1,6 +1,6 @@
 import { Header } from '../components/organisms/Header'
 import { useData } from 'vike-react/useData'
-import type { WebConfig } from '../server/cms-types'
+import type { WebConfig } from '../server/sahajcloud-types'
 import { useSiteNav } from './useSiteNav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 
@@ -29,7 +29,7 @@ export default function LayoutMap({ children }: { children: React.ReactNode }) {
   const data = useData<{ settings?: WebConfig }>()
   const settings = data?.settings
 
-  // Same degradation as LayoutChrome: a CMS-down render must not take the page
+  // Same degradation as LayoutChrome: a SahajCloud-down render must not take the page
   // down with it. The atlas is client-rendered and works without our nav.
   if (!settings) {
     return <>{children}</>

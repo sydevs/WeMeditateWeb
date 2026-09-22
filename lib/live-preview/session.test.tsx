@@ -1,17 +1,17 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import { cmsOrigin, useDocumentPreviewActive, useLivePreviewState } from './session'
+import { sahajCloudOrigin, useDocumentPreviewActive, useLivePreviewState } from './session'
 
 afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-describe('cmsOrigin', () => {
-  it('reduces the configured CMS URL to a bare origin', () => {
+describe('sahajCloudOrigin', () => {
+  it('reduces the configured SahajCloud URL to a bare origin', () => {
     vi.stubEnv('PUBLIC__SAHAJCLOUD_URL', 'https://cloud.sydevelopers.com/admin')
 
-    expect(cmsOrigin()).toBe('https://cloud.sydevelopers.com')
+    expect(sahajCloudOrigin()).toBe('https://cloud.sydevelopers.com')
   })
 
   /**
@@ -21,10 +21,10 @@ describe('cmsOrigin', () => {
    */
   it('is undefined when the URL is unset or unparseable', () => {
     vi.stubEnv('PUBLIC__SAHAJCLOUD_URL', '')
-    expect(cmsOrigin()).toBeUndefined()
+    expect(sahajCloudOrigin()).toBeUndefined()
 
     vi.stubEnv('PUBLIC__SAHAJCLOUD_URL', 'not a url')
-    expect(cmsOrigin()).toBeUndefined()
+    expect(sahajCloudOrigin()).toBeUndefined()
   })
 })
 

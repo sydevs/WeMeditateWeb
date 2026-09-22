@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
-import type { ResolvedCardItem } from '../../../lib/cms-blocks'
+import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
 import { useT } from '../../../hooks/useT'

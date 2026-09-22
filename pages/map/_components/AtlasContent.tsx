@@ -7,7 +7,7 @@
  * upgrade: real headings, real links, real text, and no interactivity
  * that is not really there.
  *
- * Nothing here is HTML from the CMS. Descriptions arrive as
+ * Nothing here is HTML from SahajCloud. Descriptions arrive as
  * `content.paragraphs`, plain text, one entry per block. Upstream
  * converts Lexical to text, precisely so no consumer has to sanitize it.
  * Render them as text, never as `dangerouslySetInnerHTML`.
@@ -225,7 +225,7 @@ function EventContent({
         />
       )}
 
-      {/* Plain text from the CMS, rendered as text. See the module comment. */}
+      {/* Plain text from SahajCloud, rendered as text. See the module comment. */}
       {paragraphs.map((paragraph, index) => (
         <p key={index} className="mt-4 text-gray-700">
           {paragraph}

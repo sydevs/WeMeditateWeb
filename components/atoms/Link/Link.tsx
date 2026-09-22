@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
-import type { Locale } from '../../../server/cms-types'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   /** Link destination (will be locale-prefixed automatically) */

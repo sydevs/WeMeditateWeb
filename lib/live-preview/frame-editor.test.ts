@@ -2,17 +2,21 @@ import { describe, expect, it } from 'vitest'
 
 import { readSeekTimestamp } from './frame-editor'
 
-const CMS = 'https://cloud.sydevelopers.com'
+const SAHAJCLOUD = 'https://cloud.sydevelopers.com'
 
 const event = (origin: string, data: unknown) => ({ origin, data })
 
 describe('readSeekTimestamp', () => {
-  it('reads the timestamp off a SEEK_TO_TIME message from the CMS', () => {
-    expect(readSeekTimestamp(event(CMS, { type: 'SEEK_TO_TIME', timestamp: 42 }), CMS)).toBe(42)
+  it('reads the timestamp off a SEEK_TO_TIME message from SahajCloud', () => {
+    expect(
+      readSeekTimestamp(event(SAHAJCLOUD, { type: 'SEEK_TO_TIME', timestamp: 42 }), SAHAJCLOUD),
+    ).toBe(42)
   })
 
   it('reads 0, which is a real timestamp and not an absent one', () => {
-    expect(readSeekTimestamp(event(CMS, { type: 'SEEK_TO_TIME', timestamp: 0 }), CMS)).toBe(0)
+    expect(
+      readSeekTimestamp(event(SAHAJCLOUD, { type: 'SEEK_TO_TIME', timestamp: 0 }), SAHAJCLOUD),
+    ).toBe(0)
   })
 
   /**
@@ -21,10 +25,10 @@ describe('readSeekTimestamp', () => {
    * unset, so a missing environment variable let ANY page drive the playhead
    * that timestamps newly inserted frames.
    */
-  it('accepts nothing at all when the CMS origin is unset', () => {
-    expect(readSeekTimestamp(event(CMS, { type: 'SEEK_TO_TIME', timestamp: 42 }), undefined)).toBe(
-      null,
-    )
+  it('accepts nothing at all when the SahajCloud origin is unset', () => {
+    expect(
+      readSeekTimestamp(event(SAHAJCLOUD, { type: 'SEEK_TO_TIME', timestamp: 42 }), undefined),
+    ).toBe(null)
     expect(
       readSeekTimestamp(event('https://evil.test', { type: 'SEEK_TO_TIME', timestamp: 42 }), ''),
     ).toBe(null)
@@ -32,7 +36,10 @@ describe('readSeekTimestamp', () => {
 
   it('ignores a message from any other origin', () => {
     expect(
-      readSeekTimestamp(event('https://evil.test', { type: 'SEEK_TO_TIME', timestamp: 42 }), CMS),
+      readSeekTimestamp(
+        event('https://evil.test', { type: 'SEEK_TO_TIME', timestamp: 42 }),
+        SAHAJCLOUD,
+      ),
     ).toBe(null)
   })
 
@@ -47,7 +54,7 @@ describe('readSeekTimestamp', () => {
       { type: 'SEEK_TO_TIME', timestamp: '42' },
       { type: 'SEEK_TO_TIME', timestamp: null },
     ]) {
-      expect(readSeekTimestamp(event(CMS, data), CMS)).toBe(null)
+      expect(readSeekTimestamp(event(SAHAJCLOUD, data), SAHAJCLOUD)).toBe(null)
     }
   })
 })

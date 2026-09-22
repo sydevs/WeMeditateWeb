@@ -43,7 +43,7 @@ export const idSchema = z.coerce
 // ===== Submission Schemas =====
 
 /**
- * One submission the same-origin forms route will forward to the CMS.
+ * One submission the same-origin forms route will forward to SahajCloud.
  *
  * ⚠ The bounds are the loosest SahajCloud allows (`src/collections/
  * UserSubmissions/submissionData.ts`: 40 entries, 100-character keys, and
@@ -75,7 +75,7 @@ export const submissionSchema = z.object({
 
 /**
  * Schema for validating API keys.
- * Used by both cms-context.ts and payload-client.ts for consistent validation.
+ * Used by both sahajcloud-context.ts and payload-client.ts for consistent validation.
  */
 export const apiKeySchema = z
   .string()
@@ -84,6 +84,6 @@ export const apiKeySchema = z
 
 /**
  * Schema for validating base URLs.
- * Used for CMS API endpoint validation.
+ * Used for SahajCloud API endpoint validation.
  */
 export const baseUrlSchema = z.url('Base URL must be a valid URL')

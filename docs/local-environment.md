@@ -1,5 +1,5 @@
 ---
-description: Local environment gotchas — CMS API key (403 vs 400) and the site globals’ edge caching.
+description: Local environment gotchas — SahajCloud API key (403 vs 400) and edge caching.
 globs:
   - "**"
 alwaysApply: false
@@ -9,17 +9,17 @@ alwaysApply: false
 
 ## `SAHAJCLOUD_API_KEY`: 403 means a stale key, not an origin block
 
-`.env.local`'s `SAHAJCLOUD_API_KEY` must be a valid production key. When local CMS access fails:
+`.env.local`'s `SAHAJCLOUD_API_KEY` must be a valid production key. When local access fails:
 
-- **403 Forbidden** on a CMS read (the page 500s locally, and the dev log shows
+- **403 Forbidden** on a SahajCloud read (the page 500s locally, and the dev log shows
   `[PayloadCMS] … → 403`) means the local key is stale or invalid. Refresh it. This is not an
   origin or IP block — the request reaches Payload's access control and fails there.
 - A valid key returns **400** on a malformed query (a missing `select`, or `depth > 1` without
-  `populate` — see [cms-api-reads](../server/AGENTS.md)). So 400 means authenticated but a bad
+  `populate` — see [server/AGENTS.md](../server/AGENTS.md)). So 400 means authenticated but a bad
   query. 403 means not authenticated.
 - The deployed Worker uses its own key, set in the Cloudflare dashboard, independent of
-  `.env.local`. The deploy can serve CMS content even while local access 403s. When the local key
-  will not work, verify against the deployed preview through CI instead.
+  `.env.local`. The deploy can serve SahajCloud content even while local access 403s. When the
+  local key will not work, verify against the deployed preview through CI instead.
 
 ### The exception: a 403 that is not a stale key
 
@@ -43,8 +43,8 @@ front of SahajCloud, so an edit to the nav, the locale set, or any UI string app
 preview within 600s — sooner, since SahajCloud purges the tag on write (SahajCloud#710). It is not
 stale code. Wait out the window before you go looking for a bug.
 
-Locally the subrequest goes to whatever `PUBLIC__SAHAJCLOUD_URL` names, so a local CMS is never
-edge-cached at all. That difference is why a change looks instant locally.
+Locally the subrequest goes to whatever `PUBLIC__SAHAJCLOUD_URL` names, so a local SahajCloud is
+never edge-cached at all. That difference is why a change looks instant locally.
 
 `loadSiteContext()` memoizes both reads per request, so a page issues one config read and one
 translations read however many components ask for them. The dev log shows each once. Two of
@@ -53,6 +53,6 @@ either means something bypassed `loadSiteContext`.
 ## The dev server can serve stale modules
 
 `pnpm dev` (Vike/Vite) sometimes serves a stale module or render after an edit. For example, a
-request that makes zero CMS calls can still render the old nav. For a data-layer change, prefer
-a unit test plus CI verification over trusting one dev-server probe. To restart cleanly:
+request that makes zero SahajCloud calls can still render the old nav. For a data-layer change,
+prefer a unit test plus CI verification over trusting one dev-server probe. To restart cleanly:
 `lsof -ti:5173 | xargs kill -9 && pnpm dev`.

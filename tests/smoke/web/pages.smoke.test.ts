@@ -1,8 +1,8 @@
 /**
  * Smoke specs for the WeMeditate web app (Workers preview) page rendering.
  *
- * Verifies the Worker loads real content from the production CMS: the
- * homepage, a real CMS page, a non-English locale homepage, the
+ * Verifies the Worker loads real content from the production SahajCloud: the
+ * homepage, a real SahajCloud page, a non-English locale homepage, the
  * default-locale canonical redirect, the SEO head tags, and the 404 path.
  * These are always-present surfaces. They should never silently break.
  *
@@ -19,13 +19,13 @@ import {
   expectChrome,
   expectNoChrome,
   expectNoBrokenLinks,
-  discoverFromCms,
+  discoverFromSahajCloud,
   nonEnglishLocale,
   htmlTag,
   renderedHtml,
   NOT_FOUND_MARKER,
 } from '../_helpers/preview'
-import { localeDirection } from '../../../server/cms-types'
+import { localeDirection } from '../../../server/sahajcloud-types'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {
@@ -39,14 +39,14 @@ describe('web preview pages', () => {
     expectNoBrokenLinks(home.html, '/')
   })
 
-  it('a CMS page renders with real content', async (ctx) => {
-    // Discover a real published page slug from the CMS rather than crawling the
+  it('a SahajCloud page renders with real content', async (ctx) => {
+    // Discover a real published page slug from SahajCloud rather than crawling the
     // homepage (nav links may be hydrated client-side, not in the SSR HTML).
-    const slug = (await discoverFromCms())?.pageSlug
+    const slug = (await discoverFromSahajCloud())?.pageSlug
 
     ctx.skip(
       !slug,
-      'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret for content-page coverage',
+      'no SahajCloud page slug; set the SAHAJCLOUD_API_KEY secret for content-page coverage',
     )
 
     const page = await fetchPage(`/${slug}`)
@@ -55,7 +55,7 @@ describe('web preview pages', () => {
   })
 
   it('a non-English locale homepage renders', async (ctx) => {
-    // Ask the CMS which locales the site offers rather than hardcoding one.
+    // Ask SahajCloud which locales the site offers rather than hardcoding one.
     // A prefix outside `availableLocales` now 404s by design, so a spec
     // pinned to "/es" would fail the day an editor stops offering Spanish —
     // and reports that as a broken deploy rather than a config change.
@@ -63,7 +63,7 @@ describe('web preview pages', () => {
 
     ctx.skip(
       !locale,
-      'the site offers English only (or no CMS key); nothing to check for a non-English locale',
+      'the site offers English only (or no SahajCloud key); no non-English locale to check',
     )
 
     // Locale roots live without a trailing slash ("/es/" 301s to "/es").
@@ -74,7 +74,7 @@ describe('web preview pages', () => {
 
   it('a locale the site does not offer returns 404', async () => {
     // `availableLocales` is the whole locale set: a prefix outside it is
-    // not a page. "zz" is not a CMS locale at all, so it can never be
+    // not a page. "zz" is not a SahajCloud locale at all, so it can never be
     // offered, whatever an editor configures.
     const res = await fetchPage('/zz/about')
 
@@ -94,7 +94,7 @@ describe('web preview pages', () => {
     // with no locale, which then caches under a key every locale shares.
     const locale = await nonEnglishLocale()
 
-    ctx.skip(!locale, 'the site offers English only (or no CMS key); no prefix to check')
+    ctx.skip(!locale, 'the site offers English only (or no SahajCloud key); no prefix to check')
 
     const res = await fetchPage(`/${locale}/__smoke_does_not_exist__`)
 
@@ -126,9 +126,9 @@ describe('web preview pages', () => {
   })
 
   it('a content page carries a self-referential canonical', async (ctx) => {
-    const slug = (await discoverFromCms())?.pageSlug
+    const slug = (await discoverFromSahajCloud())?.pageSlug
 
-    ctx.skip(!slug, 'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret')
+    ctx.skip(!slug, 'no SahajCloud page slug available; set the SAHAJCLOUD_API_KEY secret')
 
     const page = await fetchPage(`/${slug}`)
     const origin = new URL(page.finalUrl).origin
@@ -141,10 +141,10 @@ describe('web preview pages', () => {
   })
 
   it('a content page advertises only locales it is published in', async (ctx) => {
-    const discovered = await discoverFromCms()
+    const discovered = await discoverFromSahajCloud()
     const slug = discovered?.pageSlug
 
-    ctx.skip(!slug, 'no CMS page slug available; set the SAHAJCLOUD_API_KEY secret')
+    ctx.skip(!slug, 'no SahajCloud page slug available; set the SAHAJCLOUD_API_KEY secret')
 
     const page = await fetchPage(`/${slug}`)
     const origin = new URL(page.finalUrl).origin

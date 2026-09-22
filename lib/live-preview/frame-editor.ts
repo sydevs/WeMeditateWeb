@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 /**
- * The two-way channel the CMS meditation frame editor drives.
+ * The two-way channel the SahajCloud meditation frame editor drives.
  *
  * A meditation's "frames" are images pinned to timestamps. The editor shows
  * the real `/meditations/:id/embed` page in its panel and talks to it:
@@ -31,7 +31,7 @@ const PLAYBACK_MESSAGE = 'PLAYBACK_TIME_UPDATE'
 /**
  * The timestamp a `SEEK_TO_TIME` message asks for, or `null` for anything else.
  *
- * ⚠ **Fails CLOSED when `cmsOrigin` is `undefined`.** An unset
+ * ⚠ **Fails CLOSED when `sahajCloudOrigin` is `undefined`.** An unset
  * `PUBLIC__SAHAJCLOUD_URL` must mean "accept nothing", never "accept
  * anything" — an earlier version compared against a `'*'` fallback, so a
  * missing environment variable let any page drive the playhead that timestamps
@@ -41,9 +41,9 @@ const PLAYBACK_MESSAGE = 'PLAYBACK_TIME_UPDATE'
  */
 export function readSeekTimestamp(
   event: Pick<MessageEvent, 'origin' | 'data'>,
-  cmsOrigin: string | undefined,
+  sahajCloudOrigin: string | undefined,
 ): number | null {
-  if (!cmsOrigin || event.origin !== cmsOrigin) return null
+  if (!sahajCloudOrigin || event.origin !== sahajCloudOrigin) return null
 
   const data = event.data as { type?: unknown; timestamp?: unknown } | undefined
 
@@ -62,15 +62,15 @@ export interface SeekRequest {
 /**
  * Subscribes to the frame editor's seek requests and reports the playhead back.
  *
- * Both directions are inert unless `enabled` and a parseable CMS origin agree,
+ * Both directions are inert unless `enabled` and a parseable SahajCloud origin agree,
  * so the ordinary public embed attaches no listener and posts nothing.
  *
  * @param enabled - whether a live-preview session for this document is open
- * @param cmsOrigin - the CMS origin, from `cmsOrigin()` in `./session`
+ * @param sahajCloudOrigin - the SahajCloud origin, from `sahajCloudOrigin()` in `./session`
  */
 export function useFrameEditorChannel(
   enabled: boolean,
-  cmsOrigin: string | undefined,
+  sahajCloudOrigin: string | undefined,
 ): {
   seekTo: SeekRequest | undefined
   onPlaybackTimeUpdate: (currentTime: number) => void
@@ -78,10 +78,10 @@ export function useFrameEditorChannel(
   const [seekTo, setSeekTo] = useState<SeekRequest | undefined>()
 
   useEffect(() => {
-    if (!enabled || !cmsOrigin) return
+    if (!enabled || !sahajCloudOrigin) return
 
     const onMessage = (event: MessageEvent) => {
-      const timestamp = readSeekTimestamp(event, cmsOrigin)
+      const timestamp = readSeekTimestamp(event, sahajCloudOrigin)
 
       if (timestamp === null) return
 
@@ -91,11 +91,11 @@ export function useFrameEditorChannel(
     window.addEventListener('message', onMessage)
 
     return () => window.removeEventListener('message', onMessage)
-  }, [enabled, cmsOrigin])
+  }, [enabled, sahajCloudOrigin])
 
   const onPlaybackTimeUpdate = useCallback(
     (currentTime: number) => {
-      if (!enabled || !cmsOrigin) return
+      if (!enabled || !sahajCloudOrigin) return
       // Not in a frame: nothing is listening, and `postMessage` to self would
       // be a message this very page then has to ignore.
       if (window.parent === window) return
@@ -104,10 +104,10 @@ export function useFrameEditorChannel(
         { type: PLAYBACK_MESSAGE, currentTime: Math.floor(currentTime) },
         // A named origin, never `'*'`: the playhead says what an editor is
         // watching, and it is posted on every tick.
-        cmsOrigin,
+        sahajCloudOrigin,
       )
     },
-    [enabled, cmsOrigin],
+    [enabled, sahajCloudOrigin],
   )
 
   return { seekTo, onPlaybackTimeUpdate }

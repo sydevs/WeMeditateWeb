@@ -1,7 +1,7 @@
 /**
  * `useT`, the component-side translation accessor.
  *
- * `pages/+onBeforeRender.ts` fills `translations` from the CMS and
+ * `pages/+onBeforeRender.ts` fills `translations` from SahajCloud and
  * `passToClient` carries them into the browser. Outside a Vike app — Ladle, a
  * unit test rendering a component bare — there is none, so this falls back to
  * the committed English snapshot.
@@ -9,7 +9,7 @@
  * The other `pageContext` readers live in `hooks/usePageContext.ts`.
  */
 
-import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/cms-types'
+import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/sahajcloud-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 import { useOptionalPageContext } from './usePageContext'
 

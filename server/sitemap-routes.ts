@@ -6,7 +6,7 @@
  * they need a sitemap to be worth adding.
  *
  * Registered beside `registerApiRoutes`, and, like it, inside the
- * `contextStorage()` middleware, so `getCmsContext()` resolves the API
+ * `contextStorage()` middleware, so `getSahajCloudContext()` resolves the API
  * key normally. Both routes are declared before Vike's handler, so they
  * win over the page catch-all.
  *
@@ -16,14 +16,14 @@
  */
 
 import type { Hono } from 'hono'
-import type { CmsEnv } from './cms-context'
+import type { SahajCloudEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
-import { getWebConfig } from './cms-client'
+import { getWebConfig } from './sahajcloud-client'
 import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
-import { DEFAULT_LOCALE, type Locale } from './cms-types'
+import { DEFAULT_LOCALE, type Locale } from './sahajcloud-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
 /** Bounded because this runs in a Worker request. */
@@ -34,7 +34,7 @@ const CONTENT_READ_LIMIT = 500
  *
  * Typed against the generated `*Select` interfaces, per
  * `server/AGENTS.md`: `select` is mandatory for API clients. Typing it
- * here turns a CMS schema change into a compile error, instead of a
+ * here turns a SahajCloud schema change into a compile error, instead of a
  * silent 400 at runtime. `updatedAt` feeds `<lastmod>`. Every doc carries
  * its id regardless of the selection.
  */
@@ -101,7 +101,7 @@ async function readContentDocs() {
  * Site-content URLs (pages, meditations, and lectures), each annotated with
  * its `hreflang` cluster.
  *
- * The path shapes mirror `ROUTE_BUILDERS` in `lib/cms-routes.ts`, which
+ * The path shapes mirror `ROUTE_BUILDERS` in `lib/document-routes.ts`, which
  * owns the inverse direction (`/:slug`, `/meditations/:id`,
  * `/lectures/:id`).
  *
@@ -165,7 +165,7 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   }
 }
 
-export function registerSitemapRoutes(app: Hono<CmsEnv>): void {
+export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
   app.get('/robots.txt', (c) => {
     const origin = new URL(c.req.url).origin
 
