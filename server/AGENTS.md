@@ -140,3 +140,11 @@ Three things follow, all load-bearing:
 The API also enforces this: a read at a locale the page is not published in returns **zero docs**,
 not a fallback copy. So a page always renders in a locale it is published in, and its canonical is
 always self-referential.
+
+## Memoise a per-request read with `perRequest`, never a bare `WeakMap`
+
+A read that several hooks ask for goes through `perRequest` in
+[server/request-memo.ts](request-memo.ts). Vike hands `data()` and `+onBeforeRender` two different
+`pageContext` objects over one request, so a `WeakMap` keyed on the argument is written by the
+first and missed by the second — which read `wm-web-translations` twice per chromed render until
+#108. `perRequest` owns the key, so a new memo cannot get that wrong.

@@ -6,14 +6,14 @@
  * locale set). Each `+data.ts` used to call `getWebConfig` itself, so
  * adding a second global would have doubled the per-request reads.
  *
- * The two globals are memoised **separately**, both keyed on the
- * `pageContext` object. That split matters: `+onBeforeRender` runs for
- * every route including the embed ones, which deliberately fetch no config
- * ("there is no nav to populate"). Loading them together would have made
- * every iframe embed pay for a populated config read it never renders.
+ * The two globals are memoised **separately**. That split matters:
+ * `+onBeforeRender` runs for every route including the embed ones, which
+ * deliberately fetch no config ("there is no nav to populate"). Loading them
+ * together would have made every iframe embed pay for a populated config read
+ * it never renders.
  *
- * Vike creates a fresh `pageContext` per request, so `WeakMap` entries
- * cannot leak between requests and the maps need no clearing.
+ * Both go through `perRequest` (`server/request-memo.ts`), which owns the
+ * keying and the lifetime.
  */
 
 import { render } from 'vike/abort'
@@ -21,6 +21,7 @@ import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { loadLivePreview, previewArgs } from './live-preview'
+import { perRequest } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
 import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
@@ -62,44 +63,41 @@ function isEmpty(translations: WebTranslations): boolean {
  * Both paths log a Sentry warning, so the gap stays visible.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
-  const existing = translationsCache.get(pageContext)
-
-  if (existing) return existing
-
   const locale = pageContext.locale
-  const loading = loadLivePreview(pageContext)
-    .then((preview) =>
-      // Only under the `wm-web-translations` scope: a preview of a PAGE
-      // should render that page's draft inside the published chrome an
-      // ordinary visitor sees, not a second document's unsaved edits.
-      getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
-    )
-    .then((translations) => {
-      if (!isEmpty(translations)) return translations
 
-      console.warn(`[loadTranslations] "${locale}" returned no strings; using the English snapshot`)
-      Sentry.captureMessage('Translations global is empty; rendering the English snapshot', {
-        level: 'warning',
-        tags: { source: 'loadTranslations' },
-        extra: { locale },
+  return perRequest(translationsCache, pageContext, () =>
+    loadLivePreview(pageContext)
+      .then((preview) =>
+        // Only under the `wm-web-translations` scope: a preview of a PAGE
+        // should render that page's draft inside the published chrome an
+        // ordinary visitor sees, not a second document's unsaved edits.
+        getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
+      )
+      .then((translations) => {
+        if (!isEmpty(translations)) return translations
+
+        console.warn(
+          `[loadTranslations] "${locale}" returned no strings; using the English snapshot`,
+        )
+        Sentry.captureMessage('Translations global is empty; rendering the English snapshot', {
+          level: 'warning',
+          tags: { source: 'loadTranslations' },
+          extra: { locale },
+        })
+
+        return EN_TRANSLATIONS
       })
+      .catch((error: unknown) => {
+        console.warn(`[loadTranslations] read failed for "${locale}":`, error)
+        Sentry.captureMessage('Translations read failed; rendering the English snapshot', {
+          level: 'warning',
+          tags: { source: 'loadTranslations' },
+          extra: { locale },
+        })
 
-      return EN_TRANSLATIONS
-    })
-    .catch((error: unknown) => {
-      console.warn(`[loadTranslations] read failed for "${locale}":`, error)
-      Sentry.captureMessage('Translations read failed; rendering the English snapshot', {
-        level: 'warning',
-        tags: { source: 'loadTranslations' },
-        extra: { locale },
-      })
-
-      return EN_TRANSLATIONS
-    })
-
-  translationsCache.set(pageContext, loading)
-
-  return loading
+        return EN_TRANSLATIONS
+      }),
+  )
 }
 
 /**
@@ -113,15 +111,7 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
  * navigation and no home page, so the error page is the honest answer.
  */
 export function loadSiteContext(pageContext: PageContextServer): Promise<SiteContext> {
-  const existing = contextCache.get(pageContext)
-
-  if (existing) return existing
-
-  const loading = load(pageContext)
-
-  contextCache.set(pageContext, loading)
-
-  return loading
+  return perRequest(contextCache, pageContext, () => load(pageContext))
 }
 
 async function load(pageContext: PageContextServer): Promise<SiteContext> {
