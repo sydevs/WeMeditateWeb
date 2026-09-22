@@ -292,7 +292,8 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
 
       return (await res.json()) as Record<string, unknown>
     } catch (err) {
-      console.warn(`[discoverFromSahajCloud] GET /api/${path.split('?')[0]} → ${(err as Error).message}`)
+      const message = (err as Error).message
+      console.warn(`[discoverFromSahajCloud] GET /api/${path.split('?')[0]} → ${message}`)
 
       return null
     }
