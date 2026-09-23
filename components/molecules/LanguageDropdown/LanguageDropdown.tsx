@@ -61,7 +61,7 @@ export function LanguageDropdown({
   return (
     <Dropdown
       trigger={
-        <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <button className="flex min-h-11 min-w-11 items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
           <span className="text-sm font-light">{t('footer.languages')}</span>
           <Icon icon={GlobeAltIcon} size="sm" />
         </button>

@@ -175,7 +175,11 @@ export function ColumnCarousel({
                     number: index + 1,
                     title: columns[index].title,
                   })}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  // The dot stays 8px; a centred 44x44 ::before carries the
+                  // hit area. `gap-2` is 8px, so neighbouring hit areas do
+                  // overlap — widening the gap to separate them would spread
+                  // the row past the nav buttons on a 390px viewport.
+                  className={`relative w-2 h-2 rounded-full transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 ${
                     index === selectedIndex
                       ? 'bg-teal-600'
                       : 'bg-gray-300 hover:bg-gray-400'

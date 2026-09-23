@@ -76,18 +76,27 @@ This project uses Heroicons v2. Some v1 names changed — for example,
 ```
 
 ```tsx
-interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'text'
-  size?: 'sm' | 'md' | 'lg'
-  href?: string     // Renders as Link when set
-  locale?: string
-  icon?: HeroIcon
+interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
+  variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
+  theme?: 'light' | 'dark'          // dark = white colors, for dark backgrounds
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  shape?: 'square' | 'circular'     // Default: circular icon-only, square text
+  icon?: HeroIcon                   // Icon only when no children are passed
   isLoading?: boolean
-  disabled?: boolean
+  isActive?: boolean                // Current-page nav link: tinted fill + aria-current
+  fullWidth?: boolean               // Text buttons only
+  href?: string                     // Renders as Link when set
+  locale?: Locale
+  type?: 'button' | 'submit' | 'reset'
+  'aria-label'?: string             // Required for an icon-only button
 }
 ```
 
 Use `href` for navigation or a download. Use `onClick` for a JavaScript action, never `href`.
+
+`Button` guarantees the 44×44 minimum itself, at every size. A text button's box is clamped with
+`min-w-11 min-h-11`; an icon-only button keeps its drawn circle and grows a centred `::before`
+instead. Do not re-add a `min-h-11` at a call site.
 
 ### Link
 
