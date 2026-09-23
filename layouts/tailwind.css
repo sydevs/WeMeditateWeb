@@ -133,6 +133,12 @@
  * positions itself. And Tailwind emits these before its own `min-*`
  * utilities, so a `min-w-0` on the same element wins over `touch-target` —
  * drop the `min-w-0` rather than stacking the two.
+ *
+ * `min-width` does a second job here. Padding usually clears 44px across
+ * already, so what the declaration really replaces is the flex default
+ * `min-width: auto`: a flex item carrying `touch-target` now shrinks to 44px
+ * instead of to its content. `CarouselNavButton` wants exactly that floor.
+ * Anywhere else it is a shrink change to know about, not a hit area.
  */
 @utility touch-target {
   min-width: --spacing(11);
