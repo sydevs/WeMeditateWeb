@@ -90,9 +90,8 @@ export function Alert({
       {onDismiss ? (
         <button
           aria-label={t('common.a11y.dismiss')}
-          // A centred 44x44 ::before carries the hit area, so the 16px
-          // dismiss icon keeps its place against the alert's text.
-          className="relative shrink-0 rounded transition-opacity before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-current"
+          // Overlay, not a grown box: the cross sits against the alert's text.
+          className="touch-target-overlay shrink-0 rounded transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-current"
           type="button"
           onClick={onDismiss}
         >

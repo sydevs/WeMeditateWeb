@@ -58,33 +58,23 @@ describe('Button isActive (current-page nav state)', () => {
   })
 })
 
+// `touch-target` and `touch-target-overlay` are the two 44x44 utilities in
+// layouts/tailwind.css. These cases pin which one each form gets, at each
+// size — geometry needs a browser, so it stays in Ladle and on the preview.
 describe('Button touch target (44x44 minimum)', () => {
   const sizes = ['xs', 'sm', 'md', 'lg'] as const
-  const drawnIconSize = { xs: 'w-6 h-6', sm: 'w-8 h-8', md: 'w-10 h-10', lg: 'w-12 h-12' }
 
-  it.each(sizes)('clamps the %s text button to a 44px box', (size) => {
+  it.each(sizes)('clamps the %s text button', (size) => {
     const html = renderToStaticMarkup(<Button size={size}>Label</Button>)
 
-    expect(html).toContain('min-w-11')
-    expect(html).toContain('min-h-11')
+    expect(html).toContain('touch-target')
+    expect(html).not.toContain('touch-target-overlay')
   })
 
-  it.each(sizes)('gives the %s icon-only button a 44px ::before hit area', (size) => {
+  it.each(sizes)('overlays the %s icon-only button, leaving its box alone', (size) => {
     const html = renderToStaticMarkup(<Button aria-label="Play" icon={PlayIcon} size={size} />)
 
-    expect(html).toContain('before:h-11')
-    expect(html).toContain('before:w-11')
-    expect(html).toContain('before:-translate-x-1/2')
-    expect(html).toContain('before:-translate-y-1/2')
-    // An absolutely positioned ::before needs a positioned ancestor.
-    expect(html).toContain('relative')
-  })
-
-  it.each(sizes)('leaves the %s icon-only button drawn at its own size', (size) => {
-    const html = renderToStaticMarkup(<Button aria-label="Play" icon={PlayIcon} size={size} />)
-
-    expect(html).toContain(drawnIconSize[size])
-    expect(html).not.toContain('min-w-11')
+    expect(html).toContain('touch-target-overlay')
   })
 
   it('keeps the hit area on a disabled button, which drops the hover fill', () => {
@@ -97,8 +87,8 @@ describe('Button touch target (44x44 minimum)', () => {
       <Button disabled aria-label="Play" icon={PlayIcon} size="xs" />,
     )
 
-    expect(text).toContain('min-h-11')
-    expect(iconOnly).toContain('before:h-11')
+    expect(text).toContain('touch-target')
+    expect(iconOnly).toContain('touch-target-overlay')
   })
 
   it('applies the hit area to the link form too', () => {
@@ -107,6 +97,6 @@ describe('Button touch target (44x44 minimum)', () => {
     )
 
     expect(html).toContain('<a')
-    expect(html).toContain('before:h-11')
+    expect(html).toContain('touch-target-overlay')
   })
 })

@@ -249,7 +249,7 @@ export function SubtleSystem({
       <div className="text-center mb-7 text-base sm:text-lg leading-[25px]">
         <button
           aria-pressed={activeView === 'chakras'}
-          className={`inline-flex min-h-11 min-w-11 items-center justify-center px-2 cursor-pointer transition-colors ${
+          className={`inline-flex touch-target items-center justify-center px-2 cursor-pointer transition-colors ${
             activeView === 'chakras' ? 'font-bold text-teal-600' : 'hover:text-teal-600'
           }`}
           onClick={() => handleViewToggle('chakras')}
@@ -259,7 +259,7 @@ export function SubtleSystem({
         <span className="px-1">|</span>
         <button
           aria-pressed={activeView === 'channels'}
-          className={`inline-flex min-h-11 min-w-11 items-center justify-center px-2 cursor-pointer transition-colors ${
+          className={`inline-flex touch-target items-center justify-center px-2 cursor-pointer transition-colors ${
             activeView === 'channels' ? 'font-bold text-teal-600' : 'hover:text-teal-600'
           }`}
           onClick={() => handleViewToggle('channels')}
