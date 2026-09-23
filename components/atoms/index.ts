@@ -47,5 +47,3 @@ export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 
 export { Countdown } from './Countdown'
 export type { CountdownProps } from './Countdown'
-
-export { focusRing } from './focusRing'
