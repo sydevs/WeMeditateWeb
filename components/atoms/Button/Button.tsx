@@ -2,6 +2,7 @@ import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
 import { Link } from '../Link'
+import { focusRing } from '../focusRing'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
@@ -149,8 +150,7 @@ export function Button({
     ? `${animatedBase} after:scale-x-100 after:opacity-100`
     : `${animatedBase} after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100`
 
-  const baseStyles =
-    'inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
+  const baseStyles = `inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${focusRing(theme)}`
 
   // Only add animation if button is interactive (not disabled or loading)
   const isInteractive = !disabled && !isLoading
@@ -158,48 +158,42 @@ export function Button({
 
   // Variant styles for light theme (icon-only buttons)
   const iconOnlyLightThemeStyles = {
-    primary: 'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
-    secondary:
-      'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
+    primary: 'bg-teal-500 hover:bg-teal-600 text-white active:bg-teal-700',
+    secondary: 'bg-coral-500 hover:bg-coral-600 text-white active:bg-coral-700',
     outline:
-      'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 hover:bg-teal-100 hover:border-gray-500',
-    ghost: 'bg-transparent text-gray-700 focus:ring-gray-400 hover:bg-gray-100 hover:text-gray-900',
-    neutral: 'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
+      'bg-transparent border border-gray-500 text-gray-700 hover:bg-teal-100 hover:border-gray-500',
+    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900',
+    neutral: 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200',
   }
 
   // Variant styles for dark theme (icon-only buttons)
   const iconOnlyDarkThemeStyles = {
-    primary: 'bg-teal-500 hover:bg-teal-600 text-white focus:ring-teal-500 active:bg-teal-700',
-    secondary:
-      'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-500 active:bg-coral-700',
+    primary: 'bg-teal-500 hover:bg-teal-600 text-white active:bg-teal-700',
+    secondary: 'bg-coral-500 hover:bg-coral-600 text-white active:bg-coral-700',
     outline:
-      'bg-transparent border border-white text-white focus:ring-white hover:bg-white hover:text-gray-800 hover:border-white',
-    ghost: 'bg-transparent text-white focus:ring-white hover:bg-white/20 hover:text-white',
-    neutral: 'bg-white text-gray-700 focus:ring-gray-400 hover:bg-gray-50 border border-gray-200',
+      'bg-transparent border border-white text-white hover:bg-white hover:text-gray-800 hover:border-white',
+    ghost: 'bg-transparent text-white hover:bg-white/20 hover:text-white',
+    neutral: 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200',
   }
 
   // Variant styles for light theme (text buttons with animation)
   const textButtonLightThemeStyles = {
-    primary:
-      'bg-teal-500 after:bg-teal-600 text-white focus:ring-teal-500 active:after:bg-teal-700',
-    secondary:
-      'bg-coral-500 after:bg-coral-600 text-white focus:ring-coral-500 active:after:bg-coral-700',
+    primary: 'bg-teal-500 after:bg-teal-600 text-white active:after:bg-teal-700',
+    secondary: 'bg-coral-500 after:bg-coral-600 text-white active:after:bg-coral-700',
     outline:
-      'bg-transparent border border-gray-500 text-gray-700 focus:ring-gray-500 after:bg-teal-100 hover:border-gray-500',
-    ghost: 'bg-transparent text-gray-700 focus:ring-gray-400 after:bg-gray-100 hover:text-gray-900',
-    neutral: 'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
+      'bg-transparent border border-gray-500 text-gray-700 after:bg-teal-100 hover:border-gray-500',
+    ghost: 'bg-transparent text-gray-700 after:bg-gray-100 hover:text-gray-900',
+    neutral: 'bg-white after:bg-gray-50 text-gray-700 border border-gray-200',
   }
 
   // Variant styles for dark theme (text buttons with animation)
   const textButtonDarkThemeStyles = {
-    primary:
-      'bg-teal-600 after:bg-teal-500 text-white focus:ring-teal-500 active:after:bg-teal-700',
-    secondary:
-      'bg-coral-600 after:bg-coral-500 text-white focus:ring-coral-500 active:after:bg-coral-700',
+    primary: 'bg-teal-600 after:bg-teal-500 text-white active:after:bg-teal-700',
+    secondary: 'bg-coral-600 after:bg-coral-500 text-white active:after:bg-coral-700',
     outline:
-      'bg-transparent border border-white text-white focus:ring-white after:bg-white hover:text-gray-800 hover:border-white',
-    ghost: 'bg-transparent text-white focus:ring-white after:bg-white/20 hover:text-white',
-    neutral: 'bg-white after:bg-gray-50 text-gray-700 focus:ring-gray-400 border border-gray-200',
+      'bg-transparent border border-white text-white after:bg-white hover:text-gray-800 hover:border-white',
+    ghost: 'bg-transparent text-white after:bg-white/20 hover:text-white',
+    neutral: 'bg-white after:bg-gray-50 text-gray-700 border border-gray-200',
   }
 
   const variantStyles = isIconOnly
@@ -307,6 +301,10 @@ export function Button({
         className={commonClassNames}
         href={href}
         locale={locale}
+        // Without this, `Link`'s own base ring resolves light while
+        // `commonClassNames` carries the dark one, and two rules race for
+        // `--tw-ring-color`.
+        theme={theme}
         variant="unstyled"
         {...(props as any)}
       >
