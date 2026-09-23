@@ -134,11 +134,19 @@ describe('<Link> locale prefixing', () => {
 describe('<Link> focus indicator', () => {
   // Eight `focus:ring-<color>` classes shipped here against no width utility,
   // so Tailwind emitted `--tw-ring-color` and never a `box-shadow` (#133).
-  it('draws a ring width, not a bare ring colour', () => {
-    const html = renderToStaticMarkup(<Link href="/about">About</Link>)
+  // `unstyled` maps to '' in both variant maps, so it also proves the ring
+  // lives in `baseStyles` rather than in a variant entry.
+  it('draws a ring width, not a bare ring colour, on every variant', () => {
+    for (const variant of ['default', 'unstyled'] as const) {
+      const html = renderToStaticMarkup(
+        <Link href="/about" variant={variant}>
+          About
+        </Link>,
+      )
 
-    expect(html).toContain('focus-visible:ring-2')
-    expect(html).toContain('focus-visible:ring-teal-600')
+      expect(html).toContain('focus-visible:ring-2')
+      expect(html).toContain('focus-visible:ring-teal-600')
+    }
   })
 
   it('pins the offset colour, so no white band is drawn on a dark surface', () => {
@@ -165,16 +173,5 @@ describe('<Link> focus indicator', () => {
     expect(html).toContain('focus-visible:ring-white')
     expect(html).not.toContain('ring-teal-300')
     expect(html).not.toContain('ring-teal-500')
-  })
-
-  it('keeps the indicator on the unstyled variant', () => {
-    const html = renderToStaticMarkup(
-      <Link href="/about" variant="unstyled">
-        About
-      </Link>,
-    )
-
-    expect(html).toContain('focus-visible:ring-2')
-    expect(html).toContain('focus-visible:ring-teal-600')
   })
 })
