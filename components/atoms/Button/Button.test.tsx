@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { PlayIcon } from '@heroicons/react/24/outline'
 import { Button } from './Button'
 
 describe('Button isActive (current-page nav state)', () => {
@@ -54,5 +55,58 @@ describe('Button isActive (current-page nav state)', () => {
     // Inactive: fill starts hidden and scales in on hover.
     expect(html).toContain('after:scale-x-0')
     expect(html).toContain('hover:after:scale-x-100')
+  })
+})
+
+describe('Button touch target (44x44 minimum)', () => {
+  const sizes = ['xs', 'sm', 'md', 'lg'] as const
+  const drawnIconSize = { xs: 'w-6 h-6', sm: 'w-8 h-8', md: 'w-10 h-10', lg: 'w-12 h-12' }
+
+  it.each(sizes)('clamps the %s text button to a 44px box', (size) => {
+    const html = renderToStaticMarkup(<Button size={size}>Label</Button>)
+
+    expect(html).toContain('min-w-11')
+    expect(html).toContain('min-h-11')
+  })
+
+  it.each(sizes)('gives the %s icon-only button a 44px ::before hit area', (size) => {
+    const html = renderToStaticMarkup(<Button aria-label="Play" icon={PlayIcon} size={size} />)
+
+    expect(html).toContain('before:h-11')
+    expect(html).toContain('before:w-11')
+    expect(html).toContain('before:-translate-x-1/2')
+    expect(html).toContain('before:-translate-y-1/2')
+    // An absolutely positioned ::before needs a positioned ancestor.
+    expect(html).toContain('relative')
+  })
+
+  it.each(sizes)('leaves the %s icon-only button drawn at its own size', (size) => {
+    const html = renderToStaticMarkup(<Button aria-label="Play" icon={PlayIcon} size={size} />)
+
+    expect(html).toContain(drawnIconSize[size])
+    expect(html).not.toContain('min-w-11')
+  })
+
+  it('keeps the hit area on a disabled button, which drops the hover fill', () => {
+    const text = renderToStaticMarkup(
+      <Button disabled size="xs">
+        Label
+      </Button>,
+    )
+    const iconOnly = renderToStaticMarkup(
+      <Button disabled aria-label="Play" icon={PlayIcon} size="xs" />,
+    )
+
+    expect(text).toContain('min-h-11')
+    expect(iconOnly).toContain('before:h-11')
+  })
+
+  it('applies the hit area to the link form too', () => {
+    const html = renderToStaticMarkup(
+      <Button aria-label="Play" href="/meditations" icon={PlayIcon} size="md" />,
+    )
+
+    expect(html).toContain('<a')
+    expect(html).toContain('before:h-11')
   })
 })

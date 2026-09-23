@@ -152,6 +152,15 @@ export function Button({
   const baseStyles =
     'inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
 
+  // The 44x44 minimum (docs/rules/design-system.md), by two levers. A text
+  // button may grow, so `min-*` clamps its box. An icon-only button must keep
+  // its drawn circle, so a centred ::before reaches past the box instead —
+  // ::after is the hover fill's, and that fill's `overflow-hidden` would clip
+  // a ::before, but an icon-only button gets neither.
+  const textTouchTarget = 'min-w-11 min-h-11'
+  const iconOnlyTouchTarget =
+    'relative before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2'
+
   // Only add animation if button is interactive (not disabled or loading)
   const isInteractive = !disabled && !isLoading
   const animatedStyles = isIconOnly || !isInteractive ? '' : animatedHoverEffect
@@ -287,7 +296,9 @@ export function Button({
 
   const widthStyles = fullWidth && !isIconOnly ? 'w-full' : ''
 
-  const commonClassNames = `${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
+  const touchTargetStyles = isIconOnly ? iconOnlyTouchTarget : textTouchTarget
+
+  const commonClassNames = `${baseStyles} ${animatedStyles} ${touchTargetStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
 
   const content = isLoading ? (
     <Spinner color={getSpinnerColor()} size={spinnerSizeMap[size]} theme={getSpinnerTheme()} />
