@@ -122,6 +122,13 @@ leaves no lingering ring and a browser without `:focus-visible` keeps its own ou
 losing both. The colour is `teal-600` on light and `white` on dark, with the offset band pinned to
 `white` and `teal-900` to match.
 
+A fourth rule the ring's own arrival created:
+
+- **A component on a dark surface must be told so.** `focusRing` defaults to light, so a caller
+  that omits `theme` draws a teal ring over a white band on a photograph. Thread `theme` down to
+  whatever owns the interactive element — this is why `Logo` has a `theme` prop it uses for
+  nothing else.
+
 Three rules the atoms broke before this existed:
 
 - **A ring colour is inert without a ring width.** `ring-<color>` compiles to `--tw-ring-color` and
