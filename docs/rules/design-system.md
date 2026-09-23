@@ -111,8 +111,7 @@ adds screen-reader text announcing it opens in a new tab.
 ### Focus indicator
 
 `focusRing(theme)` in [components/atoms/focusRing.ts](../../components/atoms/focusRing.ts) is the
-only focus treatment an interactive component draws. Put it in the component's base styles, never
-in a variant map.
+focus treatment to draw. Put it in the component's base styles, never in a variant map.
 
 ```tsx
 const baseStyles = `transition-colors duration-200 ${focusRing(theme)}`
@@ -138,8 +137,9 @@ Dark surfaces vary — `teal-900`, the `OrnateTextBox` brown gradient, a photogr
 dark ring is `white`, which clears 3:1 on all of them (4.68 on the lightest, `#8a6f56`). A brand
 colour would not.
 
-`EmbedButton`, `SocialIcon`, `Radio`, `Checkbox`, `Alert`, `Input`, `Textarea` and `Select` still
-carry their own treatments and have not been converted (#133).
+`Link`, `Button` and `Image` call it. `EmbedButton`, `SocialIcon`, `Radio`, `Checkbox`, `Alert`,
+`Input`, `Textarea` and `Select` still carry their own treatments, and none of them has a `theme`
+prop to pass — converting them is the follow-up #133 names, not a rename.
 
 ### Divider
 

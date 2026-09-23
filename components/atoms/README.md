@@ -20,7 +20,7 @@ Typography patterns (sizing, weight, color) live in
 [Typography.stories.tsx](./Typography.stories.tsx) as documentation, with no component wrapper.
 Use Tailwind utility classes directly for text styling instead.
 
-[focusRing.ts](./focusRing.ts) is not a component. It returns the one focus indicator every
+[focusRing.ts](./focusRing.ts) is not a component. It returns the focus indicator an
 interactive component draws, per theme. See the `Focus indicator` section of
 [docs/rules/design-system.md](../../docs/rules/design-system.md).
 
