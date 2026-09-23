@@ -20,6 +20,10 @@ Typography patterns (sizing, weight, color) live in
 [Typography.stories.tsx](./Typography.stories.tsx) as documentation, with no component wrapper.
 Use Tailwind utility classes directly for text styling instead.
 
+[focusRing.ts](./focusRing.ts) is not a component. It returns the one focus indicator every
+interactive component draws, per theme. See the `Focus indicator` section of
+[docs/rules/design-system.md](../../docs/rules/design-system.md).
+
 ## Import
 
 Import from the barrel:
@@ -50,8 +54,8 @@ the barrel and `./ComponentName` is a single component.
 mutually exclusive props. Give every optional prop a sensible default.
 
 **Styling**: use Tailwind utility classes directly, following the tokens in
-`tailwind.config.ts`. Accept a `className` prop for the caller to extend styling. Include a
-visible focus state for keyboard use.
+`tailwind.config.ts`. Accept a `className` prop for the caller to extend styling. Draw the
+keyboard focus state with `focusRing(theme)`, never with a hand-written ring.
 
 **Accessibility**: use semantic HTML, add ARIA attributes where semantic HTML falls short, and
 support keyboard navigation and screen readers.
