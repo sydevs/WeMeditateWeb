@@ -20,6 +20,21 @@ mobile-first breakpoints, and the WCAG 2.1 AA accessibility rules. Read
   the breakpoint table. Give every interactive element a touch target of at least 44×44px.
 - Meet WCAG 2.1 AA.
 
+## The 44×44 touch target has two utilities — do not hand-roll a third
+
+`Button` already guarantees the minimum, so a control built on the atom needs nothing. A control
+built from a bare `<button>` picks one of the two utilities in
+[layouts/tailwind.css](../../layouts/tailwind.css), and never a hand-written `min-h-11` or
+`::before` stack:
+
+| Utility | Use it when |
+| --- | --- |
+| `touch-target` | The layout can absorb a bigger box. **Reach for this first.** |
+| `touch-target-overlay` | The drawn size *is* the design — an 8px dot, a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
+
+Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
+why growing the box is the first choice.
+
 ## Route changes are already announced — do not add a second announcer
 
 Vike Client Routing swaps the page under `<main>` while the site chrome stays in place. So a
@@ -94,9 +109,8 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
 
 Use `href` for navigation or a download. Use `onClick` for a JavaScript action, never `href`.
 
-`Button` guarantees the 44×44 minimum itself, at every size. A text button's box is clamped with
-`min-w-11 min-h-11`; an icon-only button keeps its drawn circle and grows a centred `::before`
-instead. Do not re-add a `min-h-11` at a call site.
+`Button` guarantees the 44×44 minimum itself, at every size and in both forms. Do not re-add a
+`min-h-11` at a call site.
 
 ### Link
 
