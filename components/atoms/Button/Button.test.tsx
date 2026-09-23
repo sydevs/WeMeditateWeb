@@ -88,6 +88,7 @@ describe('Button touch target (44x44 minimum)', () => {
     )
 
     expect(text).toContain('touch-target')
+    expect(text).not.toContain('touch-target-overlay')
     expect(iconOnly).toContain('touch-target-overlay')
   })
 
