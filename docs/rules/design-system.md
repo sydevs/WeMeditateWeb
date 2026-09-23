@@ -35,6 +35,9 @@ built from a bare `<button>` picks one of the two utilities in
 Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
 why growing the box is the first choice.
 
+`touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
+flex item that is the visible effect: it shrinks to 44px rather than to its content.
+
 ## Route changes are already announced — do not add a second announcer
 
 Vike Client Routing swaps the page under `<main>` while the site chrome stays in place. So a
