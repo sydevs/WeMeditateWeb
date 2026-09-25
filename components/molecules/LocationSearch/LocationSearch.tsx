@@ -234,7 +234,7 @@ export function LocationSearch({
         />
         <button
           onClick={handleChange}
-          className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
+          className="touch-target px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
           type="button"
           aria-label={t('location.a11y.change_label')}
         >

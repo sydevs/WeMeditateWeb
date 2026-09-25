@@ -38,7 +38,9 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors min-w-0"
+      // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
+      // item shrink: it still shrinks, just not below the tap minimum.
+      className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
     >
       {column && (
         <>
@@ -175,7 +177,11 @@ export function ColumnCarousel({
                     number: index + 1,
                     title: columns[index].title,
                   })}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  // Neighbouring overlays overlap at `gap-2`, and separating
+                  // them needs 44px centres — 220px of row, which overflows a
+                  // 390px viewport once the nav buttons' padding is counted.
+                  // Partial on purpose; #135 carries the layout decision.
+                  className={`touch-target-overlay w-2 h-2 rounded-full transition-colors ${
                     index === selectedIndex
                       ? 'bg-teal-600'
                       : 'bg-gray-300 hover:bg-gray-400'

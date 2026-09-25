@@ -90,7 +90,8 @@ export function Alert({
       {onDismiss ? (
         <button
           aria-label={t('common.a11y.dismiss')}
-          className="shrink-0 rounded transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-current"
+          // Overlay, not a grown box: the cross sits against the alert's text.
+          className="touch-target-overlay shrink-0 rounded transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-current"
           type="button"
           onClick={onDismiss}
         >
