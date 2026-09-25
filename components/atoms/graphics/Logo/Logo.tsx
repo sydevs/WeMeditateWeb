@@ -11,6 +11,12 @@ export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'
   align?: 'left' | 'center' | 'right'
   /** Link destination (if undefined, renders as div instead of link) */
   href?: string
+  /**
+   * Theme of the surface the logo sits on. Only reaches the focus ring: a
+   * logo over a dark splash would otherwise draw `Link`'s light one.
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark'
 }
 
 /**
@@ -25,6 +31,7 @@ export function Logo({
   size = 'md',
   align = 'center',
   href,
+  theme = 'light',
   className = '',
   ...props
 }: LogoProps) {
@@ -93,7 +100,7 @@ export function Logo({
   // Render as link or div depending on href prop
   if (href) {
     return (
-      <Link href={href} variant="unstyled" className={allStyles} {...props}>
+      <Link href={href} theme={theme} variant="unstyled" className={allStyles} {...props}>
         {content}
       </Link>
     )
