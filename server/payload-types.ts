@@ -1414,6 +1414,7 @@ export interface Manager {
     | number
     | boolean
     | null;
+  magicLinkIssuedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1871,7 +1872,7 @@ export interface Event {
     | 'finished';
   activityLog?: ActivityLog;
   /**
-   * How strongly attendees confirm this event is real (0–1). Rises with confirmations, falls with denials, and stays cautious while there are few votes — the Atlas map ranks unverified listings by it. Blank until the first vote.
+   * How strongly attendees confirm this event is real (0–1) — your check before adopting a listing, or why a denied one stays down. Rises with confirmations, falls with denials, and stays cautious while there are few votes. Blank until the first vote.
    */
   confidenceScore?: number | null;
   qualityReport?: EventQualityReport;
@@ -4419,6 +4420,7 @@ export interface ManagersSelect<T extends boolean = true> {
   lastRegistrationDigestSentAt?: T;
   legacyId?: T;
   legacyData?: T;
+  magicLinkIssuedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -8634,6 +8636,10 @@ export interface SyAtlasConfig {
    * The client that owns every atlas page no other client claims — normally We Meditate. It must be published, have canonical ownership switched on, and have a verified embed; until all three hold, those pages keep the built-in We Meditate URLs and appear in no sitemap. Once all three hold, this also moves those pages’ canonical URLs onto the address that client’s embed was last verified at, in place of the built-in one — most of the atlas at once, and with no preview. Leave this empty to keep the built-in behaviour.
    */
   canonicalFallbackClient?: (number | null) | Client;
+  /**
+   * The contact form the widget renders behind “Report an issue”. Its authored fields are what a visitor fills in, and its recipient is who the message reaches — blank recipient sends to the system contact. Leave this empty to hide the report-issue path entirely.
+   */
+  reportIssueForm?: (number | null) | Form;
   defaultMapCenter: {
     latitude: number;
     longitude: number;
@@ -9169,6 +9175,14 @@ export interface SyAtlasTranslationsEventDisplayStrings {
    * Suffix appended after the event title in the standalone page <title>.
    */
   free_meditation_class?: string;
+  /**
+   * Unverified-listing badge heading. Event view only — the list card, the Calendar entry and the map marker never show it.
+   */
+  unverified_title?: string;
+  /**
+   * Unverified-listing badge body, saying no local coordinator has verified the listing yet. Event view only.
+   */
+  unverified_note?: string;
   /**
    * Status chip: the event has no places left.
    */
@@ -9979,6 +9993,7 @@ export interface WmAppStatusSelect<T extends boolean = true> {
 export interface SyAtlasConfigSelect<T extends boolean = true> {
   availableLocales?: T;
   canonicalFallbackClient?: T;
+  reportIssueForm?: T;
   defaultMapCenter?:
     | T
     | {
