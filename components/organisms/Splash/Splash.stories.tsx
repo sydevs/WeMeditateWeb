@@ -95,7 +95,7 @@ export const Default: Story = () => {
         </div>
       </div>
 
-      <StorySection title="LCP Priority">
+      <StorySection inContext={true} title="LCP Priority">
         {/* `priority` changes the markup, not the rendering. View source: this
             splash is eager at `fetchPriority="high"` with a hoisted preload
             link, and every other splash on the page is lazy. */}
