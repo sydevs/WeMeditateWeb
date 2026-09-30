@@ -575,6 +575,26 @@ describe('<RichText>', () => {
     expect(html).toContain('imagedelivery.net/acct/img/')
   })
 
+  // Through the real converter dispatch, not a hand-built arg object: the lead
+  // splash's priority rides on `childIndex` and `parent`, which the library
+  // supplies. Were it to stop, the hero would go back to lazy silently.
+  it('marks only a leading splash block as the eager, preloaded LCP image', () => {
+    const splash = block('splash', { images: [img({ alt: 'bg' })], title: 'Hero' })
+    const lead = renderToStaticMarkup(<RichText content={editorState([splash])} />)
+
+    expect(lead).toContain('loading="eager"')
+    expect(lead).toContain('fetchPriority="high"')
+    expect(lead).toContain('rel="preload"')
+
+    const trailing = renderToStaticMarkup(
+      <RichText content={editorState([paragraph([text('Intro')]), splash])} />,
+    )
+
+    expect(trailing).toContain('loading="lazy"')
+    expect(trailing).not.toContain('fetchPriority')
+    expect(trailing).not.toContain('rel="preload"')
+  })
+
   it('renders a content-index block from server-resolved items', () => {
     const html = renderToStaticMarkup(
       <RichText

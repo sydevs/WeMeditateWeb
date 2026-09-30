@@ -96,10 +96,10 @@ export const Default: Story = () => {
       </div>
 
       <StorySection title="LCP Priority">
-        {/* Identical on screen to every other splash here. View source: this
-            one is eager at `fetchPriority="high"` with a hoisted preload,
-            and the rest are lazy. */}
-        <div className="relative max-h-96 overflow-hidden full-bleed">
+        {/* `priority` changes the markup, not the rendering. View source: this
+            splash is eager at `fetchPriority="high"` with a hoisted preload
+            link, and every other splash on the page is lazy. */}
+        <div className="relative full-bleed">
           <Splash
             priority
             backgroundImage="https://picsum.photos/id/1015/1920/1080"
