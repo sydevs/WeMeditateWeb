@@ -281,12 +281,12 @@ Context only when composition does not work, since it is the exception here, not
 ## Performance
 
 - Serve images as WebP with a fallback (`<picture>` + `<source type="image/webp">`).
-- **An above-the-fold image is a plain `<img>` with `loading="eager"` and `fetchPriority="high"`,
-  never the `<Image>` atom and never a CSS `background-image`.** React hoists a
-  `<link rel="preload" as="image">` for such an element, so the preload needs no hand-written
-  `<link>`. The atom holds every image at `opacity-0` until hydration fires `onLoad`, and Chromium
-  will not treat a transparent element as an LCP candidate. `<Splash priority>` is the worked
-  example.
+- **An above-the-fold image needs `loading="eager"` and `fetchPriority="high"`, never a CSS
+  `background-image`.** React hoists a `<link rel="preload" as="image">` for such an element, so
+  the preload needs no hand-written `<link>` — but not inside a `<picture>`, which trades the
+  preload for the WebP fallback above. Today the element is a plain `<img>`: the `<Image>` atom
+  holds every image at `opacity-0` until hydration fires `onLoad`, and Chromium will not treat a
+  transparent element as an LCP candidate (#145). `<Splash priority>` is the worked example.
 - Lazy-load a heavy component with `React.lazy` and wrap it in `<Suspense>`.
 - Memoize an expensive computation with `useMemo`, and a callback passed to a memoized child with
   `useCallback`.
