@@ -297,13 +297,19 @@ export const blockConverters: BlockConverters = {
   // layouts lack the extra data (a target date, store links, a search
   // target) to render their interactive extras. So every layout renders the
   // shared hero with the available title, subtitle, and CTA over the first image.
-  splash: ({ node }) => {
+  splash: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as SplashBlockFields
     const bg = populatedImage(fields.images?.[0])
 
     if (!bg) {
       return null
     }
+
+    // Only the page's first root-level block is above the fold, so only it is
+    // the LCP candidate. `getLeadSplash` decides the same thing from
+    // `page.content`, but nothing threads its answer down into a converter —
+    // the position is in the converter args instead.
+    const isLead = childIndex === 0 && parent?.type === 'root'
 
     return (
       <Splash
@@ -313,6 +319,7 @@ export const blockConverters: BlockConverters = {
         className={FULL_BLEED_SPLASH}
         ctaHref={fields.actionURL ?? undefined}
         ctaText={fields.actionText ?? undefined}
+        priority={isLead}
         subtitle={fields.subtitle ?? undefined}
         theme={splashTheme(fields.textColor)}
         title={fields.title ?? undefined}

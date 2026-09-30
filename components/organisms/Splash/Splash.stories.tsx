@@ -95,6 +95,33 @@ export const Default: Story = () => {
         </div>
       </div>
 
+      <StorySection title="LCP Priority">
+        {/* The difference is in the markup, not on screen: view source and
+            compare `loading`/`fetchPriority` on each background image. */}
+        <StorySection title="priority (the page's lead splash)" variant="subsection">
+          <div className="relative max-h-96 overflow-hidden full-bleed">
+            <Splash
+              priority
+              backgroundImage="https://picsum.photos/id/1015/1920/1080"
+              subtitle="Eager, fetchPriority=high, and React preloads it."
+              theme="dark"
+              title="Discover Inner Peace"
+            />
+          </div>
+        </StorySection>
+
+        <StorySection title="Default (any later splash)" variant="subsection">
+          <div className="relative max-h-96 overflow-hidden full-bleed">
+            <Splash
+              backgroundImage="https://picsum.photos/id/1019/1920/1080"
+              subtitle="Lazy, with no fetchPriority and no preload."
+              theme="dark"
+              title="Discover Inner Peace"
+            />
+          </div>
+        </StorySection>
+      </StorySection>
+
       <StorySection inContext={true} title="Countdown Timer">
         <div className="relative full-bleed">
           <Splash
