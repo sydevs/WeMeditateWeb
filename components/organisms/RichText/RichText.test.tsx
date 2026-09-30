@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { getLeadSplash } from '../../../lib/content-blocks'
+import type { Page } from '../../../server/sahajcloud-types'
 
 // RichText mounts the lightbox provider, whose barrel is client-only, and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
@@ -593,6 +595,24 @@ describe('<RichText>', () => {
     expect(trailing).toContain('loading="lazy"')
     expect(trailing).not.toContain('fetchPriority')
     expect(trailing).not.toContain('rel="preload"')
+  })
+
+  // Two predicates answer "which splash is the hero": this one from the
+  // converter's dispatch args, `getLeadSplash` from `content.root.children[0]`.
+  // The first drives the preload, the second the overlaid header and the
+  // flush-to-top spacing. Teaching one to skip a leading empty paragraph
+  // without the other would point the chrome at a lazy image.
+  it('agrees with getLeadSplash about which splash is the hero', () => {
+    const splash = block('splash', { images: [img({ alt: 'bg' })], title: 'Hero' })
+
+    for (const children of [[splash], [paragraph([text('Intro')]), splash]]) {
+      const content = editorState(children)
+      const eager = renderToStaticMarkup(<RichText content={content} />).includes(
+        'fetchPriority="high"',
+      )
+
+      expect(eager).toBe(getLeadSplash(content as unknown as Page['content']) !== null)
+    }
   })
 
   it('renders a content-index block from server-resolved items', () => {
