@@ -43,6 +43,14 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   theme?: 'light' | 'dark'
   /** Whether the CTA should pulsate */
   pulsate?: boolean
+  /**
+   * Marks this splash as the page's LCP candidate. It loads eagerly at
+   * `fetchPriority="high"`, which is also what makes React emit a hoisted
+   * `<link rel="preload" as="image">` for the hero. Only the lead splash
+   * sets it; see the `splash` converter in RichText/blockConverters.
+   * @default false
+   */
+  priority?: boolean
   /** Optional content to display between subtitle and CTA, for example a countdown timer or search input */
   children?: ReactNode
 }
@@ -72,6 +80,7 @@ export function Splash({
   ctaHref,
   theme = 'light',
   pulsate = false,
+  priority = false,
   children,
   className = '',
   ...props
@@ -87,11 +96,18 @@ export function Splash({
       className={`relative min-h-screen flex items-center justify-center overflow-hidden ${className}`}
       {...props}
     >
-      {/* Background Image */}
-      <div
+      {/* An element, not a CSS background: the preload scanner cannot see a
+          `background-image`, and only an element can carry `fetchPriority`.
+          Not the `Image` atom — it holds the image at `opacity-0` until
+          hydration fires `onLoad`, and Chromium skips a transparent element
+          as an LCP candidate. */}
+      <img
+        alt=""
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${resolvedBackgroundImage})` }}
+        className="absolute inset-0 w-full h-full object-cover"
+        fetchPriority={priority ? 'high' : undefined}
+        loading={priority ? 'eager' : 'lazy'}
+        src={resolvedBackgroundImage}
       />
 
       {/* Content Container */}
