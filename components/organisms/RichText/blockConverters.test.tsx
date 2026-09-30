@@ -201,11 +201,8 @@ describe('content-index block converter — dispatch', () => {
   })
 })
 
-/**
- * The splash converter reads its position in the tree as well as the block's
- * fields. Root-level children are dispatched with `childIndex: i` and
- * `parent: data.root` by `convertLexicalNodesToJSX`, so both are real args.
- */
+// The splash converter reads its position in the tree too. `childIndex: i` and
+// `parent: data.root` are what `convertLexicalNodesToJSX` really dispatches.
 type SplashConverter = (args: {
   childIndex: number
   node: { fields: Record<string, unknown> }

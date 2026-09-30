@@ -306,9 +306,8 @@ export const blockConverters: BlockConverters = {
     }
 
     // Only the page's first root-level block is above the fold, so only it is
-    // the LCP candidate. `getLeadSplash` decides the same thing from
-    // `page.content`, but nothing threads its answer down into a converter —
-    // the position is in the converter args instead.
+    // the LCP candidate. `getLeadSplash` answers the same question from
+    // `page.content`, but nothing threads its answer into a converter.
     const isLead = childIndex === 0 && parent?.type === 'root'
 
     return (

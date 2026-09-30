@@ -44,10 +44,8 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Whether the CTA should pulsate */
   pulsate?: boolean
   /**
-   * Marks this splash as the page's LCP candidate. It loads eagerly at
-   * `fetchPriority="high"`, which is also what makes React emit a hoisted
-   * `<link rel="preload" as="image">` for the hero. Only the lead splash
-   * sets it; see the `splash` converter in RichText/blockConverters.
+   * Marks this splash as the page's LCP candidate. `fetchPriority="high"` is
+   * also what makes React hoist a `<link rel="preload" as="image">` for it.
    * @default false
    */
   priority?: boolean
@@ -96,11 +94,10 @@ export function Splash({
       className={`relative min-h-screen flex items-center justify-center overflow-hidden ${className}`}
       {...props}
     >
-      {/* An element, not a CSS background: the preload scanner cannot see a
-          `background-image`, and only an element can carry `fetchPriority`.
-          Not the `Image` atom — it holds the image at `opacity-0` until
-          hydration fires `onLoad`, and Chromium skips a transparent element
-          as an LCP candidate. */}
+      {/* Not a CSS background (invisible to the preload scanner, and it cannot
+          carry `fetchPriority`) and not the `Image` atom (its
+          `opacity-0`-until-hydration makes Chromium skip it as an LCP
+          candidate). */}
       <img
         alt=""
         aria-hidden="true"
