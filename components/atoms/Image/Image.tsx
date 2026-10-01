@@ -92,6 +92,27 @@ export interface ImageProps extends ComponentProps<'img'> {
   showLoading?: boolean
 
   /**
+   * Mark this image as above the fold: `loading="eager"`,
+   * `fetchPriority="high"`, and a `<link rel="preload" as="image">` that React
+   * hoists into the document head.
+   *
+   * The preload comes from dropping `loading="lazy"`, not from
+   * `fetchPriority` — React hoists one for any `<img>` that is not lazy, and
+   * `fetchPriority` only ranks the links already hoisted, within a fixed-size
+   * high-priority set. So leave this `false` below the fold: setting it
+   * everywhere preloads every image on the page and prioritizes none.
+   *
+   * Pass an explicit `sizes` with it when the image renders narrower than the
+   * `responsive` default above, since `priority` makes that over-fetch a
+   * high-priority one.
+   *
+   * `loading` and `fetchPriority` passed directly still win, since the spread
+   * applies last.
+   * @default false
+   */
+  priority?: boolean
+
+  /**
    * Color variant for the loading placeholder.
    * This applies only when width and height are provided.
    * @default 'neutral'
@@ -171,6 +192,7 @@ export function Image({
   objectFit = 'cover',
   rounded = 'square',
   showLoading = true,
+  priority = false,
   placeholderVariant = 'neutral',
   lightboxGroup,
   lightboxIndex = 0,
@@ -181,7 +203,10 @@ export function Image({
   ...props
 }: ImageProps) {
   const t = useT()
-  const [isLoading, setIsLoading] = useState(true)
+  // An `opacity-0` <img> in SSR markup is invisible without JavaScript, and
+  // Chromium will not treat a zero-opacity element as an LCP candidate, so the
+  // first render — server or client — is never the loading state (#145).
+  const [isLoading, setIsLoading] = useState(false)
   const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
@@ -232,20 +257,22 @@ export function Image({
     setHasError(false)
   }
 
-  // A cached image can already be `complete` before React attaches
-  // `onLoad`, so the load event never reaches this component's handler, and
-  // `isLoading` stays stuck at `true`: the placeholder lingers, and the
-  // image stays at opacity-0. Effects do not run during SSR. So on mount,
-  // and whenever the resolved src changes, this re-checks `complete` and
-  // clears the loading state for an already-decoded image. `naturalWidth >
-  // 0` excludes broken images, so `onError` still owns the error path.
+  // Clears the loading state the reset above entered, for a new src the
+  // browser had already cached. Such an image can be `complete` before React
+  // attaches `onLoad`, so the load event never reaches `handleLoad` and the
+  // placeholder would linger over a decoded image. `naturalWidth > 0` excludes
+  // broken images, so `onError` still owns the error path.
   useEffect(() => {
+    if (!isLoading) {
+      return
+    }
+
     const img = imgRef.current
 
     if (img?.complete && img.naturalWidth > 0) {
       setIsLoading(false)
     }
-  }, [imageSrc, imageSrcSet])
+  }, [imageSrc, isLoading])
 
   // `aspectRatio` always drives Cloudflare variant and srcset selection
   // (above), but it constrains the layout to a fixed-ratio box only when
@@ -324,14 +351,14 @@ export function Image({
         </Placeholder>
       )}
 
-      {/* Image element. Hidden until loaded, and skipped on error or a blank src. */}
       {!hasError && hasSrc && (
         <img
           ref={imgRef}
           alt={alt}
           className={imageClasses}
+          fetchPriority={priority ? 'high' : undefined}
           height={height}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
           sizes={sizes ?? (imageSrcSet ? DEFAULT_SIZES : undefined)}
           src={imageSrc}
           srcSet={imageSrcSet}
