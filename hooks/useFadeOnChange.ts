@@ -1,6 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
 const DURATION_MS = 300
+
+// A passive effect can let the new contents paint at full opacity for a frame
+// before the fade starts, which reads as a flash. useLayoutEffect runs before
+// paint, but warns when it is called during SSR.
+const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /**
  * Fade an element's contents in whenever `key` changes, and never on the first
@@ -20,7 +25,7 @@ export function useFadeOnChange(key: string) {
   const rendered = useRef(key)
   const running = useRef<Animation | null>(null)
 
-  useEffect(() => {
+  useBeforePaint(() => {
     const changed = rendered.current !== key
 
     rendered.current = key
@@ -29,8 +34,8 @@ export function useFadeOnChange(key: string) {
       return
     }
 
-    // Overlapping fades composite into a half-transparent flash when a visitor
-    // toggles faster than the animation runs.
+    // A superseded fade keeps ticking on the same property until its duration
+    // runs out, so release it rather than leaving two animations on the node.
     running.current?.cancel()
     running.current =
       ref.current?.animate([{ opacity: 0 }, { opacity: 1 }], {

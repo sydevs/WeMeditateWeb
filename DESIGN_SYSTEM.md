@@ -295,7 +295,7 @@ Context only when composition does not work, since it is the exception here, not
 | Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. |
 | Alt text | A decorative image uses `alt=""` and `role="presentation"`. An informative image needs a real description. |
 | Forms | Pair every input with a `<label htmlFor>`, and set `aria-invalid` and `aria-describedby` on an errored field, pointing at an `id` with `role="alert"`. |
-| Motion | An animation a visitor's own action triggers checks `prefers-reduced-motion: reduce` and skips. A JavaScript-driven one reads it through [hooks/useFadeOnChange.ts](./hooks/useFadeOnChange.ts) or `window.matchMedia`; a CSS one uses Tailwind's `motion-safe:` variant. |
+| Motion | A JavaScript-driven animation that a visitor's own action triggers checks `prefers-reduced-motion: reduce` and skips — see [hooks/useFadeOnChange.ts](./hooks/useFadeOnChange.ts). CSS transitions here do not yet honour the preference. |
 
 ## Tailwind configuration
 
