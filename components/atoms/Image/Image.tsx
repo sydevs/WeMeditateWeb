@@ -11,6 +11,7 @@ import {
   isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
 import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
+import { focusRing } from '../focusRing'
 import { useT } from '../../../hooks/useT'
 
 const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px'
@@ -353,7 +354,7 @@ export function Image({
       <button
         aria-haspopup="dialog"
         aria-label={alt ? t('media.a11y.view_image_alt', { alt }) : t('media.a11y.view_image')}
-        className={`${containerClasses} block w-full cursor-zoom-in appearance-none border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2`}
+        className={`${containerClasses} block w-full cursor-zoom-in appearance-none border-0 bg-transparent p-0 ${focusRing()}`}
         type="button"
         onClick={() => lightbox.openAt(lightboxGroup, lightboxIndex)}
       >

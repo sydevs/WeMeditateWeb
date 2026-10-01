@@ -115,6 +115,7 @@ export function Header({
                 className="hidden lg:flex"
                 href={logoHref}
                 size="sm"
+                theme={theme}
                 variant="text"
               />
             </div>
@@ -131,6 +132,7 @@ export function Header({
                   className="no-underline leading-none hover:opacity-75 transition-opacity"
                   href={actionLinkHref}
                   size="sm"
+                  theme={theme}
                   variant="unstyled"
                 >
                   {actionLinkText}
@@ -162,6 +164,7 @@ export function Header({
               }`}
               href={logoHref}
               size="sm"
+              theme={isSticky ? 'light' : theme}
               variant="icon"
             />
 
@@ -202,6 +205,7 @@ export function Header({
                 <Link
                   className="flex items-center gap-1 no-underline hover:opacity-75 transition-opacity"
                   href={actionLinkHref}
+                  theme={isSticky ? 'light' : theme}
                   variant="unstyled"
                 >
                   <Icon icon={MapPinIcon} size="sm" />

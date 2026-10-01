@@ -289,7 +289,7 @@ Context only when composition does not work, since it is the exception here, not
 
 | Area | Requirement |
 | --- | --- |
-| Keyboard | Every interactive element is reachable by keyboard, in the visual tab order, with a visible focus ring (`focus:ring-2 focus:ring-teal-600`). Escape closes a modal or dropdown. |
+| Keyboard | Every interactive element is reachable by keyboard, in the visual tab order, with the focus ring `focusRing(theme)` draws (never a hand-written one — see `docs/rules/design-system.md`). Escape closes a modal or dropdown. |
 | Semantic HTML | Use `<nav>`, `<main>`, `<article>`, `<button>` for actions, `<a>` for navigation, and `<h1>`–`<h6>` in order. |
 | ARIA | Add ARIA only where semantic HTML falls short — `aria-expanded`/`aria-haspopup` on a dropdown trigger, `aria-busy`/`aria-live` on a loading button. |
 | Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. |
