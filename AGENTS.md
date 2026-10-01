@@ -224,10 +224,12 @@ These rules apply whether or not the matching rule file or skill is loaded.
   that is neither: `lib/payload-relationships.ts` describes the product's field shapes,
   `lib/content-blocks.ts` the upstream editor's block shapes, and `lib/document-routes.ts` paths
   on **our own** site — `documentHref` resolves one, so it is not `sahajCloudHref`.
-- **Create each Cloudflare Images variant in the dashboard too.** The `<Image>` atom appends a
-  variant name in the form `{aspectRatio}-{width}`. The list of variants lives in
-  `SIZE_WIDTH_MAP` in [lib/cloudflare-images.ts](lib/cloudflare-images.ts). Adding a variant there
-  is not enough. You must also configure it in the Cloudflare dashboard.
+- **Create each Cloudflare Images variant in the dashboard too.** The `<Image>` atom resolves a
+  SahajCloud URL to a variant named `{aspectRatio}-{width}`, replacing the `/public` segment the
+  read returns. The list of variants lives in `SIZE_WIDTH_MAP` in
+  [lib/cloudflare-images.ts](lib/cloudflare-images.ts). Adding a variant there is not enough. You
+  must also configure it in the Cloudflare dashboard, and nothing in the repo checks that you did
+  — a missing variant 404s every image that asks for it.
 - **`pageContext` carries the locale.** [types/vike.d.ts](types/vike.d.ts) extends Vike's
   `PageContext` with `locale: Locale`, which stays type-safe in every data function and component.
 
