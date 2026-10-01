@@ -102,9 +102,9 @@ export interface ImageProps extends ComponentProps<'img'> {
    * high-priority set. So leave this `false` below the fold: setting it
    * everywhere preloads every image on the page and prioritizes none.
    *
-   * Pass an explicit `sizes` with it. Without one the image falls back to
-   * full-viewport-width `sizes`, and `priority` turns that over-fetch into a
-   * high-priority one that blocks the rest of the page.
+   * Pass an explicit `sizes` with it when the image renders narrower than the
+   * `responsive` default above, since `priority` makes that over-fetch a
+   * high-priority one.
    *
    * `loading` and `fetchPriority` passed directly still win, since the spread
    * applies last.
