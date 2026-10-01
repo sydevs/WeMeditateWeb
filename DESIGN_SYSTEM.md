@@ -301,6 +301,17 @@ Context only when composition does not work, since it is the exception here, not
 | Alt text | A decorative image uses `alt=""` and `role="presentation"`. An informative image needs a real description. |
 | Forms | Pair every input with a `<label htmlFor>`, and set `aria-invalid` and `aria-describedby` on an errored field, pointing at an `id` with `role="alert"`. |
 
+## Motion
+
+Honouring reduced motion is a house convention here, not a conformance item: WCAG 2.1 puts
+animation from interactions at AAA (2.3.3), and 2.2.2 Pause, Stop, Hide starts above five seconds.
+
+- A JavaScript-driven animation that a visitor's own action triggers checks
+  `prefers-reduced-motion: reduce` and skips it — see
+  [hooks/useFadeOnChange.ts](./hooks/useFadeOnChange.ts).
+- The `transition-` classes already in use do not honour the preference. Adding one neither adopts
+  nor breaks this rule.
+
 ## Tailwind configuration
 
 [tailwind.config.ts](./tailwind.config.ts) extends only brand identity: the teal and coral color

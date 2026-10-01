@@ -92,4 +92,18 @@ describe('ContentIndex (SSR markup)', () => {
   it('renders without crashing on an empty list', () => {
     expect(() => renderToStaticMarkup(<ContentIndex items={[]} />)).not.toThrow()
   })
+
+  it('hides no card behind the filter fade on first render (#149)', () => {
+    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+
+    for (const tag of html.match(/<article[^>]*>/g) ?? []) {
+      expect(tag).not.toContain('opacity-0')
+      expect(tag).not.toContain('transition-opacity duration-500')
+    }
+
+    // The fade runs through Element.animate, so it must leave no inline opacity
+    // for a visitor with JavaScript off to be caught by.
+    expect(html).not.toContain('opacity:0')
+    expect(html).not.toContain('opacity: 0')
+  })
 })
