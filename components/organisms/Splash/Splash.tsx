@@ -5,7 +5,6 @@ import {
   type ImageSize,
   getImageURL,
   getVariantName,
-  isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
 
 export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
@@ -78,9 +77,10 @@ export function Splash({
 }: SplashProps) {
   const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
 
-  const resolvedBackgroundImage = isCloudflareImageURL(backgroundImage)
-    ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
-    : backgroundImage
+  const resolvedBackgroundImage = getImageURL(
+    backgroundImage,
+    getVariantName(imageAspectRatio, imageSize),
+  )
 
   return (
     <div

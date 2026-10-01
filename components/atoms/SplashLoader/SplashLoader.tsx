@@ -5,7 +5,6 @@ import {
   type ImageSize,
   getImageURL,
   getVariantName,
-  isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
 
 export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> {
@@ -127,9 +126,7 @@ export function SplashLoader({
   }
 
   const resolvedBackgroundImage = backgroundImage
-    ? isCloudflareImageURL(backgroundImage)
-      ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
-      : backgroundImage
+    ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
     : undefined
 
   const backgroundImageStyle = resolvedBackgroundImage

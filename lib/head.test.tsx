@@ -10,6 +10,10 @@ describe('resolveOgImageUrl', () => {
     expect(resolveOgImageUrl({ url: CF_URL })).toBe(`${CF_URL}video-1024`)
   })
 
+  it('replaces the /public variant a SahajCloud read returns', () => {
+    expect(resolveOgImageUrl({ url: `${CF_URL}public` })).toBe(`${CF_URL}video-1024`)
+  })
+
   it('returns a non-Cloudflare URL unchanged', () => {
     const external = 'https://example.com/preview.jpg'
 
