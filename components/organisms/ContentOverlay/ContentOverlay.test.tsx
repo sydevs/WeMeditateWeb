@@ -48,4 +48,12 @@ describe('<ContentOverlay> image loading', () => {
 
     expect(html.match(/srcSet=/g) ?? []).toHaveLength(2)
   })
+
+  it('declares the full-bleed slot width on both breakpoints', () => {
+    const html = renderToStaticMarkup(
+      <ContentOverlay {...BASE} imageSrc="https://imagedelivery.net/acct/img-id/" />,
+    )
+
+    expect(html.match(/sizes="100vw"/g) ?? []).toHaveLength(2)
+  })
 })

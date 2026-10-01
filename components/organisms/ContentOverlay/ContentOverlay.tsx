@@ -204,6 +204,7 @@ export function ContentOverlay({
             alt={imageAlt}
             aspectRatio="video"
             className={`w-full h-full object-cover ${imageBlendClass}`}
+            sizes="100vw"
             src={imageSrc}
           />
         </div>
