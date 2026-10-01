@@ -10,6 +10,14 @@ import {
 const BASE_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/'
 const BASE_URL_NO_SLASH = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123'
 
+// The only two shapes a SahajCloud read produces. `getCloudflareImagesUrl`
+// defaults its variant to `public` and admin thumbnails pass a flexible
+// variant (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts`,
+// `src/plugins/storage/urlFields.ts`). The bare fixtures above are a shape
+// production never sends, which is why #141 stayed green and dead.
+const PUBLIC_URL = `${BASE_URL}public`
+const FLEXIBLE_URL = `${BASE_URL}format=auto,width=320,height=320,fit=cover`
+
 describe('isCloudflareImageURL', () => {
   it('detects imagedelivery.net URLs', () => {
     expect(isCloudflareImageURL(BASE_URL)).toBe(true)
@@ -32,10 +40,18 @@ describe('getImageURL', () => {
     expect(getImageURL(BASE_URL_NO_SLASH, 'video-800')).toBe(`${BASE_URL_NO_SLASH}/video-800`)
   })
 
-  it('returns the URL unchanged when a variant is already appended', () => {
-    const withVariant = `${BASE_URL}public`
+  it('replaces the variant on a SahajCloud URL rather than appending one', () => {
+    expect(getImageURL(PUBLIC_URL, 'video-800')).toBe(`${BASE_URL}video-800`)
+  })
 
-    expect(getImageURL(withVariant, 'video-800')).toBe(withVariant)
+  it('replaces a flexible-variant segment, which carries "=" and ","', () => {
+    expect(getImageURL(FLEXIBLE_URL, 'video-800')).toBe(`${BASE_URL}video-800`)
+  })
+
+  it('returns the URL unchanged when a path segment follows the variant', () => {
+    const deep = `${PUBLIC_URL}/extra`
+
+    expect(getImageURL(deep, 'video-800')).toBe(deep)
   })
 
   it('returns the URL unchanged for non-Cloudflare URLs', () => {
@@ -100,8 +116,14 @@ describe('getImageSrcSet', () => {
     expect(widths).toEqual([640, 800, 1024, 1536])
   })
 
-  it('returns empty string when baseUrl already has a variant appended', () => {
-    expect(getImageSrcSet(`${BASE_URL}public`, 'video')).toBe('')
+  it('builds a srcset from a SahajCloud URL, with the variant replaced', () => {
+    expect(getImageSrcSet(PUBLIC_URL, 'video')).toBe(
+      `${BASE_URL}video-640 640w, ${BASE_URL}video-800 800w, ${BASE_URL}video-1024 1024w, ${BASE_URL}video-1536 1536w`,
+    )
+  })
+
+  it('returns empty string when a path segment follows the variant', () => {
+    expect(getImageSrcSet(`${PUBLIC_URL}/extra`, 'video')).toBe('')
   })
 
   it('returns empty string for non-Cloudflare URLs', () => {
