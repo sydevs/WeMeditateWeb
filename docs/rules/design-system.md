@@ -8,7 +8,7 @@ paths:
 
 This project uses the Atomic Design methodology. Before you create or classify a component, read
 [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). It holds the token values, the atomic hierarchy, the
-mobile-first breakpoints, and the WCAG 2.1 AA accessibility rules. Read
+mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion convention. Read
 [STORYBOOK.md](../../STORYBOOK.md) before you write a component story.
 
 **Quick reference**:
@@ -19,6 +19,10 @@ mobile-first breakpoints, and the WCAG 2.1 AA accessibility rules. Read
 - Implement every component mobile-first — see [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for
   the breakpoint table. Give every interactive element a touch target of at least 44×44px.
 - Meet WCAG 2.1 AA.
+- Drive an animation from JavaScript only through a `prefers-reduced-motion` check — see
+  [hooks/useFadeOnChange.ts](../../hooks/useFadeOnChange.ts). Reduced motion is a house
+  convention here, above the AA bar, so see the Motion section for what it does and does not
+  cover.
 
 ## Route changes are already announced — do not add a second announcer
 

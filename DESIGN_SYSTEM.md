@@ -309,8 +309,8 @@ animation from interactions at AAA (2.3.3), and 2.2.2 Pause, Stop, Hide starts a
 - A JavaScript-driven animation that a visitor's own action triggers checks
   `prefers-reduced-motion: reduce` and skips it — see
   [hooks/useFadeOnChange.ts](./hooks/useFadeOnChange.ts).
-- The `transition-` classes already in use do not honour the preference. Adding one neither adopts
-  nor breaks this rule.
+- This covers animation driven from JavaScript. The `transition-` classes in use across the
+  components honour no preference today, and no CSS-level rule is settled yet.
 
 ## Tailwind configuration
 
