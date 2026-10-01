@@ -74,7 +74,8 @@ export function Avatar({
     neutral: 'bg-gray-200 text-gray-700',
   }
 
-  const baseStyles = 'relative inline-flex items-center justify-center overflow-hidden font-medium flex-shrink-0'
+  const baseStyles =
+    'relative inline-flex items-center justify-center overflow-hidden font-medium flex-shrink-0'
 
   const showImage = src && !hasError
 
@@ -103,12 +104,12 @@ export function Avatar({
       </span>
       {showImage && (
         <img
-          src={src}
           alt={alt}
+          className="w-full h-full object-cover absolute inset-0"
           // React hoists a `<link rel="preload" as="image">` for any <img>
           // that is not lazy, and an avatar is never the page's hero.
           loading="lazy"
-          className="w-full h-full object-cover absolute inset-0"
+          src={src}
           onError={() => setHasError(true)}
         />
       )}

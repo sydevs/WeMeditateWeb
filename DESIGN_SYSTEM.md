@@ -288,7 +288,9 @@ Context only when composition does not work, since it is the exception here, not
 - **A component's first-render state must produce visible markup.** `useState(true)` for "still
   loading", gating an element on `opacity-0`, ships that element invisible from the server: a
   visitor with JavaScript off never sees it, and Chromium will not treat a zero-opacity element as
-  an LCP candidate. Enter a loading state on the client, never on the first render (#145).
+  an LCP candidate. Make the loaded state the first render, and enter a loading state only from
+  something that changes after it — a src swap, a refetch. An unloaded `<img>` paints nothing
+  anyway, so it needs no placeholder to avoid a flash, only reserved width and height (#145).
 - Lazy-load a heavy component with `React.lazy` and wrap it in `<Suspense>`.
 - Memoize an expensive computation with `useMemo`, and a callback passed to a memoized child with
   `useCallback`.

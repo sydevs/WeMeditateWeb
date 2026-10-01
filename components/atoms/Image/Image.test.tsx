@@ -208,7 +208,9 @@ describe('<Image> priority', () => {
   // srcSet the hoisted link carries imageSrcSet and imageSizes but no href.
   // So these assertions match rel and as only.
   it('emits eager loading, high fetchPriority, and a hoisted preload link', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" priority src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image priority alt="test" aspectRatio="video" src={CF_URL} />,
+    )
 
     expect(html).toContain('loading="eager"')
     expect(html).toContain('fetchPriority="high"')
@@ -234,7 +236,7 @@ describe('<Image> priority', () => {
 
   it('lets an explicit loading prop override priority', () => {
     const html = renderToStaticMarkup(
-      <Image alt="test" aspectRatio="video" loading="lazy" priority src={CF_URL} />,
+      <Image priority alt="test" aspectRatio="video" loading="lazy" src={CF_URL} />,
     )
 
     expect(html).toContain('loading="lazy"')
