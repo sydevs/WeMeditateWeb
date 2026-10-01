@@ -92,4 +92,23 @@ describe('ContentIndex (SSR markup)', () => {
   it('renders without crashing on an empty list', () => {
     expect(() => renderToStaticMarkup(<ContentIndex items={[]} />)).not.toThrow()
   })
+
+  it('leaves the filter fade out of the server markup (#149)', () => {
+    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    // The grid's own root is what the fade animates, so it is the element this
+    // component can ship hidden. ContentGrid.tsx opens it with `w-full`.
+    // Counting the matches, not just taking the first: a second `w-full` div
+    // above this one would send the assertions below to the wrong element.
+    const fadeTargets = html.match(/<div class="w-full[^"]*"[^>]*>/g) ?? []
+    const [fadeTarget] = fadeTargets
+
+    expect(fadeTargets).toHaveLength(1)
+    expect(fadeTarget).not.toContain('opacity-0')
+    expect(fadeTarget).not.toContain('style=')
+
+    // Element.animate cannot reach the server, so nothing here may carry an
+    // inline opacity for a visitor with JavaScript off to be caught by.
+    expect(html).not.toContain('opacity:0')
+    expect(html).not.toContain('opacity: 0')
+  })
 })

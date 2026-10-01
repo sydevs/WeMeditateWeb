@@ -22,6 +22,10 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
  * Similar to MasonryGrid but composes ContentCard components instead of plain text items.
  * Always displays all cards without pagination or "Show More" functionality.
  *
+ * The outer `w-full` div takes the spread props, `ref` among them, and that is
+ * a contract: ContentIndex animates that element. Moving the spread onto the
+ * Masonry breaks the fade and its spec silently.
+ *
  * @example
  * // Basic usage with meditation cards
  * <ContentGrid
