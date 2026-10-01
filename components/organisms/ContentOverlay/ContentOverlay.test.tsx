@@ -30,3 +30,28 @@ describe('<ContentOverlay> subtitle', () => {
     expect(html).toContain('text-white')
   })
 })
+
+describe('<ContentOverlay> image loading', () => {
+  it('hoists no image preload link', () => {
+    const html = renderToStaticMarkup(<ContentOverlay {...BASE} />)
+
+    expect(html).not.toContain('rel="preload"')
+  })
+
+  it('renders both breakpoints through the Image atom, so every image is lazy', () => {
+    const html = renderToStaticMarkup(<ContentOverlay {...BASE} />)
+    const images = html.match(/<img[^>]*>/g) ?? []
+
+    expect(images).toHaveLength(2)
+    images.forEach((img) => expect(img).toContain('loading="lazy"'))
+  })
+
+  it('requests a Cloudflare variant and a srcset on both breakpoints', () => {
+    const html = renderToStaticMarkup(
+      <ContentOverlay {...BASE} imageSrc="https://imagedelivery.net/acct/img-id/" />,
+    )
+
+    expect(html.match(/srcSet=|srcset=/g) ?? []).toHaveLength(2)
+    expect(html).toContain('/video-800')
+  })
+})

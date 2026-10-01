@@ -169,10 +169,16 @@ export function ContentOverlay({
     <div className={className} {...props}>
       {/* Mobile: Stacked layout - no variant or theme styling */}
       <div className="flex flex-col gap-6 md:hidden">
-        {/* Image on top */}
-        <div className="w-full aspect-video">
-          <img alt={imageAlt} className="w-full h-full object-cover" src={imageSrc} />
-        </div>
+        {/* Image on top. `rounded="none"` keeps the square corners the raw
+            <img> had — the desktop branch's default radius is clipped away
+            by its own `overflow-hidden` parent, so it never showed. */}
+        <Image
+          alt={imageAlt}
+          aspectRatio="video"
+          rounded="none"
+          sizes="100vw"
+          src={imageSrc}
+        />
 
         {/* Content below — title + optional subtitle kept tight together */}
         <div className="flex flex-col gap-1.5">
