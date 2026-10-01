@@ -92,6 +92,24 @@ export interface ImageProps extends ComponentProps<'img'> {
   showLoading?: boolean
 
   /**
+   * Mark this image as above the fold. It renders `loading="eager"` and
+   * `fetchPriority="high"`, and React hoists a
+   * `<link rel="preload" as="image">` into the document head for it.
+   *
+   * The preload comes from dropping `loading="lazy"`, not from
+   * `fetchPriority` — React's Fizz renderer hoists a preload for any `<img>`
+   * that is not lazy, and `fetchPriority="high"` only promotes that link into
+   * the high-priority set, which is capped at 10 per render. So leave this
+   * `false` for everything below the fold: setting it on every image on a page
+   * gives every one of them a preload and ranks none of them.
+   *
+   * `loading` and `fetchPriority` passed directly still win, since the spread
+   * applies last.
+   * @default false
+   */
+  priority?: boolean
+
+  /**
    * Color variant for the loading placeholder.
    * This applies only when width and height are provided.
    * @default 'neutral'
@@ -171,6 +189,7 @@ export function Image({
   objectFit = 'cover',
   rounded = 'square',
   showLoading = true,
+  priority = false,
   placeholderVariant = 'neutral',
   lightboxGroup,
   lightboxIndex = 0,
@@ -336,8 +355,9 @@ export function Image({
           ref={imgRef}
           alt={alt}
           className={imageClasses}
+          fetchPriority={priority ? 'high' : undefined}
           height={height}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
           sizes={sizes ?? (imageSrcSet ? DEFAULT_SIZES : undefined)}
           src={imageSrc}
           srcSet={imageSrcSet}

@@ -208,3 +208,46 @@ describe('<Image> lightbox trigger', () => {
     expect(html).not.toContain('<button')
   })
 })
+
+describe('<Image> priority', () => {
+  // React's Fizz renderer hoists <link rel="preload" as="image"> for any
+  // <img> that is not loading="lazy", so `priority` has to flip `loading`;
+  // fetchPriority alone only ranks an existing preload. The renderer spells
+  // the attribute camelCase, and with a srcSet the link carries imageSrcSet
+  // and no href — so these assertions match rel/as only (#145).
+  it('emits eager loading, high fetchPriority, and a hoisted preload link', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" priority src={CF_URL} />)
+
+    expect(html).toContain('loading="eager"')
+    expect(html).toContain('fetchPriority="high"')
+    expect(html).toMatch(/<link[^>]*rel="preload"/)
+    expect(html).toMatch(/<link[^>]*as="image"/)
+  })
+
+  it('defaults to lazy loading with no preload link', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('rel="preload"')
+    expect(html).not.toMatch(/fetchpriority/i)
+  })
+
+  it('keeps the {...props} escape hatch working for loading and fetchPriority', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" fetchPriority="high" loading="eager" src={CF_URL} />,
+    )
+
+    expect(html).toContain('loading="eager"')
+    expect(html).toContain('fetchPriority="high"')
+    expect(html).toMatch(/<link[^>]*rel="preload"/)
+  })
+
+  it('lets an explicit loading prop override priority', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" loading="lazy" priority src={CF_URL} />,
+    )
+
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('rel="preload"')
+  })
+})

@@ -281,6 +281,11 @@ Context only when composition does not work, since it is the exception here, not
 ## Performance
 
 - Serve images as WebP with a fallback (`<picture>` + `<source type="image/webp">`).
+- Give a page's hero image `<Image priority>`. It renders `loading="eager"` and
+  `fetchPriority="high"`, and React hoists a `<link rel="preload" as="image">` for it, so the
+  image can be the LCP element. Set it on one image per page, or at most a few: the preload comes
+  from dropping `loading="lazy"`, so marking every image preloads every image and ranks none.
+  Everything below the fold stays lazy, which is the default.
 - Lazy-load a heavy component with `React.lazy` and wrap it in `<Suspense>`.
 - Memoize an expensive computation with `useMemo`, and a callback passed to a memoized child with
   `useCallback`.
