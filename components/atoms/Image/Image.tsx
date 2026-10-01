@@ -92,16 +92,19 @@ export interface ImageProps extends ComponentProps<'img'> {
   showLoading?: boolean
 
   /**
-   * Mark this image as above the fold. It renders `loading="eager"` and
-   * `fetchPriority="high"`, and React hoists a
-   * `<link rel="preload" as="image">` into the document head for it.
+   * Mark this image as above the fold: `loading="eager"`,
+   * `fetchPriority="high"`, and a `<link rel="preload" as="image">` that React
+   * hoists into the document head.
    *
    * The preload comes from dropping `loading="lazy"`, not from
-   * `fetchPriority` — React's Fizz renderer hoists a preload for any `<img>`
-   * that is not lazy, and `fetchPriority="high"` only promotes that link into
-   * the high-priority set, which is capped at 10 per render. So leave this
-   * `false` for everything below the fold: setting it on every image on a page
-   * gives every one of them a preload and ranks none of them.
+   * `fetchPriority` — React hoists one for any `<img>` that is not lazy, and
+   * `fetchPriority` only ranks the links already hoisted, within a fixed-size
+   * high-priority set. So leave this `false` below the fold: setting it
+   * everywhere preloads every image on the page and prioritizes none.
+   *
+   * Pass an explicit `sizes` with it. Without one the image falls back to
+   * full-viewport-width `sizes`, and `priority` turns that over-fetch into a
+   * high-priority one that blocks the rest of the page.
    *
    * `loading` and `fetchPriority` passed directly still win, since the spread
    * applies last.
@@ -200,10 +203,9 @@ export function Image({
   ...props
 }: ImageProps) {
   const t = useT()
-  // False on the first render, server or client. An `opacity-0` <img> in SSR
-  // markup is invisible without JavaScript, and Chromium will not treat a
-  // zero-opacity element as an LCP candidate (#145). Only an in-place src
-  // change enters the loading state now; see the reset below.
+  // An `opacity-0` <img> in SSR markup is invisible without JavaScript, and
+  // Chromium will not treat a zero-opacity element as an LCP candidate, so the
+  // first render — server or client — is never the loading state (#145).
   const [isLoading, setIsLoading] = useState(false)
   const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -255,21 +257,22 @@ export function Image({
     setHasError(false)
   }
 
-  // A cached image can already be `complete` before React attaches `onLoad`,
-  // so the load event never reaches `handleLoad` and `isLoading` would stay
-  // stuck at `true` after an in-place src change: the placeholder lingers over
-  // a decoded image. Effects do not run during SSR, so this re-check runs on
-  // mount and on every resolved-src change. It only ever *clears* the loading
-  // state — entering it here would fade out an image the browser is already
-  // painting progressively from the server's markup. `naturalWidth > 0`
-  // excludes broken images, so `onError` still owns the error path.
+  // Clears the loading state the reset above entered, for a new src the
+  // browser had already cached. Such an image can be `complete` before React
+  // attaches `onLoad`, so the load event never reaches `handleLoad` and the
+  // placeholder would linger over a decoded image. `naturalWidth > 0` excludes
+  // broken images, so `onError` still owns the error path.
   useEffect(() => {
+    if (!isLoading) {
+      return
+    }
+
     const img = imgRef.current
 
     if (img?.complete && img.naturalWidth > 0) {
       setIsLoading(false)
     }
-  }, [imageSrc, imageSrcSet])
+  }, [imageSrc, isLoading])
 
   // `aspectRatio` always drives Cloudflare variant and srcset selection
   // (above), but it constrains the layout to a fixed-ratio box only when
@@ -348,8 +351,6 @@ export function Image({
         </Placeholder>
       )}
 
-      {/* Image element. Opaque on the server, faded in by `isLoading` on the
-          client, and skipped entirely on error or a blank src. */}
       {!hasError && hasSrc && (
         <img
           ref={imgRef}

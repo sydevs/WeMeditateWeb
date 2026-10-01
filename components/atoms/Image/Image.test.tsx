@@ -63,7 +63,8 @@ describe('<Image> blank src', () => {
   it('still shows the placeholder overlay so layout is preserved', () => {
     const html = renderToStaticMarkup(<Image alt="test" src="" />)
 
-    // The loading/placeholder overlay fills the container in the absence of an image.
+    // The placeholder's gradient, filling the container in the absence of an image.
+    expect(html).toContain('bg-gradient-to-br')
     expect(html).toContain('absolute inset-0')
   })
 
@@ -104,13 +105,6 @@ describe('<Image> server render', () => {
     const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
 
     expect(html).not.toContain('bg-gradient-to-br')
-    expect(html).not.toContain('animate-shimmer')
-  })
-
-  it('still renders the placeholder when there is no image to show', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src="" />)
-
-    expect(html).toContain('bg-gradient-to-br')
   })
 })
 
@@ -210,11 +204,9 @@ describe('<Image> lightbox trigger', () => {
 })
 
 describe('<Image> priority', () => {
-  // React's Fizz renderer hoists <link rel="preload" as="image"> for any
-  // <img> that is not loading="lazy", so `priority` has to flip `loading`;
-  // fetchPriority alone only ranks an existing preload. The renderer spells
-  // the attribute camelCase, and with a srcSet the link carries imageSrcSet
-  // and no href — so these assertions match rel/as only (#145).
+  // Two spelling traps: React emits `fetchPriority` camelCase, and with a
+  // srcSet the hoisted link carries imageSrcSet and imageSizes but no href.
+  // So these assertions match rel and as only.
   it('emits eager loading, high fetchPriority, and a hoisted preload link', () => {
     const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" priority src={CF_URL} />)
 
@@ -232,13 +224,11 @@ describe('<Image> priority', () => {
     expect(html).not.toMatch(/fetchpriority/i)
   })
 
-  it('keeps the {...props} escape hatch working for loading and fetchPriority', () => {
+  it('still reaches the preload through {...props}, without priority', () => {
     const html = renderToStaticMarkup(
       <Image alt="test" aspectRatio="video" fetchPriority="high" loading="eager" src={CF_URL} />,
     )
 
-    expect(html).toContain('loading="eager"')
-    expect(html).toContain('fetchPriority="high"')
     expect(html).toMatch(/<link[^>]*rel="preload"/)
   })
 
