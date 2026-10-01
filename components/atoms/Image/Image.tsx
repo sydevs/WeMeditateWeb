@@ -181,7 +181,11 @@ export function Image({
   ...props
 }: ImageProps) {
   const t = useT()
-  const [isLoading, setIsLoading] = useState(true)
+  // False on the first render, server or client. An `opacity-0` <img> in SSR
+  // markup is invisible without JavaScript, and Chromium will not treat a
+  // zero-opacity element as an LCP candidate (#145). Only an in-place src
+  // change enters the loading state now; see the reset below.
+  const [isLoading, setIsLoading] = useState(false)
   const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
@@ -232,13 +236,14 @@ export function Image({
     setHasError(false)
   }
 
-  // A cached image can already be `complete` before React attaches
-  // `onLoad`, so the load event never reaches this component's handler, and
-  // `isLoading` stays stuck at `true`: the placeholder lingers, and the
-  // image stays at opacity-0. Effects do not run during SSR. So on mount,
-  // and whenever the resolved src changes, this re-checks `complete` and
-  // clears the loading state for an already-decoded image. `naturalWidth >
-  // 0` excludes broken images, so `onError` still owns the error path.
+  // A cached image can already be `complete` before React attaches `onLoad`,
+  // so the load event never reaches `handleLoad` and `isLoading` would stay
+  // stuck at `true` after an in-place src change: the placeholder lingers over
+  // a decoded image. Effects do not run during SSR, so this re-check runs on
+  // mount and on every resolved-src change. It only ever *clears* the loading
+  // state — entering it here would fade out an image the browser is already
+  // painting progressively from the server's markup. `naturalWidth > 0`
+  // excludes broken images, so `onError` still owns the error path.
   useEffect(() => {
     const img = imgRef.current
 
@@ -324,7 +329,8 @@ export function Image({
         </Placeholder>
       )}
 
-      {/* Image element. Hidden until loaded, and skipped on error or a blank src. */}
+      {/* Image element. Opaque on the server, faded in by `isLoading` on the
+          client, and skipped entirely on error or a blank src. */}
       {!hasError && hasSrc && (
         <img
           ref={imgRef}

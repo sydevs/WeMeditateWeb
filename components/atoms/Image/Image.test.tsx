@@ -79,6 +79,41 @@ describe('<Image> blank src', () => {
   })
 })
 
+describe('<Image> server render', () => {
+  // The server render is what a crawler, a no-JavaScript visitor, and
+  // Chromium's LCP heuristic all see. A zero-opacity <img> is invisible to
+  // all three, and an opaque placeholder ahead of it in DOM order hides it
+  // from the first two (#145).
+  it('renders the <img> opaque in the boxed layout', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).not.toContain('opacity-0')
+    expect(html).toContain('opacity-100')
+  })
+
+  it('renders the <img> opaque in the natural-flow layout', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} src={CF_URL} />,
+    )
+
+    expect(html).not.toContain('opacity-0')
+    expect(html).toContain('opacity-100')
+  })
+
+  it('renders no loading placeholder above an image it has a src for', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).not.toContain('bg-gradient-to-br')
+    expect(html).not.toContain('animate-shimmer')
+  })
+
+  it('still renders the placeholder when there is no image to show', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src="" />)
+
+    expect(html).toContain('bg-gradient-to-br')
+  })
+})
+
 describe('<Image> forceAspectRatio', () => {
   it('constrains to a fixed-ratio box by default (aspect class on container, img fills it)', () => {
     const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)

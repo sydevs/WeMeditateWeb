@@ -52,7 +52,6 @@ export function Avatar({
   ...props
 }: AvatarProps) {
   const [hasError, setHasError] = useState(false)
-  const [isLoading, setIsLoading] = useState(!!src)
 
   const sizeStyles = {
     xs: 'w-6 h-6 text-xs',
@@ -79,12 +78,7 @@ export function Avatar({
 
   const showImage = src && !hasError
 
-  const handleLoad = () => {
-    setIsLoading(false)
-  }
-
   const handleError = () => {
-    setIsLoading(false)
     setHasError(true)
   }
 
@@ -105,7 +99,9 @@ export function Avatar({
       className={`${baseStyles} ${colorStyles[color]} ${sizeStyles[size]} ${shapeStyles[shape]} ${className}`}
       {...props}
     >
-      {/* Always render initials underneath */}
+      {/* Always render initials underneath. They are the avatar's placeholder:
+          the image paints over them once it loads, so the <img> needs no
+          opacity gate, and so renders visibly without JavaScript (#145). */}
       <span aria-label={alt} className={showImage ? 'absolute' : ''}>
         {displayInitials}
       </span>
@@ -113,8 +109,7 @@ export function Avatar({
         <img
           src={src}
           alt={alt}
-          className={`w-full h-full object-cover absolute inset-0 ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-          onLoad={handleLoad}
+          className="w-full h-full object-cover absolute inset-0"
           onError={handleError}
         />
       )}
