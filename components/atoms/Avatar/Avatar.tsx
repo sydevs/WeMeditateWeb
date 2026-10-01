@@ -78,10 +78,6 @@ export function Avatar({
 
   const showImage = src && !hasError
 
-  const handleError = () => {
-    setHasError(true)
-  }
-
   // Generate initials from alt text if not provided
   const displayInitials =
     initials ||
@@ -99,9 +95,9 @@ export function Avatar({
       className={`${baseStyles} ${colorStyles[color]} ${sizeStyles[size]} ${shapeStyles[shape]} ${className}`}
       {...props}
     >
-      {/* Always render initials underneath. They are the avatar's placeholder:
-          the image paints over them once it loads, so the <img> needs no
-          opacity gate, and so renders visibly without JavaScript (#145). */}
+      {/* The initials are the avatar's placeholder: the image paints over them
+          once it loads, so the <img> needs no opacity gate and renders
+          visibly without JavaScript (#145). */}
       <span aria-label={alt} className={showImage ? 'absolute' : ''}>
         {displayInitials}
       </span>
@@ -109,8 +105,11 @@ export function Avatar({
         <img
           src={src}
           alt={alt}
+          // React hoists a `<link rel="preload" as="image">` for any <img>
+          // that is not lazy, and an avatar is never the page's hero.
+          loading="lazy"
           className="w-full h-full object-cover absolute inset-0"
-          onError={handleError}
+          onError={() => setHasError(true)}
         />
       )}
     </div>
