@@ -187,6 +187,7 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-6">
         <StorySection title="Text Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
+            <Button size="xs">Extra small</Button>
             <Button size="sm">Small</Button>
             <Button size="md">Medium</Button>
             <Button size="lg">Large</Button>
@@ -194,6 +195,7 @@ export const Default: Story = () => (
         </StorySection>
         <StorySection title="Icon-only Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
+            <Button aria-label="Like (extra small)" icon={HeartIcon} size="xs" />
             <Button aria-label="Like (small)" icon={HeartIcon} size="sm" />
             <Button aria-label="Like (medium)" icon={HeartIcon} size="md" />
             <Button aria-label="Like (large)" icon={HeartIcon} size="lg" />
@@ -201,6 +203,9 @@ export const Default: Story = () => (
         </StorySection>
         <StorySection title="Icon + Text Buttons" variant="subsection">
           <div className="flex gap-4 items-center">
+            <Button icon={CheckIcon} size="xs">
+              Extra small
+            </Button>
             <Button icon={CheckIcon} size="sm">
               Small
             </Button>
@@ -352,8 +357,7 @@ export const Default: Story = () => (
         </Button>
       </div>
       <p className="text-xs text-gray-500 mt-2">
-        Buttons automatically size to content with a minimum width constraint (min-w-20/24/28 for
-        sm/md/lg)
+        Buttons size to their content, with a 44×44 floor from `touch-target` at every size.
       </p>
     </StorySection>
 

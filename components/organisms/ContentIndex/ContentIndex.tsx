@@ -51,8 +51,7 @@ interface FilterPillsProps {
   onClear: () => void
 }
 
-/** A toggle pill built on the Button atom (square, primary when active).
- * `min-h-11` keeps the touch target at least 44px, which the `sm` size alone does not guarantee. */
+/** A toggle pill built on the Button atom (square, primary when active). */
 function Pill({
   active,
   onClick,
@@ -65,7 +64,6 @@ function Pill({
   return (
     <Button
       aria-pressed={active}
-      className="min-h-11"
       shape="square"
       size="sm"
       variant={active ? 'primary' : 'ghost'}

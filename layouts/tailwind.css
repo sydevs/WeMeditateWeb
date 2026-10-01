@@ -113,6 +113,53 @@
 }
 
 /**
+ * The 44×44 touch-target minimum every interactive element owes
+ * (docs/rules/design-system.md). Two utilities, because two situations:
+ *
+ * `touch-target` grows the box. Reach for it first.
+ *
+ * `touch-target-overlay` is for a control whose drawn size *is* the design —
+ * an 8px carousel dot, a 16px dismiss cross, a 40px media button in a row
+ * sized around it. It leaves the box alone and hangs a centred, invisible
+ * 44×44 `::before` off it, which takes the clicks on the button's behalf.
+ * It is `::before` and not `::after` because Button's hover fill owns
+ * `::after`, and pairs it with `overflow-hidden` that would clip this.
+ *
+ * Two of these side by side closer than 44px apart will overlap, and the
+ * later sibling wins the overlapping strip. Prefer growing the box wherever
+ * the layout can absorb it.
+ *
+ * The overlay sets `position: relative`, so do not put it on an element that
+ * positions itself. And Tailwind emits these before its own `min-*`
+ * utilities, so a `min-w-0` on the same element wins over `touch-target` —
+ * drop the `min-w-0` rather than stacking the two.
+ *
+ * `min-width` does a second job here. Padding usually clears 44px across
+ * already, so what the declaration really replaces is the flex default
+ * `min-width: auto`: a flex item carrying `touch-target` now shrinks to 44px
+ * instead of to its content. `CarouselNavButton` wants exactly that floor.
+ * Anywhere else it is a shrink change to know about, not a hit area.
+ */
+@utility touch-target {
+  min-width: --spacing(11);
+  min-height: --spacing(11);
+}
+
+@utility touch-target-overlay {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: --spacing(11);
+    height: --spacing(11);
+    translate: -50% -50%;
+  }
+}
+
+/**
  * `--page-width` — the width a `full-bleed` block should span. It's a *registered*
  * `<length>`, which is what makes this robust: a container-query unit assigned to a
  * registered `<length>` is resolved (captured) at the element where it's set and

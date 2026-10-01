@@ -220,6 +220,8 @@ export function Button({
 
   // Size styles for text buttons (with or without icon)
   // Inspired by wemeditate.com: generous padding, no rounding
+  // `xs` and `sm` compute below 44px and are clamped there by `touch-target`,
+  // so the two render the same height and differ only horizontally.
   const textButtonSizeStyles = {
     xs: 'px-3 py-1.5 text-sm gap-1.5',
     sm: 'px-6 py-2 text-sm gap-2',
@@ -287,7 +289,13 @@ export function Button({
 
   const widthStyles = fullWidth && !isIconOnly ? 'w-full' : ''
 
-  const commonClassNames = `${baseStyles} ${animatedStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
+  // An icon-only button's drawn circle is what the media-control rows lay out
+  // around, so it takes the overlay rather than growing. Applied at every size
+  // on purpose, `lg` included: the guarantee must not depend on the size table
+  // above staying at or over 44px.
+  const touchTargetStyles = isIconOnly ? 'touch-target-overlay' : 'touch-target'
+
+  const commonClassNames = `${baseStyles} ${animatedStyles} ${touchTargetStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
 
   const content = isLoading ? (
     <Spinner color={getSpinnerColor()} size={spinnerSizeMap[size]} theme={getSpinnerTheme()} />
