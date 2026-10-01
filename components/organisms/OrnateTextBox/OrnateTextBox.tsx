@@ -113,10 +113,9 @@ export function OrnateTextBox({
         className="pointer-events-none absolute inset-0 -z-20 bg-[linear-gradient(110deg,#8a6f56_0%,#6b5340_45%,#473729_100%)]"
       />
 
-      {/* Large faded floral graphic, offset ~45% to the right, behind content.
-          `loading="lazy"` is the only thing that stops React hoisting a
-          `<link rel="preload" as="image">` for this 156 KB SVG. `aria-hidden`
-          does not exempt it. */}
+      {/* Large faded floral graphic, behind the content. `loading="lazy"` is
+          load-bearing: without it React hoists a `<link rel="preload">` for
+          this 156 KB SVG, and `aria-hidden` does not exempt it. */}
       <img
         alt=""
         aria-hidden="true"

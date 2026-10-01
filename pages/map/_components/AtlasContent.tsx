@@ -216,10 +216,9 @@ function EventContent({
         )}
       </dl>
 
-      {/* A raw <img>, not the `Image` atom: the atom ships its <img> at
-          `opacity-0` and clears that only from a client load handler, so it
-          would be invisible to the reader this markup exists for. #148
-          removes that. `loading="lazy"` suppresses React's preload link. */}
+      {/* A raw <img> until #148: the `Image` atom holds its <img> at
+          `opacity-0` until a client load handler runs, and this markup is
+          read by visitors who never hydrate. */}
       {lead && (
         <img
           alt={lead.alt ?? ''}
