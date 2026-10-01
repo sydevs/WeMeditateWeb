@@ -40,11 +40,11 @@ const SRCSET_SUFFIXES = {} as Record<AspectRatio, readonly string[]>
 
 for (const [aspectRatio, widths] of Object.entries(SIZE_WIDTH_MAP) as [
   AspectRatio,
-  Record<string, number>,
+  Partial<Record<ImageSize, number>>,
 ][]) {
-  SRCSET_SUFFIXES[aspectRatio] = Object.values(widths)
-    .sort((a, b) => a - b)
-    .map((width) => `${aspectRatio}-${width} ${width}w`)
+  SRCSET_SUFFIXES[aspectRatio] = (Object.entries(widths) as [ImageSize, number][])
+    .sort(([, a], [, b]) => a - b)
+    .map(([size, width]) => `${getVariantName(aspectRatio, size)} ${width}w`)
 }
 
 /** True when this module can resolve `url` to a variant. */
