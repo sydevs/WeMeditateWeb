@@ -233,3 +233,18 @@ describe('a class page', () => {
     expect(html).not.toContain('Visit the website')
   })
 })
+
+describe('<AtlasContent> lead image', () => {
+  it('hoists no image preload link', () => {
+    expect(render(eventSeo())).not.toContain('rel="preload"')
+  })
+
+  it('renders the lead image lazily, and visible without hydration', () => {
+    const lead = render(eventSeo()).match(/<img[^>]*a\.jpg[^>]*>/)?.[0]
+
+    expect(lead).toContain('loading="lazy"')
+    // This markup is all a crawler or a no-JS visitor gets, so an image
+    // held at opacity-0 until a client load handler runs is never seen.
+    expect(lead).not.toContain('opacity-0')
+  })
+})
