@@ -233,3 +233,12 @@ describe('a class page', () => {
     expect(html).not.toContain('Visit the website')
   })
 })
+
+describe('<AtlasContent> lead image', () => {
+  it('is lazy, and visible to a reader who never hydrates', () => {
+    const lead = render(eventSeo()).match(/<img[^>]*a\.jpg[^>]*>/)?.[0]
+
+    expect(lead).toContain('loading="lazy"')
+    expect(lead).not.toContain('opacity-0')
+  })
+})

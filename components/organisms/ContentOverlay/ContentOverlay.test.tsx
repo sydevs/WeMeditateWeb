@@ -30,3 +30,24 @@ describe('<ContentOverlay> subtitle', () => {
     expect(html).toContain('text-white')
   })
 })
+
+describe('<ContentOverlay> image loading', () => {
+  it('renders both breakpoints lazily, so neither hoists a preload link', () => {
+    const html = renderToStaticMarkup(<ContentOverlay {...BASE} />)
+    const images = html.match(/<img[^>]*>/g) ?? []
+
+    expect(html).not.toContain('rel="preload"')
+    expect(images).toHaveLength(2)
+    images.forEach((img) => expect(img).toContain('loading="lazy"'))
+  })
+
+  it('resolves a Cloudflare variant and the full-bleed slot width on the desktop branch', () => {
+    const html = renderToStaticMarkup(
+      <ContentOverlay {...BASE} imageSrc="https://imagedelivery.net/acct/img-id/" />,
+    )
+    const images = html.match(/<img[^>]*>/g) ?? []
+
+    expect(images.filter((img) => img.includes('srcSet='))).toHaveLength(1)
+    expect(images.filter((img) => img.includes('sizes="100vw"'))).toHaveLength(1)
+  })
+})
