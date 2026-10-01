@@ -95,9 +95,9 @@ export function Splash({
       {...props}
     >
       {/* Not a CSS background (invisible to the preload scanner, and it cannot
-          carry `fetchPriority`) and not the `Image` atom (its
-          `opacity-0`-until-hydration makes Chromium skip it as an LCP
-          candidate). */}
+          carry `fetchPriority`) and not the `Image` atom (its container owns
+          the layout and `className` reaches the image, so it cannot fill this
+          parent — #145 deferred a fill mode). */}
       <img
         alt=""
         aria-hidden="true"

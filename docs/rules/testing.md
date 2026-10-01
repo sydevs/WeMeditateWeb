@@ -45,7 +45,7 @@ it('emits a responsive srcSet for Cloudflare URLs', () => {
     <Image src="https://imagedelivery.net/acct/id/" alt="x" aspectRatio="video" />,
   )
   expect(html).toContain('video-800 800w')
-  expect(html).not.toContain('srcset=') // React SSR emits lowercase attributes
+  expect(html).toContain('srcSet=') // React keeps this attribute camelCase
 })
 ```
 
@@ -53,10 +53,14 @@ See [components/atoms/Image/Image.test.tsx](../../components/atoms/Image/Image.t
 full example. `useState` and `useMemo` work under this kind of SSR render, but `useEffect` does
 not run — plan each assertion around the first-render state.
 
-**Attribute casing**: React 19 lowercases some attributes (`srcSet` becomes `srcset`) and keeps
-others as authored (`playsInline` stays `playsInline`). Do not assume one rule for every
-attribute. When an assertion on an attribute fails, log the actual `renderToStaticMarkup` output
-in a throwaway test and match what React really emits.
+**Attribute casing**: React 19 keeps most camelCase props as authored — `srcSet`,
+`fetchPriority`, `referrerPolicy` and `playsInline` all survive — and lowercases a few, such as
+`crossOrigin` to `crossorigin`. Do not assume one rule for every attribute.
+
+This makes the wrong casing a *silent* failure rather than a red test: `not.toContain('srcset=')`
+passes whether or not a srcSet was emitted, so it asserts nothing. Match the authored casing.
+When an assertion on an attribute fails, log the actual `renderToStaticMarkup` output in a
+throwaway test and match what React really emits.
 
 **What to test:**
 - Test pure utilities — logic, parsing, transforms. This is fast and high-value.

@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react'
+import { ComponentProps } from 'react'
 import { PlayIcon } from '@heroicons/react/24/solid'
 import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../atoms/Link'
@@ -66,12 +66,6 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
   /** Locale for the link. Defaults to the current page locale from context. */
   locale?: Locale
 
-  /**
-   * Fade the image in when it loads.
-   * @default false
-   */
-  fadeInOnLoad?: boolean
-
   /** Custom class name for the card container. */
   className?: string
 }
@@ -132,16 +126,11 @@ export function ContentCard({
   badge,
   badgeUrl,
   locale,
-  fadeInOnLoad = false,
   className = '',
   ...props
 }: ContentCardProps) {
   const t = useT()
-  // A card with no loadable image renders a placeholder, not an <img>. Its
-  // onLoad event never fires, so fadeInOnLoad would leave the card stuck at
-  // opacity-0. Start "loaded" when there is no image src to wait for.
   const hasImageSrc = thumbnailSrc.length > 0
-  const [imageLoaded, setImageLoaded] = useState(!hasImageSrc)
   const showPlayButton = playButton
   const isHeroVariant = variant === 'hero'
 
@@ -158,13 +147,9 @@ export function ContentCard({
   // The hero variant uses a larger gap between the thumbnail and the title.
   const contentGap = isHeroVariant ? 'gap-6 sm:gap-9' : 'gap-2'
 
-  const opacityClasses = fadeInOnLoad
-    ? `transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`
-    : ''
-
   return (
     <article
-      className={`group flex flex-col gap-2 sm:gap-3 ${cardSize} text-left ${opacityClasses} ${className}`}
+      className={`group flex flex-col gap-2 sm:gap-3 ${cardSize} text-left ${className}`}
       {...props}
     >
       {/* Thumbnail with optional play button overlay */}
@@ -176,8 +161,6 @@ export function ContentCard({
             className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
             objectFit="cover"
             src={thumbnailSrc}
-            onError={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
-            onLoad={fadeInOnLoad ? () => setImageLoaded(true) : undefined}
           />
         ) : (
           // No SahajCloud thumbnail. Show a branded, non-animated fallback in a
