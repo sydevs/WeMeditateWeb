@@ -97,7 +97,7 @@ export function ContentGrid({
 
           return (
             <div key={id} className="mb-8 flex justify-center">
-              <ContentCard {...cardProps} fadeInOnLoad={true} variant={cardVariant} />
+              <ContentCard {...cardProps} variant={cardVariant} />
             </div>
           )
         })}
