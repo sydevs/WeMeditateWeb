@@ -169,9 +169,18 @@ export function ContentOverlay({
     <div className={className} {...props}>
       {/* Mobile: Stacked layout - no variant or theme styling */}
       <div className="flex flex-col gap-6 md:hidden">
-        {/* Image on top. `rounded="none"` because nothing clips this one,
-            unlike the desktop image inside its `overflow-hidden` parent. */}
-        <Image alt={imageAlt} aspectRatio="video" rounded="none" sizes="100vw" src={imageSrc} />
+        {/* Image on top. A raw <img> until #148, for the reason recorded at
+            `pages/map/_components/AtlasContent.tsx`: the `Image` atom holds its
+            <img> at `opacity-0` until a client load handler runs. `loading="lazy"`
+            is what keeps React from hoisting a `<link rel="preload">` here. */}
+        <div className="w-full aspect-video">
+          <img
+            alt={imageAlt}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            src={imageSrc}
+          />
+        </div>
 
         {/* Content below — title + optional subtitle kept tight together */}
         <div className="flex flex-col gap-1.5">
