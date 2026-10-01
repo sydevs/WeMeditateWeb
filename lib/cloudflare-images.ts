@@ -47,11 +47,6 @@ for (const [aspectRatio, widths] of Object.entries(SIZE_WIDTH_MAP) as [
     .map(([size, width]) => `${getVariantName(aspectRatio, size)} ${width}w`)
 }
 
-/** True when this module can resolve `url` to a variant. */
-export function isCloudflareImageURL(url: string): boolean {
-  return imageBaseURL(url) !== null
-}
-
 /**
  * Resolves a Cloudflare Images URL to one variant, replacing any variant segment
  * already present — `…/<image_id>/public/<variant>` does not resolve. Any other

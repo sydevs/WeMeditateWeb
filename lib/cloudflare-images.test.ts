@@ -3,7 +3,6 @@ import {
   getImageSrcSet,
   getImageURL,
   getVariantName,
-  isCloudflareImageURL,
   nearestAspectRatio,
 } from './cloudflare-images'
 
@@ -16,23 +15,6 @@ const BASE_URL_NO_SLASH = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc1
 // emitting one.
 const PUBLIC_URL = `${BASE_URL}public`
 const FLEXIBLE_URL = `${BASE_URL}format=auto,width=320,height=320,fit=cover`
-
-describe('isCloudflareImageURL', () => {
-  it('detects imagedelivery.net URLs', () => {
-    expect(isCloudflareImageURL(BASE_URL)).toBe(true)
-    expect(isCloudflareImageURL(BASE_URL_NO_SLASH)).toBe(true)
-  })
-
-  it('rejects non-Cloudflare URLs', () => {
-    expect(isCloudflareImageURL('https://picsum.photos/seed/foo/400/400')).toBe(false)
-    expect(isCloudflareImageURL('/images/local.jpg')).toBe(false)
-    expect(isCloudflareImageURL('https://example.com/cdn-cgi/image/foo.jpg')).toBe(false)
-  })
-
-  it('rejects an imagedelivery.net URL this module cannot resolve', () => {
-    expect(isCloudflareImageURL(`${BASE_URL}public/extra`)).toBe(false)
-  })
-})
 
 describe('getImageURL', () => {
   it('resolves a variant on a URL with a trailing slash', () => {
@@ -57,9 +39,11 @@ describe('getImageURL', () => {
     expect(getImageURL(deep, 'video-800')).toBe(deep)
   })
 
-  it('returns the URL unchanged for non-Cloudflare URLs', () => {
-    const external = 'https://picsum.photos/seed/foo/400/400'
-
+  it.each([
+    'https://picsum.photos/seed/foo/400/400',
+    '/images/local.jpg',
+    'https://example.com/cdn-cgi/image/foo.jpg',
+  ])('returns the URL unchanged for the non-Cloudflare URL %s', (external) => {
     expect(getImageURL(external, 'video-800')).toBe(external)
   })
 })

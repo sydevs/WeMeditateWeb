@@ -16,7 +16,7 @@
  */
 
 import { useConfig } from 'vike-react/useConfig'
-import { getImageURL, getVariantName, isCloudflareImageURL } from './cloudflare-images'
+import { getImageURL, getVariantName } from './cloudflare-images'
 import { populatedImageUrl } from './payload-relationships'
 import { useT } from '../hooks/useT'
 import { useOptionalPageContext } from '../hooks/usePageContext'
@@ -47,7 +47,7 @@ export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
     return null
   }
 
-  return isCloudflareImageURL(url) ? getImageURL(url, getVariantName('video', 'large')) : url
+  return getImageURL(url, getVariantName('video', 'large'))
 }
 
 /**
