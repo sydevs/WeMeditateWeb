@@ -142,12 +142,11 @@ export function buildLightboxSlide(
  * It gives consistent image rendering with aspect ratio control, loading
  * states, and several object-fit options.
  *
- * When `src` is a Cloudflare Images URL (imagedelivery.net) and
- * `aspectRatio` is set, the component resolves it to a `{aspectRatio}-{width}`
- * variant and emits a responsive srcset. The default
- * `sizes` attribute assumes a roughly full-width viewport layout. Pass an
- * explicit `sizes` prop when rendering inside grids, cards, or fixed-width
- * containers.
+ * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio` is
+ * set, the component resolves it to a `{aspectRatio}-{width}` variant and emits
+ * a responsive srcset. The default `sizes` attribute assumes a roughly
+ * full-width viewport layout. Pass an explicit `sizes` prop when rendering
+ * inside grids, cards, or fixed-width containers.
  *
  * When width and height are provided, the component uses a blurred
  * gradient placeholder, with a shimmer animation, to prevent layout shift

@@ -10,11 +10,10 @@ import {
 const BASE_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/'
 const BASE_URL_NO_SLASH = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123'
 
-// The only two shapes a SahajCloud read produces. `getCloudflareImagesUrl`
-// defaults its variant to `public` and admin thumbnails pass a flexible
-// variant (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts`,
-// `src/plugins/storage/urlFields.ts`). The bare fixtures above are a shape
-// production never sends, which is why #141 stayed green and dead.
+// The two shapes a SahajCloud read produces (sydevs/SahajCloud
+// `src/plugins/storage/cloudflareImagesAdapter.ts`, `src/plugins/storage/urlFields.ts`).
+// The bare fixtures above stay covered: the contract must survive SahajCloud
+// emitting one.
 const PUBLIC_URL = `${BASE_URL}public`
 const FLEXIBLE_URL = `${BASE_URL}format=auto,width=320,height=320,fit=cover`
 
@@ -29,14 +28,18 @@ describe('isCloudflareImageURL', () => {
     expect(isCloudflareImageURL('/images/local.jpg')).toBe(false)
     expect(isCloudflareImageURL('https://example.com/cdn-cgi/image/foo.jpg')).toBe(false)
   })
+
+  it('rejects an imagedelivery.net URL this module cannot resolve', () => {
+    expect(isCloudflareImageURL(`${BASE_URL}public/extra`)).toBe(false)
+  })
 })
 
 describe('getImageURL', () => {
-  it('appends variant to a URL with trailing slash', () => {
+  it('resolves a variant on a URL with a trailing slash', () => {
     expect(getImageURL(BASE_URL, 'video-800')).toBe(`${BASE_URL}video-800`)
   })
 
-  it('appends variant to a URL without trailing slash', () => {
+  it('resolves a variant on a URL without a trailing slash', () => {
     expect(getImageURL(BASE_URL_NO_SLASH, 'video-800')).toBe(`${BASE_URL_NO_SLASH}/video-800`)
   })
 
@@ -87,10 +90,12 @@ describe('getVariantName', () => {
 })
 
 describe('getImageSrcSet', () => {
-  it('returns one entry per width defined for the aspect ratio', () => {
-    const srcset = getImageSrcSet(BASE_URL, 'video')
-
-    expect(srcset).toBe(
+  it.each([
+    ['a bare base URL', BASE_URL],
+    ['a SahajCloud URL, with the variant replaced', PUBLIC_URL],
+    ['a flexible-variant URL', FLEXIBLE_URL],
+  ])('returns one entry per width defined for the aspect ratio, from %s', (_label, url) => {
+    expect(getImageSrcSet(url, 'video')).toBe(
       `${BASE_URL}video-640 640w, ${BASE_URL}video-800 800w, ${BASE_URL}video-1024 1024w, ${BASE_URL}video-1536 1536w`,
     )
   })
@@ -114,12 +119,6 @@ describe('getImageSrcSet', () => {
     const widths = srcset.match(/(\d+)w/g)?.map((w) => parseInt(w, 10))
 
     expect(widths).toEqual([640, 800, 1024, 1536])
-  })
-
-  it('builds a srcset from a SahajCloud URL, with the variant replaced', () => {
-    expect(getImageSrcSet(PUBLIC_URL, 'video')).toBe(
-      `${BASE_URL}video-640 640w, ${BASE_URL}video-800 800w, ${BASE_URL}video-1024 1024w, ${BASE_URL}video-1536 1536w`,
-    )
   })
 
   it('returns empty string when a path segment follows the variant', () => {

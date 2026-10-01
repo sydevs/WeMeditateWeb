@@ -4,7 +4,6 @@ import { Image, buildLightboxSlide } from './Image'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 
 const CF_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/'
-// What a SahajCloud read actually returns. See lib/cloudflare-images.test.ts.
 const CF_PUBLIC_URL = `${CF_URL}public`
 const PICSUM_URL = 'https://picsum.photos/seed/foo/400/400'
 
@@ -22,6 +21,15 @@ describe('<Image> Cloudflare Images integration', () => {
     expect(html).toContain('video-800 800w')
     expect(html).toContain('video-1024 1024w')
     expect(html).toContain('video-1536 1536w')
+  })
+
+  it('replaces the /public variant a SahajCloud read returns, and still emits sizes', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_PUBLIC_URL} />)
+
+    expect(html).toContain(`src="${CF_URL}video-800"`)
+    expect(html).toContain(`${CF_URL}video-1536 1536w`)
+    expect(html).toContain('sizes=')
+    expect(html).not.toContain('/public')
   })
 
   it('leaves src unchanged and omits srcSet for non-Cloudflare URLs', () => {
@@ -45,18 +53,6 @@ describe('<Image> Cloudflare Images integration', () => {
 
     expect(html).toContain(`src="${CF_URL}"`)
     expect(html).not.toContain('srcset=')
-  })
-})
-
-describe('<Image> with a SahajCloud image URL', () => {
-  it('replaces the /public variant and emits srcset and sizes', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_PUBLIC_URL} />)
-
-    expect(html).toContain(`src="${CF_URL}video-800"`)
-    expect(html).toContain(`${CF_URL}video-640 640w`)
-    expect(html).toContain(`${CF_URL}video-1536 1536w`)
-    expect(html).toContain('sizes=')
-    expect(html).not.toContain('/public')
   })
 })
 
