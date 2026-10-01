@@ -97,9 +97,12 @@ describe('ContentIndex (SSR markup)', () => {
     const html = renderToStaticMarkup(<ContentIndex items={items} />)
     // The grid's own root is what the fade animates, so it is the element this
     // component can ship hidden. ContentGrid.tsx opens it with `w-full`.
-    const fadeTarget = html.match(/<div class="w-full[^"]*"[^>]*>/)?.[0]
+    // Counting the matches, not just taking the first: a second `w-full` div
+    // above this one would send the assertions below to the wrong element.
+    const fadeTargets = html.match(/<div class="w-full[^"]*"[^>]*>/g) ?? []
+    const [fadeTarget] = fadeTargets
 
-    expect(fadeTarget).toBeDefined()
+    expect(fadeTargets).toHaveLength(1)
     expect(fadeTarget).not.toContain('opacity-0')
     expect(fadeTarget).not.toContain('style=')
 
