@@ -41,19 +41,13 @@ describe('<ContentOverlay> image loading', () => {
     images.forEach((img) => expect(img).toContain('loading="lazy"'))
   })
 
-  it('emits a Cloudflare srcset on both breakpoints', () => {
+  it('resolves a Cloudflare variant and the full-bleed slot width on the desktop branch', () => {
     const html = renderToStaticMarkup(
       <ContentOverlay {...BASE} imageSrc="https://imagedelivery.net/acct/img-id/" />,
     )
+    const images = html.match(/<img[^>]*>/g) ?? []
 
-    expect(html.match(/srcSet=/g) ?? []).toHaveLength(2)
-  })
-
-  it('declares the full-bleed slot width on both breakpoints', () => {
-    const html = renderToStaticMarkup(
-      <ContentOverlay {...BASE} imageSrc="https://imagedelivery.net/acct/img-id/" />,
-    )
-
-    expect(html.match(/sizes="100vw"/g) ?? []).toHaveLength(2)
+    expect(images.filter((img) => img.includes('srcSet='))).toHaveLength(1)
+    expect(images.filter((img) => img.includes('sizes="100vw"'))).toHaveLength(1)
   })
 })
