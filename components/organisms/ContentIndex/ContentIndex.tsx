@@ -3,6 +3,7 @@ import { Button } from '../../atoms'
 import { ContentGrid } from '../../molecules'
 import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { useT } from '../../../hooks/useT'
+import { useFadeOnChange } from '../../../hooks/useFadeOnChange'
 
 export interface ContentIndexProps {
   /** Server-resolved cards. Each item's `tags` drive the filter pills. */
@@ -112,6 +113,9 @@ function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) 
  *
  * SSR renders every card, with a pure `useState` and no `ClientOnly`.
  * Hydration then wires up the pill toggles.
+ *
+ * The first render is plain visible markup. Once a visitor narrows the list,
+ * the new result set fades in — the pills themselves do not.
  */
 export function ContentIndex({ items, className = '' }: ContentIndexProps) {
   const facets = useMemo(() => deriveFacets(items), [items])
@@ -132,6 +136,10 @@ export function ContentIndex({ items, className = '' }: ContentIndexProps) {
 
   const clear = () => setSelected(new Set())
 
+  // Keyed on the selection, not on the resulting items: a filter is the one
+  // thing a visitor does here, and two selections can yield the same cards.
+  const fadeRef = useFadeOnChange(Array.from(selected).sort().join(','))
+
   // Narrow to items whose tags intersect the selection: this is an OR
   // match, and an empty selection shows everything. Then strip `tags`,
   // because ContentCard forwards unknown props to the DOM.
@@ -145,7 +153,9 @@ export function ContentIndex({ items, className = '' }: ContentIndexProps) {
       {facets.length > 0 && (
         <FilterPills facets={facets} selected={selected} onClear={clear} onToggle={toggle} />
       )}
-      <ContentGrid items={gridItems} />
+      <div ref={fadeRef}>
+        <ContentGrid items={gridItems} />
+      </div>
     </div>
   )
 }

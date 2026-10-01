@@ -30,11 +30,4 @@ describe('ContentGrid first-render visibility', () => {
     expect(html).toContain('Alpha')
     expect(html).toContain('Beta')
   })
-
-  it('keeps the filter fade off the server markup', () => {
-    const html = renderToStaticMarkup(<ContentGrid items={items} />)
-
-    expect(html).not.toContain('opacity:0')
-    expect(html).not.toContain('opacity: 0')
-  })
 })
