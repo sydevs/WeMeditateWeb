@@ -30,4 +30,11 @@ describe('ContentGrid first-render visibility', () => {
     expect(html).toContain('Alpha')
     expect(html).toContain('Beta')
   })
+
+  it('sets no inline opacity on the server markup', () => {
+    const html = renderToStaticMarkup(<ContentGrid items={items} />)
+
+    expect(html).not.toContain('opacity:0')
+    expect(html).not.toContain('opacity: 0')
+  })
 })
