@@ -2,14 +2,14 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 
 const DURATION_MS = 300
 
-// A passive effect can let the new contents paint at full opacity for a frame
+// A passive effect lets the new contents paint at full opacity for a frame
 // before the fade starts, which reads as a flash. useLayoutEffect runs before
-// paint, but warns when it is called during SSR.
+// paint, but warns when React calls it during SSR.
 const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /**
  * Fade an element's contents in whenever `key` changes, and never on the first
- * render. Returns the ref to put on the element.
+ * render.
  *
  * Imperative on purpose. A Tailwind class that animated a later change would
  * have to be in the server's HTML to be there when the change comes, and that
@@ -23,7 +23,6 @@ const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffe
 export function useFadeOnChange(key: string) {
   const ref = useRef<HTMLDivElement>(null)
   const rendered = useRef(key)
-  const running = useRef<Animation | null>(null)
 
   useBeforePaint(() => {
     const changed = rendered.current !== key
@@ -34,14 +33,14 @@ export function useFadeOnChange(key: string) {
       return
     }
 
-    // A superseded fade keeps ticking on the same property until its duration
-    // runs out, so release it rather than leaving two animations on the node.
-    running.current?.cancel()
-    running.current =
-      ref.current?.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: DURATION_MS,
-        easing: 'ease-out',
-      }) ?? null
+    const animation = ref.current?.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: DURATION_MS,
+      easing: 'ease-out',
+    })
+
+    // A superseded fade otherwise keeps ticking on the same property until its
+    // own duration runs out, leaving two animations on the node.
+    return () => animation?.cancel()
   }, [key])
 
   return ref
