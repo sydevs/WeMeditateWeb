@@ -281,8 +281,14 @@ Context only when composition does not work, since it is the exception here, not
 ## Performance
 
 - Serve images as WebP with a fallback (`<picture>` + `<source type="image/webp">`).
-- Give a page's hero image `<Image priority sizes="...">`, so it can be the LCP element. Set it on
-  one or two images per page; the prop's own docs say why marking everything prioritizes nothing.
+- **A page's hero needs `loading="eager"` and `fetchPriority="high"`, never a CSS
+  `background-image`.** `<Image priority sizes="...">` sets both, and React hoists a
+  `<link rel="preload" as="image">` for any image that is not `loading="lazy"`, so the preload
+  needs no hand-written `<link>` — but not inside a `<picture>`, which trades the preload for the
+  WebP fallback above. Set it on one or two images per page; the prop's own docs say why marking
+  everything prioritizes nothing. A hero that must fill a sized parent hand-rolls its `<img>`
+  instead: the atom's container owns that layout and `className` reaches the image, and #145
+  deferred a fill mode. `<Splash priority>` is the worked example.
 - **A component's first-render state must produce visible markup.** Gating an element on
   `opacity-0` until a `useState(true)` clears ships it invisible from the server, and out of LCP
   contention. Enter a loading state only from a change after the first render (#145).
