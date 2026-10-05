@@ -28,7 +28,7 @@
     "@mapbox/search-js-web": "^1.6.0",
     "@marsidev/react-turnstile": "^1.6.1",
     "@payloadcms/live-preview": "^3.90.2",
-    "@payloadcms/live-preview-react": "3.88.0",
+    "@payloadcms/live-preview-react": "3.90.2",
     "@payloadcms/richtext-lexical": "^3.90.2",
     "@payloadcms/sdk": "^3.90.2",
     "@photonjs/cloudflare": "^0.1.13",
