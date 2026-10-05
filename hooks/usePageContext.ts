@@ -16,7 +16,7 @@ import { DEFAULT_LOCALE, type Locale } from '../server/sahajcloud-types'
 
 /** `pageContext`, or `null` where there is none. */
 export function useOptionalPageContext(): PageContext | null {
-  // vike-react 0.6.26 returns `undefined` off-provider rather than throwing.
+  // vike-react 0.6.29 returns `undefined` off-provider rather than throwing.
   // The `catch` is what keeps Ladle and the suite alive if that changes.
   try {
     return usePageContext() ?? null
