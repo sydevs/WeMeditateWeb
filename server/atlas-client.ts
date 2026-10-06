@@ -38,10 +38,8 @@ import { parseAtlasRoute } from '../lib/atlas-route'
  * Gets the SEO document for one atlas route, or `null` when there is
  * nothing to render server-side.
  *
- * The atlas root is a described route like any other: `/map` and the bare
- * view routes resolve to SahajCloud's `type: 'root'` answer, so the landing
- * page gets its own title, description and canonical instead of the site
- * defaults (#64).
+ * The atlas root is a described route like any other: `/map` and the bare view
+ * routes resolve to SahajCloud's `type: 'root'` answer (#64).
  *
  * `null` covers three different situations. All three render the same way:
  * the widget on its own, with the site's default metadata.
@@ -71,31 +69,53 @@ export async function getAtlasSeo(options: {
     return null
   }
 
-  // Every bare view route is the same root document, and the edge in front of
-  // SahajCloud keys on the whole URL. Asking for the normalized route gives a
-  // crawler grinding through `/map/search` and `/map/calendar` one cache entry
-  // rather than one each.
-  const route = target.kind === 'root' ? '/' : options.route
+  // The root's many spellings are one document, and the edge in front of
+  // SahajCloud keys on the whole URL, so asking for `/` keeps a crawler
+  // grinding through `/map/search` and `/map/calendar` to one cache entry
+  // rather than one per spelling. Only the root is collapsed; a view route
+  // under a region still asks for the spelling it was given.
+  const upstreamRoute = target.kind === 'root' ? '/' : options.route
 
   try {
     // A 404 means the route named nothing upstream: a stale inbound link, or
     // a region that has since been unpublished. `sahajCloudFetchOptional` answers it
     // with `null`, which reads the same as the no-target case above.
-    return await withRetry(() =>
+    const answer = await withRetry(() =>
       sahajCloudFetchOptional<AtlasSeoResponse>(
-        `/api/atlas/seo?route=${encodeURIComponent(route)}` +
+        `/api/atlas/seo?route=${encodeURIComponent(upstreamRoute)}` +
           `&locale=${encodeURIComponent(options.locale)}`,
-        `getAtlasSeo(${route})`,
+        `getAtlasSeo(${upstreamRoute})`,
       ),
     )
+
+    // The root answer is built from a global rather than a document, so it has
+    // nothing to go missing: a 404 here means the atlas root is misconfigured
+    // upstream, not that an inbound link went stale. Left silent it restores
+    // the undescribed `/map` of #64 with nothing to say why.
+    if (!answer && target.kind === 'root') {
+      Sentry.captureMessage('getAtlasSeo got no document for the atlas root', {
+        level: 'warning',
+        tags: { source: 'getAtlasSeo' },
+        extra: { askedFor: options.route, locale: options.locale },
+      })
+    }
+
+    return answer
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
     // widget still works without it. Losing it must not take the page down.
-    console.warn(`[getAtlasSeo] degrading to widget-only for ${options.route}:`, error)
+    console.warn(`[getAtlasSeo] degrading to widget-only for ${upstreamRoute}:`, error)
     Sentry.captureMessage('getAtlasSeo failed; rendering the atlas without server content', {
       level: 'warning',
       tags: { source: 'getAtlasSeo' },
-      extra: { route: options.route, locale: options.locale, target: target.kind },
+      // Both: the request carries the normalized route, so an event naming
+      // only the asked-for one cannot be matched to the failing URL.
+      extra: {
+        route: upstreamRoute,
+        askedFor: options.route,
+        locale: options.locale,
+        target: target.kind,
+      },
     })
 
     return null
