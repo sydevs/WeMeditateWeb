@@ -127,14 +127,10 @@ export interface AtlasSeoRegionContent {
 /**
  * The body content of the atlas landing page.
  *
- * The root names no region and no event, so upstream seeds its copy on the
- * `sy-atlas-translations` global instead of reading it off a document. That
- * is why `id` is `null` on this variant alone, and why there is no name,
- * level or listing here.
- *
- * `paragraphs` carries the same plain-text-per-block shape an event's
- * content uses, so one rendering path serves every route. Empty when the
- * landing page has no description.
+ * The root names no region and no event — upstream builds this answer from a
+ * global, which is why `id` is `null` on this variant alone and why there is
+ * no name, level or listing. `paragraphs` deliberately matches an event's
+ * shape so one code path renders both, and is empty when there is no copy.
  */
 export interface AtlasSeoRootContent {
   paragraphs: string[]

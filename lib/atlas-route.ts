@@ -12,11 +12,10 @@
  * its body, the exact failure canonicals exist to prevent. Change this
  * only in step with the other two.
  *
- * This function parses locally, instead of asking the endpoint, because
- * the answer decides things before the call: which cache TTL applies (a
- * class's schedule moves more often than a region's identity), and whether
- * the string is a route at all. Only the second is a reason not to call:
- * every route the endpoint will read is read, the atlas root included.
+ * This function parses locally, instead of asking the endpoint, because the
+ * answer decides whether to call at all: a string this site refuses to read
+ * names nothing to ask about. Every route the endpoint will read is read,
+ * the atlas root included.
  *
  * This module is pure and env-free. It decides what to read.
  * {@link getAtlasSeo} does the read.
@@ -73,9 +72,6 @@ const MAX_EVENT_ID = 2147483647
  * means an old inbound link still resolves, and the answer's `route` and
  * `canonical` name the URL to redirect to. Refusing it would 404 every
  * link into a restructured subtree.
- *
- * `root` carries no key. It is what a route reduces to when nothing but
- * view segments and legacy prefixes remain.
  */
 export type AtlasRouteTarget =
   { kind: 'root' } | { kind: 'region'; slug: string } | { kind: 'event'; id: number }
@@ -90,18 +86,13 @@ function safeDecode(segment: string): string {
 }
 
 /**
- * What a route names — a region, an event, or the atlas root — or `null`
- * when the string is not a route at all.
+ * What a route names — a region, an event, or the atlas root — or `null` when
+ * the string is not a route at all.
  *
- * "Names nothing" and "is not a route" are different answers. A route that
- * reduces to no segments is the root: `/` itself, and every bare view route
- * (`/search`, `/calendar`), since a view of the root is still the root.
- * Those are the routes this site actually mounts, and SahajCloud describes
- * them with its `type: 'root'` answer.
- *
- * `null` stays reserved for a string to refuse: over
- * {@link MAX_ATLAS_ROUTE_LENGTH}, carrying a query, fragment or whitespace,
- * or over the segment cap. Collapsing those into the root would answer a
+ * A route reducing to no segments is the root, since a view of the root is
+ * still the root. `null` is reserved for a string to refuse: over
+ * {@link MAX_ATLAS_ROUTE_LENGTH}, carrying a query, fragment or whitespace, or
+ * over the segment cap. Collapsing those into the root would answer a
  * malformed URL with a real page.
  */
 export function parseAtlasRoute(route: string): AtlasRouteTarget | null {

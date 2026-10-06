@@ -8,9 +8,9 @@ export interface MapPageData {
   /** The atlas route this page is of. For example, `/nl/amsterdam`, or `/` for the root. */
   atlasRoute: string
   /**
-   * The server-rendered half, or `null` for any route whose document this
-   * app could not read. The atlas root has one of its own. Never a reason to
-   * fail the page: the widget is what most visitors see, and it fetches
+   * The server-rendered half, or `null` for any route whose document this app
+   * could not read — the atlas root has one of its own (#64). Never a reason
+   * to fail the page: the widget is what most visitors see, and it fetches
    * its own data.
    */
   seo: AtlasSeoResponse | null
@@ -27,10 +27,6 @@ export interface MapPageData {
  * because the widget can navigate the visitor somewhere useful from there.
  * This drops only the server-rendered content and the page-specific
  * metadata. That is the honest thing to drop: there is nothing to describe.
- *
- * The atlas root is not that case. `/map` and the widget's own view routes
- * (`/search`, `/calendar`) resolve to upstream's root document, so the
- * landing page is described like every page beneath it (#64).
  */
 export async function data(pageContext: PageContextServer): Promise<MapPageData> {
   const atlasRoute = pageContext.routeParams.atlasRoute ?? '/'
