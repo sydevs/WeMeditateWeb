@@ -278,6 +278,18 @@ describe('the atlas landing page', () => {
   })
 })
 
+describe('an answer this build has never heard of', () => {
+  it('renders nothing instead of 500ing the route', () => {
+    // The read casts, so a fourth upstream variant arrives here at runtime
+    // before `tsc` ever sees it. Returning the narrowed value would hand
+    // React an object and throw.
+    const future = { ...rootSeo(), type: 'collection' } as unknown as AtlasSeoResponse
+
+    expect(() => render(future)).not.toThrow()
+    expect(render(future)).toBe('')
+  })
+})
+
 describe('<AtlasContent> lead image', () => {
   it('is lazy, and visible to a reader who never hydrates', () => {
     const lead = render(eventSeo()).match(/<img[^>]*a\.jpg[^>]*>/)?.[0]

@@ -284,6 +284,12 @@ function RootContent({ title, content }: { title: string; content: AtlasSeoRootC
  * error. Without it the switch still type-checks: `noImplicitReturns` is off,
  * and React accepts the `undefined` a missing branch returns. The page would
  * then serve a head describing content its body never rendered.
+ *
+ * It cannot be the only guard, though. `AtlasSeoResponse` is hand-mirrored and
+ * the read casts, so a new variant reaches this switch at runtime before it
+ * ever reaches `tsc` — as `root` just did. Returning the narrowed value would
+ * hand React an object, which throws in SSR and 500s a route `+Page.tsx`
+ * wraps in no boundary. Render nothing and keep the head.
  */
 export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
   switch (seo.type) {
@@ -294,9 +300,11 @@ export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
     case 'event':
       return <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
     default: {
+      // `void` so the exhaustiveness binding still counts as used.
       const unhandled: never = seo
+      void unhandled
 
-      return unhandled
+      return null
     }
   }
 }
