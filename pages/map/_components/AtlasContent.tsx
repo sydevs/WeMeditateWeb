@@ -300,8 +300,9 @@ export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
     case 'event':
       return <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
     default: {
-      // `void` so the exhaustiveness binding still counts as used.
       const unhandled: never = seo
+
+      // `void` so the exhaustiveness binding above still counts as used.
       void unhandled
 
       return null
