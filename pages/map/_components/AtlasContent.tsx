@@ -164,6 +164,24 @@ function RegionContent({
   )
 }
 
+/**
+ * Description blocks, as text.
+ *
+ * Upstream gives an event's and the root's description the same
+ * plain-text-per-block shape so one code path renders both. This is that path.
+ * Never render these with `dangerouslySetInnerHTML` — see the module comment.
+ *
+ * `blocks` is optional because `AtlasSeoResponse` is hand-mirrored: a field
+ * that stops arriving must not turn the page into a 500.
+ */
+function Paragraphs({ blocks }: { blocks?: string[] }) {
+  return (blocks ?? []).map((paragraph, index) => (
+    <p key={index} className="mt-4 text-gray-700">
+      {paragraph}
+    </p>
+  ))
+}
+
 /** A class page: when and where it meets, and what it says about itself. */
 function EventContent({
   content,
@@ -178,7 +196,6 @@ function EventContent({
   // hand-mirrored from upstream (see server/atlas-types.ts). If a field
   // silently stops arriving, this avoids a 500 on the page. It falls
   // back to the degraded render the rest of the feature is built for.
-  const paragraphs = content.paragraphs ?? []
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
@@ -229,12 +246,7 @@ function EventContent({
         />
       )}
 
-      {/* Plain text from SahajCloud, rendered as text. See the module comment. */}
-      {paragraphs.map((paragraph, index) => (
-        <p key={index} className="mt-4 text-gray-700">
-          {paragraph}
-        </p>
-      ))}
+      <Paragraphs blocks={content.paragraphs} />
 
       {linkUrl && (
         <p className="mt-6">
@@ -255,19 +267,11 @@ function EventContent({
  * answer's `title` rather than its content, which carries only paragraphs.
  */
 function RootContent({ title, content }: { title: string; content: AtlasSeoRootContent }) {
-  // Defensive, as in `EventContent`: these types are hand-mirrored.
-  const paragraphs = content.paragraphs ?? []
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{title}</h1>
 
-      {/* Plain text from SahajCloud, rendered as text. See the module comment. */}
-      {paragraphs.map((paragraph, index) => (
-        <p key={index} className="mt-4 text-gray-700">
-          {paragraph}
-        </p>
-      ))}
+      <Paragraphs blocks={content.paragraphs} />
     </div>
   )
 }
@@ -276,8 +280,10 @@ function RootContent({ title, content }: { title: string; content: AtlasSeoRootC
  * Dispatch on the answer's `type`. This is what the discriminated union
  * is for: narrow once, and the content shape for that variant follows.
  *
- * A `switch` rather than a ternary, so adding a fourth variant upstream is a
- * type error here instead of a page rendered with the wrong component.
+ * ⚠ The `never` assignment is what makes a new upstream variant a compile
+ * error. Without it the switch still type-checks: `noImplicitReturns` is off,
+ * and React accepts the `undefined` a missing branch returns. The page would
+ * then serve a head describing content its body never rendered.
  */
 export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
   switch (seo.type) {
@@ -287,5 +293,10 @@ export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
       return <RegionContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
     case 'event':
       return <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
+    default: {
+      const unhandled: never = seo
+
+      return unhandled
+    }
   }
 }
