@@ -104,7 +104,7 @@ export async function getAtlasSeo(options: {
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
     // widget still works without it. Losing it must not take the page down.
-    console.warn(`[getAtlasSeo] degrading to widget-only for ${upstreamRoute}:`, error)
+    console.warn(`[getAtlasSeo] degrading to widget-only for ${options.route}:`, error)
     Sentry.captureMessage('getAtlasSeo failed; rendering the atlas without server content', {
       level: 'warning',
       tags: { source: 'getAtlasSeo' },
