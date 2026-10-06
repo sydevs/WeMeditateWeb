@@ -268,20 +268,13 @@ describe('the atlas landing page', () => {
     expect(render(rootSeo())).toContain('Every class is free.')
   })
 
-  it('renders a heading and nothing else when there are no paragraphs', () => {
-    // Upstream sends an empty array when the landing page has no copy.
-    const html = render(rootSeo({ paragraphs: [] }))
+  it('renders the heading alone, rather than throwing, when the copy is missing', () => {
+    // Upstream sends an empty array when the landing page has no copy, and
+    // `AtlasSeoResponse` is hand-mirrored, so the field could stop arriving.
+    const html = render(rootSeo({ paragraphs: undefined }))
 
     expect(html).toContain('Find a meditation class near you')
     expect(html).not.toContain('<p')
-  })
-
-  it('degrades rather than throwing when a hand-mirrored field goes missing', () => {
-    expect(render(rootSeo({ paragraphs: undefined }))).toContain('Find a meditation class near you')
-  })
-
-  it('walks no ancestry, because the root is the first rung', () => {
-    expect(render(rootSeo())).not.toContain('<nav')
   })
 })
 

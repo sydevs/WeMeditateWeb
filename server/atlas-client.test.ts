@@ -177,7 +177,6 @@ describe('getAtlasSeo', () => {
     it.each([
       ['a spliced-in query string', '/gb/london?utm_source=x'],
       ['a fragment', '/gb/london#!/x'],
-      ['more segments than any real route has', `/${Array(13).fill('s').join('/')}`],
     ])('returns null for %s without calling the endpoint', async (_label, route) => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch')
 

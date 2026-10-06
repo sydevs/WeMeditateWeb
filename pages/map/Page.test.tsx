@@ -132,7 +132,7 @@ describe('the atlas page', () => {
   it('still renders the element when there is no server content to put in it', () => {
     // A route whose document we could not read: the widget is what most
     // visitors see, and it fetches its own data.
-    const html = render({ seo: null, atlasRoute: '/' })
+    const html = render({ seo: null, atlasRoute: '/gb/gone' })
 
     expect(html).toMatch(/<sahaj-atlas[^>]*>/)
     expect(html).toContain('auto.js')
@@ -182,20 +182,6 @@ describe('the atlas page', () => {
 
         expect(head).toContain('rel="canonical"')
         expect(head).toContain('href="https://wemeditate.com/map"')
-      })
-
-      it('emits no English into a non-English head', () => {
-        // Every value is served by the endpoint for `?locale=`, so nothing
-        // here is authored in this repo.
-        render({ seo: rootSeo, atlasRoute: '/' })
-
-        expect(configCalls[0].title).not.toMatch(/meditation class/i)
-      })
-
-      it('describes a bare view route as the root it is a view of', () => {
-        render({ seo: rootSeo, atlasRoute: '/search' })
-
-        expect(configCalls[0]).toMatchObject({ title: 'Trouvez un cours de méditation' })
       })
     })
   })

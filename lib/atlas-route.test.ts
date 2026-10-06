@@ -135,10 +135,9 @@ describe('parseAtlasRoute', () => {
     })
 
     it('counts segments before reserved words are dropped', () => {
-      // The cap is measured on the raw split, so a pile of view segments
-      // stays unreadable instead of reducing to the landing page. A caller
-      // sending nonsense has not named the root.
-      expect(parseAtlasRoute(`/${Array(20).fill('search').join('/')}`)).toBeNull()
+      // One over the cap, all of it reserved: the route stays unreadable
+      // instead of reducing to the landing page.
+      expect(parseAtlasRoute(`/${Array(13).fill('search').join('/')}`)).toBeNull()
     })
   })
 })
