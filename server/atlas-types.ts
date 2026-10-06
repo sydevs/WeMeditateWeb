@@ -124,6 +124,22 @@ export interface AtlasSeoRegionContent {
   eventCount: number
 }
 
+/**
+ * The body content of the atlas landing page.
+ *
+ * The root names no region and no event, so upstream seeds its copy on the
+ * `sy-atlas-translations` global instead of reading it off a document. That
+ * is why `id` is `null` on this variant alone, and why there is no name,
+ * level or listing here.
+ *
+ * `paragraphs` carries the same plain-text-per-block shape an event's
+ * content uses, so one rendering path serves every route. Empty when the
+ * landing page has no description.
+ */
+export interface AtlasSeoRootContent {
+  paragraphs: string[]
+}
+
 /** Fields every atlas SEO answer carries, whatever the route resolved to. */
 interface AtlasSeoBase {
   /** The normalized route this answer describes — view segments dropped. */
@@ -168,6 +184,7 @@ interface AtlasSeoBase {
  * for that variant, instead of an object where half the fields are `null`.
  */
 export type AtlasSeoResponse =
+  | (AtlasSeoBase & { type: 'root'; id: null; content: AtlasSeoRootContent })
   | (AtlasSeoBase & { type: 'region'; id: number; content: AtlasSeoRegionContent })
   | (AtlasSeoBase & { type: 'event'; id: number; content: AtlasSeoEventContent })
 

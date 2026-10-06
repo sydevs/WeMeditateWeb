@@ -19,6 +19,7 @@ import type {
   AtlasSeoEventContent,
   AtlasSeoRegionContent,
   AtlasSeoResponse,
+  AtlasSeoRootContent,
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT } from '../../../hooks/useT'
@@ -247,13 +248,44 @@ function EventContent({
 }
 
 /**
+ * The atlas landing page: what the atlas is, in the visitor's locale.
+ *
+ * The root names no region and no event, so there is nothing to list and no
+ * ancestry to walk — the widget is the page. The heading comes off the
+ * answer's `title` rather than its content, which carries only paragraphs.
+ */
+function RootContent({ title, content }: { title: string; content: AtlasSeoRootContent }) {
+  // Defensive, as in `EventContent`: these types are hand-mirrored.
+  const paragraphs = content.paragraphs ?? []
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{title}</h1>
+
+      {/* Plain text from SahajCloud, rendered as text. See the module comment. */}
+      {paragraphs.map((paragraph, index) => (
+        <p key={index} className="mt-4 text-gray-700">
+          {paragraph}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+/**
  * Dispatch on the answer's `type`. This is what the discriminated union
  * is for: narrow once, and the content shape for that variant follows.
+ *
+ * A `switch` rather than a ternary, so adding a fourth variant upstream is a
+ * type error here instead of a page rendered with the wrong component.
  */
 export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
-  return seo.type === 'region' ? (
-    <RegionContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
-  ) : (
-    <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
-  )
+  switch (seo.type) {
+    case 'root':
+      return <RootContent content={seo.content} title={seo.title} />
+    case 'region':
+      return <RegionContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
+    case 'event':
+      return <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
+  }
 }

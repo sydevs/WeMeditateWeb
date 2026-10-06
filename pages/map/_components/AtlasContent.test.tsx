@@ -89,6 +89,28 @@ function eventSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoR
   } as AtlasSeoResponse
 }
 
+/**
+ * The atlas root's answer, mirrored from SahajCloud's
+ * `src/endpoints/responseTypes.ts`: `id` is `null` on this member alone, and
+ * its content carries only paragraphs — no name, level or listing.
+ */
+function rootSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoResponse {
+  return {
+    type: 'root',
+    id: null,
+    route: '/',
+    locale: 'en',
+    title: 'Find a meditation class near you',
+    description: 'Free weekly classes, run by volunteers.',
+    canonical: 'https://wemeditate.com/map',
+    alternates: [],
+    openGraph: {},
+    jsonLd: '{}',
+    breadcrumbs: [],
+    content: { paragraphs: ['Every class is free.'], ...content },
+  } as AtlasSeoResponse
+}
+
 const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo={seo} />)
 
 describe('atlasHref', () => {
@@ -231,6 +253,35 @@ describe('a class page', () => {
 
     expect(html).not.toContain('Join online')
     expect(html).not.toContain('Visit the website')
+  })
+})
+
+describe('the atlas landing page', () => {
+  it('heads the page with the answer’s own title, which its content has no name for', () => {
+    const html = render(rootSeo())
+
+    expect(html).toContain('<h1')
+    expect(html).toContain('Find a meditation class near you')
+  })
+
+  it('renders the description paragraphs as text', () => {
+    expect(render(rootSeo())).toContain('Every class is free.')
+  })
+
+  it('renders a heading and nothing else when there are no paragraphs', () => {
+    // Upstream sends an empty array when the landing page has no copy.
+    const html = render(rootSeo({ paragraphs: [] }))
+
+    expect(html).toContain('Find a meditation class near you')
+    expect(html).not.toContain('<p')
+  })
+
+  it('degrades rather than throwing when a hand-mirrored field goes missing', () => {
+    expect(render(rootSeo({ paragraphs: undefined }))).toContain('Find a meditation class near you')
+  })
+
+  it('walks no ancestry, because the root is the first rung', () => {
+    expect(render(rootSeo())).not.toContain('<nav')
   })
 })
 
