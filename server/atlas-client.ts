@@ -38,12 +38,17 @@ import { parseAtlasRoute } from '../lib/atlas-route'
  * Gets the SEO document for one atlas route, or `null` when there is
  * nothing to render server-side.
  *
- * `null` covers three different situations. All three render the same way:
- * the widget on its own, with default landing metadata.
+ * The atlas root is a described route like any other: `/map` and the bare
+ * view routes resolve to SahajCloud's `type: 'root'` answer, so the landing
+ * page gets its own title, description and canonical instead of the site
+ * defaults (#64).
  *
- * - The route names no document (the atlas root `/`, or a bare `/search`
- *   view). {@link parseAtlasRoute} returns null, and this function never
- *   calls out.
+ * `null` covers three different situations. All three render the same way:
+ * the widget on its own, with the site's default metadata.
+ *
+ * - The string is not a route at all — over the length or segment ceiling,
+ *   or carrying a query or fragment. {@link parseAtlasRoute} returns null,
+ *   and this function never calls out.
  * - The route named a document that no longer resolves upstream (404).
  * - The read failed or was refused (403 in local dev, a network fault, a
  *   5xx).
@@ -60,12 +65,17 @@ export async function getAtlasSeo(options: {
 }): Promise<AtlasSeoResponse | null> {
   const target = parseAtlasRoute(options.route)
 
-  // Not a failure. The atlas landing page and bare view routes have no
-  // upstream document to describe. Skipping the call also stops a crawler
-  // that repeatedly requests `/map/search` from reaching the endpoint.
+  // Not a failure, and not a document either: a string this site refuses to
+  // read names nothing upstream to ask about.
   if (!target) {
     return null
   }
+
+  // Every bare view route is the same root document, and the edge in front of
+  // SahajCloud keys on the whole URL. Asking for the normalized route gives a
+  // crawler grinding through `/map/search` and `/map/calendar` one cache entry
+  // rather than one each.
+  const route = target.kind === 'root' ? '/' : options.route
 
   try {
     // A 404 means the route named nothing upstream: a stale inbound link, or
@@ -73,9 +83,9 @@ export async function getAtlasSeo(options: {
     // with `null`, which reads the same as the no-target case above.
     return await withRetry(() =>
       sahajCloudFetchOptional<AtlasSeoResponse>(
-        `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
+        `/api/atlas/seo?route=${encodeURIComponent(route)}` +
           `&locale=${encodeURIComponent(options.locale)}`,
-        `getAtlasSeo(${options.route})`,
+        `getAtlasSeo(${route})`,
       ),
     )
   } catch (error) {

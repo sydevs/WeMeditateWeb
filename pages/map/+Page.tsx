@@ -22,8 +22,7 @@ export function Page() {
   const { seo, atlasRoute } = useData<MapPageData>()
 
   // A hook, so this call is unconditional. It contributes nothing when
-  // `seo` is null (the atlas landing page, or a document this app could
-  // not read).
+  // `seo` is null, which now means only that the document could not be read.
   useAtlasHead(seo)
 
   const embedKey = import.meta.env.PUBLIC__SAHAJ_ATLAS_KEY

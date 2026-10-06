@@ -49,6 +49,18 @@ function fetchResponse(status: number, body: unknown) {
 
 const regionAnswer = { type: 'region', id: 5, route: '/gb/london', title: 'London' }
 
+/**
+ * The root variant, mirrored from SahajCloud's `src/endpoints/responseTypes.ts`:
+ * `id` is `null` on this member alone, and its content carries only paragraphs.
+ */
+const rootAnswer = {
+  type: 'root',
+  id: null,
+  route: '/',
+  title: 'Find a meditation class near you',
+  content: { paragraphs: ['Free weekly classes, run by volunteers.'] },
+}
+
 beforeEach(() => {
   retrySpy.mockClear()
   thrownSpy.mockClear()
@@ -130,17 +142,46 @@ describe('getAtlasSeo', () => {
     })
   })
 
-  describe('routes that name no document', () => {
+  describe('the atlas root', () => {
+    it('reads the root document instead of leaving /map on the site defaults', async () => {
+      // The whole of #64: without this read the atlas front door inherits the
+      // global title and description, and emits no canonical.
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        fetchResponse(200, rootAnswer) as unknown as Response,
+      )
+
+      expect(await getAtlasSeo({ route: '/', locale: 'en' })).toEqual(rootAnswer)
+      expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    })
+
     it.each([
-      ['the atlas root', '/'],
       ['a bare search view', '/search'],
+      ['a bare calendar view', '/calendar'],
+      ['several stacked view segments', '/search/filters'],
+    ])('asks for the normalized route on %s, not the spelling it was given', async (_l, route) => {
+      // A view of the root is the same document. The edge in front of
+      // SahajCloud keys on the whole URL, so one cache entry serves them all.
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        fetchResponse(200, rootAnswer) as unknown as Response,
+      )
+
+      await getAtlasSeo({ route, locale: 'en' })
+
+      expect(vi.mocked(globalThis.fetch).mock.calls[0][0]).toBe(
+        'https://sahajcloud.test/api/atlas/seo?route=%2F&locale=en',
+      )
+    })
+  })
+
+  describe('strings that are not routes at all', () => {
+    it.each([
       ['a spliced-in query string', '/gb/london?utm_source=x'],
+      ['a fragment', '/gb/london#!/x'],
+      ['more segments than any real route has', `/${Array(13).fill('s').join('/')}`],
     ])('returns null for %s without calling the endpoint', async (_label, route) => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch')
 
       expect(await getAtlasSeo({ route, locale: 'en' })).toBeNull()
-      // Never asking also stops a crawler that grinds through view routes
-      // from reaching the endpoint at all.
       expect(fetchSpy).not.toHaveBeenCalled()
       expect(Sentry.captureMessage).not.toHaveBeenCalled()
     })

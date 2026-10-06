@@ -36,6 +36,26 @@ const seo = {
   content: { name: 'London', subtitle: null, level: 'city', events: [], eventCount: 0 },
 } as unknown as AtlasSeoResponse
 
+/**
+ * The atlas root's answer, mirrored from SahajCloud's
+ * `src/endpoints/responseTypes.ts`: `type: 'root'`, `id: null`, and content
+ * carrying only paragraphs. Every head-bearing field is localized upstream.
+ */
+const rootSeo = {
+  type: 'root',
+  id: null,
+  route: '/',
+  locale: 'fr',
+  title: 'Trouvez un cours de méditation',
+  description: 'Des cours gratuits, partout dans le monde.',
+  canonical: 'https://wemeditate.com/map',
+  alternates: [{ hreflang: 'x-default', href: 'https://wemeditate.com/map' }],
+  openGraph: {},
+  jsonLd: '{}',
+  breadcrumbs: [],
+  content: { paragraphs: ['Des bénévoles animent chaque cours.'] },
+} as unknown as AtlasSeoResponse
+
 function render(data: Partial<MapPageData>) {
   pageData.current = {
     atlasRoute: '/gb/london',
@@ -110,8 +130,8 @@ describe('the atlas page', () => {
   })
 
   it('still renders the element when there is no server content to put in it', () => {
-    // The atlas landing page, and any route whose document we could not read:
-    // the widget is what most visitors see, and it fetches its own data.
+    // A route whose document we could not read: the widget is what most
+    // visitors see, and it fetches its own data.
     const html = render({ seo: null, atlasRoute: '/' })
 
     expect(html).toMatch(/<sahaj-atlas[^>]*>/)
@@ -140,6 +160,43 @@ describe('the atlas page', () => {
       render({ seo: null })
 
       expect(configCalls).toHaveLength(0)
+    })
+
+    describe('the atlas root', () => {
+      // #64: `/map` used to inherit the global site title and description and
+      // emit no canonical, so the front door of the atlas read to a crawler as
+      // a duplicate of the homepage.
+      it('describes the root view rather than falling back to the site defaults', () => {
+        render({ seo: rootSeo, atlasRoute: '/' })
+
+        expect(configCalls[0]).toMatchObject({
+          title: 'Trouvez un cours de méditation',
+          description: 'Des cours gratuits, partout dans le monde.',
+        })
+      })
+
+      it('emits a self-referencing canonical for /map', () => {
+        render({ seo: rootSeo, atlasRoute: '/' })
+
+        const head = renderToStaticMarkup(<>{configCalls[0].Head as React.ReactNode}</>)
+
+        expect(head).toContain('rel="canonical"')
+        expect(head).toContain('href="https://wemeditate.com/map"')
+      })
+
+      it('emits no English into a non-English head', () => {
+        // Every value is served by the endpoint for `?locale=`, so nothing
+        // here is authored in this repo.
+        render({ seo: rootSeo, atlasRoute: '/' })
+
+        expect(configCalls[0].title).not.toMatch(/meditation class/i)
+      })
+
+      it('describes a bare view route as the root it is a view of', () => {
+        render({ seo: rootSeo, atlasRoute: '/search' })
+
+        expect(configCalls[0]).toMatchObject({ title: 'Trouvez un cours de méditation' })
+      })
     })
   })
 })

@@ -1,6 +1,6 @@
 /**
  * Resolves an atlas route (the `/nl/amsterdam` string under this site's
- * `/map` prefix) to the region or event it names.
+ * `/map` prefix) to the region, event, or atlas root it names.
  *
  * ⚠ This is a deliberate port, not an independent implementation. The rule
  * is mirrored from `parseAtlasRoute` in SahajCloud
@@ -14,10 +14,9 @@
  *
  * This function parses locally, instead of asking the endpoint, because
  * the answer decides things before the call: which cache TTL applies (a
- * class's schedule moves more often than a region's identity), and
- * whether the route names a document at all. The atlas root and bare view
- * routes have no document to describe, so they must render the landing
- * page, instead of a 404.
+ * class's schedule moves more often than a region's identity), and whether
+ * the string is a route at all. Only the second is a reason not to call:
+ * every route the endpoint will read is read, the atlas root included.
  *
  * This module is pure and env-free. It decides what to read.
  * {@link getAtlasSeo} does the read.
@@ -66,7 +65,7 @@ const MAX_EVENT_ID = 2147483647
 /**
  * What a route names.
  *
- * Both variants are keyed by the terminal segment alone. This is the
+ * `region` and `event` are keyed by the terminal segment alone. This is the
  * widget's and the endpoint's rule: a region slug is globally unique, and
  * an event ID needs no ancestry. Everything before the terminal segment is
  * ancestry, the part of a URL that goes stale when a region moves in the
@@ -74,8 +73,12 @@ const MAX_EVENT_ID = 2147483647
  * means an old inbound link still resolves, and the answer's `route` and
  * `canonical` name the URL to redirect to. Refusing it would 404 every
  * link into a restructured subtree.
+ *
+ * `root` carries no key. It is what a route reduces to when nothing but
+ * view segments and legacy prefixes remain.
  */
-export type AtlasRouteTarget = { kind: 'region'; slug: string } | { kind: 'event'; id: number }
+export type AtlasRouteTarget =
+  { kind: 'root' } | { kind: 'region'; slug: string } | { kind: 'event'; id: number }
 
 /** Decode one segment, tolerating a malformed `%` escape (returns it unchanged). */
 function safeDecode(segment: string): string {
@@ -87,13 +90,19 @@ function safeDecode(segment: string): string {
 }
 
 /**
- * The region or event a route names, or `null` when it names neither: the
- * atlas root (`/`), a bare view route (`/search`), or anything
- * unparseable.
+ * What a route names — a region, an event, or the atlas root — or `null`
+ * when the string is not a route at all.
  *
- * `null` is a real answer, not a failure. It means "this is the atlas
- * landing page," and this site owns the metadata for it, because no SahajCloud
- * document describes it.
+ * "Names nothing" and "is not a route" are different answers. A route that
+ * reduces to no segments is the root: `/` itself, and every bare view route
+ * (`/search`, `/calendar`), since a view of the root is still the root.
+ * Those are the routes this site actually mounts, and SahajCloud describes
+ * them with its `type: 'root'` answer.
+ *
+ * `null` stays reserved for a string to refuse: over
+ * {@link MAX_ATLAS_ROUTE_LENGTH}, carrying a query, fragment or whitespace,
+ * or over the segment cap. Collapsing those into the root would answer a
+ * malformed URL with a real page.
  */
 export function parseAtlasRoute(route: string): AtlasRouteTarget | null {
   if (typeof route !== 'string' || route.length > MAX_ATLAS_ROUTE_LENGTH) {
@@ -106,14 +115,19 @@ export function parseAtlasRoute(route: string): AtlasRouteTarget | null {
     return null
   }
 
-  const segments = route
-    .split('/')
-    .filter(Boolean)
-    .map(safeDecode)
-    .filter((segment) => !RESERVED_SEGMENTS.has(segment.toLowerCase()))
+  const raw = route.split('/').filter(Boolean).map(safeDecode)
 
-  if (segments.length === 0 || segments.length > MAX_ATLAS_ROUTE_SEGMENTS) {
+  // Measured before reserved words are dropped, so a route of twenty
+  // `/search` segments stays unparseable instead of reducing to the root. A
+  // caller sending nonsense has not named a landing page.
+  if (raw.length > MAX_ATLAS_ROUTE_SEGMENTS) {
     return null
+  }
+
+  const segments = raw.filter((segment) => !RESERVED_SEGMENTS.has(segment.toLowerCase()))
+
+  if (segments.length === 0) {
+    return { kind: 'root' }
   }
 
   const terminal = segments[segments.length - 1]
