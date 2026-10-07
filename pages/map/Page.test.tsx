@@ -39,7 +39,12 @@ const seo = {
 /**
  * The atlas root's answer, mirrored from SahajCloud's
  * `src/endpoints/responseTypes.ts`: `type: 'root'`, `id: null`, and content
- * carrying only paragraphs. Every head-bearing field is localized upstream.
+ * carrying only paragraphs.
+ *
+ * French on purpose: the root is the one atlas answer whose copy upstream
+ * localizes, reading it from the localized `sy-atlas-translations` global,
+ * and its canonical is locale-free all the same. The pairing below is the
+ * contract, not a mismatch.
  */
 const rootSeo = {
   type: 'root',
