@@ -164,24 +164,6 @@ function RegionContent({
   )
 }
 
-/**
- * Description blocks, as text.
- *
- * Upstream gives an event's and the root's description the same
- * plain-text-per-block shape so one code path renders both. This is that path.
- * Never render these with `dangerouslySetInnerHTML` — see the module comment.
- *
- * `blocks` is optional because `AtlasSeoResponse` is hand-mirrored: a field
- * that stops arriving must not turn the page into a 500.
- */
-function Paragraphs({ blocks }: { blocks?: string[] }) {
-  return (blocks ?? []).map((paragraph, index) => (
-    <p key={index} className="mt-4 text-gray-700">
-      {paragraph}
-    </p>
-  ))
-}
-
 /** A class page: when and where it meets, and what it says about itself. */
 function EventContent({
   content,
@@ -246,7 +228,11 @@ function EventContent({
         />
       )}
 
-      <Paragraphs blocks={content.paragraphs} />
+      {(content.paragraphs ?? []).map((paragraph, index) => (
+        <p key={index} className="mt-4 text-gray-700">
+          {paragraph}
+        </p>
+      ))}
 
       {linkUrl && (
         <p className="mt-6">
@@ -271,7 +257,13 @@ function RootContent({ title, content }: { title: string; content: AtlasSeoRootC
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{title}</h1>
 
-      <Paragraphs blocks={content.paragraphs} />
+      {/* `?? []`: the type is hand-mirrored, so a field that stops arriving
+          must degrade rather than 500 the page. */}
+      {(content.paragraphs ?? []).map((paragraph, index) => (
+        <p key={index} className="mt-4 text-gray-700">
+          {paragraph}
+        </p>
+      ))}
     </div>
   )
 }
