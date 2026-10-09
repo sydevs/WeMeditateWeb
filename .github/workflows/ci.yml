@@ -57,13 +57,43 @@ jobs:
             project: wm-design
             script: test:smoke:ladle
     steps:
+      # wm-design rebuilds only when a push touches a path Ladle reads (the
+      # project's build watch paths, mirrored in WATCH/IGNORE below and listed in
+      # docs/cloudflare-previews-ci.md). With no build there is no preview, and
+      # discovery would wait out its 12-minute timeout before skipping anyway.
+      - name: Did Cloudflare build the ladle preview?
+        id: scope
+        if: matrix.target == 'ladle' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.action == 'synchronize' && github.event.before || github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          WATCH: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(cms-types|error-utils)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
+          IGNORE: '\.(test\.tsx?|spec\.ts|md)$'
+        run: |
+          if ! diff=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '"\(.total_commits) \(.files | length)", .files[].filename'); then
+            echo "built=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          read -r commits count <<< "$(head -n 1 <<< "$diff")"
+          # Cloudflare ignores watch paths for a push of 0 files or 20+ commits.
+          # 300 is the compare API's file cap, so a bigger push counts as built.
+          if (( count == 0 || count >= 300 || commits >= 20 )) ||
+            tail -n +2 <<< "$diff" | grep -Ev "$IGNORE" | grep -Eq "$WATCH"; then
+            echo "built=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "built=false" >> "$GITHUB_OUTPUT"
+            echo "No path Ladle reads changed in this push, so Cloudflare built no wm-design preview and there is nothing to smoke." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - if: steps.scope.outputs.built != 'false'
+        run: pnpm install --frozen-lockfile
 
       # Find this target's preview URL through the GitHub API. Cloudflare posts
       # it in the bot's PR comment. Check-run output and deployment data are
@@ -72,6 +102,7 @@ jobs:
       # without permissions), so the job still passes.
       - name: Discover ${{ matrix.target }} preview URL
         id: preview
+        if: steps.scope.outputs.built != 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
