@@ -28,6 +28,27 @@ check-run output).
 | web | Workers Builds | `…-wemeditate-web.<acct>.workers.dev` | `wemeditate-web` |
 | ladle | Pages | `…wm-design.pages.dev` | `wm-design` |
 
+## The Ladle preview is built only when the library changes
+
+The `wemeditate-design` Pages project has **build watch paths**, set in the Cloudflare dashboard
+(Settings → Build → Build watch paths). Nothing in this repo holds them:
+
+- **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
+  `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
+  `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
+- **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
+- **Preview branches:** every branch except `gh-readonly-queue/*`, the merge queue
+
+Cloudflare evaluates them per push, and `*` crosses `/`. A push that touches none of them gets no
+Ladle preview. So the `Smoke (ladle)` job checks the same paths first: the files changed since the
+push's `before` SHA (or since the PR base, on open). It skips discovery when none match, instead
+of waiting out the 12-minute discovery timeout.
+
+⚠ The list lives in two places: the dashboard and `WATCH`/`IGNORE` in
+[ci.yml](../.github/workflows/ci.yml). Change both together. If the CI list is wider, discovery waits out its
+timeout for a preview that never comes. If it is narrower, a preview that does exist goes
+untested.
+
 ## Pieces
 
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
