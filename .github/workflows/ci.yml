@@ -86,9 +86,14 @@ jobs:
             echo "No path Ladle reads changed in this push, so Cloudflare built no wm-design preview and there is nothing to smoke." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
+      # Skip the whole setup with install: setup-node's post step fails the job
+      # when it finds no pnpm store to cache.
+      - if: steps.scope.outputs.built != 'false'
+        uses: actions/checkout@v7
+      - if: steps.scope.outputs.built != 'false'
+        uses: pnpm/action-setup@v6
+      - if: steps.scope.outputs.built != 'false'
+        uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
