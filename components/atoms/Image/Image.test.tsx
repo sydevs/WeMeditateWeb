@@ -73,7 +73,8 @@ describe('<Image> blank src', () => {
   it('still shows the placeholder overlay so layout is preserved', () => {
     const html = renderToStaticMarkup(<Image alt="test" src="" />)
 
-    // The loading/placeholder overlay fills the container in the absence of an image.
+    // The placeholder's gradient, filling the container in the absence of an image.
+    expect(html).toContain('bg-gradient-to-br')
     expect(html).toContain('absolute inset-0')
   })
 
@@ -86,6 +87,34 @@ describe('<Image> blank src', () => {
 
     expect(html).not.toContain('src=""')
     expect(html).not.toContain('<img')
+  })
+})
+
+describe('<Image> server render', () => {
+  // The server render is what a crawler, a no-JavaScript visitor, and
+  // Chromium's LCP heuristic all see. A zero-opacity <img> is invisible to
+  // all three, and an opaque placeholder ahead of it in DOM order hides it
+  // from the first two (#145).
+  it('renders the <img> opaque in the boxed layout', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).not.toContain('opacity-0')
+    expect(html).toContain('opacity-100')
+  })
+
+  it('renders the <img> opaque in the natural-flow layout', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} src={CF_URL} />,
+    )
+
+    expect(html).not.toContain('opacity-0')
+    expect(html).toContain('opacity-100')
+  })
+
+  it('renders no loading placeholder above an image it has a src for', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).not.toContain('bg-gradient-to-br')
   })
 })
 
@@ -185,5 +214,46 @@ describe('<Image> lightbox trigger', () => {
     )
 
     expect(html).not.toContain('<button')
+  })
+})
+
+describe('<Image> priority', () => {
+  // Two spelling traps: React emits `fetchPriority` camelCase, and with a
+  // srcSet the hoisted link carries imageSrcSet and imageSizes but no href.
+  // So these assertions match rel and as only.
+  it('emits eager loading, high fetchPriority, and a hoisted preload link', () => {
+    const html = renderToStaticMarkup(
+      <Image priority alt="test" aspectRatio="video" src={CF_URL} />,
+    )
+
+    expect(html).toContain('loading="eager"')
+    expect(html).toContain('fetchPriority="high"')
+    expect(html).toMatch(/<link[^>]*rel="preload"/)
+    expect(html).toMatch(/<link[^>]*as="image"/)
+  })
+
+  it('defaults to lazy loading with no preload link', () => {
+    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('rel="preload"')
+    expect(html).not.toMatch(/fetchpriority/i)
+  })
+
+  it('still reaches the preload through {...props}, without priority', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" fetchPriority="high" loading="eager" src={CF_URL} />,
+    )
+
+    expect(html).toMatch(/<link[^>]*rel="preload"/)
+  })
+
+  it('lets an explicit loading prop override priority', () => {
+    const html = renderToStaticMarkup(
+      <Image priority alt="test" aspectRatio="video" loading="lazy" src={CF_URL} />,
+    )
+
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('rel="preload"')
   })
 })

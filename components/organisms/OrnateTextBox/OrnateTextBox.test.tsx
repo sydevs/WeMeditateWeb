@@ -81,3 +81,12 @@ describe('<OrnateTextBox>', () => {
     expect(withCta).toContain('Read more')
   })
 })
+
+describe('<OrnateTextBox> image loading', () => {
+  it('keeps the decorative floral graphic lazy, so no preload link is hoisted', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
+
+    expect(html).not.toContain('rel="preload"')
+    expect(html.match(/<img[^>]*ornate[^>]*>/)?.[0]).toContain('loading="lazy"')
+  })
+})

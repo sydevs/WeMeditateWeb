@@ -216,6 +216,9 @@ function EventContent({
         )}
       </dl>
 
+      {/* A raw <img> until #148: the `Image` atom holds its <img> at
+          `opacity-0` until a client load handler runs, and this markup is
+          read by visitors who never hydrate. */}
       {lead && (
         <img
           alt={lead.alt ?? ''}

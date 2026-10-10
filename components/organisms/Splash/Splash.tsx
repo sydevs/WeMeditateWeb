@@ -42,6 +42,12 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   theme?: 'light' | 'dark'
   /** Whether the CTA should pulsate */
   pulsate?: boolean
+  /**
+   * Marks this splash as the page's LCP candidate. `fetchPriority="high"` is
+   * also what makes React hoist a `<link rel="preload" as="image">` for it.
+   * @default false
+   */
+  priority?: boolean
   /** Optional content to display between subtitle and CTA, for example a countdown timer or search input */
   children?: ReactNode
 }
@@ -71,6 +77,7 @@ export function Splash({
   ctaHref,
   theme = 'light',
   pulsate = false,
+  priority = false,
   children,
   className = '',
   ...props
@@ -87,11 +94,17 @@ export function Splash({
       className={`relative min-h-screen flex items-center justify-center overflow-hidden ${className}`}
       {...props}
     >
-      {/* Background Image */}
-      <div
+      {/* Not a CSS background (invisible to the preload scanner, and it cannot
+          carry `fetchPriority`) and not the `Image` atom (its container owns
+          the layout and `className` reaches the image, so it cannot fill this
+          parent — #145 deferred a fill mode). */}
+      <img
+        alt=""
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${resolvedBackgroundImage})` }}
+        className="absolute inset-0 w-full h-full object-cover"
+        fetchPriority={priority ? 'high' : undefined}
+        loading={priority ? 'eager' : 'lazy'}
+        src={resolvedBackgroundImage}
       />
 
       {/* Content Container */}
