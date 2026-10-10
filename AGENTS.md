@@ -249,10 +249,10 @@ These rules apply whether or not the matching rule file or skill is loaded.
 PRs move through three phases. The point is to batch CI runs. Do not push on every small change,
 because each push re-triggers the `gate` and `smoke` jobs and both Cloudflare preview builds.
 
-1. **Implement.** `/implement-issue <n>` takes a ticket through this sequence: plan, branch,
+1. **Implement.** `/implement-ticket <n>` takes a ticket through this sequence: plan, branch,
    implement and test, then the lean local gate. It then runs the finalize pipeline, which opens
    the PR and makes CI pass.
-2. **Adjust.** While you work on an **open PR** — follow-up tweaks after `/implement-issue`, or
+2. **Adjust.** While you work on an **open PR** — follow-up tweaks after `/implement-ticket`, or
    any later change on the PR branch — commit each change locally as you go. Do not push during
    this phase. Batching avoids a CI re-run on every small tweak.
 
@@ -272,9 +272,9 @@ because each push re-triggers the `gate` and `smoke` jobs and both Cloudflare pr
    Run `/finalize-pr` when the PR is ready for review or merge.
 
 Skills come from the **`workflow` plugin** (`sydevs/claude-workflow`), enabled in
-`.claude/settings.json`. The plugin provides `/workflow:draft-ticket`,
-`/workflow:implement-issue` (phase 1), `/workflow:finalize-pr` (phase 3, also used by phase 1),
-`/workflow:cross-repo-issue`, and `/workflow:dev-server`.
+`.claude/settings.json`. The plugin provides `/workflow:file-ticket`,
+`/workflow:implement-ticket` (phase 1), `/workflow:finalize-pr` (phase 3, also used by phase 1),
+`/workflow:implement-roadmap`, and `/workflow:dev-server`.
 
 `.claude/workflow.json` holds the per-repo variation: the lean gate, the contract step, the
 security-review trigger paths, and the autonomy allowlist. Each skill exists in exactly one

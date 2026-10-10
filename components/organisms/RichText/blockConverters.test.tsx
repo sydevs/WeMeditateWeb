@@ -201,6 +201,66 @@ describe('content-index block converter — dispatch', () => {
   })
 })
 
+// The splash converter reads its position in the tree too. `childIndex: i` and
+// `parent: data.root` are what `convertLexicalNodesToJSX` really dispatches.
+type SplashConverter = (args: {
+  childIndex: number
+  node: { fields: Record<string, unknown> }
+  parent?: { type: string }
+}) => ReactElement | null
+
+const splash = blockConverters.splash as unknown as SplashConverter
+
+/** `IMG` is a populated upload ref, which is all `populatedImage` requires. */
+function renderSplash(childIndex: number, parentType = 'root'): string {
+  return renderToStaticMarkup(
+    splash({
+      childIndex,
+      node: { fields: { blockType: 'splash', images: [IMG], title: 'Inner Peace' } },
+      parent: { type: parentType },
+    }),
+  )
+}
+
+describe('splash block converter — LCP priority', () => {
+  it('paints the background as an <img>, never a CSS background', () => {
+    const html = renderSplash(0)
+
+    expect(html).toContain(`src="${IMG.url}"`)
+    expect(html).not.toContain('background-image')
+  })
+
+  it('the lead splash loads eagerly at high priority', () => {
+    const html = renderSplash(0)
+
+    expect(html).toContain('loading="eager"')
+    // React serializes the DOM property, so the attribute keeps its capital P.
+    expect(html).toContain('fetchPriority="high"')
+  })
+
+  it('the lead splash gets React’s hoisted image preload', () => {
+    const html = renderSplash(0)
+
+    expect(html).toContain('rel="preload"')
+    expect(html).toContain('as="image"')
+  })
+
+  it('a splash below the lead block stays lazy and unprioritised', () => {
+    const html = renderSplash(1)
+
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('fetchPriority')
+    expect(html).not.toContain('rel="preload"')
+  })
+
+  it('a first-child splash nested under a non-root parent is not the lead', () => {
+    const html = renderSplash(0, 'block')
+
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('fetchPriority')
+  })
+})
+
 describe('block coverage', () => {
   it.each(KNOWN_BLOCK_TYPES)('has a converter function for the %s block', (blockType) => {
     expect(typeof blockConverters[blockType]).toBe('function')

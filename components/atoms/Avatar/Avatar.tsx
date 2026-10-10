@@ -52,7 +52,6 @@ export function Avatar({
   ...props
 }: AvatarProps) {
   const [hasError, setHasError] = useState(false)
-  const [isLoading, setIsLoading] = useState(!!src)
 
   const sizeStyles = {
     xs: 'w-6 h-6 text-xs',
@@ -75,18 +74,10 @@ export function Avatar({
     neutral: 'bg-gray-200 text-gray-700',
   }
 
-  const baseStyles = 'relative inline-flex items-center justify-center overflow-hidden font-medium flex-shrink-0'
+  const baseStyles =
+    'relative inline-flex items-center justify-center overflow-hidden font-medium flex-shrink-0'
 
   const showImage = src && !hasError
-
-  const handleLoad = () => {
-    setIsLoading(false)
-  }
-
-  const handleError = () => {
-    setIsLoading(false)
-    setHasError(true)
-  }
 
   // Generate initials from alt text if not provided
   const displayInitials =
@@ -105,17 +96,21 @@ export function Avatar({
       className={`${baseStyles} ${colorStyles[color]} ${sizeStyles[size]} ${shapeStyles[shape]} ${className}`}
       {...props}
     >
-      {/* Always render initials underneath */}
+      {/* The initials are the avatar's placeholder: the image paints over them
+          once it loads, so the <img> needs no opacity gate and renders
+          visibly without JavaScript (#145). */}
       <span aria-label={alt} className={showImage ? 'absolute' : ''}>
         {displayInitials}
       </span>
       {showImage && (
         <img
-          src={src}
           alt={alt}
-          className={`w-full h-full object-cover absolute inset-0 ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-          onLoad={handleLoad}
-          onError={handleError}
+          className="w-full h-full object-cover absolute inset-0"
+          // React hoists a `<link rel="preload" as="image">` for any <img>
+          // that is not lazy, and an avatar is never the page's hero.
+          loading="lazy"
+          src={src}
+          onError={() => setHasError(true)}
         />
       )}
     </div>

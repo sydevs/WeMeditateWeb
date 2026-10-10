@@ -28,7 +28,7 @@
   "generatedFiles": [
     {
       "pattern": "^server/payload-types\\.ts$",
-      "reason": "`pnpm types:cms` generates `server/payload-types.ts`. It curls the schema from SahajCloud main and strips the module augmentation. Do not hand-edit this file. To change CMS types, first change the upstream schema and merge it. See /cross-repo-issue. For app-specific types, use `server/cms-types.ts`."
+      "reason": "`pnpm types:cms` generates `server/payload-types.ts`. It curls the schema from SahajCloud main and strips the module augmentation. Do not hand-edit this file. To change CMS types, first change the upstream schema and merge it. File the change with /workflow:file-ticket, which plans the producer first. For app-specific types, use `server/cms-types.ts`."
     },
     {
       "pattern": "^dist/",

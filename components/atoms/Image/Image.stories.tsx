@@ -8,7 +8,8 @@ export default {
 } satisfies StoryDefault;
 
 /**
- * Image component showcasing all aspect ratios, object fit options, loading states, and usage in context.
+ * Image component showcasing all aspect ratios, object fit options, placeholder states, and usage
+ * in context.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -75,26 +76,14 @@ export const Default: Story = () => (
 
     <StorySection title="States">
       <div>
-        <p className="text-sm text-gray-600 mb-2">With Loading State</p>
+        <p className="text-sm text-gray-600 mb-2">
+          A loaded image is opaque, with no placeholder over it. An absent src keeps the
+          placeholder, so the layout still holds, and showLoading false drops even that.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
-          <Image
-            src="https://picsum.photos/id/30/600/400"
-            alt="Image with loading"
-            aspectRatio="4-3"
-            showLoading
-          />
-          <Image
-            src="https://picsum.photos/id/30/600/400"
-            alt="Image with loading"
-            aspectRatio="4-3"
-            showLoading
-          />
-          <Image
-            src="https://picsum.photos/id/30/600/400"
-            alt="Image with loading"
-            aspectRatio="4-3"
-            showLoading
-          />
+          <Image alt="A loaded image" aspectRatio="4-3" src="https://picsum.photos/id/30/600/400" />
+          <Image alt="No src, so the placeholder holds the box" aspectRatio="4-3" src="" />
+          <Image alt="No src and no placeholder" aspectRatio="4-3" showLoading={false} src="" />
         </div>
       </div>
     </StorySection>
