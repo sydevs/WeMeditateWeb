@@ -93,10 +93,9 @@ export function AtlasHeadTags({ seo }: { seo: AtlasSeoResponse }) {
  * Sets an atlas page's head during render.
  *
  * This is a hook, so call it unconditionally from a component. `seo` is
- * `null` for the atlas landing page, and for any route whose document
- * this function could not read. In that case the global defaults apply,
- * and this function contributes nothing: a guessed canonical is worse
- * than none.
+ * `null` only when the document could not be read — the atlas root has one
+ * like every other route (#64). In that case the global defaults apply, and
+ * this function contributes nothing: a guessed canonical is worse than none.
  */
 export function useAtlasHead(seo: AtlasSeoResponse | null): void {
   const config = useConfig()

@@ -89,6 +89,28 @@ function eventSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoR
   } as AtlasSeoResponse
 }
 
+/**
+ * The atlas root's answer, mirrored from SahajCloud's
+ * `src/endpoints/responseTypes.ts`: `id` is `null` on this member alone, and
+ * its content carries only paragraphs — no name, level or listing.
+ */
+function rootSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoResponse {
+  return {
+    type: 'root',
+    id: null,
+    route: '/',
+    locale: 'en',
+    title: 'Find a meditation class near you',
+    description: 'Free weekly classes, run by volunteers.',
+    canonical: 'https://wemeditate.com/map',
+    alternates: [],
+    openGraph: {},
+    jsonLd: '{}',
+    breadcrumbs: [],
+    content: { paragraphs: ['Every class is free.'], ...content },
+  } as AtlasSeoResponse
+}
+
 const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo={seo} />)
 
 describe('atlasHref', () => {
@@ -231,6 +253,40 @@ describe('a class page', () => {
 
     expect(html).not.toContain('Join online')
     expect(html).not.toContain('Visit the website')
+  })
+})
+
+describe('the atlas landing page', () => {
+  it('heads the page with the answer’s own title, which its content has no name for', () => {
+    const html = render(rootSeo())
+
+    expect(html).toContain('<h1')
+    expect(html).toContain('Find a meditation class near you')
+  })
+
+  it('renders the description paragraphs as text', () => {
+    expect(render(rootSeo())).toContain('Every class is free.')
+  })
+
+  it('renders the heading alone, rather than throwing, when the copy is missing', () => {
+    // Upstream sends an empty array when the landing page has no copy, and
+    // `AtlasSeoResponse` is hand-mirrored, so the field could stop arriving.
+    const html = render(rootSeo({ paragraphs: undefined }))
+
+    expect(html).toContain('Find a meditation class near you')
+    expect(html).not.toContain('<p')
+  })
+})
+
+describe('an answer this build has never heard of', () => {
+  it('renders nothing instead of 500ing the route', () => {
+    // The read casts, so a fourth upstream variant arrives here at runtime
+    // before `tsc` ever sees it. Returning the narrowed value would hand
+    // React an object and throw.
+    const future = { ...rootSeo(), type: 'collection' } as unknown as AtlasSeoResponse
+
+    expect(() => render(future)).not.toThrow()
+    expect(render(future)).toBe('')
   })
 })
 

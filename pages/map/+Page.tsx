@@ -21,9 +21,8 @@ import { atlasEmbedSrc } from '../../lib/atlas-embed'
 export function Page() {
   const { seo, atlasRoute } = useData<MapPageData>()
 
-  // A hook, so this call is unconditional. It contributes nothing when
-  // `seo` is null (the atlas landing page, or a document this app could
-  // not read).
+  // A hook, so this call is unconditional. It contributes nothing when `seo`
+  // is null, which means the document could not be read.
   useAtlasHead(seo)
 
   const embedKey = import.meta.env.PUBLIC__SAHAJ_ATLAS_KEY

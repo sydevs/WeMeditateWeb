@@ -19,6 +19,7 @@ import type {
   AtlasSeoEventContent,
   AtlasSeoRegionContent,
   AtlasSeoResponse,
+  AtlasSeoRootContent,
 } from '../../../server/atlas-types'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT } from '../../../hooks/useT'
@@ -177,7 +178,6 @@ function EventContent({
   // hand-mirrored from upstream (see server/atlas-types.ts). If a field
   // silently stops arriving, this avoids a 500 on the page. It falls
   // back to the degraded render the rest of the feature is built for.
-  const paragraphs = content.paragraphs ?? []
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
@@ -228,8 +228,7 @@ function EventContent({
         />
       )}
 
-      {/* Plain text from SahajCloud, rendered as text. See the module comment. */}
-      {paragraphs.map((paragraph, index) => (
+      {(content.paragraphs ?? []).map((paragraph, index) => (
         <p key={index} className="mt-4 text-gray-700">
           {paragraph}
         </p>
@@ -247,13 +246,58 @@ function EventContent({
 }
 
 /**
+ * The atlas landing page: what the atlas is, in the visitor's locale.
+ *
+ * The root names no region and no event, so there is nothing to list and no
+ * ancestry to walk — the widget is the page. The heading comes off the
+ * answer's `title` rather than its content, which carries only paragraphs.
+ */
+function RootContent({ title, content }: { title: string; content: AtlasSeoRootContent }) {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{title}</h1>
+
+      {/* `?? []`: the type is hand-mirrored, so a field that stops arriving
+          must degrade rather than 500 the page. */}
+      {(content.paragraphs ?? []).map((paragraph, index) => (
+        <p key={index} className="mt-4 text-gray-700">
+          {paragraph}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+/**
  * Dispatch on the answer's `type`. This is what the discriminated union
  * is for: narrow once, and the content shape for that variant follows.
+ *
+ * ⚠ The `never` assignment is what makes a new upstream variant a compile
+ * error. Without it the switch still type-checks: `noImplicitReturns` is off,
+ * and React accepts the `undefined` a missing branch returns. The page would
+ * then serve a head describing content its body never rendered.
+ *
+ * It cannot be the only guard, though. `AtlasSeoResponse` is hand-mirrored and
+ * the read casts, so a new variant reaches this switch at runtime before it
+ * ever reaches `tsc` — as `root` just did. Returning the narrowed value would
+ * hand React an object, which throws in SSR and 500s a route `+Page.tsx`
+ * wraps in no boundary. Render nothing and keep the head.
  */
 export function AtlasContent({ seo }: { seo: AtlasSeoResponse }) {
-  return seo.type === 'region' ? (
-    <RegionContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
-  ) : (
-    <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
-  )
+  switch (seo.type) {
+    case 'root':
+      return <RootContent content={seo.content} title={seo.title} />
+    case 'region':
+      return <RegionContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
+    case 'event':
+      return <EventContent breadcrumbs={seo.breadcrumbs} content={seo.content} />
+    default: {
+      const unhandled: never = seo
+
+      // `void` so the exhaustiveness binding above still counts as used.
+      void unhandled
+
+      return null
+    }
+  }
 }
