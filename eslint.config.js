@@ -4,6 +4,30 @@ import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import tseslint from 'typescript-eslint'
 
+// `name`, `value` and `id` also take strings, but those are identifiers rather
+// than copy, so they stay out. `alt` is handled on its own, below.
+const COPY_PROPS = '/^(aria-label|label|placeholder|subtitle|title)$/'
+
+/** Prose, not punctuation: two consecutive ASCII letters. */
+const PROSE = '/[A-Za-z]{2}/'
+
+const NOT_CODE_ELEMENT = 'JSXElement:not([openingElement.name.name=/^(script|style)$/])'
+
+/** Every spelling of a literal string: `'x'`, and `` `x` `` with no substitution. */
+const copyIn = (parent) =>
+  `${parent} > Literal[value=${PROSE}], ${parent} > TemplateLiteral > TemplateElement[value.raw=${PROSE}]`
+
+/** The same, written directly on a prop, in a brace, or in either arm of a ternary. */
+const copyOn = (prop) => {
+  const attribute = `JSXAttribute[name.name=${prop}]`
+
+  return [
+    copyIn(attribute),
+    copyIn(`${attribute} > JSXExpressionContainer`),
+    copyIn(`${attribute} > JSXExpressionContainer > ConditionalExpression`),
+  ].join(', ')
+}
+
 export default [
   {
     ignores: [
@@ -140,6 +164,46 @@ export default [
           blankLine: 'any',
           prev: ['const', 'let', 'var'],
           next: ['const', 'let', 'var'],
+        },
+      ],
+    },
+  },
+  {
+    // Visitor-facing copy is SahajCloud-owned and reaches the markup through
+    // `useT()` (AGENTS.md). The guards under `tests/guards/` match source text,
+    // so neither sees a JSX text node or a quoted prop at all; these selectors
+    // do (#165).
+    //
+    // The combinator is `>` and never a descendant: the key inside
+    // `title={t('a.b')}` is a Literal too, just not the attribute's own child.
+    // A value these selectors cannot read — an identifier, or a call's return —
+    // passes, so this bounds the spellings rather than proving intent.
+    files: ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx'],
+    ignores: ['**/*.stories.tsx', '**/*.test.tsx', 'components/ladle/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: [
+            `JSXText[value=${PROSE}]`,
+            // A `<style>` or `<script>` child is code, not copy.
+            copyIn(`${NOT_CODE_ELEMENT} > JSXExpressionContainer`),
+          ].join(', '),
+          message:
+            "Visible text must come from SahajCloud: render t('group.key') instead of an English literal.",
+        },
+        {
+          selector: copyOn(COPY_PROPS),
+          message:
+            "This prop carries copy a visitor reads: pass t('group.key') instead of an English literal.",
+        },
+        {
+          // `alt` has a second right answer the other props do not: an image
+          // that carries no meaning takes `alt=""`, as `role="presentation"`
+          // and the decorative svgs do.
+          selector: copyOn("'alt'"),
+          message:
+            'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
       ],
     },

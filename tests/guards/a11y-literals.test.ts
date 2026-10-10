@@ -11,10 +11,16 @@
  * code, and this catches it in a component no test happens to render.
  *
  * ⚠ It matches text, not syntax, so its coverage is the spellings below
- * rather than every possible one. `aria-label={SOME_CONST}` passes, and
- * `alt` is not covered. Moving this to an ESLint `no-restricted-syntax`
- * selector would make it AST-accurate; until then, treat a pass as "none of
- * the common spellings", not as proof.
+ * rather than every possible one. The `no-restricted-syntax` selectors in
+ * `eslint.config.js` cover more shapes, and more props, AST-accurately
+ * (#165).
+ *
+ * What keeps this one is that it strips comments, so it never sees an
+ * `eslint-disable` — the screen-reader subset #56 was about cannot be
+ * silenced one site at a time. It also reads any literal nested anywhere
+ * inside a braced expression, where the selectors read only the paths they
+ * enumerate. Neither can see `aria-label={SOME_CONST}`: an identifier's
+ * value is not a fact about the line that uses it.
  */
 
 import { describe, it, expect } from 'vitest'
