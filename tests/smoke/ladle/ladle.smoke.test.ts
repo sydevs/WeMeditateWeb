@@ -57,4 +57,34 @@ describe('ladle preview', () => {
       /\.stories\.tsx?$/,
     )
   })
+
+  /**
+   * The refusal ships in the build output alone (#174), so only a deployment can confirm
+   * Cloudflare applies it. `tests/guards/ladle-crawler-refusal.test.ts` guards the files.
+   */
+  it('sends noindex on every URL it serves', async () => {
+    // A document and a build asset: the second carries no document, so a `<meta robots>` could
+    // not have covered it. That is why the header, not a tag, holds the policy.
+    const pages = await Promise.all([fetchPage('/'), fetchPage('/meta.json')])
+
+    for (const page of pages) {
+      expect(page.headers.get('x-robots-tag'), `${page.finalUrl} should send it`).toMatch(
+        /noindex/i,
+      )
+    }
+  })
+
+  it('serves a real robots.txt, not the SPA shell', async () => {
+    const res = await fetchPage('/robots.txt')
+
+    expect(res.status, '/robots.txt should return 200').toBe(200)
+    // Ladle's SPA fallback answers an unmatched path with `index.html`, so HTML here means the
+    // file never reached the build output.
+    expect(res.contentType, '/robots.txt should not be the Ladle shell').not.toContain('text/html')
+    // The wildcard group specifically: a `Disallow: /` anywhere in the file would also match a
+    // narrow group, with `*` left open. The guard spec parses the groups properly.
+    expect(res.html, '/robots.txt should refuse every crawler').toMatch(
+      /^User-agent: \*\nDisallow: \/$/m,
+    )
+  })
 })

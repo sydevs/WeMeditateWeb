@@ -1,8 +1,9 @@
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
+import { crawlerRefusal } from './crawler-refusal'
 
 export default defineConfig({
-  plugins: [tailwindcss()],
+  plugins: [tailwindcss(), crawlerRefusal()],
   // Expose PUBLIC__-prefixed environment variables, as in the main app
   envPrefix: 'PUBLIC__',
   resolve: {

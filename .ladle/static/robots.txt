@@ -1,0 +1,40 @@
+# The playground's crawler policy, and the one place it is written down (#174).
+#
+# A component playground is no more a search surface than the app is, and this one answers on
+# its own domain, so there is a URL worth keeping out of an index. Two signals carry that:
+# this file (do not fetch) and `X-Robots-Tag` in `_headers` (do not index, on every URL).
+# A `<meta robots>` is available as a third — Ladle injects `.ladle/head.html` into the
+# `index.html` it generates — and is deliberately unused: it reaches only the document, so
+# it covers nothing `X-Robots-Tag` does not already cover, on one more line to keep in step.
+#
+# THE INTERACTION THAT MATTERS. `Disallow` means "do not fetch", not "do not index" — so a
+# compliant crawler that never fetches a page also never sees the `noindex` served on it. The
+# two do not stack; the weaker signal hides the stronger. Residual risk, accepted: a URL
+# linked from an external page can still be listed URL-only, with no title or snippet.
+#
+# RUNBOOK. If design.wemeditate.com is ever found in an index, relax this file rather than
+# tightening it — swap `Disallow: /` for `Allow: /` so the crawler can fetch the page, read
+# the `noindex` and drop the entry, then restore this once it is gone.
+User-agent: *
+Disallow: /
+
+# Link-preview scrapers are not search engines and none of them feeds an index, so allowing
+# them costs nothing against the policy above. The list mirrors sydevs/SahajAtlasWeb's
+# `public/robots.txt`, which documents each token and the ones that ignore this file. Keep
+# the two in step. Slack appears three times because group selection matches a whole product
+# token, and its unfurl, legacy and image fetchers are separate ones.
+User-agent: facebookexternalhit
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: redditbot
+User-agent: WhatsApp
+User-agent: TelegramBot
+User-agent: Discordbot
+User-agent: Slackbot
+User-agent: Slackbot-LinkExpanding
+User-agent: Slack-ImgProxy
+User-agent: vkShare
+User-agent: OdklBot
+User-agent: Viber
+User-agent: line-poker
+Allow: /

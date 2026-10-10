@@ -228,6 +228,10 @@ These rules apply whether or not the matching rule file or skill is loaded.
   variant name in the form `{aspectRatio}-{width}`. The list of variants lives in
   `SIZE_WIDTH_MAP` in [lib/cloudflare-images.ts](lib/cloudflare-images.ts). Adding a variant there
   is not enough. You must also configure it in the Cloudflare dashboard.
+- **`public/` is shipped by both builds, so nothing site-wide goes in it.** The Vike app's build
+  and the Ladle build each copy it, so a `robots.txt`, `_headers` or `_redirects` there applies to
+  the app and the playground alike. The playground's crawler refusal lives in `.ladle/static/`
+  for that reason — see [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 - **`pageContext` carries the locale.** [types/vike.d.ts](types/vike.d.ts) extends Vike's
   `PageContext` with `locale: Locale`, which stays type-safe in every data function and component.
 
