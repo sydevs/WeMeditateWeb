@@ -3,6 +3,7 @@ import { Button } from '../../atoms'
 import { ContentGrid } from '../../molecules'
 import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { useT } from '../../../hooks/useT'
+import { useFadeOnChange } from '../../../hooks/useFadeOnChange'
 
 export interface ContentIndexProps {
   /** Server-resolved cards. Each item's `tags` drive the filter pills. */
@@ -132,6 +133,10 @@ export function ContentIndex({ items, className = '' }: ContentIndexProps) {
 
   const clear = () => setSelected(new Set())
 
+  // sort() makes the key order-independent: a Set iterates in insertion order,
+  // so picking A then B would otherwise differ from B then A.
+  const fadeRef = useFadeOnChange(Array.from(selected).sort().join(','))
+
   // Narrow to items whose tags intersect the selection: this is an OR
   // match, and an empty selection shows everything. Then strip `tags`,
   // because ContentCard forwards unknown props to the DOM.
@@ -145,7 +150,7 @@ export function ContentIndex({ items, className = '' }: ContentIndexProps) {
       {facets.length > 0 && (
         <FilterPills facets={facets} selected={selected} onClear={clear} onToggle={toggle} />
       )}
-      <ContentGrid items={gridItems} />
+      <ContentGrid ref={fadeRef} items={gridItems} />
     </div>
   )
 }

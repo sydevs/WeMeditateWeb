@@ -281,6 +281,17 @@ Context only when composition does not work, since it is the exception here, not
 ## Performance
 
 - Serve images as WebP with a fallback (`<picture>` + `<source type="image/webp">`).
+- **A page's hero needs `loading="eager"` and `fetchPriority="high"`, never a CSS
+  `background-image`.** `<Image priority sizes="...">` sets both, and React hoists a
+  `<link rel="preload" as="image">` for any image that is not `loading="lazy"`, so the preload
+  needs no hand-written `<link>` — but not inside a `<picture>`, which trades the preload for the
+  WebP fallback above. Set it on one or two images per page; the prop's own docs say why marking
+  everything prioritizes nothing. A hero that must fill a sized parent hand-rolls its `<img>`
+  instead: the atom's container owns that layout and `className` reaches the image, and #145
+  deferred a fill mode. `<Splash priority>` is the worked example.
+- **A component's first-render state must produce visible markup.** Gating an element on
+  `opacity-0` until a `useState(true)` clears ships it invisible from the server, and out of LCP
+  contention. Enter a loading state only from a change after the first render (#145).
 - Lazy-load a heavy component with `React.lazy` and wrap it in `<Suspense>`.
 - Memoize an expensive computation with `useMemo`, and a callback passed to a memoized child with
   `useCallback`.
@@ -295,6 +306,15 @@ Context only when composition does not work, since it is the exception here, not
 | Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. |
 | Alt text | A decorative image uses `alt=""` and `role="presentation"`. An informative image needs a real description. |
 | Forms | Pair every input with a `<label htmlFor>`, and set `aria-invalid` and `aria-describedby` on an errored field, pointing at an `id` with `role="alert"`. |
+
+## Motion
+
+Honouring reduced motion is a house convention here, not a conformance item: WCAG 2.1 puts
+animation from interactions at AAA (2.3.3), and 2.2.2 Pause, Stop, Hide starts above five seconds.
+
+- A JavaScript-driven animation that a visitor's own action triggers checks
+  `prefers-reduced-motion: reduce` and skips it — see
+  [hooks/useFadeOnChange.ts](./hooks/useFadeOnChange.ts).
 
 ## Tailwind configuration
 

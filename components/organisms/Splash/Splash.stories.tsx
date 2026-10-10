@@ -95,6 +95,21 @@ export const Default: Story = () => {
         </div>
       </div>
 
+      <StorySection inContext={true} title="LCP Priority">
+        {/* `priority` changes the markup, not the rendering. View source: this
+            splash is eager at `fetchPriority="high"` with a hoisted preload
+            link, and every other splash on the page is lazy. */}
+        <div className="relative full-bleed">
+          <Splash
+            priority
+            backgroundImage="https://picsum.photos/id/1015/1920/1080"
+            subtitle="The page's lead splash, and so its LCP element."
+            theme="dark"
+            title="Discover Inner Peace"
+          />
+        </div>
+      </StorySection>
+
       <StorySection inContext={true} title="Countdown Timer">
         <div className="relative full-bleed">
           <Splash
