@@ -21,30 +21,56 @@ atom.
 
 ### Colors
 
-Based on the wemeditate.com brand.
+Based on the wemeditate.com brand. [layouts/tailwind.css](./layouts/tailwind.css) declares every
+token in its `@theme` block, and Tailwind generates the matching utilities from there —
+`bg-teal-500`, `text-gray-700`, `border-error`. There is no semantic alias tier, so name the scale
+step directly.
+
+Three scales carry the brand. Each declares ten steps — `--color-teal-50` through
+`--color-teal-900`, and the same for `coral` and `gray`:
+
+| Step | Teal | Coral | Gray |
+| --- | --- | --- | --- |
+| `50` | `#ebf4f3` | `#fef5f3` | `#f7fbfa` |
+| `100` | `#c5e0dc` | `#fce4df` | `#f6f6f6` |
+| `200` | `#a3cec9` | `#fad2c9` | `#ebebeb` |
+| `300` | `#83bcb4` | `#f8c0b3` | `#d7d7d6` |
+| `400` | `#72b3a9` | `#f4a796` | `#c6c6c6` |
+| `500` | `#61aaa0` | `#e08e79` | `#aaaaa9` |
+| `600` | `#4c8d84` | `#c54d2e` | `#9d9d9c` |
+| `700` | `#3d726b` | `#b44528` | `#7b7b7b` |
+| `800` | `#2e5652` | `#8b3420` | `#5e6063` |
+| `900` | `#1f3a38` | `#5f2318` | `#555555` |
+
+Six tokens stand outside the scales:
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| `--color-primary` | `#61aaa0` | Teal — links, primary CTAs |
-| `--color-primary-light` | `#83bcb4` | Hover states, light backgrounds |
-| `--color-primary-lighter` | `#c5e0dc` | Subtle backgrounds |
-| `--color-primary-bg` | `#ebf4f3` | Teal background tint |
-| `--color-primary-300` | `#5dd4bd` | Teal on a dark background (`teal-300`) |
-| `--color-secondary` | `#e08e79` | Coral — accents, highlights |
-| `--color-secondary-dark` | `#c54d2e` | Coral emphasis |
-| `--color-accent` | `#ff856f` | Bright coral — strong CTAs |
-| `--color-secondary-300` | `#f0a898` | Coral on a dark background (`coral-300`) |
-| `--color-text-primary` | `#555` | Headings, primary text |
-| `--color-text-secondary` | `#7b7b7b` | Body text |
-| `--color-text-tertiary` | `#9d9d9c` | Subtle text |
-| `--color-border` / `-light` | `#c6c6c6` / `#d7d7d6` | Standard / subtle borders |
-| `--color-bg-white` / `-subtle` / `-light` / `-warm` | `#fff` / `#f7fbfa` / `#f6f6f6` / `#faf0e3` | Background tiers |
-| `--color-error` / `-dark` | `#cc5e5e` / `#8b0000` | Error / critical error |
-| `--color-success` | `#4c8d84` | Success states |
-| `--color-info` | `#61aaa0` | Info states (uses primary) |
+| `--color-accent` | `#ff856f` | Bright coral, for a strong CTA |
+| `--color-error` | `#cc5e5e` | Error text, borders and fills |
+| `--color-error-dark` | `#8b0000` | Critical error |
+| `--color-success` | `#4c8d84` | Success states — the same value as `--color-teal-600` |
+| `--color-info` | `#61aaa0` | Info states — the same value as `--color-teal-500` |
+| `--color-bg-warm` | `#faf0e3` | Warm page background |
 
-On a dark background, use `teal-300` or `coral-300` — both hold enough contrast while keeping the
-brand color recognizable.
+Which step each role reaches for in the light theme today. This records what the components
+do, not a contrast clearance — several of these pairings sit under the 4.5:1 bar the
+accessibility table below sets, so check yours before you copy it:
+
+| Role | Token |
+| --- | --- |
+| Primary button | `--color-teal-500`, hover `--color-teal-600`, active `--color-teal-700` |
+| Secondary button | `--color-coral-500`, hover `--color-coral-600`, active `--color-coral-700` |
+| Link | `--color-teal-600`, hover `--color-teal-700` |
+| Heading | `--color-gray-900` |
+| Body text | `--color-gray-700`, and `--color-gray-600` for secondary text |
+| Border | `--color-gray-200`, or `--color-gray-300` for a stronger rule |
+| Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` |
+
+On a dark background, use `--color-teal-300` or `--color-coral-300`, hovering to the `200` step of
+the same scale — both keep the brand color recognizable. Neither clears 4.5:1 on its own: check
+the pair against the surface you are on, because `--color-teal-300` reaches 9.8:1 on black and
+only 3.0:1 on `--color-gray-800`.
 
 ### Typography
 
@@ -318,9 +344,16 @@ animation from interactions at AAA (2.3.3), and 2.2.2 Pause, Stop, Hide starts a
 
 ## Tailwind configuration
 
-[tailwind.config.ts](./tailwind.config.ts) extends only brand identity: the teal and coral color
-palettes with semantic names (error, success, info), and the Raleway/Futura Book font families
-(weights 200–700). Everything else uses Tailwind's defaults.
+[layouts/tailwind.css](./layouts/tailwind.css) holds the theme: the teal, coral and gray scales,
+the standalone semantic colors (accent, error, success, info), the warm background, the
+Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
+uses Tailwind's defaults.
+
+[tailwind.config.ts](./tailwind.config.ts) is loaded by nothing. Tailwind v4 reads a config file
+only through an `@config` directive, and no stylesheet here has one, so both its `theme.extend`
+block and its `content` array are dead. Change
+[layouts/tailwind.css](./layouts/tailwind.css) and nothing else — its `@source` lines are the
+scan set, and its `@theme` block is the theme.
 
 **v4 gradient syntax**: Tailwind v4 renamed the gradient-direction utilities for consistency with
 CSS. Use `bg-linear-to-*`, not the v3 `bg-gradient-to-*`:
