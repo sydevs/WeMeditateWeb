@@ -26,6 +26,10 @@ token in its `@theme` block, and Tailwind generates the matching utilities from 
 `bg-teal-500`, `text-gray-700`, `border-error`. There is no semantic alias tier, so name the scale
 step directly.
 
+The three tables below copy that block, so
+[tests/guards/design-tokens.test.ts](./tests/guards/design-tokens.test.ts) holds them to it: a
+token renamed, added or re-valued in `@theme` fails the suite until these tables follow.
+
 Three scales carry the brand. Each declares ten steps — `--color-teal-50` through
 `--color-teal-900`, and the same for `coral` and `gray`:
 
