@@ -188,7 +188,11 @@ export default [
     // A value these selectors cannot read — an identifier, or a call's return —
     // passes, so this bounds the spellings rather than proving intent.
     files: ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx'],
-    ignores: ['**/*.stories.tsx', '**/*.test.tsx', 'components/ladle/**'],
+    // `pages/sentry/**` is a developer's error-trigger page, not visitor copy
+    // (AGENTS.md "Testing Sentry"). Scoping it out here rather than disabling
+    // the rule in the file keeps a later `no-restricted-syntax` rule enforced
+    // there — the shared-id problem a named rule would solve.
+    ignores: ['**/*.stories.tsx', '**/*.test.tsx', 'components/ladle/**', 'pages/sentry/**'],
     rules: {
       'no-restricted-syntax': [
         'error',

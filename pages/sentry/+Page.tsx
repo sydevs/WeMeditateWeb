@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax -- a developer's error-trigger page, not visitor copy (AGENTS.md "Testing Sentry") */
 import * as Sentry from "@sentry/react";
 import { useEffect, useState } from "react";
 
