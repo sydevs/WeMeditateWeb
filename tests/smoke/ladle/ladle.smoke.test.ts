@@ -57,4 +57,33 @@ describe('ladle preview', () => {
       /\.stories\.tsx?$/,
     )
   })
+
+  /**
+   * The playground refuses crawlers through the build output alone (#174), so these two
+   * assertions are the only place the refusal is checked against a real deployment. The
+   * static files themselves are guarded in `tests/guards/ladle-crawler-refusal.test.ts`.
+   */
+  it('sends noindex on every URL it serves', async () => {
+    // A document and a build asset, because `<meta robots>` could never have covered the
+    // second one — and Ladle writes the document itself, so it cannot carry a tag either.
+    for (const path of ['/', '/meta.json']) {
+      const res = await fetchPage(path)
+
+      expect(res.headers.get('x-robots-tag'), `${path} should send X-Robots-Tag`).toMatch(
+        /noindex/i,
+      )
+    }
+  })
+
+  it('serves a real robots.txt, not the SPA shell', async () => {
+    const res = await fetchPage('/robots.txt')
+
+    expect(res.status, '/robots.txt should return 200').toBe(200)
+    // Ladle's SPA fallback answers an unmatched path with `index.html`, so HTML here means
+    // the file is missing from the build output.
+    expect(res.contentType, '/robots.txt should not be the Ladle shell').not.toContain('text/html')
+    expect(res.html, '/robots.txt should refuse every crawler').toMatch(
+      /^User-agent: \*\nDisallow: \/$/m,
+    )
+  })
 })

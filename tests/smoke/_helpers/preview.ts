@@ -31,10 +31,11 @@ export interface PageResult {
   finalUrl: string
   location: string | null
   contentType: string
+  headers: Headers
   html: string
 }
 
-/** Fetch a path on the preview, and return the status, body, and key headers. */
+/** Fetch a path on the preview, and return the status, body, and response headers. */
 export async function fetchPage(
   path: string,
   init: { redirect?: RequestRedirect } = {},
@@ -52,6 +53,7 @@ export async function fetchPage(
     finalUrl: res.url,
     location: res.headers.get('location'),
     contentType: res.headers.get('content-type') ?? '',
+    headers: res.headers,
     html,
   }
 }
