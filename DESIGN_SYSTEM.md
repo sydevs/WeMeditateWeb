@@ -53,7 +53,9 @@ Six tokens stand outside the scales:
 | `--color-info` | `#61aaa0` | Info states — the same value as `--color-teal-500` |
 | `--color-bg-warm` | `#faf0e3` | Warm page background |
 
-Which step each role reaches for, as the components use them today:
+Which step each role reaches for in the light theme today. This records what the components
+do, not a contrast clearance — several of these pairings sit under the 4.5:1 bar the
+accessibility table below sets, so check yours before you copy it:
 
 | Role | Token |
 | --- | --- |
@@ -66,7 +68,9 @@ Which step each role reaches for, as the components use them today:
 | Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` |
 
 On a dark background, use `--color-teal-300` or `--color-coral-300`, hovering to the `200` step of
-the same scale — both hold enough contrast while keeping the brand color recognizable.
+the same scale — both keep the brand color recognizable. Neither clears 4.5:1 on its own: check
+the pair against the surface you are on, because `--color-teal-300` reaches 9.8:1 on black and
+only 3.0:1 on `--color-gray-800`.
 
 ### Typography
 
@@ -345,9 +349,11 @@ the standalone semantic colors (accent, error, success, info), the warm backgrou
 Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
 uses Tailwind's defaults.
 
-[tailwind.config.ts](./tailwind.config.ts) sets only the content paths. Tailwind v4 ignores its
-`theme.extend` block, which survives as a mirror of the same values — change
-[layouts/tailwind.css](./layouts/tailwind.css) and nothing else to move a token.
+[tailwind.config.ts](./tailwind.config.ts) is loaded by nothing. Tailwind v4 reads a config file
+only through an `@config` directive, and no stylesheet here has one, so both its `theme.extend`
+block and its `content` array are dead. Change
+[layouts/tailwind.css](./layouts/tailwind.css) and nothing else — its `@source` lines are the
+scan set, and its `@theme` block is the theme.
 
 **v4 gradient syntax**: Tailwind v4 renamed the gradient-direction utilities for consistency with
 CSS. Use `bg-linear-to-*`, not the v3 `bg-gradient-to-*`:
