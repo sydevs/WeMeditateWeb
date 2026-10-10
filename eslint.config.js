@@ -6,7 +6,8 @@ import tseslint from 'typescript-eslint'
 
 // `name`, `value` and `id` also take strings, but those are identifiers rather
 // than copy, so they stay out. `alt` is handled on its own, below.
-const COPY_PROPS = '/^(aria-label|label|placeholder|subtitle|title)$/'
+const COPY_PROPS =
+  '/^(aria-label|buttonText|caption|description|heading|label|placeholder|subtitle|text|title)$/'
 
 /** Prose, not punctuation: two consecutive ASCII letters. */
 const PROSE = '/[A-Za-z]{2}/'
