@@ -11,35 +11,6 @@ import { describe, it, expect } from 'vitest'
 import type { Plugin } from 'vite'
 import { crawlerRefusal, readRefusalFile, REFUSAL_FILES } from '../../.ladle/crawler-refusal'
 
-/** The lines carrying a directive. A `Disallow` inside a `#` comment refuses nothing. */
-function directiveLines(file: string): string[] {
-  return file.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'))
-}
-
-/**
- * The rules one `User-agent` is subject to.
- *
- * Consecutive `User-agent` lines share a group, and the first rule after them closes it — so a
- * `Disallow` cannot be read off the file in order. Asserting on the group is the point:
- * `Disallow: /` under a narrow agent, with `Allow: /` left on `*`, is exactly the inversion
- * this guard exists to catch, and the runbook in `robots.txt` is one deliberate step from it.
- */
-function rulesFor(file: string, agent: string): string[] {
-  const rules: string[] = []
-  let applies = false
-
-  for (const line of directiveLines(file)) {
-    if (/^user-agent:/i.test(line)) {
-      if (rules.length > 0) applies = false
-      if (line.trim() === `User-agent: ${agent}`) applies = true
-    } else if (applies) {
-      rules.push(line.trim())
-    }
-  }
-
-  return rules
-}
-
 /** The headers `_headers` sends for one URL pattern, in any order. */
 function headersFor(file: string, pattern: string): string[] {
   const lines = file.split('\n').filter((line) => !line.startsWith('#'))
@@ -75,9 +46,12 @@ describe('the Ladle crawler refusal', () => {
   it('refuses every crawler in robots.txt, and keeps the preview scrapers allowed', () => {
     const robots = readRefusalFile('robots.txt')
 
-    expect(rulesFor(robots, '*')).toContain('Disallow: /')
-    expect(rulesFor(robots, '*')).not.toContain('Allow: /')
-    expect(rulesFor(robots, 'Twitterbot')).toEqual(['Allow: /'])
+    // Anchoring is what makes a substring an assertion here: it stops a `#` comment satisfying
+    // the match, and the blank line stops an `Allow: /` being appended under `*`, which Google
+    // reads as the winner. That inversion is one deliberate step from the runbook in `robots.txt`.
+    expect(robots).toMatch(/^User-agent: \*\nDisallow: \/\n\n/m)
+    // Consecutive `User-agent` lines share a group, so one `Allow: /` closes the whole list.
+    expect(robots).toMatch(/^User-agent: Twitterbot\n(?:User-agent: [\w-]+\n)*Allow: \/$/m)
   })
 
   it('sends noindex on every URL in _headers', () => {
