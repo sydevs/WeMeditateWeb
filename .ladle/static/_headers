@@ -1,11 +1,8 @@
-# Cloudflare Pages reads this from the Ladle build output, like `_redirects`. It ships from
-# `.ladle/static/` rather than `public/` for the reason `robots.txt` beside it records.
+# Cloudflare Pages reads this from the build output, like `_redirects`. The policy and the
+# `robots.txt` interaction are written down once, in `robots.txt` beside this file.
 #
-# A header reaches what a `<meta>` cannot. Ladle generates its own `index.html`, and
-# `meta.json`, the hashed assets and the fonts are each a fetchable URL with no document to
-# carry a tag. `/*` covers all of them, the SPA fallback included.
-#
-# `noindex` alone, deliberately — no `nofollow`. Nothing here links anywhere a crawler should
-# be stopped from following.
+# A header reaches what a `<meta>` cannot: `meta.json`, the hashed assets and the fonts are
+# each a fetchable URL with no document to carry a tag. `noindex` alone, deliberately — no
+# `nofollow`, because nothing here links anywhere a crawler should be stopped from following.
 /*
   X-Robots-Tag: noindex

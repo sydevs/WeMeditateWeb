@@ -1,17 +1,9 @@
-# Cloudflare Pages serves this from the Ladle build output. It ships from `.ladle/static/`
-# rather than `public/`, because `public/` is copied into the Vike app's build as well, where
-# this file would answer on wemeditate.com and tell every crawler to drop the site. The app
-# builds its own refusal per host, in `server/sitemap.ts`.
+# The playground's crawler policy, and the one place it is written down (#174).
 #
 # A component playground is no more a search surface than the app is, and this one answers on
-# a custom domain, so there is a URL worth keeping out of an index (#174).
-#
-# Two signals carry that, and they are not interchangeable:
-#   - this file     — do not fetch.
-#   - X-Robots-Tag  — do not index, on every URL (`_headers` beside this file).
-#
-# A `<meta robots>` is not a third: Ladle generates its own `index.html`, so a tag added
-# anywhere in this repo never reaches the playground. The header has to carry it.
+# its own domain, so there is a URL worth keeping out of an index. Two signals carry that:
+# this file (do not fetch) and `X-Robots-Tag` in `_headers` (do not index, on every URL).
+# Ladle generates its own `index.html`, so a `<meta robots>` is not available as a third.
 #
 # THE INTERACTION THAT MATTERS. `Disallow` means "do not fetch", not "do not index" — so a
 # compliant crawler that never fetches a page also never sees the `noindex` served on it. The
@@ -24,17 +16,11 @@
 User-agent: *
 Disallow: /
 
-# Link-preview scrapers, allowed because they are not search engines and none of them feeds
-# an index — so allowing them costs nothing against the policy above. A playground URL is
-# pasted into a review thread or a chat often enough for the card to be worth something.
-#
-# The list mirrors sydevs/SahajAtlasWeb's `public/robots.txt`, which carries the full
-# reasoning for each token and is the one place it is written down. Keep the two in step.
-#
-# One group, many tokens: a group's rules apply to every User-agent line in it, and a crawler
-# that matches a specific group never falls back to `*`. Slack appears three times because
-# group selection matches the whole product token, and its unfurl, legacy and image fetchers
-# are separate tokens.
+# Link-preview scrapers are not search engines and none of them feeds an index, so allowing
+# them costs nothing against the policy above. The list mirrors sydevs/SahajAtlasWeb's
+# `public/robots.txt`, which documents each token and the ones that ignore this file. Keep
+# the two in step. Slack appears three times because group selection matches a whole product
+# token, and its unfurl, legacy and image fetchers are separate ones.
 User-agent: facebookexternalhit
 User-agent: Twitterbot
 User-agent: LinkedInBot
