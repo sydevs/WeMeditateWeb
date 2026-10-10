@@ -186,6 +186,11 @@ states, like `LoggedOut` vs. `LoggedIn`.
 the theme toggle (see above). [.ladle/vite.config.ts](.ladle/vite.config.ts) adds the Tailwind
 Vite plugin, so Tailwind classes resolve inside Ladle the same way they do in the app.
 
+It also adds `ladle-crawler-refusal`, which copies `.ladle/static/robots.txt` and
+`.ladle/static/_headers` into the build output so the published library refuses search engines.
+`public/` cannot hold them, because the app's build copies it too — see
+[docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
+
 ## Toolbar features
 
 Hot module replacement applies instantly to a component or story edit. The toolbar also offers a
