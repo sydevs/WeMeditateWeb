@@ -3,7 +3,9 @@
 # A component playground is no more a search surface than the app is, and this one answers on
 # its own domain, so there is a URL worth keeping out of an index. Two signals carry that:
 # this file (do not fetch) and `X-Robots-Tag` in `_headers` (do not index, on every URL).
-# Ladle generates its own `index.html`, so a `<meta robots>` is not available as a third.
+# A `<meta robots>` is available as a third — Ladle injects `.ladle/head.html` into the
+# `index.html` it generates — and is deliberately unused: it reaches only the document, so
+# it covers nothing `X-Robots-Tag` does not already cover, on one more line to keep in step.
 #
 # THE INTERACTION THAT MATTERS. `Disallow` means "do not fetch", not "do not index" — so a
 # compliant crawler that never fetches a page also never sees the `noindex` served on it. The

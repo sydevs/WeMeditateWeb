@@ -63,8 +63,8 @@ describe('ladle preview', () => {
    * Cloudflare applies it. `tests/guards/ladle-crawler-refusal.test.ts` guards the files.
    */
   it('sends noindex on every URL it serves', async () => {
-    // A document and a build asset: a `<meta robots>` could not have covered the second one,
-    // and Ladle generates the document itself, so it could not have carried one either.
+    // A document and a build asset: the second carries no document, so a `<meta robots>` could
+    // not have covered it. That is why the header, not a tag, holds the policy.
     const pages = await Promise.all([fetchPage('/'), fetchPage('/meta.json')])
 
     for (const page of pages) {

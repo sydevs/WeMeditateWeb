@@ -51,12 +51,11 @@ untested.
 
 ## The playground refuses crawlers
 
-Ladle generates its own `index.html`, so a `<meta robots>` written in this repo never reaches
-`design.wemeditate.com`. The refusal is two files in the build output instead —
+Two files in the build output carry the refusal —
 [.ladle/static/robots.txt](../.ladle/static/robots.txt) and
 [.ladle/static/_headers](../.ladle/static/_headers), which Cloudflare Pages reads and the
 `ladle-crawler-refusal` plugin in [.ladle/crawler-refusal.ts](../.ladle/crawler-refusal.ts)
-emits. `robots.txt` carries the policy.
+emits. `robots.txt` carries the policy, and the reason a `<meta robots>` is not a third signal.
 
 They ship from `.ladle/static/` rather than `public/`, which the app's build copies too: a
 `Disallow: /` there would answer on wemeditate.com. The app builds its own per-host refusal in
