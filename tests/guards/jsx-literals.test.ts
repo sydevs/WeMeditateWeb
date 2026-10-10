@@ -40,7 +40,7 @@ async function reportedLines(lines: string[], filePath = 'components/organisms/S
 const at = (offset: number) => FIRST_LINE + offset
 
 describe('the visible-copy lint rule', () => {
-  it('catches every spelling of visible text', async () => {
+  it('catches a text node, a braced string and a template literal', async () => {
     const samples = [
       '      <p>Inspiration comes from within</p>',
       "      <p>{'Inspiration comes from within'}</p>",
@@ -61,7 +61,7 @@ describe('the visible-copy lint rule', () => {
     expect(await reportedLines(samples)).toEqual([at(0), at(0), at(1), at(2)])
   })
 
-  it('catches every spelling of a prop that carries copy', async () => {
+  it('catches a copy prop quoted, braced, or in either branch arm', async () => {
     const samples = [
       '      <Item title="Meditate Now" />',
       "      <Item title={'Meditate Now'} />",
