@@ -11,10 +11,14 @@
  * code, and this catches it in a component no test happens to render.
  *
  * ⚠ It matches text, not syntax, so its coverage is the spellings below
- * rather than every possible one. `aria-label={SOME_CONST}` passes, and
- * `alt` is not covered. Moving this to an ESLint `no-restricted-syntax`
- * selector would make it AST-accurate; until then, treat a pass as "none of
- * the common spellings", not as proof.
+ * rather than every possible one. The `no-restricted-syntax` selectors in
+ * `eslint.config.js` are the AST-accurate check, over JSX text and over
+ * `alt`, `aria-label`, `label`, `placeholder`, `subtitle` and `title`
+ * (#165). This one stays because it runs in `pnpm test:run`, where a
+ * `pnpm lint` failure is not visible, and because its own cases pin the
+ * ternary and resolved-call shapes. Neither can see
+ * `aria-label={SOME_CONST}`: a literal's value is still only a fact about
+ * the file it is written in.
  */
 
 import { describe, it, expect } from 'vitest'

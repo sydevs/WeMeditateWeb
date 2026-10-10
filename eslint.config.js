@@ -4,6 +4,12 @@ import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import tseslint from 'typescript-eslint'
 
+/** The string-valued props that carry copy a visitor or a screen reader reads. */
+const TRANSLATED_PROPS = '/^(alt|aria-label|label|placeholder|subtitle|title)$/'
+
+const TRANSLATED_PROP_MESSAGE =
+  "This prop carries copy a visitor reads: pass t('group.key') instead of an English literal."
+
 export default [
   {
     ignores: [
@@ -140,6 +146,45 @@ export default [
           blankLine: 'any',
           prev: ['const', 'let', 'var'],
           next: ['const', 'let', 'var'],
+        },
+      ],
+    },
+  },
+  {
+    // Visitor-facing copy is SahajCloud-owned and reaches the markup through
+    // `useT()` (AGENTS.md). The two guards under `tests/guards/` match source
+    // text, so neither can see a JSX text node or a string-valued prop; these
+    // selectors read the AST instead, which is what `aria-label={SOME_CONST}`
+    // slipping past the a11y guard asked for (#165).
+    //
+    // Two consecutive ASCII letters is the prose test: it passes a separator
+    // (`·`, `—`), an entity, and a lone initial, and catches a word. A key
+    // inside `t('a.b')` is not a Literal child of the attribute, so a resolved
+    // call never trips this.
+    //
+    // Stories, tests and the Ladle scaffolding supply their own English
+    // fixtures on purpose.
+    files: ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx'],
+    ignores: ['**/*.stories.tsx', '**/*.test.tsx', 'components/ladle/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXText[value=/[A-Za-z]{2}/]',
+          message:
+            'Visible text must come from SahajCloud: render t(\'group.key\') instead of an English literal.',
+        },
+        {
+          selector: `JSXAttribute[name.name=${TRANSLATED_PROPS}] > Literal[value=/[A-Za-z]{2}/]`,
+          message: TRANSLATED_PROP_MESSAGE,
+        },
+        {
+          selector: `JSXAttribute[name.name=${TRANSLATED_PROPS}] > JSXExpressionContainer > Literal[value=/[A-Za-z]{2}/]`,
+          message: TRANSLATED_PROP_MESSAGE,
+        },
+        {
+          selector: `JSXAttribute[name.name=${TRANSLATED_PROPS}] > JSXExpressionContainer > ConditionalExpression > Literal[value=/[A-Za-z]{2}/]`,
+          message: TRANSLATED_PROP_MESSAGE,
         },
       ],
     },

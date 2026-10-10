@@ -231,11 +231,13 @@ const CONVERTERS: JSXConverters = {
         ? `block: ${n.fields.blockType}`
         : (n.type ?? 'unknown')
 
+    /* eslint-disable no-restricted-syntax -- a DEV-only notice for whoever adds the converter */
     return (
       <Alert title="Unimplemented RichText node" variant="warning">
         No converter for <code>{label}</code> — implement it or check the SahajCloud content.
       </Alert>
     )
+    /* eslint-enable no-restricted-syntax */
   },
 }
 
