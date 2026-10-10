@@ -261,6 +261,7 @@ function withDebugOverlay(label: string, render: BlockConverterFn): BlockConvert
     const button = (
       <button
         key="debug"
+        // eslint-disable-next-line no-restricted-syntax -- `debug` defaults to false, and `label` is a block type rather than copy
         aria-label={`Log ${label} block data`}
         className="absolute top-1 right-1 z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800/70 text-xs font-bold text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.9)]"
         type="button"

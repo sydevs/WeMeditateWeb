@@ -13,55 +13,81 @@
 
 import { describe, it, expect } from 'vitest'
 import { ESLint } from 'eslint'
+import { repoRoot } from './_source-scan'
 
-const eslint = new ESLint({ cwd: new URL('../..', import.meta.url).pathname })
+// Hoisted on purpose: a fresh instance re-resolves the config on every call,
+// and loading this repo's config costs ~700ms.
+const eslint = new ESLint({ cwd: repoRoot })
 
-/** The literal-copy complaints ESLint reports for `source` at `filePath`. */
-async function violations(source: string, filePath = 'components/organisms/Sample.tsx') {
-  const [result] = await eslint.lintText(source, { filePath })
+/** `lines` as a component body, so the first one lands on line 4. */
+const FIRST_LINE = 4
+
+const wrap = (lines: string[]) =>
+  ['export function Sample() {', '  return (', '    <div>', ...lines, '    </div>', '  )', '}'].join(
+    '\n',
+  )
+
+/** The lines ESLint reports literal copy on, for `lines` at `filePath`. */
+async function reportedLines(lines: string[], filePath = 'components/organisms/Sample.tsx') {
+  const [result] = await eslint.lintText(wrap(lines), { filePath })
 
   return result.messages
     .filter((message) => message.ruleId === 'no-restricted-syntax')
     .map((message) => message.line)
 }
 
-const wrap = (jsx: string) => `export function Sample() {\n  return (\n${jsx}\n  )\n}\n`
+/** Each sample's own line, so a failure names the spelling that moved. */
+const at = (offset: number) => FIRST_LINE + offset
 
 describe('the visible-copy lint rule', () => {
-  it('catches JSX text', async () => {
-    expect(await violations(wrap('    <p>Inspiration comes from within</p>'))).toHaveLength(1)
-  })
-
-  it('catches a quoted prop that carries copy', async () => {
+  it('catches every spelling of visible text', async () => {
     const samples = [
-      '    <Item title="Meditate Now" />',
-      "    <Item title={'Meditate Now'} />",
-      "    <Item aria-label={muted ? 'Unmute voice' : 'Mute voice'} />",
-      '    <img alt="A seated meditator" />',
+      '      <p>Inspiration comes from within</p>',
+      "      <p>{'Inspiration comes from within'}</p>",
+      '      <p>{`Inspiration comes from within`}</p>',
     ]
 
-    for (const sample of samples) {
-      expect(await violations(wrap(sample)), sample).not.toHaveLength(0)
-    }
+    expect(await reportedLines(samples)).toEqual([at(0), at(1), at(2)])
   })
 
-  it('passes a resolved lookup, a separator and a lone initial', async () => {
+  it('catches every spelling of a prop that carries copy', async () => {
     const samples = [
-      "    <p>{t('navigation.featured_caption')}</p>",
-      "    <Item title={t('navigation.about_meditation')} />",
-      '    <span>·</span>',
-      '    <span>{first} — {last}</span>',
+      '      <Item title="Meditate Now" />',
+      "      <Item title={'Meditate Now'} />",
+      '      <Item subtitle={`Watch guided meditations`} />',
+      "      <Item aria-label={muted ? 'Unmute voice' : 'Mute voice'} />",
+      '      <img alt="A seated meditator" />',
     ]
 
-    for (const sample of samples) {
-      expect(await violations(wrap(sample)), sample).toHaveLength(0)
-    }
+    // The ternary reports twice: one arm is not an excuse for the other.
+    expect(await reportedLines(samples)).toEqual([
+      at(0),
+      at(1),
+      at(2),
+      at(3),
+      at(3),
+      at(4),
+    ])
+  })
+
+  it('passes a resolved lookup, a separator, an empty alt and a style block', async () => {
+    const samples = [
+      "      <p>{t('navigation.featured_caption')}</p>",
+      "      <Item title={t('navigation.about_meditation')} />",
+      "      <Item title={t('media.general.embed_title', { title })} />",
+      '      <span>·</span>',
+      '      <span>{first} — {last}</span>',
+      '      <img alt="" role="presentation" />',
+      '      <style>{`.logo { fill: none; }`}</style>',
+    ]
+
+    expect(await reportedLines(samples)).toEqual([])
   })
 
   it('leaves stories and tests to their own English fixtures', async () => {
-    const sample = wrap('    <p>Inspiration comes from within</p>')
+    const samples = ['      <p>Inspiration comes from within</p>']
 
-    expect(await violations(sample, 'components/organisms/Sample.stories.tsx')).toHaveLength(0)
-    expect(await violations(sample, 'components/organisms/Sample.test.tsx')).toHaveLength(0)
+    expect(await reportedLines(samples, 'components/organisms/Sample.stories.tsx')).toEqual([])
+    expect(await reportedLines(samples, 'components/organisms/Sample.test.tsx')).toEqual([])
   })
 })

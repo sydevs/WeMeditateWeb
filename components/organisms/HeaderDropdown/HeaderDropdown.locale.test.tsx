@@ -11,10 +11,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { WebTranslations } from '../../../server/sahajcloud-types'
+import { EN_TRANSLATIONS } from '../../../lib/i18n'
 
-const FRENCH = {
-  navigation: { featured_caption: 'La source est en vous' },
-} as unknown as WebTranslations
+// Spread rather than hand-built, so the fixture needs no cast and stays valid
+// when `WebTranslations` gains a required branch.
+const FRENCH: WebTranslations = {
+  ...EN_TRANSLATIONS,
+  navigation: { ...EN_TRANSLATIONS.navigation, featured_caption: 'La source est en vous' },
+}
 
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'fr', translations: FRENCH, urlPathname: '/index' }),

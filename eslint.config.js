@@ -4,11 +4,29 @@ import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import tseslint from 'typescript-eslint'
 
-/** The string-valued props that carry copy a visitor or a screen reader reads. */
-const TRANSLATED_PROPS = '/^(alt|aria-label|label|placeholder|subtitle|title)$/'
+// `name`, `value` and `id` also take strings, but those are identifiers rather
+// than copy, so they stay out. `alt` is handled on its own, below.
+const COPY_PROPS = '/^(aria-label|label|placeholder|subtitle|title)$/'
 
-const TRANSLATED_PROP_MESSAGE =
-  "This prop carries copy a visitor reads: pass t('group.key') instead of an English literal."
+/** Prose, not punctuation: two consecutive ASCII letters. */
+const PROSE = '/[A-Za-z]{2}/'
+
+const NOT_CODE_ELEMENT = 'JSXElement:not([openingElement.name.name=/^(script|style)$/])'
+
+/** Every spelling of a literal string: `'x'`, and `` `x` `` with no substitution. */
+const copyIn = (parent) =>
+  `${parent} > Literal[value=${PROSE}], ${parent} > TemplateLiteral > TemplateElement[value.raw=${PROSE}]`
+
+/** The same, written directly on a prop, in a brace, or in either arm of a ternary. */
+const copyOn = (prop) => {
+  const attribute = `JSXAttribute[name.name=${prop}]`
+
+  return [
+    copyIn(attribute),
+    copyIn(`${attribute} > JSXExpressionContainer`),
+    copyIn(`${attribute} > JSXExpressionContainer > ConditionalExpression`),
+  ].join(', ')
+}
 
 export default [
   {
@@ -152,39 +170,40 @@ export default [
   },
   {
     // Visitor-facing copy is SahajCloud-owned and reaches the markup through
-    // `useT()` (AGENTS.md). The two guards under `tests/guards/` match source
-    // text, so neither can see a JSX text node or a string-valued prop; these
-    // selectors read the AST instead, which is what `aria-label={SOME_CONST}`
-    // slipping past the a11y guard asked for (#165).
+    // `useT()` (AGENTS.md). The guards under `tests/guards/` match source text,
+    // so neither sees a JSX text node or a quoted prop at all; these selectors
+    // do (#165).
     //
-    // Two consecutive ASCII letters is the prose test: it passes a separator
-    // (`·`, `—`), an entity, and a lone initial, and catches a word. A key
-    // inside `t('a.b')` is not a Literal child of the attribute, so a resolved
-    // call never trips this.
-    //
-    // Stories, tests and the Ladle scaffolding supply their own English
-    // fixtures on purpose.
+    // The combinator is `>` and never a descendant: the key inside
+    // `title={t('a.b')}` is a Literal too, just not the attribute's own child.
+    // A value these selectors cannot read — an identifier, or a call's return —
+    // passes, so this bounds the spellings rather than proving intent.
     files: ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx'],
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', 'components/ladle/**'],
     rules: {
       'no-restricted-syntax': [
         'error',
         {
-          selector: 'JSXText[value=/[A-Za-z]{2}/]',
+          selector: [
+            `JSXText[value=${PROSE}]`,
+            // A `<style>` or `<script>` child is code, not copy.
+            copyIn(`${NOT_CODE_ELEMENT} > JSXExpressionContainer`),
+          ].join(', '),
           message:
-            'Visible text must come from SahajCloud: render t(\'group.key\') instead of an English literal.',
+            "Visible text must come from SahajCloud: render t('group.key') instead of an English literal.",
         },
         {
-          selector: `JSXAttribute[name.name=${TRANSLATED_PROPS}] > Literal[value=/[A-Za-z]{2}/]`,
-          message: TRANSLATED_PROP_MESSAGE,
+          selector: copyOn(COPY_PROPS),
+          message:
+            "This prop carries copy a visitor reads: pass t('group.key') instead of an English literal.",
         },
         {
-          selector: `JSXAttribute[name.name=${TRANSLATED_PROPS}] > JSXExpressionContainer > Literal[value=/[A-Za-z]{2}/]`,
-          message: TRANSLATED_PROP_MESSAGE,
-        },
-        {
-          selector: `JSXAttribute[name.name=${TRANSLATED_PROPS}] > JSXExpressionContainer > ConditionalExpression > Literal[value=/[A-Za-z]{2}/]`,
-          message: TRANSLATED_PROP_MESSAGE,
+          // `alt` has a second right answer the other props do not: an image
+          // that carries no meaning takes `alt=""`, as `role="presentation"`
+          // and the decorative svgs do.
+          selector: copyOn("'alt'"),
+          message:
+            'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
       ],
     },

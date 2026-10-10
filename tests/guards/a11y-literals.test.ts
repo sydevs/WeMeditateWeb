@@ -12,13 +12,15 @@
  *
  * ⚠ It matches text, not syntax, so its coverage is the spellings below
  * rather than every possible one. The `no-restricted-syntax` selectors in
- * `eslint.config.js` are the AST-accurate check, over JSX text and over
- * `alt`, `aria-label`, `label`, `placeholder`, `subtitle` and `title`
- * (#165). This one stays because it runs in `pnpm test:run`, where a
- * `pnpm lint` failure is not visible, and because its own cases pin the
- * ternary and resolved-call shapes. Neither can see
- * `aria-label={SOME_CONST}`: a literal's value is still only a fact about
- * the file it is written in.
+ * `eslint.config.js` cover more shapes, and more props, AST-accurately
+ * (#165).
+ *
+ * What keeps this one is that it strips comments, so it never sees an
+ * `eslint-disable` — the screen-reader subset #56 was about cannot be
+ * silenced one site at a time. It also reads any literal nested anywhere
+ * inside a braced expression, where the selectors read only the paths they
+ * enumerate. Neither can see `aria-label={SOME_CONST}`: an identifier's
+ * value is not a fact about the line that uses it.
  */
 
 import { describe, it, expect } from 'vitest'
