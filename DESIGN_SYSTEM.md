@@ -59,7 +59,8 @@ Six tokens stand outside the scales:
 
 Which step each role reaches for in the light theme today. This records what the components
 do, not a contrast clearance — several of these pairings sit under the 4.5:1 bar the
-accessibility table below sets, so check yours before you copy it:
+accessibility table below sets, so check yours before you copy it. #179 proposes moving the
+failing roles to a passing step, which would rewrite the Primary button, Link and Body text rows:
 
 | Role | Token |
 | --- | --- |
