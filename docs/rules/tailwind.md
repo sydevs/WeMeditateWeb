@@ -17,6 +17,17 @@ the `@theme` directive:
 In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailwind.config.ts`.
 `tailwind.config.ts` only lists content paths for class detection.
 
+**A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
+live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
+`full-bleed`, and the two touch-target utilities that
+[design-system](design-system.md) documents. A rule with a name is greppable and lintable; the
+same eight classes pasted into three components are none of those things, and dropping one of
+them fails silently.
+
+⚠ **A custom utility is emitted before Tailwind's own**, so a core utility touching the same
+property wins on the same element — `min-w-0` beats `touch-target`'s `min-width`. Drop the core
+class rather than stacking the two.
+
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a
 SahajCloud-authored width — produces no CSS and the rule silently does nothing. Declare the range in
