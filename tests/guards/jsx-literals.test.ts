@@ -50,16 +50,27 @@ describe('the visible-copy lint rule', () => {
     expect(await reportedLines(samples)).toEqual([at(0), at(1), at(2)])
   })
 
+  it('catches a branched brace, in an element and in a fragment', async () => {
+    const samples = [
+      "      <p>{cond ? 'Inspiration comes from within' : 'Or else'}</p>",
+      "      <p>{cond && 'Something went wrong'}</p>",
+      "      <>{'Fragment copy'}</>",
+    ]
+
+    // The ternary reports twice: one arm is not an excuse for the other.
+    expect(await reportedLines(samples)).toEqual([at(0), at(0), at(1), at(2)])
+  })
+
   it('catches every spelling of a prop that carries copy', async () => {
     const samples = [
       '      <Item title="Meditate Now" />',
       "      <Item title={'Meditate Now'} />",
       '      <Item subtitle={`Watch guided meditations`} />',
       "      <Item aria-label={muted ? 'Unmute voice' : 'Mute voice'} />",
+      "      <Item description={cond && 'Sit quietly'} />",
       '      <img alt="A seated meditator" />',
     ]
 
-    // The ternary reports twice: one arm is not an excuse for the other.
     expect(await reportedLines(samples)).toEqual([
       at(0),
       at(1),
@@ -67,6 +78,7 @@ describe('the visible-copy lint rule', () => {
       at(3),
       at(3),
       at(4),
+      at(5),
     ])
   })
 

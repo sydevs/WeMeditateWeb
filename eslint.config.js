@@ -12,21 +12,29 @@ const COPY_PROPS =
 /** Prose, not punctuation: two consecutive ASCII letters. */
 const PROSE = '/[A-Za-z]{2}/'
 
-const NOT_CODE_ELEMENT = 'JSXElement:not([openingElement.name.name=/^(script|style)$/])'
+/** A child position a visitor reads. A `<style>` or `<script>` child is code, not copy. */
+const COPY_PARENTS = [
+  'JSXElement:not([openingElement.name.name=/^(script|style)$/])',
+  'JSXFragment',
+]
 
 /** Every spelling of a literal string: `'x'`, and `` `x` `` with no substitution. */
 const copyIn = (parent) =>
   `${parent} > Literal[value=${PROSE}], ${parent} > TemplateLiteral > TemplateElement[value.raw=${PROSE}]`
 
-/** The same, written directly on a prop, in a brace, or in either arm of a ternary. */
+// The branch arms are not optional: `{cond && 'copy'}` and `{cond ? 'a' : 'b'}`
+// are the same visible string, and the obvious way around a brace-only selector.
+const BRANCHES = ['', ' > ConditionalExpression', ' > LogicalExpression']
+
+/** The same, in a brace under `parent`, directly or in either arm of a branch. */
+const copyBraced = (parent) =>
+  BRANCHES.map((branch) => copyIn(`${parent} > JSXExpressionContainer${branch}`)).join(', ')
+
+/** The same, written directly on a prop or in its brace. */
 const copyOn = (prop) => {
   const attribute = `JSXAttribute[name.name=${prop}]`
 
-  return [
-    copyIn(attribute),
-    copyIn(`${attribute} > JSXExpressionContainer`),
-    copyIn(`${attribute} > JSXExpressionContainer > ConditionalExpression`),
-  ].join(', ')
+  return [copyIn(attribute), copyBraced(attribute)].join(', ')
 }
 
 export default [
@@ -185,11 +193,7 @@ export default [
       'no-restricted-syntax': [
         'error',
         {
-          selector: [
-            `JSXText[value=${PROSE}]`,
-            // A `<style>` or `<script>` child is code, not copy.
-            copyIn(`${NOT_CODE_ELEMENT} > JSXExpressionContainer`),
-          ].join(', '),
+          selector: [`JSXText[value=${PROSE}]`, ...COPY_PARENTS.map(copyBraced)].join(', '),
           message:
             "Visible text must come from SahajCloud: render t('group.key') instead of an English literal.",
         },
