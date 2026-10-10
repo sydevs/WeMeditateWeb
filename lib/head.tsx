@@ -16,7 +16,7 @@
  */
 
 import { useConfig } from 'vike-react/useConfig'
-import { getImageURL, getVariantName, isCloudflareImageURL } from './cloudflare-images'
+import { getImageURL, getVariantName } from './cloudflare-images'
 import { populatedImageUrl } from './payload-relationships'
 import { useT } from '../hooks/useT'
 import { useOptionalPageContext } from '../hooks/usePageContext'
@@ -35,11 +35,10 @@ export interface PageMetaLike {
 /**
  * Resolves a `meta.image` relationship to a single absolute og:image URL.
  *
- * og:image needs one large landscape render, so this function appends a
- * `video` (16:9) variant to a Cloudflare Images URL. A bare
- * imagedelivery.net URL does not resolve without one. Returns null when
- * the image is missing or unpopulated (a bare id), so the tag is simply
- * omitted.
+ * og:image needs one large landscape render, so this function resolves a
+ * Cloudflare Images URL to a `video` (16:9) variant, replacing the `/public`
+ * one SahajCloud returns. Returns null when the image is missing or
+ * unpopulated (a bare id), so the tag is simply omitted.
  */
 export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
   const url = populatedImageUrl(image)
@@ -48,7 +47,7 @@ export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
     return null
   }
 
-  return isCloudflareImageURL(url) ? getImageURL(url, getVariantName('video', 'large')) : url
+  return getImageURL(url, getVariantName('video', 'large'))
 }
 
 /**

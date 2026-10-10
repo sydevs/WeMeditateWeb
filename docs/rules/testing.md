@@ -42,12 +42,16 @@ import { Image } from './Image'
 
 it('emits a responsive srcSet for Cloudflare URLs', () => {
   const html = renderToStaticMarkup(
-    <Image src="https://imagedelivery.net/acct/id/" alt="x" aspectRatio="video" />,
+    <Image src="https://imagedelivery.net/acct/id/public" alt="x" aspectRatio="video" />,
   )
   expect(html).toContain('video-800 800w')
   expect(html).toContain('srcSet=') // React keeps this attribute camelCase
 })
 ```
+
+**Spell a SahajCloud URL the way SahajCloud sends it** — `…/<image_id>/public`, with the variant
+segment. A bare `…/<image_id>/` is a shape no read produces, and a fixture using it is how #141
+kept the whole responsive-image pipeline green while it was dead.
 
 See [components/atoms/Image/Image.test.tsx](../../components/atoms/Image/Image.test.tsx) for a
 full example. `useState` and `useMemo` work under this kind of SSR render, but `useEffect` does

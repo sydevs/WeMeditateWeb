@@ -1,24 +1,29 @@
 /**
  * Cloudflare Images utilities.
  *
- * SahajCloud returns base URLs like
- * `https://imagedelivery.net/<account>/<image_id>/`. Appending a variant
- * name (for example, `square-400`, `video-800`, `4-3-1024`) yields an
- * optimized, format-negotiated image (AVIF, WebP, or JPEG) delivered
- * through Cloudflare's CDN.
+ * A SahajCloud URL already carries a variant segment (`…/<image_id>/public`), so
+ * a named variant replaces that segment rather than being appended
+ * (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts`). The
+ * result is an optimized, format-negotiated image from Cloudflare's CDN.
  *
  * Variants must be configured in the Cloudflare dashboard, to match the
  * `{aspectRatio}-{width}` names derived from SIZE_WIDTH_MAP below.
  */
 
-const CLOUDFLARE_IMAGE_URL_PREFIX = 'https://imagedelivery.net/'
+// The variant segment is matched loosely, because a flexible variant carries `=`
+// and `,` (`format=auto,width=320`). Cloudflare permits a `/` inside a custom
+// image id, but SahajCloud slugifies every id (sydevs/SahajCloud
+// `src/plugins/storage/filenameUtils.ts`), so anchoring the base to two segments
+// is safe here.
+const CLOUDFLARE_URL_PATTERN = /^(https:\/\/imagedelivery\.net\/[^/]+\/[^/]+)(?:\/[^/]*)?$/
 
-// Matches a bare Cloudflare Images base URL: <prefix><account>/<image_id>/?
-// Anything after <image_id>/ (for example, an already-appended variant
-// like `/public`) fails this check and skips transformation. This avoids
-// producing an invalid `…/<existing-variant>/<new-variant>` URL.
-const BARE_CLOUDFLARE_URL_PATTERN = /^https:\/\/imagedelivery\.net\/[^/]+\/[^/]+\/?$/
+/** The variant-less base of a Cloudflare Images URL, or null for any other URL. */
+function imageBaseURL(url: string): string | null {
+  return CLOUDFLARE_URL_PATTERN.exec(url)?.[1] ?? null
+}
 
+// TODO: nothing verifies that the Cloudflare dashboard carries every name this
+// map can produce, and a missing variant 404s the image (#141).
 const SIZE_WIDTH_MAP = {
   square: { small: 400, medium: 800, xlarge: 1200 },
   video: { small: 640, medium: 800, large: 1024, xlarge: 1536 },
@@ -30,47 +35,48 @@ const SIZE_WIDTH_MAP = {
 export type AspectRatio = keyof typeof SIZE_WIDTH_MAP
 export type ImageSize = 'small' | 'medium' | 'large' | 'xlarge'
 
-export function isCloudflareImageURL(url: string): boolean {
-  return url.startsWith(CLOUDFLARE_IMAGE_URL_PREFIX)
+/** Ascending `<variant> <width>w` srcset entries, less the base URL each needs. */
+const SRCSET_SUFFIXES = {} as Record<AspectRatio, readonly string[]>
+
+for (const [aspectRatio, widths] of Object.entries(SIZE_WIDTH_MAP) as [
+  AspectRatio,
+  Partial<Record<ImageSize, number>>,
+][]) {
+  SRCSET_SUFFIXES[aspectRatio] = (Object.entries(widths) as [ImageSize, number][])
+    .sort(([, a], [, b]) => a - b)
+    .map(([size, width]) => `${getVariantName(aspectRatio, size)} ${width}w`)
 }
 
 /**
- * Appends a variant to a Cloudflare Images base URL.
- *
- * Expects `baseUrl` to be bare (`…/<account>/<image_id>/?`). If it already
- * has a variant segment appended, returns it unchanged.
+ * Resolves a Cloudflare Images URL to one variant, replacing any variant segment
+ * already present — `…/<image_id>/public/<variant>` does not resolve. Any other
+ * URL comes back unchanged, including the `/api/<collection>/file/<filename>`
+ * fallback a SahajCloud dev server returns.
  */
 export function getImageURL(baseUrl: string, variant: string): string {
-  if (!BARE_CLOUDFLARE_URL_PATTERN.test(baseUrl)) {
-    return baseUrl
-  }
-  const url = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+  const base = imageBaseURL(baseUrl)
 
-  return `${url}${variant}`
+  return base ? `${base}/${variant}` : baseUrl
 }
 
 export function getVariantName(aspectRatio: AspectRatio, size: ImageSize = 'medium'): string {
   const widths = SIZE_WIDTH_MAP[aspectRatio] as Partial<Record<ImageSize, number>>
-  // Prefer an exact match, then medium, then the smallest defined width
-  // for this ratio. This guarantees the returned variant exists in the
-  // Cloudflare dashboard, and stays deterministic regardless of
-  // object-key insertion order.
+  // Prefer an exact match, then medium, then the smallest defined width for this
+  // ratio, so the name stays deterministic regardless of object-key insertion
+  // order.
   const width = widths[size] ?? widths.medium ?? Math.min(...(Object.values(widths) as number[]))
 
   return `${aspectRatio}-${width}`
 }
 
 export function getImageSrcSet(baseUrl: string, aspectRatio: AspectRatio): string {
-  if (!BARE_CLOUDFLARE_URL_PATTERN.test(baseUrl)) {
+  const base = imageBaseURL(baseUrl)
+
+  if (!base) {
     return ''
   }
-  const widths = (Object.values(SIZE_WIDTH_MAP[aspectRatio]) as number[])
-    .slice()
-    .sort((a, b) => a - b)
 
-  return widths
-    .map((width) => `${getImageURL(baseUrl, `${aspectRatio}-${width}`)} ${width}w`)
-    .join(', ')
+  return SRCSET_SUFFIXES[aspectRatio].map((suffix) => `${base}/${suffix}`).join(', ')
 }
 
 /** Numeric width/height ratio for each supported aspect ratio. */
