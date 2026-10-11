@@ -97,6 +97,7 @@ export function ErrorFallback({
         </p>
       )}
 
+      {/* eslint-disable no-restricted-syntax -- both call sites pass showDetails={import.meta.env.DEV}, so this panel is a developer's, never a visitor's */}
       {showDetails && (
         <details className="mb-6 max-w-md text-left w-full">
           <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900 mb-2 text-center">
@@ -112,6 +113,7 @@ export function ErrorFallback({
           </div>
         </details>
       )}
+      {/* eslint-enable no-restricted-syntax */}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Button onClick={resetError} variant="secondary" size="md">

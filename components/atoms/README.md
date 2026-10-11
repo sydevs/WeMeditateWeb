@@ -50,7 +50,7 @@ the barrel and `./ComponentName` is a single component.
 mutually exclusive props. Give every optional prop a sensible default.
 
 **Styling**: use Tailwind utility classes directly, following the tokens in
-`tailwind.config.ts`. Accept a `className` prop for the caller to extend styling. Include a
+`layouts/tailwind.css`. Accept a `className` prop for the caller to extend styling. Include a
 visible focus state for keyboard use.
 
 **Accessibility**: use semantic HTML, add ARIA attributes where semantic HTML falls short, and
