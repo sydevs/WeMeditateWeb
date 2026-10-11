@@ -815,6 +815,7 @@ function MeditationPlayerInner({
         </div>
 
         {/* Upsell Message */}
+        {/* eslint-disable no-restricted-syntax -- #178: these need keys added to wm-web-translations first */}
         {upsell && (
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
@@ -836,6 +837,7 @@ function MeditationPlayerInner({
             </p>
           </div>
         )}
+        {/* eslint-enable no-restricted-syntax */}
       </div>
     </div>
   )

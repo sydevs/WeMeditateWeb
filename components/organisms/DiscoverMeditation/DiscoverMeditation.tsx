@@ -69,6 +69,7 @@ export function DiscoverMeditation({
         </div>
 
         {/* Action Items */}
+        {/* eslint-disable no-restricted-syntax -- #165 phase 3 removes this once the six keys exist upstream */}
         <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-center justify-center mt-12 lg:mt-24">
           <ActionItem
             href="/meditations"
@@ -94,6 +95,7 @@ export function DiscoverMeditation({
             title="Classes Near Me"
           />
         </div>
+        {/* eslint-enable no-restricted-syntax */}
       </div>
     </section>
   )

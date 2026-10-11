@@ -19,6 +19,7 @@ export function AnimatedLogoSvg({ className = 'w-12 h-12', ...props }: AnimatedL
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 128 94.44"
       className={className}
+      aria-hidden="true"
       {...props}
     >
       <defs>
@@ -86,7 +87,6 @@ export function AnimatedLogoSvg({ className = 'w-12 h-12', ...props }: AnimatedL
           }
         `}</style>
       </defs>
-      <title>WeMeditate Animated Logo</title>
       <path
         className="animated-logo-stroke animated-logo-path-0"
         d="M99.49 70.45a61.66 61.66 0 0 1-18.44 44.12c-.3.29-.61.6-.93.89-.48-.46-1-.93-1.44-1.4a61.58 61.58 0 0 1-17.94-43.6V68.8a61.48 61.48 0 0 1 19.38-43.34 61.55 61.55 0 0 1 19.33 42.89c.03.65.04 1.39.04 2.1z"
