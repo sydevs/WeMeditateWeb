@@ -80,19 +80,27 @@ describe('parseAtlasRoute', () => {
     })
   })
 
-  describe('routes that name nothing', () => {
+  describe('routes that resolve to the atlas root', () => {
     it.each([
       ['the atlas root', '/'],
       ['an empty string', ''],
       ['a bare search view', '/search'],
+      ['a bare calendar view', '/calendar'],
       ['a bare filters view', '/filters'],
+      ['a bare online view', '/online'],
+      ['a bare share view', '/share'],
+      ['several stacked view segments', '/search/filters'],
       ['nothing but legacy prefixes', '/events/areas'],
-    ])('returns null for %s', (_label, route) => {
-      // Not a failure. This site owns its own landing page's metadata,
-      // and there is no document upstream to describe it with.
-      expect(parseAtlasRoute(route)).toBeNull()
+    ])('resolves %s to the root', (_label, route) => {
+      // A view of the root is still the root, and these are the routes this
+      // site actually mounts — the landing page needs metadata of its own.
+      expect(parseAtlasRoute(route)).toEqual({ kind: 'root' })
     })
+  })
 
+  // "Names nothing" and "is not a route" must not collapse into one answer:
+  // the first is the root, the second is still undescribable.
+  describe('strings that are not routes at all', () => {
     it.each([
       ['a query string spliced in', '/gb/london?utm_source=x'],
       ['a fragment', '/gb/london#!/x'],
@@ -101,6 +109,15 @@ describe('parseAtlasRoute', () => {
       expect(parseAtlasRoute(route)).toBeNull()
     })
 
+    it('refuses a query or fragment on an otherwise empty route', () => {
+      // Without this, `/?utm_source=x` would reduce to zero segments and be
+      // answered as the landing page — a malformed URL given a real page.
+      expect(parseAtlasRoute('/?utm_source=x')).toBeNull()
+      expect(parseAtlasRoute('/#x')).toBeNull()
+    })
+  })
+
+  describe('bounds', () => {
     it('refuses a route past the length ceiling', () => {
       const long = `/${'a'.repeat(MAX_ATLAS_ROUTE_LENGTH)}`
 
@@ -115,6 +132,12 @@ describe('parseAtlasRoute', () => {
       expect(
         parseAtlasRoute(`/${Array.from({ length: 13 }, (_, i) => `s${i}`).join('/')}`),
       ).toBeNull()
+    })
+
+    it('counts segments before reserved words are dropped', () => {
+      // One over the cap, all of it reserved: the route stays unreadable
+      // instead of reducing to the landing page.
+      expect(parseAtlasRoute(`/${Array(13).fill('search').join('/')}`)).toBeNull()
     })
   })
 })
