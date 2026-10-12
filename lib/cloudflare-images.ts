@@ -2,12 +2,14 @@
  * Cloudflare Images utilities.
  *
  * A SahajCloud URL already carries a variant segment (`…/<image_id>/public`), so
- * a named variant replaces that segment rather than being appended
+ * a resized variant replaces that segment rather than being appended
  * (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts`). The
  * result is an optimized, format-negotiated image from Cloudflare's CDN.
  *
- * Variants must be configured in the Cloudflare dashboard, to match the
- * `{aspectRatio}-{width}` names derived from SIZE_WIDTH_MAP below.
+ * Variants are flexible (`width=800`), so no width needs a dashboard entry. This
+ * relies on the account's flexible-variants setting, which never works for an
+ * image that requires a signed URL. Named variants are not a drop-in fallback:
+ * Cloudflare answers `400 malformed URL` for a hyphenated name like `video-800`.
  */
 
 // The variant segment is matched loosely, because a flexible variant carries `=`
@@ -22,8 +24,6 @@ function imageBaseURL(url: string): string | null {
   return CLOUDFLARE_URL_PATTERN.exec(url)?.[1] ?? null
 }
 
-// TODO: nothing verifies that the Cloudflare dashboard carries every name this
-// map can produce, and a missing variant 404s the image (#141).
 const SIZE_WIDTH_MAP = {
   square: { small: 400, medium: 800, xlarge: 1200 },
   video: { small: 640, medium: 800, large: 1024, xlarge: 1536 },
@@ -59,6 +59,7 @@ export function getImageURL(baseUrl: string, variant: string): string {
   return base ? `${base}/${variant}` : baseUrl
 }
 
+/** The flexible-variant segment for one size tier of an aspect ratio. */
 export function getVariantName(aspectRatio: AspectRatio, size: ImageSize = 'medium'): string {
   const widths = SIZE_WIDTH_MAP[aspectRatio] as Partial<Record<ImageSize, number>>
   // Prefer an exact match, then medium, then the smallest defined width for this
@@ -66,7 +67,7 @@ export function getVariantName(aspectRatio: AspectRatio, size: ImageSize = 'medi
   // order.
   const width = widths[size] ?? widths.medium ?? Math.min(...(Object.values(widths) as number[]))
 
-  return `${aspectRatio}-${width}`
+  return `width=${width}`
 }
 
 export function getImageSrcSet(baseUrl: string, aspectRatio: AspectRatio): string {
@@ -94,11 +95,10 @@ const ASPECT_RATIO_ENTRIES = Object.entries(ASPECT_RATIO_VALUES) as [AspectRatio
 /**
  * Picks the supported AspectRatio closest to an image's intrinsic dimensions.
  *
- * A Cloudflare Images URL only resolves once a variant is appended, and
- * the variant name encodes a fixed aspect ratio. For a content image of
- * arbitrary dimensions (for example, an inline article upload), the
- * ratio is not known ahead of time. This function snaps to the nearest
- * configured variant, to minimize cropping.
+ * The ratio sets the box `<Image>` crops into and the widths its srcset
+ * offers. For a content image of arbitrary dimensions (for example, an
+ * inline article upload), the ratio is not known ahead of time. This
+ * function snaps to the nearest supported ratio, to minimize cropping.
  *
  * Falls back to `video` (a safe landscape default) when the dimensions
  * are missing or invalid.

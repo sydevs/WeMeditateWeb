@@ -34,9 +34,9 @@ export interface ImageProps extends ComponentProps<'img'> {
   height?: number
 
   /**
-   * Aspect ratio for the image container. Values align with Cloudflare
-   * Images variant prefixes, so this automatically optimizes
-   * SahajCloud-hosted images (for example `video` maps to `video-800`).
+   * Aspect ratio for the image container. It also picks the widths a
+   * SahajCloud-hosted image is resized to (for example `video` at the
+   * default size maps to `width=800`).
    * @default undefined (intrinsic aspect ratio)
    */
   aspectRatio?: AspectRatio
@@ -160,8 +160,8 @@ export function buildLightboxSlide(
  * states, and several object-fit options.
  *
  * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio` is
- * set, the component resolves it to a `{aspectRatio}-{width}` variant and emits
- * a responsive srcset. The default `sizes` attribute assumes a roughly
+ * set, the component resolves it to a `width=<n>` variant and emits a
+ * responsive srcset. The default `sizes` attribute assumes a roughly
  * full-width viewport layout. Pass an explicit `sizes` prop when rendering
  * inside grids, cards, or fixed-width containers.
  *

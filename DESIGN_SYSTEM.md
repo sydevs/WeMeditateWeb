@@ -369,9 +369,8 @@ The same rename applies to every direction: `-t`, `-r`, `-l`, `-br`, `-bl`, `-tr
 
 ## Cloudflare Images
 
-The `<Image>` atom detects an `imagedelivery.net/` URL and resolves it to a variant named
-`{aspectRatio}-{width}` to request an optimized, format-negotiated image, plus a matching
-`srcset`. SahajCloud sends every image URL with a `/public` variant segment already on it, so the
+The `<Image>` atom detects an `imagedelivery.net/` URL and resolves it to a flexible variant,
+`width=<n>`, to request an optimized, format-negotiated image, plus a matching `srcset`. SahajCloud sends every image URL with a `/public` variant segment already on it, so the
 variant **replaces** that segment rather than being appended. A non-Cloudflare URL (a static
 asset, a story placeholder) stays unchanged.
 
@@ -383,9 +382,9 @@ asset, a story placeholder) stays unchanged.
 | `ultrawide` (21:9) | 1536, 2048 |
 
 **Size tiers**: `small` \| `medium` (default) \| `large` \| `xlarge`. When a tier is undefined for
-a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so the name it
-returns is deterministic. Every name in the table above must also exist as a variant in the
-Cloudflare dashboard. The code list alone is not enough, and nothing verifies the dashboard side.
+a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so the width it
+picks is deterministic. Flexible variants need no dashboard entry per width, so the table above
+is the whole list.
 
 `<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
 (default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →

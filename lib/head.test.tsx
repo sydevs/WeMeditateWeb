@@ -7,11 +7,11 @@ const CF_URL = 'https://imagedelivery.net/acct/abc123/'
 
 describe('resolveOgImageUrl', () => {
   it('appends a large video variant to a Cloudflare image URL', () => {
-    expect(resolveOgImageUrl({ url: CF_URL })).toBe(`${CF_URL}video-1024`)
+    expect(resolveOgImageUrl({ url: CF_URL })).toBe(`${CF_URL}width=1024`)
   })
 
   it('replaces the /public variant a SahajCloud read returns', () => {
-    expect(resolveOgImageUrl({ url: `${CF_URL}public` })).toBe(`${CF_URL}video-1024`)
+    expect(resolveOgImageUrl({ url: `${CF_URL}public` })).toBe(`${CF_URL}width=1024`)
   })
 
   it('returns a non-Cloudflare URL unchanged', () => {

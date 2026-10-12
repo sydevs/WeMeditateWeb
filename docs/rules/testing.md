@@ -44,7 +44,7 @@ it('emits a responsive srcSet for Cloudflare URLs', () => {
   const html = renderToStaticMarkup(
     <Image src="https://imagedelivery.net/acct/id/public" alt="x" aspectRatio="video" />,
   )
-  expect(html).toContain('video-800 800w')
+  expect(html).toContain('width=800 800w')
   expect(html).toContain('srcSet=') // React keeps this attribute camelCase
 })
 ```

@@ -18,25 +18,25 @@ const FLEXIBLE_URL = `${BASE_URL}format=auto,width=320,height=320,fit=cover`
 
 describe('getImageURL', () => {
   it('resolves a variant on a URL with a trailing slash', () => {
-    expect(getImageURL(BASE_URL, 'video-800')).toBe(`${BASE_URL}video-800`)
+    expect(getImageURL(BASE_URL, 'width=800')).toBe(`${BASE_URL}width=800`)
   })
 
   it('resolves a variant on a URL without a trailing slash', () => {
-    expect(getImageURL(BASE_URL_NO_SLASH, 'video-800')).toBe(`${BASE_URL_NO_SLASH}/video-800`)
+    expect(getImageURL(BASE_URL_NO_SLASH, 'width=800')).toBe(`${BASE_URL_NO_SLASH}/width=800`)
   })
 
   it('replaces the variant on a SahajCloud URL rather than appending one', () => {
-    expect(getImageURL(PUBLIC_URL, 'video-800')).toBe(`${BASE_URL}video-800`)
+    expect(getImageURL(PUBLIC_URL, 'width=800')).toBe(`${BASE_URL}width=800`)
   })
 
   it('replaces a flexible-variant segment, which carries "=" and ","', () => {
-    expect(getImageURL(FLEXIBLE_URL, 'video-800')).toBe(`${BASE_URL}video-800`)
+    expect(getImageURL(FLEXIBLE_URL, 'width=800')).toBe(`${BASE_URL}width=800`)
   })
 
   it('returns the URL unchanged when a path segment follows the variant', () => {
     const deep = `${PUBLIC_URL}/extra`
 
-    expect(getImageURL(deep, 'video-800')).toBe(deep)
+    expect(getImageURL(deep, 'width=800')).toBe(deep)
   })
 
   it.each([
@@ -44,33 +44,44 @@ describe('getImageURL', () => {
     '/images/local.jpg',
     'https://example.com/cdn-cgi/image/foo.jpg',
   ])('returns the URL unchanged for the non-Cloudflare URL %s', (external) => {
-    expect(getImageURL(external, 'video-800')).toBe(external)
+    expect(getImageURL(external, 'width=800')).toBe(external)
   })
 })
 
 describe('getVariantName', () => {
-  it('returns "{aspectRatio}-{width}" for a defined size', () => {
-    expect(getVariantName('video', 'medium')).toBe('video-800')
-    expect(getVariantName('square', 'small')).toBe('square-400')
-    expect(getVariantName('4-3', 'large')).toBe('4-3-1024')
-    expect(getVariantName('ultrawide', 'xlarge')).toBe('ultrawide-2048')
+  it('returns a flexible "width=" variant for a defined size', () => {
+    expect(getVariantName('video', 'medium')).toBe('width=800')
+    expect(getVariantName('square', 'small')).toBe('width=400')
+    expect(getVariantName('4-3', 'large')).toBe('width=1024')
+    expect(getVariantName('ultrawide', 'xlarge')).toBe('width=2048')
   })
 
   it('defaults to medium when size is omitted', () => {
-    expect(getVariantName('video')).toBe('video-800')
-    expect(getVariantName('square')).toBe('square-800')
+    expect(getVariantName('video')).toBe('width=800')
+    expect(getVariantName('square')).toBe('width=800')
   })
 
   it('falls back to medium when the requested size is not defined for the ratio', () => {
-    expect(getVariantName('square', 'large')).toBe('square-800')
-    expect(getVariantName('4-3', 'small')).toBe('4-3-800')
-    expect(getVariantName('3-2', 'small')).toBe('3-2-800')
+    expect(getVariantName('square', 'large')).toBe('width=800')
+    expect(getVariantName('4-3', 'small')).toBe('width=800')
+    expect(getVariantName('3-2', 'small')).toBe('width=800')
   })
 
   it('falls back to the smallest defined width when neither the requested size nor medium exists', () => {
     // ultrawide has no small or medium. The fallback is deterministic: smallest defined width.
-    expect(getVariantName('ultrawide', 'small')).toBe('ultrawide-1536')
+    expect(getVariantName('ultrawide', 'small')).toBe('width=1536')
   })
+
+  // Cloudflare answers `400 malformed URL` for a hyphenated variant segment
+  // (`video-800`), so every image requesting one breaks with no fallback (#141).
+  it.each(['square', 'video', '4-3', '3-2', 'ultrawide'] as const)(
+    'never returns a hyphenated named variant for %s',
+    (aspectRatio) => {
+      for (const size of ['small', 'medium', 'large', 'xlarge'] as const) {
+        expect(getVariantName(aspectRatio, size)).toMatch(/^width=\d+$/)
+      }
+    },
+  )
 })
 
 describe('getImageSrcSet', () => {
@@ -80,7 +91,7 @@ describe('getImageSrcSet', () => {
     ['a flexible-variant URL', FLEXIBLE_URL],
   ])('returns one entry per width defined for the aspect ratio, from %s', (_label, url) => {
     expect(getImageSrcSet(url, 'video')).toBe(
-      `${BASE_URL}video-640 640w, ${BASE_URL}video-800 800w, ${BASE_URL}video-1024 1024w, ${BASE_URL}video-1536 1536w`,
+      `${BASE_URL}width=640 640w, ${BASE_URL}width=800 800w, ${BASE_URL}width=1024 1024w, ${BASE_URL}width=1536 1536w`,
     )
   })
 
@@ -88,13 +99,13 @@ describe('getImageSrcSet', () => {
     const srcset = getImageSrcSet(BASE_URL_NO_SLASH, 'square')
 
     expect(srcset).toBe(
-      `${BASE_URL_NO_SLASH}/square-400 400w, ${BASE_URL_NO_SLASH}/square-800 800w, ${BASE_URL_NO_SLASH}/square-1200 1200w`,
+      `${BASE_URL_NO_SLASH}/width=400 400w, ${BASE_URL_NO_SLASH}/width=800 800w, ${BASE_URL_NO_SLASH}/width=1200 1200w`,
     )
   })
 
   it('handles ultrawide (fewest widths)', () => {
     expect(getImageSrcSet(BASE_URL, 'ultrawide')).toBe(
-      `${BASE_URL}ultrawide-1536 1536w, ${BASE_URL}ultrawide-2048 2048w`,
+      `${BASE_URL}width=1536 1536w, ${BASE_URL}width=2048 2048w`,
     )
   })
 

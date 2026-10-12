@@ -230,12 +230,6 @@ These rules apply whether or not the matching rule file or skill is loaded.
   that is neither: `lib/payload-relationships.ts` describes the product's field shapes,
   `lib/content-blocks.ts` the upstream editor's block shapes, and `lib/document-routes.ts` paths
   on **our own** site — `documentHref` resolves one, so it is not `sahajCloudHref`.
-- **Create each Cloudflare Images variant in the dashboard too.** The `<Image>` atom resolves a
-  SahajCloud URL to a variant named `{aspectRatio}-{width}`, replacing the `/public` segment the
-  read returns. The list of variants lives in `SIZE_WIDTH_MAP` in
-  [lib/cloudflare-images.ts](lib/cloudflare-images.ts). Adding a variant there is not enough. You
-  must also configure it in the Cloudflare dashboard, and nothing in the repo checks that you did
-  — a missing variant 404s every image that asks for it.
 - **`public/` is shipped by both builds, so nothing site-wide goes in it.** The Vike app's build
   and the Ladle build each copy it, so a `robots.txt`, `_headers` or `_redirects` there applies to
   the app and the playground alike. The playground's crawler refusal lives in `.ladle/static/`

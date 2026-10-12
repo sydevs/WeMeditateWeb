@@ -8,7 +8,7 @@ describe('<SplashLoader> background image', () => {
   it('resolves a SahajCloud URL to the variant, replacing /public', () => {
     const html = renderToStaticMarkup(<SplashLoader backgroundImage={CF_PUBLIC_URL} />)
 
-    expect(html).toContain('https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/ultrawide-2048')
+    expect(html).toContain('https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/width=2048')
     expect(html).not.toContain('/public')
   })
 
