@@ -38,12 +38,15 @@ import { parseAtlasRoute } from '../lib/atlas-route'
  * Gets the SEO document for one atlas route, or `null` when there is
  * nothing to render server-side.
  *
- * `null` covers three different situations. All three render the same way:
- * the widget on its own, with default landing metadata.
+ * The atlas root is a described route like any other: `/map` and the bare view
+ * routes resolve to SahajCloud's `type: 'root'` answer (#64).
  *
- * - The route names no document (the atlas root `/`, or a bare `/search`
- *   view). {@link parseAtlasRoute} returns null, and this function never
- *   calls out.
+ * `null` covers three different situations. All three render the same way:
+ * the widget on its own, with the site's default metadata.
+ *
+ * - The string is not a route at all — over the length or segment ceiling,
+ *   or carrying a query or fragment. {@link parseAtlasRoute} returns null,
+ *   and this function never calls out.
  * - The route named a document that no longer resolves upstream (404).
  * - The read failed or was refused (403 in local dev, a network fault, a
  *   5xx).
@@ -60,24 +63,44 @@ export async function getAtlasSeo(options: {
 }): Promise<AtlasSeoResponse | null> {
   const target = parseAtlasRoute(options.route)
 
-  // Not a failure. The atlas landing page and bare view routes have no
-  // upstream document to describe. Skipping the call also stops a crawler
-  // that repeatedly requests `/map/search` from reaching the endpoint.
+  // Not a failure, and not a document either: a string this site refuses to
+  // read names nothing upstream to ask about.
   if (!target) {
     return null
   }
+
+  // The root's many spellings are one document, and the edge in front of
+  // SahajCloud keys on the whole URL, so asking for `/` keeps a crawler
+  // grinding through `/map/search` and `/map/calendar` to one cache entry
+  // rather than one per spelling. Only the root is collapsed; a view route
+  // under a region still asks for the spelling it was given.
+  const upstreamRoute = target.kind === 'root' ? '/' : options.route
 
   try {
     // A 404 means the route named nothing upstream: a stale inbound link, or
     // a region that has since been unpublished. `sahajCloudFetchOptional` answers it
     // with `null`, which reads the same as the no-target case above.
-    return await withRetry(() =>
+    const answer = await withRetry(() =>
       sahajCloudFetchOptional<AtlasSeoResponse>(
-        `/api/atlas/seo?route=${encodeURIComponent(options.route)}` +
+        `/api/atlas/seo?route=${encodeURIComponent(upstreamRoute)}` +
           `&locale=${encodeURIComponent(options.locale)}`,
-        `getAtlasSeo(${options.route})`,
+        `getAtlasSeo(${upstreamRoute})`,
       ),
     )
+
+    // The root answer is built from a global rather than a document, so it has
+    // nothing to go missing: a 404 here means the atlas root is misconfigured
+    // upstream, not that an inbound link went stale. Left silent it restores
+    // the undescribed `/map` of #64 with nothing to say why.
+    if (!answer && target.kind === 'root') {
+      Sentry.captureMessage('getAtlasSeo got no document for the atlas root', {
+        level: 'warning',
+        tags: { source: 'getAtlasSeo' },
+        extra: { askedFor: options.route, locale: options.locale },
+      })
+    }
+
+    return answer
   } catch (error) {
     // Crawlers and no-JS visitors rely on the server-rendered half. The
     // widget still works without it. Losing it must not take the page down.
@@ -85,7 +108,14 @@ export async function getAtlasSeo(options: {
     Sentry.captureMessage('getAtlasSeo failed; rendering the atlas without server content', {
       level: 'warning',
       tags: { source: 'getAtlasSeo' },
-      extra: { route: options.route, locale: options.locale, target: target.kind },
+      // Both: the request carries the normalized route, so an event naming
+      // only the asked-for one cannot be matched to the failing URL.
+      extra: {
+        route: upstreamRoute,
+        askedFor: options.route,
+        locale: options.locale,
+        target: target.kind,
+      },
     })
 
     return null

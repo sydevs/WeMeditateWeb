@@ -12,10 +12,14 @@ Tailwind v4.1.16 runs through the `@tailwindcss/vite` plugin, with CSS-first con
 the `@theme` directive:
 - Brand colors — teal, coral, and gray palettes, plus semantic colors (error, success, info)
 - Typography — Raleway and Futura Book, weights 200–700
-- Everything else uses Tailwind's defaults for spacing, font sizes, shadows, and animation
+- Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
+- Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
 In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailwind.config.ts`.
-`tailwind.config.ts` only lists content paths for class detection.
+Nothing loads `tailwind.config.ts` at all: v4 reads a config file only through an `@config`
+directive, and no stylesheet here has one. The scan set is the `@source` lines in
+[layouts/tailwind.css](../../layouts/tailwind.css), so adding a path to that file's `content`
+array changes nothing.
 
 **A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
 live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
