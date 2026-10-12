@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
 import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
+import { focusRing } from '../focusRing'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
@@ -75,23 +76,23 @@ export function Link({
 
   const finalHref = localeHref(locale ?? pageLocale, href)
 
-  const baseStyles = 'transition-colors duration-200'
+  const baseStyles = `transition-colors duration-200 ${focusRing(theme)}`
 
   // Variant styles for light theme (dark colors on light backgrounds)
   const lightThemeVariants = {
-    default: 'text-teal-600 hover:text-teal-700 hover:underline focus:ring-teal-500',
-    primary: 'text-teal-600 font-medium hover:text-teal-700 focus:ring-teal-500',
-    secondary: 'text-coral-600 font-medium hover:text-coral-700 focus:ring-coral-500',
-    neutral: 'text-gray-700 hover:text-gray-900 focus:ring-gray-400',
+    default: 'text-teal-600 hover:text-teal-700 hover:underline',
+    primary: 'text-teal-600 font-medium hover:text-teal-700',
+    secondary: 'text-coral-600 font-medium hover:text-coral-700',
+    neutral: 'text-gray-700 hover:text-gray-900',
     unstyled: '',
   }
 
   // Variant styles for dark theme (lightened colors on dark backgrounds)
   const darkThemeVariants = {
-    default: 'text-teal-300 hover:text-teal-200 hover:underline focus:ring-teal-300',
-    primary: 'text-teal-300 font-medium hover:text-teal-200 focus:ring-teal-300',
-    secondary: 'text-coral-300 font-medium hover:text-coral-200 focus:ring-coral-300',
-    neutral: 'text-gray-300 hover:text-gray-100 focus:ring-gray-300',
+    default: 'text-teal-300 hover:text-teal-200 hover:underline',
+    primary: 'text-teal-300 font-medium hover:text-teal-200',
+    secondary: 'text-coral-300 font-medium hover:text-coral-200',
+    neutral: 'text-gray-300 hover:text-gray-100',
     unstyled: '',
   }
 
@@ -104,9 +105,7 @@ export function Link({
     inherit: '',
   }
 
-  const externalProps = external
-    ? { target: '_blank', rel: 'noopener noreferrer' }
-    : {}
+  const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {}
 
   return (
     <a
@@ -119,4 +118,3 @@ export function Link({
     </a>
   )
 }
-
