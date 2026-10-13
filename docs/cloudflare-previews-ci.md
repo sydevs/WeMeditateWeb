@@ -108,8 +108,9 @@ the playground silently becomes indexable again.
 
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
   preview URL through the GitHub API (PR comment, then commit statuses, then check-runs, then
-  deployments). `CF_PROJECT_MATCH` selects the target, and by default the script excludes the
-  Ladle playground (`wm-design`, plus the `wemeditate-design` Pages project it replaced). It
+  deployments). `CF_PROJECT_MATCH` selects the target, and both CI legs set one. Without it — a
+  local or ad-hoc run — the script instead excludes the Ladle playground (`wm-design`, plus the
+  `wemeditate-design` Pages project it replaces), so that `EXCLUDE` list never applies in CI. It
   reports what it found and never judges it — the caller decides whether an empty URL is a
   failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
   not by discovery.

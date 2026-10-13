@@ -44,10 +44,10 @@ const DISCOVER_TIMEOUT_MS =
 const HEALTH_TIMEOUT_MS = Number(process.env.HEALTH_TIMEOUT_MS) || 5 * 60_000
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 
-// The design-system (Ladle) Worker name, and the Pages project it replaced. Never run the
-// web-app smoke specs on either. `wemeditate-design` is a migration-window guard: a host of
-// that name can still be sitting in the comments of a PR opened before #184. Drop it once no
-// such PR is open.
+// The design-system (Ladle) hosts: the Worker name, and the Pages project it replaces. They
+// matter only to a run with no CF_PROJECT_MATCH, which takes the web app instead — in CI
+// `matchesTarget` returns before it reads this list. Drop `wemeditate-design` once no PR
+// opened before #184 is still open.
 const EXCLUDE = ['wm-design', 'wemeditate-design']
 // Matches a Cloudflare preview origin at any subdomain depth.
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
