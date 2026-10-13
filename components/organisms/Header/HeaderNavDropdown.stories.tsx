@@ -63,7 +63,7 @@ export const Default: Story = () => (
     <StorySection
       background="gradient"
       description="Trigger uses white text for dark backgrounds; the panel styling is unchanged."
-      theme="dark"
+      surface="dark"
       title="Dark Theme"
     >
       <nav className="border-t border-b border-white/40">
@@ -72,7 +72,6 @@ export const Default: Story = () => (
             className="basis-1/4"
             dropdown={sampleDropdown}
             label="About Meditation"
-            theme="dark"
           />
         </div>
       </nav>

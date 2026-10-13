@@ -151,3 +151,72 @@
   margin-left: calc(50% - var(--page-width) / 2);
   margin-right: calc(50% - var(--page-width) / 2);
 }
+
+/**
+ * Surfaces — the colours that depend on what an element sits on.
+ *
+ * A component never takes a `theme` prop for its colours. It uses these
+ * classes (`text-fg`, `text-primary`, `border-line`, `bg-tint`, `focus-ring`),
+ * and they resolve against the nearest `surface-*` ancestor; `:root` is light.
+ * Only a component that paints a background sets a surface. `@theme inline` is
+ * load-bearing: without it, `--color-fg` would resolve once at `:root` and a
+ * nested `surface-dark` could never change it.
+ *
+ * The ring and its pinned offset band are argued in
+ * `docs/rules/design-system.md` (#133).
+ */
+@utility surface-light {
+  --surface-fg: var(--color-gray-900);
+  --surface-fg-muted: var(--color-gray-700);
+  --surface-primary: var(--color-teal-600);
+  --surface-primary-strong: var(--color-teal-700);
+  --surface-secondary: var(--color-coral-600);
+  --surface-secondary-strong: var(--color-coral-700);
+  --surface-line: var(--color-gray-500);
+  --surface-line-subtle: var(--color-gray-200);
+  --surface-tint: var(--color-gray-100);
+  --surface-highlight: var(--color-teal-100);
+  --surface-on-highlight: var(--color-gray-700);
+  --surface-ring: var(--color-teal-600);
+  --surface-ring-offset: #fff;
+}
+
+@utility surface-dark {
+  --surface-fg: #fff;
+  --surface-fg-muted: #fff;
+  --surface-primary: var(--color-teal-300);
+  --surface-primary-strong: var(--color-teal-200);
+  --surface-secondary: var(--color-coral-300);
+  --surface-secondary-strong: var(--color-coral-200);
+  --surface-line: #fff;
+  --surface-line-subtle: #fff;
+  --surface-tint: rgb(255 255 255 / 20%);
+  --surface-highlight: #fff;
+  --surface-on-highlight: var(--color-gray-800);
+  --surface-ring: #fff;
+  --surface-ring-offset: var(--color-teal-900);
+}
+
+@layer base {
+  :root {
+    @apply surface-light;
+  }
+}
+
+@theme inline {
+  --color-fg: var(--surface-fg);
+  --color-fg-muted: var(--surface-fg-muted);
+  --color-primary: var(--surface-primary);
+  --color-primary-strong: var(--surface-primary-strong);
+  --color-secondary: var(--surface-secondary);
+  --color-secondary-strong: var(--surface-secondary-strong);
+  --color-line: var(--surface-line);
+  --color-line-subtle: var(--surface-line-subtle);
+  --color-tint: var(--surface-tint);
+  --color-highlight: var(--surface-highlight);
+  --color-on-highlight: var(--surface-on-highlight);
+}
+
+@utility focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--surface-ring) focus-visible:ring-offset-(--surface-ring-offset);
+}

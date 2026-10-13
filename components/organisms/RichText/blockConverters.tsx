@@ -30,9 +30,9 @@ import {
   galleryImages,
   populatedImage,
   showcaseItems,
-  splashTheme,
+  splashSurface,
   subtleSystemItems,
-  textColorToTheme,
+  textColorToSurface,
   type ButtonBlockFields,
   type ContentIndexBlockFields,
   type ImageGalleryBlockFields,
@@ -112,8 +112,8 @@ export const blockConverters: BlockConverters = {
     const description = fields.text ?? ''
 
     // Overlay: text sits over the image. The SahajCloud `textColor` describes the
-    // *text* (dark or light), while `theme` describes the *background
-    // context* (Splash convention). So they invert: light text → dark theme.
+    // *text* (dark or light), while `surface` describes the *background* the
+    // image paints. So they invert: light text → dark surface.
     if (fields.imagePosition === 'overlay') {
       return (
         <ContentOverlay
@@ -125,7 +125,7 @@ export const blockConverters: BlockConverters = {
           imageSrc={img.url}
           subtitle={subtitle}
           text={description}
-          theme={textColorToTheme(fields.textColor, 'light')}
+          surface={textColorToSurface(fields.textColor, 'light')}
           title={title}
         />
       )
@@ -320,7 +320,7 @@ export const blockConverters: BlockConverters = {
         ctaText={fields.actionText ?? undefined}
         priority={isLead}
         subtitle={fields.subtitle ?? undefined}
-        theme={splashTheme(fields.textColor)}
+        surface={splashSurface(fields.textColor)}
         title={fields.title ?? undefined}
       />
     )

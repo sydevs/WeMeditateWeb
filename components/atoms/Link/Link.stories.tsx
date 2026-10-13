@@ -88,28 +88,28 @@ export const Default: Story = () => (
 
     <StorySection
       title="Dark Theme"
-      theme="dark"
+      surface="dark"
       background="neutral"
-      description="Lightened colors (teal-300, coral-300, gray-300) for contrast on dark backgrounds"
+      description="Lightened colors (teal-300, coral-300, white) from the dark surface tokens for contrast on dark backgrounds"
     >
       <div className="flex flex-col gap-4">
         <div>
-          <Link href="/meditations" variant="default" theme="dark">
+          <Link href="/meditations" variant="default">
             Default link on dark background
           </Link>
         </div>
         <div>
-          <Link href="/about" variant="primary" theme="dark">
+          <Link href="/about" variant="primary">
             Primary link on dark background
           </Link>
         </div>
         <div>
-          <Link href="/contact" variant="secondary" theme="dark">
+          <Link href="/contact" variant="secondary">
             Secondary link on dark background
           </Link>
         </div>
         <div>
-          <Link href="/help" variant="neutral" theme="dark">
+          <Link href="/help" variant="neutral">
             Neutral link on dark background
           </Link>
         </div>

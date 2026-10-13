@@ -30,7 +30,7 @@ export const Default: Story = () => {
           ctaHref="/start"
           ctaText="Try it now"
           subtitle="Making a start is easier than you think."
-          theme="dark"
+          surface="dark"
           title="Meditate for Better Mental Health"
         />
       </div>
@@ -45,10 +45,10 @@ export const Default: Story = () => {
             ctaHref="/start"
             ctaText="Try it now"
             subtitle="Making a start is easier than you think."
-            theme="dark"
+            surface="dark"
             title="Meditate for Better Mental Health"
           />
-          <div className="absolute top-0 left-0 right-0 z-20 p-4">
+          <div className="surface-dark absolute top-0 left-0 right-0 z-20 p-4">
             <Header
               actionLinkHref="/classes"
               actionLinkText="Classes near me"
@@ -76,7 +76,7 @@ export const Default: Story = () => {
             ctaHref="/start"
             ctaText="Begin now"
             subtitle="Your journey to mindfulness starts here."
-            theme="light"
+            surface="light"
             title="Discover Inner Peace"
           />
           <div className="absolute top-0 left-0 right-0 z-20 p-4">
@@ -104,7 +104,7 @@ export const Default: Story = () => {
             priority
             backgroundImage="https://picsum.photos/id/1015/1920/1080"
             subtitle="The page's lead splash, and so its LCP element."
-            theme="dark"
+            surface="dark"
             title="Discover Inner Peace"
           />
         </div>
@@ -118,10 +118,10 @@ export const Default: Story = () => {
             ctaHref="/live"
             ctaText="Sign up"
             subtitle="Every Tuesday and Thursday at 7 pm London / 8 pm CET"
-            theme="dark"
+            surface="dark"
             title="Join Free Zoom Meditations!"
           >
-            <Countdown targetDate={tomorrow} theme="dark" />
+            <Countdown targetDate={tomorrow} />
           </Splash>
         </div>
       </StorySection>
@@ -134,7 +134,7 @@ export const Default: Story = () => {
             ctaHref="/app"
             ctaText="Learn more"
             subtitle="Meditate anytime, anywhere."
-            theme="dark"
+            surface="dark"
             title="Download Our App"
           >
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
@@ -151,7 +151,7 @@ export const Default: Story = () => {
 
       <StorySection inContext={true} title="Search Input with Header Overlay">
         <div className="relative max-h-96 md:max-h-160 overflow-hidden full-bleed">
-          <Splash backgroundImage="https://picsum.photos/id/1019/1920/1080" theme="dark">
+          <Splash backgroundImage="https://picsum.photos/id/1019/1920/1080" surface="dark">
             <div className="max-w-md mx-auto shadow-md">
               <Input
                 className="text-lg py-4 w-full"
@@ -160,7 +160,7 @@ export const Default: Story = () => {
               />
             </div>
           </Splash>
-          <div className="absolute top-0 left-0 right-0 z-20 p-4">
+          <div className="surface-dark absolute top-0 left-0 right-0 z-20 p-4">
             <Header
               actionLinkHref="/classes"
               actionLinkText="Classes near me"
@@ -171,7 +171,6 @@ export const Default: Story = () => {
                 { label: 'Inspiration', href: '/inspiration' },
                 { label: 'About Meditation', href: '/about' },
               ]}
-              theme="dark"
             />
           </div>
         </div>

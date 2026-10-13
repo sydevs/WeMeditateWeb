@@ -48,28 +48,21 @@ describe('Header', () => {
     })
   })
 
-  describe('focus ring', () => {
-    it('gives the banner logo and action link the dark ring on a dark splash', () => {
-      // `LayoutChrome` passes `theme={leadSplash?.theme}`, so these two sit on a
-      // photograph. A caller that forgets `theme` draws `Link`'s light ring and
-      // a white offset band over it — the defect #133 exists to remove.
-      const html = render({ theme: 'dark' })
+  describe('surface', () => {
+    // The banner overlays the lead splash, so it takes the splash's surface
+    // from `LayoutChrome`'s wrapper rather than claiming one (#133).
+    it('claims no surface of its own until the nav sticks', () => {
+      const html = render()
 
-      expect(html).not.toContain('focus-visible:ring-teal-600')
-      expect(html).not.toContain('focus-visible:ring-offset-white')
-      expect(html).toContain('focus-visible:ring-white')
+      expect(html).not.toContain('surface-')
+      expect(html).toContain('text-fg-muted')
     })
 
-    it('keeps the light ring on the sticky nav, which paints itself white', () => {
-      // The compact logo and map-pin stay tabbable while transparent, so their
-      // ring follows `theme` until the nav sticks, then turns light with it.
-      // Matched on the map-pin's own anchor: the nav Buttons beside it also
-      // turn light when sticky, so a bare substring would pass without it.
-      const html = render({ condensed: true, theme: 'dark' })
-      const mapPin = html.match(/class="([^"]*hover:opacity-75[^"]*)"/)?.[1]
+    it('turns the sticky nav light, since it paints itself white', () => {
+      const nav = render({ condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
 
-      expect(mapPin).toContain('focus-visible:ring-teal-600')
-      expect(mapPin).not.toContain('focus-visible:ring-white')
+      expect(nav).toContain('surface-light')
+      expect(nav).toContain('bg-white')
     })
   })
 })

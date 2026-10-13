@@ -6,13 +6,6 @@ export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> 
   targetDate: string | Date
   /** Optional callback when countdown reaches zero */
   onComplete?: () => void
-  /**
-   * Theme based on background context
-   * - light: Dark text for light backgrounds (default)
-   * - dark: White text for dark backgrounds
-   * @default 'light'
-   */
-  theme?: 'light' | 'dark'
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
 }
@@ -71,20 +64,17 @@ function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeR
  * <Countdown
  *   targetDate={new Date(Date.now() + 3600000)}
  *   onComplete={() => console.log('Countdown finished!')}
- *   theme="dark"
  * />
  */
 export function Countdown({
   targetDate,
   onComplete,
-  theme = 'light',
   size = 'lg',
   className = '',
   ...props
 }: CountdownProps) {
   const t = useT()
   const timeRemaining = useCountdown(targetDate, onComplete)
-  const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
 
   // Size variants
   const sizeClasses = {
@@ -105,7 +95,7 @@ export function Countdown({
   const { numbers, labels } = sizeClasses[size]
 
   return (
-    <div className={`text-center ${textColor} ${className}`} {...props}>
+    <div className={`text-center text-fg ${className}`} {...props}>
       <div className={`flex items-start justify-center gap-1 font-number ${numbers} font-light tracking-wide leading-none`}>
         {/* Hours */}
         <div className="inline-flex flex-col items-center">

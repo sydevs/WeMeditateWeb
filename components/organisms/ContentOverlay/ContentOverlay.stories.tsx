@@ -23,7 +23,7 @@ export const Default: Story = () => (
               'The benefits of meditation go far beyond what you experience during the sessions.',
               'It has the power to improve every aspect of your life, from your personal growth to your work and family life, and can even spark immense creativity...',
             ]}
-            theme="dark"
+            surface="dark"
             title="Beyond the Practice"
           />
         </StorySection>
@@ -40,7 +40,7 @@ export const Default: Story = () => (
               'Discover the transformative power of daily meditation practice.',
               'Join thousands of practitioners worldwide who have found clarity, peace, and purpose through meditation.',
             ]}
-            theme="dark"
+            surface="dark"
             title="Find Your Inner Peace"
           />
         </StorySection>
@@ -57,7 +57,7 @@ export const Default: Story = () => (
               'Experience the profound benefits of meditation in every aspect of your life.',
               'From enhanced creativity to better relationships, meditation unlocks your full potential.',
             ]}
-            theme="dark"
+            surface="dark"
             title="Transform Your Life"
           />
         </StorySection>
@@ -79,7 +79,7 @@ export const Default: Story = () => (
             imageSrc="https://picsum.photos/seed/subtitle-overlay-dark/1600/900"
             subtitle="Collective meditation"
             text="The experience of meditation is even stronger when it is shared with others."
-            theme="dark"
+            surface="dark"
             title="Get Connected"
           />
         </StorySection>
@@ -94,7 +94,7 @@ export const Default: Story = () => (
             imageSrc="https://picsum.photos/seed/subtitle-overlay-light/1600/900"
             subtitle="Find your center"
             text="A few minutes of meditation each day can transform your relationship with stress."
-            theme="light"
+            surface="light"
             title="Inner Stillness"
           />
         </StorySection>
@@ -115,7 +115,7 @@ export const Default: Story = () => (
               'Meditation is the key to unlocking creativity, focus, and inner strength.',
               "Through regular practice, you'll discover abilities you never knew you had.",
             ]}
-            theme="light"
+            surface="light"
             title="Unlock Your Potential"
           />
         </StorySection>
@@ -132,7 +132,7 @@ export const Default: Story = () => (
               "Clear your mind and find answers to life's biggest questions.",
               'Meditation provides the mental space needed for breakthrough insights and deep understanding.',
             ]}
-            theme="light"
+            surface="light"
             title="Discover True Clarity"
           />
         </StorySection>
@@ -149,7 +149,7 @@ export const Default: Story = () => (
               'Connect with meditators around the world on a shared journey of self-discovery.',
               'Share experiences, learn from others, and grow together in a supportive environment.',
             ]}
-            theme="light"
+            surface="light"
             title="Join Our Community"
           />
         </StorySection>
@@ -170,7 +170,7 @@ export const Default: Story = () => (
               'The high contrast variant adds halo shadows around text and darkens the background image for improved readability.',
               'Perfect for images with complex patterns or when maximum text clarity is needed.',
             ]}
-            theme="dark"
+            surface="dark"
             title="Enhanced Readability"
             variant="highContrast"
           />
@@ -188,7 +188,7 @@ export const Default: Story = () => (
               'In light theme, the high contrast mode applies white halo shadows and screen blend mode.',
               'This ensures your content remains legible even over busy or bright background images.',
             ]}
-            theme="light"
+            surface="light"
             title="Crystal Clear Content"
             variant="highContrast"
           />
@@ -210,7 +210,7 @@ export const Default: Story = () => (
               'The box variant wraps content in a bordered container with backdrop blur for a card-like appearance.',
               'Ideal for creating distinct, elevated content areas over complex background images.',
             ]}
-            theme="dark"
+            surface="dark"
             title="Contained & Focused"
             variant="box"
           />
@@ -228,7 +228,7 @@ export const Default: Story = () => (
               'In light theme, the box variant creates a subtle frosted glass effect that complements bright images.',
               'Perfect for premium content showcases and feature announcements.',
             ]}
-            theme="light"
+            surface="light"
             title="Elegant Presentation"
             variant="box"
           />

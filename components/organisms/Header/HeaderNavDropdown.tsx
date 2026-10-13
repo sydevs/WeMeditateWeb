@@ -19,11 +19,6 @@ export interface HeaderNavDropdownProps {
   label: string
   /** Mega-menu panel content, rendered in a portal when open. */
   dropdown: HeaderDropdownProps
-  /**
-   * Trigger theme, matching the surrounding nav.
-   * @default 'light'
-   */
-  theme?: 'light' | 'dark'
   /** Extra classes for the trigger wrapper (for example flex sizing to match siblings). */
   className?: string
 }
@@ -54,7 +49,6 @@ export interface HeaderNavDropdownProps {
 export function HeaderNavDropdown({
   label,
   dropdown,
-  theme = 'light',
   className = '',
 }: HeaderNavDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -94,7 +88,6 @@ export function HeaderNavDropdown({
         <Button
           className="px-0 w-full"
           size="sm"
-          theme={theme}
           variant="ghost"
           {...getReferenceProps()}
         >
