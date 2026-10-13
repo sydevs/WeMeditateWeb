@@ -156,28 +156,28 @@ export const Default: Story = () => (
     <StorySection
       background="neutral"
       description="All button variants on dark backgrounds - outline and ghost use white, primary and secondary remain vibrant"
-      theme="dark"
+      surface="dark"
       title="Dark Theme"
     >
       <div className="flex gap-4 items-center flex-wrap">
-        <Button aria-label="Play" icon={PlayIcon} theme="dark" variant="primary" />
-        <Button theme="dark" variant="primary">
+        <Button aria-label="Play" icon={PlayIcon} variant="primary" />
+        <Button variant="primary">
           Primary
         </Button>
-        <Button aria-label="Like" icon={HeartIcon} theme="dark" variant="secondary" />
-        <Button theme="dark" variant="secondary">
+        <Button aria-label="Like" icon={HeartIcon} variant="secondary" />
+        <Button variant="secondary">
           Secondary
         </Button>
-        <Button aria-label="Confirm" icon={CheckIcon} theme="dark" variant="neutral" />
-        <Button theme="dark" variant="neutral">
+        <Button aria-label="Confirm" icon={CheckIcon} variant="neutral" />
+        <Button variant="neutral">
           Neutral
         </Button>
-        <Button aria-label="Favorite" icon={StarIcon} theme="dark" variant="outline" />
-        <Button theme="dark" variant="outline">
+        <Button aria-label="Favorite" icon={StarIcon} variant="outline" />
+        <Button variant="outline">
           Outline
         </Button>
-        <Button aria-label="Close" icon={XMarkIcon} theme="dark" variant="ghost" />
-        <Button theme="dark" variant="ghost">
+        <Button aria-label="Close" icon={XMarkIcon} variant="ghost" />
+        <Button variant="ghost">
           Ghost
         </Button>
       </div>
@@ -328,21 +328,21 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Ghost on Dark Background" variant="subsection">
-          <div className="bg-gray-900 p-6 rounded">
+          <div className="surface-dark bg-gray-900 p-6 rounded">
             <div className="flex gap-3 flex-wrap">
-              <Button isActive href="#" theme="dark" variant="ghost">
+              <Button isActive href="#" variant="ghost">
                 Meditate Now
               </Button>
-              <Button href="#" theme="dark" variant="ghost">
+              <Button href="#" variant="ghost">
                 Music for Meditation
               </Button>
-              <Button href="#" theme="dark" variant="ghost">
+              <Button href="#" variant="ghost">
                 Inspiration
               </Button>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            The active tint is theme-aware — a lighter fill for dark (splash-overlay) headers
+            The active tint is surface-aware — a lighter fill for dark (splash-overlay) headers
           </p>
         </StorySection>
       </div>
@@ -387,15 +387,15 @@ export const Default: Story = () => (
           title="Call-to-Action on Dark Background (wemeditate.com style)"
           variant="subsection"
         >
-          <div className="bg-gray-900 p-6 rounded">
+          <div className="surface-dark bg-gray-900 p-6 rounded">
             <div className="flex gap-4 flex-wrap">
-              <Button size="lg" theme="dark" variant="outline">
+              <Button size="lg" variant="outline">
                 Get Inspired
               </Button>
-              <Button size="lg" theme="dark" variant="outline">
+              <Button size="lg" variant="outline">
                 Start Today
               </Button>
-              <Button size="lg" theme="dark" variant="outline">
+              <Button size="lg" variant="outline">
                 Join Now
               </Button>
             </div>

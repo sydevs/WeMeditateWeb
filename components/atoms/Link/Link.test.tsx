@@ -132,11 +132,9 @@ describe('<Link> locale prefixing', () => {
 })
 
 describe('<Link> focus indicator', () => {
-  // Eight `focus:ring-<color>` classes shipped here against no width utility,
-  // so Tailwind emitted `--tw-ring-color` and never a `box-shadow` (#133).
   // `unstyled` maps to '' in both variant maps, so it also proves the ring
-  // lives in `baseStyles` rather than in a variant entry.
-  it('draws a ring width, not a bare ring colour, on every variant', () => {
+  // lives in `baseStyles` rather than in a variant entry (#133).
+  it('draws `focus-ring` on every variant', () => {
     for (const variant of ['default', 'unstyled'] as const) {
       const html = renderToStaticMarkup(
         <Link href="/about" variant={variant}>
@@ -144,34 +142,34 @@ describe('<Link> focus indicator', () => {
         </Link>,
       )
 
-      expect(html).toContain('focus-visible:ring-2')
-      expect(html).toContain('focus-visible:ring-teal-600')
+      expect(html).toMatch(/class="[^"]*\bfocus-ring\b/)
     }
   })
 
-  it('pins the offset colour, so no white band is drawn on a dark surface', () => {
-    const light = renderToStaticMarkup(<Link href="/about">About</Link>)
-    const dark = renderToStaticMarkup(
-      <Link href="/about" theme="dark">
-        About
-      </Link>,
-    )
+  it('carries no ring colour of its own', () => {
+    const html = renderToStaticMarkup(<Link href="/about">About</Link>)
 
-    expect(light).toContain('focus-visible:ring-offset-white')
-    expect(dark).toContain('focus-visible:ring-offset-teal-900')
+    expect(html).not.toMatch(/\bring-/)
+  })
+})
+
+describe('<Link> surface', () => {
+  // A link on a dark surface lightens because its colours are surface
+  // tokens, not because a caller remembered a `theme` prop.
+  it('colours every variant from surface tokens, never a scale step', () => {
+    for (const variant of ['default', 'primary', 'secondary', 'neutral'] as const) {
+      const html = renderToStaticMarkup(
+        <Link href="/about" variant={variant}>
+          About
+        </Link>,
+      )
+
+      expect(html).not.toMatch(/\btext-(white|gray|teal|coral)\b/)
+      expect(html).toMatch(/\btext-(primary|secondary|fg-muted)\b/)
+    }
   })
 
-  // teal-500 measures 2.70:1 on white and teal-300 is lighter still, both under
-  // the 3:1 of WCAG 2.1 SC 1.4.11.
-  it('uses white on dark, never a sub-3:1 ring colour', () => {
-    const html = renderToStaticMarkup(
-      <Link href="/about" theme="dark">
-        About
-      </Link>,
-    )
-
-    expect(html).toContain('focus-visible:ring-white')
-    expect(html).not.toContain('ring-teal-300')
-    expect(html).not.toContain('ring-teal-500')
+  it('never sets a surface', () => {
+    expect(renderToStaticMarkup(<Link href="/about">About</Link>)).not.toContain('surface-')
   })
 })

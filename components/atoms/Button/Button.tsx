@@ -2,7 +2,6 @@ import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
 import { Link } from '../Link'
-import { focusRing } from '../focusRing'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
@@ -12,13 +11,6 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    */
   variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
 
-  /**
-   * Theme based on background context
-   * - light: Standard colors for light backgrounds (default)
-   * - dark: White colors for dark backgrounds
-   * @default 'light'
-   */
-  theme?: 'light' | 'dark'
 
   /**
    * Button size
@@ -55,7 +47,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   /**
    * Active state for the current-page navigation link. When true, the
    * button renders with a persistent tinted fill, reusing the ghost hover
-   * fill so it stays theme-aware, and it carries `aria-current="page"`. Use
+   * fill so it stays surface-aware, and it carries `aria-current="page"`. Use
    * it for the current page's link in a nav.
    * @default false
    */
@@ -116,7 +108,6 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  */
 export function Button({
   variant = 'primary',
-  theme = 'light',
   size = 'md',
   shape,
   icon,
@@ -142,67 +133,42 @@ export function Button({
   //
   // When `isActive`, the same ::after fill shows permanently, scaled and
   // opaque instead of hover-triggered, so the current-page nav link keeps a
-  // persistent, theme-aware tint. It reuses each variant's `after:bg-*`
-  // color (ghost → gray-100 on light, white/20 on dark), so this needs no
+  // persistent, surface-aware tint. It reuses each variant's `after:bg-*`
+  // color (ghost → `bg-tint`), so this needs no
   // separate `bg-*` override, and there is no Tailwind class-order conflict.
   const animatedBase = 'relative isolate overflow-hidden after:absolute after:inset-0 after:-z-10'
   const animatedHoverEffect = isActive
     ? `${animatedBase} after:scale-x-100 after:opacity-100`
     : `${animatedBase} after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100`
 
-  const baseStyles = `inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${focusRing(theme)}`
+  const baseStyles = `inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none focus-ring`
 
   // Only add animation if button is interactive (not disabled or loading)
   const isInteractive = !disabled && !isLoading
   const animatedStyles = isIconOnly || !isInteractive ? '' : animatedHoverEffect
 
-  // Variant styles for light theme (icon-only buttons)
-  const iconOnlyLightThemeStyles = {
+  // Filled variants look the same on every surface. Outline and ghost take
+  // their text, border and hover tint from the surface tokens.
+  const iconOnlyStyles = {
     primary: 'bg-teal-500 hover:bg-teal-600 text-white active:bg-teal-700',
     secondary: 'bg-coral-500 hover:bg-coral-600 text-white active:bg-coral-700',
     outline:
-      'bg-transparent border border-gray-500 text-gray-700 hover:bg-teal-100 hover:border-gray-500',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900',
+      'bg-transparent border border-line text-fg-muted hover:bg-highlight hover:text-on-highlight',
+    ghost: 'bg-transparent text-fg-muted hover:bg-tint hover:text-fg',
     neutral: 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200',
   }
 
-  // Variant styles for dark theme (icon-only buttons)
-  const iconOnlyDarkThemeStyles = {
-    primary: 'bg-teal-500 hover:bg-teal-600 text-white active:bg-teal-700',
-    secondary: 'bg-coral-500 hover:bg-coral-600 text-white active:bg-coral-700',
-    outline:
-      'bg-transparent border border-white text-white hover:bg-white hover:text-gray-800 hover:border-white',
-    ghost: 'bg-transparent text-white hover:bg-white/20 hover:text-white',
-    neutral: 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200',
-  }
-
-  // Variant styles for light theme (text buttons with animation)
-  const textButtonLightThemeStyles = {
+  // Text buttons fill on hover through the animated ::after layer.
+  const textButtonStyles = {
     primary: 'bg-teal-500 after:bg-teal-600 text-white active:after:bg-teal-700',
     secondary: 'bg-coral-500 after:bg-coral-600 text-white active:after:bg-coral-700',
     outline:
-      'bg-transparent border border-gray-500 text-gray-700 after:bg-teal-100 hover:border-gray-500',
-    ghost: 'bg-transparent text-gray-700 after:bg-gray-100 hover:text-gray-900',
+      'bg-transparent border border-line text-fg-muted after:bg-highlight hover:text-on-highlight',
+    ghost: 'bg-transparent text-fg-muted after:bg-tint hover:text-fg',
     neutral: 'bg-white after:bg-gray-50 text-gray-700 border border-gray-200',
   }
 
-  // Variant styles for dark theme (text buttons with animation)
-  const textButtonDarkThemeStyles = {
-    primary: 'bg-teal-600 after:bg-teal-500 text-white active:after:bg-teal-700',
-    secondary: 'bg-coral-600 after:bg-coral-500 text-white active:after:bg-coral-700',
-    outline:
-      'bg-transparent border border-white text-white after:bg-white hover:text-gray-800 hover:border-white',
-    ghost: 'bg-transparent text-white after:bg-white/20 hover:text-white',
-    neutral: 'bg-white after:bg-gray-50 text-gray-700 border border-gray-200',
-  }
-
-  const variantStyles = isIconOnly
-    ? theme === 'dark'
-      ? iconOnlyDarkThemeStyles
-      : iconOnlyLightThemeStyles
-    : theme === 'dark'
-      ? textButtonDarkThemeStyles
-      : textButtonLightThemeStyles
+  const variantStyles = isIconOnly ? iconOnlyStyles : textButtonStyles
 
   // Size styles for icon-only buttons
   const iconOnlySizeStyles = {
@@ -243,32 +209,12 @@ export function Button({
     lg: 'lg' as const,
   }
 
-  // Spinner sizes and colors for different variants
+  // The spinner takes the button's own text colour, so it reads on every fill.
   const spinnerSizeMap = {
     xs: 'sm' as const,
     sm: 'sm' as const,
     md: 'md' as const,
     lg: 'lg' as const,
-  }
-
-  // Spinner colors and theme based on button variant and theme
-  const getSpinnerColor = () => {
-    if (variant === 'primary' || variant === 'secondary') return 'neutral' as const
-    if (variant === 'outline') return theme === 'dark' ? ('neutral' as const) : ('primary' as const)
-    if (variant === 'ghost')
-      return theme === 'dark' ? ('neutral' as const) : ('currentColor' as const)
-
-    return 'currentColor' as const
-  }
-
-  const getSpinnerTheme = (): 'light' | 'dark' => {
-    // Primary and secondary buttons have dark backgrounds, so spinners need dark theme (white)
-    if (variant === 'primary' || variant === 'secondary') return 'dark'
-    // Outline and ghost with dark theme also need white spinners
-    if (theme === 'dark') return 'dark'
-
-    // Otherwise use light theme
-    return 'light'
   }
 
   const sizeClass = isIconOnly ? iconOnlySizeStyles[size] : textButtonSizeStyles[size]
@@ -292,7 +238,7 @@ export function Button({
   const commonClassNames = `${baseStyles} ${animatedStyles} ${touchTargetStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
 
   const content = isLoading ? (
-    <Spinner color={getSpinnerColor()} size={spinnerSizeMap[size]} theme={getSpinnerTheme()} />
+    <Spinner color="currentColor" size={spinnerSizeMap[size]} />
   ) : (
     <>
       {icon && <Icon icon={icon} size={iconSizeMap[size]} />}
@@ -309,10 +255,6 @@ export function Button({
         className={commonClassNames}
         href={href}
         locale={locale}
-        // Without this, `Link`'s own base ring resolves light while
-        // `commonClassNames` carries the dark one, and two rules race for
-        // `--tw-ring-color`.
-        theme={theme}
         variant="unstyled"
         {...(props as any)}
       >

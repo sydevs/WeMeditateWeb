@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 import { Button, Container, Image } from '../../atoms'
+import { surface, type Surface } from '../../atoms/surface'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Main heading text */
@@ -27,11 +28,13 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
   ctaHref?: string
 
   /**
-   * Color theme variant
-   * - `light`: Near-black text and border (for light backgrounds)
-   * - `dark`: White text and border (for dark backgrounds)
+   * The surface the image paints behind the desktop overlay
+   * - `light`: Near-black text and border
+   * - `dark`: White text and border
+   *
+   * The stacked mobile layout sits on the page, not the image, so it ignores this.
    */
-  theme?: 'light' | 'dark'
+  surface?: Surface
 
   /**
    * Content alignment
@@ -63,23 +66,21 @@ export function ContentOverlay({
   imageAlt = '',
   ctaText,
   ctaHref,
-  theme = 'light',
+  surface: surfaceValue = 'light',
   align = 'left',
   variant = 'default',
   className = '',
   ...props
 }: ContentOverlayProps) {
-  // Theme-based text colors: the light theme applies only on desktop
-  // (md and up), and white applies on mobile.
-  const textColorClass = theme === 'dark' ? 'text-white' : 'text-[#444]'
+  const textColorClass = surfaceValue === 'dark' ? 'text-white' : 'text-[#444]'
 
   // Text shadow for a glow-and-halo effect, applied to all variants for better readability.
-  const textShadowClass = theme === 'dark' ? 'text-glow-dark' : 'text-glow-light'
+  const textShadowClass = surfaceValue === 'dark' ? 'text-glow-dark' : 'text-glow-light'
 
   // Blend mode for high contrast images
   const imageBlendClass =
     variant === 'highContrast'
-      ? theme === 'dark'
+      ? surfaceValue === 'dark'
         ? 'brightness-70 contrast-70'
         : 'brightness-130 contrast-70'
       : ''
@@ -87,20 +88,20 @@ export function ContentOverlay({
   // Box variant styling: the border matches the text color, with a subtle blur.
   const boxClasses =
     variant === 'box'
-      ? theme === 'dark'
+      ? surfaceValue === 'dark'
         ? 'bg-black/40 bg-blend-multiply p-12'
         : 'bg-white/40 bg-blend-multiply p-12'
       : ''
 
   // Button variant based on contrast level
   const buttonVariant =
-    variant === 'highContrast' ? (theme === 'dark' ? 'secondary' : 'primary') : 'outline'
+    variant === 'highContrast' ? (surfaceValue === 'dark' ? 'secondary' : 'primary') : 'outline'
 
   // Button styling for non-highContrast variants to match content text
   const buttonClassName =
     variant === 'highContrast'
       ? ''
-      : theme === 'dark'
+      : surfaceValue === 'dark'
         ? 'border-white text-white [&:not(:hover)]:text-glow-dark'
         : 'border-gray-900 text-gray-900 [&:not(:hover)]:text-glow-light'
 
@@ -155,7 +156,6 @@ export function ContentOverlay({
             className={buttonClassName}
             href={ctaHref}
             size="md"
-            theme={theme}
             variant={buttonVariant}
           >
             {ctaText}
@@ -167,7 +167,7 @@ export function ContentOverlay({
 
   return (
     <div className={className} {...props}>
-      {/* Mobile: Stacked layout - no variant or theme styling */}
+      {/* Mobile: Stacked layout - no variant or surface styling */}
       <div className="flex flex-col gap-6 md:hidden">
         {/* Image on top. A raw <img> until #148, for the reason recorded at
             `pages/map/_components/AtlasContent.tsx`: the `Image` atom holds its
@@ -206,7 +206,9 @@ export function ContentOverlay({
       </div>
 
       {/* Tablet / Desktop: Overlay layout with 16:9 aspect ratio */}
-      <div className="hidden md:block relative w-full aspect-video overflow-hidden">
+      <div
+        className={`hidden md:block relative w-full aspect-video overflow-hidden ${surface(surfaceValue)}`}
+      >
         {/* Background Image - 16:9 aspect ratio */}
         <div className="absolute inset-0">
           <Image

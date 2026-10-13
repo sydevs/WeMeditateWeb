@@ -43,9 +43,8 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Dark Theme" theme="dark" background="neutral">
+    <StorySection title="Dark Theme" surface="dark" background="neutral">
       <Breadcrumbs
-        theme="dark"
         items={[
           { label: 'Home Page', href: '/' },
           { label: 'About Meditation', href: '/about' },

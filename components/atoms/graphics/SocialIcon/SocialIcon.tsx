@@ -117,7 +117,7 @@ export function SocialIcon({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={t('common.a11y.opens_in_new_tab', { label })}
-      className={`inline-flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 ${className}`}
+      className={`inline-flex items-center justify-center transition-all duration-200 focus-ring ${className}`}
       {...props}
     >
       <svg

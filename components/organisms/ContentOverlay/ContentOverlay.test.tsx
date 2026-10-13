@@ -22,9 +22,9 @@ describe('<ContentOverlay> subtitle', () => {
     expect(html).not.toContain('Collective meditation')
   })
 
-  it('applies the theme text colour to the subtitle (white on dark theme)', () => {
+  it('applies the surface text colour to the subtitle (white on a dark surface)', () => {
     const html = renderToStaticMarkup(
-      <ContentOverlay {...BASE} subtitle="Find your center" theme="dark" />,
+      <ContentOverlay {...BASE} subtitle="Find your center" surface="dark" />,
     )
 
     expect(html).toContain('text-white')

@@ -279,8 +279,9 @@ describe('<RichText>', () => {
 
     expect(html).toContain('<figure')
     expect(html).toContain('mx-auto')
-    // 1600×900 ≈ 16:9 → snaps to the `video` variant family.
-    expect(html).toContain('imagedelivery.net/acct/img123/video-')
+    // 1600×900 ≈ 16:9 → snaps to the `video` box, and its width ladder (only `video` has 640).
+    expect(html).toContain('aspect-video')
+    expect(html).toContain('imagedelivery.net/acct/img123/width=640 640w')
     expect(html).toContain('alt="A sunrise"')
     expect(html).toContain('<figcaption')
     expect(html).toContain('Sunrise over the hills')

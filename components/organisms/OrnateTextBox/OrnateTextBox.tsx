@@ -99,7 +99,7 @@ export function OrnateTextBox({
 
   return (
     <div
-      className={`relative flex min-h-[80vh] items-center overflow-x-clip text-white ${className}`}
+      className={`surface-dark relative flex min-h-[80vh] items-center overflow-x-clip text-white ${className}`}
       {...props}
     >
       {/* Brown ground: the OrnateTextBox background, furthest back (-z-20).
@@ -182,7 +182,6 @@ export function OrnateTextBox({
               className="mt-2 border-white text-white"
               href={ctaHref}
               size="lg"
-              theme="dark"
               variant="outline"
             >
               {ctaText}
