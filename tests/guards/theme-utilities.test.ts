@@ -1,113 +1,92 @@
 /**
  * Every Tailwind utility in the scan set must name a token the theme declares.
  *
- * A utility naming an undeclared token compiles to nothing, and nothing warns:
- * no build error, no lint error, no failing test. #176 found four of them —
- * `font-raleway`, `text-gray-dark`, `border-gray-light` — and two were visible,
- * because v4 defaults `border-color` and an SVG `fill` to `currentColor`, so the
- * element took the inherited text colour instead of the grey it asked for.
+ * A utility naming an undeclared token compiles to no CSS, and nothing says so:
+ * not the build, not the linter, not the suite. #176's dead classes were visible
+ * all the same, because v4 defaults a border colour and an SVG `fill` to
+ * `currentColor`, so the element silently took the inherited text colour.
  *
- * It reads the scan set out of the stylesheet's own `@source` lines, so the
- * guard covers exactly what Tailwind covers.
+ * The theme to check against is ours *plus* Tailwind's own, because `@theme`
+ * extends the default rather than replacing it: `gray-950` still resolves, from
+ * `tailwindcss/theme.css`, though `layouts/tailwind.css` stops at `gray-900`.
+ * Reading both is also what keeps the check free of a hand-copied list of
+ * Tailwind's defaults, which a version bump would rot.
+ *
+ * Nothing here spells a working utility outright. Tailwind scans this file too,
+ * so a literal in a fixture or a comment would ship its CSS to every page.
  */
 
 import { describe, it, expect } from 'vitest'
 import { globSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import { repoRoot, readSource, lineAt } from './_source-scan'
+import { repoRoot, readSource, lineAt, themeStylesheet } from './_source-scan'
 
-const stylesheet = readFileSync(join(repoRoot, 'layouts', 'tailwind.css'), 'utf8')
+const upstream = createRequire(import.meta.url).resolve('tailwindcss/theme.css')
+const THEME = `${themeStylesheet}\n${readFileSync(upstream, 'utf8')}`
 
 /** `@source "../components";` — the inline form declares classes, not paths. */
-const SCANNED_DIRS = [...stylesheet.matchAll(/@source\s+"\.\.\/([^"]+)"/g)].map(([, dir]) => dir)
+const SCANNED_DIRS = [...themeStylesheet.matchAll(/@source\s+"\.\.\/([^"]+)"/g)].map(
+  ([, dir]) => dir,
+)
 
 const declaredTokens = (namespace: string): Set<string> =>
   new Set(
-    [...stylesheet.matchAll(new RegExp(`--${namespace}-([a-z0-9-]+):`, 'gi'))].map(
-      ([, name]) => name,
-    ),
+    [...THEME.matchAll(new RegExp(`--${namespace}-([a-z0-9-]+):`, 'gi'))].map(([, name]) => name),
   )
 
 const COLORS = declaredTokens('color')
-const FONT_WEIGHTS = declaredTokens('font-weight')
-/** `--font-weight-*` matches `--font-*` too, so subtract it back out. */
-const FONT_FAMILIES = new Set(
-  [...declaredTokens('font')].filter((name) => !name.startsWith('weight-')),
-)
+/** `--font-weight-*` matches `--font-*` too, and `font-` utilities take both. */
+const FONTS = new Set([...declaredTokens('font')].map((name) => name.replace(/^weight-/, '')))
 
 /**
  * A colour scale's name, for every token ending in a numeric step: `gray` from
  * `--color-gray-900`. A step is what a typo lands on — `gray-dark` names a real
  * scale and no step — so the scale set is what makes the typo detectable.
  */
-const SCALES = new Set(
-  [...COLORS].flatMap((token) => {
-    const scale = token.replace(/-\d+$/, '')
+const SCALES = new Set([...COLORS].flatMap((token) => /^(.+)-\d+$/.exec(token)?.[1] ?? []))
 
-    return scale === token ? [] : [scale]
-  }),
-)
+/**
+ * Matched by scale rather than by utility prefix, so one pattern covers `text-`,
+ * `bg-`, `border-`, `ring-offset-` and whatever comes next, with no allowlist of
+ * prefixes to keep current.
+ */
+const SCALE_STEP = new RegExp(`\\b(${[...SCALES].join('|')})-([a-z0-9]+)`, 'g')
 
-/** Tailwind's own `@theme` still supplies these; ours extends it, never replaces it. */
-const BUILTIN_FONT_FAMILIES = ['sans', 'serif', 'mono']
-const BUILTIN_FONT_WEIGHTS = [
-  'thin',
-  'extralight',
-  'light',
-  'normal',
-  'medium',
-  'semibold',
-  'bold',
-  'extrabold',
-  'black',
-]
-
-export interface DeadUtility {
+interface DeadUtility {
   readonly utility: string
   readonly index: number
 }
 
 /**
- * Every utility in `source` naming a token the theme does not declare.
- *
- * Colours are matched by scale rather than by utility prefix, so the check
- * covers `text-`, `border-`, `ring-offset-` and anything else without an
- * allowlist to keep current. A trailing `/50` opacity or `!` important is part
- * of the utility, not of the token, so neither is captured.
+ * Every utility in `source` naming a token the theme does not declare. A
+ * trailing `/50` opacity or `!` important belongs to the utility rather than to
+ * the token, so neither is captured.
  */
-export function findDeadUtilities(source: string): DeadUtility[] {
+function findDeadUtilities(source: string): DeadUtility[] {
   const dead: DeadUtility[] = []
 
-  for (const scale of SCALES) {
-    for (const match of source.matchAll(new RegExp(`\\b${scale}-([a-z0-9]+)`, 'g'))) {
-      if (!COLORS.has(`${scale}-${match[1]}`)) {
-        dead.push({ utility: match[0], index: match.index })
-      }
-    }
+  for (const match of source.matchAll(SCALE_STEP)) {
+    if (!COLORS.has(`${match[1]}-${match[2]}`)) dead.push({ utility: match[0], index: match.index })
   }
 
   for (const match of source.matchAll(/\bfont-([a-z][a-z0-9-]*)\b/g)) {
-    const name = match[1]
-
-    if (name.startsWith('stretch-')) continue
-    const known =
-      FONT_FAMILIES.has(name) ||
-      FONT_WEIGHTS.has(name) ||
-      BUILTIN_FONT_FAMILIES.includes(name) ||
-      BUILTIN_FONT_WEIGHTS.includes(name)
-
-    if (!known) dead.push({ utility: match[0], index: match.index })
+    // `font-stretch-*` takes a percentage keyword, not a `--font-*` token.
+    if (match[1].startsWith('stretch-')) continue
+    if (!FONTS.has(match[1])) dead.push({ utility: match[0], index: match.index })
   }
 
   return dead
 }
 
 describe('theme utilities', () => {
-  it('parses the scan set and the theme out of the stylesheet', () => {
+  it('parses both themes out of CSS', () => {
     expect(SCANNED_DIRS).toContain('components')
-    expect(SCALES).toContain('gray')
-    expect(COLORS).toContain('gray-900')
-    expect(FONT_FAMILIES).toContain('sans')
+    expect(COLORS).toContain('gray-900') // ours
+    expect(COLORS).toContain('gray-950') // Tailwind's, and still resolvable
+    expect(FONTS).toContain('number') // ours
+    expect(FONTS).toContain('serif') // Tailwind's
+    expect(SCALES.size).toBeGreaterThan(3)
   })
 
   it('flags the utilities #176 removed', () => {
@@ -118,15 +97,27 @@ describe('theme utilities', () => {
     expect(found).toEqual(expect.arrayContaining(['font-raleway', 'gray-dark', 'gray-light']))
   })
 
-  it('accepts the declared tokens, with variants, opacity and important', () => {
+  it('accepts a declared token through a variant, an opacity and an important', () => {
+    const variant = 'hover:'
+    const opacity = '/80'
+    const important = '!'
+
     expect(
-      findDeadUtilities('hover:text-gray-700 bg-teal-500/80 ring-offset-teal-900 border-gray-200!'),
+      findDeadUtilities(
+        `${variant}text-gray-700 bg-teal-500${opacity} ring-offset-teal-900 border-gray-200${important}`,
+      ),
     ).toEqual([])
     expect(findDeadUtilities('font-sans font-mono font-number font-semibold')).toEqual([])
   })
 
+  /**
+   * Stories are in scope, unlike in the other guards: Ladle renders them, and
+   * two of #176's four call sites were stories.
+   */
   it.each(SCANNED_DIRS)('declares every token the utilities in %s name', (dir) => {
     const files = globSync(`${dir}/**/*.{ts,tsx}`, { cwd: repoRoot })
+
+    expect(files.length).toBeGreaterThan(0)
 
     const offences = files.flatMap((file) => {
       const source = readSource(join(repoRoot, file))
