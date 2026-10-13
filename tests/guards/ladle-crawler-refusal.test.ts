@@ -16,8 +16,9 @@ function headersFor(file: string, pattern: string): string[] {
   const lines = file.split('\n').filter((line) => !line.startsWith('#'))
   const headers: string[] = []
 
-  // Cloudflare Pages reads an indented line as a header of the pattern above it, so collect
-  // until the next unindented line rather than assuming a position.
+  // Cloudflare reads an indented line as a header of the pattern above it — true of Pages and
+  // of Workers static assets alike — so collect until the next unindented line rather than
+  // assuming a position.
   for (const line of lines.slice(lines.findIndex((l) => l.trim() === pattern) + 1)) {
     if (line.trim() === '') continue
     if (!/^\s/.test(line)) break
@@ -54,7 +55,15 @@ describe('the Ladle crawler refusal', () => {
     expect(robots).toMatch(/^User-agent: Twitterbot\n(?:User-agent: [\w-]+\n)*Allow: \/$/m)
   })
 
-  it('sends noindex on every URL in _headers', () => {
-    expect(headersFor(readRefusalFile('_headers'), '/*')).toContain('X-Robots-Tag: noindex')
+  it('sends noindex and ACAO on every URL in _headers', () => {
+    const headers = readRefusalFile('_headers')
+
+    expect(headersFor(headers, '/*')).toContain('X-Robots-Tag: noindex')
+    // Workers supplies no ACAO of its own, unlike Pages, and sydevs/SahajCloud#913 reads these
+    // assets cross-origin (#184).
+    expect(headersFor(headers, '/*')).toContain('Access-Control-Allow-Origin: *')
+    // One rule, because both platforms comma-join a value two matching rules set, and `*, *`
+    // is invalid. Counting is the whole invariant — a second rule is the only way to break it.
+    expect(headers.match(/^[ \t]*Access-Control-Allow-Origin:/gm)).toHaveLength(1)
   })
 })
