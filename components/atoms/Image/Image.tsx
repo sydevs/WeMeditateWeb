@@ -8,7 +8,6 @@ import {
   getImageSrcSet,
   getImageURL,
   getVariantName,
-  isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
 import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
 import { focusRing } from '../focusRing'
@@ -36,9 +35,9 @@ export interface ImageProps extends ComponentProps<'img'> {
   height?: number
 
   /**
-   * Aspect ratio for the image container. Values align with Cloudflare
-   * Images variant prefixes, so this automatically optimizes
-   * SahajCloud-hosted images (for example `video` maps to `video-800`).
+   * Aspect ratio for the image container. It also picks the widths a
+   * SahajCloud-hosted image is resized to (for example `video` at the
+   * default size maps to `width=800`).
    * @default undefined (intrinsic aspect ratio)
    */
   aspectRatio?: AspectRatio
@@ -150,10 +149,7 @@ export function buildLightboxSlide(
   alt: string,
   aspectRatio?: AspectRatio,
 ): LightboxSlide {
-  const fullRes =
-    aspectRatio && isCloudflareImageURL(src)
-      ? getImageURL(src, getVariantName(aspectRatio, 'xlarge'))
-      : src
+  const fullRes = aspectRatio ? getImageURL(src, getVariantName(aspectRatio, 'xlarge')) : src
 
   return { src: fullRes, alt, description: alt || undefined }
 }
@@ -164,12 +160,11 @@ export function buildLightboxSlide(
  * It gives consistent image rendering with aspect ratio control, loading
  * states, and several object-fit options.
  *
- * When `src` is a Cloudflare Images URL (imagedelivery.net) and
- * `aspectRatio` is set, the component automatically appends a variant
- * (`{aspectRatio}-{width}`) and emits a responsive srcset. The default
- * `sizes` attribute assumes a roughly full-width viewport layout. Pass an
- * explicit `sizes` prop when rendering inside grids, cards, or fixed-width
- * containers.
+ * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio` is
+ * set, the component resolves it to a `width=<n>` variant and emits a
+ * responsive srcset. The default `sizes` attribute assumes a roughly
+ * full-width viewport layout. Pass an explicit `sizes` prop when rendering
+ * inside grids, cards, or fixed-width containers.
  *
  * When width and height are provided, the component uses a blurred
  * gradient placeholder, with a shimmer animation, to prevent layout shift
@@ -232,7 +227,7 @@ export function Image({
   }, [lightbox, lightboxGroup, lightboxIndex, slide])
 
   const { imageSrc, imageSrcSet } = useMemo(() => {
-    if (!aspectRatio || !isCloudflareImageURL(src)) {
+    if (!aspectRatio) {
       return { imageSrc: src, imageSrcSet: undefined as string | undefined }
     }
     const srcSet = responsive ? getImageSrcSet(src, aspectRatio) : ''
