@@ -15,7 +15,7 @@ permissions:
   contents: read
   pull-requests: read # primary: Cloudflare posts the preview URL in a PR comment
   issues: read # needed: GitHub serves PR comments through the issues/{n}/comments endpoint
-  checks: read # fallback: Cloudflare preview URL in the "Cloudflare Pages" check-run output
+  checks: read # fallback: a preview URL in a Cloudflare check-run output (#184 records which, if any)
   deployments: read # fallback: a Workers-Builds-style deployment environment_url
   statuses: read # fallback: a preview URL posted as a commit status
 
@@ -37,11 +37,31 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:run # unit tests only. vitest.config.ts excludes smoke specs.
+      - run: pnpm ladle:build # fail the gate on a broken story, and write build/ for the step below
+
+      # Validates the design Worker's config against the pinned wrangler's own schema. Nothing
+      # else in this repo reads `wrangler.design.jsonc` — Workers Builds holds the dashboard's
+      # copy of the path — so without this step a rename, a typo, or an `assets.directory` that
+      # drifts from what `ladle:build` writes would surface only in a Cloudflare build log, on
+      # main (#184).
+      #
+      # It must follow `ladle:build`: the dry run fails when `assets.directory` does not exist,
+      # which is exactly the drift worth catching, and `build/` is what that step writes. Run
+      # cold it reads as a broken gate. No credential and no network — `--dry-run` reaches
+      # neither, so this works on a forked PR, and metrics are off so a telemetry endpoint
+      # cannot make the gate flaky.
+      - name: Wrangler config (offline dry run)
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: pnpm check:wrangler
 
   # This repo has two Cloudflare previews per PR. The URL host tells them apart:
-  #   - web   → the Vike app, Workers Builds  (…-wemeditate-web.<acct>.workers.dev)
-  #   - ladle → the design system, Pages       (…wm-design.pages.dev)
-  # One matrix smoke job runs per target. CF_PROJECT_MATCH selects the right one.
+  #   - web   → the Vike app, Workers Builds        (…-wemeditate-web.<acct>.workers.dev)
+  #   - ladle → the design system, Workers Builds   (…-wm-design.<acct>.workers.dev)
+  # One matrix smoke job runs per target. CF_PROJECT_MATCH selects the right one, by plain
+  # substring over the preview host — which carries the Worker's own name. So renaming either
+  # Worker means editing `project:` below and `EXCLUDE` in the discovery script in the same
+  # commit.
   smoke:
     name: Smoke (${{ matrix.target }})
     runs-on: ubuntu-latest
@@ -57,10 +77,10 @@ jobs:
             project: wm-design
             script: test:smoke:ladle
     steps:
-      # wm-design rebuilds only when a push touches a path Ladle reads (the
-      # project's build watch paths, mirrored in WATCH/IGNORE below and listed in
-      # docs/cloudflare-previews-ci.md). With no build there is no preview, and
-      # discovery would wait out its 12-minute timeout before skipping anyway.
+      # wm-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
+      # trigger's path_includes/path_excludes, mirrored in WATCH/IGNORE below and in the table
+      # in docs/cloudflare-previews-ci.md. With no build there is no preview, and discovery
+      # would wait out its 12-minute timeout before reporting anyway.
       - name: Did Cloudflare build the ladle preview?
         id: scope
         if: matrix.target == 'ladle' && github.event_name == 'pull_request'
@@ -102,9 +122,9 @@ jobs:
 
       # Find this target's preview URL through the GitHub API. Cloudflare posts
       # it in the bot's PR comment. Check-run output and deployment data are
-      # fallbacks. This step waits until the preview responds. It skips
-      # gracefully when no preview is posted (for example, a forked PR
-      # without permissions), so the job still passes.
+      # fallbacks. This step waits until the preview responds, then reports what
+      # it found: an empty preview_url and exit 0 when nothing turned up. The
+      # step below decides whether that is a failure.
       - name: Discover ${{ matrix.target }} preview URL
         id: preview
         if: steps.scope.outputs.built != 'false'
@@ -122,7 +142,59 @@ jobs:
           # Web specs use this key to find a real SahajCloud page or meditation.
           # It has no effect for ladle.
           SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
-        run: pnpm ${{ matrix.script }}
+          TARGET: ${{ matrix.target }}
+        # Naming the address is the point, not decoration: it is the only record of WHICH
+        # preview a green check read, and the host label is what tells this Worker's preview
+        # from anything else answering on the PR. Written before the specs run, so a red
+        # check names it too.
+        run: |
+          {
+            echo "### Smoke ($TARGET)"
+            echo ""
+            echo "Preview address read by discovery: \`$PREVIEW_URL\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          pnpm ${{ matrix.script }}
+
+      # A skip must never look like a pass. Discovery exits 0 with an empty URL, and the Smoke
+      # step above then does not run at all — so before this step a missing ladle preview was a
+      # green check that tested nothing (#184).
+      #
+      # Three quiet cases stay green, and each is quiet for a reason this step can see:
+      #   - built == 'false' — Cloudflare built nothing, so this step is skipped and the scope
+      #     step above already said so in the summary.
+      #   - merge_group — the queue publishes no preview, and `built` is empty there because the
+      #     scope step is gated on `pull_request`. Hence the explicit event check below rather
+      #     than relying on SAME_REPO evaluating false by accident.
+      #   - a forked PR — it gets no preview by design, and carries no secrets to get one.
+      # Everything else is a same-repo PR that should have had a preview and did not. That is a
+      # real failure: the Worker's build did not happen, or discovery read the wrong host.
+      - name: Report a missing ladle preview
+        if: ${{ matrix.target == 'ladle' && steps.scope.outputs.built != 'false' && steps.preview.outputs.preview_url == '' }}
+        env:
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          if [ "$IS_PR" != "true" ]; then
+            {
+              echo "### Smoke (ladle)"
+              echo ""
+              echo "The merge queue publishes no wm-design preview, so there was nothing to smoke."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          MSG="No wm-design preview was found for this commit — NO ladle smoke specs ran."
+          {
+            echo "### Smoke (ladle)"
+            echo ""
+            echo "⚠️ $MSG"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$SAME_REPO" = "true" ]; then
+            echo "::error::$MSG This PR is from the same repository, so the wm-design Worker was expected to build one. Read the Cloudflare build log for this commit, and the 'selected …' line in the discovery step above."
+            exit 1
+          fi
+          echo "::warning::$MSG Forked PRs get no preview deployment, so the specs were skipped."
 
   # Dependency-vulnerability gate. Fails only when this PR ADDS a dependency
   # with a high or critical advisory that reaches production code. An
