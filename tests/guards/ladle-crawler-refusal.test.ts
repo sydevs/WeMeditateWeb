@@ -11,9 +11,14 @@ import { describe, it, expect } from 'vitest'
 import type { Plugin } from 'vite'
 import { crawlerRefusal, readRefusalFile, REFUSAL_FILES } from '../../.ladle/crawler-refusal'
 
+/** `_headers` without its comments — the only notion of a line this file uses. */
+function contentLines(file: string): string[] {
+  return file.split('\n').filter((line) => !line.startsWith('#'))
+}
+
 /** The headers `_headers` sends for one URL pattern, in any order. */
 function headersFor(file: string, pattern: string): string[] {
-  const lines = file.split('\n').filter((line) => !line.startsWith('#'))
+  const lines = contentLines(file)
   const headers: string[] = []
 
   // Cloudflare reads an indented line as a header of the pattern above it — true of Pages and
@@ -57,13 +62,18 @@ describe('the Ladle crawler refusal', () => {
 
   it('sends noindex and ACAO on every URL in _headers', () => {
     const headers = readRefusalFile('_headers')
+    const wildcard = headersFor(headers, '/*')
 
-    expect(headersFor(headers, '/*')).toContain('X-Robots-Tag: noindex')
-    // Workers supplies no ACAO of its own, unlike Pages, and sydevs/SahajCloud#913 reads these
-    // assets cross-origin (#184).
-    expect(headersFor(headers, '/*')).toContain('Access-Control-Allow-Origin: *')
-    // One rule, because both platforms comma-join a value two matching rules set, and `*, *`
-    // is invalid. Counting is the whole invariant — a second rule is the only way to break it.
-    expect(headers.match(/^[ \t]*Access-Control-Allow-Origin:/gm)).toHaveLength(1)
+    expect(wildcard).toContain('X-Robots-Tag: noindex')
+    expect(wildcard).toContain('Access-Control-Allow-Origin: *')
+
+    // The one-rule invariant `_headers` states: a second matching rule would comma-join into
+    // `*, *`. Counted over the whole file, since `headersFor` cannot see another pattern's
+    // rule — and over content lines, so spelling the header out in a comment cannot trip it.
+    const declared = contentLines(headers).filter((line) =>
+      line.trim().startsWith('Access-Control-Allow-Origin:'),
+    )
+
+    expect(declared).toHaveLength(1)
   })
 })

@@ -71,6 +71,10 @@ pnpm ladle
 # Build static component library
 pnpm ladle:build
 
+# Validate the design Worker's config offline. Needs `pnpm ladle:build` first — the dry run
+# reads the `build/` that step writes. No credential, no network.
+pnpm check:wrangler
+
 # Type-check, and run the unit suite once (use this in scripts and CI)
 pnpm typecheck
 pnpm test:run
