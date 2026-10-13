@@ -2,8 +2,9 @@
  * Tailwind CSS v4 - CSS-First Configuration
  *
  * In Tailwind v4, theme customization is done using the @theme directive
- * instead of tailwind.config.ts. This file defines all custom design tokens
- * for the WeMeditate design system.
+ * rather than a JavaScript config file. This file defines all custom design
+ * tokens for the WeMeditate design system, and its @source lines are the
+ * scan set.
  *
  * @see https://tailwindcss.com/docs/theme
  */

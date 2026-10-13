@@ -1,7 +1,6 @@
 ---
 paths:
   - "layouts/*.css"
-  - "tailwind.config.ts"
 ---
 
 # Tailwind CSS
@@ -15,11 +14,12 @@ the `@theme` directive:
 - Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
 - Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
-In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailwind.config.ts`.
-Nothing loads `tailwind.config.ts` at all: v4 reads a config file only through an `@config`
-directive, and no stylesheet here has one. The scan set is the `@source` lines in
-[layouts/tailwind.css](../../layouts/tailwind.css), so adding a path to that file's `content`
-array changes nothing.
+**There is no JavaScript config file, and adding one back changes nothing on its own.** In v4,
+theme customization lives in CSS through `@theme`, and v4 reads a config file only through an
+`@config` directive. A `tailwind.config.ts` sat in the repo root until #176 deleted it: no
+stylesheet pointed at it, so both its `theme.extend` block and its `content` array were dead, and
+every reader who opened it took it for the scan set. The scan set is the `@source` lines in
+[layouts/tailwind.css](../../layouts/tailwind.css).
 
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a

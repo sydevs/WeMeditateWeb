@@ -81,7 +81,7 @@ only 3.0:1 on `--color-gray-800`.
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--font-sans` (`font-sans`, `font-raleway`) | `'Raleway', sans-serif` | Default for all text |
+| `--font-sans` (`font-sans`) | `'Raleway', sans-serif` | Default for all text |
 | `--font-number` (`font-number`) | `'Futura Book', sans-serif` | Countdowns, large numbers, special headings |
 | `font-extralight` | 200 | Raleway Extra Light |
 | `font-light` | 300 | Raleway Light — default body |
@@ -354,11 +354,10 @@ the standalone semantic colors (accent, error, success, info), the warm backgrou
 Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
 uses Tailwind's defaults.
 
-[tailwind.config.ts](./tailwind.config.ts) is loaded by nothing. Tailwind v4 reads a config file
-only through an `@config` directive, and no stylesheet here has one, so both its `theme.extend`
-block and its `content` array are dead. Change
-[layouts/tailwind.css](./layouts/tailwind.css) and nothing else — its `@source` lines are the
-scan set, and its `@theme` block is the theme.
+There is no `tailwind.config.ts`. Tailwind v4 reads a config file only through an `@config`
+directive, so one that no stylesheet points at is dead on arrival — which is what the file #176
+deleted had been. Change [layouts/tailwind.css](./layouts/tailwind.css) and nothing else: its
+`@source` lines are the scan set, and its `@theme` block is the theme.
 
 **v4 gradient syntax**: Tailwind v4 renamed the gradient-direction utilities for consistency with
 CSS. Use `bg-linear-to-*`, not the v3 `bg-gradient-to-*`:
