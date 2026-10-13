@@ -60,7 +60,6 @@ export const Default: Story = () => (
           // Link-less: opens the mega-menu, no navigation of its own.
           { label: 'About Meditation', dropdown: aboutDropdown },
         ]}
-        theme="light"
       />
 
       {/* Long content to demonstrate sticky navigation */}
@@ -87,7 +86,7 @@ export const Default: Story = () => (
     <StorySection
       background="gradient"
       description="Scroll down to see how the navigation transitions from white text on dark background to gray text on white background when it becomes sticky"
-      theme="dark"
+      surface="dark"
       title="Dark Theme"
       variant="scrollable"
     >
@@ -108,7 +107,6 @@ export const Default: Story = () => (
           // Link-less: opens the mega-menu, no navigation of its own.
           { label: 'About Meditation', dropdown: aboutDropdown },
         ]}
-        theme="dark"
       />
 
       {/* Long content to demonstrate sticky navigation */}

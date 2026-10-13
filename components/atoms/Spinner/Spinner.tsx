@@ -18,18 +18,11 @@ export interface SpinnerProps extends ComponentProps<'div'> {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
   /**
-   * Spinner color (only applies to default variant)
+   * Spinner color, resolved against the surface it sits on
    * @default 'primary'
    */
   color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
 
-  /**
-   * Theme based on background context
-   * - light: Standard colors for light backgrounds (default)
-   * - dark: Lightened colors for dark backgrounds
-   * @default 'light'
-   */
-  theme?: 'light' | 'dark'
 
   /**
    * Accessible label for the loading state
@@ -50,14 +43,13 @@ export interface SpinnerProps extends ComponentProps<'div'> {
  * @example
  * <Spinner />
  * <Spinner variant="logo" size="lg" />
- * <Spinner size="lg" color="neutral" theme="dark" />
+ * <Spinner size="lg" color="neutral" />
  * <Spinner size="sm" label="Loading content..." />
  */
 export function Spinner({
   variant = 'default',
   size = 'md',
   color = 'primary',
-  theme = 'light',
   label,
   className = '',
   ...props
@@ -84,26 +76,19 @@ export function Spinner({
     xl: 'w-12 h-12 border-4',
   }
 
-  // Light theme colors (standard colors for light backgrounds)
-  const lightThemeColors = {
-    primary: 'border-teal-600 border-t-transparent',
-    secondary: 'border-coral-500 border-t-transparent',
-    neutral: 'border-gray-600 border-t-transparent',
+  const colorStyles = {
+    primary: 'border-primary border-t-transparent',
+    secondary: 'border-secondary border-t-transparent',
+    neutral: 'border-fg-muted border-t-transparent',
     currentColor: 'border-current border-t-transparent',
   }
 
-  // Dark theme colors (lightened colors for dark backgrounds)
-  const darkThemeColors = {
-    primary: 'border-teal-300 border-t-transparent',
-    secondary: 'border-coral-300 border-t-transparent',
-    neutral: 'border-white border-t-transparent',
-    currentColor: 'border-current border-t-transparent',
+  const logoColorStyles = {
+    primary: 'text-primary',
+    secondary: 'text-secondary',
+    neutral: 'text-fg-muted',
+    currentColor: 'text-current',
   }
-
-  const colorStyles = theme === 'dark' ? darkThemeColors : lightThemeColors
-
-  // Logo variant uses text color based on theme
-  const logoColorClass = theme === 'dark' ? 'text-white' : 'text-teal-600'
 
   if (variant === 'logo') {
     return (
@@ -114,7 +99,7 @@ export function Spinner({
         className={`inline-block ${className}`}
         {...props}
       >
-        <AnimatedLogoSvg className={`${logoSizeStyles[size]} ${logoColorClass}`} />
+        <AnimatedLogoSvg className={`${logoSizeStyles[size]} ${logoColorStyles[color]}`} />
         <span className="sr-only">{resolvedLabel}</span>
       </div>
     )

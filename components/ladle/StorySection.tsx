@@ -9,7 +9,7 @@ import type { ReactNode } from 'react'
  * @param title - Section title (renders as h2 for sections, p for subsections)
  * @param description - Optional description text below the title
  * @param children - The section content
- * @param theme - Text color theme: 'light' (dark text) or 'dark' (white text)
+ * @param surface - 'dark' renders the children on a dark surface; title and description stay light
  * @param background - Background style: 'none', 'neutral' (gray), or 'gradient' (teal)
  * @param variant - Section type: 'section', 'subsection', or 'scrollable'
  * @param inContext - When true, adds "In Context" prefix to title and bold top border
@@ -18,7 +18,7 @@ export interface StorySectionProps {
   title: string
   description?: string
   children: ReactNode
-  theme?: 'light' | 'dark'
+  surface?: 'light' | 'dark'
   background?: 'none' | 'neutral' | 'gradient'
   variant?: 'section' | 'subsection' | 'scrollable'
   inContext?: boolean
@@ -28,23 +28,23 @@ export const StorySection = ({
   title,
   description,
   children,
-  theme = 'light',
+  surface = 'light',
   background = 'none',
   variant = 'section',
   inContext = false,
 }: StorySectionProps) => {
-  // Background styles based on theme and background type
+  // Background styles based on surface and background type
   const getBackgroundStyles = () => {
     if (background === 'none') return ''
 
     const baseStyles = 'p-6 rounded-lg'
 
     if (background === 'neutral') {
-      return theme === 'dark' ? `bg-gray-800 ${baseStyles}` : `bg-gray-50 ${baseStyles}`
+      return surface === 'dark' ? `bg-gray-800 ${baseStyles}` : `bg-gray-50 ${baseStyles}`
     }
 
     if (background === 'gradient') {
-      return theme === 'dark'
+      return surface === 'dark'
         ? `bg-linear-to-b from-teal-600 to-teal-700 ${baseStyles}`
         : `bg-linear-to-b from-teal-50 to-teal-100 ${baseStyles}`
     }
@@ -52,16 +52,16 @@ export const StorySection = ({
     return ''
   }
 
-  // Text colors based on theme.
+  // Text colors based on surface.
   // For non-subsection dark sections with a background, the title and
   // description appear on a light wrapper background.
   const getTitleColor = () => {
     if (variant === 'subsection') {
-      return theme === 'dark' ? 'text-gray-100' : 'text-gray-700'
+      return surface === 'dark' ? 'text-gray-100' : 'text-gray-700'
     }
 
-    // Non-subsection dark-theme sections have the title and description on
-    // a light background wrapper. So they use light theme colors.
+    // Non-subsection dark sections have the title and description on
+    // a light background wrapper. So they use light colours.
     return 'text-gray-900'
   }
 
@@ -101,21 +101,21 @@ export const StorySection = ({
   const displayTitle =
     inContext && title ? `In Context - ${title}` : inContext ? 'In Context' : title
 
-  // Get text color for children based on theme
-  const childrenTextColor = theme === 'dark' ? 'text-white' : ''
+  // Children of a dark section resolve every surface token against it
+  const childrenSurfaceClass = surface === 'dark' ? 'surface-dark text-fg' : ''
 
   // For scrollable variant, wrap content in scrollable container
   const renderContent = () => {
     if (config.isScrollable) {
       // Determine border and background for scrollable container
-      const borderColor = theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+      const borderColor = surface === 'dark' ? 'border-gray-700' : 'border-gray-200'
       const scrollBackground =
         backgroundStyles ||
-        (theme === 'dark' ? 'bg-linear-to-b from-teal-600 to-teal-700' : 'bg-white')
+        (surface === 'dark' ? 'bg-linear-to-b from-teal-600 to-teal-700' : 'bg-white')
 
       return (
         <div className={`h-[600px] overflow-y-auto border-4 ${borderColor}`}>
-          <div className={`min-h-full px-6 ${scrollBackground} ${childrenTextColor}`}>
+          <div className={`min-h-full px-6 ${scrollBackground} ${childrenSurfaceClass}`}>
             {children}
           </div>
         </div>
@@ -124,10 +124,10 @@ export const StorySection = ({
 
     // Regular content with optional background and text color
     if (backgroundStyles) {
-      return <div className={`${backgroundStyles} ${childrenTextColor}`}>{children}</div>
+      return <div className={`${backgroundStyles} ${childrenSurfaceClass}`}>{children}</div>
     }
 
-    return <div className={childrenTextColor}>{children}</div>
+    return <div className={childrenSurfaceClass}>{children}</div>
   }
 
   return (

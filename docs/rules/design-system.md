@@ -110,45 +110,67 @@ interface LinkProps {
 is the default, so a link matches its parent's font size unless you set one. An `external` link
 adds screen-reader text announcing it opens in a new tab.
 
-### Focus indicator
+### Surfaces
 
-`focusRing(theme)` in [components/atoms/focusRing.ts](../../components/atoms/focusRing.ts) is the
-focus treatment to draw. Put it in the component's base styles, never in a variant map.
+A component never takes a `theme` prop. Anything that should change on a dark background — text,
+link and icon colours, outline and ghost buttons, the focus ring — uses a **surface token**:
+`text-fg`, `text-fg-muted`, `text-primary`, `text-secondary`, `border-line`, `bg-tint`,
+`focus-ring` and the rest of the table in [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md#surfaces). Each
+resolves against the nearest `surface-light` / `surface-dark` ancestor, and `:root` is light.
 
 ```tsx
-const baseStyles = `transition-colors duration-200 ${focusRing(theme)}`
+const variantStyles = {
+  default: 'text-primary hover:text-primary-strong hover:underline',
+  neutral: 'text-fg-muted hover:text-fg',
+}
 ```
+
+- **Only a component that paints a background sets a surface.** `OrnateTextBox` always paints dark.
+  The sticky header nav paints white, so it sets `surface-light` once it sticks. Ladle's
+  `StorySection surface="dark"` and any dark story wrapper (`surface-dark bg-gray-900`) do the same.
+- **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
+  `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
+  `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
+  `LayoutChrome` puts the lead splash's surface on the wrapper it overlays the header with.
+- **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
+  surface around it. A filled `Button` draws its spinner in `border-current` instead.
+- **A colour that does not change with the surface names its scale step.** Filled buttons are
+  `bg-teal-500` on every background.
+
+`layouts/tailwind.test.ts` compiles the real stylesheet and holds the mechanism: tokens resolve at
+the element (`@theme inline` — without it a nested surface changes nothing), every surface defines
+every token, and each ring clears 3:1 against its band.
+
+### Focus indicator
+
+`focus-ring` is the focus treatment to draw. Put it in the component's base styles, never in a
+variant map.
 
 It emits a 2px ring over a 2px offset band, on `focus-visible:` and not `focus:`, so a mouse click
 leaves no lingering ring and a browser without `:focus-visible` keeps its own outline instead of
-losing both. The colour is `teal-600` on light and `white` on dark, with the offset band pinned to
-`white` and `teal-900` to match.
-
-A fourth rule the ring's own arrival created:
-
-- **A component on a dark surface must be told so.** `focusRing` defaults to light, so a caller
-  that omits `theme` draws a teal ring over a white band on a photograph. Thread `theme` down to
-  whatever owns the interactive element — this is why `Logo` has a `theme` prop it uses for
-  nothing else.
+losing both. Its colours are the `--surface-ring` and `--surface-ring-offset` tokens: `teal-600`
+over a `white` band on light, `white` over `teal-900` on dark.
 
 Three rules the atoms broke before this existed:
 
 - **A ring colour is inert without a ring width.** `ring-<color>` compiles to `--tw-ring-color` and
   nothing else. Only `ring-2` writes the `box-shadow`. `Link` shipped eight colours against no
   width.
-- **The ring colour is per theme, never per variant.** A per-variant axis is what let every
-  light-theme colour drift under the 3:1 of WCAG 2.1 SC 1.4.11 — `teal-500` 2.70, `coral-500` 2.53,
+- **The ring colour is per surface, never per variant.** A per-variant axis is what let every
+  light colour drift under the 3:1 of WCAG 2.1 SC 1.4.11 — `teal-500` 2.70, `coral-500` 2.53,
   `gray-400` 1.71 on white. `teal-600` measures 3.85.
-- **Pin `ring-offset-<color>`.** `--tw-ring-offset-color` defaults to `#fff`, so a dark-theme
-  component draws a white band between itself and its ring unless you say otherwise.
+- **Pin `ring-offset-<color>`.** `--tw-ring-offset-color` defaults to `#fff`, so a component on a
+  dark surface draws a white band between itself and its ring unless you say otherwise.
 
 Dark surfaces vary — `teal-900`, the `OrnateTextBox` brown gradient, a photographic splash — so the
 dark ring is `white`, which clears 3:1 on all of them (4.68 on the lightest, `#8a6f56`). A brand
-colour would not.
+colour would not. The dark band stays, because it gives the white ring its 3:1 against a
+`teal-500` (2.70), `coral-500` (2.53) or white fill.
 
-`Link`, `Button` and `Image` call it. `EmbedButton`, `SocialIcon`, `Radio`, `Checkbox`, `Alert`,
-`Input`, `Textarea` and `Select` still carry their own treatments, and none of them has a `theme`
-prop to pass — converting them is the follow-up #133 names, not a rename.
+`Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
+textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,
+`Select`) still carry their own treatments: a field marks focus on its border, not with an offset
+ring, so converting them is a design decision rather than a rename.
 
 ### Divider
 

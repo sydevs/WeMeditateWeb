@@ -130,7 +130,7 @@ export const Default: Story = () => (
     <StorySection
       background="neutral"
       description="Lightened colors (teal-300, coral-300, white) for contrast on dark backgrounds"
-      theme="dark"
+      surface="dark"
       title="Dark Theme"
     >
       <StoryGrid>
@@ -147,17 +147,17 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Outline</StoryGridCell>
             <StoryGridCell>
-              <Icon color="primary" icon={StarIcon} size="lg" theme="dark" />
+              <Icon color="primary" icon={StarIcon} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon color="secondary" icon={StarIcon} size="lg" theme="dark" />
+              <Icon color="secondary" icon={StarIcon} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon color="neutral" icon={StarIcon} size="lg" theme="dark" />
+              <Icon color="neutral" icon={StarIcon} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
-                <Icon color="currentColor" icon={StarIcon} size="lg" theme="dark" />
+                <Icon color="currentColor" icon={StarIcon} size="lg" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -165,17 +165,17 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Solid</StoryGridCell>
             <StoryGridCell>
-              <Icon color="primary" icon={StarIconSolid} size="lg" theme="dark" />
+              <Icon color="primary" icon={StarIconSolid} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon color="secondary" icon={StarIconSolid} size="lg" theme="dark" />
+              <Icon color="secondary" icon={StarIconSolid} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Icon color="neutral" icon={StarIconSolid} size="lg" theme="dark" />
+              <Icon color="neutral" icon={StarIconSolid} size="lg" />
             </StoryGridCell>
             <StoryGridCell>
               <div className="text-blue-600">
-                <Icon color="currentColor" icon={StarIconSolid} size="lg" theme="dark" />
+                <Icon color="currentColor" icon={StarIconSolid} size="lg" />
               </div>
             </StoryGridCell>
           </StoryGridRow>
@@ -349,7 +349,7 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Current Color on Dark Background" variant="subsection">
-          <div className="bg-gray-800 rounded-lg p-6 space-y-4">
+          <div className="surface-dark bg-gray-800 rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3 text-white">
               <Icon color="currentColor" icon={HeartIcon} size="lg" />
               <span>White icon inherits from parent text color</span>

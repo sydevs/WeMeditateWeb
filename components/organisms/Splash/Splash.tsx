@@ -1,11 +1,11 @@
 import { ComponentProps, ReactNode } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
+import { surface, type Surface } from '../../atoms/surface'
 import {
   type AspectRatio,
   type ImageSize,
   getImageURL,
   getVariantName,
-  isCloudflareImageURL,
 } from '../../../lib/cloudflare-images'
 
 export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
@@ -35,12 +35,11 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Call-to-action link destination */
   ctaHref?: string
   /**
-   * Theme based on background context
-   * - light: Dark text for light backgrounds (default)
-   * - dark: White text for dark backgrounds
+   * The surface the background image paints. Everything inside — text, the
+   * CTA, any children — takes its colours from it.
    * @default 'light'
    */
-  theme?: 'light' | 'dark'
+  surface?: Surface
   /** Whether the CTA should pulsate */
   pulsate?: boolean
   /**
@@ -64,7 +63,7 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
  *   subtitle="Making a start is easier than you think."
  *   ctaText="Try it now"
  *   ctaHref="/start"
- *   theme="dark"
+ *   surface="dark"
  *   pulsate
  * />
  */
@@ -76,22 +75,22 @@ export function Splash({
   subtitle,
   ctaText,
   ctaHref,
-  theme = 'light',
+  surface: surfaceValue = 'light',
   pulsate = false,
   priority = false,
   children,
   className = '',
   ...props
 }: SplashProps) {
-  const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900'
 
-  const resolvedBackgroundImage = isCloudflareImageURL(backgroundImage)
-    ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
-    : backgroundImage
+  const resolvedBackgroundImage = getImageURL(
+    backgroundImage,
+    getVariantName(imageAspectRatio, imageSize),
+  )
 
   return (
     <div
-      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${className}`}
+      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${surface(surfaceValue)} ${className}`}
       {...props}
     >
       {/* Not a CSS background (invisible to the preload scanner, and it cannot
@@ -113,7 +112,7 @@ export function Splash({
           {/* Title */}
           {title && (
             <h1
-              className={`font-sans text-2xl md:text-4xl font-light leading-tight mb-6 ${textColor}`}
+              className="font-sans text-2xl md:text-4xl font-light leading-tight mb-6 text-fg"
             >
               {title}
             </h1>
@@ -122,7 +121,7 @@ export function Splash({
           {/* Subtitle */}
           {subtitle && (
             <p
-              className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} ${textColor}`}
+              className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} text-fg`}
             >
               {subtitle}
             </p>
@@ -134,7 +133,7 @@ export function Splash({
           {/* Call-to-Action with Decorative Leaves */}
           {ctaText && ctaHref && (
             <a
-              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light ${textColor} transition-transform hover:scale-105 ${
+              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light text-fg transition-transform hover:scale-105 focus-ring ${
                 pulsate ? 'animate-pulse-scale' : ''
               }`}
               href={ctaHref}

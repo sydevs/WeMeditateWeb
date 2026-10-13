@@ -77,12 +77,12 @@ export const Default: Story = () => {
 
       <StorySection
         title="Dark Theme"
-        theme="dark"
+        surface="dark"
         background="neutral"
         description="White text for dark backgrounds"
       >
         <div className="text-center">
-          <Countdown targetDate={createTarget(3600)} theme="dark" />
+          <Countdown targetDate={createTarget(3600)} />
         </div>
       </StorySection>
 
