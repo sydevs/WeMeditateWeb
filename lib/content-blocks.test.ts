@@ -8,9 +8,9 @@ import {
   meditationCardsFromUserChoices,
   populatedImage,
   showcaseItems,
-  splashTheme,
+  splashSurface,
   subtleSystemItems,
-  textColorToTheme,
+  textColorToSurface,
   type ShowcaseItem,
 } from './content-blocks'
 import type { Page } from '../server/sahajcloud-types'
@@ -389,25 +389,25 @@ describe('meditationCardsFromUserChoices', () => {
   })
 })
 
-describe('textColorToTheme', () => {
+describe('textColorToSurface', () => {
   it('inverts textColor and falls back when absent', () => {
     // The inversion is fixed. Only the fallback for absent values varies per caller.
-    expect(textColorToTheme('dark', 'light')).toBe('light')
-    expect(textColorToTheme('light', 'dark')).toBe('dark')
-    expect(textColorToTheme('dark', 'dark')).toBe('light') // explicit value wins over fallback
-    expect(textColorToTheme(undefined, 'light')).toBe('light')
-    expect(textColorToTheme(null, 'dark')).toBe('dark')
+    expect(textColorToSurface('dark', 'light')).toBe('light')
+    expect(textColorToSurface('light', 'dark')).toBe('dark')
+    expect(textColorToSurface('dark', 'dark')).toBe('light') // explicit value wins over fallback
+    expect(textColorToSurface(undefined, 'light')).toBe('light')
+    expect(textColorToSurface(null, 'dark')).toBe('dark')
   })
 })
 
-describe('splashTheme', () => {
-  it('inverts textColor → background theme, defaulting to dark', () => {
-    // textColor describes the text. theme describes the background. They invert.
-    expect(splashTheme('dark')).toBe('light')
-    expect(splashTheme('light')).toBe('dark')
+describe('splashSurface', () => {
+  it('inverts textColor → background surface, defaulting to dark', () => {
+    // textColor describes the text. surface describes the background. They invert.
+    expect(splashSurface('dark')).toBe('light')
+    expect(splashSurface('light')).toBe('dark')
     // Absent or null becomes dark (the splash's historical hardcoded treatment).
-    expect(splashTheme(undefined)).toBe('dark')
-    expect(splashTheme(null)).toBe('dark')
+    expect(splashSurface(undefined)).toBe('dark')
+    expect(splashSurface(null)).toBe('dark')
   })
 })
 
@@ -417,10 +417,10 @@ describe('getLeadSplash', () => {
     fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
   })
 
-  it('returns the derived theme when content leads with a splash block', () => {
-    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ theme: 'dark' })
-    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({ theme: 'light' })
-    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({ theme: 'dark' })
+  it('returns the derived surface when content leads with a splash block', () => {
+    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark' })
+    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({ surface: 'light' })
+    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({ surface: 'dark' })
   })
 
   it('returns null when the first block is not a splash', () => {
@@ -443,12 +443,12 @@ describe('leadSplashFromRouteData', () => {
   })
 
   it('reads page content on content routes ([slug])', () => {
-    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ theme: 'light' })
+    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ surface: 'light' })
   })
 
   it('reads initialData content on a pages preview', () => {
     expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
-      theme: 'dark',
+      surface: 'dark',
     })
   })
 

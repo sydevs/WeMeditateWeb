@@ -146,33 +146,30 @@ describe('<Link> focus indicator', () => {
     }
   })
 
-  // Setting a surface without being told would override the container's,
-  // which is how a logo over a dark splash drew a light ring.
-  it('inherits its surface when no theme is given', () => {
+  it('carries no ring colour of its own', () => {
     const html = renderToStaticMarkup(<Link href="/about">About</Link>)
 
-    expect(html).not.toContain('surface-')
+    expect(html).not.toMatch(/\bring-/)
   })
+})
 
-  it('claims the surface its theme names', () => {
-    for (const theme of ['light', 'dark'] as const) {
+describe('<Link> surface', () => {
+  // A link on a dark surface lightens because its colours are surface
+  // tokens, not because a caller remembered a `theme` prop.
+  it('colours every variant from surface tokens, never a scale step', () => {
+    for (const variant of ['default', 'primary', 'secondary', 'neutral'] as const) {
       const html = renderToStaticMarkup(
-        <Link href="/about" theme={theme}>
+        <Link href="/about" variant={variant}>
           About
         </Link>,
       )
 
-      expect(html).toContain(`surface-${theme}`)
+      expect(html).not.toMatch(/\btext-(white|gray|teal|coral)\b/)
+      expect(html).toMatch(/\btext-(primary|secondary|fg-muted)\b/)
     }
   })
 
-  it('carries no ring colour of its own', () => {
-    const html = renderToStaticMarkup(
-      <Link href="/about" theme="dark">
-        About
-      </Link>,
-    )
-
-    expect(html).not.toMatch(/\bring-/)
+  it('never sets a surface', () => {
+    expect(renderToStaticMarkup(<Link href="/about">About</Link>)).not.toContain('surface-')
   })
 })

@@ -4,6 +4,7 @@ import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig, Page } from '../server/sahajcloud-types'
 import { leadSplashFromRouteData } from '../lib/content-blocks'
+import { surface } from '../components/atoms/surface'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
@@ -29,7 +30,7 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   const settings = data?.settings
 
   // When the page leads with a Splash, overlay the header on it: transparent,
-  // themed to match, flush with the top. The Splash reserves `pt-60` for
+  // on the splash's surface, flush with the top. The Splash reserves `pt-60` for
   // exactly this. This works on content routes ([slug], `page`) and on the
   // live-preview route (/preview, `initialData`), so preview matches the
   // published layout. See leadSplashFromRouteData.
@@ -114,13 +115,12 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   }))
 
   const header = (
-    <div className="max-w-7xl mx-auto px-6 w-full">
+    <div className={`max-w-7xl mx-auto px-6 w-full ${surface(leadSplash?.surface)}`}>
       <Header
         actionLinkHref={actionLinkHref}
         actionLinkText={actionLinkText}
         logoHref="/"
         navItems={navItems}
-        theme={leadSplash?.theme}
       />
     </div>
   )

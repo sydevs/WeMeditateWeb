@@ -20,8 +20,8 @@ Typography patterns (sizing, weight, color) live in
 [Typography.stories.tsx](./Typography.stories.tsx) as documentation, with no component wrapper.
 Use Tailwind utility classes directly for text styling instead.
 
-[surface.ts](./surface.ts) is not a component. It maps a `theme` prop to the `surface-*` class
-that colours `focus-ring`. See the `Focus indicator` section of
+[surface.ts](./surface.ts) is not a component. It maps a `Surface` value to its `surface-*` class,
+for the few components that paint one. Atoms never take one. See the `Surfaces` section of
 [docs/rules/design-system.md](../../docs/rules/design-system.md).
 
 ## Import
@@ -55,7 +55,9 @@ mutually exclusive props. Give every optional prop a sensible default.
 
 **Styling**: use Tailwind utility classes directly, following the tokens in
 `layouts/tailwind.css`. Accept a `className` prop for the caller to extend styling. Draw the
-keyboard focus state with the `focus-ring` utility, never with a hand-written ring.
+keyboard focus state with the `focus-ring` utility, never with a hand-written ring. Colour
+anything that should change on a dark background with a surface token (`text-fg`,
+`text-primary`, `border-line`, …), never a `theme` prop.
 
 **Accessibility**: use semantic HTML, add ARIA attributes where semantic HTML falls short, and
 support keyboard navigation and screen readers.

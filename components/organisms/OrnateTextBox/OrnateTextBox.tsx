@@ -182,7 +182,6 @@ export function OrnateTextBox({
               className="mt-2 border-white text-white"
               href={ctaHref}
               size="lg"
-              theme="dark"
               variant="outline"
             >
               {ctaText}

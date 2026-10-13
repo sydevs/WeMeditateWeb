@@ -110,33 +110,46 @@ interface LinkProps {
 is the default, so a link matches its parent's font size unless you set one. An `external` link
 adds screen-reader text announcing it opens in a new tab.
 
-### Focus indicator
+### Surfaces
 
-`focus-ring`, an `@utility` in [layouts/tailwind.css](../../layouts/tailwind.css), is the focus
-treatment to draw. Put it in the component's base styles, never in a variant map.
+A component never takes a `theme` prop. Anything that should change on a dark background — text,
+link and icon colours, outline and ghost buttons, the focus ring — uses a **surface token**:
+`text-fg`, `text-fg-muted`, `text-primary`, `text-secondary`, `border-line`, `bg-tint`,
+`focus-ring` and the rest of the table in [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md#surfaces). Each
+resolves against the nearest `surface-light` / `surface-dark` ancestor, and `:root` is light.
 
 ```tsx
-const baseStyles = 'transition-colors duration-200 focus-ring'
+const variantStyles = {
+  default: 'text-primary hover:text-primary-strong hover:underline',
+  neutral: 'text-fg-muted hover:text-fg',
+}
 ```
+
+- **Only a component that paints a background sets a surface.** `OrnateTextBox` always paints dark.
+  The sticky header nav paints white, so it sets `surface-light` once it sticks. Ladle's
+  `StorySection surface="dark"` and any dark story wrapper (`surface-dark bg-gray-900`) do the same.
+- **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
+  `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
+  `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
+  `LayoutChrome` puts the lead splash's surface on the wrapper it overlays the header with.
+- **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
+  surface around it. A filled `Button` draws its spinner in `border-current` instead.
+- **A colour that does not change with the surface names its scale step.** Filled buttons are
+  `bg-teal-500` on every background.
+
+`layouts/tailwind.test.ts` compiles the real stylesheet and holds the mechanism: tokens resolve at
+the element (`@theme inline` — without it a nested surface changes nothing), every surface defines
+every token, and each ring clears 3:1 against its band.
+
+### Focus indicator
+
+`focus-ring` is the focus treatment to draw. Put it in the component's base styles, never in a
+variant map.
 
 It emits a 2px ring over a 2px offset band, on `focus-visible:` and not `focus:`, so a mouse click
 leaves no lingering ring and a browser without `:focus-visible` keeps its own outline instead of
-losing both.
-
-The colours come from the **surface**, not from the component. `focus-ring` reads two inherited
-custom properties, `--focus-ring-color` and `--focus-ring-offset-color`. `:root` sets them light:
-`teal-600` over a `white` band. The nearest ancestor with `surface-dark` sets them to `white` over
-`teal-900`. A component draws the right ring for whatever it sits on without being told.
-
-- **A container that paints a dark surface sets `surface-dark` on itself.** `OrnateTextBox`,
-  `Splash` (from its `theme`), `Header` (from its `theme`) and Ladle's dark `StorySection` do. A
-  container that paints white inside a dark one sets `surface-light` — the sticky header nav does.
-- **An atom claims a surface only when it is given a `theme`.** `Link` and `Button` pass `theme`
-  through `surface()` in [components/atoms/surface.ts](../../components/atoms/surface.ts), which
-  returns `''` when `theme` is omitted. A default would override the container: a logo inside a
-  dark header once drew a teal ring over a white band, because `Link` defaulted to light.
-- **Do not add a `theme` prop for the ring alone.** If a component's ring is wrong, the surface
-  above it is missing its class. `Logo` used to carry one for nothing else.
+losing both. Its colours are the `--surface-ring` and `--surface-ring-offset` tokens: `teal-600`
+over a `white` band on light, `white` over `teal-900` on dark.
 
 Three rules the atoms broke before this existed:
 
@@ -144,16 +157,15 @@ Three rules the atoms broke before this existed:
   nothing else. Only `ring-2` writes the `box-shadow`. `Link` shipped eight colours against no
   width.
 - **The ring colour is per surface, never per variant.** A per-variant axis is what let every
-  light-theme colour drift under the 3:1 of WCAG 2.1 SC 1.4.11 — `teal-500` 2.70, `coral-500` 2.53,
+  light colour drift under the 3:1 of WCAG 2.1 SC 1.4.11 — `teal-500` 2.70, `coral-500` 2.53,
   `gray-400` 1.71 on white. `teal-600` measures 3.85.
-- **Pin `ring-offset-<color>`.** `--tw-ring-offset-color` defaults to `#fff`, so a dark-theme
-  component draws a white band between itself and its ring unless you say otherwise.
+- **Pin `ring-offset-<color>`.** `--tw-ring-offset-color` defaults to `#fff`, so a component on a
+  dark surface draws a white band between itself and its ring unless you say otherwise.
 
 Dark surfaces vary — `teal-900`, the `OrnateTextBox` brown gradient, a photographic splash — so the
 dark ring is `white`, which clears 3:1 on all of them (4.68 on the lightest, `#8a6f56`). A brand
 colour would not. The dark band stays, because it gives the white ring its 3:1 against a
-`teal-500` (2.70), `coral-500` (2.53) or white fill. `layouts/tailwind.test.ts` compiles the real
-stylesheet and fails if a ring drops under 3:1 against its band.
+`teal-500` (2.70), `coral-500` (2.53) or white fill.
 
 `Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
 textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,

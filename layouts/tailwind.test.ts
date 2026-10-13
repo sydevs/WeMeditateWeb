@@ -21,8 +21,11 @@ async function build(candidates: string[]): Promise<string> {
   return compiler.build(candidates)
 }
 
+/** Every declaration under `selector`, across all the blocks that use it. */
 const rule = (css: string, selector: string): string =>
-  css.match(new RegExp(`${selector.replace(/[.:]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1] ?? ''
+  [...css.matchAll(new RegExp(`(?:^|[\\s}])${selector.replace(/[.:]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'))]
+    .map(([, block]) => block)
+    .join('')
 
 const declared = (block: string, property: string): string =>
   block.match(new RegExp(`${property}:\\s*([^;]+);`))?.[1].trim() ?? ''
@@ -41,6 +44,31 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
+const props = (block: string): string[] =>
+  [...block.matchAll(/(--surface-[\w-]+):/g)].map(([, name]) => name).sort()
+
+describe('surfaces', () => {
+  // Without `@theme inline`, `--color-fg` resolves once at `:root`, and a
+  // nested `surface-dark` could never change what `text-fg` draws.
+  it('resolve a token at the element, not at :root', async () => {
+    const css = await build(['text-fg', 'border-line', 'bg-tint'])
+
+    expect(declared(rule(css, '.text-fg'), 'color')).toBe('var(--surface-fg)')
+    expect(declared(rule(css, '.border-line'), 'border-color')).toBe('var(--surface-line)')
+    expect(declared(rule(css, '.bg-tint'), 'background-color')).toBe('var(--surface-tint)')
+  })
+
+  // A token one surface forgets would inherit the other surface's value.
+  it('define the same tokens on light, dark and :root', async () => {
+    const css = await build(['surface-light', 'surface-dark'])
+    const light = props(rule(css, '.surface-light'))
+
+    expect(light.length).toBeGreaterThan(10)
+    expect(props(rule(css, '.surface-dark'))).toEqual(light)
+    expect(props(rule(css, ':root'))).toEqual(light)
+  })
+})
+
 describe('focus-ring', () => {
   // A ring colour alone compiles to `--tw-ring-color` and no `box-shadow` —
   // `Link` shipped eight of them that drew nothing (#133).
@@ -49,8 +77,8 @@ describe('focus-ring', () => {
     const block = rule(css, '.focus-ring:focus-visible')
 
     expect(block).toContain('box-shadow:')
-    expect(declared(block, '--tw-ring-color')).toBe('var(--focus-ring-color)')
-    expect(declared(block, '--tw-ring-offset-color')).toBe('var(--focus-ring-offset-color)')
+    expect(declared(block, '--tw-ring-color')).toBe('var(--surface-ring)')
+    expect(declared(block, '--tw-ring-offset-color')).toBe('var(--surface-ring-offset)')
     expect(declared(block, 'outline-style')).toBe('none')
     expect(rule(css, '.focus-ring')).toBe('')
   })
@@ -65,8 +93,8 @@ describe('focus-ring', () => {
     }
 
     for (const block of [rule(css, ':root'), rule(css, '.surface-light'), rule(css, '.surface-dark')]) {
-      const ring = token(declared(block, '--focus-ring-color'))
-      const band = token(declared(block, '--focus-ring-offset-color'))
+      const ring = token(declared(block, '--surface-ring'))
+      const band = token(declared(block, '--surface-ring-offset'))
 
       expect(ring).toMatch(/^#/)
       expect(band).toMatch(/^#/)
@@ -77,6 +105,6 @@ describe('focus-ring', () => {
   it('rings white on a dark surface, which clears 3:1 on all of them', async () => {
     const css = await build(['surface-dark'])
 
-    expect(declared(rule(css, '.surface-dark'), '--focus-ring-color')).toBe('#fff')
+    expect(declared(rule(css, '.surface-dark'), '--surface-ring')).toBe('#fff')
   })
 })

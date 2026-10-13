@@ -100,28 +100,28 @@ export const Default: Story = () => (
 
     <StorySection
       title="Dark Theme"
-      theme="dark"
+      surface="dark"
       background="neutral"
       description="Lightened colors for contrast on dark backgrounds"
     >
       <div className="flex flex-col gap-6">
         <div className="flex gap-6 items-center">
           <div className="flex flex-col items-center gap-2">
-            <Spinner color="primary" theme="dark" />
+            <Spinner color="primary" />
             <p className="text-sm text-white">Primary (Light Teal)</p>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <Spinner color="secondary" theme="dark" />
+            <Spinner color="secondary" />
             <p className="text-sm text-white">Secondary (Light Coral)</p>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <Spinner color="neutral" theme="dark" />
+            <Spinner color="neutral" />
             <p className="text-sm text-white">Neutral (White)</p>
           </div>
         </div>
         <div className="flex gap-6 items-center">
           <div className="flex flex-col items-center gap-2">
-            <Spinner variant="logo" theme="dark" />
+            <Spinner color="neutral" variant="logo" />
             <p className="text-sm text-white">Logo (White)</p>
           </div>
         </div>
@@ -155,9 +155,9 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Logo Variant - Splash Screen" variant="subsection">
-          <div className="bg-teal-600 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
+          <div className="surface-dark bg-teal-600 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
             <div className="flex flex-col items-center gap-4">
-              <Spinner variant="logo" size="xl" theme="dark" />
+              <Spinner color="neutral" size="xl" variant="logo" />
               <p className="text-lg text-white">WeMeditate</p>
             </div>
           </div>

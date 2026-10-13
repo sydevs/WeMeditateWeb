@@ -23,8 +23,8 @@ atom.
 
 Based on the wemeditate.com brand. [layouts/tailwind.css](./layouts/tailwind.css) declares every
 token in its `@theme` block, and Tailwind generates the matching utilities from there —
-`bg-teal-500`, `text-gray-700`, `border-error`. There is no semantic alias tier, so name the scale
-step directly.
+`bg-teal-500`, `text-gray-700`, `border-error`. Name the scale step directly, except for a colour
+that must change on a dark background: that one is a surface token (see [Surfaces](#surfaces)).
 
 The three tables below copy that block, so
 [tests/guards/design-tokens.test.ts](./tests/guards/design-tokens.test.ts) holds them to it: a
@@ -57,10 +57,11 @@ Six tokens stand outside the scales:
 | `--color-info` | `#61aaa0` | Info states — the same value as `--color-teal-500` |
 | `--color-bg-warm` | `#faf0e3` | Warm page background |
 
-Which step each role reaches for in the light theme today. This records what the components
+Which step each role reaches for on a light surface today. This records what the components
 do, not a contrast clearance — several of these pairings sit under the 4.5:1 bar the
 accessibility table below sets, so check yours before you copy it. #179 proposes moving the
-failing roles to a passing step, which would rewrite the Primary button, Link and Body text rows:
+failing roles to a passing step, which would rewrite the Primary button, Link and Body text rows —
+the last two by changing one `surface-light` token each:
 
 | Role | Token |
 | --- | --- |
@@ -72,8 +73,30 @@ failing roles to a passing step, which would rewrite the Primary button, Link an
 | Border | `--color-gray-200`, or `--color-gray-300` for a stronger rule |
 | Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` |
 
-On a dark background, use `--color-teal-300` or `--color-coral-300`, hovering to the `200` step of
-the same scale — both keep the brand color recognizable. Neither clears 4.5:1 on its own: check
+### Surfaces
+
+A colour that depends on the background is a surface token, not a scale step. `surface-light`
+(also `:root`) and `surface-dark` in [layouts/tailwind.css](./layouts/tailwind.css) each set every
+token; a component uses the class and gets whichever surface it sits on.
+
+| Class | Light | Dark | Used for |
+| --- | --- | --- | --- |
+| `text-fg` | `gray-900` | white | Headings, current breadcrumb, countdown, splash text |
+| `text-fg-muted` | `gray-700` | white | Body and nav text, neutral links and icons, outline and ghost buttons |
+| `text-primary`, `-strong` | `teal-600`, `teal-700` | `teal-300`, `teal-200` | Links, primary icons and spinners |
+| `text-secondary`, `-strong` | `coral-600`, `coral-700` | `coral-300`, `coral-200` | Secondary links, icons and spinners |
+| `border-line` | `gray-500` | white | Outline button border, breadcrumb separator |
+| `border-line-subtle` | `gray-200` | white | Header rules |
+| `bg-tint` | `gray-100` | white at 20% | Ghost button hover and active fill |
+| `bg-highlight`, `text-on-highlight` | `teal-100`, `gray-700` | white, `gray-800` | Outline button hover |
+| `focus-ring` | `teal-600` over white | white over `teal-900` | Every focus indicator |
+
+Each works with any colour utility (`border-primary`, `bg-fg/50`). Filled buttons (`primary`,
+`secondary`, `neutral`) are the same on every surface, so they name scale steps. The rules for
+setting a surface are in [docs/rules/design-system.md](./docs/rules/design-system.md).
+
+The dark values are `teal-300` and `coral-300`, hovering to the `200` step of the same scale —
+both keep the brand color recognizable. Neither clears 4.5:1 on its own: check
 the pair against the surface you are on, because `--color-teal-300` reaches 9.8:1 on black and
 only 3.0:1 on `--color-gray-800`.
 

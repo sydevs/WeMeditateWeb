@@ -2,7 +2,6 @@ import { ComponentProps, useState, useEffect, useRef } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
 import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
-import { surface } from '../../atoms/surface'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
 
@@ -32,13 +31,6 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
   /**
-   * Theme based on background context
-   * - light: Dark colors for light backgrounds (default)
-   * - dark: White colors for dark backgrounds
-   * @default 'light'
-   */
-  theme?: 'light' | 'dark'
-  /**
    * Render the condensed header permanently, rather than only once the page has
    * been scrolled past the banner.
    *
@@ -64,7 +56,6 @@ export function Header({
   actionLinkHref,
   navItems = [],
   breadcrumbs,
-  theme = 'light',
   condensed = false,
   className = '',
   ...props
@@ -95,20 +86,14 @@ export function Header({
     return () => observer.disconnect()
   }, [condensed])
 
-  // Text color based on theme and sticky state
-  const textColorClass = theme === 'dark' ? 'text-white' : 'text-gray-700'
-
-  // Border color should match text color (except when sticky)
-  const borderColorClass = theme === 'dark' ? 'border-white' : 'border-gray-200'
-
   return (
     <>
-      <header className={`${surface(theme)} ${className}`} {...props}>
+      <header className={className} {...props}>
         {/* Top banner with logo, illustration, and action link. Omitted when
             condensed — the compact nav below carries the logo and action link
             itself, so rendering both would duplicate them. */}
         {!condensed && (
-          <div className={`flex items-center justify-between gap-8 py-4 ${textColorClass}`}>
+          <div className="flex items-center justify-between gap-8 py-4 text-fg-muted">
             {/* Logo - responsive: lg inline-text on mobile, sm inline-text on desktop */}
             <div className="shrink-0">
               <Logo
@@ -148,10 +133,10 @@ export function Header({
       {/* Main navigation menu - sticky on scroll (outside header so it can stick globally) */}
       {navItems.length > 0 && (
         <nav
-          className={`sticky top-0 z-50 border-t border-b transition-colors duration-200 ${
-            isSticky
-              ? 'surface-light full-bleed bg-white border-gray-200 text-gray-700'
-              : `${surface(theme)} ${textColorClass} ${borderColorClass}`
+          // Once stuck, the nav paints its own white surface over whatever the
+          // header was overlaid on.
+          className={`sticky top-0 z-50 border-t border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
+            isSticky ? 'surface-light full-bleed bg-white' : ''
           }`}
         >
           {/* Centered content container */}
@@ -175,7 +160,6 @@ export function Header({
                     className="basis-1/4"
                     dropdown={item.dropdown}
                     label={item.label}
-                    theme={isSticky ? 'light' : theme}
                   />
                 ) : (
                   <Button
@@ -184,7 +168,6 @@ export function Header({
                     href={item.href}
                     isActive={item.active}
                     size="sm"
-                    theme={isSticky ? 'light' : theme}
                     variant="ghost"
                   >
                     {item.label}
@@ -215,8 +198,8 @@ export function Header({
 
       {/* Breadcrumbs - below nav to preserve correct ordering */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <div className={`py-3 ${surface(theme)} ${textColorClass}`}>
-          <Breadcrumbs items={breadcrumbs} theme={theme} />
+        <div className="py-3 text-fg-muted">
+          <Breadcrumbs items={breadcrumbs} />
         </div>
       )}
     </>

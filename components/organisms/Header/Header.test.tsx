@@ -48,25 +48,21 @@ describe('Header', () => {
     })
   })
 
-  describe('focus ring', () => {
-    it('puts the banner on the dark surface its splash paints', () => {
-      // `LayoutChrome` passes `theme={leadSplash?.theme}`, so the banner logo
-      // and action link sit on a photograph. They take no `theme` of their own
-      // and inherit the ring from the `<header>` (#133).
-      const banner = render({ theme: 'dark' }).split('</header>')[0]
+  describe('surface', () => {
+    // The banner overlays the lead splash, so it takes the splash's surface
+    // from `LayoutChrome`'s wrapper rather than claiming one (#133).
+    it('claims no surface of its own until the nav sticks', () => {
+      const html = render()
 
-      expect(banner).toMatch(/^<header class="surface-dark\b/)
-      expect(banner).not.toContain('surface-light')
+      expect(html).not.toContain('surface-')
+      expect(html).toContain('text-fg-muted')
     })
 
     it('turns the sticky nav light, since it paints itself white', () => {
-      // The compact logo and map-pin stay tabbable while transparent, so the
-      // nav's surface follows `theme` until it sticks.
-      const nav = (props: Partial<React.ComponentProps<typeof Header>>) =>
-        render(props).match(/<nav class="([^"]*)"/)?.[1]
+      const nav = render({ condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
 
-      expect(nav({ condensed: true, theme: 'dark' })).toContain('surface-light')
-      expect(nav({ theme: 'dark' })).toContain('surface-dark')
+      expect(nav).toContain('surface-light')
+      expect(nav).toContain('bg-white')
     })
   })
 })

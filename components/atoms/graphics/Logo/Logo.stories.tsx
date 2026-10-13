@@ -135,7 +135,7 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Footer Branding" variant="subsection">
-          <div className="bg-gray-800 p-6 flex justify-center text-white">
+          <div className="surface-dark bg-gray-800 p-6 flex justify-center text-white">
             <Logo variant="text" href="/" size="md" />
           </div>
         </StorySection>

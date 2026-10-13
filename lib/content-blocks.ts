@@ -101,7 +101,7 @@ export interface SplashBlockFields {
   /**
    * Describes the text color (dark or light), mirroring the `textbox`
    * overlay convention. Not yet authored in SahajCloud (see SahajCloud
-   * ticket). Absent is treated as light text on a dark hero (`theme: 'dark'`).
+   * ticket). Absent is treated as light text on a dark hero (`surface: 'dark'`).
    */
   textColor?: 'dark' | 'light' | null
 }
@@ -241,13 +241,13 @@ export function galleryImages(images: ImageGalleryBlockFields['items']): Populat
 
 /**
  * Inverts a SahajCloud `textColor` (which describes the text: dark or light)
- * into a background-context `theme`. Light text implies a dark
+ * into the `surface` its background paints. Light text implies a dark
  * background, and dark text implies a light one. When `textColor` is
  * absent, this function falls back to `fallback`. Shared by the splash
  * hero and the `textbox` overlay, which use this same inversion but
  * differ only in their default.
  */
-export function textColorToTheme(
+export function textColorToSurface(
   textColor: 'dark' | 'light' | null | undefined,
   fallback: 'light' | 'dark',
 ): 'light' | 'dark' {
@@ -258,21 +258,21 @@ export function textColorToTheme(
 }
 
 /**
- * Derives a Splash background-context theme from its `textColor` field.
+ * Derives a Splash surface from its `textColor` field.
  * Defaults to `'dark'` (light text over a dark hero) when the field is
  * absent. This matches the splash's historical hardcoded treatment.
  */
-export function splashTheme(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
-  return textColorToTheme(textColor, 'dark')
+export function splashSurface(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
+  return textColorToSurface(textColor, 'dark')
 }
 
 /**
- * Returns a page's background-context theme when its content leads with
+ * Returns the surface a page's background paints when its content leads with
  * a `splash` block, or `null` otherwise. Shared by the layout (header
- * overlay theme), the page wrappers (flush-to-top spacing), and
+ * overlay surface), the page wrappers (flush-to-top spacing), and
  * PageTemplate (skipping the duplicate title).
  */
-export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dark' } | null {
+export function getLeadSplash(content: Page['content']): { surface: 'light' | 'dark' } | null {
   const first = content?.root?.children?.[0] as
     | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
     | undefined
@@ -281,7 +281,7 @@ export function getLeadSplash(content: Page['content']): { theme: 'light' | 'dar
     return null
   }
 
-  return { theme: splashTheme(first.fields.textColor) }
+  return { surface: splashSurface(first.fields.textColor) }
 }
 
 /**
@@ -301,7 +301,7 @@ export function leadSplashFromRouteData(
       }
     | null
     | undefined,
-): { theme: 'light' | 'dark' } | null {
+): { surface: 'light' | 'dark' } | null {
   const content =
     data?.page?.content ?? (data?.collection === 'pages' ? data?.initialData?.content : undefined)
 

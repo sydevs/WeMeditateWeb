@@ -1,7 +1,6 @@
 import { ComponentProps } from 'react'
 import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
-import { surface } from '../surface'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
@@ -22,15 +21,6 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
    */
   variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'unstyled'
 
-  /**
-   * Theme based on background context
-   * - light: Dark colors for light backgrounds (default)
-   * - dark: Lightened colors for dark backgrounds (white/teal-300/coral-300)
-   *
-   * Omitted, the colours are light's and the focus ring follows the nearest
-   * `surface-*` ancestor.
-   */
-  theme?: 'light' | 'dark'
 
   /**
    * Size variant (affects font size)
@@ -65,7 +55,6 @@ export function Link({
   href,
   locale,
   variant = 'default',
-  theme,
   size = 'inherit',
   external = false,
   className = '',
@@ -78,27 +67,16 @@ export function Link({
 
   const finalHref = localeHref(locale ?? pageLocale, href)
 
-  const baseStyles = `transition-colors duration-200 focus-ring ${surface(theme)}`
+  const baseStyles = 'transition-colors duration-200 focus-ring'
 
-  // Variant styles for light theme (dark colors on light backgrounds)
-  const lightThemeVariants = {
-    default: 'text-teal-600 hover:text-teal-700 hover:underline',
-    primary: 'text-teal-600 font-medium hover:text-teal-700',
-    secondary: 'text-coral-600 font-medium hover:text-coral-700',
-    neutral: 'text-gray-700 hover:text-gray-900',
+  // Surface tokens, so a link on a dark surface lightens without being told.
+  const variantStyles = {
+    default: 'text-primary hover:text-primary-strong hover:underline',
+    primary: 'text-primary font-medium hover:text-primary-strong',
+    secondary: 'text-secondary font-medium hover:text-secondary-strong',
+    neutral: 'text-fg-muted hover:text-fg',
     unstyled: '',
   }
-
-  // Variant styles for dark theme (lightened colors on dark backgrounds)
-  const darkThemeVariants = {
-    default: 'text-teal-300 hover:text-teal-200 hover:underline',
-    primary: 'text-teal-300 font-medium hover:text-teal-200',
-    secondary: 'text-coral-300 font-medium hover:text-coral-200',
-    neutral: 'text-gray-300 hover:text-gray-100',
-    unstyled: '',
-  }
-
-  const variantStyles = theme === 'dark' ? darkThemeVariants : lightThemeVariants
 
   const sizeStyles = {
     sm: 'text-sm',
