@@ -21,6 +21,13 @@ stylesheet pointed at it, so both its `theme.extend` block and its `content` arr
 every reader who opened it took it for the scan set. The scan set is the `@source` lines in
 [layouts/tailwind.css](../../layouts/tailwind.css).
 
+**A utility naming an undeclared token compiles to nothing, and nothing warns.** No build error,
+no lint error. `tests/guards/theme-utilities.test.ts` is what catches it: it reads the `@source`
+lines and the `@theme` block out of
+[layouts/tailwind.css](../../layouts/tailwind.css), then fails on any colour or font utility in
+the scan set that names a token the theme does not declare. Renaming a token there fails the
+guard until its call sites follow.
+
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a
 SahajCloud-authored width — produces no CSS and the rule silently does nothing. Declare the range in
