@@ -112,10 +112,14 @@ describe('theme utilities', () => {
 
   /**
    * Stories are in scope, unlike in the other guards: Ladle renders them, and
-   * two of #176's four call sites were stories.
+   * two of #176's four call sites were stories. Specs are not: the obvious way
+   * to test this bug is a fixture spelling a dead class, and the component a
+   * spec covers is scanned on its own, so no call site goes unchecked.
    */
   it.each(SCANNED_DIRS)('declares every token the utilities in %s name', (dir) => {
-    const files = globSync(`${dir}/**/*.{ts,tsx}`, { cwd: repoRoot })
+    const files = globSync(`${dir}/**/*.{ts,tsx}`, { cwd: repoRoot }).filter(
+      (file) => !/\.test\.tsx?$/.test(file),
+    )
 
     expect(files.length).toBeGreaterThan(0)
 
