@@ -2,7 +2,7 @@ import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
 import { Link } from '../Link'
-import { focusRing } from '../focusRing'
+import { surface } from '../surface'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
@@ -16,7 +16,9 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    * Theme based on background context
    * - light: Standard colors for light backgrounds (default)
    * - dark: White colors for dark backgrounds
-   * @default 'light'
+   *
+   * Omitted, the colours are light's and the focus ring follows the nearest
+   * `surface-*` ancestor.
    */
   theme?: 'light' | 'dark'
 
@@ -116,7 +118,7 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  */
 export function Button({
   variant = 'primary',
-  theme = 'light',
+  theme,
   size = 'md',
   shape,
   icon,
@@ -150,7 +152,7 @@ export function Button({
     ? `${animatedBase} after:scale-x-100 after:opacity-100`
     : `${animatedBase} after:scale-x-0 after:opacity-0 after:transition-all after:duration-300 after:ease-out hover:after:scale-x-100 hover:after:opacity-100`
 
-  const baseStyles = `inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${focusRing(theme)}`
+  const baseStyles = `inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none focus-ring ${surface(theme)}`
 
   // Only add animation if button is interactive (not disabled or loading)
   const isInteractive = !disabled && !isLoading
@@ -301,10 +303,6 @@ export function Button({
         className={commonClassNames}
         href={href}
         locale={locale}
-        // Without this, `Link`'s own base ring resolves light while
-        // `commonClassNames` carries the dark one, and two rules race for
-        // `--tw-ring-color`.
-        theme={theme}
         variant="unstyled"
         {...(props as any)}
       >

@@ -21,6 +21,10 @@ directive, and no stylesheet here has one. The scan set is the `@source` lines i
 [layouts/tailwind.css](../../layouts/tailwind.css), so adding a path to that file's `content`
 array changes nothing.
 
+**Custom utilities** live in the same file as `@utility` blocks: `text-glow-*`, `full-bleed`, and
+`focus-ring` with its `surface-light` / `surface-dark` pair. A styling concern shared across
+components keeps its CSS here; TypeScript only chooses which class to apply.
+
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a
 SahajCloud-authored width — produces no CSS and the rule silently does nothing. Declare the range in

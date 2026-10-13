@@ -2,6 +2,7 @@ import { ComponentProps, useState, useEffect, useRef } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
 import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
+import { surface } from '../../atoms/surface'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
 
@@ -102,7 +103,7 @@ export function Header({
 
   return (
     <>
-      <header className={className} {...props}>
+      <header className={`${surface(theme)} ${className}`} {...props}>
         {/* Top banner with logo, illustration, and action link. Omitted when
             condensed — the compact nav below carries the logo and action link
             itself, so rendering both would duplicate them. */}
@@ -115,7 +116,6 @@ export function Header({
                 className="hidden lg:flex"
                 href={logoHref}
                 size="sm"
-                theme={theme}
                 variant="text"
               />
             </div>
@@ -132,7 +132,6 @@ export function Header({
                   className="no-underline leading-none hover:opacity-75 transition-opacity"
                   href={actionLinkHref}
                   size="sm"
-                  theme={theme}
                   variant="unstyled"
                 >
                   {actionLinkText}
@@ -151,8 +150,8 @@ export function Header({
         <nav
           className={`sticky top-0 z-50 border-t border-b transition-colors duration-200 ${
             isSticky
-              ? 'full-bleed bg-white border-gray-200 text-gray-700'
-              : `${textColorClass} ${borderColorClass}`
+              ? 'surface-light full-bleed bg-white border-gray-200 text-gray-700'
+              : `${surface(theme)} ${textColorClass} ${borderColorClass}`
           }`}
         >
           {/* Centered content container */}
@@ -164,7 +163,6 @@ export function Header({
               }`}
               href={logoHref}
               size="sm"
-              theme={isSticky ? 'light' : theme}
               variant="icon"
             />
 
@@ -205,7 +203,6 @@ export function Header({
                 <Link
                   className="flex items-center gap-1 no-underline hover:opacity-75 transition-opacity"
                   href={actionLinkHref}
-                  theme={isSticky ? 'light' : theme}
                   variant="unstyled"
                 >
                   <Icon icon={MapPinIcon} size="sm" />
@@ -218,7 +215,7 @@ export function Header({
 
       {/* Breadcrumbs - below nav to preserve correct ordering */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <div className={`py-3 ${textColorClass}`}>
+        <div className={`py-3 ${surface(theme)} ${textColorClass}`}>
           <Breadcrumbs items={breadcrumbs} theme={theme} />
         </div>
       )}

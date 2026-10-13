@@ -101,8 +101,8 @@ export const StorySection = ({
   const displayTitle =
     inContext && title ? `In Context - ${title}` : inContext ? 'In Context' : title
 
-  // Get text color for children based on theme
-  const childrenTextColor = theme === 'dark' ? 'text-white' : ''
+  // Text colour and focus-ring surface for children, based on theme
+  const childrenThemeClass = theme === 'dark' ? 'surface-dark text-white' : ''
 
   // For scrollable variant, wrap content in scrollable container
   const renderContent = () => {
@@ -115,7 +115,7 @@ export const StorySection = ({
 
       return (
         <div className={`h-[600px] overflow-y-auto border-4 ${borderColor}`}>
-          <div className={`min-h-full px-6 ${scrollBackground} ${childrenTextColor}`}>
+          <div className={`min-h-full px-6 ${scrollBackground} ${childrenThemeClass}`}>
             {children}
           </div>
         </div>
@@ -124,10 +124,10 @@ export const StorySection = ({
 
     // Regular content with optional background and text color
     if (backgroundStyles) {
-      return <div className={`${backgroundStyles} ${childrenTextColor}`}>{children}</div>
+      return <div className={`${backgroundStyles} ${childrenThemeClass}`}>{children}</div>
     }
 
-    return <div className={childrenTextColor}>{children}</div>
+    return <div className={childrenThemeClass}>{children}</div>
   }
 
   return (

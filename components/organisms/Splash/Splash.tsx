@@ -1,5 +1,6 @@
 import { ComponentProps, ReactNode } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
+import { surface } from '../../atoms/surface'
 import {
   type AspectRatio,
   type ImageSize,
@@ -91,7 +92,7 @@ export function Splash({
 
   return (
     <div
-      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${className}`}
+      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${surface(theme)} ${className}`}
       {...props}
     >
       {/* Not a CSS background (invisible to the preload scanner, and it cannot
@@ -134,7 +135,7 @@ export function Splash({
           {/* Call-to-Action with Decorative Leaves */}
           {ctaText && ctaHref && (
             <a
-              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light ${textColor} transition-transform hover:scale-105 ${
+              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light ${textColor} transition-transform hover:scale-105 focus-ring ${
                 pulsate ? 'animate-pulse-scale' : ''
               }`}
               href={ctaHref}

@@ -151,3 +151,31 @@
   margin-left: calc(50% - var(--page-width) / 2);
   margin-right: calc(50% - var(--page-width) / 2);
 }
+
+/**
+ * `focus-ring` — the one focus indicator, coloured by the surface it sits on.
+ *
+ * Both colours are inherited custom properties: `:root` is light, and the
+ * nearest `surface-*` ancestor wins. A container that paints a dark surface
+ * sets `surface-dark` once, so no descendant needs a `theme` prop for its ring.
+ * The colours, the pinned offset band and `focus-visible:` are argued in
+ * `docs/rules/design-system.md` (#133).
+ */
+:root {
+  --focus-ring-color: var(--color-teal-600);
+  --focus-ring-offset-color: #fff;
+}
+
+@utility surface-light {
+  --focus-ring-color: var(--color-teal-600);
+  --focus-ring-offset-color: #fff;
+}
+
+@utility surface-dark {
+  --focus-ring-color: #fff;
+  --focus-ring-offset-color: var(--color-teal-900);
+}
+
+@utility focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--focus-ring-color) focus-visible:ring-offset-(--focus-ring-offset-color);
+}

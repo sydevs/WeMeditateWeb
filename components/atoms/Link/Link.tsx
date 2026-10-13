@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { useLocale } from '../../../hooks/usePageContext'
 import { localeHref } from '../../../lib/urls'
-import { focusRing } from '../focusRing'
+import { surface } from '../surface'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
@@ -26,7 +26,9 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
    * Theme based on background context
    * - light: Dark colors for light backgrounds (default)
    * - dark: Lightened colors for dark backgrounds (white/teal-300/coral-300)
-   * @default 'light'
+   *
+   * Omitted, the colours are light's and the focus ring follows the nearest
+   * `surface-*` ancestor.
    */
   theme?: 'light' | 'dark'
 
@@ -63,7 +65,7 @@ export function Link({
   href,
   locale,
   variant = 'default',
-  theme = 'light',
+  theme,
   size = 'inherit',
   external = false,
   className = '',
@@ -76,7 +78,7 @@ export function Link({
 
   const finalHref = localeHref(locale ?? pageLocale, href)
 
-  const baseStyles = `transition-colors duration-200 ${focusRing(theme)}`
+  const baseStyles = `transition-colors duration-200 focus-ring ${surface(theme)}`
 
   // Variant styles for light theme (dark colors on light backgrounds)
   const lightThemeVariants = {

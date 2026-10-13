@@ -49,27 +49,24 @@ describe('Header', () => {
   })
 
   describe('focus ring', () => {
-    it('gives the banner logo and action link the dark ring on a dark splash', () => {
-      // `LayoutChrome` passes `theme={leadSplash?.theme}`, so these two sit on a
-      // photograph. A caller that forgets `theme` draws `Link`'s light ring and
-      // a white offset band over it — the defect #133 exists to remove.
-      const html = render({ theme: 'dark' })
+    it('puts the banner on the dark surface its splash paints', () => {
+      // `LayoutChrome` passes `theme={leadSplash?.theme}`, so the banner logo
+      // and action link sit on a photograph. They take no `theme` of their own
+      // and inherit the ring from the `<header>` (#133).
+      const banner = render({ theme: 'dark' }).split('</header>')[0]
 
-      expect(html).not.toContain('focus-visible:ring-teal-600')
-      expect(html).not.toContain('focus-visible:ring-offset-white')
-      expect(html).toContain('focus-visible:ring-white')
+      expect(banner).toMatch(/^<header class="surface-dark\b/)
+      expect(banner).not.toContain('surface-light')
     })
 
-    it('keeps the light ring on the sticky nav, which paints itself white', () => {
-      // The compact logo and map-pin stay tabbable while transparent, so their
-      // ring follows `theme` until the nav sticks, then turns light with it.
-      // Matched on the map-pin's own anchor: the nav Buttons beside it also
-      // turn light when sticky, so a bare substring would pass without it.
-      const html = render({ condensed: true, theme: 'dark' })
-      const mapPin = html.match(/class="([^"]*hover:opacity-75[^"]*)"/)?.[1]
+    it('turns the sticky nav light, since it paints itself white', () => {
+      // The compact logo and map-pin stay tabbable while transparent, so the
+      // nav's surface follows `theme` until it sticks.
+      const nav = (props: Partial<React.ComponentProps<typeof Header>>) =>
+        render(props).match(/<nav class="([^"]*)"/)?.[1]
 
-      expect(mapPin).toContain('focus-visible:ring-teal-600')
-      expect(mapPin).not.toContain('focus-visible:ring-white')
+      expect(nav({ condensed: true, theme: 'dark' })).toContain('surface-light')
+      expect(nav({ theme: 'dark' })).toContain('surface-dark')
     })
   })
 })
