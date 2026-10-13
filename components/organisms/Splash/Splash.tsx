@@ -113,7 +113,7 @@ export function Splash({
           {/* Title */}
           {title && (
             <h1
-              className={`font-raleway text-2xl md:text-4xl font-light leading-tight mb-6 ${textColor}`}
+              className={`font-sans text-2xl md:text-4xl font-light leading-tight mb-6 ${textColor}`}
             >
               {title}
             </h1>

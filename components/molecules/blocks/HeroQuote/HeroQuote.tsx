@@ -72,7 +72,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
   return (
     <blockquote
       aria-label={title || t('blocks.a11y.quote')}
-      className={`${blockquoteMaxWidth} ${alignmentClass} font-raleway text-gray-dark mx-auto ${className}`}
+      className={`${blockquoteMaxWidth} ${alignmentClass} font-sans text-gray-900 mx-auto ${className}`}
       role="region"
     >
       {/* Top leaf divider */}

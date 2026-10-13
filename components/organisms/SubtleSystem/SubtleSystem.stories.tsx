@@ -114,7 +114,7 @@ export const Default: Story = () => (
 
     <StorySection title="With Title and Background" inContext={true}>
       <div className="bg-gradient-to-b from-teal-50 to-white py-12 px-4">
-        <h2 className="font-raleway text-4xl sm:text-5xl font-normal tracking-wide text-center mb-8">
+        <h2 className="font-sans text-4xl sm:text-5xl font-normal tracking-wide text-center mb-8">
           The Subtle System
         </h2>
         <SubtleSystem items={storyItems} />
