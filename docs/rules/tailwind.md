@@ -14,19 +14,21 @@ the `@theme` directive:
 - Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
 - Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
-**There is no JavaScript config file, and adding one back changes nothing on its own.** In v4,
-theme customization lives in CSS through `@theme`, and v4 reads a config file only through an
-`@config` directive. A `tailwind.config.ts` sat in the repo root until #176 deleted it: no
-stylesheet pointed at it, so both its `theme.extend` block and its `content` array were dead, and
-every reader who opened it took it for the scan set. The scan set is the `@source` lines in
-[layouts/tailwind.css](../../layouts/tailwind.css).
+**There is no JavaScript config file, and adding one back changes nothing on its own.** v4 reads
+a config file only through an `@config` directive, so a `tailwind.config.ts` that no stylesheet
+points at is dead — which is what #176 deleted.
 
-**A utility naming an undeclared token compiles to nothing, and nothing warns.** No build error,
-no lint error. `tests/guards/theme-utilities.test.ts` is what catches it: it reads the `@source`
-lines and the `@theme` block out of
-[layouts/tailwind.css](../../layouts/tailwind.css), then fails on any colour or font utility in
-the scan set that names a token the theme does not declare. Renaming a token there fails the
-guard until its call sites follow.
+**Tailwind scans wider than the `@source` lines.** `@import "tailwindcss"` also detects sources
+from the project root, and the `@source` paths add to that set rather than replacing it. So a
+class-shaped string outside `components/`, `pages/` and `layouts/` ships its CSS all the same —
+from a test fixture, or from a sentence in this file. Spell an example without its prefix for that
+reason. #186 weighs narrowing the set with `source(none)`.
+
+**A utility naming an undeclared token compiles to nothing, and nothing warns.**
+`tests/guards/theme-utilities.test.ts` is what catches it. It parses the `@theme` block of
+[layouts/tailwind.css](../../layouts/tailwind.css) *and* of Tailwind's own `theme.css`, because
+`@theme` extends the default rather than replacing it: a `gray-950` utility resolves even though
+ours stops at `gray-900`. Renaming a token fails the guard until its call sites follow.
 
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a

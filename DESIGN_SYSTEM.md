@@ -354,10 +354,10 @@ the standalone semantic colors (accent, error, success, info), the warm backgrou
 Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
 uses Tailwind's defaults.
 
-There is no `tailwind.config.ts`. Tailwind v4 reads a config file only through an `@config`
-directive, so one that no stylesheet points at is dead on arrival — which is what the file #176
-deleted had been. Change [layouts/tailwind.css](./layouts/tailwind.css) and nothing else: its
-`@source` lines are the scan set, and its `@theme` block is the theme.
+There is no `tailwind.config.ts`, and adding one changes nothing without an `@config` directive
+pointing at it. Change [layouts/tailwind.css](./layouts/tailwind.css) and nothing else — see
+[docs/rules/tailwind.md](./docs/rules/tailwind.md) for what it scans and the guard that holds
+utilities to it.
 
 **v4 gradient syntax**: Tailwind v4 renamed the gradient-direction utilities for consistency with
 CSS. Use `bg-linear-to-*`, not the v3 `bg-gradient-to-*`:
