@@ -15,6 +15,7 @@
     "deploy": "vike build && wrangler deploy",
     "ladle": "ladle serve",
     "ladle:build": "ladle build",
+    "check:wrangler": "wrangler deploy --dry-run --config wrangler.design.jsonc",
     "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
     "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs",
     "sync:translations": "node scripts/sync-translations.mjs"
