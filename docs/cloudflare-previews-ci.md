@@ -49,6 +49,23 @@ of waiting out the 12-minute discovery timeout.
 timeout for a preview that never comes. If it is narrower, a preview that does exist goes
 untested.
 
+## The playground refuses crawlers
+
+Two files in the build output carry the refusal —
+[.ladle/static/robots.txt](../.ladle/static/robots.txt) and
+[.ladle/static/_headers](../.ladle/static/_headers), which Cloudflare Pages reads and the
+`ladle-crawler-refusal` plugin in [.ladle/crawler-refusal.ts](../.ladle/crawler-refusal.ts)
+emits. `robots.txt` carries the policy, and the reason a `<meta robots>` is not a third signal.
+
+They ship from `.ladle/static/` rather than `public/`, which the app's build copies too: a
+`Disallow: /` there would answer on wemeditate.com. The app builds its own per-host refusal in
+[server/sitemap.ts](../server/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
+named as hosts that must never be indexed.
+
+⚠ Ladle copies Vite's `publicDir` for free and Storybook does not. A move to Storybook
+(sydevs/SahajCloud#902) has to carry both the `public/` copy (`staticDirs`) and this plugin, or
+the playground silently becomes indexable again.
+
 ## Pieces
 
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
@@ -59,8 +76,9 @@ untested.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage
   and its content, a SahajCloud page, a non-English locale, the `/en` → `/` redirect, the 404
   page, and a meditation in full and embed form. Run with `pnpm test:smoke` and `PREVIEW_URL` set.
-- [tests/smoke/ladle/](../tests/smoke/ladle/) holds fetch-based Ladle specs: the app shell and a
-  non-empty `/meta.json` story manifest. The static SPA needs no Playwright. Run with
+- [tests/smoke/ladle/](../tests/smoke/ladle/) holds fetch-based Ladle specs: the app shell, a
+  non-empty `/meta.json` story manifest, and the crawler refusal above — the `noindex` header and
+  a `robots.txt` that is not the SPA shell. The static SPA needs no Playwright. Run with
   `pnpm test:smoke:ladle`.
 - `discoverFromSahajCloud()` in `tests/smoke/_helpers/preview.ts` queries production SahajCloud
   (needs the `SAHAJCLOUD_API_KEY` Actions secret) to pick a real page or meditation, and to read

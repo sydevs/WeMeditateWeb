@@ -1,6 +1,7 @@
 import { ComponentProps, useState, useEffect } from 'react'
 import { Link, Image } from '../../atoms'
 import { LotusDotsSvg, LogoSvg } from '../../atoms/graphics/svgs'
+import { useT } from '../../../hooks/useT'
 
 export interface HeaderDropdownLink {
   label: string
@@ -108,6 +109,7 @@ interface FeaturedArticleColumnProps {
 }
 
 function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColumnProps) {
+  const t = useT()
   const [isHovered, setIsHovered] = useState(false)
 
   return (
@@ -150,7 +152,7 @@ function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColum
           >
             {/* Centered Text */}
             <p className="text-white text-sm font-light text-center px-8">
-              Inspiration comes from within
+              {t('navigation.featured_caption')}
             </p>
 
             {/* SVG anchored to bottom */}
