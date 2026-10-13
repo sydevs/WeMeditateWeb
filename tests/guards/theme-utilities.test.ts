@@ -1,5 +1,8 @@
 /**
- * Every Tailwind utility in the scan set must name a token the theme declares.
+ * A colour utility on a numeric scale, and any `font-*` utility, must name a
+ * token the theme declares. Those two families are the guard's whole reach: a
+ * token off a numeric scale — `error-light` beside the declared `error-dark` —
+ * and every other namespace pass unchecked.
  *
  * A utility naming an undeclared token compiles to no CSS, and nothing says so:
  * not the build, not the linter, not the suite. #176's dead classes were visible
@@ -59,9 +62,9 @@ interface DeadUtility {
 }
 
 /**
- * Every utility in `source` naming a token the theme does not declare. A
- * trailing `/50` opacity or `!` important belongs to the utility rather than to
- * the token, so neither is captured.
+ * Every colour-scale or `font-*` utility in `source` naming a token the theme
+ * does not declare. A trailing `/50` opacity or `!` important belongs to the
+ * utility rather than to the token, so neither is captured.
  */
 function findDeadUtilities(source: string): DeadUtility[] {
   const dead: DeadUtility[] = []

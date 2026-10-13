@@ -25,10 +25,14 @@ from a test fixture, or from a sentence in this file. Spell an example without i
 reason. #186 weighs narrowing the set with `source(none)`.
 
 **A utility naming an undeclared token compiles to nothing, and nothing warns.**
-`tests/guards/theme-utilities.test.ts` is what catches it. It parses the `@theme` block of
+`tests/guards/theme-utilities.test.ts` catches two families of that: a colour utility whose token
+sits on a scale with numeric steps, and any `font-*` utility. Nothing else is watched — a token off
+such a scale, like `error-light` beside the declared `error-dark`, and namespaces such as `radius`
+and `shadow` all pass. It parses the `@theme` block of
 [layouts/tailwind.css](../../layouts/tailwind.css) *and* of Tailwind's own `theme.css`, because
 `@theme` extends the default rather than replacing it: a `gray-950` utility resolves even though
-ours stops at `gray-900`. Renaming a token fails the guard until its call sites follow.
+ours stops at `gray-900`. Renaming a token on one of the two watched families fails the guard until
+its call sites follow.
 
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a
