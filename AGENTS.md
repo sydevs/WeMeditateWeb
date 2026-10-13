@@ -123,10 +123,11 @@ The app runs on Cloudflare Workers with server-side rendering.
 request handler. [wrangler.toml](wrangler.toml) sets the Worker name and the `nodejs_compat` flag.
 The Worker holds no bindings and no persistent state.
 
-Two Workers build from this repo. The Ladle playground (`design.wemeditate.com`) is the second,
-assets-only, configured by [wrangler.design.jsonc](wrangler.design.jsonc) — a filename wrangler
-does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml`. `pnpm check:wrangler`
-is what reads the design config in CI. See
+A second, assets-only Worker is configured here for the Ladle playground
+(`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
+wrangler does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml`.
+`pnpm check:wrangler` is what reads the design config in CI. Creating that Worker is #184's
+attended phase 2; until then the playground is served by a Cloudflare Pages project. See
 [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 
 Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
@@ -354,7 +355,7 @@ skill relevant.
 - [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including Puppeteer's `evaluate` (needs
   an explicit `return`).
 - [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md) — the CI workflow, the two
-  Cloudflare Workers (the web app and the Ladle site), and the preview smoke tests.
+  Cloudflare previews (the web Worker and the Ladle playground), and the preview smoke tests.
 - [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (403 means
   a stale key, 400 means a bad query) and `getWebConfig` caching.
 

@@ -23,16 +23,21 @@ CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.y
 
 ## Two Cloudflare previews per PR
 
-The repo connects to two Cloudflare Workers, distinguished by URL host. Neither produces a
+The repo connects to two Cloudflare projects, distinguished by URL host. Neither produces a
 GitHub deployment or commit status — the preview URL appears only in the
 `cloudflare-workers-and-pages[bot]` PR comment. Check-run output, deployments and commit
 statuses stay wired as fallbacks; what Workers Builds actually posts, if anything, is recorded
 on sydevs/WeMeditateWeb#184.
 
+⚠ The ladle row lands with #184's phase 2, which is attended. Until the `wm-design` Worker
+exists, that preview is still the `wemeditate-design` Pages project, answering on
+`<hash>.wm-design.pages.dev`. Both hosts carry `wm-design`, so the match substring selects the
+right preview either way.
+
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
 | web | Workers Builds | `…-wemeditate-web.<acct>.workers.dev` | `wemeditate-web` | [wrangler.toml](../wrangler.toml) |
-| ladle | Workers Builds | `…-wm-design.<acct>.workers.dev` | `wm-design` | [wrangler.design.jsonc](../wrangler.design.jsonc) |
+| ladle | Workers Builds (Pages until phase 2) | `…-wm-design.<acct>.workers.dev` | `wm-design` | [wrangler.design.jsonc](../wrangler.design.jsonc) |
 
 ⚠ A Workers preview host carries the **Worker's own name**, and the match is a plain substring
 over it. So renaming the `wm-design` Worker means editing `CF_PROJECT_MATCH` in
@@ -41,8 +46,9 @@ over it. So renaming the `wm-design` Worker means editing `CF_PROJECT_MATCH` in
 
 ## The Ladle preview is built only when the library changes
 
-The `wm-design` Worker's **Builds trigger** carries `path_includes` / `path_excludes`, set
-through the Cloudflare API (the dashboard cannot express them):
+The `wm-design` Worker's **Builds trigger** will carry `path_includes` / `path_excludes`, set
+through the Cloudflare API (the dashboard cannot express them). The `wemeditate-design` Pages
+project carries the equivalent build watch paths until phase 2 creates that Worker:
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
   `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
@@ -55,7 +61,7 @@ Ladle preview. So the `Smoke (ladle)` job checks the same paths first: the files
 push's `before` SHA (or since the PR base, on open). It skips discovery when none match, instead
 of waiting out the 12-minute discovery timeout.
 
-⚠ The list lives in **three** places: the Builds trigger, `WATCH`/`IGNORE` in
+⚠ The list lives in **three** places: the Cloudflare build trigger, `WATCH`/`IGNORE` in
 [ci.yml](../.github/workflows/ci.yml), and the lists above. Change all three together. If the CI
 list is wider, `Smoke (ladle)` reddens for a preview that was never going to come. If it is
 narrower, a preview that does exist goes untested.
