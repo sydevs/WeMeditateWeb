@@ -14,10 +14,9 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { repoRoot } from './_source-scan'
+import { repoRoot, themeStylesheet as stylesheet } from './_source-scan'
 
 const doc = readFileSync(join(repoRoot, 'DESIGN_SYSTEM.md'), 'utf8')
-const stylesheet = readFileSync(join(repoRoot, 'layouts', 'tailwind.css'), 'utf8')
 
 /** `--color-teal-500: #61aaa0;` inside the `@theme` block. */
 const DECLARED = new Map<string, string>(

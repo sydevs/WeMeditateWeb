@@ -54,11 +54,11 @@ export const PageTitle = ({
         text-gray-700
       `}
     >
-      <Component className="relative font-raleway text-4xl font-semibold tracking-wider">
+      <Component className="relative font-sans text-4xl font-semibold tracking-wider">
         {title}
       </Component>
       {subtitle && (
-        <p className="relative mt-4 font-raleway text-lg font-medium">
+        <p className="relative mt-4 font-sans text-lg font-medium">
           {subtitle}
         </p>
       )}

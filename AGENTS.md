@@ -315,7 +315,7 @@ editable. **Do not move a rule body back into `.claude/`.**
 | [testing](docs/rules/testing.md) | `**/*.test.ts(x)`, `tests/**` | Vitest in `node` env, no jsdom/RTL, SSR-string assertions, the `+`-prefix trap under `pages/` |
 | [zod-validation](docs/rules/zod-validation.md) | `server/validation.ts`, `pages/**/+data.ts`, FormBuilder | Schema locations, Zod 4 syntax, which status codes Vike's `render()` accepts |
 | [rest-api](docs/rules/rest-api.md) | `server/sahajcloud-client.ts` and friends | Adding a cached query function, `pnpm types:cms`, API-key auth |
-| [tailwind](docs/rules/tailwind.md) | `layouts/*.css`, `tailwind.config.ts` | v4 CSS-first `@theme` configuration (not `tailwind.config.ts`), fonts |
+| [tailwind](docs/rules/tailwind.md) | `layouts/*.css` | v4 CSS-first `@theme` configuration, the `@source` scan set, fonts |
 
 **Nested guides** are an `AGENTS.md` file with a `CLAUDE.md` symlink beside it. Its folder
 location defines its scope, so it needs no frontmatter. Codex and Cursor read it, as well as

@@ -1,10 +1,10 @@
 /**
- * Shared plumbing for the source-scanning guards.
+ * Shared plumbing for the guards.
  *
- * Both guards answer a question about the source text rather than about a
- * rendered component, so both need the same three things: the repo root, a
- * file list, and a way to ignore comments. Kept here so the non-obvious
- * comment regex has one definition.
+ * Each one answers a question about the source text rather than about a
+ * rendered component, so they need the same things: the repo root, the theme
+ * stylesheet, a file list, and a way to ignore comments. Kept here so the
+ * non-obvious comment regex and the path to the theme each have one definition.
  */
 
 import { globSync, readFileSync } from 'node:fs'
@@ -12,6 +12,9 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+
+/** `layouts/tailwind.css` — the `@theme` block, and the `@source` scan set. */
+export const themeStylesheet = readFileSync(join(repoRoot, 'layouts', 'tailwind.css'), 'utf8')
 
 /**
  * Blanks comments, keeping every newline, so reported line numbers still
