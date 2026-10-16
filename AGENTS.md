@@ -71,6 +71,10 @@ pnpm ladle
 # Build static component library
 pnpm ladle:build
 
+# Validate the design Worker's config offline. Needs `pnpm ladle:build` first — the dry run
+# reads the `build/` that step writes. No credential, no network.
+pnpm check:wrangler
+
 # Type-check, and run the unit suite once (use this in scripts and CI)
 pnpm typecheck
 pnpm test:run
@@ -118,6 +122,13 @@ The app runs on Cloudflare Workers with server-side rendering.
 [server/entry.ts](server/entry.ts) uses `@photonjs/hono` to build a Hono server with the Vike
 request handler. [wrangler.toml](wrangler.toml) sets the Worker name and the `nodejs_compat` flag.
 The Worker holds no bindings and no persistent state.
+
+A second, assets-only Worker is configured here for the Ladle playground
+(`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
+wrangler does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml`.
+`pnpm check:wrangler` is what reads the design config in CI. Creating that Worker is #184's
+attended phase 2; until then the playground is served by a Cloudflare Pages project. See
+[docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 
 Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
 `Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
@@ -344,7 +355,7 @@ skill relevant.
 - [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including Puppeteer's `evaluate` (needs
   an explicit `return`).
 - [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md) — the CI workflow, the two
-  Cloudflare previews (the web Worker and the Ladle Pages site), and the preview smoke tests.
+  Cloudflare previews (the web Worker and the Ladle playground), and the preview smoke tests.
 - [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (403 means
   a stale key, 400 means a bad query) and `getWebConfig` caching.
 

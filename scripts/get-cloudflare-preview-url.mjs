@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Finds the Cloudflare preview URL for the web app on the current pull
+ * Finds one of this repo's two Cloudflare preview URLs on the current pull
  * request, waits until it responds, and exports it as PREVIEW_URL for the
  * smoke specs (tests/smoke). See docs/cloudflare-previews-ci.md for why this
  * script is project-aware, where Cloudflare posts the URL, and the
@@ -18,11 +18,13 @@
  *   HEALTH_PATH         - health endpoint (default "/", since the app has no /api/health)
  *   DISCOVER_TIMEOUT_MS / HEALTH_TIMEOUT_MS / POLL_INTERVAL_MS - optional overrides
  *
- * Skips gracefully (empty preview_url, exit 0) when no matching preview
- * appears within the timeout, for example before the web-app preview exists,
- * or on a forked PR without permissions. Exits 1 only when a matching URL is
- * found but never becomes healthy. Writes `preview_url=<url>` to
- * $GITHUB_OUTPUT and `PREVIEW_URL=<url>` to $GITHUB_ENV.
+ * Reports rather than judges: an empty `preview_url` and exit 0 when no matching
+ * preview appears within the timeout, whether that is a forked PR without
+ * permissions or a build that never happened. The caller decides which of those
+ * is a failure — `ci.yml`'s "Report a missing ladle preview" step owns that call
+ * (#184). Exits 1 only when a matching URL is found but never becomes healthy.
+ * Writes `preview_url=<url>` to $GITHUB_OUTPUT and `PREVIEW_URL=<url>` to
+ * $GITHUB_ENV.
  */
 import { appendFileSync } from 'node:fs'
 
@@ -34,14 +36,18 @@ const CF_PROJECT_MATCH = process.env.CF_PROJECT_MATCH
 const HEALTH_PATH = process.env.HEALTH_PATH || '/'
 
 // Poll for the full build window only when a target project is set (a real
-// build to wait for). Before CF_PROJECT_MATCH is set, there is no web-app
-// preview to wait for. Check quickly, then skip, instead of waiting 12 minutes.
+// build to wait for). Without CF_PROJECT_MATCH there is no named target, so
+// check quickly and report none, instead of waiting 12 minutes. Both legs in
+// ci.yml set it; this default covers a local or ad-hoc run.
 const DISCOVER_TIMEOUT_MS =
   Number(process.env.DISCOVER_TIMEOUT_MS) || (CF_PROJECT_MATCH ? 12 * 60_000 : 30_000)
 const HEALTH_TIMEOUT_MS = Number(process.env.HEALTH_TIMEOUT_MS) || 5 * 60_000
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 
-// The design-system (Ladle) Cloudflare project. Never run smoke tests on it.
+// The design-system (Ladle) hosts: the Worker name, and the Pages project it replaces. They
+// matter only to a run with no CF_PROJECT_MATCH, which takes the web app instead — in CI
+// `matchesTarget` returns before it reads this list. Drop `wemeditate-design` once no PR
+// opened before #184 is still open.
 const EXCLUDE = ['wm-design', 'wemeditate-design']
 // Matches a Cloudflare preview origin at any subdomain depth.
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
@@ -182,12 +188,12 @@ async function main() {
   while (Date.now() < deadline) {
     url = await discoverUrl()
     if (url) break
-    console.error('no matching Cloudflare web-app preview on the PR yet...')
+    console.error('no matching Cloudflare preview on the PR yet...')
     await sleep(POLL_INTERVAL_MS)
   }
 
   if (!url) {
-    console.error('No matching Cloudflare web-app preview found within timeout — skipping smoke.')
+    console.error('No matching Cloudflare preview found within timeout — reporting none found.')
     exportUrl('')
     return
   }

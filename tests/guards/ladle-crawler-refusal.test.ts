@@ -11,13 +11,19 @@ import { describe, it, expect } from 'vitest'
 import type { Plugin } from 'vite'
 import { crawlerRefusal, readRefusalFile, REFUSAL_FILES } from '../../.ladle/crawler-refusal'
 
+/** `_headers` without its comments — the only notion of a line this file uses. */
+function contentLines(file: string): string[] {
+  return file.split('\n').filter((line) => !line.startsWith('#'))
+}
+
 /** The headers `_headers` sends for one URL pattern, in any order. */
 function headersFor(file: string, pattern: string): string[] {
-  const lines = file.split('\n').filter((line) => !line.startsWith('#'))
+  const lines = contentLines(file)
   const headers: string[] = []
 
-  // Cloudflare Pages reads an indented line as a header of the pattern above it, so collect
-  // until the next unindented line rather than assuming a position.
+  // Cloudflare reads an indented line as a header of the pattern above it — true of Pages and
+  // of Workers static assets alike — so collect until the next unindented line rather than
+  // assuming a position.
   for (const line of lines.slice(lines.findIndex((l) => l.trim() === pattern) + 1)) {
     if (line.trim() === '') continue
     if (!/^\s/.test(line)) break
@@ -54,7 +60,20 @@ describe('the Ladle crawler refusal', () => {
     expect(robots).toMatch(/^User-agent: Twitterbot\n(?:User-agent: [\w-]+\n)*Allow: \/$/m)
   })
 
-  it('sends noindex on every URL in _headers', () => {
-    expect(headersFor(readRefusalFile('_headers'), '/*')).toContain('X-Robots-Tag: noindex')
+  it('sends noindex and ACAO on every URL in _headers', () => {
+    const headers = readRefusalFile('_headers')
+    const wildcard = headersFor(headers, '/*')
+
+    expect(wildcard).toContain('X-Robots-Tag: noindex')
+    expect(wildcard).toContain('Access-Control-Allow-Origin: *')
+
+    // The one-rule invariant `_headers` states: a second matching rule would comma-join into
+    // `*, *`. Counted over the whole file, since `headersFor` cannot see another pattern's
+    // rule — and over content lines, so spelling the header out in a comment cannot trip it.
+    const declared = contentLines(headers).filter((line) =>
+      line.trim().startsWith('Access-Control-Allow-Origin:'),
+    )
+
+    expect(declared).toHaveLength(1)
   })
 })
