@@ -667,6 +667,14 @@ export type EventQualityReport =
 export type MeditationNodeWeights = {
   [k: string]: number;
 } | null;
+export type TranscriptSegments =
+  | {
+      content: string;
+      startTimeMs: number;
+      endTimeMs: number;
+      durationMs?: number;
+    }[]
+  | null;
 export type TagAssignments = {
   /**
    * The UserChoice document id.
@@ -721,6 +729,7 @@ export interface Config {
   collections: {
     pages: Page;
     meditations: Meditation;
+    'meditation-transcripts': MeditationTranscript;
     songs: Song;
     albums: Album;
     videos: Video;
@@ -750,6 +759,9 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    meditations: {
+      transcript: 'meditation-transcripts';
+    };
     albums: {
       songs: 'songs';
     };
@@ -797,6 +809,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     meditations: MeditationsSelect<false> | MeditationsSelect<true>;
+    'meditation-transcripts': MeditationTranscriptsSelect<false> | MeditationTranscriptsSelect<true>;
     songs: SongsSelect<false> | SongsSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     videos: VideosSelect<false> | VideosSelect<true>;
@@ -920,6 +933,7 @@ export interface Config {
   user: Manager | Client;
   jobs: {
     tasks: {
+      cleanupJobs: TaskCleanupJobs;
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
       deliverSubmission: TaskDeliverSubmission;
       expireEvents: TaskExpireEvents;
@@ -929,6 +943,7 @@ export interface Config {
       sendRegistrationDigests: TaskSendRegistrationDigests;
       sendSessionReminders: TaskSendSessionReminders;
       syncLectureMetadata: TaskSyncLectureMetadata;
+      transcribeMeditation: TaskTranscribeMeditation;
       verifyEmbeds: TaskVerifyEmbeds;
       resetUsage: TaskResetUsage;
       sendInvitations: TaskSendInvitations;
@@ -2675,6 +2690,11 @@ export interface Meditation {
   duration?: number | null;
   subtleSystemNodeWeights?: MeditationNodeWeights;
   durationMinutes?: number | null;
+  transcript?: {
+    docs?: (number | MeditationTranscript)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * Optional auto-generated fallback title (e.g. Meditation for Anahat), derived from this meditation's dominant subtle-system node. Front-end clients use it only when they have no composed label of their own.
    */
@@ -2811,6 +2831,182 @@ export interface Album {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meditation-transcripts".
+ */
+export interface MeditationTranscript {
+  id: number;
+  meditation?: (number | null) | Meditation;
+  audioFilename?: string | null;
+  provider?: 'lemonfox' | null;
+  language:
+    | 'en'
+    | 'es'
+    | 'de'
+    | 'it'
+    | 'fr'
+    | 'ru'
+    | 'ro'
+    | 'cs'
+    | 'uk'
+    | 'el'
+    | 'hy'
+    | 'pl'
+    | 'pt-BR'
+    | 'fa'
+    | 'bg'
+    | 'tr'
+    | 'en-AU'
+    | 'hu'
+    | 'nl';
+  segments?: TranscriptSegments;
+  job?: (number | null) | PayloadJob;
+  status?: ('processing' | 'completed' | 'failed') | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug:
+          | 'inline'
+          | 'cleanupJobs'
+          | 'cleanupOrphanedMedia'
+          | 'deliverSubmission'
+          | 'expireEvents'
+          | 'purgeSubmissions'
+          | 'screenSubmission'
+          | 'sendPostEventFollowUps'
+          | 'sendRegistrationDigests'
+          | 'sendSessionReminders'
+          | 'syncLectureMetadata'
+          | 'transcribeMeditation'
+          | 'verifyEmbeds'
+          | 'resetUsage'
+          | 'sendInvitations'
+          | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'cleanupJobs'
+        | 'cleanupOrphanedMedia'
+        | 'deliverSubmission'
+        | 'expireEvents'
+        | 'purgeSubmissions'
+        | 'screenSubmission'
+        | 'sendPostEventFollowUps'
+        | 'sendRegistrationDigests'
+        | 'sendSessionReminders'
+        | 'syncLectureMetadata'
+        | 'transcribeMeditation'
+        | 'verifyEmbeds'
+        | 'resetUsage'
+        | 'sendInvitations'
+        | 'schedulePublish'
+      )
+    | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  /**
+   * Used for concurrency control. Jobs with the same key are subject to exclusive/supersedes rules.
+   */
+  concurrencyKey?: string | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "lessons".
  */
 export interface Lesson {
@@ -2880,7 +3076,7 @@ export interface Lesson {
   deletedAt?: string | null;
 }
 /**
- * Media files (images, audio, video) and PDFs used by other collections. Orphaned files are automatically moved to trash and permanently deleted during monthly cleanup.
+ * Media files (images, audio, video) and PDFs used by other collections. A file nothing links to is moved to the trash automatically, and deleted for good after 45 days there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "files".
@@ -3741,142 +3937,6 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs".
- */
-export interface PayloadJob {
-  id: number;
-  /**
-   * Input data provided to the job
-   */
-  input?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  taskStatus?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  completedAt?: string | null;
-  totalTried?: number | null;
-  /**
-   * If hasError is true this job will not be retried
-   */
-  hasError?: boolean | null;
-  /**
-   * If hasError is true, this is the error that caused it
-   */
-  error?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Task execution log
-   */
-  log?:
-    | {
-        executedAt: string;
-        completedAt: string;
-        taskSlug:
-          | 'inline'
-          | 'cleanupOrphanedMedia'
-          | 'deliverSubmission'
-          | 'expireEvents'
-          | 'purgeSubmissions'
-          | 'screenSubmission'
-          | 'sendPostEventFollowUps'
-          | 'sendRegistrationDigests'
-          | 'sendSessionReminders'
-          | 'syncLectureMetadata'
-          | 'verifyEmbeds'
-          | 'resetUsage'
-          | 'sendInvitations'
-          | 'schedulePublish';
-        taskID: string;
-        input?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        output?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        state: 'failed' | 'succeeded';
-        error?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  taskSlug?:
-    | (
-        | 'inline'
-        | 'cleanupOrphanedMedia'
-        | 'deliverSubmission'
-        | 'expireEvents'
-        | 'purgeSubmissions'
-        | 'screenSubmission'
-        | 'sendPostEventFollowUps'
-        | 'sendRegistrationDigests'
-        | 'sendSessionReminders'
-        | 'syncLectureMetadata'
-        | 'verifyEmbeds'
-        | 'resetUsage'
-        | 'sendInvitations'
-        | 'schedulePublish'
-      )
-    | null;
-  queue?: string | null;
-  waitUntil?: string | null;
-  processing?: boolean | null;
-  /**
-   * Used for concurrency control. Jobs with the same key are subject to exclusive/supersedes rules.
-   */
-  concurrencyKey?: string | null;
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -3889,6 +3949,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'meditations';
         value: number | Meditation;
+      } | null)
+    | ({
+        relationTo: 'meditation-transcripts';
+        value: number | MeditationTranscript;
       } | null)
     | ({
         relationTo: 'songs';
@@ -4070,6 +4134,7 @@ export interface MeditationsSelect<T extends boolean = true> {
   duration?: T;
   subtleSystemNodeWeights?: T;
   durationMinutes?: T;
+  transcript?: T;
   title?: T;
   thumbnail?: T;
   type?: T;
@@ -4096,6 +4161,22 @@ export interface MeditationsSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meditation-transcripts_select".
+ */
+export interface MeditationTranscriptsSelect<T extends boolean = true> {
+  meditation?: T;
+  audioFilename?: T;
+  provider?: T;
+  language?: T;
+  segments?: T;
+  job?: T;
+  status?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5083,6 +5164,9 @@ export interface WmWebTranslation {
     general?: WmWebTranslationsErrorsGeneralStrings;
     a11y?: WmWebTranslationsErrorsA11YStrings;
   };
+  discover?: {
+    general?: WmWebTranslationsDiscoverGeneralStrings;
+  };
   article?: {
     general?: WmWebTranslationsArticleGeneralStrings;
     a11y?: WmWebTranslationsArticleA11YStrings;
@@ -5267,6 +5351,40 @@ export interface WmWebTranslationsErrorsA11YStrings {
    */
   error_icon?: string;
 }
+export interface WmWebTranslationsDiscoverGeneralStrings {
+  /**
+   * Heading of the call to action that closes the home page. Invites the visitor to try meditation instead of taking the site's word for it.
+   */
+  title?: string;
+  /**
+   * The sentence under that heading, encouraging the visitor to meditate and judge by how it feels.
+   */
+  subtitle?: string;
+  /**
+   * First of three choices: recorded meditations to play straight away. The three cards sit on one centred row, each sized to its own text — a long title widens its card and can wrap the row.
+   */
+  meditate_now?: string;
+  /**
+   * The line under the first choice, naming what it leads to. It gets one line on screen.
+   */
+  meditate_now_subtitle?: string;
+  /**
+   * Second of three choices: meditations a person leads live online. The three cards sit on one centred row, each sized to its own text — a long title widens its card and can wrap the row.
+   */
+  live_guidance?: string;
+  /**
+   * The line under the second choice, naming what it leads to. It gets one line on screen.
+   */
+  live_guidance_subtitle?: string;
+  /**
+   * Third of three choices: free classes to attend in person nearby. The three cards sit on one centred row, each sized to its own text — a long title widens its card and can wrap the row.
+   */
+  classes_near_me?: string;
+  /**
+   * The line under the third choice, naming what it leads to. It gets one line on screen.
+   */
+  classes_near_me_subtitle?: string;
+}
 export interface WmWebTranslationsArticleGeneralStrings {
   /**
    * Byline above an article's author box. `%{name}` = the author's name, rendered in italics.
@@ -5380,6 +5498,18 @@ export interface WmWebTranslationsMeditationGeneralStrings {
    * Heading above the talks suggested at the end of a meditation.
    */
   related_lectures?: string;
+  /**
+   * Line under an embedded player, sending the visitor to the full site for more meditations. `%{link}` = a link whose text is the domain wemeditate.com, which stays as it is.
+   */
+  upsell_web?: string;
+  /**
+   * The same line where the embedded player points at the mobile app instead. `%{link}` = a link whose text is `upsell_app_link`.
+   */
+  upsell_app?: string;
+  /**
+   * The clickable words inside `upsell_app`, naming the mobile app and that it costs nothing. Translate as a noun phrase, not a sentence. `upsell_app` ends in a possessive, so inflect this phrase to follow it.
+   */
+  upsell_app_link?: string;
 }
 export interface WmWebTranslationsMeditationA11YStrings {
   /**
@@ -9815,6 +9945,11 @@ export interface WmWebTranslationsSelect<T extends boolean = true> {
         general?: T;
         a11y?: T;
       };
+  discover?:
+    | T
+    | {
+        general?: T;
+      };
   article?:
     | T
     | {
@@ -10122,6 +10257,19 @@ export interface CollectionsWidget {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCleanupJobs".
+ */
+export interface TaskCleanupJobs {
+  input: {
+    now?: string | null;
+    dryRun?: boolean | null;
+  };
+  output: {
+    deletedJobs: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskCleanupOrphanedMedia".
  */
 export interface TaskCleanupOrphanedMedia {
@@ -10129,6 +10277,7 @@ export interface TaskCleanupOrphanedMedia {
     rangeStart?: string | null;
     rangeEnd?: string | null;
     maxOperations?: number | null;
+    dryRun?: boolean | null;
   };
   output: {
     permanentlyDeletedFiles: number;
@@ -10137,6 +10286,7 @@ export interface TaskCleanupOrphanedMedia {
     trashedImages: number;
     skippedImages: number;
     errors: number;
+    dryRun: boolean;
   };
 }
 /**
@@ -10244,6 +10394,19 @@ export interface TaskSyncLectureMetadata {
     synced: number;
     failed: number;
     skippedNoVimeoId: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskTranscribeMeditation".
+ */
+export interface TaskTranscribeMeditation {
+  input: {
+    meditationId: number;
+    audioFilename: string;
+  };
+  output: {
+    status: string;
   };
 }
 /**
