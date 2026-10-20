@@ -445,7 +445,7 @@ Before you mark a component complete, check it:
 
 ## Resources
 
-- [AGENTS.md](./AGENTS.md) — project overview, repo-wide conventions, and the rule map
+- [AGENTS.md](./AGENTS.md) — repo-wide conventions and the rule map
 - [docs/rules/design-system.md](./docs/rules/design-system.md) — the `components/**` rule that
   points here, plus Icon/Button/Link/Divider conventions this guide does not cover
 - [server/CACHING.md](./server/CACHING.md) — the SahajCloud caching strategy
