@@ -104,7 +104,7 @@ only 3.0:1 on `--color-gray-800`.
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--font-sans` (`font-sans`, `font-raleway`) | `'Raleway', sans-serif` | Default for all text |
+| `--font-sans` (`font-sans`) | `'Raleway', sans-serif` | Default for all text |
 | `--font-number` (`font-number`) | `'Futura Book', sans-serif` | Countdowns, large numbers, special headings |
 | `font-extralight` | 200 | Raleway Extra Light |
 | `font-light` | 300 | Raleway Light — default body |
@@ -377,11 +377,10 @@ the standalone semantic colors (accent, error, success, info), the warm backgrou
 Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
 uses Tailwind's defaults.
 
-[tailwind.config.ts](./tailwind.config.ts) is loaded by nothing. Tailwind v4 reads a config file
-only through an `@config` directive, and no stylesheet here has one, so both its `theme.extend`
-block and its `content` array are dead. Change
-[layouts/tailwind.css](./layouts/tailwind.css) and nothing else — its `@source` lines are the
-scan set, and its `@theme` block is the theme.
+There is no `tailwind.config.ts`, and adding one changes nothing without an `@config` directive
+pointing at it. Change [layouts/tailwind.css](./layouts/tailwind.css) and nothing else — see
+[docs/rules/tailwind.md](./docs/rules/tailwind.md) for what it scans and the guard that holds
+utilities to it.
 
 **v4 gradient syntax**: Tailwind v4 renamed the gradient-direction utilities for consistency with
 CSS. Use `bg-linear-to-*`, not the v3 `bg-gradient-to-*`:
@@ -446,7 +445,7 @@ Before you mark a component complete, check it:
 
 ## Resources
 
-- [AGENTS.md](./AGENTS.md) — project overview, repo-wide conventions, and the rule map
+- [AGENTS.md](./AGENTS.md) — repo-wide conventions and the rule map
 - [docs/rules/design-system.md](./docs/rules/design-system.md) — the `components/**` rule that
   points here, plus Icon/Button/Link/Divider conventions this guide does not cover
 - [server/CACHING.md](./server/CACHING.md) — the SahajCloud caching strategy

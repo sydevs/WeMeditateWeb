@@ -1,6 +1,6 @@
 ---
 name: component-development
-description: Build a new React UI component in this repo end to end: classify its atomic level, lay out the component and barrel exports, write the Ladle story, and verify. Use when creating a new atom, molecule, organism or template from scratch.
+description: "Build a new React UI component in this repo end to end: classify its atomic level, lay out the component and barrel exports, write the Ladle story, and verify. Use when creating a new atom, molecule, organism or template from scratch."
 ---
 
 # Component Development Workflow

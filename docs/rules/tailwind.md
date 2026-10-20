@@ -1,7 +1,6 @@
 ---
 paths:
   - "layouts/*.css"
-  - "tailwind.config.ts"
 ---
 
 # Tailwind CSS
@@ -15,16 +14,38 @@ the `@theme` directive:
 - Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
 - Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
-In Tailwind v4, theme customization lives in CSS through `@theme`, not in `tailwind.config.ts`.
-Nothing loads `tailwind.config.ts` at all: v4 reads a config file only through an `@config`
-directive, and no stylesheet here has one. The scan set is the `@source` lines in
-[layouts/tailwind.css](../../layouts/tailwind.css), so adding a path to that file's `content`
-array changes nothing.
+**There is no JavaScript config file, and adding one back changes nothing on its own.** v4 reads
+a config file only through an `@config` directive, so a `tailwind.config.ts` that no stylesheet
+points at is dead — which is what #176 deleted.
 
-**Custom utilities** live in the same file as `@utility` blocks: `text-glow-*`, `full-bleed`,
-`focus-ring`, and the `surface-light` / `surface-dark` pair whose tokens `@theme inline` exposes as
-colours (`text-fg`, `text-primary`, `border-line`, …). A styling concern shared across
+**Tailwind scans wider than the `@source` lines.** `@import "tailwindcss"` also detects sources
+from the project root, and the `@source` paths add to that set rather than replacing it. So a
+class-shaped string outside `components/`, `pages/` and `layouts/` ships its CSS all the same —
+from a test fixture, or from a sentence in this file. Spell an example without its prefix for that
+reason. #186 weighs narrowing the set with `source(none)`.
+
+**A utility naming an undeclared token compiles to nothing, and nothing warns.**
+`tests/guards/theme-utilities.test.ts` catches two families of that: a colour utility whose token
+sits on a scale with numeric steps, and any `font-*` utility. Nothing else is watched — a token off
+such a scale, like `error-light` beside the declared `error-dark`, and namespaces such as `radius`
+and `shadow` all pass. It parses the `@theme` block of
+[layouts/tailwind.css](../../layouts/tailwind.css) *and* of Tailwind's own `theme.css`, because
+`@theme` extends the default rather than replacing it: a `gray-950` utility resolves even though
+ours stops at `gray-900`. Renaming a token on one of the two watched families fails the guard until
+its call sites follow.
+
+**A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
+live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
+`full-bleed`, `focus-ring`, the two touch-target utilities that
+[design-system](design-system.md) documents, and the `surface-light` / `surface-dark` pair whose
+tokens `@theme inline` exposes as colours (`text-fg`, `text-primary`, `border-line`, …). A rule
+with a name is greppable and lintable; the same eight classes pasted into three components are
+none of those things, and dropping one of them fails silently. A styling concern shared across
 components keeps its CSS here; TypeScript only chooses which class to apply.
+
+⚠ **A custom utility is emitted before Tailwind's own**, so a core utility touching the same
+property wins on the same element — `min-w-0` beats `touch-target`'s `min-width`. Drop the core
+class rather than stacking the two.
 
 **A class the scanner cannot see goes in `@source inline()`, not in a literal list.** Tailwind
 scans source text, so a class built at runtime — `` `sm:col-span-${span}` `` from a

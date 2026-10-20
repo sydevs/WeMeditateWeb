@@ -26,7 +26,7 @@ Each weight ships as WOFF2 (primary, better compression) and WOFF (fallback for 
 once it loads. The page never blocks on a font download.
 
 [layouts/tailwind.css](../../layouts/tailwind.css) maps these fonts to Tailwind's `--font-*` and
-`--font-weight-*` tokens in its `@theme` block. Nothing loads `tailwind.config.ts`. See
+`--font-weight-*` tokens in its `@theme` block. See
 [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for the full token list and usage examples.
 
 ## Update the fonts

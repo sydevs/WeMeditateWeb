@@ -2,11 +2,9 @@
 
 This file gives AI coding agents guidance for this repository.
 
-**Supported agents**: Claude Code, OpenAI Codex, Cursor, and other AGENTS.md-compatible tools.
-
-> `CLAUDE.md` is a symlink to this file for Claude Code compatibility. The nested guide under
-> `server/` uses the same symlink pattern. Claude-specific features (hooks, skills, settings) stay
-> in the `.claude/` folder.
+> `CLAUDE.md` is a symlink to this file for Claude Code compatibility. The nested guides under
+> `server/`, `components/` and `pages/` use the same symlink pattern. Claude-specific features
+> (hooks, skills, settings) stay in the `.claude/` folder.
 
 This guide stays short on purpose. It states only facts that apply everywhere and that the code
 does not show directly. Rules for one part of the tree, or steps for a procedure, load on demand
@@ -24,9 +22,11 @@ the real behavior. Before you form or act on a root-cause hypothesis, do this:
 - **Read the request, not only the response.** The dev server logs
   `[PayloadCMS] GET <url> → <status>`. Use this log to confirm the exact query string and status
   code the SDK sent.
-- **When local access is blocked, confirm in CI instead.** A local **403** means the `.env.local`
-  key is stale. See [local-environment](docs/local-environment.md). Then confirm against the
-  deployed preview through CI.
+- **When local access is blocked, confirm in CI instead.** A local **403** usually means the
+  `.env.local` key is stale. The atlas endpoints are the exception: they 403 locally even with a
+  valid key, because the local client lacks the `sahaj-atlas-client` role. `GET /api/clients/me`
+  tells the two apart. See [local-environment](docs/local-environment.md). Then confirm against
+  the deployed preview through CI.
 - **Run an experiment to settle competing hypotheses.** When two hypotheses seem possible (for
   example, "the query is wrong" vs "the data is unpublished"), test query variants against the
   real API. Do not argue from the code alone.
@@ -34,93 +34,32 @@ the real behavior. Before you form or act on a root-cause hypothesis, do this:
 In past sessions, confident hypotheses were often wrong until confirmed against real data. Prefer a
 quick experiment over reasoning from source code alone.
 
-## Project Overview
-
-WeMeditateWeb is a server-rendered web application. It uses Vike (a full-stack framework),
-React 19, and TypeScript. It deploys to Cloudflare Workers.
-
-It fetches content from a PayloadCMS backend through the REST API, which the Cloudflare edge in
-front of that backend caches for 600s.
-
-**Stack**: Vike + React + TypeScript + Hono + Tailwind CSS + Cloudflare Workers + PayloadCMS REST API
-
-## Common Development Commands
+## Commands package.json does not show
 
 ```bash
-# Development server (default port 5173)
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Preview production build locally
-pnpm preview
-
-# Local testing with Wrangler (Cloudflare Workers runtime)
-pnpm prod
-
-# Deploy to Cloudflare Workers
-pnpm deploy
-
-# Linting
-pnpm lint
-
-# Component development with Ladle (port 61000)
-pnpm ladle
-
-# Build static component library
-pnpm ladle:build
-
 # Validate the design Worker's config offline. Needs `pnpm ladle:build` first — the dry run
 # reads the `build/` that step writes. No credential, no network.
 pnpm check:wrangler
-
-# Type-check, and run the unit suite once (use this in scripts and CI)
-pnpm typecheck
-pnpm test:run
-
-# Re-sync server/payload-types.ts from SahajCloud's main branch
-pnpm types:cms
 
 # Re-sync lib/translations.en.json from the SahajCloud English locale.
 # Needs PUBLIC__SAHAJCLOUD_URL and SAHAJCLOUD_API_KEY in the shell.
 pnpm sync:translations
 
-# The lean gate before push: lint + typecheck + test:run (--full adds pnpm build)
+# The lean gate before push: lint + typecheck + test:run (--full adds pnpm build).
+# Not a skill: /finalize-pr runs it from `leanGate` in .claude/workflow.json.
 .claude/skills/pr-prep/check.sh
 ```
 
 ## Environment Setup
 
-Run `cp .env.example .env.local`, then edit the new file with your real values.
 [.env.example](.env.example) lists every variable. It states which side uses each variable and
 where production's value comes from. Read that file instead of a second copy here.
-
-Both development modes read from `.env.local` automatically:
-- **Vite development** (`pnpm dev`) reads `.env.local` directly.
-- **Cloudflare Workers** (`pnpm prod`) reads `.env.local` when `.dev.vars` does not exist.
-
-**Variable Sources:**
-
-| Variable Type | Development | Production |
-|---------------|-------------|------------|
-| Server secrets | `.env.local` | Cloudflare dashboard |
-| Build-time public | `.env.local` | `.env.production` (git) |
-| Build-time secrets | `.env.local` | Cloudflare dashboard |
-
-**Variable Prefixes:**
-- `PUBLIC__` — the browser can access this variable. The build embeds it at build time via
-  `envPrefix: 'PUBLIC__'` in `vite.config.ts`.
-- No prefix — server-side only. The runtime reads it via `context.cloudflare.env`.
 
 **Note**: `PUBLIC__` means the browser can read the variable. It does not mean the value is
 public. Tokens like `PUBLIC__MAPBOX_ACCESS_TOKEN` stay secret. Restrict them by domain.
 
 ## Cloudflare Workers Deployment
 
-The app runs on Cloudflare Workers with server-side rendering.
-[server/entry.ts](server/entry.ts) uses `@photonjs/hono` to build a Hono server with the Vike
-request handler. [wrangler.toml](wrangler.toml) sets the Worker name and the `nodejs_compat` flag.
 The Worker holds no bindings and no persistent state.
 
 A second, assets-only Worker is configured here for the Ladle playground
@@ -134,41 +73,13 @@ Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 6
 `Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
 [server/CACHING.md](server/CACHING.md) before you add a read.
 
-### Keep client-only heavy deps out of the Worker bundle
-
-Load browser-only libraries (for example `vidstack`/`@vidstack/react`, `hls.js`,
-`@mapbox/search-js-react`) with **`ClientOnly` + `React.lazy` in a barrel**. Do not load them with
-a plain dynamic `import()` inside an effect.
-
-Vike's SSR build still bundles a dynamically imported module into `dist/server`. An in-effect
-`import('hls.js')` once left the ~1.1 MB library in the Worker, even though it never ran on the
-server.
-
-This is about *browser-only* libraries, not about bundle size on its own. `FormBuilder` sits on
-the RichText path that every page renders, and it still server-renders: its fields are worth more
-than the `react-hook-form` and Turnstile weight they add to every route. Price the trade, and say
-which side you took.
-
-The pattern (see
-[components/molecules/LocationSearch/index.tsx](components/molecules/LocationSearch/index.tsx)
-and [components/molecules/VideoPlayer/index.tsx](components/molecules/VideoPlayer/index.tsx)):
-the directory's `index.tsx` re-exports a wrapper. The wrapper renders
-`<ClientOnly fallback={…}><LazyImpl/></ClientOnly>`, where
-`LazyImpl = React.lazy(() => import('./Impl'))`. `ClientOnly` removes the children on the server
-entirely, so the heavy implementation and its dependencies never enter the SSR graph.
-
-After a change, confirm with `grep -rl <lib-internal-symbol> dist/server`. This command must find
-nothing. The library should appear only as a code-split chunk under `dist/client`.
+Keep browser-only libraries out of the Worker bundle: [components/AGENTS.md](components/AGENTS.md).
 
 ## Repo-wide conventions
 
 These rules apply whether or not the matching rule file or skill is loaded.
 
-- **Exclude a route-owned path from the `[slug]` matcher.**
-  [pages/[slug]/+route.ts](pages/[slug]/+route.ts) matches any single path segment. A path owned
-  by its own route function (for example `/map`) needs an explicit exclusion in
-  `RESERVED_SEGMENTS`. Without this exclusion, the path silently renders the Pages "not found"
-  state instead of its real route.
+- **A route-owned path needs a `[slug]` exclusion.** See [pages/AGENTS.md](pages/AGENTS.md).
 - **Translations are SahajCloud-owned. Never write a user-visible literal.** Every string the site
   renders — visible copy and every `aria-label` or `sr-only` label alike — comes from the
   `wm-web-translations` global, through `useT()`. `lib/translations.en.json` is the committed
@@ -245,21 +156,6 @@ These rules apply whether or not the matching rule file or skill is loaded.
   and the Ladle build each copy it, so a `robots.txt`, `_headers` or `_redirects` there applies to
   the app and the playground alike. The playground's crawler refusal lives in `.ladle/static/`
   for that reason — see [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
-- **`pageContext` carries the locale.** [types/vike.d.ts](types/vike.d.ts) extends Vike's
-  `PageContext` with `locale: Locale`, which stays type-safe in every data function and component.
-
-## Sentry Error Tracking
-
-**Browser config**: [sentry.browser.config.ts](sentry.browser.config.ts)
-- Samples 100% of transactions.
-- Records 10% of sessions as replay (100% after an error).
-- Activates only in production (`import.meta.env.PROD === true`).
-
-**Testing Sentry**: Visit the `/sentry` page in a production build to trigger test errors.
-
-**Source maps**: The `@sentry/vite-plugin` uploads them. Configure it in
-[vite.config.ts](vite.config.ts). It needs `SENTRY_ORG`, `SENTRY_PROJECT`, and
-`SENTRY_AUTH_TOKEN` in `.env.sentry-build-plugin`.
 
 ## PR Workflow (3 Phases)
 
@@ -267,8 +163,8 @@ PRs move through three phases. The point is to batch CI runs. Do not push on eve
 because each push re-triggers the `gate` and `smoke` jobs and both Cloudflare preview builds.
 
 1. **Implement.** `/implement-ticket <n>` takes a ticket through this sequence: plan, branch,
-   implement and test, then the lean local gate. It then runs the finalize pipeline, which opens
-   the PR and makes CI pass.
+   implement and test, then the lean local gate. It then hands off to `/finalize-pr`, which opens
+   the PR as a draft and pushes. Neither skill waits for CI.
 2. **Adjust.** While you work on an **open PR** — follow-up tweaks after `/implement-ticket`, or
    any later change on the PR branch — commit each change locally as you go. Do not push during
    this phase. Batching avoids a CI re-run on every small tweak.
@@ -276,31 +172,12 @@ because each push re-triggers the `gate` and `smoke` jobs and both Cloudflare pr
    This phase overrides the usual "commit and push only when asked" default. During Adjust,
    commit follow-up changes locally without being asked, and never push them yourself. The user
    can still say "hold off" to pause the automatic committing.
-3. **Finalize.** `/finalize-pr` ships the batch through this sequence:
-   - Simplify the code.
-   - Run `/pr-review-toolkit:review-pr all`.
-   - Run `/security-review`, only when risky paths changed.
-   - Run the lean test gate.
-   - Sync the docs in their own `docs:` commit, the last commit before the push.
-   - Push the branch.
-   - Open or refresh the PR title and description.
-   - Watch CI, with a capped number of automatic fixes.
+3. **Finalize.** `/finalize-pr` ships the batch.
 
    Run `/finalize-pr` when the PR is ready for review or merge.
 
-Skills come from the **`workflow` plugin** (`sydevs/claude-workflow`), enabled in
-`.claude/settings.json`. The plugin provides `/workflow:file-ticket`,
-`/workflow:implement-ticket` (phase 1), `/workflow:finalize-pr` (phase 3, also used by phase 1),
-`/workflow:implement-roadmap`, and `/workflow:dev-server`.
-
-`.claude/workflow.json` holds the per-repo variation: the lean gate, the contract step, the
-security-review trigger paths, and the autonomy allowlist. Each skill exists in exactly one
-place, so no parity spec needs syncing across repos.
-
-Phase 1 runs in an isolated git worktree by default. Pass `--no-worktree` to opt out. The
-worktree is removed once the PR is open and CI is green.
-
-The lean local gate stays in this repo, at `.claude/skills/pr-prep/check.sh`.
+Skills come from the **`workflow` plugin** (`sydevs/claude-workflow`). Each skill exists in exactly
+one place, so no parity spec needs syncing across repos.
 
 **Commit and PR conventions**: Use Conventional Commits. Find the scopes in current use in
 `git log --oneline -50`. Do not invent a new scope.
@@ -311,8 +188,9 @@ Path-scoped and procedural guidance does not live in this file. It loads on dema
 places.
 
 **Path-scoped rules** (`.claude/rules/`) apply to one part of the tree. Claude Code injects a
-rule when it reads a matching file. The prose text lives in `docs/rules/`. `.claude/rules/` holds
-only symlinks to those files, and Claude Code cites the `docs/rules/` target.
+rule when it reads a matching file. A rule with no `paths:` loads in every session. The prose
+text lives in `docs/rules/`. `.claude/rules/` holds only symlinks to those files, and Claude Code
+cites the `docs/rules/` target.
 
 This indirection is deliberate. Claude Code's Protected Paths guard requires interactive approval
 for any write under `.claude/`, ahead of `permissions.allow`. A rule body stored there would
@@ -321,12 +199,13 @@ editable. **Do not move a rule body back into `.claude/`.**
 
 | Rule | Scope | Covers |
 | --- | --- | --- |
+| [code-comments](docs/rules/code-comments.md) | every session (no `paths:`) | When a comment earns its place, and the comments never to delete. Synced from `claude-workflow`: edit the canonical block there |
 | [design-system](docs/rules/design-system.md) | `components/**`, `layouts/**` | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
 | [component-stories](docs/rules/component-stories.md) | `**/*.stories.tsx`, `components/ladle/**` | Ladle story structure, utility components, standard section order |
 | [testing](docs/rules/testing.md) | `**/*.test.ts(x)`, `tests/**` | Vitest in `node` env, no jsdom/RTL, SSR-string assertions, the `+`-prefix trap under `pages/` |
 | [zod-validation](docs/rules/zod-validation.md) | `server/validation.ts`, `pages/**/+data.ts`, FormBuilder | Schema locations, Zod 4 syntax, which status codes Vike's `render()` accepts |
-| [rest-api](docs/rules/rest-api.md) | `server/sahajcloud-client.ts` and friends | Adding a cached query function, `pnpm types:cms`, API-key auth |
-| [tailwind](docs/rules/tailwind.md) | `layouts/*.css`, `tailwind.config.ts` | v4 CSS-first `@theme` configuration (not `tailwind.config.ts`), fonts |
+| [rest-api](docs/rules/rest-api.md) | `server/sahajcloud-client.ts` and friends | Adding a query function, `pnpm types:cms`, API-key auth |
+| [tailwind](docs/rules/tailwind.md) | `layouts/*.css` | v4 CSS-first `@theme` configuration, the `@source` scan set, fonts |
 
 **Nested guides** are an `AGENTS.md` file with a `CLAUDE.md` symlink beside it. Its folder
 location defines its scope, so it needs no frontmatter. Codex and Cursor read it, as well as
@@ -335,16 +214,11 @@ Claude Code.
 - [server/AGENTS.md](server/AGENTS.md) covers `server/**`. PayloadCMS reads must send `select`
   (plus `populate` at depth > 1) and `locale`. Filter out unpublished relationships that return a
   bare id, and log a Sentry warning instead of rendering a dead link.
+- [components/AGENTS.md](components/AGENTS.md) covers `components/**`: browser-only libraries.
+- [pages/AGENTS.md](pages/AGENTS.md) covers `pages/**`: the `[slug]` matcher's exclusions.
 
 **Skills** (`.claude/skills/`) are multi-step procedures. The model loads one when it judges the
 skill relevant.
-
-| Skill | Use it for |
-| --- | --- |
-| `component-development` | Building a new component end to end: classify, implement, export, story, confirm |
-| `design-extraction` | Recreating a component from a live design — Puppeteer extraction, mapping to Tailwind tokens |
-| `ladle-processes` | Ladle/dev-server restarts, HMR not seeing new files, port conflicts, background-process hygiene |
-| `pr-prep` | `check.sh` runs the lean gate: lint, `tsc --noEmit`, `test:run`. `--full` adds `pnpm build` |
 
 **Reference docs** are long-form. Read one when the rule or skill that cites it tells you to:
 
@@ -356,8 +230,8 @@ skill relevant.
   an explicit `return`).
 - [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md) — the CI workflow, the two
   Cloudflare previews (the web Worker and the Ladle playground), and the preview smoke tests.
-- [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (403 means
-  a stale key, 400 means a bad query) and `getWebConfig` caching.
+- [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (a 403 is a
+  stale key or a missing role, a 400 is a bad query) and `getWebConfig` caching.
 
 ⚠ These links are **plain links, not `@`-imports**. `@DESIGN_SYSTEM.md`, `@STORYBOOK.md`, and
 `@MCP_USAGE.md` used to head this file. Claude Code's `@` syntax imports the full target file, so

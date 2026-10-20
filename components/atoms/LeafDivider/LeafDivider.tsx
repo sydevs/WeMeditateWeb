@@ -36,7 +36,7 @@ export const LeafDivider: React.FC<LeafDividerProps> = ({
       {/* The line at the base of the leaf */}
       {showLine && (
         <div
-          className={`w-full border-t border-gray-light absolute ${
+          className={`w-full border-t border-gray-200 absolute ${
             direction === 'up' ? 'bottom-0' : 'top-0'
           }`}
         />
@@ -44,7 +44,7 @@ export const LeafDivider: React.FC<LeafDividerProps> = ({
 
       {/* Leaf icon centered and positioned at the line */}
       <div
-        className={`absolute left-1/2 -translate-x-1/2 bg-white px-2 text-gray-dark ${
+        className={`absolute left-1/2 -translate-x-1/2 bg-white px-2 text-gray-700 ${
           direction === 'up'
             ? 'bottom-0'
             : 'top-0 rotate-180'

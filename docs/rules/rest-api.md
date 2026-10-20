@@ -25,6 +25,9 @@ paths:
            where: { slug: { equals: options.slug } },
            locale: options.locale,
            depth: 2,
+           // Without either one, SahajCloud answers 400. See server/AGENTS.md.
+           select: CONTENT_SELECT,
+           populate: CONTENT_POPULATE,
          })
 
          return result.docs[0] ?? null
