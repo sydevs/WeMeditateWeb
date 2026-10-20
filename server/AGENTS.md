@@ -46,9 +46,10 @@ Two things about `form` and the visitor's IP that only bite in production:
 
 - **`select`** is required on collection reads. Without it, the API returns **HTTP 400**, not
   403. See [local-environment](../docs/local-environment.md) for the 400-vs-403 difference.
-- **`populate`** is required whenever `depth > 1`. It returns the fields of a populated
-  relationship. Without it, the API returns a related document with missing fields (for example
-  `title` or `slug`), which renders empty content and dead links.
+- **`populate`** is required whenever `depth > 1`. Without it, the API returns **HTTP 400**, the
+  same as a missing `select`. Each entry also restricts a populated relationship to the fields it
+  lists: a field left out (for example `title` or `slug`) comes back missing, which renders empty
+  content and dead links.
 - **`locale`** is required for localized content. `title` and `slug` are localized fields, and
   without a locale they may not resolve. Pass `locale` from the caller (`pageContext.locale`).
   See `getWebConfig({ locale })` and its callers under `pages/**/+data.ts`.
@@ -130,9 +131,10 @@ Three things follow, all load-bearing:
 
 - **It is a second read, beside the content read, not a replacement for it.** It sends no locale,
   so every locale of a page issues the same URL and shares one edge entry.
-- **It returns `{}`, never `null`, and retries once.** `advertisedLocales` walks the map either
-  way; and the page content is already in hand when this read fails, so the default 3-attempt
-  backoff would stall TTFB to decorate a `<head>`.
+- **It returns `{}`, never `null`, and never retries.** It passes `maxAttempts: 1` to `withRetry`,
+  a single attempt. `advertisedLocales` walks the map either way; and the page content is already
+  in hand when this read fails, so the default 3-attempt backoff would stall TTFB to decorate a
+  `<head>`.
 - **Only `pages` (and `app-cards`) carry the map.** `meditations` returns `_status` as a plain
   string and `lectures` omits it. Neither makes a per-locale claim, and
   `advertisedLocales` returns an empty list for both rather than guessing.

@@ -1,6 +1,6 @@
 ---
 name: design-extraction
-description: Recreate a component from an existing live design: extract HTML and computed styles with Puppeteer, map them onto Tailwind tokens, and gather the missing requirements before implementing. Use when cloning a design from a URL, a screenshot, or a design file.
+description: "Recreate a component from an existing live design: extract HTML and computed styles with Puppeteer, map them onto Tailwind tokens, and gather the missing requirements before implementing. Use when cloning a design from a URL, a screenshot, or a design file."
 ---
 
 # Design Extraction Workflow
