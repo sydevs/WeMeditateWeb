@@ -13,6 +13,54 @@ export type Subtitles = {
   durationMs?: number;
   [k: string]: unknown;
 }[];
+export type EventImportResults = {
+  /**
+   * The row's line in the volunteer's spreadsheet, header included.
+   */
+  row: number;
+  outcome: 'created' | 'duplicate' | 'error';
+  /**
+   * The class the row created.
+   */
+  eventId?: number;
+  title: string;
+  city: string;
+  /**
+   * Why a skipped row was skipped.
+   */
+  reasons?: string[];
+  /**
+   * What a duplicate row repeats: a class already listed, or an earlier row.
+   */
+  duplicateOf?: {
+    eventId?: number;
+    title?: string;
+    row?: number;
+  };
+  /**
+   * A skipped row as uploaded, to fix and upload again.
+   */
+  values?: {
+    [k: string]: string;
+  };
+  /**
+   * The town a row was skipped for having no city region.
+   */
+  missingCity?: {
+    name: string;
+  };
+}[];
+export type EventImportRows =
+  | {
+      /**
+       * The row's line in the volunteer's spreadsheet.
+       */
+      line: number;
+      values: {
+        [k: string]: string;
+      };
+    }[]
+  | null;
 /**
  * Supported timezones in IANA format.
  *
@@ -667,6 +715,14 @@ export type EventQualityReport =
 export type MeditationNodeWeights = {
   [k: string]: number;
 } | null;
+export type TranscriptSegments =
+  | {
+      content: string;
+      startTimeMs: number;
+      endTimeMs: number;
+      durationMs?: number;
+    }[]
+  | null;
 export type TagAssignments = {
   /**
    * The UserChoice document id.
@@ -721,6 +777,7 @@ export interface Config {
   collections: {
     pages: Page;
     meditations: Meditation;
+    'meditation-transcripts': MeditationTranscript;
     songs: Song;
     albums: Album;
     videos: Video;
@@ -741,6 +798,7 @@ export interface Config {
     regions: Region;
     events: Event;
     users: User;
+    imports: Import;
     forms: Form;
     'user-submissions': UserSubmission;
     'payload-kv': PayloadKv;
@@ -750,6 +808,9 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    meditations: {
+      transcript: 'meditation-transcripts';
+    };
     albums: {
       songs: 'songs';
     };
@@ -797,6 +858,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     meditations: MeditationsSelect<false> | MeditationsSelect<true>;
+    'meditation-transcripts': MeditationTranscriptsSelect<false> | MeditationTranscriptsSelect<true>;
     songs: SongsSelect<false> | SongsSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     videos: VideosSelect<false> | VideosSelect<true>;
@@ -817,6 +879,7 @@ export interface Config {
     regions: RegionsSelect<false> | RegionsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    imports: ImportsSelect<false> | ImportsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'user-submissions': UserSubmissionsSelect<false> | UserSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -920,6 +983,7 @@ export interface Config {
   user: Manager | Client;
   jobs: {
     tasks: {
+      cleanupJobs: TaskCleanupJobs;
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
       deliverSubmission: TaskDeliverSubmission;
       expireEvents: TaskExpireEvents;
@@ -928,8 +992,11 @@ export interface Config {
       sendPostEventFollowUps: TaskSendPostEventFollowUps;
       sendRegistrationDigests: TaskSendRegistrationDigests;
       sendSessionReminders: TaskSendSessionReminders;
+      sweepEventImports: TaskSweepEventImports;
       syncLectureMetadata: TaskSyncLectureMetadata;
+      transcribeMeditation: TaskTranscribeMeditation;
       verifyEmbeds: TaskVerifyEmbeds;
+      importEvents: TaskImportEvents;
       resetUsage: TaskResetUsage;
       sendInvitations: TaskSendInvitations;
       schedulePublish: TaskSchedulePublish;
@@ -1545,6 +1612,7 @@ export interface Region {
  */
 export interface Event {
   id: number;
+  importBatch?: (number | null) | Import;
   /**
    * Up to 100 characters. Leave blank to fill in from the venue — "Evening Meditation at Broadstairs Friends Meeting House" — which also translates itself into every language.
    */
@@ -1874,14 +1942,7 @@ export interface Event {
    */
   manager?: (number | null) | Manager;
   verificationStage:
-    | 'unverified'
-    | 'denied'
-    | 'verified'
-    | 'reminded'
-    | 'escalated'
-    | 'urgent'
-    | 'expired'
-    | 'finished';
+    'unverified' | 'denied' | 'verified' | 'reminded' | 'escalated' | 'urgent' | 'expired' | 'finished';
   activityLog?: ActivityLog;
   /**
    * How strongly attendees confirm this event is real (0–1) — your check before adopting a listing, or why a denied one stays down. Rises with confirmations, falls with denials, and stays cautious while there are few votes. Blank until the first vote.
@@ -1900,6 +1961,10 @@ export interface Event {
    * Registrations have reached the limit.
    */
   registrationsFull?: boolean | null;
+  /**
+   * Registrants are offered a mailing list: this region, one above it, or the atlas fallback service has one switched on.
+   */
+  offersMailingList?: boolean | null;
   /**
    * Open listing-quality recommendations.
    */
@@ -1923,6 +1988,225 @@ export interface Event {
   createdAt: string;
   deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports".
+ */
+export interface Import {
+  id: number;
+  /**
+   * Classes are filed under the cities of this region. A town with no city region yet is skipped — create the city first.
+   */
+  targetRegion?: (number | null) | Region;
+  /**
+   * Why the import stopped before it could finish.
+   */
+  error?: string | null;
+  results?: EventImportResults;
+  rows?: EventImportRows;
+  status?: ('pending' | 'review' | 'completed' | 'failed') | null;
+  /**
+   * Language(s) for rows whose own `languages` column is empty.
+   */
+  defaultLanguages: (
+    | 'ab'
+    | 'aa'
+    | 'af'
+    | 'ak'
+    | 'sq'
+    | 'am'
+    | 'ar'
+    | 'an'
+    | 'hy'
+    | 'as'
+    | 'av'
+    | 'ae'
+    | 'ay'
+    | 'az'
+    | 'bm'
+    | 'ba'
+    | 'eu'
+    | 'be'
+    | 'bn'
+    | 'bi'
+    | 'bs'
+    | 'br'
+    | 'bg'
+    | 'my'
+    | 'ca'
+    | 'ch'
+    | 'ce'
+    | 'ny'
+    | 'zh'
+    | 'cv'
+    | 'kw'
+    | 'co'
+    | 'cr'
+    | 'hr'
+    | 'cs'
+    | 'da'
+    | 'dv'
+    | 'nl'
+    | 'dz'
+    | 'en'
+    | 'eo'
+    | 'et'
+    | 'ee'
+    | 'fo'
+    | 'fj'
+    | 'fi'
+    | 'fr'
+    | 'ff'
+    | 'gl'
+    | 'lg'
+    | 'ka'
+    | 'de'
+    | 'el'
+    | 'gn'
+    | 'gu'
+    | 'ht'
+    | 'ha'
+    | 'he'
+    | 'hz'
+    | 'hi'
+    | 'ho'
+    | 'hu'
+    | 'is'
+    | 'io'
+    | 'ig'
+    | 'id'
+    | 'ia'
+    | 'ie'
+    | 'iu'
+    | 'ik'
+    | 'ga'
+    | 'it'
+    | 'ja'
+    | 'jv'
+    | 'kl'
+    | 'kn'
+    | 'kr'
+    | 'ks'
+    | 'kk'
+    | 'km'
+    | 'ki'
+    | 'rw'
+    | 'rn'
+    | 'kv'
+    | 'kg'
+    | 'ko'
+    | 'ku'
+    | 'kj'
+    | 'ky'
+    | 'lo'
+    | 'la'
+    | 'lv'
+    | 'li'
+    | 'ln'
+    | 'lt'
+    | 'lu'
+    | 'lb'
+    | 'mk'
+    | 'mg'
+    | 'ms'
+    | 'ml'
+    | 'mt'
+    | 'gv'
+    | 'mi'
+    | 'mr'
+    | 'mh'
+    | 'mn'
+    | 'na'
+    | 'nv'
+    | 'ng'
+    | 'ne'
+    | 'nd'
+    | 'se'
+    | 'no'
+    | 'nb'
+    | 'nn'
+    | 'ii'
+    | 'oc'
+    | 'oj'
+    | 'cu'
+    | 'or'
+    | 'om'
+    | 'os'
+    | 'pi'
+    | 'pa'
+    | 'ps'
+    | 'fa'
+    | 'pl'
+    | 'pt'
+    | 'qu'
+    | 'ro'
+    | 'rm'
+    | 'ru'
+    | 'sm'
+    | 'sg'
+    | 'sa'
+    | 'sc'
+    | 'gd'
+    | 'sr'
+    | 'sn'
+    | 'sd'
+    | 'si'
+    | 'sk'
+    | 'sl'
+    | 'so'
+    | 'nr'
+    | 'st'
+    | 'es'
+    | 'su'
+    | 'sw'
+    | 'ss'
+    | 'sv'
+    | 'tl'
+    | 'ty'
+    | 'tg'
+    | 'ta'
+    | 'tt'
+    | 'te'
+    | 'th'
+    | 'bo'
+    | 'ti'
+    | 'to'
+    | 'ts'
+    | 'tn'
+    | 'tr'
+    | 'tk'
+    | 'tw'
+    | 'uk'
+    | 'ur'
+    | 'ug'
+    | 'uz'
+    | 've'
+    | 'vi'
+    | 'vo'
+    | 'wa'
+    | 'cy'
+    | 'fy'
+    | 'wo'
+    | 'xh'
+    | 'yi'
+    | 'yo'
+    | 'za'
+    | 'zu'
+  )[];
+  manager?: (number | null) | Manager;
+  locale?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1985,7 +2269,7 @@ export interface UserSubmission {
    */
   manager?: (number | null) | Manager;
   /**
-   * The city or venue this event belongs to. Resolved by screening — correct it here if it came back empty or wrong.
+   * The city or venue this event belongs to. Matched from the visitor’s location — correct it here if it came back empty or wrong.
    */
   region?: (number | null) | Region;
   screeningResult?: SubmissionScreeningResult;
@@ -1994,6 +2278,7 @@ export interface UserSubmission {
   client?: (number | null) | Client;
   user?: (number | null) | User;
   unsubscribedAt?: string | null;
+  location?: SubmissionLocation;
   regionHint?: SubmissionRegionHint;
   followUpSentAt?: string | null;
   updatedAt: string;
@@ -2005,7 +2290,7 @@ export interface UserSubmission {
  */
 export interface Form {
   id: number;
-  title: string;
+  title?: string | null;
   fields?:
     | (
         | {
@@ -2133,7 +2418,7 @@ export interface Form {
     [k: string]: unknown;
   } | null;
   redirect?: {
-    url: string;
+    url?: string | null;
   };
   /**
    * Contact forms deliver the message to a recipient. Subscribe forms add the sender to a client’s mailing list.
@@ -2611,8 +2896,33 @@ export interface User {
   updatedAt: string;
   createdAt: string;
 }
+export interface SubmissionLocation {
+  /**
+   * The `place` layer — the city. An online class’s city goes here.
+   */
+  placeId?: string;
+  /**
+   * The `region` layer — the state.
+   */
+  regionId?: string;
+  /**
+   * The `country` layer.
+   */
+  countryId?: string;
+}
 export interface SubmissionRegionHint {
-  [k: string]: unknown;
+  /**
+   * The matched country region.
+   */
+  country?: number;
+  /**
+   * The matched state region.
+   */
+  state?: number;
+  /**
+   * The matched city or venue, kept after a reviewer changes `region`.
+   */
+  anchorRegion?: number;
 }
 export interface EventSystemMeta {
   communityFeedback?: {
@@ -2675,6 +2985,11 @@ export interface Meditation {
   duration?: number | null;
   subtleSystemNodeWeights?: MeditationNodeWeights;
   durationMinutes?: number | null;
+  transcript?: {
+    docs?: (number | MeditationTranscript)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * Optional auto-generated fallback title (e.g. Meditation for Anahat), derived from this meditation's dominant subtle-system node. Front-end clients use it only when they have no composed label of their own.
    */
@@ -2811,24 +3126,206 @@ export interface Album {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meditation-transcripts".
+ */
+export interface MeditationTranscript {
+  id: number;
+  meditation?: (number | null) | Meditation;
+  audioFilename?: string | null;
+  provider?: 'lemonfox' | null;
+  language:
+    | 'en'
+    | 'es'
+    | 'de'
+    | 'it'
+    | 'fr'
+    | 'ru'
+    | 'ro'
+    | 'cs'
+    | 'uk'
+    | 'el'
+    | 'hy'
+    | 'pl'
+    | 'pt-BR'
+    | 'fa'
+    | 'bg'
+    | 'tr'
+    | 'en-AU'
+    | 'hu'
+    | 'nl';
+  segments?: TranscriptSegments;
+  job?: (number | null) | PayloadJob;
+  status?: ('processing' | 'completed' | 'failed') | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug:
+          | 'inline'
+          | 'cleanupJobs'
+          | 'cleanupOrphanedMedia'
+          | 'deliverSubmission'
+          | 'expireEvents'
+          | 'purgeSubmissions'
+          | 'screenSubmission'
+          | 'sendPostEventFollowUps'
+          | 'sendRegistrationDigests'
+          | 'sendSessionReminders'
+          | 'sweepEventImports'
+          | 'syncLectureMetadata'
+          | 'transcribeMeditation'
+          | 'verifyEmbeds'
+          | 'importEvents'
+          | 'resetUsage'
+          | 'sendInvitations'
+          | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'cleanupJobs'
+        | 'cleanupOrphanedMedia'
+        | 'deliverSubmission'
+        | 'expireEvents'
+        | 'purgeSubmissions'
+        | 'screenSubmission'
+        | 'sendPostEventFollowUps'
+        | 'sendRegistrationDigests'
+        | 'sendSessionReminders'
+        | 'sweepEventImports'
+        | 'syncLectureMetadata'
+        | 'transcribeMeditation'
+        | 'verifyEmbeds'
+        | 'importEvents'
+        | 'resetUsage'
+        | 'sendInvitations'
+        | 'schedulePublish'
+      )
+    | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  /**
+   * Used for concurrency control. Jobs with the same key are subject to exclusive/supersedes rules.
+   */
+  concurrencyKey?: string | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "lessons".
  */
 export interface Lesson {
   id: number;
-  title: string;
+  title?: string | null;
   /**
    * Story panels to introduce this lesson.
    */
-  panels: {
-    title?: string | null;
-    text?: string | null;
-    /**
-     * Image or video for this panel.
-     */
-    media?: (number | null) | File;
-    subtitles?: Subtitles;
-    id?: string | null;
-  }[];
+  panels?:
+    | {
+        title?: string | null;
+        text?: string | null;
+        /**
+         * Image or video for this panel.
+         */
+        media?: (number | null) | File;
+        subtitles?: Subtitles;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Link to a related guided meditation or video that complements this lesson content.
    */
@@ -2880,7 +3377,7 @@ export interface Lesson {
   deletedAt?: string | null;
 }
 /**
- * Media files (images, audio, video) and PDFs used by other collections. Orphaned files are automatically moved to trash and permanently deleted during monthly cleanup.
+ * Media files (images, audio, video) and PDFs used by other collections. A file nothing links to is moved to the trash automatically, and deleted for good after 45 days there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "files".
@@ -3741,142 +4238,6 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs".
- */
-export interface PayloadJob {
-  id: number;
-  /**
-   * Input data provided to the job
-   */
-  input?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  taskStatus?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  completedAt?: string | null;
-  totalTried?: number | null;
-  /**
-   * If hasError is true this job will not be retried
-   */
-  hasError?: boolean | null;
-  /**
-   * If hasError is true, this is the error that caused it
-   */
-  error?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Task execution log
-   */
-  log?:
-    | {
-        executedAt: string;
-        completedAt: string;
-        taskSlug:
-          | 'inline'
-          | 'cleanupOrphanedMedia'
-          | 'deliverSubmission'
-          | 'expireEvents'
-          | 'purgeSubmissions'
-          | 'screenSubmission'
-          | 'sendPostEventFollowUps'
-          | 'sendRegistrationDigests'
-          | 'sendSessionReminders'
-          | 'syncLectureMetadata'
-          | 'verifyEmbeds'
-          | 'resetUsage'
-          | 'sendInvitations'
-          | 'schedulePublish';
-        taskID: string;
-        input?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        output?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        state: 'failed' | 'succeeded';
-        error?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  taskSlug?:
-    | (
-        | 'inline'
-        | 'cleanupOrphanedMedia'
-        | 'deliverSubmission'
-        | 'expireEvents'
-        | 'purgeSubmissions'
-        | 'screenSubmission'
-        | 'sendPostEventFollowUps'
-        | 'sendRegistrationDigests'
-        | 'sendSessionReminders'
-        | 'syncLectureMetadata'
-        | 'verifyEmbeds'
-        | 'resetUsage'
-        | 'sendInvitations'
-        | 'schedulePublish'
-      )
-    | null;
-  queue?: string | null;
-  waitUntil?: string | null;
-  processing?: boolean | null;
-  /**
-   * Used for concurrency control. Jobs with the same key are subject to exclusive/supersedes rules.
-   */
-  concurrencyKey?: string | null;
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -3889,6 +4250,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'meditations';
         value: number | Meditation;
+      } | null)
+    | ({
+        relationTo: 'meditation-transcripts';
+        value: number | MeditationTranscript;
       } | null)
     | ({
         relationTo: 'songs';
@@ -4070,6 +4435,7 @@ export interface MeditationsSelect<T extends boolean = true> {
   duration?: T;
   subtleSystemNodeWeights?: T;
   durationMinutes?: T;
+  transcript?: T;
   title?: T;
   thumbnail?: T;
   type?: T;
@@ -4096,6 +4462,22 @@ export interface MeditationsSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meditation-transcripts_select".
+ */
+export interface MeditationTranscriptsSelect<T extends boolean = true> {
+  meditation?: T;
+  audioFilename?: T;
+  provider?: T;
+  language?: T;
+  segments?: T;
+  job?: T;
+  status?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4672,6 +5054,7 @@ export interface RegionsSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
+  importBatch?: T;
   title?: T;
   languages?: T;
   contactPhone?: T;
@@ -4751,6 +5134,7 @@ export interface EventsSelect<T extends boolean = true> {
   submitter?: T;
   nextCheckAt?: T;
   registrationsFull?: T;
+  offersMailingList?: T;
   qualityOpenCount?: T;
   qualityCheckVersion?: T;
   systemMeta?: T;
@@ -4774,6 +5158,31 @@ export interface UsersSelect<T extends boolean = true> {
   legacyData?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports_select".
+ */
+export interface ImportsSelect<T extends boolean = true> {
+  targetRegion?: T;
+  error?: T;
+  results?: T;
+  rows?: T;
+  status?: T;
+  defaultLanguages?: T;
+  manager?: T;
+  locale?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4931,6 +5340,7 @@ export interface UserSubmissionsSelect<T extends boolean = true> {
   client?: T;
   user?: T;
   unsubscribedAt?: T;
+  location?: T;
   regionHint?: T;
   followUpSentAt?: T;
   updatedAt?: T;
@@ -5082,6 +5492,9 @@ export interface WmWebTranslation {
   errors?: {
     general?: WmWebTranslationsErrorsGeneralStrings;
     a11y?: WmWebTranslationsErrorsA11YStrings;
+  };
+  discover?: {
+    general?: WmWebTranslationsDiscoverGeneralStrings;
   };
   article?: {
     general?: WmWebTranslationsArticleGeneralStrings;
@@ -5267,6 +5680,40 @@ export interface WmWebTranslationsErrorsA11YStrings {
    */
   error_icon?: string;
 }
+export interface WmWebTranslationsDiscoverGeneralStrings {
+  /**
+   * Heading of the call to action that closes the home page. Invites the visitor to try meditation instead of taking the site's word for it.
+   */
+  title?: string;
+  /**
+   * The sentence under that heading, encouraging the visitor to meditate and judge by how it feels.
+   */
+  subtitle?: string;
+  /**
+   * First of three choices: recorded meditations to play straight away. The three cards sit on one centred row, each sized to its own text — a long title widens its card and can wrap the row.
+   */
+  meditate_now?: string;
+  /**
+   * The line under the first choice, naming what it leads to. It gets one line on screen.
+   */
+  meditate_now_subtitle?: string;
+  /**
+   * Second of three choices: meditations a person leads live online. The three cards sit on one centred row, each sized to its own text — a long title widens its card and can wrap the row.
+   */
+  live_guidance?: string;
+  /**
+   * The line under the second choice, naming what it leads to. It gets one line on screen.
+   */
+  live_guidance_subtitle?: string;
+  /**
+   * Third of three choices: free classes to attend in person nearby. The three cards sit on one centred row, each sized to its own text — a long title widens its card and can wrap the row.
+   */
+  classes_near_me?: string;
+  /**
+   * The line under the third choice, naming what it leads to. It gets one line on screen.
+   */
+  classes_near_me_subtitle?: string;
+}
 export interface WmWebTranslationsArticleGeneralStrings {
   /**
    * Byline above an article's author box. `%{name}` = the author's name, rendered in italics.
@@ -5380,6 +5827,18 @@ export interface WmWebTranslationsMeditationGeneralStrings {
    * Heading above the talks suggested at the end of a meditation.
    */
   related_lectures?: string;
+  /**
+   * Line under an embedded player, sending the visitor to the full site for more meditations. `%{link}` = a link whose text is the domain wemeditate.com, which stays as it is.
+   */
+  upsell_web?: string;
+  /**
+   * The same line where the embedded player points at the mobile app instead. `%{link}` = a link whose text is `upsell_app_link`.
+   */
+  upsell_app?: string;
+  /**
+   * The clickable words inside `upsell_app`, naming the mobile app and that it costs nothing. Translate as a noun phrase, not a sentence. `upsell_app` ends in a possessive, so inflect this phrase to follow it.
+   */
+  upsell_app_link?: string;
 }
 export interface WmWebTranslationsMeditationA11YStrings {
   /**
@@ -8725,6 +9184,17 @@ export interface SyAtlasTranslation {
     errors?: SyAtlasTranslationsRegistrationErrorsStrings;
     questions?: SyAtlasTranslationsRegistrationQuestionsStrings;
   };
+  submit?: {
+    chrome?: SyAtlasTranslationsSubmitChromeStrings;
+    where?: SyAtlasTranslationsSubmitWhereStrings;
+    when?: SyAtlasTranslationsSubmitWhenStrings;
+    contact?: SyAtlasTranslationsSubmitContactStrings;
+    about?: SyAtlasTranslationsSubmitAboutStrings;
+    more?: SyAtlasTranslationsSubmitMoreStrings;
+    review?: SyAtlasTranslationsSubmitReviewStrings;
+    done?: SyAtlasTranslationsSubmitDoneStrings;
+    errors?: SyAtlasTranslationsSubmitErrorsStrings;
+  };
   share?: SyAtlasTranslationsShareStrings;
   compact?: SyAtlasTranslationsCompactStrings;
   seo?: SyAtlasTranslationsSeoStrings;
@@ -9544,6 +10014,10 @@ export interface SyAtlasTranslationsRegistrationFormStrings {
    * Refusal: the security check expired and must be redone before registering.
    */
   captcha_retry?: string;
+  /**
+   * Mailing-list opt-in checkbox on the registration form. Shown only when the event’s `offersMailingList` is true.
+   */
+  subscribe?: string;
 }
 export interface SyAtlasTranslationsRegistrationErrorsStrings {
   /**
@@ -9576,6 +10050,268 @@ export interface SyAtlasTranslationsRegistrationQuestionsStrings {
    * Question `questions`: anything the registrant wants to ask beforehand.
    */
   questions?: string;
+}
+export interface SyAtlasTranslationsSubmitChromeStrings {
+  /**
+   * Link at the foot of the event list and in its empty state. Opens the add-a-class panel with no place in context.
+   */
+  add_entry?: string;
+  /**
+   * Action on a region or venue page. Opens the add-a-class panel with the address search starting near that place.
+   */
+  add_here?: string;
+  /**
+   * Action on a class page. Opens the panel on its review step, prefilled with the class.
+   */
+  correct_entry?: string;
+  /**
+   * Panel heading while adding a new class.
+   */
+  title_add?: string;
+  /**
+   * Panel heading while correcting a published class.
+   */
+  title_correct?: string;
+  /**
+   * Progress line under the panel heading. `%{step}` = the current step, `%{total}` = the number of steps.
+   */
+  step_progress?: string;
+  /**
+   * Button that moves to the next step.
+   */
+  next?: string;
+  /**
+   * Button that returns to the previous step.
+   */
+  back?: string;
+  /**
+   * Button on the Contact and About steps, moving on without filling them in.
+   */
+  skip?: string;
+  /**
+   * Note above the listing that fills in behind the panel as the visitor types.
+   */
+  preview_note?: string;
+}
+export interface SyAtlasTranslationsSubmitWhereStrings {
+  /**
+   * Step heading.
+   */
+  title?: string;
+  /**
+   * Toggle option for a class held at a venue.
+   */
+  offline?: string;
+  /**
+   * Toggle option for a class held online.
+   */
+  online?: string;
+  /**
+   * Label of the address search, in person only.
+   */
+  address_label?: string;
+  /**
+   * Placeholder of the address search.
+   */
+  address_placeholder?: string;
+  /**
+   * Label of the room input under the address.
+   */
+  room_label?: string;
+  /**
+   * Label of the join-link input, online only.
+   */
+  online_url_label?: string;
+  /**
+   * Placeholder of the join-link input.
+   */
+  online_url_placeholder?: string;
+  /**
+   * Label of the city search, online only.
+   */
+  city_label?: string;
+  /**
+   * Placeholder of the city search.
+   */
+  city_placeholder?: string;
+  /**
+   * Help text under the city search, online only.
+   */
+  city_help?: string;
+}
+export interface SyAtlasTranslationsSubmitWhenStrings {
+  /**
+   * Step heading.
+   */
+  title?: string;
+  /**
+   * Label of the first-session date picker.
+   */
+  first_date?: string;
+  /**
+   * Label of the start-time input.
+   */
+  start_time?: string;
+  /**
+   * Label of the end-time input.
+   */
+  end_time?: string;
+  /**
+   * Label of the repeat choice (one-off, weekly, monthly).
+   */
+  repeats?: string;
+  /**
+   * Label of the optional end-date picker, shown for a repeating class.
+   */
+  end_date?: string;
+  /**
+   * Note under the times. `%{timezone}` = the timezone read from the address or city.
+   */
+  timezone_note?: string;
+}
+export interface SyAtlasTranslationsSubmitContactStrings {
+  /**
+   * Step heading.
+   */
+  title?: string;
+  /**
+   * Help text under the heading.
+   */
+  help?: string;
+  /**
+   * Label of the contact name input.
+   */
+  name_label?: string;
+  /**
+   * Label of the contact phone input.
+   */
+  phone_label?: string;
+  /**
+   * Label of the contact email input. Not the submitter’s own address, which `submit.review.email_label` asks for.
+   */
+  email_label?: string;
+}
+export interface SyAtlasTranslationsSubmitAboutStrings {
+  /**
+   * Step heading.
+   */
+  title?: string;
+  /**
+   * Label of the description input.
+   */
+  description_label?: string;
+  /**
+   * Placeholder of the description input.
+   */
+  description_placeholder?: string;
+}
+export interface SyAtlasTranslationsSubmitMoreStrings {
+  /**
+   * Step heading.
+   */
+  title?: string;
+  /**
+   * Label of the title input.
+   */
+  title_label?: string;
+  /**
+   * Help text under the title input.
+   */
+  title_help?: string;
+  /**
+   * Label of the languages picker.
+   */
+  languages_label?: string;
+  /**
+   * Label of the website input.
+   */
+  website_label?: string;
+}
+export interface SyAtlasTranslationsSubmitReviewStrings {
+  /**
+   * Link on each section of the listing, returning to the step that fills it.
+   */
+  edit?: string;
+  /**
+   * Label of the submitter’s own email input. Required.
+   */
+  email_label?: string;
+  /**
+   * Help text under the submitter’s email.
+   */
+  email_help?: string;
+  /**
+   * Label of the optional note to the reviewer.
+   */
+  note_label?: string;
+  /**
+   * Button that sends the submission.
+   */
+  submit?: string;
+  /**
+   * Button that opens the optional details step.
+   */
+  add_more?: string;
+  /**
+   * Shown when a correction is submitted with nothing changed.
+   */
+  no_changes?: string;
+}
+export interface SyAtlasTranslationsSubmitDoneStrings {
+  /**
+   * Confirmation heading.
+   */
+  title?: string;
+  /**
+   * Confirmation body. `%{city}` = the city the visitor chose.
+   */
+  body?: string;
+  /**
+   * Confirmation body when no city name is known.
+   */
+  body_no_city?: string;
+}
+export interface SyAtlasTranslationsSubmitErrorsStrings {
+  /**
+   * Validation and refusal (`invalid_email`): the submitter’s email is not an address.
+   */
+  email?: string;
+  /**
+   * Validation: in person, no address was picked.
+   */
+  address_required?: string;
+  /**
+   * Validation: online, no city was picked.
+   */
+  city_required?: string;
+  /**
+   * Validation: the join link is not a web address.
+   */
+  online_url?: string;
+  /**
+   * Validation: no first date was picked.
+   */
+  first_date?: string;
+  /**
+   * Validation: no start time was entered.
+   */
+  start_time?: string;
+  /**
+   * Refusal: the security check was unavailable, or the send failed for an unnamed reason.
+   */
+  send_failed?: string;
+  /**
+   * Refusal (`captcha_failed`): the security check must be redone before sending.
+   */
+  captcha?: string;
+  /**
+   * Refusal: the email address belongs to a disposable-address provider.
+   */
+  disposable_email?: string;
+  /**
+   * Refusal: a free-text field contains a link, which is rejected as spam.
+   */
+  urls_not_allowed?: string;
 }
 export interface SyAtlasTranslationsShareStrings {
   /**
@@ -9814,6 +10550,11 @@ export interface WmWebTranslationsSelect<T extends boolean = true> {
     | {
         general?: T;
         a11y?: T;
+      };
+  discover?:
+    | T
+    | {
+        general?: T;
       };
   article?:
     | T
@@ -10091,6 +10832,19 @@ export interface SyAtlasTranslationsSelect<T extends boolean = true> {
         errors?: T;
         questions?: T;
       };
+  submit?:
+    | T
+    | {
+        chrome?: T;
+        where?: T;
+        when?: T;
+        contact?: T;
+        about?: T;
+        more?: T;
+        review?: T;
+        done?: T;
+        errors?: T;
+      };
   share?: T;
   compact?: T;
   seo?: T;
@@ -10122,6 +10876,19 @@ export interface CollectionsWidget {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCleanupJobs".
+ */
+export interface TaskCleanupJobs {
+  input: {
+    now?: string | null;
+    dryRun?: boolean | null;
+  };
+  output: {
+    deletedJobs: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskCleanupOrphanedMedia".
  */
 export interface TaskCleanupOrphanedMedia {
@@ -10129,6 +10896,7 @@ export interface TaskCleanupOrphanedMedia {
     rangeStart?: string | null;
     rangeEnd?: string | null;
     maxOperations?: number | null;
+    dryRun?: boolean | null;
   };
   output: {
     permanentlyDeletedFiles: number;
@@ -10137,6 +10905,7 @@ export interface TaskCleanupOrphanedMedia {
     trashedImages: number;
     skippedImages: number;
     errors: number;
+    dryRun: boolean;
   };
 }
 /**
@@ -10233,6 +11002,19 @@ export interface TaskSendSessionReminders {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSweepEventImports".
+ */
+export interface TaskSweepEventImports {
+  input: {
+    now?: string | null;
+    dryRun?: boolean | null;
+  };
+  output: {
+    deleted: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSyncLectureMetadata".
  */
 export interface TaskSyncLectureMetadata {
@@ -10244,6 +11026,19 @@ export interface TaskSyncLectureMetadata {
     synced: number;
     failed: number;
     skippedNoVimeoId: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskTranscribeMeditation".
+ */
+export interface TaskTranscribeMeditation {
+  input: {
+    meditationId: number;
+    audioFilename: string;
+  };
+  output: {
+    status: string;
   };
 }
 /**
@@ -10261,6 +11056,16 @@ export interface TaskVerifyEmbeds {
     pathPromoted: number;
     pathDemoted: number;
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskImportEvents".
+ */
+export interface TaskImportEvents {
+  input: {
+    importId: number;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
