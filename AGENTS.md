@@ -37,6 +37,10 @@ quick experiment over reasoning from source code alone.
 ## Commands package.json does not show
 
 ```bash
+# Validate the design Worker's config offline. Needs `pnpm ladle:build` first — the dry run
+# reads the `build/` that step writes. No credential, no network.
+pnpm check:wrangler
+
 # Re-sync lib/translations.en.json from the SahajCloud English locale.
 # Needs PUBLIC__SAHAJCLOUD_URL and SAHAJCLOUD_API_KEY in the shell.
 pnpm sync:translations
@@ -57,6 +61,13 @@ public. Tokens like `PUBLIC__MAPBOX_ACCESS_TOKEN` stay secret. Restrict them by 
 ## Cloudflare Workers Deployment
 
 The Worker holds no bindings and no persistent state.
+
+A second, assets-only Worker is configured here for the Ladle playground
+(`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
+wrangler does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml`.
+`pnpm check:wrangler` is what reads the design config in CI. Creating that Worker is #184's
+attended phase 2; until then the playground is served by a Cloudflare Pages project. See
+[docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 
 Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
 `Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
@@ -218,7 +229,7 @@ skill relevant.
 - [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including Puppeteer's `evaluate` (needs
   an explicit `return`).
 - [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md) — the CI workflow, the two
-  Cloudflare previews (the web Worker and the Ladle Pages site), and the preview smoke tests.
+  Cloudflare previews (the web Worker and the Ladle playground), and the preview smoke tests.
 - [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (a 403 is a
   stale key or a missing role, a 400 is a bad query) and `getWebConfig` caching.
 

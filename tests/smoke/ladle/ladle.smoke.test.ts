@@ -62,7 +62,7 @@ describe('ladle preview', () => {
    * The refusal ships in the build output alone (#174), so only a deployment can confirm
    * Cloudflare applies it. `tests/guards/ladle-crawler-refusal.test.ts` guards the files.
    */
-  it('sends noindex on every URL it serves', async () => {
+  it('sends noindex and ACAO on every URL it serves', async () => {
     // A document and a build asset: the second carries no document, so a `<meta robots>` could
     // not have covered it. That is why the header, not a tag, holds the policy.
     const pages = await Promise.all([fetchPage('/'), fetchPage('/meta.json')])
@@ -71,6 +71,14 @@ describe('ladle preview', () => {
       expect(page.headers.get('x-robots-tag'), `${page.finalUrl} should send it`).toMatch(
         /noindex/i,
       )
+      // The sibling header on the same rule. Pages supplied this by default and Workers does
+      // not, so only a deployment can show the move kept it — and `*, *` is what a second
+      // matching rule would serve (#184). sydevs/SahajCloud#913 reads these assets
+      // cross-origin.
+      expect(
+        page.headers.get('access-control-allow-origin'),
+        `${page.finalUrl} should send it`,
+      ).toBe('*')
     }
   })
 

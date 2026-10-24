@@ -35,6 +35,7 @@ Open `http://localhost:5173`.
 | `pnpm test:ui` | Open the Vitest UI runner. |
 | `pnpm ladle` | Run the component library locally. |
 | `pnpm ladle:build` | Build the component library for static hosting. |
+| `pnpm check:wrangler` | Validate the design Worker's config offline (run `ladle:build` first). |
 | `pnpm env:setup` | Copy `.env.example` to `.env.local`. |
 | `pnpm types:cms` | Refresh SahajCloud types from the upstream Payload repo (needs network). |
 
