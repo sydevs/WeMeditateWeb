@@ -48,6 +48,15 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
    * ornamental. @default 'Ancient Wisdom'
    */
   sidetext?: string
+
+  /**
+   * Which side the image sits on, at `lg` and above. The warm gradient
+   * follows it; the floral graphic and the sidetext do not.
+   * - left: image on the left, body column on the right
+   * - right: image on the right, body column on the left
+   * @default 'left'
+   */
+  align?: 'left' | 'right'
 }
 
 /** Split a textarea string into paragraph runs on blank lines or newlines. */
@@ -63,14 +72,14 @@ function toParagraphs(text: string): string[] {
  * image and text block. It mirrors wemeditate.com's
  * `.cb-image-textbox--ornate` (dark variant): a warm-brown ground with a
  * large faded floral graphic on the right, a soft warm gradient that
- * lightens the left edge and bleeds above the block, light text, and a
+ * lightens the image's edge and bleeds above the block, light text, and a
  * faded vertical sidetext label.
  *
- * The layout is full-width and left-aligned, at least 80vh tall. The title
- * and subtitle sit above the body. The image floats left, and the body sits
- * in its own column beside it, clear of the left gradient. This reuses the
- * `Image` and `Button` atoms and the bundled `assets/ornate.svg` graphic. It
- * stacks on mobile.
+ * The layout is full-width, at least 80vh tall. The title and subtitle sit
+ * above the body. The image floats to the `align` side, and the body sits in
+ * its own column beside it, clear of the gradient. This reuses the `Image`
+ * and `Button` atoms and the bundled `assets/ornate.svg` graphic. It stacks
+ * on mobile.
  *
  * @example
  * <OrnateTextBox
@@ -92,10 +101,24 @@ export function OrnateTextBox({
   imageHeight,
   imageAspectRatio,
   sidetext = 'Ancient Wisdom',
+  align = 'left',
   className = '',
   ...props
 }: OrnateTextBoxProps) {
   const paragraphs = toParagraphs(description)
+
+  // Tailwind v4 emits an arbitrary value only for a candidate it finds
+  // verbatim in a scanned file, so each gradient is written out whole rather
+  // than interpolating the angle — which would compile to no gradient at all.
+  // 270deg points left, so the peach stop at 100% stays on the band's inner
+  // edge from `right-0`, exactly as 90deg keeps it there from `left-0`.
+  const gradientClasses =
+    align === 'right'
+      ? 'right-0 bg-[linear-gradient(270deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
+      : 'left-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
+
+  const imageFloatClasses =
+    align === 'right' ? 'lg:float-right lg:ml-12' : 'lg:float-left lg:mr-12'
 
   return (
     <div
@@ -124,13 +147,14 @@ export function OrnateTextBox({
         src={ornateBackground}
       />
 
-      {/* Soft warm gradient that lightens the left edge. It extends above
+      {/* Soft warm gradient that lightens the image's edge. It extends above
           the block (the gradient--ornate ::before). It uses a negative
           z-index, so it sits over the brown ground but behind text from the
-          block above. */}
+          block above. It mirrors with the image because a body column on the
+          left would otherwise sit over the band and measure 2.34:1 (#193). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 bottom-0 left-0 -z-10 w-1/3 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]"
+        className={`pointer-events-none absolute -top-24 bottom-0 -z-10 w-1/3 ${gradientClasses}`}
       />
 
       {/* Decorative vertical sidetext label (desktop only, single line) */}
@@ -155,8 +179,8 @@ export function OrnateTextBox({
           {subtitle && <p className="mt-2 text-base font-light text-white/80">{subtitle}</p>}
         </div>
 
-        {/* Feature image — floats left, beside the body column */}
-        <div className="mb-6 w-full lg:float-left lg:mr-12 lg:mb-4 lg:w-[44%]">
+        {/* Feature image — floats to the `align` side, beside the body column */}
+        <div className={`mb-6 w-full lg:mb-4 lg:w-[44%] ${imageFloatClasses}`}>
           <Image
             alt={imageAlt}
             aspectRatio={imageAspectRatio}
@@ -171,7 +195,9 @@ export function OrnateTextBox({
         </div>
 
         {/* Body: its own block-formatting context, so it stays a clean
-            column beside the gradient and never wraps back under the image. */}
+            column beside the gradient and never wraps back under the image.
+            Such a box cannot overlap a float's margin box on either side, so
+            this holds whichever way the float points. */}
         <div className="space-y-5 text-base font-light leading-relaxed text-white/90 lg:flow-root">
           {paragraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
