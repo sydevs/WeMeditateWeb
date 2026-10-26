@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Plugin } from 'vite'
 
-/** The files Cloudflare Pages reads from the build output to refuse crawlers. */
+/** The files Cloudflare reads from the build output to refuse crawlers and set ACAO. */
 export const REFUSAL_FILES = ['robots.txt', '_headers'] as const
 
 const staticDir = join(dirname(fileURLToPath(import.meta.url)), 'static')
@@ -22,8 +22,8 @@ export function readRefusalFile(fileName: (typeof REFUSAL_FILES)[number]): strin
  * Futura faces `layouts/fonts.css` fetches and the background `DiscoverMeditation` renders.
  *
  * Emitting rather than copying keeps this working wherever Ladle points `outDir`, and under a
- * bare `ladle build` as much as under `pnpm ladle:build` — the Pages project's build command is
- * set in the Cloudflare dashboard, not here.
+ * bare `ladle build` as much as under `pnpm ladle:build` — the Worker's build command is set in
+ * the Cloudflare dashboard, not here.
  *
  * ⚠ Ladle sets Vite's `root` inside its own package, so a path relative to the root resolves
  * into `node_modules`. Resolve from this file instead.

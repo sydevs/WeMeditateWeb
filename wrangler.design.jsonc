@@ -1,0 +1,37 @@
+{
+  // The `wm-design` Ladle playground (`design.wemeditate.com`), as a Cloudflare Workers
+  // static-assets Worker. Two Workers build from this one repo, so the filename carries the
+  // target; the app keeps the bare `wrangler.toml` that `pnpm deploy` resolves, and wrangler
+  // does not auto-discover this one.
+  //
+  // ⚠ The preview host is `<preview>-<worker>.<subdomain>.workers.dev`, never a project name,
+  // and `ci.yml`'s `CF_PROJECT_MATCH` is a plain substring test over it. So this name must
+  // stay `wm-design`: renaming the Worker means editing `ci.yml` and the `EXCLUDE` list in
+  // `scripts/get-cloudflare-preview-url.mjs` in the same commit (#184).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wm-design",
+
+  // Required even with no `main`. This is the date wrangler 4.149.0 suggests itself.
+  "compatibility_date": "2026-10-06",
+
+  // `_headers` and `robots.txt` reach `build/` through the `ladle-crawler-refusal` plugin, not
+  // through `public/`. Workers reads both from the assets directory but ignores `_redirects`;
+  // `not_found_handling` is its whole equivalent, and `single-page-application` preserves the
+  // 200-with-the-Ladle-shell that this address answers an unknown path with today.
+  "assets": {
+    "directory": "build",
+    "not_found_handling": "single-page-application"
+  },
+
+  // Not the default — wrangler's own schema says `false`. Switching previews off is refused by
+  // sydevs/SahajAtlasWeb#266, because `Smoke (ladle)` reads one.
+  "preview_urls": true,
+
+  // Pre-placed for a consumer this repo does not have yet, and empty because a preview of this
+  // Worker diverges from production in nothing. `cloudflare/wrangler-action` throws without the
+  // block (sydevs/SahajCloud#903's Technical notes, `ensure-config.ts:167,212`), and this Worker
+  // deploys through Workers Builds, which does not run that Action. Measured on
+  // sydevs/SahajAtlasWeb#279: `wrangler deploy --dry-run` is silent either way, so do not go
+  // looking for a local failure the block prevents, and do not drop it on finding none.
+  "previews": {}
+}
