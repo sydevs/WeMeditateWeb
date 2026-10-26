@@ -58,7 +58,38 @@ describe('<OrnateTextBox>', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
     expect(html).toContain('lg:float-left')
+    expect(html).toContain('lg:mr-12')
     expect(html).not.toContain('lg:float-right')
+  })
+
+  it('floats the image right under align="right"', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
+
+    expect(html).toContain('lg:float-right')
+    expect(html).toContain('lg:ml-12')
+    expect(html).not.toContain('lg:float-left')
+  })
+
+  it('defaults to the left layout, so an omitted align renders as align="left"', () => {
+    expect(renderToStaticMarkup(<OrnateTextBox {...BASE} />)).toEqual(
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />),
+    )
+  })
+
+  // The band lightens the image's edge. On the wrong side it sits under the
+  // body column and drops it to 2.34:1, below WCAG AA (#193). The angle is
+  // pinned with the side: both must compile, and 270deg is what keeps the
+  // peach stop on the band's inner edge from `right-0`.
+  it('keeps the warm gradient on the image side, angled inward', () => {
+    const left = renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />)
+
+    expect(left).toContain('left-0 bg-[linear-gradient(90deg')
+    expect(left).not.toContain('linear-gradient(270deg')
+
+    const right = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
+
+    expect(right).toContain('right-0 bg-[linear-gradient(270deg')
+    expect(right).not.toContain('linear-gradient(90deg')
   })
 
   it('renders the title above the body (header precedes the image)', () => {
