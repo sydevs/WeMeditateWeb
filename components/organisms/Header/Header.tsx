@@ -151,8 +151,12 @@ export function Header({
               variant="icon"
             />
 
-            {/* Navigation buttons */}
-            <div className="flex items-stretch justify-center gap-2 max-w-3xl flex-1">
+            {/* Navigation buttons. Desktop-only, like the banner rows above:
+                each item is `basis-1/4` and its label does not wrap, so the row
+                cannot shrink below the labels' min-content width (~553px). It
+                sits outside any `overflow` container, so below `lg:` it pushed
+                the whole document sideways rather than clipping (#202). */}
+            <div className="hidden lg:flex items-stretch justify-center gap-2 max-w-3xl flex-1">
               {navItems.map((item, index) =>
                 item.dropdown ? (
                   <HeaderNavDropdown

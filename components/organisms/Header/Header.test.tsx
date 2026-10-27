@@ -48,6 +48,19 @@ describe('Header', () => {
     })
   })
 
+  describe('the sticky nav row', () => {
+    it('renders only at lg and above', () => {
+      // Each item is `basis-1/4` and its label does not wrap, so the row cannot
+      // shrink below the labels' min-content width, and it sits outside any
+      // `overflow` container. Without this guard a 390px viewport scrolled
+      // sideways by 187px (#202).
+      const row = render().match(/<div class="([^"]*max-w-3xl flex-1[^"]*)"/)?.[1]
+
+      expect(row).toContain('hidden')
+      expect(row).toContain('lg:flex')
+    })
+  })
+
   describe('surface', () => {
     // The banner overlays the lead splash, so it takes the splash's surface
     // from `LayoutChrome`'s wrapper rather than claiming one (#133).
