@@ -25,7 +25,7 @@ function imageBaseURL(url: string): string | null {
 }
 
 const SIZE_WIDTH_MAP = {
-  square: { small: 400, medium: 800, xlarge: 1200 },
+  square: { xsmall: 200, small: 400, medium: 800, xlarge: 1200 },
   video: { small: 640, medium: 800, large: 1024, xlarge: 1536 },
   '4-3': { medium: 800, large: 1024, xlarge: 1536 },
   '3-2': { medium: 800, large: 1024, xlarge: 1536 },
@@ -33,7 +33,7 @@ const SIZE_WIDTH_MAP = {
 } as const
 
 export type AspectRatio = keyof typeof SIZE_WIDTH_MAP
-export type ImageSize = 'small' | 'medium' | 'large' | 'xlarge'
+export type ImageSize = 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'
 
 /** Ascending `<variant> <width>w` srcset entries, less the base URL each needs. */
 const SRCSET_SUFFIXES = {} as Record<AspectRatio, readonly string[]>

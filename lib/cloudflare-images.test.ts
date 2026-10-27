@@ -51,6 +51,7 @@ describe('getImageURL', () => {
 describe('getVariantName', () => {
   it('returns a flexible "width=" variant for a defined size', () => {
     expect(getVariantName('video', 'medium')).toBe('width=800')
+    expect(getVariantName('square', 'xsmall')).toBe('width=200')
     expect(getVariantName('square', 'small')).toBe('width=400')
     expect(getVariantName('4-3', 'large')).toBe('width=1024')
     expect(getVariantName('ultrawide', 'xlarge')).toBe('width=2048')
@@ -65,6 +66,9 @@ describe('getVariantName', () => {
     expect(getVariantName('square', 'large')).toBe('width=800')
     expect(getVariantName('4-3', 'small')).toBe('width=800')
     expect(getVariantName('3-2', 'small')).toBe('width=800')
+    // Only square carries xsmall; a thumbnail ladder elsewhere is unchanged.
+    expect(getVariantName('video', 'xsmall')).toBe('width=800')
+    expect(getVariantName('4-3', 'xsmall')).toBe('width=800')
   })
 
   it('falls back to the smallest defined width when neither the requested size nor medium exists', () => {
@@ -77,7 +81,7 @@ describe('getVariantName', () => {
   it.each(['square', 'video', '4-3', '3-2', 'ultrawide'] as const)(
     'never returns a hyphenated named variant for %s',
     (aspectRatio) => {
-      for (const size of ['small', 'medium', 'large', 'xlarge'] as const) {
+      for (const size of ['xsmall', 'small', 'medium', 'large', 'xlarge'] as const) {
         expect(getVariantName(aspectRatio, size)).toMatch(/^width=\d+$/)
       }
     },
@@ -99,7 +103,16 @@ describe('getImageSrcSet', () => {
     const srcset = getImageSrcSet(BASE_URL_NO_SLASH, 'square')
 
     expect(srcset).toBe(
-      `${BASE_URL_NO_SLASH}/width=400 400w, ${BASE_URL_NO_SLASH}/width=800 800w, ${BASE_URL_NO_SLASH}/width=1200 1200w`,
+      `${BASE_URL_NO_SLASH}/width=200 200w, ${BASE_URL_NO_SLASH}/width=400 400w, ${BASE_URL_NO_SLASH}/width=800 800w, ${BASE_URL_NO_SLASH}/width=1200 1200w`,
+    )
+  })
+
+  it('leaves every other ratio\'s widths unchanged by the square thumbnail tier', () => {
+    expect(getImageSrcSet(BASE_URL, '4-3')).toBe(
+      `${BASE_URL}width=800 800w, ${BASE_URL}width=1024 1024w, ${BASE_URL}width=1536 1536w`,
+    )
+    expect(getImageSrcSet(BASE_URL, '3-2')).toBe(
+      `${BASE_URL}width=800 800w, ${BASE_URL}width=1024 1024w, ${BASE_URL}width=1536 1536w`,
     )
   })
 
