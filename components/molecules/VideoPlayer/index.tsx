@@ -1,6 +1,7 @@
 import React from 'react'
 import { ClientOnly } from 'vike-react/ClientOnly'
 import type { VideoPlayerProps } from './VideoPlayer'
+import { posterURL } from './poster'
 
 const VideoPlayerLazy = React.lazy(() =>
   import('./VideoPlayer').then((mod) => ({ default: mod.VideoPlayer })),
@@ -21,7 +22,7 @@ function VideoPlayerFallback({
   return (
     <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
       {poster ? (
-        <img alt="" className="aspect-video w-full object-cover" src={poster} />
+        <img alt="" className="aspect-video w-full object-cover" src={posterURL(poster)} />
       ) : (
         <div className="aspect-video w-full" />
       )}

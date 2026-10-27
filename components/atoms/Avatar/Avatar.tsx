@@ -1,4 +1,5 @@
 import { ComponentProps, useState } from 'react'
+import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 
 export interface AvatarProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Image source URL */
@@ -79,6 +80,11 @@ export function Avatar({
 
   const showImage = src && !hasError
 
+  // An avatar box is 24–96px, so the 200px square width covers the largest at
+  // 2x. <Image> is not used here: it has neither the initials fallback nor the
+  // paint-over-initials placeholder below.
+  const imageSrc = src ? getImageURL(src, getVariantName('square', 'xsmall')) : src
+
   // Generate initials from alt text if not provided
   const displayInitials =
     initials ||
@@ -109,7 +115,7 @@ export function Avatar({
           // React hoists a `<link rel="preload" as="image">` for any <img>
           // that is not lazy, and an avatar is never the page's hero.
           loading="lazy"
-          src={src}
+          src={imageSrc}
           onError={() => setHasError(true)}
         />
       )}

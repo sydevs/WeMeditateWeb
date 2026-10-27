@@ -36,9 +36,18 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
    * Render the thumbnail at a fixed height with its natural width (a
    * Tailwind height class, for example `'h-56 sm:h-64'`) instead of a fixed aspect
    * ratio. A row of cards can then share one image height while each image
-   * keeps its own proportions. This ignores `aspectRatio` when set.
+   * keeps its own proportions. `aspectRatio` still picks the Cloudflare
+   * variant and srcset; it just stops boxing the layout.
    */
   imageHeight?: string
+
+  /**
+   * `sizes` attribute for the thumbnail, describing the rendered box so the
+   * browser picks the right srcset entry. Without it the atom assumes a
+   * roughly full-width layout, which over-fetches in a card grid or a
+   * carousel.
+   */
+  sizes?: string
 
   /**
    * Card variant.
@@ -120,6 +129,7 @@ export function ContentCard({
   description,
   aspectRatio = 'square',
   imageHeight,
+  sizes,
   variant = 'default',
   playButton = false,
   durationMinutes,
@@ -157,9 +167,14 @@ export function ContentCard({
         {hasImageSrc ? (
           <Image
             alt={thumbnailAlt || title}
-            aspectRatio={imageHeight ? undefined : aspectRatio}
+            aspectRatio={aspectRatio}
             className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
+            // A fixed image height keeps the ratio out of the layout, but not
+            // out of variant selection: dropping `aspectRatio` here is what
+            // served the full-size original to every carousel card (#146).
+            forceAspectRatio={!imageHeight}
             objectFit="cover"
+            sizes={sizes}
             src={thumbnailSrc}
           />
         ) : (

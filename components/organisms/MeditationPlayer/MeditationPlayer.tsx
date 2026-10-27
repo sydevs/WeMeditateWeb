@@ -25,6 +25,7 @@ import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
 import type { MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
+import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 import { useT } from '../../../hooks/useT'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
@@ -686,7 +687,10 @@ function MeditationPlayerInner({
                       alt={track.title}
                       className="w-full h-full object-cover"
                       draggable={false}
-                      src={currentMedia.src}
+                      // The frame sits in an aspect-square box capped at
+                      // `max-w-lg`, so 800px covers it at 2x. Frames carry no
+                      // dimensions, so `nearestAspectRatio` is unavailable.
+                      src={getImageURL(currentMedia.src, getVariantName('square', 'medium'))}
                     />
                   )}
 
