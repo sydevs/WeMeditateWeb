@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { compile } from 'tailwindcss'
+import { OrnateTextBox } from '../components/organisms/OrnateTextBox/OrnateTextBox'
 
 const require = createRequire(import.meta.url)
 const layouts = dirname(new URL(import.meta.url).pathname)
@@ -106,5 +109,45 @@ describe('focus-ring', () => {
     const css = await build(['surface-dark'])
 
     expect(declared(rule(css, '.surface-dark'), '--surface-ring')).toBe('#fff')
+  })
+})
+
+describe('an arbitrary value written out, not interpolated', () => {
+  // Tailwind emits an arbitrary value only for a candidate it finds verbatim
+  // in a scanned file. Interpolating the band's angle renders the same class
+  // string, so the component's own assertions stay green while the stylesheet
+  // loses the rule and the band draws as a bare transparent box (#193).
+  // Reading the source stands in for the `@source` scan, which this harness
+  // bypasses by handing `build` its candidates.
+  const source = readFileSync(
+    join(layouts, '../components/organisms/OrnateTextBox/OrnateTextBox.tsx'),
+    'utf8',
+  )
+
+  // `-top-24` is the warm band's alone; the brown ground is a gradient too.
+  const bandCandidate = (align: 'left' | 'right') =>
+    (
+      renderToStaticMarkup(
+        createElement(OrnateTextBox, {
+          align,
+          description: 'In every culture one can find tales of timeless wisdom.',
+          imageAlt: 'Artwork',
+          imageSrc: 'https://picsum.photos/seed/x/900/1200',
+          title: 'Sacred Teachings',
+        }),
+      ).match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
+    )
+      .split(' ')
+      .find((candidate) => candidate.startsWith('bg-[linear-gradient')) ?? ''
+
+  it.each([
+    ['left', '90deg'],
+    ['right', '270deg'],
+  ] as const)('compiles the %s ornate band from its own source', async (align, angle) => {
+    const candidate = bandCandidate(align)
+
+    expect(candidate).toContain(angle)
+    expect(source).toContain(candidate)
+    expect(await build([candidate])).toContain(`background-image: linear-gradient(${angle},`)
   })
 })
