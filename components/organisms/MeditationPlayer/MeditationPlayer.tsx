@@ -164,7 +164,7 @@ function VolumeRow({
       <p className="text-xs font-medium uppercase tracking-wide text-gray-800">
         {label}
         {sublabel ? (
-          <span className="ml-1 font-normal normal-case text-gray-800">· {sublabel}</span>
+          <span className="ml-1 font-normal normal-case">· {sublabel}</span>
         ) : null}
       </p>
       <div className="flex items-center gap-2">
