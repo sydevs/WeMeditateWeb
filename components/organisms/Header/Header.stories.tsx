@@ -64,17 +64,17 @@ export const Default: Story = () => (
 
       {/* Long content to demonstrate sticky navigation */}
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-8">
-        <h1 className="text-4xl font-semibold text-gray-700">Improving Your Meditation Practice</h1>
+        <h1 className="text-4xl font-semibold text-gray-800">Improving Your Meditation Practice</h1>
 
-        <p className="text-base text-gray-600 leading-relaxed">
+        <p className="text-base text-gray-800 leading-relaxed">
           This is the default variant suitable for light backgrounds. Notice how the sticky
           navigation maintains visibility as you scroll through the page.
         </p>
 
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i}>
-            <h2 className="text-2xl font-medium text-gray-700 mt-8">Section {i + 1}</h2>
-            <p className="text-base text-gray-600 leading-relaxed">
+            <h2 className="text-2xl font-medium text-gray-800 mt-8">Section {i + 1}</h2>
+            <p className="text-base text-gray-800 leading-relaxed">
               Content for section {i + 1}. Notice how the sticky navigation maintains visibility as
               you scroll through the page.
             </p>

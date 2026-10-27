@@ -44,7 +44,7 @@ export const LeafDivider: React.FC<LeafDividerProps> = ({
 
       {/* Leaf icon centered and positioned at the line */}
       <div
-        className={`absolute left-1/2 -translate-x-1/2 bg-white px-2 text-gray-700 ${
+        className={`absolute left-1/2 -translate-x-1/2 bg-white px-2 text-gray-800 ${
           direction === 'up'
             ? 'bottom-0'
             : 'top-0 rotate-180'

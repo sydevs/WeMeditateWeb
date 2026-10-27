@@ -133,11 +133,11 @@ export function ContentTextBox({
           {/* Title + subtitle group (kept tight together) */}
           <div className="flex flex-col gap-1.5">
             <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
-            {subtitle && <p className="text-base font-light text-gray-700">{subtitle}</p>}
+            {subtitle && <p className="text-base font-light text-gray-800">{subtitle}</p>}
           </div>
 
           {/* Description */}
-          <p className="text-lg font-light text-gray-700">{description}</p>
+          <p className="text-lg font-light text-gray-800">{description}</p>
 
           {/* CTA Button (optional — needs both text and a destination) */}
           {ctaText && ctaHref && (

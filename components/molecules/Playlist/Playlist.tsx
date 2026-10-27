@@ -57,7 +57,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
       onClick={() => onTrackClick(index)}
       className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
         isCurrentTrack
-          ? 'bg-teal-600 text-white shadow-md'
+          ? 'bg-teal-700 text-white shadow-md'
           : 'bg-white/80 hover:bg-gray-100 text-gray-900'
       }`}
     >
@@ -73,7 +73,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
             size="inherit"
             className={`text-xs truncate self-start mt-1 ${
               isCurrentTrack
-                ? 'text-teal-100 hover:text-white'
+                ? 'text-teal-50 hover:text-white'
                 : ''
             }`}
             onClick={(e) => e.stopPropagation()}
@@ -83,7 +83,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
         </div>
         <span
           className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
-            isCurrentTrack ? 'text-teal-100' : 'text-gray-600'
+            isCurrentTrack ? 'text-teal-50' : 'text-gray-800'
           }`}
         >
           {formatDuration(track.duration)}

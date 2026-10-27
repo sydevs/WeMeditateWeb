@@ -56,15 +56,15 @@ export const Default: Story = () => {
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <SocialIcon platform="facebook" size="sm" aria-label="Facebook (small)" />
-          <p className="text-sm text-gray-600">Small</p>
+          <p className="text-sm text-gray-800">Small</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <SocialIcon platform="facebook" size="md" aria-label="Facebook (medium)" />
-          <p className="text-sm text-gray-600">Medium</p>
+          <p className="text-sm text-gray-800">Medium</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <SocialIcon platform="facebook" size="lg" aria-label="Facebook (large)" />
-          <p className="text-sm text-gray-600">Large</p>
+          <p className="text-sm text-gray-800">Large</p>
         </div>
       </div>
     </StorySection>

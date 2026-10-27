@@ -250,7 +250,7 @@ export function SubtleSystem({
         <button
           aria-pressed={activeView === 'chakras'}
           className={`inline-flex touch-target items-center justify-center px-2 cursor-pointer transition-colors ${
-            activeView === 'chakras' ? 'font-bold text-teal-600' : 'hover:text-teal-600'
+            activeView === 'chakras' ? 'font-bold text-teal-700' : 'hover:text-teal-700'
           }`}
           onClick={() => handleViewToggle('chakras')}
         >
@@ -260,7 +260,7 @@ export function SubtleSystem({
         <button
           aria-pressed={activeView === 'channels'}
           className={`inline-flex touch-target items-center justify-center px-2 cursor-pointer transition-colors ${
-            activeView === 'channels' ? 'font-bold text-teal-600' : 'hover:text-teal-600'
+            activeView === 'channels' ? 'font-bold text-teal-700' : 'hover:text-teal-700'
           }`}
           onClick={() => handleViewToggle('channels')}
         >
@@ -306,10 +306,10 @@ export function SubtleSystem({
                 data-node-id={item.id}
               >
                 <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
-                <p className="text-base mb-4 text-gray-700">{item.description}</p>
+                <p className="text-base mb-4 text-gray-800">{item.description}</p>
                 <a
                   aria-label={t('blocks.a11y.learn_more_about', { title: item.title })}
-                  className="inline-block text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                  className="inline-block text-teal-700 hover:text-teal-800 font-medium transition-colors"
                   href={item.linkHref}
                 >
                   {t('blocks.general.learn_more')}

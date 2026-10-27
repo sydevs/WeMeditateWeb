@@ -74,7 +74,7 @@ export const Default: Story = () => {
 
       <StorySection title="With Proximity Bias">
         <div className="max-w-md">
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-800 mb-3">
             Search results biased toward San Francisco (lng: -122.4194, lat: 37.7749)
           </p>
           <LocationSearch
@@ -98,7 +98,7 @@ export const Default: Story = () => {
               <div>
                 <label
                   htmlFor="event-name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-800 mb-1"
                 >
                   Event Name
                 </label>
@@ -111,7 +111,7 @@ export const Default: Story = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-800 mb-1">
                   Event Location
                 </label>
                 <LocationSearch
@@ -123,7 +123,7 @@ export const Default: Story = () => {
               <div>
                 <label
                   htmlFor="event-date"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-800 mb-1"
                 >
                   Event Date
                 </label>
@@ -136,7 +136,7 @@ export const Default: Story = () => {
 
               <button
                 type="submit"
-                className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
+                className="px-6 py-2 bg-teal-700 hover:bg-teal-800 text-white font-medium transition-colors"
               >
                 Create Event
               </button>
@@ -145,7 +145,7 @@ export const Default: Story = () => {
 
           <StorySection title="With Custom Width" variant="subsection">
             <div className="max-w-sm">
-              <p className="text-sm text-gray-600 mb-2">Using max-w-sm container</p>
+              <p className="text-sm text-gray-800 mb-2">Using max-w-sm container</p>
               <LocationSearch
                 onLocationSelect={handleLocationSelect}
                 placeholder="Constrained width..."
@@ -155,7 +155,7 @@ export const Default: Story = () => {
 
           <StorySection title="Full Width" variant="subsection">
             <div>
-              <p className="text-sm text-gray-600 mb-2">Using full width of container</p>
+              <p className="text-sm text-gray-800 mb-2">Using full width of container</p>
               <LocationSearch
                 onLocationSelect={handleLocationSelect}
                 placeholder="Full width search..."

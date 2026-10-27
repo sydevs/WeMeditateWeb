@@ -68,11 +68,11 @@ export function MasonryGrid({
                 {item.heading}
               </Link>
             ) : (
-              <h3 className="mb-4 text-xl font-medium text-gray-700 tracking-wide">
+              <h3 className="mb-4 text-xl font-medium text-gray-800 tracking-wide">
                 {item.heading}
               </h3>
             )}
-            <p className="text-base font-light text-gray-700 leading-relaxed">
+            <p className="text-base font-light text-gray-800 leading-relaxed">
               {item.content}
             </p>
           </div>

@@ -104,7 +104,7 @@ function renderField(
   fieldError?: string
 ) {
   if (field.blockType === 'message') {
-    return <RichText className="text-sm sm:text-base text-gray-600 leading-relaxed" content={field.message} />
+    return <RichText className="text-sm sm:text-base text-gray-800 leading-relaxed" content={field.message} />
   }
 
   const label = field.label ?? field.name
@@ -284,9 +284,9 @@ export function FormBuilder({
           {t('forms.general.thank_you')}
         </h3>
         {form.confirmationMessage ? (
-          <RichText className="text-sm sm:text-base text-gray-700" content={form.confirmationMessage} />
+          <RichText className="text-sm sm:text-base text-gray-800" content={form.confirmationMessage} />
         ) : (
-          <p className="text-sm sm:text-base text-gray-700">{t('forms.general.submitted')}</p>
+          <p className="text-sm sm:text-base text-gray-800">{t('forms.general.submitted')}</p>
         )}
       </div>
     )
@@ -307,7 +307,7 @@ export function FormBuilder({
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {formError && (
           <div
-            className="mb-6 p-4 bg-error/10 border border-error rounded text-error text-sm"
+            className="mb-6 p-4 bg-error/10 border border-error rounded text-error-dark text-sm"
             role="alert"
             aria-live="assertive"
           >
@@ -343,7 +343,7 @@ export function FormBuilder({
                 <div key={key} className={span}>
                   {renderField(field, register, variant, t, fieldError)}
                   {fieldError && (
-                    <p className="mt-1 text-sm text-error" role="alert">
+                    <p className="mt-1 text-sm text-error-dark" role="alert">
                       {fieldError}
                     </p>
                   )}

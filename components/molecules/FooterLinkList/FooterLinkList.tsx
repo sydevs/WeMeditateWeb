@@ -55,7 +55,7 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
     <div className="flex flex-col gap-3">
       {/* Title (only for default variant) */}
       {title && !isHero && (
-        <h3 className="text-base font-semibold text-gray-700 mb-1">{title}</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-1">{title}</h3>
       )}
 
       {/* Links */}
@@ -67,7 +67,7 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
             locale={locale}
             variant="neutral"
             size={isHero ? 'lg' : 'sm'}
-            className={`hover:text-teal-600 ${
+            className={`hover:text-teal-700 ${
               isHero ? 'font-normal' : 'font-light'
             }`}
           >

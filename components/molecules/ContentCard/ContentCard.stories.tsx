@@ -293,7 +293,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Mixed Content Grid" inContext={true}>
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-800 mb-4">
         Responsive grid with mixed meditations (default variant with play button) and articles (variety of aspect ratios).
         Resize the browser window to see adaptive layout (1 column on mobile, 2 on tablet, 3 on desktop, 4 on large screens).
       </p>

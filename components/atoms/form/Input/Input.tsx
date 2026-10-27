@@ -75,7 +75,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const IconComponent = getDefaultIcon()
 
     const baseStyles =
-      'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+      'px-3 py-3 font-sans text-base placeholder:text-gray-800 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
 
     const variantStyles = {
       default: 'border bg-white',
@@ -86,7 +86,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       default:
         'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
       error:
-        'text-error border-error hover:border-error-dark focus:border-error',
+        'text-error-dark border-error hover:border-error-dark focus:border-error',
       success:
         'text-gray-900 border-success hover:border-success focus:border-success',
     }

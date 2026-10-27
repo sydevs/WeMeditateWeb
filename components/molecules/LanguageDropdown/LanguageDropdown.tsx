@@ -61,7 +61,7 @@ export function LanguageDropdown({
   return (
     <Dropdown
       trigger={
-        <button className="flex touch-target items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <button className="flex touch-target items-center gap-2 text-gray-800 hover:text-gray-900 transition-colors">
           <span className="text-sm font-light">{t('footer.languages')}</span>
           <Icon icon={GlobeAltIcon} size="sm" />
         </button>
@@ -80,9 +80,9 @@ export function LanguageDropdown({
             }`}
           >
             <LanguageFlag language={language.code} size="sm" />
-            <span className="text-sm font-light text-gray-700">{language.label}</span>
+            <span className="text-sm font-light text-gray-800">{language.label}</span>
             {language.code === currentLanguage && (
-              <Icon icon={CheckIcon} size="xs" className="ml-auto text-teal-600" />
+              <Icon icon={CheckIcon} size="xs" className="ml-auto text-teal-700" />
             )}
           </Link>
         ))}

@@ -92,7 +92,7 @@ export const Default: Story = () => (
         <h1 className="text-3xl font-bold text-gray-900 mb-6">
           Understanding the Subtle System
         </h1>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-800 mb-6">
           The subtle system is the intricate network of energy channels and centers within us.
           At the base of this system lies the Kundalini, a dormant spiritual energy that,
           when awakened, rises through the chakras to unite us with our higher consciousness.
@@ -103,17 +103,17 @@ export const Default: Story = () => (
           credit="Shri Mataji Nirmala Devi"
           className="my-6 ml-6"
         />
-        <p className="text-gray-700 mt-6">
+        <p className="text-gray-800 mt-6">
           This profound energy is present in all of us, waiting to be awakened through meditation.
           When activated, it brings about a transformation that affects every aspect of our being.
         </p>
-        <p className="text-gray-700 mt-6">
+        <p className="text-gray-800 mt-6">
           Many people believe that meditation requires silencing the mind completely, but this
           is a misconception. Instead, meditation is about discovering the stillness that exists
           beneath the noise of our thoughts. This subtle distinction is important for anyone
           beginning their meditation practice.
         </p>
-        <p className="text-gray-700 mt-6">
+        <p className="text-gray-800 mt-6">
           Many people believe that meditation requires silencing the mind completely, but this
           is a misconception. Instead, meditation is about discovering the stillness that exists
           beneath the noise of our thoughts. This subtle distinction is important for anyone
@@ -125,11 +125,11 @@ export const Default: Story = () => (
           credit="Deepak Chopra"
           className="my-6 mr-6"
         />
-        <p className="text-gray-700 mt-4">
+        <p className="text-gray-800 mt-4">
           As we continue our practice, we learn to access this inner quietude more easily,
           finding that it becomes a refuge we can return to whenever we need clarity or peace.
         </p>
-        <p className="text-gray-700 mt-4">
+        <p className="text-gray-800 mt-4">
           As we continue our practice, we learn to access this inner quietude more easily,
           finding that it becomes a refuge we can return to whenever we need clarity or peace.
         </p>

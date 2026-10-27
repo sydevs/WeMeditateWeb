@@ -64,7 +64,7 @@ export const Default: Story = () => (
                 { label: 'Improving Your Meditation' }
               ]}
             />
-            <h1 className="text-3xl font-semibold text-gray-700 mt-4">
+            <h1 className="text-3xl font-semibold text-gray-800 mt-4">
               Improving Your Meditation
             </h1>
           </div>

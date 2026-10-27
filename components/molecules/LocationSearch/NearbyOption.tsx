@@ -81,9 +81,7 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
     <button
       onClick={handleNearbyClick}
       disabled={geolocationState === 'loading'}
-      className={`w-full touch-target text-left flex items-center gap-2 font-medium text-gray-700 hover:bg-gray-100 transition-colors ${sizeStyles[size]} ${
-        geolocationState === 'error' ? 'bg-error-light' : ''
-      }`}
+      className={`w-full touch-target text-left flex items-center gap-2 font-medium text-gray-800 hover:bg-gray-100 transition-colors ${sizeStyles[size]}`}
       type="button"
     >
       {geolocationState === 'loading' ? (
@@ -97,7 +95,7 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
           <div className="flex-1">
             <div>{t('location.general.nearby')}</div>
             {geolocationState === 'error' && errorMessage && (
-              <div className="text-xs text-error mt-0.5">{errorMessage}</div>
+              <div className="text-xs text-error-dark mt-0.5">{errorMessage}</div>
             )}
           </div>
         </>

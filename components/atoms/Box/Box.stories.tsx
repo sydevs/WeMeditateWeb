@@ -135,19 +135,19 @@ export const Default: Story = () => (
     <StorySection title="Padding">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <p className="text-sm text-gray-600 mb-2">Small</p>
+          <p className="text-sm text-gray-800 mb-2">Small</p>
           <Box padding="sm" color="gray">
             <p>Small padding</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Medium</p>
+          <p className="text-sm text-gray-800 mb-2">Medium</p>
           <Box padding="md" color="gray">
             <p>Medium padding</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Large</p>
+          <p className="text-sm text-gray-800 mb-2">Large</p>
           <Box padding="lg" color="gray">
             <p>Large padding</p>
           </Box>
@@ -158,19 +158,19 @@ export const Default: Story = () => (
     <StorySection title="Shadows">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div>
-          <p className="text-sm text-gray-600 mb-2">Small</p>
+          <p className="text-sm text-gray-800 mb-2">Small</p>
           <Box padding="md" shadow="sm" color="white" border>
             <p>Small shadow</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Medium</p>
+          <p className="text-sm text-gray-800 mb-2">Medium</p>
           <Box padding="md" shadow="md" color="white" border>
             <p>Medium shadow</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Large</p>
+          <p className="text-sm text-gray-800 mb-2">Large</p>
           <Box padding="md" shadow="lg" color="white" border>
             <p>Large shadow</p>
           </Box>
@@ -183,13 +183,13 @@ export const Default: Story = () => (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Box padding="lg" shadow="md" color="white" rounded>
             <h4 className="font-semibold text-gray-900 mb-2">Morning Meditation</h4>
-            <p className="text-gray-700 mb-3">Start your day with peace and clarity</p>
-            <p className="text-sm text-teal-600">10 minutes</p>
+            <p className="text-gray-800 mb-3">Start your day with peace and clarity</p>
+            <p className="text-sm text-teal-700">10 minutes</p>
           </Box>
           <Box padding="lg" shadow="md" color="white" rounded>
             <h4 className="font-semibold text-gray-900 mb-2">Evening Practice</h4>
-            <p className="text-gray-700 mb-3">Wind down and release the day's stress</p>
-            <p className="text-sm text-teal-600">15 minutes</p>
+            <p className="text-gray-800 mb-3">Wind down and release the day's stress</p>
+            <p className="text-sm text-teal-700">15 minutes</p>
           </Box>
         </div>
 
@@ -210,17 +210,17 @@ export const Default: Story = () => (
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">🧘</div>
             <h5 className="font-medium text-gray-900 mb-1">Guided</h5>
-            <p className="text-sm text-gray-600">Step-by-step guidance</p>
+            <p className="text-sm text-gray-800">Step-by-step guidance</p>
           </Box>
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">⏱️</div>
             <h5 className="font-medium text-gray-900 mb-1">Flexible</h5>
-            <p className="text-sm text-gray-600">5-60 minute sessions</p>
+            <p className="text-sm text-gray-800">5-60 minute sessions</p>
           </Box>
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">🌟</div>
             <h5 className="font-medium text-gray-900 mb-1">Free</h5>
-            <p className="text-sm text-gray-600">Always 100% free</p>
+            <p className="text-sm text-gray-800">Always 100% free</p>
           </Box>
         </div>
       </div>

@@ -101,14 +101,14 @@ export const Default: Story = () => {
         <StorySection title="Podcast Player" variant="subsection">
           <div className="max-w-lg mx-auto bg-white border-2 border-gray-200 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-16 h-16 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+              <div className="w-16 h-16 bg-teal-700 rounded-lg flex items-center justify-center text-white font-bold text-xl">
                 PM
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Peaceful Moments
                 </h3>
-                <p className="text-sm text-gray-600">Daily Meditation Podcast</p>
+                <p className="text-sm text-gray-800">Daily Meditation Podcast</p>
               </div>
             </div>
             <AudioPlayer tracks={sampleTracks} />

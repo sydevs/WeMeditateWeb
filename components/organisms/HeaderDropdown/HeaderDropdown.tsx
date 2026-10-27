@@ -67,7 +67,7 @@ export function HeaderDropdown({
         <div className="flex flex-col">
           {/* Title - Fixed Height */}
           <div className="h-20 py-4 flex items-center">
-            <h3 className="text-xl font-semibold text-gray-700 line-clamp-2">{title}</h3>
+            <h3 className="text-xl font-semibold text-gray-800 line-clamp-2">{title}</h3>
           </div>
 
           {/* Links Section */}
@@ -76,7 +76,7 @@ export function HeaderDropdown({
               {links.map((link, index) => (
                 <li key={index}>
                   <Link
-                    className="hover:text-teal-600 transition-colors"
+                    className="hover:text-teal-700 transition-colors"
                     href={link.href}
                     size="base"
                     variant="neutral"
@@ -117,7 +117,7 @@ function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColum
       {/* Article Title - Fixed Height */}
       <div className="h-20 py-4 flex items-center">
         <Link
-          className="hover:text-teal-600 transition-colors line-clamp-3 text-sm"
+          className="hover:text-teal-700 transition-colors line-clamp-3 text-sm"
           href={article.href}
           variant="neutral"
         >

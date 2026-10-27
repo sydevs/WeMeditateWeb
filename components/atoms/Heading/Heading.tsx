@@ -23,7 +23,7 @@ export interface HeadingProps extends ComponentProps<'h1'> {
  * @example
  * <Heading level="h1">Page Title</Heading>
  * <Heading level="h2" styleAs="h1">Visually large h2</Heading>
- * <Heading level="h3" className="text-teal-600">Custom colored heading</Heading>
+ * <Heading level="h3" className="text-teal-700">Custom colored heading</Heading>
  */
 export function Heading({
   level = 'h2',

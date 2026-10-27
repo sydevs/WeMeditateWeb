@@ -37,7 +37,7 @@ export function DiscoverMeditation({
       className={`
         relative min-h-screen
         flex items-center justify-center
-        text-center text-gray-700
+        text-center text-gray-800
         py-24 lg:pb-48
         ${className}
       `}
@@ -62,8 +62,8 @@ export function DiscoverMeditation({
       <div className="relative z-10 p-6">
         {/* Header Section */}
         <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-normal text-gray-700 mb-8">{title}</h2>
-          <p className="text-xl md:text-2xl font-light text-gray-700 max-w-lg mx-auto">
+          <h2 className="text-3xl md:text-4xl font-normal text-gray-800 mb-8">{title}</h2>
+          <p className="text-xl md:text-2xl font-light text-gray-800 max-w-lg mx-auto">
             {subtitle}
           </p>
         </div>

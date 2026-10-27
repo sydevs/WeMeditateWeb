@@ -92,7 +92,7 @@ export function Footer({
         <div className="w-full border-t border-gray-200 absolute bottom-0" />
 
         {/* Floral design centered over the line */}
-        <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2 bottom-0 bg-white px-4 text-gray-500">
+        <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2 bottom-0 bg-white px-4 text-gray-800">
           <FloralDividerSvg />
         </div>
       </div>
@@ -140,7 +140,7 @@ export function Footer({
       {/* Copyright Bar */}
       <div className="border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <p className="text-center text-sm text-gray-600">{copyrightText}</p>
+          <p className="text-center text-sm text-gray-800">{copyrightText}</p>
         </div>
       </div>
     </footer>

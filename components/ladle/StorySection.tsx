@@ -33,19 +33,28 @@ export const StorySection = ({
   variant = 'section',
   inContext = false,
 }: StorySectionProps) => {
-  // Background styles based on surface and background type
+  /**
+   * Every dark ground here is a `900` step, and no lighter one will do: the
+   * dark surface draws `text-primary` as `teal-300`, which reaches 4.5:1 on
+   * `teal-900` (5.71) and `coral-900` (5.64) and on nothing above them —
+   * `teal-800` measures 3.82, `gray-800` 2.95 (#179). A gradient is governed
+   * by its lighter stop, so both of its stops are `900` too.
+   *
+   * A dark surface with no ground drew white text on the page's white
+   * background, so `none` paints one as well, without the box styling.
+   */
   const getBackgroundStyles = () => {
-    if (background === 'none') return ''
-
     const baseStyles = 'p-6 rounded-lg'
 
+    if (background === 'none') return surface === 'dark' ? 'bg-teal-900 p-6' : ''
+
     if (background === 'neutral') {
-      return surface === 'dark' ? `bg-gray-800 ${baseStyles}` : `bg-gray-50 ${baseStyles}`
+      return surface === 'dark' ? `bg-teal-900 ${baseStyles}` : `bg-gray-50 ${baseStyles}`
     }
 
     if (background === 'gradient') {
       return surface === 'dark'
-        ? `bg-linear-to-b from-teal-600 to-teal-700 ${baseStyles}`
+        ? `bg-linear-to-b from-teal-900 to-coral-900 ${baseStyles}`
         : `bg-linear-to-b from-teal-50 to-teal-100 ${baseStyles}`
     }
 
@@ -57,7 +66,7 @@ export const StorySection = ({
   // description appear on a light wrapper background.
   const getTitleColor = () => {
     if (variant === 'subsection') {
-      return surface === 'dark' ? 'text-gray-100' : 'text-gray-700'
+      return surface === 'dark' ? 'text-gray-100' : 'text-gray-800'
     }
 
     // Non-subsection dark sections have the title and description on
@@ -65,7 +74,7 @@ export const StorySection = ({
     return 'text-gray-900'
   }
 
-  const descriptionColor = 'text-gray-600' // Always on light background for non-subsections
+  const descriptionColor = 'text-gray-800' // Always on light background for non-subsections
 
   // Variant-specific configuration
   const variantConfig = {
@@ -111,7 +120,7 @@ export const StorySection = ({
       const borderColor = surface === 'dark' ? 'border-gray-700' : 'border-gray-200'
       const scrollBackground =
         backgroundStyles ||
-        (surface === 'dark' ? 'bg-linear-to-b from-teal-600 to-teal-700' : 'bg-white')
+        (surface === 'dark' ? 'bg-linear-to-b from-teal-900 to-coral-900' : 'bg-white')
 
       return (
         <div className={`h-[600px] overflow-y-auto border-4 ${borderColor}`}>

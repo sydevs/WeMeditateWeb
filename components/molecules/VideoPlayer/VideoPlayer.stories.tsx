@@ -86,9 +86,9 @@ export const Default: Story = () => (
 
     <StorySection inContext={true} title="Examples">
       <article className="max-w-2xl">
-        <h1 className="mb-4 text-3xl font-semibold text-gray-700">A Featured Talk</h1>
+        <h1 className="mb-4 text-3xl font-semibold text-gray-800">A Featured Talk</h1>
         <VideoPlayer className="mb-6" hlsUrl={HLS_URL} poster={POSTER} title="A Featured Talk" />
-        <p className="text-gray-700">
+        <p className="text-gray-800">
           The video sits at the top of the article, above the body content.
         </p>
       </article>
