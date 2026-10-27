@@ -13,10 +13,10 @@
  * namespace unchecked, and it needed a special case for `font-stretch-*`
  * because that prefix carries keywords as well as tokens.
  *
- * What the guard does still choose is **reach**: `WATCHED_PREFIXES` is the list
- * of utility prefixes whose value is a theme token. A prefix missing from it is
- * unwatched, never wrongly flagged — adding one costs nothing but the line,
- * since the compiler supplies the rule.
+ * Tailwind decides the **reach** too, for the colour namespace: a root takes a
+ * colour exactly when `<root>-<a declared colour token>` compiles. So the list
+ * follows a version bump on its own, and covers roots a hand-written one missed
+ * (`mask-*-from`, `scrollbar-thumb`, `border-x`).
  *
  * Two shapes are deliberately out of scope. An arbitrary value (`text-[16px]`,
  * `bg-(--var)`) names no token, and a match preceded by `<word>-` is a slug
@@ -24,74 +24,55 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { globSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
+import { globSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { __unstable__loadDesignSystem } from 'tailwindcss'
-import { repoRoot, readSource, lineAt, themeStylesheet } from './_source-scan'
+import {
+  repoRoot,
+  readSource,
+  lineAt,
+  layoutsDir,
+  loadTailwindStylesheet,
+  stripStyleBlocks,
+  themeStylesheet,
+} from './_source-scan'
 
 /** `@source "../components";` — the inline form declares classes, not paths. */
 const SCANNED_DIRS = [...themeStylesheet.matchAll(/@source\s+"\.\.\/([^"]+)"/g)].map(
   ([, dir]) => dir,
 )
 
-const require = createRequire(import.meta.url)
-const layouts = join(repoRoot, 'layouts')
-
 const designSystem = await __unstable__loadDesignSystem(themeStylesheet, {
-  base: layouts,
-  loadStylesheet: async (id, base) => {
-    const path = require.resolve(id === 'tailwindcss' ? 'tailwindcss/index.css' : id, {
-      paths: [base],
-    })
-
-    return { content: readFileSync(path, 'utf8'), base: dirname(path), path }
-  },
+  base: layoutsDir,
+  loadStylesheet: loadTailwindStylesheet,
 })
 
 /**
- * Utility prefixes whose value comes from the theme. The colour namespace is
- * most of the list, because most prefixes that take one are its own.
+ * Probed with a declared colour token rather than hand-listed. Probing the
+ * other namespaces this way does not work: an ambiguous value like `lg`
+ * compiles under `w-`, `blur-` and `basis-` too, so `font` and `rounded` are
+ * named instead.
  */
-const WATCHED_PREFIXES = [
-  'accent',
-  'bg',
-  'border',
-  'caret',
-  'decoration',
-  'divide',
-  'drop-shadow',
-  'fill',
-  'font',
-  'from',
-  'inset-ring',
-  'inset-shadow',
-  'outline',
-  'placeholder',
-  'ring',
-  'ring-offset',
-  'rounded',
-  'shadow',
-  'stroke',
-  'text',
-  'text-shadow',
-  'to',
-  'via',
-]
+const WATCHED_PREFIXES = ((): string[] => {
+  const sample = /--color-([a-z0-9-]+):/.exec(themeStylesheet)?.[1]
+  const roots = designSystem.utilities.keys('functional')
+  const compiled = designSystem.candidatesToCss(roots.map((root) => `${root}-${sample}`))
+
+  return [...roots.filter((_, i) => compiled[i] !== null), 'font', 'rounded']
+})()
 
 /**
- * A variant prefix is dropped rather than matched: it cannot make a dead
- * utility live, or a live one dead. A trailing `/50` opacity and `!` important
- * belong to the candidate, so the compiler is handed both.
+ * Longest root first, so `mask-x-from` wins over the `from` it contains. A
+ * variant prefix is dropped rather than matched: it cannot make a dead utility
+ * live, or a live one dead. A trailing `/50` opacity and `!` important belong
+ * to the candidate, so the compiler is handed both.
  */
 const CANDIDATE = new RegExp(
-  `(?<![a-z0-9-])(?:${WATCHED_PREFIXES.join('|')})-[a-z0-9][a-z0-9-]*(?:/[a-z0-9.]+)?!?`,
+  `(?<![a-z0-9-])(?:${[...WATCHED_PREFIXES]
+    .sort((a, b) => b.length - a.length)
+    .join('|')})-[a-z0-9][a-z0-9-]*(?:/[a-z0-9.]+)?!?`,
   'g',
 )
-
-/** An inline `<style>` block is CSS, where `stroke-width` is a property name. */
-const stripStyleBlocks = (source: string): string =>
-  source.replace(/<style>[\s\S]*?<\/style>/g, (block) => block.replace(/[^\n]/g, ' '))
 
 interface DeadUtility {
   readonly utility: string
@@ -109,62 +90,75 @@ function findDeadUtilities(source: string): DeadUtility[] {
   return found.filter((_, i) => css[i] === null)
 }
 
+const utilitiesIn = (source: string): string[] =>
+  findDeadUtilities(source).map(({ utility }) => utility)
+
 describe('theme utilities', () => {
   it('compiles against the real stylesheet', () => {
     expect(SCANNED_DIRS).toContain('components')
+    expect(WATCHED_PREFIXES).toContain('ring-offset')
     // Ours, Tailwind's own (`@theme` extends rather than replaces), and a
     // project `@utility` — all three must reach the compiler.
-    expect(findDeadUtilities('text-gray-900 text-gray-950 bg-bg-warm shadow-lg')).toEqual([])
+    expect(utilitiesIn('text-gray-900 text-gray-950 bg-bg-warm shadow-lg')).toEqual([])
   })
 
   it('flags the utilities #176 removed', () => {
-    const found = findDeadUtilities(
-      'className="font-raleway text-gray-dark border-gray-light"',
-    ).map(({ utility }) => utility)
-
-    expect(found).toEqual(['font-raleway', 'text-gray-dark', 'border-gray-light'])
+    expect(utilitiesIn('className="font-raleway text-gray-dark border-gray-light"')).toEqual([
+      'font-raleway',
+      'text-gray-dark',
+      'border-gray-light',
+    ])
   })
 
   /**
-   * The five the scale-and-`font-*` rule missed. Each is dead for its own
-   * reason: a token off a numeric scale, an unread namespace, and a scale name
-   * that is simply mistyped.
+   * The five the scale-and-`font-*` rule missed: a colour token off a numeric
+   * scale (twice), two namespaces it never read, and a mistyped scale name.
    */
-  it.each([
-    ['text-error-light', 'a colour token off a numeric scale'],
-    ['bg-accent-soft', 'a colour token off a numeric scale'],
-    ['rounded-pill', 'the radius namespace'],
-    ['shadow-brand', 'the shadow namespace'],
-    ['text-grey-700', 'a mistyped scale name'],
-  ])('flags %s — %s', (utility) => {
-    expect(findDeadUtilities(`className="${utility}"`).map((d) => d.utility)).toEqual([utility])
+  it('flags a dead token in any namespace', () => {
+    expect(
+      utilitiesIn('text-error-light bg-accent-soft rounded-pill shadow-brand text-grey-700'),
+    ).toEqual(['text-error-light', 'bg-accent-soft', 'rounded-pill', 'shadow-brand', 'text-grey-700'])
   })
 
   it('accepts a declared token through a variant, an opacity and an important', () => {
-    const variant = 'hover:'
-    const opacity = '/80'
-    const important = '!'
-
     expect(
-      findDeadUtilities(
-        `${variant}text-gray-700 bg-teal-500${opacity} ring-offset-teal-900 border-gray-200${important}`,
-      ),
+      utilitiesIn('hover:text-gray-700 bg-teal-500/80 ring-offset-teal-900 border-gray-200!'),
     ).toEqual([])
-    expect(findDeadUtilities('font-sans font-mono font-number font-semibold')).toEqual([])
   })
 
   /** A keyword sharing a prefix with a token, which the old rule special-cased. */
   it('accepts a keyword that shares its prefix with a token', () => {
     expect(
-      findDeadUtilities('text-center text-balance font-stretch-expanded border-x-2 rounded-full'),
+      utilitiesIn(
+        'text-center text-balance font-stretch-expanded border-x-2 rounded-full font-sans font-number',
+      ),
     ).toEqual([])
   })
 
   /** Out of scope: an arbitrary value names no token, and a slug is not a utility. */
   it('ignores an arbitrary value and a hyphenated slug', () => {
-    expect(
-      findDeadUtilities('text-[16px] bg-(--surface-tint) how-to-begin my-rounded-thing'),
-    ).toEqual([])
+    expect(utilitiesIn('text-[16px] bg-(--surface-tint) how-to-begin my-rounded-thing')).toEqual([])
+  })
+
+  /**
+   * `source(none)` turns a harmless failure — extra CSS ships — into a silent
+   * one: a directory outside the scan set compiles no classes at all, and the
+   * symptom is an unstyled element on first render. So the set is checked
+   * against the tree rather than only described in prose.
+   */
+  it('scans every directory that authors a class', () => {
+    const ignored = new Set(['node_modules', 'dist', 'build', '.git'])
+    const dirs = readdirSync(repoRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && !ignored.has(entry.name))
+      .map((entry) => entry.name)
+
+    const authoring = dirs.filter((dir) =>
+      globSync(`${dir}/**/*.{ts,tsx}`, { cwd: repoRoot })
+        .filter((file) => !/\.test\.tsx?$/.test(file))
+        .some((file) => readSource(join(repoRoot, file)).includes('className')),
+    )
+
+    expect(authoring.filter((dir) => !SCANNED_DIRS.includes(dir))).toEqual([])
   })
 
   /**

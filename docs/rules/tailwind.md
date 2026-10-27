@@ -36,11 +36,16 @@ no CSS, so the guard models no token sets and no keywords: `text-center` and `fo
 compile and pass, `text-error-light` and `rounded-pill` do not and fail. Variants, a `/50` opacity
 and a trailing `!` all go to the compiler as written.
 
-What the guard chooses is **reach**, in its `WATCHED_PREFIXES` list — the utility prefixes whose
-value is a theme token. A prefix missing from that list is unwatched, never wrongly flagged, so
-adding one costs a line. Two shapes stay out of scope on purpose: an arbitrary value
+**Reach** comes from Tailwind too, for the colour namespace: a root takes a colour exactly when
+`<root>-<a declared colour token>` compiles, which is 51 roots today and follows a version bump on
+its own. `font` and `rounded` are named by hand, because probing those namespaces needs an
+ambiguous value (`lg` compiles under `w-` and `blur-` as well). A root outside that set is
+unwatched, never wrongly flagged. Two shapes stay out of scope on purpose: an arbitrary value
 (`text-[16px]`, `bg-(--var)`) names no token, and a match preceded by `<word>-` is a slug rather
 than a utility. Stories are scanned; specs are not.
+
+The guard also checks the scan set against the tree: every top-level directory that authors a
+`className` must have an `@source` line.
 
 **A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
 live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,

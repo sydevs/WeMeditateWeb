@@ -1,36 +1,72 @@
 /**
- * Shared plumbing for the guards.
+ * Shared plumbing for the guards, and for `layouts/tailwind.test.ts`.
  *
  * Each one answers a question about the source text rather than about a
  * rendered component, so they need the same things: the repo root, the theme
  * stylesheet, a file list, and a way to ignore comments. Kept here so the
- * non-obvious comment regex and the path to the theme each have one definition.
+ * non-obvious comment regex, the path to the theme and the way Tailwind's own
+ * stylesheets resolve each have one definition.
  */
 
 import { globSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
+/** The directory `layouts/tailwind.css`'s own `@import` and `@source` resolve against. */
+export const layoutsDir = join(repoRoot, 'layouts')
+
 /** `layouts/tailwind.css` — the `@theme` block, and the `@source` scan set. */
-export const themeStylesheet = readFileSync(join(repoRoot, 'layouts', 'tailwind.css'), 'utf8')
+export const themeStylesheet = readFileSync(join(layoutsDir, 'tailwind.css'), 'utf8')
 
 /**
- * Blanks comments, keeping every newline, so reported line numbers still
- * point at the real line. A `t('tab.sub.key')` or an `aria-label="Close"`
- * inside a JSDoc example is documentation, not a call site.
+ * Blanks every match of `pattern`, keeping the newlines, so a reported line
+ * number still points at the real line.
+ */
+function blank(source: string, pattern: RegExp): string {
+  return source.replace(pattern, (match) => match.replace(/[^\n]/g, ' '))
+}
+
+/**
+ * Blanks comments. A `t('tab.sub.key')` or an `aria-label="Close"` inside a
+ * JSDoc example is documentation, not a call site.
  *
  * The `(^|[^:])` guard on the line-comment branch is what stops `https://`
  * inside a string from blanking the rest of the line.
  */
 export function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' '))
-    .replace(
-      /(^|[^:])\/\/[^\n]*/g,
-      (match, lead: string) => lead + ' '.repeat(match.length - lead.length),
-    )
+  return blank(source, /\/\*[\s\S]*?\*\//g).replace(
+    /(^|[^:])\/\/[^\n]*/g,
+    (match, lead: string) => lead + ' '.repeat(match.length - lead.length),
+  )
+}
+
+/**
+ * Blanks an inline `<style>` block, whose body is CSS: `stroke-width` there is
+ * a property name, not a utility. `AnimatedLogoSvg` is the one such block.
+ */
+export function stripStyleBlocks(source: string): string {
+  return blank(source, /<style>[\s\S]*?<\/style>/g)
+}
+
+/**
+ * Resolves the stylesheets `layouts/tailwind.css` imports, for Tailwind's
+ * `compile()` and `__unstable__loadDesignSystem()` alike. The bare
+ * `tailwindcss` specifier is the non-obvious half: it must resolve to the
+ * package's `index.css`, never to its `main`.
+ */
+export async function loadTailwindStylesheet(
+  id: string,
+  base: string,
+): Promise<{ content: string; base: string; path: string }> {
+  const path = createRequire(import.meta.url).resolve(
+    id === 'tailwindcss' ? 'tailwindcss/index.css' : id,
+    { paths: [base] },
+  )
+
+  return { content: readFileSync(path, 'utf8'), base: dirname(path), path }
 }
 
 /**
