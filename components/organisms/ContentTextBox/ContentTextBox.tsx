@@ -47,9 +47,9 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
   imageAspectRatio?: AspectRatio
 
   /**
-   * Text box position, relative to the image.
-   * - left: text box on the left, image on the right (max 50% width on desktop)
-   * - right: text box on the right, image on the left (max 50% width on desktop)
+   * Image position, relative to the text box.
+   * - left: image on the left, text box on the right (max 50% width on desktop)
+   * - right: image on the right, text box on the left (max 50% width on desktop)
    * @default 'left'
    */
   align?: 'left' | 'right'
