@@ -37,6 +37,13 @@ built from a bare `<button>` picks one of the two utilities in
 Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
 why growing the box is the first choice.
 
+**An overlay still needs somewhere to land, and its container owes it that room.** The `::before`
+is centred on the control, so it hangs outside any box shorter than 44px — and a bar pinned at
+`top-0` loses the half that falls above the viewport. The header's compact bar carries `min-h-11`
+for exactly this reason: at its natural 18px, hit-testing the logo and the map pin returned a
+reachable area of 44×**31** while both class lists read `touch-target-overlay` (#202). A class list
+is not a hit area. Measure one with `document.elementFromPoint`, not by reading the markup.
+
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content.
 
