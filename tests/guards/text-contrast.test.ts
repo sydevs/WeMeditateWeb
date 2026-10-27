@@ -26,9 +26,8 @@ import { repoRoot, readSource, sourceFiles } from './_source-scan'
 const BUTTON = readSource(`${repoRoot}/components/atoms/Button/Button.tsx`)
 
 /**
- * Exempt pairings, as `<path>:<text step>`. WCAG exempts both of these from
- * 1.4.3 and 1.4.11, so neither is a defect to fix — but each would otherwise
- * read as one.
+ * Exempt pairings, as `<path>:<text step>`. Each would read as a defect here,
+ * and none is one.
  */
 const EXEMPT = new Map([
   // A brand mark, not text: the `square` and `circle` variants render only
@@ -110,31 +109,29 @@ const report = (found: Offence[]): string[] =>
   )
 
 /** Stories supply their own fixture copy, so `sourceFiles` leaves them out. */
-const COMPONENTS = ['components/**/*.tsx', 'pages/**/*.tsx', 'layouts/**/*.tsx']
+const COMPONENTS = sourceFiles(['components/**/*.tsx', 'pages/**/*.tsx', 'layouts/**/*.tsx'])
+const VARIANTS = filledVariants()
 
 describe('text contrast', () => {
+  // `it.each` over an empty list creates no test and reports nothing, so the
+  // count is what makes a parse failure visible.
   it('reads both of Button’s variant maps', () => {
-    const rows = filledVariants()
-
-    expect(rows.map(({ variant }) => variant)).toEqual(
+    expect(VARIANTS.map(({ variant }) => variant)).toEqual(
       expect.arrayContaining(['primary', 'secondary']),
     )
     // Two maps, three fill steps each for primary and secondary.
-    expect(rows.length).toBeGreaterThanOrEqual(12)
+    expect(VARIANTS.length).toBeGreaterThanOrEqual(12)
   })
 
-  it.each(filledVariants())(
-    'clears 4.5:1 for a $variant label ($label on $fill)',
-    ({ fill, label }) => {
-      expect(contrast(label, fill)).toBeGreaterThanOrEqual(4.5)
-    },
-  )
+  it.each(VARIANTS)('clears 4.5:1 for a $variant label ($label on $fill)', ({ fill, label }) => {
+    expect(contrast(label, fill)).toBeGreaterThanOrEqual(4.5)
+  })
 
   // `gray-700` measured 4.23:1 on white, and `gray-500` 2.33, so a grey below
   // `gray-800` cannot carry text at all. A fill named beside it only lowers
   // that: `gray-800` clears the bar on `gray-200` (5.29) but not `gray-300`.
   it('names no grey under the bar for text', () => {
-    expect(report(offences(sourceFiles(COMPONENTS), /\btext-(gray-\d+)\b/g))).toEqual([])
+    expect(report(offences(COMPONENTS, /\btext-(gray-\d+)\b/g))).toEqual([])
   })
 
   // A component that paints its own fill and its own label on one line owes the
@@ -142,7 +139,7 @@ describe('text contrast', () => {
   // `teal-600` (3.85) the way the primary button did.
   it('clears 4.5:1 for a label on a fill it names itself', () => {
     const pattern = /\btext-([a-z]+(?:-\d+)?)(?=[\s'"`}]|$)/g
-    const found = offences(sourceFiles(COMPONENTS), pattern).filter(
+    const found = offences(COMPONENTS, pattern).filter(
       // A line naming no fill is the grey check's business, above: `text-white`
       // there sits on a surface the line does not name.
       ({ ground }) => ground !== 'white',

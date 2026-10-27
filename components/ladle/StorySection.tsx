@@ -34,14 +34,12 @@ export const StorySection = ({
   inContext = false,
 }: StorySectionProps) => {
   /**
-   * Every dark ground here is a `900` step, and no lighter one will do: the
-   * dark surface draws `text-primary` as `teal-300`, which reaches 4.5:1 on
-   * `teal-900` (5.71) and `coral-900` (5.64) and on nothing above them —
-   * `teal-800` measures 3.82, `gray-800` 2.95 (#179). A gradient is governed
-   * by its lighter stop, so both of its stops are `900` too.
+   * A dark ground is a `900` step, including both stops of the gradient, which
+   * its lighter one governs: the dark surface draws `text-primary` as
+   * `teal-300`, which clears 4.5:1 on `teal-900` and on nothing lighter (#179).
    *
-   * A dark surface with no ground drew white text on the page's white
-   * background, so `none` paints one as well, without the box styling.
+   * `none` paints one too, because a dark surface without a ground drew white
+   * text on the page's white background.
    */
   const getBackgroundStyles = () => {
     const baseStyles = 'p-6 rounded-lg'
@@ -118,9 +116,8 @@ export const StorySection = ({
     if (config.isScrollable) {
       // Determine border and background for scrollable container
       const borderColor = surface === 'dark' ? 'border-gray-700' : 'border-gray-200'
-      const scrollBackground =
-        backgroundStyles ||
-        (surface === 'dark' ? 'bg-linear-to-b from-teal-900 to-coral-900' : 'bg-white')
+      // A dark surface always has a ground now, so only a light one falls back.
+      const scrollBackground = backgroundStyles || 'bg-white'
 
       return (
         <div className={`h-[600px] overflow-y-auto border-4 ${borderColor}`}>
