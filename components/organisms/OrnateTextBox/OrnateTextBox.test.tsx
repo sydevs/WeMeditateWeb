@@ -95,6 +95,24 @@ describe('<OrnateTextBox>', () => {
     expect(right).toContain('linear-gradient(270deg')
   })
 
+  // Below `lg` the body column is full-width and crosses the band, where the
+  // full-strength peach drops it to 2.3:1. The faint pair is what holds AA
+  // there, so each align carries both intensities, not one (#193).
+  it.each([
+    ['left', '90deg'],
+    ['right', '270deg'],
+  ] as const)('runs the %s band faint below lg and full from lg up', (align, angle) => {
+    const band =
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />).match(
+        /class="([^"]*-top-24[^"]*)"/,
+      )?.[1] ?? ''
+
+    expect(band).toContain(`bg-[linear-gradient(${angle},rgba(255,255,255,0.01)`)
+    expect(band).toContain(`lg:bg-[linear-gradient(${angle},rgba(255,255,255,0.02)`)
+    expect(band).toContain('rgba(255,196,175,0.08)_100%)]')
+    expect(band).toContain('rgba(255,196,175,0.6)_100%)]')
+  })
+
   it('renders the title above the body (header precedes the image)', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
 

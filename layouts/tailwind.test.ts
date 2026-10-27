@@ -24,7 +24,11 @@ async function build(candidates: string[]): Promise<string> {
 
 /** Every declaration under `selector`, across all the blocks that use it. */
 const rule = (css: string, selector: string): string =>
-  [...css.matchAll(new RegExp(`(?:^|[\\s}])${selector.replace(/[.:]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'))]
+  [
+    ...css.matchAll(
+      new RegExp(`(?:^|[\\s}])${selector.replace(/[.:]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'),
+    ),
+  ]
     .map(([, block]) => block)
     .join('')
 
@@ -93,7 +97,11 @@ describe('focus-ring', () => {
       return name ? declared(css, name) : value
     }
 
-    for (const block of [rule(css, ':root'), rule(css, '.surface-light'), rule(css, '.surface-dark')]) {
+    for (const block of [
+      rule(css, ':root'),
+      rule(css, '.surface-light'),
+      rule(css, '.surface-dark'),
+    ]) {
       const ring = token(declared(block, '--surface-ring'))
       const band = token(declared(block, '--surface-ring-offset'))
 
@@ -112,9 +120,10 @@ describe('focus-ring', () => {
 
 describe('an arbitrary value written out, not interpolated', () => {
   // Tailwind emits an arbitrary value only for a candidate it finds verbatim
-  // in a scanned file. Interpolating the band's angle renders the same class
-  // string, so the component's own assertions stay green while the stylesheet
-  // loses the rule and the band draws as a bare transparent box (#193).
+  // in a scanned file. Interpolating the band's angle or its alphas renders
+  // the same class string, so the component's own assertions stay green while
+  // the stylesheet loses the rule and the band draws as a bare transparent
+  // box (#193).
   // Reading the source stands in for the `@source` scan, which this harness
   // bypasses by handing `build` its candidates.
   const source = readFileSync(
@@ -123,7 +132,9 @@ describe('an arbitrary value written out, not interpolated', () => {
   )
 
   // `-top-24` is the warm band's alone; the brown ground is a gradient too.
-  const bandCandidate = (align: 'left' | 'right') =>
+  // Each align carries two: the faint one below `lg`, and the `lg:` override
+  // at full strength.
+  const bandCandidate = (align: 'left' | 'right', prefix: '' | 'lg:') =>
     (
       renderToStaticMarkup(
         createElement(OrnateTextBox, {
@@ -136,16 +147,24 @@ describe('an arbitrary value written out, not interpolated', () => {
       ).match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
     )
       .split(' ')
-      .find((candidate) => candidate.startsWith('bg-[linear-gradient')) ?? ''
+      .find((candidate) => candidate.startsWith(`${prefix}bg-[linear-gradient`)) ?? ''
 
+  // The peach alpha identifies the intensity, so a faint case cannot pass on
+  // the full-strength candidate.
   it.each([
-    ['left', '90deg'],
-    ['right', '270deg'],
-  ] as const)('compiles the %s ornate band from its own source', async (align, angle) => {
-    const candidate = bandCandidate(align)
+    ['faint left', 'left', '90deg', '', '0.08'],
+    ['full left', 'left', '90deg', 'lg:', '0.6'],
+    ['faint right', 'right', '270deg', '', '0.08'],
+    ['full right', 'right', '270deg', 'lg:', '0.6'],
+  ] as const)(
+    'compiles the %s ornate band from its own source',
+    async (_name, align, angle, prefix, peach) => {
+      const candidate = bandCandidate(align, prefix)
 
-    expect(candidate).toContain(angle)
-    expect(source).toContain(candidate)
-    expect(await build([candidate])).toContain(`background-image: linear-gradient(${angle},`)
-  })
+      expect(candidate).toContain(angle)
+      expect(candidate).toContain(`rgba(255,196,175,${peach})_100%`)
+      expect(source).toContain(candidate)
+      expect(await build([candidate])).toContain(`background-image: linear-gradient(${angle},`)
+    },
+  )
 })

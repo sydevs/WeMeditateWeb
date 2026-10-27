@@ -51,8 +51,8 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
 
   /**
    * Which side the image floats to, at `lg` and above. The warm gradient
-   * follows it at every width; the floral graphic and the sidetext never
-   * move.
+   * follows it at every width, faint below `lg` and full from `lg` up; the
+   * floral graphic and the sidetext never move.
    * - left: image on the left, body column on the right
    * - right: image on the right, body column on the left
    * @default 'left'
@@ -110,14 +110,20 @@ export function OrnateTextBox({
 
   // Tailwind v4 emits an arbitrary value only for a candidate it finds
   // verbatim in a scanned file, so each gradient is written out whole rather
-  // than interpolating the angle — which would compile to no gradient at all.
-  // 270deg points left, so the peach stop at 100% stays on the band's inner
-  // edge from `right-0`, exactly as 90deg keeps it there from `left-0`.
+  // than interpolating the angle or the alphas — either would compile to no
+  // gradient at all. 270deg points left, so the peach stop at 100% stays on
+  // the band's inner edge from `right-0`, exactly as 90deg keeps it there
+  // from `left-0`.
+  //
+  // Below `lg` the body column is full-width and crosses the band, so the
+  // band runs at an eighth of its alphas there. At full strength it drops
+  // body text to 2.3:1; faint it measures 4.62:1, against a 4.76:1 ceiling
+  // set by the brown ground alone (#193).
   const bandSide = align === 'right' ? 'right-0' : 'left-0'
   const bandGradient =
     align === 'right'
-      ? 'bg-[linear-gradient(270deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
-      : 'bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
+      ? 'bg-[linear-gradient(270deg,rgba(255,255,255,0.01)_0%,rgba(255,255,255,0.02)_25%,rgba(255,196,175,0.08)_100%)] lg:bg-[linear-gradient(270deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
+      : 'bg-[linear-gradient(90deg,rgba(255,255,255,0.01)_0%,rgba(255,255,255,0.02)_25%,rgba(255,196,175,0.08)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
 
   const imageFloat = align === 'right' ? 'lg:float-right lg:ml-12' : 'lg:float-left lg:mr-12'
 

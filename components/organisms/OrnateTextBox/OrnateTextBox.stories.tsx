@@ -32,7 +32,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="align sets the image's side at lg and above. The warm gradient mirrors with it, so the body column never sits over the light band; the floral graphic and the sidetext stay put."
+      description="align sets the image's side at lg and above. The warm gradient mirrors with it, so the body column never sits over the light band; the floral graphic and the sidetext stay put. Below lg the body is full-width and does cross the band, so the band runs faint there — narrow the window to compare."
       title="Image on the Right"
     >
       <OrnateTextBox
