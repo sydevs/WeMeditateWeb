@@ -199,11 +199,14 @@ describe('theme utilities', () => {
    * symptom is an unstyled element on first render. So the set is checked
    * against the tree rather than only described in prose.
    *
-   * Bounded to `.ts`/`.tsx`, as the rest of this file is. `.claude` is ignored
+   * Bounded to the literal `className` in a `.ts`/`.tsx`, as the name says. An
+   * asset is outside it: `assets/chart.svg` carries Illustrator's `class="cls-N"`
+   * and styles those itself, so the one `class=` the tree renders through
+   * `dangerouslySetInnerHTML` needs no `@source` line. `.claude` is ignored
    * because `git worktree add .claude/worktrees/<slug>` puts a whole second
    * checkout there, which `globSync` walks and `.gitignore` does not stop.
    */
-  it('scans every directory that authors a class', () => {
+  it('scans every directory whose .ts/.tsx authors a className', () => {
     const ignored = new Set(['node_modules', 'dist', 'build', '.git', '.claude'])
     const roots = readdirSync(repoRoot, { withFileTypes: true })
       .filter((entry) => !entry.isDirectory() || !ignored.has(entry.name))
