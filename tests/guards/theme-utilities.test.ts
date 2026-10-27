@@ -1,60 +1,90 @@
 /**
- * A colour utility on a numeric scale, and any `font-*` utility, must name a
- * token the theme declares. Those two families are the guard's whole reach: a
- * token off a numeric scale — `error-light` beside the declared `error-dark` —
- * and every other namespace pass unchecked.
- *
  * A utility naming an undeclared token compiles to no CSS, and nothing says so:
  * not the build, not the linter, not the suite. #176's dead classes were visible
  * all the same, because v4 defaults a border colour and an SVG `fill` to
  * `currentColor`, so the element silently took the inherited text colour.
  *
- * The theme to check against is ours *plus* Tailwind's own, because `@theme`
- * extends the default rather than replacing it: `gray-950` still resolves, from
- * `tailwindcss/theme.css`, though `layouts/tailwind.css` stops at `gray-900`.
- * Reading both is also what keeps the check free of a hand-copied list of
- * Tailwind's defaults, which a version bump would rot.
+ * Tailwind itself decides what is dead here. `candidatesToCss` compiles a
+ * candidate against the real stylesheet and answers `null` when it emits
+ * nothing, so the guard models no token sets, no keywords, no variants and no
+ * arbitrary-value syntax. That is what the hand-rolled rule could not do: it
+ * matched colour utilities by scale, which left a token off a numeric scale
+ * (`error-light` beside the declared `error-dark`) and every non-colour
+ * namespace unchecked, and it needed a special case for `font-stretch-*`
+ * because that prefix carries keywords as well as tokens.
  *
- * Nothing here spells a working utility outright. Tailwind scans this file too,
- * so a literal in a fixture or a comment would ship its CSS to every page.
+ * Tailwind decides the **reach** too, for the colour namespace: a root takes a
+ * colour exactly when `<root>-<a declared colour token>` compiles. So the list
+ * follows a version bump on its own, and covers roots a hand-written one missed
+ * (`mask-*-from`, `scrollbar-thumb`, `border-x`).
+ *
+ * Three shapes are deliberately out of scope. An arbitrary value (`text-[16px]`,
+ * `bg-(--var)`) names no token, a match preceded by `<word>-` is a slug rather
+ * than a utility — `how-to-begin` is not a gradient stop — and a match followed
+ * by `:` or `=` is CSS rather than a class.
  */
 
 import { describe, it, expect } from 'vitest'
-import { globSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
+import { globSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { repoRoot, readSource, lineAt, themeStylesheet } from './_source-scan'
-
-const upstream = createRequire(import.meta.url).resolve('tailwindcss/theme.css')
-const THEME = `${themeStylesheet}\n${readFileSync(upstream, 'utf8')}`
+import { __unstable__loadDesignSystem } from 'tailwindcss'
+import {
+  repoRoot,
+  readSource,
+  lineAt,
+  blank,
+  layoutsDir,
+  loadTailwindStylesheet,
+  themeStylesheet,
+} from './_source-scan'
 
 /** `@source "../components";` — the inline form declares classes, not paths. */
 const SCANNED_DIRS = [...themeStylesheet.matchAll(/@source\s+"\.\.\/([^"]+)"/g)].map(
   ([, dir]) => dir,
 )
 
-const declaredTokens = (namespace: string): Set<string> =>
-  new Set(
-    [...THEME.matchAll(new RegExp(`--${namespace}-([a-z0-9-]+):`, 'gi'))].map(([, name]) => name),
-  )
-
-const COLORS = declaredTokens('color')
-/** `--font-weight-*` matches `--font-*` too, and `font-` utilities take both. */
-const FONTS = new Set([...declaredTokens('font')].map((name) => name.replace(/^weight-/, '')))
+const designSystem = await __unstable__loadDesignSystem(themeStylesheet, {
+  base: layoutsDir,
+  loadStylesheet: loadTailwindStylesheet,
+})
 
 /**
- * A colour scale's name, for every token ending in a numeric step: `gray` from
- * `--color-gray-900`. A step is what a typo lands on — `gray-dark` names a real
- * scale and no step — so the scale set is what makes the typo detectable.
+ * Probed with a declared colour token rather than hand-listed. Probing the
+ * other namespaces this way does not work: an ambiguous value like `lg`
+ * compiles under `w-`, `blur-` and `basis-` too, so `font` and `rounded` are
+ * named instead.
  */
-const SCALES = new Set([...COLORS].flatMap((token) => /^(.+)-\d+$/.exec(token)?.[1] ?? []))
+const WATCHED_PREFIXES = ((): string[] => {
+  const sample = /--color-([a-z0-9-]+):/.exec(themeStylesheet)?.[1]
+  const roots = designSystem.utilities.keys('functional')
+  const compiled = designSystem.candidatesToCss(roots.map((root) => `${root}-${sample}`))
+
+  return [...roots.filter((_, i) => compiled[i] !== null), 'font', 'rounded']
+})()
 
 /**
- * Matched by scale rather than by utility prefix, so one pattern covers `text-`,
- * `bg-`, `border-`, `ring-offset-` and whatever comes next, with no allowlist of
- * prefixes to keep current.
+ * Longest root first, so `mask-x-from` wins over the `from` it contains. A
+ * variant prefix is dropped rather than matched: it cannot make a dead utility
+ * live, or a live one dead. A trailing `/50` opacity and `!` important belong
+ * to the candidate, so the compiler is handed both.
+ *
+ * The token must open and close on an alphanumeric, and nothing class-shaped
+ * may follow it. That is what keeps an interpolated `` `bg-teal-${step}` `` out:
+ * matched loosely it yields `bg-teal-`, or `bg-teal` on a retry, and neither is
+ * a utility anyone wrote.
+ *
+ * A `:` or `=` next is the other exclusion, and it covers the larger surface:
+ * 44 kebab-case CSS property names sit under a watched root and compile to
+ * nothing, `stroke-width` and `font-family` among them. A declaration, an
+ * arbitrary property (`[stroke-width:2px]`) and an SVG attribute all put a
+ * separator straight after the name; a class never has one there.
  */
-const SCALE_STEP = new RegExp(`\\b(${[...SCALES].join('|')})-([a-z0-9]+)`, 'g')
+const CANDIDATE = new RegExp(
+  `(?<![a-z0-9-])(?:${[...WATCHED_PREFIXES]
+    .sort((a, b) => b.length - a.length)
+    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9:=-])`,
+  'g',
+)
 
 interface DeadUtility {
   readonly utility: string
@@ -62,55 +92,133 @@ interface DeadUtility {
 }
 
 /**
- * Every colour-scale or `font-*` utility in `source` naming a token the theme
- * does not declare. A trailing `/50` opacity or `!` important belongs to the
- * utility rather than to the token, so neither is captured.
+ * The two regions where a component writes CSS rather than classes. An inline
+ * `<style>` block is a stylesheet, so `stroke-width` there is a property name;
+ * `AnimatedLogoSvg` is the one such block. A `style` prop holds CSS values, and
+ * `border-box`, `text-top` and `text-bottom` sit under watched roots — React
+ * spells the keys beside them in camelCase, so no class can be in there.
+ *
+ * Non-greedy to the first `}}`, which can only end the prop early: a `}}` the
+ * object does not close cannot exist before the one that closes it.
  */
-function findDeadUtilities(source: string): DeadUtility[] {
-  const dead: DeadUtility[] = []
+const CSS_REGIONS = [/<style\b[^>]*>[\s\S]*?<\/style>/g, /\bstyle=\{\{[\s\S]*?\}\}/g]
 
-  for (const match of source.matchAll(SCALE_STEP)) {
-    if (!COLORS.has(`${match[1]}-${match[2]}`)) dead.push({ utility: match[0], index: match.index })
-  }
-
-  for (const match of source.matchAll(/\bfont-([a-z][a-z0-9-]*)\b/g)) {
-    // `font-stretch-*` takes a percentage keyword, not a `--font-*` token.
-    if (match[1].startsWith('stretch-')) continue
-    if (!FONTS.has(match[1])) dead.push({ utility: match[0], index: match.index })
-  }
-
-  return dead
+/**
+ * Blanks both, here rather than in `_source-scan`: the other guards read a file
+ * and never a bare string, while `findDeadUtilities` is handed both, so the
+ * strip has to sit with the matcher to apply in either case.
+ */
+function stripCss(source: string): string {
+  return CSS_REGIONS.reduce(blank, source)
 }
 
+/** Every watched utility in `source` that the real stylesheet compiles to nothing. */
+function findDeadUtilities(source: string): DeadUtility[] {
+  const found = [...stripCss(source).matchAll(CANDIDATE)].map((match) => ({
+    utility: match[0],
+    index: match.index,
+  }))
+  const css = designSystem.candidatesToCss(found.map(({ utility }) => utility))
+
+  return found.filter((_, i) => css[i] === null)
+}
+
+const utilitiesIn = (source: string): string[] =>
+  findDeadUtilities(source).map(({ utility }) => utility)
+
 describe('theme utilities', () => {
-  it('parses both themes out of CSS', () => {
+  it('compiles against the real stylesheet', () => {
     expect(SCANNED_DIRS).toContain('components')
-    expect(COLORS).toContain('gray-900') // ours
-    expect(COLORS).toContain('gray-950') // Tailwind's, and still resolvable
-    expect(FONTS).toContain('number') // ours
-    expect(FONTS).toContain('serif') // Tailwind's
-    expect(SCALES.size).toBeGreaterThan(3)
+    expect(WATCHED_PREFIXES).toContain('ring-offset')
+    // Ours, Tailwind's own (`@theme` extends rather than replaces), and a
+    // project `@utility` — all three must reach the compiler.
+    expect(utilitiesIn('text-gray-900 text-gray-950 bg-bg-warm text-glow-light')).toEqual([])
   })
 
   it('flags the utilities #176 removed', () => {
-    const found = findDeadUtilities(
-      'className="font-raleway text-gray-dark border-gray-light"',
-    ).map(({ utility }) => utility)
+    expect(utilitiesIn('className="font-raleway text-gray-dark border-gray-light"')).toEqual([
+      'font-raleway',
+      'text-gray-dark',
+      'border-gray-light',
+    ])
+  })
 
-    expect(found).toEqual(expect.arrayContaining(['font-raleway', 'gray-dark', 'gray-light']))
+  /**
+   * The five the scale-and-`font-*` rule missed: a colour token off a numeric
+   * scale (twice), two namespaces it never read, and a mistyped scale name.
+   */
+  it('flags a dead token in any namespace', () => {
+    expect(
+      utilitiesIn('text-error-light bg-accent-soft rounded-pill shadow-brand text-grey-700'),
+    ).toEqual(['text-error-light', 'bg-accent-soft', 'rounded-pill', 'shadow-brand', 'text-grey-700'])
   })
 
   it('accepts a declared token through a variant, an opacity and an important', () => {
-    const variant = 'hover:'
-    const opacity = '/80'
-    const important = '!'
-
     expect(
-      findDeadUtilities(
-        `${variant}text-gray-700 bg-teal-500${opacity} ring-offset-teal-900 border-gray-200${important}`,
+      utilitiesIn('hover:text-gray-700 bg-teal-500/80 ring-offset-teal-900 border-gray-200!'),
+    ).toEqual([])
+  })
+
+  /** A keyword sharing a prefix with a token, which the old rule special-cased. */
+  it('accepts a keyword that shares its prefix with a token', () => {
+    expect(
+      utilitiesIn(
+        'text-center text-balance font-stretch-expanded border-x-2 rounded-full font-sans font-number',
       ),
     ).toEqual([])
-    expect(findDeadUtilities('font-sans font-mono font-number font-semibold')).toEqual([])
+  })
+
+  /** Out of scope: an arbitrary value names no token, and a slug is not a utility. */
+  it('ignores an arbitrary value and a hyphenated slug', () => {
+    expect(utilitiesIn('text-[16px] bg-(--surface-tint) how-to-begin my-rounded-thing')).toEqual([])
+  })
+
+  it('ignores a CSS property and an attribute name', () => {
+    expect(
+      utilitiesIn('stroke-width: 3px; [stroke-width:2px] font-family="Raleway" text-align=center'),
+    ).toEqual([])
+  })
+
+  it('ignores a CSS value in a style prop', () => {
+    expect(
+      utilitiesIn("<div style={{ boxSizing: 'border-box', verticalAlign: 'text-top' }} />"),
+    ).toEqual([])
+  })
+
+  /** A class held as an object value is still a class, so `: '` is not CSS. */
+  it('flags a dead token in a variant map', () => {
+    expect(utilitiesIn("const styles = { error: 'bg-error-light text-error-light' }")).toEqual([
+      'bg-error-light',
+      'text-error-light',
+    ])
+  })
+
+  /**
+   * `source(none)` turns a harmless failure — extra CSS ships — into a silent
+   * one: a directory outside the scan set compiles no classes at all, and the
+   * symptom is an unstyled element on first render. So the set is checked
+   * against the tree rather than only described in prose.
+   *
+   * Bounded to the literal `className` in a `.ts`/`.tsx`, as the name says. An
+   * asset is outside it: `assets/chart.svg` carries Illustrator's `class="cls-N"`
+   * and styles those itself, so the one `class=` the tree renders through
+   * `dangerouslySetInnerHTML` needs no `@source` line. `.claude` is ignored
+   * because `git worktree add .claude/worktrees/<slug>` puts a whole second
+   * checkout there, which `globSync` walks and `.gitignore` does not stop.
+   */
+  it('scans every directory whose .ts/.tsx authors a className', () => {
+    const ignored = new Set(['node_modules', 'dist', 'build', '.git', '.claude'])
+    const roots = readdirSync(repoRoot, { withFileTypes: true })
+      .filter((entry) => !entry.isDirectory() || !ignored.has(entry.name))
+      .map((entry) => (entry.isDirectory() ? `${entry.name}/**/*.{ts,tsx}` : entry.name))
+
+    const authoring = roots.filter((pattern) =>
+      globSync(pattern, { cwd: repoRoot })
+        .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
+        .some((file) => readSource(join(repoRoot, file)).includes('className')),
+    )
+
+    expect(authoring.filter((pattern) => !SCANNED_DIRS.includes(pattern.split('/')[0]))).toEqual([])
   })
 
   /**
