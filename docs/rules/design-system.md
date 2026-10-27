@@ -36,27 +36,28 @@ built from a bare `<button>` picks one of the two utilities in
 | `touch-target-overlay` | The drawn size *is* the design — a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
 
 Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
-why growing the box is the first choice. `ColumnCarousel`'s dots shipped that bug: each 8px dot
-sat on 16px centres, so tapping the dot you could see selected the *next* slide (#135).
+why growing the box is the first choice. An overlay therefore carries a **spacing** requirement on
+the row around it: keep adjacent overlay centres 44px apart. `ColumnCarousel`'s dots sat on 16px
+centres, so tapping the dot you could see selected the *next* slide (#135).
+
+`touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
+flex item that is the visible effect: it shrinks to 44px rather than to its content — and on a
+flex item only. The comment in [layouts/tailwind.css](../../layouts/tailwind.css) owns the rest of
+that mechanism; read it before you expect the floor to shrink a button.
 
 ### The one documented exception: a carousel dot is 40×40
 
-Five 44px cells plus both `CarouselNavButton`s need 372px, and a 390px viewport leaves this row
-358px. So each `ColumnCarousel` dot is a 40×40 `<button>` drawing an 8px `<span>`, with the row at
-`gap-0` so adjacent cells cannot overlap by construction.
+Each `ColumnCarousel` dot is a 40×40 `<button>` drawing an 8px `<span>`, with the row at `gap-0`
+so adjacent cells cannot overlap by construction.
 
-40px still clears WCAG 2.2 AA 2.5.8, which wants 24px, and which 8px dots on 16px centres could
-not meet by the spacing exception either. Grow a box to 44px before you reach for a second
-exception, and do the width arithmetic first if you cannot.
+40px and not 44px because the dots share a row with both `CarouselNavButton`s: five 44px cells
+leave the buttons under their own 44px floor by a 360px viewport, and they then overflow back onto
+the dots — measured at 10px of overlap by 320px. 40px holds 16px of clearance down to 360px and
+still clears WCAG 2.2 AA 2.5.8, which wants 24px and which 16px centres could not meet by its
+spacing exception either.
 
-`touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
-flex item that is the visible effect: it shrinks to 44px rather than to its content.
-
-On a flex item **only**. A block-level `<button>` is sized fit-content, and its lower bound is its
-own min-content width, which no `min-width` lowers — so it keeps its full text width and overflows
-its parent. Wrap such a button in a flex parent, and give a `truncate` child `min-w-0`, or that
-child's min-content floors the button at the untruncated text. Both of `ColumnCarousel`'s nav
-buttons wanted this; only one had it, and the other reached 69px into the slide dots (#135).
+Grow a box to 44px before you reach for a second exception, and measure the row in a browser
+first if you cannot.
 
 ## Route changes are already announced — do not add a second announcer
 

@@ -123,8 +123,12 @@
  * with `overflow-hidden` that would clip this.
  *
  * Two of these side by side closer than 44px apart will overlap, and the
- * later sibling wins the overlapping strip. Prefer growing the box wherever
- * the layout can absorb it.
+ * later sibling wins the overlapping strip. So the overlay buys its hit area
+ * on credit: it leaves a *spacing* requirement on the row around it, that
+ * adjacent overlay centres stay 44px apart. Button puts this on every
+ * icon-only button, `xs` (24px drawn) and `sm` (32px) included, so a row of
+ * those owes the gap the drawn size does not give. Prefer growing the box
+ * wherever the layout can absorb it.
  *
  * The overlay sets `position: relative`, so do not put it on an element that
  * positions itself. And Tailwind emits these before its own `min-*`
@@ -140,7 +144,9 @@
  * It bites on a flex item only. A block-level `<button>` is sized
  * fit-content, whose lower bound is its own min-content width, and no
  * `min-width` lowers that — so wrap such a button in a flex parent rather
- * than expecting the floor to shrink it.
+ * than expecting the floor to shrink it. A `truncate` child needs `min-w-0`
+ * for the same reason: its own min-content is the nowrap text width, which
+ * floors the button whatever the parent does.
  */
 @utility touch-target {
   min-width: --spacing(11);

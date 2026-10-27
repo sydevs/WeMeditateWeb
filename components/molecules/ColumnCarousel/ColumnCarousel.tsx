@@ -23,7 +23,10 @@ interface CarouselNavButtonProps {
   disabled: boolean
 }
 
-/** Navigation button for the carousel. Displays a chevron and the adjacent column title. */
+/**
+ * Navigation button for the carousel, in the row slot it shrinks inside.
+ * Displays a chevron and the adjacent column title.
+ */
 function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
   const isPrev = direction === 'prev'
   const t = useT()
@@ -34,28 +37,30 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
     : t(isPrev ? 'common.a11y.previous' : 'common.a11y.next')
 
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
-      // item shrink: it still shrinks, just not below the tap minimum. That
-      // floor only bites while the button is a flex item — a block-level
-      // `<button>` is sized fit-content, whose lower bound is its min-content
-      // width, which no `min-width` lowers. So both wrappers set `flex`.
-      className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-    >
-      {column && (
-        <>
-          {isPrev && <ChevronLeftIcon className="w-5 h-5 shrink-0" />}
-          {/* `min-w-0`, or `truncate` never fires: a flex item's `min-width:
-              auto` floors it at the nowrap text width, and the overflow lands
-              on the dots instead of the ellipsis. */}
-          <span className="max-w-[100px] min-w-0 truncate">{column.title}</span>
-          {!isPrev && <ChevronRightIcon className="w-5 h-5 shrink-0" />}
-        </>
-      )}
-    </button>
+    // The slot absorbs the row's slack and gives the button a flex context.
+    // `touch-target`'s floor shrinks a flex item only: a block-level
+    // `<button>` is sized fit-content, floored at its own min-content width,
+    // which no `min-width` lowers (#135).
+    <div className={isPrev ? 'flex-1 min-w-0 flex' : 'flex-1 min-w-0 flex justify-end'}>
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
+        // item shrink: it still shrinks, just not below the tap minimum.
+        className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        {column && (
+          <>
+            {isPrev && <ChevronLeftIcon className="w-5 h-5 shrink-0" />}
+            {/* `min-w-0`, or `truncate` never fires and the title's own width
+                floors the button, pushing it onto the dots. */}
+            <span className="max-w-[100px] min-w-0 truncate">{column.title}</span>
+            {!isPrev && <ChevronRightIcon className="w-5 h-5 shrink-0" />}
+          </>
+        )}
+      </button>
+    </div>
   )
 }
 
@@ -164,23 +169,16 @@ export function ColumnCarousel({
         >
           {/* Navigation controls above carousel */}
           <div className="flex items-center mb-6">
-            <div className="flex-1 min-w-0 flex">
-              <CarouselNavButton
-                direction="prev"
-                column={prevColumn}
-                onClick={scrollPrev}
-                disabled={!hasPrev}
-              />
-            </div>
+            <CarouselNavButton
+              direction="prev"
+              column={prevColumn}
+              onClick={scrollPrev}
+              disabled={!hasPrev}
+            />
 
-            {/* Dot indicators - absolutely centered */}
-            {/*
-              `gap-0`, so the cells abut: a 44x44 `touch-target-overlay` on
-              each 8px dot overlapped its neighbour and handed the taps to the
-              next slide (#135). 40px rather than the house 44px because five
-              44px cells plus both nav buttons need 372px of the 358px a 390px
-              viewport gives this row — see docs/rules/design-system.md.
-            */}
+            {/* Abutting cells cannot overlap, which a 44px `touch-target-overlay`
+                on each 8px dot did — it handed the tap to the next slide (#135).
+                40px and not the house 44px: see docs/rules/design-system.md. */}
             <div className="flex gap-0 shrink-0 px-4">
               {columns.map((_, index) => (
                 <button
@@ -203,14 +201,12 @@ export function ColumnCarousel({
               ))}
             </div>
 
-            <div className="flex-1 min-w-0 flex justify-end">
-              <CarouselNavButton
-                direction="next"
-                column={nextColumn}
-                onClick={scrollNext}
-                disabled={!hasNext}
-              />
-            </div>
+            <CarouselNavButton
+              direction="next"
+              column={nextColumn}
+              onClick={scrollNext}
+              disabled={!hasNext}
+            />
           </div>
 
           {/* Carousel viewport */}
