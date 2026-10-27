@@ -126,9 +126,10 @@ describe('text contrast', () => {
     expect(contrast(label, fill)).toBeGreaterThanOrEqual(4.5)
   })
 
-  // `gray-700` measured 4.23:1 on white, and `gray-500` 2.33, so a grey below
-  // `gray-800` cannot carry text at all. A fill named beside it only lowers
-  // that: `gray-800` clears the bar on `gray-200` (5.29) but not `gray-300`.
+  // `gray-700` is tuned to the lightest value that clears the bar on white
+  // (4.88), so `gray-600` (2.71) and below cannot carry text at all. A fill
+  // named beside it only lowers that: `gray-700` clears `gray-100` (4.52) but
+  // not `gray-200`, where `gray-800` (5.29) is the step.
   it('names no grey under the bar for text', () => {
     expect(report(offences(COMPONENTS, /\btext-(gray-\d+)\b/g))).toEqual([])
   })

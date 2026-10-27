@@ -41,8 +41,8 @@ Three scales carry the brand. Each declares ten steps — `--color-teal-50` thro
 | `300` | `#83bcb4` | `#f8c0b3` | `#d7d7d6` |
 | `400` | `#72b3a9` | `#f4a796` | `#c6c6c6` |
 | `500` | `#61aaa0` | `#e08e79` | `#aaaaa9` |
-| `600` | `#4c8d84` | `#c54d2e` | `#9d9d9c` |
-| `700` | `#3d726b` | `#b44528` | `#7b7b7b` |
+| `600` | `#427b73` | `#c54d2e` | `#9d9d9c` |
+| `700` | `#3d726b` | `#b44528` | `#717171` |
 | `800` | `#2e5652` | `#8b3420` | `#5e6063` |
 | `900` | `#1f3a38` | `#5f2318` | `#555555` |
 
@@ -51,9 +51,9 @@ Six tokens stand outside the scales:
 | Token | Hex | Use |
 | --- | --- | --- |
 | `--color-accent` | `#ff856f` | Bright coral, for a strong CTA |
-| `--color-error` | `#cc5e5e` | Error text, borders and fills |
+| `--color-error` | `#c34040` | Error text, borders and fills |
 | `--color-error-dark` | `#8b0000` | Critical error |
-| `--color-success` | `#4c8d84` | Success states — the same value as `--color-teal-600` |
+| `--color-success` | `#427b73` | Success states — the same value as `--color-teal-600` |
 | `--color-info` | `#61aaa0` | Info states — the same value as `--color-teal-500` |
 | `--color-bg-warm` | `#faf0e3` | Warm page background |
 
@@ -63,19 +63,21 @@ since `--color-bg-warm` has no call site. `tests/guards/text-contrast.test.ts` h
 
 | Role | Token | On white |
 | --- | --- | --- |
-| Primary button | `--color-teal-700`, hover `--color-teal-800`, active `--color-teal-900` | 5.50:1 |
+| Primary button | `--color-teal-600`, hover `--color-teal-700`, active `--color-teal-800` | 4.87:1 |
 | Secondary button | `--color-coral-600`, hover `--color-coral-700`, active `--color-coral-800` | 4.69:1 |
-| Link | `--color-teal-700`, hover `--color-teal-800` | 5.50:1 |
+| Link | `--color-teal-600`, hover `--color-teal-700` | 4.87:1 |
 | Heading | `--color-gray-900` | 7.46:1 |
-| Body text | `--color-gray-800`, for muted text as well | 6.31:1 |
-| Error text | `--color-error-dark` | 10.01:1 |
+| Body text | `--color-gray-700`, for muted text as well | 4.88:1 |
+| Error text | `--color-error` | 5.09:1 |
 | Border | `--color-gray-200`, or `--color-gray-300` for a stronger rule | n/a |
 | Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` | n/a |
 
-`--color-gray-800` is the one muted step that passes, so body and secondary text share it and
-differ by weight or size instead. `--color-gray-700` (4.23:1), `-600` (2.71:1), `-500` (2.33:1)
-and `--color-error` (3.94:1) all clear 3:1, so they still serve a border, an icon or large text
-(18pt+) — never normal-size text (#179).
+`gray-700`, `teal-600` and `error` each sit at the lightest value of their own hue and
+saturation that clears 4.5:1, so the brand reads as close to its original as the bar allows
+(#179). `-600` (2.71:1) and `-500` (2.33:1) tune to the same place as `gray-700`, so one muted
+grey now carries body and secondary text alike, which differ by weight or size instead. Both
+still clear 3:1, so they serve a border, an icon or large text (18pt+) — never normal-size
+text.
 
 ### Surfaces
 
@@ -86,8 +88,8 @@ token; a component uses the class and gets whichever surface it sits on.
 | Class | Light | Dark | Used for |
 | --- | --- | --- | --- |
 | `text-fg` | `gray-900` | white | Headings, current breadcrumb, countdown, splash text |
-| `text-fg-muted` | `gray-800` | white | Body and nav text, neutral links and icons, outline and ghost buttons |
-| `text-primary`, `-strong` | `teal-700`, `teal-800` | `teal-300`, `teal-200` | Links, primary icons and spinners |
+| `text-fg-muted` | `gray-700` | white | Body and nav text, neutral links and icons, outline and ghost buttons |
+| `text-primary`, `-strong` | `teal-600`, `teal-700` | `teal-300`, `teal-200` | Links, primary icons and spinners |
 | `text-secondary`, `-strong` | `coral-600`, `coral-700` | `coral-300`, `coral-200` | Secondary links, icons and spinners |
 | `border-line` | `gray-500` | white | Outline button border, breadcrumb separator |
 | `border-line-subtle` | `gray-200` | white | Header rules |
@@ -101,7 +103,7 @@ setting a surface are in [docs/rules/design-system.md](./docs/rules/design-syste
 
 Every light text token above clears 4.5:1 on white, and `text-on-highlight` clears it on
 `bg-highlight` (4.53:1) — `layouts/tailwind.test.ts` asserts each one. The `focus-ring` row is the
-exception, and `teal-600`'s 3.85:1 is the right bar: a focus indicator is a UI component, at 3:1.
+exception: a focus indicator is a UI component, at 3:1, which `teal-600` clears at 4.87:1.
 
 **The dark side is narrower than the light side, and no product component tests it.** `teal-300`
 and `coral-300` keep the brand colour recognizable, and clear 4.5:1 only against a `900` step —

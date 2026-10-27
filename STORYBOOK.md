@@ -46,7 +46,7 @@ One component that replaces the old `StorySection`, `StoryDarkSection`, `StorySu
 | `variant` | `'section' \| 'subsection' \| 'scrollable'` | `'section'` | `subsection` drops the divider and uses a smaller title. `scrollable` fixes the height at 600px with `overflow-y-auto` |
 | `inContext` | `boolean` | `false` | Adds an "In Context – " title prefix and a bold top border, for an Examples section |
 
-Always keep the title and description in light colors (`gray-900`/`gray-800`), even inside
+Always keep the title and description in light colors (`gray-900`/`gray-700`), even inside
 a `surface="dark"` section. They render on the light page background, not inside the dark content
 area.
 

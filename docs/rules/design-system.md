@@ -163,7 +163,7 @@ const variantStyles = {
 - **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
   surface around it. A filled `Button` draws its spinner in `border-current` instead.
 - **A colour that does not change with the surface names its scale step.** Filled buttons are
-  `bg-teal-700` on every background. A step named this way owes its own 4.5:1 against the label it
+  `bg-teal-600` on every background. A step named this way owes its own 4.5:1 against the label it
   carries, with nothing resolving it for you — `tests/guards/text-contrast.test.ts` measures each
   pair a class string names.
 
@@ -197,7 +197,7 @@ Dark surfaces vary — `teal-900`, the `OrnateTextBox` brown gradient, a photogr
 dark ring is `white`, which clears 3:1 on all of them (4.68 on the lightest, `#8a6f56`). A brand
 colour would not. The dark band stays, because it gives the white ring its 3:1 against a white
 fill — the `neutral` button's. The filled brand variants clear it without the band now that they
-sit at `teal-700` (5.50) and `coral-600` (4.69), but the band is per surface, not per variant.
+sit at `teal-600` (4.87) and `coral-600` (4.69), but the band is per surface, not per variant.
 
 `Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
 textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,
@@ -226,12 +226,12 @@ custom className only for what the variant does not cover.
 
 ```tsx
 // Before
-<Link className="text-gray-800 hover:text-teal-700 transition-colors text-sm font-light">
+<Link className="text-gray-700 hover:text-teal-600 transition-colors text-sm font-light">
   {item.label}
 </Link>
 
 // After
-<Link variant="neutral" size="sm" className="hover:text-teal-700 font-light">
+<Link variant="neutral" size="sm" className="hover:text-teal-600 font-light">
   {item.label}
 </Link>
 ```
