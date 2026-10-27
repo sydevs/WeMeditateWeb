@@ -31,9 +31,9 @@ import {
   repoRoot,
   readSource,
   lineAt,
+  blank,
   layoutsDir,
   loadTailwindStylesheet,
-  stripStyleBlocks,
   themeStylesheet,
 } from './_source-scan'
 
@@ -82,6 +82,18 @@ const CANDIDATE = new RegExp(
 interface DeadUtility {
   readonly utility: string
   readonly index: number
+}
+
+/**
+ * Blanks an inline `<style>` block, whose body is CSS: `stroke-width` there is
+ * a property name, not a utility. `AnimatedLogoSvg` is the one such block.
+ *
+ * Lives here rather than in `_source-scan`: the other guards read a file and
+ * never a bare string, while `findDeadUtilities` is handed both, so the strip
+ * has to sit with the matcher to apply in either case.
+ */
+function stripStyleBlocks(source: string): string {
+  return blank(source, /<style\b[^>]*>[\s\S]*?<\/style>/g)
 }
 
 /** Every watched utility in `source` that the real stylesheet compiles to nothing. */

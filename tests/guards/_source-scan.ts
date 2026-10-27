@@ -3,9 +3,10 @@
  *
  * Each one answers a question about the source text rather than about a
  * rendered component, so they need the same things: the repo root, the theme
- * stylesheet, a file list, and a way to ignore comments. Kept here so the
+ * stylesheet, a file list, and a way to ignore a region. Kept here so the
  * non-obvious comment regex, the path to the theme and the way Tailwind's own
- * stylesheets resolve each have one definition.
+ * stylesheets resolve each have one definition. A region only one guard must
+ * ignore belongs in that guard.
  */
 
 import { globSync, readFileSync } from 'node:fs'
@@ -25,7 +26,7 @@ export const themeStylesheet = readFileSync(join(layoutsDir, 'tailwind.css'), 'u
  * Blanks every match of `pattern`, keeping the newlines, so a reported line
  * number still points at the real line.
  */
-function blank(source: string, pattern: RegExp): string {
+export function blank(source: string, pattern: RegExp): string {
   return source.replace(pattern, (match) => match.replace(/[^\n]/g, ' '))
 }
 
@@ -41,14 +42,6 @@ export function stripComments(source: string): string {
     /(^|[^:])\/\/[^\n]*/g,
     (match, lead: string) => lead + ' '.repeat(match.length - lead.length),
   )
-}
-
-/**
- * Blanks an inline `<style>` block, whose body is CSS: `stroke-width` there is
- * a property name, not a utility. `AnimatedLogoSvg` is the one such block.
- */
-export function stripStyleBlocks(source: string): string {
-  return blank(source, /<style\b[^>]*>[\s\S]*?<\/style>/g)
 }
 
 /**
