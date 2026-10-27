@@ -283,7 +283,7 @@ export function LocationSearch({
 
         {/* API Error */}
         {error && (
-          <div className="px-5 py-4 text-sm text-error bg-error-light" role="alert">
+          <div className="px-5 py-4 text-sm text-error bg-error/10" role="alert">
             {error}
           </div>
         )}

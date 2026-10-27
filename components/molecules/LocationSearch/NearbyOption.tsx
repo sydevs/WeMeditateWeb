@@ -82,7 +82,7 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
       onClick={handleNearbyClick}
       disabled={geolocationState === 'loading'}
       className={`w-full touch-target text-left flex items-center gap-2 font-medium text-gray-700 hover:bg-gray-100 transition-colors ${sizeStyles[size]} ${
-        geolocationState === 'error' ? 'bg-error-light' : ''
+        geolocationState === 'error' ? 'bg-error/10' : ''
       }`}
       type="button"
     >

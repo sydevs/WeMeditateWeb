@@ -18,21 +18,40 @@ the `@theme` directive:
 a config file only through an `@config` directive, so a `tailwind.config.ts` that no stylesheet
 points at is dead — which is what #176 deleted.
 
-**Tailwind scans wider than the `@source` lines.** `@import "tailwindcss"` also detects sources
-from the project root, and the `@source` paths add to that set rather than replacing it. So a
-class-shaped string outside `components/`, `pages/` and `layouts/` ships its CSS all the same —
-from a test fixture, or from a sentence in this file. Spell an example without its prefix for that
-reason. #186 weighs narrowing the set with `source(none)`.
+**The `@source` lines are the whole scan set.** `@import "tailwindcss" source(none)` turns
+automatic source detection off, so `components/`, `pages/` and `layouts/` are all Tailwind reads.
+A class-shaped string anywhere else emits nothing — a test fixture, a code comment, or a sentence
+in this file. Before `source(none)`, 18 utilities in the production stylesheet came from exactly
+those places, six of them from doc lines telling a reader *not* to write the class (#186).
+
+**A new top-level directory that authors a className needs a fourth `@source` line** in
+[layouts/tailwind.css](../../layouts/tailwind.css). Without one its classes compile to no CSS, and
+the failure shows as an unstyled element on first render. `hooks/` is the live code directory
+outside the set today, and it authors no class.
 
 **A utility naming an undeclared token compiles to nothing, and nothing warns.**
-`tests/guards/theme-utilities.test.ts` catches two families of that: a colour utility whose token
-sits on a scale with numeric steps, and any `font-*` utility. Nothing else is watched — a token off
-such a scale, like `error-light` beside the declared `error-dark`, and namespaces such as `radius`
-and `shadow` all pass. It parses the `@theme` block of
-[layouts/tailwind.css](../../layouts/tailwind.css) *and* of Tailwind's own `theme.css`, because
-`@theme` extends the default rather than replacing it: a `gray-950` utility resolves even though
-ours stops at `gray-900`. Renaming a token on one of the two watched families fails the guard until
-its call sites follow.
+`tests/guards/theme-utilities.test.ts` catches that by asking Tailwind. It compiles each candidate
+against the real stylesheet through `candidatesToCss`, which answers `null` when the utility emits
+no CSS, so the guard models no token sets and no keywords: `text-center` and `font-stretch-expanded`
+compile and pass, `text-error-light` and `rounded-pill` do not and fail. A `/50` opacity and a
+trailing `!` go to the compiler with the utility; a variant prefix is dropped, since it can make
+neither a dead utility live nor a live one dead.
+
+**Reach** comes from Tailwind too, for the colour namespace: a root takes a colour exactly when
+`<root>-<a declared colour token>` compiles, which is 51 roots today and follows a version bump on
+its own. `font` and `rounded` are named by hand, because probing those namespaces needs an
+ambiguous value (`lg` compiles under `w-` and `blur-` as well). A root outside that set is
+unwatched, never wrongly flagged. Three shapes stay out of scope on purpose: an arbitrary value
+(`text-[16px]`, `bg-(--var)`) names no token, a match preceded by `<word>-` is a slug rather
+than a utility, and a match followed by `:` or `=` is CSS rather than a class — 44 kebab-case
+property names sit under a watched root, and a declaration, an arbitrary property
+(`[stroke-width:2px]`) and an SVG attribute all put a separator straight after the name. A
+`<style>` block and a `style` prop are blanked whole instead, because a CSS *value* carries no
+separator. Stories are scanned; specs are not.
+
+The guard also checks the scan set against the tree: every top-level directory whose `.ts`/`.tsx`
+authors a `className` must have an `@source` line. A `class=` attribute inside an imported SVG
+sits outside that check — `assets/chart.svg` styles its own `cls-N`.
 
 **A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
 live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
