@@ -27,7 +27,7 @@
   --color-teal-300: #83bcb4;
   --color-teal-400: #72b3a9;
   --color-teal-500: #61aaa0;
-  --color-teal-600: #4c8d84;
+  --color-teal-600: #427b73;
   --color-teal-700: #3d726b;
   --color-teal-800: #2e5652;
   --color-teal-900: #1f3a38;
@@ -55,14 +55,14 @@
   --color-gray-400: #c6c6c6;
   --color-gray-500: #aaaaa9;
   --color-gray-600: #9d9d9c;
-  --color-gray-700: #7b7b7b;
+  --color-gray-700: #717171;
   --color-gray-800: #5e6063;
   --color-gray-900: #555555;
 
   /* Semantic colors */
-  --color-error: #cc5e5e;
+  --color-error: #c34040;
   --color-error-dark: #8b0000;
-  --color-success: #4c8d84;
+  --color-success: #427b73;
   --color-info: #61aaa0;
 
   /* Background colors */
@@ -214,9 +214,9 @@
  */
 @utility surface-light {
   --surface-fg: var(--color-gray-900);
-  --surface-fg-muted: var(--color-gray-800);
-  --surface-primary: var(--color-teal-700);
-  --surface-primary-strong: var(--color-teal-800);
+  --surface-fg-muted: var(--color-gray-700);
+  --surface-primary: var(--color-teal-600);
+  --surface-primary-strong: var(--color-teal-700);
   --surface-secondary: var(--color-coral-600);
   --surface-secondary-strong: var(--color-coral-700);
   --surface-line: var(--color-gray-500);
