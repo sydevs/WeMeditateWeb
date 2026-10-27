@@ -104,6 +104,11 @@ export const Default: Story = () => {
     },
   ]
 
+  // Four is the count that turns the tablet carousel on
+  // (TABLET_CAROUSEL_THRESHOLD), and the only one between the mobile
+  // threshold and MAX_COLUMNS with no section of its own.
+  const fourColumns = fiveColumns.slice(0, 4)
+
   const twoColumns = [
     {
       title: "Morning Practice",
@@ -162,6 +167,10 @@ export const Default: Story = () => {
     <StoryWrapper>
       <StorySection title="Three Columns (Classic)">
         <ColumnCarousel columns={threeColumns} />
+      </StorySection>
+
+      <StorySection title="Four Columns (Carousel from Tablet Up)">
+        <ColumnCarousel columns={fourColumns} />
       </StorySection>
 
       <StorySection title="Five Columns">
