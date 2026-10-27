@@ -59,20 +59,14 @@ export const StorySection = ({
     return ''
   }
 
-  // Text colors based on surface.
-  // For non-subsection dark sections with a background, the title and
-  // description appear on a light wrapper background.
-  const getTitleColor = () => {
-    if (variant === 'subsection') {
-      return surface === 'dark' ? 'text-gray-100' : 'text-gray-800'
-    }
+  /**
+   * The title and the description render in the wrapper, outside the ground
+   * `renderContent()` paints, so both sit on the white page whatever the
+   * surface is.
+   */
+  const getTitleColor = () => (variant === 'subsection' ? 'text-gray-800' : 'text-gray-900')
 
-    // Non-subsection dark sections have the title and description on
-    // a light background wrapper. So they use light colours.
-    return 'text-gray-900'
-  }
-
-  const descriptionColor = 'text-gray-800' // Always on light background for non-subsections
+  const descriptionColor = 'text-gray-800'
 
   // Variant-specific configuration
   const variantConfig = {
