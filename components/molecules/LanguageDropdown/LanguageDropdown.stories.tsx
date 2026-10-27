@@ -81,14 +81,14 @@ export const Default: Story = () => (
     <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-12">
         <div>
-          <h3 className="text-sm font-semibold mb-4 text-gray-800">Footer Language Selector</h3>
+          <h3 className="text-sm font-semibold mb-4 text-gray-700">Footer Language Selector</h3>
           <div className="flex justify-end bg-gray-50 p-6 rounded-lg">
             <LanguageDropdown currentLanguage="en" languages={allLanguages} align="right" />
           </div>
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-4 text-gray-800">Header Language Selector</h3>
+          <h3 className="text-sm font-semibold mb-4 text-gray-700">Header Language Selector</h3>
           <div className="bg-teal-600 p-6 rounded-lg">
             <LanguageDropdown
               currentLanguage="es"
@@ -100,7 +100,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-4 text-gray-800">Sidebar Language Selector</h3>
+          <h3 className="text-sm font-semibold mb-4 text-gray-700">Sidebar Language Selector</h3>
           <div className="border border-gray-200 p-6 rounded-lg max-w-xs">
             <LanguageDropdown currentLanguage="de" languages={sampleLanguages} />
           </div>

@@ -140,7 +140,7 @@ export const Default: Story = () => (
                 align="right"
               />
             </div>
-            <p className="text-gray-800">
+            <p className="text-gray-700">
               In today's fast-paced world, finding moments of stillness can seem impossible.
               Yet, through the practice of meditation, we can discover a sanctuary of peace
               within ourselves, accessible at any moment...

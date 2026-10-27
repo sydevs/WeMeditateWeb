@@ -16,36 +16,36 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-6">
         <StorySection title="Vertical Spacing" variant="subsection">
           <div className="border border-gray-200 rounded p-4">
-            <p className="text-gray-800">First element</p>
+            <p className="text-gray-700">First element</p>
             <Spacer size="sm" />
-            <p className="bg-gray-100 p-2 rounded text-gray-800">After small spacer (0.5rem)</p>
+            <p className="bg-gray-100 p-2 rounded text-gray-700">After small spacer (0.5rem)</p>
 
-            <p className="text-gray-800 mt-6">Second element</p>
+            <p className="text-gray-700 mt-6">Second element</p>
             <Spacer size="md" />
-            <p className="bg-gray-100 p-2 rounded text-gray-800">After medium spacer (1rem)</p>
+            <p className="bg-gray-100 p-2 rounded text-gray-700">After medium spacer (1rem)</p>
 
-            <p className="text-gray-800 mt-6">Third element</p>
+            <p className="text-gray-700 mt-6">Third element</p>
             <Spacer size="lg" />
-            <p className="bg-gray-100 p-2 rounded text-gray-800">After large spacer (1.5rem)</p>
+            <p className="bg-gray-100 p-2 rounded text-gray-700">After large spacer (1.5rem)</p>
 
-            <p className="text-gray-800 mt-6">Fourth element</p>
+            <p className="text-gray-700 mt-6">Fourth element</p>
             <Spacer size="xl" />
-            <p className="bg-gray-100 p-2 rounded text-gray-800">After extra large spacer (2rem)</p>
+            <p className="bg-gray-100 p-2 rounded text-gray-700">After extra large spacer (2rem)</p>
           </div>
         </StorySection>
 
         <StorySection title="Horizontal Spacing" variant="subsection">
           <div className="border border-gray-200 rounded p-4">
             <div className="flex items-center">
-              <p className="text-gray-800">First</p>
+              <p className="text-gray-700">First</p>
               <Spacer direction="horizontal" size="sm" />
-              <p className="bg-gray-100 p-2 rounded text-gray-800">SM</p>
+              <p className="bg-gray-100 p-2 rounded text-gray-700">SM</p>
               <Spacer direction="horizontal" size="md" />
-              <p className="bg-gray-100 p-2 rounded text-gray-800">MD</p>
+              <p className="bg-gray-100 p-2 rounded text-gray-700">MD</p>
               <Spacer direction="horizontal" size="lg" />
-              <p className="bg-gray-100 p-2 rounded text-gray-800">LG</p>
+              <p className="bg-gray-100 p-2 rounded text-gray-700">LG</p>
               <Spacer direction="horizontal" size="xl" />
-              <p className="bg-gray-100 p-2 rounded text-gray-800">XL</p>
+              <p className="bg-gray-100 p-2 rounded text-gray-700">XL</p>
             </div>
           </div>
         </StorySection>
@@ -87,21 +87,21 @@ export const Default: Story = () => (
           <article className="border border-gray-200 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900">Guide to Meditation</h2>
             <Spacer size="md" />
-            <p className="text-sm text-gray-800">Published on January 15, 2025</p>
+            <p className="text-sm text-gray-700">Published on January 15, 2025</p>
             <Spacer size="lg" />
-            <p className="text-gray-800">
+            <p className="text-gray-700">
               Meditation is a practice of focused attention and awareness that has been
               practiced for thousands of years in various cultures around the world.
             </p>
             <Spacer size="md" />
-            <p className="text-gray-800">
+            <p className="text-gray-700">
               Begin with just a few minutes each day in a quiet, comfortable space.
               Consistency is more important than duration when starting out.
             </p>
             <Spacer size="xl" />
             <h3 className="text-xl font-semibold text-gray-900">Getting Started</h3>
             <Spacer size="sm" />
-            <p className="text-gray-800">
+            <p className="text-gray-700">
               Choose a comfortable, quiet location where you won't be disturbed. This
               could be a corner of your bedroom, a peaceful spot in your garden, or
               anywhere you feel at ease.
@@ -113,15 +113,15 @@ export const Default: Story = () => (
           <div className="border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Morning Meditation</h3>
-              <span className="text-teal-700 font-medium">10 min</span>
+              <span className="text-teal-600 font-medium">10 min</span>
             </div>
             <Spacer size="md" />
-            <p className="text-gray-800">
+            <p className="text-gray-700">
               Start your day with clarity and peace through this guided morning meditation.
             </p>
             <Spacer size="lg" />
             <div className="flex gap-2">
-              <button className="px-4 py-2 bg-teal-700 text-white rounded hover:bg-teal-800">
+              <button className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700">
                 Start
               </button>
               <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
@@ -163,7 +163,7 @@ export const Default: Story = () => (
             />
             <Spacer size="lg" />
 
-            <button className="w-full bg-teal-700 text-white py-2 px-4 rounded hover:bg-teal-800">
+            <button className="w-full bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700">
               Sign Up
             </button>
           </form>

@@ -120,7 +120,7 @@ export function Author({
     const textAlign = isRight ? 'text-right' : 'text-left'
 
     return (
-      <div className={`${textAlign} text-gray-800 max-w-xs ${className}`}>
+      <div className={`${textAlign} text-gray-700 max-w-xs ${className}`}>
         <div className="mb-8">
           {href ? (
             <a href={href}>
@@ -156,8 +156,8 @@ export function Author({
     const orderClasses = isRight ? 'md:flex-row-reverse' : 'md:flex-row'
 
     return (
-      <div className={`text-gray-800 ${className}`}>
-        <h2 className={`text-xl font-semibold text-gray-800 mb-5 ${titleAlign}`}>
+      <div className={`text-gray-700 ${className}`}>
+        <h2 className={`text-xl font-semibold text-gray-700 mb-5 ${titleAlign}`}>
           {t('article.general.about_the_author')}
         </h2>
         <div className={`flex flex-col ${orderClasses} gap-8`}>

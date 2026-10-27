@@ -51,7 +51,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     ref
   ) => {
     const baseStyles =
-      'py-3 bg-transparent font-sans text-base placeholder:text-gray-800 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+      'py-3 bg-transparent font-sans text-base placeholder:text-gray-700 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
 
     const variantStyles = {
       default: 'px-3 border',
@@ -62,7 +62,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       default:
         'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
       error:
-        'text-error-dark border-error hover:border-error-dark focus:border-error',
+        'text-error border-error hover:border-error-dark focus:border-error',
       success:
         'text-gray-900 border-success hover:border-success focus:border-success',
     }

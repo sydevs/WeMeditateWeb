@@ -161,7 +161,7 @@ function VolumeRow({
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-800">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-700">
         {label}
         {sublabel ? (
           <span className="ml-1 font-normal normal-case">· {sublabel}</span>
@@ -629,7 +629,7 @@ function MeditationPlayerInner({
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
-              <p className="text-xs sm:text-sm tracking-widest text-gray-800 uppercase">
+              <p className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase">
                 {t('meditation.general.label')}
               </p>
             </div>
@@ -645,7 +645,7 @@ function MeditationPlayerInner({
                 <p className="text-xs @4xl:text-sm font-medium text-gray-800">
                   {t('meditation.general.founder_name')}
                 </p>
-                <p className="text-xs @4xl:text-sm italic text-gray-800">
+                <p className="text-xs @4xl:text-sm italic text-gray-700">
                   {t('meditation.general.founder_role')}
                 </p>
               </div>
@@ -763,7 +763,7 @@ function MeditationPlayerInner({
 
               {/* Time Display */}
               <div className="flex justify-center mt-2">
-                <span className="text-base @4xl:text-lg font-number text-gray-800">
+                <span className="text-base @4xl:text-lg font-number text-gray-700">
                   {formatTime(
                     timeDisplay === 'countdown'
                       ? Math.max(0, effectiveDuration - displayTime)
@@ -777,12 +777,12 @@ function MeditationPlayerInner({
           {/* Subtitle + Volume - Below player on narrow, left column on wide */}
           <div className="text-center @4xl:text-left @4xl:col-span-3 @4xl:order-1 @4xl:space-y-6">
             {/* Label - hidden on narrow, visible on wide */}
-            <p className="hidden @4xl:block text-sm tracking-widest text-gray-800 uppercase mb-8">
+            <p className="hidden @4xl:block text-sm tracking-widest text-gray-700 uppercase mb-8">
               {t('meditation.general.label')}
             </p>
 
             {subtitle && (
-              <p className="mb-4 text-sm sm:text-base font-light text-gray-800">{subtitle}</p>
+              <p className="mb-4 text-sm sm:text-base font-light text-gray-700">{subtitle}</p>
             )}
 
             {/* Audio controls: speaker button → popover with Voice + Music sliders */}
@@ -818,7 +818,7 @@ function MeditationPlayerInner({
         {/* eslint-disable no-restricted-syntax -- #178: these need keys added to wm-web-translations first */}
         {upsell && (
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-800">
+            <p className="text-sm text-gray-700">
               {upsell === 'web' ? (
                 <>
                   Find more meditations on{' '}

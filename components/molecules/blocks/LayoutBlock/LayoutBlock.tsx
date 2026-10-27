@@ -24,7 +24,7 @@ export interface LayoutBlockProps {
 
 /** Render an item's textarea body, preserving author line breaks. */
 function itemText(text?: string | null): ReactNode {
-  return text ? <p className="whitespace-pre-line text-gray-800">{text}</p> : null
+  return text ? <p className="whitespace-pre-line text-gray-700">{text}</p> : null
 }
 
 /** A single item for the `grid`/`list` styles: image, linkable title, text. */

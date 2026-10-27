@@ -169,21 +169,21 @@ export const Default: Story = () => {
       </StorySection>
 
       <StorySection title="Two Columns (Stacked on Mobile)">
-        <p className="text-sm text-gray-800 mb-4">
+        <p className="text-sm text-gray-700 mb-4">
           With 1-2 columns, mobile displays them stacked vertically (no carousel).
         </p>
         <ColumnCarousel columns={twoColumns} />
       </StorySection>
 
       <StorySection title="One Column">
-        <p className="text-sm text-gray-800 mb-4">
+        <p className="text-sm text-gray-700 mb-4">
           Single column displays as a simple centered layout on all screen sizes.
         </p>
         <ColumnCarousel columns={oneColumn} />
       </StorySection>
 
       <StorySection title="With Linked Titles" inContext={true}>
-        <p className="text-sm text-gray-800 mb-4">
+        <p className="text-sm text-gray-700 mb-4">
           Columns can have clickable titles that link to other pages.
         </p>
         <ColumnCarousel

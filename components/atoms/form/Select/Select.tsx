@@ -66,7 +66,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       default:
         'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
       error:
-        'text-error-dark border-error hover:border-error-dark focus:border-error',
+        'text-error border-error hover:border-error-dark focus:border-error',
       success:
         'text-gray-900 border-success hover:border-success focus:border-success',
     }
@@ -93,7 +93,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {/* Dropdown arrow icon */}
-        <div className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-800`}>
+        <div className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-700`}>
           <svg
             className="h-4 w-4"
             fill="none"

@@ -185,7 +185,7 @@ export function ContentOverlay({
         {/* Content below — title + optional subtitle kept tight together */}
         <div className="flex flex-col gap-1.5">
           <h2 className="text-2xl font-semibold tracking-wide text-gray-900">{title}</h2>
-          {subtitle && <p className="text-base font-light text-gray-800">{subtitle}</p>}
+          {subtitle && <p className="text-base font-light text-gray-700">{subtitle}</p>}
         </div>
 
         <div className="text-lg font-light leading-relaxed text-gray-900">

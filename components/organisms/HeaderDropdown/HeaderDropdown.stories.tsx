@@ -44,7 +44,7 @@ export const Default: Story = () => (
     <StorySection title="Examples" inContext={true}>
       <div className="space-y-12">
         <div>
-          <p className="text-sm font-medium text-gray-800 mb-4">
+          <p className="text-sm font-medium text-gray-700 mb-4">
             Techniques Dropdown
           </p>
           <HeaderDropdown
@@ -74,7 +74,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <p className="text-sm font-medium text-gray-800 mb-4">
+          <p className="text-sm font-medium text-gray-700 mb-4">
             Music Dropdown
           </p>
           <HeaderDropdown

@@ -92,7 +92,7 @@ export const Default: Story = () => (
         <StorySection title="With Text Trigger" variant="subsection">
           <Dropdown
             trigger={
-              <span className="text-gray-800 hover:text-gray-900 cursor-pointer text-sm">
+              <span className="text-gray-700 hover:text-gray-900 cursor-pointer text-sm">
                 Click me ▼
               </span>
             }
@@ -126,7 +126,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Placement">
-      <p className="mb-6 max-w-prose text-sm text-gray-800">
+      <p className="mb-6 max-w-prose text-sm text-gray-700">
         The panel opens on <code>side</code> and automatically <strong>flips</strong> to the
         opposite side and <strong>shifts</strong> along the cross-axis to stay within the viewport
         (open one near a screen edge to see it). Positioning is handled by Floating UI, and the
@@ -149,7 +149,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="Dialog panel">
-      <p className="mb-6 max-w-prose text-sm text-gray-800">
+      <p className="mb-6 max-w-prose text-sm text-gray-700">
         With <code>role=&quot;dialog&quot;</code> the panel holds rich, non-menu content (as the
         meditation player&rsquo;s audio controls do). Pair it with <code>ariaLabel</code> so the
         popover is announced.
@@ -166,8 +166,8 @@ export const Default: Story = () => (
         }
       >
         <div className="flex w-64 flex-col gap-3 p-4 text-left">
-          <p className="text-sm font-medium text-gray-800">Display options</p>
-          <label className="flex items-center justify-between gap-3 text-sm text-gray-800">
+          <p className="text-sm font-medium text-gray-700">Display options</p>
+          <label className="flex items-center justify-between gap-3 text-sm text-gray-700">
             Brightness
             <input
               aria-label="Brightness"
@@ -185,11 +185,11 @@ export const Default: Story = () => (
     <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-8">
         <div>
-          <h3 className="text-sm font-semibold mb-4 text-gray-800">User Menu</h3>
+          <h3 className="text-sm font-semibold mb-4 text-gray-700">User Menu</h3>
           <Dropdown
             align="right"
             trigger={
-              <button className="flex items-center gap-2 px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800">
+              <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
                 <Icon icon={UserIcon} size="sm" />
                 <span className="text-sm">John Doe</span>
                 <Icon icon={ChevronDownIcon} size="xs" />
@@ -205,7 +205,7 @@ export const Default: Story = () => (
               Settings
             </DropdownItem>
             <hr className="my-2" />
-            <DropdownItem className="flex items-center gap-2 text-error-dark" href="#">
+            <DropdownItem className="flex items-center gap-2 text-error" href="#">
               <Icon icon={ArrowRightStartOnRectangleIcon} size="sm" />
               Logout
             </DropdownItem>
@@ -213,7 +213,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-4 text-gray-800">Action Menu</h3>
+          <h3 className="text-sm font-semibold mb-4 text-gray-700">Action Menu</h3>
           <Dropdown
             trigger={
               <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
@@ -225,7 +225,7 @@ export const Default: Story = () => (
             <DropdownItem href="#">Duplicate</DropdownItem>
             <DropdownItem href="#">Archive</DropdownItem>
             <hr className="my-2" />
-            <DropdownItem className="text-error-dark" href="#">
+            <DropdownItem className="text-error" href="#">
               Delete
             </DropdownItem>
           </Dropdown>

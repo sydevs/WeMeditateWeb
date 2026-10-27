@@ -90,13 +90,13 @@ export function EmbedButton({
       }
     >
       <div className="flex flex-col gap-3 p-4">
-        <p className="text-sm font-medium text-gray-800">
+        <p className="text-sm font-medium text-gray-700">
           {title ? t('media.general.embed_title', { title }) : t('media.general.embed_player')}
         </p>
         <textarea
           readOnly
           aria-label={t('media.a11y.embed_code')}
-          className="w-full resize-none border border-gray-200 bg-gray-50 p-2 font-mono text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full resize-none border border-gray-200 bg-gray-50 p-2 font-mono text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
           rows={3}
           value={snippet}
           onFocus={(event) => event.currentTarget.select()}

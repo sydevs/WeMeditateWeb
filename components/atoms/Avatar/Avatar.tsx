@@ -69,7 +69,7 @@ export function Avatar({
   }
 
   const colorStyles = {
-    primary: 'bg-teal-700 text-white',
+    primary: 'bg-teal-600 text-white',
     secondary: 'bg-coral-600 text-white',
     neutral: 'bg-gray-200 text-gray-800',
   }

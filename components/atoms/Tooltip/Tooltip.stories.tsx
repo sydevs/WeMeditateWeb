@@ -15,7 +15,7 @@ export default {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic">
-      <p className="mb-6 max-w-prose text-sm text-gray-800">
+      <p className="mb-6 max-w-prose text-sm text-gray-700">
         Hover (or tab to) the trigger to reveal the tooltip. It appears after a short delay on hover
         and immediately on keyboard focus.
       </p>
@@ -42,7 +42,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="On text">
-      <p className="text-sm text-gray-800">
+      <p className="text-sm text-gray-700">
         Tooltips also work on inline triggers, like{' '}
         <Tooltip label="An explanatory note">
           <span className="cursor-help underline decoration-dotted">this term</span>

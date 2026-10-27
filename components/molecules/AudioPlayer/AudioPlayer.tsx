@@ -117,7 +117,7 @@ function AudioPlayerInner({
               </a>
             </div>
             {tracks.length > 1 && (
-              <div className="text-sm font-medium text-gray-800 whitespace-nowrap">
+              <div className="text-sm font-medium text-gray-700 whitespace-nowrap">
                 {state.currentTrackIndex + 1} / {tracks.length}
               </div>
             )}
@@ -136,7 +136,7 @@ function AudioPlayerInner({
             onChange={(e) => playerControls.seek(parseFloat(e.target.value))}
             className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
           />
-          <div className="flex justify-between text-xs font-number text-gray-800 mt-1">
+          <div className="flex justify-between text-xs font-number text-gray-700 mt-1">
             <span>{formatTime(state.currentTime)}</span>
             <span>{formatTime(state.duration)}</span>
           </div>

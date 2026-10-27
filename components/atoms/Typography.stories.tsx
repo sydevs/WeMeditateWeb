@@ -50,10 +50,10 @@ export const Default: Story = () => (
           <p className="text-gray-900">Default color - text-gray-900</p>
           <p className="text-teal-700">Primary color - text-teal-700</p>
           <p className="text-coral-700">Secondary color - text-coral-700</p>
-          <p className="text-gray-800">Faded color - text-gray-800</p>
-          <div className="bg-teal-700 p-3 rounded text-white">
+          <p className="text-gray-700">Faded color - text-gray-700</p>
+          <div className="bg-teal-600 p-3 rounded text-white">
             <p>
-              Inherit color from parent (text-white on bg-teal-700)
+              Inherit color from parent (text-white on bg-teal-600)
             </p>
           </div>
         </div>
@@ -62,8 +62,8 @@ export const Default: Story = () => (
           <p className="text-gray-900 font-semibold">Default color - text-gray-900 font-semibold</p>
           <p className="text-teal-700 font-semibold">Primary color - text-teal-700 font-semibold</p>
           <p className="text-coral-700 font-semibold">Secondary color - text-coral-700 font-semibold</p>
-          <p className="text-gray-800 font-semibold">Faded color - text-gray-800 font-semibold</p>
-          <div className="bg-teal-700 p-3 rounded text-white">
+          <p className="text-gray-700 font-semibold">Faded color - text-gray-700 font-semibold</p>
+          <div className="bg-teal-600 p-3 rounded text-white">
             <p className="font-semibold">
               Inherit color from parent (text-white font-semibold)
             </p>
@@ -80,17 +80,17 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-8 max-w-2xl">
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Article Byline</h3>
-          <div className="text-sm sm:text-base font-light text-gray-800 leading-tight">
+          <div className="text-sm sm:text-base font-light text-gray-700 leading-tight">
             Written by <em className="not-italic font-normal">Gabriel Kolanen</em>, FI
           </div>
-          <div className="text-sm font-light text-gray-800 leading-tight mt-1">
+          <div className="text-sm font-light text-gray-700 leading-tight mt-1">
             Meditating for 5 years
           </div>
         </div>
 
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Body Text Paragraph</h3>
-          <p className="text-sm sm:text-base font-light text-gray-800 leading-relaxed">
+          <p className="text-sm sm:text-base font-light text-gray-700 leading-relaxed">
             This is a typical body paragraph using the default text sizing and styling.
             It uses responsive sizing (text-sm sm:text-base) that scales from mobile to desktop,
             light font weight (font-light) for comfortable reading, and relaxed line height (leading-relaxed)
@@ -100,20 +100,20 @@ export const Default: Story = () => (
 
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Emphasis and Links</h3>
-          <p className="text-sm sm:text-base font-light text-gray-800 leading-relaxed">
+          <p className="text-sm sm:text-base font-light text-gray-700 leading-relaxed">
             You can emphasize text with <strong className="font-semibold">font-semibold</strong> or
             create <a href="#" className="text-teal-700 hover:text-teal-800 underline">interactive links</a> using
-            color utilities. For subtle text, use <span className="text-gray-800">text-gray-800</span>.
+            color utilities. For subtle text, use <span className="text-gray-700">text-gray-700</span>.
           </p>
         </div>
 
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Social Share Label</h3>
           <div className="flex items-center gap-3">
-            <span className="text-base sm:text-lg font-normal text-gray-800">
+            <span className="text-base sm:text-lg font-normal text-gray-700">
               Share:
             </span>
-            <div className="text-sm text-gray-800">
+            <div className="text-sm text-gray-700">
               (Social icons would appear here)
             </div>
           </div>

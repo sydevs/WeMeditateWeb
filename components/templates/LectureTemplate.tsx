@@ -40,7 +40,7 @@ export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps
 
   if (!lecture.hlsUrl) {
     return (
-      <p className="p-6 text-center text-gray-800">
+      <p className="p-6 text-center text-gray-700">
         {t('lecture.general.missing_video')}
       </p>
     )

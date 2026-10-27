@@ -122,7 +122,7 @@ export const Default: Story = () => (
           <Link href="https://example.com" external>
             External link (opens in new tab with security)
           </Link>
-          <span className="text-xs text-gray-800 ml-2">
+          <span className="text-xs text-gray-700 ml-2">
             (includes target="_blank" and rel="noopener noreferrer")
           </span>
         </div>
@@ -145,39 +145,39 @@ export const Default: Story = () => (
     >
       <div className="flex flex-col gap-4">
         <div>
-          <div className="text-sm font-medium text-gray-800 mb-2">English (en) - No prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">English (en) - No prefix:</div>
           <Link href="/meditations" locale="en">
             /meditations
           </Link>
-          <span className="text-xs text-gray-800 ml-2">(renders as /meditations)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /meditations)</span>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-800 mb-2">Spanish (es) - With prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">Spanish (es) - With prefix:</div>
           <Link href="/meditations" locale="es">
             /meditations
           </Link>
-          <span className="text-xs text-gray-800 ml-2">(renders as /es/meditations)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /es/meditations)</span>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-800 mb-2">French (fr) - With prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">French (fr) - With prefix:</div>
           <Link href="/about" locale="fr">
             /about
           </Link>
-          <span className="text-xs text-gray-800 ml-2">(renders as /fr/about)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /fr/about)</span>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-800 mb-2">German (de) - With prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">German (de) - With prefix:</div>
           <Link href="/contact" locale="de">
             /contact
           </Link>
-          <span className="text-xs text-gray-800 ml-2">(renders as /de/contact)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /de/contact)</span>
         </div>
 
         <div className="mt-2 p-3 bg-gray-50 rounded">
-          <p className="text-xs text-gray-800">
+          <p className="text-xs text-gray-700">
             <strong>Note:</strong> External URLs (http/https) and anchor links (#) are never prefixed,
             regardless of locale.
           </p>

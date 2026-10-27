@@ -17,21 +17,21 @@ export const Default: Story = () => (
     <StorySection title="Sizes">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Small</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Small</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader size="sm" color="primary" text="Loading..." />
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Medium (Default)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Medium (Default)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader size="md" color="primary" text="Loading..." />
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Large</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Large</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader size="lg" color="primary" text="Loading..." />
           </div>
@@ -42,28 +42,28 @@ export const Default: Story = () => (
     <StorySection title="Colors">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Primary (Teal)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Primary (Teal)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader color="primary" />
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Secondary (Coral)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Secondary (Coral)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader color="secondary" />
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Neutral (Gray)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Neutral (Gray)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader color="neutral" />
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">None (Transparent)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">None (Transparent)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-linear-to-br from-teal-100 to-coral-100">
             <SplashLoader color="none" />
           </div>
@@ -74,7 +74,7 @@ export const Default: Story = () => (
     <StorySection title="With Background Images">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Primary + Image</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Primary + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
               color="primary"
@@ -84,7 +84,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Secondary + Image</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Secondary + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
               color="secondary"
@@ -94,7 +94,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Neutral + Image</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Neutral + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
               color="neutral"
@@ -104,7 +104,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">None + Image</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">None + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
               color="none"
@@ -122,7 +122,7 @@ export const Default: Story = () => (
     <StorySection title="Examples" inContext={true}>
       <div className="flex flex-col gap-8">
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Full Page Splash (Large)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Full Page Splash (Large)</p>
           <div className="relative h-96 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
               size="lg"
@@ -134,7 +134,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Card Loading State (Small)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Card Loading State (Small)</p>
           <div className="max-w-md">
             <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
               <div className="h-48">
@@ -146,7 +146,7 @@ export const Default: Story = () => (
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">Card Title</h3>
-                <p className="text-gray-800">Card content that would load...</p>
+                <p className="text-gray-700">Card content that would load...</p>
               </div>
               <SplashLoader size="sm" color="secondary" text="Loading content..." />
             </div>
@@ -154,7 +154,7 @@ export const Default: Story = () => (
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2 text-gray-800">Video Player Loading (Medium)</p>
+          <p className="text-sm font-medium mb-2 text-gray-700">Video Player Loading (Medium)</p>
           <div className="relative aspect-video max-w-2xl bg-black rounded-lg overflow-hidden">
             <SplashLoader
               size="md"
@@ -187,7 +187,7 @@ function InteractiveSplashLoader() {
         <Button variant="primary" onClick={handleToggle}>
           {isLoading ? 'Complete Loading' : 'Start Loading'}
         </Button>
-        <span className="text-sm text-gray-800 flex items-center">
+        <span className="text-sm text-gray-700 flex items-center">
           Status: {isLoading ? 'Loading...' : 'Complete'}
         </span>
       </div>
@@ -203,7 +203,7 @@ function InteractiveSplashLoader() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">Content Loaded!</h3>
-              <p className="text-gray-800">The splash screen has faded out.</p>
+              <p className="text-gray-700">The splash screen has faded out.</p>
             </div>
           </div>
         )}

@@ -25,23 +25,23 @@ export const Default: Story = () => (
       <div className="flex gap-4 items-center">
         <div className="flex flex-col items-center gap-2">
           <Avatar size="xs" alt="John Doe" />
-          <p className="text-sm text-gray-800">xs</p>
+          <p className="text-sm text-gray-700">xs</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Avatar size="sm" alt="John Doe" />
-          <p className="text-sm text-gray-800">sm</p>
+          <p className="text-sm text-gray-700">sm</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Avatar size="md" alt="John Doe" />
-          <p className="text-sm text-gray-800">md</p>
+          <p className="text-sm text-gray-700">md</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Avatar size="lg" alt="John Doe" />
-          <p className="text-sm text-gray-800">lg</p>
+          <p className="text-sm text-gray-700">lg</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Avatar size="xl" alt="John Doe" />
-          <p className="text-sm text-gray-800">xl</p>
+          <p className="text-sm text-gray-700">xl</p>
         </div>
       </div>
     </StorySection>
@@ -110,7 +110,7 @@ export const Default: Story = () => (
         />
         <div>
           <p className="font-medium text-gray-900">Shri Mataji Nirmala Devi</p>
-          <p className="text-sm text-gray-800">Founder of Sahaja Yoga</p>
+          <p className="text-sm text-gray-700">Founder of Sahaja Yoga</p>
         </div>
       </div>
     </StorySection>

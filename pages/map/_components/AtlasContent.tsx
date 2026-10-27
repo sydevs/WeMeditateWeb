@@ -69,7 +69,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
   }
 
   return (
-    <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-800">
+    <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-700">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {trail.map((rung, index) => {
           const isCurrent = index === trail.length - 1
@@ -82,7 +82,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
               {isCurrent || !href ? (
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
-                <Link className="hover:text-teal-700" href={href} variant="unstyled">
+                <Link className="hover:text-teal-600" href={href} variant="unstyled">
                   {rung.name}
                 </Link>
               )}
@@ -104,19 +104,19 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
     <li className="border-t border-gray-200 py-4">
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
-          <Link className="hover:text-teal-700" href={href} variant="unstyled">
+          <Link className="hover:text-teal-600" href={href} variant="unstyled">
             {card.title}
           </Link>
         ) : (
           card.title
         )}
       </h2>
-      {card.schedule && <p className="mt-1 text-sm text-gray-800">{card.schedule}</p>}
+      {card.schedule && <p className="mt-1 text-sm text-gray-700">{card.schedule}</p>}
       {/* Empty for an online class, which says so instead. */}
       {card.online ? (
-        <p className="mt-1 text-sm text-gray-800">{t('map.general.online')}</p>
+        <p className="mt-1 text-sm text-gray-700">{t('map.general.online')}</p>
       ) : (
-        card.address && <p className="mt-1 text-sm text-gray-800">{card.address}</p>
+        card.address && <p className="mt-1 text-sm text-gray-700">{card.address}</p>
       )}
     </li>
   )
@@ -136,7 +136,7 @@ function RegionContent({
       <Breadcrumbs trail={breadcrumbs} />
 
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{content.name}</h1>
-      {content.subtitle && <p className="mt-2 text-gray-800">{content.subtitle}</p>}
+      {content.subtitle && <p className="mt-2 text-gray-700">{content.subtitle}</p>}
 
       {content.events.length > 0 ? (
         <section className="mt-8">
@@ -149,7 +149,7 @@ function RegionContent({
           {/* The listing is capped upstream. `eventCount` is the true
               total, so a partial page never reads as a complete one. */}
           {content.eventCount > content.events.length && (
-            <p className="mt-4 text-sm text-gray-800">
+            <p className="mt-4 text-sm text-gray-700">
               {t('map.general.classes_shown', {
                 shown: content.events.length,
                 count: content.eventCount,
@@ -158,7 +158,7 @@ function RegionContent({
           )}
         </section>
       ) : (
-        <p className="mt-8 text-gray-800">{t('map.general.no_classes')}</p>
+        <p className="mt-8 text-gray-700">{t('map.general.no_classes')}</p>
       )}
     </div>
   )
@@ -195,7 +195,7 @@ function EventContent({
 
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{content.title}</h1>
 
-      <dl className="mt-4 flex flex-col gap-2 text-gray-800">
+      <dl className="mt-4 flex flex-col gap-2 text-gray-700">
         {content.schedule?.oneLine && (
           <div>
             <dt className="sr-only">{t('map.a11y.when')}</dt>
@@ -211,7 +211,7 @@ function EventContent({
         {languages.length > 0 && (
           <div>
             <dt className="sr-only">{t('map.a11y.languages')}</dt>
-            <dd className="text-sm text-gray-800">{formatList(languages, locale)}</dd>
+            <dd className="text-sm text-gray-700">{formatList(languages, locale)}</dd>
           </div>
         )}
       </dl>
@@ -229,7 +229,7 @@ function EventContent({
       )}
 
       {(content.paragraphs ?? []).map((paragraph, index) => (
-        <p key={index} className="mt-4 text-gray-800">
+        <p key={index} className="mt-4 text-gray-700">
           {paragraph}
         </p>
       ))}
@@ -260,7 +260,7 @@ function RootContent({ title, content }: { title: string; content: AtlasSeoRootC
       {/* `?? []`: the type is hand-mirrored, so a field that stops arriving
           must degrade rather than 500 the page. */}
       {(content.paragraphs ?? []).map((paragraph, index) => (
-        <p key={index} className="mt-4 text-gray-800">
+        <p key={index} className="mt-4 text-gray-700">
           {paragraph}
         </p>
       ))}

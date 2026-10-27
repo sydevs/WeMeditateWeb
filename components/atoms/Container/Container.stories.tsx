@@ -15,56 +15,56 @@ export const Default: Story = () => (
     <StorySection title="Sizes">
       <div className="space-y-6">
         <div>
-          <p className="text-sm text-gray-800 mb-2">Small (max-w-3xl)</p>
+          <p className="text-sm text-gray-700 mb-2">Small (max-w-3xl)</p>
           <Container maxWidth="sm">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-800">
+              <p className="text-gray-700">
                 Small container - ideal for focused content like forms
               </p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">Medium (max-w-4xl)</p>
+          <p className="text-sm text-gray-700 mb-2">Medium (max-w-4xl)</p>
           <Container maxWidth="md">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-800">
+              <p className="text-gray-700">
                 Medium container - perfect for articles and blog posts
               </p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">Large (max-w-5xl)</p>
+          <p className="text-sm text-gray-700 mb-2">Large (max-w-5xl)</p>
           <Container maxWidth="lg">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-800">Large container - great for dashboards and grids</p>
+              <p className="text-gray-700">Large container - great for dashboards and grids</p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">XL (max-w-6xl)</p>
+          <p className="text-sm text-gray-700 mb-2">XL (max-w-6xl)</p>
           <Container maxWidth="xl">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-800">XL container - wide feature sections</p>
+              <p className="text-gray-700">XL container - wide feature sections</p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">2XL / Default (max-w-7xl)</p>
+          <p className="text-sm text-gray-700 mb-2">2XL / Default (max-w-7xl)</p>
           <Container maxWidth="2xl">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-800">
+              <p className="text-gray-700">
                 2XL container - the default; spans the full page content area
               </p>
             </div>
           </Container>
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">Full (no max-width)</p>
+          <p className="text-sm text-gray-700 mb-2">Full (no max-width)</p>
           <Container maxWidth="full">
             <div className="bg-gray-100 p-4 rounded">
-              <p className="text-gray-800">Full width container - spans the entire viewport</p>
+              <p className="text-gray-700">Full width container - spans the entire viewport</p>
             </div>
           </Container>
         </div>
@@ -79,17 +79,17 @@ export const Default: Story = () => (
               <h1 className="text-3xl font-bold text-gray-900 mb-4">
                 The Benefits of Daily Meditation
               </h1>
-              <p className="text-gray-800 mb-4">
+              <p className="text-gray-700 mb-4">
                 Meditation is a powerful practice that can transform your life in many ways. Regular
                 practice has been shown to reduce stress, improve focus, and enhance overall
                 well-being.
               </p>
-              <p className="text-gray-800 mb-4">
+              <p className="text-gray-700 mb-4">
                 Starting a meditation practice doesn't have to be complicated. Just a few minutes
                 each day can make a significant difference in how you feel and how you respond to
                 life's challenges.
               </p>
-              <p className="text-gray-800">
+              <p className="text-gray-700">
                 The key is consistency. Find a quiet time and place, sit comfortably, and simply
                 focus on your breath. Over time, you'll discover the profound benefits that
                 meditation can bring.
@@ -121,7 +121,7 @@ export const Default: Story = () => (
                     type="email"
                   />
                 </div>
-                <button className="w-full bg-teal-700 text-white py-2 px-4 rounded hover:bg-teal-800">
+                <button className="w-full bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700">
                   Get Started
                 </button>
               </form>
@@ -141,9 +141,9 @@ export const Default: Story = () => (
                 { title: 'Minutes', value: '1,840', subtitle: 'Time practiced' },
               ].map((stat) => (
                 <div key={stat.title} className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-sm font-medium text-gray-800 mb-2">{stat.title}</h3>
-                  <p className="text-3xl font-bold text-teal-700 mb-1">{stat.value}</p>
-                  <p className="text-sm text-gray-800">{stat.subtitle}</p>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">{stat.title}</h3>
+                  <p className="text-3xl font-bold text-teal-600 mb-1">{stat.value}</p>
+                  <p className="text-sm text-gray-700">{stat.subtitle}</p>
                 </div>
               ))}
             </div>

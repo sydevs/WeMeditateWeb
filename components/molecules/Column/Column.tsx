@@ -38,12 +38,12 @@ export function Column({
       href={href}
       variant="unstyled"
       size="inherit"
-      className="text-xl font-medium text-gray-800 hover:text-teal-700 transition-colors"
+      className="text-xl font-medium text-gray-700 hover:text-teal-600 transition-colors"
     >
       {title}
     </Link>
   ) : (
-    <h3 className="text-xl font-medium text-gray-800">{title}</h3>
+    <h3 className="text-xl font-medium text-gray-700">{title}</h3>
   )
 
   return (
@@ -62,7 +62,7 @@ export function Column({
 
       <div className="text-center mb-2">{titleElement}</div>
 
-      <div className="text-base font-light text-gray-800 leading-relaxed text-left w-full">
+      <div className="text-base font-light text-gray-700 leading-relaxed text-left w-full">
         {description}
       </div>
     </div>

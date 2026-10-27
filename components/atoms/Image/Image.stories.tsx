@@ -16,7 +16,7 @@ export const Default: Story = () => (
     <StorySection title="Shapes">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
         <div>
-          <p className="text-sm text-gray-800 mb-2">Square (no rounding)</p>
+          <p className="text-sm text-gray-700 mb-2">Square (no rounding)</p>
           <Image
             src="https://picsum.photos/id/40/600/600"
             alt="Square image"
@@ -25,7 +25,7 @@ export const Default: Story = () => (
           />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">Rounded (rounded-lg)</p>
+          <p className="text-sm text-gray-700 mb-2">Rounded (rounded-lg)</p>
           <Image
             src="https://picsum.photos/id/40/600/600"
             alt="Rounded image"
@@ -34,7 +34,7 @@ export const Default: Story = () => (
           />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">Circle (rounded-full)</p>
+          <p className="text-sm text-gray-700 mb-2">Circle (rounded-full)</p>
           <Image
             src="https://picsum.photos/id/40/600/600"
             alt="Circle image"
@@ -48,7 +48,7 @@ export const Default: Story = () => (
     <StorySection title="Aspect Ratios">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
         <div>
-          <p className="text-sm text-gray-800 mb-2">Square (1:1)</p>
+          <p className="text-sm text-gray-700 mb-2">Square (1:1)</p>
           <Image
             src="https://picsum.photos/id/10/400/400"
             alt="Square image"
@@ -56,7 +56,7 @@ export const Default: Story = () => (
           />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">Video (16:9)</p>
+          <p className="text-sm text-gray-700 mb-2">Video (16:9)</p>
           <Image
             src="https://picsum.photos/id/10/1600/900"
             alt="Video aspect ratio"
@@ -64,7 +64,7 @@ export const Default: Story = () => (
           />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-2">4:3</p>
+          <p className="text-sm text-gray-700 mb-2">4:3</p>
           <Image
             src="https://picsum.photos/id/10/800/600"
             alt="4:3 aspect ratio"
@@ -76,7 +76,7 @@ export const Default: Story = () => (
 
     <StorySection title="States">
       <div>
-        <p className="text-sm text-gray-800 mb-2">
+        <p className="text-sm text-gray-700 mb-2">
           A loaded image is opaque, with no placeholder over it. An absent src keeps the
           placeholder, so the layout still holds, and showLoading false drops even that.
         </p>

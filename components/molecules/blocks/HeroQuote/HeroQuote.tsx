@@ -92,7 +92,7 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
       {credit && <cite className={`${creditSize} leading-relaxed not-italic block`}>{credit}</cite>}
 
       {/* Optional caption */}
-      {caption && <p className="text-sm leading-normal mt-2 italic text-gray-800">{caption}</p>}
+      {caption && <p className="text-sm leading-normal mt-2 italic text-gray-700">{caption}</p>}
 
       {/* Bottom leaf divider */}
       <div className={`relative ${dividerSpacingBottom} ${dividerMaxWidth} mx-auto`}>

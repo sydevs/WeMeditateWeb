@@ -18,11 +18,11 @@ export const Default: Story = () => (
       <div className="flex gap-8 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner variant="default" />
-          <p className="text-sm text-gray-800">Default</p>
+          <p className="text-sm text-gray-700">Default</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Spinner variant="logo" />
-          <p className="text-sm text-gray-800">Logo</p>
+          <p className="text-sm text-gray-700">Logo</p>
         </div>
       </div>
     </StorySection>
@@ -33,23 +33,23 @@ export const Default: Story = () => (
           <div className="flex gap-6 items-center">
             <div className="flex flex-col items-center gap-2">
               <Spinner size="xs" />
-              <p className="text-sm text-gray-800">XS</p>
+              <p className="text-sm text-gray-700">XS</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="sm" />
-              <p className="text-sm text-gray-800">Small</p>
+              <p className="text-sm text-gray-700">Small</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="md" />
-              <p className="text-sm text-gray-800">Medium</p>
+              <p className="text-sm text-gray-700">Medium</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="lg" />
-              <p className="text-sm text-gray-800">Large</p>
+              <p className="text-sm text-gray-700">Large</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="xl" />
-              <p className="text-sm text-gray-800">XL</p>
+              <p className="text-sm text-gray-700">XL</p>
             </div>
           </div>
         </StorySection>
@@ -58,23 +58,23 @@ export const Default: Story = () => (
           <div className="flex gap-6 items-center">
             <div className="flex flex-col items-center gap-2">
               <Spinner variant="logo" size="xs" />
-              <p className="text-sm text-gray-800">XS</p>
+              <p className="text-sm text-gray-700">XS</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner variant="logo" size="sm" />
-              <p className="text-sm text-gray-800">Small</p>
+              <p className="text-sm text-gray-700">Small</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner variant="logo" size="md" />
-              <p className="text-sm text-gray-800">Medium</p>
+              <p className="text-sm text-gray-700">Medium</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner variant="logo" size="lg" />
-              <p className="text-sm text-gray-800">Large</p>
+              <p className="text-sm text-gray-700">Large</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner variant="logo" size="xl" />
-              <p className="text-sm text-gray-800">XL</p>
+              <p className="text-sm text-gray-700">XL</p>
             </div>
           </div>
         </StorySection>
@@ -85,15 +85,15 @@ export const Default: Story = () => (
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner color="primary" />
-          <p className="text-sm text-gray-800">Primary (Teal)</p>
+          <p className="text-sm text-gray-700">Primary (Teal)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Spinner color="secondary" />
-          <p className="text-sm text-gray-800">Secondary (Coral)</p>
+          <p className="text-sm text-gray-700">Secondary (Coral)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Spinner color="neutral" />
-          <p className="text-sm text-gray-800">Neutral (Gray)</p>
+          <p className="text-sm text-gray-700">Neutral (Gray)</p>
         </div>
       </div>
     </StorySection>
@@ -133,14 +133,14 @@ export const Default: Story = () => (
         <StorySection title="Inline Loading" variant="subsection">
           <div className="flex items-center gap-2">
             <Spinner size="sm" />
-            <p className="text-gray-800">Processing your request...</p>
+            <p className="text-gray-700">Processing your request...</p>
           </div>
         </StorySection>
 
         <StorySection title="Centered Loading" variant="subsection">
           <div className="border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-[200px]">
             <Spinner size="lg" />
-            <p className="text-gray-800">Loading meditation...</p>
+            <p className="text-gray-700">Loading meditation...</p>
           </div>
         </StorySection>
 
@@ -148,8 +148,8 @@ export const Default: Story = () => (
           <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
             <div className="flex flex-col items-center gap-4">
               <Spinner size="lg" color="primary" />
-              <p className="text-lg text-gray-800">Loading your meditation session</p>
-              <p className="text-sm text-gray-800">Please wait...</p>
+              <p className="text-lg text-gray-700">Loading your meditation session</p>
+              <p className="text-sm text-gray-700">Please wait...</p>
             </div>
           </div>
         </StorySection>
@@ -167,7 +167,7 @@ export const Default: Story = () => (
           <div className="bg-white border border-gray-200 rounded-lg p-8 flex items-center justify-center min-h-[200px]">
             <div className="flex flex-col items-center gap-3">
               <Spinner variant="logo" size="lg" />
-              <p className="text-gray-800">Loading meditation...</p>
+              <p className="text-gray-700">Loading meditation...</p>
             </div>
           </div>
         </StorySection>

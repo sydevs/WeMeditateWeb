@@ -98,11 +98,11 @@ export function TechniqueCard({
           md:px-10 lg:px-12
         `}
       >
-        <Heading level="h3" styleAs="h5" className="mb-4 text-gray-800">
+        <Heading level="h3" styleAs="h5" className="mb-4 text-gray-700">
           {title}
         </Heading>
 
-        <p className="mb-10 text-gray-800 text-lg md:text-base">
+        <p className="mb-10 text-gray-700 text-lg md:text-base">
           {description}
         </p>
 

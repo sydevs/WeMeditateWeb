@@ -26,7 +26,7 @@ export const Default: Story = () => (
         <Heading level="h1" className="mb-4">
           Guide to Meditation
         </Heading>
-        <p className="text-gray-800 mb-6">
+        <p className="text-gray-700 mb-6">
           Meditation is a practice of focused attention and awareness that has been
           practiced for thousands of years in various cultures around the world.
         </p>
@@ -34,7 +34,7 @@ export const Default: Story = () => (
         <Heading level="h2" className="mb-3">
           Getting Started
         </Heading>
-        <p className="text-gray-800 mb-6">
+        <p className="text-gray-700 mb-6">
           Begin with just a few minutes each day in a quiet, comfortable space.
           Consistency is more important than duration when starting out.
         </p>
@@ -42,7 +42,7 @@ export const Default: Story = () => (
         <Heading level="h3" className="mb-2">
           Finding a Quiet Space
         </Heading>
-        <p className="text-gray-800 mb-6">
+        <p className="text-gray-700 mb-6">
           Choose a comfortable, quiet location where you won't be disturbed. This
           could be a corner of your bedroom, a peaceful spot in your garden, or
           anywhere you feel at ease.
@@ -51,7 +51,7 @@ export const Default: Story = () => (
         <Heading level="h3" className="mb-2">
           Setting a Timer
         </Heading>
-        <p className="text-gray-800 mb-6">
+        <p className="text-gray-700 mb-6">
           Use a gentle timer to track your meditation sessions. Start with 5-10
           minutes and gradually increase as you become more comfortable with the
           practice.

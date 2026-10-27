@@ -64,9 +64,9 @@ export const StorySection = ({
    * `renderContent()` paints, so both sit on the white page whatever the
    * surface is.
    */
-  const getTitleColor = () => (variant === 'subsection' ? 'text-gray-800' : 'text-gray-900')
+  const getTitleColor = () => (variant === 'subsection' ? 'text-gray-700' : 'text-gray-900')
 
-  const descriptionColor = 'text-gray-800'
+  const descriptionColor = 'text-gray-700'
 
   // Variant-specific configuration
   const variantConfig = {

@@ -85,8 +85,8 @@ export function FormField({
   const alignStyles = align === 'center' ? 'text-center' : 'text-left'
   const labelStyles = 'block text-sm font-medium text-gray-900 mb-1'
   const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : ''
-  const descriptionStyles = 'mt-1 text-sm text-gray-800'
-  const errorStyles = 'mt-1 text-sm text-error-dark'
+  const descriptionStyles = 'mt-1 text-sm text-gray-700'
+  const errorStyles = 'mt-1 text-sm text-error'
 
   // Generate IDs for description and error for aria-describedby
   const descriptionId = description ? `${id}-description` : undefined
@@ -103,7 +103,7 @@ export function FormField({
       >
         {label}
         {required && (
-          <span className="text-error-dark ml-1" aria-label={t('forms.a11y.required_marker')}>
+          <span className="text-error ml-1" aria-label={t('forms.a11y.required_marker')}>
             *
           </span>
         )}

@@ -214,8 +214,8 @@ export function ContentCard({
           <Link
             className={
               isHeroVariant
-                ? 'text-gray-800 hover:text-teal-700 transition-colors duration-200'
-                : 'text-gray-800 hover:text-teal-700 transition-colors duration-200'
+                ? 'text-gray-700 hover:text-teal-600 transition-colors duration-200'
+                : 'text-gray-700 hover:text-teal-600 transition-colors duration-200'
             }
             href={href}
             locale={locale}
@@ -228,7 +228,7 @@ export function ContentCard({
 
         {/* Optional description */}
         {description && (
-          <p className="text-sm text-gray-800 line-clamp-3 leading-relaxed">{description}</p>
+          <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed">{description}</p>
         )}
       </div>
     </article>

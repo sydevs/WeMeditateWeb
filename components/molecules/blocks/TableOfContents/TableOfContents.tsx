@@ -38,7 +38,7 @@ export function TableOfContents({ title, headings, className = '' }: TableOfCont
       className={`not-prose my-8 rounded-lg border border-gray-200 bg-gray-50 p-6 ${className}`}
     >
       {title && (
-        <p className="mb-3 text-sm font-semibold tracking-wide text-gray-800 uppercase">{title}</p>
+        <p className="mb-3 text-sm font-semibold tracking-wide text-gray-700 uppercase">{title}</p>
       )}
 
       <ul className="flex flex-col gap-2">

@@ -114,7 +114,7 @@ export function Accordion({
               >
                 <span
                   className={`text-xl font-medium transition-colors ${
-                    isOpen ? 'text-gray-900' : 'text-gray-800 group-hover:text-gray-900'
+                    isOpen ? 'text-gray-800' : 'text-gray-700 group-hover:text-gray-800'
                   }`}
                 >
                   {item.title}
@@ -139,7 +139,7 @@ export function Accordion({
               id={`accordion-content-${item.id}`}
               role="region"
             >
-              <div className="pb-4 sm:pb-6 pr-6 sm:pr-8 text-base leading-relaxed text-gray-800">
+              <div className="pb-4 sm:pb-6 pr-6 sm:pr-8 text-base leading-relaxed text-gray-700">
                 {item.content}
               </div>
             </div>

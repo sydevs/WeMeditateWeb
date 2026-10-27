@@ -98,7 +98,7 @@ export function DropdownItem({
 
   return (
     <a
-      className={`block hover:bg-gray-100 font-medium text-gray-800 transition-colors ${sizeStyles[size]} ${className}`}
+      className={`block hover:bg-gray-100 font-medium text-gray-700 transition-colors ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {children}

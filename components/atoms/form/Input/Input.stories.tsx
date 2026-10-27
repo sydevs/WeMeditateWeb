@@ -35,11 +35,11 @@ export const Default: Story = () => (
     <StorySection title="Icon Customization">
       <div className="flex flex-col gap-3 max-w-xs">
         <div>
-          <p className="text-sm text-gray-800 mb-1">Custom icon</p>
+          <p className="text-sm text-gray-700 mb-1">Custom icon</p>
           <Input type="search" placeholder="Search..." icon={HeartIcon} />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-1">Icon disabled</p>
+          <p className="text-sm text-gray-700 mb-1">Icon disabled</p>
           <Input type="search" placeholder="Search..." icon={null} />
         </div>
       </div>
@@ -101,15 +101,15 @@ export const Default: Story = () => (
     <StorySection title="Widths">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="text-sm text-gray-800 mb-1">Default (full width)</p>
+          <p className="text-sm text-gray-700 mb-1">Default (full width)</p>
           <Input type="text" placeholder="Default width" />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-1">Custom Width (max-w-64)</p>
+          <p className="text-sm text-gray-700 mb-1">Custom Width (max-w-64)</p>
           <Input type="text" placeholder="Custom width" className="max-w-64" />
         </div>
         <div>
-          <p className="text-sm text-gray-800 mb-1">Custom Width (max-w-sm)</p>
+          <p className="text-sm text-gray-700 mb-1">Custom Width (max-w-sm)</p>
           <Input type="text" placeholder="Custom width" className="max-w-sm" />
         </div>
       </div>

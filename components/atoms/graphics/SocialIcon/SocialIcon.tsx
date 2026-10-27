@@ -92,7 +92,7 @@ export function SocialIcon({
   }
 
   const colorStyles = {
-    gray: 'text-gray-800 hover:text-gray-900',
+    gray: 'text-gray-700 hover:text-gray-900',
     primary: 'text-teal-700 hover:text-teal-800',
     secondary: 'text-coral-600 hover:text-coral-700',
     brand: {

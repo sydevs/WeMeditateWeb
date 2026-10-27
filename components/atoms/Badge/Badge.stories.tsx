@@ -121,7 +121,7 @@ export const Default: Story = () => (
 
         <StorySection title="On a card with thumbnail" variant="subsection">
           <div className="relative w-64 h-40 bg-gray-200 rounded flex items-center justify-center">
-            <span className="text-gray-800">Thumbnail Image</span>
+            <span className="text-gray-700">Thumbnail Image</span>
             <div className="absolute bottom-2 left-2">
               <Badge color="primary" shape="circular">
                 10 min

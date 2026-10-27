@@ -62,19 +62,19 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-12 md:flex-row md:gap-16">
         {/* Hero Links Section */}
         <div className="flex-1">
-          <h4 className="text-xs font-bold text-gray-800 uppercase mb-4">Hero Links (No Title)</h4>
+          <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">Hero Links (No Title)</h4>
           <FooterLinkList variant="hero" links={heroLinks} />
         </div>
 
         {/* Default Links Section */}
         <div className="flex-1">
-          <h4 className="text-xs font-bold text-gray-800 uppercase mb-4">Default Links (With Title)</h4>
+          <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">Default Links (With Title)</h4>
           <FooterLinkList title="Come meditate" links={sampleLinks} />
         </div>
 
         {/* Another Default Section */}
         <div className="flex-1">
-          <h4 className="text-xs font-bold text-gray-800 uppercase mb-4">Another Section</h4>
+          <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">Another Section</h4>
           <FooterLinkList
             title="Resources"
             links={[

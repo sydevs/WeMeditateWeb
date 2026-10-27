@@ -83,7 +83,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
         </div>
         <span
           className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
-            isCurrentTrack ? 'text-teal-50' : 'text-gray-800'
+            isCurrentTrack ? 'text-teal-50' : 'text-gray-700'
           }`}
         >
           {formatDuration(track.duration)}

@@ -72,7 +72,7 @@ export function ErrorFallback({
       </Heading>
 
       <p
-        className={`text-base sm:text-lg font-light text-gray-800 max-w-md ${
+        className={`text-base sm:text-lg font-light text-gray-700 max-w-md ${
           showStatusLink ? 'mb-2' : 'mb-6'
         }`}
       >
@@ -80,7 +80,7 @@ export function ErrorFallback({
       </p>
 
       {showStatusLink && (
-        <p className="text-base sm:text-lg font-light text-gray-800 mb-6 max-w-md">
+        <p className="text-base sm:text-lg font-light text-gray-700 mb-6 max-w-md">
           {t.rich('errors.general.status_page_hint', {
             link: (
               <a
@@ -100,7 +100,7 @@ export function ErrorFallback({
       {/* eslint-disable no-restricted-syntax -- both call sites pass showDetails={import.meta.env.DEV}, so this panel is a developer's, never a visitor's */}
       {showDetails && (
         <details className="mb-6 max-w-md text-left w-full">
-          <summary className="cursor-pointer text-sm text-gray-800 hover:text-gray-900 mb-2 text-center">
+          <summary className="cursor-pointer text-sm text-gray-700 hover:text-gray-900 mb-2 text-center">
             Technical Details
           </summary>
           <div className="mt-2 p-4 bg-gray-100 rounded text-xs font-mono break-words">

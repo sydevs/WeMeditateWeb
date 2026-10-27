@@ -55,10 +55,10 @@ const ARTICLE_CLASS = [
   // Generous top margin so headings clearly introduce their section
   '[&>h2]:mt-12 [&>h3]:mt-10 [&>h4]:mt-8 [&>h5]:mt-6 [&>h6]:mt-6',
   // Body text
-  '[&>p]:my-4 [&>p]:text-lg [&>p]:font-light [&>p]:leading-relaxed [&>p]:text-gray-800',
+  '[&>p]:my-4 [&>p]:text-lg [&>p]:font-light [&>p]:leading-relaxed [&>p]:text-gray-700',
   // Lists
   '[&>ul]:my-4 [&>ol]:my-4 [&>ul]:list-disc [&>ol]:list-decimal [&>ul]:pl-6 [&>ol]:pl-6',
-  '[&>ul]:text-lg [&>ol]:text-lg [&>ul]:font-light [&>ol]:font-light [&>ul]:text-gray-800 [&>ol]:text-gray-800',
+  '[&>ul]:text-lg [&>ol]:text-lg [&>ul]:font-light [&>ol]:font-light [&>ul]:text-gray-700 [&>ol]:text-gray-700',
 ].join(' ')
 
 /**
@@ -211,7 +211,7 @@ const CONVERTERS: JSXConverters = {
           src={image.url}
           width={image.width ?? undefined}
         />
-        {caption ? <figcaption className="mt-2 text-sm text-gray-800">{caption}</figcaption> : null}
+        {caption ? <figcaption className="mt-2 text-sm text-gray-700">{caption}</figcaption> : null}
       </figure>
     )
   },

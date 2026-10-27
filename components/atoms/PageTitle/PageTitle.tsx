@@ -51,7 +51,7 @@ export const PageTitle = ({
         before:from-transparent before:to-teal-200/30
         before:content-['']
         ${gradientClasses[align]}
-        text-gray-800
+        text-gray-700
       `}
     >
       <Component className="relative font-sans text-4xl font-semibold tracking-wider">
