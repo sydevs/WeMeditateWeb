@@ -15,7 +15,7 @@ describe('Header', () => {
 
     // The banner carries the decorative illustration. The condensed bar does not.
     expect(html).toContain('<svg')
-    expect(html).toContain('Classes near me')
+    expect(html).toContain('>Classes near me<')
     expect(html).toContain('Meditate Now')
   })
 
@@ -68,6 +68,15 @@ describe('Header', () => {
 
       expect(bar).toContain('min-h-11')
       expect(html.match(/touch-target-overlay/g)).toHaveLength(2)
+    })
+
+    it('is not drawn at all until it sticks', () => {
+      // Un-stuck it holds nothing visible, so its two rules would read as an
+      // empty 44px gap on every mobile page.
+      const navClass = (html: string) => html.match(/<nav class="([^"]*)"/)?.[1]
+
+      expect(navClass(render())).toContain('hidden lg:block')
+      expect(navClass(render({ condensed: true }))).not.toContain('hidden')
     })
 
     it('names both controls, since each renders an icon alone', () => {

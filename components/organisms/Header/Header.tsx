@@ -138,7 +138,7 @@ export function Header({
           // Once stuck, the nav paints its own white surface over whatever the
           // header was overlaid on.
           className={`sticky top-0 z-50 border-t border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
-            isSticky ? 'surface-light full-bleed bg-white' : ''
+            isSticky ? 'surface-light full-bleed bg-white' : 'hidden lg:block'
           }`}
         >
           {/* `min-h-11` is the floor the icon controls' 44×44 overlays need. Below
@@ -161,9 +161,9 @@ export function Header({
             />
 
             {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
-                cannot shrink below their min-content width, and it sits outside
-                any `overflow` container — below `lg:` it pushed the document
-                sideways rather than clipping (#202). */}
+                cannot shrink below their min-content width, and nothing in
+                `LayoutChrome` clips it — below `lg:` it pushed the document
+                sideways (#202). */}
             <div className="hidden lg:flex items-stretch justify-center gap-2 max-w-3xl flex-1">
               {navItems.map((item, index) =>
                 item.dropdown ? (
