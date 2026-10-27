@@ -211,16 +211,16 @@
  */
 @utility surface-light {
   --surface-fg: var(--color-gray-900);
-  --surface-fg-muted: var(--color-gray-700);
-  --surface-primary: var(--color-teal-600);
-  --surface-primary-strong: var(--color-teal-700);
+  --surface-fg-muted: var(--color-gray-800);
+  --surface-primary: var(--color-teal-700);
+  --surface-primary-strong: var(--color-teal-800);
   --surface-secondary: var(--color-coral-600);
   --surface-secondary-strong: var(--color-coral-700);
   --surface-line: var(--color-gray-500);
   --surface-line-subtle: var(--color-gray-200);
   --surface-tint: var(--color-gray-100);
   --surface-highlight: var(--color-teal-100);
-  --surface-on-highlight: var(--color-gray-700);
+  --surface-on-highlight: var(--color-gray-800);
   --surface-ring: var(--color-teal-600);
   --surface-ring-offset: #fff;
 }
