@@ -5,7 +5,10 @@
  * @see https://tailwindcss.com/docs/theme
  */
 
-@import "tailwindcss";
+/* `source(none)`: the @source lines below are the whole scan set, not an
+   addition to it. A new top-level directory that authors a className needs a
+   fourth line here — see docs/rules/tailwind.md (#186). */
+@import "tailwindcss" source(none);
 
 /* Tell Tailwind where to find classes for scanning */
 @source "../components";
