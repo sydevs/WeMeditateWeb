@@ -370,7 +370,7 @@ Context only when composition does not work, since it is the exception here, not
 | Keyboard | Every interactive element is reachable by keyboard, in the visual tab order, with the `focus-ring` utility (never a hand-written ring — see `docs/rules/design-system.md`). Escape closes a modal or dropdown. |
 | Semantic HTML | Use `<nav>`, `<main>`, `<article>`, `<button>` for actions, `<a>` for navigation, and `<h1>`–`<h6>` in order. |
 | ARIA | Add ARIA only where semantic HTML falls short — `aria-expanded`/`aria-haspopup` on a dropdown trigger, `aria-busy`/`aria-live` on a loading button. |
-| Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. A logotype and `aria-hidden` decoration owe neither. Reach for a surface token or a role from the table above, and `tests/guards/text-contrast.test.ts` has already measured it. |
+| Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. A logotype, and text that is pure decoration, owe neither — `aria-hidden` alone does not make informative text decorative. Reach for a surface token or a role from the table above, and `tests/guards/text-contrast.test.ts` has already measured it. |
 | Alt text | A decorative image uses `alt=""` and `role="presentation"`. An informative image needs a real description. |
 | Forms | Pair every input with a `<label htmlFor>`, and set `aria-invalid` and `aria-describedby` on an errored field, pointing at an `id` with `role="alert"`. |
 
