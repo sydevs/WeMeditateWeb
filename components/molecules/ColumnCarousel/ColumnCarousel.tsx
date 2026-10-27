@@ -39,13 +39,19 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
       disabled={disabled}
       aria-label={ariaLabel}
       // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
-      // item shrink: it still shrinks, just not below the tap minimum.
+      // item shrink: it still shrinks, just not below the tap minimum. That
+      // floor only bites while the button is a flex item — a block-level
+      // `<button>` is sized fit-content, whose lower bound is its min-content
+      // width, which no `min-width` lowers. So both wrappers set `flex`.
       className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
     >
       {column && (
         <>
           {isPrev && <ChevronLeftIcon className="w-5 h-5 shrink-0" />}
-          <span className="max-w-[100px] truncate">{column.title}</span>
+          {/* `min-w-0`, or `truncate` never fires: a flex item's `min-width:
+              auto` floors it at the nowrap text width, and the overflow lands
+              on the dots instead of the ellipsis. */}
+          <span className="max-w-[100px] min-w-0 truncate">{column.title}</span>
           {!isPrev && <ChevronRightIcon className="w-5 h-5 shrink-0" />}
         </>
       )}
@@ -158,7 +164,7 @@ export function ColumnCarousel({
         >
           {/* Navigation controls above carousel */}
           <div className="flex items-center mb-6">
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex">
               <CarouselNavButton
                 direction="prev"
                 column={prevColumn}

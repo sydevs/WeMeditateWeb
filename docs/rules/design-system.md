@@ -52,6 +52,12 @@ exception, and do the width arithmetic first if you cannot.
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content.
 
+On a flex item **only**. A block-level `<button>` is sized fit-content, and its lower bound is its
+own min-content width, which no `min-width` lowers — so it keeps its full text width and overflows
+its parent. Wrap such a button in a flex parent, and give a `truncate` child `min-w-0`, or that
+child's min-content floors the button at the untruncated text. Both of `ColumnCarousel`'s nav
+buttons wanted this; only one had it, and the other reached 69px into the slide dots (#135).
+
 ## Route changes are already announced — do not add a second announcer
 
 Vike Client Routing swaps the page under `<main>` while the site chrome stays in place. So a

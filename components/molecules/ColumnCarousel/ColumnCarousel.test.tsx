@@ -71,4 +71,20 @@ describe('CarouselNavButton', () => {
 
     expect(html.match(/flex touch-target items-center/g)).toHaveLength(2)
   })
+
+  // `touch-target`'s `min-width` only shrinks a *flex item*. The prev wrapper
+  // was the one `display: block`, which sizes its `<button>` fit-content with
+  // the min-content width as a floor — so the button stayed 132px inside a
+  // 63px wrapper and reached 69px into the dots (#135).
+  it('makes a flex item of both buttons, so the floor can bite', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
+
+    expect(html.match(/class="flex-1 min-w-0 flex(?: justify-end)?"/g)).toHaveLength(2)
+  })
+
+  it('lets the title truncate instead of flooring the button at its text width', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
+
+    expect(html).toContain('class="max-w-[100px] min-w-0 truncate"')
+  })
 })

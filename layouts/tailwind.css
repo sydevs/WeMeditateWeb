@@ -136,6 +136,11 @@
  * `min-width: auto`: a flex item carrying `touch-target` now shrinks to 44px
  * instead of to its content. `CarouselNavButton` wants exactly that floor.
  * Anywhere else it is a shrink change to know about, not a hit area.
+ *
+ * It bites on a flex item only. A block-level `<button>` is sized
+ * fit-content, whose lower bound is its own min-content width, and no
+ * `min-width` lowers that — so wrap such a button in a flex parent rather
+ * than expecting the floor to shrink it.
  */
 @utility touch-target {
   min-width: --spacing(11);
