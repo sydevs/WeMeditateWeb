@@ -153,7 +153,9 @@ const variantStyles = {
 
 - **Only a component that paints a background sets a surface.** `OrnateTextBox` always paints dark.
   The sticky header nav paints white, so it sets `surface-light` once it sticks. Ladle's
-  `StorySection surface="dark"` and any dark story wrapper (`surface-dark bg-gray-900`) do the same.
+  `StorySection surface="dark"` and any dark story wrapper (`surface-dark bg-teal-900`) do the same.
+  **A dark ground is a `900` step, never an `800`**: the dark surface draws `text-primary` as
+  `teal-300`, which clears 4.5:1 on `teal-900` (5.71) and on nothing lighter (#179).
 - **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
   `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
   `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
@@ -161,11 +163,14 @@ const variantStyles = {
 - **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
   surface around it. A filled `Button` draws its spinner in `border-current` instead.
 - **A colour that does not change with the surface names its scale step.** Filled buttons are
-  `bg-teal-500` on every background.
+  `bg-teal-700` on every background. A step named this way owes its own 4.5:1 against the label it
+  carries, with nothing resolving it for you — `tests/guards/text-contrast.test.ts` measures each
+  pair a class string names.
 
 `layouts/tailwind.test.ts` compiles the real stylesheet and holds the mechanism: tokens resolve at
 the element (`@theme inline` — without it a nested surface changes nothing), every surface defines
-every token, and each ring clears 3:1 against its band.
+every token, each light text token clears 4.5:1 against white, and each ring clears 3:1 against
+its band.
 
 ### Focus indicator
 
@@ -190,8 +195,9 @@ Three rules the atoms broke before this existed:
 
 Dark surfaces vary — `teal-900`, the `OrnateTextBox` brown gradient, a photographic splash — so the
 dark ring is `white`, which clears 3:1 on all of them (4.68 on the lightest, `#8a6f56`). A brand
-colour would not. The dark band stays, because it gives the white ring its 3:1 against a
-`teal-500` (2.70), `coral-500` (2.53) or white fill.
+colour would not. The dark band stays, because it gives the white ring its 3:1 against a white
+fill — the `neutral` button's. The filled brand variants clear it without the band now that they
+sit at `teal-700` (5.50) and `coral-600` (4.69), but the band is per surface, not per variant.
 
 `Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
 textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,
@@ -220,12 +226,12 @@ custom className only for what the variant does not cover.
 
 ```tsx
 // Before
-<Link className="text-gray-600 hover:text-teal-600 transition-colors text-sm font-light">
+<Link className="text-gray-800 hover:text-teal-700 transition-colors text-sm font-light">
   {item.label}
 </Link>
 
 // After
-<Link variant="neutral" size="sm" className="hover:text-teal-600 font-light">
+<Link variant="neutral" size="sm" className="hover:text-teal-700 font-light">
   {item.label}
 </Link>
 ```
