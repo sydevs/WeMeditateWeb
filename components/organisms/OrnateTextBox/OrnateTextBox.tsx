@@ -112,13 +112,13 @@ export function OrnateTextBox({
   // than interpolating the angle — which would compile to no gradient at all.
   // 270deg points left, so the peach stop at 100% stays on the band's inner
   // edge from `right-0`, exactly as 90deg keeps it there from `left-0`.
-  const gradientClasses =
+  const bandSide = align === 'right' ? 'right-0' : 'left-0'
+  const bandGradient =
     align === 'right'
-      ? 'right-0 bg-[linear-gradient(270deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
-      : 'left-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
+      ? 'bg-[linear-gradient(270deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
+      : 'bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
 
-  const imageFloatClasses =
-    align === 'right' ? 'lg:float-right lg:ml-12' : 'lg:float-left lg:mr-12'
+  const imageFloat = align === 'right' ? 'lg:float-right lg:ml-12' : 'lg:float-left lg:mr-12'
 
   return (
     <div
@@ -154,7 +154,7 @@ export function OrnateTextBox({
           left would otherwise sit over the band and measure 2.34:1 (#193). */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute -top-24 bottom-0 -z-10 w-1/3 ${gradientClasses}`}
+        className={`pointer-events-none absolute -top-24 bottom-0 ${bandSide} -z-10 w-1/3 ${bandGradient}`}
       />
 
       {/* Decorative vertical sidetext label (desktop only, single line) */}
@@ -180,7 +180,7 @@ export function OrnateTextBox({
         </div>
 
         {/* Feature image — floats to the `align` side, beside the body column */}
-        <div className={`mb-6 w-full lg:mb-4 lg:w-[44%] ${imageFloatClasses}`}>
+        <div className={`mb-6 w-full ${imageFloat} lg:mb-4 lg:w-[44%]`}>
           <Image
             alt={imageAlt}
             aspectRatio={imageAspectRatio}

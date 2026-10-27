@@ -81,15 +81,18 @@ describe('<OrnateTextBox>', () => {
   // pinned with the side: both must compile, and 270deg is what keeps the
   // peach stop on the band's inner edge from `right-0`.
   it('keeps the warm gradient on the image side, angled inward', () => {
-    const left = renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />)
+    // `-top-24` is the warm band's alone; the brown ground is a gradient too.
+    const band = (html: string) => html.match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
 
-    expect(left).toContain('left-0 bg-[linear-gradient(90deg')
-    expect(left).not.toContain('linear-gradient(270deg')
+    const left = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />))
 
-    const right = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
+    expect(left).toContain('left-0')
+    expect(left).toContain('linear-gradient(90deg')
 
-    expect(right).toContain('right-0 bg-[linear-gradient(270deg')
-    expect(right).not.toContain('linear-gradient(90deg')
+    const right = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />))
+
+    expect(right).toContain('right-0')
+    expect(right).toContain('linear-gradient(270deg')
   })
 
   it('renders the title above the body (header precedes the image)', () => {
