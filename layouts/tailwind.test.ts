@@ -1,25 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
 import { compile } from 'tailwindcss'
+import {
+  layoutsDir,
+  loadTailwindStylesheet,
+  themeStylesheet,
+} from '../tests/guards/_source-scan'
 
 import { contrast } from '../tests/_helpers/contrast'
 
-const require = createRequire(import.meta.url)
-const layouts = dirname(new URL(import.meta.url).pathname)
-
 /** Compiles the real stylesheet for the given class candidates. */
 async function build(candidates: string[]): Promise<string> {
-  const compiler = await compile(readFileSync(join(layouts, 'tailwind.css'), 'utf8'), {
-    base: layouts,
-    loadStylesheet: async (id, base) => {
-      const path = require.resolve(id === 'tailwindcss' ? 'tailwindcss/index.css' : id, {
-        paths: [base],
-      })
-
-      return { content: readFileSync(path, 'utf8'), base: dirname(path), path }
-    },
+  const compiler = await compile(themeStylesheet, {
+    base: layoutsDir,
+    loadStylesheet: loadTailwindStylesheet,
   })
 
   return compiler.build(candidates)
