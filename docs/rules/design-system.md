@@ -18,6 +18,7 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
 - Use the design tokens consistently. Do not add a one-off custom value.
 - Implement every component mobile-first — see [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for
   the breakpoint table. Give every interactive element a touch target of at least 44×44px.
+  `ColumnCarousel`'s slide dots are the one documented exception, at 40×40 — see below.
 - Meet WCAG 2.1 AA.
 - Gate a JavaScript-driven animation on `prefers-reduced-motion` — see the Motion section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
@@ -32,10 +33,21 @@ built from a bare `<button>` picks one of the two utilities in
 | Utility | Use it when |
 | --- | --- |
 | `touch-target` | The layout can absorb a bigger box. **Reach for this first.** |
-| `touch-target-overlay` | The drawn size *is* the design — an 8px dot, a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
+| `touch-target-overlay` | The drawn size *is* the design — a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
 
 Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
-why growing the box is the first choice.
+why growing the box is the first choice. `ColumnCarousel`'s dots shipped that bug: each 8px dot
+sat on 16px centres, so tapping the dot you could see selected the *next* slide (#135).
+
+### The one documented exception: a carousel dot is 40×40
+
+Five 44px cells plus both `CarouselNavButton`s need 372px, and a 390px viewport leaves this row
+358px. So each `ColumnCarousel` dot is a 40×40 `<button>` drawing an 8px `<span>`, with the row at
+`gap-0` so adjacent cells cannot overlap by construction.
+
+40px still clears WCAG 2.2 AA 2.5.8, which wants 24px, and which 8px dots on 16px centres could
+not meet by the spacing exception either. Grow a box to 44px before you reach for a second
+exception, and do the width arithmetic first if you cannot.
 
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content.

@@ -168,7 +168,14 @@ export function ColumnCarousel({
             </div>
 
             {/* Dot indicators - absolutely centered */}
-            <div className="flex gap-2 shrink-0 px-4">
+            {/*
+              `gap-0`, so the cells abut: a 44x44 `touch-target-overlay` on
+              each 8px dot overlapped its neighbour and handed the taps to the
+              next slide (#135). 40px rather than the house 44px because five
+              44px cells plus both nav buttons need 372px of the 358px a 390px
+              viewport gives this row — see docs/rules/design-system.md.
+            */}
+            <div className="flex gap-0 shrink-0 px-4">
               {columns.map((_, index) => (
                 <button
                   key={index}
@@ -177,16 +184,16 @@ export function ColumnCarousel({
                     number: index + 1,
                     title: columns[index].title,
                   })}
-                  // Neighbouring overlays overlap at `gap-2`, and separating
-                  // them needs 44px centres — 220px of row, which overflows a
-                  // 390px viewport once the nav buttons' padding is counted.
-                  // Partial on purpose; #135 carries the layout decision.
-                  className={`touch-target-overlay w-2 h-2 rounded-full transition-colors ${
-                    index === selectedIndex
-                      ? 'bg-teal-600'
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
+                  className="group flex w-10 h-10 items-center justify-center"
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === selectedIndex
+                        ? 'bg-teal-600'
+                        : 'bg-gray-300 group-hover:bg-gray-400'
+                    }`}
+                  />
+                </button>
               ))}
             </div>
 

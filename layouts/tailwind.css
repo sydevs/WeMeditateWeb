@@ -116,11 +116,11 @@
  * `touch-target` grows the box. Reach for it first.
  *
  * `touch-target-overlay` is for a control whose drawn size *is* the design —
- * an 8px carousel dot, a 16px dismiss cross, a 40px media button in a row
- * sized around it. It leaves the box alone and hangs a centred, invisible
- * 44×44 `::before` off it, which takes the clicks on the button's behalf.
- * It is `::before` and not `::after` because Button's hover fill owns
- * `::after`, and pairs it with `overflow-hidden` that would clip this.
+ * a 16px dismiss cross, a 40px media button in a row sized around it. It
+ * leaves the box alone and hangs a centred, invisible 44×44 `::before` off
+ * it, which takes the clicks on the button's behalf. It is `::before` and
+ * not `::after` because Button's hover fill owns `::after`, and pairs it
+ * with `overflow-hidden` that would clip this.
  *
  * Two of these side by side closer than 44px apart will overlap, and the
  * later sibling wins the overlapping strip. Prefer growing the box wherever
