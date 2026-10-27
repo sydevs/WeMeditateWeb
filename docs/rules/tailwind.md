@@ -41,12 +41,17 @@ neither a dead utility live nor a live one dead.
 `<root>-<a declared colour token>` compiles, which is 51 roots today and follows a version bump on
 its own. `font` and `rounded` are named by hand, because probing those namespaces needs an
 ambiguous value (`lg` compiles under `w-` and `blur-` as well). A root outside that set is
-unwatched, never wrongly flagged. Two shapes stay out of scope on purpose: an arbitrary value
-(`text-[16px]`, `bg-(--var)`) names no token, and a match preceded by `<word>-` is a slug rather
-than a utility. Stories are scanned; specs are not.
+unwatched, never wrongly flagged. Three shapes stay out of scope on purpose: an arbitrary value
+(`text-[16px]`, `bg-(--var)`) names no token, a match preceded by `<word>-` is a slug rather
+than a utility, and a match followed by `:` or `=` is CSS rather than a class — 44 kebab-case
+property names sit under a watched root, and a declaration, an arbitrary property
+(`[stroke-width:2px]`) and an SVG attribute all put a separator straight after the name. A
+`<style>` block and a `style` prop are blanked whole instead, because a CSS *value* carries no
+separator. Stories are scanned; specs are not.
 
-The guard also checks the scan set against the tree: every top-level directory that authors a
-`className` must have an `@source` line.
+The guard also checks the scan set against the tree: every top-level directory whose `.ts`/`.tsx`
+authors a `className` must have an `@source` line. A `class=` attribute inside an imported SVG
+sits outside that check — `assets/chart.svg` styles its own `cls-N`.
 
 **A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
 live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
