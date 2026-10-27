@@ -48,7 +48,7 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
         aria-label={ariaLabel}
         // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
         // item shrink: it still shrinks, just not below the tap minimum.
-        className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-ring"
       >
         {column && (
           <>
@@ -188,7 +188,7 @@ export function ColumnCarousel({
                     number: index + 1,
                     title: columns[index].title,
                   })}
-                  className="group flex w-10 h-10 items-center justify-center"
+                  className="group flex w-10 h-10 items-center justify-center focus-ring"
                 >
                   <span
                     className={`w-2 h-2 rounded-full transition-colors ${
