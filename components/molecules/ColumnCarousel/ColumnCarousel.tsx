@@ -188,6 +188,7 @@ export function ColumnCarousel({
                     number: index + 1,
                     title: columns[index].title,
                   })}
+                  aria-pressed={index === selectedIndex}
                   className="group flex w-10 h-10 items-center justify-center focus-ring"
                 >
                   <span
