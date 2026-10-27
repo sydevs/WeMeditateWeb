@@ -30,6 +30,14 @@ import { useT } from '../../../hooks/useT'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
 
+/**
+ * The frame's own variant. Its box is 488px at the widest — `max-w-lg` less
+ * `inset-2` and the 4px border — so 800px is a deliberate ~0.8x sample at 2x
+ * rather than full coverage: the next square width is 1200, for 2.25x the
+ * pixels. A srcset would serve both ends, and this hand-rolled <img> has none.
+ */
+const FRAME_VARIANT = getVariantName('square', 'medium')
+
 // Progress circle geometry constants
 const PROGRESS_RADIUS = 48
 const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
@@ -159,7 +167,6 @@ function VolumeRow({
   onToggleMute,
   action,
 }: VolumeRowProps) {
-
   return (
     <div className="flex flex-col gap-1">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-600">
@@ -687,10 +694,7 @@ function MeditationPlayerInner({
                       alt={track.title}
                       className="w-full h-full object-cover"
                       draggable={false}
-                      // The frame sits in an aspect-square box capped at
-                      // `max-w-lg`, so 800px covers it at 2x. Frames carry no
-                      // dimensions, so `nearestAspectRatio` is unavailable.
-                      src={getImageURL(currentMedia.src, getVariantName('square', 'medium'))}
+                      src={getImageURL(currentMedia.src, FRAME_VARIANT)}
                     />
                   )}
 

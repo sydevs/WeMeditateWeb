@@ -41,12 +41,7 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
    */
   imageHeight?: string
 
-  /**
-   * `sizes` attribute for the thumbnail, describing the rendered box so the
-   * browser picks the right srcset entry. Without it the atom assumes a
-   * roughly full-width layout, which over-fetches in a card grid or a
-   * carousel.
-   */
+  /** `sizes` for the thumbnail, describing the rendered box — see `Image`. */
   sizes?: string
 
   /**
@@ -169,9 +164,8 @@ export function ContentCard({
             alt={thumbnailAlt || title}
             aspectRatio={aspectRatio}
             className={`transition-opacity duration-200 group-hover:opacity-90 ${imageHeight ? `${imageHeight} w-auto` : ''}`}
-            // A fixed image height keeps the ratio out of the layout, but not
-            // out of variant selection: dropping `aspectRatio` here is what
-            // served the full-size original to every carousel card (#146).
+            // A fixed height must still pass `aspectRatio`: it also picks the
+            // Cloudflare variant, not just the layout box (#146).
             forceAspectRatio={!imageHeight}
             objectFit="cover"
             sizes={sizes}
