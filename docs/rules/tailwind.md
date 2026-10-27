@@ -33,8 +33,9 @@ outside the set today, and it authors no class.
 `tests/guards/theme-utilities.test.ts` catches that by asking Tailwind. It compiles each candidate
 against the real stylesheet through `candidatesToCss`, which answers `null` when the utility emits
 no CSS, so the guard models no token sets and no keywords: `text-center` and `font-stretch-expanded`
-compile and pass, `text-error-light` and `rounded-pill` do not and fail. Variants, a `/50` opacity
-and a trailing `!` all go to the compiler as written.
+compile and pass, `text-error-light` and `rounded-pill` do not and fail. A `/50` opacity and a
+trailing `!` go to the compiler with the utility; a variant prefix is dropped, since it can make
+neither a dead utility live nor a live one dead.
 
 **Reach** comes from Tailwind too, for the colour namespace: a root takes a colour exactly when
 `<root>-<a declared colour token>` compiles, which is 51 roots today and follows a version bump on

@@ -66,11 +66,16 @@ const WATCHED_PREFIXES = ((): string[] => {
  * variant prefix is dropped rather than matched: it cannot make a dead utility
  * live, or a live one dead. A trailing `/50` opacity and `!` important belong
  * to the candidate, so the compiler is handed both.
+ *
+ * The token must open and close on an alphanumeric, and nothing class-shaped
+ * may follow it. That is what keeps an interpolated `` `bg-teal-${step}` `` out:
+ * matched loosely it yields `bg-teal-`, or `bg-teal` on a retry, and neither is
+ * a utility anyone wrote.
  */
 const CANDIDATE = new RegExp(
   `(?<![a-z0-9-])(?:${[...WATCHED_PREFIXES]
     .sort((a, b) => b.length - a.length)
-    .join('|')})-[a-z0-9][a-z0-9-]*(?:/[a-z0-9.]+)?!?`,
+    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9-])`,
   'g',
 )
 
@@ -99,7 +104,7 @@ describe('theme utilities', () => {
     expect(WATCHED_PREFIXES).toContain('ring-offset')
     // Ours, Tailwind's own (`@theme` extends rather than replaces), and a
     // project `@utility` — all three must reach the compiler.
-    expect(utilitiesIn('text-gray-900 text-gray-950 bg-bg-warm shadow-lg')).toEqual([])
+    expect(utilitiesIn('text-gray-900 text-gray-950 bg-bg-warm text-glow-light')).toEqual([])
   })
 
   it('flags the utilities #176 removed', () => {
@@ -145,20 +150,24 @@ describe('theme utilities', () => {
    * one: a directory outside the scan set compiles no classes at all, and the
    * symptom is an unstyled element on first render. So the set is checked
    * against the tree rather than only described in prose.
+   *
+   * Bounded to `.ts`/`.tsx`, as the rest of this file is. `.claude` is ignored
+   * because `git worktree add .claude/worktrees/<slug>` puts a whole second
+   * checkout there, which `globSync` walks and `.gitignore` does not stop.
    */
   it('scans every directory that authors a class', () => {
-    const ignored = new Set(['node_modules', 'dist', 'build', '.git'])
-    const dirs = readdirSync(repoRoot, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && !ignored.has(entry.name))
-      .map((entry) => entry.name)
+    const ignored = new Set(['node_modules', 'dist', 'build', '.git', '.claude'])
+    const roots = readdirSync(repoRoot, { withFileTypes: true })
+      .filter((entry) => !entry.isDirectory() || !ignored.has(entry.name))
+      .map((entry) => (entry.isDirectory() ? `${entry.name}/**/*.{ts,tsx}` : entry.name))
 
-    const authoring = dirs.filter((dir) =>
-      globSync(`${dir}/**/*.{ts,tsx}`, { cwd: repoRoot })
-        .filter((file) => !/\.test\.tsx?$/.test(file))
+    const authoring = roots.filter((pattern) =>
+      globSync(pattern, { cwd: repoRoot })
+        .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
         .some((file) => readSource(join(repoRoot, file)).includes('className')),
     )
 
-    expect(authoring.filter((dir) => !SCANNED_DIRS.includes(dir))).toEqual([])
+    expect(authoring.filter((pattern) => !SCANNED_DIRS.includes(pattern.split('/')[0]))).toEqual([])
   })
 
   /**

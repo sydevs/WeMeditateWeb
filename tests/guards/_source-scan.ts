@@ -48,7 +48,7 @@ export function stripComments(source: string): string {
  * a property name, not a utility. `AnimatedLogoSvg` is the one such block.
  */
 export function stripStyleBlocks(source: string): string {
-  return blank(source, /<style>[\s\S]*?<\/style>/g)
+  return blank(source, /<style\b[^>]*>[\s\S]*?<\/style>/g)
 }
 
 /**
