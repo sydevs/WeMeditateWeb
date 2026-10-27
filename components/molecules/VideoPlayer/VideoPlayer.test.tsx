@@ -14,11 +14,7 @@ vi.mock('vike-react/ClientOnly', () => ({
 
 import { VideoPlayer } from './index'
 import { posterURL } from './poster'
-
-// The shape a SahajCloud read sends: `…/<image_id>/public`
-// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
-const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
-const BASE = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123'
+import { CF_BASE, CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
 
 describe('<VideoPlayer> server-side fallback', () => {
   it('renders the poster as the fallback frame (LCP image, no player JS)', () => {
@@ -68,14 +64,14 @@ describe('VideoPlayer poster variant', () => {
       <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" poster={CF_PUBLIC_URL} />,
     )
 
-    expect(html).toContain(`src="${BASE}/width=1024"`)
+    expect(html).toContain(`src="${CF_BASE}/width=1024"`)
     expect(html).not.toContain('/public')
   })
 
   // Vidstack needs browser media APIs, so its `poster` cannot be asserted
   // through SSR. Both branches call this one function instead.
   it('resolves one width for both branches, and passes other URLs through', () => {
-    expect(posterURL(CF_PUBLIC_URL)).toBe(`${BASE}/width=1024`)
+    expect(posterURL(CF_PUBLIC_URL)).toBe(`${CF_BASE}/width=1024`)
     expect(posterURL('/api/videos/file/v.jpg')).toBe('/api/videos/file/v.jpg')
     expect(posterURL(undefined)).toBeUndefined()
   })

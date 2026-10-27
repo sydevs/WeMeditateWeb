@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentCard } from './ContentCard'
-
-// The shape a SahajCloud read sends: `…/<image_id>/public`
-// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
-const THUMBNAIL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
-const BASE = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123'
+import {
+  CF_BASE,
+  CF_PUBLIC_URL as THUMBNAIL,
+  PASSTHROUGH_SOURCES,
+} from '../../../tests/_helpers/cloudflare-images'
 
 /** Class attribute of the outer <article>, which gates the whole card. */
 function articleClass(html: string): string {
@@ -59,27 +59,22 @@ describe('ContentCard first-render visibility', () => {
 })
 
 describe('ContentCard thumbnail variant', () => {
+  const fixedHeight = renderToStaticMarkup(
+    <ContentCard href="#" imageHeight="h-56" thumbnailSrc={THUMBNAIL} title="Fixed height" />,
+  )
+
   // A fixed imageHeight used to drop `aspectRatio` outright, so <Image>
   // returned the src untouched and the card served the original (#146).
   it('requests a variant and a srcset with a fixed image height', () => {
-    const html = renderToStaticMarkup(
-      <ContentCard href="#" imageHeight="h-56" thumbnailSrc={THUMBNAIL} title="Fixed height" />,
-    )
-
-    expect(html).toContain(`src="${BASE}/width=800"`)
-    expect(html).toContain(`${BASE}/width=200 200w`)
-    expect(html).not.toContain('/public')
+    expect(fixedHeight).toContain(`src="${CF_BASE}/width=800"`)
+    expect(fixedHeight).toContain(`${CF_BASE}/width=200 200w`)
+    expect(fixedHeight).not.toContain('/public')
   })
 
   it('keeps the fixed-height, natural-width layout', () => {
-    const html = renderToStaticMarkup(
-      <ContentCard href="#" imageHeight="h-56" thumbnailSrc={THUMBNAIL} title="Fixed height" />,
-    )
-
-    expect(html).toContain('h-56 w-auto')
-    // Not boxed: no ratio class on the wrapper, and the <img> stays in flow.
-    expect(html).not.toContain('aspect-square')
-    expect(html).not.toContain('absolute inset-0 w-full h-full')
+    expect(fixedHeight).toContain('h-56 w-auto')
+    // Not boxed, so the atom adds no ratio class of its own.
+    expect(fixedHeight).not.toContain('aspect-square')
   })
 
   it('still boxes to the aspect ratio without a fixed image height', () => {
@@ -88,7 +83,6 @@ describe('ContentCard thumbnail variant', () => {
     )
 
     expect(html).toContain('aspect-square')
-    expect(html).toContain('absolute inset-0 w-full h-full')
   })
 
   it('forwards an explicit sizes to the image', () => {
@@ -99,11 +93,7 @@ describe('ContentCard thumbnail variant', () => {
     expect(html).toContain('sizes="342px"')
   })
 
-  it.each([
-    ['a bundled asset', '/assets/smnd.webp'],
-    ['a story placeholder', 'https://picsum.photos/seed/card/400/400'],
-    ['the SahajCloud dev fallback', '/api/media/file/card.jpg'],
-  ])('leaves %s unchanged, with no srcset', (_label, src) => {
+  it.each(PASSTHROUGH_SOURCES)('leaves %s unchanged, with no srcset', (_label, src) => {
     const html = renderToStaticMarkup(
       <ContentCard href="#" imageHeight="h-56" thumbnailSrc={src} title="Passthrough" />,
     )

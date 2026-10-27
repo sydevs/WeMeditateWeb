@@ -2,10 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AudioPlayer } from './AudioPlayer'
 import type { Track } from './types'
-
-// The shape a SahajCloud read sends: `…/<image_id>/public`
-// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
-const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
+import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
 
 const track: Track = {
   url: 'https://example.com/song.mp3',
@@ -17,11 +14,11 @@ const track: Track = {
 }
 
 describe('<AudioPlayer> now-playing thumbnail sizes', () => {
-  // The box is `w-12 h-12`, 48px. Without an explicit `sizes` the atom
-  // assumed a full-width layout and fetched 800px into it (#146).
-  it('advertises the 48px box', () => {
+  it('advertises the 48px box it draws', () => {
     const html = renderToStaticMarkup(<AudioPlayer tracks={[track]} />)
 
+    // Asserted together, so the pixel number cannot outlive the box.
+    expect(html).toContain('w-12 h-12')
     expect(html).toContain('sizes="48px"')
     expect(html).not.toContain('/public')
   })

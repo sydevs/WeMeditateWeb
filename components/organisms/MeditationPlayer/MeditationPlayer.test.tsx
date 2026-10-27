@@ -2,6 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MeditationPlayer } from './MeditationPlayer'
 import type { Track } from '../../molecules/AudioPlayer/types'
+import {
+  CF_BASE,
+  CF_PUBLIC_URL,
+  PASSTHROUGH_SOURCES,
+} from '../../../tests/_helpers/cloudflare-images'
 
 const track: Track = {
   url: 'https://example.com/voice.mp3',
@@ -13,11 +18,6 @@ const track: Track = {
 }
 
 const musicTrack = { id: 1, title: 'Raag Durga', url: 'https://example.com/music.mp3' }
-
-// The shape a SahajCloud read sends: `…/<image_id>/public`
-// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
-const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
-const BASE = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123'
 
 /**
  * SSR markup assertions only. The audio-settings popover is closed on first
@@ -64,7 +64,7 @@ describe('MeditationPlayer frame variant', () => {
       />,
     )
 
-    expect(html).toContain(`src="${BASE}/width=800"`)
+    expect(html).toContain(`src="${CF_BASE}/width=800"`)
     expect(html).not.toContain('/public')
   })
 
@@ -90,10 +90,7 @@ describe('MeditationPlayer frame variant', () => {
     expect(html).toContain('src="https://cdn.example.com/f.mp4"')
   })
 
-  it.each([
-    ['a story placeholder', 'https://picsum.photos/seed/frame/800/800'],
-    ['the SahajCloud dev fallback', '/api/meditations/file/frame.jpg'],
-  ])('leaves %s unchanged', (_label, src) => {
+  it.each(PASSTHROUGH_SOURCES)('leaves %s unchanged', (_label, src) => {
     const html = renderToStaticMarkup(
       <MeditationPlayer frames={[{ timestamp: 0, media: { type: 'image', src } }]} track={track} />,
     )

@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Avatar } from './Avatar'
-
-// The shape a SahajCloud read sends: `…/<image_id>/public`
-// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
-const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
+import {
+  CF_BASE,
+  CF_PUBLIC_URL,
+  PASSTHROUGH_SOURCES,
+} from '../../../tests/_helpers/cloudflare-images'
 
 describe('<Avatar> server render', () => {
   // The same zero-opacity gate that hid every <Image> hid every avatar too
@@ -30,22 +31,14 @@ describe('<Avatar> server render', () => {
 })
 
 describe('<Avatar> image variant', () => {
-  // A 40px box was fed the full-resolution original, because Avatar never
-  // asked Cloudflare for a variant (#146).
   it('requests the 200px square width for a SahajCloud photo', () => {
     const html = renderToStaticMarkup(<Avatar alt="Jane Smith" src={CF_PUBLIC_URL} />)
 
-    expect(html).toContain(
-      'src="https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/width=200"',
-    )
+    expect(html).toContain(`src="${CF_BASE}/width=200"`)
     expect(html).not.toContain('/public')
   })
 
-  it.each([
-    ['a bundled asset', '/assets/smnd.webp'],
-    ['a story placeholder', 'https://picsum.photos/seed/jane/200/200'],
-    ['the SahajCloud dev fallback', '/api/media/file/jane.jpg'],
-  ])('leaves %s unchanged', (_label, src) => {
+  it.each(PASSTHROUGH_SOURCES)('leaves %s unchanged', (_label, src) => {
     expect(renderToStaticMarkup(<Avatar alt="Jane Smith" src={src} />)).toContain(`src="${src}"`)
   })
 })
