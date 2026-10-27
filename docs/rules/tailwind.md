@@ -18,11 +18,16 @@ the `@theme` directive:
 a config file only through an `@config` directive, so a `tailwind.config.ts` that no stylesheet
 points at is dead — which is what #176 deleted.
 
-**Tailwind scans wider than the `@source` lines.** `@import "tailwindcss"` also detects sources
-from the project root, and the `@source` paths add to that set rather than replacing it. So a
-class-shaped string outside `components/`, `pages/` and `layouts/` ships its CSS all the same —
-from a test fixture, or from a sentence in this file. Spell an example without its prefix for that
-reason. #186 weighs narrowing the set with `source(none)`.
+**The `@source` lines are the whole scan set.** `@import "tailwindcss" source(none)` turns
+automatic source detection off, so `components/`, `pages/` and `layouts/` are all Tailwind reads.
+A class-shaped string anywhere else emits nothing — a test fixture, a code comment, or a sentence
+in this file. Before `source(none)`, 18 utilities in the production stylesheet came from exactly
+those places, six of them from doc lines telling a reader *not* to write the class (#186).
+
+**A new top-level directory that authors a className needs a fourth `@source` line** in
+[layouts/tailwind.css](../../layouts/tailwind.css). Without one its classes compile to no CSS, and
+the failure shows as an unstyled element on first render. `hooks/` is the live code directory
+outside the set today, and it authors no class.
 
 **A utility naming an undeclared token compiles to nothing, and nothing warns.**
 `tests/guards/theme-utilities.test.ts` catches two families of that: a colour utility whose token

@@ -5,7 +5,17 @@
  * @see https://tailwindcss.com/docs/theme
  */
 
-@import "tailwindcss";
+/**
+ * `source(none)` turns automatic source detection off, so the three `@source`
+ * lines below are the whole scan set rather than an addition to it. Without it
+ * Tailwind also detects from the project root, which made the production
+ * stylesheet a function of the repo's prose: 16 utilities were compiled out of
+ * Markdown, code comments and test fixtures, four of them from the line in a
+ * Claude skill file telling an agent not to write them (#186).
+ *
+ * A new top-level directory that authors a className needs a fourth line here.
+ */
+@import "tailwindcss" source(none);
 
 /* Tell Tailwind where to find classes for scanning */
 @source "../components";
