@@ -60,14 +60,17 @@ describe('Header', () => {
   })
 
   describe('the compact bar below lg', () => {
-    it('floors the bar at the height its two overlays need', () => {
-      // Without the floor the bar is 18px, and a pinned bar clips a centred
-      // 44x44 `::before` against the viewport.
+    it('grows its two controls to 44x44 rather than hanging an overlay off them', () => {
+      // The bar is pinned at `top-0`, so below `lg:` — where the nav row is
+      // hidden — the viewport clipped a centred `::before` to 44x31. A grown box
+      // cannot be clipped, and it floors the bar from its own content.
       const html = render()
       const bar = html.match(/<div class="([^"]*max-w-5xl mx-auto px-6[^"]*)"/)?.[1]
 
-      expect(bar).toContain('min-h-11')
-      expect(html.match(/touch-target-overlay/g)).toHaveLength(2)
+      expect(bar).not.toContain('min-h-11')
+      expect(html).toContain('shrink-0 touch-target items-center')
+      expect(html).toContain('flex touch-target items-center justify-end')
+      expect(html).not.toContain('touch-target-overlay')
     })
 
     it('is not drawn at all until it sticks', () => {

@@ -141,18 +141,15 @@ export function Header({
             isSticky ? 'surface-light full-bleed bg-white' : 'hidden lg:block'
           }`}
         >
-          {/* `min-h-11` is the floor the icon controls' 44×44 overlays need. Below
-              `lg:` the nav row is hidden, leaving an 18px bar that clips an
-              overlay to 31px against the viewport once pinned. Inert at `lg:`,
-              where the row already makes the bar 44px. */}
-          <div className="flex items-center justify-between gap-2 min-h-11 max-w-5xl mx-auto px-6">
-            {/* Logo - only visible when sticky. The 16px icon is the design, so it
-                takes the overlay rather than growing; it and the map pin sit at
-                opposite ends of the bar, far past the 44px where two overlays
-                would fight over a shared strip. */}
+          <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">
+            {/* Logo - only visible when sticky. Growing the box to 44×44 beats
+                hanging an overlay off the 16px icon: the bar is pinned at `top-0`,
+                so below `lg:` the viewport clipped a centred `::before` to 44×31
+                (#202). The grown box floors the bar from its own content too, and
+                `items-center` holds the drawn icon where it was. */}
             <Logo
               aria-label={t('common.general.site_title')}
-              className={`shrink-0 touch-target-overlay transition-opacity duration-200 ${
+              className={`shrink-0 touch-target items-center transition-opacity duration-200 ${
                 isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
               href={logoHref}
@@ -188,7 +185,9 @@ export function Header({
               )}
             </div>
 
-            {/* Map pin icon - only visible when sticky and action link exists */}
+            {/* Map pin icon - only visible when sticky and action link exists.
+                `justify-end` keeps the drawn pin on the bar's right padding edge
+                now that `touch-target` makes its box 44px wide. */}
             {actionLinkText && actionLinkHref && (
               <div
                 className={`shrink-0 transition-opacity duration-200 ${
@@ -197,7 +196,7 @@ export function Header({
               >
                 <Link
                   aria-label={actionLinkText}
-                  className="flex items-center gap-1 touch-target-overlay no-underline hover:opacity-75 transition-opacity"
+                  className="flex touch-target items-center justify-end gap-1 no-underline hover:opacity-75 transition-opacity"
                   href={actionLinkHref}
                   variant="unstyled"
                 >
