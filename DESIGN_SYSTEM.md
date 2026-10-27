@@ -398,15 +398,22 @@ asset, a story placeholder) stays unchanged.
 
 | Aspect ratio | Widths |
 | --- | --- |
-| `square` (1:1) | 400, 800, 1200 |
+| `square` (1:1) | 200, 400, 800, 1200 |
 | `video` (16:9) | 640, 800, 1024, 1536 |
 | `4-3`, `3-2` | 800, 1024, 1536 |
 | `ultrawide` (21:9) | 1536, 2048 |
 
-**Size tiers**: `small` \| `medium` (default) \| `large` \| `xlarge`. When a tier is undefined for
-a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so the width it
-picks is deterministic. Flexible variants need no dashboard entry per width, so the table above
-is the whole list.
+**Size tiers**: `xsmall` \| `small` \| `medium` (default) \| `large` \| `xlarge`. When a tier is
+undefined for a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so
+the width it picks is deterministic. `xsmall` exists only on `square`, for a thumbnail box —
+an avatar, a now-playing tile. Flexible variants need no dashboard entry per width, so the table
+above is the whole list.
+
+**An `aspectRatio` is what asks for a variant at all, and a `sizes` is what makes the srcset
+worth having.** Without the ratio the atom hands the URL through untouched, so the box gets the
+full-size original. With the ratio but no `sizes`, the browser falls back to the atom's
+roughly-full-width default and may fetch 800px into a 48px tile. Any box narrower than the
+viewport passes its own `sizes` (#146).
 
 `<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
 (default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →
