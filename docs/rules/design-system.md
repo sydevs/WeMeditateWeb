@@ -18,7 +18,7 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
 - Use the design tokens consistently. Do not add a one-off custom value.
 - Implement every component mobile-first — see [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for
   the breakpoint table. Give every interactive element a touch target of at least 44×44px.
-  `ColumnCarousel`'s slide dots are the one documented exception, at 40×40 — see below.
+  `ColumnCarousel`'s slide dots are the one documented exception — see below.
 - Meet WCAG 2.1 AA.
 - Gate a JavaScript-driven animation on `prefers-reduced-motion` — see the Motion section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
@@ -35,10 +35,10 @@ built from a bare `<button>` picks one of the two utilities in
 | `touch-target` | The layout can absorb a bigger box. **Reach for this first.** |
 | `touch-target-overlay` | The drawn size *is* the design — a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
 
-Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
-why growing the box is the first choice. An overlay therefore carries a **spacing** requirement on
-the row around it: keep adjacent overlay centres 44px apart. `ColumnCarousel`'s dots sat on 16px
-centres, so tapping the dot you could see selected the *next* slide (#135).
+Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip, so an
+overlay leaves a **spacing** requirement on the row around it. That is why growing the box is the
+first choice. `ColumnCarousel`'s dots sat on 16px centres, so tapping the dot you could see
+selected the *next* slide (#135).
 
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content — and on a

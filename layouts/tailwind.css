@@ -123,11 +123,9 @@
  * with `overflow-hidden` that would clip this.
  *
  * Two of these side by side closer than 44px apart will overlap, and the
- * later sibling wins the overlapping strip. So the overlay buys its hit area
- * on credit: it leaves a *spacing* requirement on the row around it, that
- * adjacent overlay centres stay 44px apart. Button puts this on every
+ * later sibling wins the overlapping strip. Button puts one on every
  * icon-only button, `xs` (24px drawn) and `sm` (32px) included, so a row of
- * those owes the gap the drawn size does not give. Prefer growing the box
+ * those owes a gap its drawn size does not give. Prefer growing the box
  * wherever the layout can absorb it.
  *
  * The overlay sets `position: relative`, so do not put it on an element that
