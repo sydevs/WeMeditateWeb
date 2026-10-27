@@ -30,14 +30,17 @@ the failure shows as an unstyled element on first render. `hooks/` is the live c
 outside the set today, and it authors no class.
 
 **A utility naming an undeclared token compiles to nothing, and nothing warns.**
-`tests/guards/theme-utilities.test.ts` catches two families of that: a colour utility whose token
-sits on a scale with numeric steps, and any `font-*` utility. Nothing else is watched — a token off
-such a scale, like `error-light` beside the declared `error-dark`, and namespaces such as `radius`
-and `shadow` all pass. It parses the `@theme` block of
-[layouts/tailwind.css](../../layouts/tailwind.css) *and* of Tailwind's own `theme.css`, because
-`@theme` extends the default rather than replacing it: a `gray-950` utility resolves even though
-ours stops at `gray-900`. Renaming a token on one of the two watched families fails the guard until
-its call sites follow.
+`tests/guards/theme-utilities.test.ts` catches that by asking Tailwind. It compiles each candidate
+against the real stylesheet through `candidatesToCss`, which answers `null` when the utility emits
+no CSS, so the guard models no token sets and no keywords: `text-center` and `font-stretch-expanded`
+compile and pass, `text-error-light` and `rounded-pill` do not and fail. Variants, a `/50` opacity
+and a trailing `!` all go to the compiler as written.
+
+What the guard chooses is **reach**, in its `WATCHED_PREFIXES` list — the utility prefixes whose
+value is a theme token. A prefix missing from that list is unwatched, never wrongly flagged, so
+adding one costs a line. Two shapes stay out of scope on purpose: an arbitrary value
+(`text-[16px]`, `bg-(--var)`) names no token, and a match preceded by `<word>-` is a slug rather
+than a utility. Stories are scanned; specs are not.
 
 **A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
 live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
