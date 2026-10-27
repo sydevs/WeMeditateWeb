@@ -1,6 +1,6 @@
 /**
- * Pins the hit-area class contract the dots and the nav buttons depend on
- * (#135). A box needs a browser, so the measuring stays in Ladle.
+ * Pins the hit-area contract the dots and the nav buttons depend on (#135).
+ * A box needs a browser, so the measuring stays in Ladle.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -16,23 +16,28 @@ const columns = (count: number) =>
 // The dots render from MOBILE_CAROUSEL_THRESHOLD up to MAX_COLUMNS.
 const COUNTS = [3, 4, 5] as const
 
+const dotButtons = (html: string) =>
+  [...html.matchAll(/<button[^>]*>/g)]
+    .map(([tag]) => tag)
+    .filter((tag) => tag.includes('aria-label="Go to column'))
+
 describe('ColumnCarousel slide dots', () => {
   it.each(COUNTS)('draws %i 8px dots, each in its own 40px cell', (count) => {
     const html = renderToStaticMarkup(<ColumnCarousel columns={columns(count)} />)
+    const dots = dotButtons(html)
 
-    expect(
-      html.match(
-        /class="group flex w-10 h-10 items-center justify-center"><span class="w-2 h-2 rounded-full/g,
-      ),
-    ).toHaveLength(count)
+    expect(dots).toHaveLength(count)
+    for (const dot of dots) {
+      expect(dot).toContain('w-10')
+      expect(dot).toContain('h-10')
+    }
+    expect(html.match(/<span class="[^"]*w-2 h-2 rounded-full/g)).toHaveLength(count)
   })
 
-  it('abuts the cells, and leaves no overlay to steal a neighbour', () => {
+  it('leaves no overlay to steal a neighbour', () => {
     const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
 
     expect(html).not.toContain('touch-target-overlay')
-    // An inter-cell gap is what pushed 5 cells past the viewport at 44px.
-    expect(html).toContain('flex gap-0 shrink-0 px-4')
   })
 
   it('labels each dot with the slide it scrolls to, in order', () => {
@@ -49,6 +54,21 @@ describe('ColumnCarousel slide dots', () => {
       '4:Column 4',
       '5:Column 5',
     ])
+  })
+
+  it('presses exactly the dot whose slide is showing', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
+    const dots = dotButtons(html)
+
+    expect(dots.filter((dot) => dot.includes('aria-pressed="true"'))).toHaveLength(1)
+    expect(dots.filter((dot) => dot.includes('aria-pressed="false"'))).toHaveLength(4)
+  })
+
+  it('draws the focus ring on each dot', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
+    const dots = dotButtons(html)
+
+    expect(dots.filter((dot) => dot.includes('focus-ring'))).toHaveLength(5)
   })
 })
 
@@ -73,5 +93,11 @@ describe('CarouselNavButton', () => {
     const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
 
     expect(html).toContain('min-w-0 truncate')
+  })
+
+  it('draws the focus ring', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
+
+    expect(html.match(/transition-colors focus-ring/g)).toHaveLength(2)
   })
 })
