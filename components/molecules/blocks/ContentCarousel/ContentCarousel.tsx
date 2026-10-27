@@ -222,7 +222,12 @@ export function ContentCarousel({
                   <div className={inView ? '' : 'pointer-events-none'}>
                     {/* Fixed image height (natural width) → consistent row height
                         without forcing a single aspect ratio. */}
-                    <ContentCard sizes={imageSizes} {...item} imageHeight={imageHeight} variant={card} />
+                    <ContentCard
+                      sizes={imageSizes}
+                      {...item}
+                      imageHeight={imageHeight}
+                      variant={card}
+                    />
                   </div>
                 </div>
               )

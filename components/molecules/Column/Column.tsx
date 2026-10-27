@@ -51,16 +51,16 @@ export function Column({
       {imageUrl && (
         <div className="flex justify-center mb-2">
           <Image
-            src={imageUrl}
             alt={imageAlt}
             // The box is square, but `w-32 h-32 md:w-40 md:h-40` already draws
             // it, so the ratio is here only to pick a variant and a srcset.
             aspectRatio="square"
-            forceAspectRatio={false}
-            sizes="160px"
-            width={160}
-            height={160}
             className="w-32 h-32 md:w-40 md:h-40"
+            forceAspectRatio={false}
+            height={160}
+            sizes="160px"
+            src={imageUrl}
+            width={160}
           />
         </div>
       )}

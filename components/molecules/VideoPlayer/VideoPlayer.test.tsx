@@ -13,6 +13,12 @@ vi.mock('vike-react/ClientOnly', () => ({
 }))
 
 import { VideoPlayer } from './index'
+import { posterURL } from './poster'
+
+// The shape a SahajCloud read sends: `…/<image_id>/public`
+// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
+const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
+const BASE = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123'
 
 describe('<VideoPlayer> server-side fallback', () => {
   it('renders the poster as the fallback frame (LCP image, no player JS)', () => {
@@ -51,5 +57,37 @@ describe('VideoPlayer implementation (browser-only)', () => {
 
     expect(typeof Impl).toBe('function')
     expect(renderToStaticMarkup(<Impl hlsUrl="" />)).toBe('')
+  })
+})
+
+describe('VideoPlayer poster variant', () => {
+  // The poster was the one `imagedelivery.net` URL in the server document
+  // that still asked for no variant, so it served the original (#146).
+  it('requests the 1024px video width in the SSR fallback', () => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" poster={CF_PUBLIC_URL} />,
+    )
+
+    expect(html).toContain(`src="${BASE}/width=1024"`)
+    expect(html).not.toContain('/public')
+  })
+
+  // Vidstack needs browser media APIs, so its `poster` cannot be asserted
+  // through SSR. Both branches call this one function instead.
+  it('resolves one width for both branches, and passes other URLs through', () => {
+    expect(posterURL(CF_PUBLIC_URL)).toBe(`${BASE}/width=1024`)
+    expect(posterURL('/api/videos/file/v.jpg')).toBe('/api/videos/file/v.jpg')
+    expect(posterURL(undefined)).toBeUndefined()
+  })
+
+  it.each([
+    ['a story placeholder', 'https://picsum.photos/seed/talk/1024/576'],
+    ['the SahajCloud dev fallback', '/api/videos/file/talk.jpg'],
+  ])('leaves %s unchanged in the fallback', (_label, poster) => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" poster={poster} />,
+    )
+
+    expect(html).toContain(`src="${poster}"`)
   })
 })
