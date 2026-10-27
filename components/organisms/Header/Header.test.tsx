@@ -52,28 +52,27 @@ describe('Header', () => {
 
   describe('the sticky nav row', () => {
     it('renders only at lg and above', () => {
-      // Each item is `basis-1/4` and its label does not wrap, so the row cannot
-      // shrink below the labels' min-content width, and it sits outside any
-      // `overflow` container. Without this guard a 390px viewport scrolled
-      // sideways by 187px (#202).
+      // The pair, not `hidden` alone, which also matches `lg:hidden`.
       const row = render().match(/<div class="([^"]*max-w-3xl flex-1[^"]*)"/)?.[1]
 
-      expect(row).toContain('hidden')
-      expect(row).toContain('lg:flex')
+      expect(row).toContain('hidden lg:flex')
+    })
+  })
+
+  describe('the compact bar below lg', () => {
+    it('floors the bar at the height its two overlays need', () => {
+      // Without the floor the bar is 18px, and a pinned bar clips a centred
+      // 44x44 `::before` against the viewport.
+      const html = render()
+      const bar = html.match(/<div class="([^"]*max-w-5xl mx-auto px-6[^"]*)"/)?.[1]
+
+      expect(bar).toContain('min-h-11')
+      expect(html.match(/touch-target-overlay/g)).toHaveLength(2)
     })
 
-    // Below `lg:` the compact logo and the map pin are the bar's only controls.
-    it('leaves the logo and the map pin a 44x44 hit area', () => {
-      const overlays = [...render().matchAll(/<a [^>]*class="([^"]*)"/g)].filter(([, cls]) =>
-        cls.includes('touch-target-overlay'),
-      )
-
-      expect(overlays).toHaveLength(2)
-    })
-
-    it('names both of them, since each renders an icon alone', () => {
-      // `common.general.site_title` in lib/translations.en.json. The map pin
-      // takes the class page's own title, which is already translated.
+    it('names both controls, since each renders an icon alone', () => {
+      // `common.general.site_title` in lib/translations.en.json; the pin takes
+      // the class page's own already-translated title.
       const html = render()
 
       expect(html).toContain('aria-label="We Meditate"')

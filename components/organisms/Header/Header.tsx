@@ -141,12 +141,15 @@ export function Header({
             isSticky ? 'surface-light full-bleed bg-white' : ''
           }`}
         >
-          {/* Centered content container */}
-          <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">
-            {/* Logo - only visible when sticky. The 16px icon is the design, and
-                below `lg:` it and the map pin are the bar's only controls, so each
-                hangs a 44×44 overlay rather than growing the bar. They sit at
-                opposite ends, so the two overlays never meet. */}
+          {/* `min-h-11` is the floor the icon controls' 44×44 overlays need. Below
+              `lg:` the nav row is hidden, leaving an 18px bar that clips an
+              overlay to 31px against the viewport once pinned. Inert at `lg:`,
+              where the row already makes the bar 44px. */}
+          <div className="flex items-center justify-between gap-2 min-h-11 max-w-5xl mx-auto px-6">
+            {/* Logo - only visible when sticky. The 16px icon is the design, so it
+                takes the overlay rather than growing; it and the map pin sit at
+                opposite ends of the bar, far past the 44px where two overlays
+                would fight over a shared strip. */}
             <Logo
               aria-label={t('common.general.site_title')}
               className={`shrink-0 touch-target-overlay transition-opacity duration-200 ${
@@ -157,11 +160,10 @@ export function Header({
               variant="icon"
             />
 
-            {/* Navigation buttons. Desktop-only, like the banner rows above:
-                each item is `basis-1/4` and its label does not wrap, so the row
-                cannot shrink below the labels' min-content width (~553px). It
-                sits outside any `overflow` container, so below `lg:` it pushed
-                the whole document sideways rather than clipping (#202). */}
+            {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
+                cannot shrink below their min-content width, and it sits outside
+                any `overflow` container — below `lg:` it pushed the document
+                sideways rather than clipping (#202). */}
             <div className="hidden lg:flex items-stretch justify-center gap-2 max-w-3xl flex-1">
               {navItems.map((item, index) =>
                 item.dropdown ? (
