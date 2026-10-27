@@ -38,11 +38,11 @@ Two overlays closer than 44px apart overlap, and the later sibling wins the shar
 why growing the box is the first choice.
 
 **An overlay hangs outside its box by design, so the hazard is a clipping edge, not a short box.**
-`ColumnCarousel`'s 8px dots and `Alert`'s cross both hang well outside theirs, correctly. What
-breaks the `::before` is an edge that cuts it off: the viewport, for a bar pinned at `top-0`, or an
-`overflow` ancestor. Grow the box there instead — the header's compact bar measured 44×**31**
-reachable while both its class lists read `touch-target-overlay` (#202). A class list is not a hit
-area. Measure one with `document.elementFromPoint`.
+`Alert`'s 16px cross hangs well outside its box, correctly. What breaks the `::before` is an edge
+that cuts it off: the viewport, for a bar pinned at `top-0`, or an `overflow` ancestor. Grow the
+box there instead — the header's compact bar measured 44×**31** reachable while both its class
+lists read `touch-target-overlay` (#202). A class list is not a hit area. Measure one with
+`document.elementFromPoint`.
 
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content.
