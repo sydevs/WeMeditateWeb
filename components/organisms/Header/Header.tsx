@@ -69,6 +69,15 @@ export function Header({
   // short-circuits rather than duplicating the styling below.
   const isSticky = condensed || isScrolledPast
 
+  // The compact bar's two icon controls, faded until the nav sticks. `invisible`
+  // is what keeps them out of the tab order and the a11y tree meanwhile —
+  // `pointer-events-none` stops only the mouse, so at `lg:` un-stuck a keyboard
+  // reached two named links nobody can see (SC 2.4.7). They hide at once rather
+  // than fading: `Logo`'s own `transition-opacity` wins over a list set here.
+  const compactControl = `transition-opacity duration-200 ${
+    isSticky ? 'opacity-100' : 'opacity-0 invisible'
+  }`
+
   useEffect(() => {
     const sentinel = sentinelRef.current
 
@@ -149,9 +158,7 @@ export function Header({
                 `items-center` holds the drawn icon where it was. */}
             <Logo
               aria-label={t('common.general.site_title')}
-              className={`shrink-0 touch-target items-center transition-opacity duration-200 ${
-                isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              }`}
+              className={`shrink-0 touch-target items-center ${compactControl}`}
               href={logoHref}
               size="sm"
               variant="icon"
@@ -189,11 +196,7 @@ export function Header({
                 `justify-end` keeps the drawn pin on the bar's right padding edge
                 now that `touch-target` makes its box 44px wide. */}
             {actionLinkText && actionLinkHref && (
-              <div
-                className={`shrink-0 transition-opacity duration-200 ${
-                  isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
-              >
+              <div className={`shrink-0 ${compactControl}`}>
                 <Link
                   aria-label={actionLinkText}
                   className="flex touch-target items-center justify-end gap-1 no-underline hover:opacity-75 transition-opacity"

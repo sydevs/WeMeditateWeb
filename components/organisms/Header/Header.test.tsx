@@ -37,12 +37,12 @@ describe('Header', () => {
       const condensed = render({ condensed: true })
       const normal = render()
 
-      // `opacity-0 pointer-events-none` is the exact hidden state the compact
-      // logo and map-pin carry until the nav sticks. Asserted as the whole pair
-      // because `opacity-0` alone also matches unrelated Button classes.
+      // `opacity-0 invisible` is the exact hidden state the compact logo and
+      // map-pin carry until the nav sticks. Asserted as the whole pair because
+      // `opacity-0` alone also matches unrelated Button classes.
       expect(condensed).toContain('bg-white')
-      expect(condensed).not.toContain('opacity-0 pointer-events-none')
-      expect(normal).toContain('opacity-0 pointer-events-none')
+      expect(condensed).not.toContain('opacity-0 invisible')
+      expect(normal).toContain('opacity-0 invisible')
     })
 
     it('renders nothing extra when there are no nav items', () => {
@@ -80,6 +80,17 @@ describe('Header', () => {
 
       expect(navClass(render())).toContain('hidden lg:block')
       expect(navClass(render({ condensed: true }))).not.toContain('hidden')
+    })
+
+    it('takes both faded controls out of the tab order', () => {
+      // `pointer-events-none` stopped the mouse and nothing else, so at `lg:`
+      // un-stuck a keyboard reached two invisible named links (SC 2.4.7).
+      const html = render()
+
+      // Both controls, matched as the pair: `Button` carries a
+      // `disabled:pointer-events-none` of its own, so the absence of the old
+      // class is not assertable here.
+      expect(html.match(/opacity-0 invisible/g)).toHaveLength(2)
     })
 
     it('names both controls, since each renders an icon alone', () => {
