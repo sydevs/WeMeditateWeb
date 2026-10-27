@@ -50,8 +50,9 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   sidetext?: string
 
   /**
-   * Which side the image sits on, at `lg` and above. The warm gradient
-   * follows it; the floral graphic and the sidetext do not.
+   * Which side the image floats to, at `lg` and above. The warm gradient
+   * follows it at every width; the floral graphic and the sidetext never
+   * move.
    * - left: image on the left, body column on the right
    * - right: image on the right, body column on the left
    * @default 'left'
