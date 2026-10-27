@@ -59,6 +59,11 @@ SahajCloud-authored width — produces no CSS and the rule silently does nothing
 Scanner configuration belongs in the CSS. Writing the twelve variants out in the component to
 keep them scannable puts a CSS concern in a `.tsx` file, and the next person must guess why.
 
+**A ternary over two whole literals is not that case.** The scanner sees both, so nothing needs
+declaring — `OrnateTextBox`'s two warm-band gradients are written out for this reason, and
+`layouts/tailwind.test.ts` fails if either is folded into an interpolated angle (#193). The rule
+above fires on a class *built* from runtime data, not on a choice between classes.
+
 **Fonts**: [layouts/fonts.css](../../layouts/fonts.css) loads the web fonts:
 - Raleway, weights 200–700 — the primary font family
 - Futura Book, weight 400 — the secondary font family
