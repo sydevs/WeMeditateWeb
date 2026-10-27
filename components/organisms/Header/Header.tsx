@@ -4,6 +4,7 @@ import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../ato
 import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
+import { useT } from '../../../hooks/useT'
 
 /**
  * A single top-level nav entry. An item with a `dropdown` renders as a
@@ -62,6 +63,7 @@ export function Header({
 }: HeaderProps) {
   const [isScrolledPast, setIsScrolledPast] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const t = useT()
 
   // `condensed` is the same visual state the scroll observer produces, so it
   // short-circuits rather than duplicating the styling below.
@@ -141,9 +143,13 @@ export function Header({
         >
           {/* Centered content container */}
           <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">
-            {/* Logo - only visible when sticky */}
+            {/* Logo - only visible when sticky. The 16px icon is the design, and
+                below `lg:` it and the map pin are the bar's only controls, so each
+                hangs a 44×44 overlay rather than growing the bar. They sit at
+                opposite ends, so the two overlays never meet. */}
             <Logo
-              className={`shrink-0 transition-opacity duration-200 ${
+              aria-label={t('common.general.site_title')}
+              className={`shrink-0 touch-target-overlay transition-opacity duration-200 ${
                 isSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
               href={logoHref}
@@ -188,7 +194,8 @@ export function Header({
                 }`}
               >
                 <Link
-                  className="flex items-center gap-1 no-underline hover:opacity-75 transition-opacity"
+                  aria-label={actionLinkText}
+                  className="flex items-center gap-1 touch-target-overlay no-underline hover:opacity-75 transition-opacity"
                   href={actionLinkHref}
                   variant="unstyled"
                 >

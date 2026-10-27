@@ -25,7 +25,9 @@ describe('Header', () => {
       // page has no room for — the compact nav carries the logo and action link.
       const html = render({ condensed: true })
 
-      expect(html).not.toContain('Classes near me')
+      // Matched as element text, because the compact bar's map pin carries the
+      // same string as its `aria-label`.
+      expect(html).not.toContain('>Classes near me<')
       expect(html).toContain('Meditate Now')
     })
 
@@ -58,6 +60,24 @@ describe('Header', () => {
 
       expect(row).toContain('hidden')
       expect(row).toContain('lg:flex')
+    })
+
+    // Below `lg:` the compact logo and the map pin are the bar's only controls.
+    it('leaves the logo and the map pin a 44x44 hit area', () => {
+      const overlays = [...render().matchAll(/<a [^>]*class="([^"]*)"/g)].filter(([, cls]) =>
+        cls.includes('touch-target-overlay'),
+      )
+
+      expect(overlays).toHaveLength(2)
+    })
+
+    it('names both of them, since each renders an icon alone', () => {
+      // `common.general.site_title` in lib/translations.en.json. The map pin
+      // takes the class page's own title, which is already translated.
+      const html = render()
+
+      expect(html).toContain('aria-label="We Meditate"')
+      expect(html).toContain('aria-label="Classes near me"')
     })
   })
 
