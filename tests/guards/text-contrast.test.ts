@@ -33,10 +33,9 @@ const EXEMPT = new Map([
   // A brand mark, not text: the `square` and `circle` variants render only
   // `LogoSvg`, and a logotype carries no contrast requirement.
   ['components/atoms/graphics/Logo/Logo.tsx:white', 'logotype'],
-  // `aria-hidden` number badges, which no reader reaches: incidental text.
+  // A sequence numeral the cards' own order already conveys, so it carries no
+  // information of its own: pure decoration, which SC 1.4.3 exempts.
   ['components/organisms/TechniqueCard/TechniqueCard.tsx:gray-400', 'decorative'],
-  // Drawn only under `surface === 'dark'`, on the dark ground this file paints.
-  ['components/ladle/StorySection.tsx:gray-100', 'dark surface'],
 ])
 
 /**
