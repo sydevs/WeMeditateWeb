@@ -101,6 +101,7 @@ function AudioPlayerInner({
                 alt={state.currentTrack.title}
                 aspectRatio="square"
                 rounded="rounded"
+                sizes="48px"
               />
             </div>
             <div className="flex-1 min-w-0">

@@ -139,6 +139,9 @@ function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColum
             aspectRatio="square"
             className="w-full h-full"
             objectFit="cover"
+            // A column of the `max-w-7xl` grid: two columns from `md`, three
+            // from `lg`. The widest it gets is the top of the two-column range.
+            sizes="(min-width: 1024px) 400px, 480px"
             src={article.image}
           />
 

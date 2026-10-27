@@ -66,6 +66,8 @@ export function MusicLibrary({
               aspectRatio="square"
               className="w-full h-full"
               placeholderVariant="primary"
+              // The column is `max-w-md`, so the art never exceeds 448px.
+              sizes="(min-width: 448px) 448px, 100vw"
               src={currentTrack.thumbnailURL}
             />
             {/* Gradient Overlay */}

@@ -10,17 +10,38 @@ export type ContentCarouselSize = 'sm' | 'md' | 'lg'
 
 /**
  * Coordinated dimensions per size: the image height, the ContentCard variant
- * (which scales the title, gap, and play button together), and the gap between
- * slides. Keeping these in one place is what lets `size` resize the whole card
- * proportionally instead of just the image.
+ * (which scales the title, gap, and play button together), the gap between
+ * slides, and the `sizes` its thumbnail advertises. Keeping these in one place
+ * is what lets `size` resize the whole card proportionally instead of just the
+ * image.
+ *
+ * A slide's width is its image's natural width, so `imageSizes` is the tallest
+ * height of the row at the widest ratio the cards carry (16:9), rounded up. A
+ * single length is enough: the narrower breakpoints land on the same srcset
+ * entry.
  */
 const CAROUSEL_SIZES: Record<
   ContentCarouselSize,
-  { imageHeight: string; card: 'default' | 'hero'; slideGap: string }
+  { imageHeight: string; imageSizes: string; card: 'default' | 'hero'; slideGap: string }
 > = {
-  sm: { imageHeight: 'h-40 sm:h-44 lg:h-48', card: 'default', slideGap: 'gap-3 sm:gap-4' },
-  md: { imageHeight: 'h-48 sm:h-56 lg:h-64', card: 'hero', slideGap: 'gap-4 sm:gap-6' },
-  lg: { imageHeight: 'h-56 sm:h-64 lg:h-72', card: 'hero', slideGap: 'gap-4 sm:gap-6' },
+  sm: {
+    imageHeight: 'h-40 sm:h-44 lg:h-48',
+    imageSizes: '342px',
+    card: 'default',
+    slideGap: 'gap-3 sm:gap-4',
+  },
+  md: {
+    imageHeight: 'h-48 sm:h-56 lg:h-64',
+    imageSizes: '456px',
+    card: 'hero',
+    slideGap: 'gap-4 sm:gap-6',
+  },
+  lg: {
+    imageHeight: 'h-56 sm:h-64 lg:h-72',
+    imageSizes: '512px',
+    card: 'hero',
+    slideGap: 'gap-4 sm:gap-6',
+  },
 }
 
 export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title'> {
@@ -77,7 +98,7 @@ export function ContentCarousel({
   ...props
 }: ContentCarouselProps) {
   const t = useT()
-  const { imageHeight, card, slideGap } = CAROUSEL_SIZES[size]
+  const { imageHeight, imageSizes, card, slideGap } = CAROUSEL_SIZES[size]
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
@@ -201,7 +222,7 @@ export function ContentCarousel({
                   <div className={inView ? '' : 'pointer-events-none'}>
                     {/* Fixed image height (natural width) → consistent row height
                         without forcing a single aspect ratio. */}
-                    <ContentCard {...item} imageHeight={imageHeight} variant={card} />
+                    <ContentCard sizes={imageSizes} {...item} imageHeight={imageHeight} variant={card} />
                   </div>
                 </div>
               )
