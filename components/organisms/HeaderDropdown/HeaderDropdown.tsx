@@ -139,9 +139,11 @@ function FeaturedArticleColumn({ article, className = '' }: FeaturedArticleColum
             aspectRatio="square"
             className="w-full h-full"
             objectFit="cover"
-            // A column of the `max-w-7xl` grid: two columns from `md`, three
-            // from `lg`. The widest it gets is the top of the two-column range.
-            sizes="(min-width: 1024px) 400px, 480px"
+            // A column of the `max-w-7xl px-6` grid: three from `lg`, where it
+            // is exactly 400px, two below that. The two-column width has to be
+            // the expression, not its 480px maximum — that maximum holds only
+            // at the top of the band and fetches 800 where 400 does.
+            sizes="(min-width: 1024px) 400px, calc(50vw - 32px)"
             src={article.image}
           />
 

@@ -4,44 +4,68 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ContentCard, ContentCardProps } from '../../ContentCard/ContentCard'
 import { Button } from '../../../atoms/Button/Button'
 import { useT } from '../../../../hooks/useT'
+import { aspectRatioValue, type AspectRatio } from '../../../../lib/cloudflare-images'
 
 /** Carousel size variant. */
 export type ContentCarouselSize = 'sm' | 'md' | 'lg'
 
 /**
  * Coordinated dimensions per size: the image height, the ContentCard variant
- * (which scales the title, gap, and play button together), the gap between
- * slides, and the `sizes` its thumbnail advertises. Keeping these in one place
- * is what lets `size` resize the whole card proportionally instead of just the
- * image.
+ * (which scales the title, gap, and play button together), and the gap between
+ * slides. Keeping these in one place is what lets `size` resize the whole card
+ * proportionally instead of just the image.
  *
- * A slide's width is its image's natural width, so `imageSizes` is the tallest
- * height of the row at the widest ratio the cards carry (16:9), rounded up. A
- * single length is enough: the narrower breakpoints land on the same srcset
- * entry.
+ * `heights` repeats `imageHeight` as numbers, because a `sizes` cannot be
+ * derived from a Tailwind class string. The two must stay in step by hand.
  */
 const CAROUSEL_SIZES: Record<
   ContentCarouselSize,
-  { imageHeight: string; imageSizes: string; card: 'default' | 'hero'; slideGap: string }
+  {
+    imageHeight: string
+    heights: { base: number; sm: number; lg: number }
+    card: 'default' | 'hero'
+    slideGap: string
+  }
 > = {
   sm: {
     imageHeight: 'h-40 sm:h-44 lg:h-48',
-    imageSizes: '342px',
+    heights: { base: 160, sm: 176, lg: 192 },
     card: 'default',
     slideGap: 'gap-3 sm:gap-4',
   },
   md: {
     imageHeight: 'h-48 sm:h-56 lg:h-64',
-    imageSizes: '456px',
+    heights: { base: 192, sm: 224, lg: 256 },
     card: 'hero',
     slideGap: 'gap-4 sm:gap-6',
   },
   lg: {
     imageHeight: 'h-56 sm:h-64 lg:h-72',
-    imageSizes: '512px',
+    heights: { base: 224, sm: 256, lg: 288 },
     card: 'hero',
     slideGap: 'gap-4 sm:gap-6',
   },
+}
+
+/**
+ * The `sizes` for one slide, in the row's three heights.
+ *
+ * A slide is `h-NN w-auto`, so it renders `height × ratio` wide — which makes
+ * the width a property of the *item*, not of the row. One flat length per row
+ * cannot express that: the 16:9 figure over-declares a square card by 1.78x,
+ * enough to cross a srcset rung and fetch four times the pixels (#146).
+ */
+function slideSizes(
+  heights: { base: number; sm: number; lg: number },
+  aspectRatio: AspectRatio = 'square',
+): string {
+  const width = (height: number) => Math.ceil(height * aspectRatioValue(aspectRatio))
+
+  return [
+    `(min-width: 1024px) ${width(heights.lg)}px`,
+    `(min-width: 640px) ${width(heights.sm)}px`,
+    `${width(heights.base)}px`,
+  ].join(', ')
 }
 
 export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title'> {
@@ -98,7 +122,7 @@ export function ContentCarousel({
   ...props
 }: ContentCarouselProps) {
   const t = useT()
-  const { imageHeight, imageSizes, card, slideGap } = CAROUSEL_SIZES[size]
+  const { imageHeight, heights, card, slideGap } = CAROUSEL_SIZES[size]
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
@@ -223,7 +247,7 @@ export function ContentCarousel({
                     {/* Fixed image height (natural width) → consistent row height
                         without forcing a single aspect ratio. */}
                     <ContentCard
-                      sizes={imageSizes}
+                      sizes={slideSizes(heights, item.aspectRatio)}
                       {...item}
                       imageHeight={imageHeight}
                       variant={card}

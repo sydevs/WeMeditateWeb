@@ -2,10 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MusicLibrary } from './MusicLibrary'
 import type { Track } from '../../molecules'
-
-// The shape a SahajCloud read sends: `…/<image_id>/public`
-// (sydevs/SahajCloud `src/plugins/storage/cloudflareImagesAdapter.ts:203`).
-const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
+import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
 
 const track: Track = {
   url: 'https://example.com/song.mp3',
@@ -17,12 +14,16 @@ const track: Track = {
 }
 
 describe('<MusicLibrary> album art sizes', () => {
-  // The art column is `max-w-md`, 448px. Without an explicit `sizes` the atom
-  // assumed a full-width layout and fetched for 800px (#146).
-  it('advertises the max-w-md column, falling back to the viewport below it', () => {
+  it('advertises the max-w-md column it draws, less its own padding', () => {
     const html = renderToStaticMarkup(<MusicLibrary filters={[]} tracks={[track]} />)
 
-    expect(html).toContain('sizes="(min-width: 448px) 448px, 100vw"')
+    // Asserted together, so the pixel numbers cannot outlive the column. The
+    // `md` arm is an expression because the two-column grid makes the column
+    // 316px there, where a flat 448 would fetch 800 instead of 400 (#146).
+    expect(html).toContain('max-w-md mx-auto md:mx-0 p-4')
+    expect(html).toContain(
+      'sizes="(min-width: 968px) 416px, (min-width: 768px) calc(50vw - 68px), (min-width: 448px) 416px, calc(100vw - 64px)"',
+    )
     expect(html).not.toContain('/public')
   })
 })
