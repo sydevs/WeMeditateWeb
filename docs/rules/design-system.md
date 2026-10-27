@@ -121,6 +121,8 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   shape?: 'square' | 'circular'     // Default: circular icon-only, square text
   icon?: HeroIcon                   // Icon only when no children are passed
+  iconPosition?: 'leading' | 'trailing'  // Default: 'leading'
+  truncate?: boolean                // Ellipsise the label instead of widening the button
   isLoading?: boolean
   isActive?: boolean                // Current-page nav link: tinted fill + aria-current
   fullWidth?: boolean               // Text buttons only
@@ -135,6 +137,11 @@ Use `href` for navigation or a download. Use `onClick` for a JavaScript action, 
 
 `Button` guarantees the 44×44 minimum itself, at every size and in both forms. Do not re-add a
 `min-h-11` at a call site.
+
+A button that has to *shrink* to that floor needs `truncate` and `size="xs"`: the label then
+ellipsises, and `xs` is the one size whose padding fits inside 44px. `sm` upwards carry 48px or
+more of padding, which no `min-width` shrinks. `ColumnCarousel`'s nav buttons are the worked
+example.
 
 ### Link
 

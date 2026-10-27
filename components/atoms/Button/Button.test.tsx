@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { PlayIcon, StarIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, PlayIcon, StarIcon } from '@heroicons/react/24/outline'
 import { Button } from './Button'
 
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'neutral'] as const
@@ -147,5 +147,45 @@ describe('Button surface', () => {
     )
 
     expect(html).toContain('border-current')
+  })
+})
+
+// The icon-plus-truncating-label form. `CarouselNavButton` was a hand-rolled
+// copy of it before the atom could do it (#135).
+describe('Button icon and label', () => {
+  it('leads with the icon, and trails it on request', () => {
+    const leading = renderToStaticMarkup(<Button icon={ChevronRightIcon}>Next</Button>)
+    const trailing = renderToStaticMarkup(
+      <Button icon={ChevronRightIcon} iconPosition="trailing">
+        Next
+      </Button>,
+    )
+
+    expect(leading.indexOf('<svg')).toBeLessThan(leading.indexOf('Next'))
+    expect(trailing.indexOf('<svg')).toBeGreaterThan(trailing.indexOf('Next'))
+  })
+
+  // A `truncate` child's own min-content width is the nowrap text width, which
+  // floors the button whatever its flex parent does.
+  it('gives a truncating label its own `min-w-0` box', () => {
+    const html = renderToStaticMarkup(<Button truncate>A title too long to fit</Button>)
+
+    expect(html).toContain('<span class="min-w-0 truncate">A title too long to fit</span>')
+  })
+
+  it('leaves the label unwrapped otherwise', () => {
+    expect(renderToStaticMarkup(<Button>Go</Button>)).not.toContain('truncate')
+  })
+
+  // The visible title is only part of the name a control like
+  // `CarouselNavButton` owes: it says nothing about which way the button goes.
+  it('keeps an explicit aria-label on the text form, not the icon-only form alone', () => {
+    const html = renderToStaticMarkup(
+      <Button aria-label="Previous: Intro" icon={ChevronRightIcon} truncate>
+        Intro
+      </Button>,
+    )
+
+    expect(html).toContain('aria-label="Previous: Intro"')
   })
 })

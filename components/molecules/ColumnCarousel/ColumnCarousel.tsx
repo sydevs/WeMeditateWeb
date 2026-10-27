@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Button } from '../../atoms/Button'
 import { Column, ColumnProps } from '../Column'
 import { useT } from '../../../hooks/useT'
 
@@ -42,24 +43,23 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
     // `<button>` is sized fit-content, floored at its own min-content width,
     // which no `min-width` lowers (#135).
     <div className={isPrev ? 'flex-1 min-w-0 flex' : 'flex-1 min-w-0 flex justify-end'}>
-      <button
-        onClick={onClick}
-        disabled={disabled}
+      {/* `xs` is the one size whose padding fits inside `touch-target`'s 44px
+          floor, so the button stops there instead of on the dots. `sm` upwards
+          carry 48px or more of padding, which no `min-width` shrinks, and the
+          dots are 40px because that floor holds (#135). */}
+      <Button
+        truncate
         aria-label={ariaLabel}
-        // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
-        // item shrink: it still shrinks, just not below the tap minimum.
-        className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-ring"
+        className="max-w-40"
+        disabled={disabled}
+        icon={column ? (isPrev ? ChevronLeftIcon : ChevronRightIcon) : undefined}
+        iconPosition={isPrev ? 'leading' : 'trailing'}
+        size="xs"
+        variant="ghost"
+        onClick={onClick}
       >
-        {column && (
-          <>
-            {isPrev && <ChevronLeftIcon className="w-5 h-5 shrink-0" />}
-            {/* `min-w-0`, or `truncate` never fires and the title's own width
-                floors the button, pushing it onto the dots. */}
-            <span className="max-w-[100px] min-w-0 truncate">{column.title}</span>
-            {!isPrev && <ChevronRightIcon className="w-5 h-5 shrink-0" />}
-          </>
-        )}
-      </button>
+        {column?.title}
+      </Button>
     </div>
   )
 }
