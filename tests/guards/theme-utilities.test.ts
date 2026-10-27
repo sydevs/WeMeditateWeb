@@ -18,9 +18,10 @@
  * follows a version bump on its own, and covers roots a hand-written one missed
  * (`mask-*-from`, `scrollbar-thumb`, `border-x`).
  *
- * Two shapes are deliberately out of scope. An arbitrary value (`text-[16px]`,
- * `bg-(--var)`) names no token, and a match preceded by `<word>-` is a slug
- * rather than a utility — `how-to-begin` is not a gradient stop.
+ * Three shapes are deliberately out of scope. An arbitrary value (`text-[16px]`,
+ * `bg-(--var)`) names no token, a match preceded by `<word>-` is a slug rather
+ * than a utility — `how-to-begin` is not a gradient stop — and a match followed
+ * by `:` or `=` is CSS rather than a class.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -71,11 +72,17 @@ const WATCHED_PREFIXES = ((): string[] => {
  * may follow it. That is what keeps an interpolated `` `bg-teal-${step}` `` out:
  * matched loosely it yields `bg-teal-`, or `bg-teal` on a retry, and neither is
  * a utility anyone wrote.
+ *
+ * A `:` or `=` next is the other exclusion, and it covers the larger surface:
+ * 44 kebab-case CSS property names sit under a watched root and compile to
+ * nothing, `stroke-width` and `font-family` among them. A declaration, an
+ * arbitrary property (`[stroke-width:2px]`) and an SVG attribute all put a
+ * separator straight after the name; a class never has one there.
  */
 const CANDIDATE = new RegExp(
   `(?<![a-z0-9-])(?:${[...WATCHED_PREFIXES]
     .sort((a, b) => b.length - a.length)
-    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9-])`,
+    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9:=-])`,
   'g',
 )
 
@@ -85,20 +92,29 @@ interface DeadUtility {
 }
 
 /**
- * Blanks an inline `<style>` block, whose body is CSS: `stroke-width` there is
- * a property name, not a utility. `AnimatedLogoSvg` is the one such block.
+ * The two regions where a component writes CSS rather than classes. An inline
+ * `<style>` block is a stylesheet, so `stroke-width` there is a property name;
+ * `AnimatedLogoSvg` is the one such block. A `style` prop holds CSS values, and
+ * `border-box`, `text-top` and `text-bottom` sit under watched roots — React
+ * spells the keys beside them in camelCase, so no class can be in there.
  *
- * Lives here rather than in `_source-scan`: the other guards read a file and
- * never a bare string, while `findDeadUtilities` is handed both, so the strip
- * has to sit with the matcher to apply in either case.
+ * Non-greedy to the first `}}`, which can only end the prop early: a `}}` the
+ * object does not close cannot exist before the one that closes it.
  */
-function stripStyleBlocks(source: string): string {
-  return blank(source, /<style\b[^>]*>[\s\S]*?<\/style>/g)
+const CSS_REGIONS = [/<style\b[^>]*>[\s\S]*?<\/style>/g, /\bstyle=\{\{[\s\S]*?\}\}/g]
+
+/**
+ * Blanks both, here rather than in `_source-scan`: the other guards read a file
+ * and never a bare string, while `findDeadUtilities` is handed both, so the
+ * strip has to sit with the matcher to apply in either case.
+ */
+function stripCss(source: string): string {
+  return CSS_REGIONS.reduce(blank, source)
 }
 
 /** Every watched utility in `source` that the real stylesheet compiles to nothing. */
 function findDeadUtilities(source: string): DeadUtility[] {
-  const found = [...stripStyleBlocks(source).matchAll(CANDIDATE)].map((match) => ({
+  const found = [...stripCss(source).matchAll(CANDIDATE)].map((match) => ({
     utility: match[0],
     index: match.index,
   }))
@@ -155,6 +171,26 @@ describe('theme utilities', () => {
   /** Out of scope: an arbitrary value names no token, and a slug is not a utility. */
   it('ignores an arbitrary value and a hyphenated slug', () => {
     expect(utilitiesIn('text-[16px] bg-(--surface-tint) how-to-begin my-rounded-thing')).toEqual([])
+  })
+
+  it('ignores a CSS property and an attribute name', () => {
+    expect(
+      utilitiesIn('stroke-width: 3px; [stroke-width:2px] font-family="Raleway" text-align=center'),
+    ).toEqual([])
+  })
+
+  it('ignores a CSS value in a style prop', () => {
+    expect(
+      utilitiesIn("<div style={{ boxSizing: 'border-box', verticalAlign: 'text-top' }} />"),
+    ).toEqual([])
+  })
+
+  /** A class held as an object value is still a class, so `: '` is not CSS. */
+  it('flags a dead token in a variant map', () => {
+    expect(utilitiesIn("const styles = { error: 'bg-error-light text-error-light' }")).toEqual([
+      'bg-error-light',
+      'text-error-light',
+    ])
   })
 
   /**
