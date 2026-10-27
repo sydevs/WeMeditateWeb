@@ -11,22 +11,22 @@
  * population is small and closed, so the cheap fix is to make the next one a
  * red test rather than a silent 20x over-fetch.
  *
- * A caller that genuinely wants the intrinsic-ratio mode, or the full-width
- * default, belongs in EXEMPT with its reason — not outside the scan.
+ * This reads the prop's presence, not its value, so it cannot see a caller
+ * that forwards `sizes={sizes}` and is handed `undefined` — `ContentCard` does
+ * exactly that, and its grid callers still fall back to the atom's default
+ * (#206). A scan has no way to reach them; only a type can.
+ *
+ * There is no exemption list on purpose. A caller that genuinely wants the
+ * intrinsic-ratio mode, or the full-width default, has to edit this guard to
+ * say so, which puts the reason in front of a reviewer at the moment it is
+ * claimed. An earlier draft keyed exemptions by file and skipped the whole
+ * file, so exempting one tag silently un-guarded its siblings.
  */
 
 import { describe, it, expect } from 'vitest'
 import { lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
 
 const GLOBS = ['components/**/*.tsx', 'pages/**/*.tsx', 'layouts/**/*.tsx']
-
-/**
- * Call sites allowed to omit one of the two props, by `<path>:<prop>`.
- *
- * Empty on purpose: every site complies today. An entry here is a decision,
- * so it carries the reason the box cannot say how wide it is.
- */
-const EXEMPT: Record<string, string> = {}
 
 /**
  * The text of each `<Image …>` opening tag, with its line.
@@ -73,10 +73,6 @@ function imageTags(source: string): { tag: string; line: number }[] {
 function sitesMissing(prop: 'aspectRatio' | 'sizes'): string[] {
   return sourceFiles(GLOBS).flatMap((file) => {
     const relative = file.slice(repoRoot.length + 1)
-
-    if (EXEMPT[`${relative}:${prop}`]) {
-      return []
-    }
 
     return imageTags(readSource(file))
       .filter(({ tag }) => !new RegExp(`\\b${prop}[={]`).test(tag))
