@@ -20,6 +20,14 @@ export interface NavItem {
   dropdown?: HeaderDropdownProps
 }
 
+/**
+ * `LayoutChrome` overlays the header on a lead splash with a box that spans the
+ * whole page — which is what lets the sticky nav below travel it (#204) — and
+ * disowns its clicks so the content underneath keeps them. The header's own
+ * elements take theirs back.
+ */
+const clickable = 'pointer-events-auto'
+
 export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> {
   /** Logo href (default: "/") */
   logoHref?: string
@@ -31,6 +39,14 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
   navItems?: NavItem[]
   /** Breadcrumb navigation items */
   breadcrumbs?: BreadcrumbItem[]
+  /**
+   * The page band — max width and gutter — for the banner and the un-stuck nav.
+   *
+   * It arrives as classes rather than a wrapper because the nav below is
+   * `position: sticky`: a wrapper would be its containing block, and the nav
+   * would stop pinning one header-height down the page (#204).
+   */
+  bandClassName?: string
   /**
    * Render the condensed header permanently, rather than only once the page has
    * been scrolled past the banner.
@@ -57,6 +73,7 @@ export function Header({
   actionLinkHref,
   navItems = [],
   breadcrumbs,
+  bandClassName = '',
   condensed = false,
   className = '',
   ...props
@@ -99,7 +116,7 @@ export function Header({
 
   return (
     <>
-      <header className={className} {...props}>
+      <header className={[clickable, bandClassName, className].filter(Boolean).join(' ')} {...props}>
         {/* Top banner with logo, illustration, and action link. Omitted when
             condensed — the compact nav below carries the logo and action link
             itself, so rendering both would duplicate them. */}
@@ -145,9 +162,10 @@ export function Header({
       {navItems.length > 0 && (
         <nav
           // Once stuck, the nav paints its own white surface over whatever the
-          // header was overlaid on.
-          className={`sticky top-0 z-50 border-t border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
-            isSticky ? 'surface-light full-bleed bg-white' : 'hidden lg:block'
+          // header was overlaid on. Un-stuck it takes the layout's page band,
+          // which a wrapper cannot give it: see `bandClassName`.
+          className={`sticky top-0 z-50 ${clickable} border-t border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
+            isSticky ? 'surface-light full-bleed bg-white' : `hidden lg:block ${bandClassName}`
           }`}
         >
           <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">

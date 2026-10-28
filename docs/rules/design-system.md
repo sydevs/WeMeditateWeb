@@ -164,7 +164,8 @@ const variantStyles = {
 - **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
   `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
   `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
-  `LayoutChrome` puts the lead splash's surface on the wrapper it overlays the header with.
+  `LayoutChrome` puts the lead splash's surface in the band it hands the header, which cannot be
+  a wrapper: a wrapper is the sticky nav's containing block, and the nav stops pinning (#204).
 - **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
   surface around it. A filled `Button` draws its spinner in `border-current` instead.
 - **A colour that does not change with the surface names its scale step.** Filled buttons are
