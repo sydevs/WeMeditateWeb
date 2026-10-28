@@ -74,18 +74,12 @@ takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SE
 beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
 and typed. Listing the groups anywhere else lets the query and the type disagree.
 
-[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) needs that same list, and
-cannot import it: it is plain node with no TypeScript loader. So it reads `WEB_TRANSLATIONS_SELECT`
-out of that file as text — the client gate 400s a global read carrying no `select`, and takes
-bracketed keys only, so the script has to name each group. Adding a group there still reaches all
-three: the query, the type, and the snapshot.
-
-So the snapshot mirrors the groups the site fetches and no others. That matters because
-`lib/i18n.ts` imports it and `useT()` falls back to it, which ships every string in it to the
-browser — a group outside the select would be bytes no `useT()` call could ever address. The
-script refuses to write a snapshot smaller than the committed one, so a renamed constant or a
-half-answered read fails loudly instead of deleting English. `--allow-shrink` is for a deliberate
-upstream deletion.
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) imports that same constant,
+which is the whole reason `tsx` is a devDependency. The client gate 400s a global read carrying no
+`select`, and takes bracketed keys only, so the script names each group from it. Adding a group
+reaches all three — the query, the type, and the snapshot — so the three cannot drift. Keep it that
+way: `lib/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships to the
+browser, and a group outside the select would be bytes no `useT()` call could address.
 
 ## Translations are SahajCloud-owned
 
