@@ -10,33 +10,38 @@
  *
  * Run it against the source, not a render: a first-render `opacity-0` is a
  * fact about the code, so this catches it in a component no test happens to
- * render. `a11y-literals.test.ts` reads the source for the same reason.
+ * render. A `no-restricted-syntax` selector cannot take its place, because the
+ * verdict needs a flag's initialiser resolved from elsewhere in the file, and
+ * no single-node selector reaches that far.
  *
  * **Two conditions, because neither alone discriminates.** Every legitimate
  * reveal — a hover overlay, an accordion, a carousel arrow — is also a flag
- * that starts off before load, so condition 1 on its own flags six
- * affordances for every real bug. A site is reported only when
+ * that starts off before load, so condition 1 on its own finds affordances and
+ * nothing else. A site is reported only when
  *
  * 1. the first render can select the `opacity-0` arm, **and**
  * 2. the file wires a load event — `onLoad`, `onError`, or an `img.complete`
  *    check.
  *
- * That second count is 7 in `Image.tsx` and 0 in every other file holding an
- * `opacity-0`, so the two conditions separate the bugs from the affordances by
- * themselves and this guard grants no exemptions. A per-site exemption would
+ * An affordance never waits on a load event and a fade-in gate must, so the
+ * pair separates them without naming a single site. A per-site exemption would
  * be one chance per affordance to wave a real bug through.
  *
- * A flag whose initial value is not findable in the same file is **skipped**
- * rather than reported: `MeditationPlayer.tsx` reads `state.isPlaying` off
- * `useAudioPlayer`, and a member of a hook's return is not a fact about the
- * line that uses it. An in-file expression that may take either value is
- * reported, so `useState(!hasImageSrc)` is not waved through. That skip is
- * this guard's one known false negative, bounded by the per-component SSR
- * specs asserting the rendered side.
+ * Two gaps are deliberate, and neither has a live site to point at:
  *
- * ⚠ It matches text, not syntax, so its coverage is the two shapes below
- * rather than every possible one. A pass means "none of the covered
- * spellings", never proof that the server's markup is visible.
+ * - A flag whose initial value is not findable in the same file is skipped
+ *   rather than reported — a member of a hook's return is not a fact about the
+ *   line that uses it. #154 decision 3 chose this, so the guard never asks an
+ *   author to annotate correct code. An in-file expression that may take either
+ *   value is still reported, so `useState(!hasImageSrc)` is not waved through.
+ * - The static-plus-override shape is matched pre-emptively. `SubtleSystem` is
+ *   the only component written that way and it wires no load event, so that
+ *   shape earns its code as one the next bug could take unseen, not by catching
+ *   anything today.
+ *
+ * ⚠ It matches text, not syntax, so its coverage is the two shapes below rather
+ * than every possible one. A pass means "none of the covered spellings", never
+ * proof that the server's markup is visible.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -57,7 +62,7 @@ const HIDDEN = /(?<![\w:-])opacity-0!?(?![\w-])/
 const IMPORTANT_VISIBLE = /(?<![\w:-])opacity-100!(?![\w-])/
 
 /** One arm of a ternary: a string with no interpolation of its own. */
-const ARM = String.raw`(?:'([^'\n]*)'|"([^"\n]*)"|\`([^\`$\n]*)\`)`
+const ARM = String.raw`('[^'\n]*'|"[^"\n]*"|\`[^\`$\n]*\`)`
 
 /**
  * `flag ? 'A' : 'B'`, either polarity — the shape all three bugs took. The
@@ -66,6 +71,8 @@ const ARM = String.raw`(?:'([^'\n]*)'|"([^"\n]*)"|\`([^\`$\n]*)\`)`
  */
 const CONDITION = String.raw`[^?:;{}=\n\`][^?:;{}=\n\`]*?`
 const TERNARY = new RegExp(String.raw`(${CONDITION})\s*\?\s*${ARM}\s*:\s*${ARM}`, 'g')
+
+/** The same pattern without `g`, so the two scans cannot share a `lastIndex`. */
 const ONE_TERNARY = new RegExp(TERNARY.source)
 
 /** A template literal, and the `${…}` holes in one. */
@@ -74,7 +81,6 @@ const INTERPOLATION = /\$\{(?:[^{}]|\{[^{}]*\})*\}/g
 
 /** An identifier a condition reads, a member path kept whole. */
 const IDENTIFIER = /(?<![\w$.])[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*/g
-const KEYWORD = new Set(['typeof', 'void', 'in', 'instanceof', 'new'])
 
 /** Initialisers whose truthiness is readable off the text. */
 const LITERAL_TRUTH = new Map([
@@ -86,6 +92,11 @@ const LITERAL_TRUTH = new Map([
   ["''", false],
   ['""', false],
 ])
+
+interface Finding {
+  line: number
+  detail: string
+}
 
 /**
  * How `flag` is initialised in this file, or `null` when the file does not
@@ -113,8 +124,8 @@ type Truth = boolean | 'either' | 'unknown'
 
 /**
  * Whether `condition` holds on the first render. `'either'` means the file
- * binds every flag it reads, but to an expression, so both arms are
- * reachable. `'unknown'` means a flag comes from outside the file.
+ * binds every flag it reads, but to an expression, so both arms are reachable.
+ * `'unknown'` means a flag comes from outside the file.
  */
 function firstRenderTruth(source: string, condition: string): Truth {
   const negated = condition.startsWith('!')
@@ -132,7 +143,7 @@ function firstRenderTruth(source: string, condition: string): Truth {
 
   // A member path or a compound condition resolves only as far as the flags it
   // reads, and one flag from outside the file decides the whole condition.
-  const identifiers = (bare.match(IDENTIFIER) ?? []).filter((name) => !KEYWORD.has(name))
+  const identifiers = bare.match(IDENTIFIER) ?? []
   if (identifiers.length === 0) return 'unknown'
 
   for (const identifier of identifiers) {
@@ -144,17 +155,21 @@ function firstRenderTruth(source: string, condition: string): Truth {
   return 'either'
 }
 
-function arm(match: RegExpExecArray | RegExpMatchArray, first: number): string {
-  return match[first] ?? match[first + 1] ?? match[first + 2] ?? ''
+type Arm = 'consequent' | 'alternate'
+
+/** The arms the first render can select. */
+function reachableArms(truth: Exclude<Truth, 'unknown'>): readonly Arm[] {
+  if (truth === 'either') return ['consequent', 'alternate']
+
+  return truth ? ['consequent'] : ['alternate']
 }
 
 /**
  * The second shape: a static `opacity-0` whose only un-hiding is an
- * interpolated `!`-important override. A ternary matcher cannot see it, and
- * the next bug could take it.
+ * interpolated `!`-important override.
  */
-function scanStaticOverride(source: string): { line: number; detail: string }[] {
-  const findings: { line: number; detail: string }[] = []
+function scanStaticOverride(source: string): Finding[] {
+  const findings: Finding[] = []
 
   for (const template of source.matchAll(TEMPLATE)) {
     const hiddenAt = blank(template[0], INTERPOLATION).search(HIDDEN)
@@ -165,21 +180,20 @@ function scanStaticOverride(source: string): { line: number; detail: string }[] 
       if (!match) continue
 
       const override = {
-        consequent: IMPORTANT_VISIBLE.test(arm(match, 2)),
-        alternate: IMPORTANT_VISIBLE.test(arm(match, 5)),
+        consequent: IMPORTANT_VISIBLE.test(match[2]),
+        alternate: IMPORTANT_VISIBLE.test(match[3]),
       }
       if (!override.consequent && !override.alternate) continue
 
       const truth = firstRenderTruth(source, match[1].trim())
       if (truth === 'unknown') continue
 
-      // The static class is in the markup unless the override wins the first
-      // render outright.
-      const unhidden = truth === 'either' ? false : truth ? override.consequent : override.alternate
-      if (unhidden) continue
+      // The static class stays in the markup unless the override wins every
+      // arm the first render can take.
+      if (reachableArms(truth).every((which) => override[which])) continue
 
       findings.push({
-        line: lineAt(source, (template.index ?? 0) + hiddenAt),
+        line: lineAt(source, template.index + hiddenAt),
         detail: 'a static opacity-0 is un-hidden only by an interpolated override',
       })
       break
@@ -189,28 +203,21 @@ function scanStaticOverride(source: string): { line: number; detail: string }[] 
   return findings
 }
 
-/** Every site in `source` both conditions catch, as `line → detail`. */
-export function scan(source: string): { line: number; detail: string }[] {
+/** Every site in `source` both conditions catch. */
+export function scan(source: string): Finding[] {
   if (!LOAD_EVENT.test(source)) return []
 
-  const findings: { line: number; detail: string }[] = []
+  const findings: Finding[] = []
 
   TERNARY.lastIndex = 0
   for (let match = TERNARY.exec(source); match; match = TERNARY.exec(source)) {
-    const hidden = { consequent: HIDDEN.test(arm(match, 2)), alternate: HIDDEN.test(arm(match, 5)) }
+    const hidden = { consequent: HIDDEN.test(match[2]), alternate: HIDDEN.test(match[3]) }
     if (!hidden.consequent && !hidden.alternate) continue
 
     const condition = match[1].trim()
     const truth = firstRenderTruth(source, condition)
     if (truth === 'unknown') continue
-
-    const reachable =
-      truth === 'either'
-        ? hidden.consequent || hidden.alternate
-        : truth
-          ? hidden.consequent
-          : hidden.alternate
-    if (!reachable) continue
+    if (!reachableArms(truth).some((which) => hidden[which])) continue
 
     findings.push({
       line: lineAt(source, match.index + match[0].indexOf('?')),
@@ -221,9 +228,19 @@ export function scan(source: string): { line: number; detail: string }[] {
   return [...findings, ...scanStaticOverride(source)].sort((a, b) => a.line - b.line)
 }
 
+const lines = (source: string): number[] => scan(source).map((f) => f.line)
+
 describe('server-rendered visibility', () => {
   it('scans the component tree (the guard is not silently empty)', () => {
     expect(sourceFiles(SOURCE_GLOBS).length).toBeGreaterThan(50)
+  })
+
+  it('finds files wiring a load event (condition 2 is not vacuously false)', () => {
+    // Narrowing LOAD_EVENT to a spelling nothing uses would silently reduce the
+    // guard's real coverage to nothing while every fixture below stayed green.
+    const wired = sourceFiles(SOURCE_GLOBS).filter((file) => LOAD_EVENT.test(readSource(file)))
+
+    expect(wired.length).toBeGreaterThan(0)
   })
 
   it('no component hides its first render behind a load event', () => {
@@ -250,9 +267,9 @@ describe('server-rendered visibility', () => {
       "const a = <img onLoad={load} className={`opacity-0 invisible ${isActive ? 'opacity-100! visible!' : ''}`} />",
     ].join('\n')
 
-    expect(scan(ternary).map((f) => f.line)).toEqual([2])
-    expect(scan(mirrored).map((f) => f.line)).toEqual([2])
-    expect(scan(staticOverride).map((f) => f.line)).toEqual([2])
+    expect(lines(ternary)).toEqual([2])
+    expect(lines(mirrored)).toEqual([2])
+    expect(lines(staticOverride)).toEqual([2])
   })
 
   it('reports an in-file expression that may take either value', () => {
@@ -265,7 +282,7 @@ describe('server-rendered visibility', () => {
       "const a = <img onLoad={load} className={`${imageLoaded ? 'opacity-100' : 'opacity-0'}`} />",
     ].join('\n')
 
-    expect(scan(sample).map((f) => f.line)).toEqual([3])
+    expect(lines(sample)).toEqual([3])
   })
 
   it('resolves a prop default, so an inverted-polarity gate passes', () => {
@@ -288,7 +305,7 @@ describe('server-rendered visibility', () => {
       "const a = <img onLoad={load} className={`${isSticky ? 'opacity-100' : 'opacity-0'}`} />",
     ].join('\n')
 
-    expect(scan(sample).map((f) => f.line)).toEqual([3])
+    expect(lines(sample)).toEqual([3])
   })
 
   it('skips a flag whose initial value is not in the file', () => {
