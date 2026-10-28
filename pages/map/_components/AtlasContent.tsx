@@ -217,19 +217,18 @@ function EventContent({
         )}
       </dl>
 
-      {/* `className` reaches the <img>, not the atom's container, so the
-          margin needs an element of its own. `forceAspectRatio={false}` keeps
-          the photo in natural flow and uncropped — the ratio only picks which
-          widths the srcset offers. `sizes` tracks the `max-w-3xl` column
-          above, not the viewport. */}
+      {/* `sizes` is the column above measured inside its gutters — `max-w-3xl`
+          caps the padded box, so the image is 720px, never 768. Declaring the
+          cap instead costs a whole srcset tier at DPR 2. The wrapper carries
+          the margin because `className` reaches the <img>. */}
       {lead && (
         <div className="mt-6">
           <Image
             alt={lead.alt ?? ''}
             aspectRatio="video"
-            className="w-full max-w-full"
+            className="w-full"
             forceAspectRatio={false}
-            sizes="(max-width: 48rem) 100vw, 768px"
+            sizes="(max-width: 40rem) calc(100vw - 2rem), (max-width: 48rem) calc(100vw - 3rem), 720px"
             src={lead.url}
           />
         </div>

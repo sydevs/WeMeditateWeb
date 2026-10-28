@@ -113,9 +113,8 @@ function rootSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoRe
 
 const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo={seo} />)
 
-// `…/<id>/public` is how the upload adapter spells a URL — see
-// `cloudflareImagesAdapter.ts` in sydevs/SahajCloud. The endpoint passes
-// Payload's virtual `url` through untouched (`seoDocument.ts`).
+// Spelled as SahajCloud sends it — docs/rules/testing.md. The endpoint
+// passes Payload's virtual `url` through untouched (`seoDocument.ts`).
 const CLOUDFLARE_LEAD = { url: 'https://imagedelivery.net/acct/img-id/public', alt: 'The hall' }
 
 describe('atlasHref', () => {
@@ -305,21 +304,14 @@ describe('<AtlasContent> lead image', () => {
     expect(html).not.toContain('rel="preload"')
   })
 
-  it('requests a width variant and offers a srcset for a SahajCloud upload', () => {
+  it('requests a width variant sized to its column, uncropped', () => {
     const html = render(eventSeo({ images: [CLOUDFLARE_LEAD] }))
     const lead = html.match(/<img[^>]*img-id[^>]*>/)?.[0]
 
     expect(lead).toContain('src="https://imagedelivery.net/acct/img-id/width=800"')
     expect(lead).toContain('srcSet=')
-    expect(lead).toContain('sizes="(max-width: 48rem) 100vw, 768px"')
-  })
-
-  it('stays in natural flow, so the photo is not cropped to 16:9', () => {
-    // The ratio picks the srcset widths only. `forceAspectRatio={false}` is
-    // what keeps the atom from boxing the photo into `aspect-video`.
-    const html = render(eventSeo({ images: [CLOUDFLARE_LEAD] }))
-
+    // 720px, not the 768px cap: `max-w-3xl` bounds the box with its gutters.
+    expect(lead).toContain('720px')
     expect(html).not.toContain('aspect-video')
-    expect(html.match(/<img[^>]*img-id[^>]*>/)?.[0]).not.toContain('absolute inset-0')
   })
 })

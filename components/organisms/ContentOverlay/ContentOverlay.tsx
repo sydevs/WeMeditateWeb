@@ -53,6 +53,11 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
   variant?: 'default' | 'highContrast' | 'box'
 }
 
+// Both breakpoint branches stay in the DOM, and a hidden <img> is still
+// fetched, so the two must declare one width or the browser resolves the
+// srcset twice and downloads the picture twice. The organism is full-bleed.
+const LEAD_IMAGE_SIZES = '100vw'
+
 /**
  * ContentOverlay displays a heading, text content, and optional CTA button
  * overlaid on a background image. Commonly used for feature highlights
@@ -169,10 +174,13 @@ export function ContentOverlay({
     <div className={className} {...props}>
       {/* Mobile: Stacked layout - no variant or surface styling */}
       <div className="flex flex-col gap-6 md:hidden">
-        {/* Both branches render, and a hidden <img> is still fetched, so this
-            carries the desktop branch's `sizes` to resolve the same srcset
-            candidate rather than a second copy of the picture. */}
-        <Image alt={imageAlt} aspectRatio="video" rounded="none" sizes="100vw" src={imageSrc} />
+        <Image
+          alt={imageAlt}
+          aspectRatio="video"
+          rounded="none"
+          sizes={LEAD_IMAGE_SIZES}
+          src={imageSrc}
+        />
 
         {/* Content below — title + optional subtitle kept tight together */}
         <div className="flex flex-col gap-1.5">
@@ -207,7 +215,7 @@ export function ContentOverlay({
             alt={imageAlt}
             aspectRatio="video"
             className={`w-full h-full object-cover ${imageBlendClass}`}
-            sizes="100vw"
+            sizes={LEAD_IMAGE_SIZES}
             src={imageSrc}
           />
         </div>
