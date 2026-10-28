@@ -26,6 +26,7 @@ import { useT } from '../../../hooks/useT'
 import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
 import { sitePathFromUrl } from '../../../lib/urls'
+import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
 
 /**
@@ -216,16 +217,22 @@ function EventContent({
         )}
       </dl>
 
-      {/* A raw <img> until #148: the `Image` atom holds its <img> at
-          `opacity-0` until a client load handler runs, and this markup is
-          read by visitors who never hydrate. */}
+      {/* `className` reaches the <img>, not the atom's container, so the
+          margin needs an element of its own. `forceAspectRatio={false}` keeps
+          the photo in natural flow and uncropped — the ratio only picks which
+          widths the srcset offers. `sizes` tracks the `max-w-3xl` column
+          above, not the viewport. */}
       {lead && (
-        <img
-          alt={lead.alt ?? ''}
-          className="mt-6 w-full max-w-full rounded"
-          loading="lazy"
-          src={lead.url}
-        />
+        <div className="mt-6">
+          <Image
+            alt={lead.alt ?? ''}
+            aspectRatio="video"
+            className="w-full max-w-full"
+            forceAspectRatio={false}
+            sizes="(max-width: 48rem) 100vw, 768px"
+            src={lead.url}
+          />
+        </div>
       )}
 
       {(content.paragraphs ?? []).map((paragraph, index) => (

@@ -113,6 +113,11 @@ function rootSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoRe
 
 const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo={seo} />)
 
+// `…/<id>/public` is how the upload adapter spells a URL — see
+// `cloudflareImagesAdapter.ts` in sydevs/SahajCloud. The endpoint passes
+// Payload's virtual `url` through untouched (`seoDocument.ts`).
+const CLOUDFLARE_LEAD = { url: 'https://imagedelivery.net/acct/img-id/public', alt: 'The hall' }
+
 describe('atlasHref', () => {
   it('prefers the canonical, which may live on another owner’s domain', () => {
     // Ownership is per-subtree, so linking anywhere else would build a
@@ -292,9 +297,29 @@ describe('an answer this build has never heard of', () => {
 
 describe('<AtlasContent> lead image', () => {
   it('is lazy, and visible to a reader who never hydrates', () => {
-    const lead = render(eventSeo()).match(/<img[^>]*a\.jpg[^>]*>/)?.[0]
+    const html = render(eventSeo())
+    const lead = html.match(/<img[^>]*a\.jpg[^>]*>/)?.[0]
 
     expect(lead).toContain('loading="lazy"')
     expect(lead).not.toContain('opacity-0')
+    expect(html).not.toContain('rel="preload"')
+  })
+
+  it('requests a width variant and offers a srcset for a SahajCloud upload', () => {
+    const html = render(eventSeo({ images: [CLOUDFLARE_LEAD] }))
+    const lead = html.match(/<img[^>]*img-id[^>]*>/)?.[0]
+
+    expect(lead).toContain('src="https://imagedelivery.net/acct/img-id/width=800"')
+    expect(lead).toContain('srcSet=')
+    expect(lead).toContain('sizes="(max-width: 48rem) 100vw, 768px"')
+  })
+
+  it('stays in natural flow, so the photo is not cropped to 16:9', () => {
+    // The ratio picks the srcset widths only. `forceAspectRatio={false}` is
+    // what keeps the atom from boxing the photo into `aspect-video`.
+    const html = render(eventSeo({ images: [CLOUDFLARE_LEAD] }))
+
+    expect(html).not.toContain('aspect-video')
+    expect(html.match(/<img[^>]*img-id[^>]*>/)?.[0]).not.toContain('absolute inset-0')
   })
 })
