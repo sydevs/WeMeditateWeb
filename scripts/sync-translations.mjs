@@ -88,9 +88,26 @@ function prune(value) {
 async function readGroupNames() {
   const source = await readFile(join(repoRoot, 'server', 'sahajcloud-types.ts'), 'utf8')
   const body = source.match(/WEB_TRANSLATIONS_SELECT = \{(.*?)^\}/ms)?.[1] ?? ''
-  const groups = [...body.matchAll(/^ {2}(\w+): true,/gm)]
-    .map(([, name]) => name)
-    .filter((name) => !NON_GROUP_KEYS.has(name))
+
+  const groups = []
+  const unreadable = []
+
+  // Every entry has to be accounted for, not just the ones that match. The
+  // select type also admits `meditation: { general: true }`, which this cannot
+  // read — and dropping it silently would quietly stop syncing that group.
+  for (const [, name, value] of body.matchAll(/^ {2}(\w+):(.*)$/gm)) {
+    if (NON_GROUP_KEYS.has(name)) continue
+    if (/^true,?$/.test(value.trim())) groups.push(name)
+    else unreadable.push(name)
+  }
+
+  if (unreadable.length > 0) {
+    console.error(
+      `sync-translations: cannot read ${unreadable.join(', ')} in \`WEB_TRANSLATIONS_SELECT\` ` +
+        '(server/sahajcloud-types.ts). Only a whole-group `<name>: true` is supported.',
+    )
+    process.exit(1)
+  }
 
   if (groups.length === 0) {
     console.error(

@@ -35,29 +35,47 @@ vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'fr', translations: FRENCH, urlPathname: '/index' }),
 }))
 
+/**
+ * The rendered text, with the entities React escapes in a text node undone.
+ *
+ * Without this, any assertion on a string holding an apostrophe is vacuous —
+ * `Don't` renders as `Don&#x27;t`, so `not.toContain` can never fail and the
+ * one string this test most needs to guard goes unchecked.
+ */
+function text(html: string): string {
+  return html
+    .replace(/&#x27;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+}
+
 const { DiscoverMeditation } = await import('./DiscoverMeditation')
 
 describe('DiscoverMeditation in a non-English locale', () => {
   it('renders every SahajCloud string, and no English literal', () => {
-    const html = renderToStaticMarkup(<DiscoverMeditation />)
+    const rendered = text(renderToStaticMarkup(<DiscoverMeditation />))
 
     for (const french of Object.values(FRENCH.discover.general)) {
-      expect(html).toContain(french)
+      expect(rendered).toContain(french)
     }
     // The snapshot, not a copy of it: a reworded key upstream would otherwise
     // leave this asserting against English the component no longer holds.
     for (const english of Object.values(EN_TRANSLATIONS.discover.general)) {
-      expect(html).not.toContain(english)
+      expect(rendered).not.toContain(english)
     }
   })
 
   it('still lets a caller override the heading and subtitle', () => {
-    const html = renderToStaticMarkup(
-      <DiscoverMeditation subtitle="Essayez par vous-même" title="Un autre titre" />,
+    const rendered = text(
+      renderToStaticMarkup(
+        <DiscoverMeditation subtitle="Essayez par vous-même" title="Un autre titre" />,
+      ),
     )
 
-    expect(html).toContain('Un autre titre')
-    expect(html).toContain('Essayez par vous-même')
-    expect(html).not.toContain('Découvrez-le par vous-même !')
+    expect(rendered).toContain('Un autre titre')
+    expect(rendered).toContain('Essayez par vous-même')
+    expect(rendered).not.toContain('Découvrez-le par vous-même !')
   })
 })
