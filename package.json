@@ -18,7 +18,7 @@
     "check:wrangler": "wrangler deploy --dry-run --config wrangler.design.jsonc",
     "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
     "types:cms": "curl -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs",
-    "sync:translations": "node scripts/sync-translations.mjs"
+    "sync:translations": "tsx scripts/sync-translations.mjs"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.20",
@@ -70,6 +70,7 @@
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.2",
     "vite": "^7.3.7",

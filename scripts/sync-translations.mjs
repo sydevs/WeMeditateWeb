@@ -23,6 +23,8 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
+import { WEB_TRANSLATIONS_SELECT } from '../server/sahajcloud-types.ts'
+
 const GLOBAL_SLUG = 'wm-web-translations'
 
 /** Response fields that are document metadata, not translation groups. */
@@ -75,51 +77,6 @@ function prune(value) {
   return Object.fromEntries(entries)
 }
 
-/**
- * The groups to ask for, read out of `WEB_TRANSLATIONS_SELECT` as text.
- *
- * The client gate 400s a global read carrying no `select`, and takes bracketed
- * keys only, so the script has to name each group. It reads the same constant
- * the site queries with — the one list, per `docs/rules/rest-api.md` — because a
- * group the select omits is unreachable through `useT()`, and the snapshot ships
- * to every browser as the offline fallback. Parsing beats importing only because
- * this is plain node with no TypeScript loader.
- */
-async function readGroupNames() {
-  const source = await readFile(join(repoRoot, 'server', 'sahajcloud-types.ts'), 'utf8')
-  const body = source.match(/WEB_TRANSLATIONS_SELECT = \{(.*?)^\}/ms)?.[1] ?? ''
-
-  const groups = []
-  const unreadable = []
-
-  // Every entry has to be accounted for, not just the ones that match. The
-  // select type also admits `meditation: { general: true }`, which this cannot
-  // read — and dropping it silently would quietly stop syncing that group.
-  for (const [, name, value] of body.matchAll(/^ {2}(\w+):(.*)$/gm)) {
-    if (NON_GROUP_KEYS.has(name)) continue
-    if (/^true,?$/.test(value.trim())) groups.push(name)
-    else unreadable.push(name)
-  }
-
-  if (unreadable.length > 0) {
-    console.error(
-      `sync-translations: cannot read ${unreadable.join(', ')} in \`WEB_TRANSLATIONS_SELECT\` ` +
-        '(server/sahajcloud-types.ts). Only a whole-group `<name>: true` is supported.',
-    )
-    process.exit(1)
-  }
-
-  if (groups.length === 0) {
-    console.error(
-      'sync-translations: no groups found in `WEB_TRANSLATIONS_SELECT` ' +
-        '(server/sahajcloud-types.ts). It was renamed or reformatted.',
-    )
-    process.exit(1)
-  }
-
-  return groups
-}
-
 /** Leaf strings in a snapshot, counted by walking it rather than its punctuation. */
 function countStrings(value) {
   if (typeof value === 'string') return 1
@@ -149,7 +106,11 @@ async function main() {
   const client = me?.user?.name ?? me?.user?.email ?? me?.user?.id ?? 'unknown'
   console.log(`Authenticated as API client: ${client}`)
 
-  const groupNames = await readGroupNames()
+  // The client gate 400s a global read carrying no `select` and takes bracketed
+  // keys only, so the read names every group — from the constant the site
+  // queries with, so query, type and snapshot cannot drift. Reaching it from a
+  // script is what `tsx` is a devDependency for.
+  const groupNames = Object.keys(WEB_TRANSLATIONS_SELECT)
   console.log(`Selecting ${groupNames.length} groups: ${groupNames.join(', ')}`)
 
   // `_status` rides along so the published-locale check below still has it.
