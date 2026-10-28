@@ -23,7 +23,7 @@ atom.
 
 Based on the wemeditate.com brand. [layouts/tailwind.css](./layouts/tailwind.css) declares every
 token in its `@theme` block, and Tailwind generates the matching utilities from there —
-`bg-teal-500`, `text-gray-700`, `border-error`. Name the scale step directly, except for a colour
+`bg-teal-700`, `text-gray-800`, `border-error`. Name the scale step directly, except for a colour
 that must change on a dark background: that one is a surface token (see [Surfaces](#surfaces)).
 
 The three tables below copy that block, so
@@ -41,8 +41,8 @@ Three scales carry the brand. Each declares ten steps — `--color-teal-50` thro
 | `300` | `#83bcb4` | `#f8c0b3` | `#d7d7d6` |
 | `400` | `#72b3a9` | `#f4a796` | `#c6c6c6` |
 | `500` | `#61aaa0` | `#e08e79` | `#aaaaa9` |
-| `600` | `#4c8d84` | `#c54d2e` | `#9d9d9c` |
-| `700` | `#3d726b` | `#b44528` | `#7b7b7b` |
+| `600` | `#427b73` | `#c54d2e` | `#9d9d9c` |
+| `700` | `#3d726b` | `#b44528` | `#717171` |
 | `800` | `#2e5652` | `#8b3420` | `#5e6063` |
 | `900` | `#1f3a38` | `#5f2318` | `#555555` |
 
@@ -51,27 +51,33 @@ Six tokens stand outside the scales:
 | Token | Hex | Use |
 | --- | --- | --- |
 | `--color-accent` | `#ff856f` | Bright coral, for a strong CTA |
-| `--color-error` | `#cc5e5e` | Error text, borders and fills |
+| `--color-error` | `#c34040` | Error text, borders and fills |
 | `--color-error-dark` | `#8b0000` | Critical error |
-| `--color-success` | `#4c8d84` | Success states — the same value as `--color-teal-600` |
+| `--color-success` | `#427b73` | Success states — the same value as `--color-teal-600` |
 | `--color-info` | `#61aaa0` | Info states — the same value as `--color-teal-500` |
 | `--color-bg-warm` | `#faf0e3` | Warm page background |
 
-Which step each role reaches for on a light surface today. This records what the components
-do, not a contrast clearance — several of these pairings sit under the 4.5:1 bar the
-accessibility table below sets, so check yours before you copy it. #179 proposes moving the
-failing roles to a passing step, which would rewrite the Primary button, Link and Body text rows —
-the last two by changing one `surface-light` token each:
+Which step each role reaches for on a light surface. Every text and fill pairing here clears the
+4.5:1 the accessibility table below sets, measured against `white` — the only light background,
+since `--color-bg-warm` has no call site. `tests/guards/text-contrast.test.ts` holds it there:
 
-| Role | Token |
-| --- | --- |
-| Primary button | `--color-teal-500`, hover `--color-teal-600`, active `--color-teal-700` |
-| Secondary button | `--color-coral-500`, hover `--color-coral-600`, active `--color-coral-700` |
-| Link | `--color-teal-600`, hover `--color-teal-700` |
-| Heading | `--color-gray-900` |
-| Body text | `--color-gray-700`, and `--color-gray-600` for secondary text |
-| Border | `--color-gray-200`, or `--color-gray-300` for a stronger rule |
-| Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` |
+| Role | Token | On white |
+| --- | --- | --- |
+| Primary button | `--color-teal-600`, hover `--color-teal-700`, active `--color-teal-800` | 4.87:1 |
+| Secondary button | `--color-coral-600`, hover `--color-coral-700`, active `--color-coral-800` | 4.69:1 |
+| Link | `--color-teal-600`, hover `--color-teal-700` | 4.87:1 |
+| Heading | `--color-gray-900` | 7.46:1 |
+| Body text | `--color-gray-700`, for muted text as well | 4.88:1 |
+| Error text | `--color-error` | 5.09:1 |
+| Border | `--color-gray-200`, or `--color-gray-300` for a stronger rule | n/a |
+| Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` | n/a |
+
+`gray-700`, `teal-600` and `error` each sit at the lightest value of their own hue and
+saturation that clears 4.5:1, so the brand reads as close to its original as the bar allows
+(#179). `-600` (2.71:1) and `-500` (2.33:1) tune to the same place as `gray-700`, so one muted
+grey now carries body and secondary text alike, which differ by weight or size instead. Both
+still clear 3:1, so they serve a border, an icon or large text (18pt+) — never normal-size
+text.
 
 ### Surfaces
 
@@ -88,17 +94,26 @@ token; a component uses the class and gets whichever surface it sits on.
 | `border-line` | `gray-500` | white | Outline button border, breadcrumb separator |
 | `border-line-subtle` | `gray-200` | white | Header rules |
 | `bg-tint` | `gray-100` | white at 20% | Ghost button hover and active fill |
-| `bg-highlight`, `text-on-highlight` | `teal-100`, `gray-700` | white, `gray-800` | Outline button hover |
+| `bg-highlight`, `text-on-highlight` | `teal-100`, `gray-800` | white, `gray-800` | Outline button hover |
 | `focus-ring` | `teal-600` over white | white over `teal-900` | Every focus indicator |
 
 Each works with any colour utility (`border-primary`, `bg-fg/50`). Filled buttons (`primary`,
 `secondary`, `neutral`) are the same on every surface, so they name scale steps. The rules for
 setting a surface are in [docs/rules/design-system.md](./docs/rules/design-system.md).
 
-The dark values are `teal-300` and `coral-300`, hovering to the `200` step of the same scale —
-both keep the brand color recognizable. Neither clears 4.5:1 on its own: check
-the pair against the surface you are on, because `--color-teal-300` reaches 9.8:1 on black and
-only 3.0:1 on `--color-gray-800`.
+Every light text token above clears 4.5:1 on white, and `text-on-highlight` clears it on
+`bg-highlight` (4.53:1) — `layouts/tailwind.test.ts` asserts each one. The `focus-ring` row is the
+exception: a focus indicator is a UI component, at 3:1, which `teal-600` clears at 4.87:1.
+
+**The dark side is narrower than the light side, and no product component tests it.** `teal-300`
+and `coral-300` keep the brand colour recognizable, and clear 4.5:1 only against a `900` step —
+`teal-300` reaches 5.71:1 on `teal-900` but 3.82:1 on `teal-800` and 2.95:1 on `gray-800`.
+Measured against the two dark surfaces the product actually paints, both fall short: on
+`OrnateTextBox`'s gradient, read at its lightest stop `#8a6f56`, `teal-300` measures 2.19:1 and
+`coral-300` 2.94:1, and a `Splash` photograph cannot be measured at all. Neither component draws
+either token — both paint white text throughout — so the only evidence is the story wrappers, and
+those were moved onto `teal-900` rather than the steps changed (#179). Measure the pair against
+your own surface before you are the first component to draw one.
 
 ### Typography
 
@@ -357,7 +372,7 @@ Context only when composition does not work, since it is the exception here, not
 | Keyboard | Every interactive element is reachable by keyboard, in the visual tab order, with the `focus-ring` utility (never a hand-written ring — see `docs/rules/design-system.md`). Escape closes a modal or dropdown. |
 | Semantic HTML | Use `<nav>`, `<main>`, `<article>`, `<button>` for actions, `<a>` for navigation, and `<h1>`–`<h6>` in order. |
 | ARIA | Add ARIA only where semantic HTML falls short — `aria-expanded`/`aria-haspopup` on a dropdown trigger, `aria-busy`/`aria-live` on a loading button. |
-| Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. |
+| Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. A logotype, and text that is pure decoration, owe neither — `aria-hidden` alone does not make informative text decorative. Reach for a surface token or a role from the table above, and `tests/guards/text-contrast.test.ts` has already measured it. |
 | Alt text | A decorative image uses `alt=""` and `role="presentation"`. An informative image needs a real description. |
 | Forms | Pair every input with a `<label htmlFor>`, and set `aria-invalid` and `aria-describedby` on an errored field, pointing at an `id` with `role="alert"`. |
 

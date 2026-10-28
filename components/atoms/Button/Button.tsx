@@ -150,8 +150,8 @@ export function Button({
   // Filled variants look the same on every surface. Outline and ghost take
   // their text, border and hover tint from the surface tokens.
   const iconOnlyStyles = {
-    primary: 'bg-teal-500 hover:bg-teal-600 text-white active:bg-teal-700',
-    secondary: 'bg-coral-500 hover:bg-coral-600 text-white active:bg-coral-700',
+    primary: 'bg-teal-600 hover:bg-teal-700 text-white active:bg-teal-800',
+    secondary: 'bg-coral-600 hover:bg-coral-700 text-white active:bg-coral-800',
     outline:
       'bg-transparent border border-line text-fg-muted hover:bg-highlight hover:text-on-highlight',
     ghost: 'bg-transparent text-fg-muted hover:bg-tint hover:text-fg',
@@ -160,8 +160,8 @@ export function Button({
 
   // Text buttons fill on hover through the animated ::after layer.
   const textButtonStyles = {
-    primary: 'bg-teal-500 after:bg-teal-600 text-white active:after:bg-teal-700',
-    secondary: 'bg-coral-500 after:bg-coral-600 text-white active:after:bg-coral-700',
+    primary: 'bg-teal-600 after:bg-teal-700 text-white active:after:bg-teal-800',
+    secondary: 'bg-coral-600 after:bg-coral-700 text-white active:after:bg-coral-800',
     outline:
       'bg-transparent border border-line text-fg-muted after:bg-highlight hover:text-on-highlight',
     ghost: 'bg-transparent text-fg-muted after:bg-tint hover:text-fg',

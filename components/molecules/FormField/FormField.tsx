@@ -85,7 +85,7 @@ export function FormField({
   const alignStyles = align === 'center' ? 'text-center' : 'text-left'
   const labelStyles = 'block text-sm font-medium text-gray-900 mb-1'
   const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : ''
-  const descriptionStyles = 'mt-1 text-sm text-gray-600'
+  const descriptionStyles = 'mt-1 text-sm text-gray-700'
   const errorStyles = 'mt-1 text-sm text-error'
 
   // Generate IDs for description and error for aria-describedby

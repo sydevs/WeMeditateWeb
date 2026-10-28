@@ -44,7 +44,7 @@ export function Blockquote({ text, credit, align = 'right', className = '' }: Bl
           m-8 px-8 py-4 sm:py-8
           ${isLeft ? 'pl-16 -ml-12 text-right' : 'pr-16 -mr-12 text-left'}
           before:content-[''] before:absolute before:inset-0 before:-z-10
-          leading-relaxed text-gray-600
+          leading-relaxed text-gray-700
           ${
             isLeft
               ? 'before:left-0 before:right-[20%] before:bg-linear-to-r'

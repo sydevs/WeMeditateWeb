@@ -146,7 +146,7 @@ export const Default: Story = () => (
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">Card Title</h3>
-                <p className="text-gray-600">Card content that would load...</p>
+                <p className="text-gray-700">Card content that would load...</p>
               </div>
               <SplashLoader size="sm" color="secondary" text="Loading content..." />
             </div>
@@ -187,7 +187,7 @@ function InteractiveSplashLoader() {
         <Button variant="primary" onClick={handleToggle}>
           {isLoading ? 'Complete Loading' : 'Start Loading'}
         </Button>
-        <span className="text-sm text-gray-600 flex items-center">
+        <span className="text-sm text-gray-700 flex items-center">
           Status: {isLoading ? 'Loading...' : 'Complete'}
         </span>
       </div>
@@ -203,7 +203,7 @@ function InteractiveSplashLoader() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">Content Loaded!</h3>
-              <p className="text-gray-600">The splash screen has faded out.</p>
+              <p className="text-gray-700">The splash screen has faded out.</p>
             </div>
           </div>
         )}

@@ -309,7 +309,7 @@ export function SubtleSystem({
                 <p className="text-base mb-4 text-gray-700">{item.description}</p>
                 <a
                   aria-label={t('blocks.a11y.learn_more_about', { title: item.title })}
-                  className="inline-block text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                  className="inline-block text-teal-700 hover:text-teal-800 font-medium transition-colors"
                   href={item.linkHref}
                 >
                   {t('blocks.general.learn_more')}

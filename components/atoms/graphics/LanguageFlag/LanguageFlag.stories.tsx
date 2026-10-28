@@ -18,43 +18,43 @@ export const Default: Story = () => (
           <div className="flex gap-4 flex-wrap">
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="en" />
-              <p className="text-sm text-gray-600">English</p>
+              <p className="text-sm text-gray-700">English</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="es" />
-              <p className="text-sm text-gray-600">Español</p>
+              <p className="text-sm text-gray-700">Español</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="de" />
-              <p className="text-sm text-gray-600">Deutsch</p>
+              <p className="text-sm text-gray-700">Deutsch</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="it" />
-              <p className="text-sm text-gray-600">Italiano</p>
+              <p className="text-sm text-gray-700">Italiano</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="fr" />
-              <p className="text-sm text-gray-600">Français</p>
+              <p className="text-sm text-gray-700">Français</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="ru" />
-              <p className="text-sm text-gray-600">Русский</p>
+              <p className="text-sm text-gray-700">Русский</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="ro" />
-              <p className="text-sm text-gray-600">Română</p>
+              <p className="text-sm text-gray-700">Română</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="cs" />
-              <p className="text-sm text-gray-600">Čeština</p>
+              <p className="text-sm text-gray-700">Čeština</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="uk" />
-              <p className="text-sm text-gray-600">Українська</p>
+              <p className="text-sm text-gray-700">Українська</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <LanguageFlag language="bg" />
-              <p className="text-sm text-gray-600">Български</p>
+              <p className="text-sm text-gray-700">Български</p>
             </div>
           </div>
         </div>

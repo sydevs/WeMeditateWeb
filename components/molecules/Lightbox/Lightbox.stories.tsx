@@ -78,7 +78,7 @@ export const Default: Story = () => (
 
     <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-700">
           In rich-text content the gallery and inline images mount their own triggers automatically;
           here a button stands in for the trigger.
         </p>

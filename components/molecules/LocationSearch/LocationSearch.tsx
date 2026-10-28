@@ -275,7 +275,7 @@ export function LocationSearch({
 
         {/* Loading Coordinates State */}
         {isLoadingCoordinates && (
-          <div className="px-5 py-4 text-center text-gray-500">
+          <div className="px-5 py-4 text-center text-gray-700">
             <Spinner size="sm" color="currentColor" className="mx-auto mb-2" />
             <div className="text-sm">{t('location.general.getting_coordinates')}</div>
           </div>
@@ -290,16 +290,16 @@ export function LocationSearch({
 
         {/* Loading Suggestions */}
         {isLoadingSuggestions ? (
-          <div className="px-5 py-4 text-center text-gray-500">
+          <div className="px-5 py-4 text-center text-gray-700">
             <Spinner size="sm" color="currentColor" className="mx-auto mb-2" />
             <div className="text-sm">{t('location.general.searching')}</div>
           </div>
         ) : !inputValue ? (
-          <div className="px-5 py-4 text-sm text-gray-500 text-center">
+          <div className="px-5 py-4 text-sm text-gray-700 text-center">
             {t('location.general.type_to_search')}
           </div>
         ) : suggestions.length === 0 && !error ? (
-          <div className="px-5 py-4 text-sm text-gray-500 text-center">{t('location.general.no_results')}</div>
+          <div className="px-5 py-4 text-sm text-gray-700 text-center">{t('location.general.no_results')}</div>
         ) : null}
 
         {/* Suggestions List */}
@@ -316,7 +316,7 @@ export function LocationSearch({
             >
               <div className="font-medium text-gray-900">{suggestion.name}</div>
               {suggestion.place_formatted && (
-                <div className="text-sm text-gray-600 mt-0.5">{suggestion.place_formatted}</div>
+                <div className="text-sm text-gray-700 mt-0.5">{suggestion.place_formatted}</div>
               )}
             </button>
           ))}

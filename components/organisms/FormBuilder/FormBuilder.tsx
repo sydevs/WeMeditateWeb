@@ -104,7 +104,7 @@ function renderField(
   fieldError?: string
 ) {
   if (field.blockType === 'message') {
-    return <RichText className="text-sm sm:text-base text-gray-600 leading-relaxed" content={field.message} />
+    return <RichText className="text-sm sm:text-base text-gray-700 leading-relaxed" content={field.message} />
   }
 
   const label = field.label ?? field.name

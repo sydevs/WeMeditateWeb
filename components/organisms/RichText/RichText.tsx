@@ -211,7 +211,7 @@ const CONVERTERS: JSXConverters = {
           src={image.url}
           width={image.width ?? undefined}
         />
-        {caption ? <figcaption className="mt-2 text-sm text-gray-500">{caption}</figcaption> : null}
+        {caption ? <figcaption className="mt-2 text-sm text-gray-700">{caption}</figcaption> : null}
       </figure>
     )
   },

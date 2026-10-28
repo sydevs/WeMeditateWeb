@@ -88,7 +88,7 @@ export function ErrorFallback({
                 href={statusPageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-teal-600 hover:text-teal-700 underline"
+                className="text-teal-700 hover:text-teal-800 underline"
               >
                 {t('errors.general.status_page_link')}
               </a>
@@ -100,7 +100,7 @@ export function ErrorFallback({
       {/* eslint-disable no-restricted-syntax -- both call sites pass showDetails={import.meta.env.DEV}, so this panel is a developer's, never a visitor's */}
       {showDetails && (
         <details className="mb-6 max-w-md text-left w-full">
-          <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900 mb-2 text-center">
+          <summary className="cursor-pointer text-sm text-gray-700 hover:text-gray-900 mb-2 text-center">
             Technical Details
           </summary>
           <div className="mt-2 p-4 bg-gray-100 rounded text-xs font-mono break-words">
