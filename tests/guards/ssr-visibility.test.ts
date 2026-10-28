@@ -27,6 +27,11 @@
  * pair separates them without naming a single site. A per-site exemption would
  * be one chance per affordance to wave a real bug through.
  *
+ * Condition 2 is read per file, not per element, which is the price of needing
+ * no AST: give `HeaderDropdown` or `Accordion` a load event for some unrelated
+ * reason and its existing reveal is reported. The verdict on that site is then
+ * this guard's to change, never an exemption's.
+ *
  * Two gaps are deliberate, and neither has a live site to point at:
  *
  * - A flag whose initial value is not findable in the same file is skipped
@@ -54,9 +59,10 @@ const SOURCE_GLOBS = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx
 const LOAD_EVENT = /\bonLoad\b|\bonError\b|\.complete\b/
 
 /**
- * A bare opacity class, `!`-important or not. A variant-prefixed one —
- * `after:opacity-0`, `hover:after:opacity-100` — styles a pseudo-element or a
- * hover state, never the first render.
+ * A bare opacity class, `!`-important or not. Any variant prefix at all puts it
+ * out of scope — `after:` and `hover:` because they style a pseudo-element or a
+ * hover state rather than the first render, but `md:` and `dark:` along with
+ * them, which the ⚠ caveat covers rather than this pattern.
  */
 const HIDDEN = /(?<![\w:-])opacity-0!?(?![\w-])/
 const IMPORTANT_VISIBLE = /(?<![\w:-])opacity-100!(?![\w-])/
@@ -65,16 +71,19 @@ const IMPORTANT_VISIBLE = /(?<![\w:-])opacity-100!(?![\w-])/
 const ARM = String.raw`('[^'\n]*'|"[^"\n]*"|\`[^\`$\n]*\`)`
 
 /**
- * `flag ? 'A' : 'B'`, either polarity — the shape all three bugs took. The
- * condition stops at a brace, a backtick or a newline, which is what keeps it
- * to the one interpolation it lives in.
+ * `flag ? 'A' : 'B'`, either polarity — the shape all three bugs took.
  *
- * The first character may not be whitespace. `readSource` blanks every comment
- * to a space run, and a lazy quantifier that can start inside one re-scans it
- * from each position — which cost 170ms of this guard's 191ms, growing
- * quadratically with the length of any blanked comment.
+ * The condition is spelled as a grammar rather than "anything up to the `?`",
+ * so it cannot swallow the tokens in front of it. `return loaded ? …`,
+ * `'base ' + (loaded ? …)` and `cn('base', loaded ? …)` each used to capture
+ * that leading text, and the swallowed identifier — unbound, so unresolvable —
+ * turned a real gate into a skip. Starting only at an operand also keeps the
+ * matcher out of the space runs `readSource` makes of every comment, which it
+ * re-scanned from each position at quadratic cost.
  */
-const CONDITION = String.raw`[^\s?:;{}=\n\`][^?:;{}=\n\`]*?`
+const OPERAND = String.raw`(?:!\s*)?(?:[\w$.]+|'[^'\n]*'|"[^"\n]*")`
+const JOIN = String.raw`\s*(?:&&|\|\||===|!==|==|!=|<=|>=|<|>)\s*`
+const CONDITION = String.raw`${OPERAND}(?:${JOIN}${OPERAND})*`
 const TERNARY = new RegExp(String.raw`(${CONDITION})\s*\?\s*${ARM}\s*:\s*${ARM}`, 'g')
 
 /** The same pattern without `g`, so the two scans cannot share a `lastIndex`. */
@@ -84,8 +93,13 @@ const ONE_TERNARY = new RegExp(TERNARY.source)
 const TEMPLATE = /`[^`]*`/g
 const INTERPOLATION = /\$\{(?:[^{}]|\{[^{}]*\})*\}/g
 
-/** An identifier a condition reads, a member path kept whole. */
+/**
+ * An identifier a condition reads, a member path kept whole. The words inside a
+ * compared literal — `status === 'loading'` — are not identifiers to resolve, so
+ * they are blanked first.
+ */
 const IDENTIFIER = /(?<![\w$.])[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*/g
+const QUOTED_OPERAND = /'[^'\n]*'|"[^"\n]*"/g
 
 /** Initialisers whose truthiness is readable off the text. */
 const LITERAL_TRUTH = new Map([
@@ -119,10 +133,24 @@ function initialExpression(source: string, flag: string): string | null {
 
   for (const pattern of bindings) {
     const match = new RegExp(pattern).exec(source)
-    if (match) return match[1].trim()
+    if (match) return normalizeInitial(match[1])
   }
 
   return null
+}
+
+/**
+ * Strips the spellings that carry no meaning, so a literal still reads as one:
+ * the trailing comma the formatter leaves when it wraps `useState(\n  true,\n)`,
+ * and the arrow of a lazy `useState(() => true)`. Without this, correct code
+ * resolves to "may take either value" and the guard reports it.
+ */
+function normalizeInitial(text: string): string {
+  return text
+    .trim()
+    .replace(/,$/, '')
+    .replace(/^\(\s*\)\s*=>\s*/, '')
+    .trim()
 }
 
 type Truth = boolean | 'either' | 'unknown'
@@ -148,7 +176,7 @@ function firstRenderTruth(source: string, condition: string): Truth {
 
   // A member path or a compound condition resolves only as far as the flags it
   // reads, and one flag from outside the file decides the whole condition.
-  const identifiers = bare.match(IDENTIFIER) ?? []
+  const identifiers = blank(bare, QUOTED_OPERAND).match(IDENTIFIER) ?? []
   if (identifiers.length === 0) return 'unknown'
 
   for (const identifier of identifiers) {
@@ -277,6 +305,54 @@ describe('server-rendered visibility', () => {
     expect(lines(ternary)).toEqual([2])
     expect(lines(mirrored)).toEqual([2])
     expect(lines(staticOverride)).toEqual([2])
+  })
+
+  it('reads the condition nearest the `?`, not the tokens in front of it', () => {
+    // Each of these once captured its leading text into the condition, and the
+    // swallowed identifier — unbound, so unresolvable — skipped a real gate.
+    const returned = [
+      'const [loaded, setLoaded] = useState(false)',
+      "const cls = () => { onLoad; return loaded ? 'opacity-100' : 'opacity-0' }",
+    ].join('\n')
+    const concatenated = [
+      'const [loaded, setLoaded] = useState(false)',
+      "const cls = <img onLoad={load} className={'base ' + (loaded ? 'opacity-100' : 'opacity-0')} />",
+    ].join('\n')
+    const helper = [
+      'const [loaded, setLoaded] = useState(false)',
+      "const cls = <img onLoad={load} className={cn('base', loaded ? 'opacity-100' : 'opacity-0')} />",
+    ].join('\n')
+
+    expect(lines(returned)).toEqual([2])
+    expect(lines(concatenated)).toEqual([2])
+    expect(lines(helper)).toEqual([2])
+  })
+
+  it('reads a comparison against a literal as the condition', () => {
+    const sample = [
+      "const [status, setStatus] = useState('loading')",
+      "const a = <img onLoad={load} className={`${status === 'ready' ? 'opacity-100' : 'opacity-0'}`} />",
+    ].join('\n')
+
+    expect(lines(sample)).toEqual([2])
+  })
+
+  it('passes a literal the formatter wrapped, and a lazy initialiser', () => {
+    // Both are correct code. Reading the initialiser's text literally made them
+    // "may take either value", which the guard reports.
+    const wrapped = [
+      'const [isLoading, setIsLoading] = useState(',
+      '  true,',
+      ')',
+      "const a = <img onLoad={load} className={`${isLoading ? 'opacity-100' : 'opacity-0'}`} />",
+    ].join('\n')
+    const lazy = [
+      'const [isLoading, setIsLoading] = useState(() => true)',
+      "const a = <img onLoad={load} className={`${isLoading ? 'opacity-100' : 'opacity-0'}`} />",
+    ].join('\n')
+
+    expect(scan(wrapped)).toEqual([])
+    expect(scan(lazy)).toEqual([])
   })
 
   it('reports an in-file expression that may take either value', () => {
