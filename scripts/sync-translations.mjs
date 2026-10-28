@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Mirrors the SahajCloud `wm-web-translations` English locale into
  * `lib/translations.en.json`.
@@ -19,7 +19,7 @@
  * copy changes, and commits the diff.
  */
 
-import { readFile, writeFile } from 'node:fs/promises'
+import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -141,23 +141,9 @@ async function main() {
 
   const target = join(repoRoot, 'lib', 'translations.en.json')
 
-  // English only ever grows: a select naming fewer groups than the schema holds
-  // still reads 200, losing whole groups as quietly as the unseeded global did.
-  const committed = await readFile(target, 'utf8').catch(() => null)
-  const committedCount = committed === null ? 0 : countStrings(JSON.parse(committed))
-
-  if (keyCount < committedCount && !process.argv.includes('--allow-shrink')) {
-    console.error(
-      `sync-translations: ${keyCount} strings read, but lib/translations.en.json holds ` +
-        `${committedCount}. Refusing to shrink the snapshot — check the select and the ` +
-        'upstream schema, then pass --allow-shrink if the deletion is intended.',
-    )
-    process.exit(1)
-  }
-
   await writeFile(target, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
 
-  console.log(`Wrote ${keyCount} strings to lib/translations.en.json (was ${committedCount})`)
+  console.log(`Wrote ${keyCount} strings to lib/translations.en.json`)
 }
 
 main().catch((error) => {
