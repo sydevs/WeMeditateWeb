@@ -68,8 +68,13 @@ const ARM = String.raw`('[^'\n]*'|"[^"\n]*"|\`[^\`$\n]*\`)`
  * `flag ? 'A' : 'B'`, either polarity — the shape all three bugs took. The
  * condition stops at a brace, a backtick or a newline, which is what keeps it
  * to the one interpolation it lives in.
+ *
+ * The first character may not be whitespace. `readSource` blanks every comment
+ * to a space run, and a lazy quantifier that can start inside one re-scans it
+ * from each position — which cost 170ms of this guard's 191ms, growing
+ * quadratically with the length of any blanked comment.
  */
-const CONDITION = String.raw`[^?:;{}=\n\`][^?:;{}=\n\`]*?`
+const CONDITION = String.raw`[^\s?:;{}=\n\`][^?:;{}=\n\`]*?`
 const TERNARY = new RegExp(String.raw`(${CONDITION})\s*\?\s*${ARM}\s*:\s*${ARM}`, 'g')
 
 /** The same pattern without `g`, so the two scans cannot share a `lastIndex`. */
@@ -230,21 +235,23 @@ export function scan(source: string): Finding[] {
 
 const lines = (source: string): number[] => scan(source).map((f) => f.line)
 
+const SCANNED = sourceFiles(SOURCE_GLOBS)
+
 describe('server-rendered visibility', () => {
   it('scans the component tree (the guard is not silently empty)', () => {
-    expect(sourceFiles(SOURCE_GLOBS).length).toBeGreaterThan(50)
+    expect(SCANNED.length).toBeGreaterThan(50)
   })
 
   it('finds files wiring a load event (condition 2 is not vacuously false)', () => {
     // Narrowing LOAD_EVENT to a spelling nothing uses would silently reduce the
     // guard's real coverage to nothing while every fixture below stayed green.
-    const wired = sourceFiles(SOURCE_GLOBS).filter((file) => LOAD_EVENT.test(readSource(file)))
+    const wired = SCANNED.filter((file) => LOAD_EVENT.test(readSource(file)))
 
     expect(wired.length).toBeGreaterThan(0)
   })
 
   it('no component hides its first render behind a load event', () => {
-    const findings = sourceFiles(SOURCE_GLOBS).flatMap((file) =>
+    const findings = SCANNED.flatMap((file) =>
       scan(readSource(file)).map((f) => `${relative(repoRoot, file)}:${f.line} → ${f.detail}`),
     )
 
