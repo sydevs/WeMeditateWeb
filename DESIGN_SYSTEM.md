@@ -415,7 +415,9 @@ full-size original. With the ratio but no `sizes`, the browser falls back to the
 roughly-full-width default and may fetch 800px into a 48px tile. Any box narrower than the
 viewport passes its own `sizes` (#146).
 [tests/guards/image-variants.test.ts](./tests/guards/image-variants.test.ts) holds every call
-site to both, and names the file and line of the one that drops either.
+site to both, and names the file and line of the one that drops either. It also pins the raw
+`<img>` population, which it cannot hold to anything: a hand-rolled one reds the guard until
+someone says whether its `src` reaches `getImageURL`.
 
 `<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
 (default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →
