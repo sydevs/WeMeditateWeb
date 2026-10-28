@@ -114,7 +114,6 @@ export function useAudioPlayer({
     onEnd?.()
   })
 
-  // Seek handler, simplified because html5 mode is disabled
   const seekTo = useEffectEvent((time: number) => {
     const howl = player.player
 
