@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Button } from '../../atoms/Button'
 import { Column, ColumnProps } from '../Column'
 import { useT } from '../../../hooks/useT'
 
@@ -23,7 +24,10 @@ interface CarouselNavButtonProps {
   disabled: boolean
 }
 
-/** Navigation button for the carousel. Displays a chevron and the adjacent column title. */
+/**
+ * Navigation button for the carousel, in the row slot it shrinks inside.
+ * Displays a chevron and the adjacent column title.
+ */
 function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
   const isPrev = direction === 'prev'
   const t = useT()
@@ -34,22 +38,29 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
     : t(isPrev ? 'common.a11y.previous' : 'common.a11y.next')
 
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
-      // item shrink: it still shrinks, just not below the tap minimum.
-      className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-    >
-      {column && (
-        <>
-          {isPrev && <ChevronLeftIcon className="w-5 h-5 shrink-0" />}
-          <span className="max-w-[100px] truncate">{column.title}</span>
-          {!isPrev && <ChevronRightIcon className="w-5 h-5 shrink-0" />}
-        </>
-      )}
-    </button>
+    // The slot absorbs the row's slack and gives the button a flex context.
+    // `touch-target`'s floor shrinks a flex item only: a block-level
+    // `<button>` is sized fit-content, floored at its own min-content width,
+    // which no `min-width` lowers (#135).
+    <div className={isPrev ? 'flex-1 min-w-0 flex' : 'flex-1 min-w-0 flex justify-end'}>
+      {/* `xs` is the one size whose padding fits inside `touch-target`'s 44px
+          floor, so the button stops there instead of on the dots. `sm` upwards
+          carry 48px or more of padding, which no `min-width` shrinks, and the
+          dots are 40px because that floor holds (#135). */}
+      <Button
+        truncate
+        aria-label={ariaLabel}
+        className="max-w-40"
+        disabled={disabled}
+        icon={column ? (isPrev ? ChevronLeftIcon : ChevronRightIcon) : undefined}
+        iconPosition={isPrev ? 'leading' : 'trailing'}
+        size="xs"
+        variant="ghost"
+        onClick={onClick}
+      >
+        {column?.title}
+      </Button>
+    </div>
   )
 }
 
@@ -158,17 +169,17 @@ export function ColumnCarousel({
         >
           {/* Navigation controls above carousel */}
           <div className="flex items-center mb-6">
-            <div className="flex-1 min-w-0">
-              <CarouselNavButton
-                direction="prev"
-                column={prevColumn}
-                onClick={scrollPrev}
-                disabled={!hasPrev}
-              />
-            </div>
+            <CarouselNavButton
+              direction="prev"
+              column={prevColumn}
+              onClick={scrollPrev}
+              disabled={!hasPrev}
+            />
 
-            {/* Dot indicators - absolutely centered */}
-            <div className="flex gap-2 shrink-0 px-4">
+            {/* Abutting cells cannot overlap, which a 44px `touch-target-overlay`
+                on each 8px dot did — it handed the tap to the next slide (#135).
+                40px and not the house 44px: see docs/rules/design-system.md. */}
+            <div className="flex gap-0 shrink-0 px-4">
               {columns.map((_, index) => (
                 <button
                   key={index}
@@ -177,27 +188,26 @@ export function ColumnCarousel({
                     number: index + 1,
                     title: columns[index].title,
                   })}
-                  // Neighbouring overlays overlap at `gap-2`, and separating
-                  // them needs 44px centres — 220px of row, which overflows a
-                  // 390px viewport once the nav buttons' padding is counted.
-                  // Partial on purpose; #135 carries the layout decision.
-                  className={`touch-target-overlay w-2 h-2 rounded-full transition-colors ${
-                    index === selectedIndex
-                      ? 'bg-teal-600'
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
+                  aria-pressed={index === selectedIndex}
+                  className="group flex w-10 h-10 items-center justify-center focus-ring"
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === selectedIndex
+                        ? 'bg-teal-600'
+                        : 'bg-gray-300 group-hover:bg-gray-400'
+                    }`}
+                  />
+                </button>
               ))}
             </div>
 
-            <div className="flex-1 min-w-0 flex justify-end">
-              <CarouselNavButton
-                direction="next"
-                column={nextColumn}
-                onClick={scrollNext}
-                disabled={!hasNext}
-              />
-            </div>
+            <CarouselNavButton
+              direction="next"
+              column={nextColumn}
+              onClick={scrollNext}
+              disabled={!hasNext}
+            />
           </div>
 
           {/* Carousel viewport */}
