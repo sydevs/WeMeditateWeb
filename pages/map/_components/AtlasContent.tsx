@@ -43,10 +43,9 @@ import { Link } from '../../../components/atoms/Link'
  * URL, and the atlas publishes it locale-free, which would drop a French
  * visitor into English on every rung.
  *
- * TODO: this belongs in `Link`, which asks the same question one line from
- * the answer. Moving it rewrites every editor-pasted href and collides with
- * `external` (`MeditationPlayer` links `wemeditate.com` that way), so it is
- * a decision of its own — sydevs/WeMeditateWeb#124. Do not copy this shape.
+ * `Link` leaves a same-origin absolute href alone by design
+ * (sydevs/WeMeditateWeb#160 question 1), so resolving the canonical is
+ * this function's job, not a gap in `Link`.
  */
 export function atlasHref(
   link: { route: string | null; url: string | null },
