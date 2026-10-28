@@ -66,6 +66,11 @@ export function MusicLibrary({
               aspectRatio="square"
               className="w-full h-full"
               placeholderVariant="primary"
+              // The column is `max-w-md` less its own `p-4`, so the art caps at
+              // 416px — but only once the two-column grid is wide enough. A flat
+              // 448px would claim that width at `md`, where the column is 316px,
+              // and fetch 800 where 400 does.
+              sizes="(min-width: 968px) 416px, (min-width: 768px) calc(50vw - 68px), (min-width: 448px) 416px, calc(100vw - 64px)"
               src={currentTrack.thumbnailURL}
             />
             {/* Gradient Overlay */}
