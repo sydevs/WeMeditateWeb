@@ -27,6 +27,9 @@ describe('<VideoPlayer> server-side fallback', () => {
     )
 
     expect(html).toContain('src="https://img.example.com/p.jpg"')
+    // Eager, so React 19 hoists its preload link: this is the only poster in
+    // the server HTML, and the route's LCP image (#152).
+    expect(html).toContain('loading="eager"')
     // The Vidstack player itself must not render on the server.
     expect(html).not.toContain('media-player')
   })

@@ -694,6 +694,11 @@ function MeditationPlayerInner({
                       alt={track.title}
                       className="w-full h-full object-cover"
                       draggable={false}
+                      /* The page's main image: MeditationTemplate renders this player as the
+                         only content, so the frame is the LCP candidate. React 19 hoists a
+                         preload link for any <img> that is not loading="lazy". */
+                      fetchPriority="high"
+                      loading="eager"
                       src={getImageURL(currentMedia.src, FRAME_VARIANT)}
                     />
                   )}

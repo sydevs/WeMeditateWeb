@@ -98,3 +98,20 @@ describe('MeditationPlayer frame variant', () => {
     expect(html).toContain(`src="${src}"`)
   })
 })
+
+// MeditationTemplate renders this player as the page's only content, so the
+// frame is the LCP candidate. React 19 hoists its preload link only while the
+// <img> is not `loading="lazy"` (#152).
+describe('MeditationPlayer frame priority', () => {
+  it('asks for the frame eagerly, at high priority', () => {
+    const html = renderToStaticMarkup(
+      <MeditationPlayer
+        frames={[{ timestamp: 0, media: { type: 'image', src: CF_PUBLIC_URL } }]}
+        track={track}
+      />,
+    )
+
+    expect(html).toContain('loading="eager"')
+    expect(html).toContain('fetchPriority="high"')
+  })
+})

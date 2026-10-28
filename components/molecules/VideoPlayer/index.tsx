@@ -13,7 +13,9 @@ const VideoPlayerLazy = React.lazy(() =>
  * fallback and the mounted player use a 16:9 box (the player sets
  * `aspectRatio="16/9"`), so the poster uses `object-cover` here, to keep
  * the frame congruent and avoid a layout shift on hydration, while it
- * gives an LCP image without loading the player.
+ * gives an LCP image without loading the player. It is `loading="eager"` for
+ * that reason: this is the only poster in the server HTML, and React 19 hoists
+ * a preload link for any `<img>` that is not `loading="lazy"`.
  */
 function VideoPlayerFallback({
   poster,
@@ -22,7 +24,12 @@ function VideoPlayerFallback({
   return (
     <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
       {poster ? (
-        <img alt="" className="aspect-video w-full object-cover" src={posterURL(poster)} />
+        <img
+          alt=""
+          className="aspect-video w-full object-cover"
+          loading="eager"
+          src={posterURL(poster)}
+        />
       ) : (
         <div className="aspect-video w-full" />
       )}
