@@ -21,6 +21,14 @@
  * say so, which puts the reason in front of a reviewer at the moment it is
  * claimed. An earlier draft keyed exemptions by file and skipped the whole
  * file, so exempting one tag silently un-guarded its siblings.
+ *
+ * It reads `<Image>` tags only, and four of the ten sites #146 fixed are a
+ * hand-rolled `<img>`. Holding those to `getImageURL` needs the exemption
+ * list this guard refuses: of the eight raw `<img>` the last test pins, only
+ * two name the helper in the tag — the atom's own `<img>` is the pipeline,
+ * one paints a bundled SVG, and two reach the helper a hop away. The two that
+ * really do pass an unsized URL are `ContentOverlay` and `AtlasContent`, both
+ * #150's, so that arm goes green there rather than here.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -29,17 +37,17 @@ import { lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
 const GLOBS = ['components/**/*.tsx', 'pages/**/*.tsx', 'layouts/**/*.tsx']
 
 /**
- * The text of each `<Image …>` opening tag, with its line.
+ * The text of each `<name …>` opening tag, with its line.
  *
  * Scanning for the closing `>` has to respect braces and quotes, because a
  * prop value holds both — `sizes="(min-width: 1024px) 400px"` and
  * `aspectRatio={a > b ? 'video' : 'square'}` each contain characters that
  * would end the tag if read naively.
  */
-function imageTags(source: string): { tag: string; line: number }[] {
-  const tags: { tag: string; line: number }[] = []
+function tags(source: string, name: 'Image' | 'img'): { tag: string; line: number }[] {
+  const found: { tag: string; line: number }[] = []
 
-  for (const match of source.matchAll(/<Image(?=[\s/>])/g)) {
+  for (const match of source.matchAll(new RegExp(`<${name}(?=[\\s/>])`, 'g'))) {
     const start = match.index
     let depth = 0
     let quote: string | null = null
@@ -63,21 +71,27 @@ function imageTags(source: string): { tag: string; line: number }[] {
         break
       }
     }
-    tags.push({ tag: source.slice(start, end), line: lineAt(source, start) })
+    found.push({ tag: source.slice(start, end), line: lineAt(source, start) })
   }
 
-  return tags
+  return found
+}
+
+/** Every file in the scan set, as its repo-relative path and stripped source. */
+function scanned(): { path: string; source: string }[] {
+  return sourceFiles(GLOBS).map((file) => ({
+    path: file.slice(repoRoot.length + 1),
+    source: readSource(file),
+  }))
 }
 
 /** Every `<Image>` call site missing `prop`, as `<relative path>:<line>`. */
 function sitesMissing(prop: 'aspectRatio' | 'sizes'): string[] {
-  return sourceFiles(GLOBS).flatMap((file) => {
-    const relative = file.slice(repoRoot.length + 1)
-
-    return imageTags(readSource(file))
+  return scanned().flatMap(({ path, source }) =>
+    tags(source, 'Image')
       .filter(({ tag }) => !new RegExp(`\\b${prop}[={]`).test(tag))
-      .map(({ line }) => `${relative}:${line}`)
-  })
+      .map(({ line }) => `${path}:${line}`),
+  )
 }
 
 describe('every <Image> call site', () => {
@@ -92,14 +106,36 @@ describe('every <Image> call site', () => {
   // A scan that silently matches nothing fails open, exactly like the lint
   // selectors `jsx-literals.test.ts` guards. So prove it finds the sites.
   it('scans the real call sites, and reads a prop off a multi-line tag', () => {
-    const tags = sourceFiles(GLOBS).flatMap((file) => imageTags(readSource(file)))
+    const sites = scanned().flatMap(({ source }) => tags(source, 'Image'))
 
-    expect(tags.length).toBeGreaterThanOrEqual(12)
-    expect(tags.every(({ tag }) => tag.startsWith('<Image'))).toBe(true)
+    expect(sites.length).toBeGreaterThanOrEqual(12)
+    expect(sites.every(({ tag }) => tag.startsWith('<Image'))).toBe(true)
     // The TechniqueCard tag spans several lines and its `sizes` holds a `>`-free
     // media query with its own parentheses and quotes.
     expect(
-      tags.some(({ tag }) => tag.includes('sizes=') && tag.includes('(min-width: 1024px)')),
+      sites.some(({ tag }) => tag.includes('sizes=') && tag.includes('(min-width: 1024px)')),
     ).toBe(true)
+  })
+})
+
+// The docstring's reason for stopping at `<Image>` rests on a measurement, and
+// a measurement nothing checks is the defect this guard exists to catch. So
+// pin the raw population instead: a new hand-rolled `<img>` is a red test and
+// a decision — does its `src` reach `getImageURL`? — rather than a silent
+// eleventh over-fetch outside the scan.
+describe('every raw <img>', () => {
+  it('is one of the sites the docstring accounts for', () => {
+    const sites = scanned().flatMap(({ path, source }) => tags(source, 'img').map(() => path))
+
+    expect(sites.sort()).toEqual([
+      'components/atoms/Avatar/Avatar.tsx',
+      'components/atoms/Image/Image.tsx',
+      'components/molecules/VideoPlayer/index.tsx',
+      'components/organisms/ContentOverlay/ContentOverlay.tsx',
+      'components/organisms/MeditationPlayer/MeditationPlayer.tsx',
+      'components/organisms/OrnateTextBox/OrnateTextBox.tsx',
+      'components/organisms/Splash/Splash.tsx',
+      'pages/map/_components/AtlasContent.tsx',
+    ])
   })
 })
