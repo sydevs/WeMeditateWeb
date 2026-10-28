@@ -80,8 +80,13 @@ export function getImageSrcSet(baseUrl: string, aspectRatio: AspectRatio): strin
   return SRCSET_SUFFIXES[aspectRatio].map((suffix) => `${base}/${suffix}`).join(', ')
 }
 
-/** Numeric width/height ratio for each supported aspect ratio. */
-const ASPECT_RATIO_VALUES: Record<AspectRatio, number> = {
+/**
+ * Numeric width/height ratio for each supported aspect ratio.
+ *
+ * Exported for a caller that must size a box itself: a fixed-height image in
+ * natural flow renders `height × ratio` wide, and nothing else says how wide.
+ */
+export const ASPECT_RATIO_VALUES: Record<AspectRatio, number> = {
   square: 1,
   '4-3': 4 / 3,
   '3-2': 3 / 2,
@@ -91,15 +96,6 @@ const ASPECT_RATIO_VALUES: Record<AspectRatio, number> = {
 
 /** Precomputed entries, so nearestAspectRatio does not rebuild them per call. */
 const ASPECT_RATIO_ENTRIES = Object.entries(ASPECT_RATIO_VALUES) as [AspectRatio, number][]
-
-/**
- * An aspect ratio as a number, for a caller that must size a box itself.
- * A fixed-height image in natural flow renders `height × ratio` wide, and
- * nothing but this number tells its `sizes` how wide that is.
- */
-export function aspectRatioValue(aspectRatio: AspectRatio): number {
-  return ASPECT_RATIO_VALUES[aspectRatio]
-}
 
 /**
  * Picks the supported AspectRatio closest to an image's intrinsic dimensions.

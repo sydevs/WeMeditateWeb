@@ -4,7 +4,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ContentCard, ContentCardProps } from '../../ContentCard/ContentCard'
 import { Button } from '../../../atoms/Button/Button'
 import { useT } from '../../../../hooks/useT'
-import { aspectRatioValue, type AspectRatio } from '../../../../lib/cloudflare-images'
+import { ASPECT_RATIO_VALUES, type AspectRatio } from '../../../../lib/cloudflare-images'
 
 /** Carousel size variant. */
 export type ContentCarouselSize = 'sm' | 'md' | 'lg'
@@ -59,7 +59,7 @@ function slideSizes(
   heights: { base: number; sm: number; lg: number },
   aspectRatio: AspectRatio = 'square',
 ): string {
-  const width = (height: number) => Math.ceil(height * aspectRatioValue(aspectRatio))
+  const width = (height: number) => Math.ceil(height * ASPECT_RATIO_VALUES[aspectRatio])
 
   return [
     `(min-width: 1024px) ${width(heights.lg)}px`,
