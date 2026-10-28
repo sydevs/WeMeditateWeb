@@ -131,9 +131,9 @@ export const blockConverters: BlockConverters = {
       )
     }
 
-    // Side layouts share most props. OrnateTextBox renders the "Ancient
-    // Wisdom" treatment, left-aligned only. ContentTextBox renders the
-    // default white box.
+    // Side layouts share most props, `align` included: both components read it
+    // as the image's side. OrnateTextBox renders the "Ancient Wisdom"
+    // treatment, ContentTextBox the default white box.
     const sideProps = {
       className: BLOCK_SPACING,
       ctaHref,
@@ -151,7 +151,7 @@ export const blockConverters: BlockConverters = {
     return fields.wisdomStyle ? (
       // OrnateTextBox breaks out to full content width (later className wins over
       // the spread BLOCK_SPACING).
-      <OrnateTextBox {...sideProps} className={FULL_BLEED_BLOCK} />
+      <OrnateTextBox {...sideProps} align={fields.imagePosition} className={FULL_BLEED_BLOCK} />
     ) : (
       // ContentTextBox is wider than the readable body, but capped, not full
       // window. This breaks out of the prose Container with full-bleed, then

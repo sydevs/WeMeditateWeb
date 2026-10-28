@@ -1,11 +1,16 @@
 import { describe, it, expect } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { compile } from 'tailwindcss'
 import {
   layoutsDir,
   loadTailwindStylesheet,
+  repoRoot,
   themeStylesheet,
 } from '../tests/guards/_source-scan'
-
+import { OrnateTextBox } from '../components/organisms/OrnateTextBox/OrnateTextBox'
 import { contrast } from '../tests/_helpers/contrast'
 
 /** Compiles the real stylesheet for the given class candidates. */
@@ -126,4 +131,55 @@ describe('focus-ring', () => {
 
     expect(declared(rule(css, '.surface-dark'), '--surface-ring')).toBe('#fff')
   })
+})
+
+describe('an arbitrary value written out, not interpolated', () => {
+  // Tailwind emits an arbitrary value only for a candidate it finds verbatim
+  // in a scanned file. Interpolating the band's angle or its alphas renders
+  // the same class string, so the component's own assertions stay green while
+  // the stylesheet loses the rule and the band draws as a bare transparent
+  // box (#193).
+  // Reading the source stands in for the `@source` scan, which this harness
+  // bypasses by handing `build` its candidates.
+  const source = readFileSync(
+    join(repoRoot, 'components/organisms/OrnateTextBox/OrnateTextBox.tsx'),
+    'utf8',
+  )
+
+  // `-top-24` is the warm band's alone; the brown ground is a gradient too.
+  // Each align carries two: the faint one below `lg`, and the `lg:` override
+  // at full strength.
+  const bandCandidate = (align: 'left' | 'right', prefix: '' | 'lg:') =>
+    (
+      renderToStaticMarkup(
+        createElement(OrnateTextBox, {
+          align,
+          description: 'In every culture one can find tales of timeless wisdom.',
+          imageAlt: 'Artwork',
+          imageSrc: 'https://picsum.photos/seed/x/900/1200',
+          title: 'Sacred Teachings',
+        }),
+      ).match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
+    )
+      .split(' ')
+      .find((candidate) => candidate.startsWith(`${prefix}bg-[linear-gradient`)) ?? ''
+
+  // The peach alpha identifies the intensity, so a faint case cannot pass on
+  // the full-strength candidate.
+  it.each([
+    ['faint left', 'left', '90deg', '', '0.08'],
+    ['full left', 'left', '90deg', 'lg:', '0.6'],
+    ['faint right', 'right', '270deg', '', '0.08'],
+    ['full right', 'right', '270deg', 'lg:', '0.6'],
+  ] as const)(
+    'compiles the %s ornate band from its own source',
+    async (_name, align, angle, prefix, peach) => {
+      const candidate = bandCandidate(align, prefix)
+
+      expect(candidate).toContain(angle)
+      expect(candidate).toContain(`rgba(255,196,175,${peach})_100%`)
+      expect(source).toContain(candidate)
+      expect(await build([candidate])).toContain(`background-image: linear-gradient(${angle},`)
+    },
+  )
 })
