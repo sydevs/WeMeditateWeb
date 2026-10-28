@@ -103,9 +103,39 @@ describe('Header', () => {
     })
   })
 
+  describe('the page band', () => {
+    const band = 'max-w-7xl mx-auto px-6'
+
+    it('reaches the banner and the un-stuck nav, which cannot take it from a wrapper', () => {
+      // A wrapper would be the sticky nav's containing block, so the nav would
+      // stop pinning one header-height down the page (#204).
+      const html = render({ bandClassName: band })
+
+      expect(html).toContain(`<header class="pointer-events-auto ${band}"`)
+      expect(html.match(/<nav class="([^"]*)"/)?.[1]).toContain(band)
+    })
+
+    it('gives way to full-bleed once the nav sticks', () => {
+      const nav = render({ bandClassName: band, condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
+
+      expect(nav).toContain('full-bleed')
+      expect(nav).not.toContain('max-w-7xl')
+    })
+
+    it('leaves the banner and the bar their own clicks', () => {
+      // LayoutChrome's lead-splash overlay spans the page, so the sticky nav
+      // inside it can travel; `pointer-events-none` there hands the content
+      // below its clicks back, and these two take theirs.
+      const html = render()
+
+      expect(html).toContain('<header class="pointer-events-auto"')
+      expect(html.match(/<nav class="([^"]*)"/)?.[1]).toContain('pointer-events-auto')
+    })
+  })
+
   describe('surface', () => {
     // The banner overlays the lead splash, so it takes the splash's surface
-    // from `LayoutChrome`'s wrapper rather than claiming one (#133).
+    // from `LayoutChrome`'s band rather than claiming one (#133).
     it('claims no surface of its own until the nav sticks', () => {
       const html = render()
 
