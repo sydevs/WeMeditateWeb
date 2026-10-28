@@ -168,3 +168,15 @@ describe('an arbitrary value written out, not interpolated', () => {
     },
   )
 })
+
+describe('the spacing scale', () => {
+  // `ContentCarousel` reads its row height off the `h-*` class string and
+  // multiplies the unit by 4px, which is the one place a `--spacing` override
+  // would silently shift every carousel `sizes` (#146).
+  it('puts an `h-*` unit at 0.25rem', async () => {
+    const css = await build(['h-56'])
+
+    expect(css).toContain('--spacing: 0.25rem;')
+    expect(declared(rule(css, '.h-56'), 'height')).toBe('calc(var(--spacing) * 56)')
+  })
+})

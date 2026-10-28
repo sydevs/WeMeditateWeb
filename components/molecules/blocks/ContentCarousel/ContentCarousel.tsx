@@ -9,39 +9,55 @@ import { ASPECT_RATIO_VALUES, type AspectRatio } from '../../../../lib/cloudflar
 /** Carousel size variant. */
 export type ContentCarouselSize = 'sm' | 'md' | 'lg'
 
+/** Pixels per Tailwind spacing unit: `--spacing` is 0.25rem at a 16px root. */
+const SPACING_PX = 4
+
+/**
+ * A row height, as the three `h-*` classes that draw it.
+ *
+ * The shape is a type rather than a runtime check, so `trackHeights` has no
+ * unreachable error branch to leave untested.
+ */
+type TrackHeight = `h-${number} sm:h-${number} lg:h-${number}`
+
+/**
+ * The three pixel heights a `TrackHeight` draws, for a `sizes` to declare.
+ *
+ * The class string stays the single source. Tailwind compiles only a candidate
+ * it finds verbatim in a scanned file, so a height assembled from a number
+ * would render the right markup against no CSS at all — which is why the
+ * duplicate it replaces could not simply be deleted.
+ */
+function trackHeights(imageHeight: TrackHeight): { base: number; sm: number; lg: number } {
+  const [base, sm, lg] = imageHeight
+    .split(' ')
+    .map((candidate) => Number(candidate.replace(/^\w+:/, '').slice('h-'.length)) * SPACING_PX)
+
+  return { base, sm, lg }
+}
+
 /**
  * Coordinated dimensions per size: the image height, the ContentCard variant
  * (which scales the title, gap, and play button together), and the gap between
  * slides. Keeping these in one place is what lets `size` resize the whole card
  * proportionally instead of just the image.
- *
- * `heights` repeats `imageHeight` as numbers, because a `sizes` cannot be
- * derived from a Tailwind class string. The two must stay in step by hand.
  */
 const CAROUSEL_SIZES: Record<
   ContentCarouselSize,
-  {
-    imageHeight: string
-    heights: { base: number; sm: number; lg: number }
-    card: 'default' | 'hero'
-    slideGap: string
-  }
+  { imageHeight: TrackHeight; card: 'default' | 'hero'; slideGap: string }
 > = {
   sm: {
     imageHeight: 'h-40 sm:h-44 lg:h-48',
-    heights: { base: 160, sm: 176, lg: 192 },
     card: 'default',
     slideGap: 'gap-3 sm:gap-4',
   },
   md: {
     imageHeight: 'h-48 sm:h-56 lg:h-64',
-    heights: { base: 192, sm: 224, lg: 256 },
     card: 'hero',
     slideGap: 'gap-4 sm:gap-6',
   },
   lg: {
     imageHeight: 'h-56 sm:h-64 lg:h-72',
-    heights: { base: 224, sm: 256, lg: 288 },
     card: 'hero',
     slideGap: 'gap-4 sm:gap-6',
   },
@@ -122,7 +138,8 @@ export function ContentCarousel({
   ...props
 }: ContentCarouselProps) {
   const t = useT()
-  const { imageHeight, heights, card, slideGap } = CAROUSEL_SIZES[size]
+  const { imageHeight, card, slideGap } = CAROUSEL_SIZES[size]
+  const heights = trackHeights(imageHeight)
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
