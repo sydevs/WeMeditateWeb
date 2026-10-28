@@ -2,18 +2,13 @@ import { ComponentProps } from 'react'
 import { Link } from '../../atoms'
 import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import type { Locale } from '../../../server/sahajcloud-types'
+import { useT } from '../../../hooks/useT'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
-  /**
-   * Main heading text
-   * @default "Discover it for yourself!"
-   */
+  /** Main heading text. Defaults to `discover.general.title`. */
   title?: string
 
-  /**
-   * Subtitle/description text
-   * @default "Don't just take our word for it. Try meditating and see how you feel!"
-   */
+  /** Subtitle/description text. Defaults to `discover.general.subtitle`. */
   subtitle?: string
 
   /** Current locale for link prefixing */
@@ -26,12 +21,14 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
  * live meditations, and in-person classes.
  */
 export function DiscoverMeditation({
-  title = 'Discover it for yourself!',
-  subtitle = "Don't just take our word for it. Try meditating and see how you feel!",
+  title,
+  subtitle,
   locale,
   className = '',
   ...props
 }: DiscoverMeditationProps) {
+  const t = useT()
+
   return (
     <section
       className={`
@@ -62,40 +59,40 @@ export function DiscoverMeditation({
       <div className="relative z-10 p-6">
         {/* Header Section */}
         <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-normal text-gray-700 mb-8">{title}</h2>
+          <h2 className="text-3xl md:text-4xl font-normal text-gray-700 mb-8">
+            {title ?? t('discover.general.title')}
+          </h2>
           <p className="text-xl md:text-2xl font-light text-gray-700 max-w-lg mx-auto">
-            {subtitle}
+            {subtitle ?? t('discover.general.subtitle')}
           </p>
         </div>
 
         {/* Action Items */}
-        {/* eslint-disable no-restricted-syntax -- #165 phase 3 removes this once the six keys exist upstream */}
         <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-center justify-center mt-12 lg:mt-24">
           <ActionItem
             href="/meditations"
             icon={PlayCircleIcon}
             locale={locale}
-            subtitle="Watch guided meditations"
-            title="Meditate Now"
+            subtitle={t('discover.general.meditate_now_subtitle')}
+            title={t('discover.general.meditate_now')}
           />
 
           <ActionItem
             href="/live"
             icon={ComputerDesktopIcon}
             locale={locale}
-            subtitle="Free online meditations"
-            title="Live Guidance"
+            subtitle={t('discover.general.live_guidance_subtitle')}
+            title={t('discover.general.live_guidance')}
           />
 
           <ActionItem
             href="/classes"
             icon={MapPinIcon}
             locale={locale}
-            subtitle="Free in-person classes"
-            title="Classes Near Me"
+            subtitle={t('discover.general.classes_near_me_subtitle')}
+            title={t('discover.general.classes_near_me')}
           />
         </div>
-        {/* eslint-enable no-restricted-syntax */}
       </div>
     </section>
   )

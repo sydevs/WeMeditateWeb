@@ -75,10 +75,16 @@ beside the `WebTranslations` type that derives from it. Add a group there and it
 and typed. Listing the groups anywhere else lets the query and the type disagree.
 
 [scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
-cannot import that constant: it is plain node with no TypeScript loader. It keeps every response
-key outside `NON_GROUP_KEYS`, so the snapshot mirrors groups the site never fetches. Those cost
-bytes in `lib/translations.en.json` and nothing more — `WebTranslations` derives from the select,
-so an unfetched group never becomes addressable through `useT()`.
+cannot import that constant: it is plain node with no TypeScript loader. It reads the group names
+out of the generated `WmWebTranslation` interface as text, and sends them all — the client gate
+400s a global read carrying no `select`, and takes bracketed keys only, so the script has to name
+each one. So the snapshot mirrors groups the site never fetches. Those cost bytes in
+`lib/translations.en.json` and nothing more — `WebTranslations` derives from the select, so an
+unfetched group never becomes addressable through `useT()`.
+
+Run `pnpm types:cms` before `pnpm sync:translations`: a group that reached upstream but not the
+generated types is a group the sync cannot ask for. The script refuses rather than write a
+smaller snapshot, so a stale checkout fails loudly instead of deleting English.
 
 ## Translations are SahajCloud-owned
 
