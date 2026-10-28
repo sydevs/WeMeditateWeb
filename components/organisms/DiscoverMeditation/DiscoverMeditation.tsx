@@ -5,10 +5,10 @@ import type { Locale } from '../../../server/sahajcloud-types'
 import { useT } from '../../../hooks/useT'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
-  /** Main heading text. Defaults to `discover.general.title`. */
+  /** Overrides `discover.general.title`. */
   title?: string
 
-  /** Subtitle/description text. Defaults to `discover.general.subtitle`. */
+  /** Overrides `discover.general.subtitle`. */
   subtitle?: string
 
   /** Current locale for link prefixing */

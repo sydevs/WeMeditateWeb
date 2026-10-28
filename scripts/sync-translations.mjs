@@ -76,41 +76,39 @@ function prune(value) {
 }
 
 /**
- * The global's top-level translation groups, read out of the generated
- * `WmWebTranslation` interface.
+ * The groups to ask for, read out of `WEB_TRANSLATIONS_SELECT` as text.
  *
- * SahajCloud's client gate refuses a read that sends no `select` with a 400, and
- * it accepts only bracketed keys — there is no wildcard — so this script has to
- * name every group it wants. The generated contract is the one list in this repo
- * that `pnpm types:cms` refreshes from upstream; deriving it from the committed
- * snapshot instead would never pick up a *new* group, which is the case this
- * script exists to handle.
+ * The client gate 400s a global read carrying no `select`, and takes bracketed
+ * keys only, so the script has to name each group. It reads the same constant
+ * the site queries with — the one list, per `docs/rules/rest-api.md` — because a
+ * group the select omits is unreachable through `useT()`, and the snapshot ships
+ * to every browser as the offline fallback. Parsing beats importing only because
+ * this is plain node with no TypeScript loader.
  */
 async function readGroupNames() {
-  const types = await readFile(join(repoRoot, 'server', 'payload-types.ts'), 'utf8')
-  const body = types.match(/^export interface WmWebTranslation \{$(.*?)^\}$/ms)?.[1]
-
-  if (!body) {
-    console.error(
-      'sync-translations: no `WmWebTranslation` interface in server/payload-types.ts. ' +
-        'Run `pnpm types:cms` first.',
-    )
-    process.exit(1)
-  }
-
-  const groups = [...body.matchAll(/^ {2}([A-Za-z_][A-Za-z0-9_]*)\?:/gm)]
+  const source = await readFile(join(repoRoot, 'server', 'sahajcloud-types.ts'), 'utf8')
+  const body = source.match(/WEB_TRANSLATIONS_SELECT = \{(.*?)^\}/ms)?.[1] ?? ''
+  const groups = [...body.matchAll(/^ {2}(\w+): true,/gm)]
     .map(([, name]) => name)
     .filter((name) => !NON_GROUP_KEYS.has(name))
 
   if (groups.length === 0) {
     console.error(
-      'sync-translations: `WmWebTranslation` declares no translation groups. ' +
-        'The generated types are stale or the upstream schema changed shape.',
+      'sync-translations: no groups found in `WEB_TRANSLATIONS_SELECT` ' +
+        '(server/sahajcloud-types.ts). It was renamed or reformatted.',
     )
     process.exit(1)
   }
 
   return groups
+}
+
+/** Leaf strings in a snapshot, counted by walking it rather than its punctuation. */
+function countStrings(value) {
+  if (typeof value === 'string') return 1
+  if (value === null || typeof value !== 'object') return 0
+
+  return Object.values(value).reduce((total, nested) => total + countStrings(nested), 0)
 }
 
 async function getJson(path) {
@@ -153,7 +151,7 @@ async function main() {
     Object.entries(translations).filter(([key]) => !NON_GROUP_KEYS.has(key)),
   )
   const snapshot = sortDeep(prune(groups))
-  const keyCount = JSON.stringify(snapshot).match(/":"/g)?.length ?? 0
+  const keyCount = countStrings(snapshot)
 
   if (keyCount === 0) {
     console.error(
@@ -165,15 +163,10 @@ async function main() {
 
   const target = join(repoRoot, 'lib', 'translations.en.json')
 
-  // A select that names fewer groups than the schema holds still reads 200,
-  // so a partial `select` loses whole groups as quietly as an unseeded global
-  // once did. The committed snapshot is the floor: English only ever grows,
-  // short of a deliberate upstream deletion.
-  // Re-stringified compactly, because `keyCount` counts `":"` in the compact
-  // form while the file on disk is indented and never spells that.
+  // English only ever grows: a select naming fewer groups than the schema holds
+  // still reads 200, losing whole groups as quietly as the unseeded global did.
   const committed = await readFile(target, 'utf8').catch(() => null)
-  const committedCount =
-    committed === null ? 0 : (JSON.stringify(JSON.parse(committed)).match(/":"/g)?.length ?? 0)
+  const committedCount = committed === null ? 0 : countStrings(JSON.parse(committed))
 
   if (keyCount < committedCount && !process.argv.includes('--allow-shrink')) {
     console.error(

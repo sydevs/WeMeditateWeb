@@ -74,17 +74,18 @@ takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SE
 beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
 and typed. Listing the groups anywhere else lets the query and the type disagree.
 
-[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
-cannot import that constant: it is plain node with no TypeScript loader. It reads the group names
-out of the generated `WmWebTranslation` interface as text, and sends them all — the client gate
-400s a global read carrying no `select`, and takes bracketed keys only, so the script has to name
-each one. So the snapshot mirrors groups the site never fetches. Those cost bytes in
-`lib/translations.en.json` and nothing more — `WebTranslations` derives from the select, so an
-unfetched group never becomes addressable through `useT()`.
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) needs that same list, and
+cannot import it: it is plain node with no TypeScript loader. So it reads `WEB_TRANSLATIONS_SELECT`
+out of that file as text — the client gate 400s a global read carrying no `select`, and takes
+bracketed keys only, so the script has to name each group. Adding a group there still reaches all
+three: the query, the type, and the snapshot.
 
-Run `pnpm types:cms` before `pnpm sync:translations`: a group that reached upstream but not the
-generated types is a group the sync cannot ask for. The script refuses rather than write a
-smaller snapshot, so a stale checkout fails loudly instead of deleting English.
+So the snapshot mirrors the groups the site fetches and no others. That matters because
+`lib/i18n.ts` imports it and `useT()` falls back to it, which ships every string in it to the
+browser — a group outside the select would be bytes no `useT()` call could ever address. The
+script refuses to write a snapshot smaller than the committed one, so a renamed constant or a
+half-answered read fails loudly instead of deleting English. `--allow-shrink` is for a deliberate
+upstream deletion.
 
 ## Translations are SahajCloud-owned
 

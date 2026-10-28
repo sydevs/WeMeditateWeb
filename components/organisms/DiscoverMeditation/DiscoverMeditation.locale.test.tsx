@@ -1,5 +1,5 @@
 /**
- * Proves the eight visible strings reach the markup from SahajCloud.
+ * Proves every visible string reaches the markup from SahajCloud.
  *
  * `discover.general` holds the same English the component used to hardcode,
  * so an English render cannot tell a wired-up string from the old literal.
@@ -12,18 +12,6 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { WebTranslations } from '../../../server/sahajcloud-types'
 import { EN_TRANSLATIONS } from '../../../lib/i18n'
-
-/** The English this component carried before the keys existed upstream. */
-const ENGLISH = [
-  'Discover it for yourself!',
-  "Don't just take our word for it. Try meditating and see how you feel!",
-  'Meditate Now',
-  'Watch guided meditations',
-  'Live Guidance',
-  'Free online meditations',
-  'Classes Near Me',
-  'Free in-person classes',
-]
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
 // when `WebTranslations` gains a required branch.
@@ -56,7 +44,9 @@ describe('DiscoverMeditation in a non-English locale', () => {
     for (const french of Object.values(FRENCH.discover.general)) {
       expect(html).toContain(french)
     }
-    for (const english of ENGLISH) {
+    // The snapshot, not a copy of it: a reworded key upstream would otherwise
+    // leave this asserting against English the component no longer holds.
+    for (const english of Object.values(EN_TRANSLATIONS.discover.general)) {
       expect(html).not.toContain(english)
     }
   })

@@ -223,52 +223,5 @@
   "navigation": {
     "about_meditation": "About Meditation",
     "featured_caption": "Inspiration comes from within"
-  },
-  "video": {
-    "a11y": {
-      "fullscreen": "Fullscreen",
-      "pip": "PiP",
-      "seek": "Seek"
-    },
-    "general": {
-      "accessibility": "Accessibility",
-      "announcements": "Announcements",
-      "audio": "Audio",
-      "auto": "Auto",
-      "boost": "Boost",
-      "caption_styles": "Caption Styles",
-      "captions": "Captions",
-      "captions_look_like_this": "Captions look like this",
-      "closed_captions_off": "Closed-Captions Off",
-      "closed_captions_on": "Closed-Captions On",
-      "color": "Color",
-      "default": "Default",
-      "display_background": "Display Background",
-      "enter_fullscreen": "Enter Fullscreen",
-      "enter_pip": "Enter PiP",
-      "exit_fullscreen": "Exit Fullscreen",
-      "exit_pip": "Exit PiP",
-      "family": "Family",
-      "font": "Font",
-      "keyboard_animations": "Keyboard Animations",
-      "mute": "Mute",
-      "normal": "Normal",
-      "off": "Off",
-      "opacity": "Opacity",
-      "pause": "Pause",
-      "play": "Play",
-      "quality": "Quality",
-      "reset": "Reset",
-      "seek_backward": "Seek Backward",
-      "seek_forward": "Seek Forward",
-      "settings": "Settings",
-      "shadow": "Shadow",
-      "size": "Size",
-      "speed": "Speed",
-      "text": "Text",
-      "text_background": "Text Background",
-      "track": "Track",
-      "unmute": "Unmute"
-    }
   }
 }
