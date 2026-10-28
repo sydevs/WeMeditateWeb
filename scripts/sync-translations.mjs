@@ -19,7 +19,7 @@
  * copy changes, and commits the diff.
  */
 
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -27,6 +27,8 @@ const GLOBAL_SLUG = 'wm-web-translations'
 
 /** Response fields that are document metadata, not translation groups. */
 const NON_GROUP_KEYS = new Set(['id', '_status', 'updatedAt', 'createdAt', 'globalType'])
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const baseURL = process.env.PUBLIC__SAHAJCLOUD_URL
 const apiKey = process.env.SAHAJCLOUD_API_KEY
@@ -73,6 +75,44 @@ function prune(value) {
   return Object.fromEntries(entries)
 }
 
+/**
+ * The global's top-level translation groups, read out of the generated
+ * `WmWebTranslation` interface.
+ *
+ * SahajCloud's client gate refuses a read that sends no `select` with a 400, and
+ * it accepts only bracketed keys — there is no wildcard — so this script has to
+ * name every group it wants. The generated contract is the one list in this repo
+ * that `pnpm types:cms` refreshes from upstream; deriving it from the committed
+ * snapshot instead would never pick up a *new* group, which is the case this
+ * script exists to handle.
+ */
+async function readGroupNames() {
+  const types = await readFile(join(repoRoot, 'server', 'payload-types.ts'), 'utf8')
+  const body = types.match(/^export interface WmWebTranslation \{$(.*?)^\}$/ms)?.[1]
+
+  if (!body) {
+    console.error(
+      'sync-translations: no `WmWebTranslation` interface in server/payload-types.ts. ' +
+        'Run `pnpm types:cms` first.',
+    )
+    process.exit(1)
+  }
+
+  const groups = [...body.matchAll(/^ {2}([A-Za-z_][A-Za-z0-9_]*)\?:/gm)]
+    .map(([, name]) => name)
+    .filter((name) => !NON_GROUP_KEYS.has(name))
+
+  if (groups.length === 0) {
+    console.error(
+      'sync-translations: `WmWebTranslation` declares no translation groups. ' +
+        'The generated types are stale or the upstream schema changed shape.',
+    )
+    process.exit(1)
+  }
+
+  return groups
+}
+
 async function getJson(path) {
   const url = `${baseURL}${path}`
   const response = await fetch(url, { headers: authHeaders })
@@ -94,7 +134,13 @@ async function main() {
   const client = me?.user?.name ?? me?.user?.email ?? me?.user?.id ?? 'unknown'
   console.log(`Authenticated as API client: ${client}`)
 
-  const translations = await getJson(`/api/globals/${GLOBAL_SLUG}?locale=en&depth=0`)
+  const groupNames = await readGroupNames()
+  console.log(`Selecting ${groupNames.length} groups: ${groupNames.join(', ')}`)
+
+  // `_status` rides along so the published-locale check below still has it.
+  const select = [...groupNames, '_status'].map((field) => `select[${field}]=true`).join('&')
+
+  const translations = await getJson(`/api/globals/${GLOBAL_SLUG}?locale=en&depth=0&${select}`)
 
   if (translations._status !== 'published') {
     console.warn(
@@ -117,10 +163,30 @@ async function main() {
     process.exit(1)
   }
 
-  const target = join(dirname(fileURLToPath(import.meta.url)), '..', 'lib', 'translations.en.json')
+  const target = join(repoRoot, 'lib', 'translations.en.json')
+
+  // A select that names fewer groups than the schema holds still reads 200,
+  // so a partial `select` loses whole groups as quietly as an unseeded global
+  // once did. The committed snapshot is the floor: English only ever grows,
+  // short of a deliberate upstream deletion.
+  // Re-stringified compactly, because `keyCount` counts `":"` in the compact
+  // form while the file on disk is indented and never spells that.
+  const committed = await readFile(target, 'utf8').catch(() => null)
+  const committedCount =
+    committed === null ? 0 : (JSON.stringify(JSON.parse(committed)).match(/":"/g)?.length ?? 0)
+
+  if (keyCount < committedCount && !process.argv.includes('--allow-shrink')) {
+    console.error(
+      `sync-translations: ${keyCount} strings read, but lib/translations.en.json holds ` +
+        `${committedCount}. Refusing to shrink the snapshot — check the select and the ` +
+        'upstream schema, then pass --allow-shrink if the deletion is intended.',
+    )
+    process.exit(1)
+  }
+
   await writeFile(target, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
 
-  console.log(`Wrote ${keyCount} strings to lib/translations.en.json`)
+  console.log(`Wrote ${keyCount} strings to lib/translations.en.json (was ${committedCount})`)
 }
 
 main().catch((error) => {
