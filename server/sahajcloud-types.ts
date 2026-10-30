@@ -172,6 +172,7 @@ export const WEB_TRANSLATIONS_SELECT = {
   navigation: true,
   footer: true,
   errors: true,
+  discover: true,
   article: true,
   meditation: true,
   lecture: true,

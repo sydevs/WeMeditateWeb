@@ -74,11 +74,12 @@ takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SE
 beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
 and typed. Listing the groups anywhere else lets the query and the type disagree.
 
-[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) is the one exception, and it
-cannot import that constant: it is plain node with no TypeScript loader. It keeps every response
-key outside `NON_GROUP_KEYS`, so the snapshot mirrors groups the site never fetches. Those cost
-bytes in `lib/translations.en.json` and nothing more — `WebTranslations` derives from the select,
-so an unfetched group never becomes addressable through `useT()`.
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) imports that same constant,
+which is the whole reason `tsx` is a devDependency. The client gate 400s a global read carrying no
+`select`, and takes bracketed keys only, so the script names each group from it. Adding a group
+reaches all three — the query, the type, and the snapshot — so the three cannot drift. Keep it that
+way: `lib/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships to the
+browser, and a group outside the select would be bytes no `useT()` call could address.
 
 ## Translations are SahajCloud-owned
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Mirrors the SahajCloud `wm-web-translations` English locale into
  * `lib/translations.en.json`.
@@ -23,10 +23,14 @@ import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
+import { WEB_TRANSLATIONS_SELECT } from '../server/sahajcloud-types.ts'
+
 const GLOBAL_SLUG = 'wm-web-translations'
 
 /** Response fields that are document metadata, not translation groups. */
 const NON_GROUP_KEYS = new Set(['id', '_status', 'updatedAt', 'createdAt', 'globalType'])
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const baseURL = process.env.PUBLIC__SAHAJCLOUD_URL
 const apiKey = process.env.SAHAJCLOUD_API_KEY
@@ -73,6 +77,14 @@ function prune(value) {
   return Object.fromEntries(entries)
 }
 
+/** Leaf strings in a snapshot, counted by walking it rather than its punctuation. */
+function countStrings(value) {
+  if (typeof value === 'string') return 1
+  if (value === null || typeof value !== 'object') return 0
+
+  return Object.values(value).reduce((total, nested) => total + countStrings(nested), 0)
+}
+
 async function getJson(path) {
   const url = `${baseURL}${path}`
   const response = await fetch(url, { headers: authHeaders })
@@ -94,7 +106,17 @@ async function main() {
   const client = me?.user?.name ?? me?.user?.email ?? me?.user?.id ?? 'unknown'
   console.log(`Authenticated as API client: ${client}`)
 
-  const translations = await getJson(`/api/globals/${GLOBAL_SLUG}?locale=en&depth=0`)
+  // The client gate 400s a global read carrying no `select` and takes bracketed
+  // keys only, so the read names every group — from the constant the site
+  // queries with, so query, type and snapshot cannot drift. Reaching it from a
+  // script is what `tsx` is a devDependency for.
+  const groupNames = Object.keys(WEB_TRANSLATIONS_SELECT)
+  console.log(`Selecting ${groupNames.length} groups: ${groupNames.join(', ')}`)
+
+  // `_status` rides along so the published-locale check below still has it.
+  const select = [...groupNames, '_status'].map((field) => `select[${field}]=true`).join('&')
+
+  const translations = await getJson(`/api/globals/${GLOBAL_SLUG}?locale=en&depth=0&${select}`)
 
   if (translations._status !== 'published') {
     console.warn(
@@ -107,7 +129,7 @@ async function main() {
     Object.entries(translations).filter(([key]) => !NON_GROUP_KEYS.has(key)),
   )
   const snapshot = sortDeep(prune(groups))
-  const keyCount = JSON.stringify(snapshot).match(/":"/g)?.length ?? 0
+  const keyCount = countStrings(snapshot)
 
   if (keyCount === 0) {
     console.error(
@@ -117,7 +139,8 @@ async function main() {
     process.exit(1)
   }
 
-  const target = join(dirname(fileURLToPath(import.meta.url)), '..', 'lib', 'translations.en.json')
+  const target = join(repoRoot, 'lib', 'translations.en.json')
+
   await writeFile(target, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
 
   console.log(`Wrote ${keyCount} strings to lib/translations.en.json`)

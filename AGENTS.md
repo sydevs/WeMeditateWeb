@@ -128,7 +128,7 @@ These rules apply whether or not the matching rule file or skill is loaded.
   `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path
   under such a URL in `normalizeContentPath`'s spelling, ready for the caller to locale-prefix,
   and `null` for every other URL and for an unknown origin. Upstream canonicals arrive this way.
-  `atlasHref` calls it today; whether `Link` should call it for every consumer is #124.
+  `atlasHref` is its only caller, and `Link` passes such a URL through untouched by design (#124).
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.
