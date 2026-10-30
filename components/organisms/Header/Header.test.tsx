@@ -57,6 +57,16 @@ describe('Header', () => {
 
       expect(row).toContain('hidden lg:flex')
     })
+
+    it('sizes every item by its own label rather than by a count', () => {
+      // `basis-1/4` hard-coded four against the `featuredPages` list
+      // `useSiteNav` maps, so a fifth entry added in SahajCloud overflowed the
+      // desktop row with no code change. `px-0` only compensated for it.
+      const html = render()
+
+      expect(html).not.toContain('basis-1/4')
+      expect(html).not.toContain('px-0')
+    })
   })
 
   describe('the compact bar below lg', () => {

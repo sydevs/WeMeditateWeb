@@ -185,20 +185,23 @@ export function Header({
             {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
                 cannot shrink below their min-content width, and nothing in
                 `LayoutChrome` clips it — below `lg:` it pushed the document
-                sideways (#202). */}
+                sideways (#202).
+
+                Each item is sized by its own label. `basis-1/4` hard-coded four
+                against a list `useSiteNav` builds from `featuredPages`, so a
+                fifth entry added in SahajCloud overflowed the desktop row with
+                no code change. */}
             <div className="hidden lg:flex items-stretch justify-center gap-2 max-w-3xl flex-1">
               {navItems.map((item, index) =>
                 item.dropdown ? (
                   <HeaderNavDropdown
                     key={index}
-                    className="basis-1/4"
                     dropdown={item.dropdown}
                     label={item.label}
                   />
                 ) : (
                   <Button
                     key={index}
-                    className="px-0 basis-1/4"
                     href={item.href}
                     isActive={item.active}
                     size="sm"
