@@ -15,7 +15,7 @@ permissions:
   contents: read
   pull-requests: read # primary: Cloudflare posts the preview URL in a PR comment
   issues: read # needed: GitHub serves PR comments through the issues/{n}/comments endpoint
-  checks: read # fallback: a preview URL in a Cloudflare check-run output (#184 records which, if any)
+  checks: read # fallback: `Workers Builds: <worker>` posts only a dashboard details_url, never a preview
   deployments: read # fallback: a Workers-Builds-style deployment environment_url
   statuses: read # fallback: a preview URL posted as a commit status
 

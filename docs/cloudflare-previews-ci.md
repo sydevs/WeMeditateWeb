@@ -25,9 +25,10 @@ CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.y
 
 The repo connects to two Cloudflare projects, distinguished by URL host. Neither produces a
 GitHub deployment or commit status — the preview URL appears only in the
-`cloudflare-workers-and-pages[bot]` PR comment. Check-run output, deployments and commit
-statuses stay wired as fallbacks; what Workers Builds actually posts, if anything, is recorded
-on sydevs/WeMeditateWeb#184.
+`cloudflare-workers-and-pages[bot]` PR comment. Workers Builds does post one check run per
+Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.cloudflare.com`
+build page and carries no preview address. Check-run output, deployments and commit statuses
+stay wired as fallbacks that have never yet yielded a URL here.
 
 ⚠ The ladle preview is the `wemeditate-design` Worker, and the Pages project of the same name
 is still connected. `matchesTarget` tests `CF_PROJECT_MATCH` against `` `${project} ${url}` ``,
