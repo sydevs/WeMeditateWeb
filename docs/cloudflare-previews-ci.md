@@ -29,26 +29,23 @@ GitHub deployment or commit status — the preview URL appears only in the
 statuses stay wired as fallbacks; what Workers Builds actually posts, if anything, is recorded
 on sydevs/WeMeditateWeb#184.
 
-⚠ The ladle row lands with #184's phase 2, which is attended. Until the `wm-design` Worker
-exists, that preview is still the `wemeditate-design` Pages project, answering on
-`<hash>.wm-design.pages.dev`. Both hosts carry `wm-design`, so the match substring selects the
-right preview either way.
+The ladle preview is the `wemeditate-design` Worker. The Pages project it replaced shared that
+name but answered on `<hash>.wm-design.pages.dev`, so a PR opened before the move carries a
+preview the match substring no longer selects: push to it again.
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
 | web | Workers Builds | `…-wemeditate-web.<acct>.workers.dev` | `wemeditate-web` | [wrangler.toml](../wrangler.toml) |
-| ladle | Workers Builds (Pages until phase 2) | `…-wm-design.<acct>.workers.dev` | `wm-design` | [wrangler.design.jsonc](../wrangler.design.jsonc) |
+| ladle | Workers Builds | `…-wemeditate-design.<acct>.workers.dev` | `wemeditate-design` | [wrangler.design.jsonc](../wrangler.design.jsonc) |
 
 ⚠ A Workers preview host carries the **Worker's own name**, and the match is a plain substring
-over it. So renaming the `wm-design` Worker means editing `CF_PROJECT_MATCH` in
+over it. So renaming the `wemeditate-design` Worker means editing `CF_PROJECT_MATCH` in
 [ci.yml](../.github/workflows/ci.yml) and `EXCLUDE` in
 [the discovery script](../scripts/get-cloudflare-preview-url.mjs) in the same commit.
 
 ## The Ladle preview is built only when the library changes
 
-The `wm-design` Worker's **Builds trigger** will carry `path_includes` / `path_excludes`, set
-through the Cloudflare API (the dashboard cannot express them). The `wemeditate-design` Pages
-project carries the equivalent build watch paths until phase 2 creates that Worker:
+The `wemeditate-design` Worker's **Builds trigger** carries `path_includes` / `path_excludes`:
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
   `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
@@ -109,10 +106,10 @@ the playground silently becomes indexable again.
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
   preview URL through the GitHub API (PR comment, then commit statuses, then check-runs, then
   deployments). `CF_PROJECT_MATCH` selects the target, and both CI legs set one. Without it — a
-  local or ad-hoc run — the script instead excludes the Ladle playground (`wm-design`, plus the
-  `wemeditate-design` Pages project it replaces), so that `EXCLUDE` list never applies in CI. It
-  reports what it found and never judges it — the caller decides whether an empty URL is a
-  failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
+  local or ad-hoc run — the script instead excludes the Ladle playground (`wemeditate-design`,
+  plus `wm-design`, the host of the Pages project it replaces), so that `EXCLUDE` list never
+  applies in CI. It reports what it found and never judges it — the caller decides whether an
+  empty URL is a failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
   not by discovery.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage
   and its content, a SahajCloud page, a non-English locale, the `/en` → `/` redirect, the 404

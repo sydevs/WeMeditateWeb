@@ -57,7 +57,7 @@ jobs:
 
   # This repo has two Cloudflare previews per PR. The URL host tells them apart:
   #   - web   → the Vike app, Workers Builds        (…-wemeditate-web.<acct>.workers.dev)
-  #   - ladle → the design system, Workers Builds   (…-wm-design.<acct>.workers.dev)
+  #   - ladle → the design system, Workers Builds   (…-wemeditate-design.<acct>.workers.dev)
   # One matrix smoke job runs per target. CF_PROJECT_MATCH selects the right one, by plain
   # substring over the preview host, which carries the Worker's own name — see the ⚠ in
   # wrangler.design.jsonc for what a rename drags with it.
@@ -80,14 +80,14 @@ jobs:
             script: test:smoke
             require_preview: 'false'
           - target: ladle
-            project: wm-design
+            project: wemeditate-design
             script: test:smoke:ladle
             # Quoted on purpose. A bare YAML boolean reaches the `if:` below as a value whose
             # type GitHub does not promise, and the string "false" is truthy there — which
             # would redden the web leg for a preview it is not owed.
             require_preview: 'true'
     steps:
-      # wm-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
+      # wemeditate-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
       # trigger's path_includes/path_excludes, mirrored in WATCH/IGNORE below and in the table
       # in docs/cloudflare-previews-ci.md. With no build there is no preview, and discovery
       # would wait out its 12-minute timeout before reporting anyway.
@@ -113,7 +113,7 @@ jobs:
             echo "built=true" >> "$GITHUB_OUTPUT"
           else
             echo "built=false" >> "$GITHUB_OUTPUT"
-            echo "No path Ladle reads changed in this push, so Cloudflare built no wm-design preview and there is nothing to smoke." >> "$GITHUB_STEP_SUMMARY"
+            echo "No path Ladle reads changed in this push, so Cloudflare built no wemeditate-design preview and there is nothing to smoke." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       # Skip the whole setup with install: setup-node's post step fails the job
