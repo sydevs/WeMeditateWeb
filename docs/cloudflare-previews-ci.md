@@ -48,9 +48,14 @@ over it. So renaming the `wemeditate-design` Worker means editing `CF_PROJECT_MA
 [ci.yml](../.github/workflows/ci.yml) and `EXCLUDE` in
 [the discovery script](../scripts/get-cloudflare-preview-url.mjs) in the same commit.
 
-## The Ladle preview is built only when the library changes
+## The Ladle preview is meant to build only when the library changes
 
-The `wemeditate-design` Worker's **Builds trigger** carries `path_includes` / `path_excludes`:
+The `wemeditate-design` Worker's **Builds trigger** does not carry `path_includes` /
+`path_excludes` yet. They are set through the Cloudflare API, which the dashboard cannot express,
+and #216's own push proves them unset: it touched no path below, so `Smoke (ladle)` skipped
+discovery in 4s, yet `Workers Builds: wemeditate-design` built and commented. Until the trigger
+carries them, a push outside this list gets a preview the check never reads — green, nothing
+smoked, which is the silent green #184 closed. The lists to set:
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
   `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
@@ -58,10 +63,10 @@ The `wemeditate-design` Worker's **Builds trigger** carries `path_includes` / `p
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `gh-readonly-queue/*`, the merge queue
 
-Cloudflare evaluates them per push, and `*` crosses `/`. A push that touches none of them gets no
-Ladle preview. So the `Smoke (ladle)` job checks the same paths first: the files changed since the
-push's `before` SHA (or since the PR base, on open). It skips discovery when none match, instead
-of waiting out the 12-minute discovery timeout.
+Cloudflare evaluates them per push, and `*` crosses `/`, so once they are set a push touching none
+of them gets no Ladle preview. `Smoke (ladle)` already checks the same paths first: the files
+changed since the push's `before` SHA (or since the PR base, on open). It skips discovery when
+none match, instead of waiting out the 12-minute discovery timeout.
 
 ⚠ The list lives in **three** places: the Cloudflare build trigger, `WATCH`/`IGNORE` in
 [ci.yml](../.github/workflows/ci.yml), and the lists above. Change all three together. If the CI
