@@ -59,9 +59,9 @@ describe('Header', () => {
     })
 
     it('sizes every item by its own label rather than by a count', () => {
-      // `basis-1/4` hard-coded four against the `featuredPages` list
-      // `useSiteNav` maps, so a fifth entry added in SahajCloud overflowed the
-      // desktop row with no code change. `px-0` only compensated for it.
+      // `basis-1/4` forced four equal columns against the `featuredPages` list
+      // `useSiteNav` maps, so a fifth entry wrapped every label and grew the
+      // bar by 12px. `px-0` only compensated for the columns being too narrow.
       const html = render()
 
       expect(html).not.toContain('basis-1/4')

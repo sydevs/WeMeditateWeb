@@ -187,10 +187,11 @@ export function Header({
                 `LayoutChrome` clips it — below `lg:` it pushed the document
                 sideways (#202).
 
-                Each item is sized by its own label. `basis-1/4` hard-coded four
-                against a list `useSiteNav` builds from `featuredPages`, so a
-                fifth entry added in SahajCloud overflowed the desktop row with
-                no code change. */}
+                Each item is sized by its own label. `basis-1/4` forced four
+                equal columns against a list `useSiteNav` builds from
+                `featuredPages`, so a fifth entry wrapped every label and took
+                the bar from 46px to 58px at 1024. Content widths fit five on
+                one line. */}
             <div className="hidden lg:flex items-stretch justify-center gap-2 max-w-3xl flex-1">
               {navItems.map((item, index) =>
                 item.dropdown ? (
