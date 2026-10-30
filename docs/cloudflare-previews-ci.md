@@ -29,9 +29,14 @@ GitHub deployment or commit status — the preview URL appears only in the
 statuses stay wired as fallbacks; what Workers Builds actually posts, if anything, is recorded
 on sydevs/WeMeditateWeb#184.
 
-The ladle preview is the `wemeditate-design` Worker. The Pages project it replaced shared that
-name but answered on `<hash>.wm-design.pages.dev`, so a PR opened before the move carries a
-preview the match substring no longer selects: push to it again.
+⚠ The ladle preview is the `wemeditate-design` Worker, and the Pages project of the same name
+is still connected. `matchesTarget` tests `CF_PROJECT_MATCH` against `` `${project} ${url}` ``,
+and `fromPrComments` reads the project out of the Pages comment's `Deploying wemeditate-design
+with …`. So a Pages comment matches by project name, though its host is
+`<hash>.wm-design.pages.dev`. `discoverUrl` takes the first match and PR comments arrive
+oldest-first, so a PR that already carries a Pages comment smokes the old site — pushing again
+does not reorder the comments. Turn the Pages project's preview builds off before reading a green
+`Smoke (ladle)` as evidence, and read the `selected …` line the step prints (#184).
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
