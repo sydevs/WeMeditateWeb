@@ -15,7 +15,9 @@
  *
  * Errors propagate so error-utils.ts can retry them:
  * - Single-item queries (getPageBySlug, getDocumentById) return null for an
- *   empty result, then let errors propagate.
+ *   empty result, then let errors propagate. `getDocumentById` also answers a
+ *   404 with null: an id the collection does not hold is an empty result the
+ *   SDK happens to report as a throw.
  * - The global query (getWebConfig) lets errors propagate. The SDK throws a
  *   PayloadSDKError carrying the status, so error-utils.ts classifies it.
  *
@@ -24,7 +26,7 @@
  */
 
 import { createPayloadClient } from './payload-client'
-import { withRetry } from './error-utils'
+import { readStatus, withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
@@ -485,6 +487,12 @@ export async function getPageLocaleStatus(options: {
  * collection types that support findById queries. It supports preview mode
  * for trusted draft previews.
  *
+ * ⚠ An id the collection does not hold is `null`, not a throw. The SDK
+ * answers `findByID` with a 404, and letting it escape rendered the 500 page
+ * for a stale inbound link or a deleted document — against this function's
+ * own contract, which every caller reads as `null`. The retry ladder is not
+ * what it cost: a 404 classifies as CLIENT, so `withRetry` already refused it.
+ *
  * @param options - Query options
  * @param options.collection - The PayloadCMS collection slug
  * @param options.id - The document ID to retrieve
@@ -510,21 +518,29 @@ export async function getDocumentById<C extends FindByIdCollection>(
         previewToken: options.previewToken,
       })
 
-      const found = await client.findByID({
-        collection: options.collection,
-        id: options.id,
-        locale: options.locale,
-        // Depth 3 to resolve relationships embedded in `content` blocks (see
-        // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
-        depth: DOCUMENT_READ_DEPTH,
-        draft: isPreview,
-        // select/populate are validated per-collection at their definitions above
-        // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
-        // correlate the union-typed config to the generic collection `C`. The
-        // input is cast here. The response is re-typed to the concrete doc below.
-        select: config.select as never,
-        populate: config.populate as never,
-      })
+      let found: unknown
+
+      try {
+        found = await client.findByID({
+          collection: options.collection,
+          id: options.id,
+          locale: options.locale,
+          // Depth 3 to resolve relationships embedded in `content` blocks (see
+          // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
+          depth: DOCUMENT_READ_DEPTH,
+          draft: isPreview,
+          // select/populate are validated per-collection at their definitions above
+          // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
+          // correlate the union-typed config to the generic collection `C`. The
+          // input is cast here. The response is re-typed to the concrete doc below.
+          select: config.select as never,
+          populate: config.populate as never,
+        })
+      } catch (error) {
+        if (readStatus(error) === 404) return null
+
+        throw error
+      }
 
       const result = found as Config['collections'][C] | null
 

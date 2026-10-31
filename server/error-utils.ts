@@ -49,7 +49,12 @@ interface HttpErrorLike {
   status?: unknown
 }
 
-function readStatus(error: unknown): number | undefined {
+/**
+ * The HTTP status an error carries, where it carries one. A `PayloadSDKError`
+ * and a `SahajCloudResponseError` both do, so a caller that answers one status
+ * itself reads it here rather than matching the message.
+ */
+export function readStatus(error: unknown): number | undefined {
   if (typeof error !== 'object' || error === null) return undefined
   const e = error as HttpErrorLike
   const responseStatus = e.response?.status

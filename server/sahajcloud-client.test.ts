@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
+  getDocumentById,
   getMeditationSongs,
   getPageBySlug,
   getPageLocaleStatus,
@@ -131,6 +132,34 @@ describe('getWebConfig homePage', () => {
     vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
 
     expect((await getWebConfig({ locale: 'en' })).homePage).toBeNull()
+  })
+})
+
+describe('getDocumentById', () => {
+  beforeEach(resetReadState)
+
+  it('returns null for an unknown id, so a stale link 404s instead of 500ing', async () => {
+    const notFound = Object.assign(new Error('The requested resource was not found.'), {
+      status: 404,
+    })
+    const findByID = vi.fn().mockRejectedValue(notFound)
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findByID } as never)
+
+    await expect(
+      getDocumentById({ collection: 'meditations', id: '999999', locale: 'en' }),
+    ).resolves.toBeNull()
+  })
+
+  it('still propagates a 500, so a broken backend is not read as a missing document', async () => {
+    const serverError = Object.assign(new Error('Internal Server Error'), { status: 500 })
+    const findByID = vi.fn().mockRejectedValue(serverError)
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findByID } as never)
+
+    await expect(
+      getDocumentById({ collection: 'meditations', id: '12', locale: 'en' }),
+    ).rejects.toBe(serverError)
   })
 })
 
