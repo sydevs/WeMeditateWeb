@@ -643,6 +643,32 @@ export function partitionPublishedPages(pages: (number | NavPage)[] | null | und
 }
 
 /**
+ * The config data gaps this isolate has already reported to Sentry.
+ *
+ * ⚠ The warning below is the one in this repo that fires on healthy traffic.
+ * `withSentry` made it a real event, and `getWebConfig` runs once per render,
+ * so a *standing* gap — an editor leaving a referenced page unpublished, which
+ * is precisely what the warning is for — would bill one event per page view
+ * until someone publishes it. The gap must stay visible (server/AGENTS.md), so
+ * what is bounded is volume, not level: one event per distinct gap per isolate.
+ * A gap that changes is a new signature and reports immediately, and
+ * `console.warn` still fires on every request, so the per-request record is
+ * unchanged.
+ *
+ * A Workers isolate is reused across requests and dropped without notice,
+ * which is the bound wanted here: often enough that a gap cannot go
+ * unreported, rare enough to cost nothing.
+ */
+const reportedConfigGaps = new Set<string>()
+
+/**
+ * Bounds that memo. One isolate serves every locale, and a gap differs per
+ * locale, so the set must not grow unbounded. Past the cap it is emptied
+ * rather than pruned: re-reporting a live gap is the harmless direction.
+ */
+const MAX_REPORTED_CONFIG_GAPS = 64
+
+/**
  * Gets the WebConfig (site configuration).
  *
  * This singleton global holds references to important pages across the
@@ -695,11 +721,21 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
       console.warn(
         `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
       )
-      Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
-        level: 'warning',
-        tags: { source: 'getWebConfig' },
-        extra: { unresolved, locale: options.locale ?? null },
-      })
+
+      const signature = unresolved.join(',')
+
+      if (!reportedConfigGaps.has(signature)) {
+        if (reportedConfigGaps.size >= MAX_REPORTED_CONFIG_GAPS) reportedConfigGaps.clear()
+
+        reportedConfigGaps.add(signature)
+        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
+          level: 'warning',
+          tags: { source: 'getWebConfig' },
+          // The locale of the render that first saw this gap in this isolate,
+          // not the only one affected.
+          extra: { unresolved, locale: options.locale ?? null },
+        })
+      }
     }
 
     // An unconfigured global offers English only. Never return an empty

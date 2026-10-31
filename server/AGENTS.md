@@ -68,6 +68,12 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
   dropped. This keeps the SahajCloud data gap visible. Do not hide it silently, and do not throw
   a 500.
+- ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render
+  and nothing here caches them, and a gap this warning catches stands until an editor fixes the
+  data — so a bare `captureMessage` bills the Sentry quota per page view. `getWebConfig` sends one
+  event per distinct gap per isolate (`reportedConfigGaps`) and keeps `console.warn` on every
+  request. Lower the volume, never the level: a warning nobody can afford to leave on gets turned
+  off, and then the gap is invisible again.
 - Import Sentry from `@sentry/cloudflare`. `withSentry` in [entry.ts](entry.ts) initialises it
   per request from the `SENTRY_DSN` secret; `error-utils.ts` says why it alone imports
   `@sentry/react`.

@@ -10,6 +10,7 @@ import {
   getRelatedLectures,
 } from './sahajcloud-client'
 import { createPayloadClient } from './payload-client'
+import * as Sentry from '@sentry/cloudflare'
 import { detectErrorType, ErrorType } from './error-utils'
 import type { Locale, Page, PageStatus } from './sahajcloud-types'
 
@@ -21,7 +22,8 @@ vi.mock('./payload-client', () => ({
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Silence the Sentry warning emitted on unresolved page references.
+// Silence the Sentry warning emitted on unresolved page references, and keep
+// its calls countable: the warning is rate-limited per isolate.
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the config visible to the tests that assert one, and
@@ -138,6 +140,54 @@ describe('getWebConfig featuredArticles', () => {
 
     expect(Object.keys(pages).sort()).toEqual(['meta', 'slug', 'title'])
     expect(Object.keys(pages.meta).sort()).toEqual(['image', 'title'])
+  })
+})
+
+describe('getWebConfig unresolved-reference reporting', () => {
+  /** A config whose `featuredArticles` holds one unpublished (bare-id) page. */
+  function configWithGap(badId: number) {
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1, featuredArticles: [badId] })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+  }
+
+  it('sends one event per distinct gap, not one per render', async () => {
+    resetReadState()
+    vi.mocked(Sentry.captureMessage).mockClear()
+    configWithGap(9001)
+
+    await getWebConfig({ locale: 'en' })
+    await getWebConfig({ locale: 'en' })
+    await getWebConfig({ locale: 'fr' })
+
+    // The read runs per render, and the gap stands until an editor publishes
+    // the page. Per-render events would spend the Sentry quota on one data gap.
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+  })
+
+  it('still warns on every render, so the request log keeps the full record', async () => {
+    resetReadState()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    configWithGap(9002)
+
+    await getWebConfig({ locale: 'en' })
+    await getWebConfig({ locale: 'en' })
+
+    expect(warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports a gap it has not seen before', async () => {
+    resetReadState()
+    vi.mocked(Sentry.captureMessage).mockClear()
+
+    configWithGap(9003)
+    await getWebConfig({ locale: 'en' })
+
+    configWithGap(9004)
+    await getWebConfig({ locale: 'en' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
   })
 })
 
