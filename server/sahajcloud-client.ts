@@ -47,6 +47,8 @@ import type {
 import type {
   EmbeddedFormSelect,
   Locale,
+  NavPage,
+  NavPageSelect,
   Page,
   PageStatus,
   WebConfig,
@@ -239,6 +241,18 @@ const WEB_CONFIG_SELECT = {
 } satisfies WmWebConfigSelect<true>
 
 /**
+ * The fields a config page relationship comes back with. Annotated with
+ * `NavPageSelect`, so this and the `NavPage` type it returns cannot drift:
+ * adding a key here without widening `NavPage` is a compile error, and so is
+ * dropping one a consumer still reads.
+ */
+const NAV_PAGE_SELECT: NavPageSelect = {
+  title: true,
+  slug: true,
+  meta: { title: true, image: true },
+} satisfies PagesSelect<true>
+
+/**
  * Populates the global's page relationships at depth 2, with only what the nav
  * renders: title and slug for a link, `meta` for a header card's image. The
  * config is serialised into every page's HTML, so nothing more belongs here.
@@ -246,11 +260,7 @@ const WEB_CONFIG_SELECT = {
  */
 const WEB_CONFIG_POPULATE = {
   images: IMAGE_POPULATE.images,
-  pages: {
-    title: true,
-    slug: true,
-    meta: { title: true, image: true },
-  } satisfies PagesSelect<true>,
+  pages: NAV_PAGE_SELECT,
 }
 
 /** Fields rendered for a Meditation (MeditationTemplate) plus draft status. */
@@ -610,12 +620,15 @@ export async function getLecture(
  * unresolved when it returns as a bare ID (believed unpublished or trashed:
  * a published page populates, an unpublished one returns as just its ID) or
  * as an object with no slug.
+ *
+ * The published side is {@link NavPage}, not `Page`: `NAV_PAGE_SELECT` is what
+ * the config read asks for, so nothing outside it arrives.
  */
-export function partitionPublishedPages(pages: (number | Page)[] | null | undefined): {
-  published: Page[]
+export function partitionPublishedPages(pages: (number | NavPage)[] | null | undefined): {
+  published: NavPage[]
   unresolved: string[]
 } {
-  const published: Page[] = []
+  const published: NavPage[] = []
   const unresolved: string[] = []
 
   for (const page of pages ?? []) {

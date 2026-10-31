@@ -123,6 +123,22 @@ describe('getWebConfig featuredArticles', () => {
     // The bare-id (unpublished) ref is dropped. Only linkable articles remain.
     expect(config.featuredArticles.map((p) => p.slug)).toEqual(['history-of-meditation'])
   })
+
+  it('populates a config page with exactly the fields `NavPage` promises', async () => {
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+
+    await getWebConfig({ locale: 'en' })
+
+    // The config is serialised into every page's HTML, so a key added here is
+    // paid for on every render. `NavPage` is what the consumers may read, and
+    // this is the read that makes it true.
+    const { pages } = findGlobal.mock.calls[0][0].populate
+
+    expect(Object.keys(pages).sort()).toEqual(['meta', 'slug', 'title'])
+    expect(Object.keys(pages.meta).sort()).toEqual(['image', 'title'])
+  })
 })
 
 describe('getWebConfig homePage', () => {

@@ -3,12 +3,12 @@
  * SahajCloud pages. Kept framework-free so the mapping, image resolution, and random
  * selection can be unit-tested without rendering.
  */
-import type { Page } from '../server/sahajcloud-types'
+import type { NavPage } from '../server/sahajcloud-types'
 import { populatedImageUrl } from '../lib/payload-relationships'
 import type { HeaderDropdownArticle, HeaderDropdownLink } from '../components/organisms'
 
 /** A knowledge page → a left-column nav link (`/<slug>`). */
-export function pageToLink(page: Page): HeaderDropdownLink {
+export function pageToLink(page: NavPage): HeaderDropdownLink {
   return { label: page.title, href: '/' + page.slug }
 }
 
@@ -17,7 +17,7 @@ export function pageToLink(page: Page): HeaderDropdownLink {
  * relationship to a URL (empty string when none is populated — the article
  * is still linkable). Falls back to the page title for alt text.
  */
-export function pageToArticle(page: Page): HeaderDropdownArticle {
+export function pageToArticle(page: NavPage): HeaderDropdownArticle {
   return {
     title: page.title,
     image: populatedImageUrl(page.meta?.image) ?? '',
@@ -35,11 +35,11 @@ export function pageToArticle(page: Page): HeaderDropdownArticle {
  * deterministic tests.
  */
 export function pickFeaturedArticles(
-  featured: Page[],
-  fallback: Page[],
+  featured: NavPage[],
+  fallback: NavPage[],
   count = 2,
   random: () => number = Math.random,
-): Page[] {
+): NavPage[] {
   const source = featured.length > 0 ? featured : fallback
 
   if (source.length <= count) return source.slice()
