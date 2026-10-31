@@ -57,6 +57,11 @@ Two things about `form` and the visitor's IP that only bite in production:
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
   `server/sahajcloud-client.ts`.
+- ⚠ **Return the shape the `select` asked for, never the generated document.** A read narrowed
+  to four fields that hands back a `Page` lets every consumer typecheck `page.content` and read
+  `undefined` at runtime. Pair the narrow type with a select type derived from it, so neither can
+  drift: `NavPage`/`NavPageSelect` for the config's nav pages, `EmbeddedForm`/`EmbeddedFormSelect`
+  for a form, both in [sahajcloud-types.ts](sahajcloud-types.ts).
 
 ## Treat a bare id as unpublished — degrade, do not break
 
@@ -106,7 +111,10 @@ Three rules still apply:
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).
-- **Never branch on a status. Pick the reader that matches the read.** `sahajCloudFetch` throws a
+- **Never branch on a status. Pick the reader that matches the read.** This is the rule for
+  `sahajCloudFetch`'s callers. The SDK has no such pair, so `getDocumentById` reads the status
+  itself — through `readStatus`, the one place a status is read off an error — to answer an
+  unknown id with `null`. `sahajCloudFetch` throws a
   `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
   where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
   `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
