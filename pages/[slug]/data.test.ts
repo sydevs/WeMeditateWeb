@@ -90,6 +90,15 @@ describe('Pages data', () => {
     expect(await redirectOf('about')).toBeNull()
   })
 
+  it('does not redirect `/` to itself when the home page is slugged `index`', async () => {
+    // `/` routes as `index`, so a home document an editor slugged `index`
+    // would match the self-redirect above and loop the site's front page.
+    settings.homePage = { slug: 'index' }
+    getPageBySlug.mockResolvedValue({ id: 1, slug: 'index', content: [] })
+
+    expect(await redirectOf('index')).toBeNull()
+  })
+
   it('reads `/` through the same page read as any slug, not from the config', async () => {
     settings.homePage = { slug: '' }
     getPageBySlug.mockResolvedValue({ id: 1, slug: '', content: [] })

@@ -69,7 +69,11 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   //
   // 302, not `/index`'s 301: a routing spelling is permanent, an editor's
   // slug is not, and a cached 301 would outlive a `homePage` change.
-  if (settings.homePage?.slug && slug === settings.homePage.slug) {
+  //
+  // ⚠ Never for `index`, which is `/` itself after `+onBeforeRoute`. A home
+  // page an editor slugged `index` would otherwise redirect `/` to `/`, and
+  // the site's front page would answer only a redirect loop.
+  if (slug !== 'index' && settings.homePage?.slug && slug === settings.homePage.slug) {
     throw redirect(localePath(locale, '/'), 302)
   }
 
