@@ -79,6 +79,15 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
   event per distinct gap per isolate (`reportedConfigGaps`) and keeps `console.warn` on every
   request. Lower the volume, never the level: a warning nobody can afford to leave on gets turned
   off, and then the gap is invisible again.
+- ⚠ **Everything Sentry attaches to an event is scrubbed in `entry.ts`, not where it is
+  captured.** `scrubCredentials` there runs from `beforeSend` **and**
+  `beforeSendTransaction` — a transaction is not an error event, and
+  `SENTRY_TRACES_SAMPLE_RATE` in the Worker env can enable tracing with no code change. It drops
+  the inbound POST body (`httpServerIntegration` buffers one on every non-GET request, gated on
+  nothing) and filters every credential header (`requestDataIntegration` copies the inbound
+  headers verbatim; its own deny-list reaches the URL and query string only). A new inbound
+  credential header is covered by `CREDENTIAL_HEADER_SNIPPETS` matching its name — check that it
+  does.
 - Import Sentry from `@sentry/cloudflare`. `withSentry` in [entry.ts](entry.ts) initialises it
   per request from the `SENTRY_DSN` secret; `error-utils.ts` says why it alone imports
   `@sentry/react`.
