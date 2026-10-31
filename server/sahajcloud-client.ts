@@ -18,8 +18,6 @@
  *   empty result, then let errors propagate.
  * - The global query (getWebConfig) lets errors propagate. The SDK throws a
  *   PayloadSDKError carrying the status, so error-utils.ts classifies it.
- * - List queries (getPagesByTags, getSongsByTags) return an empty array for
- *   an empty result, then let errors propagate.
  *
  * error-utils.ts classifies by HTTP status where the error carries one, and
  * falls back to message patterns for errors that do not (a network TypeError).
@@ -35,11 +33,9 @@ import type {
   PagesSelect,
   MeditationsSelect,
   LecturesSelect,
-  SongsSelect,
   AlbumsSelect,
   AppCardsSelect,
   FormsSelect,
-  SongTagsSelect,
   ImagesSelect,
   AuthorsSelect,
   VideosSelect,
@@ -51,10 +47,8 @@ import type {
   Locale,
   Page,
   PageStatus,
-  Song,
   WebConfig,
   WebTranslations,
-  PageListItem,
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
@@ -257,12 +251,6 @@ const WEB_CONFIG_POPULATE = {
   } satisfies PagesSelect<true>,
 }
 
-/** Minimal fields for page list items (getPagesByTags → PageListItem). */
-const PAGE_LIST_SELECT = {
-  title: true,
-  meta: { image: true },
-} satisfies PagesSelect<true>
-
 /** Fields rendered for a Meditation (MeditationTemplate) plus draft status. */
 const MEDITATION_SELECT = {
   url: true,
@@ -299,22 +287,6 @@ const LECTURE_SELECT = {
 const LECTURE_POPULATE = {
   images: IMAGE_POPULATE.images,
   lectures: LECTURE_SELECT,
-}
-
-/** Fields for songs (getSongsByTags returns full Song-ish data). */
-const SONG_SELECT = {
-  title: true,
-  url: true,
-  filename: true,
-  album: true,
-  tags: true,
-} satisfies SongsSelect<true>
-
-/** Populate shapes for song relationships (album → artwork image, song tags). */
-const SONG_POPULATE = {
-  albums: { title: true, artist: true, artwork: true } satisfies AlbumsSelect<true>,
-  'song-tags': { title: true, slug: true } satisfies SongTagsSelect<true>,
-  images: IMAGE_POPULATE.images,
 }
 
 /**
@@ -765,84 +737,6 @@ export async function getWebTranslations(options: {
     },
     { preview: isPreview },
   )
-}
-
-// --- List Queries (filtered by tags) ---
-
-/**
- * Retrieves a list of pages filtered by tags (minimal data: id, title, thumbnail).
- *
- * @param options - Query options
- * @param options.tags - Array of tag values to filter by (e.g., 'wisdom', 'lifestyle', 'technique')
- * @param options.locale - The locale to retrieve pages in
- * @param options.limit - Maximum number of pages to return (default: 100)
- * @returns Array of page list items
- */
-export async function getPagesByTags(
-  options: LocalizedQueryOptions & {
-    tags: string[]
-    limit?: number
-  },
-): Promise<PageListItem[]> {
-  const limit = options.limit || 100
-
-  return withRetryUnlessPreview(async () => {
-    const client = createPayloadClient()
-
-    const result = await client.find({
-      collection: 'pages',
-      where: { tags: { in: options.tags } },
-      locale: options.locale,
-      limit,
-      depth: 2,
-      select: PAGE_LIST_SELECT,
-      populate: IMAGE_POPULATE,
-    })
-
-    if (!result?.docs) return []
-
-    return result.docs.map((page) => ({
-      id: page.id,
-      title: page.title ?? null,
-      meta: page.meta ? { image: page.meta.image ?? null } : null,
-    })) as PageListItem[]
-  })
-}
-
-/**
- * Retrieves a list of songs filtered by tags (full song data).
- *
- * @param options - Query options
- * @param options.tagIds - Array of tag IDs to filter by
- * @param options.locale - The locale to retrieve songs in
- * @param options.limit - Maximum number of songs to return (default: 100)
- * @returns Array of song items
- */
-export async function getSongsByTags(
-  options: LocalizedQueryOptions & {
-    tagIds: string[]
-    limit?: number
-  },
-): Promise<Song[]> {
-  const limit = options.limit || 100
-
-  return withRetryUnlessPreview(async () => {
-    const client = createPayloadClient()
-
-    const result = await client.find({
-      collection: 'songs',
-      where: { tags: { in: options.tagIds } },
-      locale: options.locale,
-      limit,
-      depth: 2,
-      select: SONG_SELECT,
-      populate: SONG_POPULATE,
-    })
-
-    if (!result?.docs) return []
-
-    return result.docs as Song[]
-  })
 }
 
 /**

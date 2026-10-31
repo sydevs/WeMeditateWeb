@@ -86,11 +86,3 @@ export function getSahajCloudContext(): SahajCloudContext {
     baseURL: result.data.baseURL,
   }
 }
-
-/**
- * Checks whether SahajCloud context is available in the current request.
- * Useful for conditional logic in code that may run outside a request.
- */
-export function hasSahajCloudContext(): boolean {
-  return tryGetContext() !== undefined
-}

@@ -191,41 +191,8 @@ export type WebTranslations = RequiredGroups<
   Pick<WmWebTranslation, keyof typeof WEB_TRANSLATIONS_SELECT>
 >
 
-/** One translations tab — `common`, `navigation`, … */
-export type TranslationsTab = keyof WebTranslations
-
 /** Page status enum */
 export type PageStatus = 'draft' | 'published'
-
-/** Simplified page reference, used in WebConfig navigation. */
-export interface PageReference {
-  id: string | number
-  title: string
-  slug: string
-}
-
-/** Page meta information */
-export interface PageMeta {
-  title: string | null
-  description: string | null
-  image: import('./payload-types').Image | null
-}
-
-/** Minimal page data for lists (id, title, and meta image). */
-export interface PageListItem {
-  id: string | number
-  title: string | null
-  meta: {
-    image: import('./payload-types').Image | null
-  } | null
-}
-
-/** Minimal meditation data for lists (id, title, thumbnail) */
-export interface MeditationListItem {
-  id: string | number
-  title: string | null
-  thumbnail: import('./payload-types').Image | null
-}
 
 /**
  * Background-music track for a meditation, as returned by the
