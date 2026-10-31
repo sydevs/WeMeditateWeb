@@ -25,30 +25,38 @@ CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.y
 
 The repo connects to two Cloudflare projects, distinguished by URL host. Neither produces a
 GitHub deployment or commit status — the preview URL appears only in the
-`cloudflare-workers-and-pages[bot]` PR comment. Check-run output, deployments and commit
-statuses stay wired as fallbacks; what Workers Builds actually posts, if anything, is recorded
-on sydevs/WeMeditateWeb#184.
+`cloudflare-workers-and-pages[bot]` PR comment. Workers Builds does post one check run per
+Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.cloudflare.com`
+build page and carries no preview address. Check-run output, deployments and commit statuses
+stay wired as fallbacks that have never yet yielded a URL here.
 
-⚠ The ladle row lands with #184's phase 2, which is attended. Until the `wm-design` Worker
-exists, that preview is still the `wemeditate-design` Pages project, answering on
-`<hash>.wm-design.pages.dev`. Both hosts carry `wm-design`, so the match substring selects the
-right preview either way.
+⚠ The ladle preview is the `wemeditate-design` Worker, and the Pages project of the same name
+is still connected. `matchesTarget` tests `CF_PROJECT_MATCH` against `` `${project} ${url}` ``,
+and `fromPrComments` reads the project out of the Pages comment's `Deploying wemeditate-design
+with …`. So a Pages comment matches by project name, though its host is
+`<hash>.wm-design.pages.dev`. `discoverUrl` takes the first match and PR comments arrive
+oldest-first, so a PR that already carries a Pages comment smokes the old site — pushing again
+does not reorder the comments. Turn the Pages project's preview builds off before reading a green
+`Smoke (ladle)` as evidence, and read the `selected …` line the step prints (#184).
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
 | web | Workers Builds | `…-wemeditate-web.<acct>.workers.dev` | `wemeditate-web` | [wrangler.toml](../wrangler.toml) |
-| ladle | Workers Builds (Pages until phase 2) | `…-wm-design.<acct>.workers.dev` | `wm-design` | [wrangler.design.jsonc](../wrangler.design.jsonc) |
+| ladle | Workers Builds | `…-wemeditate-design.<acct>.workers.dev` | `wemeditate-design` | [wrangler.design.jsonc](../wrangler.design.jsonc) |
 
 ⚠ A Workers preview host carries the **Worker's own name**, and the match is a plain substring
-over it. So renaming the `wm-design` Worker means editing `CF_PROJECT_MATCH` in
+over it. So renaming the `wemeditate-design` Worker means editing `CF_PROJECT_MATCH` in
 [ci.yml](../.github/workflows/ci.yml) and `EXCLUDE` in
 [the discovery script](../scripts/get-cloudflare-preview-url.mjs) in the same commit.
 
-## The Ladle preview is built only when the library changes
+## The Ladle preview is meant to build only when the library changes
 
-The `wm-design` Worker's **Builds trigger** will carry `path_includes` / `path_excludes`, set
-through the Cloudflare API (the dashboard cannot express them). The `wemeditate-design` Pages
-project carries the equivalent build watch paths until phase 2 creates that Worker:
+The `wemeditate-design` Worker's **Builds trigger** does not carry `path_includes` /
+`path_excludes` yet. They are set through the Cloudflare API, which the dashboard cannot express,
+and #216's own push proves them unset: it touched no path below, so `Smoke (ladle)` skipped
+discovery in 4s, yet `Workers Builds: wemeditate-design` built and commented. Until the trigger
+carries them, a push outside this list gets a preview the check never reads — green, nothing
+smoked, which is the silent green #184 closed. The lists to set:
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
   `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
@@ -56,10 +64,10 @@ project carries the equivalent build watch paths until phase 2 creates that Work
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `gh-readonly-queue/*`, the merge queue
 
-Cloudflare evaluates them per push, and `*` crosses `/`. A push that touches none of them gets no
-Ladle preview. So the `Smoke (ladle)` job checks the same paths first: the files changed since the
-push's `before` SHA (or since the PR base, on open). It skips discovery when none match, instead
-of waiting out the 12-minute discovery timeout.
+Cloudflare evaluates them per push, and `*` crosses `/`, so once they are set a push touching none
+of them gets no Ladle preview. `Smoke (ladle)` already checks the same paths first: the files
+changed since the push's `before` SHA (or since the PR base, on open). It skips discovery when
+none match, instead of waiting out the 12-minute discovery timeout.
 
 ⚠ The list lives in **three** places: the Cloudflare build trigger, `WATCH`/`IGNORE` in
 [ci.yml](../.github/workflows/ci.yml), and the lists above. Change all three together. If the CI
@@ -109,10 +117,10 @@ the playground silently becomes indexable again.
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
   preview URL through the GitHub API (PR comment, then commit statuses, then check-runs, then
   deployments). `CF_PROJECT_MATCH` selects the target, and both CI legs set one. Without it — a
-  local or ad-hoc run — the script instead excludes the Ladle playground (`wm-design`, plus the
-  `wemeditate-design` Pages project it replaces), so that `EXCLUDE` list never applies in CI. It
-  reports what it found and never judges it — the caller decides whether an empty URL is a
-  failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
+  local or ad-hoc run — the script instead excludes the Ladle playground (`wemeditate-design`,
+  plus `wm-design`, the host of the Pages project it replaces), so that `EXCLUDE` list never
+  applies in CI. It reports what it found and never judges it — the caller decides whether an
+  empty URL is a failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
   not by discovery.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage
   and its content, a SahajCloud page, a non-English locale, the `/en` → `/` redirect, the 404

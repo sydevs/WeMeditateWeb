@@ -44,11 +44,11 @@ const DISCOVER_TIMEOUT_MS =
 const HEALTH_TIMEOUT_MS = Number(process.env.HEALTH_TIMEOUT_MS) || 5 * 60_000
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 
-// The design-system (Ladle) hosts: the Worker name, and the Pages project it replaces. They
-// matter only to a run with no CF_PROJECT_MATCH, which takes the web app instead — in CI
-// `matchesTarget` returns before it reads this list. Drop `wemeditate-design` once no PR
-// opened before #184 is still open.
-const EXCLUDE = ['wm-design', 'wemeditate-design']
+// The design-system (Ladle) hosts: the Worker name, and `wm-design`, the host of the Pages
+// project it replaces. They matter only to a run with no CF_PROJECT_MATCH, which takes the web
+// app instead — in CI `matchesTarget` returns before it reads this list. Drop `wm-design` once
+// the `wemeditate-design` Pages project is deleted.
+const EXCLUDE = ['wemeditate-design', 'wm-design']
 // Matches a Cloudflare preview origin at any subdomain depth.
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
 

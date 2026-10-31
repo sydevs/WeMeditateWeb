@@ -11,14 +11,14 @@
     "command": "pnpm types:cms"
   },
   "securityReview": {
-    "triggerPattern": "^server/|^pages/preview/|^wrangler\\.toml|^vite\\.config\\.ts|^sentry\\.[a-z]+\\.config\\.ts|^scripts/|^\\.env|^\\.dev\\.vars",
+    "triggerPattern": "^server/|^pages/preview/|^wrangler\\.|^vite\\.config\\.ts|^sentry\\.[a-z]+\\.config\\.ts|^scripts/|^\\.env|^\\.dev\\.vars",
     "rationale": "Server-side rendering, preview routes, and the deploy/build configuration."
   },
   "worktreeSetup": [
     "pnpm install"
   ],
   "worktreeNotes": "Copy .env and .dev.vars from the main checkout when the branch needs them.",
-  "deployTarget": "Cloudflare Workers (web) + Cloudflare Pages (Ladle)",
+  "deployTarget": "Cloudflare Workers (web and Ladle)",
   "devServer": {
     "command": "pnpm dev --port {port}",
     "basePort": 5173,

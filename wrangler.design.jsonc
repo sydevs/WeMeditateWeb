@@ -1,15 +1,15 @@
 {
-  // The `wm-design` Ladle playground (`design.wemeditate.com`), as a Cloudflare Workers
+  // The `wemeditate-design` Ladle playground (`design.wemeditate.com`), as a Cloudflare Workers
   // static-assets Worker. Two Workers build from this one repo, so the filename carries the
   // target; the app keeps the bare `wrangler.toml` that `pnpm deploy` resolves, and wrangler
   // does not auto-discover this one.
   //
   // ⚠ The preview host is `<preview>-<worker>.<subdomain>.workers.dev`, never a project name,
   // and `ci.yml`'s `CF_PROJECT_MATCH` is a plain substring test over it. So this name must
-  // stay `wm-design`: renaming the Worker means editing `ci.yml` and the `EXCLUDE` list in
+  // stay `wemeditate-design`: renaming the Worker means editing `ci.yml` and the `EXCLUDE` list in
   // `scripts/get-cloudflare-preview-url.mjs` in the same commit (#184).
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "wm-design",
+  "name": "wemeditate-design",
 
   // Required even with no `main`. This is the date wrangler 4.149.0 suggests itself.
   "compatibility_date": "2026-10-06",
