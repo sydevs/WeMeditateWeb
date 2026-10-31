@@ -24,6 +24,7 @@ import { apiKeySchema, baseUrlSchema } from './validation'
 export type SahajCloudEnv = {
   Bindings: {
     SAHAJCLOUD_API_KEY?: string
+    SENTRY_DSN?: string
   }
 }
 

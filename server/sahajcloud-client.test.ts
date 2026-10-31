@@ -21,7 +21,7 @@ vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 // Silence the Sentry warning emitted on unresolved page references.
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the config visible to the tests that assert one, and
 // `retried.error` the error the ladder was handed, which is what decides

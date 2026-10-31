@@ -17,7 +17,7 @@
  */
 
 import { render } from 'vike/abort'
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { loadLivePreview, previewArgs } from './live-preview'

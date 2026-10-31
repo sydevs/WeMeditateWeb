@@ -29,7 +29,7 @@ import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import type {
   Config,
   PagesSelect,

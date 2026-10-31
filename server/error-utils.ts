@@ -5,6 +5,10 @@
  * and user-friendly message generation.
  */
 
+// ⚠ `@sentry/react`, unlike the rest of `server/`: `ErrorFallback` imports this
+// module in the browser, where `@sentry/cloudflare` does not build. On the
+// server `withRetry`'s calls still reach the Worker's client, because both SDKs
+// re-export one `@sentry/core` — so keep the two packages on the same version.
 import * as Sentry from '@sentry/react'
 
 export enum ErrorType {

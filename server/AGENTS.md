@@ -68,6 +68,9 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
   dropped. This keeps the SahajCloud data gap visible. Do not hide it silently, and do not throw
   a 500.
+- Import Sentry from `@sentry/cloudflare`. `withSentry` in [entry.ts](entry.ts) initialises it
+  per request from the `SENTRY_DSN` secret; `error-utils.ts` says why it alone imports
+  `@sentry/react`.
 
 ## Custom root endpoints are not collection reads
 

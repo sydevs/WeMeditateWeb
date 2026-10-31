@@ -33,6 +33,7 @@
     "@payloadcms/richtext-lexical": "^3.91.0",
     "@payloadcms/sdk": "^3.91.0",
     "@photonjs/hono": "^0.1.12",
+    "@sentry/cloudflare": "^10.76.2",
     "@sentry/react": "^10.76.2",
     "@vidstack/react": "1.15.7",
     "embla-carousel-react": "^8.6.0",

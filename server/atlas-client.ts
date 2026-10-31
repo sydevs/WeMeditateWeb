@@ -24,7 +24,7 @@
  * widget and its own `<head>`. It only loses the server-rendered half.
  */
 
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import { sahajCloudFetch, sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
 import type { Locale } from './sahajcloud-types'
