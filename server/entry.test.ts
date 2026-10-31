@@ -67,6 +67,17 @@ describe('server Sentry', () => {
     expect(JSON.stringify(event)).not.toContain('apikey789')
   })
 
+  it('drops the request body, which carries a visitor submission', () => {
+    // `httpServerIntegration` buffers every non-GET body onto the scope
+    // regardless of `sendDefaultPii`, and `requestDataIntegration` reads it
+    // back unconditionally. `POST /api/submissions` is a name and an email.
+    const event = serverOptions().beforeSend?.(eventWithCredentials(), {}) as ErrorEvent
+
+    expect(event.request?.data).toBeUndefined()
+    expect(JSON.stringify(event)).not.toContain('visitor@example.com')
+    expect(JSON.stringify(event)).not.toContain('Ada')
+  })
+
   it('scrubs a transaction too, which `beforeSend` never sees', () => {
     // `tracesSampleRate` comes from `SENTRY_TRACES_SAMPLE_RATE` in the Worker
     // env, so tracing can be enabled from the Cloudflare dashboard alone.
