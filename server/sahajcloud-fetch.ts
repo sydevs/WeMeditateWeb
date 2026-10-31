@@ -51,6 +51,10 @@ export function sahajCloudAuthHeaders(apiKey: string): Record<string, string> {
  * to. It also emits the `[PayloadCMS] <method> <url> → <status>` line the
  * debugging workflow in AGENTS.md reads.
  *
+ * ⚠ Every call is bounded at 15 s. Unbounded, a hung read waited out
+ * Cloudflare's ~100 s 524 — three times over, since `withRetry` retries a 5xx.
+ * The timeout itself classifies as UNKNOWN, so it is never retried.
+ *
  * @param quietStatuses - Statuses to log without their body. Only a caller
  *   that answers a status itself can say it carries nothing worth dumping.
  */
@@ -59,7 +63,10 @@ export async function fetchWithErrorDetails(
   init?: RequestInit,
   quietStatuses: readonly number[] = [],
 ): Promise<Response> {
-  const response = await fetch(input, init)
+  const response = await fetch(input, {
+    ...init,
+    signal: init?.signal ?? AbortSignal.timeout(15_000),
+  })
 
   // Log every API request, for debugging.
   console.log(`[PayloadCMS] ${init?.method || 'GET'} ${input} → ${response.status}`)

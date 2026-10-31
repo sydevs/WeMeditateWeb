@@ -162,6 +162,19 @@ describe('fetchWithErrorDetails', () => {
       }),
     )
   })
+
+  it('bounds a read with a timeout signal, and keeps one the caller passed', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }))
+    const own = new AbortController().signal
+
+    await fetchWithErrorDetails('https://sahajcloud.test/api/pages')
+    await fetchWithErrorDetails('https://sahajcloud.test/api/pages', { signal: own })
+
+    expect(fetchSpy.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal)
+    expect(fetchSpy.mock.calls[1][1]?.signal).toBe(own)
+  })
 })
 
 describe('SahajCloudResponseError', () => {
