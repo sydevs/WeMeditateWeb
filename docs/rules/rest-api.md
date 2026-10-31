@@ -49,6 +49,8 @@ paths:
    `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
    classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
+   A 404 on a by-id read is an empty result the SDK reports as a throw — `getDocumentById` reads
+   the status with `readStatus` and answers `null`. Nothing else may swallow a status.
 
 ## Read a global, and share it across the request
 

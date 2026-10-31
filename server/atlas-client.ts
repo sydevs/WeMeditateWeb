@@ -5,10 +5,9 @@
  * already about 950 lines, and holds only collection reads through the
  * Payload SDK. This file has two custom root endpoints,
  * `GET /api/atlas/seo` and `GET /api/atlas/sitemap`, which belong to no
- * collection, so the SDK cannot express them. The seo read goes through
- * `sahajCloudFetch` (`server/sahajcloud-fetch.ts`), the one helper every
- * custom-endpoint read shares. The sitemap read still assembles its own,
- * and is not yet converted.
+ * collection, so the SDK cannot express them. Both go through
+ * `server/sahajcloud-fetch.ts`, the one helper every custom-endpoint read
+ * shares.
  *
  * ## Access
  *
@@ -25,9 +24,8 @@
  * widget and its own `<head>`. It only loses the server-rendered half.
  */
 
-import * as Sentry from '@sentry/react'
-import { getSahajCloudContext } from './sahajcloud-context'
-import { sahajCloudFetchOptional } from './sahajcloud-fetch'
+import * as Sentry from '@sentry/cloudflare'
+import { sahajCloudFetch, sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
 import type { Locale } from './sahajcloud-types'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from './atlas-types'
@@ -153,26 +151,10 @@ const SITEMAP_URL_CAP = 45_000
 export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   try {
     return await withRetry(async () => {
-      const { apiKey, baseURL } = getSahajCloudContext()
-      const url = `${baseURL}/api/atlas/sitemap`
-
-      const response = await fetch(url, {
-        headers: { Authorization: `clients API-Key ${apiKey}` },
-      })
-
-      console.log(`[PayloadCMS] GET ${url} → ${response.status}`)
-
-      if (!response.ok) {
-        // The status rides on the error because `detectErrorType` reads it
-        // structurally and only falls back to matching `50[0-9]` in the
-        // message. A Cloudflare-origin 5xx — 520, 522, 524 — would otherwise
-        // classify as UNKNOWN and lose the retry it most needs.
-        throw Object.assign(new Error(`getAtlasSitemapUrls failed: ${response.status}`), {
-          status: response.status,
-        })
-      }
-
-      const body = (await response.json()) as AtlasSitemapResponse
+      const body = await sahajCloudFetch<AtlasSitemapResponse>(
+        '/api/atlas/sitemap',
+        'getAtlasSitemapUrls',
+      )
 
       // A 200 whose shape drifted reads exactly like a client that owns no
       // subtree, so it would empty the atlas half with nothing logged. These

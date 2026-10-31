@@ -162,6 +162,38 @@ describe('fetchWithErrorDetails', () => {
       }),
     )
   })
+
+  it('bounds a read with a timeout signal, and keeps one the caller passed', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }))
+    const own = new AbortController().signal
+
+    await fetchWithErrorDetails('https://sahajcloud.test/api/pages')
+    await fetchWithErrorDetails('https://sahajcloud.test/api/pages', { signal: own })
+
+    expect(fetchSpy.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal)
+    expect(fetchSpy.mock.calls[1][1]?.signal).toBe(own)
+  })
+
+  it('gives a write a longer bound than a read, so a submission is not cut mid-flight', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 200 }))
+
+    const timeoutSpy = vi
+      .spyOn(AbortSignal, 'timeout')
+      .mockReturnValue(new AbortController().signal)
+
+    await fetchWithErrorDetails('https://sahajcloud.test/api/pages')
+    await fetchWithErrorDetails('https://sahajcloud.test/api/user-submissions', { method: 'POST' })
+    await fetchWithErrorDetails('https://sahajcloud.test/api/user-submissions', { method: 'post' })
+
+    const [read, write, lowercased] = timeoutSpy.mock.calls.map(([ms]) => ms)
+
+    expect(read).toBe(15_000)
+    expect(write).toBe(30_000)
+    // The method is whatever the caller wrote. `post` is the same write.
+    expect(lowercased).toBe(30_000)
+  })
 })
 
 describe('SahajCloudResponseError', () => {

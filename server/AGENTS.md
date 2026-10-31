@@ -57,6 +57,11 @@ Two things about `form` and the visitor's IP that only bite in production:
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
   `server/sahajcloud-client.ts`.
+- ⚠ **Return the shape the `select` asked for, never the generated document.** A read narrowed
+  to four fields that hands back a `Page` lets every consumer typecheck `page.content` and read
+  `undefined` at runtime. Pair the narrow type with a select type derived from it, so neither can
+  drift: `NavPage`/`NavPageSelect` for the config's nav pages, `EmbeddedForm`/`EmbeddedFormSelect`
+  for a form, both in [sahajcloud-types.ts](sahajcloud-types.ts).
 
 ## Treat a bare id as unpublished — degrade, do not break
 
@@ -68,18 +73,39 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
   dropped. This keeps the SahajCloud data gap visible. Do not hide it silently, and do not throw
   a 500.
+- ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render
+  and nothing here caches them, and a gap this warning catches stands until an editor fixes the
+  data — so a bare `captureMessage` bills the Sentry quota per page view. `getWebConfig` sends one
+  event per distinct gap per isolate (`reportedConfigGaps`) and keeps `console.warn` on every
+  request. Lower the volume, never the level: a warning nobody can afford to leave on gets turned
+  off, and then the gap is invisible again.
+- ⚠ **Everything Sentry attaches to an event is scrubbed in `entry.ts`, not where it is
+  captured.** `scrubCredentials` there runs from `beforeSend` **and**
+  `beforeSendTransaction` — a transaction is not an error event, and
+  `SENTRY_TRACES_SAMPLE_RATE` in the Worker env can enable tracing with no code change. It drops
+  the inbound POST body (`httpServerIntegration` buffers one on every non-GET request, gated on
+  nothing) and filters every credential header (`requestDataIntegration` copies the inbound
+  headers verbatim; its own deny-list reaches the URL and query string only). A new inbound
+  credential header is covered by `CREDENTIAL_HEADER_SNIPPETS` matching its name — check that it
+  does.
+- Import Sentry from `@sentry/cloudflare`. `withSentry` in [entry.ts](entry.ts) initialises it
+  per request from the `SENTRY_DSN` secret; `error-utils.ts` says why it alone imports
+  `@sentry/react`.
 
 ## Custom root endpoints are not collection reads
 
 `GET /api/atlas/seo`, `GET /api/atlas/sitemap`, the `related-*` endpoints, and a content-index
 block's computed endpoint belong to no collection, so the Payload SDK cannot express them. Every
-one but the sitemap reads through `sahajCloudFetch`
-([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves the base URL, sends the
-`Authorization: clients API-Key` header, logs the request, dumps the SahajCloud error body on a
-non-OK response, and returns the parsed body. Hand it a path, never a URL — it refuses anything
-that is not site-relative, so a computed endpoint cannot move the request off the SahajCloud
-origin — and type the body yourself. `getAtlasSitemapUrls` still assembles its own `fetch`, and is
-not yet converted. `select` and `populate` do not apply here.
+one reads through `sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves
+the base URL, sends the `Authorization: clients API-Key` header, logs the request, dumps the
+SahajCloud error body on a non-OK response, and returns the parsed body. Hand it a path, never a
+URL — it refuses anything that is not site-relative, so a computed endpoint cannot move the request
+off the SahajCloud origin — and type the body yourself. `select` and `populate` do not apply here.
+
+⚠ **Never call `fetch` for SahajCloud directly.** `fetchWithErrorDetails` under both the SDK and
+`sahajCloudFetch` is what bounds every call; a raw `fetch` has no limit at all. A read gets 15 s,
+because a visitor waits on it. A write — the submission proxy, the live-preview populate call —
+gets 30 s, because an abandoned write may already have landed upstream and the visitor resubmits.
 
 ⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
 URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
@@ -94,16 +120,19 @@ Three rules still apply:
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).
-- **Never branch on a status. Pick the reader that matches the read.** `sahajCloudFetch` throws a
+- **Never branch on a status. Pick the reader that matches the read.** This is the rule for
+  `sahajCloudFetch`'s callers. The SDK has no such pair, so `getDocumentById` reads the status
+  itself — through `readStatus`, the one place a status is read off an error — to answer an
+  unknown id with `null`. `sahajCloudFetch` throws a
   `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
   where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
   `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
-  without a body dump. Four of the five reads take the optional form; `fetchContentIndexDocs`
-  takes `sahajCloudFetch`, because its endpoint is one SahajCloud computed and nothing answering it
-  is a data gap. The status rides on the error because `detectErrorType` reads it structurally and
-  otherwise falls back to matching `50[0-9]` in the message — a plain `Error` classifies a
-  Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one shape a
-  Railway restart behind the edge produces.
+  without a body dump. Four of the six reads take the optional form; `fetchContentIndexDocs` and
+  `getAtlasSitemapUrls` take `sahajCloudFetch`, because a 404 from either endpoint is a data
+  gap, not an answer. The status rides on the error because `detectErrorType` reads it
+  structurally and otherwise falls back to matching `50[0-9]` in the message — a plain `Error`
+  classifies a Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one
+  shape a Railway restart behind the edge produces.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See

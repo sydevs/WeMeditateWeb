@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 
 import {
   resolveContentIndexItems,

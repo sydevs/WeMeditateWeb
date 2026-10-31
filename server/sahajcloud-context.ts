@@ -24,6 +24,7 @@ import { apiKeySchema, baseUrlSchema } from './validation'
 export type SahajCloudEnv = {
   Bindings: {
     SAHAJCLOUD_API_KEY?: string
+    SENTRY_DSN?: string
   }
 }
 
@@ -84,12 +85,4 @@ export function getSahajCloudContext(): SahajCloudContext {
     apiKey: result.data.apiKey,
     baseURL: result.data.baseURL,
   }
-}
-
-/**
- * Checks whether SahajCloud context is available in the current request.
- * Useful for conditional logic in code that may run outside a request.
- */
-export function hasSahajCloudContext(): boolean {
-  return tryGetContext() !== undefined
 }

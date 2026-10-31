@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
+  getDocumentById,
   getMeditationSongs,
   getPageBySlug,
   getPageLocaleStatus,
@@ -9,6 +10,7 @@ import {
   getRelatedLectures,
 } from './sahajcloud-client'
 import { createPayloadClient } from './payload-client'
+import * as Sentry from '@sentry/cloudflare'
 import { detectErrorType, ErrorType } from './error-utils'
 import type { Locale, Page, PageStatus } from './sahajcloud-types'
 
@@ -20,8 +22,9 @@ vi.mock('./payload-client', () => ({
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Silence the Sentry warning emitted on unresolved page references.
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+// Silence the Sentry warning emitted on unresolved page references, and keep
+// its calls countable: the warning is rate-limited per isolate.
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the config visible to the tests that assert one, and
 // `retried.error` the error the ladder was handed, which is what decides
@@ -121,6 +124,108 @@ describe('getWebConfig featuredArticles', () => {
     expect(args.select.featuredArticles).toBe(true)
     // The bare-id (unpublished) ref is dropped. Only linkable articles remain.
     expect(config.featuredArticles.map((p) => p.slug)).toEqual(['history-of-meditation'])
+  })
+
+  it('populates a config page with exactly the fields `NavPage` promises', async () => {
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+
+    await getWebConfig({ locale: 'en' })
+
+    // The config is serialised into every page's HTML, so a key added here is
+    // paid for on every render. `NavPage` is what the consumers may read, and
+    // this is the read that makes it true.
+    const { pages } = findGlobal.mock.calls[0][0].populate
+
+    expect(Object.keys(pages).sort()).toEqual(['meta', 'slug', 'title'])
+    expect(Object.keys(pages.meta).sort()).toEqual(['image', 'title'])
+  })
+})
+
+describe('getWebConfig unresolved-reference reporting', () => {
+  /** A config whose `featuredArticles` holds one unpublished (bare-id) page. */
+  function configWithGap(badId: number) {
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1, featuredArticles: [badId] })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+  }
+
+  it('sends one event per distinct gap, not one per render', async () => {
+    resetReadState()
+    vi.mocked(Sentry.captureMessage).mockClear()
+    configWithGap(9001)
+
+    await getWebConfig({ locale: 'en' })
+    await getWebConfig({ locale: 'en' })
+    await getWebConfig({ locale: 'fr' })
+
+    // The read runs per render, and the gap stands until an editor publishes
+    // the page. Per-render events would spend the Sentry quota on one data gap.
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+  })
+
+  it('still warns on every render, so the request log keeps the full record', async () => {
+    resetReadState()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    configWithGap(9002)
+
+    await getWebConfig({ locale: 'en' })
+    await getWebConfig({ locale: 'en' })
+
+    expect(warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports a gap it has not seen before', async () => {
+    resetReadState()
+    vi.mocked(Sentry.captureMessage).mockClear()
+
+    configWithGap(9003)
+    await getWebConfig({ locale: 'en' })
+
+    configWithGap(9004)
+    await getWebConfig({ locale: 'en' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('getWebConfig homePage', () => {
+  it('is null when the home page is unpublished, so `/` 404s instead of rendering blank', async () => {
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1, homePage: 7 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+
+    expect((await getWebConfig({ locale: 'en' })).homePage).toBeNull()
+  })
+})
+
+describe('getDocumentById', () => {
+  beforeEach(resetReadState)
+
+  it('returns null for an unknown id, so a stale link 404s instead of 500ing', async () => {
+    const notFound = Object.assign(new Error('The requested resource was not found.'), {
+      status: 404,
+    })
+    const findByID = vi.fn().mockRejectedValue(notFound)
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findByID } as never)
+
+    await expect(
+      getDocumentById({ collection: 'meditations', id: '999999', locale: 'en' }),
+    ).resolves.toBeNull()
+  })
+
+  it('still propagates a 500, so a broken backend is not read as a missing document', async () => {
+    const serverError = Object.assign(new Error('Internal Server Error'), { status: 500 })
+    const findByID = vi.fn().mockRejectedValue(serverError)
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findByID } as never)
+
+    await expect(
+      getDocumentById({ collection: 'meditations', id: '12', locale: 'en' }),
+    ).rejects.toBe(serverError)
   })
 })
 

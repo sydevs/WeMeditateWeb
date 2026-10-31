@@ -14,7 +14,7 @@ main = "virtual:photon:cloudflare:server-entry"
 # - SAHAJCLOUD_API_KEY (server-side only)
 # - PUBLIC__MAPBOX_ACCESS_TOKEN (browser-accessible, but still secret)
 # - PUBLIC__SENTRY_DSN (browser-accessible, but still secret)
-# - SENTRY_DSN (server-side only)
+# - SENTRY_DSN (server-side only, read by withSentry in server/entry.ts)
 #
 # Build-time PUBLIC__* variables:
 # - Set in .env.production (tracked in git, no secrets)
