@@ -37,43 +37,30 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     throw render(404, error instanceof Error ? error.message : 'Invalid slug')
   }
 
-  // Homepage (slug "index") uses homePage from WebConfig directly.
-  // The onBeforeRoute hook converts "/" to "/index", so this is the homepage path.
-  if (slug === 'index') {
-    const { settings, t } = await loadSiteContext(pageContext)
+  const preview = await loadLivePreview(pageContext)
+  const site = loadSiteContext(pageContext)
 
-    if (!settings.homePage) {
+  // `/` (routed as "index" by +onBeforeRoute) serves the config's home page,
+  // so its slug is known only once the config is in. It is then read, and
+  // advertises its locales, exactly as the page at its own slug would.
+  let pageSlug = slug
+
+  if (slug === 'index') {
+    const { homePage } = (await site).settings
+
+    if (!homePage) {
       throw render(404, 'Homepage not configured.')
     }
-    // The home page advertises the locales of the document behind it, not
-    // of the `/index` route.
-    const [content, status] = await Promise.all([
-      resolveContentIndexBlocks(settings.homePage.content, {
-        locale,
-        audiences: settings.audiences,
-        pageTagLabels: pageTagLabels(t),
-      }),
-      getPageLocaleStatus({ slug: settings.homePage.slug }),
-    ])
-
-    return {
-      page: { ...settings.homePage, content },
-      locale,
-      slug,
-      settings,
-      alternateLocales: advertisedLocales(status, settings.availableLocales),
-    }
+    pageSlug = homePage.slug
   }
 
   // Fetch the config, the page, and its per-locale publish state together.
   // The status read needs only the slug, so making it wait on the other two
   // would add a round trip to TTFB for a `<head>` annotation.
-  const preview = await loadLivePreview(pageContext)
-
   const [{ settings, t }, page, status] = await Promise.all([
-    loadSiteContext(pageContext),
-    getPageBySlug({ slug, locale, ...previewArgs(preview) }),
-    getPageLocaleStatus({ slug }),
+    site,
+    getPageBySlug({ slug: pageSlug, locale, ...previewArgs(preview) }),
+    getPageLocaleStatus({ slug: pageSlug }),
   ])
 
   // `homePage` is served at `/`, so its own slug is a second URL for one

@@ -228,8 +228,9 @@ const PAGE_POPULATE = {
   forms: EMBEDDED_FORM_SELECT,
 }
 
-/** Global config fields: `pages` relationships the layout + home page need, plus
- * `audiences` (the site's fixed audience set the lectures /for-audience feed uses). */
+/** Global config fields: the `pages` relationships the layout needs, `homePage`
+ * (whose slug `/` reads), and `audiences` (the site's fixed audience set the
+ * lectures /for-audience feed uses). */
 const WEB_CONFIG_SELECT = {
   availableLocales: true,
   homePage: true,
@@ -242,14 +243,18 @@ const WEB_CONFIG_SELECT = {
 } satisfies WmWebConfigSelect<true>
 
 /**
- * Populates the global's page relationships at depth 2, with the fields the
- * layout (title and slug, for nav) and the home page (content and meta)
- * render. Required because the backend rejects a depth > 1 read without
- * `populate`.
+ * Populates the global's page relationships at depth 2, with only what the nav
+ * renders: title and slug for a link, `meta` for a header card's image. The
+ * config is serialised into every page's HTML, so nothing more belongs here.
+ * Required because the backend rejects a depth > 1 read without `populate`.
  */
 const WEB_CONFIG_POPULATE = {
-  ...PAGE_POPULATE,
-  pages: PAGE_SELECT,
+  images: IMAGE_POPULATE.images,
+  pages: {
+    title: true,
+    slug: true,
+    meta: { title: true, image: true },
+  } satisfies PagesSelect<true>,
 }
 
 /** Minimal fields for page list items (getPagesByTags → PageListItem). */

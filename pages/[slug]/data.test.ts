@@ -89,4 +89,15 @@ describe('Pages data', () => {
 
     expect(await redirectOf('about')).toBeNull()
   })
+
+  it('reads `/` through the same page read as any slug, not from the config', async () => {
+    settings.homePage = { slug: '' }
+    getPageBySlug.mockResolvedValue({ id: 1, slug: '', content: [] })
+
+    const result = await data({ locale: 'fr', routeParams: { slug: 'index' } } as never)
+
+    expect(getPageBySlug).toHaveBeenLastCalledWith({ slug: '', locale: 'fr' })
+    expect(getPageLocaleStatus).toHaveBeenLastCalledWith({ slug: '' })
+    expect(result.page).toMatchObject({ id: 1 })
+  })
 })
