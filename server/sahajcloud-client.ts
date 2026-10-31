@@ -704,6 +704,9 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
     return {
       ...config,
       availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
+      // A bare id is an unpublished home page, logged above. Passed through it
+      // would render `/` blank with a 200; `null` lets the route 404.
+      homePage: typeof config.homePage === 'object' ? config.homePage : null,
       featuredPages: featured.published,
       featuredArticles: featuredArticles.published,
       classPages: classPages.published,

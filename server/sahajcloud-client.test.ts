@@ -124,6 +124,16 @@ describe('getWebConfig featuredArticles', () => {
   })
 })
 
+describe('getWebConfig homePage', () => {
+  it('is null when the home page is unpublished, so `/` 404s instead of rendering blank', async () => {
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1, homePage: 7 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findGlobal } as never)
+
+    expect((await getWebConfig({ locale: 'en' })).homePage).toBeNull()
+  })
+})
+
 describe('getPageBySlug query shape', () => {
   it('reads at depth 3 with narrow per-collection populate for embedded relations', async () => {
     const find = vi.fn().mockResolvedValue({

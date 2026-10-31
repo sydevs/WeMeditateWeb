@@ -76,7 +76,8 @@ export interface WebConfig extends Omit<
    * unconfigured SahajCloud row to `['en']`. A locale prefix outside this set 404s.
    */
   availableLocales: Locale[]
-  homePage: Page
+  /** `null` when the configured home page is unpublished (a bare id). */
+  homePage: Page | null
   featuredPages: Page[]
   featuredArticles: Page[]
   classPages: Page[]
