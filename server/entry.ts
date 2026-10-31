@@ -1,5 +1,5 @@
 import { apply, serve } from '@photonjs/hono'
-import { withSentry } from '@sentry/cloudflare'
+import { withSentry, type Event } from '@sentry/cloudflare'
 import { Hono } from 'hono'
 import { contextStorage } from 'hono/context-storage'
 import type { SahajCloudEnv } from './sahajcloud-context'
@@ -10,6 +10,57 @@ import { stripLivePreviewToken } from '../lib/live-preview/token-url'
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 
+/**
+ * Header names whose value is a credential, matched as a lowercase substring so
+ * a header added later is covered by its name rather than by an edit here.
+ *
+ * ⚠ Sentry does not do this for us, and its own deny-list looks like it
+ * would. `requestDataIntegration` copies every inbound header onto
+ * `event.request.headers`, removing only `cookie` and the IP headers; the
+ * deny-list (`PII_HEADER_SNIPPETS`: `forwarded`, `-ip`, `remote-`, `via`,
+ * `-user`) is applied to the URL and the query string and never to the
+ * headers — and would match neither name below. So this Worker's two inbound
+ * credentials, the live-preview token (`x-sahajcloud-preview-secret`) and the
+ * Turnstile token, would otherwise arrive in plaintext and outlive the session
+ * they were minted for (lib/live-preview/token-url.ts says what that costs).
+ */
+const CREDENTIAL_HEADER_SNIPPETS = ['secret', 'token', 'auth', 'key']
+
+/**
+ * Removes every credential this Worker's requests carry from an outgoing event.
+ *
+ * ⚠ Called from `beforeSend` **and** `beforeSendTransaction`. A transaction is
+ * not an error event, so `beforeSend` never sees one, and `tracesSampleRate`
+ * comes from `SENTRY_TRACES_SAMPLE_RATE` in the Worker env — so tracing can be
+ * switched on from the Cloudflare dashboard, the same place `SENTRY_DSN` is
+ * set, with no change here.
+ */
+function scrubCredentials<E extends Event>(event: E): E {
+  const request = event.request
+
+  if (!request) return event
+
+  // A live-preview request carries its token in the query string, which Sentry
+  // records twice: in `url` and in `query_string`. The browser keeps the token
+  // out of Sentry too (lib/live-preview/token-url.ts).
+  request.url &&= stripLivePreviewToken(request.url)
+  delete request.query_string
+
+  const { headers } = request
+
+  if (headers) {
+    for (const name of Object.keys(headers)) {
+      const lower = name.toLowerCase()
+
+      if (CREDENTIAL_HEADER_SNIPPETS.some((snippet) => lower.includes(snippet))) {
+        headers[name] = '[Filtered]'
+      }
+    }
+  }
+
+  return event
+}
+
 // `serve()` returns `{ fetch, server }` and photon's Cloudflare entry spreads it
 // into the Worker export, so wrapping it here initialises Sentry for every
 // request. Every server-side `Sentry.capture*` depends on it.
@@ -17,17 +68,8 @@ export default withSentry(
   (env: SahajCloudEnv['Bindings']) => ({
     dsn: env.SENTRY_DSN,
     environment: 'production-backend',
-    // ⚠ A live-preview request carries its token in the query string, which
-    // Sentry records twice: in `url` and in `query_string`. The browser keeps
-    // the token out of Sentry too (lib/live-preview/token-url.ts).
-    beforeSend(event) {
-      if (event.request) {
-        event.request.url &&= stripLivePreviewToken(event.request.url)
-        delete event.request.query_string
-      }
-
-      return event
-    },
+    beforeSend: scrubCredentials,
+    beforeSendTransaction: scrubCredentials,
   }),
   startServer(),
 )
