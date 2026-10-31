@@ -83,7 +83,9 @@ URL — it refuses anything that is not site-relative, so a computed endpoint ca
 off the SahajCloud origin — and type the body yourself. `select` and `populate` do not apply here.
 
 ⚠ **Never call `fetch` for SahajCloud directly.** `fetchWithErrorDetails` under both the SDK and
-`sahajCloudFetch` is what bounds every read at 15 s; a raw `fetch` has no limit at all.
+`sahajCloudFetch` is what bounds every call; a raw `fetch` has no limit at all. A read gets 15 s,
+because a visitor waits on it. A write — the submission proxy, the live-preview populate call —
+gets 30 s, because an abandoned write may already have landed upstream and the visitor resubmits.
 
 ⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
 URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so

@@ -43,6 +43,23 @@ export function sahajCloudAuthHeaders(apiKey: string): Record<string, string> {
 }
 
 /**
+ * A read is bounded tight: a visitor is waiting on the render it feeds.
+ * Unbounded, a hung read waited out Cloudflare's ~100 s 524 — three times
+ * over, since `withRetry` retries a 5xx.
+ */
+const READ_TIMEOUT_MS = 15_000
+
+/**
+ * A write gets longer, because cutting one is not a safe failure. The only
+ * writes here are `POST /api/submissions` and the live-preview populate proxy,
+ * and an abandoned submission answers 502 while the upstream row may already
+ * be written — so the visitor resubmits, and the duplicate is ours. Bounded
+ * all the same, since an unbounded call is what this exists to stop, but far
+ * enough out that only a genuinely stuck origin reaches it.
+ */
+const WRITE_TIMEOUT_MS = 30_000
+
+/**
  * A custom fetch wrapper that logs every SahajCloud request and error body.
  *
  * The SDK throws a `PayloadSDKError` on a non-OK response, carrying the
@@ -51,9 +68,8 @@ export function sahajCloudAuthHeaders(apiKey: string): Record<string, string> {
  * to. It also emits the `[PayloadCMS] <method> <url> → <status>` line the
  * debugging workflow in AGENTS.md reads.
  *
- * ⚠ Every call is bounded at 15 s. Unbounded, a hung read waited out
- * Cloudflare's ~100 s 524 — three times over, since `withRetry` retries a 5xx.
- * The timeout itself classifies as UNKNOWN, so it is never retried.
+ * ⚠ Every call is bounded, a read tighter than a write. The timeout itself
+ * classifies as UNKNOWN, so it is never retried.
  *
  * @param quietStatuses - Statuses to log without their body. Only a caller
  *   that answers a status itself can say it carries nothing worth dumping.
@@ -63,9 +79,11 @@ export async function fetchWithErrorDetails(
   init?: RequestInit,
   quietStatuses: readonly number[] = [],
 ): Promise<Response> {
+  const method = init?.method?.toUpperCase() ?? 'GET'
+  const isRead = method === 'GET' || method === 'HEAD'
   const response = await fetch(input, {
     ...init,
-    signal: init?.signal ?? AbortSignal.timeout(15_000),
+    signal: init?.signal ?? AbortSignal.timeout(isRead ? READ_TIMEOUT_MS : WRITE_TIMEOUT_MS),
   })
 
   // Log every API request, for debugging.
