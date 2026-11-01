@@ -169,6 +169,16 @@ describe('withRetry', () => {
     expect(mockFn).toHaveBeenCalledTimes(3)
   })
 
+  it('should NOT retry a read that hit its timeout signal', async () => {
+    // What `fetch` rejects with when `AbortSignal.timeout` fires. Retrying it
+    // would triple the time a hung SahajCloud read holds a render.
+    const timeout = new DOMException('The operation was aborted due to timeout', 'TimeoutError')
+    const mockFn = vi.fn().mockRejectedValue(timeout)
+
+    await expect(withRetry(mockFn, { maxAttempts: 3 })).rejects.toBe(timeout)
+    expect(mockFn).toHaveBeenCalledTimes(1)
+  })
+
   it('should NOT retry on client errors', async () => {
     const mockFn = vi.fn().mockRejectedValue({ response: { status: 404 } })
 

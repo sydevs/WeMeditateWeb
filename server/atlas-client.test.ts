@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import { detectErrorType, ErrorType } from './error-utils'
 
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one, and

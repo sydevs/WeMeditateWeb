@@ -15,7 +15,7 @@
  * instead of breaking the page.
  */
 
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './sahajcloud-types'

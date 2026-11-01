@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { PayloadSDKError } from '@payloadcms/sdk'
-import { createPayloadClient, validatePayloadConfig, PayloadConfigError } from './payload-client'
+import { createPayloadClient } from './payload-client'
 import { detectErrorType, ErrorType } from './error-utils'
 
 // createPayloadClient reads its defaults from the request context, which does
@@ -60,58 +60,5 @@ describe('a non-OK SahajCloud response', () => {
 
     expect((error as PayloadSDKError).status).toBe(503)
     expect(detectErrorType(error)).toBe(ErrorType.SERVER)
-  })
-})
-
-describe('validatePayloadConfig', () => {
-  it('should throw with 401 status when API key is missing', () => {
-    try {
-      validatePayloadConfig({ apiKey: undefined })
-      expect.fail('Should have thrown')
-    } catch (error) {
-      expect(error).toBeInstanceOf(PayloadConfigError)
-      expect((error as PayloadConfigError).response.status).toBe(401)
-      expect((error as Error).message).toContain('apiKey')
-    }
-  })
-
-  it('should throw with 401 status when API key is empty string', () => {
-    try {
-      validatePayloadConfig({ apiKey: '' })
-      expect.fail('Should have thrown')
-    } catch (error) {
-      expect(error).toBeInstanceOf(PayloadConfigError)
-      expect((error as PayloadConfigError).response.status).toBe(401)
-      expect((error as Error).message).toContain('apiKey')
-    }
-  })
-
-  it('should throw with 401 status when API key is whitespace only', () => {
-    try {
-      validatePayloadConfig({ apiKey: '   ' })
-      expect.fail('Should have thrown')
-    } catch (error) {
-      expect(error).toBeInstanceOf(PayloadConfigError)
-      expect((error as PayloadConfigError).response.status).toBe(401)
-      expect((error as Error).message).toContain('apiKey')
-    }
-  })
-
-  it('should throw with 400 status for invalid URL format', () => {
-    try {
-      validatePayloadConfig({ apiKey: 'valid-key', baseURL: 'sahajcloud.example.com' })
-      expect.fail('Should have thrown')
-    } catch (error) {
-      expect(error).toBeInstanceOf(PayloadConfigError)
-      expect((error as PayloadConfigError).response.status).toBe(400)
-      expect((error as Error).message).toContain('Base URL must be a valid URL')
-    }
-  })
-
-  it('should accept valid configuration', () => {
-    expect(() => validatePayloadConfig({
-      apiKey: 'valid-key',
-      baseURL: 'https://sahajcloud.example.com'
-    })).not.toThrow()
   })
 })

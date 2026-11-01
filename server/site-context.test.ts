@@ -7,7 +7,7 @@ import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import type { WebConfig, WebTranslations } from './sahajcloud-types'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('./sahajcloud-client', () => ({
   getWebTranslations: vi.fn(),
   getWebConfig: vi.fn(),

@@ -56,10 +56,36 @@ export type EmbeddedFormSelect = { [K in Exclude<keyof EmbeddedForm, 'id'>]: tru
 export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../lib/lecture-shape'
 
 /**
+ * A page as the site config populates it: a nav link's label and target, plus
+ * the `meta` an article card draws from.
+ *
+ * Not `Page`. `WEB_CONFIG_POPULATE` gives these relationships four fields, so
+ * asserting the full document would let `page.content` or `meta.description`
+ * typecheck here and arrive `undefined` at runtime — the same bug the
+ * `homePage` narrowing closed, open five fields over. `NAV_PAGE_SELECT` in
+ * [sahajcloud-client.ts](sahajcloud-client.ts) is checked against
+ * `NavPageSelect` below, so dropping a key from either one is a compile error
+ * in the other.
+ */
+export type NavPage = Pick<Page, 'id' | 'title' | 'slug'> & {
+  meta?: Pick<NonNullable<Page['meta']>, 'title' | 'image'>
+}
+
+/**
+ * The `select` shape that returns exactly a {@link NavPage}. Derived from it,
+ * so the two cannot drift. `id` always comes back.
+ */
+export type NavPageSelect = Record<Exclude<keyof NavPage, 'id' | 'meta'>, true> & {
+  meta: Record<keyof NonNullable<NavPage['meta']>, true>
+}
+
+/**
  * WebConfig with populated relationships.
  *
  * These queries always use depth: 2, so every relationship field is a
- * fully populated object, not just an ID.
+ * populated object rather than a bare id — populated to the fields
+ * `WEB_CONFIG_POPULATE` names, which is what makes these {@link NavPage} and
+ * not `Page`.
  */
 export interface WebConfig extends Omit<
   WmWebConfig,
@@ -76,12 +102,16 @@ export interface WebConfig extends Omit<
    * unconfigured SahajCloud row to `['en']`. A locale prefix outside this set 404s.
    */
   availableLocales: Locale[]
-  homePage: Page
-  featuredPages: Page[]
-  featuredArticles: Page[]
-  classPages: Page[]
-  knowledgePages: Page[]
-  infoPages: Page[]
+  /**
+   * Only the slug: `/` reads the page itself, as any slug does. `null` when the
+   * configured home page is unpublished (a bare id).
+   */
+  homePage: Pick<Page, 'slug'> | null
+  featuredPages: NavPage[]
+  featuredArticles: NavPage[]
+  classPages: NavPage[]
+  knowledgePages: NavPage[]
+  infoPages: NavPage[]
 }
 
 /**
@@ -187,41 +217,8 @@ export type WebTranslations = RequiredGroups<
   Pick<WmWebTranslation, keyof typeof WEB_TRANSLATIONS_SELECT>
 >
 
-/** One translations tab — `common`, `navigation`, … */
-export type TranslationsTab = keyof WebTranslations
-
 /** Page status enum */
 export type PageStatus = 'draft' | 'published'
-
-/** Simplified page reference, used in WebConfig navigation. */
-export interface PageReference {
-  id: string | number
-  title: string
-  slug: string
-}
-
-/** Page meta information */
-export interface PageMeta {
-  title: string | null
-  description: string | null
-  image: import('./payload-types').Image | null
-}
-
-/** Minimal page data for lists (id, title, and meta image). */
-export interface PageListItem {
-  id: string | number
-  title: string | null
-  meta: {
-    image: import('./payload-types').Image | null
-  } | null
-}
-
-/** Minimal meditation data for lists (id, title, thumbnail) */
-export interface MeditationListItem {
-  id: string | number
-  title: string | null
-  thumbnail: import('./payload-types').Image | null
-}
 
 /**
  * Background-music track for a meditation, as returned by the

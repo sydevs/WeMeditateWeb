@@ -28,7 +28,7 @@ vi.mock('./sahajcloud-context', () => ({
     kv: undefined,
   }),
 }))
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
 vi.mock('./payload-client', () => ({
   createPayloadClient: (config: unknown) => {
     createdWith.push(config)

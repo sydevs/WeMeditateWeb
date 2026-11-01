@@ -1,7 +1,7 @@
 ---
 paths:
   - "server/validation.ts"
-  - "server/payload-client.ts"
+  - "server/sahajcloud-context.ts"
   - "pages/**/+data.ts"
   - "components/organisms/FormBuilder/**"
 ---
@@ -22,9 +22,8 @@ The project uses Zod 4 for runtime schema validation at critical data boundaries
   SahajCloud's own, and are a cheap refusal at the edge rather than the enforcement: the
   collection re-checks every one per type, against the keys the form's author declared.
 
-**API configuration** ([server/payload-client.ts](../../server/payload-client.ts)):
-- `payloadConfigSchema` — validates the API key and base URL
-- `PayloadConfigError` — an error class that carries the Zod issues
+**API configuration** ([server/sahajcloud-context.ts](../../server/sahajcloud-context.ts)):
+- `sahajCloudContextSchema` — validates the API key and base URL before any SahajCloud read
 
 ## Use a validation schema
 
