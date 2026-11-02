@@ -25,7 +25,6 @@ vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({
     apiKey: 'test-key',
     baseURL: 'https://sahajcloud.test',
-    kv: undefined,
   }),
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))

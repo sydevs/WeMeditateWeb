@@ -103,7 +103,7 @@ describe('getAtlasSeo', () => {
   })
 
   describe('retry policy', () => {
-    it('retries a failing read, since the KV layer used to supply that', async () => {
+    it('retries a failing read', async () => {
       // `withCache` ran `withRetry` on every miss (#98). Dropping the cache
       // must not drop the resilience with it: this read degrades to `null`,
       // so an unretried blip silently costs the page its server-rendered half.
@@ -346,7 +346,7 @@ describe('getAtlasSitemapUrls', () => {
     expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })
 
-  it('wraps the read in withRetry, since the KV layer used to supply that', async () => {
+  it('wraps the read in withRetry', async () => {
     // This read degrades to `[]`, so an unretried blip costs the sitemap
     // its atlas half with nothing visible in the response (#98).
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(sitemapResponse([]))
