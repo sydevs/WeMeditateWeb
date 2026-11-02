@@ -73,7 +73,7 @@ export function Placeholder({
   const textColorStyles = {
     primary: 'text-teal-600',
     secondary: 'text-coral-600',
-    neutral: 'text-gray-600',
+    neutral: 'text-gray-700',
   }
 
   // Build inline styles for dimensions

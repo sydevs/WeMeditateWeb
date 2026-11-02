@@ -51,9 +51,9 @@ export const Default: Story = () => (
           <p className="text-teal-700">Primary color - text-teal-700</p>
           <p className="text-coral-700">Secondary color - text-coral-700</p>
           <p className="text-gray-700">Faded color - text-gray-700</p>
-          <div className="bg-teal-500 p-3 rounded text-white">
+          <div className="bg-teal-600 p-3 rounded text-white">
             <p>
-              Inherit color from parent (text-white on bg-teal-500)
+              Inherit color from parent (text-white on bg-teal-600)
             </p>
           </div>
         </div>
@@ -63,7 +63,7 @@ export const Default: Story = () => (
           <p className="text-teal-700 font-semibold">Primary color - text-teal-700 font-semibold</p>
           <p className="text-coral-700 font-semibold">Secondary color - text-coral-700 font-semibold</p>
           <p className="text-gray-700 font-semibold">Faded color - text-gray-700 font-semibold</p>
-          <div className="bg-teal-500 p-3 rounded text-white">
+          <div className="bg-teal-600 p-3 rounded text-white">
             <p className="font-semibold">
               Inherit color from parent (text-white font-semibold)
             </p>
@@ -102,8 +102,8 @@ export const Default: Story = () => (
           <h3 className="text-lg font-medium text-gray-900 mb-2">Emphasis and Links</h3>
           <p className="text-sm sm:text-base font-light text-gray-700 leading-relaxed">
             You can emphasize text with <strong className="font-semibold">font-semibold</strong> or
-            create <a href="#" className="text-teal-600 hover:text-teal-700 underline">interactive links</a> using
-            color utilities. For subtle text, use <span className="text-gray-600">text-gray-600</span>.
+            create <a href="#" className="text-teal-700 hover:text-teal-800 underline">interactive links</a> using
+            color utilities. For subtle text, use <span className="text-gray-700">text-gray-700</span>.
           </p>
         </div>
 
@@ -113,7 +113,7 @@ export const Default: Story = () => (
             <span className="text-base sm:text-lg font-normal text-gray-700">
               Share:
             </span>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-700">
               (Social icons would appear here)
             </div>
           </div>

@@ -137,7 +137,7 @@ export const Default: Story = () => (
     <StorySection title="Widths">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="text-sm text-gray-600 mb-1">Default (256px / w-64)</p>
+          <p className="text-sm text-gray-700 mb-1">Default (256px / w-64)</p>
           <Select>
             <option value="">Choose...</option>
             <option value="1">Option 1</option>
@@ -145,7 +145,7 @@ export const Default: Story = () => (
           </Select>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-1">Full Width</p>
+          <p className="text-sm text-gray-700 mb-1">Full Width</p>
           <Select fullWidth>
             <option value="">Choose...</option>
             <option value="1">Option 1</option>

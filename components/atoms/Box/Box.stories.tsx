@@ -135,19 +135,19 @@ export const Default: Story = () => (
     <StorySection title="Padding">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <p className="text-sm text-gray-600 mb-2">Small</p>
+          <p className="text-sm text-gray-700 mb-2">Small</p>
           <Box padding="sm" color="gray">
             <p>Small padding</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Medium</p>
+          <p className="text-sm text-gray-700 mb-2">Medium</p>
           <Box padding="md" color="gray">
             <p>Medium padding</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Large</p>
+          <p className="text-sm text-gray-700 mb-2">Large</p>
           <Box padding="lg" color="gray">
             <p>Large padding</p>
           </Box>
@@ -158,19 +158,19 @@ export const Default: Story = () => (
     <StorySection title="Shadows">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div>
-          <p className="text-sm text-gray-600 mb-2">Small</p>
+          <p className="text-sm text-gray-700 mb-2">Small</p>
           <Box padding="md" shadow="sm" color="white" border>
             <p>Small shadow</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Medium</p>
+          <p className="text-sm text-gray-700 mb-2">Medium</p>
           <Box padding="md" shadow="md" color="white" border>
             <p>Medium shadow</p>
           </Box>
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-2">Large</p>
+          <p className="text-sm text-gray-700 mb-2">Large</p>
           <Box padding="md" shadow="lg" color="white" border>
             <p>Large shadow</p>
           </Box>
@@ -210,17 +210,17 @@ export const Default: Story = () => (
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">🧘</div>
             <h5 className="font-medium text-gray-900 mb-1">Guided</h5>
-            <p className="text-sm text-gray-600">Step-by-step guidance</p>
+            <p className="text-sm text-gray-700">Step-by-step guidance</p>
           </Box>
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">⏱️</div>
             <h5 className="font-medium text-gray-900 mb-1">Flexible</h5>
-            <p className="text-sm text-gray-600">5-60 minute sessions</p>
+            <p className="text-sm text-gray-700">5-60 minute sessions</p>
           </Box>
           <Box padding="md" color="white" border rounded className="text-center">
             <div className="text-3xl mb-2">🌟</div>
             <h5 className="font-medium text-gray-900 mb-1">Free</h5>
-            <p className="text-sm text-gray-600">Always 100% free</p>
+            <p className="text-sm text-gray-700">Always 100% free</p>
           </Box>
         </div>
       </div>

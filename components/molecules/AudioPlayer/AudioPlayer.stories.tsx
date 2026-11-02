@@ -108,7 +108,7 @@ export const Default: Story = () => {
                 <h3 className="text-lg font-semibold text-gray-900">
                   Peaceful Moments
                 </h3>
-                <p className="text-sm text-gray-600">Daily Meditation Podcast</p>
+                <p className="text-sm text-gray-700">Daily Meditation Podcast</p>
               </div>
             </div>
             <AudioPlayer tracks={sampleTracks} />

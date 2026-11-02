@@ -74,7 +74,7 @@ export const Default: Story = () => {
 
       <StorySection title="With Proximity Bias">
         <div className="max-w-md">
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-700 mb-3">
             Search results biased toward San Francisco (lng: -122.4194, lat: 37.7749)
           </p>
           <LocationSearch
@@ -145,7 +145,7 @@ export const Default: Story = () => {
 
           <StorySection title="With Custom Width" variant="subsection">
             <div className="max-w-sm">
-              <p className="text-sm text-gray-600 mb-2">Using max-w-sm container</p>
+              <p className="text-sm text-gray-700 mb-2">Using max-w-sm container</p>
               <LocationSearch
                 onLocationSelect={handleLocationSelect}
                 placeholder="Constrained width..."
@@ -155,7 +155,7 @@ export const Default: Story = () => {
 
           <StorySection title="Full Width" variant="subsection">
             <div>
-              <p className="text-sm text-gray-600 mb-2">Using full width of container</p>
+              <p className="text-sm text-gray-700 mb-2">Using full width of container</p>
               <LocationSearch
                 onLocationSelect={handleLocationSelect}
                 placeholder="Full width search..."

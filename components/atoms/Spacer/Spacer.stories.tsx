@@ -87,7 +87,7 @@ export const Default: Story = () => (
           <article className="border border-gray-200 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900">Guide to Meditation</h2>
             <Spacer size="md" />
-            <p className="text-sm text-gray-600">Published on January 15, 2025</p>
+            <p className="text-sm text-gray-700">Published on January 15, 2025</p>
             <Spacer size="lg" />
             <p className="text-gray-700">
               Meditation is a practice of focused attention and awareness that has been
@@ -121,7 +121,7 @@ export const Default: Story = () => (
             </p>
             <Spacer size="lg" />
             <div className="flex gap-2">
-              <button className="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
+              <button className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700">
                 Start
               </button>
               <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
@@ -163,7 +163,7 @@ export const Default: Story = () => (
             />
             <Spacer size="lg" />
 
-            <button className="w-full bg-teal-500 text-white py-2 px-4 rounded hover:bg-teal-600">
+            <button className="w-full bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700">
               Sign Up
             </button>
           </form>

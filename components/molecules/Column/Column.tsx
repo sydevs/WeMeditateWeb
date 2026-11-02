@@ -38,12 +38,12 @@ export function Column({
       href={href}
       variant="unstyled"
       size="inherit"
-      className="text-xl font-medium text-gray-600 hover:text-teal-600 transition-colors"
+      className="text-xl font-medium text-gray-700 hover:text-teal-600 transition-colors"
     >
       {title}
     </Link>
   ) : (
-    <h3 className="text-xl font-medium text-gray-600">{title}</h3>
+    <h3 className="text-xl font-medium text-gray-700">{title}</h3>
   )
 
   return (
