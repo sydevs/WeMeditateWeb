@@ -172,22 +172,6 @@ export function internalLinks(html: string): string[] {
   return [...found]
 }
 
-/** Parse the document <head> for SEO assertions (used by the #24 page renderer). */
-export function headTags(html: string): {
-  title: string | null
-  description: string | null
-  ogImage: string | null
-} {
-  const head = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? html
-  const meta = (re: RegExp) => head.match(re)?.[1]?.trim() ?? null
-
-  return {
-    title: meta(/<title[^>]*>([^<]*)<\/title>/i),
-    description: meta(/<meta[^>]*name="description"[^>]*content="([^"]*)"/i),
-    ogImage: meta(/<meta[^>]*property="og:image"[^>]*content="([^"]*)"/i),
-  }
-}
-
 export interface SahajCloudSamples {
   pageSlug: string | null
   meditationId: string | null

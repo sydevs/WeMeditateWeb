@@ -20,7 +20,7 @@ export interface RelatedContentProps {
  * a degraded or empty fetch, or a non-English locale where meditation
  * titles do not resolve, omits the whole section instead of showing a bare
  * heading. RelatedContentLoader loads it client-side, so `items` stays
- * empty until the slow, KV-cached related-content fetch resolves. Nothing
+ * empty until the slow, edge-cached related-content fetch resolves. Nothing
  * renders meanwhile.
  */
 export function RelatedContent({ title, items, className = '' }: RelatedContentProps) {
