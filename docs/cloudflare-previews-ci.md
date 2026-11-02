@@ -30,11 +30,10 @@ Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.clo
 build page and carries no preview address. Check-run output, deployments and commit statuses
 stay wired as fallbacks that have never yet yielded a URL here.
 
-⚠ The ladle preview is the `wemeditate-design` Worker. A Pages project of the same name served
-the playground until sydevs/SahajAtlasWeb#266 deleted it on 2026-11-02, and while it stood its
-PR comments matched `CF_PROJECT_MATCH` by project name and came first, so `Smoke (ladle)` could
-read the old site. A PR opened before that date may still carry such a comment, and its
-`wm-design.pages.dev` host no longer answers: read the `selected …` line the step prints (#184).
+⚠ The ladle preview is the `wemeditate-design` Worker. A PR opened before 2026-11-02 may still
+carry a `wemeditate-design` Pages comment: it matches `CF_PROJECT_MATCH` by project name and comes
+first, and its `wm-design.pages.dev` host no longer answers. Read the `selected …` line the step
+prints (#184).
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
