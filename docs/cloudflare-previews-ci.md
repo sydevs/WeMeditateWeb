@@ -49,9 +49,6 @@ over it. So renaming the `wemeditate-design` Worker means editing `CF_PROJECT_MA
 
 Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and every other branch —
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
-Before then they carried none, and #216's own push showed the cost: it touched no path below, so
-`Smoke (ladle)` skipped discovery in 4s, yet `Workers Builds: wemeditate-design` built and
-commented — green, nothing smoked, which is the silent green #184 closed.
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
   `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
