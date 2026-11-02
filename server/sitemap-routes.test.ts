@@ -158,7 +158,7 @@ describe('/sitemap.xml', () => {
     expect(xml).not.toContain('<loc>https://wemeditate.com/null</loc>')
   })
 
-  it('retries every read behind it, since the KV layer used to supply that', async () => {
+  it('retries every read behind it', async () => {
     await get('/sitemap.xml')
 
     // The config read, the content documents, and the atlas half. Each

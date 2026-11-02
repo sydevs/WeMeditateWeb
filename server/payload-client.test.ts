@@ -11,7 +11,6 @@ vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({
     apiKey: 'test-key',
     baseURL: 'https://sahajcloud.test',
-    kv: undefined,
   }),
 }))
 
