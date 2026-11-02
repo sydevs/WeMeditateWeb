@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Avatar } from './Avatar'
+import {
+  CF_BASE,
+  CF_PUBLIC_URL,
+  PASSTHROUGH_SOURCES,
+} from '../../../tests/_helpers/cloudflare-images'
 
 describe('<Avatar> server render', () => {
   // The same zero-opacity gate that hid every <Image> hid every avatar too
@@ -22,5 +27,18 @@ describe('<Avatar> server render', () => {
 
     expect(html).not.toContain('<img')
     expect(html).toContain('JS')
+  })
+})
+
+describe('<Avatar> image variant', () => {
+  it('requests the 200px square width for a SahajCloud photo', () => {
+    const html = renderToStaticMarkup(<Avatar alt="Jane Smith" src={CF_PUBLIC_URL} />)
+
+    expect(html).toContain(`src="${CF_BASE}/width=200"`)
+    expect(html).not.toContain('/public')
+  })
+
+  it.each(PASSTHROUGH_SOURCES)('leaves %s unchanged', (_label, src) => {
+    expect(renderToStaticMarkup(<Avatar alt="Jane Smith" src={src} />)).toContain(`src="${src}"`)
   })
 })

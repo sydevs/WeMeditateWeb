@@ -7,6 +7,7 @@ import '@vidstack/react/player/styles/default/theme.css'
 import '@vidstack/react/player/styles/default/poster.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
+import { posterURL } from './poster'
 
 /**
  * Player accent, scoped to this instance, with no global CSS. Vidstack
@@ -172,7 +173,7 @@ export function VideoPlayer({
         // initial load light, and it stops every instance on a page from
         // spinning up hls.js at once.
         load={autoLoad ? 'visible' : 'play'}
-        poster={poster}
+        poster={posterURL(poster)}
         src={{ src: hlsUrl, type: 'application/x-mpegurl' }}
         style={PLAYER_STYLE}
         title={title}

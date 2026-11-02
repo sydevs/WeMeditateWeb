@@ -88,6 +88,9 @@ export function TechniqueCard({
           alt={imageAlt}
           aspectRatio="square"
           className="h-full w-full object-cover"
+          // One length per step of the wrapper above: `w-full max-w-md`,
+          // then `md:w-84`, then `lg:w-96`.
+          sizes="(min-width: 1024px) 384px, (min-width: 768px) 336px, (min-width: 448px) 448px, 100vw"
         />
       </div>
 
