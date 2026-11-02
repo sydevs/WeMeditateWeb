@@ -80,7 +80,7 @@ jobs:
             script: test:smoke
             require_preview: 'false'
           - target: ladle
-            project: no-such-worker-266
+            project: wemeditate-design
             script: test:smoke:ladle
             # Quoted on purpose. A bare YAML boolean reaches the `if:` below as a value whose
             # type GitHub does not promise, and the string "false" is truthy there — which
@@ -143,7 +143,6 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           CF_PROJECT_MATCH: ${{ matrix.project }}
-          DISCOVER_TIMEOUT_MS: '60000'
         run: node scripts/get-cloudflare-preview-url.mjs
 
       - name: Smoke ${{ matrix.target }}

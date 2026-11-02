@@ -39,4 +39,3 @@ export function crawlerRefusal(): Plugin {
     },
   }
 }
-// sydevs/SahajAtlasWeb#266 red-proof push: touches a watched path. Reverted in the next commit.
