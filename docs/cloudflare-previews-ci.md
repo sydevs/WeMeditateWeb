@@ -30,14 +30,11 @@ Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.clo
 build page and carries no preview address. Check-run output, deployments and commit statuses
 stay wired as fallbacks that have never yet yielded a URL here.
 
-⚠ The ladle preview is the `wemeditate-design` Worker, and the Pages project of the same name
-is still connected. `matchesTarget` tests `CF_PROJECT_MATCH` against `` `${project} ${url}` ``,
-and `fromPrComments` reads the project out of the Pages comment's `Deploying wemeditate-design
-with …`. So a Pages comment matches by project name, though its host is
-`<hash>.wm-design.pages.dev`. `discoverUrl` takes the first match and PR comments arrive
-oldest-first, so a PR that already carries a Pages comment smokes the old site — pushing again
-does not reorder the comments. Turn the Pages project's preview builds off before reading a green
-`Smoke (ladle)` as evidence, and read the `selected …` line the step prints (#184).
+⚠ The ladle preview is the `wemeditate-design` Worker. A Pages project of the same name served
+the playground until sydevs/SahajAtlasWeb#266 deleted it on 2026-11-02, and while it stood its
+PR comments matched `CF_PROJECT_MATCH` by project name and came first, so `Smoke (ladle)` could
+read the old site. A PR opened before that date may still carry such a comment, and its
+`wm-design.pages.dev` host no longer answers: read the `selected …` line the step prints (#184).
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
@@ -49,23 +46,24 @@ over it. So renaming the `wemeditate-design` Worker means editing `CF_PROJECT_MA
 [ci.yml](../.github/workflows/ci.yml) and `EXCLUDE` in
 [the discovery script](../scripts/get-cloudflare-preview-url.mjs) in the same commit.
 
-## The Ladle preview is meant to build only when the library changes
+## The Ladle preview builds only when the library changes
 
-The `wemeditate-design` Worker's **Builds trigger** does not carry `path_includes` /
-`path_excludes` yet. They are set through the Cloudflare API, which the dashboard cannot express,
-and #216's own push proves them unset: it touched no path below, so `Smoke (ladle)` skipped
-discovery in 4s, yet `Workers Builds: wemeditate-design` built and commented. Until the trigger
-carries them, a push outside this list gets a preview the check never reads — green, nothing
-smoked, which is the silent green #184 closed. The lists to set:
+Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and every other branch —
+carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
+Before then they carried none, and #216's own push showed the cost: it touched no path below, so
+`Smoke (ladle)` skipped discovery in 4s, yet `Workers Builds: wemeditate-design` built and
+commented — green, nothing smoked, which is the silent green #184 closed.
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
   `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
   `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
-- **Preview branches:** every branch except `gh-readonly-queue/*`, the merge queue
+- **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
+  `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so
+  merge-queue branches build a preview nothing reads, accepted in sydevs/SahajAtlasWeb#266.
 
-Cloudflare evaluates them per push, and `*` crosses `/`, so once they are set a push touching none
-of them gets no Ladle preview. `Smoke (ladle)` already checks the same paths first: the files
+Cloudflare evaluates them per push, and `*` crosses `/`, so a push touching none of them gets no
+Ladle preview. `Smoke (ladle)` already checks the same paths first: the files
 changed since the push's `before` SHA (or since the PR base, on open). It skips discovery when
 none match, instead of waiting out the 12-minute discovery timeout.
 
@@ -117,8 +115,8 @@ the playground silently becomes indexable again.
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
   preview URL through the GitHub API (PR comment, then commit statuses, then check-runs, then
   deployments). `CF_PROJECT_MATCH` selects the target, and both CI legs set one. Without it — a
-  local or ad-hoc run — the script instead excludes the Ladle playground (`wemeditate-design`,
-  plus `wm-design`, the host of the Pages project it replaces), so that `EXCLUDE` list never
+  local or ad-hoc run — the script instead excludes the Ladle playground (`wemeditate-design`),
+  so that `EXCLUDE` list never
   applies in CI. It reports what it found and never judges it — the caller decides whether an
   empty URL is a failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
   not by discovery.
