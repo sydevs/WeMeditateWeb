@@ -139,7 +139,8 @@ Apply this to every molecule and organism. Apply it to an atom whenever it has l
 implications (a container, a spacer, a complex button). Use judgment for a simple atom (plain
 text, an icon). Never skip it for a template or a page-level organism.
 
-Every interactive element needs a touch target of at least 44×44px on mobile.
+Every interactive element needs a touch target of at least 44×44px on mobile, with one documented
+exception — see [docs/rules/design-system.md](docs/rules/design-system.md).
 
 See [docs/rules/design-system.md](docs/rules/design-system.md) for the Icon, Button, Link, and
 Divider component conventions, and the route-announcer rule for client-side navigation.
