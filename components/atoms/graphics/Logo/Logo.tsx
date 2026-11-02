@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
 import { Link } from '../../Link'
 import { LogoSvg } from '../svgs'
+import { useT } from '../../../../hooks/useT'
 
 export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'> {
   /** Logo variant */
@@ -16,7 +17,7 @@ export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'
 /**
  * Logo component with multiple variants for different contexts.
  * - icon: Just the lotus icon
- * - text: Icon above text "We meditate" (stacked vertically)
+ * - text: Icon above the site-title wordmark (stacked vertically)
  * - square: Icon in a colored square container
  * - circle: Icon in a colored circular container
  */
@@ -28,6 +29,8 @@ export function Logo({
   className = '',
   ...props
 }: LogoProps) {
+  const t = useT()
+
   // Size configurations for different elements
   const iconSizes = {
     sm: 'w-4 h-4',
@@ -61,15 +64,20 @@ export function Logo({
     variantStyles = href ? 'hover:opacity-80 transition-opacity' : ''
     content = <LogoSvg className={iconSizes[size]} />
   } else if (variant === 'text') {
-    // Stacked: icon above text "We meditate"
+    // Stacked: icon above the wordmark
     const alignmentStyles = {
       left: 'items-start text-left',
       center: 'items-center text-center',
       right: 'items-end text-right',
     }
 
-    // For left/right alignment, add line breaks to make "We meditate" multiline
-    const textContent = align === 'center' ? 'We meditate' : 'We\nmeditate'
+    // The wordmark is the site title in the mark's own typography, derived from
+    // the one translated string rather than restated per locale: an initial
+    // capital with the rest lower-case, and a line per word where the lockup is
+    // stacked against a left or right edge.
+    const title = t('common.general.site_title')
+    const wordmark = title.charAt(0) + title.slice(1).toLowerCase()
+    const textContent = align === 'center' ? wordmark : wordmark.replace(/ /g, '\n')
 
     variantStyles = `flex-col gap-1 ${alignmentStyles[align]} ${href ? 'no-underline hover:opacity-80 transition-opacity' : ''}`
     content = (

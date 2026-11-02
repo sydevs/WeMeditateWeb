@@ -114,22 +114,27 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     href: urlPathname,
   }))
 
+  // The page band reaches the header as classes, not as a wrapper. `Header`'s
+  // nav is `position: sticky`, so a wrapper would be its containing block and
+  // the nav would stop pinning one header-height down the page (#204).
   const header = (
-    <div className={`max-w-7xl mx-auto px-6 w-full ${surface(leadSplash?.surface)}`}>
-      <Header
-        actionLinkHref={actionLinkHref}
-        actionLinkText={actionLinkText}
-        logoHref="/"
-        navItems={navItems}
-      />
-    </div>
+    <Header
+      actionLinkHref={actionLinkHref}
+      actionLinkText={actionLinkText}
+      bandClassName={`max-w-7xl mx-auto px-6 w-full ${surface(leadSplash?.surface)}`}
+      logoHref="/"
+      navItems={navItems}
+    />
   )
 
   return (
     <div className={`flex flex-col min-h-screen ${leadSplash ? 'relative' : ''}`}>
       {leadSplash ? (
-        // Overlay the header transparently on the lead splash.
-        <div className="absolute inset-x-0 top-0 z-30">{header}</div>
+        // Overlay the header transparently on the lead splash. The box spans the
+        // whole column rather than the header, so the nav inside it still has the
+        // page to travel, and `pointer-events-none` leaves the content below its
+        // clicks.
+        <div className="pointer-events-none absolute inset-0 z-30">{header}</div>
       ) : (
         header
       )}
