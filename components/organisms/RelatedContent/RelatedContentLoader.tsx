@@ -48,7 +48,7 @@ export interface RelatedContentLoaderProps {
 /**
  * Client-side loader for the related-content section.
  *
- * The related endpoints are slow (about 5 to 12 seconds, KV-cached), so
+ * The related endpoints are slow (about 5 to 12 seconds, edge-cached), so
  * fetching them in a Vike `data()` hook would block SSR and trip the
  * slow-hook warning. Instead the player page renders immediately, and this
  * loader fetches the already-mapped cards from `/api/:kind/:anchorId` after
