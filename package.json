@@ -29,7 +29,7 @@
     "@mapbox/search-js-web": "^1.6.0",
     "@marsidev/react-turnstile": "^1.6.3",
     "@payloadcms/live-preview": "^3.92.1",
-    "@payloadcms/live-preview-react": "3.92.1",
+    "@payloadcms/live-preview-react": "^3.92.1",
     "@payloadcms/richtext-lexical": "^3.92.1",
     "@payloadcms/sdk": "^3.92.1",
     "@photonjs/hono": "^0.1.12",
