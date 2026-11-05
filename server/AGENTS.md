@@ -50,9 +50,12 @@ Two things about `form` and the visitor's IP that only bite in production:
   same as a missing `select`. Each entry also restricts a populated relationship to the fields it
   lists: a field left out (for example `title` or `slug`) comes back missing, which renders empty
   content and dead links.
-- **`locale`** is required for localized content. `title` and `slug` are localized fields, and
-  without a locale they may not resolve. Pass `locale` from the caller (`pageContext.locale`).
-  See `getWebConfig({ locale })` and its callers under `pages/**/+data.ts`.
+- **`locale`** is required for localized content. `title` is localized, and without a locale it
+  may not resolve. **`slug` is not localized upstream**, which is why one path serves every locale
+  and carries the whole `hreflang` cluster (`lib/hreflang.ts`), and why the sitemap's
+  `locale: 'all'` read gets a plain string back. Pass `locale` from the caller
+  (`pageContext.locale`). See `getWebConfig({ locale })` and its callers under
+  `pages/**/+data.ts`.
 - Type the `select`/`populate` constants against the generated `*Select` interfaces
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
