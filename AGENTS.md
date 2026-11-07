@@ -65,9 +65,8 @@ The Worker holds no bindings and no persistent state.
 A second, assets-only Worker is configured here for the Ladle playground
 (`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
 wrangler does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml`.
-`pnpm check:wrangler` is what reads the design config in CI. That Worker exists and serves every
-PR preview; `design.wemeditate.com` itself still answers from the Pages project of the same name,
-which keeps that address until it is moved (sydevs/SahajAtlasWeb#266). See
+`pnpm check:wrangler` is what reads the design config in CI. That Worker serves every PR preview,
+and `design.wemeditate.com` as a Workers Custom Domain (sydevs/SahajAtlasWeb#266). See
 [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 
 Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
