@@ -12,13 +12,12 @@
       "type": "http",
       "url": "https://docs.mcp.cloudflare.com/mcp"
     },
-    "puppeteer": {
+    "playwright": {
       "command": "npx",
       "args": [
         "-y",
-        "puppeteer-mcp-server"
-      ],
-      "env": {}
+        "@playwright/mcp@0.0.84"
+      ]
     },
     "payloadcms-docs": {
       "type": "stdio",
