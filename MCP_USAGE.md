@@ -17,8 +17,7 @@ without a confirmation prompt. Other MCP tools ask for confirmation on first use
 
 ## Playwright
 
-The server is pinned to an exact version. SahajCloud and SahajAtlasWeb pin the same version, so
-bump all three together.
+SahajCloud and SahajAtlasWeb run the same server, at `@latest`.
 
 ### Act on snapshot references, not selectors
 
@@ -57,7 +56,7 @@ your sign-in, attach to a Chrome started with a debug port instead:
 
 ```bash
 ./scripts/chrome-debug.sh
-claude mcp add playwright-cdp --scope local -- npx -y @playwright/mcp@0.0.84 --cdp-endpoint http://localhost:9222
+claude mcp add playwright-cdp --scope local -- npx -y @playwright/mcp@latest --cdp-endpoint http://localhost:9222
 ```
 
 The second command adds a local-only server and is not checked in. Check the port is open:
