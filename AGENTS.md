@@ -226,8 +226,8 @@ skill relevant.
   standards, and implementation guidelines.
 - [STORYBOOK.md](STORYBOOK.md) — the story utility-component API, section order, and Ladle
   configuration.
-- [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including Puppeteer's `evaluate` (needs
-  an explicit `return`).
+- [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including the Playwright MCP's
+  `evaluate` (takes a function and returns only serializable values).
 - [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md) — the CI workflow, the two
   Cloudflare previews (the web Worker and the Ladle playground), and the preview smoke tests.
 - [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (a 403 is a
