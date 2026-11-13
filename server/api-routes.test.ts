@@ -3,7 +3,7 @@ import { SignJWT } from 'jose'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
+import { CLIENT_IP_HEADER, SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
 import type { SahajCloudEnv } from './sahajcloud-context'
 
 /**
@@ -218,11 +218,12 @@ describe('POST /api/live-preview/populate — the forward', () => {
  * ⚠ `/api/submissions` attaches `SAHAJCLOUD_API_KEY` on our side, so what it
  * forwards and what it hands back are both part of the gate. Every case below
  * asserts one of three things: the body is re-validated before SahajCloud is
- * called at all, exactly one browser header crosses over, and a refusal
- * carries the intake's code and never its prose.
+ * called at all, the forwarded header set is exactly the captcha token and the
+ * visitor's address, and a refusal carries the intake's code and never its
+ * prose.
  */
 
-function submit(options: { body?: unknown; token?: string } = {}) {
+function submit(options: { body?: unknown; token?: string; clientIp?: string } = {}) {
   const app = new Hono<SahajCloudEnv>()
 
   registerApiRoutes(app)
@@ -234,6 +235,9 @@ function submit(options: { body?: unknown; token?: string } = {}) {
       Origin: 'https://wemeditate.com',
       Referer: 'https://wemeditate.com/contact',
       ...(options.token ? { [TURNSTILE_TOKEN_HEADER]: options.token } : {}),
+      // Spelled as Cloudflare sends it. `Headers` matches case-insensitively,
+      // and a fixture that quietly lowercased it would stop proving that.
+      ...(options.clientIp ? { 'CF-Connecting-IP': options.clientIp } : {}),
     },
     body: JSON.stringify(
       options.body ?? {
@@ -283,10 +287,21 @@ describe('POST /api/submissions — the forward', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('forwards the captcha token, and no other browser header', async () => {
+  it('forwards the captcha token and the visitor, and no other browser header', async () => {
     // Origin and Referer must not cross over: a server-to-server call is
     // exempt from the client's allowedDomains allowlist, and forwarding the
     // browser's host would put this site through it.
+    await submit({ token: 'turnstile-token', clientIp: '203.0.113.7' })
+
+    expect(request.mock.calls[0][0].init.headers).toEqual({
+      [TURNSTILE_TOKEN_HEADER]: 'turnstile-token',
+      [CLIENT_IP_HEADER]: '203.0.113.7',
+    })
+  })
+
+  it('sends no visitor address at all when our own request carries none', async () => {
+    // Upstream falls back to the address it sees when the header is absent.
+    // A blank one is a claim about the visitor that we cannot make.
     await submit({ token: 'turnstile-token' })
 
     expect(request.mock.calls[0][0].init.headers).toEqual({

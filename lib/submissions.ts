@@ -27,6 +27,15 @@ export const SUBMISSION_PATH = '/api/submissions'
  */
 export const TURNSTILE_TOKEN_HEADER = 'x-turnstile-token'
 
+/**
+ * ⚠ The visitor's address, which a proxied create must name itself. The call
+ * reaches SahajCloud from this Worker's egress address, so without this header
+ * Turnstile's `remoteip` is the proxy rather than whoever solved the
+ * challenge. SahajCloud reads it only from an authenticated `clients` request
+ * and never requires it (sydevs/SahajCloud#808).
+ */
+export const CLIENT_IP_HEADER = 'x-client-ip'
+
 /** One `[{ field, value }]` pair, as the collection stores it. */
 export interface SubmissionPair {
   field: string

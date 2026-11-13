@@ -11,9 +11,10 @@ Every contact and subscribe form posts to `POST /api/submissions`
 - **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
   and SahajCloud answers a wildcard CORS origin with no credentials.
 - **A captcha token is required on every public write**, as the `x-turnstile-token` header, not
-  as document data. It is the only browser header the proxy forwards: `Origin` and `Referer` must
+  as document data. It is the only *browser* header the proxy forwards: `Origin` and `Referer` must
   not cross over, because a server-to-server call is deliberately exempt from the client's
-  `allowedDomains` allowlist, which the API key stands in for.
+  `allowedDomains` allowlist, which the API key stands in for. The proxy adds one header of its
+  own, the visitor's address — see below.
 - **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape
   (`captcha_failed`, `disposable_email`, `urls_not_allowed`, `submission_data_invalid`, …). The
   code is forwarded to the browser and the message never is: it is SahajCloud's English, written for
@@ -28,19 +29,25 @@ keys it allows per type: the base context set (`name`, `locale`, `path`, `hostUr
 400 naming it, and so does a repeated one. `lib/submissions.ts` owns that body; nothing else
 composes one.
 
-Two things about `form` and the visitor's IP that only bite in production:
+Two things about `form` and the visitor's IP that only show in production:
 
 - **`form` is a number.** SahajCloud resolves the relationship with `relationId()`, which answers
   `null` for a string. A quoted id is accepted and then leaves the intake unable to load the form,
   which empties the authored-field allow-list — so every field the editor named is refused as
   unknown, while the base keys still pass. `submissionSchema` refuses a string at the edge so this
   cannot ship again.
-- ⚠ **SahajCloud sees this Worker's IP, not the visitor's.** It reads `cf-connecting-ip` off its own
-  request for Turnstile's `remoteip`, and a proxied submission carries ours. Cloudflare validates
-  `remoteip` against the address that solved the challenge, so this needs an end-to-end test
-  before anyone trusts it, and a forwarded-IP contract upstream if it refuses
-  (sydevs/SahajCloud#808). The same substitution puts every submission in one edge rate-limit
-  bucket.
+- ⚠ **The proxy names the visitor, because SahajCloud cannot see them.** SahajCloud reads
+  `cf-connecting-ip` off its own request for Turnstile's `remoteip`, and a proxied submission
+  reaches it from this Worker's egress address. So the proxy forwards its own incoming
+  `cf-connecting-ip` as `x-client-ip`, which SahajCloud prefers over the address it sees
+  (sydevs/SahajCloud#808). The header is omitted, never blanked, when our own request carries no
+  `cf-connecting-ip`; upstream falls back on absence and requires it from nobody — the Atlas
+  widget posts from the browser and sends none.
+
+  Two limits stand. Whether Cloudflare refuses a `remoteip` that did not solve the challenge is
+  **unverified** — the always-passes test secret cannot answer it — so `remoteip` is a scoring
+  hint here, and nothing depends on it being checked. And the edge rate-limit bucket still keys
+  on the address SahajCloud sees, so every proxied submission shares ours.
 
 ## Always send `select`, `populate` at depth > 1, and `locale`
 
