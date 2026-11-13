@@ -36,10 +36,11 @@ const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 // Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
 
-// The web upsell's link text. A domain is a brand name, so it carries no
-// translation key — and naming it keeps the deliberately English line out of
-// `no-restricted-syntax`, which reads a JSX literal and not an identifier.
-const UPSELL_WEB_DOMAIN = 'wemeditate.com'
+// The public site an embedded player sends a visitor back to: the legacy Rails
+// app on its own origin, which localizes its own slugs (`/fr/méditations`), so
+// `lib/urls.ts` cannot spell these and both links stay on the English entry
+// points. The bare domain is the web arm's link text — a brand name, not copy.
+const WEMEDITATE_DOMAIN = 'wemeditate.com'
 
 // Placeholder image for when no frames are available (teal gradient)
 const PLACEHOLDER_IMAGE =
@@ -829,10 +830,10 @@ function MeditationPlayerInner({
                       <Link
                         key="upsell"
                         external
-                        href="https://wemeditate.com/meditations"
+                        href={`https://${WEMEDITATE_DOMAIN}/meditations`}
                         variant="primary"
                       >
-                        {UPSELL_WEB_DOMAIN}
+                        {WEMEDITATE_DOMAIN}
                       </Link>
                     ),
                   })
@@ -841,7 +842,7 @@ function MeditationPlayerInner({
                       <Link
                         key="upsell"
                         external
-                        href="https://wemeditate.com/app"
+                        href={`https://${WEMEDITATE_DOMAIN}/app`}
                         variant="primary"
                       >
                         {t('meditation.general.upsell_app_link')}

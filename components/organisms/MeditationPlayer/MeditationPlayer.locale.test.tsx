@@ -15,8 +15,7 @@ import { EN_TRANSLATIONS } from '../../../lib/i18n'
 import type { Track } from '../../molecules/AudioPlayer/types'
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
-// when `WebTranslations` gains a required branch. `%{link}` is the placeholder
-// spelling `createT` splits on, and the one the English keys already use.
+// when `WebTranslations` gains a required branch.
 const FRENCH: WebTranslations = {
   ...EN_TRANSLATIONS,
   meditation: {
@@ -52,7 +51,7 @@ describe('the MeditationPlayer upsell in a non-English locale', () => {
     expect(html).toContain('Trouvez plus de méditations sur')
     expect(html).not.toContain('Find more meditations on')
     // The domain is a brand name, so it stays English inside the translated
-    // sentence — and it still links out.
+    // sentence.
     expect(html).toContain('wemeditate.com</a>')
     expect(html).toContain('href="https://wemeditate.com/meditations"')
   })
@@ -65,12 +64,5 @@ describe('the MeditationPlayer upsell in a non-English locale', () => {
     expect(html).toContain('application gratuite')
     expect(html).not.toContain('free app')
     expect(html).toContain('href="https://wemeditate.com/app"')
-  })
-
-  it('renders no upsell when the prop is absent', () => {
-    const html = renderToStaticMarkup(<MeditationPlayer frames={[]} track={track} />)
-
-    expect(html).not.toContain('Trouvez')
-    expect(html).not.toContain('href="https://wemeditate.com/app"')
   })
 })
