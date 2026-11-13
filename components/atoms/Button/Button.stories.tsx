@@ -435,10 +435,41 @@ export const Default: Story = () => (
             <Button icon={ChevronLeftIcon} variant="outline">
               Back
             </Button>
-            <Button icon={ArrowRightIcon} variant="primary">
+            <Button icon={ArrowRightIcon} iconPosition="trailing" variant="primary">
               Continue
             </Button>
           </div>
+        </StorySection>
+
+        <StorySection title="Carousel Navigation" variant="subsection">
+          <div className="flex items-center gap-0 max-w-[320px]">
+            <Button
+              truncate
+              aria-label="Previous: A title far too long for the slot"
+              className="max-w-40"
+              icon={ChevronLeftIcon}
+              size="xs"
+              variant="ghost"
+            >
+              A title far too long for the slot
+            </Button>
+            <div className="flex-1" />
+            <Button
+              truncate
+              aria-label="Next: Another title that will not fit"
+              className="max-w-40"
+              icon={ChevronRightIcon}
+              iconPosition="trailing"
+              size="xs"
+              variant="ghost"
+            >
+              Another title that will not fit
+            </Button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            The label ellipsises, so the button shrinks to its 44px floor rather than to its text.
+            Narrow the window to watch it give way. ColumnCarousel uses this form.
+          </p>
         </StorySection>
 
         <StorySection title="Toolbar" variant="subsection">

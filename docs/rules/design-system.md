@@ -18,6 +18,7 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
 - Use the design tokens consistently. Do not add a one-off custom value.
 - Implement every component mobile-first — see [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for
   the breakpoint table. Give every interactive element a touch target of at least 44×44px.
+  `ColumnCarousel`'s slide dots are the one documented exception — see below.
 - Meet WCAG 2.1 AA.
 - Gate a JavaScript-driven animation on `prefers-reduced-motion` — see the Motion section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
@@ -32,13 +33,31 @@ built from a bare `<button>` picks one of the two utilities in
 | Utility | Use it when |
 | --- | --- |
 | `touch-target` | The layout can absorb a bigger box. **Reach for this first.** |
-| `touch-target-overlay` | The drawn size *is* the design — an 8px dot, a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
+| `touch-target-overlay` | The drawn size *is* the design — a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
 
-Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
-why growing the box is the first choice.
+Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip, so an
+overlay leaves a **spacing** requirement on the row around it. That is why growing the box is the
+first choice. `ColumnCarousel`'s dots sat on 16px centres, so tapping the dot you could see
+selected the *next* slide (#135).
 
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
-flex item that is the visible effect: it shrinks to 44px rather than to its content.
+flex item that is the visible effect: it shrinks to 44px rather than to its content — and on a
+flex item only. The comment in [layouts/tailwind.css](../../layouts/tailwind.css) owns the rest of
+that mechanism; read it before you expect the floor to shrink a button.
+
+### The one documented exception: a carousel dot is 40×40
+
+Each `ColumnCarousel` dot is a 40×40 `<button>` drawing an 8px `<span>`, with the row at `gap-0`
+so adjacent cells cannot overlap by construction.
+
+40px and not 44px because the dots share a row with both `CarouselNavButton`s: five 44px cells
+leave the buttons under their own 44px floor by a 360px viewport, and they then overflow back onto
+the dots — measured at 10px of overlap by 320px. 40px holds 16px of clearance down to 360px and
+still clears WCAG 2.2 AA 2.5.8, which wants 24px and which 16px centres could not meet by its
+spacing exception either.
+
+Grow a box to 44px before you reach for a second exception, and measure the row in a browser
+first if you cannot.
 
 ## Route changes are already announced — do not add a second announcer
 
@@ -102,6 +121,8 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   shape?: 'square' | 'circular'     // Default: circular icon-only, square text
   icon?: HeroIcon                   // Icon only when no children are passed
+  iconPosition?: 'leading' | 'trailing'  // Default: 'leading'
+  truncate?: boolean                // Ellipsise the label instead of widening the button
   isLoading?: boolean
   isActive?: boolean                // Current-page nav link: tinted fill + aria-current
   fullWidth?: boolean               // Text buttons only
@@ -116,6 +137,11 @@ Use `href` for navigation or a download. Use `onClick` for a JavaScript action, 
 
 `Button` guarantees the 44×44 minimum itself, at every size and in both forms. Do not re-add a
 `min-h-11` at a call site.
+
+A button that has to *shrink* to that floor needs `truncate` and `size="xs"`: the label then
+ellipsises, and `xs` is the one size whose padding fits inside 44px. `sm` upwards carry 48px or
+more of padding, which no `min-width` shrinks. `ColumnCarousel`'s nav buttons are the worked
+example.
 
 ### Link
 
