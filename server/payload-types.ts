@@ -650,42 +650,24 @@ export type SupportedTimezones =
   | 'Etc/GMT+11'
   | 'Etc/GMT+12';
 export type ScheduleUpcomingDates = string[];
-/**
- * @maxItems 500
- */
-export type ActivityLog = {
-  /**
-   * ISO 8601. The first column, and the sort key.
-   */
-  at?: string;
-  /**
-   * Stable slug — matched by jobs, never shown.
-   */
-  type?: string;
-  /**
-   * Exactly-once key, scoped to `type`.
-   */
-  key?: string;
-  /**
-   * What the columns read. Everything outside this is machine data.
-   */
-  cells?: {
-    [k: string]:
-      | string
-      | {
-          /**
-           * Muted, inline before the text.
-           */
-          label?: string;
-          text: string;
-          /**
-           * Muted line beneath the text.
-           */
-          sub?: string;
-        };
-  };
+export type ActivityLogCells = {
+  [k: string]:
+    | string
+    | {
+        /**
+         * Muted, inline before the text.
+         */
+        label?: string;
+        text: string;
+        /**
+         * Muted line beneath the text.
+         */
+        sub?: string;
+      };
+} | null;
+export type ActivityLogData = {
   [k: string]: unknown;
-}[];
+} | null;
 export type EventQualityReport =
   | {
       skipped: true;
@@ -774,6 +756,7 @@ export type RoleSlug =
   | 'page-editor'
   | 'atlas-region-manager'
   | 'atlas-event-manager'
+  | 'atlas-service-manager'
   | 'wemeditate-web-client'
   | 'wemeditate-app-client'
   | 'sahaj-atlas-client';
@@ -787,7 +770,7 @@ export interface Config {
   collections: {
     pages: Page;
     meditations: Meditation;
-    'meditation-transcripts': MeditationTranscript;
+    transcripts: Transcript;
     songs: Song;
     albums: Album;
     videos: Video;
@@ -819,7 +802,7 @@ export interface Config {
   };
   collectionsJoins: {
     meditations: {
-      transcript: 'meditation-transcripts';
+      transcript: 'transcripts';
     };
     albums: {
       songs: 'songs';
@@ -850,6 +833,7 @@ export interface Config {
       managedPages: 'pages';
       managedRegions: 'regions';
       managedEvents: 'events';
+      managedClients: 'clients';
     };
     regions: {
       events: 'events';
@@ -868,7 +852,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     meditations: MeditationsSelect<false> | MeditationsSelect<true>;
-    'meditation-transcripts': MeditationTranscriptsSelect<false> | MeditationTranscriptsSelect<true>;
+    transcripts: TranscriptsSelect<false> | TranscriptsSelect<true>;
     songs: SongsSelect<false> | SongsSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     videos: VideosSelect<false> | VideosSelect<true>;
@@ -997,6 +981,7 @@ export interface Config {
       cleanupOrphanedMedia: TaskCleanupOrphanedMedia;
       deliverSubmission: TaskDeliverSubmission;
       expireEvents: TaskExpireEvents;
+      recoverLostJobs: TaskRecoverLostJobs;
       screenSubmission: TaskScreenSubmission;
       sendPostEventFollowUps: TaskSendPostEventFollowUps;
       sendDigests: TaskSendDigests;
@@ -1275,6 +1260,14 @@ export interface Manager {
     totalDocs?: number;
   };
   /**
+   * Sahaj Atlas services — websites — this manager looks after.
+   */
+  managedClients?: {
+    docs?: (number | Client)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * The manager's preferred language.
    */
   language?:
@@ -1494,6 +1487,7 @@ export interface Manager {
     | boolean
     | null;
   magicLinkIssuedAt?: string | null;
+  lastLoginAt?: string | null;
   pendingInvitation?:
     | {
         [k: string]: unknown;
@@ -1947,12 +1941,33 @@ export interface Event {
     totalDocs?: number;
   };
   /**
-   * Manager responsible for verifying this event. Assigning one to an unverified event adopts it into the verification cycle.
+   * Manager responsible for verifying this event. Assigning one to an unverified or denied event adopts it: that verifies the listing and publishes it.
    */
   manager?: (number | null) | Manager;
   verificationStage:
     'unverified' | 'denied' | 'verified' | 'reminded' | 'escalated' | 'urgent' | 'expired' | 'finished';
-  activityLog?: ActivityLog;
+  /**
+   * Current verification cycle — the verification that opened it plus each reminder sent. Reset on every verification. Keeps the most recent 50 entries.
+   */
+  activityLog?:
+    | {
+        /**
+         * ISO 8601. The sort key.
+         */
+        at?: string | null;
+        /**
+         * Matched by jobs, never shown.
+         */
+        type?: string | null;
+        /**
+         * Exactly-once key, scoped to `type`.
+         */
+        key?: string | null;
+        cells?: ActivityLogCells;
+        data?: ActivityLogData;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * How strongly attendees confirm this event is real (0–1) — your check before adopting a listing, or why a denied one stays down. Rises with confirmations, falls with denials, and stays cautious while there are few votes. Blank until the first vote.
    */
@@ -1974,6 +1989,10 @@ export interface Event {
    * Registrants are offered a mailing list: this region, one above it, or the atlas fallback service has one switched on.
    */
   offersMailingList?: boolean | null;
+  /**
+   * Subscribable calendar address. Anyone holding it can subscribe.
+   */
+  calendarFeedUrl?: string | null;
   /**
    * Open listing-quality recommendations.
    */
@@ -2268,7 +2287,28 @@ export interface UserSubmission {
    * The city or venue this event belongs to. Matched from the visitor’s location — correct it here if it came back empty or wrong.
    */
   region?: (number | null) | Region;
-  activityLog?: ActivityLog;
+  /**
+   * Everything recorded about this submission — screening, delivery, decisions. Keeps the most recent 50 entries.
+   */
+  activityLog?:
+    | {
+        /**
+         * ISO 8601. The sort key.
+         */
+        at?: string | null;
+        /**
+         * Matched by jobs, never shown.
+         */
+        type?: string | null;
+        /**
+         * Exactly-once key, scoped to `type`.
+         */
+        key?: string | null;
+        cells?: ActivityLogCells;
+        data?: ActivityLogData;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Composed when the submission arrives.
    */
@@ -2365,40 +2405,123 @@ export interface User {
 export interface Client {
   id: number;
   /**
-   * Client organization or application name
+   * How this service is known inside SahajCloud. Never shown to the public.
    */
-  name: string;
+  label: string;
   /**
-   * What domains are associated with this client. Put each domain on a new line.
+   * This service’s API key works only while this is on.
    */
-  allowedDomains?: string | null;
+  enabled?: boolean | null;
   /**
-   * Hex color code (e.g., #FF5733)
+   * Purpose and usage notes for this client
    */
-  color1?: string | null;
+  notes?: string | null;
   /**
-   * Hex color code (e.g., #FF5733)
+   * What this service’s API key may read and write, in every locale.
    */
-  color2?: string | null;
+  roles?: ('wemeditate-web-client' | 'wemeditate-app-client' | 'sahaj-atlas-client')[] | null;
   /**
-   * Hex color code (e.g., #FF5733)
+   * Users who can manage this client
    */
-  color3?: string | null;
+  managers: (number | Manager)[];
+  /**
+   * Primary user contact for this client. Only needed when more than one manager is assigned.
+   */
+  primaryContact?: (number | null) | Manager;
+  /**
+   * Where the map opens, and the region whose atlas links this service’s site becomes the home for. Leave empty for a worldwide map.
+   */
+  region?: (number | null) | Region;
+  /**
+   * The name registrants see, e.g. in their confirmation emails. Leave empty to use the site’s domain.
+   */
+  title?: string | null;
   /**
    * Logo shown in registrant emails. Resolved to a PNG at send time — email clients render SVG poorly or not at all.
    */
   logo?: (number | null) | Image;
+  color1?: string | null;
+  color2?: string | null;
+  color3?: string | null;
   /**
-   * Linked from the footer of registrant emails.
-   */
-  websiteUrl?: string | null;
-  /**
-   * Reply-To on registrant emails, so replies reach this service rather than us.
+   * Reply-To on registrant emails, so replies reach this service rather than us. While this service owns its region, the emails also link to its site.
    */
   supportEmail?: string | null;
   /**
-   * Primary language for this service (any language).
+   * Add people who sign up for news on this site to your own mailing list.
    */
+  mailingList?: {
+    /**
+     * Leave empty if this service has no mailing list.
+     */
+    provider?: ('mailchimp' | 'brevo' | 'klaviyo' | 'cleverreach') | null;
+    /**
+     * From your CleverReach app.
+     */
+    clientId?: string | null;
+    /**
+     * The list new subscribers are added to.
+     */
+    listId?: string | null;
+    apiKeyChange?: string | null;
+    apiKey?: string | null;
+    /**
+     * People are only added after they click the link in that email.
+     */
+    doubleOptIn?: boolean | null;
+    /**
+     * The CleverReach form that sends the confirmation email. Copy its Flow ID.
+     */
+    doiFlowId?: string | null;
+  };
+  usage?: {
+    abuseScore?: ClientAbuseScore;
+    /**
+     * Today's request count
+     */
+    dailyRequests?: number | null;
+    /**
+     * Maximum historical request count
+     */
+    peakDailyRequests?: number | null;
+    /**
+     * Last API call timestamp
+     */
+    lastRequestAt?: string | null;
+    /**
+     * Lifetime total requests (never resets)
+     */
+    totalRequests?: number | null;
+    /**
+     * Count of days exceeding threshold
+     */
+    highUsageDays?: number | null;
+    /**
+     * Last date threshold was exceeded
+     */
+    lastHighUsageAt?: string | null;
+    /**
+     * First API request (tracking start)
+     */
+    firstRequestAt?: string | null;
+  };
+  canonical?: {
+    owned?: boolean | null;
+    verification?: ClientCanonicalVerification;
+    /**
+     * Derived, never chosen: “Path segment” once the CMS has seen this host serve the atlas under the embed’s own subtree, “Query parameter” otherwise.
+     */
+    routing?: ('query' | 'path') | null;
+    nextVerifyAt?: string | null;
+    embed?: string | null;
+  };
+  embedMetadata?: ClientEmbedMetadata;
+  site?: {
+    domain?: string | null;
+    page?: string | null;
+    track?: ('custom' | 'wp-selfhosted' | 'wp-com' | 'wix' | 'squarespace' | 'iframe') | null;
+    embedHeight?: ('fixed' | 'screen' | 'window') | null;
+  };
   language?:
     | (
         | 'ab'
@@ -2586,107 +2709,12 @@ export interface Client {
         | 'zu'
       )
     | null;
-  /**
-   * Atlas geographic scope for this service.
-   */
-  region?: (number | null) | Region;
-  /**
-   * Where subscribe submissions relayed by this service are delivered. Off by default, and nothing is pushed anywhere until it is switched on.
-   */
-  mailingList?: {
-    enabled?: boolean | null;
-    provider?: ('mailchimp' | 'brevo' | 'klaviyo') | null;
-    /**
-     * Mailchimp’s Audience ID, Brevo’s numeric list id, or Klaviyo’s List ID.
-     */
-    listId?: string | null;
-    /**
-     * The provider secret. Checked against the provider when you save, and never readable by an API client.
-     */
-    apiKey?: string | null;
-    /**
-     * Mailchimp adds the address as `pending` and emails it a confirmation link.
-     */
-    doubleOptIn?: boolean | null;
-  };
-  /**
-   * Declares that this service owns the canonical Atlas URLs for its region. Off by default, and nothing resolves differently until it is switched on.
-   */
-  canonical?: {
-    /**
-     * At most one service per region may own them. Requires a region and one of the embeds this service has reported — the CMS then loads that page itself to confirm the widget is really there, and only a verified embed ever yields a canonical URL.
-     */
-    enabled?: boolean | null;
-    /**
-     * Which of the embeds this service reported owns the canonical URLs. Domain, mount and routing all come from this one choice.
-     */
-    embed?: string | null;
-    verification?: ClientCanonicalVerification;
-    /**
-     * Derived, never chosen: “Path segment” once the CMS has seen this host serve the atlas under the embed’s own subtree, “Query parameter” otherwise.
-     */
-    routing?: ('query' | 'path') | null;
-    nextVerifyAt?: string | null;
-  };
-  embedMetadata?: ClientEmbedMetadata;
-  /**
-   * Purpose and usage notes for this client
-   */
-  notes?: string | null;
-  /**
-   * Assign API client roles. Roles apply to all locales.
-   */
-  roles?: ('wemeditate-web-client' | 'wemeditate-app-client' | 'sahaj-atlas-client')[] | null;
-  /**
-   * Users who can manage this client
-   */
-  managers: (number | Manager)[];
-  /**
-   * Primary user contact for this client. Only needed when more than one manager is assigned.
-   */
-  primaryContact?: (number | null) | Manager;
+  allowedDomains?: string | null;
+  domain?: string | null;
   /**
    * Public identifier for this service. Auto-generated, or the Atlas public key for imported services.
    */
   clientId?: string | null;
-  /**
-   * Timestamp of last API key generation
-   */
-  keyGeneratedAt?: string | null;
-  /**
-   * API usage statistics
-   */
-  usage?: {
-    abuseScore?: ClientAbuseScore;
-    /**
-     * Today's request count
-     */
-    dailyRequests?: number | null;
-    /**
-     * Maximum historical request count
-     */
-    peakDailyRequests?: number | null;
-    /**
-     * Last API call timestamp
-     */
-    lastRequestAt?: string | null;
-    /**
-     * Lifetime total requests (never resets)
-     */
-    totalRequests?: number | null;
-    /**
-     * Count of days exceeding threshold
-     */
-    highUsageDays?: number | null;
-    /**
-     * Last date threshold was exceeded
-     */
-    lastHighUsageAt?: string | null;
-    /**
-     * First API request (tracking start)
-     */
-    firstRequestAt?: string | null;
-  };
   legacyId?: number | null;
   legacyData?:
     | {
@@ -2699,42 +2727,11 @@ export interface Client {
     | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
   hasAPIKey?: boolean | null;
   collection: 'clients';
-}
-export interface ClientCanonicalVerification {
-  verified: {
-    domain: string;
-    mount: string;
-    routing?: 'query' | 'path';
-    widgetVersion: number;
-    at: string;
-  } | null;
-  failureCount: number;
-  routingProbe?: {
-    at: string;
-    verdict: 'query' | 'path';
-    failedAttempts: number;
-  };
-  attempts: {
-    at: string;
-    status: 'verified' | 'failed' | 'inconclusive';
-    reason?: 'dns' | 'http' | 'marker-absent' | 'not-configured' | 'provider-error' | 'quota' | 'bot-challenge';
-  }[];
-}
-export interface ClientEmbedMetadata {
-  [k: string]: {
-    mode: 'inline' | 'iframe';
-    topLevel: boolean;
-    urlWritable: boolean;
-    paramPersisted: boolean;
-    routing: 'query' | 'path';
-    lastSeen: string;
-  };
 }
 export interface ClientAbuseScore {
   /**
@@ -2758,6 +2755,45 @@ export interface ClientAbuseScore {
      * Current-spike contribution (0-30).
      */
     current: number;
+  };
+}
+export interface ClientCanonicalVerification {
+  verified: {
+    domain: string;
+    mount: string;
+    widgetVersion: number;
+    at: string;
+  } | null;
+  failureCount: number;
+  releasedAt?: string;
+  routingProbe?: {
+    at: string;
+    verdict: 'query' | 'path';
+    failedAttempts: number;
+  };
+  seo?: {
+    at: string;
+    results: {
+      route: string;
+      check: 'title' | 'canonical' | 'json-ld' | 'body' | 'sitemap';
+      status: 'pass' | 'fail' | 'skipped';
+      detail?: string;
+    }[];
+  };
+  attempts: {
+    at: string;
+    status: 'verified' | 'failed' | 'inconclusive';
+    reason?: 'dns' | 'http' | 'marker-absent' | 'not-configured' | 'provider-error' | 'quota' | 'bot-challenge';
+  }[];
+}
+export interface ClientEmbedMetadata {
+  [k: string]: {
+    mode: 'inline' | 'iframe';
+    topLevel: boolean;
+    urlWritable: boolean;
+    paramPersisted: boolean;
+    routing: 'query' | 'path';
+    lastSeen: string;
   };
 }
 /**
@@ -2990,7 +3026,7 @@ export interface Meditation {
   subtleSystemNodeWeights?: MeditationNodeWeights;
   durationMinutes?: number | null;
   transcript?: {
-    docs?: (number | MeditationTranscript)[];
+    docs?: (number | Transcript)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -3130,11 +3166,19 @@ export interface Album {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "meditation-transcripts".
+ * via the `definition` "transcripts".
  */
-export interface MeditationTranscript {
+export interface Transcript {
   id: number;
-  meditation?: (number | null) | Meditation;
+  source:
+    | {
+        relationTo: 'meditations';
+        value: number | Meditation;
+      }
+    | {
+        relationTo: 'files';
+        value: number | File;
+      };
   audioFilename?: string | null;
   provider?: 'lemonfox' | null;
   language:
@@ -3158,11 +3202,37 @@ export interface MeditationTranscript {
     | 'hu'
     | 'nl';
   segments?: TranscriptSegments;
+  segmentCount?: number | null;
   job?: (number | null) | PayloadJob;
   status?: ('processing' | 'completed' | 'failed') | null;
   error?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Media files (images, audio, video) and PDFs used by other collections. A file nothing links to is moved to the trash automatically, and deleted for good after 45 days there.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "files".
+ */
+export interface File {
+  id: number;
+  createdAt: string;
+  hlsUrl?: string | null;
+  mp4Url?: string | null;
+  previewUrl?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  deletedAt?: string | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3222,6 +3292,7 @@ export interface PayloadJob {
           | 'cleanupOrphanedMedia'
           | 'deliverSubmission'
           | 'expireEvents'
+          | 'recoverLostJobs'
           | 'screenSubmission'
           | 'sendPostEventFollowUps'
           | 'sendDigests'
@@ -3273,6 +3344,7 @@ export interface PayloadJob {
         | 'cleanupOrphanedMedia'
         | 'deliverSubmission'
         | 'expireEvents'
+        | 'recoverLostJobs'
         | 'screenSubmission'
         | 'sendPostEventFollowUps'
         | 'sendDigests'
@@ -3377,31 +3449,6 @@ export interface Lesson {
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
-}
-/**
- * Media files (images, audio, video) and PDFs used by other collections. A file nothing links to is moved to the trash automatically, and deleted for good after 45 days there.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "files".
- */
-export interface File {
-  id: number;
-  createdAt: string;
-  hlsUrl?: string | null;
-  mp4Url?: string | null;
-  previewUrl?: string | null;
-  _objectKey?: string | null;
-  updatedAt: string;
-  deletedAt?: string | null;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4254,8 +4301,8 @@ export interface PayloadLockedDocument {
         value: number | Meditation;
       } | null)
     | ({
-        relationTo: 'meditation-transcripts';
-        value: number | MeditationTranscript;
+        relationTo: 'transcripts';
+        value: number | Transcript;
       } | null)
     | ({
         relationTo: 'songs';
@@ -4467,14 +4514,15 @@ export interface MeditationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "meditation-transcripts_select".
+ * via the `definition` "transcripts_select".
  */
-export interface MeditationTranscriptsSelect<T extends boolean = true> {
-  meditation?: T;
+export interface TranscriptsSelect<T extends boolean = true> {
+  source?: T;
   audioFilename?: T;
   provider?: T;
   language?: T;
   segments?: T;
+  segmentCount?: T;
   job?: T;
   status?: T;
   error?: T;
@@ -4820,6 +4868,7 @@ export interface ManagersSelect<T extends boolean = true> {
   managedPages?: T;
   managedRegions?: T;
   managedEvents?: T;
+  managedClients?: T;
   language?: T;
   contactDetails?:
     | T
@@ -4834,6 +4883,7 @@ export interface ManagersSelect<T extends boolean = true> {
   legacyId?: T;
   legacyData?: T;
   magicLinkIssuedAt?: T;
+  lastLoginAt?: T;
   pendingInvitation?: T;
   invitationDueAt?: T;
   updatedAt?: T;
@@ -4859,41 +4909,30 @@ export interface ManagersSelect<T extends boolean = true> {
  * via the `definition` "clients_select".
  */
 export interface ClientsSelect<T extends boolean = true> {
-  name?: T;
-  allowedDomains?: T;
-  color1?: T;
-  color2?: T;
-  color3?: T;
-  logo?: T;
-  websiteUrl?: T;
-  supportEmail?: T;
-  language?: T;
-  region?: T;
-  mailingList?:
-    | T
-    | {
-        enabled?: T;
-        provider?: T;
-        listId?: T;
-        apiKey?: T;
-        doubleOptIn?: T;
-      };
-  canonical?:
-    | T
-    | {
-        enabled?: T;
-        embed?: T;
-        verification?: T;
-        routing?: T;
-        nextVerifyAt?: T;
-      };
-  embedMetadata?: T;
+  label?: T;
+  enabled?: T;
   notes?: T;
   roles?: T;
   managers?: T;
   primaryContact?: T;
-  clientId?: T;
-  keyGeneratedAt?: T;
+  region?: T;
+  title?: T;
+  logo?: T;
+  color1?: T;
+  color2?: T;
+  color3?: T;
+  supportEmail?: T;
+  mailingList?:
+    | T
+    | {
+        provider?: T;
+        clientId?: T;
+        listId?: T;
+        apiKeyChange?: T;
+        apiKey?: T;
+        doubleOptIn?: T;
+        doiFlowId?: T;
+      };
   usage?:
     | T
     | {
@@ -4906,11 +4945,32 @@ export interface ClientsSelect<T extends boolean = true> {
         lastHighUsageAt?: T;
         firstRequestAt?: T;
       };
+  canonical?:
+    | T
+    | {
+        owned?: T;
+        verification?: T;
+        routing?: T;
+        nextVerifyAt?: T;
+        embed?: T;
+      };
+  embedMetadata?: T;
+  site?:
+    | T
+    | {
+        domain?: T;
+        page?: T;
+        track?: T;
+        embedHeight?: T;
+      };
+  language?: T;
+  allowedDomains?: T;
+  domain?: T;
+  clientId?: T;
   legacyId?: T;
   legacyData?: T;
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
@@ -5130,13 +5190,23 @@ export interface EventsSelect<T extends boolean = true> {
   registrations?: T;
   manager?: T;
   verificationStage?: T;
-  activityLog?: T;
+  activityLog?:
+    | T
+    | {
+        at?: T;
+        type?: T;
+        key?: T;
+        cells?: T;
+        data?: T;
+        id?: T;
+      };
   confidenceScore?: T;
   qualityReport?: T;
   submitter?: T;
   nextCheckAt?: T;
   registrationsFull?: T;
   offersMailingList?: T;
+  calendarFeedUrl?: T;
   qualityOpenCount?: T;
   qualityCheckVersion?: T;
   systemMeta?: T;
@@ -5334,7 +5404,16 @@ export interface UserSubmissionsSelect<T extends boolean = true> {
   previewEvent?: T;
   manager?: T;
   region?: T;
-  activityLog?: T;
+  activityLog?:
+    | T
+    | {
+        at?: T;
+        type?: T;
+        key?: T;
+        cells?: T;
+        data?: T;
+        id?: T;
+      };
   subject?: T;
   type?: T;
   status?: T;
@@ -10952,6 +11031,16 @@ export interface TaskExpireEvents {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskRecoverLostJobs".
+ */
+export interface TaskRecoverLostJobs {
+  input?: unknown;
+  output: {
+    cancelled: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskScreenSubmission".
  */
 export interface TaskScreenSubmission {
@@ -11066,6 +11155,7 @@ export interface TaskVerifyEmbeds {
     disabled: number;
     pathPromoted: number;
     pathDemoted: number;
+    seoFailing: number;
   };
 }
 /**
