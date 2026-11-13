@@ -134,7 +134,7 @@ const mixedItems = [
 export const ContentCarouselStory: Story = () => (
   <StoryWrapper>
     <StorySection title="Sizes">
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-700 mb-4">
         The <code>size</code> prop resizes the whole card — image height, title, spacing, and play
         button — in a coordinated way. The nav arrows stay centered on the image.
       </p>
@@ -146,14 +146,14 @@ export const ContentCarouselStory: Story = () => (
     </StorySection>
 
     <StorySection inContext={true} title="Meditations">
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-700 mb-4">
         Meditation carousel with play buttons, duration badges, and titles (no descriptions).
       </p>
       <ContentCarousel items={meditationItems} title="Featured Meditations" />
     </StorySection>
 
     <StorySection inContext={true} title="Articles">
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-700 mb-4">
         Article carousel with titles, descriptions, and varied aspect ratios (no play buttons or
         duration).
       </p>
@@ -161,7 +161,7 @@ export const ContentCarouselStory: Story = () => (
     </StorySection>
 
     <StorySection inContext={true} title="Mixed Content">
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-700 mb-4">
         Combination of meditations and articles with varied aspect ratios and features.
       </p>
       <ContentCarousel items={mixedItems} title="Explore Content" />

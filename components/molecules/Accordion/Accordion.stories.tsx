@@ -84,7 +84,7 @@ export const Default: Story = () => (
                 </ol>
                 <p className="mb-2">
                   For guided sessions, visit our{' '}
-                  <a href="#" className="text-teal-600 underline hover:text-teal-700">
+                  <a href="#" className="text-teal-700 underline hover:text-teal-800">
                     meditation library
                   </a>
                   .
