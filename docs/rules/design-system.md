@@ -21,6 +21,8 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
 - Meet WCAG 2.1 AA.
 - Gate a JavaScript-driven animation on `prefers-reduced-motion` — see the Motion section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
+- Keep every component's first render visible — see the Performance section in
+  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
 
 ## The 44×44 touch target has two utilities — do not hand-roll a third
 
