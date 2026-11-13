@@ -36,6 +36,12 @@ const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 // Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
 
+// The public site an embedded player sends a visitor back to: the legacy Rails
+// app on its own origin, which localizes its own slugs (`/fr/méditations`), so
+// `lib/urls.ts` cannot spell these and both links stay on the English entry
+// points. The bare domain is the web arm's link text — a brand name, not copy.
+const WEMEDITATE_DOMAIN = 'wemeditate.com'
+
 // Placeholder image for when no frames are available (teal gradient)
 const PLACEHOLDER_IMAGE =
   'data:image/svg+xml,' +
@@ -815,29 +821,37 @@ function MeditationPlayerInner({
         </div>
 
         {/* Upsell Message */}
-        {/* eslint-disable no-restricted-syntax -- #178: these need keys added to wm-web-translations first */}
         {upsell && (
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
-              {upsell === 'web' ? (
-                <>
-                  Find more meditations on{' '}
-                  <Link external href="https://wemeditate.com/meditations" variant="primary">
-                    wemeditate.com
-                  </Link>
-                </>
-              ) : (
-                <>
-                  Find interactive meditations with meditation music in our{' '}
-                  <Link external href="https://wemeditate.com/app" variant="primary">
-                    free app
-                  </Link>
-                </>
-              )}
+              {upsell === 'web'
+                ? t.rich('meditation.general.upsell_web', {
+                    link: (
+                      <Link
+                        key="upsell"
+                        external
+                        href={`https://${WEMEDITATE_DOMAIN}/meditations`}
+                        variant="primary"
+                      >
+                        {WEMEDITATE_DOMAIN}
+                      </Link>
+                    ),
+                  })
+                : t.rich('meditation.general.upsell_app', {
+                    link: (
+                      <Link
+                        key="upsell"
+                        external
+                        href={`https://${WEMEDITATE_DOMAIN}/app`}
+                        variant="primary"
+                      >
+                        {t('meditation.general.upsell_app_link')}
+                      </Link>
+                    ),
+                  })}
             </p>
           </div>
         )}
-        {/* eslint-enable no-restricted-syntax */}
       </div>
     </div>
   )
