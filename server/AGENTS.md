@@ -41,8 +41,7 @@ Two things about `form` and the visitor's IP that only show in production:
   reaches it from this Worker's egress address. So the proxy forwards its own incoming
   `cf-connecting-ip` as `x-client-ip`, which SahajCloud prefers over the address it sees
   (sydevs/SahajCloud#808). The header is omitted, never blanked, when our own request carries no
-  `cf-connecting-ip`; upstream falls back on absence and requires it from nobody — the Atlas
-  widget posts from the browser and sends none.
+  `cf-connecting-ip`; upstream falls back on absence and requires it from nobody.
 
   Two limits stand. Whether Cloudflare refuses a `remoteip` that did not solve the challenge is
   **unverified** — the always-passes test secret cannot answer it — so `remoteip` is a scoring

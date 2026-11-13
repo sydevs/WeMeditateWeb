@@ -3,7 +3,7 @@ import { SignJWT } from 'jose'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
-import { CLIENT_IP_HEADER, SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
 import type { SahajCloudEnv } from './sahajcloud-context'
 
 /**
@@ -235,8 +235,7 @@ function submit(options: { body?: unknown; token?: string; clientIp?: string } =
       Origin: 'https://wemeditate.com',
       Referer: 'https://wemeditate.com/contact',
       ...(options.token ? { [TURNSTILE_TOKEN_HEADER]: options.token } : {}),
-      // Spelled as Cloudflare sends it. `Headers` matches case-insensitively,
-      // and a fixture that quietly lowercased it would stop proving that.
+      // Spelled as Cloudflare sends it, not as the route reads it.
       ...(options.clientIp ? { 'CF-Connecting-IP': options.clientIp } : {}),
     },
     body: JSON.stringify(
@@ -287,25 +286,28 @@ describe('POST /api/submissions — the forward', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('forwards the captcha token and the visitor, and no other browser header', async () => {
+  it('forwards the captcha token and the visitor, and nothing the browser sent', async () => {
     // Origin and Referer must not cross over: a server-to-server call is
     // exempt from the client's allowedDomains allowlist, and forwarding the
     // browser's host would put this site through it.
+    //
+    // Both names are spelled out rather than read from their constants. An
+    // assertion built from the symbol it is checking stays green through a
+    // rename that silently drops the header upstream.
     await submit({ token: 'turnstile-token', clientIp: '203.0.113.7' })
 
     expect(request.mock.calls[0][0].init.headers).toEqual({
-      [TURNSTILE_TOKEN_HEADER]: 'turnstile-token',
-      [CLIENT_IP_HEADER]: '203.0.113.7',
+      'x-turnstile-token': 'turnstile-token',
+      'x-client-ip': '203.0.113.7',
     })
   })
 
   it('sends no visitor address at all when our own request carries none', async () => {
     // Upstream falls back to the address it sees when the header is absent.
-    // A blank one is a claim about the visitor that we cannot make.
     await submit({ token: 'turnstile-token' })
 
     expect(request.mock.calls[0][0].init.headers).toEqual({
-      [TURNSTILE_TOKEN_HEADER]: 'turnstile-token',
+      'x-turnstile-token': 'turnstile-token',
     })
   })
 

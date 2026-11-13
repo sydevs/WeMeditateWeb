@@ -33,6 +33,8 @@ export const TURNSTILE_TOKEN_HEADER = 'x-turnstile-token'
  * Turnstile's `remoteip` is the proxy rather than whoever solved the
  * challenge. SahajCloud reads it only from an authenticated `clients` request
  * and never requires it (sydevs/SahajCloud#808).
+ *
+ * The proxy sets this one, unlike the two names above, which the browser sends.
  */
 export const CLIENT_IP_HEADER = 'x-client-ip'
 

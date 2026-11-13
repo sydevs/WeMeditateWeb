@@ -215,11 +215,9 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
  * there. Everything else in the body is re-validated by the collection per
  * type.
  *
- * The address is this Worker's own `cf-connecting-ip`, set by the edge in
- * front of us, and it goes on as `CLIENT_IP_HEADER` because SahajCloud would
- * otherwise read our egress address for Turnstile's `remoteip`. It is omitted
- * rather than blanked when our own request carries none, since upstream treats
- * absence as "score without it".
+ * The address is this Worker's own `cf-connecting-ip`, because SahajCloud
+ * would otherwise read our egress address for Turnstile's `remoteip`. It is
+ * omitted rather than blanked when we have none: upstream scores without it.
  *
  * Nothing of the created row is echoed back. An API client holds create and
  * no read on `user-submissions` on purpose, and the browser needs only
