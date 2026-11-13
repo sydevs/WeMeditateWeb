@@ -7,19 +7,35 @@
  * Heavy organism imports are mocked, so the test exercises LayoutChrome's
  * own settings handling, not the full component tree.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
-const ctx: { settings: unknown } = { settings: undefined }
+const ctx: { settings: unknown; page: unknown } = { settings: undefined, page: undefined }
 
-vi.mock('vike-react/useData', () => ({ useData: () => ({ settings: ctx.settings }) }))
+vi.mock('vike-react/useData', () => ({
+  useData: () => ({ settings: ctx.settings, page: ctx.page }),
+}))
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'en', urlPathname: '/index', translations: EN_TRANSLATIONS }),
 }))
 vi.mock('../components/organisms/Header', () => ({
-  Header: ({ navItems }: { navItems: { label: string; dropdown?: unknown }[] }) => (
-    <nav>{navItems.map((n) => `${n.label}${n.dropdown ? '[dropdown]' : ''}`).join(',')}</nav>
+  // Stands in for Header's fragment: the banner, then the sticky nav. Both
+  // carry what the layout hands them, because where the nav sits and what band
+  // it is given are LayoutChrome's own contract (#204).
+  Header: ({
+    navItems,
+    bandClassName,
+  }: {
+    navItems: { label: string; dropdown?: unknown }[]
+    bandClassName?: string
+  }) => (
+    <>
+      <header className={bandClassName} />
+      <nav className="sticky top-0">
+        {navItems.map((n) => `${n.label}${n.dropdown ? '[dropdown]' : ''}`).join(',')}
+      </nav>
+    </>
   ),
 }))
 vi.mock('../components/organisms/Footer', () => ({
@@ -30,14 +46,43 @@ vi.mock('../components/organisms/Footer', () => ({
 
 const { default: LayoutChrome } = await import('./LayoutChrome')
 
+/**
+ * Open `<div>`s enclosing the sticky nav. A sticky element travels only inside
+ * its containing block, so this count is what decides how far the nav can go:
+ * 1 is the page column alone, and anything more is a box that releases it.
+ */
+function wrappersAroundNav(html: string): number {
+  const before = html.slice(0, html.indexOf('<nav'))
+
+  return (before.match(/<div/g) ?? []).length - (before.match(/<\/div>/g) ?? []).length
+}
+
+const splashPage = {
+  content: {
+    root: { children: [{ type: 'block', fields: { blockType: 'splash', textColor: 'light' } }] },
+  },
+}
+
+const navSettings = {
+  featuredPages: [{ title: 'About', slug: 'about' }],
+  knowledgePages: [],
+  featuredArticles: [],
+  classPages: [],
+  infoPages: [],
+}
+
 describe('LayoutChrome', () => {
+  beforeEach(() => {
+    ctx.page = undefined
+  })
+
   it('renders only children when settings are absent (error-page / SahajCloud-down path)', () => {
     ctx.settings = undefined
     const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
 
     expect(html).toContain('page content')
     // No chrome when settings are unavailable.
-    expect(html).not.toContain('<nav>')
+    expect(html).not.toContain('<nav')
     expect(html).not.toContain('<footer')
   })
 
@@ -99,6 +144,37 @@ describe('LayoutChrome', () => {
     const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
 
     expect(html).toContain('en:/index,fr:/index')
+  })
+
+  describe('the sticky nav', () => {
+    // Measured in Chromium at 1200px of scroll: `top` was -1153 without a lead
+    // splash and -1107 with one, at 390px and at 1280px. The nav never reached
+    // the state its compact bar, its fade and its sentinel all exist for (#204).
+    it('hangs off the page column, so it has the page to pin against', () => {
+      ctx.settings = navSettings
+
+      expect(wrappersAroundNav(renderToStaticMarkup(<LayoutChrome>c</LayoutChrome>))).toBe(1)
+    })
+
+    it('keeps that much room inside the lead-splash overlay', () => {
+      // The overlay spans the whole column, not the header, so the nav inside
+      // it still has the page to travel.
+      ctx.settings = navSettings
+      ctx.page = splashPage
+      const html = renderToStaticMarkup(<LayoutChrome>c</LayoutChrome>)
+
+      expect(wrappersAroundNav(html)).toBe(2)
+      expect(html).toContain('class="pointer-events-none absolute inset-0 z-30"')
+    })
+
+    it('hands the header the page band a wrapper used to give it', () => {
+      ctx.settings = navSettings
+      ctx.page = splashPage
+
+      expect(renderToStaticMarkup(<LayoutChrome>c</LayoutChrome>)).toContain(
+        '<header class="max-w-7xl mx-auto px-6 w-full surface-dark"',
+      )
+    })
   })
 
   it('omits the dropdown item entirely when there are no knowledge pages', () => {
