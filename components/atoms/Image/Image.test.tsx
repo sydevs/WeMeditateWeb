@@ -139,11 +139,9 @@ describe('<Image> forceAspectRatio', () => {
     expect(html).not.toContain('w-full h-full')
   })
 
-  // The placeholder is `absolute inset-0`, so without a box the container
-  // collapses to 0px and the error icon is invisible (#212). A blank src
-  // reaches the same branch as a failed load at first render, which is what
-  // makes the state reachable from a server render at all.
-  it('falls back to the caller\u2019s ratio when the placeholder is the only content', () => {
+  // A blank src reaches the same branch as a failed load at first render,
+  // which is what makes this state reachable from a server render at all.
+  it('falls back to the given ratio when only the placeholder renders', () => {
     const html = renderToStaticMarkup(
       <Image alt="test" aspectRatio="video" forceAspectRatio={false} src="" />,
     )

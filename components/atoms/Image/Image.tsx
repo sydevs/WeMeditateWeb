@@ -276,16 +276,6 @@ export function Image({
   // still fetching an optimized variant.
   const boxed = Boolean(aspectRatio) && forceAspectRatio
 
-  const aspectRatioClass = aspectRatio
-    ? {
-        square: 'aspect-square',
-        video: 'aspect-video',
-        '4-3': 'aspect-[4/3]',
-        '3-2': 'aspect-[3/2]',
-        ultrawide: 'aspect-[21/9]',
-      }[aspectRatio]
-    : ''
-
   const objectFitStyles = {
     cover: 'object-cover',
     contain: 'object-contain',
@@ -319,16 +309,27 @@ export function Image({
   // <img> and let the placeholder show.
   const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''
 
-  const placeholderOnly = showLoading && (isLoading || hasError || !hasSrc)
+  const hasImg = !hasError && hasSrc
 
-  // Unboxed, the `absolute inset-0` <Placeholder> gives the container no
-  // height, so the error state collapses to 0px and hides its icon (#212).
-  // Only while the placeholder is alone: `overflow-hidden` below would clip a
-  // loaded natural-flow <img> taller than the box.
-  const aspectRatioStyles = boxed || placeholderOnly ? aspectRatioClass : ''
+  const showPlaceholder = showLoading && (isLoading || !hasImg)
 
-  // `aspectRatioStyles` is '' when no ratio applies, so one literal covers
-  // both cases.
+  // The placeholder is `absolute inset-0`, so an unboxed container has no
+  // height and the error icon is invisible (#212). Only while the placeholder
+  // is alone: `overflow-hidden` below would clip a natural-flow <img> taller
+  // than the box, loading or loaded.
+  const aspectRatioStyles =
+    aspectRatio && (boxed || (showPlaceholder && !hasImg))
+      ? {
+          square: 'aspect-square',
+          video: 'aspect-video',
+          '4-3': 'aspect-[4/3]',
+          '3-2': 'aspect-[3/2]',
+          ultrawide: 'aspect-[21/9]',
+        }[aspectRatio]
+      : ''
+
+  // One literal for both cases: an empty `aspectRatioStyles` leaves the double
+  // space, so unboxed markup is unchanged byte for byte.
   const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
@@ -344,23 +345,15 @@ export function Image({
           top-left, overflowing or clipping instead of matching the rendered
           image box. The <img>'s own width and height attributes reserve
           layout space and prevent shift. */}
-      {placeholderOnly && (
-        <Placeholder
-          animate={!hasError && hasSrc}
-          className="absolute inset-0"
-          variant={placeholderVariant}
-        >
+      {showPlaceholder && (
+        <Placeholder animate={hasImg} className="absolute inset-0" variant={placeholderVariant}>
           {hasError && (
-            <Icon
-              aria-label={t('errors.a11y.error_icon')}
-              icon={ExclamationCircleIcon}
-              size="lg"
-            />
+            <Icon aria-label={t('errors.a11y.error_icon')} icon={ExclamationCircleIcon} size="lg" />
           )}
         </Placeholder>
       )}
 
-      {!hasError && hasSrc && (
+      {hasImg && (
         <img
           ref={imgRef}
           alt={alt}

@@ -75,38 +75,32 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="States">
-      <div>
-        <p className="text-sm text-gray-600 mb-2">
-          A loaded image is opaque, with no placeholder over it. An absent src keeps the
-          placeholder, so the layout still holds, and showLoading false drops even that.
-        </p>
+      <StorySection
+        description="A loaded image is opaque, with no placeholder over it. An absent src keeps the placeholder, so the layout still holds, and showLoading false drops even that."
+        title="Placeholder"
+        variant="subsection"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
           <Image alt="A loaded image" aspectRatio="4-3" src="https://picsum.photos/id/30/600/400" />
           <Image alt="No src, so the placeholder holds the box" aspectRatio="4-3" src="" />
           <Image alt="No src and no placeholder" aspectRatio="4-3" showLoading={false} src="" />
         </div>
-      </div>
+      </StorySection>
 
-      <div className="mt-6">
-        <p className="text-sm text-gray-600 mb-2">
-          A natural-flow image (forceAspectRatio false) whose load fails falls back to the
-          aspectRatio it was given, so the error icon stays visible. Without an aspectRatio there
-          is nothing to fall back to, and the slot collapses.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+      <StorySection
+        description="A natural-flow image (forceAspectRatio false) whose load fails falls back to the aspectRatio it was given, so the error icon stays visible instead of collapsing the slot to 0px."
+        title="Failed load"
+        variant="subsection"
+      >
+        <div className="max-w-sm">
           <Image
-            alt="A broken natural-flow image with an aspect ratio"
+            alt="A broken natural-flow image"
             aspectRatio="video"
             forceAspectRatio={false}
             src="https://picsum.photos/id/999999/600/400"
           />
-          <Image
-            alt="A broken natural-flow image with no aspect ratio"
-            forceAspectRatio={false}
-            src="https://picsum.photos/id/999999/600/400"
-          />
         </div>
-      </div>
+      </StorySection>
     </StorySection>
 
     <StorySection title="Examples" inContext={true}>
