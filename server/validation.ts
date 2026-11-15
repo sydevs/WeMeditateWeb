@@ -33,11 +33,15 @@ export const slugSchema = z
  * Schema for validating numeric IDs.
  * Coerces a string to a number, validates it, then transforms it back to
  * a string, for API compatibility.
+ *
+ * Capped at Postgres `int4`: SahajCloud answers a larger id with a 500, not a
+ * 404, so it would cost three retried reads and then an error page.
  */
 export const idSchema = z.coerce
   .number({ message: 'ID must be a number' })
   .int('ID must be an integer')
   .positive('ID must be positive')
+  .max(2147483647, 'ID out of range')
   .transform(String)
 
 // ===== Submission Schemas =====

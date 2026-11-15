@@ -5,6 +5,10 @@
  * and user-friendly message generation.
  */
 
+// ⚠ `@sentry/react`, unlike the rest of `server/`: `ErrorFallback` imports this
+// module in the browser, where `@sentry/cloudflare` does not build. On the
+// server `withRetry`'s calls still reach the Worker's client, because both SDKs
+// re-export one `@sentry/core` — so keep the two packages on the same version.
 import * as Sentry from '@sentry/react'
 
 export enum ErrorType {
@@ -45,7 +49,12 @@ interface HttpErrorLike {
   status?: unknown
 }
 
-function readStatus(error: unknown): number | undefined {
+/**
+ * The HTTP status an error carries, where it carries one. A `PayloadSDKError`
+ * and a `SahajCloudResponseError` both do, so a caller that answers one status
+ * itself reads it here rather than matching the message.
+ */
+export function readStatus(error: unknown): number | undefined {
   if (typeof error !== 'object' || error === null) return undefined
   const e = error as HttpErrorLike
   const responseStatus = e.response?.status

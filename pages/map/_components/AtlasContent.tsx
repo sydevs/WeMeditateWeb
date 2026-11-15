@@ -26,6 +26,7 @@ import { useT } from '../../../hooks/useT'
 import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
 import { sitePathFromUrl } from '../../../lib/urls'
+import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
 
 /**
@@ -43,10 +44,9 @@ import { Link } from '../../../components/atoms/Link'
  * URL, and the atlas publishes it locale-free, which would drop a French
  * visitor into English on every rung.
  *
- * TODO: this belongs in `Link`, which asks the same question one line from
- * the answer. Moving it rewrites every editor-pasted href and collides with
- * `external` (`MeditationPlayer` links `wemeditate.com` that way), so it is
- * a decision of its own — sydevs/WeMeditateWeb#124. Do not copy this shape.
+ * `Link` leaves a same-origin absolute href alone by design
+ * (sydevs/WeMeditateWeb#160 question 1), so resolving the canonical is
+ * this function's job, not a gap in `Link`.
  */
 export function atlasHref(
   link: { route: string | null; url: string | null },
@@ -216,16 +216,21 @@ function EventContent({
         )}
       </dl>
 
-      {/* A raw <img> until #148: the `Image` atom holds its <img> at
-          `opacity-0` until a client load handler runs, and this markup is
-          read by visitors who never hydrate. */}
+      {/* `sizes` is the column above measured inside its gutters — `max-w-3xl`
+          caps the padded box, so the image is 720px, never 768. Declaring the
+          cap instead costs a whole srcset tier at DPR 2. The wrapper carries
+          the margin because `className` reaches the <img>. */}
       {lead && (
-        <img
-          alt={lead.alt ?? ''}
-          className="mt-6 w-full max-w-full rounded"
-          loading="lazy"
-          src={lead.url}
-        />
+        <div className="mt-6">
+          <Image
+            alt={lead.alt ?? ''}
+            aspectRatio="video"
+            className="w-full"
+            forceAspectRatio={false}
+            sizes="(max-width: 40rem) calc(100vw - 2rem), (max-width: 48rem) calc(100vw - 3rem), 720px"
+            src={lead.url}
+          />
+        </div>
       )}
 
       {(content.paragraphs ?? []).map((paragraph, index) => (

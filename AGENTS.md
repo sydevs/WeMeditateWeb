@@ -65,8 +65,8 @@ The Worker holds no bindings and no persistent state.
 A second, assets-only Worker is configured here for the Ladle playground
 (`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
 wrangler does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml`.
-`pnpm check:wrangler` is what reads the design config in CI. Creating that Worker is #184's
-attended phase 2; until then the playground is served by a Cloudflare Pages project. See
+`pnpm check:wrangler` is what reads the design config in CI. That Worker serves every PR preview,
+and `design.wemeditate.com` as a Workers Custom Domain (sydevs/SahajAtlasWeb#266). See
 [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 
 Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
@@ -128,7 +128,7 @@ These rules apply whether or not the matching rule file or skill is loaded.
   `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path
   under such a URL in `normalizeContentPath`'s spelling, ready for the caller to locale-prefix,
   and `null` for every other URL and for an unknown origin. Upstream canonicals arrive this way.
-  `atlasHref` calls it today; whether `Link` should call it for every consumer is #124.
+  `atlasHref` is its only caller, and `Link` passes such a URL through untouched by design (#124).
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.
@@ -200,7 +200,7 @@ editable. **Do not move a rule body back into `.claude/`.**
 | Rule | Scope | Covers |
 | --- | --- | --- |
 | [code-comments](docs/rules/code-comments.md) | every session (no `paths:`) | When a comment earns its place, and the comments never to delete. Synced from `claude-workflow`: edit the canonical block there |
-| [design-system](docs/rules/design-system.md) | `components/**`, `layouts/**` | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
+| [design-system](docs/rules/design-system.md) | `components/**`, `layouts/**`, `pages/**` | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
 | [component-stories](docs/rules/component-stories.md) | `**/*.stories.tsx`, `components/ladle/**` | Ladle story structure, utility components, standard section order |
 | [testing](docs/rules/testing.md) | `**/*.test.ts(x)`, `tests/**` | Vitest in `node` env, no jsdom/RTL, SSR-string assertions, the `+`-prefix trap under `pages/` |
 | [zod-validation](docs/rules/zod-validation.md) | `server/validation.ts`, `pages/**/+data.ts`, FormBuilder | Schema locations, Zod 4 syntax, which status codes Vike's `render()` accepts |
@@ -226,8 +226,8 @@ skill relevant.
   standards, and implementation guidelines.
 - [STORYBOOK.md](STORYBOOK.md) — the story utility-component API, section order, and Ladle
   configuration.
-- [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including Puppeteer's `evaluate` (needs
-  an explicit `return`).
+- [MCP_USAGE.md](MCP_USAGE.md) — MCP server usage notes, including the Playwright MCP's
+  `evaluate` (takes a function and returns only serializable values).
 - [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md) — the CI workflow, the two
   Cloudflare previews (the web Worker and the Ladle playground), and the preview smoke tests.
 - [docs/local-environment.md](docs/local-environment.md) — local SahajCloud key issues (a 403 is a

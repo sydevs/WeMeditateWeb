@@ -16,8 +16,8 @@
  * docblocks.
  *
  * These routes run inside the `contextStorage()` middleware (registered
- * first in entry.ts), so `getSahajCloudContext()` resolves the API key and KV
- * binding normally.
+ * first in entry.ts), so `getSahajCloudContext()` resolves the API key
+ * normally.
  */
 
 import type { Hono } from 'hono'
