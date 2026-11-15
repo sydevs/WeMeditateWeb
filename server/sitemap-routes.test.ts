@@ -13,7 +13,7 @@ vi.stubGlobal('fetch', fetchMock)
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one.
@@ -158,7 +158,7 @@ describe('/sitemap.xml', () => {
     expect(xml).not.toContain('<loc>https://wemeditate.com/null</loc>')
   })
 
-  it('retries every read behind it, since the KV layer used to supply that', async () => {
+  it('retries every read behind it', async () => {
     await get('/sitemap.xml')
 
     // The config read, the content documents, and the atlas half. Each

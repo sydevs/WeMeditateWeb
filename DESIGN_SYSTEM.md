@@ -268,7 +268,7 @@ To remove an overengineered component:
 6. Compare the result to the original design, and check accessibility (contrast, semantic HTML,
    ARIA).
 
-See [MCP_USAGE.md](MCP_USAGE.md) for the Puppeteer workflow that extracts these values from a
+See [MCP_USAGE.md](MCP_USAGE.md) for the Playwright MCP workflow that extracts these values from a
 live page.
 
 ## Size variants
