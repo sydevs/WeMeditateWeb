@@ -209,6 +209,7 @@ export const WEB_TRANSLATIONS_SELECT = {
   map: true,
   forms: true,
   media: true,
+  video: true,
   location: true,
   blocks: true,
 } satisfies WmWebTranslationsSelect<true>
