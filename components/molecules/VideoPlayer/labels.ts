@@ -71,17 +71,18 @@ export const VIDEO_LAYOUT_KEYS = {
 } as const satisfies Partial<Record<DefaultLayoutWord, TranslationKey>>
 
 /**
- * Words `<DefaultVideoLayout>` declares that this player cannot reach, so
- * each keeps Vidstack's English and costs nobody a translation.
+ * Words `<DefaultVideoLayout>` declares that no visitor of this player
+ * reads, so each keeps Vidstack's English and costs nobody a translation.
  *
- * Three kinds, measured against `@vidstack/react@1.15.7`. A feature this
- * player does not configure: remote playback (`AirPlay`, `Google Cast` and
- * its three connection states), a `download` prop, a live stream, a
- * chapters track. A word the default layout never renders at all: `Loop`,
- * `Playback`, and `Disabled`, which belongs to the Plyr layout. And
- * `Replay` / `Continue`, which only `DefaultAudioTitle` renders.
+ * Measured against `@vidstack/react@1.15.7`. A feature this player does not
+ * configure: remote playback (`AirPlay`, `Google Cast`, its three connection
+ * states), a `download` prop, a live stream, a chapters track — the two cast
+ * buttons do render, as `display: none` and `aria-hidden`, so the rendered
+ * page holds their English. A word the layout never renders at all: `Loop`,
+ * `Playback`, and `Disabled`, which is Plyr's. And `Replay` / `Continue`,
+ * which only `DefaultAudioTitle` renders.
  *
- * Enabling one of those features is what adds its key, not an upgrade.
+ * Enabling one of those features adds its key. A Vidstack upgrade does not.
  */
 export const UNREACHABLE_WORDS = [
   'AirPlay',
