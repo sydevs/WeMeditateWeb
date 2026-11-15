@@ -260,6 +260,85 @@ describe('a class page', () => {
   })
 })
 
+/**
+ * The opening `<a>` tag carrying this href, or the empty string.
+ *
+ * Both branches of a canonical render an `<a>`, so an assertion naming only
+ * the attribute would pass on the wrong link.
+ */
+function anchorFor(html: string, href: string): string {
+  const at = html.indexOf(`href="${href}"`)
+
+  return at === -1 ? '' : html.slice(html.lastIndexOf('<a', at), html.indexOf('>', at) + 1)
+}
+
+describe('a canonical owned by another domain', () => {
+  // Ownership is per-subtree, so these are real links off this site, not a
+  // fallback. Without an origin to compare against, every canonical here
+  // reads as foreign — which is what a render outside a request really has.
+  it('sends a breadcrumb rung to a new tab, and withholds the referrer', () => {
+    const seo = {
+      ...regionSeo(),
+      breadcrumbs: [
+        { name: 'United Kingdom', route: '/gb', url: 'https://other.org/classes/gb' },
+        ...breadcrumbs.slice(1),
+      ],
+    } as AtlasSeoResponse
+    const rung = anchorFor(render(seo), 'https://other.org/classes/gb')
+
+    expect(rung).toContain('target="_blank"')
+    expect(rung).toContain('rel="noopener noreferrer"')
+  })
+
+  it('does the same for an event card', () => {
+    const html = render(
+      regionSeo({
+        events: [
+          {
+            id: 1204,
+            route: '/gb/london/1204',
+            url: 'https://other.org/classes/gb/london/1204',
+            title: 'Saturday morning meditation',
+            schedule: 'Every week on Saturday at 9:30 AM',
+            address: '12 Beethoven Street, London',
+            online: false,
+          },
+        ],
+        eventCount: 1,
+      }),
+    )
+    const card = anchorFor(html, 'https://other.org/classes/gb/london/1204')
+
+    expect(card).toContain('target="_blank"')
+    expect(card).toContain('rel="noopener noreferrer"')
+  })
+
+  it('leaves a card that fell back to our own /map path alone', () => {
+    const html = render(
+      regionSeo({
+        events: [
+          {
+            id: 9,
+            route: '/gb/london/9',
+            url: null,
+            title: 'Online sitting',
+            schedule: 'Daily at 7 PM',
+            address: '',
+            online: true,
+          },
+        ],
+        eventCount: 1,
+      }),
+    )
+    const card = anchorFor(html, '/map/gb/london/9')
+
+    // Positive first: `not.toContain` on an empty match would pass vacuously.
+    expect(card).toContain('href="/map/gb/london/9"')
+    expect(card).not.toContain('target=')
+    expect(card).not.toContain('rel=')
+  })
+})
+
 describe('the atlas landing page', () => {
   it('heads the page with the answer’s own title, which its content has no name for', () => {
     const html = render(rootSeo())

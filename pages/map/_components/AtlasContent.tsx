@@ -25,7 +25,7 @@ import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT } from '../../../hooks/useT'
 import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
-import { sitePathFromUrl } from '../../../lib/urls'
+import { isSitePath, sitePathFromUrl } from '../../../lib/urls'
 import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
 
@@ -82,7 +82,12 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
               {isCurrent || !href ? (
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
-                <Link className="hover:text-teal-600" href={href} variant="unstyled">
+                <Link
+                  className="hover:text-teal-600"
+                  external={!isSitePath(href)}
+                  href={href}
+                  variant="unstyled"
+                >
                   {rung.name}
                 </Link>
               )}
@@ -104,7 +109,12 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
     <li className="border-t border-gray-200 py-4">
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
-          <Link className="hover:text-teal-600" href={href} variant="unstyled">
+          <Link
+            className="hover:text-teal-600"
+            external={!isSitePath(href)}
+            href={href}
+            variant="unstyled"
+          >
             {card.title}
           </Link>
         ) : (
