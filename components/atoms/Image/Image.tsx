@@ -328,8 +328,8 @@ export function Image({
         }[aspectRatio]
       : ''
 
-  // One literal for both cases: an empty `aspectRatioStyles` leaves the double
-  // space, so unboxed markup is unchanged byte for byte.
+  // One literal for both cases: an empty `aspectRatioStyles` still leaves the
+  // separating space, so the unboxed container's class list is unaffected.
   const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
