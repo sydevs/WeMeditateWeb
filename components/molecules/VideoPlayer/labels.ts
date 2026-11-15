@@ -119,9 +119,19 @@ export type EveryLayoutWordHandled = AssertNever<Exclude<DefaultLayoutWord, Hand
  *
  * The prop is `Partial<>`, so a word this map omits keeps Vidstack's own
  * English rather than rendering blank.
+ *
+ * Assigning word by word is what type-checks the result. `Object.fromEntries`
+ * returns `{ [k: string]: string }`, and an index signature satisfies an
+ * all-optional target whatever its value type, so the declared return type
+ * checks nothing there.
  */
 export function videoLayoutTranslations(t: TFunction): Partial<DefaultLayoutTranslations> {
   const entries = Object.entries(VIDEO_LAYOUT_KEYS) as [DefaultLayoutWord, TranslationKey][]
+  const translations: Partial<DefaultLayoutTranslations> = {}
 
-  return Object.fromEntries(entries.map(([word, key]) => [word, t(key)]))
+  for (const [word, key] of entries) {
+    translations[word] = t(key)
+  }
+
+  return translations
 }
