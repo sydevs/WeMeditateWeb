@@ -19,10 +19,12 @@ import type {
 import type { TFunction, TranslationKey } from '../../../lib/i18n'
 
 /**
- * The `video` tab covers the control bar and the settings menu. `Volume`
- * is the exception: the bank already names that slider for the audio
- * player, and a second copy of one word would be a second thing to
- * translate.
+ * The `video` tab covers the control bar and the settings menu. Seven words
+ * point outside it, because the bank already names those controls for the
+ * audio player and the gallery, and a second copy of a string is a second
+ * thing to translate (#82). The two `blocks.a11y.*` strings are sentence
+ * case, so those tooltips read `Enter fullscreen` rather than Vidstack's
+ * title case.
  */
 export const VIDEO_LAYOUT_KEYS = {
   Accessibility: 'video.general.accessibility',
@@ -38,21 +40,21 @@ export const VIDEO_LAYOUT_KEYS = {
   Color: 'video.general.color',
   Default: 'video.general.default',
   'Display Background': 'video.general.display_background',
-  'Enter Fullscreen': 'video.general.enter_fullscreen',
+  'Enter Fullscreen': 'blocks.a11y.enter_fullscreen',
   'Enter PiP': 'video.general.enter_pip',
-  'Exit Fullscreen': 'video.general.exit_fullscreen',
+  'Exit Fullscreen': 'blocks.a11y.exit_fullscreen',
   'Exit PiP': 'video.general.exit_pip',
   Family: 'video.general.family',
   Font: 'video.general.font',
   Fullscreen: 'video.a11y.fullscreen',
   'Keyboard Animations': 'video.general.keyboard_animations',
-  Mute: 'video.general.mute',
+  Mute: 'media.a11y.mute',
   Normal: 'video.general.normal',
   Off: 'video.general.off',
   Opacity: 'video.general.opacity',
-  Pause: 'video.general.pause',
+  Pause: 'media.a11y.pause',
   PiP: 'video.a11y.pip',
-  Play: 'video.general.play',
+  Play: 'media.a11y.play',
   Quality: 'video.general.quality',
   Reset: 'video.general.reset',
   Seek: 'video.a11y.seek',
@@ -65,7 +67,7 @@ export const VIDEO_LAYOUT_KEYS = {
   Text: 'video.general.text',
   'Text Background': 'video.general.text_background',
   Track: 'video.general.track',
-  Unmute: 'video.general.unmute',
+  Unmute: 'media.a11y.unmute',
   Volume: 'media.a11y.volume',
 } as const satisfies Partial<Record<DefaultLayoutWord, TranslationKey>>
 

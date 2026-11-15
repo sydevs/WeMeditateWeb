@@ -8,9 +8,10 @@ describe('videoLayoutTranslations', () => {
     // SahajCloud seeded this copy from Vidstack's own English, so in English
     // the map is an identity. That is what catches a key pointing at the
     // wrong string: `Settings → video.general.quality` resolves fine and
-    // renders "Quality" on the settings button.
+    // renders "Quality" on the settings button. Case is excluded, because
+    // the reused `blocks.a11y.*` strings are sentence case.
     const wrong = Object.entries(videoLayoutTranslations(enT)).filter(
-      ([word, value]) => value !== word,
+      ([word, value]) => value.toLowerCase() !== word.toLowerCase(),
     )
 
     expect(wrong).toEqual([])
@@ -32,6 +33,25 @@ describe('videoLayoutTranslations', () => {
     expect(translations).toHaveProperty(['Enter PiP'])
   })
 
+  it('reuses the bank for every control the rest of the site already names', () => {
+    // #82: do not seed a second copy of a string the bank renders. A key
+    // under `video.` for one of these seven is a duplicate a translator
+    // has to fill twice, and the two players drift from that point on.
+    const reused = [
+      'Play',
+      'Pause',
+      'Mute',
+      'Unmute',
+      'Volume',
+      'Enter Fullscreen',
+      'Exit Fullscreen',
+    ] as const
+
+    for (const word of reused) {
+      expect(VIDEO_LAYOUT_KEYS[word]).not.toMatch(/^video\./)
+    }
+  })
+
   it('omits every word this player cannot reach, so Vidstack keeps its own English', () => {
     const translations = videoLayoutTranslations(enT)
 
@@ -43,8 +63,8 @@ describe('videoLayoutTranslations', () => {
   it('renders each word in the locale, not in English', () => {
     const fr = getT(
       {
-        video: { general: { play: 'Lecture' }, a11y: { seek: 'Rechercher' } },
-        media: { a11y: { volume: 'Volume sonore' } },
+        video: { a11y: { seek: 'Rechercher' } },
+        media: { a11y: { play: 'Lecture', volume: 'Volume sonore' } },
       } as unknown as WebTranslations,
       'fr',
     )
