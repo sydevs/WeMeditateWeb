@@ -348,7 +348,16 @@ export function Image({
       {showPlaceholder && (
         <Placeholder animate={hasImg} className="absolute inset-0" variant={placeholderVariant}>
           {hasError && (
-            <Icon aria-label={t('errors.a11y.error_icon')} icon={ExclamationCircleIcon} size="lg" />
+            <>
+              <Icon
+                aria-label={t('errors.a11y.error_icon')}
+                icon={ExclamationCircleIcon}
+                size="lg"
+              />
+              {/* The failed <img> takes its `alt` out of the document with it,
+                  so the only description of what is missing would be gone. */}
+              {alt && <span className="sr-only">{alt}</span>}
+            </>
           )}
         </Placeholder>
       )}
