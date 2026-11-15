@@ -1,7 +1,7 @@
 import React from 'react'
 import { ClientOnly } from 'vike-react/ClientOnly'
 import type { VideoPlayerProps } from './VideoPlayer'
-import { posterURL } from './poster'
+import { BOUNDED_POSTER_SIZES, posterSrcSet, posterURL } from './poster'
 
 const VideoPlayerLazy = React.lazy(() =>
   import('./VideoPlayer').then((mod) => ({ default: mod.VideoPlayer })),
@@ -16,11 +16,18 @@ const VideoPlayerLazy = React.lazy(() =>
  * gives an LCP image without loading the player. It is `loading="eager"` for
  * that reason: this is the only poster in the server HTML, and React 19 hoists
  * a preload link for any `<img>` that is not `loading="lazy"`.
+ *
+ * Unlike Vidstack's own poster, which takes a single URL, this `<img>` carries
+ * the whole video ladder, so the width follows the box and the device pixel
+ * ratio.
  */
 function VideoPlayerFallback({
   poster,
+  posterSizes = BOUNDED_POSTER_SIZES,
   className,
-}: Pick<VideoPlayerProps, 'poster' | 'className'>) {
+}: Pick<VideoPlayerProps, 'poster' | 'posterSizes' | 'className'>) {
+  const srcSet = posterSrcSet(poster)
+
   return (
     <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
       {poster ? (
@@ -28,7 +35,9 @@ function VideoPlayerFallback({
           alt=""
           className="aspect-video w-full object-cover"
           loading="eager"
+          sizes={srcSet ? posterSizes : undefined}
           src={posterURL(poster)}
+          srcSet={srcSet}
         />
       ) : (
         <div className="aspect-video w-full" />
@@ -53,7 +62,13 @@ export function VideoPlayer(props: VideoPlayerProps) {
 
   return (
     <ClientOnly
-      fallback={<VideoPlayerFallback className={props.className} poster={props.poster} />}
+      fallback={
+        <VideoPlayerFallback
+          className={props.className}
+          poster={props.poster}
+          posterSizes={props.posterSizes}
+        />
+      }
     >
       <VideoPlayerLazy {...props} />
     </ClientOnly>

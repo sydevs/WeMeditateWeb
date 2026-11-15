@@ -27,6 +27,13 @@ export interface VideoPlayerProps {
   hlsUrl: string
   /** Poster image shown before playback (and as a no-JS fallback frame). */
   poster?: string
+  /**
+   * The `sizes` the server-rendered poster declares, where this player is not
+   * inside the layout its default assumes. Vidstack's own poster takes one
+   * URL, so the mounted player keeps a single width whatever this says.
+   * @default the bounded `max-w-4xl` case
+   */
+  posterSizes?: string
   /** Seconds to seek to once metadata loads (start of a playback window). */
   startTime?: number | null
   /** Seconds at which to pause playback (end of a playback window). */

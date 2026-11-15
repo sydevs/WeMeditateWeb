@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { ResolvedLecture } from '../../server/sahajcloud-types'
 import { LectureTemplate, LecturePlayer } from './LectureTemplate'
+import { CF_BASE } from '../../tests/_helpers/cloudflare-images'
 
 // VideoPlayer is wrapped in vike-react's ClientOnly, which reads vike's page
 // context (absent in a bare node render). Stub it to render its `fallback` —
@@ -83,5 +84,18 @@ describe('<LecturePlayer> (bare, used by the embed route)', () => {
     const html = renderToStaticMarkup(<LecturePlayer lecture={makeResolved({ hlsUrl: null })} />)
 
     expect(html).toContain('missing a playable video source')
+  })
+
+  // The embed route renders this bare, so it is the one caller that has to
+  // override the poster's bounded default.
+  it('carries posterSizes through to the player', () => {
+    const html = renderToStaticMarkup(
+      <LecturePlayer
+        lecture={makeResolved({ thumbnailUrl: `${CF_BASE}/public` })}
+        posterSizes="100vw"
+      />,
+    )
+
+    expect(html).toContain('sizes="100vw"')
   })
 })

@@ -13,7 +13,7 @@ vi.mock('vike-react/ClientOnly', () => ({
 }))
 
 import { VideoPlayer } from './index'
-import { posterURL } from './poster'
+import { BOUNDED_POSTER_SIZES, posterSrcSet, posterURL } from './poster'
 import { CF_BASE, CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
 
 describe('<VideoPlayer> server-side fallback', () => {
@@ -88,5 +88,58 @@ describe('VideoPlayer poster variant', () => {
     )
 
     expect(html).toContain(`src="${poster}"`)
+  })
+})
+
+describe('VideoPlayer poster srcset', () => {
+  // The mounted player takes one URL from Vidstack, but the fallback is a
+  // plain <img>, so it can offer the whole ladder and let the box and the
+  // device pixel ratio pick.
+  it('offers every video width in the SSR fallback', () => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" poster={CF_PUBLIC_URL} />,
+    )
+
+    expect(html).toContain(
+      `srcSet="${CF_BASE}/width=640 640w, ${CF_BASE}/width=800 800w, ` +
+        `${CF_BASE}/width=1024 1024w, ${CF_BASE}/width=1536 1536w"`,
+    )
+  })
+
+  it('declares the bounded box by default', () => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" poster={CF_PUBLIC_URL} />,
+    )
+
+    expect(html).toContain(`sizes="${BOUNDED_POSTER_SIZES}"`)
+  })
+
+  // The case the default is wrong for: an iframe at 1280-1920px used to get
+  // the 1024px poster, because nothing caps /lectures/:id/embed.
+  it('lets an unbounded route declare its own box', () => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer
+        hlsUrl="https://cdn.example.com/v.m3u8"
+        poster={CF_PUBLIC_URL}
+        posterSizes="100vw"
+      />,
+    )
+
+    expect(html).toContain('sizes="100vw"')
+    expect(html).not.toContain(BOUNDED_POSTER_SIZES)
+  })
+
+  // A `sizes` with no srcset to govern is inert markup, so neither is emitted.
+  it.each([
+    ['a story placeholder', 'https://picsum.photos/seed/talk/1024/576'],
+    ['the SahajCloud dev fallback', '/api/videos/file/talk.jpg'],
+  ])('emits neither attribute for %s', (_label, poster) => {
+    const html = renderToStaticMarkup(
+      <VideoPlayer hlsUrl="https://cdn.example.com/v.m3u8" poster={poster} />,
+    )
+
+    expect(html).not.toContain('srcSet=')
+    expect(html).not.toContain('sizes=')
+    expect(posterSrcSet(poster)).toBeUndefined()
   })
 })
