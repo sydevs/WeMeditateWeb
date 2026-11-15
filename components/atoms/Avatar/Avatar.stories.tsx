@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Avatar } from "./Avatar";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Avatar } from './Avatar'
 import {
   StoryWrapper,
   StorySection,
@@ -10,11 +10,11 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-} from '../../ladle';
+} from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Avatar component showcasing all sizes, shapes, images, fallback initials, and usage in context.
@@ -24,23 +24,23 @@ export const Default: Story = () => (
     <StorySection title="Sizes">
       <div className="flex gap-4 items-center">
         <div className="flex flex-col items-center gap-2">
-          <Avatar size="xs" alt="John Doe" />
+          <Avatar alt="John Doe" size="xs" />
           <p className="text-sm text-gray-700">xs</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Avatar size="sm" alt="John Doe" />
+          <Avatar alt="John Doe" size="sm" />
           <p className="text-sm text-gray-700">sm</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Avatar size="md" alt="John Doe" />
+          <Avatar alt="John Doe" size="md" />
           <p className="text-sm text-gray-700">md</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Avatar size="lg" alt="John Doe" />
+          <Avatar alt="John Doe" size="lg" />
           <p className="text-sm text-gray-700">lg</p>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Avatar size="xl" alt="John Doe" />
+          <Avatar alt="John Doe" size="xl" />
           <p className="text-sm text-gray-700">xl</p>
         </div>
       </div>
@@ -61,25 +61,25 @@ export const Default: Story = () => (
             <StoryGridCell isLabel>With Images</StoryGridCell>
             <StoryGridCell>
               <Avatar
-                size="lg"
+                alt="User Avatar"
                 shape="circle"
-                alt="User Avatar"
+                size="lg"
                 src="https://picsum.photos/id/64/200/200"
               />
             </StoryGridCell>
             <StoryGridCell>
               <Avatar
-                size="lg"
+                alt="User Avatar"
                 shape="rounded"
-                alt="User Avatar"
+                size="lg"
                 src="https://picsum.photos/id/64/200/200"
               />
             </StoryGridCell>
             <StoryGridCell>
               <Avatar
-                size="lg"
-                shape="square"
                 alt="User Avatar"
+                shape="square"
+                size="lg"
                 src="https://picsum.photos/id/64/200/200"
               />
             </StoryGridCell>
@@ -88,24 +88,24 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Fallback Initials</StoryGridCell>
             <StoryGridCell>
-              <Avatar size="lg" shape="circle" alt="John Doe" />
+              <Avatar alt="John Doe" shape="circle" size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Avatar size="lg" shape="rounded" alt="John Doe" />
+              <Avatar alt="John Doe" shape="rounded" size="lg" />
             </StoryGridCell>
             <StoryGridCell>
-              <Avatar size="lg" shape="square" alt="John Doe" />
+              <Avatar alt="John Doe" shape="square" size="lg" />
             </StoryGridCell>
           </StoryGridRow>
         </StoryGridBody>
       </StoryGrid>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex items-center gap-3">
         <Avatar
-          size="md"
           alt="Shri Mataji Nirmala Devi"
+          size="md"
           src="https://picsum.photos/id/64/200/200"
         />
         <div>
@@ -115,5 +115,5 @@ export const Default: Story = () => (
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Avatar"
+)
+Default.storyName = 'Avatar'
