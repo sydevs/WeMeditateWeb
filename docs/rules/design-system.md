@@ -2,6 +2,7 @@
 paths:
   - "components/**"
   - "layouts/**"
+  - "pages/**"
 ---
 
 # Design System
