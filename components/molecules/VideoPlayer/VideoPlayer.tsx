@@ -7,6 +7,9 @@ import '@vidstack/react/player/styles/default/theme.css'
 import '@vidstack/react/player/styles/default/poster.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
+import { videoLayoutTranslations } from './labels'
+import { useT } from '../../../hooks/useT'
+import { localeEndonym } from '../../../lib/locale-names'
 
 /**
  * Player accent, scoped to this instance, with no global CSS. Vidstack
@@ -84,6 +87,12 @@ export function VideoPlayer({
   autoLoad = false,
   className,
 }: VideoPlayerProps) {
+  const t = useT()
+
+  // Vidstack reads this prop by identity, so rebuilding it on every render
+  // would re-render the whole control bar.
+  const translations = useMemo(() => videoLayoutTranslations(t), [t])
+
   // Inline cues (Video collection) → a single inline WebVTT track. Vidstack
   // parses the VTT string directly, so this needs no blob URL or fetch.
   const inlineVtt = useMemo(
@@ -191,7 +200,7 @@ export function VideoPlayer({
               default
               content={inlineVtt}
               kind="subtitles"
-              label={subtitleLang.toUpperCase()}
+              label={localeEndonym(subtitleLang)}
               lang={subtitleLang}
               type="vtt"
             />
@@ -204,7 +213,7 @@ export function VideoPlayer({
               key={track.locale}
               default={track.locale === defaultSubtitleLang}
               kind="subtitles"
-              label={track.locale.toUpperCase()}
+              label={localeEndonym(track.locale)}
               lang={track.locale}
               src={track.url}
               type="vtt"
@@ -216,7 +225,7 @@ export function VideoPlayer({
             prop. So this adds the Poster element, and its stylesheet, explicitly. */}
         {poster ? <Poster alt={title ?? ''} className="vds-poster" /> : null}
 
-        <DefaultVideoLayout icons={defaultLayoutIcons} />
+        <DefaultVideoLayout icons={defaultLayoutIcons} translations={translations} />
       </MediaPlayer>
     </div>
   )

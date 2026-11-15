@@ -20,6 +20,7 @@ import { ErrorType } from '../../server/error-utils'
 import { errorMessageKey, errorTitleKey } from '../../lib/error-keys'
 import { PAGE_TAG_KEYS } from '../../lib/content-blocks'
 import { RELATED_CONTENT_KEYS } from '../../components/organisms/RelatedContent/RelatedContentLoader'
+import { VIDEO_LAYOUT_KEYS } from '../../components/molecules/VideoPlayer/labels'
 
 const SOURCE_GLOBS = [
   'components/**/*.{ts,tsx}',
@@ -84,6 +85,7 @@ describe('translation keys', () => {
       ...Object.values(ErrorType).flatMap((type) => [errorTitleKey(type), errorMessageKey(type)]),
       ...Object.values(PAGE_TAG_KEYS),
       ...Object.values(RELATED_CONTENT_KEYS).flatMap((pair) => [pair.title, pair.loading]),
+      ...Object.values(VIDEO_LAYOUT_KEYS),
     ]
 
     expect(tabled.filter((key) => !resolves(key))).toEqual([])

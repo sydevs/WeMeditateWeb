@@ -18,11 +18,15 @@ import type { Locale } from '../server/sahajcloud-types'
  * — Turkish `i` uppercases to `İ`, not `I`.
  *
  * Falls back to the raw code if the runtime has no name for it, which is
- * still a usable picker entry.
+ * still a usable picker entry. A malformed tag throws from the
+ * `Intl.DisplayNames` constructor, which is the same fallback.
+ *
+ * It takes any BCP-47 tag, not only a `Locale`: a subtitle track names its
+ * own language, and a video may carry one the site is not offered in.
  */
-const ENDONYMS = new Map<Locale, string>()
+const ENDONYMS = new Map<string, string>()
 
-export function localeEndonym(locale: Locale): string {
+export function localeEndonym(locale: string): string {
   // The site chrome maps this over every offered locale on every page, and
   // each flag calls it again. An endonym is a constant for its locale, and
   // `Intl.DisplayNames` is expensive to construct, so cache the result.
