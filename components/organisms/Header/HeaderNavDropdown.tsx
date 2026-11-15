@@ -19,7 +19,7 @@ export interface HeaderNavDropdownProps {
   label: string
   /** Mega-menu panel content, rendered in a portal when open. */
   dropdown: HeaderDropdownProps
-  /** Extra classes for the trigger wrapper (for example flex sizing to match siblings). */
+  /** Extra classes for the trigger wrapper. */
   className?: string
 }
 
@@ -86,7 +86,7 @@ export function HeaderNavDropdown({
        */}
       <span ref={refs.setReference} className={`flex ${className}`}>
         <Button
-          className="px-0 w-full"
+          className="w-full"
           size="sm"
           variant="ghost"
           {...getReferenceProps()}
