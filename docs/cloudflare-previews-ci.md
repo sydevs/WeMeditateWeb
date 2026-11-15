@@ -84,6 +84,12 @@ check, and the addon still verifies its own payload. It has to be in the script:
 when it starts, before it reads `.ladle/config.mjs`, so a config file cannot set it in time.
 sydevs/SahajAtlasWeb's playground uses the same prefix.
 
+⚠ The opt-out lives only in the `ladle:build` script, so the `wemeditate-design` build command —
+set in the Cloudflare dashboard, not in this repo — must stay `pnpm ladle:build`. A bare
+`ladle build` there drops the prefix and the build dies again. The crawler refusal survives that
+change, because [.ladle/crawler-refusal.ts](../.ladle/crawler-refusal.ts) emits its files from the
+Vite build. This cannot.
+
 ⚠ GitHub's runners and macOS both pass SWC's check, so dropping the prefix fails nowhere but a
 Cloudflare build log. [tests/guards/ladle-swc-cache.test.ts](../tests/guards/ladle-swc-cache.test.ts)
 pins it, since `package.json` cannot carry a comment saying why it is there.
