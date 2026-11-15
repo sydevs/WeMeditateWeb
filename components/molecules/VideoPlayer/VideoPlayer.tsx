@@ -107,7 +107,7 @@ export function VideoPlayer({
 
   // Stable key, so a fresh `subtitleTracks` array identity, for example one
   // re-resolved on every live-preview render, does not trigger a redundant refetch.
-  const tracksKey = (subtitleTracks ?? []).map((t) => `${t.locale} ${t.url}`).join('')
+  const tracksKey = (subtitleTracks ?? []).map((track) => `${track.locale} ${track.url}`).join('')
 
   useEffect(() => {
     const tracks = subtitleTracks ?? []
