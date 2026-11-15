@@ -37,6 +37,13 @@ built from a bare `<button>` picks one of the two utilities in
 Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
 why growing the box is the first choice.
 
+**An overlay hangs outside its box by design, so the hazard is a clipping edge, not a short box.**
+`Alert`'s 16px cross hangs well outside its box, correctly. What breaks the `::before` is an edge
+that cuts it off: the viewport, for a bar pinned at `top-0`, or an `overflow` ancestor. Grow the
+box there instead — the header's compact bar measured 44×**31** reachable while both its class
+lists read `touch-target-overlay` (#202). A class list is not a hit area. Measure one with
+`document.elementFromPoint`.
+
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content.
 
@@ -157,7 +164,8 @@ const variantStyles = {
 - **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
   `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
   `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
-  `LayoutChrome` puts the lead splash's surface on the wrapper it overlays the header with.
+  `LayoutChrome` puts the lead splash's surface in the band it hands the header, which cannot be
+  a wrapper: a wrapper is the sticky nav's containing block, and the nav stops pinning (#204).
 - **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
   surface around it. A filled `Button` draws its spinner in `border-current` instead.
 - **A colour that does not change with the surface names its scale step.** Filled buttons are
