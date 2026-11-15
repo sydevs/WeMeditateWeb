@@ -24,11 +24,9 @@
  *
  * It reads `<Image>` tags only, and four of the ten sites #146 fixed are a
  * hand-rolled `<img>`. Holding those to `getImageURL` needs the exemption
- * list this guard refuses: of the eight raw `<img>` the last test pins, only
+ * list this guard refuses: of the six raw `<img>` the last test pins, only
  * two name the helper in the tag — the atom's own `<img>` is the pipeline,
- * one paints a bundled SVG, and two reach the helper a hop away. The two that
- * really do pass an unsized URL are `ContentOverlay` and `AtlasContent`, both
- * #150's, so that arm goes green there rather than here.
+ * one paints a bundled SVG, and two reach the helper a hop away.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -131,11 +129,9 @@ describe('every raw <img>', () => {
       'components/atoms/Avatar/Avatar.tsx',
       'components/atoms/Image/Image.tsx',
       'components/molecules/VideoPlayer/index.tsx',
-      'components/organisms/ContentOverlay/ContentOverlay.tsx',
       'components/organisms/MeditationPlayer/MeditationPlayer.tsx',
       'components/organisms/OrnateTextBox/OrnateTextBox.tsx',
       'components/organisms/Splash/Splash.tsx',
-      'pages/map/_components/AtlasContent.tsx',
     ])
   })
 })
