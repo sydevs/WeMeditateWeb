@@ -68,6 +68,32 @@ none match, instead of waiting out the 12-minute discovery timeout.
 list is wider, `Smoke (ladle)` reddens for a preview that was never going to come. If it is
 narrower, a preview that does exist goes untested.
 
+## The Ladle build opts out of one SWC check
+
+Ladle compiles through `@swc/core`, which it imports at startup. Since 1.16.12 SWC's native addon
+ships compressed and unpacks itself into a cache directory on first load. It refuses any directory
+with an ancestor that another user can write without a sticky bit. Since 2026-11-13 the Workers
+build image fails that rule for both `~/.cache` and `/tmp`, so every `wemeditate-design` build
+died with `ERR_SWC_NATIVE_CACHE` as soon as `ladle build` started. The same lockfile had built
+there on 2026-11-07 (#233).
+
+So `pnpm ladle:build` sets `SWC_NATIVE_BINDING_CACHE_SKIP_SECURITY_CHECK` to `1` when
+`WORKERS_CI` is set. Workers Builds injects `WORKERS_CI` into every build, and nothing else here
+sets it, so the check stays on locally and in `gate`. The variable turns off only the ancestor
+check, and the addon still verifies its own payload. It has to be in the script: Ladle loads SWC
+when it starts, before it reads `.ladle/config.mjs`, so a config file cannot set it in time.
+sydevs/SahajAtlasWeb's playground uses the same prefix.
+
+⚠ The opt-out lives only in the `ladle:build` script, so the `wemeditate-design` build command —
+set in the Cloudflare dashboard, not in this repo — must stay `pnpm ladle:build`. A bare
+`ladle build` there drops the prefix and the build dies again. The crawler refusal survives that
+change, because [.ladle/crawler-refusal.ts](../.ladle/crawler-refusal.ts) emits its files from the
+Vite build. This cannot.
+
+⚠ GitHub's runners and macOS both pass SWC's check, so dropping the prefix fails nowhere but a
+Cloudflare build log. [tests/guards/ladle-swc-cache.test.ts](../tests/guards/ladle-swc-cache.test.ts)
+pins it, since `package.json` cannot carry a comment saying why it is there.
+
 ## A missing ladle preview is red, not green
 
 `Smoke (ladle)` fails when discovery finds no preview on a same-repo pull request. Before #184 it
