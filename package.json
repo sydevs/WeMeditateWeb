@@ -14,7 +14,7 @@
     "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
     "deploy": "vike build && wrangler deploy",
     "ladle": "ladle serve",
-    "ladle:build": "ladle build",
+    "ladle:build": "SWC_NATIVE_BINDING_CACHE_SKIP_SECURITY_CHECK=${WORKERS_CI:+1} ladle build",
     "check:wrangler": "wrangler deploy --dry-run --config wrangler.design.jsonc",
     "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
     "types:cms": "curl -fsSL -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs",
