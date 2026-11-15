@@ -8,7 +8,9 @@ const wrapper = (html: string) => html.slice(0, html.indexOf('>') + 1)
 
 describe('<Icon> accessible name', () => {
   it('names the icon on a role that accepts a name', () => {
-    const html = wrapper(renderToStaticMarkup(<Icon aria-label="Error" icon={ExclamationCircleIcon} />))
+    const html = wrapper(
+      renderToStaticMarkup(<Icon aria-label="Error" icon={ExclamationCircleIcon} />),
+    )
 
     expect(html).toContain('role="img"')
     expect(html).toContain('aria-label="Error"')
