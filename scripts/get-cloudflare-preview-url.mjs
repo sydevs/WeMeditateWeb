@@ -49,6 +49,13 @@ const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 const EXCLUDE = ['wemeditate-design']
 // Matches a Cloudflare preview origin at any subdomain depth.
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
+// Both previews are Workers Builds since 2026-11-02 (sydevs/SahajAtlasWeb#266), and the
+// wm-design.pages.dev zone went with the migration — the host does not resolve. A PR opened
+// before that date still carries the Pages bot comment, which names wemeditate-design and so
+// matches the target, and which sorts ahead of the Workers comment. Selecting it spends the
+// whole health timeout on a host that cannot answer (#184). Still matched, so the log can name
+// the candidate it dropped.
+const isRetiredPagesPreview = (url) => /\.pages\.dev\b/i.test(url)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -138,11 +145,16 @@ async function discoverUrl() {
   }
 
   for (const c of candidates) {
+    const label = `[${c.source}, project=${c.project ?? '?'}]`
+    if (isRetiredPagesPreview(c.url)) {
+      console.error(`skipping ${c.url} ${label} — retired Pages preview, host no longer resolves`)
+      continue
+    }
     if (matchesTarget(c.project, c.url)) {
-      console.error(`selected ${c.url} [${c.source}, project=${c.project ?? '?'}]`)
+      console.error(`selected ${c.url} ${label}`)
       return c.url
     }
-    console.error(`skipping ${c.url} [${c.source}, project=${c.project ?? '?'}] — not the target project`)
+    console.error(`skipping ${c.url} ${label} — not the target project`)
   }
   return null
 }
