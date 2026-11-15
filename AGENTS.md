@@ -200,7 +200,7 @@ editable. **Do not move a rule body back into `.claude/`.**
 | Rule | Scope | Covers |
 | --- | --- | --- |
 | [code-comments](docs/rules/code-comments.md) | every session (no `paths:`) | When a comment earns its place, and the comments never to delete. Synced from `claude-workflow`: edit the canonical block there |
-| [design-system](docs/rules/design-system.md) | `components/**`, `layouts/**` | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
+| [design-system](docs/rules/design-system.md) | `components/**`, `layouts/**`, `pages/**` | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
 | [component-stories](docs/rules/component-stories.md) | `**/*.stories.tsx`, `components/ladle/**` | Ladle story structure, utility components, standard section order |
 | [testing](docs/rules/testing.md) | `**/*.test.ts(x)`, `tests/**` | Vitest in `node` env, no jsdom/RTL, SSR-string assertions, the `+`-prefix trap under `pages/` |
 | [zod-validation](docs/rules/zod-validation.md) | `server/validation.ts`, `pages/**/+data.ts`, FormBuilder | Schema locations, Zod 4 syntax, which status codes Vike's `render()` accepts |
