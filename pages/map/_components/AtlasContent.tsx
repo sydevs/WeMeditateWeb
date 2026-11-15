@@ -30,6 +30,17 @@ import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
 
 /**
+ * A URL as SahajCloud sent it, or `null` where it is absent or not http(s).
+ *
+ * Nothing upstream validates either field this guards — a region's canonical
+ * or a class's own room link, which a coordinator types. This contract also
+ * spells "absent" as the empty string, as `address.oneLine` does.
+ */
+function upstreamUrl(url: string | null | undefined): string | null {
+  return url && isSafeHttpUrl(url) ? url : null
+}
+
+/**
  * Where a region or class link should point.
  *
  * The canonical wins when there is one. Ownership is per-subtree, so a
@@ -52,8 +63,10 @@ export function atlasHref(
   link: { route: string | null; url: string | null },
   origin: string | null,
 ): string | null {
-  if (link.url) {
-    return sitePathFromUrl(link.url, origin) ?? link.url
+  const canonical = upstreamUrl(link.url)
+
+  if (canonical) {
+    return sitePathFromUrl(canonical, origin) ?? canonical
   }
 
   return link.route ? `${MAP_PREFIX}${link.route}` : null
@@ -174,18 +187,6 @@ function RegionContent({
   )
 }
 
-/**
- * A class's own link, as a coordinator typed it, or `null`.
- *
- * This contract spells "absent" as the empty string (`address.oneLine`,
- * `schedule.oneLine` do the same), so an empty `onlineUrl` falls through to
- * the website rather than rendering `href=""`. Nothing upstream validates
- * the scheme, which is what `isSafeHttpUrl` is here for.
- */
-function editorUrl(url: string | null | undefined): string | null {
-  return url && isSafeHttpUrl(url) ? url : null
-}
-
 /** A class page: when and where it meets, and what it says about itself. */
 function EventContent({
   content,
@@ -203,8 +204,8 @@ function EventContent({
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
-  const joinUrl = editorUrl(content.onlineUrl)
-  const websiteUrl = editorUrl(content.website)
+  const joinUrl = upstreamUrl(content.onlineUrl)
+  const websiteUrl = upstreamUrl(content.website)
   const linkUrl = joinUrl ?? websiteUrl
 
   return (

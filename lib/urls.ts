@@ -73,10 +73,11 @@ export function localeFromPath(pathname: string): PathLocale {
  *
  * ⚠ **The gate on any URL this site did not author itself**, and the only
  * thing standing between a configured value and `javascript:` or `data:`
- * running in our origin. Three values need it today: the status-page link
+ * running in our origin. Three callers need it today: the status-page link
  * (`ErrorFallback`), an authored form's redirect (`lib/submissions.ts`),
- * which reaches `window.location.href` on a successful submission, and a
- * class's own room or website link (`pages/map/_components/AtlasContent.tsx`).
+ * which reaches `window.location.href` on a successful submission, and
+ * everything the atlas sends — a region's canonical and a class's own room
+ * or website link (`pages/map/_components/AtlasContent.tsx`).
  *
  * It lives here because a scheme is how a URL is spelled, which this module
  * owns.

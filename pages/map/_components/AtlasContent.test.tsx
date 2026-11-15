@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AtlasContent, atlasHref } from './AtlasContent'
 import type { AtlasSeoResponse } from '../../../server/atlas-types'
+import { anchorFor } from '../../../tests/_helpers/markup'
 
 const breadcrumbs = [
   { name: 'United Kingdom', route: '/gb', url: 'https://wemeditate.com/map/gb' },
@@ -133,6 +134,14 @@ describe('atlasHref', () => {
   it('returns null when there is neither, so nothing renders a dead link', () => {
     expect(atlasHref({ route: null, url: null }, null)).toBeNull()
   })
+
+  it('refuses a canonical whose scheme could run in our origin', () => {
+    // Nothing upstream validates this field either. The region stays
+    // reachable through the path we serve it at.
+    expect(atlasHref({ route: '/gb/london', url: 'javascript:alert(1)' }, null)).toBe(
+      '/map/gb/london',
+    )
+  })
 })
 
 describe('a region page', () => {
@@ -248,7 +257,8 @@ describe('a class page', () => {
   it('offers nothing at all when every link a class gives is unusable', () => {
     const html = render(eventSeo({ onlineUrl: 'javascript:alert(1)', website: 'data:text/html,x' }))
 
-    expect(html).toContain('Saturday morning meditation')
+    expect(html).not.toContain('javascript:')
+    expect(html).not.toContain('data:text/html')
     expect(html).not.toContain('Join online')
     expect(html).not.toContain('Visit the website')
   })
@@ -281,18 +291,6 @@ describe('a class page', () => {
     expect(html).not.toContain('Visit the website')
   })
 })
-
-/**
- * The opening `<a>` tag carrying this href, or the empty string.
- *
- * Both branches of a canonical render an `<a>`, so an assertion naming only
- * the attribute would pass on the wrong link.
- */
-function anchorFor(html: string, href: string): string {
-  const at = html.indexOf(`href="${href}"`)
-
-  return at === -1 ? '' : html.slice(html.lastIndexOf('<a', at), html.indexOf('>', at) + 1)
-}
 
 describe('a canonical owned by another domain', () => {
   // Ownership is per-subtree, so these are real links off this site, not a
