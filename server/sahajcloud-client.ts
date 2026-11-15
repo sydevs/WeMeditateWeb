@@ -15,31 +15,29 @@
  *
  * Errors propagate so error-utils.ts can retry them:
  * - Single-item queries (getPageBySlug, getDocumentById) return null for an
- *   empty result, then let errors propagate.
+ *   empty result, then let errors propagate. `getDocumentById` also answers a
+ *   404 with null: an id the collection does not hold is an empty result the
+ *   SDK happens to report as a throw.
  * - The global query (getWebConfig) lets errors propagate. The SDK throws a
  *   PayloadSDKError carrying the status, so error-utils.ts classifies it.
- * - List queries (getPagesByTags, getSongsByTags) return an empty array for
- *   an empty result, then let errors propagate.
  *
  * error-utils.ts classifies by HTTP status where the error carries one, and
  * falls back to message patterns for errors that do not (a network TypeError).
  */
 
 import { createPayloadClient } from './payload-client'
-import { withRetry } from './error-utils'
+import { readStatus, withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import type {
   Config,
   PagesSelect,
   MeditationsSelect,
   LecturesSelect,
-  SongsSelect,
   AlbumsSelect,
   AppCardsSelect,
   FormsSelect,
-  SongTagsSelect,
   ImagesSelect,
   AuthorsSelect,
   VideosSelect,
@@ -49,12 +47,12 @@ import type {
 import type {
   EmbeddedFormSelect,
   Locale,
+  NavPage,
+  NavPageSelect,
   Page,
   PageStatus,
-  Song,
   WebConfig,
   WebTranslations,
-  PageListItem,
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
@@ -228,8 +226,9 @@ const PAGE_POPULATE = {
   forms: EMBEDDED_FORM_SELECT,
 }
 
-/** Global config fields: `pages` relationships the layout + home page need, plus
- * `audiences` (the site's fixed audience set the lectures /for-audience feed uses). */
+/** Global config fields: the `pages` relationships the layout needs, `homePage`
+ * (whose slug `/` reads), and `audiences` (the site's fixed audience set the
+ * lectures /for-audience feed uses). */
 const WEB_CONFIG_SELECT = {
   availableLocales: true,
   homePage: true,
@@ -242,21 +241,27 @@ const WEB_CONFIG_SELECT = {
 } satisfies WmWebConfigSelect<true>
 
 /**
- * Populates the global's page relationships at depth 2, with the fields the
- * layout (title and slug, for nav) and the home page (content and meta)
- * render. Required because the backend rejects a depth > 1 read without
- * `populate`.
+ * The fields a config page relationship comes back with. Annotated with
+ * `NavPageSelect`, so this and the `NavPage` type it returns cannot drift:
+ * adding a key here without widening `NavPage` is a compile error, and so is
+ * dropping one a consumer still reads.
+ */
+const NAV_PAGE_SELECT: NavPageSelect = {
+  title: true,
+  slug: true,
+  meta: { title: true, image: true },
+} satisfies PagesSelect<true>
+
+/**
+ * Populates the global's page relationships at depth 2, with only what the nav
+ * renders: title and slug for a link, `meta` for a header card's image. The
+ * config is serialised into every page's HTML, so nothing more belongs here.
+ * Required because the backend rejects a depth > 1 read without `populate`.
  */
 const WEB_CONFIG_POPULATE = {
-  ...PAGE_POPULATE,
-  pages: PAGE_SELECT,
+  images: IMAGE_POPULATE.images,
+  pages: NAV_PAGE_SELECT,
 }
-
-/** Minimal fields for page list items (getPagesByTags → PageListItem). */
-const PAGE_LIST_SELECT = {
-  title: true,
-  meta: { image: true },
-} satisfies PagesSelect<true>
 
 /** Fields rendered for a Meditation (MeditationTemplate) plus draft status. */
 const MEDITATION_SELECT = {
@@ -294,22 +299,6 @@ const LECTURE_SELECT = {
 const LECTURE_POPULATE = {
   images: IMAGE_POPULATE.images,
   lectures: LECTURE_SELECT,
-}
-
-/** Fields for songs (getSongsByTags returns full Song-ish data). */
-const SONG_SELECT = {
-  title: true,
-  url: true,
-  filename: true,
-  album: true,
-  tags: true,
-} satisfies SongsSelect<true>
-
-/** Populate shapes for song relationships (album → artwork image, song tags). */
-const SONG_POPULATE = {
-  albums: { title: true, artist: true, artwork: true } satisfies AlbumsSelect<true>,
-  'song-tags': { title: true, slug: true } satisfies SongTagsSelect<true>,
-  images: IMAGE_POPULATE.images,
 }
 
 /**
@@ -508,6 +497,12 @@ export async function getPageLocaleStatus(options: {
  * collection types that support findById queries. It supports preview mode
  * for trusted draft previews.
  *
+ * ⚠ An id the collection does not hold is `null`, not a throw. The SDK
+ * answers `findByID` with a 404, and letting it escape rendered the 500 page
+ * for a stale inbound link or a deleted document — against this function's
+ * own contract, which every caller reads as `null`. The retry ladder is not
+ * what it cost: a 404 classifies as CLIENT, so `withRetry` already refused it.
+ *
  * @param options - Query options
  * @param options.collection - The PayloadCMS collection slug
  * @param options.id - The document ID to retrieve
@@ -533,21 +528,29 @@ export async function getDocumentById<C extends FindByIdCollection>(
         previewToken: options.previewToken,
       })
 
-      const found = await client.findByID({
-        collection: options.collection,
-        id: options.id,
-        locale: options.locale,
-        // Depth 3 to resolve relationships embedded in `content` blocks (see
-        // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
-        depth: DOCUMENT_READ_DEPTH,
-        draft: isPreview,
-        // select/populate are validated per-collection at their definitions above
-        // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
-        // correlate the union-typed config to the generic collection `C`. The
-        // input is cast here. The response is re-typed to the concrete doc below.
-        select: config.select as never,
-        populate: config.populate as never,
-      })
+      let found: unknown
+
+      try {
+        found = await client.findByID({
+          collection: options.collection,
+          id: options.id,
+          locale: options.locale,
+          // Depth 3 to resolve relationships embedded in `content` blocks (see
+          // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
+          depth: DOCUMENT_READ_DEPTH,
+          draft: isPreview,
+          // select/populate are validated per-collection at their definitions above
+          // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
+          // correlate the union-typed config to the generic collection `C`. The
+          // input is cast here. The response is re-typed to the concrete doc below.
+          select: config.select as never,
+          populate: config.populate as never,
+        })
+      } catch (error) {
+        if (readStatus(error) === 404) return null
+
+        throw error
+      }
 
       const result = found as Config['collections'][C] | null
 
@@ -617,12 +620,15 @@ export async function getLecture(
  * unresolved when it returns as a bare ID (believed unpublished or trashed:
  * a published page populates, an unpublished one returns as just its ID) or
  * as an object with no slug.
+ *
+ * The published side is {@link NavPage}, not `Page`: `NAV_PAGE_SELECT` is what
+ * the config read asks for, so nothing outside it arrives.
  */
-export function partitionPublishedPages(pages: (number | Page)[] | null | undefined): {
-  published: Page[]
+export function partitionPublishedPages(pages: (number | NavPage)[] | null | undefined): {
+  published: NavPage[]
   unresolved: string[]
 } {
-  const published: Page[] = []
+  const published: NavPage[] = []
   const unresolved: string[] = []
 
   for (const page of pages ?? []) {
@@ -635,6 +641,32 @@ export function partitionPublishedPages(pages: (number | Page)[] | null | undefi
 
   return { published, unresolved }
 }
+
+/**
+ * The config data gaps this isolate has already reported to Sentry.
+ *
+ * ⚠ The warning below is the one in this repo that fires on healthy traffic.
+ * `withSentry` made it a real event, and `getWebConfig` runs once per render,
+ * so a *standing* gap — an editor leaving a referenced page unpublished, which
+ * is precisely what the warning is for — would bill one event per page view
+ * until someone publishes it. The gap must stay visible (server/AGENTS.md), so
+ * what is bounded is volume, not level: one event per distinct gap per isolate.
+ * A gap that changes is a new signature and reports immediately, and
+ * `console.warn` still fires on every request, so the per-request record is
+ * unchanged.
+ *
+ * A Workers isolate is reused across requests and dropped without notice,
+ * which is the bound wanted here: often enough that a gap cannot go
+ * unreported, rare enough to cost nothing.
+ */
+const reportedConfigGaps = new Set<string>()
+
+/**
+ * Bounds that memo. One isolate serves every locale, and a gap differs per
+ * locale, so the set must not grow unbounded. Past the cap it is emptied
+ * rather than pruned: re-reporting a live gap is the harmless direction.
+ */
+const MAX_REPORTED_CONFIG_GAPS = 64
 
 /**
  * Gets the WebConfig (site configuration).
@@ -689,11 +721,21 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
       console.warn(
         `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
       )
-      Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
-        level: 'warning',
-        tags: { source: 'getWebConfig' },
-        extra: { unresolved, locale: options.locale ?? null },
-      })
+
+      const signature = unresolved.join(',')
+
+      if (!reportedConfigGaps.has(signature)) {
+        if (reportedConfigGaps.size >= MAX_REPORTED_CONFIG_GAPS) reportedConfigGaps.clear()
+
+        reportedConfigGaps.add(signature)
+        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
+          level: 'warning',
+          tags: { source: 'getWebConfig' },
+          // The locale of the render that first saw this gap in this isolate,
+          // not the only one affected.
+          extra: { unresolved, locale: options.locale ?? null },
+        })
+      }
     }
 
     // An unconfigured global offers English only. Never return an empty
@@ -704,6 +746,9 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
     return {
       ...config,
       availableLocales: availableLocales.length > 0 ? availableLocales : [DEFAULT_LOCALE],
+      // A bare id is an unpublished home page, logged above. Passed through it
+      // would render `/` blank with a 200; `null` lets the route 404.
+      homePage: typeof config.homePage === 'object' ? config.homePage : null,
       featuredPages: featured.published,
       featuredArticles: featuredArticles.published,
       classPages: classPages.published,
@@ -757,84 +802,6 @@ export async function getWebTranslations(options: {
     },
     { preview: isPreview },
   )
-}
-
-// --- List Queries (filtered by tags) ---
-
-/**
- * Retrieves a list of pages filtered by tags (minimal data: id, title, thumbnail).
- *
- * @param options - Query options
- * @param options.tags - Array of tag values to filter by (e.g., 'wisdom', 'lifestyle', 'technique')
- * @param options.locale - The locale to retrieve pages in
- * @param options.limit - Maximum number of pages to return (default: 100)
- * @returns Array of page list items
- */
-export async function getPagesByTags(
-  options: LocalizedQueryOptions & {
-    tags: string[]
-    limit?: number
-  },
-): Promise<PageListItem[]> {
-  const limit = options.limit || 100
-
-  return withRetryUnlessPreview(async () => {
-    const client = createPayloadClient()
-
-    const result = await client.find({
-      collection: 'pages',
-      where: { tags: { in: options.tags } },
-      locale: options.locale,
-      limit,
-      depth: 2,
-      select: PAGE_LIST_SELECT,
-      populate: IMAGE_POPULATE,
-    })
-
-    if (!result?.docs) return []
-
-    return result.docs.map((page) => ({
-      id: page.id,
-      title: page.title ?? null,
-      meta: page.meta ? { image: page.meta.image ?? null } : null,
-    })) as PageListItem[]
-  })
-}
-
-/**
- * Retrieves a list of songs filtered by tags (full song data).
- *
- * @param options - Query options
- * @param options.tagIds - Array of tag IDs to filter by
- * @param options.locale - The locale to retrieve songs in
- * @param options.limit - Maximum number of songs to return (default: 100)
- * @returns Array of song items
- */
-export async function getSongsByTags(
-  options: LocalizedQueryOptions & {
-    tagIds: string[]
-    limit?: number
-  },
-): Promise<Song[]> {
-  const limit = options.limit || 100
-
-  return withRetryUnlessPreview(async () => {
-    const client = createPayloadClient()
-
-    const result = await client.find({
-      collection: 'songs',
-      where: { tags: { in: options.tagIds } },
-      locale: options.locale,
-      limit,
-      depth: 2,
-      select: SONG_SELECT,
-      populate: SONG_POPULATE,
-    })
-
-    if (!result?.docs) return []
-
-    return result.docs as Song[]
-  })
 }
 
 /**

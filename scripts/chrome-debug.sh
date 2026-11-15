@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Launches Chrome with remote debugging enabled, for Puppeteer MCP.
+# Launches Chrome with remote debugging enabled, for the Playwright MCP's --cdp-endpoint mode.
 # Usage: ./scripts/chrome-debug.sh [port]
 
 PORT=${1:-9222}
@@ -9,10 +9,8 @@ DEBUG_PROFILE="/tmp/chrome-debug-profile"
 # Find the Chrome executable
 if [ -f "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]; then
     CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-elif [ -f "$HOME/.cache/puppeteer/chrome/mac_arm-131.0.6778.204/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" ]; then
-    CHROME_PATH="$HOME/.cache/puppeteer/chrome/mac_arm-131.0.6778.204/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
 else
-    echo "❌ Chrome not found. Please install Google Chrome or ensure Puppeteer Chrome is available."
+    echo "❌ Chrome not found. Please install Google Chrome."
     exit 1
 fi
 
@@ -32,7 +30,6 @@ echo ""
 
 # Kill any existing Chrome processes to avoid conflicts
 pkill -f "Google Chrome" 2>/dev/null
-pkill -f "Chrome for Testing" 2>/dev/null
 
 # Wait a moment for old processes to exit
 sleep 1
@@ -57,7 +54,7 @@ for i in {1..10}; do
         echo "🌐 Debug endpoint: http://localhost:$PORT"
         echo "🔍 Chrome PID: $CHROME_PID"
         echo ""
-        echo "💡 You can now use Puppeteer MCP to connect to this Chrome instance."
+        echo "💡 Point the Playwright MCP at it with --cdp-endpoint http://localhost:$PORT (see MCP_USAGE.md)."
         echo "💡 To stop Chrome, run: kill $CHROME_PID"
         exit 0
     fi

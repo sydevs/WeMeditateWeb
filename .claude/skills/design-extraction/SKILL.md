@@ -1,6 +1,6 @@
 ---
 name: design-extraction
-description: "Recreate a component from an existing live design: extract HTML and computed styles with Puppeteer, map them onto Tailwind tokens, and gather the missing requirements before implementing. Use when cloning a design from a URL, a screenshot, or a design file."
+description: "Recreate a component from an existing live design: extract HTML and computed styles with the Playwright MCP, map them onto Tailwind tokens, and gather the missing requirements before implementing. Use when cloning a design from a URL, a screenshot, or a design file."
 ---
 
 # Design Extraction Workflow
@@ -9,20 +9,23 @@ When creating components based on existing designs from live websites (e.g., usi
 
 ## Step 1: Analyze the Existing Design
 
-**Using Puppeteer** (preferred for live sites):
+**Using the Playwright MCP** (preferred for live sites — see `MCP_USAGE.md`):
+1. `browser_navigate({ url })`
+2. `browser_snapshot` to find the target element and its `ref`
+3. `browser_evaluate` with that `ref` and a function that reads the element:
 ```javascript
-// Navigate to the page
-await puppeteer.navigate(url)
-
-// Extract HTML structure and computed styles
-const element = document.querySelector('.target-class')
-const styles = window.getComputedStyle(element)
+(el) => {
+  const s = window.getComputedStyle(el)
+  const props = ['display', 'gap', 'padding', 'margin', 'max-width', 'font-size', 'font-weight',
+    'line-height', 'color', 'background-color', 'border', 'border-radius', 'box-shadow']
+  return { html: el.outerHTML, styles: Object.fromEntries(props.map((p) => [p, s.getPropertyValue(p)])) }
+}
 ```
 
 **When to ask for screenshots instead**:
 - The website requires authentication
 - The design is from a design file (Figma, Sketch)
-- JavaScript-heavy sites where Puppeteer struggles
+- JavaScript-heavy sites where the Playwright MCP struggles
 - When the user has already provided a screenshot
 
 ## Step 2: Translate Design to Tailwind Tokens
@@ -102,7 +105,7 @@ After creating the component:
 ```
 User: Create a Blockquote component based on .cb-text-textbox on https://example.com
 
-1. Navigate to URL with Puppeteer
+1. Navigate to URL with the Playwright MCP
 2. Extract HTML structure and computed styles
 3. Analyze: This is a molecule (combines text + credit + gradient background)
 4. Ask about: max-width, gradient coverage, alignment behavior, margins
