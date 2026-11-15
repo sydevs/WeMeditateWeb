@@ -96,6 +96,10 @@ These rules apply whether or not the matching rule file or skill is loaded.
   stories, Ladle and the Sentry trigger page.
   A language's own name, a brand name, and a list separator are not translations: use
   `Intl.DisplayNames`, the platform's own label, and `Intl.ListFormat`.
+  **A third-party component's own English labels are the site's strings too**, and the lint never
+  sees them. Where the library takes a translations prop, map its words to keys beside the
+  component — `components/molecules/VideoPlayer/labels.ts` does it for Vidstack, typed against the
+  library's own word union so an upgrade that adds one is a compile error.
 - **A string composed in English is still an English string.** `` `Mute ${label.toLowerCase()}` ``
   and `` `Loading ${title.toLowerCase()}` `` build a sentence only English builds that way. Take
   the finished label as a prop or a key, never assemble one from a visible label.

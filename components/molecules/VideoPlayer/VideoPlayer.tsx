@@ -88,9 +88,6 @@ export function VideoPlayer({
   className,
 }: VideoPlayerProps) {
   const t = useT()
-
-  // Vidstack reads this prop by identity, so rebuilding it on every render
-  // would re-render the whole control bar.
   const translations = useMemo(() => videoLayoutTranslations(t), [t])
 
   // Inline cues (Video collection) → a single inline WebVTT track. Vidstack

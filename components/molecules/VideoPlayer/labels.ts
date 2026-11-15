@@ -8,9 +8,8 @@
  * Vidstack word on the left, the `wm-web-translations` key that replaces it
  * on the right.
  *
- * `@vidstack/react` ships no locale data of its own — the published package
- * carries no locale, i18n or translation file — so there is nothing upstream
- * to import.
+ * `@vidstack/react` ships no locale data of its own, so there is nothing
+ * upstream to import in place of this.
  */
 
 import type {
