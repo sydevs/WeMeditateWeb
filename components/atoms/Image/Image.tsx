@@ -314,11 +314,11 @@ export function Image({
   const showPlaceholder = showLoading && (isLoading || !hasImg)
 
   // The placeholder is `absolute inset-0`, so an unboxed container has no
-  // height and the error icon is invisible (#212). Only while the placeholder
-  // is alone: `overflow-hidden` below would clip a natural-flow <img> taller
+  // height and the error icon is invisible (#212). Only while there is no
+  // <img>: `overflow-hidden` below would clip a natural-flow <img> taller
   // than the box, loading or loaded.
   const aspectRatioStyles =
-    aspectRatio && (boxed || (showPlaceholder && !hasImg))
+    aspectRatio && (boxed || (showLoading && !hasImg))
       ? {
           square: 'aspect-square',
           video: 'aspect-video',
