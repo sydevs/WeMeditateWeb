@@ -276,16 +276,15 @@ export function Image({
   // still fetching an optimized variant.
   const boxed = Boolean(aspectRatio) && forceAspectRatio
 
-  const aspectRatioStyles =
-    boxed && aspectRatio
-      ? {
-          square: 'aspect-square',
-          video: 'aspect-video',
-          '4-3': 'aspect-[4/3]',
-          '3-2': 'aspect-[3/2]',
-          ultrawide: 'aspect-[21/9]',
-        }[aspectRatio]
-      : ''
+  const aspectRatioClass = aspectRatio
+    ? {
+        square: 'aspect-square',
+        video: 'aspect-video',
+        '4-3': 'aspect-[4/3]',
+        '3-2': 'aspect-[3/2]',
+        ultrawide: 'aspect-[21/9]',
+      }[aspectRatio]
+    : ''
 
   const objectFitStyles = {
     cover: 'object-cover',
@@ -320,7 +319,16 @@ export function Image({
   // <img> and let the placeholder show.
   const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''
 
-  // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
+  const placeholderOnly = showLoading && (isLoading || hasError || !hasSrc)
+
+  // Unboxed, the `absolute inset-0` <Placeholder> gives the container no
+  // height, so the error state collapses to 0px and hides its icon (#212).
+  // Only while the placeholder is alone: `overflow-hidden` below would clip a
+  // loaded natural-flow <img> taller than the box.
+  const aspectRatioStyles = boxed || placeholderOnly ? aspectRatioClass : ''
+
+  // `aspectRatioStyles` is '' when no ratio applies, so one literal covers
+  // both cases.
   const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
@@ -336,13 +344,19 @@ export function Image({
           top-left, overflowing or clipping instead of matching the rendered
           image box. The <img>'s own width and height attributes reserve
           layout space and prevent shift. */}
-      {showLoading && (isLoading || hasError || !hasSrc) && (
+      {placeholderOnly && (
         <Placeholder
           animate={!hasError && hasSrc}
           className="absolute inset-0"
           variant={placeholderVariant}
         >
-          {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
+          {hasError && (
+            <Icon
+              aria-label={t('errors.a11y.error_icon')}
+              icon={ExclamationCircleIcon}
+              size="lg"
+            />
+          )}
         </Placeholder>
       )}
 

@@ -86,6 +86,27 @@ export const Default: Story = () => (
           <Image alt="No src and no placeholder" aspectRatio="4-3" showLoading={false} src="" />
         </div>
       </div>
+
+      <div className="mt-6">
+        <p className="text-sm text-gray-600 mb-2">
+          A natural-flow image (forceAspectRatio false) whose load fails falls back to the
+          aspectRatio it was given, so the error icon stays visible. Without an aspectRatio there
+          is nothing to fall back to, and the slot collapses.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+          <Image
+            alt="A broken natural-flow image with an aspect ratio"
+            aspectRatio="video"
+            forceAspectRatio={false}
+            src="https://picsum.photos/id/999999/600/400"
+          />
+          <Image
+            alt="A broken natural-flow image with no aspect ratio"
+            forceAspectRatio={false}
+            src="https://picsum.photos/id/999999/600/400"
+          />
+        </div>
+      </div>
     </StorySection>
 
     <StorySection title="Examples" inContext={true}>
