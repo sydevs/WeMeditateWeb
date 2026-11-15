@@ -113,6 +113,10 @@ function rootSeo(content: Partial<AtlasSeoResponse['content']> = {}): AtlasSeoRe
 
 const render = (seo: AtlasSeoResponse) => renderToStaticMarkup(<AtlasContent seo={seo} />)
 
+// Spelled as SahajCloud sends it — docs/rules/testing.md. The endpoint
+// passes Payload's virtual `url` through untouched (`seoDocument.ts`).
+const CLOUDFLARE_LEAD = { url: 'https://imagedelivery.net/acct/img-id/public', alt: 'The hall' }
+
 describe('atlasHref', () => {
   it('prefers the canonical, which may live on another owner’s domain', () => {
     // Ownership is per-subtree, so linking anywhere else would build a
@@ -292,9 +296,22 @@ describe('an answer this build has never heard of', () => {
 
 describe('<AtlasContent> lead image', () => {
   it('is lazy, and visible to a reader who never hydrates', () => {
-    const lead = render(eventSeo()).match(/<img[^>]*a\.jpg[^>]*>/)?.[0]
+    const html = render(eventSeo())
+    const lead = html.match(/<img[^>]*a\.jpg[^>]*>/)?.[0]
 
     expect(lead).toContain('loading="lazy"')
     expect(lead).not.toContain('opacity-0')
+    expect(html).not.toContain('rel="preload"')
+  })
+
+  it('requests a width variant sized to its column, uncropped', () => {
+    const html = render(eventSeo({ images: [CLOUDFLARE_LEAD] }))
+    const lead = html.match(/<img[^>]*img-id[^>]*>/)?.[0]
+
+    expect(lead).toContain('src="https://imagedelivery.net/acct/img-id/width=800"')
+    expect(lead).toContain('srcSet=')
+    // 720px, not the 768px cap: `max-w-3xl` bounds the box with its gutters.
+    expect(lead).toContain('720px')
+    expect(html).not.toContain('aspect-video')
   })
 })
