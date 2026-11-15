@@ -97,7 +97,7 @@ export const Default: Story = () => (
             alt="A broken natural-flow image"
             aspectRatio="video"
             forceAspectRatio={false}
-            src="https://picsum.photos/id/999999/600/400"
+            src="/this-image-does-not-exist.jpg"
           />
         </div>
       </StorySection>
