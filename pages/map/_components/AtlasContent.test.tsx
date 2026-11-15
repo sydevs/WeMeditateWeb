@@ -224,11 +224,33 @@ describe('a class page', () => {
     expect(html).toContain('alt="The hall"')
   })
 
-  it('offers the join link for an online class', () => {
+  it('offers the join link for an online class, as a link off this site', () => {
     const html = render(eventSeo({ onlineUrl: 'https://meet.test/room', address: null }))
+    const room = anchorFor(html, 'https://meet.test/room')
 
-    expect(html).toContain('href="https://meet.test/room"')
+    expect(room).toContain('target="_blank"')
+    expect(room).toContain('rel="noopener noreferrer"')
     expect(html).toContain('Join online')
+  })
+
+  it('refuses a room URL whose scheme could run in our origin', () => {
+    // Nothing upstream validates this field, and it reaches an href
+    // unchanged. The website is a separate value, so it still answers.
+    const html = render(
+      eventSeo({ onlineUrl: 'javascript:alert(1)', website: 'https://site.test' }),
+    )
+
+    expect(html).not.toContain('javascript:')
+    expect(html).toContain('href="https://site.test"')
+    expect(html).toContain('Visit the website')
+  })
+
+  it('offers nothing at all when every link a class gives is unusable', () => {
+    const html = render(eventSeo({ onlineUrl: 'javascript:alert(1)', website: 'data:text/html,x' }))
+
+    expect(html).toContain('Saturday morning meditation')
+    expect(html).not.toContain('Join online')
+    expect(html).not.toContain('Visit the website')
   })
 
   it('falls through to the website when onlineUrl is empty rather than linking to nothing', () => {

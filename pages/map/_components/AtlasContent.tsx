@@ -25,7 +25,7 @@ import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT } from '../../../hooks/useT'
 import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
-import { isSitePath, sitePathFromUrl } from '../../../lib/urls'
+import { isSafeHttpUrl, isSitePath, sitePathFromUrl } from '../../../lib/urls'
 import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
 
@@ -174,6 +174,18 @@ function RegionContent({
   )
 }
 
+/**
+ * A class's own link, as a coordinator typed it, or `null`.
+ *
+ * This contract spells "absent" as the empty string (`address.oneLine`,
+ * `schedule.oneLine` do the same), so an empty `onlineUrl` falls through to
+ * the website rather than rendering `href=""`. Nothing upstream validates
+ * the scheme, which is what `isSafeHttpUrl` is here for.
+ */
+function editorUrl(url: string | null | undefined): string | null {
+  return url && isSafeHttpUrl(url) ? url : null
+}
+
 /** A class page: when and where it meets, and what it says about itself. */
 function EventContent({
   content,
@@ -191,12 +203,8 @@ function EventContent({
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
-  // `||`, not `??`: upstream uses the empty string for "absent" elsewhere
-  // in this contract (`address.oneLine`, `schedule.oneLine`). So an empty
-  // `onlineUrl` must fall through to the website, instead of rendering
-  // href="".
-  const joinUrl = content.onlineUrl || null
-  const websiteUrl = content.website || null
+  const joinUrl = editorUrl(content.onlineUrl)
+  const websiteUrl = editorUrl(content.website)
   const linkUrl = joinUrl ?? websiteUrl
 
   return (
@@ -251,9 +259,14 @@ function EventContent({
 
       {linkUrl && (
         <p className="mt-6">
-          <a className="text-teal-600 hover:text-teal-700" href={linkUrl} rel="noopener noreferrer">
+          <Link
+            external
+            className="text-teal-600 hover:text-teal-700"
+            href={linkUrl}
+            variant="unstyled"
+          >
             {joinUrl ? t('map.general.join_online') : t('map.general.visit_website')}
-          </a>
+          </Link>
         </p>
       )}
     </div>
