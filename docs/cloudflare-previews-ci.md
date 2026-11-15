@@ -32,8 +32,10 @@ stay wired as fallbacks that have never yet yielded a URL here.
 
 ⚠ The ladle preview is the `wemeditate-design` Worker. A PR opened before 2026-11-02 may still
 carry a `wemeditate-design` Pages comment: it matches `CF_PROJECT_MATCH` by project name and comes
-first, and its `wm-design.pages.dev` host no longer answers. Read the `selected …` line the step
-prints (#184).
+first, and its `wm-design.pages.dev` host no longer answers. Discovery rejects a `pages.dev` host
+outright for that reason, printing `skipping … — retired Cloudflare Pages host` and reading on to
+the Workers comment (#199). Moving either preview back to Pages means lifting that rule in the
+same commit.
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |

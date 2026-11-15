@@ -50,6 +50,12 @@ const EXCLUDE = ['wemeditate-design']
 // Matches a Cloudflare preview origin at any subdomain depth.
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
 
+// Both previews are Workers Builds, so a `pages.dev` host is a deployment of the retired
+// wemeditate-design Pages project. Its comment still names the target project, still sorts
+// ahead of the Workers one on a PR opened before 2026-11-02, and the host no longer answers —
+// so selecting it burns the whole health timeout and reddens a build that did deploy (#199).
+const RETIRED_HOST_RE = /\.pages\.dev$/i
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 const extractPreviewUrl = (text) => String(text ?? '').match(PREVIEW_URL_RE)?.[0] ?? null
@@ -138,11 +144,17 @@ async function discoverUrl() {
   }
 
   for (const c of candidates) {
-    if (matchesTarget(c.project, c.url)) {
-      console.error(`selected ${c.url} [${c.source}, project=${c.project ?? '?'}]`)
-      return c.url
+    const label = `${c.url} [${c.source}, project=${c.project ?? '?'}]`
+    if (RETIRED_HOST_RE.test(c.url)) {
+      console.error(`skipping ${label} — retired Cloudflare Pages host`)
+      continue
     }
-    console.error(`skipping ${c.url} [${c.source}, project=${c.project ?? '?'}] — not the target project`)
+    if (!matchesTarget(c.project, c.url)) {
+      console.error(`skipping ${label} — not the target project`)
+      continue
+    }
+    console.error(`selected ${label}`)
+    return c.url
   }
   return null
 }
