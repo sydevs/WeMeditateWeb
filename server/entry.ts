@@ -47,13 +47,14 @@ function scrubCredentials<E extends Event>(event: E): E {
   request.url &&= stripLivePreviewToken(request.url)
   delete request.query_string
 
-  // ⚠ The inbound POST body, which Sentry attaches whether or not
-  // `sendDefaultPii` is set: `httpServerIntegration` buffers up to 10 KB of it
-  // onto the scope for every non-GET request, and `requestDataIntegration`
-  // reads it back with `data: true` unconditionally. On `POST /api/submissions`
-  // that body is the visitor's name, email address and message. Nothing needs
-  // it to debug these paths — the upstream error body is already in the
-  // request log (sahajcloud-fetch.ts).
+  // ⚠ A backstop. `httpBodies: []` (lib/sentry-data-collection.ts) is what
+  // keeps the inbound body off the event: `httpServerIntegration` ships with no
+  // `maxRequestBodySize`, so that option alone decides whether the body is
+  // buffered, and an empty list means it never is. This line is what holds if
+  // the option is ever widened, because on `POST /api/submissions` the body is
+  // the visitor's name, email address and message, and nothing needs it to
+  // debug these paths — the upstream error body is already in the request log
+  // (sahajcloud-fetch.ts).
   delete request.data
 
   const { headers } = request
