@@ -66,12 +66,7 @@ jobs:
   # stays lenient. The wemeditate-web Worker's own Builds-trigger branch filters live in
   # Cloudflare and are not readable from here, so reddening that leg could block a PR for a
   # cause nothing in this repo can observe. sydevs/SahajCloud#903 replaces the discovery for
-  # both legs, and flipping web strict is this one word. (sydevs/SahajCloud#903 was still open
-  # when the skip counts below were added.)
-  #
-  # While web is lenient, the "Smoke results" step still states how many specs ran, passed and
-  # skipped, and warns when every one skipped: a spec calls ctx.skip when it has no key or no
-  # discoverable content, and vitest counts that as a pass.
+  # both legs, and flipping web strict is this one word.
   smoke:
     name: Smoke (${{ matrix.target }})
     runs-on: ubuntu-latest

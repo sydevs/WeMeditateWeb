@@ -112,13 +112,6 @@ summary (`scripts/smoke-skip-summary.mjs`) and warns when every spec skipped. A 
 with `ctx.skip` when it has no `SAHAJCLOUD_API_KEY` or no discoverable content, and vitest counts
 that as a pass, so the warning is the only sign that the leg asserted nothing.
 
-## Payload types drift is checked weekly, not per PR
-
-`.github/workflows/types-drift.yml` runs `pnpm types:cms` on a Monday schedule (and by hand) and
-fails when `server/payload-types.ts` differs from the commit. It never runs on a pull request, so
-an unrelated SahajCloud change cannot block one. A red run means: run `pnpm types:cms`, typecheck,
-and open a `chore(contracts)` PR.
-
 ## The playground refuses crawlers, and answers cross-origin
 
 Two files in the build output carry the refusal —
