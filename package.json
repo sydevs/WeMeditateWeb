@@ -23,7 +23,6 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.20",
     "@heroicons/react": "^2.2.0",
-    "@hookform/resolvers": "^7.0.6",
     "@mapbox/search-js-core": "^1.6.0",
     "@mapbox/search-js-react": "^1.6.0",
     "@mapbox/search-js-web": "^1.6.0",
