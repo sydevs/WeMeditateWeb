@@ -1,3 +1,5 @@
+const PII_KEY_SNIPPETS = ['forwarded', '-ip', 'remote-', 'via', '-user']
+
 /**
  * The v10 default for what the Sentry SDKs collect, spelled out for v11.
  *
@@ -7,17 +9,15 @@
  * that. Pass this object to `Sentry.init` on both the server and the browser;
  * leaving `dataCollection` out would widen collection silently.
  */
-const PII_HEADER_SNIPPETS = ['forwarded', '-ip', 'remote-', 'via', '-user']
-
 export const sentryDataCollection = {
   userInfo: false,
   cookies: false,
   httpHeaders: {
-    request: { deny: PII_HEADER_SNIPPETS },
-    response: { deny: PII_HEADER_SNIPPETS },
+    request: { deny: PII_KEY_SNIPPETS },
+    response: { deny: PII_KEY_SNIPPETS },
   },
   httpBodies: [],
-  urlQueryParams: { deny: PII_HEADER_SNIPPETS },
+  urlQueryParams: { deny: PII_KEY_SNIPPETS },
   genAI: { inputs: false, outputs: false },
   databaseQueryData: false,
   queues: false,

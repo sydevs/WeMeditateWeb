@@ -15,15 +15,15 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
  * Header names whose value is a credential, matched as a lowercase substring so
  * a header added later is covered by its name rather than by an edit here.
  *
- * ⚠ Sentry does not do this for us, and its own deny-list looks like it
- * would. `requestDataIntegration` copies every inbound header onto
- * `event.request.headers`, removing only `cookie` and the IP headers; the
- * deny-list (`PII_HEADER_SNIPPETS`: `forwarded`, `-ip`, `remote-`, `via`,
- * `-user`) is applied to the URL and the query string and never to the
- * headers — and would match neither name below. So this Worker's two inbound
- * credentials, the live-preview token (`x-sahajcloud-preview-secret`) and the
- * Turnstile token, would otherwise arrive in plaintext and outlive the session
- * they were minted for (lib/live-preview/token-url.ts says what that costs).
+ * ⚠ A backstop, not the only guard. Sentry 11 filters a header whose name
+ * matches its own `SENSITIVE_KEY_SNIPPETS`, which today covers all four
+ * snippets below, on top of the `PII_KEY_SNIPPETS` deny-list this Worker now
+ * passes for request and response headers alike. That built-in list is
+ * SDK-internal and can narrow in a minor, and what rides on it is this
+ * Worker's two inbound credentials — the live-preview token
+ * (`x-sahajcloud-preview-secret`) and the Turnstile token — which otherwise
+ * arrive in plaintext and outlive the session they were minted for
+ * (lib/live-preview/token-url.ts says what that costs).
  */
 const CREDENTIAL_HEADER_SNIPPETS = ['secret', 'token', 'auth', 'key']
 
