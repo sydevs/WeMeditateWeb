@@ -66,7 +66,12 @@ jobs:
   # stays lenient. The wemeditate-web Worker's own Builds-trigger branch filters live in
   # Cloudflare and are not readable from here, so reddening that leg could block a PR for a
   # cause nothing in this repo can observe. sydevs/SahajCloud#903 replaces the discovery for
-  # both legs, and flipping web strict is this one word.
+  # both legs, and flipping web strict is this one word. (sydevs/SahajCloud#903 was still open
+  # when the skip counts below were added.)
+  #
+  # While web is lenient, the "Smoke results" step still states how many specs ran, passed and
+  # skipped, and warns when every one skipped: a spec calls ctx.skip when it has no key or no
+  # discoverable content, and vitest counts that as a pass.
   smoke:
     name: Smoke (${{ matrix.target }})
     runs-on: ubuntu-latest
@@ -163,7 +168,13 @@ jobs:
             echo ""
             echo "Preview address read by discovery: \`$PREVIEW_URL\`"
           } >> "$GITHUB_STEP_SUMMARY"
-          pnpm ${{ matrix.script }}
+          pnpm ${{ matrix.script }} --reporter=default --reporter=json --outputFile.json=smoke-report.json
+
+      # Always runs once discovery ran, so a failing leg still gets its counts. With no preview
+      # there is no report, and the script says so instead of staying silent.
+      - name: Smoke results (${{ matrix.target }})
+        if: ${{ always() && steps.scope.outputs.built != 'false' }}
+        run: node scripts/smoke-skip-summary.mjs smoke-report.json ${{ matrix.target }}
 
       # A skip must never look like a pass. Discovery exits 0 with an empty URL, and the Smoke
       # step above then does not run at all — so before this step a missing preview was a green

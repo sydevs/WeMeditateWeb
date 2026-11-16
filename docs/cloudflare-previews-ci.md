@@ -107,6 +107,18 @@ the step summary, so a pass always says which preview it tested.
 Builds-trigger branch filters are not readable from this repo, so reddening that leg could block
 PRs for a cause nothing here can observe. sydevs/SahajCloud#903 replaces the discovery for both.
 
+Both legs end with a "Smoke results" step that writes passed, failed and skipped counts to the job
+summary (`scripts/smoke-skip-summary.mjs`) and warns when every spec skipped. A spec skips itself
+with `ctx.skip` when it has no `SAHAJCLOUD_API_KEY` or no discoverable content, and vitest counts
+that as a pass, so the warning is the only sign that the leg asserted nothing.
+
+## Payload types drift is checked weekly, not per PR
+
+`.github/workflows/types-drift.yml` runs `pnpm types:cms` on a Monday schedule (and by hand) and
+fails when `server/payload-types.ts` differs from the commit. It never runs on a pull request, so
+an unrelated SahajCloud change cannot block one. A red run means: run `pnpm types:cms`, typecheck,
+and open a `chore(contracts)` PR.
+
 ## The playground refuses crawlers, and answers cross-origin
 
 Two files in the build output carry the refusal —
