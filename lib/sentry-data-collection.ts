@@ -1,5 +1,7 @@
 import type { CloudflareOptions } from '@sentry/cloudflare'
 
+import { LIVE_PREVIEW_PARAM } from './live-preview/protocol'
+
 /**
  * ⚠ Reached through `CloudflareOptions` because `DataCollection` is exported
  * from `@sentry/core`, which is not a dependency here. Both SDKs take the same
@@ -8,6 +10,16 @@ import type { CloudflareOptions } from '@sentry/cloudflare'
 type SentryDataCollection = NonNullable<CloudflareOptions['dataCollection']>
 
 const PII_KEY_SNIPPETS = ['forwarded', '-ip', 'remote-', 'via', '-user']
+
+/**
+ * ⚠ Our own credential, which no Sentry deny-list knows. `urlQueryParams` is
+ * the only filter that reaches a span's `url.full` and `url.query`:
+ * `scrubCredentials` (server/entry.ts) cleans `event.request` and never
+ * `event.contexts.trace.data`. Tracing turns on from the Cloudflare dashboard
+ * alone, through `SENTRY_TRACES_SAMPLE_RATE`, so without this the first traced
+ * live-preview request carries its JWT into Sentry.
+ */
+const CREDENTIAL_QUERY_SNIPPETS = [LIVE_PREVIEW_PARAM]
 
 /**
  * The v10 default for what the Sentry SDKs collect, spelled out for v11.
@@ -31,7 +43,7 @@ export const sentryDataCollection = {
     response: { deny: PII_KEY_SNIPPETS },
   },
   httpBodies: [],
-  urlQueryParams: { deny: PII_KEY_SNIPPETS },
+  urlQueryParams: { deny: [...PII_KEY_SNIPPETS, ...CREDENTIAL_QUERY_SNIPPETS] },
   genAI: { inputs: false, outputs: false },
   databaseQueryData: false,
   queues: false,
