@@ -7,6 +7,7 @@ import { registerApiRoutes } from './api-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
 import { stripLivePreviewToken } from '../lib/live-preview/token-url'
+import { sentryDataCollection } from '../lib/sentry-data-collection'
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 
@@ -77,6 +78,11 @@ export default withSentry(
   (env: SahajCloudEnv['Bindings']) => ({
     dsn: env.SENTRY_DSN,
     environment: 'production-backend',
+    dataCollection: sentryDataCollection,
+    // ⚠ Sentry 11 streams spans by default, and a streamed span never reaches
+    // `beforeSendTransaction`, so `scrubCredentials` would stop running on
+    // traced requests. Stay on transactions until spans are scrubbed another way.
+    traceLifecycle: 'static',
     beforeSend: scrubCredentials,
     beforeSendTransaction: scrubCredentials,
   }),
