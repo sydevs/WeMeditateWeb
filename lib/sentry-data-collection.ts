@@ -1,3 +1,12 @@
+import type { CloudflareOptions } from '@sentry/cloudflare'
+
+/**
+ * ⚠ Reached through `CloudflareOptions` because `DataCollection` is exported
+ * from `@sentry/core`, which is not a dependency here. Both SDKs take the same
+ * type, so checking against the Worker's options covers the browser init too.
+ */
+type SentryDataCollection = NonNullable<CloudflareOptions['dataCollection']>
+
 const PII_KEY_SNIPPETS = ['forwarded', '-ip', 'remote-', 'via', '-user']
 
 /**
@@ -8,6 +17,11 @@ const PII_KEY_SNIPPETS = ['forwarded', '-ip', 'remote-', 'via', '-user']
  * query data. Neither init ever set `sendDefaultPii`, so v10 collected none of
  * that. Pass this object to `Sentry.init` on both the server and the browser;
  * leaving `dataCollection` out would widen collection silently.
+ *
+ * ⚠ `satisfies`, never a bare object literal. Passed to `Sentry.init` as a
+ * variable this object is never checked against the SDK's shape, so a key
+ * Sentry renames compiles clean and silently widens collection — the one
+ * failure this file exists to prevent.
  */
 export const sentryDataCollection = {
   userInfo: false,
@@ -22,4 +36,4 @@ export const sentryDataCollection = {
   databaseQueryData: false,
   queues: false,
   graphQL: { document: false, variables: false },
-}
+} satisfies SentryDataCollection
