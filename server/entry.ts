@@ -82,7 +82,9 @@ export default withSentry(
     dataCollection: sentryDataCollection,
     // ⚠ Sentry 11 streams spans by default, and a streamed span never reaches
     // `beforeSendTransaction`, so `scrubCredentials` would stop running on
-    // traced requests. Stay on transactions until spans are scrubbed another way.
+    // traced requests.
+    // shortcut: the static lifecycle keeps beforeSendTransaction, which v12
+    // removes; upgrade when scrubCredentials can scrub streamed span attributes
     traceLifecycle: 'static',
     beforeSend: scrubCredentials,
     beforeSendTransaction: scrubCredentials,
