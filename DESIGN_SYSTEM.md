@@ -441,6 +441,10 @@ import { Icon } from './components/atoms'
 <Icon icon={HeartIcon} size="lg" color="primary" />
 ```
 
+An icon with no `aria-label` is decorative: `Icon` marks it `aria-hidden`. Pass `aria-label` when
+the icon carries meaning on its own, and the wrapper becomes `role="img"` so the name reaches the
+accessibility tree — ARIA forbids naming the bare `<span>` a decorative icon renders as.
+
 ## Component stories
 
 Every component needs a Ladle story for visual documentation and isolated development. See

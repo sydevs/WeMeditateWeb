@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react'
 
+import { sentryDataCollection } from './lib/sentry-data-collection'
 import { scrubTokenFromLocation } from './lib/live-preview/token-url'
 
 export const sentryBrowserConfig = () => {
@@ -23,6 +24,7 @@ export const sentryBrowserConfig = () => {
     Sentry.init({
       dsn: import.meta.env.PUBLIC__SENTRY_DSN,
       environment: 'production-frontend',
+      dataCollection: sentryDataCollection,
       integrations: [Sentry.replayIntegration()],
       tracesSampleRate: 1.0,
       tracePropagationTargets: [/^\//, /^https:\/\/yourserver\.io\/api/],
