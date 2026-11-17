@@ -9,6 +9,9 @@ const BASE = {
   imageAlt: 'Meditation',
 } as const
 
+// Spelled as SahajCloud sends it — docs/rules/testing.md.
+const CLOUDFLARE_SRC = 'https://imagedelivery.net/acct/img-id/public'
+
 describe('<ContentOverlay> subtitle', () => {
   it('renders the subtitle when provided', () => {
     const html = renderToStaticMarkup(<ContentOverlay {...BASE} subtitle="Collective meditation" />)
@@ -41,13 +44,16 @@ describe('<ContentOverlay> image loading', () => {
     images.forEach((img) => expect(img).toContain('loading="lazy"'))
   })
 
-  it('resolves a Cloudflare variant and the full-bleed slot width on the desktop branch', () => {
-    const html = renderToStaticMarkup(
-      <ContentOverlay {...BASE} imageSrc="https://imagedelivery.net/acct/img-id/" />,
-    )
+  it('points both branches at one variant, so a visitor downloads it once', () => {
+    const html = renderToStaticMarkup(<ContentOverlay {...BASE} imageSrc={CLOUDFLARE_SRC} />)
     const images = html.match(/<img[^>]*>/g) ?? []
+    const sources = [...html.matchAll(/<img[^>]*\ssrc="([^"]*)"/g)].map(([, src]) => src)
 
-    expect(images.filter((img) => img.includes('srcSet='))).toHaveLength(1)
-    expect(images.filter((img) => img.includes('sizes="100vw"'))).toHaveLength(1)
+    expect(images.filter((img) => img.includes('srcSet='))).toHaveLength(2)
+    expect(images.filter((img) => img.includes('sizes="100vw"'))).toHaveLength(2)
+    expect(sources).toEqual([
+      'https://imagedelivery.net/acct/img-id/width=800',
+      'https://imagedelivery.net/acct/img-id/width=800',
+    ])
   })
 })

@@ -25,8 +25,20 @@ import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT } from '../../../hooks/useT'
 import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
-import { sitePathFromUrl } from '../../../lib/urls'
+import { isSafeHttpUrl, isSitePath, sitePathFromUrl } from '../../../lib/urls'
+import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
+
+/**
+ * A URL as SahajCloud sent it, or `null` where it is absent or not http(s).
+ *
+ * Nothing upstream validates either field this guards — a region's canonical
+ * or a class's own room link, which a coordinator types. This contract also
+ * spells "absent" as the empty string, as `address.oneLine` does.
+ */
+function upstreamUrl(url: string | null | undefined): string | null {
+  return url && isSafeHttpUrl(url) ? url : null
+}
 
 /**
  * Where a region or class link should point.
@@ -43,17 +55,18 @@ import { Link } from '../../../components/atoms/Link'
  * URL, and the atlas publishes it locale-free, which would drop a French
  * visitor into English on every rung.
  *
- * TODO: this belongs in `Link`, which asks the same question one line from
- * the answer. Moving it rewrites every editor-pasted href and collides with
- * `external` (`MeditationPlayer` links `wemeditate.com` that way), so it is
- * a decision of its own — sydevs/WeMeditateWeb#124. Do not copy this shape.
+ * `Link` leaves a same-origin absolute href alone by design
+ * (sydevs/WeMeditateWeb#160 question 1), so resolving the canonical is
+ * this function's job, not a gap in `Link`.
  */
 export function atlasHref(
   link: { route: string | null; url: string | null },
   origin: string | null,
 ): string | null {
-  if (link.url) {
-    return sitePathFromUrl(link.url, origin) ?? link.url
+  const canonical = upstreamUrl(link.url)
+
+  if (canonical) {
+    return sitePathFromUrl(canonical, origin) ?? canonical
   }
 
   return link.route ? `${MAP_PREFIX}${link.route}` : null
@@ -82,7 +95,12 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
               {isCurrent || !href ? (
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
-                <Link className="hover:text-teal-600" href={href} variant="unstyled">
+                <Link
+                  className="hover:text-teal-600"
+                  external={!isSitePath(href)}
+                  href={href}
+                  variant="unstyled"
+                >
                   {rung.name}
                 </Link>
               )}
@@ -104,7 +122,12 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
     <li className="border-t border-gray-200 py-4">
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
-          <Link className="hover:text-teal-600" href={href} variant="unstyled">
+          <Link
+            className="hover:text-teal-600"
+            external={!isSitePath(href)}
+            href={href}
+            variant="unstyled"
+          >
             {card.title}
           </Link>
         ) : (
@@ -181,12 +204,8 @@ function EventContent({
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
-  // `||`, not `??`: upstream uses the empty string for "absent" elsewhere
-  // in this contract (`address.oneLine`, `schedule.oneLine`). So an empty
-  // `onlineUrl` must fall through to the website, instead of rendering
-  // href="".
-  const joinUrl = content.onlineUrl || null
-  const websiteUrl = content.website || null
+  const joinUrl = upstreamUrl(content.onlineUrl)
+  const websiteUrl = upstreamUrl(content.website)
   const linkUrl = joinUrl ?? websiteUrl
 
   return (
@@ -216,16 +235,21 @@ function EventContent({
         )}
       </dl>
 
-      {/* A raw <img> until #148: the `Image` atom holds its <img> at
-          `opacity-0` until a client load handler runs, and this markup is
-          read by visitors who never hydrate. */}
+      {/* `sizes` is the column above measured inside its gutters — `max-w-3xl`
+          caps the padded box, so the image is 720px, never 768. Declaring the
+          cap instead costs a whole srcset tier at DPR 2. The wrapper carries
+          the margin because `className` reaches the <img>. */}
       {lead && (
-        <img
-          alt={lead.alt ?? ''}
-          className="mt-6 w-full max-w-full rounded"
-          loading="lazy"
-          src={lead.url}
-        />
+        <div className="mt-6">
+          <Image
+            alt={lead.alt ?? ''}
+            aspectRatio="video"
+            className="w-full"
+            forceAspectRatio={false}
+            sizes="(max-width: 40rem) calc(100vw - 2rem), (max-width: 48rem) calc(100vw - 3rem), 720px"
+            src={lead.url}
+          />
+        </div>
       )}
 
       {(content.paragraphs ?? []).map((paragraph, index) => (
@@ -236,9 +260,14 @@ function EventContent({
 
       {linkUrl && (
         <p className="mt-6">
-          <a className="text-teal-600 hover:text-teal-700" href={linkUrl} rel="noopener noreferrer">
+          <Link
+            external
+            className="text-teal-600 hover:text-teal-700"
+            href={linkUrl}
+            variant="unstyled"
+          >
             {joinUrl ? t('map.general.join_online') : t('map.general.visit_website')}
-          </a>
+          </Link>
         </p>
       )}
     </div>

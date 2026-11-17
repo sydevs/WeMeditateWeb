@@ -50,7 +50,6 @@ export const Default: Story = () => (
       <nav className="border-t border-b border-gray-200">
         <div className="flex items-stretch justify-center gap-2 max-w-3xl mx-auto px-6">
           <HeaderNavDropdown
-            className="basis-1/4"
             dropdown={sampleDropdown}
             label="About Meditation"
           />
@@ -69,7 +68,6 @@ export const Default: Story = () => (
       <nav className="border-t border-b border-white/40">
         <div className="flex items-stretch justify-center gap-2 max-w-3xl mx-auto px-6">
           <HeaderNavDropdown
-            className="basis-1/4"
             dropdown={sampleDropdown}
             label="About Meditation"
           />

@@ -2,6 +2,7 @@
 paths:
   - "components/**"
   - "layouts/**"
+  - "pages/**"
 ---
 
 # Design System
@@ -22,6 +23,8 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
 - Meet WCAG 2.1 AA.
 - Gate a JavaScript-driven animation on `prefers-reduced-motion` — see the Motion section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
+- Keep every component's first render visible — see the Performance section in
+  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
 
 ## The 44×44 touch target has two utilities — do not hand-roll a third
 
@@ -39,6 +42,13 @@ Two overlays closer than 44px apart overlap, and the later sibling wins the shar
 overlay leaves a **spacing** requirement on the row around it. That is why growing the box is the
 first choice. `ColumnCarousel`'s dots sat on 16px centres, so tapping the dot you could see
 selected the *next* slide (#135).
+
+**An overlay hangs outside its box by design, so the hazard is a clipping edge, not a short box.**
+`Alert`'s 16px cross hangs well outside its box, correctly. What breaks the `::before` is an edge
+that cuts it off: the viewport, for a bar pinned at `top-0`, or an `overflow` ancestor. Grow the
+box there instead — the header's compact bar measured 44×**31** reachable while both its class
+lists read `touch-target-overlay` (#202). A class list is not a hit area. Measure one with
+`document.elementFromPoint`.
 
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
 flex item that is the visible effect: it shrinks to 44px rather than to its content — and on a
@@ -160,7 +170,8 @@ interface LinkProps {
 
 `Link` prefixes a non-English locale automatically (`/about` becomes `/es/about`). `size="inherit"`
 is the default, so a link matches its parent's font size unless you set one. An `external` link
-adds screen-reader text announcing it opens in a new tab.
+sets `target="_blank"` and `rel="noopener noreferrer"`, and nothing more. It does not announce the
+new tab to a screen reader; #238 adds that.
 
 ### Surfaces
 
@@ -183,7 +194,8 @@ const variantStyles = {
 - **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
   `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
   `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
-  `LayoutChrome` puts the lead splash's surface on the wrapper it overlays the header with.
+  `LayoutChrome` puts the lead splash's surface in the band it hands the header, which cannot be
+  a wrapper: a wrapper is the sticky nav's containing block, and the nav stops pinning (#204).
 - **Never set a surface on an interactive element.** Its focus ring sits outside it, on the
   surface around it. A filled `Button` draws its spinner in `border-current` instead.
 - **A colour that does not change with the surface names its scale step.** Filled buttons are

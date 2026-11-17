@@ -58,7 +58,59 @@ describe('<OrnateTextBox>', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
     expect(html).toContain('lg:float-left')
+    expect(html).toContain('lg:mr-12')
     expect(html).not.toContain('lg:float-right')
+  })
+
+  it('floats the image right under align="right"', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
+
+    expect(html).toContain('lg:float-right')
+    expect(html).toContain('lg:ml-12')
+    expect(html).not.toContain('lg:float-left')
+  })
+
+  it('defaults to the left layout, so an omitted align renders as align="left"', () => {
+    expect(renderToStaticMarkup(<OrnateTextBox {...BASE} />)).toEqual(
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />),
+    )
+  })
+
+  // The band lightens the image's edge. On the wrong side it sits under the
+  // body column and drops it to 2.34:1, below WCAG AA (#193). The angle is
+  // pinned with the side: both must compile, and 270deg is what keeps the
+  // peach stop on the band's inner edge from `right-0`.
+  it('keeps the warm gradient on the image side, angled inward', () => {
+    // `-top-24` is the warm band's alone; the brown ground is a gradient too.
+    const band = (html: string) => html.match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
+
+    const left = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />))
+
+    expect(left).toContain('left-0')
+    expect(left).toContain('linear-gradient(90deg')
+
+    const right = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />))
+
+    expect(right).toContain('right-0')
+    expect(right).toContain('linear-gradient(270deg')
+  })
+
+  // Below `lg` the body column is full-width and crosses the band, where the
+  // full-strength peach drops it to 2.3:1. The faint pair is what holds AA
+  // there, so each align carries both intensities, not one (#193).
+  it.each([
+    ['left', '90deg'],
+    ['right', '270deg'],
+  ] as const)('runs the %s band faint below lg and full from lg up', (align, angle) => {
+    const band =
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />).match(
+        /class="([^"]*-top-24[^"]*)"/,
+      )?.[1] ?? ''
+
+    expect(band).toContain(`bg-[linear-gradient(${angle},rgba(255,255,255,0.01)`)
+    expect(band).toContain(`lg:bg-[linear-gradient(${angle},rgba(255,255,255,0.02)`)
+    expect(band).toContain('rgba(255,196,175,0.08)_100%)]')
+    expect(band).toContain('rgba(255,196,175,0.6)_100%)]')
   })
 
   it('renders the title above the body (header precedes the image)', () => {

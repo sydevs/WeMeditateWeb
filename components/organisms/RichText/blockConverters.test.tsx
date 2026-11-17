@@ -69,6 +69,14 @@ describe('textbox block converter — routing', () => {
     expect(html).not.toContain('lg:bg-white') // not the plain ContentTextBox
   })
 
+  it('threads imagePosition into the ornate treatment as the image side', () => {
+    const html = renderTextbox({ imagePosition: 'right', wisdomStyle: true, title: 'Wisdom' })
+
+    expect(html).toContain('#6b5340') // still the ornate branch
+    expect(html).toContain('lg:float-right')
+    expect(html).not.toContain('lg:float-left')
+  })
+
   it('overlay takes precedence over wisdomStyle (no ornate ground)', () => {
     const html = renderTextbox({ imagePosition: 'overlay', wisdomStyle: true, title: 'Wisdom' })
 

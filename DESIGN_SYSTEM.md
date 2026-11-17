@@ -269,7 +269,7 @@ To remove an overengineered component:
 6. Compare the result to the original design, and check accessibility (contrast, semantic HTML,
    ARIA).
 
-See [MCP_USAGE.md](MCP_USAGE.md) for the Puppeteer workflow that extracts these values from a
+See [MCP_USAGE.md](MCP_USAGE.md) for the Playwright MCP workflow that extracts these values from a
 live page.
 
 ## Size variants
@@ -426,6 +426,10 @@ import { Icon } from './components/atoms'
 
 <Icon icon={HeartIcon} size="lg" color="primary" />
 ```
+
+An icon with no `aria-label` is decorative: `Icon` marks it `aria-hidden`. Pass `aria-label` when
+the icon carries meaning on its own, and the wrapper becomes `role="img"` so the name reaches the
+accessibility tree — ARIA forbids naming the bare `<span>` a decorative icon renders as.
 
 ## Component stories
 
