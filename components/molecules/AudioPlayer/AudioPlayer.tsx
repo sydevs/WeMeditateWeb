@@ -29,10 +29,11 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
   shuffle?: boolean
 
   /**
-   * Initial track index to play
+   * Index of the track to play, in `tracks`. Followed when it changes, so a
+   * consumer can drive the player.
    * @default 0
    */
-  initialTrackIndex?: number
+  trackIndex?: number
 
   /**
    * Controls to disable in the player
@@ -59,7 +60,7 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
 function AudioPlayerInner({
   tracks,
   shuffle = false,
-  initialTrackIndex = 0,
+  trackIndex = 0,
   disabledControls = [],
   onTrackChange,
   className = '',
@@ -69,7 +70,7 @@ function AudioPlayerInner({
   const [state, playerControls] = usePlaylistAudioPlayer({
     tracks,
     shuffle,
-    initialTrackIndex,
+    trackIndex,
     onTrackChange,
   })
 

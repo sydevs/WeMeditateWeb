@@ -7,8 +7,8 @@ export interface UsePlaylistAudioPlayerOptions {
   tracks: Track[]
   /** Enable shuffle mode on initialization */
   shuffle?: boolean
-  /** Initial track index to start with */
-  initialTrackIndex?: number
+  /** Index of the track to play, in `tracks`. The hook follows it when it changes. */
+  trackIndex?: number
   /** Callback when track changes */
   onTrackChange?: (trackIndex: number) => void
   /** Callback fired every 100ms during playback (also on play/pause/seek) */
@@ -37,7 +37,7 @@ export interface UsePlaylistAudioPlayerOptions {
 export function usePlaylistAudioPlayer({
   tracks,
   shuffle = false,
-  initialTrackIndex = 0,
+  trackIndex = 0,
   onTrackChange,
   onPlaybackTimeUpdate,
 }: UsePlaylistAudioPlayerOptions): [PlaylistAudioPlayerState, PlaylistAudioPlayerControls] {
@@ -47,7 +47,7 @@ export function usePlaylistAudioPlayer({
   })
 
   // Playlist state
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(trackIndex)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   const [playOrder, setPlayOrder] = useState<number[]>([])
   const [hasEnded, setHasEnded] = useState(false)
@@ -133,6 +133,18 @@ export function usePlaylistAudioPlayer({
     },
     [playerState.isPlaying]
   )
+
+  // The hook moves the index itself — next, previous, track end — so it owns
+  // the state and follows `trackIndex` on change rather than reading it
+  // directly. Without this a consumer driving the player, such as a playlist
+  // click, changed nothing and the previous track kept playing (#249).
+  const followTrackIndex = useEffectEvent(() => {
+    selectTrack(trackIndex)
+  })
+
+  useEffect(() => {
+    followTrackIndex()
+  }, [trackIndex])
 
   // Compose state
   const state: PlaylistAudioPlayerState = {

@@ -89,8 +89,8 @@ export function MusicLibrary({
           {/* Audio Player */}
           <AudioPlayer
             disabledControls={['trackInfo']}
-            initialTrackIndex={currentTrackIndex}
             shuffle={true}
+            trackIndex={currentTrackIndex}
             tracks={tracks}
             onTrackChange={setCurrentTrackIndex}
           />
