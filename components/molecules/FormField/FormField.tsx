@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { cloneElement, isValidElement, ReactNode } from 'react'
 import { useT } from '../../../hooks/useT'
 
 export interface FormFieldProps {
@@ -88,12 +88,24 @@ export function FormField({
   const descriptionStyles = 'mt-1 text-sm text-gray-700'
   const errorStyles = 'mt-1 text-sm text-error'
 
-  // Generate IDs for description and error for aria-describedby
-  const descriptionId = description ? `${id}-description` : undefined
+  // Only what this component actually renders: an error hides the description,
+  // and `aria-describedby` pointing at a missing id announces nothing.
+  const descriptionId = description && !error ? `${id}-description` : undefined
   const errorId = error ? `${id}-error` : undefined
-
-  // Build aria-describedby value
   const ariaDescribedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined
+
+  // The description and the error are siblings of the control, so nothing
+  // connects them to it but this attribute. A single element child takes it;
+  // anything else keeps its own markup, and a control that already names its
+  // own description keeps that too.
+  const describedChildren =
+    ariaDescribedBy && isValidElement<{ 'aria-describedby'?: string }>(children)
+      ? cloneElement(children, {
+          'aria-describedby':
+            [children.props['aria-describedby'], ariaDescribedBy].filter(Boolean).join(' ') ||
+            undefined,
+        })
+      : children
 
   return (
     <div className={`${alignStyles} ${className}`}>
@@ -112,7 +124,7 @@ export function FormField({
         </p>
       )}
 
-      <div className={description && !error ? 'mt-1' : ''}>{children}</div>
+      <div className={description && !error ? 'mt-1' : ''}>{describedChildren}</div>
 
       {error && (
         <p className={errorStyles} id={errorId} role="alert">
