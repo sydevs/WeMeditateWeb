@@ -9,10 +9,12 @@ import {
 import { Input } from './Input'
 import type { HeroIcon } from '../../Icon/Icon'
 
+/** What marks the rendered icon, so the absence cases below cannot pass vacuously. */
+const ICON_MARKER = 'aria-hidden="true"'
+
 describe('Input', () => {
-  // Rendering the same input with the icon named explicitly is what pins the
-  // table: a swapped pair still renders an icon, and only this comparison
-  // notices which one.
+  // Compared against the icon named explicitly: a swapped table entry still
+  // renders an icon, and only this comparison notices which one.
   const defaults: [string, HeroIcon][] = [
     ['search', MagnifyingGlassIcon],
     ['email', EnvelopeIcon],
@@ -26,23 +28,17 @@ describe('Input', () => {
     )
   })
 
-  it('does not give every type the same icon', () => {
-    const rendered = defaults.map(([type]) => renderToStaticMarkup(<Input type={type} />))
-
-    expect(new Set(rendered).size).toBe(defaults.length)
+  it('marks the icon it renders', () => {
+    expect(renderToStaticMarkup(<Input type="search" />)).toContain(ICON_MARKER)
   })
 
-  it('renders a bare input for a type with no default icon', () => {
-    const html = renderToStaticMarkup(<Input type="text" />)
+  it.each([
+    ['a type with no default icon', { type: 'text' }],
+    ['icon={null}', { icon: null, type: 'search' }],
+  ])('renders a bare input for %s', (_label, props) => {
+    const html = renderToStaticMarkup(<Input {...props} />)
 
     expect(html).toContain('<input')
-    expect(html).not.toContain('aria-hidden="true"')
-  })
-
-  it('drops the default icon when icon is null', () => {
-    const html = renderToStaticMarkup(<Input icon={null} type="search" />)
-
-    expect(html).toContain('<input')
-    expect(html).not.toContain('aria-hidden="true"')
+    expect(html).not.toContain(ICON_MARKER)
   })
 })

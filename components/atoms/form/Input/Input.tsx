@@ -8,11 +8,11 @@ import {
 import type { HeroIcon } from '../../Icon/Icon'
 
 /**
- * The icon each input type shows when the caller passes none. A table rather
- * than a function: a call that returns a component reads as a component built
- * during render.
+ * The icon each input type shows when the caller passes none. A table, not a
+ * function: `@eslint-react/static-components` reads a call returning a
+ * component as one created during render.
  */
-const DEFAULT_ICONS: Record<string, HeroIcon | undefined> = {
+const DEFAULT_ICONS: Partial<Record<NonNullable<ComponentProps<'input'>['type']>, HeroIcon>> = {
   search: MagnifyingGlassIcon,
   email: EnvelopeIcon,
   tel: PhoneIcon,
@@ -33,13 +33,8 @@ export interface InputProps extends ComponentProps<'input'> {
   variant?: 'default' | 'minimal'
 
   /**
-   * Optional icon to display on the right side of the input
-   * If not provided, default icons will be used for certain input types:
-   * - search: MagnifyingGlassIcon
-   * - email: EnvelopeIcon
-   * - tel: PhoneIcon
-   * - url: GlobeAltIcon
-   * Set to null to explicitly disable icon for these types
+   * Icon on the right of the input. Omitted, the input type picks one from
+   * `DEFAULT_ICONS`; `null` suppresses that default.
    */
   icon?: HeroIcon | null
 }
@@ -63,8 +58,7 @@ export interface InputProps extends ComponentProps<'input'> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ state = 'default', variant = 'default', icon, className = '', type, ...props }, ref) => {
     // An explicit `icon`, `null` included, overrides the type's default.
-    // `''` is no input type, so an input with none falls through to no icon.
-    const IconComponent = icon !== undefined ? icon : DEFAULT_ICONS[type ?? '']
+    const IconComponent = icon === undefined && type ? DEFAULT_ICONS[type] : icon
 
     const baseStyles =
       'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'

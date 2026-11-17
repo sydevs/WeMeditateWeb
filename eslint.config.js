@@ -1,3 +1,4 @@
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import react from '@eslint-react/eslint-plugin'
 import stylistic from '@stylistic/eslint-plugin'
@@ -11,8 +12,7 @@ import tseslint from 'typescript-eslint'
 const COPY_PROPS =
   '/^(aria-label|buttonText|caption|description|heading|label|placeholder|subtitle|text|title)$/'
 
-/** Every file the app's own rules apply to. */
-const JSX_FILES = ['**/*.{js,jsx,ts,tsx}']
+const APP_FILES = ['**/*.{js,jsx,ts,tsx}']
 
 /** Prose, not punctuation: two consecutive ASCII letters. */
 const PROSE = '/[A-Za-z]{2}/'
@@ -42,7 +42,7 @@ const copyOn = (prop) => {
   return [copyIn(attribute), copyBraced(attribute)].join(', ')
 }
 
-export default [
+export default defineConfig([
   {
     ignores: [
       '.DS_Store',
@@ -112,12 +112,12 @@ export default [
       'cdk.out/**',
     ],
   },
-  // The plugin's own configs carry no `files`, so they would reach the config
-  // files and the plain scripts too.
-  { files: JSX_FILES, ...react.configs['recommended-typescript'] },
+  // `extends`, not a spread: the plugin's config carries no `files` of its own,
+  // and spreading it would silently drop every rule the day it ships an array.
+  { files: APP_FILES, extends: [react.configs['recommended-typescript']] },
   prettierConfig,
   {
-    files: JSX_FILES,
+    files: APP_FILES,
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -154,9 +154,9 @@ export default [
         },
       ],
       '@stylistic/jsx-self-closing-comp': 'warn',
-      // The groups carry what the previous sort rule took as flags:
-      // reserved props first, then shorthand, then the rest, callbacks last.
-      // It sorted case-sensitively, which is not this rule's default.
+      // The groups reproduce the previous rule's `reservedFirst`,
+      // `shorthandFirst` and `callbacksLast`, and `ignoreCase: false` its
+      // case-sensitive order. Drop them and the repo's prop order changes.
       'perfectionist/sort-jsx-props': [
         'warn',
         {
@@ -224,14 +224,6 @@ export default [
     },
   },
   {
-    // These guards read the app's own source with the TypeScript compiler API,
-    // so a `useX` name here is a token being matched, not a hook being called.
-    files: ['tests/guards/**'],
-    rules: {
-      '@eslint-react/rules-of-hooks': 'off',
-    },
-  },
-  {
     // Nothing below reaches a visitor's console, so a bare log stays a warning
     // here. `server/` logs `[PayloadCMS] GET … → …`, the request log AGENTS.md
     // tells you to read when debugging; a story logs a callback's payload to
@@ -251,4 +243,4 @@ export default [
       'no-console': 'warn',
     },
   },
-]
+])

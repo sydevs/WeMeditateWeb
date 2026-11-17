@@ -38,27 +38,15 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
     return <>{children}</>
   }
 
-  return (
-    <Chrome data={data} settings={settings}>
-      {children}
-    </Chrome>
-  )
+  return <Chrome settings={settings}>{children}</Chrome>
 }
 
 /**
- * Split from the export so `useSiteNav` is never called conditionally — the
- * settings guard above returns before any hook would run. LayoutMap splits the
- * same way, for the same reason.
+ * Split from the export so `useSiteNav` is never called conditionally.
+ * LayoutMap splits the same way, for the same reason.
  */
-function Chrome({
-  data,
-  settings,
-  children,
-}: {
-  data: RouteData
-  settings: WebConfig
-  children: React.ReactNode
-}) {
+function Chrome({ settings, children }: { settings: WebConfig; children: React.ReactNode }) {
+  const data = useData<RouteData>()
   const { locale, urlPathname } = usePageContext()
   const t = useT()
 

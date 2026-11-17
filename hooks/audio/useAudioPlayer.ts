@@ -85,7 +85,9 @@ export function useAudioPlayer({
   const [currentTime, setCurrentTime] = useState(0)
   const soundIdRef = useRef<number | null>(null)
 
-  // Effect Events always read the latest props and state, not dependencies
+  // An Effect Event reads the newest props, and the 100ms interval below is
+  // registered once per play/pause. A plain function there would hold the
+  // `player` of the render that started the interval.
   const updateTime = useEffectEvent(() => {
     const howl = player.player
     const time =
@@ -97,15 +99,14 @@ export function useAudioPlayer({
     onPlaybackTimeUpdate?.(time)
   })
 
-  // Howler keeps the callbacks it was loaded with, and fires them long after
-  // the render that registered them, so they read the caller's latest handlers
-  // from here. An Effect Event cannot carry them: React allows one to be called
-  // only from an Effect, and `load` below is part of the returned controls.
+  // Howler fires these long after the render that registered them. An Effect
+  // Event cannot carry them: React allows one to be called only from an Effect,
+  // and `load` below is part of the returned controls.
   const latestRef = useRef({ onPlay, onPause, onEnd })
 
   useEffect(() => {
     latestRef.current = { onPlay, onPause, onEnd }
-  })
+  }, [onPlay, onPause, onEnd])
 
   const handleOnPlay = (soundId?: number) => {
     if (typeof soundId === 'number') {
@@ -124,16 +125,16 @@ export function useAudioPlayer({
   }
 
   // Load track with the url option, when provided
-  // Note: This only reloads when url changes. The handlers read `latest`, so they always see the newest callbacks.
+  // Note: This only reloads when url changes.
   useEffect(() => {
     if (url) {
       soundIdRef.current = null
       player.load(url, {
         autoplay,
         html5: true,
-        onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
-        onpause: () => handleOnPause(),
-        onend: () => handleOnEnd(),
+        onplay: handleOnPlay as () => void,
+        onpause: handleOnPause,
+        onend: handleOnEnd,
       })
     }
   }, [url, autoplay])
@@ -217,11 +218,13 @@ export function useAudioPlayer({
     player.load(loadUrl, {
       autoplay: options?.autoplay ?? false,
       html5: true,
-      onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
-      onpause: () => handleOnPause(),
+      onplay: handleOnPlay as () => void,
+      onpause: handleOnPause,
+      // A caller's `onEnd` replaces the hook's, rather than running beside it:
+      // the playlist advances its own track and the hook's would fight it.
       onend: () => {
         soundIdRef.current = null
-        options?.onEnd?.() // Caller-provided onEnd for playlist track-end handling
+        options?.onEnd?.()
       },
     })
   }
