@@ -15,7 +15,11 @@
  */
 
 import type { Meditation, MeditationSong } from '../../server/sahajcloud-types'
-import { MeditationPlayer, type MeditationFrame } from '../organisms/MeditationPlayer'
+import {
+  MeditationPlayer,
+  type MeditationFrame,
+  type MeditationPlayerProps,
+} from '../organisms/MeditationPlayer'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { EmbedButton } from '../molecules'
 import { populatedImageUrl } from '../../lib/payload-relationships'
@@ -58,6 +62,13 @@ export interface MeditationTemplateProps {
    * @default false
    */
   showRelated?: boolean
+  /**
+   * Which upsell line the player closes with, or nothing when omitted. The
+   * copy sends an embedded player's viewer to the full site or to the app, so
+   * only the embed route sets it — on a page of our own the destination is the
+   * page the reader is already on.
+   */
+  upsell?: MeditationPlayerProps['upsell']
 }
 
 export function MeditationTemplate({
@@ -68,6 +79,7 @@ export function MeditationTemplate({
   seekTo,
   showEmbedButton = true,
   showRelated = false,
+  upsell,
 }: MeditationTemplateProps) {
   const t = useT()
   // Get SahajCloud base URL for building full frame URLs
@@ -184,6 +196,7 @@ export function MeditationTemplate({
           musicTracks={musicTracks}
           seekTo={seekTo}
           timeDisplay={timeDisplay}
+          upsell={upsell}
           track={{
             url: meditation.url,
             title: meditation.title || t('meditation.general.untitled'),

@@ -57,6 +57,12 @@ See [components/atoms/Image/Image.test.tsx](../../components/atoms/Image/Image.t
 full example. `useState` and `useMemo` work under this kind of SSR render, but `useEffect` does
 not run — plan each assertion around the first-render state.
 
+**Narrow the string before asserting an attribute.** `toContain('target="_blank"')` over a whole
+page passes when any element carries it, not the one under test. `anchorFor(html, href)` in
+[tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) returns that href's opening `<a>` tag.
+Assert something positive about the result first: it answers the empty string when nothing
+matches, and `not.toContain` passes on that whatever it is given.
+
 **Attribute casing**: React 19 keeps most camelCase props as authored — `srcSet`,
 `fetchPriority`, `referrerPolicy` and `playsInline` all survive — and lowercases a few, such as
 `crossOrigin` to `crossorigin`. Do not assume one rule for every attribute.

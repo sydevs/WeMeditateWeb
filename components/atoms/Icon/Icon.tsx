@@ -75,11 +75,15 @@ export function Icon({
 
   const baseStyles = 'inline-flex items-center justify-center flex-shrink-0'
 
+  // A bare <span> is `role=generic`, and ARIA prohibits naming one, so a
+  // labelled icon needs a role that accepts a name. Chrome exposes the name
+  // without it; no other engine has to.
   return (
     <span
       className={`${baseStyles} ${sizeStyles[size]} ${colorStyles[color]} ${className}`}
       aria-hidden={ariaLabel ? undefined : 'true'}
       aria-label={ariaLabel}
+      role={ariaLabel ? 'img' : undefined}
       {...props}
     >
       <IconComponent className="w-full h-full" />
