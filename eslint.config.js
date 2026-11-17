@@ -225,8 +225,9 @@ export default [
           //
           // These sit in this block because `no-restricted-syntax` is one rule
           // id: a second block covering the same files would replace the copy
-          // selectors above rather than add to them. A disable region for copy
-          // therefore silences these too — no region wraps an `<Image>` today.
+          // selectors above rather than add to them. So the block's `ignores`,
+          // and any disable region for copy, silence these too — neither
+          // reaches an `<Image>` today.
           selector:
             'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="aspectRatio"]))',
           message:

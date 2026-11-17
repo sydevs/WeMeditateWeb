@@ -414,10 +414,11 @@ worth having.** Without the ratio the atom hands the URL through untouched, so t
 full-size original. With the ratio but no `sizes`, the browser falls back to the atom's
 roughly-full-width default and may fetch 800px into a 48px tile. Any box narrower than the
 viewport passes its own `sizes` (#146).
-[tests/guards/image-variants.test.ts](./tests/guards/image-variants.test.ts) holds every call
-site to both, and names the file and line of the one that drops either. It also pins the raw
-`<img>` population, which it cannot hold to anything: a hand-rolled one reds the guard until
-someone says whether its `src` reaches `getImageURL`.
+Two `no-restricted-syntax` selectors in [eslint.config.js](./eslint.config.js) hold every
+`<Image>` call site to both, and fault the one that drops either where it is written.
+[tests/guards/image-variants.test.ts](./tests/guards/image-variants.test.ts) proves they still
+match, and pins the raw `<img>` population they cannot reach: a hand-rolled one reds that spec
+until someone says whether its `src` reaches `getImageURL`.
 
 `<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
 (default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →
