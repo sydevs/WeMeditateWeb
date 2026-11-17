@@ -125,13 +125,6 @@ These rules apply whether or not the matching rule file or skill is loaded.
   pageContext, so routing never happens there — `pages/+onCreatePageContext.server.ts` covers
   that one path, and only when `locale` is still absent. Never guard a consumer against an
   undefined locale; the type says `Locale` and those two make it true.
-- **`pnpm lint` enforces React's own rules as errors**, through `@eslint-react`. Two bite here. A
-  hook must not sit below an early return: a layout that guards on missing SahajCloud settings
-  splits in two, the export guarding and an inner component holding every hook, as
-  `LayoutChrome` and `LayoutMap` both do. And a function that returns a component counts as
-  building one during render, however far outside the component it is declared — a lookup table
-  is the way to pick one from a fixed set. A `use` prefix on a function that calls no hooks is
-  reported too, which reaches the compiler-API helpers under `tests/guards/`.
 - **UI must be mobile-first and meet WCAG 2.1 AA.** See
   [design-system](docs/rules/design-system.md) for the full rules, including breakpoints and
   touch-target sizes.
