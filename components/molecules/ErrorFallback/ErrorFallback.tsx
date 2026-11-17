@@ -88,7 +88,7 @@ export function ErrorFallback({
                 href={statusPageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-teal-700 hover:text-teal-800 underline"
+                className="text-teal-600 hover:text-teal-700 underline"
               >
                 {t('errors.general.status_page_link')}
               </a>

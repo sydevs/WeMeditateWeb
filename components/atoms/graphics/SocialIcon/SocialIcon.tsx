@@ -93,7 +93,7 @@ export function SocialIcon({
 
   const colorStyles = {
     gray: 'text-gray-700 hover:text-gray-900',
-    primary: 'text-teal-700 hover:text-teal-800',
+    primary: 'text-teal-600 hover:text-teal-700',
     secondary: 'text-coral-600 hover:text-coral-700',
     brand: {
       facebook: 'text-[#1877F2] hover:opacity-80',

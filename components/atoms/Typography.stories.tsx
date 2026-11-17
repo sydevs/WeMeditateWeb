@@ -102,7 +102,7 @@ export const Default: Story = () => (
           <h3 className="text-lg font-medium text-gray-900 mb-2">Emphasis and Links</h3>
           <p className="text-sm sm:text-base font-light text-gray-700 leading-relaxed">
             You can emphasize text with <strong className="font-semibold">font-semibold</strong> or
-            create <a href="#" className="text-teal-700 hover:text-teal-800 underline">interactive links</a> using
+            create <a href="#" className="text-teal-600 hover:text-teal-700 underline">interactive links</a> using
             color utilities. For subtle text, use <span className="text-gray-700">text-gray-700</span>.
           </p>
         </div>

@@ -111,7 +111,7 @@ function AudioPlayerInner({
                 href={state.currentTrack.creditURL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-teal-700 hover:text-teal-800 truncate block"
+                className="text-xs text-teal-600 hover:text-teal-700 truncate block"
               >
                 {state.currentTrack.credit}
               </a>
@@ -184,7 +184,7 @@ function AudioPlayerInner({
               onClick={playerControls.toggleShuffle}
               aria-label={t('media.a11y.toggle_shuffle')}
               aria-pressed={state.isShuffleOn}
-              className={state.isShuffleOn ? 'text-teal-700 hover:text-teal-800' : ''}
+              className={state.isShuffleOn ? 'text-teal-600 hover:text-teal-700' : ''}
             />
           )}
         </div>
