@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
 import { useT } from '../../../../hooks/useT'
+import { isSafeLinkHref } from '../../../../lib/urls'
 
 /** Every social platform the site links to. */
 export type SocialPlatform =
@@ -77,12 +78,20 @@ export function SocialIcon({
   size = 'md',
   color = 'gray',
   className = '',
+  'aria-label': ariaLabel,
   ...props
 }: SocialIconProps) {
   const t = useT()
 
-
   const { label, icon } = PLATFORM_CONFIG[platform]
+
+  // A caller may name the link itself — `SocialShare` says "Share on X" — and
+  // an `aria-label` replaces the accessible name outright, so the new-tab
+  // warning belongs inside whichever name wins. Spreading `props` over a
+  // finished label dropped the warning from every share button (#238).
+  const name = ariaLabel ?? label
+
+  const safe = isSafeLinkHref(href)
 
   const sizeStyles = {
     sm: 'w-4 h-4',
@@ -113,12 +122,11 @@ export function SocialIcon({
 
   return (
     <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={t('common.a11y.opens_in_new_tab', { label })}
-      className={`inline-flex items-center justify-center transition-all duration-200 focus-ring ${className}`}
       {...props}
+      href={safe ? href : undefined}
+      {...(safe ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      aria-label={safe ? t('common.a11y.opens_in_new_tab', { label: name }) : name}
+      className={`inline-flex items-center justify-center transition-all duration-200 focus-ring ${className}`}
     >
       <svg
         className={`${sizeStyles[size]} ${colorClass}`}

@@ -108,9 +108,14 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
   answer from there. Never restate one of these rules at a call site. A **scheme** is part of that
-  spelling: `isSafeHttpUrl` and `isSafeNavigationUrl` live there too, and any URL the site did not
-  author itself passes one of them before it reaches an `href` or `window.location` — they are
-  what stops a configured `javascript:` value running in our origin.
+  spelling: `isSafeHttpUrl`, `isSafeNavigationUrl` and `isSafeLinkHref` live there too, and any URL
+  the site did not author itself passes one of them before it reaches an `href` or
+  `window.location` — they are what stops a configured `javascript:` value running in our origin.
+  Which one is the destination's: `window.location` takes the first two, and an `href` takes
+  `isSafeLinkHref`, the only one that admits what an editor legitimately types — a site path, a
+  bare `#anchor`, `mailto:` and `tel:`. **The `Link` atom applies that one itself**, so an href
+  reaching an anchor through `Link` or `Button href` is already gated and the call site adds
+  nothing. A bare `<a>` is what still owes the call.
 
   An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it, so
   `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path

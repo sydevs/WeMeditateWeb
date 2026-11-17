@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Link } from './Link'
 
@@ -99,8 +99,8 @@ describe('<Link> locale prefixing', () => {
   })
 
   it('leaves an href that is not a path on this site alone', () => {
-    // Each of these once had a locale glued on: `/frmailto:…`, `/fr//cdn…`.
-    for (const href of ['mailto:hello@example.com', 'tel:+1234567890', '//cdn.example.com/x', '']) {
+    // Each of these once had a locale glued on: `/frmailto:…`.
+    for (const href of ['mailto:hello@example.com', 'tel:+1234567890']) {
       const html = renderToStaticMarkup(
         <Link href={href} locale="fr">
           x
@@ -171,5 +171,99 @@ describe('<Link> surface', () => {
 
   it('never sets a surface', () => {
     expect(renderToStaticMarkup(<Link href="/about">About</Link>)).not.toContain('surface-')
+  })
+})
+
+describe('<Link> scheme gate', () => {
+  // `RichText`, `LayoutBlock`, `Playlist` and a rich-text button block all
+  // hand `Link` a URL an editor typed into SahajCloud. This is the only place
+  // that gate lives, so a call site never restates it.
+  it('renders no href for a scheme that would execute in our origin', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    for (const href of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>']) {
+      const html = renderToStaticMarkup(<Link href={href}>Click me</Link>)
+
+      expect(html, href).not.toContain('href')
+      expect(html, href).not.toContain(href.slice(0, href.indexOf(':')))
+      // The words still render, so the page does not lose its content.
+      expect(html, href).toContain('Click me')
+    }
+
+    warn.mockRestore()
+  })
+
+  it('names the refused href once, in development', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    renderToStaticMarkup(<Link href="javascript:alert(1)">x</Link>)
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0][0]).toContain('javascript:alert(1)')
+
+    warn.mockRestore()
+  })
+
+  it('renders no href for a protocol-relative URL or an unset one', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    for (const href of ['//cdn.example.com/x', '']) {
+      expect(renderToStaticMarkup(<Link href={href}>x</Link>), href).not.toContain('href')
+    }
+
+    warn.mockRestore()
+  })
+
+  it('opens no tab for a href it refused', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const html = renderToStaticMarkup(
+      <Link href="javascript:alert(1)" external>
+        x
+      </Link>,
+    )
+
+    expect(html).not.toContain('_blank')
+    expect(html).not.toContain('opens in new tab')
+
+    warn.mockRestore()
+  })
+})
+
+describe('<Link> new-tab announcement', () => {
+  // The string comes from SahajCloud. These render with no `pageContext`, so
+  // `useT` falls back to `lib/translations.en.json`, the committed mirror.
+  it('names the new tab in screen-reader-only text after the link words', () => {
+    const html = renderToStaticMarkup(
+      <Link href="https://example.com" external>
+        Our partner
+      </Link>,
+    )
+
+    expect(html).toContain('_blank')
+    expect(html).toMatch(/class="sr-only">\(opens in new tab\)</)
+    // After the words, so a reader hears the destination first.
+    expect(html.indexOf('Our partner')).toBeLessThan(html.indexOf('sr-only'))
+  })
+
+  it('says nothing extra on a link that stays in this tab', () => {
+    const html = renderToStaticMarkup(<Link href="/about">About</Link>)
+
+    expect(html).not.toContain('sr-only')
+    expect(html).not.toContain('opens in new tab')
+  })
+
+  it('folds the warning into an aria-label, which would otherwise hide it', () => {
+    // An `aria-label` replaces the accessible name, so an `sr-only` child
+    // inside the anchor is never read. `SocialShare` lost the announcement
+    // exactly this way.
+    const html = renderToStaticMarkup(
+      <Link href="https://example.com" external aria-label="Our partner">
+        <span>icon</span>
+      </Link>,
+    )
+
+    expect(html).toContain('aria-label="Our partner (opens in new tab)"')
+    expect(html).not.toContain('sr-only')
   })
 })

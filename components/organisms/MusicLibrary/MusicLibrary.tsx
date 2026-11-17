@@ -1,7 +1,7 @@
 import { ComponentProps, useState } from 'react'
 import { AudioPlayer, Playlist, Track, MusicFilter } from '../../molecules'
 import { useT } from '../../../hooks/useT'
-import { Image } from '../../atoms'
+import { Image, Link } from '../../atoms'
 
 export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Array of audio tracks */
@@ -75,14 +75,14 @@ export function MusicLibrary({
               <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
                 {currentTrack.title}
               </h3>
-              <a
+              <Link
                 className="text-sm text-white/90 hover:text-white truncate block mt-1"
+                external
                 href={currentTrack.creditURL}
-                rel="noopener noreferrer"
-                target="_blank"
+                variant="unstyled"
               >
                 {currentTrack.credit}
-              </a>
+              </Link>
             </div>
           </div>
 

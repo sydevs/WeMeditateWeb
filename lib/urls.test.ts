@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   isSafeHttpUrl,
+  isSafeLinkHref,
   isSafeNavigationUrl,
   isSitePath,
   localeFromPath,
@@ -322,5 +323,46 @@ describe('sitePathFromUrl', () => {
     expect(sitePathFromUrl(`${ORIGIN}/map/gb`, null)).toBeNull()
     expect(sitePathFromUrl(`${ORIGIN}/map/gb`, undefined)).toBeNull()
     expect(sitePathFromUrl(`${ORIGIN}/map/gb`, '')).toBeNull()
+  })
+})
+
+describe('isSafeLinkHref', () => {
+  it('admits every spelling an editor legitimately types', () => {
+    for (const href of [
+      'https://example.com',
+      'http://example.com/x?q=1',
+      'mailto:hello@example.com',
+      'tel:+1234567890',
+      '/meditations',
+      '/',
+      '#section',
+    ]) {
+      expect(isSafeLinkHref(href), href).toBe(true)
+    }
+  })
+
+  it('refuses a scheme that would execute rather than navigate', () => {
+    for (const href of [
+      'javascript:alert(1)',
+      'JavaScript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+      'vbscript:msgbox(1)',
+      'file:///etc/passwd',
+    ]) {
+      expect(isSafeLinkHref(href), href).toBe(false)
+    }
+  })
+
+  it('refuses a protocol-relative URL and an unset href', () => {
+    // `//host` names another origin and borrows our scheme. The plain
+    // `https://host` spelling of the same destination is already admitted,
+    // and an empty href reloads the page the visitor is already on.
+    expect(isSafeLinkHref('//cdn.example.com/x')).toBe(false)
+    expect(isSafeLinkHref('')).toBe(false)
+  })
+
+  it('refuses a bare relative href, which no route here serves', () => {
+    expect(isSafeLinkHref('about')).toBe(false)
+    expect(isSafeLinkHref('?q=1')).toBe(false)
   })
 })

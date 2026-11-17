@@ -144,7 +144,15 @@ interface LinkProps {
 
 `Link` prefixes a non-English locale automatically (`/about` becomes `/es/about`). `size="inherit"`
 is the default, so a link matches its parent's font size unless you set one. An `external` link
-adds screen-reader text announcing it opens in a new tab.
+opens a new tab and announces it — as screen-reader-only text after the link's own words, or
+folded into the `aria-label` where the caller supplies one, since a label replaces the accessible
+name and anything inside the anchor goes unread.
+
+**`Link` is also the scheme gate for every href the site did not author**, and the reason no call
+site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
+a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
+run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
+bare `<a>` fed a SahajCloud value has to call it itself.
 
 ### Surfaces
 

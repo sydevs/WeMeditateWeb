@@ -107,6 +107,40 @@ export function isSafeNavigationUrl(url: string): boolean {
   return url.startsWith('/') || isSafeHttpUrl(url)
 }
 
+/** The schemes a link on this site may carry. */
+const LINK_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:'])
+
+/**
+ * True if the href is one the `Link` atom may render.
+ *
+ * ⚠ **The gate on every href the site did not author**, and the widest of the
+ * three: an editor's link legitimately spells a site path, a bare `#anchor`,
+ * `mailto:` or `tel:`, all of which {@link isSafeHttpUrl} and
+ * {@link isSafeNavigationUrl} reject. `Link` is where every such href
+ * converges, so this is what keeps a configured `javascript:` or `data:` value
+ * out of an `href` in our origin.
+ *
+ * A scheme is the whole test. Where the link goes is the editor's business,
+ * as on {@link isSafeNavigationUrl}.
+ *
+ * Two spellings fall outside the allowlist on purpose. A protocol-relative
+ * `//host` names another origin and inherits our scheme; the plain `https://`
+ * spelling of the same destination is already allowed. And an empty href
+ * reloads the current page, which is never what an unset SahajCloud field
+ * meant.
+ */
+export function isSafeLinkHref(href: string): boolean {
+  if (href.startsWith('#') || isSitePath(href)) {
+    return true
+  }
+
+  try {
+    return LINK_SCHEMES.has(new URL(href).protocol)
+  } catch {
+    return false
+  }
+}
+
 /**
  * The locale-free path, in the spelling the URL builders below expect.
  *
