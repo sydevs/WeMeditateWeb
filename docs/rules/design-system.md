@@ -144,7 +144,8 @@ interface LinkProps {
 
 `Link` prefixes a non-English locale automatically (`/about` becomes `/es/about`). `size="inherit"`
 is the default, so a link matches its parent's font size unless you set one. An `external` link
-adds screen-reader text announcing it opens in a new tab.
+sets `target="_blank"` and `rel="noopener noreferrer"`, and nothing more. It does not announce the
+new tab to a screen reader; #238 adds that.
 
 ### Surfaces
 
