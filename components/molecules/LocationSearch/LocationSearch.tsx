@@ -101,6 +101,7 @@ export function LocationSearch({
   // Handle input change with debouncing
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
+
     setInputValue(value)
     setError('')
 
@@ -112,6 +113,7 @@ export function LocationSearch({
     // Don't search if input is empty
     if (!value.trim()) {
       setSuggestions([])
+
       return
     }
 
@@ -226,17 +228,17 @@ export function LocationSearch({
     return (
       <div className={`flex gap-2 ${className}`}>
         <Input
-          value={selectedLocation.name}
-          readOnly
           disabled
-          className="flex-1"
+          readOnly
           aria-label={t('location.a11y.selected_label')}
+          className="flex-1"
+          value={selectedLocation.name}
         />
         <button
-          onClick={handleChange}
+          aria-label={t('location.a11y.change_label')}
           className="touch-target px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
           type="button"
-          aria-label={t('location.a11y.change_label')}
+          onClick={handleChange}
         >
           {t('location.general.change')}
         </button>
@@ -246,29 +248,29 @@ export function LocationSearch({
 
   return (
     <Dropdown
-      isOpen={shouldShowDropdown}
-      onOpenChange={setIsDropdownOpen}
-      openOnFocus={true}
       closeOnBlur={true}
       fullWidth={true}
+      isOpen={shouldShowDropdown}
+      openOnFocus={true}
       trigger={
         <Input
-          value={inputValue}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          placeholder={resolvedPlaceholder}
-          disabled={!isReady}
-          aria-label={t('location.a11y.search_label')}
           aria-autocomplete="list"
           aria-controls="location-search-listbox"
           aria-expanded={shouldShowDropdown}
+          aria-label={t('location.a11y.search_label')}
           className={className}
+          disabled={!isReady}
+          placeholder={resolvedPlaceholder}
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
         />
       }
+      onOpenChange={setIsDropdownOpen}
     >
-      <div id="location-search-listbox" role="listbox" className="max-h-80 overflow-y-auto">
+      <div className="max-h-80 overflow-y-auto" id="location-search-listbox" role="listbox">
         {/* Nearby Option - Always first */}
-        <NearbyOption onLocationSelect={handleNearbySelect} size="lg" />
+        <NearbyOption size="lg" onLocationSelect={handleNearbySelect} />
 
         {/* Divider */}
         <div className="border-t border-gray-200" />
@@ -276,7 +278,7 @@ export function LocationSearch({
         {/* Loading Coordinates State */}
         {isLoadingCoordinates && (
           <div className="px-5 py-4 text-center text-gray-700">
-            <Spinner size="sm" color="currentColor" className="mx-auto mb-2" />
+            <Spinner className="mx-auto mb-2" color="currentColor" size="sm" />
             <div className="text-sm">{t('location.general.getting_coordinates')}</div>
           </div>
         )}
@@ -291,7 +293,7 @@ export function LocationSearch({
         {/* Loading Suggestions */}
         {isLoadingSuggestions ? (
           <div className="px-5 py-4 text-center text-gray-700">
-            <Spinner size="sm" color="currentColor" className="mx-auto mb-2" />
+            <Spinner className="mx-auto mb-2" color="currentColor" size="sm" />
             <div className="text-sm">{t('location.general.searching')}</div>
           </div>
         ) : !inputValue ? (
@@ -299,7 +301,9 @@ export function LocationSearch({
             {t('location.general.type_to_search')}
           </div>
         ) : suggestions.length === 0 && !error ? (
-          <div className="px-5 py-4 text-sm text-gray-700 text-center">{t('location.general.no_results')}</div>
+          <div className="px-5 py-4 text-sm text-gray-700 text-center">
+            {t('location.general.no_results')}
+          </div>
         ) : null}
 
         {/* Suggestions List */}
@@ -308,11 +312,11 @@ export function LocationSearch({
           suggestions.map((suggestion) => (
             <button
               key={suggestion.mapbox_id}
-              onClick={() => handleSelect(suggestion)}
-              className="w-full text-left px-5 py-3.5 hover:bg-gray-100 transition-colors"
-              type="button"
-              role="option"
               aria-selected={false}
+              className="w-full text-left px-5 py-3.5 hover:bg-gray-100 transition-colors"
+              role="option"
+              type="button"
+              onClick={() => handleSelect(suggestion)}
             >
               <div className="font-medium text-gray-900">{suggestion.name}</div>
               {suggestion.place_formatted && (

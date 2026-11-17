@@ -14,7 +14,7 @@ export const Default: Story = () => {
   }) => {
     console.log('Location selected:', location)
     alert(
-      `Selected: ${location.name}\nCoordinates: ${location.coordinates.lat}, ${location.coordinates.lng}`
+      `Selected: ${location.name}\nCoordinates: ${location.coordinates.lat}, ${location.coordinates.lng}`,
     )
   }
 
@@ -25,25 +25,26 @@ export const Default: Story = () => {
   console.log('Mapbox Access Token Status:', {
     isDefined: hasToken,
     length: accessToken?.length || 0,
-    prefix: accessToken?.substring(0, 8) + '...' || 'N/A'
+    prefix: accessToken?.substring(0, 8) + '...' || 'N/A',
   })
 
   return (
     <StoryWrapper>
       <StorySection
-        title="API Key Status"
         description="This component requires a Mapbox access token set in PUBLIC__MAPBOX_ACCESS_TOKEN environment variable."
+        title="API Key Status"
       >
-        <div className={`p-6 border text-sm ${
-          hasToken
-            ? 'bg-green-50 border-green-200'
-            : 'bg-red-50 border-red-200'
-        }`}>
+        <div
+          className={`p-6 border text-sm ${
+            hasToken ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+          }`}
+        >
           {hasToken ? (
             <>
               <p className="font-medium text-green-900 mb-2">✓ Access Token Found</p>
               <p className="text-green-800">
-                Token is loaded and component should be functional. Try typing in the search input below.
+                Token is loaded and component should be functional. Try typing in the search input
+                below.
               </p>
             </>
           ) : (
@@ -66,8 +67,8 @@ export const Default: Story = () => {
       <StorySection title="Default">
         <div className="max-w-md">
           <LocationSearch
-            onLocationSelect={handleLocationSelect}
             placeholder="Enter your city or address..."
+            onLocationSelect={handleLocationSelect}
           />
         </div>
       </StorySection>
@@ -78,35 +79,35 @@ export const Default: Story = () => {
             Search results biased toward San Francisco (lng: -122.4194, lat: 37.7749)
           </p>
           <LocationSearch
-            onLocationSelect={handleLocationSelect}
             placeholder="Search near San Francisco..."
             proximity={{ lng: -122.4194, lat: 37.7749 }}
+            onLocationSelect={handleLocationSelect}
           />
         </div>
       </StorySection>
 
-      <StorySection title="Examples" inContext={true}>
+      <StorySection inContext={true} title="Examples">
         <div className="flex flex-col gap-8">
           <StorySection title="In a Form" variant="subsection">
             <form
+              className="max-w-lg space-y-4"
               onSubmit={(e) => {
                 e.preventDefault()
                 alert('Form submitted!')
               }}
-              className="max-w-lg space-y-4"
             >
               <div>
                 <label
-                  htmlFor="event-name"
                   className="block text-sm font-medium text-gray-700 mb-1"
+                  htmlFor="event-name"
                 >
                   Event Name
                 </label>
                 <input
-                  id="event-name"
-                  type="text"
                   className="w-full px-3 py-2 border border-gray-300 focus:border-teal-500 focus:outline-none"
+                  id="event-name"
                   placeholder="Enter event name..."
+                  type="text"
                 />
               </div>
 
@@ -115,28 +116,28 @@ export const Default: Story = () => {
                   Event Location
                 </label>
                 <LocationSearch
-                  onLocationSelect={handleLocationSelect}
                   placeholder="Search for event location..."
+                  onLocationSelect={handleLocationSelect}
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="event-date"
                   className="block text-sm font-medium text-gray-700 mb-1"
+                  htmlFor="event-date"
                 >
                   Event Date
                 </label>
                 <input
+                  className="w-full px-3 py-2 border border-gray-300 focus:border-teal-500 focus:outline-none"
                   id="event-date"
                   type="date"
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-teal-500 focus:outline-none"
                 />
               </div>
 
               <button
-                type="submit"
                 className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
+                type="submit"
               >
                 Create Event
               </button>
@@ -147,8 +148,8 @@ export const Default: Story = () => {
             <div className="max-w-sm">
               <p className="text-sm text-gray-700 mb-2">Using max-w-sm container</p>
               <LocationSearch
-                onLocationSelect={handleLocationSelect}
                 placeholder="Constrained width..."
+                onLocationSelect={handleLocationSelect}
               />
             </div>
           </StorySection>
@@ -157,8 +158,8 @@ export const Default: Story = () => {
             <div>
               <p className="text-sm text-gray-700 mb-2">Using full width of container</p>
               <LocationSearch
-                onLocationSelect={handleLocationSelect}
                 placeholder="Full width search..."
+                onLocationSelect={handleLocationSelect}
               />
             </div>
           </StorySection>

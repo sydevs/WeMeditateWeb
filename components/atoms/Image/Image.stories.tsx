@@ -1,11 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Image } from "./Image";
-import { StorySection,
-   StoryWrapper } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Image } from './Image'
+import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Image component showcasing all aspect ratios, object fit options, placeholder states, and usage
@@ -18,28 +17,28 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-700 mb-2">Square (no rounding)</p>
           <Image
-            src="https://picsum.photos/id/40/600/600"
             alt="Square image"
             aspectRatio="square"
             rounded="square"
+            src="https://picsum.photos/id/40/600/600"
           />
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Rounded (rounded-lg)</p>
           <Image
-            src="https://picsum.photos/id/40/600/600"
             alt="Rounded image"
             aspectRatio="square"
             rounded="rounded"
+            src="https://picsum.photos/id/40/600/600"
           />
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Circle (rounded-full)</p>
           <Image
-            src="https://picsum.photos/id/40/600/600"
             alt="Circle image"
             aspectRatio="square"
             rounded="circle"
+            src="https://picsum.photos/id/40/600/600"
           />
         </div>
       </div>
@@ -50,25 +49,25 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm text-gray-700 mb-2">Square (1:1)</p>
           <Image
-            src="https://picsum.photos/id/10/400/400"
             alt="Square image"
             aspectRatio="square"
+            src="https://picsum.photos/id/10/400/400"
           />
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Video (16:9)</p>
           <Image
-            src="https://picsum.photos/id/10/1600/900"
             alt="Video aspect ratio"
             aspectRatio="video"
+            src="https://picsum.photos/id/10/1600/900"
           />
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">4:3</p>
           <Image
-            src="https://picsum.photos/id/10/800/600"
             alt="4:3 aspect ratio"
             aspectRatio="4-3"
+            src="https://picsum.photos/id/10/800/600"
           />
         </div>
       </div>
@@ -103,30 +102,30 @@ export const Default: Story = () => (
       </StorySection>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
         <Image
-          src="https://picsum.photos/id/50/600/800"
           alt="Portrait meditation"
           aspectRatio="3-2"
           rounded="rounded"
+          src="https://picsum.photos/id/50/600/800"
         />
         <div className="flex flex-col gap-3">
           <Image
-            src="https://picsum.photos/id/51/600/400"
             alt="Landscape meditation"
             aspectRatio="3-2"
             rounded="rounded"
+            src="https://picsum.photos/id/51/600/400"
           />
           <Image
-            src="https://picsum.photos/id/52/600/400"
             alt="Another landscape"
             aspectRatio="3-2"
             rounded="rounded"
+            src="https://picsum.photos/id/52/600/400"
           />
         </div>
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Image"
+)
+Default.storyName = 'Image'

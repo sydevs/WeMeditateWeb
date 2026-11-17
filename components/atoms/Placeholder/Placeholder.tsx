@@ -96,7 +96,9 @@ export function Placeholder({
 
       {/* Centered children content */}
       {children && (
-        <div className={`absolute inset-0 flex items-center justify-center ${textColorStyles[variant]}`}>
+        <div
+          className={`absolute inset-0 flex items-center justify-center ${textColorStyles[variant]}`}
+        >
           {children}
         </div>
       )}

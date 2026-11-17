@@ -60,29 +60,29 @@ export function LanguageDropdown({
 
   return (
     <Dropdown
+      align={align}
+      className={className}
       trigger={
         <button className="flex touch-target items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors">
           <span className="text-sm font-light">{t('footer.languages')}</span>
           <Icon icon={GlobeAltIcon} size="sm" />
         </button>
       }
-      align={align}
-      className={className}
     >
       <div className="flex flex-col py-2">
         {languages.map((language) => (
           <Link
             key={language.code}
-            href={language.href}
-            locale={language.code}
             className={`px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 ${
               language.code === currentLanguage ? 'bg-gray-50' : ''
             }`}
+            href={language.href}
+            locale={language.code}
           >
             <LanguageFlag language={language.code} size="sm" />
             <span className="text-sm font-light text-gray-700">{language.label}</span>
             {language.code === currentLanguage && (
-              <Icon icon={CheckIcon} size="xs" className="ml-auto text-teal-600" />
+              <Icon className="ml-auto text-teal-600" icon={CheckIcon} size="xs" />
             )}
           </Link>
         ))}

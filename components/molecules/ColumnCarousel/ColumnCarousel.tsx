@@ -35,12 +35,12 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
 
   return (
     <button
-      onClick={onClick}
+      className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
       disabled={disabled}
       aria-label={ariaLabel}
       // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
       // item shrink: it still shrinks, just not below the tap minimum.
-      className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      onClick={onClick}
     >
       {column && (
         <>
@@ -78,10 +78,7 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
  *   ]}
  * />
  */
-export function ColumnCarousel({
-  columns: rawColumns,
-  className = '',
-}: ColumnCarouselProps) {
+export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCarouselProps) {
   const t = useT()
   // Enforce maximum of 5 columns
   const columns = rawColumns.slice(0, MAX_COLUMNS)
@@ -111,14 +108,18 @@ export function ColumnCarousel({
     setSelectedIndex(emblaApi.selectedScrollSnap())
   }, [emblaApi])
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index)
-  }, [emblaApi])
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index)
+    },
+    [emblaApi],
+  )
 
   useEffect(() => {
     if (!emblaApi) return
     onSelect()
     emblaApi.on('select', onSelect)
+
     return () => {
       emblaApi.off('select', onSelect)
     }
@@ -128,7 +129,7 @@ export function ColumnCarousel({
   useEffect(() => {
     if (rawColumns.length > MAX_COLUMNS) {
       console.warn(
-        `ColumnCarousel: Maximum ${MAX_COLUMNS} columns allowed. Received ${rawColumns.length} columns. Truncating to ${MAX_COLUMNS}.`
+        `ColumnCarousel: Maximum ${MAX_COLUMNS} columns allowed. Received ${rawColumns.length} columns. Truncating to ${MAX_COLUMNS}.`,
       )
     }
   }, [rawColumns.length])
@@ -160,10 +161,10 @@ export function ColumnCarousel({
           <div className="flex items-center mb-6">
             <div className="flex-1 min-w-0">
               <CarouselNavButton
-                direction="prev"
                 column={prevColumn}
-                onClick={scrollPrev}
+                direction="prev"
                 disabled={!hasPrev}
+                onClick={scrollPrev}
               />
             </div>
 
@@ -172,7 +173,9 @@ export function ColumnCarousel({
               {columns.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => scrollTo(index)}
+                  className={`touch-target-overlay w-2 h-2 rounded-full transition-colors ${
+                    index === selectedIndex ? 'bg-teal-600' : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
                   aria-label={t('blocks.a11y.go_to_column', {
                     number: index + 1,
                     title: columns[index].title,
@@ -181,33 +184,26 @@ export function ColumnCarousel({
                   // them needs 44px centres — 220px of row, which overflows a
                   // 390px viewport once the nav buttons' padding is counted.
                   // Partial on purpose; #135 carries the layout decision.
-                  className={`touch-target-overlay w-2 h-2 rounded-full transition-colors ${
-                    index === selectedIndex
-                      ? 'bg-teal-600'
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
+                  onClick={() => scrollTo(index)}
                 />
               ))}
             </div>
 
             <div className="flex-1 min-w-0 flex justify-end">
               <CarouselNavButton
-                direction="next"
                 column={nextColumn}
-                onClick={scrollNext}
+                direction="next"
                 disabled={!hasNext}
+                onClick={scrollNext}
               />
             </div>
           </div>
 
           {/* Carousel viewport */}
-          <div className="overflow-hidden" ref={emblaRef}>
+          <div ref={emblaRef} className="overflow-hidden">
             <div className="flex gap-4">
               {columns.map((column, index) => (
-                <div
-                  key={index}
-                  className="flex-[0_0_auto] w-full flex justify-center"
-                >
+                <div key={index} className="flex-[0_0_auto] w-full flex justify-center">
                   <Column {...column} />
                 </div>
               ))}

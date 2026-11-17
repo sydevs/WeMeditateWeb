@@ -35,10 +35,10 @@ export function Column({
 }: ColumnProps) {
   const titleElement = href ? (
     <Link
-      href={href}
-      variant="unstyled"
-      size="inherit"
       className="text-xl font-medium text-gray-700 hover:text-teal-600 transition-colors"
+      href={href}
+      size="inherit"
+      variant="unstyled"
     >
       {title}
     </Link>
@@ -51,11 +51,11 @@ export function Column({
       {imageUrl && (
         <div className="flex justify-center mb-2">
           <Image
-            src={imageUrl}
             alt={imageAlt}
-            width={160}
-            height={160}
             className="w-32 h-32 md:w-40 md:h-40"
+            height={160}
+            src={imageUrl}
+            width={160}
           />
         </div>
       )}

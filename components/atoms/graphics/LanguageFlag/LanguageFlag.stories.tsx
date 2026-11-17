@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { LanguageFlag } from "./LanguageFlag";
-import { StorySection, StoryWrapper } from '../../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { LanguageFlag } from './LanguageFlag'
+import { StorySection, StoryWrapper } from '../../../ladle'
 
 export default {
-  title: "Atoms / Graphics"
-} satisfies StoryDefault;
+  title: 'Atoms / Graphics',
+} satisfies StoryDefault
 
 /**
  * LanguageFlag component showcasing all supported languages, labels, sizes, and usage in context.
@@ -62,15 +62,15 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm font-medium text-gray-700 mb-3">With Labels</p>
           <div className="flex gap-4 flex-wrap">
-            <LanguageFlag language="en" showLabel />
-            <LanguageFlag language="es" showLabel />
-            <LanguageFlag language="de" showLabel />
-            <LanguageFlag language="it" showLabel />
-            <LanguageFlag language="fr" showLabel />
+            <LanguageFlag showLabel language="en" />
+            <LanguageFlag showLabel language="es" />
+            <LanguageFlag showLabel language="de" />
+            <LanguageFlag showLabel language="it" />
+            <LanguageFlag showLabel language="fr" />
           </div>
         </div>
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Language Flag"
+)
+Default.storyName = 'Language Flag'

@@ -1,6 +1,6 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Badge } from "./Badge";
-import { HeartIcon, BellIcon, StarIcon } from '@heroicons/react/24/solid';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Badge } from './Badge'
+import { HeartIcon, BellIcon, StarIcon } from '@heroicons/react/24/solid'
 import {
   StoryWrapper,
   StorySection,
@@ -10,12 +10,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../ladle';
+  StoryGridCell,
+} from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /** Badge component showcasing all color variants, shapes, and usage examples. */
 export const Default: Story = () => (
@@ -33,28 +33,40 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Primary</StoryGridCell>
             <StoryGridCell>
-              <Badge color="primary" shape="square">10 min</Badge>
+              <Badge color="primary" shape="square">
+                10 min
+              </Badge>
             </StoryGridCell>
             <StoryGridCell>
-              <Badge color="primary" shape="circular">10 min</Badge>
+              <Badge color="primary" shape="circular">
+                10 min
+              </Badge>
             </StoryGridCell>
           </StoryGridRow>
           <StoryGridRow>
             <StoryGridCell isLabel>Secondary</StoryGridCell>
             <StoryGridCell>
-              <Badge color="secondary" shape="square">New</Badge>
+              <Badge color="secondary" shape="square">
+                New
+              </Badge>
             </StoryGridCell>
             <StoryGridCell>
-              <Badge color="secondary" shape="circular">New</Badge>
+              <Badge color="secondary" shape="circular">
+                New
+              </Badge>
             </StoryGridCell>
           </StoryGridRow>
           <StoryGridRow>
             <StoryGridCell isLabel>Neutral</StoryGridCell>
             <StoryGridCell>
-              <Badge color="neutral" shape="square">15 min</Badge>
+              <Badge color="neutral" shape="square">
+                15 min
+              </Badge>
             </StoryGridCell>
             <StoryGridCell>
-              <Badge color="neutral" shape="circular">15 min</Badge>
+              <Badge color="neutral" shape="circular">
+                15 min
+              </Badge>
             </StoryGridCell>
           </StoryGridRow>
         </StoryGridBody>
@@ -69,30 +81,50 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-6">
         <StorySection title="Duration labels" variant="subsection">
           <div className="flex gap-2">
-            <Badge color="neutral" shape="circular">5 min</Badge>
-            <Badge color="neutral" shape="circular">10 min</Badge>
-            <Badge color="neutral" shape="circular">15 min</Badge>
-            <Badge color="neutral" shape="circular">20 min</Badge>
+            <Badge color="neutral" shape="circular">
+              5 min
+            </Badge>
+            <Badge color="neutral" shape="circular">
+              10 min
+            </Badge>
+            <Badge color="neutral" shape="circular">
+              15 min
+            </Badge>
+            <Badge color="neutral" shape="circular">
+              20 min
+            </Badge>
           </div>
         </StorySection>
 
         <StorySection title="Notification counts" variant="subsection">
           <div className="flex gap-2">
-            <Badge color="primary" shape="circular">3</Badge>
-            <Badge color="primary" shape="circular">12</Badge>
-            <Badge color="secondary" shape="circular">99+</Badge>
+            <Badge color="primary" shape="circular">
+              3
+            </Badge>
+            <Badge color="primary" shape="circular">
+              12
+            </Badge>
+            <Badge color="secondary" shape="circular">
+              99+
+            </Badge>
           </div>
         </StorySection>
 
         <StorySection title="Status indicators" variant="subsection">
           <div className="flex gap-2">
-            <Badge color="secondary" shape="square">New</Badge>
-            <Badge color="primary" shape="square">Featured</Badge>
-            <Badge color="neutral" shape="square">Popular</Badge>
+            <Badge color="secondary" shape="square">
+              New
+            </Badge>
+            <Badge color="primary" shape="square">
+              Featured
+            </Badge>
+            <Badge color="neutral" shape="square">
+              Popular
+            </Badge>
           </div>
         </StorySection>
 
@@ -106,8 +138,7 @@ export const Default: Story = () => (
             </div>
             <div className="flex items-center gap-2">
               <Badge color="secondary" shape="circular">
-                <BellIcon className="w-3 h-3 mr-1" />
-                5
+                <BellIcon className="w-3 h-3 mr-1" />5
               </Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -133,9 +164,15 @@ export const Default: Story = () => (
         <StorySection title="On dark backgrounds" variant="subsection">
           <div className="bg-gray-800 p-6 rounded-lg space-y-4">
             <div className="flex gap-2">
-              <Badge color="primary" shape="circular">5 min</Badge>
-              <Badge color="secondary" shape="circular">New</Badge>
-              <Badge color="neutral" shape="square">Popular</Badge>
+              <Badge color="primary" shape="circular">
+                5 min
+              </Badge>
+              <Badge color="secondary" shape="circular">
+                New
+              </Badge>
+              <Badge color="neutral" shape="square">
+                Popular
+              </Badge>
             </div>
             <div className="relative w-64 h-40 bg-gray-900 rounded flex items-center justify-center">
               <span className="text-gray-400">Dark Thumbnail</span>
@@ -152,6 +189,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Badge"
+Default.storyName = 'Badge'

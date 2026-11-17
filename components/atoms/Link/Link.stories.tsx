@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Link } from "./Link";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Link } from './Link'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /** Link component showcasing all variants, sizes, and locale handling. */
 export const Default: Story = () => (
@@ -32,7 +32,7 @@ export const Default: Story = () => (
           </Link>
         </div>
         <div>
-          <Link href="/custom" variant="unstyled" className="text-purple-600 underline">
+          <Link className="text-purple-600 underline" href="/custom" variant="unstyled">
             Unstyled link with custom styling
           </Link>
         </div>
@@ -87,10 +87,10 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Dark Theme"
-      surface="dark"
       background="neutral"
       description="Lightened colors (teal-300, coral-300, white) from the dark surface tokens for contrast on dark backgrounds"
+      surface="dark"
+      title="Dark Theme"
     >
       <div className="flex flex-col gap-4">
         <div>
@@ -119,7 +119,7 @@ export const Default: Story = () => (
     <StorySection title="External Links">
       <div className="flex flex-col gap-3">
         <div>
-          <Link href="https://example.com" external>
+          <Link external href="https://example.com">
             External link (opens in new tab with security)
           </Link>
           <span className="text-xs text-gray-700 ml-2">
@@ -127,12 +127,12 @@ export const Default: Story = () => (
           </span>
         </div>
         <div>
-          <Link href="https://github.com" external variant="primary">
+          <Link external href="https://github.com" variant="primary">
             External primary link
           </Link>
         </div>
         <div>
-          <Link href="https://stackoverflow.com" external variant="secondary">
+          <Link external href="https://stackoverflow.com" variant="secondary">
             External secondary link
           </Link>
         </div>
@@ -140,8 +140,8 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Locale Handling"
       description="Automatic locale prefixing for internationalization"
+      title="Locale Handling"
     >
       <div className="flex flex-col gap-4">
         <div>
@@ -178,8 +178,8 @@ export const Default: Story = () => (
 
         <div className="mt-2 p-3 bg-gray-50 rounded">
           <p className="text-xs text-gray-700">
-            <strong>Note:</strong> External URLs (http/https) and anchor links (#) are never prefixed,
-            regardless of locale.
+            <strong>Note:</strong> External URLs (http/https) and anchor links (#) are never
+            prefixed, regardless of locale.
           </p>
         </div>
       </div>
@@ -187,6 +187,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Link"
+Default.storyName = 'Link'

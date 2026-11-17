@@ -26,16 +26,16 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-8">
         <StorySection title="Minimal" variant="subsection">
           <FooterLinkList
-            title="Learn more"
             links={[
               { text: 'About Us', href: '/about' },
               { text: 'Contact', href: '/contact' },
             ]}
+            title="Learn more"
           />
         </StorySection>
 
         <StorySection title="Maximal" variant="subsection">
-          <FooterLinkList title="Learn more" links={sampleLinks} locale="en" />
+          <FooterLinkList links={sampleLinks} locale="en" title="Learn more" />
         </StorySection>
       </div>
     </StorySection>
@@ -44,39 +44,40 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-8">
         <StorySection title="Minimal" variant="subsection">
           <FooterLinkList
-            variant="hero"
             links={[
               { text: 'Meditate Now', href: '/meditate' },
               { text: 'Music for meditation', href: '/music' },
             ]}
+            variant="hero"
           />
         </StorySection>
 
         <StorySection title="Maximal" variant="subsection">
-          <FooterLinkList variant="hero" links={heroLinks} locale="en" />
+          <FooterLinkList links={heroLinks} locale="en" variant="hero" />
         </StorySection>
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-12 md:flex-row md:gap-16">
         {/* Hero Links Section */}
         <div className="flex-1">
           <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">Hero Links (No Title)</h4>
-          <FooterLinkList variant="hero" links={heroLinks} />
+          <FooterLinkList links={heroLinks} variant="hero" />
         </div>
 
         {/* Default Links Section */}
         <div className="flex-1">
-          <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">Default Links (With Title)</h4>
-          <FooterLinkList title="Come meditate" links={sampleLinks} />
+          <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">
+            Default Links (With Title)
+          </h4>
+          <FooterLinkList links={sampleLinks} title="Come meditate" />
         </div>
 
         {/* Another Default Section */}
         <div className="flex-1">
           <h4 className="text-xs font-bold text-gray-700 uppercase mb-4">Another Section</h4>
           <FooterLinkList
-            title="Resources"
             links={[
               { text: 'Classes Near Me', href: '/classes' },
               { text: 'Guided Meditations Online', href: '/guided' },
@@ -84,6 +85,7 @@ export const Default: Story = () => (
               { text: 'Privacy Notice', href: '/privacy' },
               { text: 'Contact Us', href: '/contact' },
             ]}
+            title="Resources"
           />
         </div>
       </div>

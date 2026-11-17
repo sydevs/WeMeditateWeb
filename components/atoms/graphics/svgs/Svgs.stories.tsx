@@ -1,4 +1,4 @@
-import type { Story, StoryDefault } from "@ladle/react";
+import type { Story, StoryDefault } from '@ladle/react'
 import { LogoSvg } from './LogoSvg'
 import { LeafSvg } from './LeafSvg'
 import { LotusDotsSvg } from './LotusDotsSvg'
@@ -6,16 +6,16 @@ import { FloralDividerSvg } from './FloralDividerSvg'
 import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 import { TriangleDecorationSvg } from './TriangleDecorationSvg'
 import { AnimatedLogoSvg } from './AnimatedLogoSvg'
-import { StoryWrapper, StorySection } from '../../../ladle';
+import { StoryWrapper, StorySection } from '../../../ladle'
 
 export default {
-  title: "Atoms / Graphics"
-} satisfies StoryDefault;
+  title: 'Atoms / Graphics',
+} satisfies StoryDefault
 
 /** Comprehensive showcase of all SVG icons and illustrations used throughout the application. */
 export const Default: Story = () => (
   <StoryWrapper>
-    <StorySection title="Brand Icons" description="Core brand identity SVG icons">
+    <StorySection description="Core brand identity SVG icons" title="Brand Icons">
       <div className="flex flex-col gap-8">
         <div className="flex items-center gap-4">
           <LogoSvg className="w-5 h-5 text-gray-700" />
@@ -29,7 +29,9 @@ export const Default: Story = () => (
           <LeafSvg className="w-[29px] h-8 text-gray-700" />
           <div>
             <p className="font-medium text-gray-700">LeafSvg</p>
-            <p className="text-sm text-gray-700">Decorative leaf ornament (default: w-[29px] h-8)</p>
+            <p className="text-sm text-gray-700">
+              Decorative leaf ornament (default: w-[29px] h-8)
+            </p>
           </div>
         </div>
 
@@ -37,32 +39,44 @@ export const Default: Story = () => (
           <LotusDotsSvg className="w-11 h-11 text-gray-700" />
           <div>
             <p className="font-medium text-gray-700">LotusDotsSvg</p>
-            <p className="text-sm text-gray-700">Lotus flower with dots pattern (default: w-11 h-11)</p>
+            <p className="text-sm text-gray-700">
+              Lotus flower with dots pattern (default: w-11 h-11)
+            </p>
           </div>
         </div>
       </div>
     </StorySection>
 
-    <StorySection title="Animated Icons" description="Animated SVG graphics with looping animations">
+    <StorySection
+      description="Animated SVG graphics with looping animations"
+      title="Animated Icons"
+    >
       <div className="flex flex-col gap-8">
         <div className="flex items-center gap-4">
           <AnimatedLogoSvg className="w-12 h-12 text-teal-600" />
           <div>
             <p className="font-medium text-gray-700">AnimatedLogoSvg</p>
-            <p className="text-sm text-gray-700">Animated WeMeditate logo with drawing effect (default: w-12 h-12)</p>
+            <p className="text-sm text-gray-700">
+              Animated WeMeditate logo with drawing effect (default: w-12 h-12)
+            </p>
             <p className="text-xs text-teal-600 mt-1">Used for loading states and preloaders</p>
           </div>
         </div>
       </div>
     </StorySection>
 
-    <StorySection title="Decorative Elements" description="Ornamental SVG graphics for visual enhancement">
+    <StorySection
+      description="Ornamental SVG graphics for visual enhancement"
+      title="Decorative Elements"
+    >
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <FloralDividerSvg className="w-52 h-auto text-gray-700" />
           <div>
             <p className="font-medium text-gray-700">FloralDividerSvg</p>
-            <p className="text-sm text-gray-700">Decorative floral divider (default: w-52 h-auto)</p>
+            <p className="text-sm text-gray-700">
+              Decorative floral divider (default: w-52 h-auto)
+            </p>
           </div>
         </div>
 
@@ -70,7 +84,9 @@ export const Default: Story = () => (
           <HeaderIllustrationSvg className="w-full h-auto max-h-24 text-gray-700" />
           <div>
             <p className="font-medium text-gray-700">HeaderIllustrationSvg</p>
-            <p className="text-sm text-gray-700">Header banner illustration (default: w-full h-auto max-h-24)</p>
+            <p className="text-sm text-gray-700">
+              Header banner illustration (default: w-full h-auto max-h-24)
+            </p>
           </div>
         </div>
 
@@ -78,14 +94,19 @@ export const Default: Story = () => (
           <TriangleDecorationSvg className="w-80 h-auto" />
           <div>
             <p className="font-medium text-gray-700">TriangleDecorationSvg</p>
-            <p className="text-sm text-gray-700">Geometric triangle decoration with built-in coral and teal colors (default: w-80 h-auto)</p>
-            <p className="text-xs text-coral-500 mt-1">Note: Colors are fixed and cannot be changed via currentColor</p>
+            <p className="text-sm text-gray-700">
+              Geometric triangle decoration with built-in coral and teal colors (default: w-80
+              h-auto)
+            </p>
+            <p className="text-xs text-coral-500 mt-1">
+              Note: Colors are fixed and cannot be changed via currentColor
+            </p>
           </div>
         </div>
       </div>
     </StorySection>
 
-    <StorySection title="Color Variations" description="SVGs inherit text color via currentColor">
+    <StorySection description="SVGs inherit text color via currentColor" title="Color Variations">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <LogoSvg className="w-8 h-8 text-teal-600" />
@@ -121,7 +142,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Size Variations" description="Flexible sizing using className prop">
+    <StorySection description="Flexible sizing using className prop" title="Size Variations">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <LogoSvg className="w-4 h-4 text-gray-700" />
@@ -159,6 +180,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "SVG Components"
+Default.storyName = 'SVG Components'

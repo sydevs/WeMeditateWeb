@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { useT } from '../../../hooks/useT'
 
 export interface FormFieldProps {
@@ -97,30 +97,25 @@ export function FormField({
 
   return (
     <div className={`${alignStyles} ${className}`}>
-      <label
-        htmlFor={id}
-        className={`${labelStyles} ${disabledStyles}`}
-      >
+      <label className={`${labelStyles} ${disabledStyles}`} htmlFor={id}>
         {label}
         {required && (
-          <span className="text-error ml-1" aria-label={t('forms.a11y.required_marker')}>
+          <span aria-label={t('forms.a11y.required_marker')} className="text-error ml-1">
             *
           </span>
         )}
       </label>
 
       {description && !error && (
-        <p id={descriptionId} className={descriptionStyles}>
+        <p className={descriptionStyles} id={descriptionId}>
           {description}
         </p>
       )}
 
-      <div className={description && !error ? 'mt-1' : ''}>
-        {children}
-      </div>
+      <div className={description && !error ? 'mt-1' : ''}>{children}</div>
 
       {error && (
-        <p id={errorId} className={errorStyles} role="alert">
+        <p className={errorStyles} id={errorId} role="alert">
           {error}
         </p>
       )}

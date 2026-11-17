@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Box } from "./Box";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Box } from './Box'
 import {
   StorySection,
   StoryWrapper,
@@ -9,12 +9,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../ladle';
+  StoryGridCell,
+} from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Box component showcasing all color variants, borders, rounded corners, padding, shadows, and usage in context.
@@ -36,22 +36,22 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Simple</StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="white">
+              <Box color="white" padding="md">
                 <p>White</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="gray">
+              <Box color="gray" padding="md">
                 <p>Gray</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="primary">
+              <Box color="primary" padding="md">
                 <p>Primary</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="secondary">
+              <Box color="secondary" padding="md">
                 <p>Secondary</p>
               </Box>
             </StoryGridCell>
@@ -60,22 +60,22 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Bordered</StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="white" border>
+              <Box border color="white" padding="md">
                 <p>White</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="gray" border>
+              <Box border color="gray" padding="md">
                 <p>Gray</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="primary" border>
+              <Box border color="primary" padding="md">
                 <p>Primary</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="secondary" border>
+              <Box border color="secondary" padding="md">
                 <p>Secondary</p>
               </Box>
             </StoryGridCell>
@@ -84,22 +84,22 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Rounded</StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="white" rounded>
+              <Box rounded color="white" padding="md">
                 <p>White</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="gray" rounded>
+              <Box rounded color="gray" padding="md">
                 <p>Gray</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="primary" rounded>
+              <Box rounded color="primary" padding="md">
                 <p>Primary</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="secondary" rounded>
+              <Box rounded color="secondary" padding="md">
                 <p>Secondary</p>
               </Box>
             </StoryGridCell>
@@ -108,22 +108,22 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Both</StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="white" border rounded>
+              <Box border rounded color="white" padding="md">
                 <p>White</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="gray" border rounded>
+              <Box border rounded color="gray" padding="md">
                 <p>Gray</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="primary" border rounded>
+              <Box border rounded color="primary" padding="md">
                 <p>Primary</p>
               </Box>
             </StoryGridCell>
             <StoryGridCell>
-              <Box padding="md" color="secondary" border rounded>
+              <Box border rounded color="secondary" padding="md">
                 <p>Secondary</p>
               </Box>
             </StoryGridCell>
@@ -136,19 +136,19 @@ export const Default: Story = () => (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <p className="text-sm text-gray-700 mb-2">Small</p>
-          <Box padding="sm" color="gray">
+          <Box color="gray" padding="sm">
             <p>Small padding</p>
           </Box>
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Medium</p>
-          <Box padding="md" color="gray">
+          <Box color="gray" padding="md">
             <p>Medium padding</p>
           </Box>
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Large</p>
-          <Box padding="lg" color="gray">
+          <Box color="gray" padding="lg">
             <p>Large padding</p>
           </Box>
         </div>
@@ -159,34 +159,34 @@ export const Default: Story = () => (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div>
           <p className="text-sm text-gray-700 mb-2">Small</p>
-          <Box padding="md" shadow="sm" color="white" border>
+          <Box border color="white" padding="md" shadow="sm">
             <p>Small shadow</p>
           </Box>
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Medium</p>
-          <Box padding="md" shadow="md" color="white" border>
+          <Box border color="white" padding="md" shadow="md">
             <p>Medium shadow</p>
           </Box>
         </div>
         <div>
           <p className="text-sm text-gray-700 mb-2">Large</p>
-          <Box padding="md" shadow="lg" color="white" border>
+          <Box border color="white" padding="md" shadow="lg">
             <p>Large shadow</p>
           </Box>
         </div>
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-8 max-w-3xl">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Box padding="lg" shadow="md" color="white" rounded>
+          <Box rounded color="white" padding="lg" shadow="md">
             <h4 className="font-semibold text-gray-900 mb-2">Morning Meditation</h4>
             <p className="text-gray-700 mb-3">Start your day with peace and clarity</p>
             <p className="text-sm text-teal-600">10 minutes</p>
           </Box>
-          <Box padding="lg" shadow="md" color="white" rounded>
+          <Box rounded color="white" padding="lg" shadow="md">
             <h4 className="font-semibold text-gray-900 mb-2">Evening Practice</h4>
             <p className="text-gray-700 mb-3">Wind down and release the day's stress</p>
             <p className="text-sm text-teal-600">15 minutes</p>
@@ -194,30 +194,31 @@ export const Default: Story = () => (
         </div>
 
         <div className="space-y-3">
-          <Box padding="md" color="primary" border rounded>
+          <Box border rounded color="primary" padding="md">
             <p>
               <strong>Tip:</strong> For best results, practice meditation at the same time each day.
             </p>
           </Box>
-          <Box padding="md" color="gray" border rounded>
+          <Box border rounded color="gray" padding="md">
             <p>
-              <strong>Note:</strong> This meditation is suitable for beginners and experienced practitioners.
+              <strong>Note:</strong> This meditation is suitable for beginners and experienced
+              practitioners.
             </p>
           </Box>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Box padding="md" color="white" border rounded className="text-center">
+          <Box border rounded className="text-center" color="white" padding="md">
             <div className="text-3xl mb-2">🧘</div>
             <h5 className="font-medium text-gray-900 mb-1">Guided</h5>
             <p className="text-sm text-gray-700">Step-by-step guidance</p>
           </Box>
-          <Box padding="md" color="white" border rounded className="text-center">
+          <Box border rounded className="text-center" color="white" padding="md">
             <div className="text-3xl mb-2">⏱️</div>
             <h5 className="font-medium text-gray-900 mb-1">Flexible</h5>
             <p className="text-sm text-gray-700">5-60 minute sessions</p>
           </Box>
-          <Box padding="md" color="white" border rounded className="text-center">
+          <Box border rounded className="text-center" color="white" padding="md">
             <div className="text-3xl mb-2">🌟</div>
             <h5 className="font-medium text-gray-900 mb-1">Free</h5>
             <p className="text-sm text-gray-700">Always 100% free</p>
@@ -226,5 +227,5 @@ export const Default: Story = () => (
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Box"
+)
+Default.storyName = 'Box'

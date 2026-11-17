@@ -77,6 +77,7 @@ function AudioPlayerInner({
     if (!isFinite(seconds)) return '0:00'
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
+
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
@@ -97,10 +98,10 @@ function AudioPlayerInner({
           <div className="flex items-center gap-3">
             <div className="w-12 h-12">
               <Image
-                src={state.currentTrack.thumbnailURL}
                 alt={state.currentTrack.title}
                 aspectRatio="square"
                 rounded="rounded"
+                src={state.currentTrack.thumbnailURL}
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -108,10 +109,10 @@ function AudioPlayerInner({
                 {state.currentTrack.title}
               </h3>
               <a
-                href={state.currentTrack.creditURL}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-xs text-teal-600 hover:text-teal-700 truncate block"
+                href={state.currentTrack.creditURL}
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 {state.currentTrack.credit}
               </a>
@@ -129,12 +130,12 @@ function AudioPlayerInner({
       {hasControl('progress') && (
         <div className="mb-3">
           <input
-            type="range"
-            min="0"
+            className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
             max={state.duration || 0}
+            min="0"
+            type="range"
             value={state.currentTime}
             onChange={(e) => playerControls.seek(parseFloat(e.target.value))}
-            className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
           />
           <div className="flex justify-between text-xs font-number text-gray-700 mt-1">
             <span>{formatTime(state.currentTime)}</span>
@@ -149,42 +150,42 @@ function AudioPlayerInner({
         <div className="flex items-center gap-2">
           {hasControl('skip') && (
             <Button
-              icon={BackwardIcon}
-              variant="ghost"
-              size="md"
-              onClick={playerControls.previous}
               aria-label={t('media.a11y.previous_track')}
+              icon={BackwardIcon}
+              size="md"
+              variant="ghost"
+              onClick={playerControls.previous}
             />
           )}
 
           <Button
+            aria-label={state.isPlaying ? t('media.a11y.pause') : t('media.a11y.play')}
             icon={state.isPlaying ? PauseIcon : PlayIcon}
-            variant="primary"
             shape="circular"
             size="md"
+            variant="primary"
             onClick={playerControls.togglePlayPause}
-            aria-label={state.isPlaying ? t('media.a11y.pause') : t('media.a11y.play')}
           />
 
           {hasControl('skip') && (
             <Button
-              icon={ForwardIcon}
-              variant="ghost"
-              size="md"
-              onClick={playerControls.next}
               aria-label={t('media.a11y.next_track')}
+              icon={ForwardIcon}
+              size="md"
+              variant="ghost"
+              onClick={playerControls.next}
             />
           )}
 
           {hasControl('shuffle') && (
             <Button
-              icon={ArrowsRightLeftIcon}
-              variant="ghost"
-              size="md"
-              onClick={playerControls.toggleShuffle}
               aria-label={t('media.a11y.toggle_shuffle')}
               aria-pressed={state.isShuffleOn}
               className={state.isShuffleOn ? 'text-teal-600 hover:text-teal-700' : ''}
+              icon={ArrowsRightLeftIcon}
+              size="md"
+              variant="ghost"
+              onClick={playerControls.toggleShuffle}
             />
           )}
         </div>
@@ -193,21 +194,21 @@ function AudioPlayerInner({
         {hasControl('volume') && (
           <div className="flex items-center gap-2">
             <Button
-              icon={state.isMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
-              variant="ghost"
-              size="md"
-              onClick={playerControls.toggleMute}
               aria-label={state.isMuted ? t('media.a11y.unmute') : t('media.a11y.mute')}
+              icon={state.isMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
+              size="md"
+              variant="ghost"
+              onClick={playerControls.toggleMute}
             />
             <input
-              type="range"
-              min="0"
+              aria-label={t('media.a11y.volume')}
+              className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
               max="1"
+              min="0"
               step="0.01"
+              type="range"
               value={state.isMuted ? 0 : state.volume}
               onChange={(e) => playerControls.setVolume(parseFloat(e.target.value))}
-              className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
-              aria-label={t('media.a11y.volume')}
             />
           </div>
         )}

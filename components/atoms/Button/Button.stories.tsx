@@ -161,25 +161,15 @@ export const Default: Story = () => (
     >
       <div className="flex gap-4 items-center flex-wrap">
         <Button aria-label="Play" icon={PlayIcon} variant="primary" />
-        <Button variant="primary">
-          Primary
-        </Button>
+        <Button variant="primary">Primary</Button>
         <Button aria-label="Like" icon={HeartIcon} variant="secondary" />
-        <Button variant="secondary">
-          Secondary
-        </Button>
+        <Button variant="secondary">Secondary</Button>
         <Button aria-label="Confirm" icon={CheckIcon} variant="neutral" />
-        <Button variant="neutral">
-          Neutral
-        </Button>
+        <Button variant="neutral">Neutral</Button>
         <Button aria-label="Favorite" icon={StarIcon} variant="outline" />
-        <Button variant="outline">
-          Outline
-        </Button>
+        <Button variant="outline">Outline</Button>
         <Button aria-label="Close" icon={XMarkIcon} variant="ghost" />
-        <Button variant="ghost">
-          Ghost
-        </Button>
+        <Button variant="ghost">Ghost</Button>
       </div>
     </StorySection>
 

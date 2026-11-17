@@ -191,8 +191,7 @@ const CONVERTERS: JSXConverters = {
       return null
     }
     const fields = node.fields as
-      | { caption?: unknown; align?: string | null; alt?: string | null }
-      | undefined
+      { caption?: unknown; align?: string | null; alt?: string | null } | undefined
     const caption = renderCaption(fields?.caption)
     // `wide` images break out to the full content width. They get no
     // rounding, because they meet the edges, and a full-width `sizes` hint,

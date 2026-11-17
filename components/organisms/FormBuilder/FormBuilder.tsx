@@ -10,11 +10,7 @@ import { FormField } from '../../molecules/FormField'
 import { RichText } from '../RichText/RichText'
 import { useT } from '../../../hooks/useT'
 import { useLocale, useOptionalPageContext } from '../../../hooks/usePageContext'
-import {
-  submissionBody,
-  SUBMISSION_PATH,
-  TURNSTILE_TOKEN_HEADER,
-} from '../../../lib/submissions'
+import { submissionBody, SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../../../lib/submissions'
 import { isSafeNavigationUrl, normalizeContentPath } from '../../../lib/urls'
 import type { TFunction } from '../../../lib/i18n'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
@@ -101,10 +97,15 @@ function renderField(
   // A plain function, not a component, so the accessor is passed in
   // rather than read from a hook.
   t: TFunction,
-  fieldError?: string
+  fieldError?: string,
 ) {
   if (field.blockType === 'message') {
-    return <RichText className="text-sm sm:text-base text-gray-700 leading-relaxed" content={field.message} />
+    return (
+      <RichText
+        className="text-sm sm:text-base text-gray-700 leading-relaxed"
+        content={field.message}
+      />
+    )
   }
 
   const label = field.label ?? field.name
@@ -116,11 +117,11 @@ function renderField(
     return (
       <Checkbox
         {...register(field.name)}
-        id={field.name}
-        label={label}
+        aria-invalid={!!fieldError}
         defaultChecked={defaultValue === true}
         hasError={!!fieldError}
-        aria-invalid={!!fieldError}
+        id={field.name}
+        label={label}
       />
     )
   }
@@ -142,18 +143,16 @@ function renderField(
       return <Textarea {...commonProps} rows={4} />
 
     case 'number':
-      return <Input {...commonProps} type="number" step="any" />
+      return <Input {...commonProps} step="any" type="number" />
 
     case 'select':
       return (
         <Select
           {...commonProps}
-          placeholder={
-            variant === 'minimal'
-              ? label
-              : placeholder || t('forms.general.select_placeholder')
-          }
           fullWidth
+          placeholder={
+            variant === 'minimal' ? label : placeholder || t('forms.general.select_placeholder')
+          }
         >
           {options?.map((option) => (
             <option key={option.value} value={option.value}>
@@ -276,15 +275,18 @@ export function FormBuilder({
   if (isSubmitted && !redirect) {
     return (
       <div
+        aria-live="polite"
         className={`p-6 sm:p-8 bg-teal-50 rounded-lg text-center ${className}`}
         role="status"
-        aria-live="polite"
       >
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
           {t('forms.general.thank_you')}
         </h3>
         {form.confirmationMessage ? (
-          <RichText className="text-sm sm:text-base text-gray-700" content={form.confirmationMessage} />
+          <RichText
+            className="text-sm sm:text-base text-gray-700"
+            content={form.confirmationMessage}
+          />
         ) : (
           <p className="text-sm sm:text-base text-gray-700">{t('forms.general.submitted')}</p>
         )}
@@ -299,17 +301,19 @@ export function FormBuilder({
   return (
     <div className={className}>
       {form.title && (
-        <h2 className={`text-xl sm:text-2xl font-semibold text-gray-900 mb-6 sm:mb-8 ${align === 'center' ? 'text-center' : 'text-left'}`}>
+        <h2
+          className={`text-xl sm:text-2xl font-semibold text-gray-900 mb-6 sm:mb-8 ${align === 'center' ? 'text-center' : 'text-left'}`}
+        >
           {form.title}
         </h2>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
         {formError && (
           <div
+            aria-live="assertive"
             className="mb-6 p-4 bg-error/10 border border-error rounded text-error text-sm"
             role="alert"
-            aria-live="assertive"
           >
             {formError}
           </div>
@@ -354,11 +358,11 @@ export function FormBuilder({
             return (
               <div key={key} className={span}>
                 <FormField
+                  disabled={isSubmitting}
+                  error={fieldError}
                   id={field.name}
                   label={field.label ?? field.name}
                   required={field.required ?? undefined}
-                  error={fieldError}
-                  disabled={isSubmitting}
                 >
                   {renderField(field, register, variant, t, fieldError)}
                 </FormField>
@@ -371,12 +375,12 @@ export function FormBuilder({
           <div className={`mt-6 ${rowAlign}`}>
             <Turnstile
               key={attempt}
-              siteKey={siteKey}
+              options={{ execution: 'render', theme: 'light', language: locale }}
               onSuccess={setToken}
               // A failed, expired or unreachable challenge all leave the form
               // without a token. SahajCloud refuses that submission, which is the
               // same outcome as an unsolved challenge — nothing to recover.
-              onError={() => setToken(null)}
+              siteKey={siteKey}
               onExpire={() => setToken(null)}
               // ⚠ `execution: 'render'` is what survives a client-side
               // navigation. Cloudflare's automatic scan runs once per document
@@ -387,25 +391,25 @@ export function FormBuilder({
               // Cloudflare's own language default follows the *browser*, so a
               // visitor reading the Spanish site in an English browser would
               // get an English challenge mid-form. Pass the page locale.
-              options={{ execution: 'render', theme: 'light', language: locale }}
+              onError={() => setToken(null)}
             />
           </div>
         )}
 
         <div className={`mt-8 ${rowAlign}`}>
           <Button
+            className="min-w-32"
+            disabled={isSubmitting}
+            isLoading={isSubmitting}
             type="submit"
             variant={variant === 'minimal' ? 'outline' : 'primary'}
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-            className="min-w-32"
           >
             {form.submitButtonLabel || t('forms.general.submit')}
           </Button>
         </div>
 
         {isSubmitting && (
-          <div className="sr-only" role="status" aria-live="assertive">
+          <div aria-live="assertive" className="sr-only" role="status">
             {t('forms.a11y.submitting')}
           </div>
         )}

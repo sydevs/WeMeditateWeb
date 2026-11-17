@@ -11,7 +11,6 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    */
   variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
 
-
   /**
    * Button size
    * @default 'md'

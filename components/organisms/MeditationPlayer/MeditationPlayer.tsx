@@ -168,14 +168,11 @@ function VolumeRow({
   onToggleMute,
   action,
 }: VolumeRowProps) {
-
   return (
     <div className="flex flex-col gap-1">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-700">
         {label}
-        {sublabel ? (
-          <span className="ml-1 font-normal normal-case">· {sublabel}</span>
-        ) : null}
+        {sublabel ? <span className="ml-1 font-normal normal-case">· {sublabel}</span> : null}
       </p>
       <div className="flex items-center gap-2">
         <Button
@@ -242,6 +239,7 @@ function AudioControls({
   onShuffle,
 }: AudioControlsProps) {
   const t = useT()
+
   return (
     <Dropdown
       align="center"
@@ -264,10 +262,10 @@ function AudioControls({
         <VolumeRow
           label={t('meditation.general.voice')}
           muteLabel={t('meditation.a11y.mute_voice')}
-          unmuteLabel={t('meditation.a11y.unmute_voice')}
-          volumeLabel={t('meditation.a11y.voice_volume')}
           muted={voiceMuted}
+          unmuteLabel={t('meditation.a11y.unmute_voice')}
           volume={voiceVolume}
+          volumeLabel={t('meditation.a11y.voice_volume')}
           onToggleMute={onToggleVoiceMute}
           onVolumeChange={onVoiceVolumeChange}
         />
@@ -289,11 +287,11 @@ function AudioControls({
             }
             label={t('meditation.general.music')}
             muteLabel={t('meditation.a11y.mute_music')}
-            unmuteLabel={t('meditation.a11y.unmute_music')}
-            volumeLabel={t('meditation.a11y.music_volume')}
             muted={musicMuted}
             sublabel={musicTrackTitle}
+            unmuteLabel={t('meditation.a11y.unmute_music')}
             volume={musicVolume}
+            volumeLabel={t('meditation.a11y.music_volume')}
             onToggleMute={onToggleMusicMute}
             onVolumeChange={onMusicVolumeChange}
           />

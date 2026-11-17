@@ -1,11 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Spacer } from "./Spacer";
-import { StorySection,
-   StoryWrapper } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Spacer } from './Spacer'
+import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Spacer component showcasing all vertical and horizontal spacing options, and usage in context.
@@ -81,7 +80,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-8 max-w-2xl">
         <StorySection title="Article Layout" variant="subsection">
           <article className="border border-gray-200 rounded-lg p-6">
@@ -90,21 +89,20 @@ export const Default: Story = () => (
             <p className="text-sm text-gray-700">Published on January 15, 2025</p>
             <Spacer size="lg" />
             <p className="text-gray-700">
-              Meditation is a practice of focused attention and awareness that has been
-              practiced for thousands of years in various cultures around the world.
+              Meditation is a practice of focused attention and awareness that has been practiced
+              for thousands of years in various cultures around the world.
             </p>
             <Spacer size="md" />
             <p className="text-gray-700">
-              Begin with just a few minutes each day in a quiet, comfortable space.
-              Consistency is more important than duration when starting out.
+              Begin with just a few minutes each day in a quiet, comfortable space. Consistency is
+              more important than duration when starting out.
             </p>
             <Spacer size="xl" />
             <h3 className="text-xl font-semibold text-gray-900">Getting Started</h3>
             <Spacer size="sm" />
             <p className="text-gray-700">
-              Choose a comfortable, quiet location where you won't be disturbed. This
-              could be a corner of your bedroom, a peaceful spot in your garden, or
-              anywhere you feel at ease.
+              Choose a comfortable, quiet location where you won't be disturbed. This could be a
+              corner of your bedroom, a peaceful spot in your garden, or anywhere you feel at ease.
             </p>
           </article>
         </StorySection>
@@ -139,27 +137,27 @@ export const Default: Story = () => (
             <label className="block text-sm font-medium text-gray-900">Name</label>
             <Spacer size="sm" />
             <input
-              type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
               placeholder="Your name"
+              type="text"
             />
             <Spacer size="md" />
 
             <label className="block text-sm font-medium text-gray-900">Email</label>
             <Spacer size="sm" />
             <input
-              type="email"
               className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
               placeholder="you@example.com"
+              type="email"
             />
             <Spacer size="md" />
 
             <label className="block text-sm font-medium text-gray-900">Password</label>
             <Spacer size="sm" />
             <input
-              type="password"
               className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
               placeholder="••••••••"
+              type="password"
             />
             <Spacer size="lg" />
 
@@ -171,5 +169,5 @@ export const Default: Story = () => (
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Spacer"
+)
+Default.storyName = 'Spacer'

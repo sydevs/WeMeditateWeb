@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Select } from "./Select";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Select } from './Select'
 import {
   StorySection,
   StoryWrapper,
@@ -9,12 +9,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../../ladle';
+  StoryGridCell,
+} from '../../../ladle'
 
 export default {
-  title: "Atoms / Form"
-} satisfies StoryDefault;
+  title: 'Atoms / Form',
+} satisfies StoryDefault
 
 /** Select component showcasing all options, optgroups, validation states, and usage in context. */
 export const Default: Story = () => (
@@ -86,13 +86,13 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Success</StoryGridCell>
             <StoryGridCell>
-              <Select state="success" defaultValue="1">
+              <Select defaultValue="1" state="success">
                 <option value="1">Valid Selection</option>
                 <option value="2">Option 2</option>
               </Select>
             </StoryGridCell>
             <StoryGridCell>
-              <Select state="success" defaultValue="1" variant="minimal">
+              <Select defaultValue="1" state="success" variant="minimal">
                 <option value="1">Valid Selection</option>
                 <option value="2">Option 2</option>
               </Select>
@@ -155,13 +155,13 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="space-y-4">
         <div>
-          <label htmlFor="country" className="block text-sm font-medium mb-1 text-gray-900">
+          <label className="block text-sm font-medium mb-1 text-gray-900" htmlFor="country">
             Country
           </label>
-          <Select id="country" fullWidth>
+          <Select fullWidth id="country">
             <option value="">Select your country...</option>
             <option value="us">United States</option>
             <option value="uk">United Kingdom</option>
@@ -172,10 +172,10 @@ export const Default: Story = () => (
           </Select>
         </div>
         <div>
-          <label htmlFor="language" className="block text-sm font-medium mb-1 text-gray-900">
+          <label className="block text-sm font-medium mb-1 text-gray-900" htmlFor="language">
             Preferred Language
           </label>
-          <Select id="language" fullWidth defaultValue="en">
+          <Select fullWidth defaultValue="en" id="language">
             <option value="en">English</option>
             <option value="es">Español</option>
             <option value="de">Deutsch</option>
@@ -185,5 +185,5 @@ export const Default: Story = () => (
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Select"
+)
+Default.storyName = 'Select'

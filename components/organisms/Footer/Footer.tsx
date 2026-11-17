@@ -15,7 +15,17 @@ export interface FooterSection {
 /** A social media link */
 export interface SocialLink {
   /** Social media platform */
-  platform: 'facebook' | 'instagram' | 'bluesky' | 'youtube' | 'pinterest' | 'whatsapp' | 'linkedin' | 'yandex' | 'telegram' | 'wechat'
+  platform:
+    | 'facebook'
+    | 'instagram'
+    | 'bluesky'
+    | 'youtube'
+    | 'pinterest'
+    | 'whatsapp'
+    | 'linkedin'
+    | 'yandex'
+    | 'telegram'
+    | 'wechat'
   /** URL to the social media profile */
   href: string
 }
@@ -37,7 +47,6 @@ export interface FooterProps {
   /** Current locale for locale-aware links */
   locale?: Locale
 }
-
 
 /**
  * Footer organism component with responsive grid layout.
@@ -87,7 +96,7 @@ export function Footer({
   return (
     <footer className="w-full bg-white">
       {/* Decorative Divider */}
-      <div className="relative w-full text-center pt-[53px]" role="separator" aria-hidden="true">
+      <div aria-hidden="true" className="relative w-full text-center pt-[53px]" role="separator">
         {/* The horizontal line */}
         <div className="w-full border-t border-gray-200 absolute bottom-0" />
 
@@ -102,13 +111,13 @@ export function Footer({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {/* Hero Links Section */}
           <div>
-            <FooterLinkList variant="hero" links={heroLinks} locale={locale} />
+            <FooterLinkList links={heroLinks} locale={locale} variant="hero" />
           </div>
 
           {/* Regular Link Sections */}
           {sections.map((section, index) => (
             <div key={index}>
-              <FooterLinkList title={section.title} links={section.links} locale={locale} />
+              <FooterLinkList links={section.links} locale={locale} title={section.title} />
             </div>
           ))}
 
@@ -119,19 +128,19 @@ export function Footer({
               {socialLinks.map((social, index) => (
                 <SocialIcon
                   key={index}
-                  platform={social.platform}
-                  href={social.href}
-                  size="lg"
                   color="brand"
+                  href={social.href}
+                  platform={social.platform}
+                  size="lg"
                 />
               ))}
             </div>
 
             {/* Language Dropdown */}
             <LanguageDropdown
+              align="left"
               currentLanguage={currentLanguage}
               languages={languages}
-              align="left"
             />
           </div>
         </div>
