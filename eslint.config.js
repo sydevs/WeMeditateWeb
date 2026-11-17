@@ -1,6 +1,6 @@
 import { defineConfig } from 'eslint/config'
 import globals from 'globals'
-import react from '@eslint-react/eslint-plugin'
+import reactPlugin from '@eslint-react/eslint-plugin'
 import stylistic from '@stylistic/eslint-plugin'
 import perfectionist from 'eslint-plugin-perfectionist'
 import prettierConfig from 'eslint-config-prettier'
@@ -114,7 +114,7 @@ export default defineConfig([
   },
   // `extends`, not a spread: the plugin's config carries no `files` of its own,
   // and spreading it would silently drop every rule the day it ships an array.
-  { files: APP_FILES, extends: [react.configs['recommended-typescript']] },
+  { files: APP_FILES, extends: [reactPlugin.configs['recommended-typescript']] },
   prettierConfig,
   {
     files: APP_FILES,
