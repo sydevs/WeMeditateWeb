@@ -1,5 +1,7 @@
 import globals from 'globals'
-import react from 'eslint-plugin-react'
+import react from '@eslint-react/eslint-plugin'
+import stylistic from '@stylistic/eslint-plugin'
+import perfectionist from 'eslint-plugin-perfectionist'
 import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import tseslint from 'typescript-eslint'
@@ -8,6 +10,9 @@ import tseslint from 'typescript-eslint'
 // than copy, so they stay out. `alt` is handled on its own, below.
 const COPY_PROPS =
   '/^(aria-label|buttonText|caption|description|heading|label|placeholder|subtitle|text|title)$/'
+
+/** Every file the app's own rules apply to. */
+const JSX_FILES = ['**/*.{js,jsx,ts,tsx}']
 
 /** Prose, not punctuation: two consecutive ASCII letters. */
 const PROSE = '/[A-Za-z]{2}/'
@@ -107,17 +112,12 @@ export default [
       'cdk.out/**',
     ],
   },
-  {
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-  },
-  react.configs.flat.recommended,
+  // The plugin's own configs carry no `files`, so they would reach the config
+  // files and the plain scripts too.
+  { files: JSX_FILES, ...react.configs['recommended-typescript'] },
   prettierConfig,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: JSX_FILES,
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -134,6 +134,8 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
+      '@stylistic': stylistic,
+      perfectionist,
       prettier,
     },
     rules: {
@@ -141,10 +143,6 @@ export default [
       // Mapbox token survived in a shipped component (#105). `error` and `warn`
       // stay allowed: they report a real failure to whoever opens the console.
       'no-console': ['error', { allow: ['error', 'warn'] }],
-      'react/prop-types': 'off',
-      'react/jsx-uses-react': 'off',
-      'react/no-unescaped-entities': 'off',
-      'react/react-in-jsx-scope': 'off',
       'prettier/prettier': 'warn',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
@@ -155,14 +153,22 @@ export default [
           argsIgnorePattern: '^_.*?$',
         },
       ],
-      'react/self-closing-comp': 'warn',
-      'react/jsx-sort-props': [
+      '@stylistic/jsx-self-closing-comp': 'warn',
+      // The groups carry what the previous sort rule took as flags:
+      // reserved props first, then shorthand, then the rest, callbacks last.
+      // It sorted case-sensitively, which is not this rule's default.
+      'perfectionist/sort-jsx-props': [
         'warn',
         {
-          callbacksLast: true,
-          shorthandFirst: true,
-          noSortAlphabetically: false,
-          reservedFirst: true,
+          ignoreCase: false,
+          groups: ['reserved', 'shorthand-prop', 'unknown', 'callback'],
+          customGroups: [
+            {
+              groupName: 'reserved',
+              elementNamePattern: '^(children|dangerouslySetInnerHTML|key|ref)$',
+            },
+            { groupName: 'callback', elementNamePattern: '^on[A-Z]' },
+          ],
         },
       ],
       'padding-line-between-statements': [
@@ -215,6 +221,14 @@ export default [
             'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
       ],
+    },
+  },
+  {
+    // These guards read the app's own source with the TypeScript compiler API,
+    // so a `useX` name here is a token being matched, not a hook being called.
+    files: ['tests/guards/**'],
+    rules: {
+      '@eslint-react/rules-of-hooks': 'off',
     },
   },
   {
