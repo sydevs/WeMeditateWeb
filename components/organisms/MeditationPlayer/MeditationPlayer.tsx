@@ -26,6 +26,7 @@ import type { Track } from '../../molecules/AudioPlayer/types'
 import type { MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
 import { useT } from '../../../hooks/useT'
+import { formatDuration } from '../../../lib/duration'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
 
@@ -52,14 +53,6 @@ const PLACEHOLDER_IMAGE =
 `)
 
 /** Format time in seconds to MM:SS format */
-function formatTime(seconds: number): string {
-  if (!isFinite(seconds)) return '0:00'
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
-
 export interface MeditationFrame {
   /** Timestamp in seconds when this frame should be displayed */
   timestamp: number
@@ -764,7 +757,7 @@ function MeditationPlayerInner({
               {/* Time Display */}
               <div className="flex justify-center mt-2">
                 <span className="text-base @4xl:text-lg font-number text-gray-700">
-                  {formatTime(
+                  {formatDuration(
                     timeDisplay === 'countdown'
                       ? Math.max(0, effectiveDuration - displayTime)
                       : displayTime,
