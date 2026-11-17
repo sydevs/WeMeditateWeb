@@ -37,6 +37,24 @@ export interface PlaylistProps extends Omit<ComponentProps<'div'>, 'children'> {
   onFilterChange?: (filterId: string) => void
 }
 
+/**
+ * Pair each track with its index in `tracks`, keeping only the ones the filter
+ * matches.
+ *
+ * The index has to travel with the track: `currentTrackIndex` and
+ * `onTrackClick` both index `tracks`, while a filtered row's position in the
+ * rendered list is its own. Reading one as the other plays and highlights the
+ * wrong track (#249).
+ */
+export function visibleTracks(
+  tracks: Track[],
+  selectedFilter?: string | null,
+): { track: Track; index: number }[] {
+  return tracks
+    .map((track, index) => ({ track, index }))
+    .filter(({ track }) => !selectedFilter || track.tags?.some((tag) => tag.id === selectedFilter))
+}
+
 /** PlaylistItem is a subcomponent: an individual track item in the playlist. */
 interface PlaylistItemProps {
   track: Track
@@ -114,11 +132,6 @@ export function Playlist({
   className = '',
   ...props
 }: PlaylistProps) {
-  // Filter tracks based on selected filter using tags
-  const filteredTracks = selectedFilter
-    ? tracks.filter((track) => track.tags?.some((tag) => tag.id === selectedFilter))
-    : tracks
-
   return (
     <div
       className={`relative h-full flex flex-col ${className}`}
@@ -152,9 +165,9 @@ export function Playlist({
 
       {/* Playlist items */}
       <div className="relative flex-1 overflow-y-auto space-y-2">
-        {filteredTracks.map((track, index) => (
+        {visibleTracks(tracks, selectedFilter).map(({ track, index }) => (
           <PlaylistItem
-            key={index}
+            key={track.url}
             track={track}
             index={index}
             isCurrentTrack={index === currentTrackIndex}
