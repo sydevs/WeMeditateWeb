@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useEffectEvent, useRef } from 'react'
+import { useState, useEffect, useEffectEvent, useRef } from 'react'
 import { useAudioPlayer as useAudioPlayerLib } from 'react-use-audio-player'
 
 export interface UseAudioPlayerOptions {
@@ -97,37 +97,34 @@ export function useAudioPlayer({
     onPlaybackTimeUpdate?.(time)
   })
 
-  // Effect Events for callbacks: always read the latest props and avoid stale closures
-  const handleOnPlay = useEffectEvent((soundId?: number) => {
+  // Howler keeps the callbacks it was loaded with, and fires them long after
+  // the render that registered them, so they read the caller's latest handlers
+  // from here. An Effect Event cannot carry them: React allows one to be called
+  // only from an Effect, and `load` below is part of the returned controls.
+  const latestRef = useRef({ onPlay, onPause, onEnd })
+
+  useEffect(() => {
+    latestRef.current = { onPlay, onPause, onEnd }
+  })
+
+  const handleOnPlay = (soundId?: number) => {
     if (typeof soundId === 'number') {
       soundIdRef.current = soundId
     }
-    onPlay?.()
-  })
+    latestRef.current.onPlay?.()
+  }
 
-  const handleOnPause = useEffectEvent(() => {
-    onPause?.()
-  })
+  const handleOnPause = () => {
+    latestRef.current.onPause?.()
+  }
 
-  const handleOnEnd = useEffectEvent(() => {
+  const handleOnEnd = () => {
     soundIdRef.current = null
-    onEnd?.()
-  })
-
-  const seekTo = useEffectEvent((time: number) => {
-    const howl = player.player
-
-    if (howl && soundIdRef.current !== null) {
-      howl.seek(time, soundIdRef.current)
-    } else {
-      player.seek(time)
-    }
-    setCurrentTime(time)
-    onPlaybackTimeUpdate?.(time)
-  })
+    latestRef.current.onEnd?.()
+  }
 
   // Load track with the url option, when provided
-  // Note: This only reloads when url changes. Callbacks use useEffectEvent, so they always read the latest values.
+  // Note: This only reloads when url changes. The handlers read `latest`, so they always see the newest callbacks.
   useEffect(() => {
     if (url) {
       soundIdRef.current = null
@@ -159,12 +156,20 @@ export function useAudioPlayer({
   }, [player.isPaused])
 
   // Seek handler with callback
-  const seek = useCallback((time: number) => {
-    seekTo(time)
-  }, [])
+  const seek = (time: number) => {
+    const howl = player.player
+
+    if (howl && soundIdRef.current !== null) {
+      howl.seek(time, soundIdRef.current)
+    } else {
+      player.seek(time)
+    }
+    setCurrentTime(time)
+    onPlaybackTimeUpdate?.(time)
+  }
 
   // Play/pause handlers that track a single sound id to avoid overlapping audio instances
-  const play = useEffectEvent(() => {
+  const play = () => {
     const howl = player.player
 
     if (!howl) {
@@ -182,9 +187,9 @@ export function useAudioPlayer({
     }
 
     soundIdRef.current = howl.play()
-  })
+  }
 
-  const pause = useEffectEvent(() => {
+  const pause = () => {
     const howl = player.player
 
     if (howl) {
@@ -194,9 +199,9 @@ export function useAudioPlayer({
     }
 
     player.pause()
-  })
+  }
 
-  const togglePlayPause = useEffectEvent(() => {
+  const togglePlayPause = () => {
     if (player.isPlaying) {
       pause()
 
@@ -204,26 +209,22 @@ export function useAudioPlayer({
     }
 
     play()
-  })
+  }
 
   // Dynamic load function for playlists and manual loading
-  // Note: Uses useEffectEvent handlers for consistent callback behavior
-  const load = useCallback(
-    (loadUrl: string, options?: { autoplay?: boolean; onEnd?: () => void }) => {
-      soundIdRef.current = null
-      player.load(loadUrl, {
-        autoplay: options?.autoplay ?? false,
-        html5: true,
-        onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
-        onpause: () => handleOnPause(),
-        onend: () => {
-          soundIdRef.current = null
-          options?.onEnd?.() // Caller-provided onEnd for playlist track-end handling
-        },
-      })
-    },
-    [],
-  )
+  const load = (loadUrl: string, options?: { autoplay?: boolean; onEnd?: () => void }) => {
+    soundIdRef.current = null
+    player.load(loadUrl, {
+      autoplay: options?.autoplay ?? false,
+      html5: true,
+      onplay: ((soundId?: number) => handleOnPlay(soundId)) as () => void,
+      onpause: () => handleOnPause(),
+      onend: () => {
+        soundIdRef.current = null
+        options?.onEnd?.() // Caller-provided onEnd for playlist track-end handling
+      },
+    })
+  }
 
   // Compose state
   const state: AudioPlayerState = {
