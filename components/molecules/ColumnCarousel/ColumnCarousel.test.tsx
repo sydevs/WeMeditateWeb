@@ -84,6 +84,23 @@ describe('ColumnCarousel slide dots', () => {
   })
 })
 
+describe('ColumnCarousel breakpoints', () => {
+  // The wrapper's opening tag, which carries the breakpoint classes.
+  const wrapper = (count: number) => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(count)} />)
+    const at = html.indexOf('aria-label="Previous')
+    return html.slice(0, at).slice(html.slice(0, at).indexOf('<div', 5))
+  }
+
+  it('hands three columns back to the flex row at tablet', () => {
+    expect(wrapper(3)).toContain('md:hidden')
+  })
+
+  it.each([4, 5])('keeps the carousel at tablet for %i columns', (count) => {
+    expect(wrapper(count)).not.toContain('md:hidden')
+  })
+})
+
 describe('CarouselNavButton', () => {
   const html = () => renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
 

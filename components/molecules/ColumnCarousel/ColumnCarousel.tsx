@@ -146,19 +146,20 @@ export function ColumnCarousel({
   const useCarouselMobile = columns.length >= MOBILE_CAROUSEL_THRESHOLD
   const useCarouselTablet = columns.length >= TABLET_CAROUSEL_THRESHOLD
 
-  // Show carousel on mobile (3+ cols) or tablet (4+ cols)
-  const showCarousel = useCarouselMobile || useCarouselTablet
+  // The tablet threshold is the higher of the two, so it implies the mobile
+  // one and adds nothing here.
+  const showCarousel = useCarouselMobile
 
   return (
     <div className={className}>
       {/* Consolidated Carousel (Mobile: 3+ cols, Tablet: 4+ cols) */}
       {showCarousel && (
         <div
-          className={`
-            ${useCarouselMobile ? '' : 'md:hidden'}
-            ${useCarouselTablet ? 'md:block' : ''}
-            lg:hidden
-          `}
+          // Keyed on the tablet threshold, which is the one that decides
+          // anything here: inside this branch the mobile one is always true,
+          // so it emitted no class and three columns kept the carousel at
+          // tablet, against the behaviour above (#201).
+          className={useCarouselTablet ? 'lg:hidden' : 'md:hidden lg:hidden'}
         >
           {/* Navigation controls above carousel */}
           <div className="flex items-center">
@@ -227,8 +228,8 @@ export function ColumnCarousel({
       {/* Desktop: always flex row */}
       <div
         className={`
-          ${!useCarouselMobile ? 'flex flex-col md:flex-row' : 'hidden'}
-          ${useCarouselTablet ? 'md:hidden!' : ''}
+          ${useCarouselMobile ? 'hidden' : 'flex flex-col'}
+          ${useCarouselTablet ? 'md:hidden!' : 'md:flex md:flex-row'}
           lg:flex! lg:flex-row
           items-start justify-center gap-8
         `}
