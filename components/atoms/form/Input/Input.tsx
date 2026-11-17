@@ -7,6 +7,18 @@ import {
 } from '@heroicons/react/24/outline'
 import type { HeroIcon } from '../../Icon/Icon'
 
+/**
+ * The icon each input type shows when the caller passes none. A table rather
+ * than a function: a call that returns a component reads as a component built
+ * during render.
+ */
+const DEFAULT_ICONS: Record<string, HeroIcon | undefined> = {
+  search: MagnifyingGlassIcon,
+  email: EnvelopeIcon,
+  tel: PhoneIcon,
+  url: GlobeAltIcon,
+}
+
 export interface InputProps extends ComponentProps<'input'> {
   /**
    * Validation state
@@ -50,29 +62,9 @@ export interface InputProps extends ComponentProps<'input'> {
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ state = 'default', variant = 'default', icon, className = '', type, ...props }, ref) => {
-    // Determine which icon to display
-    const getDefaultIcon = (): HeroIcon | null => {
-      // If icon is explicitly set (including null), use that
-      if (icon !== undefined) {
-        return icon
-      }
-
-      // Otherwise, use default icons based on input type
-      switch (type) {
-        case 'search':
-          return MagnifyingGlassIcon
-        case 'email':
-          return EnvelopeIcon
-        case 'tel':
-          return PhoneIcon
-        case 'url':
-          return GlobeAltIcon
-        default:
-          return null
-      }
-    }
-
-    const IconComponent = getDefaultIcon()
+    // An explicit `icon`, `null` included, overrides the type's default.
+    // `''` is no input type, so an input with none falls through to no icon.
+    const IconComponent = icon !== undefined ? icon : DEFAULT_ICONS[type ?? '']
 
     const baseStyles =
       'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
