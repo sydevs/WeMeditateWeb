@@ -7,6 +7,7 @@ import { registerApiRoutes } from './api-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
 import { stripLivePreviewToken } from '../lib/live-preview/token-url'
+import { sentryDataCollection } from '../lib/sentry-data-collection'
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 
@@ -14,15 +15,15 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
  * Header names whose value is a credential, matched as a lowercase substring so
  * a header added later is covered by its name rather than by an edit here.
  *
- * ⚠ Sentry does not do this for us, and its own deny-list looks like it
- * would. `requestDataIntegration` copies every inbound header onto
- * `event.request.headers`, removing only `cookie` and the IP headers; the
- * deny-list (`PII_HEADER_SNIPPETS`: `forwarded`, `-ip`, `remote-`, `via`,
- * `-user`) is applied to the URL and the query string and never to the
- * headers — and would match neither name below. So this Worker's two inbound
- * credentials, the live-preview token (`x-sahajcloud-preview-secret`) and the
- * Turnstile token, would otherwise arrive in plaintext and outlive the session
- * they were minted for (lib/live-preview/token-url.ts says what that costs).
+ * ⚠ A backstop, not the only guard. Sentry 11 filters a header whose name
+ * matches its own `SENSITIVE_KEY_SNIPPETS`, which today covers all four
+ * snippets below, on top of the `PII_KEY_SNIPPETS` deny-list this Worker now
+ * passes for request and response headers alike. That built-in list is
+ * SDK-internal and can narrow in a minor, and what rides on it is this
+ * Worker's two inbound credentials — the live-preview token
+ * (`x-sahajcloud-preview-secret`) and the Turnstile token — which otherwise
+ * arrive in plaintext and outlive the session they were minted for
+ * (lib/live-preview/token-url.ts says what that costs).
  */
 const CREDENTIAL_HEADER_SNIPPETS = ['secret', 'token', 'auth', 'key']
 
@@ -46,13 +47,14 @@ function scrubCredentials<E extends Event>(event: E): E {
   request.url &&= stripLivePreviewToken(request.url)
   delete request.query_string
 
-  // ⚠ The inbound POST body, which Sentry attaches whether or not
-  // `sendDefaultPii` is set: `httpServerIntegration` buffers up to 10 KB of it
-  // onto the scope for every non-GET request, and `requestDataIntegration`
-  // reads it back with `data: true` unconditionally. On `POST /api/submissions`
-  // that body is the visitor's name, email address and message. Nothing needs
-  // it to debug these paths — the upstream error body is already in the
-  // request log (sahajcloud-fetch.ts).
+  // ⚠ A backstop. `httpBodies: []` (lib/sentry-data-collection.ts) is what
+  // keeps the inbound body off the event: `httpServerIntegration` ships with no
+  // `maxRequestBodySize`, so that option alone decides whether the body is
+  // buffered, and an empty list means it never is. This line is what holds if
+  // the option is ever widened, because on `POST /api/submissions` the body is
+  // the visitor's name, email address and message, and nothing needs it to
+  // debug these paths — the upstream error body is already in the request log
+  // (sahajcloud-fetch.ts).
   delete request.data
 
   const { headers } = request
@@ -77,6 +79,13 @@ export default withSentry(
   (env: SahajCloudEnv['Bindings']) => ({
     dsn: env.SENTRY_DSN,
     environment: 'production-backend',
+    dataCollection: sentryDataCollection,
+    // ⚠ Sentry 11 streams spans by default, and a streamed span never reaches
+    // `beforeSendTransaction`, so `scrubCredentials` would stop running on
+    // traced requests.
+    // shortcut: the static lifecycle keeps beforeSendTransaction, which v12
+    // removes; upgrade when scrubCredentials can scrub streamed span attributes
+    traceLifecycle: 'static',
     beforeSend: scrubCredentials,
     beforeSendTransaction: scrubCredentials,
   }),

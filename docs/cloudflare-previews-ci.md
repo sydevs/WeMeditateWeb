@@ -107,6 +107,13 @@ the step summary, so a pass always says which preview it tested.
 Builds-trigger branch filters are not readable from this repo, so reddening that leg could block
 PRs for a cause nothing here can observe. sydevs/SahajCloud#903 replaces the discovery for both.
 
+Both legs end with a "Smoke results" step that copies vitest's own passed, failed, skipped and todo
+counts into the job summary (`scripts/smoke-skip-summary.mjs`) and warns when nothing asserted. A
+spec skips itself with `ctx.skip` when it has no `SAHAJCLOUD_API_KEY` or no discoverable content,
+and vitest counts that as a pass, so the warning is the only sign that the leg asserted nothing.
+The step runs on pull requests only — the merge queue publishes no preview, so there is nothing
+there to count.
+
 ## The playground refuses crawlers, and answers cross-origin
 
 Two files in the build output carry the refusal —

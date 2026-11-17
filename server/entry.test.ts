@@ -13,11 +13,16 @@ vi.mock('@sentry/cloudflare', () => ({ withSentry }))
 
 await import('./entry')
 
+// ⚠ Read at import time. Vitest clears every mock's recorded calls before each
+// test (`clearMocks`, on by default since 5.0), and `entry.ts` calls
+// `withSentry` once, as it loads.
+const optionsFor = withSentry.mock.calls[0][0] as (env: { SENTRY_DSN: string }) => CloudflareOptions
+
 /** The options `entry.ts` hands `withSentry`, for the given Worker env. */
 function serverOptions(): CloudflareOptions {
-  return withSentry.mock.calls[0][0]({
+  return optionsFor({
     SENTRY_DSN: 'https://k@sentry.test/1',
-  }) as CloudflareOptions
+  })
 }
 
 /**
