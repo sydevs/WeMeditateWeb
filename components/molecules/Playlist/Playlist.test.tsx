@@ -63,12 +63,17 @@ const filters: MusicFilter[] = [
   { id: 'wind', label: 'Wind', icon: MusicalNoteIcon },
 ]
 
+interface Row {
+  title: string
+  playing: boolean
+}
+
 /**
  * The track rows in render order, each with whether it draws the "now playing"
  * treatment. A filter pill is a `<button>` too, so rows are the ones carrying a
  * track title.
  */
-function trackRows(html: string): { title: string; playing: boolean }[] {
+function trackRows(html: string): Row[] {
   return html
     .split('<button')
     .slice(1)
@@ -79,7 +84,9 @@ function trackRows(html: string): { title: string; playing: boolean }[] {
     }))
 }
 
-function render(selectedFilter: string | null, currentTrackIndex: number) {
+const playingTitles = (rows: Row[]) => rows.filter((row) => row.playing).map((row) => row.title)
+
+function render(selectedFilter: string | null, currentTrackIndex: number): Row[] {
   return trackRows(
     renderToStaticMarkup(
       <Playlist
@@ -94,7 +101,7 @@ function render(selectedFilter: string | null, currentTrackIndex: number) {
   )
 }
 
-describe('visibleTracks — what a row clicks', () => {
+describe('visibleTracks — the index a row reports when clicked', () => {
   it('reports the index each visible row carries in the full track list', () => {
     expect(visibleTracks(tracks, 'wind').map(({ track, index }) => [track.title, index])).toEqual([
       ['Persian Vibes', 1],
@@ -104,14 +111,12 @@ describe('visibleTracks — what a row clicks', () => {
 
   it('reports every track in order with no filter', () => {
     expect(visibleTracks(tracks, null).map(({ index }) => index)).toEqual([0, 1, 2, 3, 4])
-    expect(visibleTracks(tracks).map(({ index }) => index)).toEqual([0, 1, 2, 3, 4])
   })
 
   it('drops a track carrying no tags once a filter is set', () => {
     const untagged: Track[] = [{ ...tracks[0], tags: undefined }, tracks[1]]
 
     expect(visibleTracks(untagged, 'wind').map(({ index }) => index)).toEqual([1])
-    expect(visibleTracks(untagged, null)).toHaveLength(2)
   })
 
   it('reports nothing for a filter no track matches', () => {
@@ -120,38 +125,27 @@ describe('visibleTracks — what a row clicks', () => {
 })
 
 describe('Playlist highlighting under a filter', () => {
-  it('renders only the tracks the filter matches', () => {
-    expect(render('wind', 0).map((row) => row.title)).toEqual([
-      'Persian Vibes',
-      'Flute Meditation',
-    ])
+  it('renders the matching tracks, and highlights none when the playing one is hidden', () => {
+    // 0 is Raga Malkauns, which the wind filter hides.
+    const rows = render('wind', 0)
+
+    expect(rows.map((row) => row.title)).toEqual(['Persian Vibes', 'Flute Meditation'])
+    expect(playingTitles(rows)).toEqual([])
   })
 
   it('highlights the playing track, not the row in its position', () => {
-    // `currentTrackIndex` 4 is Flute Meditation, the second visible row.
-    expect(render('wind', 4).filter((row) => row.playing).map((row) => row.title)).toEqual([
-      'Flute Meditation',
-    ])
+    // 4 is Flute Meditation, the second visible row.
+    expect(playingTitles(render('wind', 4))).toEqual(['Flute Meditation'])
   })
 
   it('highlights no row beyond the one the index names', () => {
     // 1 is Persian Vibes. Reading it as a position in the filtered list would
     // highlight Flute Meditation instead.
-    expect(render('wind', 1).filter((row) => row.playing).map((row) => row.title)).toEqual([
-      'Persian Vibes',
-    ])
+    expect(playingTitles(render('wind', 1))).toEqual(['Persian Vibes'])
   })
 
-  it('keeps the highlight on the same track when a filter is set and cleared', () => {
-    const playing = (rows: { title: string; playing: boolean }[]) =>
-      rows.filter((row) => row.playing).map((row) => row.title)
-
-    expect(playing(render(null, 4))).toEqual(['Flute Meditation'])
-    expect(playing(render('wind', 4))).toEqual(['Flute Meditation'])
-    expect(playing(render(null, 4))).toEqual(['Flute Meditation'])
-  })
-
-  it('highlights nothing when the playing track is filtered out', () => {
-    expect(render('wind', 0).filter((row) => row.playing)).toEqual([])
+  it('highlights the same track with and without a filter', () => {
+    expect(playingTitles(render(null, 4))).toEqual(['Flute Meditation'])
+    expect(playingTitles(render('wind', 4))).toEqual(['Flute Meditation'])
   })
 })

@@ -167,6 +167,8 @@ export function Playlist({
       <div className="relative flex-1 overflow-y-auto space-y-2">
         {visibleTracks(tracks, selectedFilter).map(({ track, index }) => (
           <PlaylistItem
+            // shortcut: Track carries no id, so the audio url stands in as the
+            // row's identity; give it one if two songs ever share an upload.
             key={track.url}
             track={track}
             index={index}

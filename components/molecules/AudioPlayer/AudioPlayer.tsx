@@ -30,7 +30,8 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
 
   /**
    * Index of the track to play, in `tracks`. Followed when it changes, so a
-   * consumer can drive the player.
+   * consumer can drive the player. Pair it with `onTrackChange`: the player
+   * also moves the index itself, and a consumer that ignores that drifts.
    * @default 0
    */
   trackIndex?: number

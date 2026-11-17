@@ -7,7 +7,12 @@ export interface UsePlaylistAudioPlayerOptions {
   tracks: Track[]
   /** Enable shuffle mode on initialization */
   shuffle?: boolean
-  /** Index of the track to play, in `tracks`. The hook follows it when it changes. */
+  /**
+   * Index of the track to play, in `tracks`. The hook follows it when it
+   * changes. It is not fully controlled: the hook moves the index itself on
+   * next, previous and track end, and reports that through `onTrackChange`, so
+   * a consumer passing `trackIndex` must echo it back or the two drift apart.
+   */
   trackIndex?: number
   /** Callback when track changes */
   onTrackChange?: (trackIndex: number) => void
