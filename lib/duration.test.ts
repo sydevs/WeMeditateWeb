@@ -12,7 +12,7 @@ describe('formatDuration', () => {
   })
 
   it('truncates a fractional second rather than rounding it up', () => {
-    // `currentTime` arrives fractional, so 89.9s must still read 1:29.
+    // `currentTime` arrives fractional, not as a stored integer.
     expect(formatDuration(89.9)).toBe('1:29')
   })
 

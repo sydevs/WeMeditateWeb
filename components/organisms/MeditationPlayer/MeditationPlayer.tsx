@@ -52,7 +52,6 @@ const PLACEHOLDER_IMAGE =
   </svg>
 `)
 
-/** Format time in seconds to MM:SS format */
 export interface MeditationFrame {
   /** Timestamp in seconds when this frame should be displayed */
   timestamp: number

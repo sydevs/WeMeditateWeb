@@ -1,14 +1,14 @@
 /**
- * Formats a duration in seconds as `M:SS`, the media-player convention —
- * shared by `AudioPlayer`, `Playlist` and `MeditationPlayer` so a timestamp
- * reads the same wherever it appears.
+ * Formats a duration in seconds as `M:SS`.
  *
- * A non-finite input renders as `0:00`: howler reports `Infinity` for a
- * stream of indeterminate length, which the arithmetic below would otherwise
- * render as `Infinity:NaN`.
+ * A non-finite input renders as `0:00`: a source of indeterminate length
+ * reports `Infinity`, and a media element reports `NaN` until its metadata
+ * loads.
  */
+// shortcut: an hour or more reads `61:40`, never `1:01:40` — add an hours part
+// when a track that long reaches a player.
 export function formatDuration(seconds: number): string {
-  if (!isFinite(seconds)) return '0:00'
+  if (!Number.isFinite(seconds)) return '0:00'
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
 
