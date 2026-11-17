@@ -81,6 +81,12 @@ async function ghFetch(path) {
 }
 
 // 1. PR comments. The only surface that names the project, so this is the primary source.
+// Anyone who can comment can post a workers.dev URL that matchesTarget accepts, and the smoke
+// suite would then measure that host and report it green. Sources 2-4 read fields only an app
+// with write access can set, so this is the one open surface. A Cloudflare rename degrades to
+// those rather than failing, since comments are only the first source tried.
+const PREVIEW_COMMENT_AUTHORS = ['cloudflare-workers-and-pages[bot]']
+
 async function fromPrComments() {
   if (!PR_NUMBER) return []
   const comments = await ghFetch(`/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100`)
@@ -88,8 +94,13 @@ async function fromPrComments() {
   for (const c of comments) {
     const url = extractPreviewUrl(c.body)
     if (!url) continue
+    const author = c.user?.login ?? '?'
+    if (!PREVIEW_COMMENT_AUTHORS.includes(author)) {
+      console.error(`skipping ${url} [pr-comment(${author})] — not a preview bot`)
+      continue
+    }
     const project = (c.body || '').match(/Deploying\s+([a-z0-9._-]+)\s+with/i)?.[1] ?? null
-    out.push({ project, url, source: `pr-comment(${c.user?.login ?? '?'})` })
+    out.push({ project, url, source: `pr-comment(${author})` })
   }
   return out
 }
