@@ -9,9 +9,6 @@ import {
 import { Input } from './Input'
 import type { HeroIcon } from '../../Icon/Icon'
 
-/** What marks the rendered icon, so the absence cases below cannot pass vacuously. */
-const ICON_MARKER = 'aria-hidden="true"'
-
 describe('Input', () => {
   // Compared against the icon named explicitly: a swapped table entry still
   // renders an icon, and only this comparison notices which one.
@@ -28,17 +25,26 @@ describe('Input', () => {
     )
   })
 
-  it('marks the icon it renders', () => {
-    expect(renderToStaticMarkup(<Input type="search" />)).toContain(ICON_MARKER)
+  it('wraps the input when it renders an icon', () => {
+    const html = renderToStaticMarkup(<Input type="search" />)
+
+    expect(html).toContain('<div')
+    expect(html).toContain('<svg')
   })
 
   it.each([
     ['a type with no default icon', { type: 'text' }],
     ['icon={null}', { icon: null, type: 'search' }],
-  ])('renders a bare input for %s', (_label, props) => {
+    // FormBuilder hands `type` a SahajCloud block type as a plain string. An
+    // inherited member must not be found and rendered: unguarded, `toString`
+    // reaches the icon slot and React writes `[object Undefined]` into it.
+    ['a type naming an inherited member', { type: 'toString' }],
+  ])('renders a lone input for %s', (_label, props) => {
     const html = renderToStaticMarkup(<Input {...props} />)
 
+    // Only the icon branch wraps the input, so a bare render has no element
+    // around it and nothing in the icon slot.
     expect(html).toContain('<input')
-    expect(html).not.toContain(ICON_MARKER)
+    expect(html).not.toContain('<div')
   })
 })

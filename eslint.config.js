@@ -153,6 +153,12 @@ export default defineConfig([
           argsIgnorePattern: '^_.*?$',
         },
       ],
+      // Severity parity with the rules the old recommended set carried as
+      // errors. `tsc --noEmit` covers its `jsx-no-duplicate-props` (TS17001)
+      // and `no-unknown-property` (TS2322); nothing covers this one.
+      '@eslint-react/dom-no-unsafe-target-blank': 'error',
+      '@eslint-react/jsx-no-comment-textnodes': 'error',
+      '@eslint-react/jsx-no-children-prop': 'error',
       '@stylistic/jsx-self-closing-comp': 'warn',
       // The groups reproduce the previous rule's `reservedFirst`,
       // `shorthandFirst` and `callbacksLast`, and `ignoreCase: false` its

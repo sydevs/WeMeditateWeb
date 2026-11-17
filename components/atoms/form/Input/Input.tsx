@@ -58,7 +58,12 @@ export interface InputProps extends ComponentProps<'input'> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ state = 'default', variant = 'default', icon, className = '', type, ...props }, ref) => {
     // An explicit `icon`, `null` included, overrides the type's default.
-    const IconComponent = icon === undefined && type ? DEFAULT_ICONS[type] : icon
+    // `type` arrives unvalidated — FormBuilder passes a SahajCloud block type
+    // through as a plain string — so an inherited `toString` must not read as
+    // an icon and get rendered. A `Map` would say this, but the rule above
+    // rejects a lookup call as a component built during render.
+    const IconComponent =
+      icon === undefined && type && Object.hasOwn(DEFAULT_ICONS, type) ? DEFAULT_ICONS[type] : icon
 
     const baseStyles =
       'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
