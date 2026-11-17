@@ -214,6 +214,30 @@ export default [
           message:
             'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
+        {
+          // An `<Image>` with no `aspectRatio` resolves no Cloudflare variant,
+          // so the box gets the full-size original; with no `sizes` its srcset
+          // assumes a roughly full-width layout, so a 48px tile fetched 800px.
+          // Fourteen call sites were missing one or the other (#146).
+          //
+          // Presence, not value: a caller forwarding `sizes={sizes}` and handed
+          // `undefined` reads as compliant (#206). Only a type could catch that.
+          //
+          // These sit in this block because `no-restricted-syntax` is one rule
+          // id: a second block covering the same files would replace the copy
+          // selectors above rather than add to them. A disable region for copy
+          // therefore silences these too — no region wraps an `<Image>` today.
+          selector:
+            'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="aspectRatio"]))',
+          message:
+            '<Image> without aspectRatio serves the full-size original: name the ratio its box draws.',
+        },
+        {
+          selector:
+            'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="sizes"]))',
+          message:
+            '<Image> without sizes fetches for a full-width box: declare the length the layout draws.',
+        },
       ],
     },
   },
