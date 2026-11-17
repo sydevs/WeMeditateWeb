@@ -468,7 +468,7 @@ export const Default: Story = () => (
           </div>
           <p className="text-xs text-gray-500 mt-2">
             The label ellipsises, so the button shrinks to its 44px floor rather than to its text.
-            Narrow the window to watch it give way. ColumnCarousel uses this form.
+            Narrow the window to watch it give way.
           </p>
         </StorySection>
 

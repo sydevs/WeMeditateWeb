@@ -22,14 +22,14 @@ const dotButtons = (html: string) =>
     .filter((tag) => tag.includes('aria-label="Go to column'))
 
 describe('ColumnCarousel slide dots', () => {
-  it.each(COUNTS)('draws %i 8px dots, each in its own 40px cell', (count) => {
+  it.each(COUNTS)('draws %i 8px dots, each in its own 44px cell', (count) => {
     const html = renderToStaticMarkup(<ColumnCarousel columns={columns(count)} />)
     const dots = dotButtons(html)
 
     expect(dots).toHaveLength(count)
     for (const dot of dots) {
-      expect(dot).toContain('w-10')
-      expect(dot).toContain('h-10')
+      expect(dot).toContain('w-11')
+      expect(dot).toContain('h-11')
     }
     expect(html.match(/<span class="[^"]*w-2 h-2 rounded-full/g)).toHaveLength(count)
   })
@@ -64,6 +64,18 @@ describe('ColumnCarousel slide dots', () => {
     expect(dots.filter((dot) => dot.includes('aria-pressed="false"'))).toHaveLength(4)
   })
 
+  // Sharing the nav row is what cost the cells their 4px and the titles most
+  // of their width (#135). A row of their own is what pays for both.
+  it('sits in a row of its own, after both nav buttons', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
+    const firstDot = html.indexOf('aria-label="Go to column 1')
+
+    expect(firstDot).toBeGreaterThan(-1)
+    expect(html.indexOf('aria-label="Previous:')).toBeLessThan(firstDot)
+    expect(html.indexOf('aria-label="Next:')).toBeLessThan(firstDot)
+    expect(html.slice(html.lastIndexOf('<div', firstDot), firstDot)).toContain('justify-center')
+  })
+
   it('draws the focus ring on each dot', () => {
     const html = renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />)
     const dots = dotButtons(html)
@@ -81,21 +93,18 @@ describe('CarouselNavButton', () => {
     return markup.slice(markup.lastIndexOf('<button', at), markup.indexOf('</button>', at))
   }
 
-  // The dots are 40px because these two keep `touch-target`'s 44px floor, and
-  // `xs` is the one Button size whose padding fits inside it.
   it('keeps its own 44px floor, and takes no overlay beside it', () => {
     for (const label of ['Previous:', 'Next:']) {
       const nav = navButton(html(), label)
 
       expect(nav).toContain('touch-target')
       expect(nav).not.toContain('touch-target-overlay')
-      expect(nav).toContain('px-3')
+      expect(nav).toContain('px-6')
     }
   })
 
-  // That floor shrinks a flex item only. The prev slot was the one without
-  // `flex`, so its block-level `<button>` kept its full text width and
-  // reached 69px into the dots (#135).
+  // The prev slot was the one without `flex`, so its block-level `<button>`
+  // kept its full text width and reached 69px into the dots (#135).
   it('gives both buttons a flex slot, so the floor can bite', () => {
     expect(html().match(/min-w-0 flex/g)).toHaveLength(2)
   })

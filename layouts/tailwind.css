@@ -139,8 +139,9 @@
  * `min-width` does a second job here. Padding usually clears 44px across
  * already, so what the declaration really replaces is the flex default
  * `min-width: auto`: a flex item carrying `touch-target` now shrinks to 44px
- * instead of to its content. `CarouselNavButton` wants exactly that floor.
- * Anywhere else it is a shrink change to know about, not a hit area.
+ * instead of to its content. Where a button must reach that floor, that is
+ * the mechanism; anywhere else it is a shrink change to know about, not a
+ * hit area.
  *
  * It bites on a flex item only. A block-level `<button>` is sized
  * fit-content, whose lower bound is its own min-content width, and no

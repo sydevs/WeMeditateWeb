@@ -38,23 +38,16 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
     : t(isPrev ? 'common.a11y.previous' : 'common.a11y.next')
 
   return (
-    // The slot absorbs the row's slack and gives the button a flex context.
-    // `touch-target`'s floor shrinks a flex item only: a block-level
-    // `<button>` is sized fit-content, floored at its own min-content width,
-    // which no `min-width` lowers (#135).
+    // Half the row each, and `min-w-0` so the slot may shrink under the
+    // title's own width and let `truncate` fire instead of widening the row.
     <div className={isPrev ? 'flex-1 min-w-0 flex' : 'flex-1 min-w-0 flex justify-end'}>
-      {/* `xs` is the one size whose padding fits inside `touch-target`'s 44px
-          floor, so the button stops there instead of on the dots. `sm` upwards
-          carry 48px or more of padding, which no `min-width` shrinks, and the
-          dots are 40px because that floor holds (#135). */}
       <Button
         truncate
         aria-label={ariaLabel}
-        className="max-w-40"
         disabled={disabled}
         icon={column ? (isPrev ? ChevronLeftIcon : ChevronRightIcon) : undefined}
         iconPosition={isPrev ? 'leading' : 'trailing'}
-        size="xs"
+        size="sm"
         variant="ghost"
         onClick={onClick}
       >
@@ -168,7 +161,7 @@ export function ColumnCarousel({
           `}
         >
           {/* Navigation controls above carousel */}
-          <div className="flex items-center mb-6">
+          <div className="flex items-center">
             <CarouselNavButton
               direction="prev"
               column={prevColumn}
@@ -176,38 +169,40 @@ export function ColumnCarousel({
               disabled={!hasPrev}
             />
 
-            {/* Abutting cells cannot overlap, which a 44px `touch-target-overlay`
-                on each 8px dot did — it handed the tap to the next slide (#135).
-                40px and not the house 44px: see docs/rules/design-system.md. */}
-            <div className="flex gap-0 shrink-0 px-4">
-              {columns.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollTo(index)}
-                  aria-label={t('blocks.a11y.go_to_column', {
-                    number: index + 1,
-                    title: columns[index].title,
-                  })}
-                  aria-pressed={index === selectedIndex}
-                  className="group flex w-10 h-10 items-center justify-center focus-ring"
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === selectedIndex
-                        ? 'bg-teal-600'
-                        : 'bg-gray-300 group-hover:bg-gray-400'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-
             <CarouselNavButton
               direction="next"
               column={nextColumn}
               onClick={scrollNext}
               disabled={!hasNext}
             />
+          </div>
+
+          {/* The dots take a line of their own, so neither row pays for the
+              other: sharing one left each nav title about 61px at a 390px
+              viewport, and forced the cells under the house 44px to fit.
+              Abutting cells cannot overlap, which a 44px `touch-target-overlay`
+              on each 8px dot did — it handed the tap to the next slide (#135). */}
+          <div className="flex justify-center mb-6">
+            {columns.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollTo(index)}
+                aria-label={t('blocks.a11y.go_to_column', {
+                  number: index + 1,
+                  title: columns[index].title,
+                })}
+                aria-pressed={index === selectedIndex}
+                className="group flex w-11 h-11 items-center justify-center focus-ring"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === selectedIndex
+                      ? 'bg-teal-600'
+                      : 'bg-gray-300 group-hover:bg-gray-400'
+                  }`}
+                />
+              </button>
+            ))}
           </div>
 
           {/* Carousel viewport */}
