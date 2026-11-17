@@ -95,9 +95,11 @@ export function FormField({
   const ariaDescribedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined
 
   // The description and the error are siblings of the control, so nothing
-  // connects them to it but this attribute. A single element child takes it;
-  // anything else keeps its own markup, and a control that already names its
+  // connects them to it but this attribute. A control that already names its
   // own description keeps that too.
+  // shortcut: only a single element child is reached, so a field wrapping a
+  // fragment or several controls gets nothing. Upgrade to a context when a
+  // call site needs one — every one today renders one control.
   const describedChildren =
     ariaDescribedBy && isValidElement<{ 'aria-describedby'?: string }>(children)
       ? cloneElement(children, {
