@@ -73,6 +73,23 @@ export const FULL_BLEED_BLOCK = 'full-bleed my-6 clear-both'
 export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
 
 /**
+ * One card of the `content-index` grid, which renders inside the
+ * `Container maxWidth="xl"` below — so the length lives beside the container
+ * that sets it.
+ *
+ * `react-masonry-css` gives each column `100%/n` of the track and the track
+ * carries a negative gutter margin, so a card is `(content + gutter) / n −
+ * gutter`: 357px at the widest three-column band, against a 1120px content
+ * column and a 24px gutter. The queries are `639` and `1023`, not `640` and
+ * `1024`, because the library switches on `innerWidth <= breakpoint`, so the
+ * breakpoint itself belongs to the narrower band. 360px is the first round
+ * number above the widest card, and it shares a srcset rung with 357px at
+ * DPR 1, 2 and 3 — rounding further costs real bytes, since Cloudflare
+ * upscales rather than capping at the source width (#206).
+ */
+const CONTENT_INDEX_CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
+
+/**
  * Build MusicLibrary filters from the unique song-tag slugs across the tracks.
  * SongTag carries no icon, so every filter uses a single music glyph (the
  * shared MusicLibrary and Playlist API takes a Heroicon per filter).
@@ -361,7 +378,7 @@ export const blockConverters: BlockConverters = {
     return (
       <div className={FULL_BLEED_BLOCK}>
         <Container maxWidth="xl">
-          <ContentIndex items={items} />
+          <ContentIndex items={items} sizes={CONTENT_INDEX_CARD_SIZES} />
         </Container>
       </div>
     )

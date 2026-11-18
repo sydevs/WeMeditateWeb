@@ -229,28 +229,24 @@ export default defineConfig([
         },
         {
           // An `<Image>` with no `aspectRatio` resolves no Cloudflare variant,
-          // so the box gets the full-size original; with no `sizes` its srcset
-          // assumes a roughly full-width layout, so a 48px tile fetched 800px.
-          // Fourteen call sites were missing one or the other (#146).
+          // so the box gets the full-size original. Fourteen call sites were
+          // missing it, a `sizes`, or both (#146).
           //
-          // Presence, not value: a caller forwarding `sizes={sizes}` and handed
-          // `undefined` reads as compliant (#206). Only a type could catch that.
+          // `sizes` is required by `ImageProps` instead, because a selector
+          // reads a prop's presence: a caller forwarding `sizes={sizes}` and
+          // handed `undefined` passes it, and that was #206 exactly. The ratio
+          // stays here — it is optional by design, for a `<Image>` whose src is
+          // not Cloudflare's, so no type can demand it.
           //
-          // These sit in this block because `no-restricted-syntax` is one rule
+          // This sits in this block because `no-restricted-syntax` is one rule
           // id: a second block covering the same files would replace the copy
           // selectors above rather than add to them. So the block's `ignores`,
-          // and any disable region for copy, silence these too — neither
-          // reaches an `<Image>` today.
+          // and any disable region for copy, silence it too — neither reaches
+          // an `<Image>` today.
           selector:
             'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="aspectRatio"]))',
           message:
             '<Image> without aspectRatio serves the full-size original: name the ratio its box draws.',
-        },
-        {
-          selector:
-            'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="sizes"]))',
-          message:
-            '<Image> without sizes fetches for a full-width box: declare the length the layout draws.',
         },
       ],
     },

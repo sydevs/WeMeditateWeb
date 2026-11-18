@@ -59,7 +59,10 @@ function slideSizes(imageHeight: TrackHeight, aspectRatio: AspectRatio = 'square
 
 export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Array of content items to display in the carousel */
-  items: Omit<ContentCardProps, 'variant'>[]
+  items: (Omit<ContentCardProps, 'variant' | 'sizes'> & {
+    /** Overrides the length this carousel derives for the slide. */
+    sizes?: string
+  })[]
 
   /** Optional heading for the carousel section */
   title?: string
@@ -236,9 +239,9 @@ export function ContentCarousel({
                     {/* Fixed image height (natural width) → consistent row height
                         without forcing a single aspect ratio. */}
                     <ContentCard
-                      sizes={slideSizes(imageHeight, item.aspectRatio)}
                       {...item}
                       imageHeight={imageHeight}
+                      sizes={item.sizes ?? slideSizes(imageHeight, item.aspectRatio)}
                       variant={card}
                     />
                   </div>

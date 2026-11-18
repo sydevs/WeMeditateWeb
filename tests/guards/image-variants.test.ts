@@ -1,18 +1,21 @@
 /**
- * The `<Image>` variant selectors in `eslint.config.js` really match, and the
- * raw `<img>` population they cannot reach stays accounted for.
+ * The `<Image>` aspectRatio selector in `eslint.config.js` really matches, and
+ * the raw `<img>` population it cannot reach stays accounted for.
  *
- * Why those two props are required sits beside the selectors. A selector that
- * silently matches nothing fails open, so this asks ESLint against the repo
- * config rather than re-implementing it (`jsx-literals.test.ts`).
+ * Why the prop is required sits beside the selector. A selector that silently
+ * matches nothing fails open, so this asks ESLint against the repo config
+ * rather than re-implementing it (`jsx-literals.test.ts`).
  *
- * They read `<Image>` tags only, and four of the ten sites #146 fixed are a
- * hand-rolled `<img>`. Holding those to `getImageURL` would need exemptions:
- * of the six raw `<img>` the last test pins, only two name the helper in the
- * tag — the atom's own `<img>` is the pipeline, one paints a bundled SVG, and
- * two reach the helper a hop away. A measurement nothing checks is the defect
- * these guards exist to catch, so the population is pinned: a seventh is a red
- * test and a decision, not a silent over-fetch.
+ * `sizes` is not here: `ImageProps` requires it, so `tsc` owns that one and
+ * catches the forwarded `undefined` a selector reads as compliant (#206).
+ *
+ * The selector reads `<Image>` tags only, and four of the ten sites #146 fixed
+ * are a hand-rolled `<img>`. Holding those to `getImageURL` would need
+ * exemptions: of the six raw `<img>` the last test pins, only two name the
+ * helper in the tag — the atom's own `<img>` is the pipeline, one paints a
+ * bundled SVG, and two reach the helper a hop away. A measurement nothing
+ * checks is the defect this guard exists to catch, so the population is
+ * pinned: a seventh is a red test and a decision, not a silent over-fetch.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -24,7 +27,7 @@ import { readSource, repoRoot, sourceFiles } from './_source-scan'
 // and loading this repo's config costs ~700ms.
 const eslint = new ESLint({ cwd: repoRoot })
 
-const PROPS = ['aspectRatio', 'sizes'] as const
+const PROPS = ['aspectRatio'] as const
 
 /**
  * The props ESLint faults `tag` for, as the file at `filePath`.
@@ -45,9 +48,7 @@ async function faults(
 }
 
 describe('the <Image> variant lint rule', () => {
-  it('faults a call site for each prop it omits', async () => {
-    expect(await faults('<Image alt="" src="/a.jpg" />')).toEqual(['aspectRatio', 'sizes'])
-    expect(await faults('<Image alt="" aspectRatio="square" src="/a.jpg" />')).toEqual(['sizes'])
+  it('faults a call site that omits aspectRatio', async () => {
     expect(await faults('<Image alt="" sizes="48px" src="/a.jpg" />')).toEqual(['aspectRatio'])
   })
 
