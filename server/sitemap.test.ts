@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildRobotsTxt, buildSitemapXml, isIndexableHost, xmlEscape } from './sitemap'
+import { buildRobotsTxt, buildSitemapXml, isIndexableOrigin, xmlEscape } from './sitemap'
 
 describe('xmlEscape', () => {
   it('escapes all five predefined entities', () => {
@@ -11,19 +11,26 @@ describe('xmlEscape', () => {
   })
 })
 
-describe('isIndexableHost', () => {
-  it.each(['wemeditate.com', 'www.wemeditate.com'])('allows the real site (%s)', (host) => {
-    expect(isIndexableHost(host)).toBe(true)
-  })
+describe('isIndexableOrigin', () => {
+  it.each(['https://wemeditate.com', 'https://www.wemeditate.com'])(
+    'allows the real site (%s)',
+    (origin) => {
+      expect(isIndexableOrigin(origin)).toBe(true)
+    },
+  )
 
   it.each([
-    ['a preview Worker', 'wemeditate-web-pr-62.workers.dev'],
-    ['a preview Pages site', 'wemeditate-ladle.pages.dev'],
-    ['local development', 'localhost'],
-  ])('refuses %s', (_label, host) => {
+    ['a preview Worker', 'https://wemeditate-web-pr-62.workers.dev'],
+    ['a preview Pages site', 'https://wemeditate-ladle.pages.dev'],
+    ['local development', 'http://localhost:5173'],
+  ])('refuses %s', (_label, origin) => {
     // Every PR builds these. A preview that invites crawlers competes with
     // production for the same content.
-    expect(isIndexableHost(host)).toBe(false)
+    expect(isIndexableOrigin(origin)).toBe(false)
+  })
+
+  it('reads the host, so a port does not make a local origin indexable', () => {
+    expect(isIndexableOrigin('http://127.0.0.1:4173')).toBe(false)
   })
 })
 

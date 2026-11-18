@@ -53,9 +53,16 @@ export function xmlEscape(value: string): string {
  */
 const NON_CANONICAL_HOST = /(\.workers\.dev|\.pages\.dev)$|^localhost$|^127\.0\.0\.1$/
 
-/** Whether this host is the real site, and so may be crawled. */
-export function isIndexableHost(hostname: string): boolean {
-  return !NON_CANONICAL_HOST.test(hostname)
+/**
+ * Whether this origin is the real site, and so may be crawled and counted.
+ *
+ * Takes an origin rather than a host because every caller has one: the two
+ * routes below read it off the request, and the analytics tag in
+ * `pages/+Head.tsx` reads it off `pageContext`. A host-level predicate made
+ * each of them spell the same parse.
+ */
+export function isIndexableOrigin(origin: string): boolean {
+  return !NON_CANONICAL_HOST.test(new URL(origin).hostname)
 }
 
 /**
@@ -66,9 +73,7 @@ export function isIndexableHost(hostname: string): boolean {
  * absolute, because `robots.txt` requires it.
  */
 export function buildRobotsTxt(origin: string): string {
-  const { hostname } = new URL(origin)
-
-  if (!isIndexableHost(hostname)) {
+  if (!isIndexableOrigin(origin)) {
     return ['User-agent: *', 'Disallow: /', ''].join('\n')
   }
 

@@ -3,7 +3,7 @@
 //# BATI.has("mantine")
 import logoUrl from '../assets/logo.svg'
 import { useOptionalPageContext, useOrigin } from '../hooks/usePageContext'
-import { isIndexableHost } from '../server/sitemap'
+import { isIndexableOrigin } from '../server/sitemap'
 
 export default function HeadDefault() {
   // ⚠ **The analytics script is omitted entirely under a live preview**, and
@@ -23,11 +23,10 @@ export default function HeadDefault() {
   const livePreview = useOptionalPageContext()?.livePreview
 
   // A preview Worker and the dev server render the same documents as
-  // production, so only the host tells a real pageview from one of ours.
-  // Reusing `/robots.txt`'s own answer stops analytics and indexing
-  // disagreeing about which host counts.
+  // production, so only the host tells a real pageview from one of ours —
+  // the same answer `/robots.txt` and `/sitemap.xml` already give.
   const origin = useOrigin()
-  const isRealSite = origin !== null && isIndexableHost(new URL(origin).hostname)
+  const isRealSite = origin !== null && isIndexableOrigin(origin)
 
   return (
     <>
@@ -35,8 +34,8 @@ export default function HeadDefault() {
       <link rel="preconnect" href="https://cloud.sydevelopers.com" />
       <link rel="icon" href={logoUrl} />
 
-      {/* `data-spa="auto"` is load-bearing: Fathom counts one pageview per
-          document load, and Vike's client routing swaps the page without one. */}
+      {/* Vike's client routing swaps the page with no document load, and a
+          document load is all Fathom counts by default. */}
       {!livePreview?.active && isRealSite && (
         <script
           defer

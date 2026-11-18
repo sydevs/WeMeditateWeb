@@ -16,18 +16,13 @@ import type { LivePreviewState } from '../lib/live-preview/protocol'
  * So under a preview the tag is not emitted at all. That is a structural
  * guarantee rather than a race, and it is what these specs pin.
  *
- * The host gate is pinned here too, for a different reason: a preview Worker
- * and the dev server render these same documents, and neither serves visitors
- * worth counting.
+ * The host gate is pinned here too: a preview Worker and the dev server
+ * render these same documents.
  */
 
-const REAL_ORIGIN = 'https://wemeditate.com'
-
-const { context } = vi.hoisted(() => ({
-  context: {
-    livePreview: null as LivePreviewState | null,
-    origin: null as string | null,
-  },
+const context = vi.hoisted(() => ({
+  livePreview: null as LivePreviewState | null,
+  origin: null as string | null,
 }))
 
 vi.mock('../hooks/usePageContext', () => ({
@@ -37,7 +32,7 @@ vi.mock('../hooks/usePageContext', () => ({
 
 beforeEach(() => {
   context.livePreview = null
-  context.origin = REAL_ORIGIN
+  context.origin = 'https://wemeditate.com'
 })
 
 describe('HeadDefault', () => {
@@ -48,10 +43,8 @@ describe('HeadDefault', () => {
     expect(html).toContain('data-site="PFPCDAMQ"')
     // Deferred, so it never blocks the parser.
     expect(html).toContain('defer=""')
-  })
-
-  it('counts a client-side navigation, which Fathom does not do by default', () => {
-    expect(renderToStaticMarkup(<HeadDefault />)).toContain('data-spa="auto"')
+    // Without this, a Vike navigation is not counted at all.
+    expect(html).toContain('data-spa="auto"')
   })
 
   it('emits no analytics script under a live preview', () => {
