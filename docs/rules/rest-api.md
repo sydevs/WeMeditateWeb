@@ -39,8 +39,8 @@ paths:
 
    No cache key, no TTL, and no purge step. The Cloudflare edge in front of SahajCloud caches the
    subrequest for 600s — see [server/CACHING.md](../../server/CACHING.md), which also says why the
-   purge on write is not a guarantee. A new path caches only once SahajCloud's Cache Rule covers
-   it.
+   purge on write is not a guarantee. A new path caches as soon as SahajCloud stamps it, which is a
+   change to `CACHE_TTLS` upstream and nowhere else.
 
    `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
    preview read, which must fail fast. A read outside `sahajcloud-client.ts` has no preview
