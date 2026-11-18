@@ -3,11 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 
 // The player is wrapped in vike-react's ClientOnly: server-side it renders
-// only the poster fallback, because the implementation, Vidstack and
-// hls.js, is browser-only. Stub ClientOnly to its fallback, to assert that
-// SSR-and-CLS contract here. Ladle verifies the interactive Vidstack layer
-// (controls, captions menu, clip timeline, teal theming) visually, not at
-// the markup level.
+// only the poster fallback, because the implementation, Video.js and the
+// hls.js engine it bundles, is browser-only. Stub ClientOnly to its fallback,
+// to assert that SSR-and-CLS contract here. Ladle verifies the interactive
+// layer (controls, captions menu, clip timeline, teal theming) visually, not
+// at the markup level; `clip.test.ts` covers the window's own rules.
 vi.mock('vike-react/ClientOnly', () => ({
   ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
 }))
@@ -30,8 +30,9 @@ describe('<VideoPlayer> server-side fallback', () => {
     // Eager, so React 19 hoists its preload link: this is the only poster in
     // the server HTML, and the route's LCP image (#152).
     expect(html).toContain('loading="eager"')
-    // The Vidstack player itself must not render on the server.
-    expect(html).not.toContain('media-player')
+    // The player itself must not render on the server. `media-skin` is the
+    // class its container always carries (skin/ui/container.tsx).
+    expect(html).not.toContain('media-skin')
   })
 
   it('falls back to an aspect-video placeholder when there is no poster', () => {
@@ -48,10 +49,10 @@ describe('<VideoPlayer> server-side fallback', () => {
 
 describe('VideoPlayer implementation (browser-only)', () => {
   it('imports server-safe and renders nothing without an hlsUrl', async () => {
-    // Importing the impl pulls in @vidstack/react. This test checks that it
-    // resolves in a non-DOM environment, and that the empty-source guard
-    // returns before any player mounts. It uses a dynamic import, so a
-    // resolution failure stays isolated to this test.
+    // Importing the impl pulls in @videojs/react and the vendored skin. This
+    // test checks that they resolve in a non-DOM environment, and that the
+    // empty-source guard returns before any player mounts. It uses a dynamic
+    // import, so a resolution failure stays isolated to this test.
     const { VideoPlayer: Impl } = await import('./VideoPlayer')
 
     expect(typeof Impl).toBe('function')
@@ -71,8 +72,8 @@ describe('VideoPlayer poster variant', () => {
     expect(html).not.toContain('/public')
   })
 
-  // Vidstack needs browser media APIs, so its `poster` cannot be asserted
-  // through SSR. Both branches call this one function instead.
+  // The mounted player needs browser media APIs, so its `poster` cannot be
+  // asserted through SSR. Both branches call this one function instead.
   it('resolves one width for both branches, and passes other URLs through', () => {
     expect(posterURL(CF_PUBLIC_URL)).toBe(`${CF_BASE}/width=1024`)
     expect(posterURL('/api/videos/file/v.jpg')).toBe('/api/videos/file/v.jpg')
@@ -92,7 +93,7 @@ describe('VideoPlayer poster variant', () => {
 })
 
 describe('VideoPlayer poster srcset', () => {
-  // The mounted player takes one URL from Vidstack, but the fallback is a
+  // The mounted player's own poster takes one URL, but the fallback is a
   // plain <img>, so it can offer the whole ladder and let the box and the
   // device pixel ratio pick.
   it('offers every video width in the SSR fallback', () => {

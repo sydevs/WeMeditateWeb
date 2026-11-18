@@ -8,41 +8,14 @@ import { useTranslator } from '@videojs/react/i18n'
 import { usePlayer } from '@videojs/react/video'
 import { SliderFill, SliderThumb, SliderTrack } from './skin/ui/slider'
 import { cn } from './skin/lib/resolve-class-name'
+import { formatClock, type ClipWindow } from './clip'
 
 /**
- * A `[startTime, stopTime]` playback window, in seconds of the underlying media.
- *
- * Video.js 10 has no clipping (videojs/video.js#3040), so a lecture clip's window is this
- * repo's to enforce and to display. The context is what lets the vendored control bar show the
- * window's own timeline without the clip logic reaching into the skin.
+ * The ambient playback window, `null` for a video that plays end to end. It is what lets the
+ * vendored control bar draw the window's own timeline without the clip logic reaching into the
+ * skin — see skin/README.md.
  */
-export interface ClipWindow {
-  /** Where the window opens, in media seconds. */
-  start: number
-  /** Where it closes, or `null` to run to the end of the media. */
-  end: number | null
-}
-
-const ClipWindowContext = createContext<ClipWindow | null>(null)
-
-export { ClipWindowContext }
-
-/**
- * Resolve a window from the player's two optional props, or `null` for a video that plays end
- * to end — a full lecture passes `null` for both, and must get no seek and no injected pause.
- *
- * A `stopTime` at or before `startTime` is not a window: that spelling would play nothing. It
- * is dropped, which leaves the start as the only bound, exactly as a bare `startTime` does.
- */
-export function resolveClipWindow(
-  startTime?: number | null,
-  stopTime?: number | null,
-): ClipWindow | null {
-  const start = typeof startTime === 'number' && startTime > 0 ? startTime : 0
-  const end = typeof stopTime === 'number' && stopTime > start ? stopTime : null
-
-  return start === 0 && end === null ? null : { start, end }
-}
+export const ClipWindowContext = createContext<ClipWindow | null>(null)
 
 /**
  * The window in the shape the time UI needs: where it opens, and how long it runs.
@@ -55,24 +28,6 @@ function useWindowBounds(window: ClipWindow): { start: number; length: number } 
   const end = window.end ?? duration
 
   return { start: window.start, length: Math.max(end - window.start, 0) }
-}
-
-/**
- * Seconds as a clock, in the padding the player's own time displays use: hours unpadded and
- * shown only past the hour, minutes padded beside hours, seconds always padded.
- *
- * shortcut: Latin digits whatever the locale, where `Time.Value` asks `Intl` for the locale's
- * own. Upgrade it when the site launches a locale that writes numbers in another script.
- */
-function formatClock(seconds: number, guide: number): string {
-  const total = Math.max(0, Math.floor(seconds))
-  const hours = Math.floor(total / 3600)
-  const minutes = Math.floor((total % 3600) / 60)
-  const seconds2 = String(total % 60).padStart(2, '0')
-
-  return hours > 0 || guide >= 3600
-    ? `${hours}:${String(minutes).padStart(2, '0')}:${seconds2}`
-    : `${minutes}:${seconds2}`
 }
 
 /** Where playback sits inside the window, clamped to it. */

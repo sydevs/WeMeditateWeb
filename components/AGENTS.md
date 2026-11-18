@@ -2,9 +2,9 @@
 
 ## Keep client-only heavy deps out of the Worker bundle
 
-Load browser-only libraries (for example `vidstack`/`@vidstack/react`, `hls.js`,
-`@mapbox/search-js-react`) with **`ClientOnly` + `React.lazy` in a barrel**. Do not load them with
-a plain dynamic `import()` inside an effect.
+Load browser-only libraries (for example `@videojs/react` and the `@videojs/hlsjs-video` engine
+it bundles, `@mapbox/search-js-react`) with **`ClientOnly` + `React.lazy` in a barrel**. Do not
+load them with a plain dynamic `import()` inside an effect.
 
 Vike's SSR build still bundles a dynamically imported module into `dist/server`. An in-effect
 `import('hls.js')` once left the ~1.1 MB library in the Worker, even though it never ran on the
@@ -23,5 +23,13 @@ the directory's `index.tsx` re-exports a wrapper. The wrapper renders
 `LazyImpl = React.lazy(() => import('./Impl'))`. `ClientOnly` removes the children on the server
 entirely, so the heavy implementation and its dependencies never enter the SSR graph.
 
-After a change, confirm with `grep -rl <lib-internal-symbol> dist/server`. This command must find
-nothing. The library should appear only as a code-split chunk under `dist/client`.
+After a change, confirm with `grep -rl <lib-internal-symbol> dist/server` — `videojs` and `Hls`
+for the player. This command must find nothing. The library should appear only as a code-split
+chunk under `dist/client`.
+
+**The vendored Video.js skin source is part of that graph**, not an exception to it:
+`components/molecules/VideoPlayer/skin/` imports `@videojs/react`, so only the barrel may reach
+it. Its own stylesheets ride the same client chunk. One file is the exception, and it is CSS, not
+code: `skin/styles/tailwind.css` is `@import`ed by `layouts/tailwind.css`, because `@theme`,
+`@utility` and `@custom-variant` are compile-time Tailwind directives and have to sit in the
+entry. See [molecules/VideoPlayer/skin/README.md](molecules/VideoPlayer/skin/README.md).

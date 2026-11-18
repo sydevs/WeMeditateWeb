@@ -5,7 +5,8 @@ import { I18nProvider } from '@videojs/react/i18n'
 import { HlsJsVideo } from '@videojs/react/media/hlsjs-video'
 import { VideoPlayer as VideoJsPlayer, usePlayer } from '@videojs/react/video'
 import { useLocale } from '../../../hooks/usePageContext'
-import { ClipWindowContext, resolveClipWindow, type ClipWindow } from './clip-window'
+import { holdInWindow, replayFrom, resolveClipWindow, type ClipWindow } from './clip'
+import { ClipWindowContext } from './clip-window'
 import { VideoSkin } from './skin/video/skin'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 import { posterURL } from './poster'
@@ -19,9 +20,6 @@ import { posterURL } from './poster'
 const PLAYER_STYLE = {
   '--media-accent-color': 'var(--color-teal-500)',
 } as CSSProperties
-
-/** How close to the window's end still counts as "at the end", given `timeupdate`'s ~250ms. */
-const END_TOLERANCE = 0.5
 
 export interface VideoPlayerProps {
   /** HLS manifest URL (.m3u8). */
@@ -229,17 +227,13 @@ export function VideoPlayer({
     return null
   }
 
-  // The window is ours to enforce, on the media element itself: clamping here catches every way
-  // playback can leave it, the hotkeys and the gestures included, which a seek-once-on-load
-  // would not.
+  // The window is ours to enforce, on the media element itself: `clip.ts` decides, this applies.
   const holdWindow = (media: HTMLVideoElement) => {
-    if (!clip) {
-      return
-    }
+    const correction = holdInWindow(clip, media.currentTime)
 
-    if (media.currentTime < clip.start) {
-      media.currentTime = clip.start
-    } else if (clip.end !== null && media.currentTime >= clip.end) {
+    if (correction?.kind === 'seek') {
+      media.currentTime = correction.time
+    } else if (correction?.kind === 'pause') {
       media.pause()
     }
   }
@@ -265,13 +259,10 @@ export function VideoPlayer({
                   }
                 }}
                 onPlay={(event) => {
-                  // Replaying a window that has run out restarts it, rather than pausing again
-                  // on the next `timeupdate`.
-                  if (
-                    clip?.end != null &&
-                    event.currentTarget.currentTime >= clip.end - END_TOLERANCE
-                  ) {
-                    event.currentTarget.currentTime = clip.start
+                  const from = replayFrom(clip, event.currentTarget.currentTime)
+
+                  if (from !== null) {
+                    event.currentTarget.currentTime = from
                   }
                 }}
                 onTimeUpdate={(event) => holdWindow(event.currentTarget)}
