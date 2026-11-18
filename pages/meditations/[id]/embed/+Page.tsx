@@ -24,6 +24,9 @@ import { sahajCloudOrigin, useDocumentPreviewActive } from '../../../../lib/live
  *   new frame is written at
  *
  * Both are gated on the SahajCloud origin and both fail CLOSED when it is unset.
+ *
+ * It is also the one route that asks for the player's upsell line: an embed
+ * runs on someone else's page, so the line is the only way back to the site.
  */
 export function Page() {
   const { meditation: initialMeditation, musicTracks } = useData<MeditationEmbedPageData>()
@@ -45,6 +48,7 @@ export function Page() {
           seekTo={seekTo}
           showEmbedButton={false}
           timeDisplay={previewingThisMeditation ? 'elapsed' : undefined}
+          upsell="web"
           onPlaybackTimeUpdate={previewingThisMeditation ? onPlaybackTimeUpdate : undefined}
         />
       )}

@@ -25,9 +25,20 @@ import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { useT } from '../../../hooks/useT'
 import { useLocale, useOrigin } from '../../../hooks/usePageContext'
 import { formatList } from '../../../lib/locale-names'
-import { sitePathFromUrl } from '../../../lib/urls'
+import { isSafeHttpUrl, isSitePath, sitePathFromUrl } from '../../../lib/urls'
 import { Image } from '../../../components/atoms/Image'
 import { Link } from '../../../components/atoms/Link'
+
+/**
+ * A URL as SahajCloud sent it, or `null` where it is absent or not http(s).
+ *
+ * Nothing upstream validates either field this guards — a region's canonical
+ * or a class's own room link, which a coordinator types. This contract also
+ * spells "absent" as the empty string, as `address.oneLine` does.
+ */
+function upstreamUrl(url: string | null | undefined): string | null {
+  return url && isSafeHttpUrl(url) ? url : null
+}
 
 /**
  * Where a region or class link should point.
@@ -52,8 +63,10 @@ export function atlasHref(
   link: { route: string | null; url: string | null },
   origin: string | null,
 ): string | null {
-  if (link.url) {
-    return sitePathFromUrl(link.url, origin) ?? link.url
+  const canonical = upstreamUrl(link.url)
+
+  if (canonical) {
+    return sitePathFromUrl(canonical, origin) ?? canonical
   }
 
   return link.route ? `${MAP_PREFIX}${link.route}` : null
@@ -82,7 +95,12 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
               {isCurrent || !href ? (
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
-                <Link className="hover:text-teal-600" href={href} variant="unstyled">
+                <Link
+                  className="hover:text-teal-600"
+                  external={!isSitePath(href)}
+                  href={href}
+                  variant="unstyled"
+                >
                   {rung.name}
                 </Link>
               )}
@@ -104,7 +122,12 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
     <li className="border-t border-gray-200 py-4">
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
-          <Link className="hover:text-teal-600" href={href} variant="unstyled">
+          <Link
+            className="hover:text-teal-600"
+            external={!isSitePath(href)}
+            href={href}
+            variant="unstyled"
+          >
             {card.title}
           </Link>
         ) : (
@@ -181,12 +204,8 @@ function EventContent({
   const languages = content.languages ?? []
   const lead = content.images?.[0]
 
-  // `||`, not `??`: upstream uses the empty string for "absent" elsewhere
-  // in this contract (`address.oneLine`, `schedule.oneLine`). So an empty
-  // `onlineUrl` must fall through to the website, instead of rendering
-  // href="".
-  const joinUrl = content.onlineUrl || null
-  const websiteUrl = content.website || null
+  const joinUrl = upstreamUrl(content.onlineUrl)
+  const websiteUrl = upstreamUrl(content.website)
   const linkUrl = joinUrl ?? websiteUrl
 
   return (
@@ -241,7 +260,12 @@ function EventContent({
 
       {linkUrl && (
         <p className="mt-6">
-          <Link href={linkUrl} rel="noopener noreferrer" variant="primary">
+          <Link
+            external
+            className="text-teal-600 hover:text-teal-700"
+            href={linkUrl}
+            variant="unstyled"
+          >
             {joinUrl ? t('map.general.join_online') : t('map.general.visit_website')}
           </Link>
         </p>
