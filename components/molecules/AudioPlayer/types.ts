@@ -45,8 +45,6 @@ export interface PlaylistAudioPlayerState {
   currentTrack: Track
   /** Whether audio is loading/buffering */
   isLoading: boolean
-  /** Whether the current track has ended */
-  hasEnded: boolean
 }
 
 /** Controls returned by usePlaylistAudioPlayer hook */

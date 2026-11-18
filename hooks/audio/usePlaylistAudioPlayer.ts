@@ -50,7 +50,6 @@ export function usePlaylistAudioPlayer({
   const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   const [playOrder, setPlayOrder] = useState<number[]>([])
-  const [hasEnded, setHasEnded] = useState(false)
 
   // What the listener asked for, which a track change auto-resumes from. It
   // cannot be read back off `playerState.isPlaying`: that is false for as long
@@ -86,7 +85,6 @@ export function usePlaylistAudioPlayer({
 
   // Advances to the next track in play order.
   const handleTrackEnd = () => {
-    setHasEnded(true)
     setCurrentTrackIndex((current) => {
       const order = playOrderRef.current
       const at = order.indexOf(current)
@@ -110,12 +108,6 @@ export function usePlaylistAudioPlayer({
   useEffect(() => {
     loadCurrentTrack()
   }, [currentTrackIndex, currentTrack?.url])
-
-  useEffect(() => {
-    if (playerState.isPlaying) {
-      setHasEnded(false)
-    }
-  }, [playerState.isPlaying])
 
   // The two moments a listener states what they want, and so the only writers
   // of the flag above.
@@ -161,7 +153,6 @@ export function usePlaylistAudioPlayer({
     isShuffleOn,
     currentTrack,
     isLoading: playerState.isLoading,
-    hasEnded,
   }
 
   // Compose controls
