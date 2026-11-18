@@ -52,7 +52,7 @@ import ts from 'typescript'
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
-import { repoRoot, sourceFiles } from './_source-scan'
+import { lineOf, parse, repoRoot, sourceFiles, walk } from './_source-scan'
 
 const SOURCE_GLOBS = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
 
@@ -75,19 +75,6 @@ interface Finding {
 
 type Truth = boolean | 'either' | 'unknown'
 type Arm = 'consequent' | 'alternate'
-
-/** `setParentNodes`, because every resolution below walks up from a use site. */
-function parse(source: string): ts.SourceFile {
-  return ts.createSourceFile('scan.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
-}
-
-function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
-  visit(node)
-  node.forEachChild((child) => walk(child, visit))
-}
-
-const lineOf = (file: ts.SourceFile, position: number): number =>
-  file.getLineAndCharacterOfPosition(position).line + 1
 
 /** Condition 2 — a load event wired anywhere in the file. */
 function wiresLoadEvent(file: ts.SourceFile): boolean {

@@ -1,14 +1,16 @@
 /**
  * Shared plumbing for the guards, and for `layouts/tailwind.test.ts`.
  *
- * Each one answers a question about the source text rather than about a
- * rendered component, so they need the same things: the repo root, the theme
- * stylesheet, a file list, and a way to ignore a region. Kept here so the
- * non-obvious comment regex, the path to the theme and the way Tailwind's own
- * stylesheets resolve each have one definition. A region only one guard must
- * ignore belongs in that guard.
+ * Each one answers a question about the source rather than about a rendered
+ * component, so they need the same things: the repo root, the theme
+ * stylesheet, a file list, a way to ignore a region, and a parse for the ones
+ * whose question is about syntax. Kept here so the non-obvious comment regex,
+ * the path to the theme, the way Tailwind's own stylesheets resolve and the
+ * parse options each have one definition. A region only one guard must ignore
+ * belongs in that guard.
  */
 
+import ts from 'typescript'
 import { globSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -83,3 +85,24 @@ export function readSource(file: string): string {
 export function lineAt(source: string, index: number): number {
   return source.slice(0, index).split('\n').length
 }
+
+/**
+ * A syntax-only parse — no program, no type checker — for a guard whose
+ * question is about syntax rather than about text. It costs a parse per file,
+ * and reads a tag as a tag: a `>` inside a prop value cannot truncate it, and
+ * a commented-out element is trivia rather than a match.
+ *
+ * `setParentNodes`, because a resolution walks up from a use site.
+ */
+export function parse(source: string): ts.SourceFile {
+  return ts.createSourceFile('scan.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+}
+
+export function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
+  visit(node)
+  node.forEachChild((child) => walk(child, visit))
+}
+
+/** 1-based line number of a position in `file` — `lineAt` for a parsed source. */
+export const lineOf = (file: ts.SourceFile, position: number): number =>
+  file.getLineAndCharacterOfPosition(position).line + 1
