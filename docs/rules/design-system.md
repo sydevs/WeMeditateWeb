@@ -121,6 +121,14 @@ This project uses Heroicons v2. Some v1 names changed — for example,
 `ArrowRightOnRectangleIcon` is now `ArrowRightStartOnRectangleIcon`. Check the
 [v2 migration guide](https://github.com/tailwindlabs/heroicons/releases/tag/v2.0.0) for others.
 
+### Image
+
+**Every hand-rolled `<img>` states its own `loading`.** `tests/guards/img-loading.test.ts` fails
+the suite with the `file:line` of one that does not. The `Image` atom sets it from `priority`,
+whose JSDoc ([components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx)) says why
+dropping `loading="lazy"` is what buys the preload, and
+[DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) covers the hero case.
+
 ### Button
 
 `Button` renders as a link when you pass `href`. Do not nest a `Link` inside a `Button`.
