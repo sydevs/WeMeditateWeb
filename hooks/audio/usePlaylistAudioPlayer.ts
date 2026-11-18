@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback, useEffectEvent, useRef } from 'react'
+import { useState, useEffect, useCallback, useEffectEvent, useMemo, useRef } from 'react'
 import { useAudioPlayer } from './useAudioPlayer'
-import type { Track, PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from '../../components/molecules/AudioPlayer/types'
+import type {
+  Track,
+  PlaylistAudioPlayerState,
+  PlaylistAudioPlayerControls,
+} from '../../components/molecules/AudioPlayer/types'
 
 export interface UsePlaylistAudioPlayerOptions {
   /** Array of tracks to manage */
@@ -41,7 +45,9 @@ export function usePlaylistAudioPlayer({
   // Playlist state
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
-  const [playOrder, setPlayOrder] = useState<number[]>([])
+  // Only the shuffle is held in state. In-order play follows `tracks` with no
+  // render to catch up, and a stored copy could only fall behind it.
+  const [shuffledOrder, setShuffledOrder] = useState<number[] | null>(null)
 
   // What the listener asked for, which a track change auto-resumes from. It
   // cannot be read back off `playerState.isPlaying`: that is false for as long
@@ -51,19 +57,28 @@ export function usePlaylistAudioPlayer({
 
   const currentTrack = tracks[currentTrackIndex]
 
-  // Initialize/update play order when shuffle changes or tracks change
+  // A shuffle held over a playlist of another length would index past its end,
+  // so it is kept only while the two agree.
+  const playOrder = useMemo(
+    () =>
+      shuffledOrder?.length === tracks.length ? shuffledOrder : [...Array(tracks.length).keys()],
+    [shuffledOrder, tracks.length],
+  )
+
+  // Re-shuffle when shuffle turns on, or when the playlist changes under it.
   useEffect(() => {
-    if (isShuffleOn) {
-      // Fisher-Yates shuffle algorithm
-      const shuffled = [...Array(tracks.length).keys()]
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-      }
-      setPlayOrder(shuffled)
-    } else {
-      setPlayOrder([...Array(tracks.length).keys()])
+    if (!isShuffleOn) return
+
+    const order = [...Array(tracks.length).keys()]
+
+    // Fisher-Yates shuffle algorithm
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[order[i], order[j]] = [order[j], order[i]]
     }
+
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- a shuffle is random, so it cannot run on the server; play order drives playback, never markup
+    setShuffledOrder(order)
   }, [isShuffleOn, tracks.length])
 
   // Howler holds this callback from the load that registered it and fires it
@@ -134,6 +149,9 @@ export function usePlaylistAudioPlayer({
 
   const toggleShuffle = useCallback(() => {
     setIsShuffleOn((prev) => !prev)
+    // Dropping the stored shuffle is what restores in-order play; the Effect
+    // mints a fresh one when shuffle is what was turned on.
+    setShuffledOrder(null)
   }, [])
 
   // Picking a track asks to hear it, so it starts playback whether or not the

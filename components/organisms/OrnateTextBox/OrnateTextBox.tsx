@@ -207,6 +207,7 @@ export function OrnateTextBox({
             this holds whichever way the float points. */}
         <div className="space-y-5 text-base font-light leading-relaxed text-white lg:flow-root">
           {paragraphs.map((paragraph, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
             <p key={index}>{paragraph}</p>
           ))}
 

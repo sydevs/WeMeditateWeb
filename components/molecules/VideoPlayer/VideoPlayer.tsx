@@ -115,6 +115,7 @@ export function VideoPlayer({
     const tracks = subtitleTracks ?? []
 
     if (tracks.length === 0) {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- a no-op on mount, since `trackBlobs` starts empty; it clears blobs only when the tracks go away
       setTrackBlobs([])
 
       return
@@ -154,6 +155,7 @@ export function VideoPlayer({
     // Keyed on the track URLs only (`tracksKey`), not on `defaultSubtitleLang`.
     // The active track is chosen at render time, so switching locale never
     // refetches or revokes a blob URL that a mounted <Track> still points to.
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- `tracksKey` encodes every track's locale and url, so a stale `subtitleTracks` differs only in array identity
   }, [tracksKey])
 
   if (!hlsUrl) {

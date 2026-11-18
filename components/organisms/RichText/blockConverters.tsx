@@ -237,6 +237,7 @@ export const blockConverters: BlockConverters = {
       <div className={`${BLOCK_SPACING} columns-2 gap-3 lg:columns-3 *:mb-3`}>
         {images.map((img, index) => (
           <Image
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the url leads the key; the index only separates one image used twice in a gallery
             key={`${img.url}-${index}`}
             alt={img.alt}
             aspectRatio={img.aspectRatio}

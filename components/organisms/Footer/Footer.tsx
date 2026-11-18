@@ -116,6 +116,7 @@ export function Footer({
 
           {/* Regular Link Sections */}
           {sections.map((section, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- a section holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
             <div key={index}>
               <FooterLinkList links={section.links} locale={locale} title={section.title} />
             </div>
@@ -127,6 +128,7 @@ export function Footer({
             <div className="flex items-center gap-4">
               {socialLinks.map((social, index) => (
                 <SocialIcon
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a social icon holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
                   key={index}
                   color="brand"
                   href={social.href}

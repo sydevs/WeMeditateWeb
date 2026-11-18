@@ -13,7 +13,7 @@
  */
 
 import { ExclamationCircleIcon, WifiIcon, ServerIcon } from '@heroicons/react/24/outline'
-import { Icon, Heading, Button } from '../../atoms'
+import { Icon, Heading, Button, Link } from '../../atoms'
 import { detectErrorType, ErrorType } from '../../../server/error-utils'
 import { isSafeHttpUrl } from '../../../lib/urls'
 import { errorMessageKey, errorTitleKey } from '../../../lib/error-keys'
@@ -84,15 +84,15 @@ export function ErrorFallback({
         <p className="text-base sm:text-lg font-light text-gray-700 mb-6 max-w-md">
           {t.rich('errors.general.status_page_hint', {
             link: (
-              <a
+              <Link
                 key="status-page"
                 className="text-teal-600 hover:text-teal-700 underline"
+                external
                 href={statusPageUrl}
-                rel="noopener noreferrer"
-                target="_blank"
+                variant="unstyled"
               >
                 {t('errors.general.status_page_link')}
-              </a>
+              </Link>
             ),
           })}
         </p>

@@ -9,6 +9,7 @@ export default function ReactSentryErrorPage() {
   });
   useEffect(() => {
     const options = Sentry?.getClient()?.getOptions();
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the Sentry client exists only in the browser, so this page can report it no earlier
     setSentryClientStatus({
       client_not_loaded: !options,
       dsn_missing: (options?.dsn?.length ?? 0) < 2,

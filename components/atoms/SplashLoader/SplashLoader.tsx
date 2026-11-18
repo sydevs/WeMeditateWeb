@@ -92,6 +92,7 @@ export function SplashLoader({
 
       return () => clearTimeout(timer)
     } else {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- a no-op on mount, since `shouldRender` starts true; it only re-arms the fade when `isLoading` flips back
       setShouldRender(true)
     }
   }, [isLoading])

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { ResolvedCardItem } from '../../../lib/content-blocks'
+import type { Locale } from '../../../server/sahajcloud-types'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
 import { useT } from '../../../hooks/useT'
@@ -61,17 +62,34 @@ export interface RelatedContentLoaderProps {
  * there is no hydration mismatch.
  */
 export function RelatedContentLoader({ kind, anchorId, className }: RelatedContentLoaderProps) {
-  const t = useT()
   const { locale } = usePageContext()
+
+  // Vike swaps one player page for the next under the same `<main>`, so React
+  // reuses this instance across a client navigation and the loaded state would
+  // outlive the anchor it belongs to. Keying on the request remounts instead,
+  // which is what puts the spinner back in the same paint as the new page —
+  // an Effect resetting it would paint the previous page's cards first.
+  return (
+    <RelatedContentFeed
+      key={`${kind}-${anchorId}-${locale}`}
+      {...{ anchorId, className, kind, locale }}
+    />
+  )
+}
+
+function RelatedContentFeed({
+  anchorId,
+  className,
+  kind,
+  locale,
+}: RelatedContentLoaderProps & { locale: Locale }) {
+  const t = useT()
   const title = t(RELATED_CONTENT_KEYS[kind].title)
   // null → loading (fetch in flight). [] → loaded but empty. [...] → loaded.
   const [items, setItems] = useState<ResolvedCardItem[] | null>(null)
 
   useEffect(() => {
     let cancelled = false
-
-    // Reset to the loading state when the anchor/locale changes (client nav).
-    setItems(null)
 
     const url = `/api/${kind}/${encodeURIComponent(String(anchorId))}?locale=${encodeURIComponent(locale)}`
 
