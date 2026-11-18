@@ -106,7 +106,10 @@ describe('<OrnateTextBox>', () => {
     ['left', '90deg'],
     ['right', '270deg'],
   ] as const)('runs the %s band faint below lg and full from lg up', (align, angle) => {
-    const band = classFor(renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />), '-top-24')
+    const band = classFor(
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />),
+      '-top-24',
+    )
 
     expect(band).toContain(`bg-[linear-gradient(${angle},rgba(255,255,255,0.01)`)
     expect(band).toContain(`lg:bg-[linear-gradient(${angle},rgba(255,255,255,0.02)`)
@@ -138,9 +141,12 @@ describe('<OrnateTextBox>', () => {
   // instead, the title measures 2.47:1 against a 3:1 bar (#262). The
   // block-formatting context is then what keeps the header out of the float's
   // margin box, whichever way the float points (#193).
-  it('puts the floated image before the header, in the header\'s own BFC', () => {
+  it("puts the floated image before the header, in the header's own BFC", () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
 
+    // A missing marker indexes as -1, which satisfies `toBeLessThan` against
+    // anything, so each one is pinned as present before it is ordered.
+    expect(html).toContain('lg:float-left')
     expect(html.indexOf('lg:float-left')).toBeLessThan(html.indexOf('Sacred Teachings'))
     expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('timeless wisdom'))
     expect(classFor(html, 'lg:mb-6')).toContain('lg:flow-root')

@@ -7,7 +7,7 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   /** Main heading. */
   title: string
 
-  /** Secondary line rendered directly below the title (faded but legible). */
+  /** Secondary line rendered directly below the title. */
   subtitle?: string
 
   /**
