@@ -62,10 +62,14 @@ full example. `useState` and `useMemo` work under this kind of SSR render, but `
 not run — plan each assertion around the first-render state.
 
 **Narrow the string before asserting an attribute.** `toContain('target="_blank"')` over a whole
-page passes when any element carries it, not the one under test. `anchorFor(html, href)` in
-[tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) returns that href's opening `<a>` tag.
-Assert something positive about the result first: it answers the empty string when nothing
-matches, and `not.toContain` passes on that whatever it is given.
+page passes when any element carries it, not the one under test.
+[tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) holds the two primitives that narrow
+it: `anchorFor(html, href)` returns that href's opening `<a>` tag, and `classFor(html, marker)`
+the class attribute containing that class. Assert something positive about the result first: each
+answers the empty string when nothing matches, and `not.toContain` passes on that whatever it is
+given. Reach for `classFor` over a hand-written regex — a class list is sorted by
+`prettier-plugin-tailwindcss`, so a pattern anchored on where a class sits in it breaks on the
+next format.
 
 **Attribute casing**: React 19 keeps most camelCase props as authored — `srcSet`,
 `fetchPriority`, `referrerPolicy` and `playsInline` all survive — and lowercases a few, such as
