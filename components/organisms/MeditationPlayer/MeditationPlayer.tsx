@@ -25,10 +25,19 @@ import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
 import type { MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
+import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 import { useT } from '../../../hooks/useT'
 import { formatDuration } from '../../../lib/duration'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
+
+/**
+ * The frame's own variant. Its box is 488px at the widest — `max-w-lg` less
+ * `inset-2` and the 4px border — so 800px is a deliberate ~0.8x sample at 2x
+ * rather than full coverage: the next square width is 1200, for 2.25x the
+ * pixels. A srcset would serve both ends, and this hand-rolled <img> has none.
+ */
+const FRAME_VARIANT = getVariantName('square', 'medium')
 
 // Progress circle geometry constants
 const PROGRESS_RADIUS = 48
@@ -686,7 +695,12 @@ function MeditationPlayerInner({
                       alt={track.title}
                       className="w-full h-full object-cover"
                       draggable={false}
-                      src={currentMedia.src}
+                      /* The page's main image: MeditationTemplate renders this player as the
+                         only content, so the frame is the LCP candidate. React 19 hoists a
+                         preload link for any <img> that is not loading="lazy". */
+                      fetchPriority="high"
+                      loading="eager"
+                      src={getImageURL(currentMedia.src, FRAME_VARIANT)}
                     />
                   )}
 

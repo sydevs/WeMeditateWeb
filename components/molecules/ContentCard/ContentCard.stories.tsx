@@ -16,6 +16,11 @@ export default {
   title: 'Molecules',
 } satisfies StoryDefault
 
+// The demo rows below stack on mobile and sit side by side from `sm`, where a
+// card settles around 360px. One length for every story card: the point here is
+// the card's layout, not a production page's grid.
+const STORY_CARD_SIZES = '(min-width: 640px) 360px, 100vw'
+
 // Sample data for stories using picsum.photos
 const sampleMeditationData = {
   title: 'Feel Love',
@@ -41,6 +46,7 @@ export const Default: Story = () => (
             <ContentCard
               description={sampleMeditationData.description}
               href={sampleMeditationData.href}
+              sizes={STORY_CARD_SIZES}
               thumbnailSrc={sampleMeditationData.thumbnailSrc}
               title={sampleMeditationData.title}
               variant="default"
@@ -52,6 +58,7 @@ export const Default: Story = () => (
           <StorySection title="Default Variant - Without Description" variant="subsection">
             <ContentCard
               href={sampleShortData.href}
+              sizes={STORY_CARD_SIZES}
               thumbnailSrc={sampleShortData.thumbnailSrc}
               title={sampleShortData.title}
               variant="default"
@@ -68,6 +75,7 @@ export const Default: Story = () => (
               durationMinutes={15}
               href="#"
               playButton={true}
+              sizes={STORY_CARD_SIZES}
               thumbnailSrc="https://picsum.photos/seed/hero/800/800"
               title="Featured Meditation"
               variant="hero"
@@ -82,6 +90,7 @@ export const Default: Story = () => (
               badgeUrl="#"
               description="Learn about the ancient practice of meditation."
               href="#"
+              sizes={STORY_CARD_SIZES}
               thumbnailSrc="https://picsum.photos/seed/article/800/800"
               title="What is Meditation?"
               variant="default"
@@ -114,6 +123,7 @@ export const Default: Story = () => (
                 aspectRatio="square"
                 href="#"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid1/800/800"
                 title="Meditation"
                 variant="default"
@@ -125,6 +135,7 @@ export const Default: Story = () => (
                 durationMinutes={10}
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid2/800/800"
                 title="Meditation"
                 variant="default"
@@ -136,6 +147,7 @@ export const Default: Story = () => (
                 durationMinutes={20}
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid4/800/800"
                 title="Meditation"
                 variant="hero"
@@ -150,6 +162,7 @@ export const Default: Story = () => (
                 aspectRatio="video"
                 href="#"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid5/800/450"
                 title="Meditation"
                 variant="default"
@@ -160,6 +173,7 @@ export const Default: Story = () => (
                 aspectRatio="video"
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid6/800/450"
                 title="Meditation"
                 variant="default"
@@ -171,6 +185,7 @@ export const Default: Story = () => (
                 durationMinutes={5}
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid8/800/450"
                 title="Meditation"
                 variant="hero"
@@ -185,6 +200,7 @@ export const Default: Story = () => (
                 aspectRatio="4-3"
                 href="#"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid9/800/600"
                 title="Meditation"
                 variant="default"
@@ -195,6 +211,7 @@ export const Default: Story = () => (
                 aspectRatio="4-3"
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid10/800/600"
                 title="Meditation"
                 variant="default"
@@ -205,6 +222,7 @@ export const Default: Story = () => (
                 aspectRatio="4-3"
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid12/800/600"
                 title="Meditation"
                 variant="hero"
@@ -219,6 +237,7 @@ export const Default: Story = () => (
                 aspectRatio="3-2"
                 href="#"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid13/800/533"
                 title="Meditation"
                 variant="default"
@@ -229,6 +248,7 @@ export const Default: Story = () => (
                 aspectRatio="3-2"
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid14/800/533"
                 title="Meditation"
                 variant="default"
@@ -239,6 +259,7 @@ export const Default: Story = () => (
                 aspectRatio="3-2"
                 href="#"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
                 thumbnailSrc="https://picsum.photos/seed/grid16/800/533"
                 title="Meditation"
                 variant="hero"
@@ -256,6 +277,7 @@ export const Default: Story = () => (
           description="Unconditional love sounds hard, but it's actually innate to all human beings. Free your mind and feel the love we have within."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/med1/800/450"
           title="Feel Love"
         />
@@ -264,6 +286,7 @@ export const Default: Story = () => (
           description="Feel like your mind is often occupied with criticisms, either of yourself or others? Silence those thoughts and experience the deep sense of peace that comes with humility."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/med2/800/450"
           title="Feel Humble"
         />
@@ -272,6 +295,7 @@ export const Default: Story = () => (
           description="Bring your attention back to the center with a few simple exercises to completely clear your mind."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/med3/800/450"
           title="Feel Focused"
         />
@@ -280,6 +304,7 @@ export const Default: Story = () => (
           description="Try out these simple exercises to see how quickly and spontaneously you can tap into the ocean of true joy emanating from within."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/med4/800/450"
           title="Experience Joy"
         />
@@ -299,6 +324,7 @@ export const Default: Story = () => (
           description="Start your day with clarity and peace through this guided morning meditation."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content1/800/450"
           title="Morning Meditation"
         />
@@ -306,6 +332,7 @@ export const Default: Story = () => (
           aspectRatio="4-3"
           description="Discover the ancient practice of Sahaja Yoga and its transformative power."
           href="#"
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content2/800/600"
           title="What is Sahaja Yoga?"
         />
@@ -314,6 +341,7 @@ export const Default: Story = () => (
           description="Wind down after a long day with this soothing evening meditation practice."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content3/800/450"
           title="Evening Calm"
         />
@@ -321,6 +349,7 @@ export const Default: Story = () => (
           aspectRatio="3-2"
           description="Learn how consistent meditation transforms your mind, body, and spirit."
           href="#"
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content4/800/533"
           title="Benefits of Daily Practice"
         />
@@ -328,6 +357,7 @@ export const Default: Story = () => (
           aspectRatio="video"
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content5/800/450"
           title="Quick Reset"
         />
@@ -335,6 +365,7 @@ export const Default: Story = () => (
           aspectRatio="square"
           description="Everything you need to know to begin your meditation journey today."
           href="#"
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content6/800/800"
           title="Getting Started Guide"
         />
@@ -343,12 +374,14 @@ export const Default: Story = () => (
           description="Experience profound relaxation and release tension from your entire body."
           href="#"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content7/800/450"
           title="Deep Relaxation"
         />
         <ContentCard
           aspectRatio="video"
           href="#"
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content8/800/450"
           title="Science of Meditation"
         />

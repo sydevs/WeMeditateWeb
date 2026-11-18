@@ -94,6 +94,8 @@ function AudioPlayerInner({
                 alt={state.currentTrack.title}
                 aspectRatio="square"
                 rounded="rounded"
+                // The 48px of `w-12 h-12` above.
+                sizes="48px"
                 src={state.currentTrack.thumbnailURL}
               />
             </div>
@@ -102,10 +104,10 @@ function AudioPlayerInner({
                 {state.currentTrack.title}
               </h3>
               <Link
-                href={state.currentTrack.creditURL}
                 external
-                variant="primary"
                 className="text-xs truncate block"
+                href={state.currentTrack.creditURL}
+                variant="primary"
               >
                 {state.currentTrack.credit}
               </Link>
