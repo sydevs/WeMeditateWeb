@@ -162,7 +162,7 @@ export const Default: Story = () => {
         <div className="max-w-md">
           <Playlist
             currentTrackIndex={0}
-            title="Songs From SahajCloud"
+            title="Unmeasured Songs"
             tracks={undatedTracks}
             onTrackClick={() => {}}
           />
