@@ -77,7 +77,7 @@ export function MusicLibrary({
               </h3>
               <Link
                 external
-                className="text-sm text-white/90 hover:text-white truncate block mt-1"
+                className="text-sm text-white/90 hover:text-white truncate block mt-1 transition-colors duration-200"
                 href={currentTrack.creditURL}
                 variant="unstyled"
               >

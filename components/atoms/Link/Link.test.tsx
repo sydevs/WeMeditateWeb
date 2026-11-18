@@ -153,6 +153,34 @@ describe('<Link> focus indicator', () => {
   })
 })
 
+describe('<Link> transition', () => {
+  // A `transition-property` the caller did not ask for overrides the one it
+  // did, at equal specificity and later source order. That is what kept
+  // `Splash`'s transform hover out of the atom (#257).
+  it('leaves `unstyled` with no transition at all', () => {
+    const html = renderToStaticMarkup(
+      <Link href="/about" variant="unstyled">
+        About
+      </Link>,
+    )
+
+    expect(html).toMatch(/class="/)
+    expect(html).not.toMatch(/\btransition-/)
+  })
+
+  it('transitions the colour on every variant that paints one', () => {
+    for (const variant of ['default', 'primary', 'secondary', 'neutral'] as const) {
+      const html = renderToStaticMarkup(
+        <Link href="/about" variant={variant}>
+          About
+        </Link>,
+      )
+
+      expect(html, variant).toContain('transition-colors')
+    }
+  })
+})
+
 describe('<Link> surface', () => {
   // A link on a dark surface lightens because its colours are surface
   // tokens, not because a caller remembered a `theme` prop.

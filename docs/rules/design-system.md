@@ -152,8 +152,16 @@ name and anything inside the anchor goes unread.
 site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
 a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
 run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
-bare `<a>` fed a SahajCloud value has to call it itself — `Splash`'s call to action is the one
-that does, because its hover is a transform `Link`'s own `transition-colors` would override.
+bare `<a>` fed a SahajCloud value has to call it itself.
+
+A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
+call to action and `AtlasContent`'s website link both do. The atom renders inert words, and words
+that invite a click going nowhere are worse than an absent element.
+
+**Only a variant that paints a colour carries `transition-colors`**, so `unstyled` carries no
+`transition-property` at all. A caller painting its own hover brings the matching transition: a
+colour one, as `ContentCard` and `Column` do, or a transform, as the `Splash` call to action does.
+At equal specificity the atom's own would have won on source order.
 
 Two spellings stopped reaching an `href` when the gate landed: a protocol-relative `//host`, and
 the empty string an unset SahajCloud field leaves behind.

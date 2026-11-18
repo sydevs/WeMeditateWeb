@@ -84,14 +84,20 @@ export function Link({
     console.warn(`[Link] refused an href whose scheme is not allowed: "${href}"`)
   }
 
-  const baseStyles = 'transition-colors duration-200 focus-ring'
+  const baseStyles = 'focus-ring'
 
   // Surface tokens, so a link on a dark surface lightens without being told.
+  //
+  // Each colour carries its own `transition-colors`, so `unstyled` really is
+  // unstyled: a caller painting a transform hover no longer has to leave the
+  // atom to escape a `transition-property` it never asked for. A caller that
+  // paints a colour hover brings the transition with it.
   const variantStyles = {
-    default: 'text-primary hover:text-primary-strong hover:underline',
-    primary: 'text-primary font-medium hover:text-primary-strong',
-    secondary: 'text-secondary font-medium hover:text-secondary-strong',
-    neutral: 'text-fg-muted hover:text-fg',
+    default: 'text-primary hover:text-primary-strong hover:underline transition-colors duration-200',
+    primary: 'text-primary font-medium hover:text-primary-strong transition-colors duration-200',
+    secondary:
+      'text-secondary font-medium hover:text-secondary-strong transition-colors duration-200',
+    neutral: 'text-fg-muted hover:text-fg transition-colors duration-200',
     unstyled: '',
   }
 

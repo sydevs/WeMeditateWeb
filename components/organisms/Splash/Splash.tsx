@@ -1,5 +1,6 @@
 import { ComponentProps, ReactNode } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
+import { Link } from '../../atoms/Link'
 import { surface, type Surface } from '../../atoms/surface'
 import { isSafeLinkHref } from '../../../lib/urls'
 import {
@@ -132,17 +133,17 @@ export function Splash({
           {children && <div className="mb-20">{children}</div>}
 
           {/* Call-to-Action with Decorative Leaves */}
-          {/* A bare anchor, because the hover is a transform `Link`'s own
-              `transition-colors` would override. So it owes the scheme gate
-              itself, and a refused URL renders no call to action at all —
-              the leaves and the words alone would invite a click that goes
-              nowhere. */}
+          {/* The gate stays at the call site although `Link` applies it too:
+              a refused URL must render no call to action at all, where the
+              atom would render the leaves and the words inert. They invite a
+              click, so they are worse than absent. */}
           {ctaText && ctaHref && isSafeLinkHref(ctaHref) && (
-            <a
-              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light text-fg transition-transform hover:scale-105 focus-ring ${
+            <Link
+              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light text-fg transition-transform hover:scale-105 ${
                 pulsate ? 'animate-pulse-scale' : ''
               }`}
               href={ctaHref}
+              variant="unstyled"
             >
               {/* Left Leaf (rotated outward) */}
               <LeafSvg aria-hidden="true" className="w-16 h-16 -rotate-90" />
@@ -152,7 +153,7 @@ export function Splash({
 
               {/* Right Leaf (rotated outward) */}
               <LeafSvg aria-hidden="true" className="w-16 h-16 rotate-90" />
-            </a>
+            </Link>
           )}
         </div>
       </div>
