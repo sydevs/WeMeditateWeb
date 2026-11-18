@@ -191,8 +191,10 @@ run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the
 [tests/guards/bare-anchors.test.ts](../../tests/guards/bare-anchors.test.ts) enforces that, and
 its allowlist is the whole exception list — one entry for the atom, one for `ErrorFallback`, whose
 href `isSafeHttpUrl` has already proved absolute. An atom that takes an `href` delegates to `Link`
-rather than drawing an anchor: `Button`, `Badge` and `DropdownItem` all do, which is where their
-`locale` prop goes.
+rather than drawing an anchor: `Button`, `Badge` and `DropdownItem` all do. `Badge` and
+`DropdownItem` type that branch as `Omit<LinkProps, 'size' | 'variant'>`, so `locale`, `external`,
+`target` and `rel` arrive from the atom instead of being restated. `Button` still declares its own
+`href` and `locale` beside its button props, and casts.
 
 A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
 call to action and `AtlasContent`'s website link both do. The atom renders inert words, and words
