@@ -175,7 +175,7 @@ function findBinding(name: string, from: ts.Node): ts.Node | null {
 }
 
 /** The `useState` argument a `[flag, setFlag]` element destructures. */
-function useStateArgument(element: ts.BindingElement): ts.Expression | null {
+function stateArgument(element: ts.BindingElement): ts.Expression | null {
   const pattern = element.parent
   if (!ts.isArrayBindingPattern(pattern) || pattern.elements.indexOf(element) !== 0) return null
 
@@ -196,7 +196,7 @@ function useStateArgument(element: ts.BindingElement): ts.Expression | null {
  * name but not the value — a destructured hook return, or an import.
  */
 function initialExpression(binding: ts.Node): ts.Expression | null {
-  if (ts.isBindingElement(binding)) return binding.initializer ?? useStateArgument(binding)
+  if (ts.isBindingElement(binding)) return binding.initializer ?? stateArgument(binding)
   if (ts.isVariableDeclaration(binding) || ts.isParameter(binding)) {
     return binding.initializer ?? null
   }

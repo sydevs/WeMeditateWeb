@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AtlasContent, atlasHref } from './AtlasContent'
 import type { AtlasSeoResponse } from '../../../server/atlas-types'
+import { anchorFor } from '../../../tests/_helpers/markup'
 
 const breadcrumbs = [
   { name: 'United Kingdom', route: '/gb', url: 'https://wemeditate.com/map/gb' },
@@ -133,6 +134,14 @@ describe('atlasHref', () => {
   it('returns null when there is neither, so nothing renders a dead link', () => {
     expect(atlasHref({ route: null, url: null }, null)).toBeNull()
   })
+
+  it('refuses a canonical whose scheme could run in our origin', () => {
+    // Nothing upstream validates this field either. The region stays
+    // reachable through the path we serve it at.
+    expect(atlasHref({ route: '/gb/london', url: 'javascript:alert(1)' }, null)).toBe(
+      '/map/gb/london',
+    )
+  })
 })
 
 describe('a region page', () => {
@@ -224,11 +233,34 @@ describe('a class page', () => {
     expect(html).toContain('alt="The hall"')
   })
 
-  it('offers the join link for an online class', () => {
+  it('offers the join link for an online class, as a link off this site', () => {
     const html = render(eventSeo({ onlineUrl: 'https://meet.test/room', address: null }))
+    const room = anchorFor(html, 'https://meet.test/room')
 
-    expect(html).toContain('href="https://meet.test/room"')
+    expect(room).toContain('target="_blank"')
+    expect(room).toContain('rel="noopener noreferrer"')
     expect(html).toContain('Join online')
+  })
+
+  it('refuses a room URL whose scheme could run in our origin', () => {
+    // Nothing upstream validates this field, and it reaches an href
+    // unchanged. The website is a separate value, so it still answers.
+    const html = render(
+      eventSeo({ onlineUrl: 'javascript:alert(1)', website: 'https://site.test' }),
+    )
+
+    expect(html).not.toContain('javascript:')
+    expect(html).toContain('href="https://site.test"')
+    expect(html).toContain('Visit the website')
+  })
+
+  it('offers nothing at all when every link a class gives is unusable', () => {
+    const html = render(eventSeo({ onlineUrl: 'javascript:alert(1)', website: 'data:text/html,x' }))
+
+    expect(html).not.toContain('javascript:')
+    expect(html).not.toContain('data:text/html')
+    expect(html).not.toContain('Join online')
+    expect(html).not.toContain('Visit the website')
   })
 
   it('falls through to the website when onlineUrl is empty rather than linking to nothing', () => {
@@ -257,6 +289,73 @@ describe('a class page', () => {
 
     expect(html).not.toContain('Join online')
     expect(html).not.toContain('Visit the website')
+  })
+})
+
+describe('a canonical owned by another domain', () => {
+  // Ownership is per-subtree, so these are real links off this site, not a
+  // fallback. Without an origin to compare against, every canonical here
+  // reads as foreign — which is what a render outside a request really has.
+  it('sends a breadcrumb rung to a new tab, and withholds the referrer', () => {
+    const seo = {
+      ...regionSeo(),
+      breadcrumbs: [
+        { name: 'United Kingdom', route: '/gb', url: 'https://other.org/classes/gb' },
+        ...breadcrumbs.slice(1),
+      ],
+    } as AtlasSeoResponse
+    const rung = anchorFor(render(seo), 'https://other.org/classes/gb')
+
+    expect(rung).toContain('target="_blank"')
+    expect(rung).toContain('rel="noopener noreferrer"')
+  })
+
+  it('does the same for an event card', () => {
+    const html = render(
+      regionSeo({
+        events: [
+          {
+            id: 1204,
+            route: '/gb/london/1204',
+            url: 'https://other.org/classes/gb/london/1204',
+            title: 'Saturday morning meditation',
+            schedule: 'Every week on Saturday at 9:30 AM',
+            address: '12 Beethoven Street, London',
+            online: false,
+          },
+        ],
+        eventCount: 1,
+      }),
+    )
+    const card = anchorFor(html, 'https://other.org/classes/gb/london/1204')
+
+    expect(card).toContain('target="_blank"')
+    expect(card).toContain('rel="noopener noreferrer"')
+  })
+
+  it('leaves a card that fell back to our own /map path alone', () => {
+    const html = render(
+      regionSeo({
+        events: [
+          {
+            id: 9,
+            route: '/gb/london/9',
+            url: null,
+            title: 'Online sitting',
+            schedule: 'Daily at 7 PM',
+            address: '',
+            online: true,
+          },
+        ],
+        eventCount: 1,
+      }),
+    )
+    const card = anchorFor(html, '/map/gb/london/9')
+
+    // Positive first: `not.toContain` on an empty match would pass vacuously.
+    expect(card).toContain('href="/map/gb/london/9"')
+    expect(card).not.toContain('target=')
+    expect(card).not.toContain('rel=')
   })
 })
 

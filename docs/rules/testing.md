@@ -25,6 +25,9 @@ pnpm test:ui      # Vitest UI
   a config file, and fails the build when one exports no `route` and no `default`. Test
   `+route.ts` as `route.test.ts`, never as `+route.test.ts`. `pnpm test:run` and `tsc` both pass
   either way — only `pnpm build` catches this.
+- Give a helper a `use` prefix only when it calls hooks. `@eslint-react` errors on a
+  `use`-prefixed function that calls none, which reaches the compiler-API helpers under
+  `tests/guards/`.
 - `vitest.config.ts` enables Vitest's globals. Import `describe`, `it`, and `expect` from
   `'vitest'` explicitly, to
   match existing files such as [lib/cloudflare-images.test.ts](../../lib/cloudflare-images.test.ts)
@@ -56,6 +59,12 @@ kept the whole responsive-image pipeline green while it was dead.
 See [components/atoms/Image/Image.test.tsx](../../components/atoms/Image/Image.test.tsx) for a
 full example. `useState` and `useMemo` work under this kind of SSR render, but `useEffect` does
 not run — plan each assertion around the first-render state.
+
+**Narrow the string before asserting an attribute.** `toContain('target="_blank"')` over a whole
+page passes when any element carries it, not the one under test. `anchorFor(html, href)` in
+[tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) returns that href's opening `<a>` tag.
+Assert something positive about the result first: it answers the empty string when nothing
+matches, and `not.toContain` passes on that whatever it is given.
 
 **Attribute casing**: React 19 keeps most camelCase props as authored — `srcSet`,
 `fetchPriority`, `referrerPolicy` and `playsInline` all survive — and lowercases a few, such as
