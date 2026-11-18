@@ -99,13 +99,20 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
             {track.credit}
           </Link>
         </div>
-        <span
-          className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
-            isCurrentTrack ? 'text-teal-100' : 'text-gray-600'
-          }`}
-        >
-          {formatDuration(track.duration)}
-        </span>
+        {/*
+          `contentIndexTrack` hands every song `duration: 0`, because
+          SahajCloud's Song type has no duration field, so each production row
+          printed `0:00`. Only the fixtures' real durations hid it.
+        */}
+        {track.duration > 0 && (
+          <span
+            className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
+              isCurrentTrack ? 'text-teal-100' : 'text-gray-600'
+            }`}
+          >
+            {formatDuration(track.duration)}
+          </span>
+        )}
       </div>
     </button>
   )

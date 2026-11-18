@@ -86,19 +86,25 @@ function trackRows(html: string): Row[] {
 
 const playingTitles = (rows: Row[]) => rows.filter((row) => row.playing).map((row) => row.title)
 
-function render(selectedFilter: string | null, currentTrackIndex: number): Row[] {
-  return trackRows(
-    renderToStaticMarkup(
-      <Playlist
-        currentTrackIndex={currentTrackIndex}
-        filters={filters}
-        selectedFilter={selectedFilter}
-        title="Meditation Music"
-        tracks={tracks}
-        onTrackClick={() => {}}
-      />,
-    ),
+function markup(
+  selectedFilter: string | null,
+  currentTrackIndex: number,
+  list: Track[] = tracks,
+): string {
+  return renderToStaticMarkup(
+    <Playlist
+      currentTrackIndex={currentTrackIndex}
+      filters={filters}
+      selectedFilter={selectedFilter}
+      title="Meditation Music"
+      tracks={list}
+      onTrackClick={() => {}}
+    />,
   )
+}
+
+function render(selectedFilter: string | null, currentTrackIndex: number): Row[] {
+  return trackRows(markup(selectedFilter, currentTrackIndex))
 }
 
 describe('visibleTracks — the index a row reports when clicked', () => {
@@ -147,5 +153,18 @@ describe('Playlist highlighting under a filter', () => {
   it('highlights the same track with and without a filter', () => {
     expect(playingTitles(render(null, 4))).toEqual(['Flute Meditation'])
     expect(playingTitles(render('wind', 4))).toEqual(['Flute Meditation'])
+  })
+})
+
+describe('Playlist durations', () => {
+  it('prints the duration a track states', () => {
+    expect(markup(null, 0)).toContain('3:16')
+  })
+
+  it('prints no duration where a song states none', () => {
+    // `contentIndexTrack` hands every song `duration: 0`.
+    const undated = tracks.map((track) => ({ ...track, duration: 0 }))
+
+    expect(markup(null, 0, undated)).not.toContain('0:00')
   })
 })
