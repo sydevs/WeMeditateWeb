@@ -51,27 +51,27 @@ export const Default: Story = () => (
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="xs" />
-          <p className="text-sm text-gray-600">XS (3×3)</p>
+          <p className="text-sm text-gray-700">XS (3×3)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="sm" />
-          <p className="text-sm text-gray-600">Small (4×4)</p>
+          <p className="text-sm text-gray-700">Small (4×4)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="md" />
-          <p className="text-sm text-gray-600">Medium (5×5)</p>
+          <p className="text-sm text-gray-700">Medium (5×5)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="lg" />
-          <p className="text-sm text-gray-600">Large (6×6)</p>
+          <p className="text-sm text-gray-700">Large (6×6)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="xl" />
-          <p className="text-sm text-gray-600">XL (8×8)</p>
+          <p className="text-sm text-gray-700">XL (8×8)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="2xl" />
-          <p className="text-sm text-gray-600">2XL (10×10)</p>
+          <p className="text-sm text-gray-700">2XL (10×10)</p>
         </div>
       </div>
     </StorySection>
@@ -187,51 +187,51 @@ export const Default: Story = () => (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={MagnifyingGlassIcon} size="lg" />
-          <p className="text-xs text-gray-600">Search</p>
+          <p className="text-xs text-gray-700">Search</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={Bars3Icon} size="lg" />
-          <p className="text-xs text-gray-600">Menu</p>
+          <p className="text-xs text-gray-700">Menu</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={XMarkIcon} size="lg" />
-          <p className="text-xs text-gray-600">Close</p>
+          <p className="text-xs text-gray-700">Close</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIcon} size="lg" />
-          <p className="text-xs text-gray-600">Heart</p>
+          <p className="text-xs text-gray-700">Heart</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={StarIcon} size="lg" />
-          <p className="text-xs text-gray-600">Star</p>
+          <p className="text-xs text-gray-700">Star</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={PlayIcon} size="lg" />
-          <p className="text-xs text-gray-600">Play</p>
+          <p className="text-xs text-gray-700">Play</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={PauseIcon} size="lg" />
-          <p className="text-xs text-gray-600">Pause</p>
+          <p className="text-xs text-gray-700">Pause</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={ChevronLeftIcon} size="lg" />
-          <p className="text-xs text-gray-600">Chevron Left</p>
+          <p className="text-xs text-gray-700">Chevron Left</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={ChevronRightIcon} size="lg" />
-          <p className="text-xs text-gray-600">Chevron Right</p>
+          <p className="text-xs text-gray-700">Chevron Right</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={CheckIcon} size="lg" />
-          <p className="text-xs text-gray-600">Check</p>
+          <p className="text-xs text-gray-700">Check</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={InformationCircleIcon} size="lg" />
-          <p className="text-xs text-gray-600">Info</p>
+          <p className="text-xs text-gray-700">Info</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={ClockIcon} size="lg" />
-          <p className="text-xs text-gray-600">Clock</p>
+          <p className="text-xs text-gray-700">Clock</p>
         </div>
       </div>
     </StorySection>
@@ -240,51 +240,51 @@ export const Default: Story = () => (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
         <div className="flex flex-col items-center gap-2">
           <Icon icon={MagnifyingGlassIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Search</p>
+          <p className="text-xs text-gray-700">Search</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={Bars3IconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Menu</p>
+          <p className="text-xs text-gray-700">Menu</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={XMarkIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Close</p>
+          <p className="text-xs text-gray-700">Close</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={HeartIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Heart</p>
+          <p className="text-xs text-gray-700">Heart</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={StarIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Star</p>
+          <p className="text-xs text-gray-700">Star</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={PlayIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Play</p>
+          <p className="text-xs text-gray-700">Play</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={PauseIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Pause</p>
+          <p className="text-xs text-gray-700">Pause</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={ChevronLeftIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Chevron Left</p>
+          <p className="text-xs text-gray-700">Chevron Left</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={ChevronRightIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Chevron Right</p>
+          <p className="text-xs text-gray-700">Chevron Right</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={CheckIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Check</p>
+          <p className="text-xs text-gray-700">Check</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={InformationCircleIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Info</p>
+          <p className="text-xs text-gray-700">Info</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Icon icon={ClockIconSolid} size="lg" />
-          <p className="text-xs text-gray-600">Clock</p>
+          <p className="text-xs text-gray-700">Clock</p>
         </div>
       </div>
     </StorySection>
@@ -293,7 +293,7 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-6">
         <StorySection title="Button with Icons" variant="subsection">
           <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
+            <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700">
               <Icon icon={PlayIcon} size="sm" />
               <span>Play</span>
             </button>
@@ -349,7 +349,7 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Current Color on Dark Background" variant="subsection">
-          <div className="surface-dark bg-gray-800 rounded-lg p-6 space-y-4">
+          <div className="surface-dark bg-teal-900 rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3 text-white">
               <Icon color="currentColor" icon={HeartIcon} size="lg" />
               <span>White icon inherits from parent text color</span>

@@ -161,25 +161,15 @@ export const Default: Story = () => (
     >
       <div className="flex gap-4 items-center flex-wrap">
         <Button aria-label="Play" icon={PlayIcon} variant="primary" />
-        <Button variant="primary">
-          Primary
-        </Button>
+        <Button variant="primary">Primary</Button>
         <Button aria-label="Like" icon={HeartIcon} variant="secondary" />
-        <Button variant="secondary">
-          Secondary
-        </Button>
+        <Button variant="secondary">Secondary</Button>
         <Button aria-label="Confirm" icon={CheckIcon} variant="neutral" />
-        <Button variant="neutral">
-          Neutral
-        </Button>
+        <Button variant="neutral">Neutral</Button>
         <Button aria-label="Favorite" icon={StarIcon} variant="outline" />
-        <Button variant="outline">
-          Outline
-        </Button>
+        <Button variant="outline">Outline</Button>
         <Button aria-label="Close" icon={XMarkIcon} variant="ghost" />
-        <Button variant="ghost">
-          Ghost
-        </Button>
+        <Button variant="ghost">Ghost</Button>
       </div>
     </StorySection>
 
@@ -225,7 +215,7 @@ export const Default: Story = () => (
         <StorySection title="Loading" variant="subsection">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-sm text-gray-600 mb-2">Text Buttons</p>
+              <p className="text-sm text-gray-700 mb-2">Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
                 <Button isLoading variant="primary">
                   Primary
@@ -242,7 +232,7 @@ export const Default: Story = () => (
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Icon-only Buttons</p>
+              <p className="text-sm text-gray-700 mb-2">Icon-only Buttons</p>
               <div className="flex gap-3 flex-wrap">
                 <Button isLoading aria-label="Loading" icon={PlayIcon} variant="primary" />
                 <Button isLoading aria-label="Loading" icon={HeartIcon} variant="secondary" />
@@ -251,7 +241,7 @@ export const Default: Story = () => (
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Icon + Text Buttons</p>
+              <p className="text-sm text-gray-700 mb-2">Icon + Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
                 <Button isLoading icon={CheckIcon} variant="primary">
                   Saving
@@ -267,7 +257,7 @@ export const Default: Story = () => (
         <StorySection title="Disabled" variant="subsection">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-sm text-gray-600 mb-2">Text Buttons</p>
+              <p className="text-sm text-gray-700 mb-2">Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
                 <Button disabled variant="primary">
                   Primary
@@ -284,7 +274,7 @@ export const Default: Story = () => (
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Icon-only Buttons</p>
+              <p className="text-sm text-gray-700 mb-2">Icon-only Buttons</p>
               <div className="flex gap-3 flex-wrap">
                 <Button disabled aria-label="Play" icon={PlayIcon} variant="primary" />
                 <Button disabled aria-label="Like" icon={HeartIcon} variant="secondary" />
@@ -293,7 +283,7 @@ export const Default: Story = () => (
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Icon + Text Buttons</p>
+              <p className="text-sm text-gray-700 mb-2">Icon + Text Buttons</p>
               <div className="flex gap-3 flex-wrap">
                 <Button disabled icon={CheckIcon} variant="primary">
                   Save
@@ -322,13 +312,13 @@ export const Default: Story = () => (
               Inspiration
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-700 mt-2">
             The active link keeps a persistent tinted fill and carries aria-current="page"
           </p>
         </StorySection>
 
         <StorySection title="Ghost on Dark Background" variant="subsection">
-          <div className="surface-dark bg-gray-900 p-6 rounded">
+          <div className="surface-dark bg-teal-900 p-6 rounded">
             <div className="flex gap-3 flex-wrap">
               <Button isActive href="#" variant="ghost">
                 Meditate Now
@@ -341,7 +331,7 @@ export const Default: Story = () => (
               </Button>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-700 mt-2">
             The active tint is surface-aware — a lighter fill for dark (splash-overlay) headers
           </p>
         </StorySection>
@@ -356,7 +346,7 @@ export const Default: Story = () => (
           Full Width
         </Button>
       </div>
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-gray-700 mt-2">
         Buttons size to their content, with a 44×44 floor from `touch-target` at every size.
       </p>
     </StorySection>
@@ -378,7 +368,7 @@ export const Default: Story = () => (
               Discover My Sound
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-700 mt-2">
             Hover to see the animated background fill from center to edges
           </p>
         </StorySection>
@@ -387,7 +377,7 @@ export const Default: Story = () => (
           title="Call-to-Action on Dark Background (wemeditate.com style)"
           variant="subsection"
         >
-          <div className="surface-dark bg-gray-900 p-6 rounded">
+          <div className="surface-dark bg-teal-900 p-6 rounded">
             <div className="flex gap-4 flex-wrap">
               <Button size="lg" variant="outline">
                 Get Inspired
@@ -400,7 +390,7 @@ export const Default: Story = () => (
               </Button>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-700 mt-2">
             White variant with animated hover effect for dark backgrounds
           </p>
         </StorySection>

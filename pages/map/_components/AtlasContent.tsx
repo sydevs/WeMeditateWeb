@@ -82,7 +82,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
   }
 
   return (
-    <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-600">
+    <nav aria-label={t('common.a11y.breadcrumb')} className="mb-4 text-sm text-gray-700">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {trail.map((rung, index) => {
           const isCurrent = index === trail.length - 1
@@ -134,12 +134,12 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
           card.title
         )}
       </h2>
-      {card.schedule && <p className="mt-1 text-sm text-gray-600">{card.schedule}</p>}
+      {card.schedule && <p className="mt-1 text-sm text-gray-700">{card.schedule}</p>}
       {/* Empty for an online class, which says so instead. */}
       {card.online ? (
-        <p className="mt-1 text-sm text-gray-600">{t('map.general.online')}</p>
+        <p className="mt-1 text-sm text-gray-700">{t('map.general.online')}</p>
       ) : (
-        card.address && <p className="mt-1 text-sm text-gray-600">{card.address}</p>
+        card.address && <p className="mt-1 text-sm text-gray-700">{card.address}</p>
       )}
     </li>
   )
@@ -154,12 +154,13 @@ function RegionContent({
   breadcrumbs: AtlasSeoBreadcrumb[]
 }) {
   const t = useT()
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Breadcrumbs trail={breadcrumbs} />
 
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{content.name}</h1>
-      {content.subtitle && <p className="mt-2 text-gray-600">{content.subtitle}</p>}
+      {content.subtitle && <p className="mt-2 text-gray-700">{content.subtitle}</p>}
 
       {content.events.length > 0 ? (
         <section className="mt-8">
@@ -172,7 +173,7 @@ function RegionContent({
           {/* The listing is capped upstream. `eventCount` is the true
               total, so a partial page never reads as a complete one. */}
           {content.eventCount > content.events.length && (
-            <p className="mt-4 text-sm text-gray-600">
+            <p className="mt-4 text-sm text-gray-700">
               {t('map.general.classes_shown', {
                 shown: content.events.length,
                 count: content.eventCount,
@@ -181,7 +182,7 @@ function RegionContent({
           )}
         </section>
       ) : (
-        <p className="mt-8 text-gray-600">{t('map.general.no_classes')}</p>
+        <p className="mt-8 text-gray-700">{t('map.general.no_classes')}</p>
       )}
     </div>
   )
@@ -230,7 +231,7 @@ function EventContent({
         {languages.length > 0 && (
           <div>
             <dt className="sr-only">{t('map.a11y.languages')}</dt>
-            <dd className="text-sm text-gray-600">{formatList(languages, locale)}</dd>
+            <dd className="text-sm text-gray-700">{formatList(languages, locale)}</dd>
           </div>
         )}
       </dl>
