@@ -132,9 +132,8 @@ This project uses Heroicons v2. Some v1 names changed — for example,
 ```
 
 ```tsx
-interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
+interface ButtonOwnProps {
   variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
-  theme?: 'light' | 'dark'          // dark = white colors, for dark backgrounds
   size?: 'xs' | 'sm' | 'md' | 'lg'
   shape?: 'square' | 'circular'     // Default: circular icon-only, square text
   icon?: HeroIcon                   // Icon only when no children are passed
@@ -143,12 +142,20 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   isLoading?: boolean
   isActive?: boolean                // Current-page nav link: tinted fill + aria-current
   fullWidth?: boolean               // Text buttons only
-  href?: string                     // Renders as Link when set
-  locale?: Locale
-  type?: 'button' | 'submit' | 'reset'
   'aria-label'?: string             // Required for an icon-only button
 }
+
+type ButtonProps =
+  | (ButtonOwnProps & Omit<ComponentProps<'button'>, 'type'> & {
+      href?: never; locale?: never; type?: 'button' | 'submit' | 'reset'
+    })
+  | (ButtonOwnProps & Omit<LinkProps, 'size' | 'variant' | 'type'> & {
+      disabled?: never; type?: never
+    })
 ```
+
+An href makes it a link, so `disabled` and `type` are a type error beside one, and `locale`,
+`external`, `target` and `rel` arrive from `Link`.
 
 Use `href` for navigation or a download. Use `onClick` for a JavaScript action, never `href`.
 
@@ -191,9 +198,10 @@ run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the
 [tests/guards/bare-anchors.test.ts](../../tests/guards/bare-anchors.test.ts) enforces that, and
 its allowlist is the whole exception list — one entry, for the atom. An atom that takes an `href`
 delegates to `Link` rather than drawing an anchor: `Button`, `Badge` and `DropdownItem` all do.
-`Badge` and `DropdownItem` type that branch as `Omit<LinkProps, 'size' | 'variant'>`, so `locale`,
-`external`, `target` and `rel` arrive from the atom instead of being restated. `Button` still
-declares its own `href` and `locale` beside its button props, and casts.
+Each types that branch as `Omit<LinkProps, 'size' | 'variant'>`, so `locale`, `external`, `target`
+and `rel` arrive from the atom instead of being restated, and none of the three casts. `Button`
+drops `type` from its link branch as well, and bars `disabled` there: a `<button>` prop passed
+beside an href used to be swallowed.
 
 A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
 call to action, `AtlasContent`'s website link and `ErrorFallback`'s status page all do. The atom

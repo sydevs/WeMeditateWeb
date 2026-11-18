@@ -1,10 +1,9 @@
 import { ComponentProps } from 'react'
 import { Icon, HeroIcon } from '../Icon/Icon'
 import { Spinner } from '../Spinner/Spinner'
-import { Link } from '../Link'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { Link, type LinkProps } from '../Link'
 
-export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
+interface ButtonOwnProps {
   /**
    * Visual style variant
    * @default 'primary'
@@ -73,24 +72,31 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
    */
   fullWidth?: boolean
 
-  /**
-   * Optional href to render as a link (using Link component)
-   * When provided, button renders as a link instead of a button element
-   */
-  href?: string
-
-  /** Locale for the link (only used when href is provided) */
-  locale?: Locale
-
-  /**
-   * Button type (only used when href is not provided)
-   * @default 'button'
-   */
-  type?: 'button' | 'submit' | 'reset'
-
   /** Accessible label (required for icon-only buttons without text) */
   'aria-label'?: string
 }
+
+/**
+ * A button is a `<button>` until it is given an href, and then it is whatever
+ * `Link` is — `locale`, `external`, `target` and `rel` included, with no prop
+ * of its own restating one. `disabled` and `type` stay on the button branch,
+ * so neither can be passed beside an href and silently dropped. `Badge` and
+ * `DropdownItem` take the same shape.
+ */
+export type ButtonProps =
+  | (ButtonOwnProps &
+      Omit<ComponentProps<'button'>, 'type'> & {
+        href?: never
+        locale?: never
+
+        /**
+         * Button type
+         * @default 'button'
+         */
+        type?: 'button' | 'submit' | 'reset'
+      })
+  | (ButtonOwnProps &
+      Omit<LinkProps, 'size' | 'variant' | 'type'> & { disabled?: never; type?: never })
 
 /**
  * Unified Button component for all button types.
@@ -136,12 +142,8 @@ export function Button({
   isLoading = false,
   isActive = false,
   fullWidth = false,
-  href,
-  locale,
   className = '',
   children,
-  disabled,
-  type = 'button',
   'aria-label': ariaLabel,
   ...props
 }: ButtonProps) {
@@ -166,7 +168,7 @@ export function Button({
   const baseStyles = `inline-flex items-center justify-center text-center font-sans font-medium transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none focus-ring`
 
   // Only add animation if button is interactive (not disabled or loading)
-  const isInteractive = !disabled && !isLoading
+  const isInteractive = !props.disabled && !isLoading
   const animatedStyles = isIconOnly || !isInteractive ? '' : animatedHoverEffect
 
   // Filled variants look the same on every surface. Outline and ghost take
@@ -275,16 +277,14 @@ export function Button({
   )
 
   // Render as Link if href is provided
-  if (href) {
+  if (props.href !== undefined) {
     return (
       <Link
         aria-current={isActive ? 'page' : undefined}
         aria-label={ariaLabel}
         className={commonClassNames}
-        href={href}
-        locale={locale}
         variant="unstyled"
-        {...(props as any)}
+        {...props}
       >
         {content}
       </Link>
@@ -292,6 +292,7 @@ export function Button({
   }
 
   // Render as button
+  const { disabled, type = 'button', ...buttonProps } = props
   return (
     <button
       aria-busy={isLoading}
@@ -300,7 +301,7 @@ export function Button({
       className={commonClassNames}
       disabled={disabled || isLoading}
       type={type}
-      {...props}
+      {...buttonProps}
     >
       {content}
     </button>
