@@ -152,6 +152,15 @@ These rules apply whether or not the matching rule file or skill is loaded.
   that is neither: `lib/payload-relationships.ts` describes the product's field shapes,
   `lib/content-blocks.ts` the upstream editor's block shapes, and `lib/document-routes.ts` paths
   on **our own** site — `documentHref` resolves one, so it is not `sahajCloudHref`.
+- **`@payloadcms/live-preview-react` is pinned exact, and the version it is pinned to is
+  SahajCloud's own `payload` version, not the newest published one.** It is the one dependency
+  whose semantics are the producer's rather than a standard's: it merges a `postMessage`
+  SahajCloud mints, and `lib/live-preview/document.tsx` hands it the whole transport. A caret
+  would let a fresh resolve carry it ahead of the CMS (#222 did; #248 restored the pin). Move it
+  when SahajCloud moves, in the same bump as `@payloadcms/live-preview`,
+  `@payloadcms/richtext-lexical` and `@payloadcms/sdk`. `live-preview-react@<v>` depends on
+  exactly `live-preview@<v>`, so both take one version or `pnpm-lock.yaml` carries two copies.
+  SahajAtlasWeb's `docs/rules/data-layer.md` states the same rule for the other consumer.
 - **`public/` is shipped by both builds, so nothing site-wide goes in it.** The Vike app's build
   and the Ladle build each copy it, so a `robots.txt`, `_headers` or `_redirects` there applies to
   the app and the playground alike. The playground's crawler refusal lives in `.ladle/static/`
