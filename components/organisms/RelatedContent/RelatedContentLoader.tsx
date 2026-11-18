@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 import type { ResolvedCardItem } from '../../../lib/content-blocks'
+import type { Locale } from '../../../server/sahajcloud-types'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
 import { useT } from '../../../hooks/useT'
@@ -68,15 +69,20 @@ export function RelatedContentLoader({ kind, anchorId, className }: RelatedConte
   // outlive the anchor it belongs to. Keying on the request remounts instead,
   // which is what puts the spinner back in the same paint as the new page —
   // an Effect resetting it would paint the previous page's cards first.
-  return <Feed key={`${kind}-${anchorId}-${locale}`} {...{ anchorId, className, kind, locale }} />
+  return (
+    <RelatedContentFeed
+      key={`${kind}-${anchorId}-${locale}`}
+      {...{ anchorId, className, kind, locale }}
+    />
+  )
 }
 
-function Feed({
+function RelatedContentFeed({
   anchorId,
   className,
   kind,
   locale,
-}: RelatedContentLoaderProps & { locale: string }) {
+}: RelatedContentLoaderProps & { locale: Locale }) {
   const t = useT()
   const title = t(RELATED_CONTENT_KEYS[kind].title)
   // null → loading (fetch in flight). [] → loaded but empty. [...] → loaded.
