@@ -1,5 +1,7 @@
 import { ComponentProps, useState } from 'react'
+import { AudioPlayerProvider } from 'react-use-audio-player'
 import { AudioPlayer, Playlist, Track, MusicFilter } from '../../molecules'
+import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import { useT } from '../../../hooks/useT'
 import { Image } from '../../atoms'
 
@@ -29,7 +31,7 @@ export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children
  * - Integrated AudioPlayer
  * - Mobile-first responsive design
  */
-export function MusicLibrary({
+function MusicLibraryInner({
   tracks,
   filters,
   onFilterChange,
@@ -38,7 +40,7 @@ export function MusicLibrary({
 }: MusicLibraryProps) {
   const t = useT()
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
+  const [state, controls] = usePlaylistAudioPlayer({ tracks, shuffle: true })
 
   const handleFilterClick = (filterId: string) => {
     const newFilter = selectedFilter === filterId ? null : filterId
@@ -47,11 +49,7 @@ export function MusicLibrary({
     onFilterChange?.(newFilter)
   }
 
-  const handleTrackClick = (index: number) => {
-    setCurrentTrackIndex(index)
-  }
-
-  const currentTrack = tracks[currentTrackIndex]
+  const currentTrack = state.currentTrack
 
   return (
     <div className={`w-full max-w-7xl mx-auto p-4 sm:p-6 ${className}`} {...props}>
@@ -88,11 +86,9 @@ export function MusicLibrary({
 
           {/* Audio Player */}
           <AudioPlayer
-            disabledControls={['trackInfo']}
-            requestedTrackIndex={currentTrackIndex}
-            shuffle={true}
-            tracks={tracks}
-            onTrackChange={setCurrentTrackIndex}
+            controls={controls}
+            disabledControls={['trackInfo', 'shuffle']}
+            state={state}
           />
         </div>
 
@@ -104,17 +100,26 @@ export function MusicLibrary({
           <div className="relative h-full p-6 md:pr-10 z-10">
             <Playlist
               className="min-w-xs"
-              currentTrackIndex={currentTrackIndex}
+              currentTrackIndex={state.currentTrackIndex}
               filters={filters}
               selectedFilter={selectedFilter}
               title={t('media.general.playlist')}
               tracks={tracks}
               onFilterChange={handleFilterClick}
-              onTrackClick={handleTrackClick}
+              onTrackClick={controls.selectTrack}
             />
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+/** MusicLibrary with the AudioPlayerProvider its player hook needs */
+export function MusicLibrary(props: MusicLibraryProps) {
+  return (
+    <AudioPlayerProvider>
+      <MusicLibraryInner {...props} />
+    </AudioPlayerProvider>
   )
 }

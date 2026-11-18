@@ -29,6 +29,8 @@ export interface Track {
 export interface PlaylistAudioPlayerState {
   /** Current track index in the tracks array */
   currentTrackIndex: number
+  /** How many tracks the playlist holds */
+  trackCount: number
   /** Whether audio is currently playing */
   isPlaying: boolean
   /** Current playback position in seconds */
@@ -69,6 +71,6 @@ export interface PlaylistAudioPlayerControls {
   toggleMute: () => void
   /** Toggle shuffle mode on/off */
   toggleShuffle: () => void
-  /** Play a specific track by index, from a stopped player too */
+  /** Play the track at this index in the tracks array, from a stopped player too */
   selectTrack: (index: number) => void
 }

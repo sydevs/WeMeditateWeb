@@ -1,5 +1,4 @@
 import { ComponentProps } from 'react'
-import { AudioPlayerProvider } from 'react-use-audio-player'
 import {
   PlayIcon,
   PauseIcon,
@@ -10,8 +9,7 @@ import {
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
 import { Button, Image } from '../../atoms'
-import { usePlaylistAudioPlayer } from '../../../hooks/audio'
-import type { Track } from './types'
+import type { PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from './types'
 import { useT } from '../../../hooks/useT'
 
 export type { Track } from './types'
@@ -19,39 +17,28 @@ export type { Track } from './types'
 export type AudioControl = 'skip' | 'shuffle' | 'volume' | 'progress' | 'trackInfo'
 
 export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /** Array of audio tracks to play */
-  tracks: Track[]
+  /** Player state, from `usePlaylistAudioPlayer` */
+  state: PlaylistAudioPlayerState
 
-  /**
-   * Whether to enable shuffle mode (automatically removes shuffle control)
-   * @default false
-   */
-  shuffle?: boolean
-
-  /**
-   * The track to play, as an index into `tracks`. Followed on each new value,
-   * so a consumer can drive the player. Pair it with `onTrackChange`: the
-   * player also moves the index itself, and a consumer that ignores that
-   * drifts.
-   * @default 0
-   */
-  requestedTrackIndex?: number
+  /** Player controls, from `usePlaylistAudioPlayer` */
+  controls: PlaylistAudioPlayerControls
 
   /**
    * Controls to disable in the player
    * @default []
    */
   disabledControls?: AudioControl[]
-
-  /** Callback when track changes */
-  onTrackChange?: (trackIndex: number) => void
 }
 
 /**
- * AudioPlayer is a molecule: a standalone audio player with configurable controls.
+ * AudioPlayer is a molecule: the transport controls for a playlist.
+ *
+ * It renders what `usePlaylistAudioPlayer` holds and calls back into it. The
+ * owning component calls that hook, inside an `AudioPlayerProvider`, so the
+ * playing track has one owner that the player, a playlist and album art all
+ * read (#249).
  *
  * Features:
- * - Built on react-use-audio-player (Howler.js) for reliable cross-browser audio
  * - Configurable controls through props
  * - Play/pause, previous, next controls
  * - Shuffle mode
@@ -59,22 +46,14 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
  * - Progress bar with time display
  * - Current track info display
  */
-function AudioPlayerInner({
-  tracks,
-  shuffle = false,
-  requestedTrackIndex = 0,
+export function AudioPlayer({
+  state,
+  controls: playerControls,
   disabledControls = [],
-  onTrackChange,
   className = '',
   ...props
 }: AudioPlayerProps) {
   const t = useT()
-  const [state, playerControls] = usePlaylistAudioPlayer({
-    tracks,
-    shuffle,
-    requestedTrackIndex,
-    onTrackChange,
-  })
 
   const formatTime = (seconds: number) => {
     if (!isFinite(seconds)) return '0:00'
@@ -83,13 +62,8 @@ function AudioPlayerInner({
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Add shuffle to disabled controls when shuffle is enabled
-  const effectiveDisabledControls = shuffle
-    ? [...disabledControls, 'shuffle' as AudioControl]
-    : disabledControls
-
   const hasControl = (control: AudioControl) => {
-    return !effectiveDisabledControls.includes(control)
+    return !disabledControls.includes(control)
   }
 
   return (
@@ -119,9 +93,9 @@ function AudioPlayerInner({
                 {state.currentTrack.credit}
               </a>
             </div>
-            {tracks.length > 1 && (
+            {state.trackCount > 1 && (
               <div className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                {state.currentTrackIndex + 1} / {tracks.length}
+                {state.currentTrackIndex + 1} / {state.trackCount}
               </div>
             )}
           </div>
@@ -216,14 +190,5 @@ function AudioPlayerInner({
         )}
       </div>
     </div>
-  )
-}
-
-/** AudioPlayer with AudioPlayerProvider context wrapper */
-export function AudioPlayer(props: AudioPlayerProps) {
-  return (
-    <AudioPlayerProvider>
-      <AudioPlayerInner {...props} />
-    </AudioPlayerProvider>
   )
 }
