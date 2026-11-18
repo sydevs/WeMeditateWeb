@@ -113,6 +113,10 @@ const musicFilters: MusicFilter[] = [
   },
 ]
 
+// Every song reaches the site this way: SahajCloud's Song type has no duration
+// field, so `contentIndexTrack` sets 0.
+const undatedTracks: Track[] = sampleTracks.map((track) => ({ ...track, duration: 0 }))
+
 /** Playlist molecule showcasing track list with filters and current track highlighting. */
 export const Default: Story = () => {
   const [currentTrack, setCurrentTrack] = useState(0)
@@ -142,6 +146,17 @@ export const Default: Story = () => {
             tracks={extendedTracks}
             currentTrackIndex={scrollableCurrentTrack}
             onTrackClick={setScrollableCurrentTrack}
+          />
+        </div>
+      </StorySection>
+
+      <StorySection title="Without durations">
+        <div className="max-w-md">
+          <Playlist
+            currentTrackIndex={0}
+            title="Songs From SahajCloud"
+            tracks={undatedTracks}
+            onTrackClick={() => {}}
           />
         </div>
       </StorySection>

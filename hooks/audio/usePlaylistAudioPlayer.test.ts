@@ -1,32 +1,127 @@
-import { describe, it, expect } from 'vitest'
-import { join } from 'node:path'
-import { readSource, repoRoot } from '../../tests/guards/_source-scan'
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderHook, act } from '@testing-library/react'
+import { usePlaylistAudioPlayer } from './usePlaylistAudioPlayer'
+import type { AudioPlayerControls, AudioPlayerState } from './useAudioPlayer'
+import type { Track } from '../../components/molecules/AudioPlayer/types'
 
-/**
- * The auto-resume flag is a ref, read by an Effect Event and written from event
- * handlers, so no SSR render reaches it and this repo has no DOM environment to
- * drive one. What is checkable is what gets written to it, and that is the
- * defect exactly: reading the flag back off `playerState.isPlaying` made a
- * track change arriving during a load cancel the resume (#256).
- */
-const source = readSource(join(repoRoot, 'hooks/audio/usePlaylistAudioPlayer.ts'))
+// Howler never plays under jsdom, so the core hook is replaced by a recorder.
+const player = vi.hoisted(() => ({ load: vi.fn(), play: vi.fn(), pause: vi.fn(), isPlaying: false }))
 
-describe('the auto-resume flag', () => {
-  it('is what a track load reads as its autoplay', () => {
-    expect(source).toContain('autoplay: wantsPlaybackRef.current')
+vi.mock('./useAudioPlayer', () => ({
+  useAudioPlayer: () => [
+    {
+      isPlaying: player.isPlaying,
+      isPaused: !player.isPlaying,
+      isLoading: false,
+      isReady: true,
+      currentTime: 0,
+      duration: 0,
+      volume: 1,
+      isMuted: false,
+      error: null,
+    } satisfies AudioPlayerState,
+    {
+      load: player.load,
+      play: player.play,
+      pause: player.pause,
+    } satisfies Partial<AudioPlayerControls>,
+  ],
+}))
+
+const tracks: Track[] = ['one', 'two', 'three'].map((name) => ({
+  url: `https://cdn.example.com/${name}.mp3`,
+  title: name,
+  credit: '',
+  creditURL: '',
+  thumbnailURL: '',
+  duration: 0,
+}))
+
+const lastLoad = () => {
+  const [url, options] = player.load.mock.calls.at(-1) ?? []
+
+  return { url, autoplay: options?.autoplay }
+}
+
+beforeEach(() => {
+  player.load.mockClear()
+  player.play.mockClear()
+  player.pause.mockClear()
+  player.isPlaying = false
+})
+
+describe('usePlaylistAudioPlayer — next and previous', () => {
+  it('steps through the play order and wraps at both ends', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+    const step = (move: 'next' | 'previous') => act(() => result.current[1][move]())
+
+    step('previous')
+    expect(lastLoad().url).toBe(tracks[2].url)
+
+    step('next')
+    expect(lastLoad().url).toBe(tracks[0].url)
+
+    step('next')
+    expect(result.current[0].currentTrackIndex).toBe(1)
+    expect(lastLoad().url).toBe(tracks[1].url)
   })
 
-  it('takes only the listener asking for playback, or for silence', () => {
-    const writes = [...source.matchAll(/wantsPlaybackRef\.current\s*=\s*(\w+)/g)]
+  it.each([
+    ['play', true],
+    ['pause', false],
+  ] as const)('carries what the listener last asked for, after %s', (ask, autoplay) => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
 
-    expect(writes.map((write) => write[1]).sort()).toEqual(['false', 'true'])
+    act(() => result.current[1].play())
+    act(() => result.current[1][ask]())
+    act(() => result.current[1].next())
+
+    expect(lastLoad().autoplay).toBe(autoplay)
   })
 
-  // Counting the writes is not enough on its own: one `true` and one `false`
-  // moved into `next` and `previous` would be the original defect, and would
-  // still count two.
-  it('takes each of them where that listener states it', () => {
-    expect(source).toMatch(/const play = \(\) => \{\s*wantsPlaybackRef\.current = true\b/)
-    expect(source).toMatch(/const pause = \(\) => \{\s*wantsPlaybackRef\.current = false\b/)
+  // The defect (#256). Reading the flag back off `playerState.isPlaying` made
+  // the second skip load silent, because a load reports no playback.
+  it('keeps playing when the next skip lands inside the load the last one started', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+
+    act(() => result.current[1].play())
+    player.isPlaying = true
+
+    act(() => result.current[1].next())
+    player.isPlaying = false
+
+    act(() => result.current[1].next())
+
+    expect(lastLoad()).toEqual({ url: tracks[2].url, autoplay: true })
+  })
+})
+
+describe('usePlaylistAudioPlayer — selectTrack', () => {
+  it('loads another track and plays it, from a paused player', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+
+    act(() => result.current[1].selectTrack(2))
+
+    expect(lastLoad()).toEqual({ url: tracks[2].url, autoplay: true })
+  })
+
+  it('plays the loaded track in place when its own row is picked', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+    const loads = player.load.mock.calls.length
+
+    act(() => result.current[1].selectTrack(0))
+
+    expect(player.play).toHaveBeenCalledOnce()
+    expect(player.load.mock.calls.length).toBe(loads)
+  })
+
+  it('states the intent a later skip reads, when its own row is picked', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+
+    act(() => result.current[1].selectTrack(0))
+    act(() => result.current[1].next())
+
+    expect(lastLoad().autoplay).toBe(true)
   })
 })
