@@ -5,7 +5,7 @@
 
 import type { Locale } from '../../server/sahajcloud-types'
 import { DEFAULT_LOCALE } from '../../server/sahajcloud-types'
-import { localePath } from '../urls'
+import { isSitePath, localePath } from '../urls'
 
 /** What a record kind's old URL looks like, and so which table holds its slugs. */
 export type ExactType =
@@ -248,5 +248,11 @@ export function lookupIn(map: LegacyRedirectMap, pathname: string): string | nul
   // a caller that consults this first still gets one hop.
   const request = pathname.replace(/\/+$/, '') || '/'
 
-  return target === request ? null : target
+  if (target === request) return null
+
+  // ⚠ A target is spelled from a SahajCloud page slug, which this site did not
+  // author, and the caller puts the answer in a `Location` header. `isSitePath`
+  // is what stops a slug spelled `/evil.com` leaving our origin as
+  // `//evil.com`.
+  return isSitePath(target) ? target : null
 }

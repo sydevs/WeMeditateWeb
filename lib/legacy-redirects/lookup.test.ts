@@ -202,6 +202,18 @@ describe('lookupIn', () => {
     expect(look('/inspiration/')).toBeNull()
     expect(look('/fr/techniques')).toBeNull()
   })
+
+  it('refuses a target that would leave this origin', () => {
+    // A page slug is SahajCloud's, not ours. `//evil.com` is a host despite
+    // the leading slash, and the caller puts this answer in a `Location`.
+    const hostile: LegacyRedirectMap = {
+      ...MAP,
+      pages: { ...MAP.pages, '2': ['/evil.com', ''] },
+    }
+
+    expect(lookupIn(hostile, '/privacy')).toBeNull()
+    expect(look('/privacy')).toBe('/privacy-notice')
+  })
 })
 
 describe('lookupLegacyRedirect', () => {

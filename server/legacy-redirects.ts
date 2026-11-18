@@ -38,7 +38,6 @@ export function registerLegacyRedirects(app: Hono<SahajCloudEnv>): void {
 
     const target = lookupLegacyRedirect(pathname)
 
-    // The lookup answers with a path, and the query string is the visitor's.
     if (target) c.res = c.redirect(`${target}${search}`, 301)
   })
 }
