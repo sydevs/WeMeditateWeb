@@ -6,12 +6,12 @@ import { getPageBySlug, getPageLocaleStatus } from '../../server/sahajcloud-clie
 import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
 import { advertisedLocales } from '../../lib/hreflang'
-import { pageSeo } from '../../lib/content-seo'
+import { pageSeo, seoRoute } from '../../lib/content-seo'
 import type { SeoDocument } from '../../lib/head'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
-import { localePath, normalizeContentPath } from '../../lib/urls'
+import { localePath } from '../../lib/urls'
 import { redirect, render } from 'vike/abort'
 
 export interface PageData {
@@ -20,14 +20,14 @@ export interface PageData {
   locale: Locale
   slug: string
   /**
-   * The locales this page advertises in its `hreflang` cluster: published
-   * in SahajCloud and offered by the site. Empty means "no translations", and
-   * the page then emits its canonical alone.
-   */
-  alternateLocales: Locale[]
-  /**
    * Everything the `<head>` publishes for this URL. Built here, where the
    * document is in hand, and rendered by `lib/head.tsx`.
+   *
+   * shortcut: the whole document, serialized JSON-LD included, rides `data`
+   * to the browser, which reads only its title and description — 1.5 KB on a
+   * plain page, 5.7 KB on a listing with two content indexes. Move the
+   * render-only half onto `pageContext` once a page's payload is measured as
+   * a problem.
    */
   seo: SeoDocument
 }
@@ -96,25 +96,19 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   })
 
   const resolved = { ...page, content }
-  const alternateLocales = advertisedLocales(status, settings.availableLocales)
 
   return {
     page: resolved,
     locale,
     slug,
     settings,
-    alternateLocales,
     seo: pageSeo({
       page: resolved,
       settings,
-      isHome: slug === 'index',
-      locales: alternateLocales,
-      route: {
-        origin: pageContext.urlParsed.origin,
-        path: normalizeContentPath(pageContext.urlPathname),
-        locale,
-        t,
-      },
+      // Published in SahajCloud and offered by the site. Empty means "no
+      // translations", and the page then advertises its canonical alone.
+      locales: advertisedLocales(status, settings.availableLocales),
+      route: seoRoute(pageContext, t),
     }),
   }
 }

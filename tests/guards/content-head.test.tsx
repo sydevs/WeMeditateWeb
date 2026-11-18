@@ -39,7 +39,6 @@ const DOCUMENTS: [string, SeoDocument][] = [
       settings: { knowledgePages: [] } as unknown as Parameters<typeof pageSeo>[0]['settings'],
       route: route('/about'),
       locales: ['en'],
-      isHome: false,
     }),
   ],
   [
@@ -80,7 +79,8 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
     // 59 of 66 production pages have no image of their own, so a route that
     // depends on one would share nothing at all.
     expect(html).toContain('property="og:image"')
-    expect(html).toContain('property="twitter:card"')
+    // Twitter keys on `name`, Open Graph on `property`.
+    expect(html).toContain('name="twitter:card"')
   })
 
   it('carries JSON-LD that parses, describing the organisation and the site', () => {

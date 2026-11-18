@@ -197,25 +197,6 @@ export async function resolveContentIndexTracks(
   return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
 
-/** Checks for at least one `content-index` block, and stops at the first
- * match. Avoids cloning content that has none, the common case. */
-function hasContentIndexBlock(node: unknown): boolean {
-  if (Array.isArray(node)) {
-    return node.some(hasContentIndexBlock)
-  }
-  if (node && typeof node === 'object') {
-    const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
-
-    if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
-      return true
-    }
-
-    return Object.values(node).some(hasContentIndexBlock)
-  }
-
-  return false
-}
-
 /**
  * Walks a page's lexical `content`, resolves every `content-index` block's
  * list, and returns content with `resolvedItems` attached. The input stays
@@ -227,7 +208,9 @@ export async function resolveContentIndexBlocks<T>(
   content: T,
   options: ResolveOptions = {},
 ): Promise<T> {
-  if (!content || typeof content !== 'object' || !hasContentIndexBlock(content)) {
+  // Walked before the clone, so content with no such block — the common
+  // case — is never cloned.
+  if (!content || typeof content !== 'object' || contentIndexBlocks(content).length === 0) {
     return content
   }
   // Clone so the caller's document is never mutated. Reached only when

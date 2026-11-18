@@ -34,7 +34,8 @@ export function seoDocument(data: unknown): SeoDocument | null {
  * `<title>`, which vike-react also emits as `og:title`.
  *
  * A route with no document of its own falls back to the site's own name, in
- * the locale of the URL — the embed routes and the error page.
+ * the locale of the URL. The error page takes that fallback; each embed route
+ * names itself in its own `+config.ts`.
  */
 export function contentTitle(pageContext: PageContext): string {
   return (

@@ -27,10 +27,11 @@ import type {
 import type { SeoDocument } from './head'
 import type { TFunction } from './i18n'
 import { buildAlternates } from './hreflang'
+import { isKnowledgePage } from './featured-nav'
 import { contentIndexBlocks, type ResolvedCardItem } from './content-blocks'
 import { getImageURL, getVariantName } from './cloudflare-images'
 import { isPopulated, populatedImageUrl } from './payload-relationships'
-import { isSitePath, localeHref, localeUrl } from './urls'
+import { absoluteHref, isSitePath, localeUrl, normalizeContentPath } from './urls'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
 import {
@@ -57,9 +58,6 @@ import type { Thing } from 'schema-dts'
  */
 const DEFAULT_SHARE_IMAGE = '/images/metadata/preview.png'
 
-/** The one setting a page's head reads: which pages the knowledge menu lists. */
-export type KnowledgeMenu = Pick<WebConfig, 'knowledgePages'>
-
 /** Where a URL is published, and the language it is published in. */
 export interface SeoRoute {
   /** The request origin, or null outside a Vike app. A guessed one is worse than none. */
@@ -71,21 +69,44 @@ export interface SeoRoute {
 }
 
 /**
+ * The route a `+data.ts` is answering for, as the builders need it.
+ *
+ * One derivation, so three content routes cannot spell "this URL" three ways
+ * — and a fourth route inherits the answer rather than copying it.
+ */
+export function seoRoute(
+  pageContext: { urlParsed: { origin: string | null }; urlPathname: string; locale: Locale },
+  t: TFunction,
+): SeoRoute {
+  return {
+    origin: pageContext.urlParsed.origin,
+    path: normalizeContentPath(pageContext.urlPathname),
+    locale: pageContext.locale,
+    t,
+  }
+}
+
+/**
+ * A share-sized render of an image URL.
+ *
+ * og:image needs one large landscape render, so a Cloudflare Images URL
+ * resolves to a `video` (16:9) variant, replacing the `/public` one
+ * SahajCloud returns. Anything else is handed back untouched.
+ */
+function shareVariant(url: string): string {
+  return getImageURL(url, getVariantName('video', 'large'))
+}
+
+/**
  * Resolves a `meta.image` relationship to a single og:image URL.
  *
- * og:image needs one large landscape render, so this resolves a Cloudflare
- * Images URL to a `video` (16:9) variant, replacing the `/public` one
- * SahajCloud returns. Returns null when the image is missing or unpopulated
- * (a bare id), which is what lets the default take over.
+ * Returns null when the image is missing or unpopulated (a bare id), which is
+ * what lets the default take over.
  */
 export function resolveOgImageUrl(image: unknown): string | null {
   const url = populatedImageUrl(image)
 
-  if (!url) {
-    return null
-  }
-
-  return getImageURL(url, getVariantName('video', 'large'))
+  return url ? shareVariant(url) : null
 }
 
 /** An image URL made absolute, for a `public/` path that is not one yet. */
@@ -112,20 +133,21 @@ function shareImage(route: SeoRoute, own: string | null): string | null {
  * unknown — outside a Vike app, where a guessed one is worse than none.
  *
  * Also the `og:url` and the `url` every JSON-LD node points at, so all three
- * come from one derivation.
+ * come from one derivation. A node takes `?? ''`, which never reaches a page:
+ * `baseDocument` serializes no nodes at all without an origin.
  */
 function canonicalUrl(route: SeoRoute): string | null {
   return route.origin ? localeUrl(route.origin, route.locale, route.path) : null
 }
 
 /**
- * The canonical a JSON-LD node points at.
+ * A locale as Open Graph spells one: `language_TERRITORY`, not BCP 47.
  *
- * `baseDocument` serializes nothing without an origin, so the empty string
- * stands in for a URL that never reaches a page.
+ * Only the separator changes. SahajCloud stores no territory for a bare `en`,
+ * and inventing `en_US` would claim a region nobody chose.
  */
-function nodeUrl(route: SeoRoute): string {
-  return canonicalUrl(route) ?? ''
+function openGraphLocale(locale: Locale): string {
+  return locale.replace('-', '_')
 }
 
 /** The parts every content route shares, before its own type is considered. */
@@ -149,7 +171,7 @@ function baseDocument(
   const meta: [string, string][] = [
     ['og:site_name', siteName],
     ['og:type', options.ogType],
-    ['og:locale', locale],
+    ['og:locale', openGraphLocale(locale)],
     ['twitter:site', TWITTER_HANDLE],
   ]
 
@@ -165,7 +187,7 @@ function baseDocument(
   // builds it. Two readings of "which translations exist" would eventually
   // disagree, and a crawler would see the page claim both.
   for (const advertised of options.locales) {
-    meta.push(['og:locale:alternate', advertised])
+    meta.push(['og:locale:alternate', openGraphLocale(advertised)])
   }
 
   const organization = organizationNode({
@@ -219,7 +241,7 @@ function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): ListE
 
   return items
     .filter((item) => isSitePath(item.href))
-    .map((item) => ({ name: item.title, url: `${origin}${localeHref(locale, item.href)}` }))
+    .map((item) => ({ name: item.title, url: absoluteHref(origin, locale, item.href) }))
 }
 
 /**
@@ -230,14 +252,13 @@ function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): ListE
  */
 function knowledgeTrail(
   page: Page,
-  settings: KnowledgeMenu,
+  settings: Pick<WebConfig, 'knowledgePages'>,
   route: SeoRoute,
   name: string,
 ): Breadcrumb[] {
   const { origin, locale, t } = route
-  const listed = settings.knowledgePages.some((knowledge) => knowledge.slug === page.slug)
 
-  if (!listed || !origin) {
+  if (!origin || !isKnowledgePage(page, settings)) {
     return []
   }
 
@@ -257,25 +278,31 @@ function knowledgeTrail(
  */
 export function pageSeo(options: {
   page: Page
-  settings: KnowledgeMenu
+  settings: Pick<WebConfig, 'knowledgePages'>
   route: SeoRoute
   locales: readonly Locale[]
-  isHome: boolean
 }): SeoDocument {
-  const { page, settings, route, isHome } = options
+  const { page, settings, route } = options
   const { t } = route
   const siteName = t('common.general.site_title')
   const tagline = t('common.general.site_description')
   const name = page.meta?.title || page.title
   const description = page.meta?.description || tagline
-  const image = shareImage(route, resolveOgImageUrl(page.meta?.image))
+  // ⚠ Two different images. The JSON-LD describes **this document**, so it
+  // carries the page's own or nothing; the default would claim the site's
+  // preview as the article's picture. `og:image` is a share card and takes
+  // the default, because a link with no preview is worse than a generic one.
+  const ownImage = absoluteImage(route.origin, resolveOgImageUrl(page.meta?.image))
+  // `/` normalizes to `/`, and `/index` with it, so the route's own path is
+  // the predicate — no caller can pass the wrong answer.
+  const isHome = route.path === '/'
   // An author or an article tag is what makes a page an article rather than
   // a standing page of the site. Both come from SahajCloud; neither is inferred
   // from the slug, which is the editor's to change.
   const author = isPopulated<{ name?: string }>(page.author) ? page.author.name : null
   const isArticle = Boolean(author) || (page.tags?.length ?? 0) > 0
-  const url = nodeUrl(route)
-  const nodes: Thing[] = [webPageNode({ name, url, description, image })]
+  const url = canonicalUrl(route) ?? ''
+  const nodes: Thing[] = [webPageNode({ name, url, description, image: ownImage })]
 
   if (isArticle) {
     nodes.push(
@@ -283,7 +310,7 @@ export function pageSeo(options: {
         headline: name,
         url,
         description,
-        image,
+        image: ownImage,
         authorName: author,
         datePublished: page.createdAt,
       }),
@@ -307,7 +334,7 @@ export function pageSeo(options: {
   return baseDocument(route, {
     title: isHome ? `${siteName} | ${page.meta?.title || tagline}` : composeTitle(name, siteName),
     description,
-    image,
+    image: shareImage(route, ownImage),
     ogType: isArticle ? 'article' : 'website',
     locales: options.locales,
     nodes,
@@ -334,7 +361,7 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
     nodes: [
       audioObjectNode({
         name,
-        url: nodeUrl(route),
+        url: canonicalUrl(route) ?? '',
         thumbnailUrl: thumbnail,
         durationSeconds:
           meditation.durationMinutes == null ? null : meditation.durationMinutes * 60,
@@ -347,11 +374,17 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
 export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute }): SeoDocument {
   const { lecture, route } = options
   const { t } = route
+  // `resolveLecture` hands back a URL, not a relationship, so the share
+  // variant is taken here. A meditation's thumbnail gets the same treatment,
+  // and both the share card and the media node then name one render.
+  const poster = lecture.thumbnailUrl
+    ? absoluteImage(route.origin, shareVariant(lecture.thumbnailUrl))
+    : null
 
   return baseDocument(route, {
     title: composeTitle(lecture.title, t('common.general.site_title')),
     description: t('common.general.site_description'),
-    image: shareImage(route, lecture.thumbnailUrl),
+    image: shareImage(route, poster),
     ogType: 'video.other',
     // `lectures` omits `_status` entirely upstream (lib/hreflang.ts).
     locales: [],
@@ -361,8 +394,8 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
       ? [
           videoObjectNode({
             name: lecture.title,
-            url: nodeUrl(route),
-            thumbnailUrl: lecture.thumbnailUrl,
+            url: canonicalUrl(route) ?? '',
+            thumbnailUrl: poster,
             durationSeconds: lecturePlaybackSeconds(lecture),
           }),
         ]

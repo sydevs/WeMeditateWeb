@@ -104,9 +104,7 @@ export function expectRenders(page: PageResult, path: string): void {
   expect(page.status, `${path} should return 200, got ${page.status}`).toBe(200)
   expect(page.contentType, `${path} should be HTML`).toContain('text/html')
 
-  const title = page.html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim()
-
-  expect(title, `${path} should render a non-empty <title>`).toBeTruthy()
+  expect(titleOf(page.html), `${path} should render a non-empty <title>`).toBeTruthy()
 
   const rendered = renderedHtml(page.html)
 
@@ -243,6 +241,36 @@ export async function nonEnglishLocale(): Promise<Locale | null> {
   return (offered.find((code) => code !== DEFAULT_LOCALE) as Locale | undefined) ?? null
 }
 
+/** The page's `<title>` text, trimmed, or the empty string. */
+export function titleOf(html: string): string {
+  return html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? ''
+}
+
+/** Every `content` value for one `og:`/`twitter:` key, in document order. */
+export function metaContent(html: string, key: string): string[] {
+  return (
+    [...html.matchAll(/<meta[^>]*>/gi)]
+      .map((match) => match[0])
+      // Open Graph keys on `property`, Twitter on `name`.
+      .filter((tag) => tag.includes(`property="${key}"`) || tag.includes(`name="${key}"`))
+      .map((tag) => tag.match(/content="([^"]*)"/)?.[1] ?? '')
+  )
+}
+
+/** Every JSON-LD block on the page, parsed. Throws on one that does not parse. */
+export function jsonLdBlocks(html: string): { '@graph'?: { '@type': string }[] }[] {
+  return [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((match) =>
+    JSON.parse(match[1]),
+  )
+}
+
+/** Every `@type` the page's JSON-LD names, across all its blocks. */
+export function jsonLdTypes(html: string): string[] {
+  return jsonLdBlocks(html)
+    .flatMap((graph) => graph['@graph'] ?? [])
+    .map((node) => node['@type'])
+}
+
 /** The opening `<html>` tag, which carries `lang` and `dir`. */
 export function htmlTag(html: string): string {
   return html.match(/<html[^>]*>/i)?.[0] ?? ''
@@ -282,6 +310,7 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
       return (await res.json()) as Record<string, unknown>
     } catch (err) {
       const message = (err as Error).message
+
       console.warn(`[discoverFromSahajCloud] GET /api/${path.split('?')[0]} → ${message}`)
 
       return null

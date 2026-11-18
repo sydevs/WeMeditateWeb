@@ -3,8 +3,10 @@ import type { Image, Meditation, Page, ResolvedLecture } from '../server/sahajcl
 import { lectureSeo, meditationSeo, pageSeo, resolveOgImageUrl, type SeoRoute } from './content-seo'
 import { enT } from './i18n'
 
+import { CF_BASE, CF_PUBLIC_URL } from '../tests/_helpers/cloudflare-images'
+
 const ORIGIN = 'https://wemeditate.com'
-const CF_URL = 'https://imagedelivery.net/acct/abc123/'
+const SHARE_VARIANT = `${CF_BASE}/width=1024`
 
 /**
  * Fixtures mirror what a real read returns.
@@ -18,7 +20,7 @@ const CF_URL = 'https://imagedelivery.net/acct/abc123/'
  *   `server/payload-types.ts`, which `PAGE_SELECT` now requests.
  */
 /** A populated upload, narrowed to the fields `IMAGE_POPULATE` returns. */
-const CF_IMAGE = { url: `${CF_URL}public` } as unknown as Image
+const CF_IMAGE = { url: CF_PUBLIC_URL } as unknown as Image
 
 function route(overrides: Partial<SeoRoute> = {}): SeoRoute {
   return { origin: ORIGIN, path: '/about', locale: 'en', t: enT, ...overrides }
@@ -43,7 +45,6 @@ function seoFor(overrides: Partial<Parameters<typeof pageSeo>[0]> = {}) {
     settings: NO_MENU,
     route: route(),
     locales: [],
-    isHome: false,
     ...overrides,
   })
 }
@@ -61,11 +62,11 @@ const typesIn = (seo: { jsonLd: string }) => graph(seo).map((node) => node['@typ
 
 describe('resolveOgImageUrl', () => {
   it('appends a large video variant to a Cloudflare image URL', () => {
-    expect(resolveOgImageUrl({ url: CF_URL })).toBe(`${CF_URL}width=1024`)
+    expect(resolveOgImageUrl({ url: `${CF_BASE}/` })).toBe(SHARE_VARIANT)
   })
 
   it('replaces the /public variant a SahajCloud read returns', () => {
-    expect(resolveOgImageUrl({ url: `${CF_URL}public` })).toBe(`${CF_URL}width=1024`)
+    expect(resolveOgImageUrl({ url: CF_PUBLIC_URL })).toBe(SHARE_VARIANT)
   })
 
   it('returns a non-Cloudflare URL unchanged', () => {
@@ -97,13 +98,17 @@ describe('pageSeo', () => {
   })
 
   it('reverses the form on the home page, whose own name is the site name', () => {
-    const seo = seoFor({ page: page({ meta: { title: 'Guided meditations' } }), isHome: true })
+    // `/` is the whole predicate: `normalizeContentPath` maps `/index` to it.
+    const seo = seoFor({
+      page: page({ meta: { title: 'Guided meditations' } }),
+      route: route({ path: '/' }),
+    })
 
     expect(seo.title).toBe('We Meditate | Guided meditations')
   })
 
   it('falls back to the site tagline on a home page with no meta title', () => {
-    expect(seoFor({ isHome: true }).title).toBe(
+    expect(seoFor({ route: route({ path: '/' }) }).title).toBe(
       `We Meditate | ${enT('common.general.site_description')}`,
     )
   })
@@ -135,7 +140,24 @@ describe('pageSeo', () => {
   it("serves the page's own meta image where it has one", () => {
     const seo = seoFor({ page: page({ meta: { image: CF_IMAGE } }) })
 
-    expect(metaValues(seo, 'og:image')).toEqual([`${CF_URL}width=1024`])
+    expect(metaValues(seo, 'og:image')).toEqual([SHARE_VARIANT])
+  })
+
+  it('describes the document with its own image, never the site default', () => {
+    // og:image takes the default so a share is never blank. The JSON-LD is a
+    // claim about this document, so a generic picture would be a false one.
+    const withImage = graph(seoFor({ page: page({ meta: { image: CF_IMAGE } }) }))
+    const without = graph(seoFor())
+
+    expect(withImage.find((node) => node['@type'] === 'WebPage')?.image).toBe(SHARE_VARIANT)
+    expect(without.find((node) => node['@type'] === 'WebPage')?.image).toBeUndefined()
+  })
+
+  it('spells a regional locale the Open Graph way, and invents no territory', () => {
+    const seo = seoFor({ route: route({ locale: 'pt-BR' }), locales: ['en', 'pt-BR'] })
+
+    expect(metaValues(seo, 'og:locale')).toEqual(['pt_BR'])
+    expect(metaValues(seo, 'og:locale:alternate')).toEqual(['en', 'pt_BR'])
   })
 
   it('names the site and the Twitter account on every page', () => {
@@ -191,9 +213,7 @@ describe('pageSeo', () => {
   })
 
   it('trails Home → About Meditation → page for a page the knowledge menu lists', () => {
-    const seo = seoFor({
-      settings: { knowledgePages: [{ slug: 'about' }] } as typeof NO_MENU,
-    })
+    const seo = seoFor({ settings: { knowledgePages: [{ slug: 'about' }] } as typeof NO_MENU })
     const trail = graph(seo).find((node) => node['@type'] === 'BreadcrumbList')
 
     expect(trail?.itemListElement).toEqual([
@@ -275,7 +295,7 @@ describe('meditationSeo', () => {
     expect(typesIn(seo)).toEqual(['Organization', 'WebSite', 'AudioObject'])
     expect(audio?.duration).toBe('PT20M')
     expect(audio?.url).toBe(`${ORIGIN}/meditations/105`)
-    expect(audio?.thumbnailUrl).toBe(`${CF_URL}width=1024`)
+    expect(audio?.thumbnailUrl).toBe(SHARE_VARIANT)
   })
 
   it('omits the duration where SahajCloud stored none', () => {
@@ -286,7 +306,9 @@ describe('meditationSeo', () => {
 
   it('shares its thumbnail, and the default image where it has none', () => {
     expect(metaValues(seoFor(), 'og:image')).toEqual([`${ORIGIN}/images/metadata/preview.png`])
-    expect(metaValues(seoFor({ thumbnail: CF_IMAGE }), 'og:image')).toEqual([`${CF_URL}width=1024`])
+    expect(metaValues(seoFor({ thumbnail: CF_IMAGE }), 'og:image')).toEqual([
+      `${CF_BASE}/width=1024`,
+    ])
   })
 
   it('advertises no translations: meditations carry no per-locale status', () => {
@@ -321,8 +343,20 @@ describe('lectureSeo', () => {
     expect(metaValues(seo, 'og:type')).toEqual(['video.other'])
   })
 
-  it('shares its poster', () => {
-    expect(metaValues(seoFor(), 'og:image')).toEqual(['https://video.test/poster.jpg'])
+  it('shares its poster, and names the same render in the VideoObject', () => {
+    // `resolveLecture` hands back a URL, so the share variant is taken here.
+    // A non-Cloudflare poster passes through untouched.
+    const seo = seoFor()
+    const video = graph(seo).find((node) => node['@type'] === 'VideoObject')
+
+    expect(metaValues(seo, 'og:image')).toEqual(['https://video.test/poster.jpg'])
+    expect(video?.thumbnailUrl).toBe('https://video.test/poster.jpg')
+  })
+
+  it('resolves a Cloudflare poster to the share variant, as a meditation does', () => {
+    const seo = seoFor({ thumbnailUrl: CF_PUBLIC_URL })
+
+    expect(metaValues(seo, 'og:image')).toEqual([SHARE_VARIANT])
   })
 
   it('describes itself as a VideoObject playing the whole source', () => {
@@ -348,6 +382,7 @@ describe('lectureSeo', () => {
   })
 
   it('never publishes an uploadDate, because nothing upstream stores one', () => {
+    // `lastSyncedAt` is when we read the lecture, not when it was published.
     expect(
       graph(seoFor()).find((node) => node['@type'] === 'VideoObject')?.uploadDate,
     ).toBeUndefined()

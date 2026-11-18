@@ -155,12 +155,16 @@ export function audioObjectNode(options: {
   }
 }
 
+/**
+ * No `uploadDate`: nothing upstream stores one. `LectureMetadata` carries
+ * `lastSyncedAt`, which is when we read the lecture, not when it was
+ * published, and a wrong date is worse than an absent one.
+ */
 export function videoObjectNode(options: {
   name: string
   url: string
   thumbnailUrl?: string | null
   durationSeconds?: number | null
-  uploadDate?: string | null
 }): VideoObject {
   const duration = options.durationSeconds == null ? null : isoDuration(options.durationSeconds)
 
@@ -170,7 +174,6 @@ export function videoObjectNode(options: {
     url: options.url,
     ...(options.thumbnailUrl ? { thumbnailUrl: options.thumbnailUrl } : {}),
     ...(duration ? { duration } : {}),
-    ...(options.uploadDate ? { uploadDate: options.uploadDate } : {}),
   }
 }
 

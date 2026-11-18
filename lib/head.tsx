@@ -113,9 +113,16 @@ export function SeoHeadTags({ seo }: { seo: SeoHead }) {
 
       <HreflangLinks alternates={seo.alternates} />
 
-      {seo.meta.map(([property, content]) => (
-        <meta key={`${property}:${content}`} content={content} property={property} />
-      ))}
+      {seo.meta.map(([property, content]) =>
+        // Open Graph keys on `property`, Twitter on `name`. vike-react spells
+        // the `twitter:card` it emits for `/map` the second way, so spelling
+        // ours the first would leave one tag with two spellings on one site.
+        property.startsWith('twitter:') ? (
+          <meta key={`${property}:${content}`} content={content} name={property} />
+        ) : (
+          <meta key={`${property}:${content}`} content={content} property={property} />
+        ),
+      )}
 
       {isSafeJsonLd(seo.jsonLd) && (
         // Emitted verbatim: see `isSafeJsonLd` for why this is neither

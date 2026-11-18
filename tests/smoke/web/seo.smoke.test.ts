@@ -12,27 +12,17 @@
  * design. sydevs/WeMeditateWeb#160's post-switch check covers that.
  */
 import { describe, it, expect } from 'vitest'
-import { fetchPage, discoverFromSahajCloud, type PageResult } from '../_helpers/preview'
-
-/** Every `content` value for one `og:`/`twitter:` property, in document order. */
-function metaContent(html: string, property: string): string[] {
-  return [...html.matchAll(/<meta[^>]*>/gi)]
-    .map((match) => match[0])
-    .filter((tag) => tag.includes(`property="${property}"`))
-    .map((tag) => tag.match(/content="([^"]*)"/)?.[1] ?? '')
-}
+import {
+  fetchPage,
+  discoverFromSahajCloud,
+  jsonLdTypes,
+  metaContent,
+  titleOf,
+  type PageResult,
+} from '../_helpers/preview'
 
 /** A URL without its trailing slash, so `https://host/` and `https://host` compare equal. */
 const bare = (url: string) => url.replace(/\/$/, '')
-
-/** Every JSON-LD block on the page, parsed. */
-function jsonLdBlocks(html: string): { '@graph'?: { '@type': string }[] }[] {
-  return [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((match) =>
-    JSON.parse(match[1]),
-  )
-}
-
-const titleOf = (html: string) => html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ''
 
 /** The assertions every content route owes, whatever it serves. */
 function expectShareable(page: PageResult, path: string) {
@@ -53,11 +43,7 @@ function expectShareable(page: PageResult, path: string) {
     `${path} should declare a Twitter card beside its image`,
   ).toBe('summary_large_image')
 
-  const graphs = jsonLdBlocks(page.html)
-
-  expect(graphs.length, `${path} should carry JSON-LD`).toBeGreaterThan(0)
-
-  const types = graphs.flatMap((graph) => graph['@graph'] ?? []).map((node) => node['@type'])
+  const types = jsonLdTypes(page.html)
 
   expect(types, `${path} should describe the organisation`).toContain('Organization')
   expect(types, `${path} should describe the site`).toContain('WebSite')
@@ -81,12 +67,7 @@ describe('web preview share metadata', () => {
     const page = await fetchPage(`/${slug}`)
 
     expectShareable(page, `/${slug}`)
-
-    const types = jsonLdBlocks(page.html)
-      .flatMap((graph) => graph['@graph'] ?? [])
-      .map((node) => node['@type'])
-
-    expect(types).toContain('WebPage')
+    expect(jsonLdTypes(page.html)).toContain('WebPage')
     expect(titleOf(page.html), 'a content page is named before the site').toMatch(
       / \| We Meditate$/,
     )
@@ -102,12 +83,7 @@ describe('web preview share metadata', () => {
     expectShareable(page, `/meditations/${id}`)
     // The bug this ticket closes: every meditation served the site default.
     expect(titleOf(page.html), 'a meditation should carry its own name').not.toBe('We Meditate')
-
-    const types = jsonLdBlocks(page.html)
-      .flatMap((graph) => graph['@graph'] ?? [])
-      .map((node) => node['@type'])
-
-    expect(types).toContain('AudioObject')
+    expect(jsonLdTypes(page.html)).toContain('AudioObject')
   })
 
   it('a lecture is shareable and describes its video', async (ctx) => {
@@ -119,12 +95,7 @@ describe('web preview share metadata', () => {
 
     expectShareable(page, `/lectures/${id}`)
     expect(metaContent(page.html, 'og:type')[0]).toBe('video.other')
-
-    const types = jsonLdBlocks(page.html)
-      .flatMap((graph) => graph['@graph'] ?? [])
-      .map((node) => node['@type'])
-
-    expect(types).toContain('VideoObject')
+    expect(jsonLdTypes(page.html)).toContain('VideoObject')
   })
 
   it('an embed route publishes no URL claim at all', async (ctx) => {

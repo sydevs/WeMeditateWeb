@@ -115,8 +115,11 @@ These rules apply whether or not the matching rule file or skill is loaded.
   and building no document.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
-  answer from there. Never restate one of these rules at a call site. A **scheme** is part of that
-  spelling: `isSafeHttpUrl`, `isSafeNavigationUrl` and `isSafeLinkHref` live there too, and any URL
+  answer from there. Never restate one of these rules at a call site. **An absolute URL for one of
+  our own pages is `absoluteHref`**, not an origin glued onto `localeHref`: the embed snippet and
+  a content-index card's `ItemList` entry both need one, and it leaves an off-site URL alone.
+  A **scheme** is part of that spelling: `isSafeHttpUrl`, `isSafeNavigationUrl` and
+  `isSafeLinkHref` live there too, and any URL
   the site did not author itself passes one of them before it reaches an `href` or
   `window.location` — they are what stops a configured `javascript:` value running in our origin.
   Which one is the destination's: `window.location` takes the first two, and an `href` takes
