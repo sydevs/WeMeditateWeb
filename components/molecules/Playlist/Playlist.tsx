@@ -92,9 +92,8 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
           </Link>
         </div>
         {/*
-          `contentIndexTrack` hands every song `duration: 0`, because
-          SahajCloud's Song type has no duration field, so each production row
-          printed `0:00`. Only the fixtures' real durations hid it.
+          A song SahajCloud could not read a length from arrives as `0`, and
+          `0:00` is worse than a blank.
         */}
         {track.duration > 0 && (
           <span

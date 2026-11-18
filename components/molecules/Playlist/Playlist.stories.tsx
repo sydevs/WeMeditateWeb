@@ -42,6 +42,16 @@ const sampleTracks: Track[] = [
     duration: 318,
     tags: [{ id: 'vocal', label: 'Vocal' }],
   },
+  // A song SahajCloud stores no duration for, so its row prints no timestamp.
+  {
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3',
+    title: 'Unmeasured Drone',
+    credit: 'Meera Joshi',
+    creditURL: '#',
+    thumbnailURL: 'https://picsum.photos/seed/track13/200/200',
+    duration: 0,
+    tags: [{ id: 'strings', label: 'Strings' }],
+  },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
     title: 'Morning Melody',
@@ -113,8 +123,7 @@ const musicFilters: MusicFilter[] = [
   },
 ]
 
-// Every song reaches the site this way: SahajCloud's Song type has no duration
-// field, so `contentIndexTrack` sets 0.
+// What a playlist looks like before SahajCloud has a length for any of it.
 const undatedTracks: Track[] = sampleTracks.map((track) => ({ ...track, duration: 0 }))
 
 /** Playlist molecule showcasing track list with filters and current track highlighting. */

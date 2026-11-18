@@ -237,11 +237,12 @@ describe('contentIndexTrack', () => {
     ...over,
   })
 
-  it('maps a song doc to a playable Track (duration 0, tags as id/label facets)', () => {
+  it('maps a song doc to a playable Track (stored duration, tags as id/label facets)', () => {
     const track = contentIndexTrack({
       id: 10,
       title: 'Raga',
       url: 'https://cdn/audio.mp3',
+      duration: 212,
       album: album(),
       tags: [
         { id: 1, slug: 'strings', title: 'Strings' },
@@ -256,12 +257,22 @@ describe('contentIndexTrack', () => {
       credit: 'Nightingale',
       creditURL: 'https://example.com/artist',
       thumbnailURL: 'https://imagedelivery.net/acct/img/',
-      duration: 0,
+      duration: 212,
       tags: [
         { id: 'strings', label: 'Strings' },
         { id: 'vocal', label: 'Vocal' },
       ],
     })
+  })
+
+  it('falls back to 0 where SahajCloud stores no duration', () => {
+    // A song whose audio SahajCloud could not parse keeps a null column, and
+    // one read before the field existed carries no key at all. Playlist
+    // prints no timestamp for either.
+    const song = { id: 10, title: 'Raga', url: 'https://cdn/audio.mp3' }
+
+    expect(contentIndexTrack(song)?.duration).toBe(0)
+    expect(contentIndexTrack({ ...song, duration: null })?.duration).toBe(0)
   })
 
   it('labels a song tag from its SahajCloud title, falling back to the slug', () => {
