@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
 ]
 
 const open = () => {
-  render(<MobileMenu navItems={navItems} />)
+  const { container } = render(<MobileMenu navItems={navItems} />)
   const trigger = screen.getByRole('button', { name: 'Menu' })
 
   // A tap or a keypress focuses the button before it activates, and
@@ -30,12 +30,12 @@ const open = () => {
   trigger.focus()
   fireEvent.click(trigger)
 
-  return trigger
+  return { trigger, container }
 }
 
 describe('MobileMenu', () => {
   it('opens a dialog carrying every destination the lg: row reaches', () => {
-    const trigger = open()
+    const { trigger } = open()
 
     expect(trigger.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('dialog', { name: 'Menu' })).toBeTruthy()
@@ -53,7 +53,7 @@ describe('MobileMenu', () => {
   })
 
   it('takes the page behind it out of reach while it is open', () => {
-    const trigger = open()
+    const { trigger } = open()
 
     // The trap is what keeps Tab inside the panel, and jsdom implements no Tab
     // key — so this asserts the other half of the same mechanism: Floating UI
@@ -75,7 +75,7 @@ describe('MobileMenu', () => {
   })
 
   it('closes on Escape and gives focus back to the trigger', async () => {
-    const trigger = open()
+    const { trigger } = open()
 
     // Focus is put on a row first, standing in for the Tab that takes a
     // keyboard user there. Without it the trigger never loses focus, and the
@@ -91,6 +91,17 @@ describe('MobileMenu', () => {
     await new Promise(requestAnimationFrame)
 
     expect(document.activeElement).toBe(trigger)
+  })
+
+  it('leaves the bar entirely, so no overflow ancestor can clip it', () => {
+    // `/map` renders the bar inside `overflow-hidden h-dvh`, and a splash route
+    // wraps the header in `pointer-events-none`. A portaled, fixed panel is
+    // outside both — which is why nothing above the nav had to change (#204).
+    const { container } = open()
+    const panel = screen.getByRole('dialog')
+
+    expect(container.contains(panel)).toBe(false)
+    expect(panel.style.position).toBe('fixed')
   })
 
   it('closes on a press outside it', () => {
