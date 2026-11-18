@@ -40,7 +40,7 @@ window has named nothing, discovery spells the Worker's branch host itself:
 preview the PR does carry. It waits out that window first because the branch alias tracks the
 branch's latest successful build rather than this commit, so running it earlier would hand the
 specs the previous build while this commit's own was still deploying. The address still has to
-answer before it reaches the specs. Read the `selected …` line the step prints.
+answer before it reaches the specs. Read the `selected …` and `skipping …` lines the step prints.
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |

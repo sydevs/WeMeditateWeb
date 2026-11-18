@@ -14,6 +14,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { WebTranslations } from '../../../server/sahajcloud-types'
 
+const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
+
 const FRENCH = {
   common: { general: {}, a11y: {} },
   article: {
@@ -47,14 +49,14 @@ const items = [
 
 describe('ContentIndex in a non-English locale', () => {
   it('renders the SahajCloud French, not the English snapshot', () => {
-    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    const html = renderToStaticMarkup(<ContentIndex items={items} sizes={CARD_SIZES} />)
 
     expect(html).toContain('Tout')
     expect(html).not.toContain('>All<')
   })
 
   it('translates the screen-reader-only filter label too', () => {
-    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    const html = renderToStaticMarkup(<ContentIndex items={items} sizes={CARD_SIZES} />)
 
     expect(html).toContain('aria-label="Filtrer le contenu par étiquette"')
     expect(html).not.toContain('Filter content by tag')
@@ -62,7 +64,7 @@ describe('ContentIndex in a non-English locale', () => {
 
   it('shows the facet labels the server resolved', () => {
     // These come down on the items, already localized by `+data.ts`.
-    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    const html = renderToStaticMarkup(<ContentIndex items={items} sizes={CARD_SIZES} />)
 
     expect(html).toContain('Sagesse')
     expect(html).toContain('Événement')

@@ -1,4 +1,8 @@
 import { ComponentProps, useState } from 'react'
+import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
+
+/** An avatar box is 24–96px, so 200px covers the largest of them at 2x. */
+const AVATAR_VARIANT = getVariantName('square', 'xsmall')
 
 export interface AvatarProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Image source URL */
@@ -109,7 +113,7 @@ export function Avatar({
           // React hoists a `<link rel="preload" as="image">` for any <img>
           // that is not lazy, and an avatar is never the page's hero.
           loading="lazy"
-          src={src}
+          src={getImageURL(src, AVATAR_VARIANT)}
           onError={() => setHasError(true)}
         />
       )}
