@@ -4,8 +4,7 @@
  * ⚠ SELECT only: the export must never write to Heroku. A row is exported
  * only when it has been published at some point (`state` 2 archived, 3
  * published or 4 unpublished), so the address of a never-published draft
- * and its working title never reach the repo. `data/legacy-redirects/README.md`
- * carries the same text, and `queries.test.ts` fails when the two drift.
+ * and its working title never reach the repo.
  */
 
 export const QUERIES = {

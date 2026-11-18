@@ -54,66 +54,6 @@ An address the old site never had returns `null`: the map is built from the reco
 
 ## The queries
 
-Every statement is a SELECT, run through `heroku pg:psql -a wemeditate` wrapped in
-`select row_to_json(t) from (<query>) t`.
-
-### articles
-
-```sql
-select t.article_id as id, a.category_id, a.article_type, t.locale, t.slug, t.name, t.state, t.published_at::date as published_at from article_translations t join articles a on a.id = t.article_id where t.state in (2,3,4) and t.slug is not null order by t.article_id, t.locale
-```
-
-### staticPages
-
-```sql
-select t.static_page_id as id, a.role, t.locale, t.slug, t.name, t.state, t.published_at::date as published_at from static_page_translations t join static_pages a on a.id = t.static_page_id where t.state in (2,3,4) and t.slug is not null order by t.static_page_id, t.locale
-```
-
-### meditations
-
-```sql
-select t.meditation_id as id, t.locale, t.slug, t.name, t.state, t.published_at::date as published_at, (t.horizontal_vimeo_id is not null or t.vertical_vimeo_id is not null) as has_video from meditation_translations t where t.state in (2,3,4) and t.slug is not null order by t.meditation_id, t.locale
-```
-
-### treatments
-
-```sql
-select t.treatment_id as id, t.locale, t.slug, t.name, t.state, t.published_at::date as published_at from treatment_translations t where t.state in (2,3,4) and t.slug is not null order by t.treatment_id, t.locale
-```
-
-### subtleSystemNodes
-
-```sql
-select t.subtle_system_node_id as id, a.role, t.locale, t.slug, t.name, t.state, t.published_at::date as published_at from subtle_system_node_translations t join subtle_system_nodes a on a.id = t.subtle_system_node_id where t.state in (2,3,4) and t.slug is not null order by t.subtle_system_node_id, t.locale
-```
-
-### categories
-
-```sql
-select t.category_id as id, t.locale, t.slug, t.name, t.published, t.published_at::date as published_at from category_translations t where (t.published or t.published_at is not null) and t.slug is not null order by t.category_id, t.locale
-```
-
-### streams
-
-```sql
-select id, locale, slug, name, state, published_at::date as published_at from streams where state in (2,3,4) and slug is not null order by id
-```
-
-### promoPages
-
-```sql
-select id, locale, slug, name, state, published_at::date as published_at from promo_pages where state in (2,3,4) and slug is not null order by id
-```
-
-### slugHistory
-
-```sql
-select slug, sluggable_id, sluggable_type, locale from friendly_id_slugs where sluggable_type in ('Article','Meditation','PromoPage','Stream','SubtleSystemNode','Treatment') order by id
-```
-
-### exportedOn
-
-```sql
-select now()::date as exported_on
-```
-
+`../../scripts/legacy-redirects/queries.ts` holds all ten, one named export per table. Each is a
+SELECT, wrapped in `select row_to_json(t) from (<query>) t` and run through
+`heroku pg:psql -a wemeditate`, which `pnpm redirects:export-inventory` does for you.
