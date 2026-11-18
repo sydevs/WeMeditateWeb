@@ -72,6 +72,8 @@ export function AudioPlayer({
                 alt={state.currentTrack.title}
                 aspectRatio="square"
                 rounded="rounded"
+                // The 48px of `w-12 h-12` above.
+                sizes="48px"
               />
             </div>
             <div className="flex-1 min-w-0">

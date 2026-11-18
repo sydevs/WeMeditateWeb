@@ -25,6 +25,8 @@ export interface LecturePlayerProps {
   lecture: ResolvedLecture
   /** Current locale. Selects which subtitle track is the default, active one. */
   locale?: Locale
+  /** `sizes` for the server-rendered poster, where no layout bounds the player. */
+  posterSizes?: string
   className?: string
 }
 
@@ -35,7 +37,7 @@ export interface LecturePlayerProps {
  * (`/lectures/:id/embed`) renders it standalone, and LectureTemplate wraps
  * it with a title and duration, so the player wiring stays identical in both.
  */
-export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
+export function LecturePlayer({ lecture, locale, posterSizes, className }: LecturePlayerProps) {
   const t = useT()
 
   if (!lecture.hlsUrl) {
@@ -53,6 +55,7 @@ export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps
       defaultSubtitleLang={locale}
       hlsUrl={lecture.hlsUrl}
       poster={lecture.thumbnailUrl ?? undefined}
+      posterSizes={posterSizes}
       startTime={lecture.startTime}
       stopTime={lecture.stopTime}
       subtitleTracks={lecture.subtitles}

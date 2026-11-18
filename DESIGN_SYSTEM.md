@@ -399,15 +399,33 @@ asset, a story placeholder) stays unchanged.
 
 | Aspect ratio | Widths |
 | --- | --- |
-| `square` (1:1) | 400, 800, 1200 |
+| `square` (1:1) | 200, 400, 800, 1200 |
 | `video` (16:9) | 640, 800, 1024, 1536 |
 | `4-3`, `3-2` | 800, 1024, 1536 |
 | `ultrawide` (21:9) | 1536, 2048 |
 
-**Size tiers**: `small` \| `medium` (default) \| `large` \| `xlarge`. When a tier is undefined for
-a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so the width it
-picks is deterministic. Flexible variants need no dashboard entry per width, so the table above
-is the whole list.
+**Size tiers**: `xsmall` \| `small` \| `medium` (default) \| `large` \| `xlarge`. When a tier is
+undefined for a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so
+the width it picks is deterministic. `xsmall` exists only on `square`, for a thumbnail box —
+an avatar, a now-playing tile. Flexible variants need no dashboard entry per width, so the table
+above is the whole list.
+
+**An `aspectRatio` is what asks for a variant at all, and a `sizes` is what makes the srcset
+worth having.** Without the ratio the atom hands the URL through untouched, so the box gets the
+full-size original. Without a `sizes` the browser has nothing to resolve the srcset against and
+may fetch 800px into a 48px tile (#146).
+
+Each prop is held by what can hold it. **`sizes` is required by `ImageProps`**, so `tsc` faults
+a call site that declares no box — including one forwarding a `sizes` of its own that is
+`undefined`, the spelling a lint selector reads as compliant (#206). A component that renders an
+`<Image>` it does not size therefore takes a `sizes` of its own and passes it on: `ContentCard`,
+`ContentGrid` and `ContentIndex` each do, and the length is chosen where the container width is.
+**`aspectRatio` stays a `no-restricted-syntax` selector** in
+[eslint.config.js](./eslint.config.js), because the prop is optional by design — an `<Image>`
+whose src is not Cloudflare's needs no ratio, so no type can demand it.
+[tests/guards/image-variants.test.ts](./tests/guards/image-variants.test.ts) proves that selector
+still matches, and pins the raw `<img>` population it cannot reach: a hand-rolled one reds that
+spec until someone says whether its `src` reaches `getImageURL`.
 
 `<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
 (default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →

@@ -227,6 +227,27 @@ export default defineConfig([
           message:
             'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
+        {
+          // An `<Image>` with no `aspectRatio` resolves no Cloudflare variant,
+          // so the box gets the full-size original. Fourteen call sites were
+          // missing it, a `sizes`, or both (#146).
+          //
+          // `sizes` is required by `ImageProps` instead, because a selector
+          // reads a prop's presence: a caller forwarding `sizes={sizes}` and
+          // handed `undefined` passes it, and that was #206 exactly. The ratio
+          // stays here — it is optional by design, for a `<Image>` whose src is
+          // not Cloudflare's, so no type can demand it.
+          //
+          // This sits in this block because `no-restricted-syntax` is one rule
+          // id: a second block covering the same files would replace the copy
+          // selectors above rather than add to them. So the block's `ignores`,
+          // and any disable region for copy, silence it too — neither reaches
+          // an `<Image>` today.
+          selector:
+            'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="aspectRatio"]))',
+          message:
+            '<Image> without aspectRatio serves the full-size original: name the ratio its box draws.',
+        },
       ],
     },
   },

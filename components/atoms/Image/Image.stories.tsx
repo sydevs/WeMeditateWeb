@@ -3,6 +3,13 @@ import { Image } from "./Image";
 import { StorySection,
    StoryWrapper } from '../../ladle';
 
+// Every <Image> declares the box its grid draws. The three-column grids are
+// `max-w-4xl` with a 16px gap, so a cell caps at (896 - 32) / 3 = 288px; the
+// two-column Examples grid is `max-w-2xl` with a 12px gap, (672 - 12) / 2 = 330px.
+const THIRD_OF_4XL = '(min-width: 640px) 288px, 100vw'
+const HALF_OF_2XL = '(min-width: 640px) 330px, 100vw'
+const MAX_W_SM = '(min-width: 384px) 384px, 100vw'
+
 export default {
   title: "Atoms"
 } satisfies StoryDefault;
@@ -22,6 +29,7 @@ export const Default: Story = () => (
             alt="Square image"
             aspectRatio="square"
             rounded="square"
+            sizes={THIRD_OF_4XL}
           />
         </div>
         <div>
@@ -31,6 +39,7 @@ export const Default: Story = () => (
             alt="Rounded image"
             aspectRatio="square"
             rounded="rounded"
+            sizes={THIRD_OF_4XL}
           />
         </div>
         <div>
@@ -40,6 +49,7 @@ export const Default: Story = () => (
             alt="Circle image"
             aspectRatio="square"
             rounded="circle"
+            sizes={THIRD_OF_4XL}
           />
         </div>
       </div>
@@ -53,6 +63,7 @@ export const Default: Story = () => (
             src="https://picsum.photos/id/10/400/400"
             alt="Square image"
             aspectRatio="square"
+            sizes={THIRD_OF_4XL}
           />
         </div>
         <div>
@@ -61,6 +72,7 @@ export const Default: Story = () => (
             src="https://picsum.photos/id/10/1600/900"
             alt="Video aspect ratio"
             aspectRatio="video"
+            sizes={THIRD_OF_4XL}
           />
         </div>
         <div>
@@ -69,6 +81,7 @@ export const Default: Story = () => (
             src="https://picsum.photos/id/10/800/600"
             alt="4:3 aspect ratio"
             aspectRatio="4-3"
+            sizes={THIRD_OF_4XL}
           />
         </div>
       </div>
@@ -81,9 +94,25 @@ export const Default: Story = () => (
         variant="subsection"
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
-          <Image alt="A loaded image" aspectRatio="4-3" src="https://picsum.photos/id/30/600/400" />
-          <Image alt="No src, so the placeholder holds the box" aspectRatio="4-3" src="" />
-          <Image alt="No src and no placeholder" aspectRatio="4-3" showLoading={false} src="" />
+          <Image
+            alt="A loaded image"
+            aspectRatio="4-3"
+            sizes={THIRD_OF_4XL}
+            src="https://picsum.photos/id/30/600/400"
+          />
+          <Image
+            alt="No src, so the placeholder holds the box"
+            aspectRatio="4-3"
+            sizes={THIRD_OF_4XL}
+            src=""
+          />
+          <Image
+            alt="No src and no placeholder"
+            aspectRatio="4-3"
+            showLoading={false}
+            sizes={THIRD_OF_4XL}
+            src=""
+          />
         </div>
       </StorySection>
 
@@ -97,6 +126,7 @@ export const Default: Story = () => (
             alt="A broken natural-flow image"
             aspectRatio="video"
             forceAspectRatio={false}
+            sizes={MAX_W_SM}
             src="/this-image-does-not-exist.jpg"
           />
         </div>
@@ -110,6 +140,7 @@ export const Default: Story = () => (
           alt="Portrait meditation"
           aspectRatio="3-2"
           rounded="rounded"
+          sizes={HALF_OF_2XL}
         />
         <div className="flex flex-col gap-3">
           <Image
@@ -117,12 +148,14 @@ export const Default: Story = () => (
             alt="Landscape meditation"
             aspectRatio="3-2"
             rounded="rounded"
+            sizes={HALF_OF_2XL}
           />
           <Image
             src="https://picsum.photos/id/52/600/400"
             alt="Another landscape"
             aspectRatio="3-2"
             rounded="rounded"
+            sizes={HALF_OF_2XL}
           />
         </div>
       </div>
