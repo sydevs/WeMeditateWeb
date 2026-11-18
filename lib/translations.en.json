@@ -51,6 +51,7 @@
       "dismiss": "Dismiss",
       "next": "Next",
       "opens_in_new_tab": "%{label} (opens in new tab)",
+      "opens_in_new_tab_suffix": "(opens in new tab)",
       "previous": "Previous",
       "show_more_items_one": "Show %{count} more item",
       "show_more_items_other": "Show %{count} more items"
