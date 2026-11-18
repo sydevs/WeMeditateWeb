@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { OrnateTextBox } from './OrnateTextBox'
-import { classFor } from '../../../tests/_helpers/markup'
+import { classFor, classOf } from '../../../tests/_helpers/markup'
 
 const BASE = {
   title: 'Sacred Teachings',
@@ -127,7 +127,7 @@ describe('<OrnateTextBox>', () => {
   it('keeps the graphic faint and the subtitle and body copy free of alpha', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Timeless teachings" />)
     const body = classFor(html, 'space-y-5')
-    const subtitle = classFor(html, 'mt-2 text-base')
+    const subtitle = classOf(html, 'Timeless teachings')
 
     expect(ornateImg(html)).toContain('opacity-25')
     expect(body).toContain('leading-relaxed')
@@ -149,7 +149,7 @@ describe('<OrnateTextBox>', () => {
     expect(html).toContain('lg:float-left')
     expect(html.indexOf('lg:float-left')).toBeLessThan(html.indexOf('Sacred Teachings'))
     expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('timeless wisdom'))
-    expect(classFor(html, 'lg:mb-6')).toContain('lg:flow-root')
+    expect(classFor(html, 'lg:mb-6').split(' ')).toContain('lg:flow-root')
   })
 
   // Source order is image, header, body; the reading order below `lg` is
@@ -160,11 +160,11 @@ describe('<OrnateTextBox>', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
     const container = classFor(html, 'lg:pr-24')
 
-    expect(container).toContain('flex-col')
-    expect(container).toContain('lg:flow-root')
-    expect(classFor(html, 'lg:float-left')).toContain('order-2')
-    expect(classFor(html, 'lg:mb-6')).toContain('order-1')
-    expect(classFor(html, 'space-y-5')).toContain('order-3')
+    expect(container.split(' ')).toContain('flex-col')
+    expect(container.split(' ')).toContain('lg:flow-root')
+    expect(classFor(html, 'lg:float-left').split(' ')).toContain('order-2')
+    expect(classFor(html, 'lg:mb-6').split(' ')).toContain('order-1')
+    expect(classFor(html, 'space-y-5').split(' ')).toContain('order-3')
   })
 
   it('renders the CTA only when both text and href are set', () => {
