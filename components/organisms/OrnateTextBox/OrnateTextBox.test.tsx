@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { OrnateTextBox } from './OrnateTextBox'
+import { classFor } from '../../../tests/_helpers/markup'
 
 const BASE = {
   title: 'Sacred Teachings',
@@ -84,14 +85,15 @@ describe('<OrnateTextBox>', () => {
   // peach stop on the band's inner edge from `right-0`.
   it('keeps the warm gradient on the image side, angled inward', () => {
     // `-top-24` is the warm band's alone; the brown ground is a gradient too.
-    const band = (html: string) => html.match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
-
-    const left = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />))
+    const left = classFor(renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />), '-top-24')
 
     expect(left).toContain('left-0')
     expect(left).toContain('linear-gradient(90deg')
 
-    const right = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />))
+    const right = classFor(
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />),
+      '-top-24',
+    )
 
     expect(right).toContain('right-0')
     expect(right).toContain('linear-gradient(270deg')
@@ -104,10 +106,7 @@ describe('<OrnateTextBox>', () => {
     ['left', '90deg'],
     ['right', '270deg'],
   ] as const)('runs the %s band faint below lg and full from lg up', (align, angle) => {
-    const band =
-      renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />).match(
-        /class="([^"]*-top-24[^"]*)"/,
-      )?.[1] ?? ''
+    const band = classFor(renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />), '-top-24')
 
     expect(band).toContain(`bg-[linear-gradient(${angle},rgba(255,255,255,0.01)`)
     expect(band).toContain(`lg:bg-[linear-gradient(${angle},rgba(255,255,255,0.02)`)
@@ -115,67 +114,51 @@ describe('<OrnateTextBox>', () => {
     expect(band).toContain('rgba(255,196,175,0.6)_100%)]')
   })
 
-  // The body copy's AA floor is a composite of the brown ground, the graphic
-  // and the band, so `layouts/tailwind.test.ts` cannot reach it — the class
-  // values are all there is to pin. The worst cell measures 5.19:1 (#205).
-  // Any alpha on the body copy is what takes it back under the bar; the root
-  // already paints white, so the token the wrapper carries is not the subject.
-  it('keeps the graphic faint and the body copy free of alpha', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
-    const body = html.match(/class="([^"]*space-y-5[^"]*)"/)?.[1] ?? ''
+  // These AA floors are a composite of the brown ground, the graphic and the
+  // band, so `layouts/tailwind.test.ts` cannot reach them — the class values
+  // are all there is to pin. The worst body cell measures 5.19:1 (#205), and
+  // `text-white/80` left the subtitle at 3.94:1 against a 4.5:1 bar even in
+  // the layout the band is clear of (#262). Any alpha is what takes either
+  // back under its bar; the root already paints white, so the token the body
+  // wrapper carries is not the subject.
+  it('keeps the graphic faint and the subtitle and body copy free of alpha', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Timeless teachings" />)
+    const body = classFor(html, 'space-y-5')
+    const subtitle = classFor(html, 'mt-2 text-base')
 
     expect(ornateImg(html)).toContain('opacity-25')
     expect(body).toContain('leading-relaxed')
     expect(body).not.toContain('text-white/')
+    expect(subtitle).toContain('font-light')
+    expect(subtitle).not.toContain('text-white/')
   })
 
   // A float only affects what follows it, so the header can only share the
   // body's column by coming after the image in source order. Across the band
-  // instead, the title measures 2.47:1 against a 3:1 bar (#262).
-  it('puts the floated image before the header in document order', () => {
+  // instead, the title measures 2.47:1 against a 3:1 bar (#262). The
+  // block-formatting context is then what keeps the header out of the float's
+  // margin box, whichever way the float points (#193).
+  it('puts the floated image before the header, in the header\'s own BFC', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
 
     expect(html.indexOf('lg:float-left')).toBeLessThan(html.indexOf('Sacred Teachings'))
-    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('Sub'))
-    expect(html.indexOf('Sub')).toBeLessThan(html.indexOf('timeless wisdom'))
+    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('timeless wisdom'))
+    expect(classFor(html, 'lg:mb-6')).toContain('lg:flow-root')
   })
 
   // Source order is image, header, body; the reading order below `lg` is
-  // title, subtitle, image, body. `order-*` is what reconciles the two, and
-  // it needs a flex container to act in. Above `lg` the wrapper is
-  // `flow-root` instead, which both makes `order-*` inert and contains the
-  // float's height.
+  // title, subtitle, image, body. `order-*` reconciles the two, and needs a
+  // flex container to act in. At `lg` the container is `flow-root` instead,
+  // which both makes `order-*` inert and contains the float's height.
   it('restores the reading order below lg, and drops to flow-root at lg', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
-    const wrapper = html.match(/class="(flex flex-col[^"]*)"/)?.[1] ?? ''
-    const classOf = (marker: string) =>
-      html.match(new RegExp(`class="([^"]*${marker}[^"]*)"`))?.[1] ?? ''
+    const container = classFor(html, 'lg:pr-24')
 
-    expect(wrapper).toContain('lg:flow-root')
-    expect(classOf('lg:float-left')).toContain('order-2')
-    expect(classOf('lg:mb-6')).toContain('order-1')
-    expect(classOf('space-y-5')).toContain('order-3')
-  })
-
-  // A block-formatting context cannot overlap a float's margin box on either
-  // side, so this is what holds the header in the column whichever way the
-  // float points (#193).
-  it('gives the header its own block-formatting context at lg', () => {
-    const header =
-      renderToStaticMarkup(<OrnateTextBox {...BASE} />).match(/class="([^"]*lg:mb-6[^"]*)"/)?.[1] ??
-      ''
-
-    expect(header).toContain('lg:flow-root')
-  })
-
-  // `text-white/80` left the subtitle at 3.94:1 against a 4.5:1 bar even in
-  // the layout the band is clear of. The root paints white already (#262).
-  it('keeps the subtitle free of alpha', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Timeless teachings" />)
-    const subtitle = html.match(/class="([^"]*mt-2 text-base[^"]*)"/)?.[1] ?? ''
-
-    expect(subtitle).toContain('font-light')
-    expect(subtitle).not.toContain('text-white/')
+    expect(container).toContain('flex-col')
+    expect(container).toContain('lg:flow-root')
+    expect(classFor(html, 'lg:float-left')).toContain('order-2')
+    expect(classFor(html, 'lg:mb-6')).toContain('order-1')
+    expect(classFor(html, 'space-y-5')).toContain('order-3')
   })
 
   it('renders the CTA only when both text and href are set', () => {
