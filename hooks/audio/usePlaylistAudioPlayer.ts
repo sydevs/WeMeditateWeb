@@ -8,12 +8,12 @@ export interface UsePlaylistAudioPlayerOptions {
   /** Enable shuffle mode on initialization */
   shuffle?: boolean
   /**
-   * Index of the track to play, in `tracks`. The hook follows it when it
-   * changes. It is not fully controlled: the hook moves the index itself on
-   * next, previous and track end, and reports that through `onTrackChange`, so
-   * a consumer passing `trackIndex` must echo it back or the two drift apart.
+   * The track to play, as an index into `tracks`. The hook follows each new
+   * value. It is a request, not a controlled value: the hook moves the index
+   * itself on next, previous and track end, and reports that through
+   * `onTrackChange`, which a consumer holding this prop must echo back.
    */
-  trackIndex?: number
+  requestedTrackIndex?: number
   /** Callback when track changes */
   onTrackChange?: (trackIndex: number) => void
   /** Callback fired every 100ms during playback (also on play/pause/seek) */
@@ -42,7 +42,7 @@ export interface UsePlaylistAudioPlayerOptions {
 export function usePlaylistAudioPlayer({
   tracks,
   shuffle = false,
-  trackIndex = 0,
+  requestedTrackIndex = 0,
   onTrackChange,
   onPlaybackTimeUpdate,
 }: UsePlaylistAudioPlayerOptions): [PlaylistAudioPlayerState, PlaylistAudioPlayerControls] {
@@ -52,7 +52,7 @@ export function usePlaylistAudioPlayer({
   })
 
   // Playlist state
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(trackIndex)
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(requestedTrackIndex)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   const [playOrder, setPlayOrder] = useState<number[]>([])
   const [hasEnded, setHasEnded] = useState(false)
@@ -140,20 +140,20 @@ export function usePlaylistAudioPlayer({
   }, [])
 
   // The hook moves the index itself — next, previous, track end — so it owns
-  // the state and follows `trackIndex` on change rather than reading it
+  // the state and follows `requestedTrackIndex` on change rather than reading it
   // directly. Without this a consumer driving the player, such as a playlist
   // click, changed nothing and the previous track kept playing (#249).
   const followTrackIndex = useEffectEvent(() => {
     // A consumer echoes `onTrackChange` back, so most changes here are the
     // hook's own move returning, naming the track already loaded.
-    if (trackIndex !== currentTrackIndex) {
-      selectTrack(trackIndex)
+    if (requestedTrackIndex !== currentTrackIndex) {
+      selectTrack(requestedTrackIndex)
     }
   })
 
   useEffect(() => {
     followTrackIndex()
-  }, [trackIndex])
+  }, [requestedTrackIndex])
 
   // Compose state
   const state: PlaylistAudioPlayerState = {
