@@ -23,6 +23,8 @@ describe('isIndexableOrigin', () => {
     ['a preview Worker', 'https://wemeditate-web-pr-62.workers.dev'],
     ['a preview Pages site', 'https://wemeditate-ladle.pages.dev'],
     ['local development', 'http://localhost:5173'],
+    ['the IPv6 loopback, brackets and all', 'http://[::1]:5173'],
+    ['a dev server bound to every interface', 'http://0.0.0.0:5173'],
   ])('refuses %s', (_label, origin) => {
     // Every PR builds these. A preview that invites crawlers competes with
     // production for the same content.
@@ -31,6 +33,11 @@ describe('isIndexableOrigin', () => {
 
   it('reads the host, so a port does not make a local origin indexable', () => {
     expect(isIndexableOrigin('http://127.0.0.1:4173')).toBe(false)
+  })
+
+  it('refuses a string no origin could be, rather than throwing', () => {
+    // This runs inside a document render, where a throw is a 500.
+    expect(isIndexableOrigin('not an origin')).toBe(false)
   })
 })
 

@@ -50,8 +50,17 @@ export function xmlEscape(value: string): string {
  * the same content, and can outrank it. So this rule works as an
  * allowlist by exclusion, applied to whatever host actually served the
  * request, not to a build-time guess.
+ *
+ * Both loopback spellings are listed beside `localhost`, because a dev
+ * server reached at either one is the same machine. `URL` keeps an IPv6
+ * host's brackets, so `[::1]` is the literal to match.
+ *
+ * shortcut: a LAN address still reads as the real site, so a dev server
+ * bound with `--host` and opened at `192.168.x.x` counts its pageviews.
+ * Exclude the private ranges if anyone starts developing that way.
  */
-const NON_CANONICAL_HOST = /(\.workers\.dev|\.pages\.dev)$|^localhost$|^127\.0\.0\.1$/
+const NON_CANONICAL_HOST =
+  /(\.workers\.dev|\.pages\.dev)$|^localhost$|^127\.0\.0\.1$|^\[::1\]$|^0\.0\.0\.0$/
 
 /**
  * Whether this origin is the real site, and so may be crawled and counted.
@@ -62,7 +71,14 @@ const NON_CANONICAL_HOST = /(\.workers\.dev|\.pages\.dev)$|^localhost$|^127\.0\.
  * each of them spell the same parse.
  */
 export function isIndexableOrigin(origin: string): boolean {
-  return !NON_CANONICAL_HOST.test(new URL(origin).hostname)
+  try {
+    return !NON_CANONICAL_HOST.test(new URL(origin).hostname)
+  } catch {
+    // Every other URL predicate here wraps its parse, and this is the one
+    // on a render path. "Not the real site" is also the honest answer for a
+    // string no origin could be: no crawling, no sitemap, no pageview.
+    return false
+  }
 }
 
 /**
