@@ -117,8 +117,8 @@ export function OrnateTextBox({
   //
   // Below `lg` the body column is full-width and crosses the band, so the
   // band runs at an eighth of its alphas there. At full strength it drops
-  // body text to 2.3:1; faint it measures 4.62:1, against a 4.76:1 ceiling
-  // set by the brown ground alone (#193).
+  // body text to 2.57:1; faint it measures 5.54:1, against a 5.77:1 ceiling
+  // set by the brown ground alone (#193, #205).
   const bandSide = align === 'right' ? 'right-0' : 'left-0'
   const bandGradient =
     align === 'right'
@@ -149,7 +149,7 @@ export function OrnateTextBox({
       <img
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-[45%] -z-10 h-full w-[80%] object-cover object-left opacity-40"
+        className="pointer-events-none absolute inset-y-0 left-[45%] -z-10 h-full w-[80%] object-cover object-left opacity-25"
         loading="lazy"
         src={ornateBackground}
       />
@@ -158,7 +158,7 @@ export function OrnateTextBox({
           the block (the gradient--ornate ::before). It uses a negative
           z-index, so it sits over the brown ground but behind text from the
           block above. It mirrors with the image because a body column on the
-          left would otherwise sit over the band and measure 2.34:1 (#193). */}
+          left would otherwise sit over the band and measure 2.50:1 (#193, #205). */}
       <div
         aria-hidden="true"
         className={`pointer-events-none absolute -top-24 bottom-0 ${bandSide} -z-10 w-1/3 ${bandGradient}`}
@@ -205,7 +205,7 @@ export function OrnateTextBox({
             column beside the gradient and never wraps back under the image.
             Such a box cannot overlap a float's margin box on either side, so
             this holds whichever way the float points. */}
-        <div className="space-y-5 text-base font-light leading-relaxed text-white/90 lg:flow-root">
+        <div className="space-y-5 text-base font-light leading-relaxed text-white lg:flow-root">
           {paragraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}

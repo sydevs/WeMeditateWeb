@@ -1,6 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { useState } from 'react'
+import { AudioPlayerProvider } from 'react-use-audio-player'
 import { AudioPlayer, Track, AudioControl } from './AudioPlayer'
+import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import { StoryWrapper, StorySection } from '../../ladle'
 import { Checkbox } from '../../atoms'
 
@@ -44,6 +46,30 @@ const sampleTracks: Track[] = [
   },
 ]
 
+interface PlaylistPlayerProps {
+  tracks: Track[]
+  disabledControls?: AudioControl[]
+}
+
+function PlaylistPlayerInner({ tracks, disabledControls }: PlaylistPlayerProps) {
+  const [state, controls] = usePlaylistAudioPlayer({ tracks })
+
+  return <AudioPlayer controls={controls} disabledControls={disabledControls} state={state} />
+}
+
+/**
+ * The wiring every consumer writes: the hook inside an `AudioPlayerProvider`,
+ * held by whichever component owns the playing track. `AudioPlayer` itself only
+ * renders what the hook holds.
+ */
+function PlaylistPlayer(props: PlaylistPlayerProps) {
+  return (
+    <AudioPlayerProvider>
+      <PlaylistPlayerInner {...props} />
+    </AudioPlayerProvider>
+  )
+}
+
 /** AudioPlayer component showcasing audio playback controls and playlist management. */
 export const Default: Story = () => {
   const [disabledControls, setDisabledControls] = useState<AudioControl[]>([])
@@ -62,7 +88,7 @@ export const Default: Story = () => {
     <StoryWrapper>
       <StorySection title="Basic">
         <div className="max-w-md">
-          <AudioPlayer tracks={sampleTracks} />
+          <PlaylistPlayer tracks={sampleTracks} />
         </div>
       </StorySection>
 
@@ -85,7 +111,7 @@ export const Default: Story = () => {
 
           {/* Live Audio Player */}
           <div className="flex-1 max-w-md border-2 border-gray-200 rounded-lg p-4 self-center">
-            <AudioPlayer disabledControls={disabledControls} tracks={sampleTracks} />
+            <PlaylistPlayer disabledControls={disabledControls} tracks={sampleTracks} />
           </div>
         </div>
       </StorySection>
@@ -103,13 +129,13 @@ export const Default: Story = () => {
                   <p className="text-sm text-gray-700">Daily Meditation Podcast</p>
                 </div>
               </div>
-              <AudioPlayer tracks={sampleTracks} />
+              <PlaylistPlayer tracks={sampleTracks} />
             </div>
           </StorySection>
 
           <StorySection title="Square Player" variant="subsection">
             <div className="w-64 aspect-square mx-auto bg-white shadow-xl p-6 flex items-center justify-center">
-              <AudioPlayer
+              <PlaylistPlayer
                 disabledControls={['trackInfo', 'progress', 'skip', 'shuffle']}
                 tracks={[sampleTracks[0]]}
               />
