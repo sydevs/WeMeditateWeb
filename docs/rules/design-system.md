@@ -178,8 +178,27 @@ interface LinkProps {
 
 `Link` prefixes a non-English locale automatically (`/about` becomes `/es/about`). `size="inherit"`
 is the default, so a link matches its parent's font size unless you set one. An `external` link
-sets `target="_blank"` and `rel="noopener noreferrer"`, and nothing more. It does not announce the
-new tab to a screen reader; #238 adds that.
+opens a new tab and announces it — as screen-reader-only text after the link's own words, or
+folded into the `aria-label` where the caller supplies one, since a label replaces the accessible
+name and anything inside the anchor goes unread.
+
+**`Link` is also the scheme gate for every href the site did not author**, and the reason no call
+site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
+a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
+run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
+bare `<a>` fed a SahajCloud value has to call it itself.
+
+A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
+call to action and `AtlasContent`'s website link both do. The atom renders inert words, and words
+that invite a click going nowhere are worse than an absent element.
+
+**Only a variant that paints a colour carries `transition-colors`**, so `unstyled` carries no
+`transition-property` at all. A caller painting its own hover brings the matching transition: a
+colour one, as `ContentCard` and `Column` do, or a transform, as the `Splash` call to action does.
+At equal specificity the atom's own would have won on source order.
+
+Two spellings stopped reaching an `href` when the gate landed: a protocol-relative `//host`, and
+the empty string an unset SahajCloud field leaves behind.
 
 ### Surfaces
 
