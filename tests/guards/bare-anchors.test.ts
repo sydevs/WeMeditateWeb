@@ -35,8 +35,6 @@ const ANCHOR = /<a(?=[\s/>])/g
 const ALLOWED: Record<string, string> = {
   'components/atoms/Link/Link.tsx':
     'the atom itself — this is the anchor every call site routes through',
-  'components/molecules/ErrorFallback/ErrorFallback.tsx':
-    'isSafeHttpUrl proves the status-page URL absolute before it renders, so there is no locale to add',
 }
 
 /** 1-based line numbers of every `<a>` opened in `source`. */
