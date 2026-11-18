@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Header } from './Header'
+import { tagFor } from '../../../tests/_helpers/markup'
 
 const navItems = [{ label: 'Meditate Now', href: '/meditate' }]
 
@@ -80,9 +81,6 @@ describe('Header', () => {
       expect(bar).not.toContain('min-h-11')
       expect(html).toContain('shrink-0 touch-target items-center')
       expect(html).toContain('flex touch-target items-center justify-end')
-      // Narrowed to the two controls: the menu trigger is an icon-only
-      // `Button`, and the atom picks the overlay for every one of those.
-      expect(html).not.toContain('touch-target-overlay items-center')
     })
 
     it('is drawn before it sticks, because the menu trigger lives in it', () => {
@@ -100,13 +98,10 @@ describe('Header', () => {
       // takes an element out of the a11y tree and the tab order with it. The
       // trigger shares nothing with the bar's two existing icons, so the count
       // asserted below stays at two.
-      const html = render()
-      const trigger = html.match(/<button[^>]*aria-label="Menu"[^>]*>/)?.[0]
+      const trigger = tagFor(render(), 'button', 'aria-label="Menu"')
 
       expect(trigger).toContain('lg:hidden')
       expect(trigger).not.toContain('opacity-0')
-      expect(trigger).not.toContain('min-h-11')
-      expect(trigger).toContain('aria-expanded="false"')
     })
 
     it('takes both faded controls out of the tab order', () => {

@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { MobileMenu } from './MobileMenu'
-import type { NavItem } from '../Header/Header'
+import type { NavItem } from '../Header'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
@@ -38,17 +38,10 @@ const navItems: NavItem[] = [
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection
-      description="Icon-only ghost button. Its accessible name comes from the content system, and is the same whether the panel is open or closed."
+      description="Icon-only ghost button. Its accessible name comes from the content system, and is the same whether the panel is open or closed. A nav with no mega-menu item renders a flat list, with no heading."
       title="Basic Examples"
     >
       <MobileMenu navItems={navItems} />
-    </StorySection>
-
-    <StorySection
-      description="A nav with no mega-menu item renders a flat list, with no heading."
-      title="States"
-    >
-      <MobileMenu navItems={navItems.filter((item) => item.href !== undefined)} />
     </StorySection>
 
     <StorySection

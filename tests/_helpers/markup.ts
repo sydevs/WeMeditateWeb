@@ -17,3 +17,14 @@ export function anchorFor(html: string, href: string): string {
 
   return at === -1 ? '' : html.slice(html.lastIndexOf('<a', at), html.indexOf('>', at) + 1)
 }
+
+/**
+ * The opening `<tag>` carrying this attribute text, or the empty string.
+ *
+ * Same caveat as `anchorFor`: assert something positive before an absence.
+ */
+export function tagFor(html: string, tag: string, attribute = ''): string {
+  const at = attribute === '' ? html.indexOf(`<${tag}`) : html.indexOf(attribute)
+
+  return at === -1 ? '' : html.slice(html.lastIndexOf(`<${tag}`, at), html.indexOf('>', at) + 1)
+}

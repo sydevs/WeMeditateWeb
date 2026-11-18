@@ -164,7 +164,8 @@ export function Header({
         <nav
           // Once stuck, the nav paints its own white surface over whatever the
           // header was overlaid on. Un-stuck it takes the layout's page band,
-          // which a wrapper cannot give it: see `bandClassName`.
+          // which a wrapper cannot give it: see `bandClassName`. It is drawn
+          // un-stuck below `lg:` too, because the menu trigger lives in it.
           className={`sticky top-0 z-50 ${clickable} border-t border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
             isSticky ? 'surface-light full-bleed bg-white' : bandClassName
           }`}
@@ -183,10 +184,8 @@ export function Header({
               variant="icon"
             />
 
-            {/* The site menu below `lg:`, where the link row is hidden. It takes no
-                `compactControl`: that string is `opacity-0 invisible` until the nav
-                sticks, and the trigger has to stay reachable un-stuck — which is
-                also why the nav above no longer hides itself below `lg:`. */}
+            {/* Un-gated by `compactControl`: that string is `opacity-0 invisible`
+                until the nav sticks, and the menu must be reachable before it does. */}
             <MobileMenu className="lg:hidden" navItems={navItems} />
 
             {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row

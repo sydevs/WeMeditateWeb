@@ -19,8 +19,6 @@ export interface HeaderNavDropdownProps {
   label: string
   /** Mega-menu panel content, rendered in a portal when open. */
   dropdown: HeaderDropdownProps
-  /** Extra classes for the trigger wrapper. */
-  className?: string
 }
 
 /**
@@ -47,11 +45,7 @@ export interface HeaderNavDropdownProps {
  * and the button branch of `ButtonProps` types it, so the atom needs no
  * wrapper to carry one.
  */
-export function HeaderNavDropdown({
-  label,
-  dropdown,
-  className = '',
-}: HeaderNavDropdownProps) {
+export function HeaderNavDropdown({ label, dropdown }: HeaderNavDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const { refs, floatingStyles, context } = useFloating({
@@ -77,22 +71,7 @@ export function HeaderNavDropdown({
 
   return (
     <>
-      {/*
-       * The interaction props and ARIA attributes — aria-haspopup,
-       * aria-expanded, and aria-controls from useRole, plus the hover,
-       * click, and keyboard handlers — go on the focusable Button, so the
-       * popup contract lives on the element a keyboard or assistive-tech
-       * user lands on. The ref goes there too: the row sizes each item by
-       * its own label, so a wrapper carrying it would need a width of its
-       * own to pass on.
-       */}
-      <Button
-        ref={refs.setReference}
-        className={className}
-        size="sm"
-        variant="ghost"
-        {...getReferenceProps()}
-      >
+      <Button ref={refs.setReference} size="sm" variant="ghost" {...getReferenceProps()}>
         {label}
       </Button>
 
