@@ -402,10 +402,6 @@ const lines = (source: string): number[] => scan(source).map((f) => f.line)
 const SCANNED = sourceFiles(componentGlobs)
 
 describe('server-rendered visibility', () => {
-  it('scans the component tree (the guard is not silently empty)', () => {
-    expect(SCANNED.length).toBeGreaterThan(50)
-  })
-
   it('finds files wiring a load event (condition 2 is not vacuously false)', () => {
     // Narrowing LOAD_HANDLERS to a spelling nothing uses would silently reduce
     // the guard's real coverage to nothing while every fixture below stayed

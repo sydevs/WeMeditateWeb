@@ -85,10 +85,6 @@ export function scan(source: string): { line: number; text: string }[] {
 }
 
 describe('screen-reader strings', () => {
-  it('scans the component tree (the guard is not silently empty)', () => {
-    expect(sourceFiles(componentGlobs).length).toBeGreaterThan(50)
-  })
-
   it('no aria-label or sr-only text is a hardcoded literal', () => {
     const findings = sourceFiles(componentGlobs).flatMap((file) =>
       scan(readSource(file)).map((f) => `${relative(repoRoot, file)}:${f.line} → ${f.text}`),

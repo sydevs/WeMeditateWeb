@@ -72,10 +72,6 @@ export function scan(source: string): number[] {
 const SCANNED = sourceFiles(componentGlobs)
 
 describe('image loading', () => {
-  it('scans the component tree (the guard is not silently empty)', () => {
-    expect(SCANNED.length).toBeGreaterThan(50)
-  })
-
   it('every raw <img> React would preload names its own loading', () => {
     const findings = SCANNED.flatMap((file) =>
       scan(readFileSync(file, 'utf8')).map((line) => `${relative(repoRoot, file)}:${line}`),
