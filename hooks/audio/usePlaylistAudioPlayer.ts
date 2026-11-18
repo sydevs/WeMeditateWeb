@@ -117,9 +117,8 @@ export function usePlaylistAudioPlayer({
     }
   }, [playerState.isPlaying])
 
-  // Playback controls. These are the only writers of the auto-resume flag:
-  // asking for playback and asking for silence are the two things a track
-  // change must carry across, and a navigation callback knows neither.
+  // The two moments a listener states what they want, and so the only writers
+  // of the flag above.
   const play = () => {
     wantsPlaybackRef.current = true
     playerControls.play()
@@ -130,15 +129,7 @@ export function usePlaylistAudioPlayer({
     playerControls.pause()
   }
 
-  const togglePlayPause = () => {
-    if (playerState.isPlaying) {
-      pause()
-
-      return
-    }
-
-    play()
-  }
+  const togglePlayPause = () => (playerState.isPlaying ? pause() : play())
 
   // Navigation controls
   const previous = useCallback(() => {
@@ -157,10 +148,6 @@ export function usePlaylistAudioPlayer({
 
   const toggleShuffle = useCallback(() => {
     setIsShuffleOn((prev) => !prev)
-  }, [])
-
-  const selectTrack = useCallback((index: number) => {
-    setCurrentTrackIndex(index)
   }, [])
 
   // Compose state
@@ -188,7 +175,7 @@ export function usePlaylistAudioPlayer({
     setVolume: playerControls.setVolume,
     toggleMute: playerControls.toggleMute,
     toggleShuffle,
-    selectTrack,
+    selectTrack: setCurrentTrackIndex,
   }
 
   return [state, controls]
