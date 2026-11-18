@@ -9,6 +9,8 @@ const BASE = {
   imageAlt: 'Artwork',
 } as const
 
+const ornateImg = (html: string) => html.match(/<img[^>]*ornate[^>]*>/)?.[0] ?? ''
+
 describe('<OrnateTextBox>', () => {
   it('renders the warm ornate ground and the floral graphic', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
@@ -77,7 +79,7 @@ describe('<OrnateTextBox>', () => {
   })
 
   // The band lightens the image's edge. On the wrong side it sits under the
-  // body column and drops it to 2.34:1, below WCAG AA (#193). The angle is
+  // body column and drops it to 2.50:1, below WCAG AA (#193, #205). The angle is
   // pinned with the side: both must compile, and 270deg is what keeps the
   // peach stop on the band's inner edge from `right-0`.
   it('keeps the warm gradient on the image side, angled inward', () => {
@@ -96,8 +98,8 @@ describe('<OrnateTextBox>', () => {
   })
 
   // Below `lg` the body column is full-width and crosses the band, where the
-  // full-strength peach drops it to 2.3:1. The faint pair is what holds AA
-  // there, so each align carries both intensities, not one (#193).
+  // full-strength peach drops it to 2.57:1. The faint pair is what holds AA
+  // there, so each align carries both intensities, not one (#193, #205).
   it.each([
     ['left', '90deg'],
     ['right', '270deg'],
@@ -111,6 +113,20 @@ describe('<OrnateTextBox>', () => {
     expect(band).toContain(`lg:bg-[linear-gradient(${angle},rgba(255,255,255,0.02)`)
     expect(band).toContain('rgba(255,196,175,0.08)_100%)]')
     expect(band).toContain('rgba(255,196,175,0.6)_100%)]')
+  })
+
+  // The body copy's AA floor is a composite of the brown ground, the graphic
+  // and the band, so `layouts/tailwind.test.ts` cannot reach it — the class
+  // values are all there is to pin. The worst cell measures 5.19:1 (#205).
+  // Any alpha on the body copy is what takes it back under the bar; the root
+  // already paints white, so the token the wrapper carries is not the subject.
+  it('keeps the graphic faint and the body copy free of alpha', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
+    const body = html.match(/class="([^"]*space-y-5[^"]*)"/)?.[1] ?? ''
+
+    expect(ornateImg(html)).toContain('opacity-25')
+    expect(body).toContain('leading-relaxed')
+    expect(body).not.toContain('text-white/')
   })
 
   it('renders the title above the body (header precedes the image)', () => {
@@ -139,6 +155,6 @@ describe('<OrnateTextBox> image loading', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
     expect(html).not.toContain('rel="preload"')
-    expect(html.match(/<img[^>]*ornate[^>]*>/)?.[0]).toContain('loading="lazy"')
+    expect(ornateImg(html)).toContain('loading="lazy"')
   })
 })
