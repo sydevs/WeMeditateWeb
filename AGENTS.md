@@ -117,6 +117,10 @@ These rules apply whether or not the matching rule file or skill is loaded.
   reaching an anchor through `Link`, or through an atom that delegates to it, is already gated and
   the call site adds nothing. `tests/guards/bare-anchors.test.ts` is what keeps that true: no
   component may open an `<a>` outside the atom, and its allowlist is the whole exception list.
+  A **`Location` header** is the third destination, and `isSitePath` is its gate: `lookupIn`
+  ([lib/legacy-redirects/core.ts](lib/legacy-redirects/core.ts)) applies it to every answer, so a
+  SahajCloud slug cannot spell a target that leaves our origin and
+  [server/legacy-redirects.ts](server/legacy-redirects.ts) repeats nothing.
 
   **One exception, and it is about what renders, not about safety.** A call site gates a value it
   also passes to `Link` when a refused URL must render **nothing** — `Splash`'s call to action,

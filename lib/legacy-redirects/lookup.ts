@@ -3,9 +3,10 @@
  *
  * A pure function over `map.generated.json`, which
  * `scripts/legacy-redirects/generate.ts` builds from the old database and the
- * pages SahajCloud serves today. The caller consults it only for a request
- * that would otherwise 404, and appends the query string itself. It returns a
- * path, never a URL, and `null` for an address the old site never had.
+ * pages SahajCloud serves today. `server/legacy-redirects.ts` consults it only
+ * for a request that would otherwise 404, and appends the query string itself.
+ * It returns a path on this site, never a URL, and `null` for an address the
+ * old site never had.
  *
  * Every target is a page that answers 200 in the visitor's own language when
  * that page is published there, and in English otherwise. A target is never

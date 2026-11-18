@@ -1,8 +1,8 @@
 # Legacy redirect map
 
 Where an address on the retired Rails site (`sydevs/WeMeditate`, wemeditate.com until the cutover in
-sydevs/WeMeditateWeb#160) lands on this site. The Worker consults the map only for a request that would
-otherwise 404; wiring that lookup in is a separate ticket.
+sydevs/WeMeditateWeb#160) lands on this site. `server/legacy-redirects.ts` consults the map only for a
+request that would otherwise 404, and 301s to the answer.
 
 | File | What it is | Produced by |
 | --- | --- | --- |
