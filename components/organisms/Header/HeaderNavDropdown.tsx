@@ -43,8 +43,9 @@ export interface HeaderNavDropdownProps {
  *
  * The trigger is a real `<Button>` carrying `aria-haspopup` and
  * `aria-expanded`, so it is keyboard-focusable and opens on Enter or Space.
- * The positioning and interaction props live on the wrapping element
- * instead, because Button does not forward a ref.
+ * It is also the positioning anchor: React 19 passes `ref` through `props`,
+ * and the button branch of `ButtonProps` types it, so the atom needs no
+ * wrapper to carry one.
  */
 export function HeaderNavDropdown({
   label,
@@ -77,23 +78,23 @@ export function HeaderNavDropdown({
   return (
     <>
       {/*
-       * The span is the positioning anchor, because Button does not forward
-       * a ref. The interaction props and ARIA attributes — aria-haspopup,
+       * The interaction props and ARIA attributes — aria-haspopup,
        * aria-expanded, and aria-controls from useRole, plus the hover,
-       * click, and keyboard handlers — go on the focusable Button instead,
-       * so the popup contract lives on the element a keyboard or
-       * assistive-tech user lands on.
+       * click, and keyboard handlers — go on the focusable Button, so the
+       * popup contract lives on the element a keyboard or assistive-tech
+       * user lands on. The ref goes there too: the row sizes each item by
+       * its own label, so a wrapper carrying it would need a width of its
+       * own to pass on.
        */}
-      <span ref={refs.setReference} className={`flex ${className}`}>
-        <Button
-          className="w-full"
-          size="sm"
-          variant="ghost"
-          {...getReferenceProps()}
-        >
-          {label}
-        </Button>
-      </span>
+      <Button
+        ref={refs.setReference}
+        className={className}
+        size="sm"
+        variant="ghost"
+        {...getReferenceProps()}
+      >
+        {label}
+      </Button>
 
       {isOpen && (
         <FloatingPortal>

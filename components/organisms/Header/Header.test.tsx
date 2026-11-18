@@ -80,16 +80,33 @@ describe('Header', () => {
       expect(bar).not.toContain('min-h-11')
       expect(html).toContain('shrink-0 touch-target items-center')
       expect(html).toContain('flex touch-target items-center justify-end')
-      expect(html).not.toContain('touch-target-overlay')
+      // Narrowed to the two controls: the menu trigger is an icon-only
+      // `Button`, and the atom picks the overlay for every one of those.
+      expect(html).not.toContain('touch-target-overlay items-center')
     })
 
-    it('is not drawn at all until it sticks', () => {
-      // Un-stuck it holds nothing visible, so its two rules would read as an
-      // empty 44px gap on every mobile page.
+    it('is drawn before it sticks, because the menu trigger lives in it', () => {
+      // The trigger inside it is visible and un-gated, so a bar that hid itself
+      // below `lg:` would leave a phone no menu at all until it scrolled past
+      // the banner.
       const navClass = (html: string) => html.match(/<nav class="([^"]*)"/)?.[1]
 
-      expect(navClass(render())).toContain('hidden lg:block')
+      expect(navClass(render())).not.toContain('hidden')
       expect(navClass(render({ condensed: true }))).not.toContain('hidden')
+    })
+
+    it('carries the menu trigger, un-gated by the sticky state', () => {
+      // `compactControl` is `opacity-0 invisible` until the nav sticks, which
+      // takes an element out of the a11y tree and the tab order with it. The
+      // trigger shares nothing with the bar's two existing icons, so the count
+      // asserted below stays at two.
+      const html = render()
+      const trigger = html.match(/<button[^>]*aria-label="Menu"[^>]*>/)?.[0]
+
+      expect(trigger).toContain('lg:hidden')
+      expect(trigger).not.toContain('opacity-0')
+      expect(trigger).not.toContain('min-h-11')
+      expect(trigger).toContain('aria-expanded="false"')
     })
 
     it('takes both faded controls out of the tab order', () => {

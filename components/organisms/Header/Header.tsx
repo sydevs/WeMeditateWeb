@@ -3,6 +3,7 @@ import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
 import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
+import { MobileMenu } from '../MobileMenu'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
 import { useT } from '../../../hooks/useT'
 
@@ -165,7 +166,7 @@ export function Header({
           // header was overlaid on. Un-stuck it takes the layout's page band,
           // which a wrapper cannot give it: see `bandClassName`.
           className={`sticky top-0 z-50 ${clickable} border-t border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
-            isSticky ? 'surface-light full-bleed bg-white' : `hidden lg:block ${bandClassName}`
+            isSticky ? 'surface-light full-bleed bg-white' : bandClassName
           }`}
         >
           <div className="flex items-center justify-between gap-2 max-w-5xl mx-auto px-6">
@@ -181,6 +182,12 @@ export function Header({
               size="sm"
               variant="icon"
             />
+
+            {/* The site menu below `lg:`, where the link row is hidden. It takes no
+                `compactControl`: that string is `opacity-0 invisible` until the nav
+                sticks, and the trigger has to stay reachable un-stuck — which is
+                also why the nav above no longer hides itself below `lg:`. */}
+            <MobileMenu className="lg:hidden" navItems={navItems} />
 
             {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
                 cannot shrink below their min-content width, and nothing in
