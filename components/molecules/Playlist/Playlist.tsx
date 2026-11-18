@@ -91,10 +91,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
             {track.credit}
           </Link>
         </div>
-        {/*
-          A song SahajCloud could not read a length from arrives as `0`, and
-          `0:00` is worse than a blank.
-        */}
+        {/* `0:00` is worse than a blank where SahajCloud stores no duration. */}
         {track.duration > 0 && (
           <span
             className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${

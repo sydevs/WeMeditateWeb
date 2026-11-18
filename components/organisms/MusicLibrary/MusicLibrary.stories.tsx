@@ -94,7 +94,7 @@ const sampleTracks: Track[] = [
     duration: 289,
     tags: [{ id: 'vocal', label: 'Vocal' }],
   },
-  // A song SahajCloud stores no duration for, so its row prints no timestamp.
+  // Keeps the no-duration row visible beside real lengths.
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3',
     title: 'Unmeasured Drone',

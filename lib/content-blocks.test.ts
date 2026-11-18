@@ -265,14 +265,13 @@ describe('contentIndexTrack', () => {
     })
   })
 
-  it('falls back to 0 where SahajCloud stores no duration', () => {
-    // A song whose audio SahajCloud could not parse keeps a null column, and
-    // one read before the field existed carries no key at all. Playlist
-    // prints no timestamp for either.
+  it('falls back to 0 for any length that is not a playable one', () => {
+    // `0` is what Playlist reads as "unknown" and prints nothing for.
+    // SahajCloud stores null for a song whose audio it could not measure.
     const song = { id: 10, title: 'Raga', url: 'https://cdn/audio.mp3' }
 
-    expect(contentIndexTrack(song)?.duration).toBe(0)
     expect(contentIndexTrack({ ...song, duration: null })?.duration).toBe(0)
+    expect(contentIndexTrack({ ...song, duration: -12 })?.duration).toBe(0)
   })
 
   it('labels a song tag from its SahajCloud title, falling back to the slug', () => {
