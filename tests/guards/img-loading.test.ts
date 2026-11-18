@@ -2,8 +2,11 @@
  * No hand-rolled `<img>` may leave `loading` unsaid.
  *
  * React 19 hoists a `<link rel="preload" as="image">` for every `<img>`
- * carrying a `src` unless it is `loading="lazy"`, `fetchPriority="low"`, a
- * `data:` URI, or inside a `<picture>` or `<noscript>`. So an author who omits
+ * carrying a `src` **or a `srcSet`** unless it is `loading="lazy"`,
+ * `fetchPriority="low"`, a `data:` URI, or inside a `<picture>` or
+ * `<noscript>`. Both halves are measured against `react-dom@19.3.1`: a
+ * `srcSet` with no `src` preloads too, which is the shape `VideoPlayer`'s
+ * fallback is one attribute away from. So an author who omits
  * the attribute preloads the image whether or not the page wants it — the
  * regression #142, #145 and #150 each fixed one site at a time, with nothing
  * stopping the next one. The `Image` atom decides this from its `priority`
@@ -41,7 +44,7 @@ import { relative } from 'node:path'
 import { componentGlobs, repoRoot, sourceFiles } from './_source-scan'
 import { lineOf, parse, walk } from './_syntax-scan'
 
-/** Every `<img src>` in `source` that names no `loading`, by line. */
+/** Every `<img>` in `source` React would preload, by line. */
 export function scan(source: string): number[] {
   const file = parse(source)
   const lines: number[] = []
@@ -55,7 +58,7 @@ export function scan(source: string): number[] {
         (property) => ts.isJsxAttribute(property) && property.name.getText(file) === name,
       )
 
-    if (!spells('src') || spells('loading')) return
+    if ((!spells('src') && !spells('srcSet')) || spells('loading')) return
 
     lines.push(lineOf(file, node.tagName.getStart(file)))
   })
@@ -70,7 +73,7 @@ describe('image loading', () => {
     expect(SCANNED.length).toBeGreaterThan(50)
   })
 
-  it('every raw <img> with a src names its own loading', () => {
+  it('every raw <img> React would preload names its own loading', () => {
     const findings = SCANNED.flatMap((file) =>
       scan(readFileSync(file, 'utf8')).map((line) => `${relative(repoRoot, file)}:${line}`),
     )
@@ -85,9 +88,13 @@ describe('image loading', () => {
     const multiline = ['const a = (', '  <img', '    alt=""', '    src="/x.png"', '  />', ')'].join(
       '\n',
     )
+    // React preloads a srcSet with no src too, so a src-only rule fails open
+    // on the shape the `VideoPlayer` fallback is one attribute away from.
+    const srcSetOnly = 'const a = <img alt="" sizes="100vw" srcSet={ladder} />'
 
     expect(scan(unsaid)).toEqual([2])
     expect(scan(multiline)).toEqual([2])
+    expect(scan(srcSetOnly)).toEqual([1])
   })
 
   it('reads the whole tag, so a > inside a prop value decides nothing', () => {
@@ -100,10 +107,13 @@ describe('image loading', () => {
     expect(scan(bare)).toEqual([1])
   })
 
-  it('passes a lazy img, an eager one, and an img with no src', () => {
+  it('passes a lazy img, an eager one, and an img React would not preload', () => {
     expect(scan('const a = <img alt="" loading="lazy" src="/x.png" />')).toEqual([])
     expect(scan('const a = <img alt="" loading="eager" src="/x.png" />')).toEqual([])
-    expect(scan('const a = <img alt="" loading={priority ? "eager" : "lazy"} src={src} />')).toEqual(
+    expect(
+      scan('const a = <img alt="" loading={priority ? "eager" : "lazy"} src={src} />'),
+    ).toEqual([])
+    expect(scan('const a = <img alt="" loading="lazy" sizes="100vw" srcSet={ladder} />')).toEqual(
       [],
     )
     expect(scan('const a = <img alt="" />')).toEqual([])

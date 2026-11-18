@@ -63,9 +63,12 @@ export async function loadTailwindStylesheet(
 }
 
 /**
- * The tree every guard about a component scans, and the `files` list of the
- * `no-restricted-syntax` block in `eslint.config.js`. One definition, so a new
+ * The tree the guards about a component scan. One definition, so a new
  * top-level directory does not reach some guards and not others.
+ *
+ * The `no-restricted-syntax` block in `eslint.config.js` names the same three
+ * directories and must be updated alongside: it is plain JS loaded before any
+ * transpile, so it cannot import this.
  */
 export const componentGlobs = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
 
