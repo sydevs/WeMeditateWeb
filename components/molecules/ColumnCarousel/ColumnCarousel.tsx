@@ -121,6 +121,7 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
 
   useEffect(() => {
     if (!emblaApi) return
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount, and it reports the `startIndex` the state already holds
     onSelect()
     emblaApi.on('select', onSelect)
 
@@ -187,6 +188,7 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
           <div className="flex justify-center mb-6">
             {columns.map((_, index) => (
               <button
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- a dot indicator over a fixed `columns` array: the position is the identity
                 key={index}
                 onClick={() => scrollTo(index)}
                 aria-label={t('blocks.a11y.go_to_column', {
@@ -211,7 +213,11 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
           <div ref={emblaRef} className="overflow-hidden">
             <div className="flex gap-4">
               {columns.map((column, index) => (
-                <div key={index} className="flex-[0_0_auto] w-full flex justify-center">
+                <div
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a slide over a fixed `columns` array, in the order the block declares
+                  key={index}
+                  className="flex-[0_0_auto] w-full flex justify-center"
+                >
                   <Column {...column} />
                 </div>
               ))}
@@ -233,6 +239,7 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
         `}
       >
         {columns.map((column, index) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- the same fixed `columns` array, laid out rather than scrolled
           <Column key={index} {...column} />
         ))}
       </div>

@@ -135,6 +135,7 @@ export function useCircularProgress({
   // This prevents the flash to old position while React state propagates
   useEffect(() => {
     if (seekPosition !== null && Math.abs(currentTime - seekPosition) < 0.5) {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- `currentTime` arrives from the audio element, so the handover can only be noticed after a render
       setSeekPosition(null)
     }
   }, [currentTime, seekPosition])

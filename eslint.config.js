@@ -170,6 +170,24 @@ export default defineConfig([
       '@eslint-react/jsx-no-comment-textnodes': 'error',
       '@eslint-react/jsx-no-children-prop': 'error',
       '@eslint-react/no-missing-component-display-name': 'error',
+      // `eslint .` exits 0 on warnings, so a rule left at `warn` here records
+      // a violation nobody is stopped by — in a file already carrying two
+      // thousand of them. These five are the React 18 idioms React 19 replaced
+      // outright: every site is gone, the replacement is mechanical, and a new
+      // one is always a mistake rather than a judgement (#250).
+      '@eslint-react/no-forward-ref': 'error',
+      '@eslint-react/no-use-context': 'error',
+      '@eslint-react/no-context-provider': 'error',
+      '@eslint-react/naming-convention-ref-name': 'error',
+      '@eslint-react/use-state': 'error',
+      // These three are judgements rather than mechanical replacements, so an
+      // `error` does force a new author to either change the code or write a
+      // disable carrying a reason. That is the point: every site in the repo
+      // has had that call made once, and `warn` would let the next one land
+      // unexamined among two thousand warnings nobody reads (#250).
+      '@eslint-react/no-array-index-key': 'error',
+      '@eslint-react/set-state-in-effect': 'error',
+      '@eslint-react/exhaustive-deps': 'error',
       '@stylistic/jsx-self-closing-comp': 'warn',
       // The groups reproduce the previous rule's `reservedFirst`,
       // `shorthandFirst` and `callbacksLast`, and `ignoreCase: false` its
@@ -199,6 +217,56 @@ export default defineConfig([
         },
       ],
     },
+  },
+  // A rule wrong about a whole file is turned off here, scoped by `files`, so
+  // the reason is stated once. A rule wrong about one site is disabled where
+  // that site is, so its reason sits beside the code it is about. Neither is
+  // ever turned off repo-wide.
+  {
+    // Two authored HTML strings, neither of which takes visitor input:
+    // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystem` renders
+    // SahajCloud's own rich text.
+    files: ['lib/atlas-head.tsx', 'components/organisms/SubtleSystem/SubtleSystem.tsx'],
+    rules: { '@eslint-react/dom-no-dangerously-set-innerhtml': 'off' },
+  },
+  {
+    // The Effect already sets a `cancelled` flag its cleanup flips, so nothing
+    // is stored after unmount and the rule is not reporting a leak. An
+    // AbortController would additionally cancel the request in flight, which
+    // is a separate improvement rather than this fix.
+    files: ['components/organisms/RelatedContent/RelatedContentLoader.tsx'],
+    rules: { '@eslint-react/web-api-no-leaked-fetch': 'off' },
+  },
+  {
+    // `new Date().getFullYear()` for a copyright year, and a story's countdown
+    // target. Impure, with no consequence a reader could see.
+    files: ['layouts/LayoutChrome.tsx', 'components/organisms/Splash/Splash.stories.tsx'],
+    rules: { '@eslint-react/purity': 'off' },
+  },
+  {
+    // The debug overlay has to add a class to the aligned image's own
+    // `<figure>`: a wrapper would contain the float and stop the text wrapping.
+    // `cloneElement` is the only way to reach an element already rendered.
+    files: ['components/organisms/RichText/RichText.tsx'],
+    rules: { '@eslint-react/no-clone-element': 'off' },
+  },
+  {
+    // A story's filler list — `Array.from({ length: 5 })` scrolled under a
+    // sticky header — is never the product concern the rule is about, and the
+    // next story author would leave the warning rather than re-make the call.
+    files: ['**/*.stories.tsx'],
+    rules: { '@eslint-react/no-array-index-key': 'off' },
+  },
+  {
+    // Here a `javascript:` URL is the input under test: these files assert
+    // that `Link` and `SocialIcon` refuse one. Flagging them flags the proof
+    // that the gate works.
+    files: [
+      'components/atoms/Link/Link.test.tsx',
+      'components/atoms/Link/Link.stories.tsx',
+      'components/atoms/graphics/SocialIcon/SocialIcon.test.tsx',
+    ],
+    rules: { '@eslint-react/dom-no-script-url': 'off' },
   },
   {
     // Visitor-facing copy is SahajCloud-owned and reaches the markup through

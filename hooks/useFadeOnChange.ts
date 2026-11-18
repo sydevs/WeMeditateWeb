@@ -22,12 +22,12 @@ const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffe
  */
 export function useFadeOnChange(key: string) {
   const ref = useRef<HTMLDivElement>(null)
-  const rendered = useRef(key)
+  const renderedRef = useRef(key)
 
   useBeforePaint(() => {
-    const changed = rendered.current !== key
+    const changed = renderedRef.current !== key
 
-    rendered.current = key
+    renderedRef.current = key
 
     if (!changed || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return

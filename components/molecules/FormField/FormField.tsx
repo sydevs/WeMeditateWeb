@@ -102,7 +102,11 @@ export function FormField({
   // call site needs one — every one today renders one control.
   const describedChildren =
     ariaDescribedBy && isValidElement<{ 'aria-describedby'?: string }>(children)
-      ? cloneElement(children, {
+      ? // The control is the caller's element, so nothing but `cloneElement`
+        // can put an attribute on it. A wrapper cannot carry
+        // `aria-describedby`: it has to sit on the control the label names.
+        // eslint-disable-next-line @eslint-react/no-clone-element
+        cloneElement(children, {
           'aria-describedby':
             [children.props['aria-describedby'], ariaDescribedBy].filter(Boolean).join(' ') ||
             undefined,

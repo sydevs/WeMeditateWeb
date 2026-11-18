@@ -30,7 +30,7 @@ export default function HeadDefault() {
       {/* See https://plausible.io/docs/plausible-script */}
       {/* TODO: update data-domain */}
       {!livePreview?.active && (
-        <script defer data-domain="yourdomain.com" src="https://plausible.io/js/script.js"></script>
+        <script defer data-domain="yourdomain.com" src="https://plausible.io/js/script.js" />
       )}
     </>
   )

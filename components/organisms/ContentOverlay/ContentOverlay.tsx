@@ -149,6 +149,7 @@ export function ContentOverlay({
         className={`text-base md:text-lg font-medium leading-relaxed ${textColorClass} ${textShadowClass}`}
       >
         {textParagraphs.map((paragraph, index) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
           <p key={index} className={index < textParagraphs.length - 1 ? 'mb-4' : ''}>
             {paragraph}
           </p>
@@ -190,6 +191,7 @@ export function ContentOverlay({
 
         <div className="text-lg font-light leading-relaxed text-gray-900">
           {textParagraphs.map((paragraph, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
             <p key={index} className={index < textParagraphs.length - 1 ? 'mb-4' : ''}>
               {paragraph}
             </p>

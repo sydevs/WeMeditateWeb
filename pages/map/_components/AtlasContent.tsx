@@ -90,6 +90,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
           const href = isCurrent ? null : atlasHref(rung, origin)
 
           return (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the route leads the key; the index only separates two rungs that share a name
             <li key={`${rung.route ?? rung.name}-${index}`} className="flex items-center gap-x-2">
               {index > 0 && <span aria-hidden="true">/</span>}
               {isCurrent || !href ? (
@@ -254,6 +255,7 @@ function EventContent({
       )}
 
       {(content.paragraphs ?? []).map((paragraph, index) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
         <p key={index} className="mt-4 text-gray-700">
           {paragraph}
         </p>
@@ -290,6 +292,7 @@ function RootContent({ title, content }: { title: string; content: AtlasSeoRootC
       {/* `?? []`: the type is hand-mirrored, so a field that stops arriving
           must degrade rather than 500 the page. */}
       {(content.paragraphs ?? []).map((paragraph, index) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
         <p key={index} className="mt-4 text-gray-700">
           {paragraph}
         </p>

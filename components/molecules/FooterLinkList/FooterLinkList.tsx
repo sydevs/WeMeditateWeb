@@ -62,6 +62,7 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
       <nav className="flex flex-col gap-3">
         {links.map((link, index) => (
           <Link
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- a row of this list holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
             key={index}
             href={link.href}
             locale={locale}
