@@ -1,22 +1,20 @@
 /**
- * Every form atom still hands its caller's `ref` to the element it wraps.
+ * Every form atom hands its caller's `ref` to every element it renders.
  *
  * `FormBuilder` and `react-hook-form` register a field by its ref, so an atom
  * that drops one takes its field out of the form without failing a render.
- * The five atoms used to guarantee this through `forwardRef`, whose absence
- * `tsc` would have caught; React 19 passes `ref` as an ordinary prop, and a
- * prop left out of the destructure still flows through `{...props}` onto the
- * element. So nothing above this file reports the day one stops being wired.
+ * `forwardRef` used to carry that contract in the type; React 19 passes `ref`
+ * as an ordinary prop, and what is left reports a break only as one
+ * `no-unused-vars` warning among twenty — in a run that exits 0.
  *
- * It takes two halves, because neither alone can say it:
+ * The branch that needs it most is the one no caller exercises: `Input`
+ * renders a second `<input>` when it draws an icon, so a ref wired to the
+ * plain branch alone looks correct everywhere a test renders it.
  *
- * - **The type.** Each atom is rendered with a `ref` of its element's type.
- *   That is a compile-time claim, enforced by `tsc --noEmit` in the gate: an
- *   atom that stopped accepting a ref, or started accepting the wrong element,
- *   fails there rather than here.
- * - **The wiring.** A ref never attaches under `renderToStaticMarkup`, so the
- *   rendered HTML cannot show it (`docs/rules/testing.md`). Where it lands is
- *   a fact about the source, read the way `ssr-visibility.test.ts` reads one.
+ * A ref never attaches under `renderToStaticMarkup`, so the wiring is read
+ * from the source the way `ssr-visibility.test.ts` reads one. The render below
+ * is a compile-time claim instead: `tsc --noEmit` rejects it if an atom stops
+ * accepting a ref, or starts accepting the wrong element.
  */
 
 import ts from 'typescript'
@@ -40,53 +38,63 @@ const ATOMS = [
   { name: 'Textarea', tag: 'textarea', file: 'components/atoms/form/Textarea/Textarea.tsx' },
 ]
 
-/** Every tag in `file` that carries `ref={ref}`. */
-function tagsWiringRef(file: string): string[] {
-  const tags: string[] = []
+/**
+ * How many `<tag>` elements `file` renders, and how many of those carry a
+ * `ref`. Any expression counts: the binding is renamed the moment an atom
+ * needs two refs, and the contract is that the element has one.
+ */
+function refCoverage(file: string, tag: string): { elements: number; wired: number } {
+  let elements = 0
+  let wired = 0
 
   walk(parse(readSource(join(repoRoot, file))), (node) => {
     if (!ts.isJsxSelfClosingElement(node) && !ts.isJsxOpeningElement(node)) {
       return
     }
-    const wired = node.attributes.properties.some(
+
+    if (node.tagName.getText() !== tag) {
+      return
+    }
+
+    elements += 1
+
+    const carriesRef = node.attributes.properties.some(
       (attribute) =>
         ts.isJsxAttribute(attribute) &&
         attribute.name.getText() === 'ref' &&
         attribute.initializer !== undefined &&
-        ts.isJsxExpression(attribute.initializer) &&
-        attribute.initializer.expression?.getText() === 'ref',
+        ts.isJsxExpression(attribute.initializer),
     )
 
-    if (wired) {
-      tags.push(node.tagName.getText())
+    if (carriesRef) {
+      wired += 1
     }
   })
 
-  return tags
+  return { elements, wired }
 }
 
 describe('form atoms forward a ref', () => {
-  it.each(ATOMS)('$name wires its ref to its <$tag>', ({ tag, file }) => {
-    expect(tagsWiringRef(file)).toContain(tag)
+  it.each(ATOMS)('$name wires a ref to every <$tag> it renders', ({ tag, file }) => {
+    const { elements, wired } = refCoverage(file, tag)
+
+    expect(elements).toBeGreaterThan(0)
+    expect(wired).toBe(elements)
   })
 
-  it('renders every atom given a ref of its own element type', () => {
+  it('accepts a ref of its own element type, and keeps it out of the markup', () => {
     const input = createRef<HTMLInputElement>()
     const select = createRef<HTMLSelectElement>()
     const textarea = createRef<HTMLTextAreaElement>()
 
     const markup = [
       renderToStaticMarkup(<Checkbox ref={input} label="Agree" />),
-      renderToStaticMarkup(<Input ref={input} type="email" />),
+      renderToStaticMarkup(<Input ref={input} type="search" />),
       renderToStaticMarkup(<Radio ref={input} label="Five minutes" name="duration" />),
       renderToStaticMarkup(<Select ref={select} />),
       renderToStaticMarkup(<Textarea ref={textarea} />),
-    ]
+    ].join('')
 
-    expect(markup.filter((html) => html.includes('<input'))).toHaveLength(3)
-    expect(markup.some((html) => html.includes('<select'))).toBe(true)
-    expect(markup.some((html) => html.includes('<textarea'))).toBe(true)
-    // A ref is not an attribute: it must never reach the server's HTML.
-    expect(markup.join('').includes(' ref=')).toBe(false)
+    expect(markup).not.toContain(' ref=')
   })
 })

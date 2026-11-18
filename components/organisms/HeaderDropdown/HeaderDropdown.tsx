@@ -74,7 +74,7 @@ export function HeaderDropdown({
           <nav className="py-6">
             <ul className="flex flex-col gap-3">
               {links.map((link, index) => (
-                // eslint-disable-next-line @eslint-react/no-array-index-key -- dropdown links built once per site configuration, never reordered or filtered
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- a row of this list holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
                 <li key={index}>
                   <Link
                     className="hover:text-teal-600 transition-colors"

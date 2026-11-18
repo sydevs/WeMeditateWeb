@@ -160,6 +160,16 @@ export default defineConfig([
       '@eslint-react/jsx-no-comment-textnodes': 'error',
       '@eslint-react/jsx-no-children-prop': 'error',
       '@eslint-react/no-missing-component-display-name': 'error',
+      // `eslint .` exits 0 on warnings, so a rule left at `warn` here records
+      // a violation nobody is stopped by — in a file already carrying two
+      // thousand of them. These five are the React 18 idioms React 19 replaced
+      // outright: every site is gone, the replacement is mechanical, and a new
+      // one is always a mistake rather than a judgement (#250).
+      '@eslint-react/no-forward-ref': 'error',
+      '@eslint-react/no-use-context': 'error',
+      '@eslint-react/no-context-provider': 'error',
+      '@eslint-react/naming-convention-ref-name': 'error',
+      '@eslint-react/use-state': 'error',
       '@stylistic/jsx-self-closing-comp': 'warn',
       // The groups reproduce the previous rule's `reservedFirst`,
       // `shorthandFirst` and `callbacksLast`, and `ignoreCase: false` its
@@ -190,6 +200,10 @@ export default defineConfig([
       ],
     },
   },
+  // A rule wrong about a whole file is turned off here, scoped by `files`, so
+  // the reason is stated once. A rule wrong about one site is disabled where
+  // that site is, so its reason sits beside the code it is about. Neither is
+  // ever turned off repo-wide.
   {
     // Two authored HTML strings, neither of which takes visitor input:
     // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystem` renders
@@ -217,6 +231,13 @@ export default defineConfig([
     // `cloneElement` is the only way to reach an element already rendered.
     files: ['components/organisms/RichText/RichText.tsx'],
     rules: { '@eslint-react/no-clone-element': 'off' },
+  },
+  {
+    // A story's filler list — `Array.from({ length: 5 })` scrolled under a
+    // sticky header — is never the product concern the rule is about, and the
+    // next story author would leave the warning rather than re-make the call.
+    files: ['**/*.stories.tsx'],
+    rules: { '@eslint-react/no-array-index-key': 'off' },
   },
   {
     // Here a `javascript:` URL is the input under test: these files assert
