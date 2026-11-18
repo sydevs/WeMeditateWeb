@@ -251,7 +251,6 @@ type BlockConverterFn = Extract<JSXConverter, (args: never) => unknown>
  * render, and never in production unless a caller opts in.
  */
 function withDebugOverlay(label: string, render: BlockConverterFn): BlockConverterFn {
-  // eslint-disable-next-line react/display-name -- a Lexical converter, not a React component
   return (args) => {
     const logNode = () => {
       // eslint-disable-next-line no-console -- the debug overlay logs block data

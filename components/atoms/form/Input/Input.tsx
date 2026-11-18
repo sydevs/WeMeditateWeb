@@ -7,6 +7,18 @@ import {
 } from '@heroicons/react/24/outline'
 import type { HeroIcon } from '../../Icon/Icon'
 
+/**
+ * The icon each input type shows when the caller passes none. A table, not a
+ * function: `@eslint-react/static-components` reads a call returning a
+ * component as one created during render.
+ */
+const DEFAULT_ICONS: Partial<Record<NonNullable<ComponentProps<'input'>['type']>, HeroIcon>> = {
+  search: MagnifyingGlassIcon,
+  email: EnvelopeIcon,
+  tel: PhoneIcon,
+  url: GlobeAltIcon,
+}
+
 export interface InputProps extends ComponentProps<'input'> {
   /**
    * Validation state
@@ -21,13 +33,8 @@ export interface InputProps extends ComponentProps<'input'> {
   variant?: 'default' | 'minimal'
 
   /**
-   * Optional icon to display on the right side of the input
-   * If not provided, default icons will be used for certain input types:
-   * - search: MagnifyingGlassIcon
-   * - email: EnvelopeIcon
-   * - tel: PhoneIcon
-   * - url: GlobeAltIcon
-   * Set to null to explicitly disable icon for these types
+   * Icon on the right of the input. Omitted, the input type picks one from
+   * `DEFAULT_ICONS`; `null` suppresses that default.
    */
   icon?: HeroIcon | null
 }
@@ -50,29 +57,13 @@ export interface InputProps extends ComponentProps<'input'> {
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ state = 'default', variant = 'default', icon, className = '', type, ...props }, ref) => {
-    // Determine which icon to display
-    const getDefaultIcon = (): HeroIcon | null => {
-      // If icon is explicitly set (including null), use that
-      if (icon !== undefined) {
-        return icon
-      }
-
-      // Otherwise, use default icons based on input type
-      switch (type) {
-        case 'search':
-          return MagnifyingGlassIcon
-        case 'email':
-          return EnvelopeIcon
-        case 'tel':
-          return PhoneIcon
-        case 'url':
-          return GlobeAltIcon
-        default:
-          return null
-      }
-    }
-
-    const IconComponent = getDefaultIcon()
+    // An explicit `icon`, `null` included, overrides the type's default.
+    // `type` arrives unvalidated — FormBuilder passes a SahajCloud block type
+    // through as a plain string — so an inherited `toString` must not read as
+    // an icon and get rendered. A `Map` would say this, but the rule above
+    // rejects a lookup call as a component built during render.
+    const IconComponent =
+      icon === undefined && type && Object.hasOwn(DEFAULT_ICONS, type) ? DEFAULT_ICONS[type] : icon
 
     const baseStyles =
       'px-3 py-3 font-sans text-base placeholder:text-gray-700 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'

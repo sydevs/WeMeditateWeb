@@ -25,6 +25,19 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
 - Keep every component's first render visible — see the Performance section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
 
+## Two component shapes `pnpm lint` rejects
+
+`@eslint-react` reports both as errors, and neither message names the shape that satisfies it.
+
+- **A hook must not sit below an early return.** A layout that guards on missing SahajCloud
+  settings splits in two: the export holds the guard, an inner component holds every hook, and
+  the guard passes what it read down as props. `LayoutChrome` and `LayoutMap` both do this.
+- **A function that returns a component counts as building one during render**, however far
+  outside the component it is declared. Pick from a fixed set with a module-scope lookup table —
+  `Input`'s `DEFAULT_ICONS`. A `Map` does not satisfy the rule: `.get()` is read as the call.
+  Guard the index with `Object.hasOwn`, or an inherited key such as `toString` resolves to a
+  prototype method.
+
 ## The 44×44 touch target has two utilities — do not hand-roll a third
 
 `Button` already guarantees the minimum, so a control built on the atom needs nothing. A control
