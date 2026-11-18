@@ -59,19 +59,18 @@ export function usePlaylistAudioPlayer({
 
   // Initialize/update play order when shuffle changes or tracks change
   useEffect(() => {
+    const order = [...Array(tracks.length).keys()]
+
     if (isShuffleOn) {
       // Fisher-Yates shuffle algorithm
-      const shuffled = [...Array(tracks.length).keys()]
-      for (let i = shuffled.length - 1; i > 0; i--) {
+      for (let i = order.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
-        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        ;[order[i], order[j]] = [order[j], order[i]]
       }
-      // eslint-disable-next-line @eslint-react/set-state-in-effect -- the shuffle is random, so it has to run after hydration; play order drives playback, never markup
-      setPlayOrder(shuffled)
-    } else {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect -- play order drives playback, never markup, so the extra render paints nothing new
-      setPlayOrder([...Array(tracks.length).keys()])
     }
+
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- a shuffle is random, so it cannot run on the server; play order drives playback, never markup
+    setPlayOrder(order)
   }, [isShuffleOn, tracks.length])
 
   // Howler holds this callback from the load that registered it and fires it

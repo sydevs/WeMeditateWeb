@@ -41,7 +41,7 @@ export interface SelectProps extends ComponentProps<'select'> {
  *   <option value="es">Español</option>
  * </Select>
  */
-export const Select = ({
+export function Select({
   state = 'default',
   variant = 'default',
   fullWidth = false,
@@ -50,7 +50,7 @@ export const Select = ({
   children,
   ref,
   ...props
-}: SelectProps) => {
+}: SelectProps) {
   const baseStyles =
     'py-3 bg-transparent font-sans text-base transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed appearance-none cursor-pointer'
 

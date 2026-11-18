@@ -55,7 +55,7 @@ export interface InputProps extends ComponentProps<'input'> {
  * <Input type="search" icon={CustomIcon} />
  * <Input type="search" icon={null} /> // Explicitly disable icon
  */
-export const Input = ({
+export function Input({
   state = 'default',
   variant = 'default',
   icon,
@@ -63,7 +63,7 @@ export const Input = ({
   type,
   ref,
   ...props
-}: InputProps) => {
+}: InputProps) {
   // An explicit `icon`, `null` included, overrides the type's default.
   // `type` arrives unvalidated — FormBuilder passes a SahajCloud block type
   // through as a plain string — so an inherited `toString` must not read as

@@ -28,7 +28,7 @@ export interface RadioProps extends Omit<ComponentProps<'input'>, 'type'> {
  * <Radio name="duration" value="10" label="10 minutes" />
  * <Radio name="duration" value="15" label="15 minutes" />
  */
-export const Radio = ({
+export function Radio({
   label,
   hasError = false,
   color = 'primary',
@@ -36,7 +36,7 @@ export const Radio = ({
   id,
   ref,
   ...props
-}: RadioProps) => {
+}: RadioProps) {
   const generatedId = useId()
   const inputId = id || generatedId
 

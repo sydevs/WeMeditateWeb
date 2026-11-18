@@ -1,4 +1,4 @@
-import { ComponentProps, useCallback, useState, useEffect } from 'react'
+import { ComponentProps, useState, useEffect } from 'react'
 import { useT } from '../../../hooks/useT'
 
 export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> {
@@ -17,30 +17,33 @@ interface TimeRemaining {
   isExpired: boolean
 }
 
+function timeRemainingUntil(targetDate: string | Date): TimeRemaining {
+  const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
+  const now = new Date()
+  const difference = target.getTime() - now.getTime()
+
+  if (difference <= 0) {
+    return { hours: 0, minutes: 0, seconds: 0, isExpired: true }
+  }
+
+  const hours = Math.floor(difference / (1000 * 60 * 60))
+  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+
+  return { hours, minutes, seconds, isExpired: false }
+}
+
 /** Calculate time remaining until target date */
 function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeRemaining {
-  const calculateTimeRemaining = useCallback((): TimeRemaining => {
-    const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
-    const now = new Date()
-    const difference = target.getTime() - now.getTime()
-
-    if (difference <= 0) {
-      return { hours: 0, minutes: 0, seconds: 0, isExpired: true }
-    }
-
-    const hours = Math.floor(difference / (1000 * 60 * 60))
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-    return { hours, minutes, seconds, isExpired: false }
-  }, [targetDate])
-
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(calculateTimeRemaining)
+  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(() =>
+    timeRemainingUntil(targetDate),
+  )
   const [hasCompleted, setHasCompleted] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const newTime = calculateTimeRemaining()
+      const newTime = timeRemainingUntil(targetDate)
+
       setTimeRemaining(newTime)
 
       // Trigger onComplete callback only once when countdown expires
@@ -51,7 +54,7 @@ function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeR
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [calculateTimeRemaining, onComplete, hasCompleted])
+  }, [targetDate, onComplete, hasCompleted])
 
   return timeRemaining
 }

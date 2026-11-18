@@ -28,7 +28,7 @@ export interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
  * <Checkbox id="newsletter" label="Subscribe to newsletter" />
  * <Checkbox hasError label="Required field" />
  */
-export const Checkbox = ({
+export function Checkbox({
   label,
   hasError = false,
   color = 'primary',
@@ -36,7 +36,7 @@ export const Checkbox = ({
   id,
   ref,
   ...props
-}: CheckboxProps) => {
+}: CheckboxProps) {
   const generatedId = useId()
   const inputId = id || generatedId
 

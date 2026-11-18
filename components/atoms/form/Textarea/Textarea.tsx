@@ -37,7 +37,7 @@ export interface TextareaProps extends ComponentProps<'textarea'> {
  * <Textarea state="error" />
  * <Textarea autoResize placeholder="Type here..." />
  */
-export const Textarea = ({
+export function Textarea({
   state = 'default',
   variant = 'default',
   fullWidth = true,
@@ -46,7 +46,7 @@ export const Textarea = ({
   onChange,
   ref,
   ...props
-}: TextareaProps) => {
+}: TextareaProps) {
   const baseStyles =
     'py-3 bg-transparent font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
 
