@@ -44,7 +44,7 @@ describe('<Image> Cloudflare Images integration', () => {
     )
 
     expect(html).toContain(`src="${PICSUM_URL}"`)
-    expect(html).not.toContain('srcset=')
+    expect(html).not.toContain('srcSet=')
   })
 
   it('respects responsive={false}: transforms src but suppresses srcSet', () => {
@@ -53,14 +53,14 @@ describe('<Image> Cloudflare Images integration', () => {
     )
 
     expect(html).toContain(`src="${CF_URL}width=800"`)
-    expect(html).not.toContain('srcset=')
+    expect(html).not.toContain('srcSet=')
   })
 
   it('leaves src unchanged when aspectRatio is omitted', () => {
     const html = renderToStaticMarkup(<Image alt="test" sizes="100vw" src={CF_URL} />)
 
     expect(html).toContain(`src="${CF_URL}"`)
-    expect(html).not.toContain('srcset=')
+    expect(html).not.toContain('srcSet=')
   })
 })
 
