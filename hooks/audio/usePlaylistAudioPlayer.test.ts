@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { usePlaylistAudioPlayer } from './usePlaylistAudioPlayer'
+import type { AudioPlayerControls, AudioPlayerState } from './useAudioPlayer'
 import type { Track } from '../../components/molecules/AudioPlayer/types'
 
 // Howler never plays under jsdom, so the core hook is replaced by a recorder.
@@ -19,8 +20,8 @@ vi.mock('./useAudioPlayer', () => ({
       volume: 1,
       isMuted: false,
       error: null,
-    },
-    { load: player.load },
+    } satisfies AudioPlayerState,
+    { load: player.load } satisfies Partial<AudioPlayerControls>,
   ],
 }))
 
@@ -33,7 +34,11 @@ const tracks: Track[] = ['one', 'two', 'three'].map((name) => ({
   duration: 0,
 }))
 
-const lastLoad = () => player.load.mock.calls.at(-1)
+const lastLoad = () => {
+  const [url, options] = player.load.mock.calls.at(-1) ?? []
+
+  return { url, autoplay: options?.autoplay }
+}
 
 beforeEach(() => {
   player.load.mockClear()
@@ -43,27 +48,25 @@ beforeEach(() => {
 describe('usePlaylistAudioPlayer — next and previous', () => {
   it('steps through the play order and wraps at both ends', () => {
     const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+    const step = (move: 'next' | 'previous') => act(() => result.current[1][move]())
 
-    act(() => result.current[1].next())
+    step('previous')
+    expect(lastLoad().url).toBe(tracks[2].url)
+
+    step('next')
+    expect(lastLoad().url).toBe(tracks[0].url)
+
+    step('next')
     expect(result.current[0].currentTrackIndex).toBe(1)
-    expect(lastLoad()?.[0]).toBe(tracks[1].url)
-
-    act(() => result.current[1].previous())
-    act(() => result.current[1].previous())
-    expect(result.current[0].currentTrackIndex).toBe(2)
-    expect(result.current[0].currentTrack).toBe(tracks[2])
-    expect(lastLoad()?.[0]).toBe(tracks[2].url)
+    expect(lastLoad().url).toBe(tracks[1].url)
   })
 
-  it('keeps playing across a skip, and stays paused across one', () => {
-    const { result, rerender } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+  it.each([true, false])('carries playback across a skip when playing is %s', (isPlaying) => {
+    player.isPlaying = isPlaying
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
 
     act(() => result.current[1].next())
-    expect(lastLoad()?.[1]).toMatchObject({ autoplay: false })
 
-    player.isPlaying = true
-    rerender()
-    act(() => result.current[1].next())
-    expect(lastLoad()?.[1]).toMatchObject({ autoplay: true })
+    expect(lastLoad().autoplay).toBe(isPlaying)
   })
 })

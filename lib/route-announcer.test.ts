@@ -9,8 +9,8 @@ import {
 
 /**
  * A stand-in for the two elements this touches. A fake is honest here, not a
- * gap jsdom would fill: the contract under test is "which element is looked up, and what
- * is done to it", which is exactly what these record.
+ * gap jsdom would fill: the contract under test is "which element is looked
+ * up, and what is done to it", which is exactly what these record.
  */
 function stubDocument(
   title: string,

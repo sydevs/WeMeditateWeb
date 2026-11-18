@@ -10,7 +10,7 @@ export interface Track {
   creditURL: string
   /** Album art/thumbnail image URL */
   thumbnailURL: string
-  /** Duration in seconds */
+  /** Duration in seconds, or 0 when unknown — SahajCloud's Song carries none */
   duration: number
   /**
    * Optional filter facets. `id` is the tag slug — the stable filter id,

@@ -1,9 +1,9 @@
 /**
  * Assertion primitives for `renderToStaticMarkup` output.
  *
- * The suite runs in `environment: 'node'` with no DOM to query
- * (`docs/rules/testing.md`), so a test that cares *which* element carries an
- * attribute has to narrow the HTML string itself.
+ * A server render is a string, not a DOM (`docs/rules/testing.md`), so a test
+ * that cares *which* element carries an attribute has to narrow the HTML
+ * string itself.
  */
 
 /**

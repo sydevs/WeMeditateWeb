@@ -10,8 +10,8 @@ paths:
 # Testing
 
 The project uses Vitest with `environment: 'node'` (see [vitest.config.ts](../../vitest.config.ts)).
-A file that needs a DOM — a click, an effect, a state change after mount — opts into jsdom with
-its first line, and uses `@testing-library/react`. See [below](#test-interaction-with-jsdom).
+A file that needs a DOM — a click, an effect, a state change after mount — opts into jsdom
+(see **Test interaction with jsdom** below).
 
 **Commands:**
 ```bash
@@ -78,20 +78,10 @@ throwaway test and match what React really emits.
 
 **Test interaction with jsdom:**
 
-Start the file with `// @vitest-environment jsdom`, then render with `@testing-library/react`.
-Keep the default `node` everywhere else: jsdom adds setup time to every file that loads it.
-Cleanup between tests runs automatically, because Vitest's globals are on.
-
-```tsx
-// @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-```
-
-Howler never plays under jsdom. A test of the audio player replaces `hooks/audio/useAudioPlayer`
-with a `vi.mock` recorder and asserts on the `load` calls it receives — see
-[MusicLibrary.test.tsx](../../components/organisms/MusicLibrary/MusicLibrary.test.tsx) and
-[usePlaylistAudioPlayer.test.ts](../../hooks/audio/usePlaylistAudioPlayer.test.ts).
+Make `// @vitest-environment jsdom` the file's first line, then render with
+`@testing-library/react`. Leave every other file on `node`: jsdom adds setup time to each file
+that loads it. Cleanup between tests is automatic, because Vitest's globals are on. See
+[MusicLibrary.test.tsx](../../components/organisms/MusicLibrary/MusicLibrary.test.tsx).
 
 **What to test:**
 - Test pure utilities — logic, parsing, transforms. This is fast and high-value.

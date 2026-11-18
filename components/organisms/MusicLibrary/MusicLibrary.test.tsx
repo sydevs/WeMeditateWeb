@@ -4,10 +4,9 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { MusicLibrary } from './MusicLibrary'
 import type { MusicFilter, Track } from '../../molecules'
+import type { AudioPlayerControls, AudioPlayerState } from '../../../hooks/audio'
 
-// Howler never plays under jsdom, so the core hook is replaced by a recorder:
-// what these tests assert is which url the playlist asks it to load, and
-// whether it asks for playback.
+// Howler never plays under jsdom, so the core hook is replaced by a recorder.
 const player = vi.hoisted(() => ({ load: vi.fn() }))
 
 vi.mock('../../../hooks/audio/useAudioPlayer', () => ({
@@ -22,22 +21,13 @@ vi.mock('../../../hooks/audio/useAudioPlayer', () => ({
       volume: 1,
       isMuted: false,
       error: null,
-    },
-    {
-      play: () => {},
-      pause: () => {},
-      togglePlayPause: () => {},
-      seek: () => {},
-      setVolume: () => {},
-      toggleMute: () => {},
-      unmute: () => {},
-      load: player.load,
-    },
+    } satisfies AudioPlayerState,
+    { load: player.load } satisfies Partial<AudioPlayerControls>,
   ],
 }))
 
 const track = (title: string, tag: string): Track => ({
-  url: `https://cdn.example.com/${title.toLowerCase().replace(/ /g, '-')}.mp3`,
+  url: `https://cdn.example.com/${title}.mp3`,
   title,
   credit: 'Artist',
   creditURL: 'https://example.com/artist',
@@ -61,16 +51,18 @@ const filters: MusicFilter[] = [
 ]
 
 const row = (title: string) => screen.getByRole('button', { name: new RegExp(title) })
+const toggleWind = () => fireEvent.click(screen.getByRole('button', { name: 'Wind' }))
 
-/** Titles of the rows drawing the "now playing" treatment. */
 const highlighted = () =>
-  tracks
-    .map((t) => t.title)
-    .filter((title) =>
-      screen.queryByRole('button', { name: new RegExp(title) })?.className.includes('bg-teal-600'),
-    )
+  screen
+    .queryAllByRole('button', { current: true })
+    .map((button) => button.querySelector('h4')?.textContent)
 
-const lastLoad = () => player.load.mock.calls.at(-1)
+const lastLoad = () => {
+  const [url, options] = player.load.mock.calls.at(-1) ?? []
+
+  return { url, autoplay: options?.autoplay }
+}
 
 beforeEach(() => {
   player.load.mockClear()
@@ -80,38 +72,28 @@ describe('MusicLibrary — the playing track has one owner', () => {
   it('loads the first track on mount without playing it', () => {
     render(<MusicLibrary filters={filters} tracks={tracks} />)
 
-    expect(lastLoad()?.[0]).toBe(tracks[0].url)
-    expect(lastLoad()?.[1]).toMatchObject({ autoplay: false })
+    expect(lastLoad()).toEqual({ url: tracks[0].url, autoplay: false })
   })
 
-  it('plays, highlights and shows the filtered row that was clicked', () => {
+  it('plays, highlights and shows the filtered row clicked on a paused player', () => {
     render(<MusicLibrary filters={filters} tracks={tracks} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Wind' }))
+    toggleWind()
     fireEvent.click(row('Flute Meditation'))
 
-    expect(lastLoad()?.[0]).toBe(tracks[4].url)
+    expect(lastLoad()).toEqual({ url: tracks[4].url, autoplay: true })
     expect(highlighted()).toEqual(['Flute Meditation'])
     expect(screen.getByRole('heading', { level: 3, name: 'Flute Meditation' })).toBeTruthy()
-  })
-
-  it('starts playback when a row is clicked on a paused player', () => {
-    render(<MusicLibrary filters={filters} tracks={tracks} />)
-
-    fireEvent.click(row('Peaceful Chants'))
-
-    expect(lastLoad()?.[0]).toBe(tracks[2].url)
-    expect(lastLoad()?.[1]).toMatchObject({ autoplay: true })
   })
 
   it('keeps the playing track when the filter is cleared', () => {
     render(<MusicLibrary filters={filters} tracks={tracks} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Wind' }))
+    toggleWind()
     fireEvent.click(row('Flute Meditation'))
     const loads = player.load.mock.calls.length
 
-    fireEvent.click(screen.getByRole('button', { name: 'Wind' }))
+    toggleWind()
 
     expect(screen.getAllByRole('button', { name: /Artist/ })).toHaveLength(tracks.length)
     expect(highlighted()).toEqual(['Flute Meditation'])
