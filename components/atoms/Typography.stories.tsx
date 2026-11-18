@@ -1,9 +1,9 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { StorySection, StoryWrapper } from '../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { StorySection, StoryWrapper } from '../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Typography showcase demonstrating text sizing, weights, and colors using Tailwind CSS utilities.
@@ -14,13 +14,15 @@ export default {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection
-      title="Sizes"
       description="Responsive text sizes with mobile-first breakpoints. Base and larger sizes adapt from mobile to desktop."
+      title="Sizes"
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs">Extra small text (text-xs)</p>
         <p className="text-sm">Small text (text-sm)</p>
-        <p className="text-sm sm:text-base">Base text (text-sm sm:text-base) - responsive default</p>
+        <p className="text-sm sm:text-base">
+          Base text (text-sm sm:text-base) - responsive default
+        </p>
         <p className="text-base sm:text-lg">Large text (text-base sm:text-lg)</p>
         <p className="text-lg sm:text-xl">Extra large text (text-lg sm:text-xl)</p>
         <p className="text-xl sm:text-2xl">2X large text (text-xl sm:text-2xl)</p>
@@ -28,8 +30,8 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Weights"
       description="Raleway font weights from 200 (extralight) to 700 (bold). Light (300) is the default for body text."
+      title="Weights"
     >
       <div className="flex flex-col gap-3">
         <p className="font-extralight">Extra light weight - font-extralight (200)</p>
@@ -42,8 +44,8 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Colors"
       description="Semantic text colors from the design system. Use color utilities that match your content's purpose."
+      title="Colors"
     >
       <div className="flex gap-5">
         <div className="flex flex-col gap-3">
@@ -51,31 +53,29 @@ export const Default: Story = () => (
           <p className="text-teal-700">Primary color - text-teal-700</p>
           <p className="text-coral-700">Secondary color - text-coral-700</p>
           <p className="text-gray-700">Faded color - text-gray-700</p>
-          <div className="bg-teal-500 p-3 rounded text-white">
-            <p>
-              Inherit color from parent (text-white on bg-teal-500)
-            </p>
+          <div className="bg-teal-600 p-3 rounded text-white">
+            <p>Inherit color from parent (text-white on bg-teal-600)</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
           <p className="text-gray-900 font-semibold">Default color - text-gray-900 font-semibold</p>
           <p className="text-teal-700 font-semibold">Primary color - text-teal-700 font-semibold</p>
-          <p className="text-coral-700 font-semibold">Secondary color - text-coral-700 font-semibold</p>
+          <p className="text-coral-700 font-semibold">
+            Secondary color - text-coral-700 font-semibold
+          </p>
           <p className="text-gray-700 font-semibold">Faded color - text-gray-700 font-semibold</p>
-          <div className="bg-teal-500 p-3 rounded text-white">
-            <p className="font-semibold">
-              Inherit color from parent (text-white font-semibold)
-            </p>
+          <div className="bg-teal-600 p-3 rounded text-white">
+            <p className="font-semibold">Inherit color from parent (text-white font-semibold)</p>
           </div>
         </div>
       </div>
     </StorySection>
 
     <StorySection
-      title="Examples"
-      inContext={true}
       description="Real-world typography usage patterns combining size, weight, and color."
+      inContext={true}
+      title="Examples"
     >
       <div className="flex flex-col gap-8 max-w-2xl">
         <div>
@@ -91,9 +91,9 @@ export const Default: Story = () => (
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Body Text Paragraph</h3>
           <p className="text-sm sm:text-base font-light text-gray-700 leading-relaxed">
-            This is a typical body paragraph using the default text sizing and styling.
-            It uses responsive sizing (text-sm sm:text-base) that scales from mobile to desktop,
-            light font weight (font-light) for comfortable reading, and relaxed line height (leading-relaxed)
+            This is a typical body paragraph using the default text sizing and styling. It uses
+            responsive sizing (text-sm sm:text-base) that scales from mobile to desktop, light font
+            weight (font-light) for comfortable reading, and relaxed line height (leading-relaxed)
             for improved readability.
           </p>
         </div>
@@ -102,20 +102,20 @@ export const Default: Story = () => (
           <h3 className="text-lg font-medium text-gray-900 mb-2">Emphasis and Links</h3>
           <p className="text-sm sm:text-base font-light text-gray-700 leading-relaxed">
             You can emphasize text with <strong className="font-semibold">font-semibold</strong> or
-            create <a href="#" className="text-teal-600 hover:text-teal-700 underline">interactive links</a> using
-            color utilities. For subtle text, use <span className="text-gray-600">text-gray-600</span>.
+            create{' '}
+            <a className="text-teal-600 hover:text-teal-700 underline" href="#">
+              interactive links
+            </a>{' '}
+            using color utilities. For subtle text, use{' '}
+            <span className="text-gray-700">text-gray-700</span>.
           </p>
         </div>
 
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Social Share Label</h3>
           <div className="flex items-center gap-3">
-            <span className="text-base sm:text-lg font-normal text-gray-700">
-              Share:
-            </span>
-            <div className="text-sm text-gray-500">
-              (Social icons would appear here)
-            </div>
+            <span className="text-base sm:text-lg font-normal text-gray-700">Share:</span>
+            <div className="text-sm text-gray-700">(Social icons would appear here)</div>
           </div>
         </div>
       </div>
@@ -123,6 +123,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Typography"
+Default.storyName = 'Typography'

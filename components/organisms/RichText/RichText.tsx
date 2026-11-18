@@ -191,8 +191,7 @@ const CONVERTERS: JSXConverters = {
       return null
     }
     const fields = node.fields as
-      | { caption?: unknown; align?: string | null; alt?: string | null }
-      | undefined
+      { caption?: unknown; align?: string | null; alt?: string | null } | undefined
     const caption = renderCaption(fields?.caption)
     // `wide` images break out to the full content width. They get no
     // rounding, because they meet the edges, and a full-width `sizes` hint,
@@ -211,7 +210,7 @@ const CONVERTERS: JSXConverters = {
           src={image.url}
           width={image.width ?? undefined}
         />
-        {caption ? <figcaption className="mt-2 text-sm text-gray-500">{caption}</figcaption> : null}
+        {caption ? <figcaption className="mt-2 text-sm text-gray-700">{caption}</figcaption> : null}
       </figure>
     )
   },

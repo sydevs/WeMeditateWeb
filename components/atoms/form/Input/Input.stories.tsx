@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Input } from "./Input";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Input } from './Input'
 import {
   StorySection,
   StoryWrapper,
@@ -9,25 +9,25 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../../ladle';
-import { HeartIcon } from '@heroicons/react/24/outline';
+  StoryGridCell,
+} from '../../../ladle'
+import { HeartIcon } from '@heroicons/react/24/outline'
 
 export default {
-  title: "Atoms / Form"
-} satisfies StoryDefault;
+  title: 'Atoms / Form',
+} satisfies StoryDefault
 
 /** Input component showcasing all types, width options, and validation states. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Input Types">
       <div className="flex flex-col gap-3 max-w-xs">
-        <Input type="text" placeholder="Text input" />
-        <Input type="email" placeholder="Email input" />
-        <Input type="number" placeholder="Number input" />
-        <Input type="tel" placeholder="Phone number" />
-        <Input type="url" placeholder="Website URL" />
-        <Input type="search" placeholder="Search..." />
+        <Input placeholder="Text input" type="text" />
+        <Input placeholder="Email input" type="email" />
+        <Input placeholder="Number input" type="number" />
+        <Input placeholder="Phone number" type="tel" />
+        <Input placeholder="Website URL" type="url" />
+        <Input placeholder="Search..." type="search" />
         <Input type="date" />
       </div>
     </StorySection>
@@ -35,12 +35,12 @@ export const Default: Story = () => (
     <StorySection title="Icon Customization">
       <div className="flex flex-col gap-3 max-w-xs">
         <div>
-          <p className="text-sm text-gray-600 mb-1">Custom icon</p>
-          <Input type="search" placeholder="Search..." icon={HeartIcon} />
+          <p className="text-sm text-gray-700 mb-1">Custom icon</p>
+          <Input icon={HeartIcon} placeholder="Search..." type="search" />
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-1">Icon disabled</p>
-          <Input type="search" placeholder="Search..." icon={null} />
+          <p className="text-sm text-gray-700 mb-1">Icon disabled</p>
+          <Input icon={null} placeholder="Search..." type="search" />
         </div>
       </div>
     </StorySection>
@@ -58,40 +58,45 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Default</StoryGridCell>
             <StoryGridCell>
-              <Input type="text" placeholder="Normal input" />
+              <Input placeholder="Normal input" type="text" />
             </StoryGridCell>
             <StoryGridCell>
-              <Input type="text" placeholder="Normal input" variant="minimal" />
+              <Input placeholder="Normal input" type="text" variant="minimal" />
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Success</StoryGridCell>
             <StoryGridCell>
-              <Input type="email" state="success" defaultValue="valid@email.com" />
+              <Input defaultValue="valid@email.com" state="success" type="email" />
             </StoryGridCell>
             <StoryGridCell>
-              <Input type="email" state="success" defaultValue="valid@email.com" variant="minimal" />
+              <Input
+                defaultValue="valid@email.com"
+                state="success"
+                type="email"
+                variant="minimal"
+              />
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Error</StoryGridCell>
             <StoryGridCell>
-              <Input type="email" state="error" defaultValue="invalid@email" />
+              <Input defaultValue="invalid@email" state="error" type="email" />
             </StoryGridCell>
             <StoryGridCell>
-              <Input type="email" state="error" defaultValue="invalid@email" variant="minimal" />
+              <Input defaultValue="invalid@email" state="error" type="email" variant="minimal" />
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Disabled</StoryGridCell>
             <StoryGridCell>
-              <Input type="text" placeholder="Disabled input" disabled />
+              <Input disabled placeholder="Disabled input" type="text" />
             </StoryGridCell>
             <StoryGridCell>
-              <Input type="text" placeholder="Disabled input" disabled variant="minimal" />
+              <Input disabled placeholder="Disabled input" type="text" variant="minimal" />
             </StoryGridCell>
           </StoryGridRow>
         </StoryGridBody>
@@ -101,25 +106,25 @@ export const Default: Story = () => (
     <StorySection title="Widths">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="text-sm text-gray-600 mb-1">Default (full width)</p>
-          <Input type="text" placeholder="Default width" />
+          <p className="text-sm text-gray-700 mb-1">Default (full width)</p>
+          <Input placeholder="Default width" type="text" />
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-1">Custom Width (max-w-64)</p>
-          <Input type="text" placeholder="Custom width" className="max-w-64" />
+          <p className="text-sm text-gray-700 mb-1">Custom Width (max-w-64)</p>
+          <Input className="max-w-64" placeholder="Custom width" type="text" />
         </div>
         <div>
-          <p className="text-sm text-gray-600 mb-1">Custom Width (max-w-sm)</p>
-          <Input type="text" placeholder="Custom width" className="max-w-sm" />
+          <p className="text-sm text-gray-700 mb-1">Custom Width (max-w-sm)</p>
+          <Input className="max-w-sm" placeholder="Custom width" type="text" />
         </div>
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="space-y-6">
         <StorySection title="Search Bar" variant="subsection">
           <div className="max-w-md">
-            <Input type="search" placeholder="Search meditations..." className="w-full" />
+            <Input className="w-full" placeholder="Search meditations..." type="search" />
           </div>
         </StorySection>
 
@@ -127,11 +132,11 @@ export const Default: Story = () => (
           <div className="space-y-3 max-w-md">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Email</label>
-              <Input type="email" placeholder="you@example.com" className="w-full" />
+              <Input className="w-full" placeholder="you@example.com" type="email" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Password</label>
-              <Input type="password" placeholder="••••••••" className="w-full" />
+              <Input className="w-full" placeholder="••••••••" type="password" />
             </div>
           </div>
         </StorySection>
@@ -140,16 +145,16 @@ export const Default: Story = () => (
           <div className="space-y-3 max-w-md">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Phone</label>
-              <Input type="tel" placeholder="+1 (555) 123-4567" className="w-full" />
+              <Input className="w-full" placeholder="+1 (555) 123-4567" type="tel" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Website</label>
-              <Input type="url" placeholder="https://example.com" className="w-full" />
+              <Input className="w-full" placeholder="https://example.com" type="url" />
             </div>
           </div>
         </StorySection>
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Input"
+)
+Default.storyName = 'Input'

@@ -41,11 +41,7 @@ export function LecturePlayer({ lecture, locale, posterSizes, className }: Lectu
   const t = useT()
 
   if (!lecture.hlsUrl) {
-    return (
-      <p className="p-6 text-center text-gray-500">
-        {t('lecture.general.missing_video')}
-      </p>
-    )
+    return <p className="p-6 text-center text-gray-700">{t('lecture.general.missing_video')}</p>
   }
 
   return (
@@ -153,10 +149,7 @@ export function LectureTemplate({
           bare embed route uses LecturePlayer, not this template, so this
           setting does not affect it. */}
       {showRelated ? (
-        <RelatedContentLoader
-          anchorId={lecture.id}
-          kind="related-meditations"
-        />
+        <RelatedContentLoader anchorId={lecture.id} kind="related-meditations" />
       ) : null}
     </article>
   )

@@ -15,7 +15,17 @@ export interface FooterSection {
 /** A social media link */
 export interface SocialLink {
   /** Social media platform */
-  platform: 'facebook' | 'instagram' | 'bluesky' | 'youtube' | 'pinterest' | 'whatsapp' | 'linkedin' | 'yandex' | 'telegram' | 'wechat'
+  platform:
+    | 'facebook'
+    | 'instagram'
+    | 'bluesky'
+    | 'youtube'
+    | 'pinterest'
+    | 'whatsapp'
+    | 'linkedin'
+    | 'yandex'
+    | 'telegram'
+    | 'wechat'
   /** URL to the social media profile */
   href: string
 }
@@ -37,7 +47,6 @@ export interface FooterProps {
   /** Current locale for locale-aware links */
   locale?: Locale
 }
-
 
 /**
  * Footer organism component with responsive grid layout.
@@ -87,12 +96,12 @@ export function Footer({
   return (
     <footer className="w-full bg-white">
       {/* Decorative Divider */}
-      <div className="relative w-full text-center pt-[53px]" role="separator" aria-hidden="true">
+      <div aria-hidden="true" className="relative w-full text-center pt-[53px]" role="separator">
         {/* The horizontal line */}
         <div className="w-full border-t border-gray-200 absolute bottom-0" />
 
         {/* Floral design centered over the line */}
-        <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2 bottom-0 bg-white px-4 text-gray-500">
+        <div className="absolute left-1/2 -translate-x-1/2 translate-y-1/2 bottom-0 bg-white px-4 text-gray-700">
           <FloralDividerSvg />
         </div>
       </div>
@@ -102,14 +111,14 @@ export function Footer({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {/* Hero Links Section */}
           <div>
-            <FooterLinkList variant="hero" links={heroLinks} locale={locale} />
+            <FooterLinkList links={heroLinks} locale={locale} variant="hero" />
           </div>
 
           {/* Regular Link Sections */}
           {sections.map((section, index) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key -- a section holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
             <div key={index}>
-              <FooterLinkList title={section.title} links={section.links} locale={locale} />
+              <FooterLinkList links={section.links} locale={locale} title={section.title} />
             </div>
           ))}
 
@@ -121,19 +130,19 @@ export function Footer({
                 <SocialIcon
                   // eslint-disable-next-line @eslint-react/no-array-index-key -- a social icon holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
                   key={index}
-                  platform={social.platform}
-                  href={social.href}
-                  size="lg"
                   color="brand"
+                  href={social.href}
+                  platform={social.platform}
+                  size="lg"
                 />
               ))}
             </div>
 
             {/* Language Dropdown */}
             <LanguageDropdown
+              align="left"
               currentLanguage={currentLanguage}
               languages={languages}
-              align="left"
             />
           </div>
         </div>
@@ -142,7 +151,7 @@ export function Footer({
       {/* Copyright Bar */}
       <div className="border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <p className="text-center text-sm text-gray-600">{copyrightText}</p>
+          <p className="text-center text-sm text-gray-700">{copyrightText}</p>
         </div>
       </div>
     </footer>

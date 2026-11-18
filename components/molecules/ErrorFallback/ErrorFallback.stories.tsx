@@ -19,30 +19,22 @@ export const Default: Story = () => {
   return (
     <StoryWrapper>
       <StorySection title="Basic">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-700 mb-4">
           Fully configured ErrorFallback with error, resetError, and showDetails
         </p>
         <div className="border border-gray-200 rounded-lg">
-          <ErrorFallback
-            error={mockError}
-            resetError={mockResetError}
-            showDetails={true}
-          />
+          <ErrorFallback error={mockError} resetError={mockResetError} showDetails={true} />
         </div>
       </StorySection>
 
-      <StorySection title="Examples" inContext={true}>
-        <p className="text-sm text-gray-600 mb-4">
+      <StorySection inContext={true} title="Examples">
+        <p className="text-sm text-gray-700 mb-4">
           Real-world usage wrapped in Sentry.ErrorBoundary
         </p>
         <div className="border border-gray-200 rounded-lg p-4">
           <Sentry.ErrorBoundary
             fallback={({ error, resetError }) => (
-              <ErrorFallback
-                error={error as Error}
-                resetError={resetError}
-                showDetails={true}
-              />
+              <ErrorFallback error={error as Error} resetError={resetError} showDetails={true} />
             )}
           >
             <ThrowErrorButton />
@@ -67,10 +59,10 @@ function ThrowErrorButton() {
 
   return (
     <div className="text-center p-8">
-      <p className="mb-4 text-gray-600">Click the button to trigger an error:</p>
+      <p className="mb-4 text-gray-700">Click the button to trigger an error:</p>
       <button
-        onClick={() => setShouldThrow(true)}
         className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        onClick={() => setShouldThrow(true)}
       >
         Throw Error
       </button>
