@@ -23,7 +23,7 @@ import type { TFunction } from '../../lib/i18n'
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
-  /** Current locale. Selects which subtitle track is the default, active one. */
+  /** Current locale. Selects the default subtitle track, and the player controls' language. */
   locale?: Locale
   /** `sizes` for the server-rendered poster, where no layout bounds the player. */
   posterSizes?: string
@@ -50,6 +50,7 @@ export function LecturePlayer({ lecture, locale, posterSizes, className }: Lectu
       className={className}
       defaultSubtitleLang={locale}
       hlsUrl={lecture.hlsUrl}
+      locale={locale}
       poster={lecture.thumbnailUrl ?? undefined}
       posterSizes={posterSizes}
       startTime={lecture.startTime}
@@ -63,7 +64,7 @@ export function LecturePlayer({ lecture, locale, posterSizes, className }: Lectu
 export interface LectureTemplateProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
-  /** Current locale. Selects which subtitle track is the default, active one. */
+  /** Current locale. Selects the default subtitle track, and the player controls' language. */
   locale?: Locale
   /**
    * Whether to show the Embed button (copy an iframe snippet for this lecture).

@@ -78,11 +78,17 @@ const WATCHED_PREFIXES = ((): string[] => {
  * nothing, `stroke-width` and `font-family` among them. A declaration, an
  * arbitrary property (`[stroke-width:2px]`) and an SVG attribute all put a
  * separator straight after the name; a class never has one there.
+ *
+ * One quote may sit between the name and the `:`, because a quoted object key
+ * is a key and not a class — `'text-shadow': [...]` in the vendored player
+ * skin's theme table. The cost is a `clsx`-style `{ 'text-error-light': on }`,
+ * where the key really is a class; nothing in this repo composes classes that
+ * way, and the `cn()` and template-string sites stay covered.
  */
 const CANDIDATE = new RegExp(
   `(?<![a-z0-9-])(?:${[...WATCHED_PREFIXES]
     .sort((a, b) => b.length - a.length)
-    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9:=-])`,
+    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9:=-])(?!['"]:)`,
   'g',
 )
 
@@ -92,16 +98,26 @@ interface DeadUtility {
 }
 
 /**
- * The two regions where a component writes CSS rather than classes. An inline
+ * The three regions where a component writes CSS rather than classes. An inline
  * `<style>` block is a stylesheet, so `stroke-width` there is a property name;
  * `AnimatedLogoSvg` is the one such block. A `style` prop holds CSS values, and
  * `border-box`, `text-top` and `text-bottom` sit under watched roots — React
  * spells the keys beside them in camelCase, so no class can be in there.
  *
- * Non-greedy to the first `}}`, which can only end the prop early: a `}}` the
- * object does not close cannot exist before the one that closes it.
+ * The third is an arbitrary value's own brackets, whose contents are CSS and
+ * routinely a list of property names: `transition-[outline-color,outline-offset]`.
+ * Only the contents are blanked, so the utility around them keeps the shape
+ * that puts an arbitrary value out of scope in the first place.
+ *
+ * The `style` prop is non-greedy to the first `}}`, which can only end the prop
+ * early: a `}}` the object does not close cannot exist before the one that
+ * closes it.
  */
-const CSS_REGIONS = [/<style\b[^>]*>[\s\S]*?<\/style>/g, /\bstyle=\{\{[\s\S]*?\}\}/g]
+const CSS_REGIONS = [
+  /<style\b[^>]*>[\s\S]*?<\/style>/g,
+  /\bstyle=\{\{[\s\S]*?\}\}/g,
+  /(?<=\[)[^\]\n]*(?=\])/g,
+]
 
 /**
  * Blanks both, here rather than in `_source-scan`: the other guards read a file
@@ -171,6 +187,16 @@ describe('theme utilities', () => {
   /** Out of scope: an arbitrary value names no token, and a slug is not a utility. */
   it('ignores an arbitrary value and a hyphenated slug', () => {
     expect(utilitiesIn('text-[16px] bg-(--surface-tint) how-to-begin my-rounded-thing')).toEqual([])
+  })
+
+  it('ignores the CSS inside an arbitrary value', () => {
+    expect(
+      utilitiesIn("<div className=\"transition-[outline-color,outline-offset] text-teal-500\" />"),
+    ).toEqual([])
+  })
+
+  it('ignores a quoted object key', () => {
+    expect(utilitiesIn("const groups = { 'text-shadow': ['media'] }")).toEqual([])
   })
 
   it('ignores a CSS property and an attribute name', () => {

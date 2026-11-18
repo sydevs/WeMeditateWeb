@@ -1,7 +1,11 @@
 /** @jsxImportSource react */
 
 import { Controls, BufferingIndicator, Time, Tooltip } from '@videojs/react'
-import type { ComponentProps } from 'react'
+import { use, type ComponentProps } from 'react'
+
+// wm: the clip window's own time UI. Video.js 10 has no clipping, so a lecture clip's timeline
+// is this repo's to draw (videojs/video.js#3040).
+import { ClipDuration, ClipElapsed, ClipTimeSlider, ClipWindowContext } from '../../../clip-window'
 
 import { AirPlayButton } from '../../ui/airplay-button'
 import { ButtonTooltip } from '../../ui/button-tooltip'
@@ -22,6 +26,9 @@ export interface DefaultVideoControlsProps {
 }
 
 export function DefaultVideoControls({ renderThumbnail }: DefaultVideoControlsProps = {}) {
+  // wm: a window replaces the three time controls below; `null` leaves the skin as it ships.
+  const clip = use(ClipWindowContext)
+
   return (
     <Controls.Root>
       <BufferingIndicator className={'group/buffering contents'}>
@@ -126,28 +133,47 @@ export function DefaultVideoControls({ renderThumbnail }: DefaultVideoControlsPr
                 'media-max-4xs:flex-none',
               )}
             >
-              <Time.Value
-                className={cn(
-                  'tabular-nums transition-opacity duration-media-slow ease-out data-unavailable:opacity-50',
-                  'media-4xs:media-max-2xs:hidden!',
-                )}
-                type="current"
-              />
-              <TimeSlider
-                className={'min-w-0! media-max-4xs:hidden'}
-                renderThumbnail={renderThumbnail}
-              />
-              <Time.Value
-                toggle
-                className={cn(
-                  'cursor-pointer rounded-sm tabular-nums focus-ring-media',
-                  'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-                  'transition-[outline-color,outline-offset] duration-media-fast ease-out',
-                  'focus-visible:outline-media-ring focus-visible:outline-offset-2',
-                  'media-max-sm:hidden',
-                )}
-                type="remaining"
-              />
+              {/* wm: the window's elapsed time, from 0:00, in place of the media position. */}
+              {clip ? (
+                <ClipElapsed
+                  className={cn('tabular-nums', 'media-4xs:media-max-2xs:hidden!')}
+                  window={clip}
+                />
+              ) : (
+                <Time.Value
+                  className={cn(
+                    'tabular-nums transition-opacity duration-media-slow ease-out data-unavailable:opacity-50',
+                    'media-4xs:media-max-2xs:hidden!',
+                  )}
+                  type="current"
+                />
+              )}
+              {/* wm: the window's own scale, so the scrubber runs 0:00 to its length. */}
+              {clip ? (
+                <ClipTimeSlider className={'min-w-0! media-max-4xs:hidden'} window={clip} />
+              ) : (
+                <TimeSlider
+                  className={'min-w-0! media-max-4xs:hidden'}
+                  renderThumbnail={renderThumbnail}
+                />
+              )}
+              {/* wm: the window's length. A toggle to remaining would contradict nothing the
+                  skin shows, but it is machinery the window does not need. */}
+              {clip ? (
+                <ClipDuration className={cn('tabular-nums', 'media-max-sm:hidden')} window={clip} />
+              ) : (
+                <Time.Value
+                  toggle
+                  className={cn(
+                    'cursor-pointer rounded-sm tabular-nums focus-ring-media',
+                    'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+                    'transition-[outline-color,outline-offset] duration-media-fast ease-out',
+                    'focus-visible:outline-media-ring focus-visible:outline-offset-2',
+                    'media-max-sm:hidden',
+                  )}
+                  type="remaining"
+                />
+              )}
             </Controls.Group>
 
             <ButtonTooltip side="top">

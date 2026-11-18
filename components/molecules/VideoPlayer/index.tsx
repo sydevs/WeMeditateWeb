@@ -10,16 +10,17 @@ const VideoPlayerLazy = React.lazy(() =>
 /**
  * A lightweight SSR-and-hydration fallback. This renders the poster, or an
  * empty placeholder, in the same container as the real player. Both the
- * fallback and the mounted player use a 16:9 box (the player sets
- * `aspectRatio="16/9"`), so the poster uses `object-cover` here, to keep
- * the frame congruent and avoid a layout shift on hydration, while it
- * gives an LCP image without loading the player. It is `loading="eager"` for
- * that reason: this is the only poster in the server HTML, and React 19 hoists
- * a preload link for any `<img>` that is not `loading="lazy"`.
+ * fallback and the mounted player use a 16:9 box — Video.js 10 ships no
+ * default one, so `VideoPlayer` declares `aspect-video` on the skin to match
+ * this — so the poster uses `object-cover` here, to keep the frame congruent
+ * and avoid a layout shift on hydration, while it gives an LCP image without
+ * loading the player. It is `loading="eager"` for that reason: this is the
+ * only poster in the server HTML, and React 19 hoists a preload link for any
+ * `<img>` that is not `loading="lazy"`.
  *
- * Unlike Vidstack's own poster, which takes a single URL, this `<img>` carries
- * the whole video ladder, so the width follows the box and the device pixel
- * ratio.
+ * Unlike the mounted player's own poster, which takes a single URL, this
+ * `<img>` carries the whole video ladder, so the width follows the box and the
+ * device pixel ratio.
  */
 function VideoPlayerFallback({
   poster,
@@ -49,11 +50,11 @@ function VideoPlayerFallback({
 /**
  * Client-only wrapper around the HLS player.
  *
- * The player, Vidstack and hls.js, needs browser media APIs. So, following
- * the LocationSearch and Mapbox pattern, ClientOnly and React.lazy load the
- * implementation only in the browser. This keeps Vidstack and hls.js out of
- * the SSR-and-Workers bundle entirely, not just lazy within it. The poster
- * renders as the server-side fallback.
+ * The player, Video.js and the hls.js engine it bundles, needs browser media
+ * APIs. So, following the LocationSearch and Mapbox pattern, ClientOnly and
+ * React.lazy load the implementation only in the browser. This keeps Video.js
+ * out of the SSR-and-Workers bundle entirely, not just lazy within it. The
+ * poster renders as the server-side fallback.
  */
 export function VideoPlayer(props: VideoPlayerProps) {
   if (!props.hlsUrl) {
