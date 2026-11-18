@@ -121,6 +121,9 @@ export function usePlaylistAudioPlayer({
     playerControls.pause()
   }
 
+  // shortcut: the toggle reads playback, not intent — a press during a load
+  // always plays, writing `true` to the flag against the listener. Fix when
+  // `playerState.isPlaying` reports intent.
   const togglePlayPause = () => (playerState.isPlaying ? pause() : play())
 
   // Navigation controls
