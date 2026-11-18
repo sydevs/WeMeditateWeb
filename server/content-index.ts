@@ -20,6 +20,7 @@ import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './sahajcloud-types'
 import {
+  contentIndexBlocks,
   contentIndexCard,
   contentIndexTrack,
   meditationCardsFromUserChoices,
@@ -196,27 +197,6 @@ export async function resolveContentIndexTracks(
   return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
 
-/** Recursively collect every `content-index` block's `fields` object. */
-function collectContentIndexBlocks(node: unknown, out: ContentIndexBlockFields[]): void {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      collectContentIndexBlocks(child, out)
-    }
-
-    return
-  }
-  if (node && typeof node === 'object') {
-    const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
-
-    if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
-      out.push(candidate.fields as ContentIndexBlockFields)
-    }
-    for (const value of Object.values(node)) {
-      collectContentIndexBlocks(value, out)
-    }
-  }
-}
-
 /** Checks for at least one `content-index` block, and stops at the first
  * match. Avoids cloning content that has none, the common case. */
 function hasContentIndexBlock(node: unknown): boolean {
@@ -253,9 +233,7 @@ export async function resolveContentIndexBlocks<T>(
   // Clone so the caller's document is never mutated. Reached only when
   // there is at least one content-index block to resolve.
   const cloned = structuredClone(content)
-  const targets: ContentIndexBlockFields[] = []
-
-  collectContentIndexBlocks(cloned, targets)
+  const targets = contentIndexBlocks(cloned)
 
   await Promise.all(
     targets.map(async (fields) => {

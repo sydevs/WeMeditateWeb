@@ -102,7 +102,9 @@ const IMAGE_POPULATE = {
 }
 
 /** Fields rendered for a full Page (PageTemplate): body, author byline,
- * featured video, SEO meta, plus slug/draft status. */
+ * featured video, SEO meta, plus slug/draft status. `tags` is read by the
+ * head, not the body: an author or a tag is what makes a page an article
+ * rather than a standing page (lib/content-seo.ts). */
 const PAGE_SELECT = {
   title: true,
   content: true,
@@ -111,6 +113,7 @@ const PAGE_SELECT = {
   _status: true,
   author: true,
   featuredVideo: true,
+  tags: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
 

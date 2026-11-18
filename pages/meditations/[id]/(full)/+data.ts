@@ -2,9 +2,17 @@ import type { PageContextServer } from 'vike/types'
 import type { WebConfig } from '../../../../server/sahajcloud-types'
 import { loadSiteContext } from '../../../../server/site-context'
 import { loadMeditation, type MeditationData } from '../_meditation'
+import { meditationSeo } from '../../../../lib/content-seo'
+import type { SeoDocument } from '../../../../lib/head'
+import { normalizeContentPath } from '../../../../lib/urls'
 
 export interface MeditationPageData extends MeditationData {
   settings: WebConfig
+  /**
+   * Everything the `<head>` publishes for this URL. The embed route builds
+   * none: an iframe target is not a URL to point a crawler at.
+   */
+  seo: SeoDocument
 }
 
 /**
@@ -19,5 +27,17 @@ export interface MeditationPageData extends MeditationData {
 export async function data(pageContext: PageContextServer): Promise<MeditationPageData> {
   const [base, site] = await Promise.all([loadMeditation(pageContext), loadSiteContext(pageContext)])
 
-  return { ...base, settings: site.settings }
+  return {
+    ...base,
+    settings: site.settings,
+    seo: meditationSeo({
+      meditation: base.meditation,
+      route: {
+        origin: pageContext.urlParsed.origin,
+        path: normalizeContentPath(pageContext.urlPathname),
+        locale: base.locale,
+        t: site.t,
+      },
+    }),
+  }
 }

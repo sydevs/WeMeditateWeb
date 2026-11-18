@@ -14,7 +14,18 @@ import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 import { useOptionalPageContext } from './usePageContext'
 
 export function useT(): TFunction {
-  const pageContext = useOptionalPageContext()
+  return pageContextT(useOptionalPageContext())
+}
+
+/**
+ * The same accessor, off a `pageContext` held directly.
+ *
+ * `pages/+config.ts` composes the `<title>` and the description from a
+ * plain function, where no hook may be called.
+ */
+export function pageContextT(
+  pageContext: { locale?: Locale; translations?: unknown } | null | undefined,
+): TFunction {
   const locale: Locale = pageContext?.locale ?? DEFAULT_LOCALE
   const translations: WebTranslations =
     (pageContext?.translations as WebTranslations | undefined) ?? EN_TRANSLATIONS

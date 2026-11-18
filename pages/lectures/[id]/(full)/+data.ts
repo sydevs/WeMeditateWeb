@@ -2,9 +2,17 @@ import type { PageContextServer } from 'vike/types'
 import type { WebConfig } from '../../../../server/sahajcloud-types'
 import { loadSiteContext } from '../../../../server/site-context'
 import { loadLecture, type LectureData } from '../_lecture'
+import { lectureSeo } from '../../../../lib/content-seo'
+import type { SeoDocument } from '../../../../lib/head'
+import { normalizeContentPath } from '../../../../lib/urls'
 
 export interface LecturePageData extends LectureData {
   settings: WebConfig
+  /**
+   * Everything the `<head>` publishes for this URL. The embed route builds
+   * none: an iframe target is not a URL to point a crawler at.
+   */
+  seo: SeoDocument
 }
 
 /**
@@ -19,5 +27,17 @@ export interface LecturePageData extends LectureData {
 export async function data(pageContext: PageContextServer): Promise<LecturePageData> {
   const [base, site] = await Promise.all([loadLecture(pageContext), loadSiteContext(pageContext)])
 
-  return { ...base, settings: site.settings }
+  return {
+    ...base,
+    settings: site.settings,
+    seo: lectureSeo({
+      lecture: base.lecture,
+      route: {
+        origin: pageContext.urlParsed.origin,
+        path: normalizeContentPath(pageContext.urlPathname),
+        locale: base.locale,
+        t: site.t,
+      },
+    }),
+  }
 }

@@ -1,46 +1,25 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { ContentHeadTags, resolveOgImageUrl } from './head'
+import { isSafeJsonLd, SeoHeadTags, seoDocument, type SeoHead } from './head'
 import { buildAlternates } from './hreflang'
 
-const CF_URL = 'https://imagedelivery.net/acct/abc123/'
+const ORIGIN = 'https://wemeditate.com'
 
-describe('resolveOgImageUrl', () => {
-  it('appends a large video variant to a Cloudflare image URL', () => {
-    expect(resolveOgImageUrl({ url: CF_URL })).toBe(`${CF_URL}width=1024`)
-  })
+function head(overrides: Partial<SeoHead> = {}): SeoHead {
+  return {
+    canonical: `${ORIGIN}/about`,
+    alternates: [],
+    meta: [],
+    jsonLd: '',
+    ...overrides,
+  }
+}
 
-  it('replaces the /public variant a SahajCloud read returns', () => {
-    expect(resolveOgImageUrl({ url: `${CF_URL}public` })).toBe(`${CF_URL}width=1024`)
-  })
+const render = (seo: SeoHead) => renderToStaticMarkup(<SeoHeadTags seo={seo} />)
 
-  it('returns a non-Cloudflare URL unchanged', () => {
-    const external = 'https://example.com/preview.jpg'
-
-    expect(resolveOgImageUrl({ url: external })).toBe(external)
-  })
-
-  it('returns null for a bare id (unpopulated relationship)', () => {
-    expect(resolveOgImageUrl(7)).toBeNull()
-  })
-
-  it('returns null when the image or its url is missing', () => {
-    expect(resolveOgImageUrl(null)).toBeNull()
-    expect(resolveOgImageUrl(undefined)).toBeNull()
-    expect(resolveOgImageUrl({})).toBeNull()
-    expect(resolveOgImageUrl({ url: null })).toBeNull()
-  })
-})
-
-describe('ContentHeadTags', () => {
-  const ORIGIN = 'https://wemeditate.com'
+describe('SeoHeadTags', () => {
   const cluster = (locales: Parameters<typeof buildAlternates>[0]['locales']) =>
-    renderToStaticMarkup(
-      <ContentHeadTags
-        alternates={buildAlternates({ origin: ORIGIN, path: '/about', locales })}
-        canonical={`${ORIGIN}/about`}
-      />,
-    )
+    render(head({ alternates: buildAlternates({ origin: ORIGIN, path: '/about', locales }) }))
 
   it('emits the canonical alone where there is no cluster', () => {
     // A meditation or a lecture carries no per-locale publish state. It
@@ -52,10 +31,16 @@ describe('ContentHeadTags', () => {
     expect(html).not.toContain('rel="alternate"')
   })
 
+  it('omits the canonical entirely where the route publishes none', () => {
+    expect(render(head({ canonical: null }))).not.toContain('rel="canonical"')
+  })
+
   it('emits one alternate per advertised locale, plus x-default', () => {
     const html = cluster(['en', 'fr'])
 
-    expect(html).toContain('<link rel="alternate" hreflang="en" href="https://wemeditate.com/about"/>')
+    expect(html).toContain(
+      '<link rel="alternate" hreflang="en" href="https://wemeditate.com/about"/>',
+    )
     expect(html).toContain(
       '<link rel="alternate" hreflang="fr" href="https://wemeditate.com/fr/about"/>',
     )
@@ -73,4 +58,64 @@ describe('ContentHeadTags', () => {
     expect(html).not.toContain('hrefLang=')
   })
 
+  it('emits every meta pair it is given, repeats included', () => {
+    // `og:locale:alternate` is the reason `meta` is a list and not a record.
+    const html = render(
+      head({
+        meta: [
+          ['og:locale:alternate', 'fr'],
+          ['og:locale:alternate', 'de'],
+        ],
+      }),
+    )
+
+    expect(html).toContain('<meta content="fr" property="og:locale:alternate"/>')
+    expect(html).toContain('<meta content="de" property="og:locale:alternate"/>')
+  })
+
+  it('emits the JSON-LD block verbatim, unescaped', () => {
+    const html = render(head({ jsonLd: '{"@context":"https://schema.org","@graph":[]}' }))
+
+    expect(html).toContain('<script type="application/ld+json">')
+    // Not HTML-escaped: `&quot;` here would be invalid JSON-LD.
+    expect(html).toContain('{"@context":"https://schema.org"')
+    expect(html).not.toContain('&quot;')
+  })
+
+  it.each([
+    ['a raw closing script tag', '{"name":"</script><img src=x onerror=alert(1)>"}'],
+    ['a raw comment opener', '{"name":"<!--"}'],
+  ])('drops the block entirely on %s', (_label, jsonLd) => {
+    // Fail closed. Reaching here means a producer's escaping regressed. A
+    // page that is merely less richly described beats one that executes
+    // SahajCloud text.
+    const html = render(head({ jsonLd }))
+
+    expect(html).not.toContain('application/ld+json')
+    expect(html).not.toContain('onerror')
+  })
+})
+
+describe('isSafeJsonLd', () => {
+  it('accepts a properly escaped document', () => {
+    expect(isSafeJsonLd('{"name":"\\u003c/script\\u003e"}')).toBe(true)
+  })
+
+  it.each([
+    ['</script>', '{"a":"</script>"}'],
+    ['</SCRIPT> in any case', '{"a":"</SCRIPT >"}'],
+    ['a comment opener', '{"a":"<!--"}'],
+    ['an empty string', ''],
+  ])('refuses %s', (_label, value) => {
+    expect(isSafeJsonLd(value)).toBe(false)
+  })
+})
+
+describe('seoDocument', () => {
+  it('answers null for a route that built none', () => {
+    // Every embed route and the error page. They publish no URL claim, and
+    // the head settings then fall back to the site's own name.
+    expect(seoDocument(undefined)).toBeNull()
+    expect(seoDocument({})).toBeNull()
+  })
 })

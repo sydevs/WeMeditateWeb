@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { AtlasHeadTags, isSafeJsonLd } from './atlas-head'
+import { AtlasHeadTags } from './atlas-head'
 import type { AtlasSeoResponse } from '../server/atlas-types'
 
 /** A region answer with every head-bearing field populated. */
@@ -121,20 +121,5 @@ describe('AtlasHeadTags', () => {
       expect(html).not.toContain('application/ld+json')
       expect(html).not.toContain('onerror')
     })
-  })
-})
-
-describe('isSafeJsonLd', () => {
-  it('accepts a properly escaped document', () => {
-    expect(isSafeJsonLd('{"name":"\\u003c/script\\u003e"}')).toBe(true)
-  })
-
-  it.each([
-    ['</script>', '{"a":"</script>"}'],
-    ['</SCRIPT> in any case', '{"a":"</SCRIPT >"}'],
-    ['a comment opener', '{"a":"<!--"}'],
-    ['an empty string', ''],
-  ])('refuses %s', (_label, value) => {
-    expect(isSafeJsonLd(value)).toBe(false)
   })
 })

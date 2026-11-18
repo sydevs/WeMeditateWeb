@@ -15,7 +15,6 @@ import type { Page, Author, Video } from '../../server/sahajcloud-types'
 import { RichText } from '../organisms'
 import { VideoPlayer, Author as AuthorByline } from '../molecules'
 import { Container, PageTitle } from '../atoms'
-import { usePageHead } from '../../lib/head'
 import { isPopulated, populatedImageUrl } from '../../lib/payload-relationships'
 import { getLeadSplash } from '../../lib/content-blocks'
 
@@ -33,9 +32,6 @@ export interface PageTemplateProps {
 }
 
 export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
-  // Set <title>/description/og:image from SahajCloud meta (must run unconditionally).
-  usePageHead({ meta: page.meta, fallbackTitle: page.title })
-
   const author = isPopulated<Author>(page.author) ? page.author : null
   const video = isPopulated<Video>(page.featuredVideo) ? page.featuredVideo : null
   // A lead splash renders its own full-bleed title, so skip the PageTitle banner

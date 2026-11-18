@@ -13,20 +13,20 @@
  * implementation here would be free to disagree with the first.
  * Publishing a canonical that points at a URL that does not restore the
  * view is exactly the failure canonicals exist to prevent.
+ *
+ * This module only adapts that answer to the shape `lib/head.tsx` renders.
+ * The content routes build the same shape locally (`lib/content-seo.ts`),
+ * so one component renders every head on the site.
  */
 
 import { useConfig } from 'vike-react/useConfig'
 import type { AtlasSeoResponse } from '../server/atlas-types'
-import { HreflangLinks } from './head'
+import { SeoHeadTags, type SeoHead } from './head'
 
 /**
- * Open Graph properties vike-react already emits from `title`,
- * `description`, and `image`. This module must not emit them a second
- * time.
- *
- * `og:image` is passed to the config, instead of rendered here, because
- * that also gets `twitter:card` for free. `og:image:alt` has no config
- * equivalent, and is rendered below.
+ * Open Graph properties `useAtlasHead` already passes to `useConfig`, which
+ * emits each of them. The endpoint sends them in `openGraph` as well, so
+ * they are dropped here rather than rendered twice.
  */
 const OG_EMITTED_BY_CONFIG: ReadonlySet<string> = new Set([
   'og:title',
@@ -34,59 +34,27 @@ const OG_EMITTED_BY_CONFIG: ReadonlySet<string> = new Set([
   'og:image',
 ])
 
-/**
- * Whether a pre-serialized JSON-LD string is safe to emit verbatim.
- *
- * Upstream's `jsonLdEscape()` already neutralizes `</script>` and `<!--`,
- * with JSON escapes that round-trip to the same characters. This is why
- * this string is emitted with `dangerouslySetInnerHTML`, instead of
- * re-escaped. HTML-escaping a JSON string would corrupt it, and running
- * it through `JSON.parse` and `stringify` would drop the escaping that
- * makes it safe.
- *
- * This check is the belt to that braces. The sink is a `<script>` block
- * on this page, carrying SahajCloud-authored text, so an upstream regression
- * would become an XSS here. Fail closed: drop the block, keeping the
- * page correct but less richly described, instead of trying to repair
- * the string, which would silently emit invalid JSON-LD.
- */
-export function isSafeJsonLd(jsonLd: string): boolean {
-  return jsonLd.length > 0 && !/<\/script|<!--/i.test(jsonLd)
+/** The atlas answer as a {@link SeoHead}. */
+export function atlasHead(seo: AtlasSeoResponse): SeoHead {
+  return {
+    canonical: seo.canonical,
+    // One row per enabled atlas locale, plus x-default. The canonical is
+    // locale-free by design. Nothing in the atlas is translated, so the
+    // locales differ only in the widget's UI language, which the endpoint
+    // carries as `?locale=` — unlike a content page's cluster, whose members
+    // are path prefixes. The two clusters must not be merged, but they are
+    // spelled by one component.
+    alternates: seo.alternates,
+    meta: Object.entries(seo.openGraph).filter(
+      ([property]) => !OG_EMITTED_BY_CONFIG.has(property),
+    ),
+    jsonLd: seo.jsonLd,
+  }
 }
 
-/**
- * The head tags an atlas page contributes: canonical, the hreflang cluster,
- * Open Graph, and the JSON-LD block.
- *
- * Rendered as a component, instead of assembled as strings, so React does
- * the ordinary attribute escaping on every value.
- */
+/** The head tags an atlas page contributes. */
 export function AtlasHeadTags({ seo }: { seo: AtlasSeoResponse }) {
-  return (
-    <>
-      {seo.canonical && <link href={seo.canonical} rel="canonical" />}
-
-      {/* One row per enabled atlas locale, plus x-default. The canonical
-          is locale-free by design. Nothing in the atlas is translated, so
-          the locales differ only in the widget's UI language, which the
-          endpoint carries as `?locale=` — unlike a content page's cluster,
-          whose members are path prefixes. The two clusters must not be
-          merged, but they are spelled by one component. */}
-      <HreflangLinks alternates={seo.alternates} />
-
-      {Object.entries(seo.openGraph)
-        .filter(([property]) => !OG_EMITTED_BY_CONFIG.has(property))
-        .map(([property, content]) => (
-          <meta key={property} content={content} property={property} />
-        ))}
-
-      {isSafeJsonLd(seo.jsonLd) && (
-        // Emitted verbatim: see `isSafeJsonLd` for why this is neither
-        // re-escaped nor re-serialized.
-        <script dangerouslySetInnerHTML={{ __html: seo.jsonLd }} type="application/ld+json" />
-      )}
-    </>
-  )
+  return <SeoHeadTags seo={atlasHead(seo)} />
 }
 
 /**

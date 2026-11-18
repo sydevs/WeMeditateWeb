@@ -6,10 +6,12 @@ import { getPageBySlug, getPageLocaleStatus } from '../../server/sahajcloud-clie
 import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
 import { advertisedLocales } from '../../lib/hreflang'
+import { pageSeo } from '../../lib/content-seo'
+import type { SeoDocument } from '../../lib/head'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
-import { localePath } from '../../lib/urls'
+import { localePath, normalizeContentPath } from '../../lib/urls'
 import { redirect, render } from 'vike/abort'
 
 export interface PageData {
@@ -23,6 +25,11 @@ export interface PageData {
    * the page then emits its canonical alone.
    */
   alternateLocales: Locale[]
+  /**
+   * Everything the `<head>` publishes for this URL. Built here, where the
+   * document is in hand, and rendered by `lib/head.tsx`.
+   */
+  seo: SeoDocument
 }
 
 export async function data(pageContext: PageContextServer): Promise<PageData> {
@@ -88,11 +95,26 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     pageTagLabels: pageTagLabels(t),
   })
 
+  const resolved = { ...page, content }
+  const alternateLocales = advertisedLocales(status, settings.availableLocales)
+
   return {
-    page: { ...page, content },
+    page: resolved,
     locale,
     slug,
     settings,
-    alternateLocales: advertisedLocales(status, settings.availableLocales),
+    alternateLocales,
+    seo: pageSeo({
+      page: resolved,
+      settings,
+      isHome: slug === 'index',
+      locales: alternateLocales,
+      route: {
+        origin: pageContext.urlParsed.origin,
+        path: normalizeContentPath(pageContext.urlPathname),
+        locale,
+        t,
+      },
+    }),
   }
 }

@@ -2,6 +2,7 @@ import type { Config } from 'vike/types'
 import vikePhoton from 'vike-photon/config'
 import vikeReact from 'vike-react/config'
 import Layout from '../layouts/LayoutRoot.js'
+import { contentDescription, contentTitle } from '../lib/head.js'
 
 // Default config. Pages can override it.
 // https://vike.dev/config
@@ -15,13 +16,15 @@ export default {
   // https://vike.dev/Layout
   Layout,
 
-  // Default <head> tags. Content pages override these per page with
-  // usePageHead (lib/head.tsx), using their SahajCloud meta. These defaults apply
-  // only where meta is absent.
+  // The whole site's <title> and description, in one declaration. Each reads
+  // the SEO document the route's +data.ts built (lib/content-seo.ts), and
+  // falls back to the site's own name and description, in the locale of the
+  // URL, for a route that publishes none — an embed route, or the error page.
+  // `og:image` is not a setting here: it rides the route's own Open Graph
+  // list, because vike-react's `image` cannot see `pageContext.data`.
   // https://vike.dev/head-tags
-  title: 'We Meditate',
-  description:
-    'Discover free guided meditations, music, and articles to learn and deepen your meditation practice.',
+  title: contentTitle,
+  description: contentDescription,
 
   // `translations` is filled by +onBeforeRender from SahajCloud. The client
   // needs it so `useT()` resolves the same strings during hydration as the

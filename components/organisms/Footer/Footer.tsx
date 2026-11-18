@@ -37,7 +37,7 @@ export interface FooterProps {
   /** Footer sections with titles and links */
   sections: FooterSection[]
   /** Social media links */
-  socialLinks: SocialLink[]
+  socialLinks: readonly SocialLink[]
   /** Current language code */
   currentLanguage: Locale
   /** Available language options */
