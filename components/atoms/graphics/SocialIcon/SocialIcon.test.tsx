@@ -36,9 +36,7 @@ describe('<SocialIcon> new-tab announcement', () => {
     // `layouts/Footer.tsx` feeds this prop a SahajCloud-configured URL.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const html = renderToStaticMarkup(
-      <SocialIcon platform="facebook" href="javascript:alert(1)" />,
-    )
+    const html = renderToStaticMarkup(<SocialIcon platform="facebook" href="javascript:alert(1)" />)
 
     expect(html).not.toContain('href')
     expect(html).not.toContain('javascript')

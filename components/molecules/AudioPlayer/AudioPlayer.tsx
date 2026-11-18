@@ -110,8 +110,8 @@ function AudioPlayerInner({
               <Link
                 href={state.currentTrack.creditURL}
                 external
-                variant="unstyled"
-                className="text-xs text-teal-600 hover:text-teal-700 truncate block"
+                variant="primary"
+                className="text-xs truncate block"
               >
                 {state.currentTrack.credit}
               </Link>

@@ -241,9 +241,9 @@ function EventContent({
 
       {linkUrl && (
         <p className="mt-6">
-          <a className="text-teal-600 hover:text-teal-700" href={linkUrl} rel="noopener noreferrer">
+          <Link href={linkUrl} rel="noopener noreferrer" variant="primary">
             {joinUrl ? t('map.general.join_online') : t('map.general.visit_website')}
-          </a>
+          </Link>
         </p>
       )}
     </div>

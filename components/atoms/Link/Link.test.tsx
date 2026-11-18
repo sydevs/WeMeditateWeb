@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Link } from './Link'
 
@@ -175,12 +175,20 @@ describe('<Link> surface', () => {
 })
 
 describe('<Link> scheme gate', () => {
+  // Every refusal warns, so the spy is the whole describe's rather than
+  // four copies of the same two lines.
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   // `RichText`, `LayoutBlock`, `Playlist` and a rich-text button block all
   // hand `Link` a URL an editor typed into SahajCloud. This is the only place
   // that gate lives, so a call site never restates it.
   it('renders no href for a scheme that would execute in our origin', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     for (const href of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>']) {
       const html = renderToStaticMarkup(<Link href={href}>Click me</Link>)
 
@@ -189,34 +197,24 @@ describe('<Link> scheme gate', () => {
       // The words still render, so the page does not lose its content.
       expect(html, href).toContain('Click me')
     }
-
-    warn.mockRestore()
   })
 
   it('names the refused href once, in development', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     renderToStaticMarkup(<Link href="javascript:alert(1)">x</Link>)
 
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0][0]).toContain('javascript:alert(1)')
-
-    warn.mockRestore()
+    expect(console.warn).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(console.warn).mock.calls[0][0]).toContain('javascript:alert(1)')
   })
 
+  // These two rendered an href before this gate existed, so the component
+  // pins them even though `lib/urls.test.ts` owns the allowlist itself.
   it('renders no href for a protocol-relative URL or an unset one', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     for (const href of ['//cdn.example.com/x', '']) {
       expect(renderToStaticMarkup(<Link href={href}>x</Link>), href).not.toContain('href')
     }
-
-    warn.mockRestore()
   })
 
   it('opens no tab for a href it refused', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
     const html = renderToStaticMarkup(
       <Link href="javascript:alert(1)" external>
         x
@@ -225,8 +223,6 @@ describe('<Link> scheme gate', () => {
 
     expect(html).not.toContain('_blank')
     expect(html).not.toContain('opens in new tab')
-
-    warn.mockRestore()
   })
 })
 

@@ -110,6 +110,10 @@ export function Link({
   // caller cannot see would never be read. `SocialShare` lost the whole
   // announcement that way (#238). Each case takes the key written for its
   // shape: a label is a name the string wraps, children are words it follows.
+  //
+  // shortcut: only `aria-label` is detected, not every way a name can come
+  // from outside the anchor — upgrade when a caller passes `aria-labelledby`
+  // or `title`, which would silently lose the warning again.
   const label =
     opensNewTab && ariaLabel ? t('common.a11y.opens_in_new_tab', { label: ariaLabel }) : ariaLabel
 

@@ -158,9 +158,12 @@ export const Default: Story = () => (
             (renders the words with no href at all — inspect it)
           </span>
         </div>
-        <div>
-          <Link href="mailto:hello@example.com">mailto:, tel:, #anchor and a site path</Link>
-          <span className="text-xs text-gray-500 ml-2">(all render unchanged)</span>
+        <div className="flex flex-wrap gap-8">
+          <Link href="mailto:hello@example.com">mailto:</Link>
+          <Link href="tel:+1234567890">tel:</Link>
+          <Link href="#section">#anchor</Link>
+          <Link href="/about">a site path</Link>
+          <span className="text-xs text-gray-500">(all four render unchanged)</span>
         </div>
       </div>
     </StorySection>

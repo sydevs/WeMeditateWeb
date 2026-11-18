@@ -152,7 +152,11 @@ name and anything inside the anchor goes unread.
 site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
 a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
 run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
-bare `<a>` fed a SahajCloud value has to call it itself.
+bare `<a>` fed a SahajCloud value has to call it itself — `Splash`'s call to action is the one
+that does, because its hover is a transform `Link`'s own `transition-colors` would override.
+
+Two spellings stopped reaching an `href` when the gate landed: a protocol-relative `//host`, and
+the empty string an unset SahajCloud field leaves behind.
 
 ### Surfaces
 

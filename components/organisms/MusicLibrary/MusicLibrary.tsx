@@ -76,8 +76,8 @@ export function MusicLibrary({
                 {currentTrack.title}
               </h3>
               <Link
-                className="text-sm text-white/90 hover:text-white truncate block mt-1"
                 external
+                className="text-sm text-white/90 hover:text-white truncate block mt-1"
                 href={currentTrack.creditURL}
                 variant="unstyled"
               >

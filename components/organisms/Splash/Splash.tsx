@@ -1,6 +1,7 @@
 import { ComponentProps, ReactNode } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
 import { surface, type Surface } from '../../atoms/surface'
+import { isSafeLinkHref } from '../../../lib/urls'
 import {
   type AspectRatio,
   type ImageSize,
@@ -131,7 +132,12 @@ export function Splash({
           {children && <div className="mb-20">{children}</div>}
 
           {/* Call-to-Action with Decorative Leaves */}
-          {ctaText && ctaHref && (
+          {/* A bare anchor, because the hover is a transform `Link`'s own
+              `transition-colors` would override. So it owes the scheme gate
+              itself, and a refused URL renders no call to action at all —
+              the leaves and the words alone would invite a click that goes
+              nowhere. */}
+          {ctaText && ctaHref && isSafeLinkHref(ctaHref) && (
             <a
               className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light text-fg transition-transform hover:scale-105 focus-ring ${
                 pulsate ? 'animate-pulse-scale' : ''
