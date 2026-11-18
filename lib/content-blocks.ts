@@ -652,15 +652,13 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
     label: typeof tag.title === 'string' && tag.title.length > 0 ? tag.title : (tag.slug as string),
   }))
 
-  const duration = typeof doc.duration === 'number' && doc.duration > 0 ? doc.duration : 0
-
   return {
     url,
     title: asText(doc.title),
     credit: album?.artist ?? '',
     creditURL: album?.artistUrl ?? '',
     thumbnailURL: artwork?.url ?? songThumbnail,
-    duration,
+    duration: typeof doc.duration === 'number' ? doc.duration : 0,
     tags,
   }
 }
