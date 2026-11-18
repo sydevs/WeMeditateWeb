@@ -9,6 +9,8 @@ const BASE = {
   imageAlt: 'Artwork',
 } as const
 
+const ornateImg = (html: string) => html.match(/<img[^>]*ornate[^>]*>/)?.[0] ?? ''
+
 describe('<OrnateTextBox>', () => {
   it('renders the warm ornate ground and the floral graphic', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
@@ -113,16 +115,17 @@ describe('<OrnateTextBox>', () => {
     expect(band).toContain('rgba(255,196,175,0.6)_100%)]')
   })
 
-  // The AA floor here is a composite of the brown ground, the graphic and the
-  // band, so `layouts/tailwind.test.ts` cannot reach it and these two class
-  // values are all there is to pin. At `opacity-40` over `text-white/90` the
-  // worst cell measured 4.57:1; at these two, 5.19:1 (#205).
-  it('keeps the graphic faint and the body copy fully opaque', () => {
+  // The body copy's AA floor is a composite of the brown ground, the graphic
+  // and the band, so `layouts/tailwind.test.ts` cannot reach it — the class
+  // values are all there is to pin. The worst cell measures 5.19:1 (#205).
+  // Any alpha on the body copy is what takes it back under the bar; the root
+  // already paints white, so the token the wrapper carries is not the subject.
+  it('keeps the graphic faint and the body copy free of alpha', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
     const body = html.match(/class="([^"]*space-y-5[^"]*)"/)?.[1] ?? ''
 
-    expect(html.match(/<img[^>]*ornate[^>]*>/)?.[0]).toContain('opacity-25')
-    expect(body).toContain('text-white')
+    expect(ornateImg(html)).toContain('opacity-25')
+    expect(body).toContain('leading-relaxed')
     expect(body).not.toContain('text-white/')
   })
 
@@ -152,6 +155,6 @@ describe('<OrnateTextBox> image loading', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
     expect(html).not.toContain('rel="preload"')
-    expect(html.match(/<img[^>]*ornate[^>]*>/)?.[0]).toContain('loading="lazy"')
+    expect(ornateImg(html)).toContain('loading="lazy"')
   })
 })
