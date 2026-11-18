@@ -3,6 +3,10 @@
  * over the map it just built; `lookup.ts` binds them to the committed one.
  */
 
+import type { Locale } from '../../server/sahajcloud-types'
+import { DEFAULT_LOCALE } from '../../server/sahajcloud-types'
+import { localePath } from '../urls'
+
 /** What a record kind's old URL looks like, and so which table holds its slugs. */
 export type ExactType =
   'article' | 'category' | 'meditation' | 'treatment' | 'subtle' | 'stream' | 'promo' | 'event'
@@ -23,7 +27,7 @@ export interface LegacyRedirectMap {
 }
 
 /** Old locale code, as the old site spelled it in a URL, to the new site's. */
-export const LAUNCH_LOCALES: Readonly<Record<string, string>> = {
+export const LAUNCH_LOCALES: Readonly<Record<string, Locale>> = {
   en: 'en',
   ru: 'ru',
   it: 'it',
@@ -135,16 +139,14 @@ function segmentsOf(pathname: string): string[] | null {
 }
 
 /** The path a new-site page is served at for a visitor in `locale`. */
-function pageHref(map: LegacyRedirectMap, id: number, locale: string): string {
+function pageHref(map: LegacyRedirectMap, id: number, locale: Locale): string {
   const [slug, locales] = map.pages[String(id)]
-  const localized = locale !== 'en' && locales.split(' ').includes(locale)
+  const publishedThere = locale !== DEFAULT_LOCALE && locales.split(' ').includes(locale)
 
-  if (slug === '') return localized ? `/${locale}` : '/'
-
-  return localized ? `/${locale}/${slug}` : `/${slug}`
+  return localePath(publishedThere ? locale : DEFAULT_LOCALE, slug === '' ? '/' : `/${slug}`)
 }
 
-function roleHref(map: LegacyRedirectMap, role: string, locale: string): string | null {
+function roleHref(map: LegacyRedirectMap, role: string, locale: Locale): string | null {
   const id = own(map.roles, role)
 
   return id === undefined ? null : pageHref(map, id, locale)
@@ -160,7 +162,7 @@ function exactHref(
   type: ExactType,
   locale: string,
   slug: string,
-  visitor: string,
+  visitor: Locale,
 ): string | null {
   const value = own(own(map.exact[type], locale), slug)
 
@@ -175,7 +177,7 @@ function resolve(
   map: LegacyRedirectMap,
   locale: string,
   rest: string[],
-  visitor: string,
+  visitor: Locale,
 ): string | null {
   if (rest.length === 0) return roleHref(map, 'home', visitor)
 
@@ -237,7 +239,7 @@ export function lookupIn(map: LegacyRedirectMap, pathname: string): string | nul
 
   const prefixed = OLD_LOCALES.has(segments[0])
   const locale = prefixed ? segments[0] : 'en'
-  const visitor = own(LAUNCH_LOCALES, locale) ?? 'en'
+  const visitor = own(LAUNCH_LOCALES, locale) ?? DEFAULT_LOCALE
   const target = resolve(map, locale, prefixed ? segments.slice(1) : segments, visitor)
 
   if (target === null) return null

@@ -41,7 +41,7 @@ describe('legacy redirect map', () => {
   it('only ever targets a page published where it points, or a meditation that exists', () => {
     const pages = new Map(site.pages.map((page) => [page.slug, new Set(page.translated)]))
     const meditations = new Set(site.meditations.map((m) => m.id))
-    const launch = new Set(Object.values(LAUNCH_LOCALES))
+    const launch = new Set<string>(Object.values(LAUNCH_LOCALES))
     let checked = 0
 
     for (const url of result.urls) {
