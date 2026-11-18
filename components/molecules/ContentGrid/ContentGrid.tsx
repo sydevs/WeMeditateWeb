@@ -2,14 +2,24 @@ import { ComponentProps } from 'react'
 import Masonry from 'react-masonry-css'
 import { ContentCard, ContentCardProps } from '../ContentCard/ContentCard'
 
-export interface ContentGridItem extends Omit<ContentCardProps, 'className' | 'id'> {
+export interface ContentGridItem extends Omit<ContentCardProps, 'className' | 'id' | 'sizes'> {
   /** Unique identifier for the item */
   id: string | number
+  /** `sizes` for this item's thumbnail. Overrides the grid's own. */
+  sizes?: string
 }
 
 export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Array of content items to display in the grid */
   items: ContentGridItem[]
+  /**
+   * `sizes` for every card's thumbnail, describing one column of this grid.
+   *
+   * The caller's, not the grid's: a column is `(container + gutter) / n −
+   * gutter`, and only the caller knows the container it put the grid in, or
+   * the `breakpointCols` it passed (#206).
+   */
+  sizes: string
   /** Card variant to apply to all cards in the grid */
   cardVariant?: 'default' | 'hero'
   /** Custom breakpoints for responsive columns (defaults to 1 mobile, 2 tablet, 3 desktop) */
@@ -29,6 +39,7 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
  * @example
  * // Basic usage with meditation cards
  * <ContentGrid
+ *   sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px"
  *   items={[
  *     {
  *       id: 1,
@@ -53,6 +64,7 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
  * // Custom breakpoints (2 columns mobile, 3 tablet, 4 desktop)
  * <ContentGrid
  *   items={contentItems}
+ *   sizes="(max-width: 639px) 50vw, (max-width: 1279px) 33vw, 270px"
  *   breakpointCols={{
  *     default: 4,
  *     1280: 3,
@@ -63,6 +75,7 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
  */
 export function ContentGrid({
   items,
+  sizes,
   cardVariant = 'default',
   breakpointCols = {
     default: 3, // Desktop: 3 columns (1024px+)
@@ -97,11 +110,14 @@ export function ContentGrid({
         columnClassName={`${columnGapClasses} bg-clip-padding`}
       >
         {items.map((item) => {
-          const { id, ...cardProps } = item
+          const { id, sizes: itemSizes, ...cardProps } = item
 
           return (
             <div key={id} className="mb-8 flex justify-center">
-              <ContentCard {...cardProps} variant={cardVariant} />
+              {/* `??`, not a pre-spread default: an item built by spreading a
+                  wider shape can carry an explicit `sizes: undefined`, which
+                  a spread would hand on as the card's own (#206). */}
+              <ContentCard {...cardProps} sizes={itemSizes ?? sizes} variant={cardVariant} />
             </div>
           )
         })}

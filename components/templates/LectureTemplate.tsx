@@ -25,6 +25,8 @@ export interface LecturePlayerProps {
   lecture: ResolvedLecture
   /** Current locale. Selects which subtitle track is the default, active one. */
   locale?: Locale
+  /** `sizes` for the server-rendered poster, where no layout bounds the player. */
+  posterSizes?: string
   className?: string
 }
 
@@ -35,15 +37,11 @@ export interface LecturePlayerProps {
  * (`/lectures/:id/embed`) renders it standalone, and LectureTemplate wraps
  * it with a title and duration, so the player wiring stays identical in both.
  */
-export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps) {
+export function LecturePlayer({ lecture, locale, posterSizes, className }: LecturePlayerProps) {
   const t = useT()
 
   if (!lecture.hlsUrl) {
-    return (
-      <p className="p-6 text-center text-gray-500">
-        {t('lecture.general.missing_video')}
-      </p>
-    )
+    return <p className="p-6 text-center text-gray-700">{t('lecture.general.missing_video')}</p>
   }
 
   return (
@@ -53,6 +51,7 @@ export function LecturePlayer({ lecture, locale, className }: LecturePlayerProps
       defaultSubtitleLang={locale}
       hlsUrl={lecture.hlsUrl}
       poster={lecture.thumbnailUrl ?? undefined}
+      posterSizes={posterSizes}
       startTime={lecture.startTime}
       stopTime={lecture.stopTime}
       subtitleTracks={lecture.subtitles}
@@ -150,10 +149,7 @@ export function LectureTemplate({
           bare embed route uses LecturePlayer, not this template, so this
           setting does not affect it. */}
       {showRelated ? (
-        <RelatedContentLoader
-          anchorId={lecture.id}
-          kind="related-meditations"
-        />
+        <RelatedContentLoader anchorId={lecture.id} kind="related-meditations" />
       ) : null}
     </article>
   )

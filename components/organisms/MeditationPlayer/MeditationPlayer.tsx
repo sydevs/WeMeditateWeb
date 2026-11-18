@@ -25,9 +25,19 @@ import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
 import type { MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
+import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 import { useT } from '../../../hooks/useT'
+import { formatDuration } from '../../../lib/duration'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
+
+/**
+ * The frame's own variant. Its box is 488px at the widest — `max-w-lg` less
+ * `inset-2` and the 4px border — so 800px is a deliberate ~0.8x sample at 2x
+ * rather than full coverage: the next square width is 1200, for 2.25x the
+ * pixels. A srcset would serve both ends, and this hand-rolled <img> has none.
+ */
+const FRAME_VARIANT = getVariantName('square', 'medium')
 
 // Progress circle geometry constants
 const PROGRESS_RADIUS = 48
@@ -60,15 +70,6 @@ const PLACEHOLDER_IMAGE =
     <rect width="400" height="400" fill="url(#g)"/>
   </svg>
 `)
-
-/** Format time in seconds to MM:SS format */
-function formatTime(seconds: number): string {
-  if (!isFinite(seconds)) return '0:00'
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
 
 export interface MeditationFrame {
   /** Timestamp in seconds when this frame should be displayed */
@@ -168,14 +169,11 @@ function VolumeRow({
   onToggleMute,
   action,
 }: VolumeRowProps) {
-
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-600">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-700">
         {label}
-        {sublabel ? (
-          <span className="ml-1 font-normal normal-case text-gray-400">· {sublabel}</span>
-        ) : null}
+        {sublabel ? <span className="ml-1 font-normal normal-case">· {sublabel}</span> : null}
       </p>
       <div className="flex items-center gap-2">
         <Button
@@ -242,6 +240,7 @@ function AudioControls({
   onShuffle,
 }: AudioControlsProps) {
   const t = useT()
+
   return (
     <Dropdown
       align="center"
@@ -264,10 +263,10 @@ function AudioControls({
         <VolumeRow
           label={t('meditation.general.voice')}
           muteLabel={t('meditation.a11y.mute_voice')}
-          unmuteLabel={t('meditation.a11y.unmute_voice')}
-          volumeLabel={t('meditation.a11y.voice_volume')}
           muted={voiceMuted}
+          unmuteLabel={t('meditation.a11y.unmute_voice')}
           volume={voiceVolume}
+          volumeLabel={t('meditation.a11y.voice_volume')}
           onToggleMute={onToggleVoiceMute}
           onVolumeChange={onVoiceVolumeChange}
         />
@@ -289,11 +288,11 @@ function AudioControls({
             }
             label={t('meditation.general.music')}
             muteLabel={t('meditation.a11y.mute_music')}
-            unmuteLabel={t('meditation.a11y.unmute_music')}
-            volumeLabel={t('meditation.a11y.music_volume')}
             muted={musicMuted}
             sublabel={musicTrackTitle}
+            unmuteLabel={t('meditation.a11y.unmute_music')}
             volume={musicVolume}
+            volumeLabel={t('meditation.a11y.music_volume')}
             onToggleMute={onToggleMusicMute}
             onVolumeChange={onMusicVolumeChange}
           />
@@ -639,7 +638,7 @@ function MeditationPlayerInner({
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
-              <p className="text-xs sm:text-sm tracking-widest text-gray-600 uppercase">
+              <p className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase">
                 {t('meditation.general.label')}
               </p>
             </div>
@@ -655,7 +654,7 @@ function MeditationPlayerInner({
                 <p className="text-xs @4xl:text-sm font-medium text-gray-800">
                   {t('meditation.general.founder_name')}
                 </p>
-                <p className="text-xs @4xl:text-sm italic text-gray-600">
+                <p className="text-xs @4xl:text-sm italic text-gray-700">
                   {t('meditation.general.founder_role')}
                 </p>
               </div>
@@ -696,7 +695,12 @@ function MeditationPlayerInner({
                       alt={track.title}
                       className="w-full h-full object-cover"
                       draggable={false}
-                      src={currentMedia.src}
+                      /* The page's main image: MeditationTemplate renders this player as the
+                         only content, so the frame is the LCP candidate. React 19 hoists a
+                         preload link for any <img> that is not loading="lazy". */
+                      fetchPriority="high"
+                      loading="eager"
+                      src={getImageURL(currentMedia.src, FRAME_VARIANT)}
                     />
                   )}
 
@@ -774,7 +778,7 @@ function MeditationPlayerInner({
               {/* Time Display */}
               <div className="flex justify-center mt-2">
                 <span className="text-base @4xl:text-lg font-number text-gray-700">
-                  {formatTime(
+                  {formatDuration(
                     timeDisplay === 'countdown'
                       ? Math.max(0, effectiveDuration - displayTime)
                       : displayTime,
@@ -787,7 +791,7 @@ function MeditationPlayerInner({
           {/* Subtitle + Volume - Below player on narrow, left column on wide */}
           <div className="text-center @4xl:text-left @4xl:col-span-3 @4xl:order-1 @4xl:space-y-6">
             {/* Label - hidden on narrow, visible on wide */}
-            <p className="hidden @4xl:block text-sm tracking-widest text-gray-600 uppercase mb-8">
+            <p className="hidden @4xl:block text-sm tracking-widest text-gray-700 uppercase mb-8">
               {t('meditation.general.label')}
             </p>
 
@@ -827,7 +831,7 @@ function MeditationPlayerInner({
         {/* Upsell Message */}
         {upsell && (
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               {upsell === 'web'
                 ? t.rich('meditation.general.upsell_web', {
                     link: (

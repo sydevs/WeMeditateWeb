@@ -3,6 +3,8 @@ import { ContentIndex } from './ContentIndex'
 import type { ResolvedCardItem } from '../../../lib/content-blocks'
 import { StoryWrapper, StorySection } from '../../ladle'
 
+const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
+
 export default {
   title: 'Organisms',
 } satisfies StoryDefault
@@ -51,18 +53,18 @@ export const Default: Story = () => (
       description="Facets are derived from the items' own tags. Multi-select (OR); the 'All' pill resets."
       title="With filter pills"
     >
-      <ContentIndex items={tagged} />
+      <ContentIndex items={tagged} sizes={CARD_SIZES} />
     </StorySection>
 
     <StorySection
       description="When no item carries tags (e.g. today's lecture feed), the pill row is omitted and it degrades to a plain grid."
       title="No facets"
     >
-      <ContentIndex items={untagged} />
+      <ContentIndex items={untagged} sizes={CARD_SIZES} />
     </StorySection>
 
     <StorySection description="An empty list renders nothing (no pills, no grid)." title="Empty">
-      <ContentIndex items={[]} />
+      <ContentIndex items={[]} sizes={CARD_SIZES} />
     </StorySection>
 
     <div />

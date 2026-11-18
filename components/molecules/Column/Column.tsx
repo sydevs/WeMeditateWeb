@@ -35,15 +35,15 @@ export function Column({
 }: ColumnProps) {
   const titleElement = href ? (
     <Link
+      className="text-xl font-medium text-gray-700 hover:text-teal-600 transition-colors"
       href={href}
-      variant="unstyled"
       size="inherit"
-      className="text-xl font-medium text-gray-600 hover:text-teal-600 transition-colors"
+      variant="unstyled"
     >
       {title}
     </Link>
   ) : (
-    <h3 className="text-xl font-medium text-gray-600">{title}</h3>
+    <h3 className="text-xl font-medium text-gray-700">{title}</h3>
   )
 
   return (
@@ -51,11 +51,16 @@ export function Column({
       {imageUrl && (
         <div className="flex justify-center mb-2">
           <Image
-            src={imageUrl}
             alt={imageAlt}
-            width={160}
-            height={160}
+            // The box is square, but `w-32 h-32 md:w-40 md:h-40` already draws
+            // it, so the ratio is here only to pick a variant and a srcset.
+            aspectRatio="square"
             className="w-32 h-32 md:w-40 md:h-40"
+            forceAspectRatio={false}
+            height={160}
+            sizes="160px"
+            src={imageUrl}
+            width={160}
           />
         </div>
       )}

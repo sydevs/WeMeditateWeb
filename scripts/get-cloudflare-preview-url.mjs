@@ -52,10 +52,10 @@ const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 // the web app instead — in CI `matchesTarget` returns before it reads this list.
 const EXCLUDE = ['wemeditate-design']
 // Matches a Cloudflare preview origin at any subdomain depth. Workers only: both previews moved
-// off Pages on 2026-11-02, so a `pages.dev` host is a leftover that no longer resolves — and a
-// pull request opened before that still carries the `wemeditate-design` Pages comment, which
-// matched by project name, sorted ahead of the live Worker, and spent the job's five-minute
-// reachability budget on a dead address (#184).
+// off Pages on 2026-11-02 (sydevs/SahajAtlasWeb#266), so a `pages.dev` host is a leftover that no
+// longer resolves — and a pull request opened before that still carries the `wemeditate-design`
+// Pages comment, which matched by project name, sorted ahead of the live Worker, and spent the
+// job's five-minute reachability budget on a dead address (#184).
 const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.workers\.dev/i
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -93,6 +93,12 @@ async function ghFetch(path) {
 }
 
 // 1. PR comments. The only surface that names the project, so this is the primary source.
+// Anyone who can comment can post a workers.dev URL that matchesTarget accepts, and the smoke
+// suite would then measure that host and report it green. Sources 2-4 read fields only an app
+// with write access can set, so this is the one open surface. A Cloudflare rename degrades to
+// those rather than failing, since comments are only the first source tried.
+const PREVIEW_COMMENT_AUTHORS = ['cloudflare-workers-and-pages[bot]']
+
 async function fromPrComments() {
   if (!PR_NUMBER) return []
   const comments = await ghFetch(`/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100`)
@@ -100,8 +106,13 @@ async function fromPrComments() {
   for (const c of comments) {
     const url = extractPreviewUrl(c.body)
     if (!url) continue
+    const author = c.user?.login ?? '?'
+    if (!PREVIEW_COMMENT_AUTHORS.includes(author)) {
+      console.error(`skipping ${url} [pr-comment(${author})] — not a preview bot`)
+      continue
+    }
     const project = (c.body || '').match(/Deploying\s+([a-z0-9._-]+)\s+with/i)?.[1] ?? null
-    out.push({ project, url, source: `pr-comment(${c.user?.login ?? '?'})` })
+    out.push({ project, url, source: `pr-comment(${author})` })
   }
   return out
 }
@@ -180,11 +191,12 @@ async function discoverUrl({ derive = false } = {}) {
   if (derive) candidates.push(...fromDerivedBranchHost(candidates))
 
   for (const c of candidates) {
+    const label = `[${c.source}, project=${c.project ?? '?'}]`
     if (matchesTarget(c.project, c.url)) {
-      console.error(`selected ${c.url} [${c.source}, project=${c.project ?? '?'}]`)
+      console.error(`selected ${c.url} ${label}`)
       return c.url
     }
-    console.error(`skipping ${c.url} [${c.source}, project=${c.project ?? '?'}] — not the target project`)
+    console.error(`skipping ${c.url} ${label} — not the target project`)
   }
   return null
 }

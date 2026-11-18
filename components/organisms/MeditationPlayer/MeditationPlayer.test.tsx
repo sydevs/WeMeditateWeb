@@ -2,6 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MeditationPlayer } from './MeditationPlayer'
 import type { Track } from '../../molecules/AudioPlayer/types'
+import {
+  CF_BASE,
+  CF_PUBLIC_URL,
+  PASSTHROUGH_SOURCES,
+} from '../../../tests/_helpers/cloudflare-images'
 
 const track: Track = {
   url: 'https://example.com/voice.mp3',
@@ -45,5 +50,68 @@ describe('MeditationPlayer audio controls', () => {
     const html = renderToStaticMarkup(<MeditationPlayer frames={[]} track={track} />)
 
     expect(html).not.toContain('<audio')
+  })
+})
+
+describe('MeditationPlayer frame variant', () => {
+  // The frame <img> is hand-rolled, so it never reached the variant pipeline
+  // and the circular player served the original (#146).
+  it('requests the 800px square width for a SahajCloud frame', () => {
+    const html = renderToStaticMarkup(
+      <MeditationPlayer
+        frames={[{ timestamp: 0, media: { type: 'image', src: CF_PUBLIC_URL } }]}
+        track={track}
+      />,
+    )
+
+    expect(html).toContain(`src="${CF_BASE}/width=800"`)
+    expect(html).not.toContain('/public')
+  })
+
+  // The video branch is an HLS or MP4 source, not an image.
+  it('leaves a video frame and its MP4 fallback untouched', () => {
+    const html = renderToStaticMarkup(
+      <MeditationPlayer
+        frames={[
+          {
+            timestamp: 0,
+            media: {
+              type: 'video',
+              src: 'https://cdn.example.com/f.m3u8',
+              fallbackSrc: 'https://cdn.example.com/f.mp4',
+            },
+          },
+        ]}
+        track={track}
+      />,
+    )
+
+    expect(html).toContain('src="https://cdn.example.com/f.m3u8"')
+    expect(html).toContain('src="https://cdn.example.com/f.mp4"')
+  })
+
+  it.each(PASSTHROUGH_SOURCES)('leaves %s unchanged', (_label, src) => {
+    const html = renderToStaticMarkup(
+      <MeditationPlayer frames={[{ timestamp: 0, media: { type: 'image', src } }]} track={track} />,
+    )
+
+    expect(html).toContain(`src="${src}"`)
+  })
+})
+
+// MeditationTemplate renders this player as the page's only content, so the
+// frame is the LCP candidate. React 19 hoists its preload link only while the
+// <img> is not `loading="lazy"` (#152).
+describe('MeditationPlayer frame priority', () => {
+  it('asks for the frame eagerly, at high priority', () => {
+    const html = renderToStaticMarkup(
+      <MeditationPlayer
+        frames={[{ timestamp: 0, media: { type: 'image', src: CF_PUBLIC_URL } }]}
+        track={track}
+      />,
+    )
+
+    expect(html).toContain('loading="eager"')
+    expect(html).toContain('fetchPriority="high"')
   })
 })

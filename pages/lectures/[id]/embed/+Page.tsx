@@ -7,9 +7,13 @@ import { LecturePlayer } from '../../../../components/templates'
  * Bare by construction: it sets no Layout, so it inherits only the global
  * LayoutRoot (no Header/Footer/nav). Renders the bare LecturePlayer (no
  * title/duration chrome) because it is already inside an iframe.
+ *
+ * Nothing caps the player here, so the poster's box is the iframe's own
+ * width — which is why the bounded default the player assumes is wrong on
+ * this one route.
  */
 export function Page() {
   const { lecture, locale } = useData<LectureEmbedPageData>()
 
-  return <LecturePlayer lecture={lecture} locale={locale} />
+  return <LecturePlayer lecture={lecture} locale={locale} posterSizes="100vw" />
 }
