@@ -52,9 +52,8 @@ import ts from 'typescript'
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
-import { lineOf, parse, repoRoot, sourceFiles, walk } from './_source-scan'
-
-const SOURCE_GLOBS = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
+import { componentGlobs, repoRoot, sourceFiles } from './_source-scan'
+import { lineOf, parse, walk } from './_syntax-scan'
 
 /** Condition 2 — the names that wire a load event. */
 const LOAD_HANDLERS = new Set(['onLoad', 'onError'])
@@ -400,7 +399,7 @@ export function scan(source: string): Finding[] {
 
 const lines = (source: string): number[] => scan(source).map((f) => f.line)
 
-const SCANNED = sourceFiles(SOURCE_GLOBS)
+const SCANNED = sourceFiles(componentGlobs)
 
 describe('server-rendered visibility', () => {
   it('scans the component tree (the guard is not silently empty)', () => {

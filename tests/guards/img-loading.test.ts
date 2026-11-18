@@ -15,37 +15,31 @@
  * entry asserts nothing. `loading="eager"` at the call site says the same
  * thing beside the code it describes.
  *
- * An `<img>` with no `src` is not a finding: React hoists nothing without one,
- * which is what makes the narrow rule sufficient. Neither `<picture>` nor
- * `<noscript>` appears in the scan set, so neither needs a carve-out.
+ * **Why not the `no-restricted-syntax` selector `<Image>` uses** (#207). The
+ * selector is equivalent on today's tree — measured, not assumed — and faults
+ * in the editor, which a spec cannot. It is also silenceable: an
+ * `eslint-disable no-restricted-syntax` region, the spelling AGENTS.md tells
+ * an author to write for untranslated copy, turns it off for every selector
+ * in reach. A guard reading the source cannot be silenced one site at a time,
+ * which is the same reason `a11y-literals.test.ts` stays a guard.
  *
- * This reads the parsed tag rather than the source text (`_source-scan.ts`),
- * because an `onError={() => setHasError(true)}` ahead of the `loading` is what
- * a regex would truncate the tag at — `Avatar` spells exactly that.
+ * Neither `<picture>` nor `<noscript>` appears in the scan set, so neither
+ * needs a carve-out.
  *
- * ⚠ It reads the attributes a tag spells itself, so a `<img {...props} />`
- * whose spread carries the `src` is skipped rather than reported. Reporting it
- * would ask an author to annotate correct code, which this guard offers no way
- * to exempt. A pass means "no tag names a src without a loading", not proof
- * that nothing preloads.
+ * ⚠ Two gaps, both deliberate. It reads the attributes a tag spells itself, so
+ * a `<img {...props} />` whose spread carries the `src` is skipped rather than
+ * reported — reporting it would ask an author to annotate correct code, which
+ * this guard offers no way to exempt. And `sourceFiles` drops stories, so the
+ * raw `<img>` in `SplashLoader.stories.tsx` is out of scope along with every
+ * other playground fixture.
  */
 
 import ts from 'typescript'
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
-import { lineOf, parse, repoRoot, sourceFiles, walk } from './_source-scan'
-
-const SOURCE_GLOBS = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
-
-/** The attribute names a tag spells itself. A spread contributes none. */
-function spelledAttributes(tag: ts.JsxOpeningLikeElement, file: ts.SourceFile): Set<string> {
-  return new Set(
-    tag.attributes.properties
-      .filter(ts.isJsxAttribute)
-      .map((attribute) => attribute.name.getText(file)),
-  )
-}
+import { componentGlobs, repoRoot, sourceFiles } from './_source-scan'
+import { lineOf, parse, walk } from './_syntax-scan'
 
 /** Every `<img src>` in `source` that names no `loading`, by line. */
 export function scan(source: string): number[] {
@@ -55,8 +49,13 @@ export function scan(source: string): number[] {
   walk(file, (node) => {
     if (!ts.isJsxOpeningLikeElement(node) || node.tagName.getText(file) !== 'img') return
 
-    const spelled = spelledAttributes(node, file)
-    if (!spelled.has('src') || spelled.has('loading')) return
+    // A spread contributes no name, which is the first ⚠ gap above.
+    const spells = (name: string) =>
+      node.attributes.properties.some(
+        (property) => ts.isJsxAttribute(property) && property.name.getText(file) === name,
+      )
+
+    if (!spells('src') || spells('loading')) return
 
     lines.push(lineOf(file, node.tagName.getStart(file)))
   })
@@ -64,7 +63,7 @@ export function scan(source: string): number[] {
   return lines
 }
 
-const SCANNED = sourceFiles(SOURCE_GLOBS)
+const SCANNED = sourceFiles(componentGlobs)
 
 describe('image loading', () => {
   it('scans the component tree (the guard is not silently empty)', () => {
@@ -82,12 +81,12 @@ describe('image loading', () => {
   it('catches the shape it claims to catch', () => {
     // Proves the matcher actually fires. Without this, a broken one would make
     // the guard above pass forever.
-    const eager = ['const a = (', '  <img alt="" src="/x.png" />', ')'].join('\n')
+    const unsaid = ['const a = (', '  <img alt="" src="/x.png" />', ')'].join('\n')
     const multiline = ['const a = (', '  <img', '    alt=""', '    src="/x.png"', '  />', ')'].join(
       '\n',
     )
 
-    expect(scan(eager)).toEqual([2])
+    expect(scan(unsaid)).toEqual([2])
     expect(scan(multiline)).toEqual([2])
   })
 
@@ -108,13 +107,5 @@ describe('image loading', () => {
       [],
     )
     expect(scan('const a = <img alt="" />')).toEqual([])
-  })
-
-  it('leaves the <Image> atom to its own lint selector', () => {
-    // `eslint.config.js` holds `<Image>` to an `aspectRatio`; the atom sets
-    // `loading` from `priority`, so a call site never spells one.
-    expect(scan('const a = <Image alt="" aspectRatio="square" sizes="48px" src="/x.png" />')).toEqual(
-      [],
-    )
   })
 })

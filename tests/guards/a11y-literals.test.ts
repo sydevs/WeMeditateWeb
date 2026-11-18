@@ -25,9 +25,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { relative } from 'node:path'
-import { lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
-
-const SOURCE_GLOBS = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
+import { componentGlobs, lineAt, readSource, repoRoot, sourceFiles } from './_source-scan'
 
 /**
  * A quoted string inside an `aria-label`: `="…"`, `={'…'}`, `` ={`…`} ``,
@@ -88,11 +86,11 @@ export function scan(source: string): { line: number; text: string }[] {
 
 describe('screen-reader strings', () => {
   it('scans the component tree (the guard is not silently empty)', () => {
-    expect(sourceFiles(SOURCE_GLOBS).length).toBeGreaterThan(50)
+    expect(sourceFiles(componentGlobs).length).toBeGreaterThan(50)
   })
 
   it('no aria-label or sr-only text is a hardcoded literal', () => {
-    const findings = sourceFiles(SOURCE_GLOBS).flatMap((file) =>
+    const findings = sourceFiles(componentGlobs).flatMap((file) =>
       scan(readSource(file)).map((f) => `${relative(repoRoot, file)}:${f.line} → ${f.text}`),
     )
 

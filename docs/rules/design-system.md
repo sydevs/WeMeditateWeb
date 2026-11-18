@@ -24,6 +24,10 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
 - Keep every component's first render visible — see the Performance section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
+- Spell `loading` on every hand-rolled `<img>` under `components/`, `layouts/` or `pages/` —
+  omitting it preloads the image, as the `priority` prop's own docs in
+  [components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx) explain.
+  `tests/guards/img-loading.test.ts` guards it, stories excepted.
 
 ## Two component shapes `pnpm lint` rejects
 
@@ -120,14 +124,6 @@ import { HeartIcon } from '@heroicons/react/24/outline'
 This project uses Heroicons v2. Some v1 names changed — for example,
 `ArrowRightOnRectangleIcon` is now `ArrowRightStartOnRectangleIcon`. Check the
 [v2 migration guide](https://github.com/tailwindlabs/heroicons/releases/tag/v2.0.0) for others.
-
-### Image
-
-**Every hand-rolled `<img>` states its own `loading`.** `tests/guards/img-loading.test.ts` fails
-the suite with the `file:line` of one that does not. The `Image` atom sets it from `priority`,
-whose JSDoc ([components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx)) says why
-dropping `loading="lazy"` is what buys the preload, and
-[DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) covers the hero case.
 
 ### Button
 

@@ -21,7 +21,7 @@
 import { describe, it, expect } from 'vitest'
 import { ESLint } from 'eslint'
 import { relative } from 'node:path'
-import { readSource, repoRoot, sourceFiles } from './_source-scan'
+import { componentGlobs, readSource, repoRoot, sourceFiles } from './_source-scan'
 
 // Hoisted on purpose: a fresh instance re-resolves the config on every call,
 // and loading this repo's config costs ~700ms.
@@ -77,7 +77,7 @@ describe('the <Image> variant lint rule', () => {
 
 describe('every raw <img>', () => {
   it('is one of the sites the docstring accounts for', () => {
-    const sites = sourceFiles(['components/**/*.tsx', 'pages/**/*.tsx', 'layouts/**/*.tsx'])
+    const sites = sourceFiles(componentGlobs)
       .filter((file) => /<img[\s/>]/.test(readSource(file)))
       .map((file) => relative(repoRoot, file))
 
