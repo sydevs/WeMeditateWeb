@@ -24,6 +24,13 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
 - Keep every component's first render visible — see the Performance section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
+- Spell `loading` on every hand-rolled `<img>` under `components/`, `layouts/` or `pages/` —
+  omitting it preloads the image. See the Performance section in
+  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for the hero rule and the `<picture>` carve-out, and
+  the `priority` prop's own docs in
+  [components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx) for why dropping
+  `loading="lazy"` is what preloads. `pnpm lint` rejects it through `local/img-loading`
+  ([eslint-rules/index.js](../../eslint-rules/index.js)), stories excepted.
 
 ## Two component shapes `pnpm lint` rejects
 

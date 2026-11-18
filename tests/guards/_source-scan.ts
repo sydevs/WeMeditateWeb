@@ -63,6 +63,16 @@ export async function loadTailwindStylesheet(
 }
 
 /**
+ * The tree the guards about a component scan. One definition, so a new
+ * top-level directory does not reach some guards and not others.
+ *
+ * `COMPONENT_FILES` in `eslint.config.js` names the same three directories and
+ * must be updated alongside: that file is plain JS loaded before any transpile,
+ * so it cannot import this.
+ */
+export const componentGlobs = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
+
+/**
  * Every source file matching `globs`, minus stories and tests — both supply
  * their own fixture copy on purpose.
  */

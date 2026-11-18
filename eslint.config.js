@@ -6,13 +6,23 @@ import perfectionist from 'eslint-plugin-perfectionist'
 import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import tseslint from 'typescript-eslint'
+import { rules as localRules } from './eslint-rules/index.js'
+
+const APP_FILES = ['**/*.{js,jsx,ts,tsx}']
+
+/**
+ * The component tree every rule about a component covers.
+ *
+ * `componentGlobs` in `tests/guards/_source-scan.ts` is the same set for the
+ * guards, and must be updated alongside: this file is plain JS loaded before
+ * any transpile, so it cannot import that one.
+ */
+const COMPONENT_FILES = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
 
 // `name`, `value` and `id` also take strings, but those are identifiers rather
 // than copy, so they stay out. `alt` is handled on its own, below.
 const COPY_PROPS =
   '/^(aria-label|buttonText|caption|description|heading|label|placeholder|subtitle|text|title)$/'
-
-const APP_FILES = ['**/*.{js,jsx,ts,tsx}']
 
 /** Prose, not punctuation: two consecutive ASCII letters. */
 const PROSE = '/[A-Za-z]{2}/'
@@ -200,11 +210,11 @@ export default defineConfig([
     // `title={t('a.b')}` is a Literal too, just not the attribute's own child.
     // A value these selectors cannot read — an identifier, or a call's return —
     // passes, so this bounds the spellings rather than proving intent.
-    files: ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx'],
+    files: COMPONENT_FILES,
     // `pages/sentry/**` is a developer's error-trigger page, not visitor copy.
     // Scoping it out here rather than disabling the rule in the file keeps a
     // later `no-restricted-syntax` rule enforced there — the shared-id problem
-    // a named rule would solve.
+    // the `local` rules below are named to escape.
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', 'components/ladle/**', 'pages/sentry/**'],
     rules: {
       'no-restricted-syntax': [
@@ -227,28 +237,22 @@ export default defineConfig([
           message:
             'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
-        {
-          // An `<Image>` with no `aspectRatio` resolves no Cloudflare variant,
-          // so the box gets the full-size original. Fourteen call sites were
-          // missing it, a `sizes`, or both (#146).
-          //
-          // `sizes` is required by `ImageProps` instead, because a selector
-          // reads a prop's presence: a caller forwarding `sizes={sizes}` and
-          // handed `undefined` passes it, and that was #206 exactly. The ratio
-          // stays here — it is optional by design, for a `<Image>` whose src is
-          // not Cloudflare's, so no type can demand it.
-          //
-          // This sits in this block because `no-restricted-syntax` is one rule
-          // id: a second block covering the same files would replace the copy
-          // selectors above rather than add to them. So the block's `ignores`,
-          // and any disable region for copy, silence it too — neither reaches
-          // an `<Image>` today.
-          selector:
-            'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="aspectRatio"]))',
-          message:
-            '<Image> without aspectRatio serves the full-size original: name the ratio its box draws.',
-        },
       ],
+    },
+  },
+  {
+    // The repo's own rules, each with an id of its own (`eslint-rules/`). A
+    // block of their own is what that buys: `no-restricted-syntax` above is one
+    // id, so a second block naming it would replace the copy selectors instead
+    // of adding to them, and these rules would inherit that block's `ignores`
+    // and every `eslint-disable no-restricted-syntax` region written for copy.
+    files: COMPONENT_FILES,
+    // Both supply their own fixture copy, as `sourceFiles` does for the guards.
+    ignores: ['**/*.stories.tsx', '**/*.test.tsx'],
+    plugins: { local: { rules: localRules } },
+    rules: {
+      'local/image-aspect-ratio': 'error',
+      'local/img-loading': 'error',
     },
   },
   {
