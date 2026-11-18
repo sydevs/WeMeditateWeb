@@ -131,11 +131,22 @@ export function usePlaylistAudioPlayer({
 
   // Picking a track asks to hear it, so it starts playback whether or not the
   // player was already running. Copying `playerState.isPlaying` here left a
-  // row click on a paused player loading the track in silence (#249).
-  const selectTrack = useCallback((index: number) => {
-    wasPlayingRef.current = true
-    setCurrentTrackIndex(index)
-  }, [])
+  // row click on a paused player loading the track in silence (#249). The
+  // loaded track is played directly: an unchanged index never reaches the
+  // load effect.
+  const selectTrack = useCallback(
+    (index: number) => {
+      if (index === currentTrackIndex) {
+        playerControls.play()
+
+        return
+      }
+
+      wasPlayingRef.current = true
+      setCurrentTrackIndex(index)
+    },
+    [currentTrackIndex, playerControls],
+  )
 
   // Compose state
   const state: PlaylistAudioPlayerState = {

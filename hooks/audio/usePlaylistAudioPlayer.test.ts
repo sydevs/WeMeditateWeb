@@ -6,7 +6,7 @@ import type { AudioPlayerControls, AudioPlayerState } from './useAudioPlayer'
 import type { Track } from '../../components/molecules/AudioPlayer/types'
 
 // Howler never plays under jsdom, so the core hook is replaced by a recorder.
-const player = vi.hoisted(() => ({ load: vi.fn(), isPlaying: false }))
+const player = vi.hoisted(() => ({ load: vi.fn(), play: vi.fn(), isPlaying: false }))
 
 vi.mock('./useAudioPlayer', () => ({
   useAudioPlayer: () => [
@@ -21,7 +21,7 @@ vi.mock('./useAudioPlayer', () => ({
       isMuted: false,
       error: null,
     } satisfies AudioPlayerState,
-    { load: player.load } satisfies Partial<AudioPlayerControls>,
+    { load: player.load, play: player.play } satisfies Partial<AudioPlayerControls>,
   ],
 }))
 
@@ -42,6 +42,7 @@ const lastLoad = () => {
 
 beforeEach(() => {
   player.load.mockClear()
+  player.play.mockClear()
   player.isPlaying = false
 })
 
@@ -68,5 +69,25 @@ describe('usePlaylistAudioPlayer — next and previous', () => {
     act(() => result.current[1].next())
 
     expect(lastLoad().autoplay).toBe(isPlaying)
+  })
+})
+
+describe('usePlaylistAudioPlayer — selectTrack', () => {
+  it('loads another track and plays it, from a paused player', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+
+    act(() => result.current[1].selectTrack(2))
+
+    expect(lastLoad()).toEqual({ url: tracks[2].url, autoplay: true })
+  })
+
+  it('plays the loaded track in place when its own row is picked', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+    const loads = player.load.mock.calls.length
+
+    act(() => result.current[1].selectTrack(0))
+
+    expect(player.play).toHaveBeenCalledOnce()
+    expect(player.load.mock.calls.length).toBe(loads)
   })
 })
