@@ -66,8 +66,10 @@ export function usePlaylistAudioPlayer({
         const j = Math.floor(Math.random() * (i + 1))
         ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- the shuffle is random, so it has to run after hydration; play order drives playback, never markup
       setPlayOrder(shuffled)
     } else {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- play order drives playback, never markup, so the extra render paints nothing new
       setPlayOrder([...Array(tracks.length).keys()])
     }
   }, [isShuffleOn, tracks.length])
@@ -112,6 +114,7 @@ export function usePlaylistAudioPlayer({
   useEffect(() => {
     if (playerState.isPlaying) {
       wasPlayingRef.current = true
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- Howler reports playback starting, and an effect is the only place that event reaches React
       setHasEnded(false)
     } else if (!playerState.isLoading && !playerState.isReady) {
       // Reset when stopped/unloaded

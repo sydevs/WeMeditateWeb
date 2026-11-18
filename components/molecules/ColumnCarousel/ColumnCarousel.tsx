@@ -121,6 +121,7 @@ export function ColumnCarousel({
 
   useEffect(() => {
     if (!emblaApi) return
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount, and it reports the `startIndex` the state already holds
     onSelect()
     emblaApi.on('select', onSelect)
     return () => {

@@ -137,6 +137,7 @@ export function useAudioPlayer({
         onend: handleOnEnd,
       })
     }
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- `player` is a fresh object every render, and listing it would reload the track on each one
   }, [url, autoplay])
 
   // Poll for current time (100ms interval when playing)

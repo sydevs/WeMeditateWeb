@@ -71,6 +71,7 @@ export function RelatedContentLoader({ kind, anchorId, className }: RelatedConte
     let cancelled = false
 
     // Reset to the loading state when the anchor/locale changes (client nav).
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- a no-op on mount, since `items` starts null; it only resets the section on a client navigation
     setItems(null)
 
     const url = `/api/${kind}/${encodeURIComponent(String(anchorId))}?locale=${encodeURIComponent(locale)}`

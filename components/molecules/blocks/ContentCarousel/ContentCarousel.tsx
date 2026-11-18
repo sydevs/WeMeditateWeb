@@ -158,6 +158,7 @@ export function ContentCarousel({
 
   useEffect(() => {
     if (!emblaApi) return
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount; an empty `slidesInView` already renders every slide in view (below)
     updateState()
     emblaApi.on('select', updateState)
     // slidesInView fires as slides enter or leave the viewport while scrolling.

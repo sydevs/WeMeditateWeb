@@ -407,6 +407,7 @@ function MeditationPlayerInner({
   // also runs before playback starts, so the source swap is inaudible.
   useEffect(() => {
     if (musicTracks.length > 1) {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- the random pick has to run after hydration, or the server and the client would disagree on the track
       setMusicIndex(pickRandomIndex(musicTracks.length))
     }
   }, [musicTracks])
@@ -474,6 +475,7 @@ function MeditationPlayerInner({
     if (seekTo) {
       applyExternalSeek(seekTo.timestamp)
     }
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- the id is the seek command's identity; depending on the whole object would re-seek whenever the caller rebuilt it
   }, [seekTo?.id])
 
   // The circular-progress hook handles all drag and coordinate calculations.
