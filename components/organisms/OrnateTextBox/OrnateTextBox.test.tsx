@@ -129,12 +129,43 @@ describe('<OrnateTextBox>', () => {
     expect(body).not.toContain('text-white/')
   })
 
-  it('renders the title above the body (header precedes the image)', () => {
+  // A float only affects what follows it, so the header can only share the
+  // body's column by coming after the image in source order. Across the band
+  // instead, the title measures 2.47:1 against a 3:1 bar (#262).
+  it('puts the floated image before the header in document order', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
 
-    // Title and subtitle appear before the floated image in document order.
-    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('lg:float-left'))
-    expect(html.indexOf('Sub')).toBeLessThan(html.indexOf('lg:float-left'))
+    expect(html.indexOf('lg:float-left')).toBeLessThan(html.indexOf('Sacred Teachings'))
+    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('Sub'))
+    expect(html.indexOf('Sub')).toBeLessThan(html.indexOf('timeless wisdom'))
+  })
+
+  // Source order is image, header, body; the reading order below `lg` is
+  // title, subtitle, image, body. `order-*` is what reconciles the two, and
+  // it needs a flex container to act in. Above `lg` the wrapper is
+  // `flow-root` instead, which both makes `order-*` inert and contains the
+  // float's height.
+  it('restores the reading order below lg, and drops to flow-root at lg', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
+    const wrapper = html.match(/class="(flex flex-col[^"]*)"/)?.[1] ?? ''
+    const classOf = (marker: string) =>
+      html.match(new RegExp(`class="([^"]*${marker}[^"]*)"`))?.[1] ?? ''
+
+    expect(wrapper).toContain('lg:flow-root')
+    expect(classOf('lg:float-left')).toContain('order-2')
+    expect(classOf('lg:mb-6')).toContain('order-1')
+    expect(classOf('space-y-5')).toContain('order-3')
+  })
+
+  // A block-formatting context cannot overlap a float's margin box on either
+  // side, so this is what holds the header in the column whichever way the
+  // float points (#193).
+  it('gives the header its own block-formatting context at lg', () => {
+    const header =
+      renderToStaticMarkup(<OrnateTextBox {...BASE} />).match(/class="([^"]*lg:mb-6[^"]*)"/)?.[1] ??
+      ''
+
+    expect(header).toContain('lg:flow-root')
   })
 
   it('renders the CTA only when both text and href are set', () => {

@@ -157,8 +157,10 @@ export function OrnateTextBox({
       {/* Soft warm gradient that lightens the image's edge. It extends above
           the block (the gradient--ornate ::before). It uses a negative
           z-index, so it sits over the brown ground but behind text from the
-          block above. It mirrors with the image because a body column on the
-          left would otherwise sit over the band and measure 2.50:1 (#193, #205). */}
+          block above. It mirrors with the image because the text column on
+          the left would otherwise sit over the band: the body measures
+          2.50:1 there, and the header, which shares that column, 2.47:1
+          (#193, #205, #262). */}
       <div
         aria-hidden="true"
         className={`pointer-events-none absolute -top-24 bottom-0 ${bandSide} -z-10 w-1/3 ${bandGradient}`}
@@ -180,46 +182,56 @@ export function OrnateTextBox({
           where the sidetext sits, so this reserves a right gutter
           (lg:pr-24) to keep the body clear of it. */}
       <Container className="relative z-10 py-12 lg:py-20 lg:pr-24" maxWidth="md">
-        {/* Title and subtitle header, above the body */}
-        <div className="mb-8 lg:mb-6">
-          <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
-          {subtitle && <p className="mt-2 text-base font-light text-white/80">{subtitle}</p>}
-        </div>
+        {/* The float is first in source order because a float only affects
+            what follows it: this is what puts the header in the text column
+            rather than across the band. Below `lg` nothing floats, so this
+            box is a column flex container and `order-*` restores the reading
+            order; at `lg` `flow-root` replaces `flex`, `order-*` goes inert,
+            and the box contains the float's height (#262). */}
+        <div className="flex flex-col lg:flow-root">
+          {/* Feature image — floats to the `align` side, beside the text column */}
+          <div className={`order-2 mb-6 w-full ${imageFloat} lg:mb-4 lg:w-[44%]`}>
+            <Image
+              alt={imageAlt}
+              aspectRatio={imageAspectRatio}
+              className="w-full"
+              forceAspectRatio={false}
+              height={imageHeight}
+              objectFit="cover"
+              sizes="(max-width: 1024px) 100vw, 400px"
+              src={imageSrc}
+              width={imageWidth}
+            />
+          </div>
 
-        {/* Feature image — floats to the `align` side, beside the body column */}
-        <div className={`mb-6 w-full ${imageFloat} lg:mb-4 lg:w-[44%]`}>
-          <Image
-            alt={imageAlt}
-            aspectRatio={imageAspectRatio}
-            className="w-full"
-            forceAspectRatio={false}
-            height={imageHeight}
-            objectFit="cover"
-            sizes="(max-width: 1024px) 100vw, 400px"
-            src={imageSrc}
-            width={imageWidth}
-          />
-        </div>
+          {/* Title and subtitle header. Its own block-formatting context at
+              `lg`, for the body's reason below: it shares the body's column
+              and so must not overlap the float's margin box (#262). */}
+          <div className="order-1 mb-8 lg:mb-6 lg:flow-root">
+            <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
+            {subtitle && <p className="mt-2 text-base font-light text-white/80">{subtitle}</p>}
+          </div>
 
-        {/* Body: its own block-formatting context, so it stays a clean
-            column beside the gradient and never wraps back under the image.
-            Such a box cannot overlap a float's margin box on either side, so
-            this holds whichever way the float points. */}
-        <div className="space-y-5 text-base font-light leading-relaxed text-white lg:flow-root">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
+          {/* Body: its own block-formatting context, so it stays a clean
+              column beside the gradient and never wraps back under the image.
+              Such a box cannot overlap a float's margin box on either side, so
+              this holds whichever way the float points. */}
+          <div className="order-3 space-y-5 text-base font-light leading-relaxed text-white lg:flow-root">
+            {paragraphs.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
 
-          {ctaText && ctaHref && (
-            <Button
-              className="mt-2 border-white text-white"
-              href={ctaHref}
-              size="lg"
-              variant="outline"
-            >
-              {ctaText}
-            </Button>
-          )}
+            {ctaText && ctaHref && (
+              <Button
+                className="mt-2 border-white text-white"
+                href={ctaHref}
+                size="lg"
+                variant="outline"
+              >
+                {ctaText}
+              </Button>
+            )}
+          </div>
         </div>
       </Container>
     </div>
