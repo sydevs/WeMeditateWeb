@@ -1,4 +1,11 @@
-import { cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react'
+import {
+  cloneElement,
+  Fragment,
+  isValidElement,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -246,7 +253,10 @@ export function Dropdown({
   // a second tab stop, and can only be named by what it contains (#278). In
   // focus mode the inner control — an `Input` — already owns focus, so the
   // wrapper stays transparent and keeps the reference.
-  const triggerOwnsInteraction = !openOnFocus && isValidElement(trigger)
+  // A fragment passes `isValidElement` and then swallows every prop cloned
+  // onto it, which would leave the trigger operable by nothing at all.
+  const triggerOwnsInteraction =
+    !openOnFocus && isValidElement(trigger) && trigger.type !== Fragment
   const triggerElement = trigger as ReactElement<Record<string, unknown>>
 
   return (

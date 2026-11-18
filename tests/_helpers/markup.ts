@@ -17,3 +17,21 @@ export function anchorFor(html: string, href: string): string {
 
   return at === -1 ? '' : html.slice(html.lastIndexOf('<a', at), html.indexOf('>', at) + 1)
 }
+
+/**
+ * The opening `<tag>` of the first one in `html`, or the empty string.
+ *
+ * Narrowing to the tag before asserting an attribute is what keeps a test from
+ * silently matching nothing when the attribute order changes, and from passing
+ * on an attribute some other element carries.
+ */
+export function openTag(html: string, tag: string): string {
+  const at = html.indexOf(`<${tag}`)
+
+  return at === -1 ? '' : html.slice(at, html.indexOf('>', at) + 1)
+}
+
+/** The `class` attribute of the first `<tag>` in `html`, or the empty string. */
+export function classOf(html: string, tag: string): string {
+  return /\sclass="([^"]*)"/.exec(openTag(html, tag))?.[1] ?? ''
+}

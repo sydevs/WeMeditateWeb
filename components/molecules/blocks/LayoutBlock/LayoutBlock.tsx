@@ -171,8 +171,8 @@ export function LayoutBlock({
         }
       >
         {items.map((it, i) => (
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- the id is the key wherever SahajCloud sends one; the index is only its fallback
           <LayoutCard
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the id is the key wherever SahajCloud sends one; the index is only its fallback
             key={it.id ?? i}
             headingLevel={itemHeadingLevel}
             item={it}

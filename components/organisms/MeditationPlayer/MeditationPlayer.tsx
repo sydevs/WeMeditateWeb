@@ -708,9 +708,14 @@ function MeditationPlayerInner({
                     <div className="absolute inset-0 bg-teal-700/20" />
                   )}
 
-                  {/* Play/Pause Button - Fades in/out when paused or hovering */}
+                  {/* Play/Pause Button - Fades in/out when paused or hovering.
+                      `invisible` is what keeps the button out of the tab order
+                      and the a11y tree while it is faded out: `pointer-events-none`
+                      stops only the mouse, so a keyboard reached a control nobody
+                      can see (SC 2.4.7). It lifts with the opacity on hover, the
+                      same pairing `Header`'s compact bar uses. */}
                   <div
-                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 invisible pointer-events-none group-hover:visible group-hover:opacity-100'}`}
                   >
                     <Button
                       aria-label={state.isPlaying ? t('media.a11y.pause') : t('media.a11y.play')}

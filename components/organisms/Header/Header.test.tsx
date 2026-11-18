@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { classOf } from '../../../tests/_helpers/markup'
 import { Header } from './Header'
 
 const navItems = [{ label: 'Meditate Now', href: '/meditate' }]
@@ -86,7 +87,7 @@ describe('Header', () => {
     it('is not drawn at all until it sticks', () => {
       // Un-stuck it holds nothing visible, so its two rules would read as an
       // empty 44px gap on every mobile page.
-      const navClass = (html: string) => html.match(/<nav class="([^"]*)"/)?.[1]
+      const navClass = (html: string) => classOf(html, 'nav')
 
       expect(navClass(render())).toContain('hidden lg:block')
       expect(navClass(render({ condensed: true }))).not.toContain('hidden')
@@ -122,11 +123,11 @@ describe('Header', () => {
       const html = render({ bandClassName: band })
 
       expect(html).toContain(`<header class="pointer-events-auto ${band}"`)
-      expect(html.match(/<nav class="([^"]*)"/)?.[1]).toContain(band)
+      expect(classOf(html, 'nav')).toContain(band)
     })
 
     it('gives way to full-bleed once the nav sticks', () => {
-      const nav = render({ bandClassName: band, condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
+      const nav = classOf(render({ bandClassName: band, condensed: true }), 'nav')
 
       expect(nav).toContain('full-bleed')
       expect(nav).not.toContain('max-w-7xl')
@@ -139,7 +140,7 @@ describe('Header', () => {
       const html = render()
 
       expect(html).toContain('<header class="pointer-events-auto"')
-      expect(html.match(/<nav class="([^"]*)"/)?.[1]).toContain('pointer-events-auto')
+      expect(classOf(html, 'nav')).toContain('pointer-events-auto')
     })
   })
 
@@ -154,7 +155,7 @@ describe('Header', () => {
     })
 
     it('turns the sticky nav light, since it paints itself white', () => {
-      const nav = render({ condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
+      const nav = classOf(render({ condensed: true }), 'nav')
 
       expect(nav).toContain('surface-light')
       expect(nav).toContain('bg-white')

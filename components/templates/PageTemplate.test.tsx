@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { Page } from '../../server/sahajcloud-types'
+import { classOf } from '../../tests/_helpers/markup'
 import { PageTemplate } from './PageTemplate'
 
 // PageTemplate calls usePageHead → vike-react's useConfig, which needs vike's
@@ -41,10 +42,15 @@ describe('<PageTemplate> hideTitle', () => {
     expect(html).toContain('Meditate Now')
   })
 
-  it('omits the PageTitle when hideTitle is true', () => {
+  it('omits the PageTitle banner when hideTitle is true, keeping one heading', () => {
     const html = renderToStaticMarkup(<PageTemplate hideTitle page={makePage()} />)
 
-    expect(html).not.toContain('Meditate Now')
+    // `hideTitle` suppresses a banner a visitor does not need, not the page's
+    // only `<h1>` — a featured-nav page with no lead splash had none (#278).
+    expect(classOf(html, 'h1')).toContain('sr-only')
+    expect(html).toContain('Meditate Now')
+    // The banner's own gradient box is what goes.
+    expect(html).not.toContain('before:to-teal-200/30')
   })
 
   it('still renders the header (author byline) when hideTitle hides only the title', () => {
@@ -54,8 +60,8 @@ describe('<PageTemplate> hideTitle', () => {
 
     const html = renderToStaticMarkup(<PageTemplate hideTitle page={page} />)
 
-    // Title suppressed, but the byline keeps the header container present.
-    expect(html).not.toContain('Meditate Now')
+    // Banner suppressed, but the byline keeps the header container present.
+    expect(html).not.toContain('before:to-teal-200/30')
     expect(html).toContain('Shri Mataji')
   })
 })

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import { anchorFor, openTag } from '../../../tests/_helpers/markup'
 import { Dropdown, DropdownItem } from './Dropdown'
 
 /**
@@ -10,20 +10,45 @@ import { Dropdown, DropdownItem } from './Dropdown'
  * placement, flip/shift, dismiss) is verified in Ladle / the browser.
  */
 describe('Dropdown', () => {
-  it('renders the trigger as a focusable button and keeps the panel closed', () => {
+  it('wires the trigger element itself, and keeps the panel closed', () => {
     const html = renderToStaticMarkup(
-      <Dropdown trigger={<span>Open</span>}>
+      <Dropdown trigger={<button type="button">Open</button>}>
+        <div>Panel content</div>
+      </Dropdown>,
+    )
+
+    // The caller's own control carries the popup state. A wrapper carrying
+    // `role="button"` around it was axe `nested-interactive` and a second tab
+    // stop (#278), so the wrapper must stay transparent here.
+    const trigger = openTag(html, 'button')
+
+    expect(trigger).toContain('aria-haspopup="menu"')
+    expect(trigger).toContain('aria-expanded="false"')
+    expect(html).not.toContain('role="button"')
+    expect(html).not.toContain('tabindex="0"')
+    expect(html).toContain('Open')
+    // Closed by default → the panel (and its content) is not in the SSR output.
+    expect(html).not.toContain('Panel content')
+  })
+
+  it('falls back to a focusable wrapper when the trigger is not one element', () => {
+    // Nothing in the repo passes a fragment, but the prop is `ReactNode`, so
+    // the wrapper is still what makes such a trigger operable at all.
+    const html = renderToStaticMarkup(
+      <Dropdown
+        trigger={
+          <>
+            <span>Open</span>
+            <span>me</span>
+          </>
+        }
+      >
         <div>Panel content</div>
       </Dropdown>,
     )
 
     expect(html).toContain('role="button"')
-    expect(html).toContain('aria-haspopup="menu"')
-    expect(html).toContain('aria-expanded="false"')
     expect(html).toContain('tabindex="0"')
-    expect(html).toContain('Open')
-    // Closed by default → the panel (and its content) is not in the SSR output.
-    expect(html).not.toContain('Panel content')
   })
 
   it('does not turn the wrapper into a button in focus (autocomplete) mode', () => {
