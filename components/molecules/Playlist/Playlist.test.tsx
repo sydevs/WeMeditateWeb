@@ -69,9 +69,9 @@ interface Row {
 }
 
 /**
- * The track rows in render order, each with whether it draws the "now playing"
- * treatment. A filter pill is a `<button>` too, so rows are the ones carrying a
- * track title.
+ * The track rows in render order, each with whether `aria-current` marks it as
+ * the playing one. A filter pill is a `<button>` too, so rows are the ones
+ * carrying a track title.
  */
 function trackRows(html: string): Row[] {
   return html
@@ -80,7 +80,7 @@ function trackRows(html: string): Row[] {
     .filter((chunk) => chunk.includes('<h4'))
     .map((chunk) => ({
       title: chunk.match(/<h4[^>]*>([^<]*)<\/h4>/)?.[1] ?? '',
-      playing: chunk.slice(0, chunk.indexOf('>')).includes('bg-teal-600'),
+      playing: chunk.slice(0, chunk.indexOf('>')).includes('aria-current="true"'),
     }))
 }
 

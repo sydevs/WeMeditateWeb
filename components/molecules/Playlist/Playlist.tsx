@@ -72,6 +72,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
 
   return (
     <button
+      aria-current={isCurrentTrack ? 'true' : undefined}
       onClick={() => onTrackClick(index)}
       className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
         isCurrentTrack
