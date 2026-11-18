@@ -51,6 +51,9 @@ import type { Thing } from 'schema-dts'
  */
 const DEFAULT_SHARE_IMAGE = '/images/metadata/preview.png'
 
+/** The one setting a page's head reads: which pages the knowledge menu lists. */
+export type KnowledgeMenu = Pick<WebConfig, 'knowledgePages'>
+
 /** Where a URL is published, and the language it is published in. */
 export interface SeoRoute {
   /** The request origin, or null outside a Vike app. A guessed one is worse than none. */
@@ -183,7 +186,7 @@ function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): ListE
  */
 function knowledgeTrail(
   page: Page,
-  settings: WebConfig,
+  settings: KnowledgeMenu,
   route: SeoRoute,
   name: string,
 ): Breadcrumb[] {
@@ -210,7 +213,7 @@ function knowledgeTrail(
  */
 export function pageSeo(options: {
   page: Page
-  settings: WebConfig
+  settings: KnowledgeMenu
   route: SeoRoute
   locales: readonly Locale[]
   isHome: boolean

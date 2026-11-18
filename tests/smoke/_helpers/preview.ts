@@ -175,6 +175,7 @@ export function internalLinks(html: string): string[] {
 export interface SahajCloudSamples {
   pageSlug: string | null
   meditationId: string | null
+  lectureId: string | null
   /**
    * The locales the site offers, from `wm-web-config.availableLocales`,
    * normalised the way `getWebConfig` normalises it.
@@ -221,6 +222,8 @@ const PAGE_SELECT = {
   meta: { title: true, description: true, image: true },
 }
 const MEDITATION_SELECT = { title: true, thumbnail: true, _status: true }
+// `lectures` carries no `_status`, so a lecture read filters on nothing.
+const LECTURE_SELECT = { title: true, type: true, thumbnail: true }
 const IMAGE_POPULATE = {
   images: { url: true, filename: true, alt: true, width: true, height: true },
 }
@@ -329,8 +332,15 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
     select: MEDITATION_SELECT,
     populate: IMAGE_POPULATE,
   })
+  const lectureQuery = toQueryString({
+    limit: 1,
+    depth: 2,
+    select: LECTURE_SELECT,
+    populate: IMAGE_POPULATE,
+  })
   const page = await firstDoc(`pages?${pageQuery}`)
   const meditation = await firstDoc(`meditations?${meditationQuery}`)
+  const lecture = await firstDoc(`lectures?${lectureQuery}`)
   const config = await getJson('globals/wm-web-config?depth=0&select[availableLocales]=true')
   const locales = config?.availableLocales
   const offered = Array.isArray(locales) ? locales.filter((l) => typeof l === 'string') : []
@@ -338,6 +348,7 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
   return {
     pageSlug: typeof page?.slug === 'string' ? page.slug : null,
     meditationId: meditation?.id != null ? String(meditation.id) : null,
+    lectureId: lecture?.id != null ? String(lecture.id) : null,
     // Same normalisation as `getWebConfig`: an unconfigured global offers
     // the default locale, and that is the locale set the Worker serves.
     availableLocales: offered.length > 0 ? offered : [DEFAULT_LOCALE],
