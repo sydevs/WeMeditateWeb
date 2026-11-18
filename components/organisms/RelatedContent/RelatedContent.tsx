@@ -28,10 +28,11 @@ export function RelatedContent({ title, items, className = '' }: RelatedContentP
     return null
   }
 
-  // ContentCarousel items are `Omit<ContentCardProps, 'variant'>`. Strip the
-  // fields that ResolvedCardItem carries but ContentCardProps does not
-  // model: `id` is `string | number`, and `tags` is a facet list. This
-  // keeps them from spreading onto the ContentCard DOM node.
+  // A ContentCarousel item is a ContentCard's props less `variant` and
+  // `sizes`, which the carousel derives per slide. Strip the fields that
+  // ResolvedCardItem carries but ContentCardProps does not model: `id` is
+  // `string | number`, and `tags` is a facet list. This keeps them from
+  // spreading onto the ContentCard DOM node.
   const carouselItems = items.map(({ id: _id, tags: _tags, ...card }) => card)
 
   return (

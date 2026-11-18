@@ -33,39 +33,40 @@ export const StorySection = ({
   variant = 'section',
   inContext = false,
 }: StorySectionProps) => {
-  // Background styles based on surface and background type
+  /**
+   * A dark ground is a `900` step, including both stops of the gradient, which
+   * its lighter one governs: the dark surface draws `text-primary` as
+   * `teal-300`, which clears 4.5:1 on `teal-900` and on nothing lighter (#179).
+   *
+   * `none` paints one too, because a dark surface without a ground drew white
+   * text on the page's white background.
+   */
   const getBackgroundStyles = () => {
-    if (background === 'none') return ''
-
     const baseStyles = 'p-6 rounded-lg'
 
+    if (background === 'none') return surface === 'dark' ? 'bg-teal-900 p-6' : ''
+
     if (background === 'neutral') {
-      return surface === 'dark' ? `bg-gray-800 ${baseStyles}` : `bg-gray-50 ${baseStyles}`
+      return surface === 'dark' ? `bg-teal-900 ${baseStyles}` : `bg-gray-50 ${baseStyles}`
     }
 
     if (background === 'gradient') {
       return surface === 'dark'
-        ? `bg-linear-to-b from-teal-600 to-teal-700 ${baseStyles}`
+        ? `bg-linear-to-b from-teal-900 to-coral-900 ${baseStyles}`
         : `bg-linear-to-b from-teal-50 to-teal-100 ${baseStyles}`
     }
 
     return ''
   }
 
-  // Text colors based on surface.
-  // For non-subsection dark sections with a background, the title and
-  // description appear on a light wrapper background.
-  const getTitleColor = () => {
-    if (variant === 'subsection') {
-      return surface === 'dark' ? 'text-gray-100' : 'text-gray-700'
-    }
+  /**
+   * The title and the description render in the wrapper, outside the ground
+   * `renderContent()` paints, so both sit on the white page whatever the
+   * surface is.
+   */
+  const getTitleColor = () => (variant === 'subsection' ? 'text-gray-700' : 'text-gray-900')
 
-    // Non-subsection dark sections have the title and description on
-    // a light background wrapper. So they use light colours.
-    return 'text-gray-900'
-  }
-
-  const descriptionColor = 'text-gray-600' // Always on light background for non-subsections
+  const descriptionColor = 'text-gray-700'
 
   // Variant-specific configuration
   const variantConfig = {
@@ -109,9 +110,8 @@ export const StorySection = ({
     if (config.isScrollable) {
       // Determine border and background for scrollable container
       const borderColor = surface === 'dark' ? 'border-gray-700' : 'border-gray-200'
-      const scrollBackground =
-        backgroundStyles ||
-        (surface === 'dark' ? 'bg-linear-to-b from-teal-600 to-teal-700' : 'bg-white')
+      // A dark surface always has a ground now, so only a light one falls back.
+      const scrollBackground = backgroundStyles || 'bg-white'
 
       return (
         <div className={`h-[600px] overflow-y-auto border-4 ${borderColor}`}>

@@ -74,12 +74,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const stateStyles = {
-      default:
-        'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
-      error:
-        'text-error border-error hover:border-error-dark focus:border-error',
-      success:
-        'text-gray-900 border-success hover:border-success focus:border-success',
+      default: 'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
+      error: 'text-error border-error hover:border-error-dark focus:border-error',
+      success: 'text-gray-900 border-success hover:border-success focus:border-success',
     }
 
     // If no icon, render simple input
@@ -87,9 +84,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       return (
         <input
           ref={ref}
-          type={type}
-          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full ${className}`}
           aria-invalid={state === 'error'}
+          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full ${className}`}
+          type={type}
           {...props}
         />
       )
@@ -100,17 +97,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className={`relative w-full ${className}`}>
         <input
           ref={ref}
-          type={type}
-          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full pr-10`}
           aria-invalid={state === 'error'}
+          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full pr-10`}
+          type={type}
           {...props}
         />
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <IconComponent className="w-5 h-5 text-gray-800" aria-hidden="true" />
+          <IconComponent aria-hidden="true" className="w-5 h-5 text-gray-800" />
         </div>
       </div>
     )
-  }
+  },
 )
 
 Input.displayName = 'Input'

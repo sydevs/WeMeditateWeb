@@ -8,6 +8,8 @@ import { useFadeOnChange } from '../../../hooks/useFadeOnChange'
 export interface ContentIndexProps {
   /** Server-resolved cards. Each item's `tags` drive the filter pills. */
   items: ResolvedCardItem[]
+  /** `sizes` for one card of the grid below — see `ContentGrid`. */
+  sizes: string
   className?: string
 }
 
@@ -112,7 +114,7 @@ function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) 
  * SSR renders every card, with a pure `useState` and no `ClientOnly`.
  * Hydration then wires up the pill toggles.
  */
-export function ContentIndex({ items, className = '' }: ContentIndexProps) {
+export function ContentIndex({ items, sizes, className = '' }: ContentIndexProps) {
   const facets = useMemo(() => deriveFacets(items), [items])
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
@@ -148,7 +150,7 @@ export function ContentIndex({ items, className = '' }: ContentIndexProps) {
       {facets.length > 0 && (
         <FilterPills facets={facets} selected={selected} onClear={clear} onToggle={toggle} />
       )}
-      <ContentGrid ref={fadeRef} items={gridItems} />
+      <ContentGrid ref={fadeRef} items={gridItems} sizes={sizes} />
     </div>
   )
 }

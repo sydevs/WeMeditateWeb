@@ -68,7 +68,7 @@ export const Default: Story = () => (
 
     <StorySection inContext={true} title="Examples">
       <div className="flex items-center justify-end gap-3 rounded-lg bg-gray-100 p-4">
-        <span className="text-sm text-gray-500">Player chrome</span>
+        <span className="text-sm text-gray-700">Player chrome</span>
         <EmbedButton embedPath="/lectures/456/embed" origin={ORIGIN} title="Lecture on Joy" />
       </div>
     </StorySection>
