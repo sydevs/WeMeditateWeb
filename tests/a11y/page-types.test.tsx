@@ -25,6 +25,7 @@ import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
 import { EN_TRANSLATIONS } from '../../lib/i18n'
+import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
 import { A11Y_REPORT_PATH } from './report-path'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
 
@@ -89,6 +90,12 @@ function options(exclude: string[]): RunOptions {
     rules: Object.fromEntries(exclude.map((id) => [id, { enabled: false }])),
   }
 }
+
+/**
+ * Everything a server render can put in the tab order. `[tabindex]` covers both
+ * directions: a `-1` stop would be a finding here, not an omission.
+ */
+const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]'
 
 /** Every target, as the gate's own output names them. */
 const TARGETS = [
@@ -268,6 +275,17 @@ describe('accessibility · page types', () => {
       expect({ h1: count('h1'), main: count('main') }).toEqual(
         target.chrome ? { h1: 1, main: 1 } : { h1: 0, main: 0 },
       )
+
+      // The skip link is reached in DOM order, which paint order does not
+      // change — so a lead splash's absolutely positioned header overlay
+      // cannot take the first stop from it. An embed renders none: it has no
+      // menus to skip and no `<main>` to point at.
+      const first = document.querySelector(FOCUSABLE)
+
+      expect(first?.getAttribute('href') ?? null).toBe(
+        target.chrome ? `#${MAIN_CONTENT_ID}` : null,
+      )
+      expect(count(`a[href="#${MAIN_CONTENT_ID}"]`)).toBe(target.chrome ? 1 : 0)
     },
   )
 
