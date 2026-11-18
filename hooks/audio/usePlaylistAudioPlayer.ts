@@ -144,7 +144,13 @@ export function usePlaylistAudioPlayer({
   // directly. Without this a consumer driving the player, such as a playlist
   // click, changed nothing and the previous track kept playing (#249).
   const followTrackIndex = useEffectEvent(() => {
-    selectTrack(trackIndex)
+    // A consumer echoes `onTrackChange` back, so most changes here are the
+    // hook's own move returning. Acting on one would re-enter `selectTrack`
+    // while that move is still loading, where `isPlaying` reads false and
+    // cancels the auto-resume the move asked for.
+    if (trackIndex !== currentTrackIndex) {
+      selectTrack(trackIndex)
+    }
   })
 
   useEffect(() => {
