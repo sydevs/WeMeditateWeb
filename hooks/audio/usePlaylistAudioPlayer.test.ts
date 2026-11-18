@@ -44,6 +44,9 @@ const lastLoad = () => {
   return { url, autoplay: options?.autoplay }
 }
 
+// Howler calls this from the load that registered it, when the track ends.
+const endCurrentTrack = () => player.load.mock.calls.at(-1)?.[1]?.onEnd?.()
+
 beforeEach(() => {
   player.load.mockClear()
   player.play.mockClear()
@@ -94,6 +97,20 @@ describe('usePlaylistAudioPlayer — next and previous', () => {
     act(() => result.current[1].next())
 
     expect(lastLoad()).toEqual({ url: tracks[2].url, autoplay: true })
+  })
+})
+
+describe('usePlaylistAudioPlayer — the end of a track', () => {
+  it('advances in play order and keeps playing', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+
+    act(() => result.current[1].play())
+    player.isPlaying = true
+
+    act(() => endCurrentTrack())
+
+    expect(result.current[0].currentTrackIndex).toBe(1)
+    expect(lastLoad()).toEqual({ url: tracks[1].url, autoplay: true })
   })
 })
 
