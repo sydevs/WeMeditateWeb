@@ -119,7 +119,8 @@
   },
   "lecture": {
     "a11y": {
-      "related_meditations_loading": "Loading related meditations"
+      "related_meditations_loading": "Loading related meditations",
+      "untitled_heading": "Untitled talk"
     },
     "general": {
       "missing_video": "This lecture is missing a playable video source.",

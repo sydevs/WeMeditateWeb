@@ -253,9 +253,6 @@ function AudioControls({
           icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
           size="lg"
           variant="ghost"
-          // The Dropdown wrapper is the focusable trigger (role=button,
-          // aria-expanded). Keep this inner button out of the tab order.
-          tabIndex={-1}
         />
       }
     >

@@ -80,9 +80,6 @@ export function EmbedButton({
         <Button
           icon={CodeBracketIcon}
           size="sm"
-          // The Dropdown wrapper is the keyboard-focusable trigger
-          // (role=button, aria-expanded). Keep this inner button out of the tab order.
-          tabIndex={-1}
           variant="ghost"
         >
           {t('media.general.embed')}

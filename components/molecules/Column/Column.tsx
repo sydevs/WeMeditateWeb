@@ -17,6 +17,14 @@ export interface ColumnProps {
   /** Optional link URL. Makes the title clickable. */
   href?: string
 
+  /**
+   * The heading level the title takes. A column sits under a section heading
+   * most of the time, but a section with no heading of its own leaves the
+   * column to start the level (axe `heading-order`).
+   * @default 'h3'
+   */
+  headingLevel?: 'h2' | 'h3'
+
   /** Additional CSS classes */
   className?: string
 }
@@ -31,19 +39,28 @@ export function Column({
   imageUrl,
   imageAlt = '',
   href,
+  headingLevel = 'h3',
   className = '',
 }: ColumnProps) {
-  const titleElement = href ? (
-    <Link
-      className="text-xl font-medium text-gray-700 hover:text-teal-600 transition-colors"
-      href={href}
-      size="inherit"
-      variant="unstyled"
-    >
-      {title}
-    </Link>
-  ) : (
-    <h3 className="text-xl font-medium text-gray-700">{title}</h3>
+  const Title = headingLevel
+
+  // A linked column used to contribute no heading at all, so one column of a
+  // row joined the outline and the next did not (#278).
+  const titleElement = (
+    <Title className="text-xl font-medium text-gray-700">
+      {href ? (
+        <Link
+          className="hover:text-teal-600 transition-colors"
+          href={href}
+          size="inherit"
+          variant="unstyled"
+        >
+          {title}
+        </Link>
+      ) : (
+        title
+      )}
+    </Title>
   )
 
   return (

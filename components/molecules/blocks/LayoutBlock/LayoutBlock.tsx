@@ -9,6 +9,13 @@ import {
   type LayoutItem,
 } from '../../../../lib/content-blocks'
 
+/**
+ * The level an item's own title takes. A section with a heading of its own
+ * nests its items one level under it; a section with none has to start the
+ * level itself, or the items read as orphans (axe `heading-order`).
+ */
+type ItemHeadingLevel = 'h2' | 'h3'
+
 export interface LayoutBlockProps {
   /** Presentation style for the items. */
   style: LayoutBlockFields['style']
@@ -28,7 +35,16 @@ function itemText(text?: string | null): ReactNode {
 }
 
 /** A single item for the `grid`/`list` styles: image, linkable title, text. */
-function LayoutCard({ item, orientation }: { item: LayoutItem; orientation: 'grid' | 'list' }) {
+function LayoutCard({
+  item,
+  orientation,
+  headingLevel,
+}: {
+  item: LayoutItem
+  orientation: 'grid' | 'list'
+  headingLevel: ItemHeadingLevel
+}) {
+  const Title = headingLevel
   const img = populatedImage(item.image)
   const title = item.title ?? ''
   const heading = item.titleUrl ? (
@@ -59,7 +75,7 @@ function LayoutCard({ item, orientation }: { item: LayoutItem; orientation: 'gri
         </div>
       )}
       <div className="flex flex-col gap-2">
-        {title && <h3 className="text-lg font-semibold text-gray-800">{heading}</h3>}
+        {title && <Title className="text-lg font-semibold text-gray-800">{heading}</Title>}
         {itemText(item.text)}
       </div>
     </div>
@@ -87,6 +103,7 @@ export function LayoutBlock({
   const heading = title ? (
     <h2 className="mb-6 text-2xl font-semibold text-gray-800">{title}</h2>
   ) : null
+  const itemHeadingLevel: ItemHeadingLevel = heading ? 'h3' : 'h2'
 
   if (style === 'accordion') {
     const accordionItems: AccordionItemData[] = withTitle.map((it, i) => ({
@@ -113,6 +130,7 @@ export function LayoutBlock({
         imageUrl: img?.url,
         imageAlt: img?.alt || it.title || '',
         href: it.titleUrl ?? undefined,
+        headingLevel: itemHeadingLevel,
       }
     })
 
@@ -154,7 +172,12 @@ export function LayoutBlock({
       >
         {items.map((it, i) => (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- the id is the key wherever SahajCloud sends one; the index is only its fallback
-          <LayoutCard key={it.id ?? i} item={it} orientation={style === 'list' ? 'list' : 'grid'} />
+          <LayoutCard
+            key={it.id ?? i}
+            headingLevel={itemHeadingLevel}
+            item={it}
+            orientation={style === 'list' ? 'list' : 'grid'}
+          />
         ))}
       </div>
     </section>

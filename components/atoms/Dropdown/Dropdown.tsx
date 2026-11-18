@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react'
+import { cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -240,22 +240,35 @@ export function Dropdown({
       }
     : {}
 
+  // In click mode the trigger's own control is the button, so the interaction
+  // goes onto it rather than onto a wrapper around it. A wrapper carrying
+  // `role="button"` around a real `<button>` is axe `nested-interactive`, takes
+  // a second tab stop, and can only be named by what it contains (#278). In
+  // focus mode the inner control — an `Input` — already owns focus, so the
+  // wrapper stays transparent and keeps the reference.
+  const triggerOwnsInteraction = !openOnFocus && isValidElement(trigger)
+  const triggerElement = trigger as ReactElement<Record<string, unknown>>
+
   return (
     <>
       <div
-        ref={refs.setReference}
-        {...getReferenceProps({
-          ...focusProps,
-          // In click mode the wrapper is the focusable button (callers may keep
-          // their inner control out of the tab order). In focus mode the inner
-          // control, for example an Input, owns focus, so the wrapper stays transparent.
-          ...(openOnFocus ? {} : { role: 'button', tabIndex: 0 }),
-        })}
+        ref={triggerOwnsInteraction ? undefined : refs.setReference}
+        {...(triggerOwnsInteraction
+          ? {}
+          : getReferenceProps({
+              ...focusProps,
+              ...(openOnFocus ? {} : { role: 'button', tabIndex: 0 }),
+            }))}
         className={`${fullWidth ? 'w-full' : 'inline-block'} ${
           openOnFocus ? '' : 'cursor-pointer'
         } ${className}`}
       >
-        {trigger}
+        {triggerOwnsInteraction
+          ? cloneElement(
+              triggerElement,
+              getReferenceProps({ ...triggerElement.props, ref: refs.setReference }),
+            )
+          : trigger}
       </div>
 
       {isOpen && (
