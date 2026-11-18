@@ -96,15 +96,23 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **A string composed in English is still an English string.** `` `Mute ${label.toLowerCase()}` ``
   and `` `Loading ${title.toLowerCase()}` `` build a sentence only English builds that way. Take
   the finished label as a prop or a key, never assemble one from a visible label.
-- **An indexable content route declares `Head: ContentHead` in its `+config.ts`**, beside its
-  `Layout: LayoutChrome`. `ContentHead` ([lib/head.tsx](lib/head.tsx)) emits the canonical and the
-  `hreflang` cluster; `useConfig` cannot emit a `<link>`, so this goes through vike-react's `Head`.
-  Never set it from a template: `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are
-  shared with the `embed` routes and the live preview, and none of those is a URL to point a
+- **An indexable content route builds its head in `+data.ts` and declares `Head: ContentHead` in
+  its `+config.ts`**, beside its `Layout: LayoutChrome`. The `+data.ts` builds one `SeoDocument`
+  through [lib/content-seo.ts](lib/content-seo.ts) — the title, the canonical, the `hreflang`
+  cluster, Open Graph, Twitter and JSON-LD together — and `ContentHead`
+  ([lib/head.tsx](lib/head.tsx)) renders it, as `/map` renders the one SahajCloud serves. A route
+  that builds none publishes no URL claim at all, which is what keeps the `embed` routes and the
+  error page bare. `<title>` and `description` are the exception: they are vike-react settings,
+  declared site-wide in `pages/+config.ts` from
+  [lib/head-settings.ts](lib/head-settings.ts), which has to be a separate module and says why.
+  Never set a head tag from a template: `PageTemplate`, `MeditationTemplate` and `LectureTemplate`
+  are shared with the `embed` routes and the live preview, and none of those is a URL to point a
   crawler at. A URL advertises only the locales its own document is published in —
-  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
-  `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
-  set, never the set itself.
+  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the page head, the
+  `og:locale:alternate` list and `/sitemap.xml`, so the three cannot disagree. The site's
+  `availableLocales` is a filter on that set, never the set itself.
+  `tests/guards/content-head.test.tsx` is what keeps a new content route from declaring the head
+  and building no document.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
   answer from there. Never restate one of these rules at a call site. A **scheme** is part of that

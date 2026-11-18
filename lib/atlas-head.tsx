@@ -45,9 +45,7 @@ export function atlasHead(seo: AtlasSeoResponse): SeoHead {
     // are path prefixes. The two clusters must not be merged, but they are
     // spelled by one component.
     alternates: seo.alternates,
-    meta: Object.entries(seo.openGraph).filter(
-      ([property]) => !OG_EMITTED_BY_CONFIG.has(property),
-    ),
+    meta: Object.entries(seo.openGraph).filter(([property]) => !OG_EMITTED_BY_CONFIG.has(property)),
     jsonLd: seo.jsonLd,
   }
 }

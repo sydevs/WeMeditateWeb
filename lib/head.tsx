@@ -5,9 +5,10 @@
  * vike-react splits it:
  *
  * - `title` and `description` are vike-react settings, declared once in
- *   `pages/+config.ts` as the two functions below. Vike turns them into
- *   `<title>`, `og:title`, `description` and `og:description`, and re-applies
- *   them on a client-side navigation, which no `Head` component gets to do.
+ *   `pages/+config.ts` and composed in `lib/head-settings.ts`, which says
+ *   why they cannot live here. Vike turns them into `<title>`, `og:title`,
+ *   `description` and `og:description`, and re-applies them on a client-side
+ *   navigation, which no `Head` component gets to do.
  * - Everything else — the canonical, the `hreflang` cluster, the rest of
  *   Open Graph, and JSON-LD — is a `Head` component, because `useConfig`
  *   emits no `<link>` and no `<script>`.
@@ -21,9 +22,8 @@
  * See https://vike.dev/useConfig and https://vike.dev/title
  */
 
-import type { PageContext } from 'vike/types'
-import { pageContextT } from '../hooks/useT'
 import { useOptionalPageContext } from '../hooks/usePageContext'
+import { seoDocument } from './head-settings'
 import type { Alternate } from './hreflang'
 
 /** The `<head>` tags a URL contributes beyond vike-react's own settings. */
@@ -123,39 +123,6 @@ export function SeoHeadTags({ seo }: { seo: SeoHead }) {
         <script dangerouslySetInnerHTML={{ __html: seo.jsonLd }} type="application/ld+json" />
       )}
     </>
-  )
-}
-
-/**
- * The {@link SeoDocument} a route's `+data.ts` built, or null.
- *
- * Null for every route that publishes no URL: an `embed` route, the error
- * page, and anything rendered outside a Vike app.
- */
-export function seoDocument(data: unknown): SeoDocument | null {
-  const { seo } = (data ?? {}) as { seo?: SeoDocument }
-
-  return seo ?? null
-}
-
-/**
- * `<title>` for whichever route is rendering. Declared as `title` in
- * `pages/+config.ts`, so one declaration covers the whole site.
- *
- * A route with no document of its own falls back to the site's own name,
- * in the locale of the URL — the embed routes and the error page.
- */
-export function contentTitle(pageContext: PageContext): string {
-  return (
-    seoDocument(pageContext.data)?.title ?? pageContextT(pageContext)('common.general.site_title')
-  )
-}
-
-/** `description` and `og:description`, on the same terms as {@link contentTitle}. */
-export function contentDescription(pageContext: PageContext): string {
-  return (
-    seoDocument(pageContext.data)?.description ??
-    pageContextT(pageContext)('common.general.site_description')
   )
 }
 

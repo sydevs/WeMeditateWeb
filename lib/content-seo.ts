@@ -17,7 +17,13 @@
  */
 
 import logoUrl from '../assets/logo.svg'
-import type { Locale, Meditation, Page, ResolvedLecture, WebConfig } from '../server/sahajcloud-types'
+import type {
+  Locale,
+  Meditation,
+  Page,
+  ResolvedLecture,
+  WebConfig,
+} from '../server/sahajcloud-types'
 import type { SeoDocument } from './head'
 import type { TFunction } from './i18n'
 import { buildAlternates } from './hreflang'
@@ -91,6 +97,37 @@ function absoluteImage(origin: string | null, url: string | null): string | null
   return isSitePath(url) ? `${origin}${url}` : url
 }
 
+/**
+ * The URL this route shares: its own image, else the site's default.
+ *
+ * Null only where the origin is unknown, because an og:image a scraper
+ * cannot resolve is no share image at all.
+ */
+function shareImage(route: SeoRoute, own: string | null): string | null {
+  return absoluteImage(route.origin, own) ?? absoluteImage(route.origin, DEFAULT_SHARE_IMAGE)
+}
+
+/**
+ * This URL's self-referential canonical, or null where the origin is
+ * unknown — outside a Vike app, where a guessed one is worse than none.
+ *
+ * Also the `og:url` and the `url` every JSON-LD node points at, so all three
+ * come from one derivation.
+ */
+function canonicalUrl(route: SeoRoute): string | null {
+  return route.origin ? localeUrl(route.origin, route.locale, route.path) : null
+}
+
+/**
+ * The canonical a JSON-LD node points at.
+ *
+ * `baseDocument` serializes nothing without an origin, so the empty string
+ * stands in for a URL that never reaches a page.
+ */
+function nodeUrl(route: SeoRoute): string {
+  return canonicalUrl(route) ?? ''
+}
+
 /** The parts every content route shares, before its own type is considered. */
 function baseDocument(
   route: SeoRoute,
@@ -108,7 +145,7 @@ function baseDocument(
 ): SeoDocument {
   const { origin, path, locale, t } = route
   const siteName = t('common.general.site_title')
-  const canonical = origin ? localeUrl(origin, locale, path) : null
+  const canonical = canonicalUrl(route)
   const meta: [string, string][] = [
     ['og:site_name', siteName],
     ['og:type', options.ogType],
@@ -147,7 +184,14 @@ function baseDocument(
     jsonLd: origin
       ? serializeJsonLd([
           organization,
-          webSiteNode({ name: siteName, url: origin, description: options.description }),
+          // The site's own description, never the page's: this node describes
+          // the site, and a crawler reading one page's summary as the whole
+          // site's is a worse claim than no description at all.
+          webSiteNode({
+            name: siteName,
+            url: origin,
+            description: t('common.general.site_description'),
+          }),
           ...options.nodes,
         ])
       : '',
@@ -224,24 +268,20 @@ export function pageSeo(options: {
   const tagline = t('common.general.site_description')
   const name = page.meta?.title || page.title
   const description = page.meta?.description || tagline
-  const image =
-    absoluteImage(route.origin, resolveOgImageUrl(page.meta?.image)) ??
-    absoluteImage(route.origin, DEFAULT_SHARE_IMAGE)
+  const image = shareImage(route, resolveOgImageUrl(page.meta?.image))
   // An author or an article tag is what makes a page an article rather than
   // a standing page of the site. Both come from SahajCloud; neither is inferred
   // from the slug, which is the editor's to change.
   const author = isPopulated<{ name?: string }>(page.author) ? page.author.name : null
   const isArticle = Boolean(author) || (page.tags?.length ?? 0) > 0
-  const canonical = route.origin ? localeUrl(route.origin, route.locale, route.path) : null
-  const nodes: Thing[] = [
-    webPageNode({ name, url: canonical ?? '', description, image }),
-  ]
+  const url = nodeUrl(route)
+  const nodes: Thing[] = [webPageNode({ name, url, description, image })]
 
   if (isArticle) {
     nodes.push(
       articleNode({
         headline: name,
-        url: canonical ?? '',
+        url,
         description,
         image,
         authorName: author,
@@ -275,21 +315,16 @@ export function pageSeo(options: {
 }
 
 /** The head document for `/meditations/:id`. */
-export function meditationSeo(options: {
-  meditation: Meditation
-  route: SeoRoute
-}): SeoDocument {
+export function meditationSeo(options: { meditation: Meditation; route: SeoRoute }): SeoDocument {
   const { meditation, route } = options
   const { t } = route
   const name = meditation.title || t('meditation.general.untitled')
   const thumbnail = absoluteImage(route.origin, resolveOgImageUrl(meditation.thumbnail))
-  const image = thumbnail ?? absoluteImage(route.origin, DEFAULT_SHARE_IMAGE)
-  const canonical = route.origin ? localeUrl(route.origin, route.locale, route.path) : null
 
   return baseDocument(route, {
     title: composeTitle(name, t('common.general.site_title')),
     description: t('common.general.site_description'),
-    image,
+    image: shareImage(route, thumbnail),
     // The new meditations are audio, so `video.other` would misdescribe them
     // and Open Graph has no audio page type.
     ogType: 'website',
@@ -299,7 +334,7 @@ export function meditationSeo(options: {
     nodes: [
       audioObjectNode({
         name,
-        url: canonical ?? '',
+        url: nodeUrl(route),
         thumbnailUrl: thumbnail,
         durationSeconds:
           meditation.durationMinutes == null ? null : meditation.durationMinutes * 60,
@@ -312,15 +347,11 @@ export function meditationSeo(options: {
 export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute }): SeoDocument {
   const { lecture, route } = options
   const { t } = route
-  const image =
-    absoluteImage(route.origin, lecture.thumbnailUrl) ??
-    absoluteImage(route.origin, DEFAULT_SHARE_IMAGE)
-  const canonical = route.origin ? localeUrl(route.origin, route.locale, route.path) : null
 
   return baseDocument(route, {
     title: composeTitle(lecture.title, t('common.general.site_title')),
     description: t('common.general.site_description'),
-    image,
+    image: shareImage(route, lecture.thumbnailUrl),
     ogType: 'video.other',
     // `lectures` omits `_status` entirely upstream (lib/hreflang.ts).
     locales: [],
@@ -330,7 +361,7 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
       ? [
           videoObjectNode({
             name: lecture.title,
-            url: canonical ?? '',
+            url: nodeUrl(route),
             thumbnailUrl: lecture.thumbnailUrl,
             durationSeconds: lecturePlaybackSeconds(lecture),
           }),

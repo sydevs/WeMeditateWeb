@@ -223,10 +223,10 @@ export default defineConfig([
   // that site is, so its reason sits beside the code it is about. Neither is
   // ever turned off repo-wide.
   {
-    // Two authored HTML strings, neither of which takes visitor input:
-    // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystem` renders
-    // SahajCloud's own rich text.
-    files: ['lib/atlas-head.tsx', 'components/organisms/SubtleSystem/SubtleSystem.tsx'],
+    // Two authored HTML strings, neither of which takes visitor input: `head`
+    // emits the JSON-LD a producer built and `isSafeJsonLd` passed, and
+    // `SubtleSystem` renders SahajCloud's own rich text.
+    files: ['lib/head.tsx', 'components/organisms/SubtleSystem/SubtleSystem.tsx'],
     rules: { '@eslint-react/dom-no-dangerously-set-innerhtml': 'off' },
   },
   {

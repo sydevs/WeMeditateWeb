@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { isSafeJsonLd, SeoHeadTags, seoDocument, type SeoHead } from './head'
+import { isSafeJsonLd, SeoHeadTags, type SeoHead } from './head'
+import { seoDocument } from './head-settings'
 import { buildAlternates } from './hreflang'
 
 const ORIGIN = 'https://wemeditate.com'

@@ -103,7 +103,9 @@ describe('pageSeo', () => {
   })
 
   it('falls back to the site tagline on a home page with no meta title', () => {
-    expect(seoFor({ isHome: true }).title).toBe(`We Meditate | ${enT('common.general.site_description')}`)
+    expect(seoFor({ isHome: true }).title).toBe(
+      `We Meditate | ${enT('common.general.site_description')}`,
+    )
   })
 
   it('serves a self-referential canonical and og:url', () => {
@@ -142,6 +144,15 @@ describe('pageSeo', () => {
     expect(metaValues(seo, 'og:site_name')).toEqual(['We Meditate'])
     expect(metaValues(seo, 'twitter:site')).toEqual(['@wemeditate'])
     expect(metaValues(seo, 'og:locale')).toEqual(['en'])
+  })
+
+  it("describes the site with the site's own description, never the page's", () => {
+    // The WebSite node is a claim about the whole site. One page's summary
+    // standing in for it is a worse claim than no description at all.
+    const seo = seoFor({ page: page({ meta: { description: 'One page only' } }) })
+    const site = graph(seo).find((node) => node['@type'] === 'WebSite')
+
+    expect(site?.description).toBe(enT('common.general.site_description'))
   })
 
   it('describes a standing page as a website, with Organization and WebSite', () => {
@@ -268,14 +279,14 @@ describe('meditationSeo', () => {
   })
 
   it('omits the duration where SahajCloud stored none', () => {
-    expect(graph(seoFor()).find((node) => node['@type'] === 'AudioObject')?.duration).toBeUndefined()
+    expect(
+      graph(seoFor()).find((node) => node['@type'] === 'AudioObject')?.duration,
+    ).toBeUndefined()
   })
 
   it('shares its thumbnail, and the default image where it has none', () => {
     expect(metaValues(seoFor(), 'og:image')).toEqual([`${ORIGIN}/images/metadata/preview.png`])
-    expect(metaValues(seoFor({ thumbnail: CF_IMAGE }), 'og:image')).toEqual([
-      `${CF_URL}width=1024`,
-    ])
+    expect(metaValues(seoFor({ thumbnail: CF_IMAGE }), 'og:image')).toEqual([`${CF_URL}width=1024`])
   })
 
   it('advertises no translations: meditations carry no per-locale status', () => {

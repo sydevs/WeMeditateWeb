@@ -2,7 +2,16 @@ import type { Config } from 'vike/types'
 import vikePhoton from 'vike-photon/config'
 import vikeReact from 'vike-react/config'
 import Layout from '../layouts/LayoutRoot.js'
-import { contentDescription, contentTitle } from '../lib/head.js'
+// ⚠ The import attribute is load-bearing. Vike reads an import of a plain
+// `.ts` file in a `+config.ts` as config code and executes it while it
+// resolves the config, where there is no request and no app — evaluating the
+// translations snapshot there throws. A `.tsx` import is a pointer import by
+// its extension alone, which is why `ContentHead` and `Layout` need no
+// attribute. See https://vike.dev/config#pointer-imports
+import {
+  contentDescription,
+  contentTitle,
+} from '../lib/head-settings.js' with { type: 'vike:pointer' }
 
 // Default config. Pages can override it.
 // https://vike.dev/config
