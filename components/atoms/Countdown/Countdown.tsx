@@ -1,4 +1,4 @@
-import { ComponentProps, useState, useEffect } from 'react'
+import { ComponentProps, useCallback, useState, useEffect } from 'react'
 import { useT } from '../../../hooks/useT'
 
 export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> {
@@ -19,7 +19,7 @@ interface TimeRemaining {
 
 /** Calculate time remaining until target date */
 function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeRemaining {
-  const calculateTimeRemaining = (): TimeRemaining => {
+  const calculateTimeRemaining = useCallback((): TimeRemaining => {
     const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
     const now = new Date()
     const difference = target.getTime() - now.getTime()
@@ -33,9 +33,9 @@ function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeR
     const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
     return { hours, minutes, seconds, isExpired: false }
-  }
+  }, [targetDate])
 
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(calculateTimeRemaining())
+  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(calculateTimeRemaining)
   const [hasCompleted, setHasCompleted] = useState(false)
 
   useEffect(() => {
@@ -51,7 +51,7 @@ function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeR
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [targetDate, onComplete, hasCompleted])
+  }, [calculateTimeRemaining, onComplete, hasCompleted])
 
   return timeRemaining
 }

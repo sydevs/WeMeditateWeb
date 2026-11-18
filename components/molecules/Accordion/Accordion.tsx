@@ -66,7 +66,7 @@ export function Accordion({
   onToggle,
   className = '',
 }: AccordionProps) {
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set(defaultOpenItems))
+  const [openItems, setOpenItems] = useState<Set<string>>(() => new Set(defaultOpenItems))
 
   const toggleItem = (itemId: string) => {
     setOpenItems((prev) => {

@@ -116,7 +116,7 @@ function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) 
  */
 export function ContentIndex({ items, sizes, className = '' }: ContentIndexProps) {
   const facets = useMemo(() => deriveFacets(items), [items])
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState<Set<string>>(() => new Set())
 
   const toggle = (id: string) =>
     setSelected((prev) => {

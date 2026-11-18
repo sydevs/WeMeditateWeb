@@ -1,4 +1,4 @@
-import { ComponentProps, forwardRef } from 'react'
+import { ComponentProps } from 'react'
 import {
   MagnifyingGlassIcon,
   EnvelopeIcon,
@@ -55,62 +55,66 @@ export interface InputProps extends ComponentProps<'input'> {
  * <Input type="search" icon={CustomIcon} />
  * <Input type="search" icon={null} /> // Explicitly disable icon
  */
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ state = 'default', variant = 'default', icon, className = '', type, ...props }, ref) => {
-    // An explicit `icon`, `null` included, overrides the type's default.
-    // `type` arrives unvalidated — FormBuilder passes a SahajCloud block type
-    // through as a plain string — so an inherited `toString` must not read as
-    // an icon and get rendered. A `Map` would say this, but the rule above
-    // rejects a lookup call as a component built during render.
-    const IconComponent =
-      icon === undefined && type && Object.hasOwn(DEFAULT_ICONS, type) ? DEFAULT_ICONS[type] : icon
+export const Input = ({
+  state = 'default',
+  variant = 'default',
+  icon,
+  className = '',
+  type,
+  ref,
+  ...props
+}: InputProps) => {
+  // An explicit `icon`, `null` included, overrides the type's default.
+  // `type` arrives unvalidated — FormBuilder passes a SahajCloud block type
+  // through as a plain string — so an inherited `toString` must not read as
+  // an icon and get rendered. A `Map` would say this, but the rule above
+  // rejects a lookup call as a component built during render.
+  const IconComponent =
+    icon === undefined && type && Object.hasOwn(DEFAULT_ICONS, type) ? DEFAULT_ICONS[type] : icon
 
-    const baseStyles =
-      'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+  const baseStyles =
+    'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
 
-    const variantStyles = {
-      default: 'border bg-white',
-      minimal: 'border-0 border-b-2 bg-transparent',
-    }
+  const variantStyles = {
+    default: 'border bg-white',
+    minimal: 'border-0 border-b-2 bg-transparent',
+  }
 
-    const stateStyles = {
-      default:
-        'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
-      error:
-        'text-error border-error hover:border-error-dark focus:border-error',
-      success:
-        'text-gray-900 border-success hover:border-success focus:border-success',
-    }
+  const stateStyles = {
+    default:
+      'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
+    error:
+      'text-error border-error hover:border-error-dark focus:border-error',
+    success:
+      'text-gray-900 border-success hover:border-success focus:border-success',
+  }
 
-    // If no icon, render simple input
-    if (!IconComponent) {
-      return (
-        <input
-          ref={ref}
-          type={type}
-          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full ${className}`}
-          aria-invalid={state === 'error'}
-          {...props}
-        />
-      )
-    }
-
-    // With icon, render wrapped input with icon on the right
+  // If no icon, render simple input
+  if (!IconComponent) {
     return (
-      <div className={`relative w-full ${className}`}>
-        <input
-          ref={ref}
-          type={type}
-          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full pr-10`}
-          aria-invalid={state === 'error'}
-          {...props}
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <IconComponent className="w-5 h-5 text-gray-800" aria-hidden="true" />
-        </div>
-      </div>
+      <input
+        ref={ref}
+        type={type}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full ${className}`}
+        aria-invalid={state === 'error'}
+        {...props}
+      />
     )
   }
-)
 
-Input.displayName = 'Input'
+  // With icon, render wrapped input with icon on the right
+  return (
+    <div className={`relative w-full ${className}`}>
+      <input
+        ref={ref}
+        type={type}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} w-full pr-10`}
+        aria-invalid={state === 'error'}
+        {...props}
+      />
+      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <IconComponent className="w-5 h-5 text-gray-800" aria-hidden="true" />
+      </div>
+    </div>
+  )
+}
