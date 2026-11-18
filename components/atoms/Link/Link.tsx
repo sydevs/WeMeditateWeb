@@ -114,14 +114,15 @@ export function Link({
 
   // An `aria-label` replaces the accessible name outright, so a child the
   // caller cannot see would never be read. `SocialShare` lost the whole
-  // announcement that way (#238). Each case takes the key written for its
-  // shape: a label is a name the string wraps, children are words it follows.
+  // announcement that way (#238). Both cases read the one suffix key after
+  // the link's own name: children get it as an `sr-only` sibling, and a
+  // label gets it joined on here, the same order a reader hears either way.
   //
   // shortcut: only `aria-label` is detected, not every way a name can come
   // from outside the anchor — upgrade when a caller passes `aria-labelledby`
   // or `title`, which would silently lose the warning again.
-  const label =
-    opensNewTab && ariaLabel ? t('common.a11y.opens_in_new_tab', { label: ariaLabel }) : ariaLabel
+  const suffix = opensNewTab ? t('common.a11y.opens_in_new_tab_suffix') : undefined
+  const label = suffix && ariaLabel ? `${ariaLabel} ${suffix}` : ariaLabel
 
   return (
     <a
@@ -132,9 +133,7 @@ export function Link({
       {...props}
     >
       {children}
-      {opensNewTab && !ariaLabel && (
-        <span className="sr-only">{t('common.a11y.opens_in_new_tab_suffix')}</span>
-      )}
+      {suffix && !ariaLabel && <span className="sr-only">{suffix}</span>}
     </a>
   )
 }
