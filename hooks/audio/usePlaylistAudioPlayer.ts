@@ -11,10 +11,6 @@ export interface UsePlaylistAudioPlayerOptions {
   tracks: Track[]
   /** Enable shuffle mode on initialization */
   shuffle?: boolean
-  /** Initial track index to start with */
-  initialTrackIndex?: number
-  /** Callback when track changes */
-  onTrackChange?: (trackIndex: number) => void
   /** Callback fired every 100ms during playback (also on play/pause/seek) */
   onPlaybackTimeUpdate?: (currentTime: number) => void
 }
@@ -23,26 +19,22 @@ export interface UsePlaylistAudioPlayerOptions {
  * Playlist wrapper hook for useAudioPlayer.
  * Adds playlist management (tracks, shuffle, next/prev) on top of the core hook.
  *
- * @example
- * // Basic usage
- * const [state, controls] = usePlaylistAudioPlayer({
- *   tracks: [{ url: '/audio.mp3', title: 'Track 1', ... }],
- *   shuffle: false
- * })
+ * Call it inside an `AudioPlayerProvider`, and hold it in whichever component
+ * owns the playing track — the one that renders both the player and anything
+ * else reading the track, such as a playlist or album art. It owns the index
+ * outright: nothing passes one in, and a consumer asks for a track by calling
+ * `selectTrack`. A second copy of the index synchronised by props is what
+ * played and highlighted two different tracks (#249).
  *
  * @example
- * // With callbacks
- * const [state, controls] = usePlaylistAudioPlayer({
- *   tracks: myTracks,
- *   onTrackChange: (index) => console.log(`Now playing track ${index}`),
- *   onPlaybackTimeUpdate: (time) => console.log(`At ${time}s`)
- * })
+ * const [state, controls] = usePlaylistAudioPlayer({ tracks, shuffle: true })
+ * // then: <AudioPlayer state={state} controls={controls} />
+ * //       <Playlist currentTrackIndex={state.currentTrackIndex}
+ * //                 onTrackClick={controls.selectTrack} ... />
  */
 export function usePlaylistAudioPlayer({
   tracks,
   shuffle = false,
-  initialTrackIndex = 0,
-  onTrackChange,
   onPlaybackTimeUpdate,
 }: UsePlaylistAudioPlayerOptions): [PlaylistAudioPlayerState, PlaylistAudioPlayerControls] {
   // Core audio player hook (handles time polling, seek callbacks)
@@ -51,7 +43,7 @@ export function usePlaylistAudioPlayer({
   })
 
   // Playlist state
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex)
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   // Only the shuffle is held in state. In-order play follows `tracks` with no
   // render to catch up, and a stored copy could only fall behind it.
@@ -114,7 +106,6 @@ export function usePlaylistAudioPlayer({
         autoplay: wasPlayingRef.current,
         onEnd: handleTrackEnd,
       })
-      onTrackChange?.(currentTrackIndex)
     }
   })
 
@@ -157,17 +148,29 @@ export function usePlaylistAudioPlayer({
     setShuffledOrder(null)
   }, [])
 
+  // Picking a track asks to hear it, so it starts playback whether or not the
+  // player was already running. Copying `playerState.isPlaying` here left a
+  // row click on a paused player loading the track in silence (#249). The
+  // loaded track is played directly: an unchanged index never reaches the
+  // load effect.
   const selectTrack = useCallback(
     (index: number) => {
-      wasPlayingRef.current = playerState.isPlaying
+      if (index === currentTrackIndex) {
+        playerControls.play()
+
+        return
+      }
+
+      wasPlayingRef.current = true
       setCurrentTrackIndex(index)
     },
-    [playerState.isPlaying],
+    [currentTrackIndex, playerControls],
   )
 
   // Compose state
   const state: PlaylistAudioPlayerState = {
     currentTrackIndex,
+    trackCount: tracks.length,
     isPlaying: playerState.isPlaying,
     currentTime: playerState.currentTime,
     duration: playerState.duration,
