@@ -42,10 +42,12 @@ export function usePlaylistAudioPlayer({
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [isShuffleOn, setIsShuffleOn] = useState(shuffle)
   const [playOrder, setPlayOrder] = useState<number[]>([])
-  const [hasEnded, setHasEnded] = useState(false)
 
-  // Ref that tracks whether audio was playing before a track change (for auto-resume)
-  const wasPlayingRef = useRef(false)
+  // What the listener asked for, which a track change auto-resumes from. It
+  // cannot be read back off `playerState.isPlaying`: that is false for as long
+  // as a load takes, so a track change arriving inside one would load the next
+  // track silent — two presses of next a fetch apart was enough (#256).
+  const wantsPlaybackRef = useRef(false)
 
   const currentTrack = tracks[currentTrackIndex]
 
@@ -75,7 +77,6 @@ export function usePlaylistAudioPlayer({
 
   // Advances to the next track in play order.
   const handleTrackEnd = () => {
-    setHasEnded(true)
     setCurrentTrackIndex((current) => {
       const order = playOrderRef.current
       const at = order.indexOf(current)
@@ -88,7 +89,7 @@ export function usePlaylistAudioPlayer({
   const loadCurrentTrack = useEffectEvent(() => {
     if (currentTrack) {
       playerControls.load(currentTrack.url, {
-        autoplay: wasPlayingRef.current,
+        autoplay: wantsPlaybackRef.current,
         onEnd: handleTrackEnd,
       })
     }
@@ -99,31 +100,37 @@ export function usePlaylistAudioPlayer({
     loadCurrentTrack()
   }, [currentTrackIndex, currentTrack?.url])
 
-  // Track playing state for auto-resume logic
-  useEffect(() => {
-    if (playerState.isPlaying) {
-      wasPlayingRef.current = true
-      setHasEnded(false)
-    } else if (!playerState.isLoading && !playerState.isReady) {
-      // Reset when stopped/unloaded
-      wasPlayingRef.current = false
-    }
-  }, [playerState.isPlaying, playerState.isLoading, playerState.isReady])
+  // The two moments a listener states what they want, and so the only writers
+  // of the flag above.
+  const play = () => {
+    wantsPlaybackRef.current = true
+    playerControls.play()
+  }
+
+  const pause = () => {
+    wantsPlaybackRef.current = false
+    playerControls.pause()
+  }
+
+  // shortcut: the toggle reads playback, not intent — a press during a load
+  // always plays, writing `true` to the flag against the listener. Fix when
+  // `playerState.isPlaying` reports intent.
+  const togglePlayPause = () => (playerState.isPlaying ? pause() : play())
 
   // Navigation controls
   const previous = useCallback(() => {
     const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
     const prevIndex = currentOrderIndex > 0 ? currentOrderIndex - 1 : playOrder.length - 1
-    wasPlayingRef.current = playerState.isPlaying
+
     setCurrentTrackIndex(playOrder[prevIndex])
-  }, [playOrder, currentTrackIndex, playerState.isPlaying])
+  }, [playOrder, currentTrackIndex])
 
   const next = useCallback(() => {
     const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
     const nextIndex = currentOrderIndex < playOrder.length - 1 ? currentOrderIndex + 1 : 0
-    wasPlayingRef.current = playerState.isPlaying
+
     setCurrentTrackIndex(playOrder[nextIndex])
-  }, [playOrder, currentTrackIndex, playerState.isPlaying])
+  }, [playOrder, currentTrackIndex])
 
   const toggleShuffle = useCallback(() => {
     setIsShuffleOn((prev) => !prev)
@@ -131,22 +138,19 @@ export function usePlaylistAudioPlayer({
 
   // Picking a track asks to hear it, so it starts playback whether or not the
   // player was already running. Copying `playerState.isPlaying` here left a
-  // row click on a paused player loading the track in silence (#249). The
-  // loaded track is played directly: an unchanged index never reaches the
-  // load effect.
-  const selectTrack = useCallback(
-    (index: number) => {
-      if (index === currentTrackIndex) {
-        playerControls.play()
+  // row click on a paused player loading the track in silence (#249). An
+  // unchanged index never reaches the load effect, so that row plays through
+  // `play` instead, which is also what states the intent the next load reads.
+  const selectTrack = (index: number) => {
+    if (index === currentTrackIndex) {
+      play()
 
-        return
-      }
+      return
+    }
 
-      wasPlayingRef.current = true
-      setCurrentTrackIndex(index)
-    },
-    [currentTrackIndex, playerControls],
-  )
+    wantsPlaybackRef.current = true
+    setCurrentTrackIndex(index)
+  }
 
   // Compose state
   const state: PlaylistAudioPlayerState = {
@@ -160,14 +164,13 @@ export function usePlaylistAudioPlayer({
     isShuffleOn,
     currentTrack,
     isLoading: playerState.isLoading,
-    hasEnded,
   }
 
   // Compose controls
   const controls: PlaylistAudioPlayerControls = {
-    play: playerControls.play,
-    pause: playerControls.pause,
-    togglePlayPause: playerControls.togglePlayPause,
+    play,
+    pause,
+    togglePlayPause,
     previous,
     next,
     seek: playerControls.seek,
