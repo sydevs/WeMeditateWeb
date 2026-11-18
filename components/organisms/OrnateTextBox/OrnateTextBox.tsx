@@ -206,10 +206,11 @@ export function OrnateTextBox({
 
           {/* Title and subtitle header. Its own block-formatting context at
               `lg`, for the body's reason below: it shares the body's column
-              and so must not overlap the float's margin box (#262). */}
+              and so must not overlap the float's margin box. The subtitle
+              takes the root's white rather than dimming it (#262). */}
           <div className="order-1 mb-8 lg:mb-6 lg:flow-root">
             <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
-            {subtitle && <p className="mt-2 text-base font-light text-white/80">{subtitle}</p>}
+            {subtitle && <p className="mt-2 text-base font-light">{subtitle}</p>}
           </div>
 
           {/* Body: its own block-formatting context, so it stays a clean

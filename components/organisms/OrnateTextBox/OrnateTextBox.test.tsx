@@ -168,6 +168,16 @@ describe('<OrnateTextBox>', () => {
     expect(header).toContain('lg:flow-root')
   })
 
+  // `text-white/80` left the subtitle at 3.94:1 against a 4.5:1 bar even in
+  // the layout the band is clear of. The root paints white already (#262).
+  it('keeps the subtitle free of alpha', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Timeless teachings" />)
+    const subtitle = html.match(/class="([^"]*mt-2 text-base[^"]*)"/)?.[1] ?? ''
+
+    expect(subtitle).toContain('font-light')
+    expect(subtitle).not.toContain('text-white/')
+  })
+
   it('renders the CTA only when both text and href are set', () => {
     const without = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
