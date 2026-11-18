@@ -1,4 +1,6 @@
 import { ComponentProps } from 'react'
+import { Link } from '../Link'
+import type { Locale } from '../../../server/sahajcloud-types'
 
 export interface BadgeProps extends ComponentProps<'span'> {
   /**
@@ -21,6 +23,9 @@ export interface BadgeProps extends ComponentProps<'span'> {
 
   /** Optional href to render badge as a link */
   href?: string
+
+  /** Locale for the link (only used when href is provided) */
+  locale?: Locale
 
   /** Badge content (text or number) */
   children: React.ReactNode
@@ -55,6 +60,7 @@ export function Badge({
   shape = 'square',
   size = 'md',
   href,
+  locale,
   className = '',
   children,
   ...props
@@ -92,13 +98,15 @@ export function Badge({
 
   if (href) {
     return (
-      <a
-        href={href}
+      <Link
         className={classNames}
-        {...(props as ComponentProps<'a'>)}
+        href={href}
+        locale={locale}
+        variant="unstyled"
+        {...(props as Omit<ComponentProps<'a'>, 'href'>)}
       >
         {children}
-      </a>
+      </Link>
     )
   }
 
