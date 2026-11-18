@@ -191,6 +191,45 @@ export default defineConfig([
     },
   },
   {
+    // Two authored HTML strings, neither of which takes visitor input:
+    // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystem` renders
+    // SahajCloud's own rich text.
+    files: ['lib/atlas-head.tsx', 'components/organisms/SubtleSystem/SubtleSystem.tsx'],
+    rules: { '@eslint-react/dom-no-dangerously-set-innerhtml': 'off' },
+  },
+  {
+    // The Effect already sets a `cancelled` flag its cleanup flips, so nothing
+    // is stored after unmount and the rule is not reporting a leak. An
+    // AbortController would additionally cancel the request in flight, which
+    // is a separate improvement rather than this fix.
+    files: ['components/organisms/RelatedContent/RelatedContentLoader.tsx'],
+    rules: { '@eslint-react/web-api-no-leaked-fetch': 'off' },
+  },
+  {
+    // `new Date().getFullYear()` for a copyright year, and a story's countdown
+    // target. Impure, with no consequence a reader could see.
+    files: ['layouts/LayoutChrome.tsx', 'components/organisms/Splash/Splash.stories.tsx'],
+    rules: { '@eslint-react/purity': 'off' },
+  },
+  {
+    // The debug overlay has to add a class to the aligned image's own
+    // `<figure>`: a wrapper would contain the float and stop the text wrapping.
+    // `cloneElement` is the only way to reach an element already rendered.
+    files: ['components/organisms/RichText/RichText.tsx'],
+    rules: { '@eslint-react/no-clone-element': 'off' },
+  },
+  {
+    // Here a `javascript:` URL is the input under test: these files assert
+    // that `Link` and `SocialIcon` refuse one. Flagging them flags the proof
+    // that the gate works.
+    files: [
+      'components/atoms/Link/Link.test.tsx',
+      'components/atoms/Link/Link.stories.tsx',
+      'components/atoms/graphics/SocialIcon/SocialIcon.test.tsx',
+    ],
+    rules: { '@eslint-react/dom-no-script-url': 'off' },
+  },
+  {
     // Visitor-facing copy is SahajCloud-owned and reaches the markup through
     // `useT()` (AGENTS.md). The guards under `tests/guards/` match source text,
     // so neither sees a JSX text node or a quoted prop at all; these selectors

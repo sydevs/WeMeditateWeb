@@ -9,6 +9,7 @@
  * ignore belongs in that guard.
  */
 
+import ts from 'typescript'
 import { globSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -82,4 +83,19 @@ export function readSource(file: string): string {
 /** 1-based line number of an index into a source string. */
 export function lineAt(source: string, index: number): number {
   return source.slice(0, index).split('\n').length
+}
+
+/**
+ * Parses TSX syntax only — no program, no type checker — so it costs one parse
+ * per file. `setParentNodes`, because a guard resolving a use site walks up
+ * from it.
+ */
+export function parse(source: string): ts.SourceFile {
+  return ts.createSourceFile('scan.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+}
+
+/** Pre-order, so a visitor sees a node before anything it contains. */
+export function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
+  visit(node)
+  node.forEachChild((child) => walk(child, visit))
 }

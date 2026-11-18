@@ -16,7 +16,6 @@ const SCRIPT = new URL('../../scripts/get-cloudflare-preview-url.mjs', import.me
 const WORKER = 'wemeditate-design'
 const BRANCH = 'claude/fix-135-carousel-dot-cells'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let discovery: any
 
 beforeAll(async () => {
