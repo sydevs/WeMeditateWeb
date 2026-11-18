@@ -139,9 +139,8 @@ This project uses Heroicons v2. Some v1 names changed — for example,
 ```
 
 ```tsx
-interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
+interface ButtonOwnProps {
   variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
-  theme?: 'light' | 'dark'          // dark = white colors, for dark backgrounds
   size?: 'xs' | 'sm' | 'md' | 'lg'
   shape?: 'square' | 'circular'     // Default: circular icon-only, square text
   icon?: HeroIcon                   // Icon only when no children are passed
@@ -150,12 +149,20 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   isLoading?: boolean
   isActive?: boolean                // Current-page nav link: tinted fill + aria-current
   fullWidth?: boolean               // Text buttons only
-  href?: string                     // Renders as Link when set
-  locale?: Locale
-  type?: 'button' | 'submit' | 'reset'
   'aria-label'?: string             // Required for an icon-only button
 }
+
+type ButtonProps =
+  | (ButtonOwnProps & Omit<ComponentProps<'button'>, 'type'> & {
+      href?: never; locale?: never; type?: 'button' | 'submit' | 'reset'
+    })
+  | (ButtonOwnProps & Omit<LinkProps, 'size' | 'variant' | 'type'> & {
+      disabled?: never; type?: never
+    })
 ```
+
+An href makes it a link, so `disabled` and `type` are a type error beside one, and `locale`,
+`external`, `target` and `rel` arrive from `Link`.
 
 Use `href` for navigation or a download. Use `onClick` for a JavaScript action, never `href`.
 
@@ -192,12 +199,21 @@ name and anything inside the anchor goes unread.
 **`Link` is also the scheme gate for every href the site did not author**, and the reason no call
 site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
 a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
-run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
-bare `<a>` fed a SahajCloud value has to call it itself.
+run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist.
+
+**No component opens its own `<a>`**, so no call site repeats the gate.
+[tests/guards/bare-anchors.test.ts](../../tests/guards/bare-anchors.test.ts) enforces that, and
+its allowlist is the whole exception list — one entry, for the atom. An atom that takes an `href`
+delegates to `Link` rather than drawing an anchor: `Button`, `Badge` and `DropdownItem` all do.
+Each types that branch as `Omit<LinkProps, 'size' | 'variant'>`, so `locale`, `external`, `target`
+and `rel` arrive from the atom instead of being restated, and none of the three casts. `Button`
+drops `type` from its link branch as well, and bars `disabled` there: a `<button>` prop passed
+beside an href used to be swallowed.
 
 A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
-call to action and `AtlasContent`'s website link both do. The atom renders inert words, and words
-that invite a click going nowhere are worse than an absent element.
+call to action, `AtlasContent`'s website link and `ErrorFallback`'s status page all do. The atom
+renders inert words, and words that invite a click going nowhere are worse than an absent element.
+`ErrorFallback` passes `external`, so the link announces the tab it opens.
 
 **Only a variant that paints a colour carries `transition-colors`**, so `unstyled` carries no
 `transition-property` at all. A caller painting its own hover brings the matching transition: a
@@ -271,7 +287,8 @@ colour would not. The dark band stays, because it gives the white ring its 3:1 a
 fill — the `neutral` button's. The filled brand variants clear it without the band now that they
 sit at `teal-600` (4.87) and `coral-600` (4.69), but the band is per surface, not per variant.
 
-`Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
+`Link`, `Image`, `SocialIcon` and everything that delegates to `Link` draw it — `Button`, a `Badge`
+with an `href`, a `DropdownItem`, the `Splash` call to action. `EmbedButton`'s
 textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,
 `Select`) still carry their own treatments: a field marks focus on its border, not with an offset
 ring, so converting them is a design decision rather than a rename.

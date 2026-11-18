@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
+import { Link, type LinkProps } from '../Link'
 
-export interface BadgeProps extends ComponentProps<'span'> {
+interface BadgeOwnProps {
   /**
    * Badge color variant
    * @default 'neutral'
@@ -19,12 +20,18 @@ export interface BadgeProps extends ComponentProps<'span'> {
    */
   size?: 'sm' | 'md' | 'lg'
 
-  /** Optional href to render badge as a link */
-  href?: string
-
   /** Badge content (text or number) */
   children: React.ReactNode
 }
+
+/**
+ * A badge is a span until it is given an href, and then it is whatever `Link`
+ * is — `locale`, `external`, `target` and `rel` included, with no prop of its
+ * own restating one. `DropdownItem` takes the same shape.
+ */
+export type BadgeProps =
+  | (BadgeOwnProps & ComponentProps<'span'> & { href?: never; locale?: never })
+  | (BadgeOwnProps & Omit<LinkProps, 'size' | 'variant'>)
 
 /**
  * Badge component for displaying labels, counts, or status indicators.
@@ -54,7 +61,6 @@ export function Badge({
   color = 'neutral',
   shape = 'square',
   size = 'md',
-  href,
   className = '',
   children,
   ...props
@@ -67,7 +73,7 @@ export function Badge({
     neutral: 'bg-gray-100 text-gray-800',
   }
 
-  const hoverStyles = href ? {
+  const hoverStyles = props.href ? {
     primary: 'hover:bg-teal-200 transition-colors',
     secondary: 'hover:bg-coral-200 transition-colors',
     neutral: 'hover:bg-gray-200 transition-colors',
@@ -90,23 +96,16 @@ export function Badge({
 
   const classNames = `${baseStyles} ${colorStyles[color]} ${hoverStyles[color]} ${shapeStyles[shape]} ${sizeStyles[size]} ${className}`
 
-  if (href) {
+  if (props.href !== undefined) {
     return (
-      <a
-        href={href}
-        className={classNames}
-        {...(props as ComponentProps<'a'>)}
-      >
+      <Link className={classNames} variant="unstyled" {...props}>
         {children}
-      </a>
+      </Link>
     )
   }
 
   return (
-    <span
-      className={classNames}
-      {...props}
-    >
+    <span className={classNames} {...props}>
       {children}
     </span>
   )
