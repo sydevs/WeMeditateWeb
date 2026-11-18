@@ -69,6 +69,6 @@ export interface PlaylistAudioPlayerControls {
   toggleMute: () => void
   /** Toggle shuffle mode on/off */
   toggleShuffle: () => void
-  /** Jump to a specific track by index */
+  /** Play a specific track by index, from a stopped player too */
   selectTrack: (index: number) => void
 }

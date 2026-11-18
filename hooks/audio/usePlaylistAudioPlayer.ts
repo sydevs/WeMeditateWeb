@@ -131,13 +131,13 @@ export function usePlaylistAudioPlayer({
     setIsShuffleOn((prev) => !prev)
   }, [])
 
-  const selectTrack = useCallback(
-    (index: number) => {
-      wasPlayingRef.current = playerState.isPlaying
-      setCurrentTrackIndex(index)
-    },
-    [playerState.isPlaying]
-  )
+  // Picking a track asks to hear it, so it starts playback whether or not the
+  // player was already running. Copying `playerState.isPlaying` here left a
+  // row click on a paused player loading the track in silence (#249).
+  const selectTrack = useCallback((index: number) => {
+    wasPlayingRef.current = true
+    setCurrentTrackIndex(index)
+  }, [])
 
   // The hook moves the index itself — next, previous, track end — so it owns
   // the state and follows `trackIndex` on change rather than reading it
@@ -145,9 +145,7 @@ export function usePlaylistAudioPlayer({
   // click, changed nothing and the previous track kept playing (#249).
   const followTrackIndex = useEffectEvent(() => {
     // A consumer echoes `onTrackChange` back, so most changes here are the
-    // hook's own move returning. Acting on one would re-enter `selectTrack`
-    // while that move is still loading, where `isPlaying` reads false and
-    // cancels the auto-resume the move asked for.
+    // hook's own move returning, naming the track already loaded.
     if (trackIndex !== currentTrackIndex) {
       selectTrack(trackIndex)
     }
