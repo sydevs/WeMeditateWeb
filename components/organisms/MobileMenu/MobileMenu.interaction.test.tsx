@@ -94,6 +94,37 @@ describe('MobileMenu · opening and closing', () => {
     expect(panel.className).toContain('fixed')
   })
 
+  it('closes when a destination is taken', () => {
+    open()
+
+    // Vike swaps the page under a header that stays mounted, so a panel that
+    // did not close here would cover the page it just navigated to — and
+    // `markOthers` has that page hidden from assistive tech meanwhile.
+    fireEvent.click(screen.getByRole('link', { name: 'Meditate Now' }))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('draws a close control, for the viewer whose trigger the breakpoint hid', () => {
+    open()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('holds the page still while it is open', () => {
+    // The nav is `position: sticky`, so a page scrolling behind the panel flips
+    // the sticky state under it and the panel's own top edge jumps.
+    const before = document.body.style.overflow
+
+    open()
+    expect(document.body.style.overflow).toBe('hidden')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(document.body.style.overflow).toBe(before)
+  })
+
   it('closes on a press outside it', () => {
     open()
 
