@@ -66,7 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       icon === undefined && type && Object.hasOwn(DEFAULT_ICONS, type) ? DEFAULT_ICONS[type] : icon
 
     const baseStyles =
-      'px-3 py-3 font-sans text-base placeholder:text-gray-700 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
+      'px-3 py-3 font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
 
     const variantStyles = {
       default: 'border bg-white',

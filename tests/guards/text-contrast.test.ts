@@ -26,8 +26,8 @@ import { repoRoot, readSource, sourceFiles } from './_source-scan'
 const BUTTON = readSource(`${repoRoot}/components/atoms/Button/Button.tsx`)
 
 /**
- * Exempt pairings, as `<path>:<text step>`. Each would read as a defect here,
- * and none is one.
+ * Pairings this guard does not measure, as `<path>:<text step>`: what SC 1.4.3
+ * exempts, and the one deviation the reviewer took outright.
  */
 const EXEMPT = new Map([
   // A brand mark, not text: the `square` and `circle` variants render only
@@ -36,6 +36,12 @@ const EXEMPT = new Map([
   // A sequence numeral the cards' own order already conveys, so it carries no
   // information of its own: pure decoration, which SC 1.4.3 exempts.
   ['components/organisms/TechniqueCard/TechniqueCard.tsx:gray-400', 'decorative'],
+  // Not an exemption: a placeholder is text, and this fails 1.4.3 at 2.33:1.
+  // Darkening it to the bar makes an empty field read as filled in, and #199
+  // took that trade. Every call site pairs the field with a visible `<label
+  // htmlFor>`, so the placeholder carries nothing on its own.
+  ['components/atoms/form/Input/Input.tsx:gray-500', 'placeholder'],
+  ['components/atoms/form/Textarea/Textarea.tsx:gray-500', 'placeholder'],
 ])
 
 /**
