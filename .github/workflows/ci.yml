@@ -132,9 +132,10 @@ jobs:
 
       # Find this target's preview URL through the GitHub API. Cloudflare posts
       # it in the bot's PR comment. Check-run output and deployment data are
-      # fallbacks. This step waits until the preview responds, then reports what
-      # it found: an empty preview_url and exit 0 when nothing turned up. The
-      # step below decides whether that is a failure.
+      # fallbacks, and the Worker's own branch host — spelled from PR_HEAD_REF — is the last
+      # resort for a pull request Cloudflare never commented on. This step waits until the
+      # preview responds, then reports what it found: an empty preview_url and exit 0 when
+      # nothing turned up. The step below decides whether that is a failure.
       - name: Discover ${{ matrix.target }} preview URL
         id: preview
         if: steps.scope.outputs.built != 'false'
@@ -142,6 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           CF_PROJECT_MATCH: ${{ matrix.project }}
         run: node scripts/get-cloudflare-preview-url.mjs
 
@@ -163,7 +165,15 @@ jobs:
             echo ""
             echo "Preview address read by discovery: \`$PREVIEW_URL\`"
           } >> "$GITHUB_STEP_SUMMARY"
-          pnpm ${{ matrix.script }}
+          pnpm ${{ matrix.script }} --reporter=default --reporter=json --outputFile.json=smoke-report.json
+
+      # Runs on a red leg too, so a failure still gets its counts. With no preview there is no
+      # report, and the script says so instead of staying silent. Restricted to pull_request
+      # because the merge queue publishes no preview at all, which the step below documents as
+      # legitimately quiet — warning there would contradict it on every queue run.
+      - name: Smoke results (${{ matrix.target }})
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.scope.outputs.built != 'false' }}
+        run: node scripts/smoke-skip-summary.mjs smoke-report.json ${{ matrix.target }}
 
       # A skip must never look like a pass. Discovery exits 0 with an empty URL, and the Smoke
       # step above then does not run at all — so before this step a missing preview was a green

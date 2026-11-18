@@ -1,7 +1,7 @@
 import { ComponentProps, useState } from 'react'
 import { AudioPlayer, Playlist, Track, MusicFilter } from '../../molecules'
 import { useT } from '../../../hooks/useT'
-import { Image } from '../../atoms'
+import { Image, Link } from '../../atoms'
 
 export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Array of audio tracks */
@@ -66,6 +66,11 @@ export function MusicLibrary({
               aspectRatio="square"
               className="w-full h-full"
               placeholderVariant="primary"
+              // The column is `max-w-md` less its own `p-4`, so the art caps at
+              // 416px — but only once the two-column grid is wide enough. A flat
+              // 448px would claim that width at `md`, where the column is 316px,
+              // and fetch 800 where 400 does.
+              sizes="(min-width: 968px) 416px, (min-width: 768px) calc(50vw - 68px), (min-width: 448px) 416px, calc(100vw - 64px)"
               src={currentTrack.thumbnailURL}
             />
             {/* Gradient Overlay */}
@@ -75,14 +80,14 @@ export function MusicLibrary({
               <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
                 {currentTrack.title}
               </h3>
-              <a
-                className="text-sm text-white/90 hover:text-white truncate block mt-1"
+              <Link
+                external
+                className="text-sm text-white/90 hover:text-white truncate block mt-1 transition-colors duration-200"
                 href={currentTrack.creditURL}
-                rel="noopener noreferrer"
-                target="_blank"
+                variant="unstyled"
               >
                 {currentTrack.credit}
-              </a>
+              </Link>
             </div>
           </div>
 

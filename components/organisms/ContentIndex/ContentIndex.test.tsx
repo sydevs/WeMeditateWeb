@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentIndex, deriveFacets, filterByFacets } from './ContentIndex'
 import type { ResolvedCardItem } from '../../../lib/content-blocks'
 
+const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
+
 const item = (
   id: number,
   title: string,
@@ -64,7 +66,7 @@ describe('filterByFacets', () => {
 
 describe('ContentIndex (SSR markup)', () => {
   it('renders an "All" pill plus one pill per facet, with "All" pressed by default', () => {
-    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    const html = renderToStaticMarkup(<ContentIndex items={items} sizes={CARD_SIZES} />)
 
     expect(html).toContain('>All<')
     expect(html).toContain('>Wisdom<')
@@ -75,7 +77,7 @@ describe('ContentIndex (SSR markup)', () => {
   })
 
   it('renders every card on first render (SSR shows the full, SEO-friendly list)', () => {
-    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    const html = renderToStaticMarkup(<ContentIndex items={items} sizes={CARD_SIZES} />)
 
     for (const title of ['Alpha', 'Beta', 'Gamma', 'Delta']) {
       expect(html).toContain(title)
@@ -83,18 +85,20 @@ describe('ContentIndex (SSR markup)', () => {
   })
 
   it('renders no filter pill row when no item carries tags', () => {
-    const html = renderToStaticMarkup(<ContentIndex items={[item(1, 'Alpha'), item(2, 'Beta')]} />)
+    const html = renderToStaticMarkup(
+      <ContentIndex items={[item(1, 'Alpha'), item(2, 'Beta')]} sizes={CARD_SIZES} />,
+    )
 
     expect(html).not.toContain('Filter content by tag')
     expect(html).toContain('Alpha')
   })
 
   it('renders without crashing on an empty list', () => {
-    expect(() => renderToStaticMarkup(<ContentIndex items={[]} />)).not.toThrow()
+    expect(() => renderToStaticMarkup(<ContentIndex items={[]} sizes={CARD_SIZES} />)).not.toThrow()
   })
 
   it('leaves the filter fade out of the server markup (#149)', () => {
-    const html = renderToStaticMarkup(<ContentIndex items={items} />)
+    const html = renderToStaticMarkup(<ContentIndex items={items} sizes={CARD_SIZES} />)
     // The grid's own root is what the fade animates, so it is the element this
     // component can ship hidden. ContentGrid.tsx opens it with `w-full`.
     // Counting the matches, not just taking the first: a second `w-full` div
@@ -110,5 +114,25 @@ describe('ContentIndex (SSR markup)', () => {
     // inline opacity for a visitor with JavaScript off to be caught by.
     expect(html).not.toContain('opacity:0')
     expect(html).not.toContain('opacity: 0')
+  })
+})
+
+describe('ContentIndex sizes', () => {
+  it('reaches every card, through the grid between them', () => {
+    const html = renderToStaticMarkup(
+      <ContentIndex
+        items={[
+          {
+            id: 1,
+            title: 'Alpha',
+            href: '#1',
+            thumbnailSrc: 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public',
+          },
+        ]}
+        sizes={CARD_SIZES}
+      />,
+    )
+
+    expect(html).toContain(`sizes="${CARD_SIZES}"`)
   })
 })

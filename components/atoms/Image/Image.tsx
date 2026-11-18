@@ -12,14 +12,24 @@ import {
 import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
 import { useT } from '../../../hooks/useT'
 
-const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px'
-
 export interface ImageProps extends ComponentProps<'img'> {
   /** Image source URL */
   src: string
 
   /** Alternative text for accessibility */
   alt: string
+
+  /**
+   * The length this image is drawn at, as a `sizes` attribute — `48px`, or
+   * `(min-width: 1024px) 400px, calc(50vw - 32px)`.
+   *
+   * Required, because no default can be right: the atom cannot see the box,
+   * and the full-width default it used to fall back to fetched 800px into a
+   * 48px tile (#146). A `string` here is also what catches the caller that
+   * forwards an `undefined` of its own — a lint selector reads the prop's
+   * presence, so that spelling passes it (#206).
+   */
+  sizes: string
 
   /**
    * Width of the image in pixels. Together with height, this prevents
@@ -63,11 +73,6 @@ export interface ImageProps extends ComponentProps<'img'> {
   /**
    * Emit a responsive srcset for Cloudflare-hosted images.
    * Has no effect on non-Cloudflare URLs.
-   *
-   * When true, this uses a `sizes` attribute tuned for full-width viewport
-   * layouts by default. A caller that renders images inside grids, cards, or
-   * fixed-width containers should pass its own `sizes` prop, so the browser
-   * picks the correct variant instead of over-fetching.
    * @default true
    */
   responsive?: boolean
@@ -100,10 +105,6 @@ export interface ImageProps extends ComponentProps<'img'> {
    * `fetchPriority` only ranks the links already hoisted, within a fixed-size
    * high-priority set. So leave this `false` below the fold: setting it
    * everywhere preloads every image on the page and prioritizes none.
-   *
-   * Pass an explicit `sizes` with it when the image renders narrower than the
-   * `responsive` default above, since `priority` makes that over-fetch a
-   * high-priority one.
    *
    * `loading` and `fetchPriority` passed directly still win, since the spread
    * applies last.
@@ -161,19 +162,17 @@ export function buildLightboxSlide(
  *
  * When `src` is a Cloudflare Images URL (imagedelivery.net) and `aspectRatio` is
  * set, the component resolves it to a `width=<n>` variant and emits a
- * responsive srcset. The default `sizes` attribute assumes a roughly
- * full-width viewport layout. Pass an explicit `sizes` prop when rendering
- * inside grids, cards, or fixed-width containers.
+ * responsive srcset. The required `sizes` is what tells the browser which
+ * rung of that srcset to take.
  *
  * When width and height are provided, the component uses a blurred
  * gradient placeholder, with a shimmer animation, to prevent layout shift
  * during loading.
  *
  * @example
- * <Image src="/path/to/image.jpg" alt="Description" />
- * <Image src="/banner.jpg" alt="Banner" aspectRatio="video" />
- * <Image src="/profile.jpg" alt="Profile" aspectRatio="square" rounded="circle" />
- * <Image src="/hero.jpg" alt="Hero" width={1200} height={600} placeholderVariant="primary" />
+ * <Image src="/banner.jpg" alt="Banner" aspectRatio="video" sizes="100vw" />
+ * <Image src="/profile.jpg" alt="Profile" aspectRatio="square" rounded="circle" sizes="64px" />
+ * <Image src="/hero.jpg" alt="Hero" aspectRatio="video" sizes="(min-width: 1024px) 800px, 100vw" />
  */
 export function Image({
   src,
@@ -276,17 +275,6 @@ export function Image({
   // still fetching an optimized variant.
   const boxed = Boolean(aspectRatio) && forceAspectRatio
 
-  const aspectRatioStyles =
-    boxed && aspectRatio
-      ? {
-          square: 'aspect-square',
-          video: 'aspect-video',
-          '4-3': 'aspect-[4/3]',
-          '3-2': 'aspect-[3/2]',
-          ultrawide: 'aspect-[21/9]',
-        }[aspectRatio]
-      : ''
-
   const objectFitStyles = {
     cover: 'object-cover',
     contain: 'object-contain',
@@ -320,7 +308,27 @@ export function Image({
   // <img> and let the placeholder show.
   const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''
 
-  // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
+  const hasImg = !hasError && hasSrc
+
+  const showPlaceholder = showLoading && (isLoading || !hasImg)
+
+  // The placeholder is `absolute inset-0`, so an unboxed container has no
+  // height and the error icon is invisible (#212). Only while there is no
+  // <img>: `overflow-hidden` below would clip a natural-flow <img> taller
+  // than the box, loading or loaded.
+  const aspectRatioStyles =
+    aspectRatio && (boxed || (showLoading && !hasImg))
+      ? {
+          square: 'aspect-square',
+          video: 'aspect-video',
+          '4-3': 'aspect-[4/3]',
+          '3-2': 'aspect-[3/2]',
+          ultrawide: 'aspect-[21/9]',
+        }[aspectRatio]
+      : ''
+
+  // One literal for both cases: an empty `aspectRatioStyles` still leaves the
+  // separating space, so the unboxed container's class list is unaffected.
   const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
@@ -336,17 +344,24 @@ export function Image({
           top-left, overflowing or clipping instead of matching the rendered
           image box. The <img>'s own width and height attributes reserve
           layout space and prevent shift. */}
-      {showLoading && (isLoading || hasError || !hasSrc) && (
-        <Placeholder
-          animate={!hasError && hasSrc}
-          className="absolute inset-0"
-          variant={placeholderVariant}
-        >
-          {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
+      {showPlaceholder && (
+        <Placeholder animate={hasImg} className="absolute inset-0" variant={placeholderVariant}>
+          {hasError && (
+            <>
+              <Icon
+                aria-label={t('errors.a11y.error_icon')}
+                icon={ExclamationCircleIcon}
+                size="lg"
+              />
+              {/* The failed <img> takes its `alt` out of the document with it,
+                  so the only description of what is missing would be gone. */}
+              {alt && <span className="sr-only">{alt}</span>}
+            </>
+          )}
         </Placeholder>
       )}
 
-      {!hasError && hasSrc && (
+      {hasImg && (
         <img
           ref={imgRef}
           alt={alt}
@@ -354,7 +369,7 @@ export function Image({
           fetchPriority={priority ? 'high' : undefined}
           height={height}
           loading={priority ? 'eager' : 'lazy'}
-          sizes={sizes ?? (imageSrcSet ? DEFAULT_SIZES : undefined)}
+          sizes={sizes}
           src={imageSrc}
           srcSet={imageSrcSet}
           width={width}

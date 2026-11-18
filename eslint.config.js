@@ -1,5 +1,8 @@
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
-import react from 'eslint-plugin-react'
+import reactPlugin from '@eslint-react/eslint-plugin'
+import stylistic from '@stylistic/eslint-plugin'
+import perfectionist from 'eslint-plugin-perfectionist'
 import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import tseslint from 'typescript-eslint'
@@ -8,6 +11,8 @@ import tseslint from 'typescript-eslint'
 // than copy, so they stay out. `alt` is handled on its own, below.
 const COPY_PROPS =
   '/^(aria-label|buttonText|caption|description|heading|label|placeholder|subtitle|text|title)$/'
+
+const APP_FILES = ['**/*.{js,jsx,ts,tsx}']
 
 /** Prose, not punctuation: two consecutive ASCII letters. */
 const PROSE = '/[A-Za-z]{2}/'
@@ -37,7 +42,7 @@ const copyOn = (prop) => {
   return [copyIn(attribute), copyBraced(attribute)].join(', ')
 }
 
-export default [
+export default defineConfig([
   {
     ignores: [
       '.DS_Store',
@@ -107,17 +112,12 @@ export default [
       'cdk.out/**',
     ],
   },
-  {
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-  },
-  react.configs.flat.recommended,
+  // `extends`, not a spread: the plugin's config carries no `files` of its own,
+  // and spreading it would silently drop every rule the day it ships an array.
+  { files: APP_FILES, extends: [reactPlugin.configs['recommended-typescript']] },
   prettierConfig,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: APP_FILES,
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -134,6 +134,8 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
+      '@stylistic': stylistic,
+      perfectionist,
       prettier,
     },
     rules: {
@@ -141,10 +143,6 @@ export default [
       // Mapbox token survived in a shipped component (#105). `error` and `warn`
       // stay allowed: they report a real failure to whoever opens the console.
       'no-console': ['error', { allow: ['error', 'warn'] }],
-      'react/prop-types': 'off',
-      'react/jsx-uses-react': 'off',
-      'react/no-unescaped-entities': 'off',
-      'react/react-in-jsx-scope': 'off',
       'prettier/prettier': 'warn',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
@@ -155,14 +153,29 @@ export default [
           argsIgnorePattern: '^_.*?$',
         },
       ],
-      'react/self-closing-comp': 'warn',
-      'react/jsx-sort-props': [
+      // Severity parity with the rules the old recommended set carried as
+      // errors. `tsc --noEmit` covers its `jsx-no-duplicate-props` (TS17001)
+      // and `no-unknown-property` (TS2322); nothing covers these.
+      '@eslint-react/dom-no-unsafe-target-blank': 'error',
+      '@eslint-react/jsx-no-comment-textnodes': 'error',
+      '@eslint-react/jsx-no-children-prop': 'error',
+      '@eslint-react/no-missing-component-display-name': 'error',
+      '@stylistic/jsx-self-closing-comp': 'warn',
+      // The groups reproduce the previous rule's `reservedFirst`,
+      // `shorthandFirst` and `callbacksLast`, and `ignoreCase: false` its
+      // case-sensitive order. Drop them and the repo's prop order changes.
+      'perfectionist/sort-jsx-props': [
         'warn',
         {
-          callbacksLast: true,
-          shorthandFirst: true,
-          noSortAlphabetically: false,
-          reservedFirst: true,
+          ignoreCase: false,
+          groups: ['reserved', 'shorthand-prop', 'unknown', 'callback'],
+          customGroups: [
+            {
+              groupName: 'reserved',
+              elementNamePattern: '^(children|dangerouslySetInnerHTML|key|ref)$',
+            },
+            { groupName: 'callback', elementNamePattern: '^on[A-Z]' },
+          ],
         },
       ],
       'padding-line-between-statements': [
@@ -214,6 +227,27 @@ export default [
           message:
             'An English alt text ships untranslated: pass t(\'group.key\'), or alt="" when the image is decorative.',
         },
+        {
+          // An `<Image>` with no `aspectRatio` resolves no Cloudflare variant,
+          // so the box gets the full-size original. Fourteen call sites were
+          // missing it, a `sizes`, or both (#146).
+          //
+          // `sizes` is required by `ImageProps` instead, because a selector
+          // reads a prop's presence: a caller forwarding `sizes={sizes}` and
+          // handed `undefined` passes it, and that was #206 exactly. The ratio
+          // stays here — it is optional by design, for a `<Image>` whose src is
+          // not Cloudflare's, so no type can demand it.
+          //
+          // This sits in this block because `no-restricted-syntax` is one rule
+          // id: a second block covering the same files would replace the copy
+          // selectors above rather than add to them. So the block's `ignores`,
+          // and any disable region for copy, silence it too — neither reaches
+          // an `<Image>` today.
+          selector:
+            'JSXOpeningElement[name.name="Image"]:not(:has(> JSXAttribute[name.name="aspectRatio"]))',
+          message:
+            '<Image> without aspectRatio serves the full-size original: name the ratio its box draws.',
+        },
       ],
     },
   },
@@ -237,4 +271,4 @@ export default [
       'no-console': 'warn',
     },
   },
-]
+])

@@ -2,6 +2,7 @@ import { ComponentProps } from 'react'
 import { Link, Button } from '../../atoms'
 import type { Track } from '../AudioPlayer/types'
 import type { HeroIcon } from '../../atoms/Icon/Icon'
+import { formatDuration } from '../../../lib/duration'
 
 export interface MusicFilter {
   /** Filter identifier, for example 'strings', 'vocal', 'wind' */
@@ -46,12 +47,6 @@ interface PlaylistItemProps {
 }
 
 function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistItemProps) {
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
   return (
     <button
       onClick={() => onTrackClick(index)}
@@ -73,7 +68,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
             size="inherit"
             className={`text-xs truncate self-start mt-1 ${
               isCurrentTrack
-                ? 'text-teal-100 hover:text-white'
+                ? 'text-teal-100 hover:text-white transition-colors duration-200'
                 : ''
             }`}
             onClick={(e) => e.stopPropagation()}

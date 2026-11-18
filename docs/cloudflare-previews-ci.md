@@ -30,10 +30,17 @@ Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.clo
 build page and carries no preview address. Check-run output, deployments and commit statuses
 stay wired as fallbacks that have never yet yielded a URL here.
 
-⚠ The ladle preview is the `wemeditate-design` Worker. A PR opened before 2026-11-02 may still
-carry a `wemeditate-design` Pages comment: it matches `CF_PROJECT_MATCH` by project name and comes
-first, and its `wm-design.pages.dev` host no longer answers. Read the `selected …` line the step
-prints (#184).
+⚠ The ladle preview is the `wemeditate-design` Worker. Discovery accepts a `workers.dev` host and
+nothing else, because a PR opened before 2026-11-02 still carries a `wemeditate-design` **Pages**
+comment: it matched `CF_PROJECT_MATCH` by project name, came first, and its `wm-design.pages.dev`
+host no longer resolves (#184). Such a PR gets no Workers comment for that Worker either —
+Cloudflare comments only from its Git integration's own lifetime — so once the whole discovery
+window has named nothing, discovery spells the Worker's branch host itself:
+`<branch-slug>-<worker>.<account>.workers.dev`, taking the account subdomain from whatever other
+preview the PR does carry. It waits out that window first because the branch alias tracks the
+branch's latest successful build rather than this commit, so running it earlier would hand the
+specs the previous build while this commit's own was still deploying. The address still has to
+answer before it reaches the specs. Read the `selected …` and `skipping …` lines the step prints.
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
@@ -107,6 +114,13 @@ the step summary, so a pass always says which preview it tested.
 Builds-trigger branch filters are not readable from this repo, so reddening that leg could block
 PRs for a cause nothing here can observe. sydevs/SahajCloud#903 replaces the discovery for both.
 
+Both legs end with a "Smoke results" step that copies vitest's own passed, failed, skipped and todo
+counts into the job summary (`scripts/smoke-skip-summary.mjs`) and warns when nothing asserted. A
+spec skips itself with `ctx.skip` when it has no `SAHAJCLOUD_API_KEY` or no discoverable content,
+and vitest counts that as a pass, so the warning is the only sign that the leg asserted nothing.
+The step runs on pull requests only — the merge queue publishes no preview, so there is nothing
+there to count.
+
 ## The playground refuses crawlers, and answers cross-origin
 
 Two files in the build output carry the refusal —
@@ -136,10 +150,10 @@ the playground silently becomes indexable again.
 
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
   preview URL through the GitHub API (PR comment, then commit statuses, then check-runs, then
-  deployments). `CF_PROJECT_MATCH` selects the target, and both CI legs set one. Without it — a
-  local or ad-hoc run — the script instead excludes the Ladle playground (`wemeditate-design`),
-  so that `EXCLUDE` list never
-  applies in CI. It reports what it found and never judges it — the caller decides whether an
+  deployments), and derives the target's own branch host only when none of those named one.
+  `CF_PROJECT_MATCH` selects the target, and both CI legs set one; the derivation also reads it
+  as the Worker's exact name. Without it — a local or ad-hoc run — the script instead excludes
+  the Ladle playground (`wemeditate-design`), so that `EXCLUDE` list never applies in CI. It reports what it found and never judges it — the caller decides whether an
   empty URL is a failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
   not by discovery.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage

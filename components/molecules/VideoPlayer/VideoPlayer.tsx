@@ -8,6 +8,7 @@ import '@vidstack/react/player/styles/default/poster.css'
 import '@vidstack/react/player/styles/default/layouts/video.css'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 import { videoLayoutTranslations } from './labels'
+import { posterURL } from './poster'
 import { useT } from '../../../hooks/useT'
 import { localeEndonym } from '../../../lib/locale-names'
 
@@ -29,6 +30,13 @@ export interface VideoPlayerProps {
   hlsUrl: string
   /** Poster image shown before playback (and as a no-JS fallback frame). */
   poster?: string
+  /**
+   * The `sizes` the server-rendered poster declares, where this player is not
+   * inside the layout its default assumes. Vidstack's own poster takes one
+   * URL, so the mounted player keeps a single width whatever this says.
+   * @default the bounded `max-w-4xl` case
+   */
+  posterSizes?: string
   /** Seconds to seek to once metadata loads (start of a playback window). */
   startTime?: number | null
   /** Seconds at which to pause playback (end of a playback window). */
@@ -178,7 +186,7 @@ export function VideoPlayer({
         // initial load light, and it stops every instance on a page from
         // spinning up hls.js at once.
         load={autoLoad ? 'visible' : 'play'}
-        poster={poster}
+        poster={posterURL(poster)}
         src={{ src: hlsUrl, type: 'application/x-mpegurl' }}
         style={PLAYER_STYLE}
         title={title}

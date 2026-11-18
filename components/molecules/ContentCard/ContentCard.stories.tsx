@@ -16,6 +16,11 @@ export default {
   title: "Molecules"
 } satisfies StoryDefault;
 
+// The demo rows below stack on mobile and sit side by side from `sm`, where a
+// card settles around 360px. One length for every story card: the point here is
+// the card's layout, not a production page's grid.
+const STORY_CARD_SIZES = '(min-width: 640px) 360px, 100vw'
+
 // Sample data for stories using picsum.photos
 const sampleMeditationData = {
   title: "Feel Love",
@@ -49,6 +54,7 @@ export const Default: Story = () => (
               href={sampleMeditationData.href}
               thumbnailSrc={sampleMeditationData.thumbnailSrc}
               description={sampleMeditationData.description}
+              sizes={STORY_CARD_SIZES}
               variant="default"
             />
           </StorySection>
@@ -59,6 +65,7 @@ export const Default: Story = () => (
             <ContentCard
               title={sampleShortData.title}
               href={sampleShortData.href}
+              sizes={STORY_CARD_SIZES}
               thumbnailSrc={sampleShortData.thumbnailSrc}
               variant="default"
             />
@@ -77,6 +84,7 @@ export const Default: Story = () => (
               durationMinutes={15}
               badge="Mindfulness"
               badgeUrl="#"
+              sizes={STORY_CARD_SIZES}
             />
           </StorySection>
         </div>
@@ -91,6 +99,7 @@ export const Default: Story = () => (
               variant="default"
               badge="Philosophy"
               badgeUrl="#"
+              sizes={STORY_CARD_SIZES}
             />
           </StorySection>
         </div>
@@ -123,6 +132,7 @@ export const Default: Story = () => (
                 aspectRatio="square"
                 variant="default"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -134,6 +144,7 @@ export const Default: Story = () => (
                 variant="default"
                 playButton={true}
                 durationMinutes={10}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -145,6 +156,7 @@ export const Default: Story = () => (
                 variant="hero"
                 playButton={true}
                 durationMinutes={20}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -159,6 +171,7 @@ export const Default: Story = () => (
                 aspectRatio="video"
                 variant="default"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -169,6 +182,7 @@ export const Default: Story = () => (
                 aspectRatio="video"
                 variant="default"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -180,6 +194,7 @@ export const Default: Story = () => (
                 variant="hero"
                 playButton={true}
                 durationMinutes={5}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -194,6 +209,7 @@ export const Default: Story = () => (
                 aspectRatio="4-3"
                 variant="default"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -204,6 +220,7 @@ export const Default: Story = () => (
                 aspectRatio="4-3"
                 variant="default"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -214,6 +231,7 @@ export const Default: Story = () => (
                 aspectRatio="4-3"
                 variant="hero"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -228,6 +246,7 @@ export const Default: Story = () => (
                 aspectRatio="3-2"
                 variant="default"
                 playButton={false}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -238,6 +257,7 @@ export const Default: Story = () => (
                 aspectRatio="3-2"
                 variant="default"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
@@ -248,6 +268,7 @@ export const Default: Story = () => (
                 aspectRatio="3-2"
                 variant="hero"
                 playButton={true}
+                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -264,6 +285,7 @@ export const Default: Story = () => (
           description="Unconditional love sounds hard, but it's actually innate to all human beings. Free your mind and feel the love we have within."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Feel Humble"
@@ -272,6 +294,7 @@ export const Default: Story = () => (
           description="Feel like your mind is often occupied with criticisms, either of yourself or others? Silence those thoughts and experience the deep sense of peace that comes with humility."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Feel Focused"
@@ -280,6 +303,7 @@ export const Default: Story = () => (
           description="Bring your attention back to the center with a few simple exercises to completely clear your mind."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Experience Joy"
@@ -288,6 +312,7 @@ export const Default: Story = () => (
           description="Try out these simple exercises to see how quickly and spontaneously you can tap into the ocean of true joy emanating from within."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
       </div>
     </StorySection>
@@ -306,6 +331,7 @@ export const Default: Story = () => (
           description="Start your day with clarity and peace through this guided morning meditation."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="What is Sahaja Yoga?"
@@ -313,6 +339,7 @@ export const Default: Story = () => (
           thumbnailSrc="https://picsum.photos/seed/content2/800/600"
           description="Discover the ancient practice of Sahaja Yoga and its transformative power."
           aspectRatio="4-3"
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Evening Calm"
@@ -321,6 +348,7 @@ export const Default: Story = () => (
           description="Wind down after a long day with this soothing evening meditation practice."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Benefits of Daily Practice"
@@ -328,6 +356,7 @@ export const Default: Story = () => (
           thumbnailSrc="https://picsum.photos/seed/content4/800/533"
           description="Learn how consistent meditation transforms your mind, body, and spirit."
           aspectRatio="3-2"
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Quick Reset"
@@ -335,6 +364,7 @@ export const Default: Story = () => (
           thumbnailSrc="https://picsum.photos/seed/content5/800/450"
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Getting Started Guide"
@@ -342,6 +372,7 @@ export const Default: Story = () => (
           thumbnailSrc="https://picsum.photos/seed/content6/800/800"
           description="Everything you need to know to begin your meditation journey today."
           aspectRatio="square"
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Deep Relaxation"
@@ -350,12 +381,14 @@ export const Default: Story = () => (
           description="Experience profound relaxation and release tension from your entire body."
           aspectRatio="video"
           playButton={true}
+          sizes={STORY_CARD_SIZES}
         />
         <ContentCard
           title="Science of Meditation"
           href="#"
           thumbnailSrc="https://picsum.photos/seed/content8/800/450"
           aspectRatio="video"
+          sizes={STORY_CARD_SIZES}
         />
       </div>
     </StorySection>

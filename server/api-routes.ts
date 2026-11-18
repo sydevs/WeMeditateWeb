@@ -31,7 +31,12 @@ import {
 } from './sahajcloud-client'
 import { relatedMeditationsToCards, relatedLecturesToCards } from '../lib/related-content'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER, type SubmissionResult } from '../lib/submissions'
+import {
+  CLIENT_IP_HEADER,
+  SUBMISSION_PATH,
+  TURNSTILE_TOKEN_HEADER,
+  type SubmissionResult,
+} from '../lib/submissions'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
 import { idSchema, submissionSchema } from './validation'
@@ -203,11 +208,16 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
  * SahajCloud answers a wildcard CORS origin with no credentials
  * (see the live-preview proxy above for the same pairing).
  *
- * ⚠ **Exactly one header crosses over: the captcha token.** Forwarding the
- * browser's `Origin` or `Referer` would put this site's own host through the
- * client's `allowedDomains` allowlist, which a server-to-server call is
- * deliberately exempt from — the API key is the gate there. Everything else
- * in the body is re-validated by the collection per type.
+ * ⚠ **Two headers cross over: the captcha token, and the visitor's address.**
+ * Forwarding the browser's `Origin` or `Referer` would put this site's own
+ * host through the client's `allowedDomains` allowlist, which a
+ * server-to-server call is deliberately exempt from — the API key is the gate
+ * there. Everything else in the body is re-validated by the collection per
+ * type.
+ *
+ * The address is this Worker's own `cf-connecting-ip`, because SahajCloud
+ * would otherwise read our egress address for Turnstile's `remoteip`. It is
+ * omitted rather than blanked when we have none: upstream scores without it.
  *
  * Nothing of the created row is echoed back. An API client holds create and
  * no read on `user-submissions` on purpose, and the browser needs only
@@ -223,6 +233,7 @@ function registerSubmissions(app: Hono<SahajCloudEnv>): void {
       return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
     }
     const token = c.req.header(TURNSTILE_TOKEN_HEADER)
+    const clientIp = c.req.header('cf-connecting-ip')
 
     try {
       const client = createPayloadClient()
@@ -233,7 +244,12 @@ function registerSubmissions(app: Hono<SahajCloudEnv>): void {
         // Nothing reads the response, so ask SahajCloud to populate nothing.
         args: { depth: 0 },
         json: body.data,
-        init: { headers: token ? { [TURNSTILE_TOKEN_HEADER]: token } : {} },
+        init: {
+          headers: {
+            ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
+            ...(clientIp ? { [CLIENT_IP_HEADER]: clientIp } : {}),
+          },
+        },
       })
 
       return c.json<SubmissionResult>({ ok: true })

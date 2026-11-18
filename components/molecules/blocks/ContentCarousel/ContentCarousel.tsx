@@ -4,9 +4,21 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ContentCard, ContentCardProps } from '../../ContentCard/ContentCard'
 import { Button } from '../../../atoms/Button/Button'
 import { useT } from '../../../../hooks/useT'
+import { ASPECT_RATIO_VALUES, type AspectRatio } from '../../../../lib/cloudflare-images'
 
 /** Carousel size variant. */
 export type ContentCarouselSize = 'sm' | 'md' | 'lg'
+
+/** Pixels per Tailwind spacing unit: `--spacing` is 0.25rem at a 16px root. */
+const SPACING_PX = 4
+
+/**
+ * A row height, as the three `h-*` classes that draw it.
+ *
+ * The shape is a type rather than a runtime check, so `slideSizes` has no
+ * unreachable error branch to leave untested.
+ */
+type TrackHeight = `h-${number} sm:h-${number} lg:h-${number}`
 
 /**
  * Coordinated dimensions per size: the image height, the ContentCard variant
@@ -16,16 +28,41 @@ export type ContentCarouselSize = 'sm' | 'md' | 'lg'
  */
 const CAROUSEL_SIZES: Record<
   ContentCarouselSize,
-  { imageHeight: string; card: 'default' | 'hero'; slideGap: string }
+  { imageHeight: TrackHeight; card: 'default' | 'hero'; slideGap: string }
 > = {
   sm: { imageHeight: 'h-40 sm:h-44 lg:h-48', card: 'default', slideGap: 'gap-3 sm:gap-4' },
   md: { imageHeight: 'h-48 sm:h-56 lg:h-64', card: 'hero', slideGap: 'gap-4 sm:gap-6' },
   lg: { imageHeight: 'h-56 sm:h-64 lg:h-72', card: 'hero', slideGap: 'gap-4 sm:gap-6' },
 }
 
+/**
+ * The `sizes` for one slide of a row `imageHeight` tall.
+ *
+ * A slide is `h-NN w-auto`, so it renders `height × ratio` wide — which makes
+ * the width a property of the *item*, not of the row. One flat length per row
+ * cannot express that: the 16:9 figure over-declares a square card by 1.78x,
+ * enough to cross a srcset rung and fetch four times the pixels (#146).
+ *
+ * The heights are read out of the class string rather than restated beside it.
+ * Tailwind compiles only a candidate it finds verbatim in a scanned file, so
+ * the string has to stay literal, and a second copy of the numbers would be
+ * the same defect as a `sizes` outliving its box.
+ */
+function slideSizes(imageHeight: TrackHeight, aspectRatio: AspectRatio = 'square'): string {
+  const ratio = ASPECT_RATIO_VALUES[aspectRatio]
+  const [base, sm, lg] = imageHeight
+    .split(' ')
+    .map((candidate) => Math.ceil(Number(candidate.replace(/\D/g, '')) * SPACING_PX * ratio))
+
+  return `(min-width: 1024px) ${lg}px, (min-width: 640px) ${sm}px, ${base}px`
+}
+
 export interface ContentCarouselProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Array of content items to display in the carousel */
-  items: Omit<ContentCardProps, 'variant'>[]
+  items: (Omit<ContentCardProps, 'variant' | 'sizes'> & {
+    /** Overrides the length this carousel derives for the slide. */
+    sizes?: string
+  })[]
 
   /** Optional heading for the carousel section */
   title?: string
@@ -201,7 +238,12 @@ export function ContentCarousel({
                   <div className={inView ? '' : 'pointer-events-none'}>
                     {/* Fixed image height (natural width) → consistent row height
                         without forcing a single aspect ratio. */}
-                    <ContentCard {...item} imageHeight={imageHeight} variant={card} />
+                    <ContentCard
+                      {...item}
+                      imageHeight={imageHeight}
+                      sizes={item.sizes ?? slideSizes(imageHeight, item.aspectRatio)}
+                      variant={card}
+                    />
                   </div>
                 </div>
               )

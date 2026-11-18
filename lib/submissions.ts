@@ -27,6 +27,13 @@ export const SUBMISSION_PATH = '/api/submissions'
  */
 export const TURNSTILE_TOKEN_HEADER = 'x-turnstile-token'
 
+/**
+ * ⚠ The visitor's address. The proxy sets this one, unlike the two names
+ * above, which the browser sends. Why it must, and what it does not buy, is in
+ * `server/AGENTS.md` (sydevs/SahajCloud#808).
+ */
+export const CLIENT_IP_HEADER = 'x-client-ip'
+
 /** One `[{ field, value }]` pair, as the collection stores it. */
 export interface SubmissionPair {
   field: string

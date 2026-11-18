@@ -9,13 +9,17 @@ const PICSUM_URL = 'https://picsum.photos/seed/foo/400/400'
 
 describe('<Image> Cloudflare Images integration', () => {
   it('transforms src to the matching variant for Cloudflare URLs', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
+    )
 
     expect(html).toContain(`src="${CF_URL}width=800"`)
   })
 
   it('emits a responsive srcSet covering all widths for the aspect ratio', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
+    )
 
     expect(html).toContain('width=640 640w')
     expect(html).toContain('width=800 800w')
@@ -24,7 +28,9 @@ describe('<Image> Cloudflare Images integration', () => {
   })
 
   it('replaces the /public variant a SahajCloud read returns, and still emits sizes', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_PUBLIC_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_PUBLIC_URL} />,
+    )
 
     expect(html).toContain(`src="${CF_URL}width=800"`)
     expect(html).toContain(`${CF_URL}width=1536 1536w`)
@@ -33,7 +39,9 @@ describe('<Image> Cloudflare Images integration', () => {
   })
 
   it('leaves src unchanged and omits srcSet for non-Cloudflare URLs', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={PICSUM_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={PICSUM_URL} />,
+    )
 
     expect(html).toContain(`src="${PICSUM_URL}"`)
     expect(html).not.toContain('srcset=')
@@ -41,7 +49,7 @@ describe('<Image> Cloudflare Images integration', () => {
 
   it('respects responsive={false}: transforms src but suppresses srcSet', () => {
     const html = renderToStaticMarkup(
-      <Image alt="test" aspectRatio="video" responsive={false} src={CF_URL} />,
+      <Image alt="test" aspectRatio="video" responsive={false} sizes="100vw" src={CF_URL} />,
     )
 
     expect(html).toContain(`src="${CF_URL}width=800"`)
@@ -49,29 +57,45 @@ describe('<Image> Cloudflare Images integration', () => {
   })
 
   it('leaves src unchanged when aspectRatio is omitted', () => {
-    const html = renderToStaticMarkup(<Image alt="test" src={CF_URL} />)
+    const html = renderToStaticMarkup(<Image alt="test" sizes="100vw" src={CF_URL} />)
 
     expect(html).toContain(`src="${CF_URL}"`)
     expect(html).not.toContain('srcset=')
   })
 })
 
+describe('<Image> requires a sizes', () => {
+  it('is the type that enforces it, not a lint selector', () => {
+    // `tsc` is the guard. Make `sizes` optional again and the directive below
+    // becomes an unused-`@ts-expect-error` error — which is the only thing
+    // that catches a caller forwarding an `undefined` of its own (#206).
+    const html = renderToStaticMarkup(
+      // @ts-expect-error `sizes` is required by ImageProps
+      <Image alt="test" aspectRatio="video" src={CF_URL} />,
+    )
+
+    // Without one, the srcset the atom emits has nothing to resolve against.
+    expect(html).toContain('srcSet=')
+    expect(html).not.toContain('sizes=')
+  })
+})
+
 describe('<Image> blank src', () => {
   it('renders no <img> for an empty src (never emits src="")', () => {
-    const html = renderToStaticMarkup(<Image alt="test" src="" />)
+    const html = renderToStaticMarkup(<Image alt="test" sizes="100vw" src="" />)
 
     expect(html).not.toContain('<img')
     expect(html).not.toContain('src=""')
   })
 
   it('renders no <img> for a whitespace-only src', () => {
-    const html = renderToStaticMarkup(<Image alt="test" src="   " />)
+    const html = renderToStaticMarkup(<Image alt="test" sizes="100vw" src="   " />)
 
     expect(html).not.toContain('<img')
   })
 
   it('still shows the placeholder overlay so layout is preserved', () => {
-    const html = renderToStaticMarkup(<Image alt="test" src="" />)
+    const html = renderToStaticMarkup(<Image alt="test" sizes="100vw" src="" />)
 
     // The placeholder's gradient, filling the container in the absence of an image.
     expect(html).toContain('bg-gradient-to-br')
@@ -81,7 +105,7 @@ describe('<Image> blank src', () => {
   it('does not emit src="" for a blank src inside a lightbox trigger', () => {
     const html = renderToStaticMarkup(
       <LightboxProvider>
-        <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" src="" />
+        <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" sizes="100vw" src="" />
       </LightboxProvider>,
     )
 
@@ -96,7 +120,9 @@ describe('<Image> server render', () => {
   // all three, and an opaque placeholder ahead of it in DOM order hides it
   // from the first two (#145).
   it('renders the <img> opaque in the boxed layout', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
+    )
 
     expect(html).not.toContain('opacity-0')
     expect(html).toContain('opacity-100')
@@ -104,7 +130,7 @@ describe('<Image> server render', () => {
 
   it('renders the <img> opaque in the natural-flow layout', () => {
     const html = renderToStaticMarkup(
-      <Image alt="test" aspectRatio="video" forceAspectRatio={false} src={CF_URL} />,
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} sizes="100vw" src={CF_URL} />,
     )
 
     expect(html).not.toContain('opacity-0')
@@ -112,7 +138,9 @@ describe('<Image> server render', () => {
   })
 
   it('renders no loading placeholder above an image it has a src for', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
+    )
 
     expect(html).not.toContain('bg-gradient-to-br')
   })
@@ -120,7 +148,9 @@ describe('<Image> server render', () => {
 
 describe('<Image> forceAspectRatio', () => {
   it('constrains to a fixed-ratio box by default (aspect class on container, img fills it)', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
+    )
 
     expect(html).toContain('aspect-video')
     expect(html).toContain('w-full h-full') // <img> fills the box
@@ -128,7 +158,7 @@ describe('<Image> forceAspectRatio', () => {
 
   it('renders natural flow when false, but still fetches the optimized variant + srcset', () => {
     const html = renderToStaticMarkup(
-      <Image alt="test" aspectRatio="video" forceAspectRatio={false} src={CF_URL} />,
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} sizes="100vw" src={CF_URL} />,
     )
 
     // The optimized variant and responsive srcSet still emit.
@@ -137,6 +167,40 @@ describe('<Image> forceAspectRatio', () => {
     // There is no fixed-ratio box, and the <img> is not absolutely positioned to fill one.
     expect(html).not.toContain('aspect-video')
     expect(html).not.toContain('w-full h-full')
+  })
+
+  // A blank src reaches the same branch as a failed load at first render,
+  // which is what makes this state reachable from a server render at all.
+  it('falls back to the given ratio when only the placeholder renders', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} sizes="100vw" src="" />,
+    )
+
+    expect(html).toContain('aspect-video')
+    expect(html).not.toContain('<img')
+  })
+
+  it('leaves an unboxed placeholder with no aspectRatio unboxed', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" forceAspectRatio={false} sizes="100vw" src="" />,
+    )
+
+    expect(html).not.toContain('aspect-')
+  })
+
+  it('reserves no box for a placeholder the caller suppressed', () => {
+    const html = renderToStaticMarkup(
+      <Image
+        alt="test"
+        aspectRatio="video"
+        forceAspectRatio={false}
+        showLoading={false}
+        sizes="100vw"
+        src=""
+      />,
+    )
+
+    expect(html).not.toContain('aspect-video')
   })
 })
 
@@ -175,7 +239,7 @@ describe('<Image> lightbox trigger', () => {
   it('renders a keyboard-accessible trigger when lightboxGroup is set inside a provider', () => {
     const html = renderToStaticMarkup(
       <LightboxProvider>
-        <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" src={CF_URL} />
+        <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" sizes="100vw" src={CF_URL} />
       </LightboxProvider>,
     )
 
@@ -190,7 +254,7 @@ describe('<Image> lightbox trigger', () => {
   it('falls back to a generic label when alt is empty', () => {
     const html = renderToStaticMarkup(
       <LightboxProvider>
-        <Image alt="" aspectRatio="video" lightboxGroup="g1" src={CF_URL} />
+        <Image alt="" aspectRatio="video" lightboxGroup="g1" sizes="100vw" src={CF_URL} />
       </LightboxProvider>,
     )
 
@@ -199,7 +263,7 @@ describe('<Image> lightbox trigger', () => {
 
   it('renders no trigger when lightboxGroup is set but no provider is mounted', () => {
     const html = renderToStaticMarkup(
-      <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" src={CF_URL} />,
+      <Image alt="A sunrise" aspectRatio="video" lightboxGroup="g1" sizes="100vw" src={CF_URL} />,
     )
 
     expect(html).not.toContain('<button')
@@ -209,7 +273,7 @@ describe('<Image> lightbox trigger', () => {
   it('renders no trigger without a lightboxGroup, even inside a provider', () => {
     const html = renderToStaticMarkup(
       <LightboxProvider>
-        <Image alt="x" aspectRatio="video" src={CF_URL} />
+        <Image alt="x" aspectRatio="video" sizes="100vw" src={CF_URL} />
       </LightboxProvider>,
     )
 
@@ -223,7 +287,7 @@ describe('<Image> priority', () => {
   // So these assertions match rel and as only.
   it('emits eager loading, high fetchPriority, and a hoisted preload link', () => {
     const html = renderToStaticMarkup(
-      <Image priority alt="test" aspectRatio="video" src={CF_URL} />,
+      <Image priority alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
     )
 
     expect(html).toContain('loading="eager"')
@@ -233,7 +297,9 @@ describe('<Image> priority', () => {
   })
 
   it('defaults to lazy loading with no preload link', () => {
-    const html = renderToStaticMarkup(<Image alt="test" aspectRatio="video" src={CF_URL} />)
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" sizes="100vw" src={CF_URL} />,
+    )
 
     expect(html).toContain('loading="lazy"')
     expect(html).not.toContain('rel="preload"')
@@ -242,7 +308,14 @@ describe('<Image> priority', () => {
 
   it('still reaches the preload through {...props}, without priority', () => {
     const html = renderToStaticMarkup(
-      <Image alt="test" aspectRatio="video" fetchPriority="high" loading="eager" src={CF_URL} />,
+      <Image
+        alt="test"
+        aspectRatio="video"
+        fetchPriority="high"
+        loading="eager"
+        sizes="100vw"
+        src={CF_URL}
+      />,
     )
 
     expect(html).toMatch(/<link[^>]*rel="preload"/)
@@ -250,7 +323,7 @@ describe('<Image> priority', () => {
 
   it('lets an explicit loading prop override priority', () => {
     const html = renderToStaticMarkup(
-      <Image priority alt="test" aspectRatio="video" loading="lazy" src={CF_URL} />,
+      <Image priority alt="test" aspectRatio="video" loading="lazy" sizes="100vw" src={CF_URL} />,
     )
 
     expect(html).toContain('loading="lazy"')

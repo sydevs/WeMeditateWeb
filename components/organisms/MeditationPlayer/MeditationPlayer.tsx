@@ -25,9 +25,19 @@ import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
 import type { MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
+import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 import { useT } from '../../../hooks/useT'
+import { formatDuration } from '../../../lib/duration'
 
 export type { Track } from '../../molecules/AudioPlayer/types'
+
+/**
+ * The frame's own variant. Its box is 488px at the widest — `max-w-lg` less
+ * `inset-2` and the 4px border — so 800px is a deliberate ~0.8x sample at 2x
+ * rather than full coverage: the next square width is 1200, for 2.25x the
+ * pixels. A srcset would serve both ends, and this hand-rolled <img> has none.
+ */
+const FRAME_VARIANT = getVariantName('square', 'medium')
 
 // Progress circle geometry constants
 const PROGRESS_RADIUS = 48
@@ -35,6 +45,16 @@ const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 
 // Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
+
+// The public site an embedded player sends a visitor back to: today the legacy
+// Rails app on its own origin, which localizes its own slugs (`/fr/méditations`),
+// so `lib/urls.ts` cannot spell these and both links stay on the English entry
+// points. The bare domain is the web arm's link text — a brand name, not copy.
+// shortcut: absolute and unlocalized while this domain is somebody else's. Once
+// this app serves wemeditate.com, `Link` stops passing these through as external
+// and both become unprefixed self-links in every locale — route them through
+// `localeHref` then.
+const WEMEDITATE_DOMAIN = 'wemeditate.com'
 
 // Placeholder image for when no frames are available (teal gradient)
 const PLACEHOLDER_IMAGE =
@@ -50,15 +70,6 @@ const PLACEHOLDER_IMAGE =
     <rect width="400" height="400" fill="url(#g)"/>
   </svg>
 `)
-
-/** Format time in seconds to MM:SS format */
-function formatTime(seconds: number): string {
-  if (!isFinite(seconds)) return '0:00'
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
 
 export interface MeditationFrame {
   /** Timestamp in seconds when this frame should be displayed */
@@ -158,7 +169,6 @@ function VolumeRow({
   onToggleMute,
   action,
 }: VolumeRowProps) {
-
   return (
     <div className="flex flex-col gap-1">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-600">
@@ -686,7 +696,12 @@ function MeditationPlayerInner({
                       alt={track.title}
                       className="w-full h-full object-cover"
                       draggable={false}
-                      src={currentMedia.src}
+                      /* The page's main image: MeditationTemplate renders this player as the
+                         only content, so the frame is the LCP candidate. React 19 hoists a
+                         preload link for any <img> that is not loading="lazy". */
+                      fetchPriority="high"
+                      loading="eager"
+                      src={getImageURL(currentMedia.src, FRAME_VARIANT)}
                     />
                   )}
 
@@ -764,7 +779,7 @@ function MeditationPlayerInner({
               {/* Time Display */}
               <div className="flex justify-center mt-2">
                 <span className="text-base @4xl:text-lg font-number text-gray-700">
-                  {formatTime(
+                  {formatDuration(
                     timeDisplay === 'countdown'
                       ? Math.max(0, effectiveDuration - displayTime)
                       : displayTime,
@@ -815,29 +830,37 @@ function MeditationPlayerInner({
         </div>
 
         {/* Upsell Message */}
-        {/* eslint-disable no-restricted-syntax -- #178: these need keys added to wm-web-translations first */}
         {upsell && (
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
-              {upsell === 'web' ? (
-                <>
-                  Find more meditations on{' '}
-                  <Link external href="https://wemeditate.com/meditations" variant="primary">
-                    wemeditate.com
-                  </Link>
-                </>
-              ) : (
-                <>
-                  Find interactive meditations with meditation music in our{' '}
-                  <Link external href="https://wemeditate.com/app" variant="primary">
-                    free app
-                  </Link>
-                </>
-              )}
+              {upsell === 'web'
+                ? t.rich('meditation.general.upsell_web', {
+                    link: (
+                      <Link
+                        key="upsell"
+                        external
+                        href={`https://${WEMEDITATE_DOMAIN}/meditations`}
+                        variant="primary"
+                      >
+                        {WEMEDITATE_DOMAIN}
+                      </Link>
+                    ),
+                  })
+                : t.rich('meditation.general.upsell_app', {
+                    link: (
+                      <Link
+                        key="upsell"
+                        external
+                        href={`https://${WEMEDITATE_DOMAIN}/app`}
+                        variant="primary"
+                      >
+                        {t('meditation.general.upsell_app_link')}
+                      </Link>
+                    ),
+                  })}
             </p>
           </div>
         )}
-        {/* eslint-enable no-restricted-syntax */}
       </div>
     </div>
   )
