@@ -132,9 +132,10 @@ jobs:
 
       # Find this target's preview URL through the GitHub API. Cloudflare posts
       # it in the bot's PR comment. Check-run output and deployment data are
-      # fallbacks. This step waits until the preview responds, then reports what
-      # it found: an empty preview_url and exit 0 when nothing turned up. The
-      # step below decides whether that is a failure.
+      # fallbacks, and the Worker's own branch host — spelled from PR_HEAD_REF — is the last
+      # resort for a pull request Cloudflare never commented on. This step waits until the
+      # preview responds, then reports what it found: an empty preview_url and exit 0 when
+      # nothing turned up. The step below decides whether that is a failure.
       - name: Discover ${{ matrix.target }} preview URL
         id: preview
         if: steps.scope.outputs.built != 'false'
@@ -142,6 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           CF_PROJECT_MATCH: ${{ matrix.project }}
         run: node scripts/get-cloudflare-preview-url.mjs
 

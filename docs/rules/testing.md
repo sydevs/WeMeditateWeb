@@ -25,6 +25,9 @@ pnpm test:ui      # Vitest UI
   a config file, and fails the build when one exports no `route` and no `default`. Test
   `+route.ts` as `route.test.ts`, never as `+route.test.ts`. `pnpm test:run` and `tsc` both pass
   either way — only `pnpm build` catches this.
+- Give a helper a `use` prefix only when it calls hooks. `@eslint-react` errors on a
+  `use`-prefixed function that calls none, which reaches the compiler-API helpers under
+  `tests/guards/`.
 - `vitest.config.ts` enables Vitest's globals. Import `describe`, `it`, and `expect` from
   `'vitest'` explicitly, to
   match existing files such as [lib/cloudflare-images.test.ts](../../lib/cloudflare-images.test.ts)

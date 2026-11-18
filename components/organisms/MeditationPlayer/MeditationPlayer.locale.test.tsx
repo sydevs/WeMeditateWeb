@@ -51,8 +51,10 @@ describe('the MeditationPlayer upsell in a non-English locale', () => {
     expect(html).toContain('Trouvez plus de méditations sur')
     expect(html).not.toContain('Find more meditations on')
     // The domain is a brand name, so it stays English inside the translated
-    // sentence.
-    expect(html).toContain('wemeditate.com</a>')
+    // sentence. Matched as element text rather than up to `</a>`, because the
+    // anchor is `external` and `Link` closes it with its own sr-only
+    // new-tab announcement.
+    expect(html).toContain('>wemeditate.com<')
     expect(html).toContain('href="https://wemeditate.com/meditations"')
   })
 

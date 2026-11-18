@@ -1,6 +1,8 @@
 import { ComponentProps, ReactNode } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
+import { Link } from '../../atoms/Link'
 import { surface, type Surface } from '../../atoms/surface'
+import { isSafeLinkHref } from '../../../lib/urls'
 import {
   type AspectRatio,
   type ImageSize,
@@ -131,12 +133,17 @@ export function Splash({
           {children && <div className="mb-20">{children}</div>}
 
           {/* Call-to-Action with Decorative Leaves */}
-          {ctaText && ctaHref && (
-            <a
-              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light text-fg transition-transform hover:scale-105 focus-ring ${
+          {/* The gate stays at the call site although `Link` applies it too:
+              a refused URL must render no call to action at all, where the
+              atom would render the leaves and the words inert. They invite a
+              click, so they are worse than absent. */}
+          {ctaText && ctaHref && isSafeLinkHref(ctaHref) && (
+            <Link
+              className={`inline-flex items-center justify-center gap-4 text-xl md:text-2xl font-light text-fg transition-transform hover:scale-105 ${
                 pulsate ? 'animate-pulse-scale' : ''
               }`}
               href={ctaHref}
+              variant="unstyled"
             >
               {/* Left Leaf (rotated outward) */}
               <LeafSvg aria-hidden="true" className="w-16 h-16 -rotate-90" />
@@ -146,7 +153,7 @@ export function Splash({
 
               {/* Right Leaf (rotated outward) */}
               <LeafSvg aria-hidden="true" className="w-16 h-16 rotate-90" />
-            </a>
+            </Link>
           )}
         </div>
       </div>

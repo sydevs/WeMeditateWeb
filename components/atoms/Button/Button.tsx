@@ -39,6 +39,21 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   icon?: HeroIcon
 
   /**
+   * Which side of the label the icon sits on.
+   * @default 'leading'
+   */
+  iconPosition?: 'leading' | 'trailing'
+
+  /**
+   * Ellipsise the label rather than let its text width floor the button.
+   * Give the button a `max-w-*` to truncate against, and read the flex
+   * `min-width` note in layouts/tailwind.css: the floor `touch-target`
+   * gives shrinks a flex item only.
+   * @default false
+   */
+  truncate?: boolean
+
+  /**
    * Loading state. Disables the button and shows a spinner.
    * @default false
    */
@@ -84,7 +99,8 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  * Supports:
  * - Text-only buttons
  * - Icon-only buttons (circular or square)
- * - Icon-and-text buttons
+ * - Icon-and-text buttons, the icon leading or trailing
+ * - Labels that ellipsise rather than widen the button
  * - Multiple variants: primary, secondary, outline, ghost
  * - Loading states with spinner
  * - Different sizes and shapes
@@ -103,6 +119,11 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
  * // Icon and text button
  * <Button icon={PlayIcon}>Play Video</Button>
  *
+ * // Trailing icon, with a label that ellipsises instead of widening the button
+ * <Button icon={ChevronRightIcon} iconPosition="trailing" truncate className="max-w-40">
+ *   {title}
+ * </Button>
+ *
  * // Loading state
  * <Button isLoading>Save</Button>
  */
@@ -111,6 +132,8 @@ export function Button({
   size = 'md',
   shape,
   icon,
+  iconPosition = 'leading',
+  truncate = false,
   isLoading = false,
   isActive = false,
   fullWidth = false,
@@ -237,12 +260,18 @@ export function Button({
 
   const commonClassNames = `${baseStyles} ${animatedStyles} ${touchTargetStyles} ${variantStyles[variant]} ${sizeClass} ${shapeClass} ${widthStyles} ${className}`
 
+  // `min-w-0`, or the label's min-content width is the nowrap text width and
+  // `truncate` never fires.
+  const label = truncate ? <span className="min-w-0 truncate">{children}</span> : children
+  const renderedIcon = icon && <Icon icon={icon} size={iconSizeMap[size]} />
+
   const content = isLoading ? (
     <Spinner color="currentColor" size={spinnerSizeMap[size]} />
   ) : (
     <>
-      {icon && <Icon icon={icon} size={iconSizeMap[size]} />}
-      {children}
+      {iconPosition === 'leading' && renderedIcon}
+      {label}
+      {iconPosition === 'trailing' && renderedIcon}
     </>
   )
 
@@ -251,7 +280,7 @@ export function Button({
     return (
       <Link
         aria-current={isActive ? 'page' : undefined}
-        aria-label={isIconOnly ? ariaLabel : undefined}
+        aria-label={ariaLabel}
         className={commonClassNames}
         href={href}
         locale={locale}
@@ -268,7 +297,7 @@ export function Button({
     <button
       aria-busy={isLoading}
       aria-current={isActive ? 'page' : undefined}
-      aria-label={isIconOnly ? ariaLabel : undefined}
+      aria-label={ariaLabel}
       className={commonClassNames}
       disabled={disabled || isLoading}
       type={type}

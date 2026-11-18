@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import { Avatar } from '../../atoms/Avatar/Avatar'
+import { Link } from '../../atoms/Link'
 import { useT } from '../../../hooks/useT'
 
 export interface AuthorProps {
@@ -123,9 +124,9 @@ export function Author({
       <div className={`${textAlign} text-gray-700 max-w-xs ${className}`}>
         <div className="mb-8">
           {href ? (
-            <a href={href}>
+            <Link href={href} variant="unstyled">
               {avatarElement}
-            </a>
+            </Link>
           ) : (
             avatarElement
           )}
