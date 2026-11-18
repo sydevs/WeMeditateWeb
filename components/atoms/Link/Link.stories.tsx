@@ -116,25 +116,54 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="External Links">
+    <StorySection
+      title="External Links"
+      description="An external link opens a new tab, and says so to a screen reader"
+    >
       <div className="flex flex-col gap-3">
         <div>
-          <Link external href="https://example.com">
-            External link (opens in new tab with security)
+          <Link href="https://example.com" external>
+            External link
           </Link>
           <span className="text-xs text-gray-700 ml-2">
-            (includes target="_blank" and rel="noopener noreferrer")
+            (target="_blank", rel="noopener noreferrer", and screen-reader-only text after the
+            link&apos;s own words)
           </span>
         </div>
         <div>
-          <Link external href="https://github.com" variant="primary">
-            External primary link
+          <Link href="https://github.com" external variant="primary" aria-label="Our GitHub">
+            External primary link, labelled
           </Link>
+          <span className="text-xs text-gray-700 ml-2">
+            (an aria-label replaces the accessible name, so the warning is folded into the label
+            instead: &quot;Our GitHub (opens in new tab)&quot;)
+          </span>
         </div>
         <div>
           <Link external href="https://stackoverflow.com" variant="secondary">
             External secondary link
           </Link>
+        </div>
+      </div>
+    </StorySection>
+
+    <StorySection
+      title="Refused Schemes"
+      description="Link is the scheme gate for every href the site did not author"
+    >
+      <div className="flex flex-col gap-3">
+        <div>
+          <Link href="javascript:alert(1)">A javascript: href</Link>
+          <span className="text-xs text-gray-700 ml-2">
+            (renders the words with no href at all — inspect it)
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-8">
+          <Link href="mailto:hello@example.com">mailto:</Link>
+          <Link href="tel:+1234567890">tel:</Link>
+          <Link href="#section">#anchor</Link>
+          <Link href="/about">a site path</Link>
+          <span className="text-xs text-gray-700">(all four render unchanged)</span>
         </div>
       </div>
     </StorySection>

@@ -96,7 +96,7 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
                 <span aria-current={isCurrent ? 'page' : undefined}>{rung.name}</span>
               ) : (
                 <Link
-                  className="hover:text-teal-600"
+                  className="hover:text-teal-600 transition-colors duration-200"
                   external={!isSitePath(href)}
                   href={href}
                   variant="unstyled"
@@ -123,7 +123,7 @@ function EventCard({ card }: { card: AtlasSeoEventCard }) {
       <h2 className="text-base font-medium text-gray-800 sm:text-lg">
         {href ? (
           <Link
-            className="hover:text-teal-600"
+            className="hover:text-teal-600 transition-colors duration-200"
             external={!isSitePath(href)}
             href={href}
             variant="unstyled"
@@ -263,7 +263,7 @@ function EventContent({
         <p className="mt-6">
           <Link
             external
-            className="text-teal-600 hover:text-teal-700"
+            className="text-teal-600 hover:text-teal-700 transition-colors duration-200"
             href={linkUrl}
             variant="unstyled"
           >

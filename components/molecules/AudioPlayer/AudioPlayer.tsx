@@ -9,7 +9,7 @@ import {
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
-import { Button, Image } from '../../atoms'
+import { Button, Image, Link } from '../../atoms'
 import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import type { Track } from './types'
 import { useT } from '../../../hooks/useT'
@@ -108,14 +108,14 @@ function AudioPlayerInner({
               <h3 className="text-sm font-medium text-gray-900 truncate">
                 {state.currentTrack.title}
               </h3>
-              <a
-                className="text-xs text-teal-600 hover:text-teal-700 truncate block"
+              <Link
                 href={state.currentTrack.creditURL}
-                rel="noopener noreferrer"
-                target="_blank"
+                external
+                variant="primary"
+                className="text-xs truncate block"
               >
                 {state.currentTrack.credit}
-              </a>
+              </Link>
             </div>
             {tracks.length > 1 && (
               <div className="text-sm font-medium text-gray-700 whitespace-nowrap">

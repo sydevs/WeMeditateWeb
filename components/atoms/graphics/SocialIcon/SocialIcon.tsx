@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { useT } from '../../../../hooks/useT'
+import { Link } from '../../Link'
 
 /** Every social platform the site links to. */
 export type SocialPlatform =
@@ -107,11 +107,16 @@ export function SocialIcon({
   size = 'md',
   color = 'gray',
   className = '',
+  'aria-label': ariaLabel,
   ...props
 }: SocialIconProps) {
-  const t = useT()
-
   const { label, icon } = PLATFORM_CONFIG[platform]
+
+  // `Link` folds the new-tab warning into whichever name wins, and gates the
+  // scheme. A caller may name the link itself — `SocialShare` says "Share on
+  // X" — and spreading `props` over a finished label is what dropped the
+  // warning from every share button (#238).
+  const name = ariaLabel ?? label
 
   const sizeStyles = {
     sm: 'w-4 h-4',
@@ -141,13 +146,13 @@ export function SocialIcon({
   const colorClass = color === 'brand' ? colorStyles.brand : colorStyles[color]
 
   return (
-    <a
-      aria-label={t('common.a11y.opens_in_new_tab', { label })}
-      className={`inline-flex items-center justify-center transition-all duration-200 focus-ring ${className}`}
-      href={href}
-      rel="noopener noreferrer"
-      target="_blank"
+    <Link
       {...props}
+      href={href}
+      external
+      variant="unstyled"
+      aria-label={name}
+      className={`inline-flex items-center justify-center ${className}`}
     >
       <svg
         aria-hidden="true"
@@ -157,6 +162,6 @@ export function SocialIcon({
       >
         <path d={icon} />
       </svg>
-    </a>
+    </Link>
   )
 }

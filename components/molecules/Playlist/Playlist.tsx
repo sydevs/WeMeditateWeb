@@ -68,7 +68,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
           <Link
             external
             className={`text-xs truncate self-start mt-1 ${
-              isCurrentTrack ? 'text-teal-50 hover:text-white' : ''
+              isCurrentTrack ? 'text-teal-50 hover:text-white transition-colors duration-200' : ''
             }`}
             href={track.creditURL}
             size="inherit"

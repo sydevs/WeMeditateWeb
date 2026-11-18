@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Button } from '../../atoms/Button'
 import { Column, ColumnProps } from '../Column'
 import { useT } from '../../../hooks/useT'
 
@@ -23,7 +24,10 @@ interface CarouselNavButtonProps {
   disabled: boolean
 }
 
-/** Navigation button for the carousel. Displays a chevron and the adjacent column title. */
+/**
+ * Navigation button for the carousel, in the row slot it shrinks inside.
+ * Displays a chevron and the adjacent column title.
+ */
 function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNavButtonProps) {
   const isPrev = direction === 'prev'
   const t = useT()
@@ -34,22 +38,22 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
     : t(isPrev ? 'common.a11y.previous' : 'common.a11y.next')
 
   return (
-    <button
-      className="flex touch-target items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-      disabled={disabled}
-      aria-label={ariaLabel}
-      // `touch-target`'s 44px floor replaces the `min-w-0` that let this flex
-      // item shrink: it still shrinks, just not below the tap minimum.
-      onClick={onClick}
-    >
-      {column && (
-        <>
-          {isPrev && <ChevronLeftIcon className="w-5 h-5 shrink-0" />}
-          <span className="max-w-[100px] truncate">{column.title}</span>
-          {!isPrev && <ChevronRightIcon className="w-5 h-5 shrink-0" />}
-        </>
-      )}
-    </button>
+    // Half the row each, and `min-w-0` so the slot may shrink under the
+    // title's own width and let `truncate` fire instead of widening the row.
+    <div className={isPrev ? 'flex-1 min-w-0 flex' : 'flex-1 min-w-0 flex justify-end'}>
+      <Button
+        truncate
+        aria-label={ariaLabel}
+        disabled={disabled}
+        icon={column ? (isPrev ? ChevronLeftIcon : ChevronRightIcon) : undefined}
+        iconPosition={isPrev ? 'leading' : 'trailing'}
+        size="sm"
+        variant="ghost"
+        onClick={onClick}
+      >
+        {column?.title}
+      </Button>
+    </div>
   )
 }
 
@@ -143,60 +147,64 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
   const useCarouselMobile = columns.length >= MOBILE_CAROUSEL_THRESHOLD
   const useCarouselTablet = columns.length >= TABLET_CAROUSEL_THRESHOLD
 
-  // Show carousel on mobile (3+ cols) or tablet (4+ cols)
-  const showCarousel = useCarouselMobile || useCarouselTablet
+  // The tablet threshold is the higher of the two, so it implies the mobile
+  // one and adds nothing here.
+  const showCarousel = useCarouselMobile
 
   return (
     <div className={className}>
       {/* Consolidated Carousel (Mobile: 3+ cols, Tablet: 4+ cols) */}
       {showCarousel && (
         <div
-          className={`
-            ${useCarouselMobile ? '' : 'md:hidden'}
-            ${useCarouselTablet ? 'md:block' : ''}
-            lg:hidden
-          `}
+          // Keyed on the tablet threshold, which is the one that decides
+          // anything here: inside this branch the mobile one is always true,
+          // so it emitted no class and three columns kept the carousel at
+          // tablet, against the behaviour above (#201).
+          className={useCarouselTablet ? 'lg:hidden' : 'md:hidden lg:hidden'}
         >
           {/* Navigation controls above carousel */}
-          <div className="flex items-center mb-6">
-            <div className="flex-1 min-w-0">
-              <CarouselNavButton
-                column={prevColumn}
-                direction="prev"
-                disabled={!hasPrev}
-                onClick={scrollPrev}
-              />
-            </div>
+          <div className="flex items-center">
+            <CarouselNavButton
+              direction="prev"
+              column={prevColumn}
+              onClick={scrollPrev}
+              disabled={!hasPrev}
+            />
 
-            {/* Dot indicators - absolutely centered */}
-            <div className="flex gap-2 shrink-0 px-4">
-              {columns.map((_, index) => (
-                <button
-                  key={index}
-                  className={`touch-target-overlay w-2 h-2 rounded-full transition-colors ${
-                    index === selectedIndex ? 'bg-teal-600' : 'bg-gray-300 hover:bg-gray-400'
+            <CarouselNavButton
+              direction="next"
+              column={nextColumn}
+              onClick={scrollNext}
+              disabled={!hasNext}
+            />
+          </div>
+
+          {/* The dots take a line of their own, so neither row pays for the
+              other: sharing one left each nav title about 61px at a 390px
+              viewport, and forced the cells under the house 44px to fit.
+              Abutting cells cannot overlap, which a 44px `touch-target-overlay`
+              on each 8px dot did — it handed the tap to the next slide (#135). */}
+          <div className="flex justify-center mb-6">
+            {columns.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollTo(index)}
+                aria-label={t('blocks.a11y.go_to_column', {
+                  number: index + 1,
+                  title: columns[index].title,
+                })}
+                aria-pressed={index === selectedIndex}
+                className="group flex w-11 h-11 items-center justify-center focus-ring"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === selectedIndex
+                      ? 'bg-teal-600'
+                      : 'bg-gray-300 group-hover:bg-gray-400'
                   }`}
-                  aria-label={t('blocks.a11y.go_to_column', {
-                    number: index + 1,
-                    title: columns[index].title,
-                  })}
-                  // Neighbouring overlays overlap at `gap-2`, and separating
-                  // them needs 44px centres — 220px of row, which overflows a
-                  // 390px viewport once the nav buttons' padding is counted.
-                  // Partial on purpose; #135 carries the layout decision.
-                  onClick={() => scrollTo(index)}
                 />
-              ))}
-            </div>
-
-            <div className="flex-1 min-w-0 flex justify-end">
-              <CarouselNavButton
-                column={nextColumn}
-                direction="next"
-                disabled={!hasNext}
-                onClick={scrollNext}
-              />
-            </div>
+              </button>
+            ))}
           </div>
 
           {/* Carousel viewport */}
@@ -218,8 +226,8 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
       {/* Desktop: always flex row */}
       <div
         className={`
-          ${!useCarouselMobile ? 'flex flex-col md:flex-row' : 'hidden'}
-          ${useCarouselTablet ? 'md:hidden!' : ''}
+          ${useCarouselMobile ? 'hidden' : 'flex flex-col'}
+          ${useCarouselTablet ? 'md:hidden!' : 'md:flex md:flex-row'}
           lg:flex! lg:flex-row
           items-start justify-center gap-8
         `}

@@ -12,6 +12,8 @@
  *   PR_HEAD_SHA         - PR head commit SHA (github.event.pull_request.head.sha)
  *   PR_NUMBER           - PR number (github.event.pull_request.number).
  *                         Enables the primary PR-comment source.
+ *   PR_HEAD_REF         - PR head branch (github.event.pull_request.head.ref).
+ *                         Enables the derived-host source of last resort.
  *   CF_PROJECT_MATCH    - substring the target project or host must contain
  *                         (for example "wemeditate-web"). When unset, the
  *                         script accepts any non-Ladle preview.
@@ -27,11 +29,13 @@
  * $GITHUB_ENV.
  */
 import { appendFileSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 
 const GH_TOKEN = process.env.GITHUB_TOKEN
 const REPO = process.env.GITHUB_REPOSITORY
 const SHA = process.env.PR_HEAD_SHA
 const PR_NUMBER = process.env.PR_NUMBER
+const PR_HEAD_REF = process.env.PR_HEAD_REF
 const CF_PROJECT_MATCH = process.env.CF_PROJECT_MATCH
 const HEALTH_PATH = process.env.HEALTH_PATH || '/'
 
@@ -47,14 +51,12 @@ const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 15_000
 // The design-system (Ladle) Worker. It matters only to a run with no CF_PROJECT_MATCH, which takes
 // the web app instead — in CI `matchesTarget` returns before it reads this list.
 const EXCLUDE = ['wemeditate-design']
-// Matches a Cloudflare preview origin at any subdomain depth.
-const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.(?:pages\.dev|workers\.dev)/i
-
-// Both previews are Workers Builds, so a `pages.dev` host is a deployment of the retired
-// wemeditate-design Pages project. Its comment still names the target project, still sorts
-// ahead of the Workers one on a PR opened before 2026-11-02, and the host no longer answers —
-// so selecting it burns the whole health timeout and reddens a build that did deploy (#199).
-const RETIRED_HOST_RE = /\.pages\.dev$/i
+// Matches a Cloudflare preview origin at any subdomain depth. Workers only: both previews moved
+// off Pages on 2026-11-02, so a `pages.dev` host is a leftover that no longer resolves — and a
+// pull request opened before that still carries the `wemeditate-design` Pages comment, which
+// matched by project name, sorted ahead of the live Worker, and spent the job's five-minute
+// reachability budget on a dead address (#184).
+const PREVIEW_URL_RE = /https?:\/\/[a-z0-9.-]+\.workers\.dev/i
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -66,6 +68,17 @@ function matchesTarget(project, url) {
   if (CF_PROJECT_MATCH) return hay.includes(CF_PROJECT_MATCH.toLowerCase())
   return !EXCLUDE.some((x) => hay.includes(x))
 }
+
+/** Cloudflare's branch-preview slug: lowercase, each run of other characters one dash. */
+const slugifyBranch = (ref) =>
+  String(ref ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+/** The account subdomain of a `*.workers.dev` preview origin, or null if the host is not one. */
+const accountSubdomain = (url) =>
+  String(url ?? '').match(/^https?:\/\/[a-z0-9-]+\.([a-z0-9-]+)\.workers\.dev$/i)?.[1] ?? null
 
 async function ghFetch(path) {
   const res = await fetch(`https://api.github.com${path}`, {
@@ -133,7 +146,29 @@ async function fromCheckRuns() {
   return out
 }
 
-async function discoverUrl() {
+// 5. Last resort: spell the target's own branch host. Workers Builds names one
+// `<branch-slug>-<worker>.<account>.workers.dev`, so any one preview found on this PR gives away
+// the account subdomain, and CF_PROJECT_MATCH is the Worker's exact name in both ci.yml legs.
+// Needed because Cloudflare posts no comment at all for the `wemeditate-design` Worker on a pull
+// request older than its Git integration, which leaves the live preview in no source above.
+// A wrong guess never reaches the specs: it has to answer first.
+// shortcut: the branch alias tracks the branch's latest successful build rather than this
+// commit, and no commit-level address is derivable — upgrade with sydevs/SahajCloud#903
+function fromDerivedBranchHost(found) {
+  if (!CF_PROJECT_MATCH || !PR_HEAD_REF) return []
+  const account = found.map((c) => accountSubdomain(c.url)).find(Boolean)
+  const slug = slugifyBranch(PR_HEAD_REF)
+  if (!account || !slug) return []
+  return [
+    {
+      project: CF_PROJECT_MATCH,
+      url: `https://${slug}-${CF_PROJECT_MATCH}.${account}.workers.dev`,
+      source: 'derived-branch-host',
+    },
+  ]
+}
+
+async function discoverUrl({ derive = false } = {}) {
   const candidates = []
   for (const source of [fromPrComments, fromDeployments, fromCommitStatuses, fromCheckRuns]) {
     try {
@@ -142,19 +177,14 @@ async function discoverUrl() {
       console.error(`discovery (${source.name}): ${err.message}`)
     }
   }
+  if (derive) candidates.push(...fromDerivedBranchHost(candidates))
 
   for (const c of candidates) {
-    const label = `${c.url} [${c.source}, project=${c.project ?? '?'}]`
-    if (RETIRED_HOST_RE.test(c.url)) {
-      console.error(`skipping ${label} — retired Cloudflare Pages host`)
-      continue
+    if (matchesTarget(c.project, c.url)) {
+      console.error(`selected ${c.url} [${c.source}, project=${c.project ?? '?'}]`)
+      return c.url
     }
-    if (!matchesTarget(c.project, c.url)) {
-      console.error(`skipping ${label} — not the target project`)
-      continue
-    }
-    console.error(`selected ${label}`)
-    return c.url
+    console.error(`skipping ${c.url} [${c.source}, project=${c.project ?? '?'}] — not the target project`)
   }
   return null
 }
@@ -202,6 +232,11 @@ async function main() {
     await sleep(POLL_INTERVAL_MS)
   }
 
+  // Only after the whole discovery window named nothing. The derived address is the branch
+  // alias, so letting it run earlier would hand the specs the previous build while this
+  // commit's own was still deploying.
+  if (!url) url = await discoverUrl({ derive: true })
+
   if (!url) {
     console.error('No matching Cloudflare preview found within timeout — reporting none found.')
     exportUrl('')
@@ -217,7 +252,20 @@ async function main() {
   console.log(url)
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+export {
+  PREVIEW_URL_RE,
+  extractPreviewUrl,
+  matchesTarget,
+  slugifyBranch,
+  accountSubdomain,
+  fromDerivedBranchHost,
+}
+
+// tests/guards/preview-discovery.test.ts imports the helpers above, so the work runs only for a
+// direct `node scripts/get-cloudflare-preview-url.mjs`.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}

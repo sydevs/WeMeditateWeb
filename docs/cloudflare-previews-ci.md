@@ -30,12 +30,17 @@ Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.clo
 build page and carries no preview address. Check-run output, deployments and commit statuses
 stay wired as fallbacks that have never yet yielded a URL here.
 
-⚠ The ladle preview is the `wemeditate-design` Worker. A PR opened before 2026-11-02 may still
-carry a `wemeditate-design` Pages comment: it matches `CF_PROJECT_MATCH` by project name and comes
-first, and its `wm-design.pages.dev` host no longer answers. Discovery rejects a `pages.dev` host
-outright for that reason, printing `skipping … — retired Cloudflare Pages host` and reading on to
-the Workers comment (#199). Moving either preview back to Pages means lifting that rule in the
-same commit.
+⚠ The ladle preview is the `wemeditate-design` Worker. Discovery accepts a `workers.dev` host and
+nothing else, because a PR opened before 2026-11-02 still carries a `wemeditate-design` **Pages**
+comment: it matched `CF_PROJECT_MATCH` by project name, came first, and its `wm-design.pages.dev`
+host no longer resolves (#184). Such a PR gets no Workers comment for that Worker either —
+Cloudflare comments only from its Git integration's own lifetime — so once the whole discovery
+window has named nothing, discovery spells the Worker's branch host itself:
+`<branch-slug>-<worker>.<account>.workers.dev`, taking the account subdomain from whatever other
+preview the PR does carry. It waits out that window first because the branch alias tracks the
+branch's latest successful build rather than this commit, so running it earlier would hand the
+specs the previous build while this commit's own was still deploying. The address still has to
+answer before it reaches the specs. Read the `selected …` line the step prints.
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
@@ -145,10 +150,10 @@ the playground silently becomes indexable again.
 
 - [scripts/get-cloudflare-preview-url.mjs](../scripts/get-cloudflare-preview-url.mjs) finds the
   preview URL through the GitHub API (PR comment, then commit statuses, then check-runs, then
-  deployments). `CF_PROJECT_MATCH` selects the target, and both CI legs set one. Without it — a
-  local or ad-hoc run — the script instead excludes the Ladle playground (`wemeditate-design`),
-  so that `EXCLUDE` list never
-  applies in CI. It reports what it found and never judges it — the caller decides whether an
+  deployments), and derives the target's own branch host only when none of those named one.
+  `CF_PROJECT_MATCH` selects the target, and both CI legs set one; the derivation also reads it
+  as the Worker's exact name. Without it — a local or ad-hoc run — the script instead excludes
+  the Ladle playground (`wemeditate-design`), so that `EXCLUDE` list never applies in CI. It reports what it found and never judges it — the caller decides whether an
   empty URL is a failure. It treats any HTTP response as "reachable," so a 500 is caught by the smoke specs,
   not by discovery.
 - [tests/smoke/web/](../tests/smoke/web/) holds fetch-based specs for the Vike app: the homepage

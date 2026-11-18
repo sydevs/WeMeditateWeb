@@ -82,13 +82,11 @@ export function MasonryGrid({
       {/* Show More Button */}
       {!showAll && hasMoreItems && (
         <div className="text-center mt-8 md:mt-12">
-          <Button
-            variant="outline"
-            onClick={() => setShowAll(true)}
-            aria-label={t('common.a11y.show_more_items', {
-              count: items.length - initialItemCount,
-            })}
-          >
+          {/* No `aria-label`: the count-carrying one did not contain the
+              visible label, which WCAG 2.1 2.5.3 Label in Name requires
+              (#201). `Button` dropped it silently until the atom started
+              honouring it on its text form. */}
+          <Button variant="outline" onClick={() => setShowAll(true)}>
             {t('common.general.show_more')}
           </Button>
         </div>
