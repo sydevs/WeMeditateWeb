@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDuration } from './duration'
+import { formatDuration } from './index'
 
 describe('formatDuration', () => {
   it('renders a whole minute with no remainder', () => {
