@@ -261,10 +261,19 @@ describe('isSafeNavigationUrl', () => {
     expect(isSafeNavigationUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
   })
 
-  it('accepts an off-site URL, however it is spelled', () => {
-    // An editor may send a visitor elsewhere, so `//host` and the `/\host`
-    // browsers fold into it are the plain absolute URL by another name.
-    expect(isSafeNavigationUrl('//other.example/thanks')).toBe(true)
+  it('accepts an off-site URL by its own spelling, not borrowing our scheme', () => {
+    expect(isSafeNavigationUrl('https://other.example/thanks')).toBe(true)
+    expect(isSafeNavigationUrl('//other.example/thanks')).toBe(false)
+  })
+
+  it('answers `//host` as `isSafeLinkHref` does', () => {
+    // One string, one answer. The file held two views of it before (#257).
+    for (const url of ['//other.example/thanks', '//cdn.example.com']) {
+      expect(isSafeNavigationUrl(url), url).toBe(isSafeLinkHref(url))
+    }
+  })
+
+  it('still reads `/\\host` as a path, which is `isSitePath`’s limit', () => {
     expect(isSafeNavigationUrl('/\\other.example/thanks')).toBe(true)
   })
 

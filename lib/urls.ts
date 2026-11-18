@@ -102,13 +102,16 @@ export function isSafeHttpUrl(url: string): boolean {
  * likely one — `/thank-you` is a path, which `new URL` alone cannot parse.
  *
  * ⚠ **This gates the scheme, not the destination.** An editor is allowed to
- * send a visitor to another site, so an off-site URL passes. Anything that
- * tries to read as a path and leave anyway — `//host`, or `/\host`, which
- * browsers fold to `//host` — is therefore not a case worth excluding: the
- * plain spelling of the same destination is already allowed.
+ * send a visitor to another site, so an off-site URL passes — but by its own
+ * spelling. {@link isSitePath} decides what counts as a path here, so
+ * `//host` is read as the origin it names rather than as a path, and
+ * {@link isSafeLinkHref} cannot answer the same string differently.
+ *
+ * `/\host`, which browsers fold to `//host`, still reads as a path. That is
+ * {@link isSitePath}'s limit, not a second view of one here.
  */
 export function isSafeNavigationUrl(url: string): boolean {
-  return url.startsWith('/') || isSafeHttpUrl(url)
+  return isSitePath(url) || isSafeHttpUrl(url)
 }
 
 /** The schemes a link on this site may carry. */
