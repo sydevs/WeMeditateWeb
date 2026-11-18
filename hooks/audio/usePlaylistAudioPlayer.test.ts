@@ -21,4 +21,12 @@ describe('the auto-resume flag', () => {
 
     expect(writes.map((write) => write[1]).sort()).toEqual(['false', 'true'])
   })
+
+  // Counting the writes is not enough on its own: one `true` and one `false`
+  // moved into `next` and `previous` would be the original defect, and would
+  // still count two.
+  it('takes each of them where that listener states it', () => {
+    expect(source).toMatch(/const play = \(\) => \{\s*wantsPlaybackRef\.current = true\b/)
+    expect(source).toMatch(/const pause = \(\) => \{\s*wantsPlaybackRef\.current = false\b/)
+  })
 })
