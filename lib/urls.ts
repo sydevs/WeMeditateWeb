@@ -134,6 +134,14 @@ export function isSafeLinkHref(href: string): boolean {
     return true
   }
 
+  // Refused ahead of the parse because `new URL` answers both by throwing, and
+  // a caught `TypeError` carries a captured stack trace — some twenty times
+  // the cost of rendering the whole link. An unset SahajCloud field arrives
+  // here as `''`, which `Playlist` and `AudioPlayer` hand over per track.
+  if (href === '' || href.startsWith('//')) {
+    return false
+  }
+
   try {
     return LINK_SCHEMES.has(new URL(href).protocol)
   } catch {
