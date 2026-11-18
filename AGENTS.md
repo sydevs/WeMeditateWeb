@@ -114,15 +114,17 @@ These rules apply whether or not the matching rule file or skill is loaded.
   Which one is the destination's: `window.location` takes the first two, and an `href` takes
   `isSafeLinkHref`, the only one that admits what an editor legitimately types — a site path, a
   bare `#anchor`, `mailto:` and `tel:`. **The `Link` atom applies that one itself**, so an href
-  reaching an anchor through `Link` or `Button href` is already gated and the call site adds
-  nothing. A bare `<a>` is what still owes the call.
+  reaching an anchor through `Link`, or through an atom that delegates to it, is already gated and
+  the call site adds nothing. `tests/guards/bare-anchors.test.ts` is what keeps that true: no
+  component may open an `<a>` outside the atom, and its allowlist is the whole exception list.
 
   **One exception, and it is about what renders, not about safety.** A call site gates a value it
-  also passes to `Link` when a refused URL must render **nothing** — `Splash`'s call to action and
-  `AtlasContent`'s website link both do, because the atom renders the words inert and words
-  inviting a click that goes nowhere are worse than an absent element. `isSafeHttpUrl` is the
-  gate where the URL must additionally be absolute: a status page in `target="_blank"`
-  (`ErrorFallback`), and anything the atlas publishes, whose canonical `sitePathFromUrl` parses.
+  also passes to `Link` when a refused URL must render **nothing** — `Splash`'s call to action,
+  `AtlasContent`'s website link and `ErrorFallback`'s status page all do, because the atom renders
+  the words inert and words inviting a click that goes nowhere are worse than an absent element.
+  `isSafeHttpUrl` is the gate where the URL must additionally be absolute: a status page in
+  `target="_blank"` (`ErrorFallback`), and anything the atlas publishes, whose canonical
+  `sitePathFromUrl` parses.
 
   An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it, so
   `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path

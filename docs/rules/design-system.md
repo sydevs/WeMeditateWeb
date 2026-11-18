@@ -24,6 +24,13 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
 - Keep every component's first render visible — see the Performance section in
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
+- Spell `loading` on every hand-rolled `<img>` under `components/`, `layouts/` or `pages/` —
+  omitting it preloads the image. See the Performance section in
+  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for the hero rule and the `<picture>` carve-out, and
+  the `priority` prop's own docs in
+  [components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx) for why dropping
+  `loading="lazy"` is what preloads. `pnpm lint` rejects it through `local/img-loading`
+  ([eslint-rules/index.js](../../eslint-rules/index.js)), stories excepted.
 
 ## Two component shapes `pnpm lint` rejects
 
@@ -37,6 +44,30 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   `Input`'s `DEFAULT_ICONS`. A `Map` does not satisfy the rule: `.get()` is read as the call.
   Guard the index with `Object.hasOwn`, or an inherited key such as `toString` resolves to a
   prototype method.
+
+## A ref is an ordinary prop — never `forwardRef`
+
+React 19 passes `ref` through `props`, so a component that takes one destructures it beside the
+rest and sets no `displayName`. The five form atoms are the worked examples.
+
+`ComponentProps<'input'>` already types it, so a component extending one needs nothing further.
+A component over a different element declares `ref?: Ref<HTMLDivElement>` itself.
+
+`no-forward-ref`, `no-use-context`, `no-context-provider`, `naming-convention-ref-name` and
+`use-state` are errors, so `pnpm lint` stops a new one (#250).
+
+`no-array-index-key`, `set-state-in-effect` and `exhaustive-deps` are errors too, and those three
+are judgements rather than renames. Every site in the repo has had the call made once, so a new one
+either changes the code or carries an `eslint-disable-next-line` stating why the rule is wrong
+there. Put that reason at the site, not in a `files` block — a block states one reason over every
+site in the file, including the next one, whose reason will differ.
+
+**A ref that stops being *wired* is reported by nothing that stops you.** `forwardRef`'s absence
+was a type error; today a destructured-but-unused `ref` is one `no-unused-vars` warning among
+twenty, and a `ref` left out of the destructure still reaches the element through `{...props}`.
+`tests/guards/form-atom-refs.test.tsx` makes it a failing test for the five atoms instead, reading
+the wiring from the source because a ref never attaches under `renderToStaticMarkup`. It counts
+**every** element of the atom's tag: `Input` renders a second `<input>` for its icon branch.
 
 ## The 44×44 touch target has two utilities — do not hand-roll a third
 
@@ -132,9 +163,8 @@ This project uses Heroicons v2. Some v1 names changed — for example,
 ```
 
 ```tsx
-interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
+interface ButtonOwnProps {
   variant?: 'primary' | 'secondary' | 'neutral' | 'outline' | 'ghost'
-  theme?: 'light' | 'dark'          // dark = white colors, for dark backgrounds
   size?: 'xs' | 'sm' | 'md' | 'lg'
   shape?: 'square' | 'circular'     // Default: circular icon-only, square text
   icon?: HeroIcon                   // Icon only when no children are passed
@@ -143,12 +173,20 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   isLoading?: boolean
   isActive?: boolean                // Current-page nav link: tinted fill + aria-current
   fullWidth?: boolean               // Text buttons only
-  href?: string                     // Renders as Link when set
-  locale?: Locale
-  type?: 'button' | 'submit' | 'reset'
   'aria-label'?: string             // Required for an icon-only button
 }
+
+type ButtonProps =
+  | (ButtonOwnProps & Omit<ComponentProps<'button'>, 'type'> & {
+      href?: never; locale?: never; type?: 'button' | 'submit' | 'reset'
+    })
+  | (ButtonOwnProps & Omit<LinkProps, 'size' | 'variant' | 'type'> & {
+      disabled?: never; type?: never
+    })
 ```
+
+An href makes it a link, so `disabled` and `type` are a type error beside one, and `locale`,
+`external`, `target` and `rel` arrive from `Link`.
 
 Use `href` for navigation or a download. Use `onClick` for a JavaScript action, never `href`.
 
@@ -185,12 +223,21 @@ name and anything inside the anchor goes unread.
 **`Link` is also the scheme gate for every href the site did not author**, and the reason no call
 site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
 a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
-run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
-bare `<a>` fed a SahajCloud value has to call it itself.
+run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist.
+
+**No component opens its own `<a>`**, so no call site repeats the gate.
+[tests/guards/bare-anchors.test.ts](../../tests/guards/bare-anchors.test.ts) enforces that, and
+its allowlist is the whole exception list — one entry, for the atom. An atom that takes an `href`
+delegates to `Link` rather than drawing an anchor: `Button`, `Badge` and `DropdownItem` all do.
+Each types that branch as `Omit<LinkProps, 'size' | 'variant'>`, so `locale`, `external`, `target`
+and `rel` arrive from the atom instead of being restated, and none of the three casts. `Button`
+drops `type` from its link branch as well, and bars `disabled` there: a `<button>` prop passed
+beside an href used to be swallowed.
 
 A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
-call to action and `AtlasContent`'s website link both do. The atom renders inert words, and words
-that invite a click going nowhere are worse than an absent element.
+call to action, `AtlasContent`'s website link and `ErrorFallback`'s status page all do. The atom
+renders inert words, and words that invite a click going nowhere are worse than an absent element.
+`ErrorFallback` passes `external`, so the link announces the tab it opens.
 
 **Only a variant that paints a colour carries `transition-colors`**, so `unstyled` carries no
 `transition-property` at all. A caller painting its own hover brings the matching transition: a
@@ -264,7 +311,8 @@ colour would not. The dark band stays, because it gives the white ring its 3:1 a
 fill — the `neutral` button's. The filled brand variants clear it without the band now that they
 sit at `teal-600` (4.87) and `coral-600` (4.69), but the band is per surface, not per variant.
 
-`Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
+`Link`, `Image`, `SocialIcon` and everything that delegates to `Link` draw it — `Button`, a `Badge`
+with an `href`, a `DropdownItem`, the `Splash` call to action. `EmbedButton`'s
 textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,
 `Select`) still carry their own treatments: a field marks focus on its border, not with an offset
 ring, so converting them is a design decision rather than a rename.

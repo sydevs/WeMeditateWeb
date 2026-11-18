@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -14,6 +14,7 @@ import {
   FloatingFocusManager,
   type Placement,
 } from '@floating-ui/react'
+import { Link, type LinkProps } from '../Link'
 
 /** Side of the trigger the panel opens on. */
 export type DropdownSide = 'top' | 'bottom' | 'left' | 'right'
@@ -73,11 +74,9 @@ export interface DropdownProps {
 }
 
 /** Props for the DropdownItem component */
-export interface DropdownItemProps extends ComponentProps<'a'> {
+export interface DropdownItemProps extends Omit<LinkProps, 'size' | 'variant'> {
   /** Size variant. Defaults to the parent Dropdown's size when omitted. */
   size?: 'sm' | 'md' | 'lg'
-  /** Additional CSS classes */
-  className?: string
 }
 
 /**
@@ -97,12 +96,13 @@ export function DropdownItem({
   }
 
   return (
-    <a
+    <Link
       className={`block hover:bg-gray-100 font-medium text-gray-700 transition-colors ${sizeStyles[size]} ${className}`}
+      variant="unstyled"
       {...props}
     >
       {children}
-    </a>
+    </Link>
   )
 }
 

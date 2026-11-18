@@ -17,30 +17,33 @@ interface TimeRemaining {
   isExpired: boolean
 }
 
-/** Calculate time remaining until target date */
-function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeRemaining {
-  const calculateTimeRemaining = (): TimeRemaining => {
-    const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
-    const now = new Date()
-    const difference = target.getTime() - now.getTime()
+function timeRemainingUntil(targetDate: string | Date): TimeRemaining {
+  const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
+  const now = new Date()
+  const difference = target.getTime() - now.getTime()
 
-    if (difference <= 0) {
-      return { hours: 0, minutes: 0, seconds: 0, isExpired: true }
-    }
-
-    const hours = Math.floor(difference / (1000 * 60 * 60))
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-    return { hours, minutes, seconds, isExpired: false }
+  if (difference <= 0) {
+    return { hours: 0, minutes: 0, seconds: 0, isExpired: true }
   }
 
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(calculateTimeRemaining())
+  const hours = Math.floor(difference / (1000 * 60 * 60))
+  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+
+  return { hours, minutes, seconds, isExpired: false }
+}
+
+/** Calculate time remaining until target date */
+function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeRemaining {
+  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(() =>
+    timeRemainingUntil(targetDate),
+  )
   const [hasCompleted, setHasCompleted] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const newTime = calculateTimeRemaining()
+      const newTime = timeRemainingUntil(targetDate)
+
       setTimeRemaining(newTime)
 
       // Trigger onComplete callback only once when countdown expires

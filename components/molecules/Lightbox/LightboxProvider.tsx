@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, use, useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Lightbox } from './index'
 
 /**
@@ -47,7 +39,7 @@ const LightboxContext = createContext<LightboxContextValue | null>(null)
  * plain, non-interactive rendering.
  */
 export function useLightbox(): LightboxContextValue | null {
-  return useContext(LightboxContext)
+  return use(LightboxContext)
 }
 
 export interface LightboxProviderProps {
@@ -131,11 +123,11 @@ export function LightboxProvider({ children }: LightboxProviderProps) {
   const position = Math.min(active?.position ?? 0, Math.max(slides.length - 1, 0))
 
   return (
-    <LightboxContext.Provider value={value}>
+    <LightboxContext value={value}>
       {children}
       {active && slides.length > 0 ? (
         <Lightbox open close={() => setActive(null)} index={position} slides={slides} />
       ) : null}
-    </LightboxContext.Provider>
+    </LightboxContext>
   )
 }

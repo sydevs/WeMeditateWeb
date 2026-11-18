@@ -52,9 +52,7 @@ import ts from 'typescript'
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
-import { repoRoot, sourceFiles } from './_source-scan'
-
-const SOURCE_GLOBS = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
+import { componentGlobs, parse, repoRoot, sourceFiles, walk } from './_source-scan'
 
 /** Condition 2 — the names that wire a load event. */
 const LOAD_HANDLERS = new Set(['onLoad', 'onError'])
@@ -75,16 +73,6 @@ interface Finding {
 
 type Truth = boolean | 'either' | 'unknown'
 type Arm = 'consequent' | 'alternate'
-
-/** `setParentNodes`, because every resolution below walks up from a use site. */
-function parse(source: string): ts.SourceFile {
-  return ts.createSourceFile('scan.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
-}
-
-function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
-  visit(node)
-  node.forEachChild((child) => walk(child, visit))
-}
 
 const lineOf = (file: ts.SourceFile, position: number): number =>
   file.getLineAndCharacterOfPosition(position).line + 1
@@ -413,13 +401,9 @@ export function scan(source: string): Finding[] {
 
 const lines = (source: string): number[] => scan(source).map((f) => f.line)
 
-const SCANNED = sourceFiles(SOURCE_GLOBS)
+const SCANNED = sourceFiles(componentGlobs)
 
 describe('server-rendered visibility', () => {
-  it('scans the component tree (the guard is not silently empty)', () => {
-    expect(SCANNED.length).toBeGreaterThan(50)
-  })
-
   it('finds files wiring a load event (condition 2 is not vacuously false)', () => {
     // Narrowing LOAD_HANDLERS to a spelling nothing uses would silently reduce
     // the guard's real coverage to nothing while every fixture below stayed

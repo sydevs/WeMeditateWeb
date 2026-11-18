@@ -200,7 +200,7 @@ function SubscribedDocument<T extends PreviewDocument>({
 }: DocumentProps<T> & { serverURL: string }): ReactNode {
   // The document on screen, for a failed populate to fall back to. A ref
   // rather than state: it is read inside the handler, never rendered.
-  const lastGood = useRef(initialData)
+  const lastGoodRef = useRef(initialData)
 
   // Memoised because the hook re-subscribes on every change of it, and a
   // re-subscribe resets the SDK's accumulated document.
@@ -209,7 +209,7 @@ function SubscribedDocument<T extends PreviewDocument>({
       createPopulateRequestHandler<T>({
         slug,
         token: livePreviewToken,
-        lastGood: () => lastGood.current,
+        lastGood: () => lastGoodRef.current,
       }),
     [slug],
   )
@@ -219,7 +219,7 @@ function SubscribedDocument<T extends PreviewDocument>({
   const { data } = useLivePreview<T>({ initialData, requestHandler, serverURL })
 
   useEffect(() => {
-    lastGood.current = data
+    lastGoodRef.current = data
   }, [data])
 
   return children(data)

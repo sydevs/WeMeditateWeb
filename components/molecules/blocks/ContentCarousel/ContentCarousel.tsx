@@ -158,6 +158,7 @@ export function ContentCarousel({
 
   useEffect(() => {
     if (!emblaApi) return
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount; an empty `slidesInView` already renders every slide in view (below)
     updateState()
     emblaApi.on('select', updateState)
     // slidesInView fires as slides enter or leave the viewport while scrolling.
@@ -227,6 +228,7 @@ export function ContentCarousel({
 
               return (
                 <div
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a slide over the `items` prop, in the order the block declares; the carousel scrolls it but never reorders it
                   key={index}
                   className={`flex-[0_0_auto] transition-opacity duration-300 ${
                     inView ? 'opacity-100 cursor-default' : 'opacity-40 cursor-pointer'

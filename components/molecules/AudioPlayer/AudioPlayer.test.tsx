@@ -24,7 +24,6 @@ const state: PlaylistAudioPlayerState = {
   isShuffleOn: false,
   currentTrack: track,
   isLoading: false,
-  hasEnded: false,
 }
 
 const noop = () => {}

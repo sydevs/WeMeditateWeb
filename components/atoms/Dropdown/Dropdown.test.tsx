@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Dropdown } from './Dropdown'
+import { anchorFor } from '../../../tests/_helpers/markup'
+import { Dropdown, DropdownItem } from './Dropdown'
 
 /**
  * SSR markup assertions only. The panel is closed on first render (and portaled +
@@ -36,5 +37,39 @@ describe('Dropdown', () => {
     expect(html).not.toContain('role="button"')
     expect(html).not.toContain('tabindex="0"')
     expect(html).toContain('aria-label="Search"')
+  })
+})
+
+describe('DropdownItem', () => {
+  it('locale-prefixes a site path', () => {
+    const html = renderToStaticMarkup(
+      <DropdownItem href="/meditations" locale="fr">
+        Meditations
+      </DropdownItem>,
+    )
+
+    expect(html).toContain('href="/fr/meditations"')
+  })
+
+  it('renders no href at all for a refused scheme', () => {
+    const html = renderToStaticMarkup(<DropdownItem href="javascript:alert(1)">Item</DropdownItem>)
+
+    expect(html).toContain('Item')
+    expect(html).not.toContain('javascript:')
+  })
+
+  it('keeps its own item styling, and takes the atom’s focus ring', () => {
+    const anchor = anchorFor(
+      renderToStaticMarkup(
+        <DropdownItem href="/meditations" size="lg">
+          Meditations
+        </DropdownItem>,
+      ),
+      '/meditations',
+    )
+
+    expect(anchor).toContain('hover:bg-gray-100')
+    expect(anchor).toContain('px-6 py-4 text-base')
+    expect(anchor).toContain('focus-ring')
   })
 })

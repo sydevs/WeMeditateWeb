@@ -1,4 +1,4 @@
-import { ComponentProps, forwardRef } from 'react'
+import { ComponentProps } from 'react'
 
 export interface SelectProps extends ComponentProps<'select'> {
   /**
@@ -41,77 +41,71 @@ export interface SelectProps extends ComponentProps<'select'> {
  *   <option value="es">Español</option>
  * </Select>
  */
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  (
-    {
-      state = 'default',
-      variant = 'default',
-      fullWidth = false,
-      placeholder,
-      className = '',
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    const baseStyles =
-      'py-3 bg-transparent font-sans text-base transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed appearance-none cursor-pointer'
+export function Select({
+  state = 'default',
+  variant = 'default',
+  fullWidth = false,
+  placeholder,
+  className = '',
+  children,
+  ref,
+  ...props
+}: SelectProps) {
+  const baseStyles =
+    'py-3 bg-transparent font-sans text-base transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed appearance-none cursor-pointer'
 
-    const variantStyles = {
-      default: 'px-3 pr-10 border',
-      minimal: 'px-0 pr-8 border-0 border-b-2',
-    }
-
-    const stateStyles = {
-      default:
-        'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
-      error:
-        'text-error border-error hover:border-error-dark focus:border-error',
-      success:
-        'text-gray-900 border-success hover:border-success focus:border-success',
-    }
-
-    const wrapperWidthStyles = fullWidth ? 'w-full' : 'inline-block'
-    const selectWidthStyles = fullWidth ? 'w-full' : 'w-64'
-
-    // Adjust chevron position based on variant
-    const chevronRightPosition = variant === 'default' ? 'right-3' : 'right-0'
-
-    return (
-      <div className={`relative ${wrapperWidthStyles}`}>
-        <select
-          ref={ref}
-          className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
-          aria-invalid={state === 'error'}
-          {...props}
-        >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {children}
-        </select>
-        {/* Dropdown arrow icon */}
-        <div className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-700`}>
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
-      </div>
-    )
+  const variantStyles = {
+    default: 'px-3 pr-10 border',
+    minimal: 'px-0 pr-8 border-0 border-b-2',
   }
-)
 
-Select.displayName = 'Select'
+  const stateStyles = {
+    default:
+      'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
+    error:
+      'text-error border-error hover:border-error-dark focus:border-error',
+    success:
+      'text-gray-900 border-success hover:border-success focus:border-success',
+  }
+
+  const wrapperWidthStyles = fullWidth ? 'w-full' : 'inline-block'
+  const selectWidthStyles = fullWidth ? 'w-full' : 'w-64'
+
+  // Adjust chevron position based on variant
+  const chevronRightPosition = variant === 'default' ? 'right-3' : 'right-0'
+
+  return (
+    <div className={`relative ${wrapperWidthStyles}`}>
+      <select
+        ref={ref}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
+        aria-invalid={state === 'error'}
+        {...props}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {children}
+      </select>
+      {/* Dropdown arrow icon */}
+      <div className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-700`}>
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+    </div>
+  )
+}

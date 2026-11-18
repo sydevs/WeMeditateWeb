@@ -40,6 +40,7 @@ export function Breadcrumbs({
           const isLast = index === items.length - 1
 
           return (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- a trail: a rung is its depth, and the only way the list changes is a new navigation
             <li key={index} className="flex items-center gap-2">
               {item.href && !isLast ? (
                 <Link

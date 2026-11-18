@@ -1,4 +1,4 @@
-import { ComponentProps, forwardRef, useId } from 'react'
+import { ComponentProps, useId } from 'react'
 
 export interface RadioProps extends Omit<ComponentProps<'input'>, 'type'> {
   /** Radio button label text */
@@ -28,48 +28,52 @@ export interface RadioProps extends Omit<ComponentProps<'input'>, 'type'> {
  * <Radio name="duration" value="10" label="10 minutes" />
  * <Radio name="duration" value="15" label="15 minutes" />
  */
-export const Radio = forwardRef<HTMLInputElement, RadioProps>(
-  ({ label, hasError = false, color = 'primary', className = '', id, ...props }, ref) => {
-    const generatedId = useId()
-    const inputId = id || generatedId
+export function Radio({
+  label,
+  hasError = false,
+  color = 'primary',
+  className = '',
+  id,
+  ref,
+  ...props
+}: RadioProps) {
+  const generatedId = useId()
+  const inputId = id || generatedId
 
-    const colorStyles = {
-      primary: 'accent-teal-600 focus:ring-teal-500',
-      secondary: 'accent-coral-600 focus:ring-coral-500',
-    }
-
-    const inputStyles =
-      `w-4 h-4 bg-white border-gray-300 focus:ring-2 focus:ring-offset-1 transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${colorStyles[color]}`
-
-    const errorStyles = hasError ? 'border-error focus:ring-error' : ''
-
-    const labelStyles =
-      'ml-2 text-sm font-sans text-gray-900 cursor-pointer select-none'
-
-    const radioElement = (
-      <input
-        ref={ref}
-        type="radio"
-        id={inputId}
-        className={`${inputStyles} ${errorStyles} ${className}`}
-        aria-invalid={hasError}
-        {...props}
-      />
-    )
-
-    if (label) {
-      return (
-        <div className="flex items-center">
-          {radioElement}
-          <label htmlFor={inputId} className={labelStyles}>
-            {label}
-          </label>
-        </div>
-      )
-    }
-
-    return radioElement
+  const colorStyles = {
+    primary: 'accent-teal-600 focus:ring-teal-500',
+    secondary: 'accent-coral-600 focus:ring-coral-500',
   }
-)
 
-Radio.displayName = 'Radio'
+  const inputStyles =
+    `w-4 h-4 bg-white border-gray-300 focus:ring-2 focus:ring-offset-1 transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${colorStyles[color]}`
+
+  const errorStyles = hasError ? 'border-error focus:ring-error' : ''
+
+  const labelStyles =
+    'ml-2 text-sm font-sans text-gray-900 cursor-pointer select-none'
+
+  const radioElement = (
+    <input
+      ref={ref}
+      type="radio"
+      id={inputId}
+      className={`${inputStyles} ${errorStyles} ${className}`}
+      aria-invalid={hasError}
+      {...props}
+    />
+  )
+
+  if (label) {
+    return (
+      <div className="flex items-center">
+        {radioElement}
+        <label htmlFor={inputId} className={labelStyles}>
+          {label}
+        </label>
+      </div>
+    )
+  }
+
+  return radioElement
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, ComponentProps } from 'react'
 import chartSvg from '../../../assets/chart.svg?raw'
 import { Button } from '../../atoms/Button'
+import { Link } from '../../atoms/Link'
 import { ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline'
 import './SubtleSystem.css'
 import { useT } from '../../../hooks/useT'
@@ -307,13 +308,14 @@ export function SubtleSystem({
               >
                 <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
                 <p className="text-base mb-4 text-gray-700">{item.description}</p>
-                <a
+                <Link
                   aria-label={t('blocks.a11y.learn_more_about', { title: item.title })}
-                  className="inline-block text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                  className="inline-block"
                   href={item.linkHref}
+                  variant="primary"
                 >
                   {t('blocks.general.learn_more')}
-                </a>
+                </Link>
               </div>
             )
           })}
