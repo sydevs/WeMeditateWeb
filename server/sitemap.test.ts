@@ -34,11 +34,6 @@ describe('isIndexableOrigin', () => {
   it('reads the host, so a port does not make a local origin indexable', () => {
     expect(isIndexableOrigin('http://127.0.0.1:4173')).toBe(false)
   })
-
-  it('refuses a string no origin could be, rather than throwing', () => {
-    // This runs inside a document render, where a throw is a 500.
-    expect(isIndexableOrigin('not an origin')).toBe(false)
-  })
 })
 
 describe('buildRobotsTxt', () => {

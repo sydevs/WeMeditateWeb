@@ -71,14 +71,7 @@ const NON_CANONICAL_HOST =
  * each of them spell the same parse.
  */
 export function isIndexableOrigin(origin: string): boolean {
-  try {
-    return !NON_CANONICAL_HOST.test(new URL(origin).hostname)
-  } catch {
-    // Every other URL predicate here wraps its parse, and this is the one
-    // on a render path. "Not the real site" is also the honest answer for a
-    // string no origin could be: no crawling, no sitemap, no pageview.
-    return false
-  }
+  return !NON_CANONICAL_HOST.test(new URL(origin).hostname)
 }
 
 /**
