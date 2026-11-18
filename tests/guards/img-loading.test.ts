@@ -29,12 +29,15 @@
  * Neither `<picture>` nor `<noscript>` appears in the scan set, so neither
  * needs a carve-out.
  *
- * ⚠ Two gaps, both deliberate. It reads the attributes a tag spells itself, so
+ * ⚠ Three gaps, all deliberate. It reads the attributes a tag spells itself, so
  * a `<img {...props} />` whose spread carries the `src` is skipped rather than
  * reported — reporting it would ask an author to annotate correct code, which
- * this guard offers no way to exempt. And `sourceFiles` drops stories, so the
- * raw `<img>` in `SplashLoader.stories.tsx` is out of scope along with every
- * other playground fixture.
+ * this guard offers no way to exempt. It reads presence, not value, so
+ * `loading={loading}` handed `undefined` passes here and preloads anyway —
+ * measured, and the trap `eslint.config.js` records for `sizes` as #206, where
+ * the answer was a type requirement rather than a source rule. And
+ * `sourceFiles` drops stories, so the raw `<img>` in `SplashLoader.stories.tsx`
+ * is out of scope along with every other playground fixture.
  */
 
 import ts from 'typescript'
