@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import {
   useFloating,
   autoUpdate,
