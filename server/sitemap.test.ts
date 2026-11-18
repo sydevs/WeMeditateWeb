@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildRobotsTxt, buildSitemapXml, isIndexableOrigin, xmlEscape } from './sitemap'
+import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, xmlEscape } from './sitemap'
 
 describe('xmlEscape', () => {
   it('escapes all five predefined entities', () => {
@@ -11,11 +11,11 @@ describe('xmlEscape', () => {
   })
 })
 
-describe('isIndexableOrigin', () => {
+describe('isCanonicalOrigin', () => {
   it.each(['https://wemeditate.com', 'https://www.wemeditate.com'])(
     'allows the real site (%s)',
     (origin) => {
-      expect(isIndexableOrigin(origin)).toBe(true)
+      expect(isCanonicalOrigin(origin)).toBe(true)
     },
   )
 
@@ -28,11 +28,11 @@ describe('isIndexableOrigin', () => {
   ])('refuses %s', (_label, origin) => {
     // Every PR builds these. A preview that invites crawlers competes with
     // production for the same content.
-    expect(isIndexableOrigin(origin)).toBe(false)
+    expect(isCanonicalOrigin(origin)).toBe(false)
   })
 
-  it('reads the host, so a port does not make a local origin indexable', () => {
-    expect(isIndexableOrigin('http://127.0.0.1:4173')).toBe(false)
+  it('reads the host, so a port does not make a local origin the real site', () => {
+    expect(isCanonicalOrigin('http://127.0.0.1:4173')).toBe(false)
   })
 })
 

@@ -3,7 +3,7 @@
 //# BATI.has("mantine")
 import logoUrl from '../assets/logo.svg'
 import { useOptionalPageContext, useOrigin } from '../hooks/usePageContext'
-import { isIndexableOrigin } from '../server/sitemap'
+import { isCanonicalOrigin } from '../server/sitemap'
 
 export default function HeadDefault() {
   // ⚠ **The analytics script is omitted entirely under a live preview**, and
@@ -26,7 +26,6 @@ export default function HeadDefault() {
   // production, so only the host tells a real pageview from one of ours —
   // the same answer `/robots.txt` and `/sitemap.xml` already give.
   const origin = useOrigin()
-  const isRealSite = origin !== null && isIndexableOrigin(origin)
 
   return (
     <>
@@ -36,7 +35,7 @@ export default function HeadDefault() {
 
       {/* Vike's client routing swaps the page with no document load, and a
           document load is all Fathom counts by default. */}
-      {!livePreview?.active && isRealSite && (
+      {!livePreview?.active && origin !== null && isCanonicalOrigin(origin) && (
         <script
           defer
           data-site="PFPCDAMQ"

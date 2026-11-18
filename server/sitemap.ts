@@ -70,7 +70,7 @@ const NON_CANONICAL_HOST =
  * `pages/+Head.tsx` reads it off `pageContext`. A host-level predicate made
  * each of them spell the same parse.
  */
-export function isIndexableOrigin(origin: string): boolean {
+export function isCanonicalOrigin(origin: string): boolean {
   return !NON_CANONICAL_HOST.test(new URL(origin).hostname)
 }
 
@@ -82,7 +82,7 @@ export function isIndexableOrigin(origin: string): boolean {
  * absolute, because `robots.txt` requires it.
  */
 export function buildRobotsTxt(origin: string): string {
-  if (!isIndexableOrigin(origin)) {
+  if (!isCanonicalOrigin(origin)) {
     return ['User-agent: *', 'Disallow: /', ''].join('\n')
   }
 
