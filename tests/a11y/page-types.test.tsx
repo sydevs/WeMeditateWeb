@@ -19,11 +19,13 @@
  * (`docs/accessibility-walkthrough.md`), which measures them on a drawn page.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterAll, beforeEach, afterEach } from 'vitest'
+import { writeFileSync } from 'node:fs'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
 import { EN_TRANSLATIONS } from '../../lib/i18n'
+import { A11Y_REPORT_PATH } from './report-path'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
 
 /** Route data, swapped per target before the render. */
@@ -54,15 +56,32 @@ const { Page: LectureEmbedPage } = await import('../../pages/lectures/[id]/embed
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 
-/** Needs a drawn box, which jsdom has none of. See the module comment. */
-const NEEDS_LAYOUT = ['color-contrast', 'target-size']
+/**
+ * Rules jsdom cannot decide, disabled by name so they are visibly out of scope
+ * rather than silently not firing.
+ *
+ * `color-contrast` and `target-size` need a drawn box, and the decision of
+ * 2026-10-21 moved both to the walk-through. `page-has-heading-one` and
+ * `landmark-one-main` are different: axe cannot confirm it is looking at a top
+ * frame here, so it answers `incomplete` for both **even when the `<h1>` and
+ * the `<main>` are present** — measured against axe-core@4.14.0. Leaving them
+ * on would fail every target forever, and counting `incomplete` as a pass
+ * would make them decorative. `the structural contract` below asserts both
+ * directly instead, which is stronger: it counts the elements.
+ */
+const UNDECIDABLE = [
+  'color-contrast',
+  'target-size',
+  'page-has-heading-one',
+  'landmark-one-main',
+]
 
 /**
- * The four rules an embed cannot satisfy, because it has no chrome: it is a
- * fragment of someone else's page and owns neither the `<main>` nor the
- * outline root. Nothing else is relaxed for them.
+ * The two further rules an embed cannot satisfy, because it has no chrome: it
+ * is a fragment of someone else's page, with no landmark to contain its content
+ * and no menu to skip past. Nothing else is relaxed for them.
  */
-const CHROME_ONLY = ['page-has-heading-one', 'region', 'bypass', 'landmark-one-main']
+const CHROME_ONLY = ['region', 'bypass']
 
 function options(exclude: string[]): RunOptions {
   return {
@@ -170,12 +189,12 @@ function mountDocument(markup: string): void {
   document.body.innerHTML = markup
 }
 
-/** Violations, as `<rule-id> (<impact>): <node count>`, so a failure reads. */
-function describeViolations(violations: Result[]): string[] {
-  return violations.map(
-    (violation) =>
-      `${violation.id} (${violation.impact ?? 'unknown'}): ${violation.nodes.length} node(s) — ` +
-      violation.nodes
+/** Findings, as `<rule-id> (<impact>): <node count>`, so a failure reads. */
+function describeResults(results: Result[], label: string): string[] {
+  return results.map(
+    (result) =>
+      `${result.id} (${label}, ${result.impact ?? 'unknown'}): ${result.nodes.length} node(s) — ` +
+      result.nodes
         .slice(0, 3)
         .map((node) => node.target.join(' '))
         .join(' | '),
@@ -185,15 +204,42 @@ function describeViolations(violations: Result[]): string[] {
 async function violationsFor(target: (typeof TARGETS)[number]): Promise<string[]> {
   mountDocument(renderToStaticMarkup(target.render()))
 
+  // The whole document, not `document.body`: axe runs its page-level rules —
+  // `page-has-heading-one`, `landmark-one-main`, `region`, `bypass` — only when
+  // the context is the document itself, and silently skips all four over a
+  // fragment. Three of this goal's own lines are those rules.
   const result = await axe.run(
-    document.body,
-    options(target.chrome ? NEEDS_LAYOUT : [...NEEDS_LAYOUT, ...CHROME_ONLY]),
+    document,
+    options(target.chrome ? UNDECIDABLE : [...UNDECIDABLE, ...CHROME_ONLY]),
   )
+  // `incomplete` counts too. axe decides `page-has-heading-one` and
+  // `landmark-one-main` from a check that answers `undefined` rather than
+  // `false`, so both land there and never in `violations` — and they are two of
+  // this goal's own lines. The two rules that genuinely cannot be decided
+  // without layout are already off by name, so anything left here is a finding
+  // a reviewer owes an answer, not noise.
+  const violations = [
+    ...describeResults(result.violations, 'violation'),
+    ...describeResults(result.incomplete, 'needs review'),
+  ]
 
-  return describeViolations(result.violations)
+  report.push({ target: target.name, violations })
+
+  return violations
 }
 
+/**
+ * Per-target counts for the job summary, written whether the run passed or
+ * failed — `scripts/a11y-summary.mjs` is what makes the result visible on the
+ * pull request without anyone asking for it.
+ */
+const report: { target: string; violations: string[] }[] = []
+
 describe('accessibility · page types', () => {
+  afterAll(() => {
+    writeFileSync(A11Y_REPORT_PATH, `${JSON.stringify({ targets: report }, null, 2)}\n`)
+  })
+
   beforeEach(() => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -203,13 +249,27 @@ describe('accessibility · page types', () => {
     vi.restoreAllMocks()
   })
 
-  it('runs the rule set the goal asks for, with only the two layout rules off', () => {
+  it('runs the rule set the goal asks for, with only the undecidable rules off', () => {
     // Without this, dropping `best-practice` would silently stop the gate
-    // seeing `heading-order`, `landmark-unique` and `page-has-heading-one` —
-    // three of the goal's own lines.
+    // seeing `heading-order` and `landmark-unique`, two of the goal's own lines.
     expect(TAGS).toContain('best-practice')
-    expect(Object.keys(options(NEEDS_LAYOUT).rules ?? {})).toEqual(NEEDS_LAYOUT)
+    expect(Object.keys(options(UNDECIDABLE).rules ?? {})).toEqual(UNDECIDABLE)
   })
+
+  it.each(TARGETS.map((target) => [target.name, target] as const))(
+    '%s renders the structural contract axe cannot decide here',
+    (_name, target) => {
+      mountDocument(renderToStaticMarkup(target.render()))
+
+      const count = (selector: string) => document.querySelectorAll(selector).length
+
+      // A page type owes exactly one outline root and one main landmark; an
+      // embed owes neither, because it is a fragment of someone else's page.
+      expect({ h1: count('h1'), main: count('main') }).toEqual(
+        target.chrome ? { h1: 1, main: 1 } : { h1: 0, main: 0 },
+      )
+    },
+  )
 
   it.each(TARGETS.map((target) => [target.name, target] as const))(
     '%s has no axe violations',

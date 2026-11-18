@@ -102,10 +102,17 @@ export function Avatar({
     >
       {/* The initials are the avatar's placeholder: the image paints over them
           once it loads, so the <img> needs no opacity gate and renders
-          visibly without JavaScript (#145). */}
-      <span aria-label={alt} className={showImage ? 'absolute' : ''}>
+          visibly without JavaScript (#145).
+
+          They are an abbreviation, so they are hidden from a reader rather
+          than spelled out, and the name comes from the <img>'s own `alt` — or,
+          with no image, from the `sr-only` text below. `aria-label` on a bare
+          <span> is what it cannot be: a span carries no role, so the attribute
+          is ignored by spec and reported as `aria-prohibited-attr` (#278). */}
+      <span aria-hidden="true" className={showImage ? 'absolute' : ''}>
         {displayInitials}
       </span>
+      {!showImage && alt ? <span className="sr-only">{alt}</span> : null}
       {showImage && (
         <img
           alt={alt}

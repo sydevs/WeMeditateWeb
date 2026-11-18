@@ -18,6 +18,7 @@
  * against the `splash` and `layout` converters there.
  */
 
+import type { AtlasSeoResponse } from '../../server/atlas-types'
 import type { Lecture, Meditation, Page, WebConfig } from '../../server/sahajcloud-types'
 
 const IMAGE = {
@@ -137,13 +138,27 @@ export const lecture = {
   thumbnail: IMAGE,
 } as unknown as Lecture
 
-/** `/map`'s landing document — the body a crawler reads before the widget mounts. */
-export const atlasSeo = {
-  kind: 'root',
+/**
+ * `/map`'s landing document — the body a crawler reads before the widget mounts.
+ *
+ * **Pre-mortem.** `AtlasContent` dispatches on `type`, not on a `kind` field,
+ * and the `root` variant carries `id: null` and a `content.paragraphs` list.
+ * Checked against the `AtlasSeoResponse` union in `server/atlas-types.ts` and
+ * the switch in `pages/map/_components/AtlasContent.tsx` — an unrecognised
+ * discriminator renders nothing at all, which is how this fixture first served
+ * a `/map` with no heading.
+ */
+export const atlasSeo: AtlasSeoResponse = {
+  type: 'root',
+  id: null,
+  route: '/',
+  locale: 'en',
   title: 'Find a free meditation class near you',
   description: 'Classes run by volunteers, everywhere.',
   canonical: 'https://wemeditate.com/map',
-  openGraph: { 'og:image': IMAGE.url },
+  alternates: [],
+  openGraph: { 'og:image': IMAGE.url } as AtlasSeoResponse['openGraph'],
+  jsonLd: '{}',
   breadcrumbs: [],
   content: {
     paragraphs: [
@@ -151,4 +166,4 @@ export const atlasSeo = {
       'Search by place, or open the map and look around.',
     ],
   },
-} as unknown as import('../../server/atlas-types').AtlasSeoResponse
+}
