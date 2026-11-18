@@ -22,21 +22,25 @@ function appServing(...served: string[]): Hono<SahajCloudEnv> {
   return app
 }
 
+const ORIGIN = 'https://wemeditate.com'
+
 const request = async (app: Hono<SahajCloudEnv>, path: string): Promise<Response> =>
-  app.request(`https://wemeditate.com${path}`)
+  app.request(`${ORIGIN}${path}`)
 
 describe('legacy redirects', () => {
   it('301s a refused request the old site answered', async () => {
     const response = await request(appServing(), '/privacy')
 
     expect(response.status).toBe(301)
-    expect(response.headers.get('location')).toBe('/privacy-notice')
+    // Absolute, as every other redirect on this site is. `tests/smoke/web`
+    // reads a `Location` with `new URL`, which a bare path throws on.
+    expect(response.headers.get('location')).toBe(`${ORIGIN}/privacy-notice`)
   })
 
   it('keeps the query string, which is the visitor the lookup never sees', async () => {
     const response = await request(appServing(), '/classes?ref=newsletter')
 
-    expect(response.headers.get('location')).toBe('/classes-near-me?ref=newsletter')
+    expect(response.headers.get('location')).toBe(`${ORIGIN}/classes-near-me?ref=newsletter`)
   })
 
   it('reaches the target in one hop from under the `/en` prefix', async () => {
@@ -44,7 +48,7 @@ describe('legacy redirects', () => {
 
     // Not `/privacy`, which is what `+onBeforeRoute` alone would answer.
     expect(response.status).toBe(301)
-    expect(response.headers.get('location')).toBe('/privacy-notice')
+    expect(response.headers.get('location')).toBe(`${ORIGIN}/privacy-notice`)
   })
 
   it('leaves a request this site serves alone', async () => {

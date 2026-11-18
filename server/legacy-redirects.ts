@@ -11,11 +11,20 @@
  * `data/legacy-redirects/README.md` says how the map is built.
  */
 
-import type { Hono } from 'hono'
+import type { Context, Hono } from 'hono'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { lookupLegacyRedirect } from '../lib/legacy-redirects/lookup'
 import { localeFromPath } from '../lib/urls'
 import { DEFAULT_LOCALE } from './sahajcloud-types'
+
+/**
+ * `pages/+onBeforeRoute.ts` spells every other redirect on this site over the
+ * request's own URL, so a `Location` here is absolute too. A bare path is
+ * legal, but it would make this the one redirect a client resolves itself.
+ */
+function redirectToTarget(c: Context<SahajCloudEnv>, target: string, search: string): Response {
+  return c.redirect(new URL(`${target}${search}`, c.req.url).toString(), 301)
+}
 
 export function registerLegacyRedirects(app: Hono<SahajCloudEnv>): void {
   app.use('*', async (c, next) => {
@@ -29,7 +38,7 @@ export function registerLegacyRedirects(app: Hono<SahajCloudEnv>): void {
     if (prefixed && locale === DEFAULT_LOCALE) {
       const prefixedTarget = lookupLegacyRedirect(pathname)
 
-      if (prefixedTarget) return c.redirect(`${prefixedTarget}${search}`, 301)
+      if (prefixedTarget) return redirectToTarget(c, prefixedTarget, search)
     }
 
     await next()
@@ -38,6 +47,6 @@ export function registerLegacyRedirects(app: Hono<SahajCloudEnv>): void {
 
     const target = lookupLegacyRedirect(pathname)
 
-    if (target) c.res = c.redirect(`${target}${search}`, 301)
+    if (target) c.res = redirectToTarget(c, target, search)
   })
 }
