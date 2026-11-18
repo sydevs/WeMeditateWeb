@@ -167,4 +167,11 @@ describe('Playlist durations', () => {
 
     expect(markup(null, 0, undated)).not.toContain('0:00')
   })
+
+  it('prints a non-finite duration as 0:00', () => {
+    // howler reports `Infinity` for a source of indeterminate length.
+    const endless = [{ ...tracks[0], duration: Infinity }]
+
+    expect(markup(null, 0, endless)).toContain('0:00')
+  })
 })
