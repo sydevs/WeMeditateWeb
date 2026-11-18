@@ -185,8 +185,14 @@ name and anything inside the anchor goes unread.
 **`Link` is also the scheme gate for every href the site did not author**, and the reason no call
 site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
 a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
-run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist, and a
-bare `<a>` fed a SahajCloud value has to call it itself.
+run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist.
+
+**No component opens its own `<a>`**, so no call site repeats the gate.
+[tests/guards/bare-anchors.test.ts](../../tests/guards/bare-anchors.test.ts) enforces that, and
+its allowlist is the whole exception list — one entry for the atom, one for `ErrorFallback`, whose
+href `isSafeHttpUrl` has already proved absolute. An atom that takes an `href` delegates to `Link`
+rather than drawing an anchor: `Button`, `Badge` and `DropdownItem` all do, which is where their
+`locale` prop goes.
 
 A call site over `Link` still calls it where a refused URL must render **nothing** — `Splash`'s
 call to action and `AtlasContent`'s website link both do. The atom renders inert words, and words
@@ -258,7 +264,8 @@ dark ring is `white`, which clears 3:1 on all of them (4.68 on the lightest, `#8
 colour would not. The dark band stays, because it gives the white ring its 3:1 against a
 `teal-500` (2.70), `coral-500` (2.53) or white fill.
 
-`Link`, `Button`, `Image`, `SocialIcon` and the `Splash` call to action draw it. `EmbedButton`'s
+`Link`, `Image`, `SocialIcon` and everything that delegates to `Link` draw it — `Button`, a `Badge`
+with an `href`, a `DropdownItem`, the `Splash` call to action. `EmbedButton`'s
 textarea, `Alert`'s dismiss button and the form fields (`Radio`, `Checkbox`, `Input`, `Textarea`,
 `Select`) still carry their own treatments: a field marks focus on its border, not with an offset
 ring, so converting them is a design decision rather than a rename.
