@@ -48,7 +48,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       onChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const baseStyles =
       'py-3 bg-transparent font-sans text-base placeholder:text-gray-500 transition-colors duration-200 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed'
@@ -59,12 +59,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     }
 
     const stateStyles = {
-      default:
-        'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
-      error:
-        'text-error border-error hover:border-error-dark focus:border-error',
-      success:
-        'text-gray-900 border-success hover:border-success focus:border-success',
+      default: 'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
+      error: 'text-error border-error hover:border-error-dark focus:border-error',
+      success: 'text-gray-900 border-success hover:border-success focus:border-success',
     }
 
     const widthStyles = fullWidth ? 'w-full' : 'w-64'
@@ -81,13 +78,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <textarea
         ref={ref}
-        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${widthStyles} ${resizeStyles} ${className}`}
         aria-invalid={state === 'error'}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${widthStyles} ${resizeStyles} ${className}`}
         onChange={handleChange}
         {...props}
       />
     )
-  }
+  },
 )
 
 Textarea.displayName = 'Textarea'

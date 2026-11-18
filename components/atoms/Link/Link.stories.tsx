@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Link } from "./Link";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Link } from './Link'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /** Link component showcasing all variants, sizes, and locale handling. */
 export const Default: Story = () => (
@@ -32,7 +32,7 @@ export const Default: Story = () => (
           </Link>
         </div>
         <div>
-          <Link href="/custom" variant="unstyled" className="text-purple-600 underline">
+          <Link className="text-purple-600 underline" href="/custom" variant="unstyled">
             Unstyled link with custom styling
           </Link>
         </div>
@@ -87,10 +87,10 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Dark Theme"
-      surface="dark"
       background="neutral"
       description="Lightened colors (teal-300, coral-300, white) from the dark surface tokens for contrast on dark backgrounds"
+      surface="dark"
+      title="Dark Theme"
     >
       <div className="flex flex-col gap-4">
         <div>
@@ -125,7 +125,7 @@ export const Default: Story = () => (
           <Link href="https://example.com" external>
             External link
           </Link>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-gray-700 ml-2">
             (target="_blank", rel="noopener noreferrer", and screen-reader-only text after the
             link&apos;s own words)
           </span>
@@ -134,13 +134,13 @@ export const Default: Story = () => (
           <Link href="https://github.com" external variant="primary" aria-label="Our GitHub">
             External primary link, labelled
           </Link>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-gray-700 ml-2">
             (an aria-label replaces the accessible name, so the warning is folded into the label
             instead: &quot;Our GitHub (opens in new tab)&quot;)
           </span>
         </div>
         <div>
-          <Link href="https://stackoverflow.com" external variant="secondary">
+          <Link external href="https://stackoverflow.com" variant="secondary">
             External secondary link
           </Link>
         </div>
@@ -154,7 +154,7 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-3">
         <div>
           <Link href="javascript:alert(1)">A javascript: href</Link>
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-gray-700 ml-2">
             (renders the words with no href at all — inspect it)
           </span>
         </div>
@@ -163,52 +163,52 @@ export const Default: Story = () => (
           <Link href="tel:+1234567890">tel:</Link>
           <Link href="#section">#anchor</Link>
           <Link href="/about">a site path</Link>
-          <span className="text-xs text-gray-500">(all four render unchanged)</span>
+          <span className="text-xs text-gray-700">(all four render unchanged)</span>
         </div>
       </div>
     </StorySection>
 
     <StorySection
-      title="Locale Handling"
       description="Automatic locale prefixing for internationalization"
+      title="Locale Handling"
     >
       <div className="flex flex-col gap-4">
         <div>
-          <div className="text-sm font-medium text-gray-600 mb-2">English (en) - No prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">English (en) - No prefix:</div>
           <Link href="/meditations" locale="en">
             /meditations
           </Link>
-          <span className="text-xs text-gray-500 ml-2">(renders as /meditations)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /meditations)</span>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-600 mb-2">Spanish (es) - With prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">Spanish (es) - With prefix:</div>
           <Link href="/meditations" locale="es">
             /meditations
           </Link>
-          <span className="text-xs text-gray-500 ml-2">(renders as /es/meditations)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /es/meditations)</span>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-600 mb-2">French (fr) - With prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">French (fr) - With prefix:</div>
           <Link href="/about" locale="fr">
             /about
           </Link>
-          <span className="text-xs text-gray-500 ml-2">(renders as /fr/about)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /fr/about)</span>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-600 mb-2">German (de) - With prefix:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">German (de) - With prefix:</div>
           <Link href="/contact" locale="de">
             /contact
           </Link>
-          <span className="text-xs text-gray-500 ml-2">(renders as /de/contact)</span>
+          <span className="text-xs text-gray-700 ml-2">(renders as /de/contact)</span>
         </div>
 
         <div className="mt-2 p-3 bg-gray-50 rounded">
-          <p className="text-xs text-gray-600">
-            <strong>Note:</strong> External URLs (http/https) and anchor links (#) are never prefixed,
-            regardless of locale.
+          <p className="text-xs text-gray-700">
+            <strong>Note:</strong> External URLs (http/https) and anchor links (#) are never
+            prefixed, regardless of locale.
           </p>
         </div>
       </div>
@@ -216,6 +216,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Link"
+Default.storyName = 'Link'

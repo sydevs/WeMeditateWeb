@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { ContentCard } from "./ContentCard";
+import type { Story, StoryDefault } from '@ladle/react'
+import { ContentCard } from './ContentCard'
 import {
   StoryWrapper,
   StorySection,
@@ -9,12 +9,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../ladle';
+  StoryGridCell,
+} from '../../ladle'
 
 export default {
-  title: "Molecules"
-} satisfies StoryDefault;
+  title: 'Molecules',
+} satisfies StoryDefault
 
 // The demo rows below stack on mobile and sit side by side from `sm`, where a
 // card settles around 360px. One length for every story card: the point here is
@@ -23,24 +23,18 @@ const STORY_CARD_SIZES = '(min-width: 640px) 360px, 100vw'
 
 // Sample data for stories using picsum.photos
 const sampleMeditationData = {
-  title: "Feel Love",
-  href: "#",
-  thumbnailSrc: "https://picsum.photos/seed/meditation1/800/800",
-  description: "Unconditional love sounds hard, but it's actually innate to all human beings. Free your mind and feel the love we have within.",
-};
-
-const sampleArticleData = {
-  title: "What is Meditation?",
-  href: "#",
-  thumbnailSrc: "https://picsum.photos/seed/article1/800/600",
-  description: "Meditation is a state of thoughtless awareness. It is when the incessant flow of thoughts that we experience daily ceases.",
-};
+  title: 'Feel Love',
+  href: '#',
+  thumbnailSrc: 'https://picsum.photos/seed/meditation1/800/800',
+  description:
+    "Unconditional love sounds hard, but it's actually innate to all human beings. Free your mind and feel the love we have within.",
+}
 
 const sampleShortData = {
-  title: "Guided Meditation",
-  href: "#",
-  thumbnailSrc: "https://picsum.photos/seed/meditation2/800/800",
-};
+  title: 'Guided Meditation',
+  href: '#',
+  thumbnailSrc: 'https://picsum.photos/seed/meditation2/800/800',
+}
 
 /** ContentCard molecule showcasing all configurations for content preview display. */
 export const Default: Story = () => (
@@ -50,11 +44,11 @@ export const Default: Story = () => (
         <div>
           <StorySection title="Default Variant - With Description" variant="subsection">
             <ContentCard
-              title={sampleMeditationData.title}
-              href={sampleMeditationData.href}
-              thumbnailSrc={sampleMeditationData.thumbnailSrc}
               description={sampleMeditationData.description}
+              href={sampleMeditationData.href}
               sizes={STORY_CARD_SIZES}
+              thumbnailSrc={sampleMeditationData.thumbnailSrc}
+              title={sampleMeditationData.title}
               variant="default"
             />
           </StorySection>
@@ -63,10 +57,10 @@ export const Default: Story = () => (
         <div>
           <StorySection title="Default Variant - Without Description" variant="subsection">
             <ContentCard
-              title={sampleShortData.title}
               href={sampleShortData.href}
               sizes={STORY_CARD_SIZES}
               thumbnailSrc={sampleShortData.thumbnailSrc}
+              title={sampleShortData.title}
               variant="default"
             />
           </StorySection>
@@ -75,16 +69,16 @@ export const Default: Story = () => (
         <div>
           <StorySection title="Hero Variant" variant="subsection">
             <ContentCard
-              title="Featured Meditation"
-              href="#"
-              thumbnailSrc="https://picsum.photos/seed/hero/800/800"
-              description="Experience this special featured meditation."
-              variant="hero"
-              playButton={true}
-              durationMinutes={15}
               badge="Mindfulness"
               badgeUrl="#"
+              description="Experience this special featured meditation."
+              durationMinutes={15}
+              href="#"
+              playButton={true}
               sizes={STORY_CARD_SIZES}
+              thumbnailSrc="https://picsum.photos/seed/hero/800/800"
+              title="Featured Meditation"
+              variant="hero"
             />
           </StorySection>
         </div>
@@ -92,14 +86,14 @@ export const Default: Story = () => (
         <div>
           <StorySection title="With Category Badge Only" variant="subsection">
             <ContentCard
-              title="What is Meditation?"
-              href="#"
-              thumbnailSrc="https://picsum.photos/seed/article/800/800"
-              description="Learn about the ancient practice of meditation."
-              variant="default"
               badge="Philosophy"
               badgeUrl="#"
+              description="Learn about the ancient practice of meditation."
+              href="#"
               sizes={STORY_CARD_SIZES}
+              thumbnailSrc="https://picsum.photos/seed/article/800/800"
+              title="What is Meditation?"
+              variant="default"
             />
           </StorySection>
         </div>
@@ -126,37 +120,37 @@ export const Default: Story = () => (
             <StoryGridCell isLabel>Square</StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid1/800/800"
                 aspectRatio="square"
-                variant="default"
+                href="#"
                 playButton={false}
                 sizes={STORY_CARD_SIZES}
-              />
-            </StoryGridCell>
-            <StoryGridCell>
-              <ContentCard
+                thumbnailSrc="https://picsum.photos/seed/grid1/800/800"
                 title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid2/800/800"
-                aspectRatio="square"
                 variant="default"
-                playButton={true}
-                durationMinutes={10}
-                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid4/800/800"
                 aspectRatio="square"
-                variant="hero"
+                durationMinutes={10}
+                href="#"
                 playButton={true}
-                durationMinutes={20}
                 sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid2/800/800"
+                title="Meditation"
+                variant="default"
+              />
+            </StoryGridCell>
+            <StoryGridCell>
+              <ContentCard
+                aspectRatio="square"
+                durationMinutes={20}
+                href="#"
+                playButton={true}
+                sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid4/800/800"
+                title="Meditation"
+                variant="hero"
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -165,36 +159,36 @@ export const Default: Story = () => (
             <StoryGridCell isLabel>Video (16:9)</StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid5/800/450"
                 aspectRatio="video"
-                variant="default"
+                href="#"
                 playButton={false}
                 sizes={STORY_CARD_SIZES}
-              />
-            </StoryGridCell>
-            <StoryGridCell>
-              <ContentCard
+                thumbnailSrc="https://picsum.photos/seed/grid5/800/450"
                 title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid6/800/450"
-                aspectRatio="video"
                 variant="default"
-                playButton={true}
-                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid8/800/450"
                 aspectRatio="video"
-                variant="hero"
+                href="#"
                 playButton={true}
-                durationMinutes={5}
                 sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid6/800/450"
+                title="Meditation"
+                variant="default"
+              />
+            </StoryGridCell>
+            <StoryGridCell>
+              <ContentCard
+                aspectRatio="video"
+                durationMinutes={5}
+                href="#"
+                playButton={true}
+                sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid8/800/450"
+                title="Meditation"
+                variant="hero"
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -203,35 +197,35 @@ export const Default: Story = () => (
             <StoryGridCell isLabel>4:3</StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid9/800/600"
                 aspectRatio="4-3"
-                variant="default"
+                href="#"
                 playButton={false}
                 sizes={STORY_CARD_SIZES}
-              />
-            </StoryGridCell>
-            <StoryGridCell>
-              <ContentCard
+                thumbnailSrc="https://picsum.photos/seed/grid9/800/600"
                 title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid10/800/600"
-                aspectRatio="4-3"
                 variant="default"
-                playButton={true}
-                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid12/800/600"
                 aspectRatio="4-3"
-                variant="hero"
+                href="#"
                 playButton={true}
                 sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid10/800/600"
+                title="Meditation"
+                variant="default"
+              />
+            </StoryGridCell>
+            <StoryGridCell>
+              <ContentCard
+                aspectRatio="4-3"
+                href="#"
+                playButton={true}
+                sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid12/800/600"
+                title="Meditation"
+                variant="hero"
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -240,35 +234,35 @@ export const Default: Story = () => (
             <StoryGridCell isLabel>3:2</StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid13/800/533"
                 aspectRatio="3-2"
-                variant="default"
+                href="#"
                 playButton={false}
                 sizes={STORY_CARD_SIZES}
-              />
-            </StoryGridCell>
-            <StoryGridCell>
-              <ContentCard
+                thumbnailSrc="https://picsum.photos/seed/grid13/800/533"
                 title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid14/800/533"
-                aspectRatio="3-2"
                 variant="default"
-                playButton={true}
-                sizes={STORY_CARD_SIZES}
               />
             </StoryGridCell>
             <StoryGridCell>
               <ContentCard
-                title="Meditation"
-                href="#"
-                thumbnailSrc="https://picsum.photos/seed/grid16/800/533"
                 aspectRatio="3-2"
-                variant="hero"
+                href="#"
                 playButton={true}
                 sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid14/800/533"
+                title="Meditation"
+                variant="default"
+              />
+            </StoryGridCell>
+            <StoryGridCell>
+              <ContentCard
+                aspectRatio="3-2"
+                href="#"
+                playButton={true}
+                sizes={STORY_CARD_SIZES}
+                thumbnailSrc="https://picsum.photos/seed/grid16/800/533"
+                title="Meditation"
+                variant="hero"
               />
             </StoryGridCell>
           </StoryGridRow>
@@ -276,123 +270,124 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StorySection title="Meditation Grid (Default Variant)" inContext={true}>
+    <StorySection inContext={true} title="Meditation Grid (Default Variant)">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         <ContentCard
-          title="Feel Love"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/med1/800/450"
+          aspectRatio="video"
           description="Unconditional love sounds hard, but it's actually innate to all human beings. Free your mind and feel the love we have within."
-          aspectRatio="video"
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/med1/800/450"
+          title="Feel Love"
         />
         <ContentCard
-          title="Feel Humble"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/med2/800/450"
+          aspectRatio="video"
           description="Feel like your mind is often occupied with criticisms, either of yourself or others? Silence those thoughts and experience the deep sense of peace that comes with humility."
-          aspectRatio="video"
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/med2/800/450"
+          title="Feel Humble"
         />
         <ContentCard
-          title="Feel Focused"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/med3/800/450"
+          aspectRatio="video"
           description="Bring your attention back to the center with a few simple exercises to completely clear your mind."
-          aspectRatio="video"
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/med3/800/450"
+          title="Feel Focused"
         />
         <ContentCard
-          title="Experience Joy"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/med4/800/450"
-          description="Try out these simple exercises to see how quickly and spontaneously you can tap into the ocean of true joy emanating from within."
           aspectRatio="video"
+          description="Try out these simple exercises to see how quickly and spontaneously you can tap into the ocean of true joy emanating from within."
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/med4/800/450"
+          title="Experience Joy"
         />
       </div>
     </StorySection>
 
-    <StorySection title="Mixed Content Grid" inContext={true}>
-      <p className="text-sm text-gray-600 mb-4">
-        Responsive grid with mixed meditations (default variant with play button) and articles (variety of aspect ratios).
-        Resize the browser window to see adaptive layout (1 column on mobile, 2 on tablet, 3 on desktop, 4 on large screens).
+    <StorySection inContext={true} title="Mixed Content Grid">
+      <p className="text-sm text-gray-700 mb-4">
+        Responsive grid with mixed meditations (default variant with play button) and articles
+        (variety of aspect ratios). Resize the browser window to see adaptive layout (1 column on
+        mobile, 2 on tablet, 3 on desktop, 4 on large screens).
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* Meditation cards */}
         <ContentCard
-          title="Morning Meditation"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content1/800/450"
+          aspectRatio="video"
           description="Start your day with clarity and peace through this guided morning meditation."
-          aspectRatio="video"
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content1/800/450"
+          title="Morning Meditation"
         />
         <ContentCard
-          title="What is Sahaja Yoga?"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content2/800/600"
-          description="Discover the ancient practice of Sahaja Yoga and its transformative power."
           aspectRatio="4-3"
+          description="Discover the ancient practice of Sahaja Yoga and its transformative power."
+          href="#"
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content2/800/600"
+          title="What is Sahaja Yoga?"
         />
         <ContentCard
-          title="Evening Calm"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content3/800/450"
+          aspectRatio="video"
           description="Wind down after a long day with this soothing evening meditation practice."
-          aspectRatio="video"
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content3/800/450"
+          title="Evening Calm"
         />
         <ContentCard
-          title="Benefits of Daily Practice"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content4/800/533"
-          description="Learn how consistent meditation transforms your mind, body, and spirit."
           aspectRatio="3-2"
+          description="Learn how consistent meditation transforms your mind, body, and spirit."
+          href="#"
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content4/800/533"
+          title="Benefits of Daily Practice"
         />
         <ContentCard
-          title="Quick Reset"
+          aspectRatio="video"
           href="#"
+          playButton={true}
+          sizes={STORY_CARD_SIZES}
           thumbnailSrc="https://picsum.photos/seed/content5/800/450"
-          aspectRatio="video"
-          playButton={true}
-          sizes={STORY_CARD_SIZES}
+          title="Quick Reset"
         />
         <ContentCard
-          title="Getting Started Guide"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content6/800/800"
-          description="Everything you need to know to begin your meditation journey today."
           aspectRatio="square"
+          description="Everything you need to know to begin your meditation journey today."
+          href="#"
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content6/800/800"
+          title="Getting Started Guide"
         />
         <ContentCard
-          title="Deep Relaxation"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content7/800/450"
-          description="Experience profound relaxation and release tension from your entire body."
           aspectRatio="video"
+          description="Experience profound relaxation and release tension from your entire body."
+          href="#"
           playButton={true}
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content7/800/450"
+          title="Deep Relaxation"
         />
         <ContentCard
-          title="Science of Meditation"
-          href="#"
-          thumbnailSrc="https://picsum.photos/seed/content8/800/450"
           aspectRatio="video"
+          href="#"
           sizes={STORY_CARD_SIZES}
+          thumbnailSrc="https://picsum.photos/seed/content8/800/450"
+          title="Science of Meditation"
         />
       </div>
     </StorySection>
   </StoryWrapper>
-);
+)
 
-Default.storyName = "ContentCard"
+Default.storyName = 'ContentCard'

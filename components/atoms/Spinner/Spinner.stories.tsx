@@ -1,28 +1,28 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Spinner } from "./Spinner";
-import {
-  StorySection,
-  StoryWrapper
-} from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Spinner } from './Spinner'
+import { StorySection, StoryWrapper } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * Spinner component showcasing variants, sizes, colors, and usage in context with loading states.
  */
 export const Default: Story = () => (
   <StoryWrapper>
-    <StorySection title="Variants" description="Two spinner variants: default circular spinner and animated logo">
+    <StorySection
+      description="Two spinner variants: default circular spinner and animated logo"
+      title="Variants"
+    >
       <div className="flex gap-8 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner variant="default" />
-          <p className="text-sm text-gray-600">Default</p>
+          <p className="text-sm text-gray-700">Default</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Spinner variant="logo" />
-          <p className="text-sm text-gray-600">Logo</p>
+          <p className="text-sm text-gray-700">Logo</p>
         </div>
       </div>
     </StorySection>
@@ -33,23 +33,23 @@ export const Default: Story = () => (
           <div className="flex gap-6 items-center">
             <div className="flex flex-col items-center gap-2">
               <Spinner size="xs" />
-              <p className="text-sm text-gray-600">XS</p>
+              <p className="text-sm text-gray-700">XS</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="sm" />
-              <p className="text-sm text-gray-600">Small</p>
+              <p className="text-sm text-gray-700">Small</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="md" />
-              <p className="text-sm text-gray-600">Medium</p>
+              <p className="text-sm text-gray-700">Medium</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="lg" />
-              <p className="text-sm text-gray-600">Large</p>
+              <p className="text-sm text-gray-700">Large</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Spinner size="xl" />
-              <p className="text-sm text-gray-600">XL</p>
+              <p className="text-sm text-gray-700">XL</p>
             </div>
           </div>
         </StorySection>
@@ -57,24 +57,24 @@ export const Default: Story = () => (
         <StorySection title="Logo Variant Sizes" variant="subsection">
           <div className="flex gap-6 items-center">
             <div className="flex flex-col items-center gap-2">
-              <Spinner variant="logo" size="xs" />
-              <p className="text-sm text-gray-600">XS</p>
+              <Spinner size="xs" variant="logo" />
+              <p className="text-sm text-gray-700">XS</p>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Spinner variant="logo" size="sm" />
-              <p className="text-sm text-gray-600">Small</p>
+              <Spinner size="sm" variant="logo" />
+              <p className="text-sm text-gray-700">Small</p>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Spinner variant="logo" size="md" />
-              <p className="text-sm text-gray-600">Medium</p>
+              <Spinner size="md" variant="logo" />
+              <p className="text-sm text-gray-700">Medium</p>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Spinner variant="logo" size="lg" />
-              <p className="text-sm text-gray-600">Large</p>
+              <Spinner size="lg" variant="logo" />
+              <p className="text-sm text-gray-700">Large</p>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Spinner variant="logo" size="xl" />
-              <p className="text-sm text-gray-600">XL</p>
+              <Spinner size="xl" variant="logo" />
+              <p className="text-sm text-gray-700">XL</p>
             </div>
           </div>
         </StorySection>
@@ -85,24 +85,24 @@ export const Default: Story = () => (
       <div className="flex gap-6 items-center">
         <div className="flex flex-col items-center gap-2">
           <Spinner color="primary" />
-          <p className="text-sm text-gray-600">Primary (Teal)</p>
+          <p className="text-sm text-gray-700">Primary (Teal)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Spinner color="secondary" />
-          <p className="text-sm text-gray-600">Secondary (Coral)</p>
+          <p className="text-sm text-gray-700">Secondary (Coral)</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Spinner color="neutral" />
-          <p className="text-sm text-gray-600">Neutral (Gray)</p>
+          <p className="text-sm text-gray-700">Neutral (Gray)</p>
         </div>
       </div>
     </StorySection>
 
     <StorySection
-      title="Dark Theme"
-      surface="dark"
       background="neutral"
       description="Lightened colors for contrast on dark backgrounds"
+      surface="dark"
+      title="Dark Theme"
     >
       <div className="flex flex-col gap-6">
         <div className="flex gap-6 items-center">
@@ -128,7 +128,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-6">
         <StorySection title="Inline Loading" variant="subsection">
           <div className="flex items-center gap-2">
@@ -140,22 +140,22 @@ export const Default: Story = () => (
         <StorySection title="Centered Loading" variant="subsection">
           <div className="border border-gray-200 rounded-lg p-8 flex flex-col items-center justify-center gap-3 min-h-[200px]">
             <Spinner size="lg" />
-            <p className="text-gray-600">Loading meditation...</p>
+            <p className="text-gray-700">Loading meditation...</p>
           </div>
         </StorySection>
 
         <StorySection title="Full Page Loading" variant="subsection">
           <div className="bg-white border border-gray-200 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
             <div className="flex flex-col items-center gap-4">
-              <Spinner size="lg" color="primary" />
+              <Spinner color="primary" size="lg" />
               <p className="text-lg text-gray-700">Loading your meditation session</p>
-              <p className="text-sm text-gray-500">Please wait...</p>
+              <p className="text-sm text-gray-700">Please wait...</p>
             </div>
           </div>
         </StorySection>
 
         <StorySection title="Logo Variant - Splash Screen" variant="subsection">
-          <div className="surface-dark bg-teal-600 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
+          <div className="surface-dark bg-teal-900 rounded-lg p-12 flex items-center justify-center min-h-[300px]">
             <div className="flex flex-col items-center gap-4">
               <Spinner color="neutral" size="xl" variant="logo" />
               <p className="text-lg text-white">WeMeditate</p>
@@ -166,8 +166,8 @@ export const Default: Story = () => (
         <StorySection title="Logo Variant - Content Loading" variant="subsection">
           <div className="bg-white border border-gray-200 rounded-lg p-8 flex items-center justify-center min-h-[200px]">
             <div className="flex flex-col items-center gap-3">
-              <Spinner variant="logo" size="lg" />
-              <p className="text-gray-600">Loading meditation...</p>
+              <Spinner size="lg" variant="logo" />
+              <p className="text-gray-700">Loading meditation...</p>
             </div>
           </div>
         </StorySection>
@@ -176,5 +176,5 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
-Default.storyName = "Spinner"
+)
+Default.storyName = 'Spinner'
