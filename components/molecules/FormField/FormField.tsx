@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode } from 'react'
+import { cloneElement, isValidElement, ReactNode } from 'react'
 import { useT } from '../../../hooks/useT'
 
 export interface FormFieldProps {
@@ -85,42 +85,51 @@ export function FormField({
   const alignStyles = align === 'center' ? 'text-center' : 'text-left'
   const labelStyles = 'block text-sm font-medium text-gray-900 mb-1'
   const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : ''
-  const descriptionStyles = 'mt-1 text-sm text-gray-600'
+  const descriptionStyles = 'mt-1 text-sm text-gray-700'
   const errorStyles = 'mt-1 text-sm text-error'
 
-  // Generate IDs for description and error for aria-describedby
-  const descriptionId = description ? `${id}-description` : undefined
+  // Only what this component actually renders: an error hides the description,
+  // and `aria-describedby` pointing at a missing id announces nothing.
+  const descriptionId = description && !error ? `${id}-description` : undefined
   const errorId = error ? `${id}-error` : undefined
-
-  // Build aria-describedby value
   const ariaDescribedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined
+
+  // The description and the error are siblings of the control, so nothing
+  // connects them to it but this attribute. A control that already names its
+  // own description keeps that too.
+  // shortcut: only a single element child is reached, so a field wrapping a
+  // fragment or several controls gets nothing. Upgrade to a context when a
+  // call site needs one — every one today renders one control.
+  const describedChildren =
+    ariaDescribedBy && isValidElement<{ 'aria-describedby'?: string }>(children)
+      ? cloneElement(children, {
+          'aria-describedby':
+            [children.props['aria-describedby'], ariaDescribedBy].filter(Boolean).join(' ') ||
+            undefined,
+        })
+      : children
 
   return (
     <div className={`${alignStyles} ${className}`}>
-      <label
-        htmlFor={id}
-        className={`${labelStyles} ${disabledStyles}`}
-      >
+      <label className={`${labelStyles} ${disabledStyles}`} htmlFor={id}>
         {label}
         {required && (
-          <span className="text-error ml-1" aria-label={t('forms.a11y.required_marker')}>
+          <span aria-label={t('forms.a11y.required_marker')} className="text-error ml-1">
             *
           </span>
         )}
       </label>
 
       {description && !error && (
-        <p id={descriptionId} className={descriptionStyles}>
+        <p className={descriptionStyles} id={descriptionId}>
           {description}
         </p>
       )}
 
-      <div className={description && !error ? 'mt-1' : ''}>
-        {children}
-      </div>
+      <div className={description && !error ? 'mt-1' : ''}>{describedChildren}</div>
 
       {error && (
-        <p id={errorId} className={errorStyles} role="alert">
+        <p className={errorStyles} id={errorId} role="alert">
           {error}
         </p>
       )}

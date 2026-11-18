@@ -73,7 +73,7 @@ export function Placeholder({
   const textColorStyles = {
     primary: 'text-teal-600',
     secondary: 'text-coral-600',
-    neutral: 'text-gray-600',
+    neutral: 'text-gray-700',
   }
 
   // Build inline styles for dimensions
@@ -96,7 +96,9 @@ export function Placeholder({
 
       {/* Centered children content */}
       {children && (
-        <div className={`absolute inset-0 flex items-center justify-center ${textColorStyles[variant]}`}>
+        <div
+          className={`absolute inset-0 flex items-center justify-center ${textColorStyles[variant]}`}
+        >
           {children}
         </div>
       )}

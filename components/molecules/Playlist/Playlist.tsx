@@ -68,28 +68,24 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
   return (
     <button
       aria-current={isCurrentTrack ? 'true' : undefined}
-      onClick={() => onTrackClick(index)}
       className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
         isCurrentTrack
-          ? 'bg-teal-600 text-white shadow-md'
+          ? 'bg-teal-700 text-white shadow-md'
           : 'bg-white/80 hover:bg-gray-100 text-gray-900'
       }`}
+      onClick={() => onTrackClick(index)}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h4 className="text-sm font-medium truncate">
-            {track.title}
-          </h4>
+          <h4 className="text-sm font-medium truncate">{track.title}</h4>
           <Link
-            href={track.creditURL}
             external
-            variant={isCurrentTrack ? 'unstyled' : 'primary'}
-            size="inherit"
             className={`text-xs truncate self-start mt-1 ${
-              isCurrentTrack
-                ? 'text-teal-100 hover:text-white transition-colors duration-200'
-                : ''
+              isCurrentTrack ? 'text-teal-50 hover:text-white transition-colors duration-200' : ''
             }`}
+            href={track.creditURL}
+            size="inherit"
+            variant={isCurrentTrack ? 'unstyled' : 'primary'}
             onClick={(e) => e.stopPropagation()}
           >
             {track.credit}
@@ -103,7 +99,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
         {track.duration > 0 && (
           <span
             className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
-              isCurrentTrack ? 'text-teal-100' : 'text-gray-600'
+              isCurrentTrack ? 'text-teal-50' : 'text-gray-700'
             }`}
           >
             {formatDuration(track.duration)}
@@ -136,10 +132,7 @@ export function Playlist({
   ...props
 }: PlaylistProps) {
   return (
-    <div
-      className={`relative h-full flex flex-col ${className}`}
-      {...props}
-    >
+    <div className={`relative h-full flex flex-col ${className}`} {...props}>
       {/* Playlist header */}
       <div className="relative mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -152,12 +145,12 @@ export function Playlist({
             {filters.map((filter) => (
               <Button
                 key={filter.id}
-                icon={filter.icon}
-                variant={selectedFilter === filter.id ? 'primary' : 'ghost'}
-                size="xs"
-                shape="circular"
-                onClick={() => onFilterChange?.(filter.id)}
                 aria-pressed={selectedFilter === filter.id}
+                icon={filter.icon}
+                shape="circular"
+                size="xs"
+                variant={selectedFilter === filter.id ? 'primary' : 'ghost'}
+                onClick={() => onFilterChange?.(filter.id)}
               >
                 {filter.label}
               </Button>
@@ -173,9 +166,9 @@ export function Playlist({
             // shortcut: Track carries no id, so the audio url stands in as the
             // row's identity; give it one if two songs ever share an upload.
             key={track.url}
-            track={track}
             index={index}
             isCurrentTrack={index === currentTrackIndex}
+            track={track}
             onTrackClick={onTrackClick}
           />
         ))}

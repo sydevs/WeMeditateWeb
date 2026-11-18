@@ -1,12 +1,12 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { useState } from "react";
-import { SplashLoader } from "./SplashLoader";
-import { StoryWrapper, StorySection } from '../../ladle';
-import { Button } from '../Button';
+import type { Story, StoryDefault } from '@ladle/react'
+import { useState } from 'react'
+import { SplashLoader } from './SplashLoader'
+import { StoryWrapper, StorySection } from '../../ladle'
+import { Button } from '../Button'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * SplashLoader component showcasing sizes, color variants, with/without background images,
@@ -19,21 +19,21 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm font-medium mb-2 text-gray-700">Small</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
-            <SplashLoader size="sm" color="primary" text="Loading..." />
+            <SplashLoader color="primary" size="sm" text="Loading..." />
           </div>
         </div>
 
         <div>
           <p className="text-sm font-medium mb-2 text-gray-700">Medium (Default)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
-            <SplashLoader size="md" color="primary" text="Loading..." />
+            <SplashLoader color="primary" size="md" text="Loading..." />
           </div>
         </div>
 
         <div>
           <p className="text-sm font-medium mb-2 text-gray-700">Large</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
-            <SplashLoader size="lg" color="primary" text="Loading..." />
+            <SplashLoader color="primary" size="lg" text="Loading..." />
           </div>
         </div>
       </div>
@@ -77,8 +77,8 @@ export const Default: Story = () => (
           <p className="text-sm font-medium mb-2 text-gray-700">Primary + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
-              color="primary"
               backgroundImage="https://picsum.photos/seed/splash3/800/600"
+              color="primary"
             />
           </div>
         </div>
@@ -87,8 +87,8 @@ export const Default: Story = () => (
           <p className="text-sm font-medium mb-2 text-gray-700">Secondary + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
-              color="secondary"
               backgroundImage="https://picsum.photos/seed/splash2/800/600"
+              color="secondary"
             />
           </div>
         </div>
@@ -97,8 +97,8 @@ export const Default: Story = () => (
           <p className="text-sm font-medium mb-2 text-gray-700">Neutral + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
-              color="neutral"
               backgroundImage="https://picsum.photos/seed/splash3/800/600"
+              color="neutral"
             />
           </div>
         </div>
@@ -107,27 +107,30 @@ export const Default: Story = () => (
           <p className="text-sm font-medium mb-2 text-gray-700">None + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
-              color="none"
               backgroundImage="https://picsum.photos/seed/splash4/800/600"
+              color="none"
             />
           </div>
         </div>
       </div>
     </StorySection>
 
-    <StorySection title="Interactive - Loading State" description="Click the button to toggle loading state and see the fade-out transition">
+    <StorySection
+      description="Click the button to toggle loading state and see the fade-out transition"
+      title="Interactive - Loading State"
+    >
       <InteractiveSplashLoader />
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-8">
         <div>
           <p className="text-sm font-medium mb-2 text-gray-700">Full Page Splash (Large)</p>
           <div className="relative h-96 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
-              size="lg"
-              color="primary"
               backgroundImage="https://picsum.photos/seed/hero1/1920/1080"
+              color="primary"
+              size="lg"
               text="Preparing your meditation journey..."
             />
           </div>
@@ -139,16 +142,16 @@ export const Default: Story = () => (
             <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
               <div className="h-48">
                 <img
-                  src="https://picsum.photos/seed/card1/400/300"
                   alt="Card content"
                   className="w-full h-full object-cover"
+                  src="https://picsum.photos/seed/card1/400/300"
                 />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">Card Title</h3>
-                <p className="text-gray-600">Card content that would load...</p>
+                <p className="text-gray-700">Card content that would load...</p>
               </div>
-              <SplashLoader size="sm" color="secondary" text="Loading content..." />
+              <SplashLoader color="secondary" size="sm" text="Loading content..." />
             </div>
           </div>
         </div>
@@ -157,9 +160,9 @@ export const Default: Story = () => (
           <p className="text-sm font-medium mb-2 text-gray-700">Video Player Loading (Medium)</p>
           <div className="relative aspect-video max-w-2xl bg-black rounded-lg overflow-hidden">
             <SplashLoader
-              size="md"
-              color="neutral"
               backgroundImage="https://picsum.photos/seed/video1/1280/720"
+              color="neutral"
+              size="md"
               text="Buffering video..."
             />
           </div>
@@ -169,17 +172,17 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Splash Loader"
+Default.storyName = 'Splash Loader'
 
 /** Interactive component to demonstrate loading state transitions */
 function InteractiveSplashLoader() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true)
 
   const handleToggle = () => {
-    setIsLoading(!isLoading);
-  };
+    setIsLoading(!isLoading)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -187,27 +190,27 @@ function InteractiveSplashLoader() {
         <Button variant="primary" onClick={handleToggle}>
           {isLoading ? 'Complete Loading' : 'Start Loading'}
         </Button>
-        <span className="text-sm text-gray-600 flex items-center">
+        <span className="text-sm text-gray-700 flex items-center">
           Status: {isLoading ? 'Loading...' : 'Complete'}
         </span>
       </div>
 
       <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-linear-to-br from-teal-50 to-coral-50">
         <SplashLoader
-          color="primary"
           backgroundImage="https://picsum.photos/seed/interactive/800/600"
-          text="Please wait, loading your content..."
+          color="primary"
           isLoading={isLoading}
+          text="Please wait, loading your content..."
         />
         {!isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">Content Loaded!</h3>
-              <p className="text-gray-600">The splash screen has faded out.</p>
+              <p className="text-gray-700">The splash screen has faded out.</p>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }

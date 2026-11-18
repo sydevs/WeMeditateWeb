@@ -55,19 +55,20 @@ export function ErrorFallback({
   // Both the title and the body come from the same resolved category, so a
   // 404 can no longer show the UNKNOWN body under "Content Not Found".
   const userMessage = t(errorMessageKey(resolvedType))
-  const showStatusLink = resolvedType === ErrorType.SERVER && !!statusPageUrl && isSafeHttpUrl(statusPageUrl)
+  const showStatusLink =
+    resolvedType === ErrorType.SERVER && !!statusPageUrl && isSafeHttpUrl(statusPageUrl)
 
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
       <Icon
+        aria-label={t('errors.a11y.error_icon')}
+        className="mb-6"
+        color="secondary"
         icon={ICON_BY_TYPE[resolvedType]}
         size="2xl"
-        color="secondary"
-        className="mb-6"
-        aria-label={t('errors.a11y.error_icon')}
       />
 
-      <Heading level="h3" className="mb-2">
+      <Heading className="mb-2" level="h3">
         {t(errorTitleKey(resolvedType))}
       </Heading>
 
@@ -85,10 +86,10 @@ export function ErrorFallback({
             link: (
               <a
                 key="status-page"
-                href={statusPageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-teal-600 hover:text-teal-700 underline"
+                href={statusPageUrl}
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 {t('errors.general.status_page_link')}
               </a>
@@ -100,7 +101,7 @@ export function ErrorFallback({
       {/* eslint-disable no-restricted-syntax -- both call sites pass showDetails={import.meta.env.DEV}, so this panel is a developer's, never a visitor's */}
       {showDetails && (
         <details className="mb-6 max-w-md text-left w-full">
-          <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900 mb-2 text-center">
+          <summary className="cursor-pointer text-sm text-gray-700 hover:text-gray-900 mb-2 text-center">
             Technical Details
           </summary>
           <div className="mt-2 p-4 bg-gray-100 rounded text-xs font-mono break-words">
@@ -116,10 +117,10 @@ export function ErrorFallback({
       {/* eslint-enable no-restricted-syntax */}
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button onClick={resetError} variant="secondary" size="md">
+        <Button size="md" variant="secondary" onClick={resetError}>
           {t('errors.general.try_again')}
         </Button>
-        <Button href="/" variant="outline" size="md">
+        <Button href="/" size="md" variant="outline">
           {t('errors.general.back_to_home')}
         </Button>
       </div>

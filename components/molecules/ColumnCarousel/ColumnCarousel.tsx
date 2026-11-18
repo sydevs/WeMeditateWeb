@@ -82,10 +82,7 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
  *   ]}
  * />
  */
-export function ColumnCarousel({
-  columns: rawColumns,
-  className = '',
-}: ColumnCarouselProps) {
+export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCarouselProps) {
   const t = useT()
   // Enforce maximum of 5 columns
   const columns = rawColumns.slice(0, MAX_COLUMNS)
@@ -115,14 +112,18 @@ export function ColumnCarousel({
     setSelectedIndex(emblaApi.selectedScrollSnap())
   }, [emblaApi])
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index)
-  }, [emblaApi])
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index)
+    },
+    [emblaApi],
+  )
 
   useEffect(() => {
     if (!emblaApi) return
     onSelect()
     emblaApi.on('select', onSelect)
+
     return () => {
       emblaApi.off('select', onSelect)
     }
@@ -132,7 +133,7 @@ export function ColumnCarousel({
   useEffect(() => {
     if (rawColumns.length > MAX_COLUMNS) {
       console.warn(
-        `ColumnCarousel: Maximum ${MAX_COLUMNS} columns allowed. Received ${rawColumns.length} columns. Truncating to ${MAX_COLUMNS}.`
+        `ColumnCarousel: Maximum ${MAX_COLUMNS} columns allowed. Received ${rawColumns.length} columns. Truncating to ${MAX_COLUMNS}.`,
       )
     }
   }, [rawColumns.length])
@@ -207,13 +208,10 @@ export function ColumnCarousel({
           </div>
 
           {/* Carousel viewport */}
-          <div className="overflow-hidden" ref={emblaRef}>
+          <div ref={emblaRef} className="overflow-hidden">
             <div className="flex gap-4">
               {columns.map((column, index) => (
-                <div
-                  key={index}
-                  className="flex-[0_0_auto] w-full flex justify-center"
-                >
+                <div key={index} className="flex-[0_0_auto] w-full flex justify-center">
                   <Column {...column} />
                 </div>
               ))}

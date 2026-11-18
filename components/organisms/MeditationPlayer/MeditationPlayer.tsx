@@ -171,11 +171,9 @@ function VolumeRow({
 }: VolumeRowProps) {
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-600">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-700">
         {label}
-        {sublabel ? (
-          <span className="ml-1 font-normal normal-case text-gray-400">· {sublabel}</span>
-        ) : null}
+        {sublabel ? <span className="ml-1 font-normal normal-case">· {sublabel}</span> : null}
       </p>
       <div className="flex items-center gap-2">
         <Button
@@ -242,6 +240,7 @@ function AudioControls({
   onShuffle,
 }: AudioControlsProps) {
   const t = useT()
+
   return (
     <Dropdown
       align="center"
@@ -264,10 +263,10 @@ function AudioControls({
         <VolumeRow
           label={t('meditation.general.voice')}
           muteLabel={t('meditation.a11y.mute_voice')}
-          unmuteLabel={t('meditation.a11y.unmute_voice')}
-          volumeLabel={t('meditation.a11y.voice_volume')}
           muted={voiceMuted}
+          unmuteLabel={t('meditation.a11y.unmute_voice')}
           volume={voiceVolume}
+          volumeLabel={t('meditation.a11y.voice_volume')}
           onToggleMute={onToggleVoiceMute}
           onVolumeChange={onVoiceVolumeChange}
         />
@@ -289,11 +288,11 @@ function AudioControls({
             }
             label={t('meditation.general.music')}
             muteLabel={t('meditation.a11y.mute_music')}
-            unmuteLabel={t('meditation.a11y.unmute_music')}
-            volumeLabel={t('meditation.a11y.music_volume')}
             muted={musicMuted}
             sublabel={musicTrackTitle}
+            unmuteLabel={t('meditation.a11y.unmute_music')}
             volume={musicVolume}
+            volumeLabel={t('meditation.a11y.music_volume')}
             onToggleMute={onToggleMusicMute}
             onVolumeChange={onMusicVolumeChange}
           />
@@ -639,7 +638,7 @@ function MeditationPlayerInner({
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
-              <p className="text-xs sm:text-sm tracking-widest text-gray-600 uppercase">
+              <p className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase">
                 {t('meditation.general.label')}
               </p>
             </div>
@@ -655,7 +654,7 @@ function MeditationPlayerInner({
                 <p className="text-xs @4xl:text-sm font-medium text-gray-800">
                   {t('meditation.general.founder_name')}
                 </p>
-                <p className="text-xs @4xl:text-sm italic text-gray-600">
+                <p className="text-xs @4xl:text-sm italic text-gray-700">
                   {t('meditation.general.founder_role')}
                 </p>
               </div>
@@ -792,7 +791,7 @@ function MeditationPlayerInner({
           {/* Subtitle + Volume - Below player on narrow, left column on wide */}
           <div className="text-center @4xl:text-left @4xl:col-span-3 @4xl:order-1 @4xl:space-y-6">
             {/* Label - hidden on narrow, visible on wide */}
-            <p className="hidden @4xl:block text-sm tracking-widest text-gray-600 uppercase mb-8">
+            <p className="hidden @4xl:block text-sm tracking-widest text-gray-700 uppercase mb-8">
               {t('meditation.general.label')}
             </p>
 
@@ -832,7 +831,7 @@ function MeditationPlayerInner({
         {/* Upsell Message */}
         {upsell && (
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700">
               {upsell === 'web'
                 ? t.rich('meditation.general.upsell_web', {
                     link: (
