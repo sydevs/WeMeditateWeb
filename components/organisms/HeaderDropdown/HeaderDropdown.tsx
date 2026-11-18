@@ -74,6 +74,7 @@ export function HeaderDropdown({
           <nav className="py-6">
             <ul className="flex flex-col gap-3">
               {links.map((link, index) => (
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- dropdown links built once per site configuration, never reordered or filtered
                 <li key={index}>
                   <Link
                     className="hover:text-teal-600 transition-colors"
@@ -92,6 +93,7 @@ export function HeaderDropdown({
         {/* Columns 2 & 3: Featured Articles */}
         {validArticles.map((article, index) => (
           <FeaturedArticleColumn
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- two fixed article slots, and the slot is what decides the breakpoint class below
             key={index}
             article={article}
             className={index === 0 ? 'hidden md:flex' : 'hidden lg:flex'}

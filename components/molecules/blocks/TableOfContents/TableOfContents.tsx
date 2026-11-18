@@ -47,6 +47,7 @@ export function TableOfContents({ title, headings, className = '' }: TableOfCont
           const offset = Math.min(heading.level - minLevel, INDENT_CLASSES.length - 1)
 
           return (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the anchor leads the key; the index only separates two headings that slugify alike
             <li key={`${anchor}-${index}`} className={INDENT_CLASSES[offset]}>
               <Link className="no-underline hover:underline" href={`#${anchor}`} variant="primary">
                 {heading.text}

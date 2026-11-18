@@ -107,6 +107,7 @@ export function Footer({
 
           {/* Regular Link Sections */}
           {sections.map((section, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- footer sections built once per site configuration, never reordered or filtered
             <div key={index}>
               <FooterLinkList title={section.title} links={section.links} locale={locale} />
             </div>
@@ -118,6 +119,7 @@ export function Footer({
             <div className="flex items-center gap-4">
               {socialLinks.map((social, index) => (
                 <SocialIcon
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- social icons built once per site configuration, never reordered or filtered
                   key={index}
                   platform={social.platform}
                   href={social.href}

@@ -187,6 +187,7 @@ export function ColumnCarousel({
           <div className="flex justify-center mb-6">
             {columns.map((_, index) => (
               <button
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- a dot indicator over a fixed `columns` array: the position is the identity
                 key={index}
                 onClick={() => scrollTo(index)}
                 aria-label={t('blocks.a11y.go_to_column', {
@@ -212,6 +213,7 @@ export function ColumnCarousel({
             <div className="flex gap-4">
               {columns.map((column, index) => (
                 <div
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a slide over a fixed `columns` array, in the order the block declares
                   key={index}
                   className="flex-[0_0_auto] w-full flex justify-center"
                 >
@@ -236,6 +238,7 @@ export function ColumnCarousel({
         `}
       >
         {columns.map((column, index) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- the same fixed `columns` array, laid out rather than scrolled
           <Column key={index} {...column} />
         ))}
       </div>

@@ -130,6 +130,7 @@ export function LayoutBlock({
         {heading}
         <ul className="flex flex-col gap-4">
           {items.map((it, i) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the id is the key wherever SahajCloud sends one; the index is only its fallback
             <li key={it.id ?? i}>
               {it.title && <p className="font-semibold text-gray-800">{it.title}</p>}
               {itemText(it.text)}
@@ -152,6 +153,7 @@ export function LayoutBlock({
         }
       >
         {items.map((it, i) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- the id is the key wherever SahajCloud sends one; the index is only its fallback
           <LayoutCard key={it.id ?? i} item={it} orientation={style === 'list' ? 'list' : 'grid'} />
         ))}
       </div>

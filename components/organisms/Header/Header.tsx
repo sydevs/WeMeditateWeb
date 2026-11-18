@@ -196,12 +196,14 @@ export function Header({
               {navItems.map((item, index) =>
                 item.dropdown ? (
                   <HeaderNavDropdown
+                    // eslint-disable-next-line @eslint-react/no-array-index-key -- nav items built once per site configuration, never reordered or filtered
                     key={index}
                     dropdown={item.dropdown}
                     label={item.label}
                   />
                 ) : (
                   <Button
+                    // eslint-disable-next-line @eslint-react/no-array-index-key -- nav items built once per site configuration, never reordered or filtered
                     key={index}
                     href={item.href}
                     isActive={item.active}

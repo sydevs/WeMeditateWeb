@@ -62,6 +62,7 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
       <nav className="flex flex-col gap-3">
         {links.map((link, index) => (
           <Link
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- a link list built once per site configuration, never reordered or filtered
             key={index}
             href={link.href}
             locale={locale}

@@ -72,6 +72,7 @@ export const Default: Story = () => (
         </p>
 
         {Array.from({ length: 5 }).map((_, i) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- filler sections from a fixed-length array, so the story has something to scroll
           <div key={i}>
             <h2 className="text-2xl font-medium text-gray-700 mt-8">Section {i + 1}</h2>
             <p className="text-base text-gray-600 leading-relaxed">
@@ -119,6 +120,7 @@ export const Default: Story = () => (
         </p>
 
         {Array.from({ length: 5 }).map((_, i) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- filler sections from a fixed-length array, so the story has something to scroll
           <div key={i}>
             <h2 className="text-2xl font-medium text-white mt-8">Section {i + 1}</h2>
             <p className="text-base text-white/90 leading-relaxed">
