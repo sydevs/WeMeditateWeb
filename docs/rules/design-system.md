@@ -48,10 +48,17 @@ built from a bare `<button>` picks one of the two utilities in
 | Utility | Use it when |
 | --- | --- |
 | `touch-target` | The layout can absorb a bigger box. **Reach for this first.** |
-| `touch-target-overlay` | The drawn size *is* the design — an 8px dot, a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
+| `touch-target-overlay` | The drawn size *is* the design — a 16px cross, a media button in a row sized around it. The box is untouched; an invisible centred 44×44 `::before` takes the clicks. |
 
-Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip. That is
-why growing the box is the first choice.
+Two overlays closer than 44px apart overlap, and the later sibling wins the shared strip, so an
+overlay leaves a **spacing** requirement on the row around it. That is why growing the box is the
+first choice. `ColumnCarousel`'s dots sat on 16px centres, so tapping the dot you could see
+selected the *next* slide (#135).
+
+**A grown box needs the room, and the row is where you find it.** Five 44px dot cells left each
+`CarouselNavButton` title about 61px wide while they shared a row, so the dots took a line of
+their own instead of the cells taking a size below the minimum. Give the control its own line
+before you argue for an exception.
 
 **An overlay hangs outside its box by design, so the hazard is a clipping edge, not a short box.**
 `Alert`'s 16px cross hangs well outside its box, correctly. What breaks the `::before` is an edge
@@ -61,7 +68,13 @@ lists read `touch-target-overlay` (#202). A class list is not a hit area. Measur
 `document.elementFromPoint`.
 
 `touch-target` also sets a `min-width`, which replaces the flex default `min-width: auto`. On a
-flex item that is the visible effect: it shrinks to 44px rather than to its content.
+flex item that is the visible effect: it shrinks to 44px rather than to its content — and on a
+flex item only. The comment in [layouts/tailwind.css](../../layouts/tailwind.css) owns the rest of
+that mechanism; read it before you expect the floor to shrink a button.
+
+Each `ColumnCarousel` dot is a 44×44 `<button>` drawing an 8px `<span>`, with no gap between
+cells, so adjacent cells cannot overlap by construction. There is no documented exception to the
+44px minimum. Measure the row in a browser before you propose one.
 
 ## Route changes are already announced — do not add a second announcer
 
@@ -125,6 +138,8 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'type'> {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   shape?: 'square' | 'circular'     // Default: circular icon-only, square text
   icon?: HeroIcon                   // Icon only when no children are passed
+  iconPosition?: 'leading' | 'trailing'  // Default: 'leading'
+  truncate?: boolean                // Ellipsise the label instead of widening the button
   isLoading?: boolean
   isActive?: boolean                // Current-page nav link: tinted fill + aria-current
   fullWidth?: boolean               // Text buttons only
@@ -139,6 +154,12 @@ Use `href` for navigation or a download. Use `onClick` for a JavaScript action, 
 
 `Button` guarantees the 44×44 minimum itself, at every size and in both forms. Do not re-add a
 `min-h-11` at a call site.
+
+A button that has to *shrink* to that floor needs `truncate` and `size="xs"`: the label then
+ellipsises, and `xs` is the one size whose padding fits inside 44px. `sm` upwards carry 48px or
+more of padding, which no `min-width` shrinks. The `Button` story's **Carousel Navigation**
+example is the worked one. `truncate` alone is enough wherever the slot is wider than the
+button's padding — `ColumnCarousel`'s nav buttons take it at `sm`.
 
 ### Link
 
