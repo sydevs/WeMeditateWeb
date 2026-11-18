@@ -38,6 +38,24 @@ export interface PlaylistProps extends Omit<ComponentProps<'div'>, 'children'> {
   onFilterChange?: (filterId: string) => void
 }
 
+/**
+ * Pair each track with its index in `tracks`, keeping only the ones the filter
+ * matches.
+ *
+ * The index has to travel with the track: `currentTrackIndex` and
+ * `onTrackClick` both index `tracks`, while a filtered row's position in the
+ * rendered list is its own. Reading one as the other plays and highlights the
+ * wrong track (#249).
+ */
+export function visibleTracks(
+  tracks: Track[],
+  selectedFilter?: string | null,
+): { track: Track; index: number }[] {
+  return tracks
+    .map((track, index) => ({ track, index }))
+    .filter(({ track }) => !selectedFilter || track.tags?.some((tag) => tag.id === selectedFilter))
+}
+
 /** PlaylistItem is a subcomponent: an individual track item in the playlist. */
 interface PlaylistItemProps {
   track: Track
@@ -49,6 +67,7 @@ interface PlaylistItemProps {
 function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistItemProps) {
   return (
     <button
+      aria-current={isCurrentTrack ? 'true' : undefined}
       className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
         isCurrentTrack
           ? 'bg-teal-700 text-white shadow-md'
@@ -72,13 +91,20 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
             {track.credit}
           </Link>
         </div>
-        <span
-          className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
-            isCurrentTrack ? 'text-teal-50' : 'text-gray-700'
-          }`}
-        >
-          {formatDuration(track.duration)}
-        </span>
+        {/*
+          `contentIndexTrack` hands every song `duration: 0`, because
+          SahajCloud's Song type has no duration field, so each production row
+          printed `0:00`. Only the fixtures' real durations hid it.
+        */}
+        {track.duration > 0 && (
+          <span
+            className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
+              isCurrentTrack ? 'text-teal-50' : 'text-gray-700'
+            }`}
+          >
+            {formatDuration(track.duration)}
+          </span>
+        )}
       </div>
     </button>
   )
@@ -105,11 +131,6 @@ export function Playlist({
   className = '',
   ...props
 }: PlaylistProps) {
-  // Filter tracks based on selected filter using tags
-  const filteredTracks = selectedFilter
-    ? tracks.filter((track) => track.tags?.some((tag) => tag.id === selectedFilter))
-    : tracks
-
   return (
     <div className={`relative h-full flex flex-col ${className}`} {...props}>
       {/* Playlist header */}
@@ -140,9 +161,11 @@ export function Playlist({
 
       {/* Playlist items */}
       <div className="relative flex-1 overflow-y-auto space-y-2">
-        {filteredTracks.map((track, index) => (
+        {visibleTracks(tracks, selectedFilter).map(({ track, index }) => (
           <PlaylistItem
-            key={index}
+            // shortcut: Track carries no id, so the audio url stands in as the
+            // row's identity; give it one if two songs ever share an upload.
+            key={track.url}
             index={index}
             isCurrentTrack={index === currentTrackIndex}
             track={track}
