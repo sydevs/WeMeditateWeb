@@ -435,12 +435,12 @@ a call site that declares no box — including one forwarding a `sizes` of its o
 `undefined`, the spelling a lint selector reads as compliant (#206). A component that renders an
 `<Image>` it does not size therefore takes a `sizes` of its own and passes it on: `ContentCard`,
 `ContentGrid` and `ContentIndex` each do, and the length is chosen where the container width is.
-**`aspectRatio` stays a `no-restricted-syntax` selector** in
-[eslint.config.js](./eslint.config.js), because the prop is optional by design — an `<Image>`
-whose src is not Cloudflare's needs no ratio, so no type can demand it.
-[tests/guards/image-variants.test.ts](./tests/guards/image-variants.test.ts) proves that selector
-still matches, and pins the raw `<img>` population it cannot reach: a hand-rolled one reds that
-spec until someone says whether its `src` reaches `getImageURL`.
+**`aspectRatio` stays a lint rule**, `local/img-loading`'s neighbour `local/image-aspect-ratio`
+in [eslint-rules/index.js](./eslint-rules/index.js), because the prop is optional by design — an
+`<Image>` whose src is not Cloudflare's needs no ratio, so no type can demand it.
+[tests/guards/image-variants.test.ts](./tests/guards/image-variants.test.ts) proves the rule is
+still wired to the component tree, and pins the raw `<img>` population it cannot reach: a
+hand-rolled one reds that spec until someone says whether its `src` reaches `getImageURL`.
 
 `<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
 (default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →

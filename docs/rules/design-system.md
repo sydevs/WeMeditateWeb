@@ -29,8 +29,8 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for the hero rule and the `<picture>` carve-out, and
   the `priority` prop's own docs in
   [components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx) for why dropping
-  `loading="lazy"` is what preloads. `tests/guards/img-loading.test.ts` guards it, stories
-  excepted.
+  `loading="lazy"` is what preloads. `pnpm lint` rejects it through `local/img-loading`
+  ([eslint-rules/index.js](../../eslint-rules/index.js)), stories excepted.
 
 ## Two component shapes `pnpm lint` rejects
 

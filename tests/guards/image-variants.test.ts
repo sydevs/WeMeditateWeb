@@ -1,15 +1,16 @@
 /**
- * The `<Image>` aspectRatio selector in `eslint.config.js` really matches, and
- * the raw `<img>` population it cannot reach stays accounted for.
+ * The `local/image-aspect-ratio` rule is wired where it must be, and the raw
+ * `<img>` population it cannot reach stays accounted for.
  *
- * Why the prop is required sits beside the selector. A selector that silently
- * matches nothing fails open, so this asks ESLint against the repo config
- * rather than re-implementing it (`jsx-literals.test.ts`).
+ * Why the prop is required sits beside the rule, in `eslint-rules/index.js`,
+ * whose own fixtures prove the matcher fires. A rule scoped to nothing fails
+ * open just as silently, so this asks ESLint against the repo config instead
+ * (`jsx-literals.test.ts`).
  *
  * `sizes` is not here: `ImageProps` requires it, so `tsc` owns that one and
  * catches the forwarded `undefined` a selector reads as compliant (#206).
  *
- * The selector reads `<Image>` tags only, and four of the ten sites #146 fixed
+ * The rule reads `<Image>` tags only, and four of the ten sites #146 fixed
  * are a hand-rolled `<img>`. Holding those to `getImageURL` would need
  * exemptions: of the six raw `<img>` the last test pins, only two name the
  * helper in the tag — the atom's own `<img>` is the pipeline, one paints a
@@ -42,7 +43,7 @@ async function faults(
   const [result] = await eslint.lintText(`export const Sample = () => (\n${tag}\n)\n`, { filePath })
 
   return result.messages
-    .filter((message) => message.ruleId === 'no-restricted-syntax')
+    .filter((message) => message.ruleId === 'local/image-aspect-ratio')
     .flatMap((message) => PROPS.filter((prop) => message.message.includes(prop)))
     .sort()
 }
