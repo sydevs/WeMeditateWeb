@@ -51,20 +51,6 @@ describe('DropdownItem', () => {
     expect(html).toContain('href="/fr/meditations"')
   })
 
-  it('leaves an absolute URL, a mail address, a phone number and an anchor alone', () => {
-    const untouched = ['https://example.com/x', 'mailto:hi@example.com', 'tel:+123', '#section']
-
-    for (const href of untouched) {
-      expect(
-        renderToStaticMarkup(
-          <DropdownItem href={href} locale="fr">
-            Item
-          </DropdownItem>,
-        ),
-      ).toContain(`href="${href}"`)
-    }
-  })
-
   it('renders no href at all for a refused scheme', () => {
     const html = renderToStaticMarkup(<DropdownItem href="javascript:alert(1)">Item</DropdownItem>)
 

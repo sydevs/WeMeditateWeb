@@ -77,8 +77,6 @@ export interface DropdownProps {
 export interface DropdownItemProps extends Omit<LinkProps, 'size' | 'variant'> {
   /** Size variant. Defaults to the parent Dropdown's size when omitted. */
   size?: 'sm' | 'md' | 'lg'
-  /** Additional CSS classes */
-  className?: string
 }
 
 /**

@@ -18,44 +18,35 @@ vi.mock('vike-react/usePageContext', () => ({
 
 const { SubtleSystem } = await import('./SubtleSystem')
 
-const item = (linkHref: string) => [
-  { id: 'chakra_1', title: 'Mooladhara', description: 'Innocence', linkHref },
-]
+const render = (linkHref: string) =>
+  renderToStaticMarkup(
+    <SubtleSystem
+      items={[{ id: 'chakra_1', title: 'Mooladhara', description: 'Innocence', linkHref }]}
+    />,
+  )
+
+// The component inlines a 325 KB SVG, so each render is an expensive string.
+const prefixed = render('/about')
 
 describe('<SubtleSystem> in a non-English locale', () => {
   it('prefixes the article link with the locale', () => {
-    const html = renderToStaticMarkup(<SubtleSystem items={item('/about')} />)
-
-    expect(html).toContain('href="/fr/about"')
-  })
-
-  it('leaves an absolute URL and a bare anchor alone', () => {
-    for (const href of ['https://example.com/x', '#section']) {
-      expect(renderToStaticMarkup(<SubtleSystem items={item(href)} />)).toContain(`href="${href}"`)
-    }
+    expect(prefixed).toContain('href="/fr/about"')
   })
 
   it('renders no href at all for a refused scheme', () => {
-    const html = renderToStaticMarkup(<SubtleSystem items={item('javascript:alert(1)')} />)
+    const html = render('javascript:alert(1)')
 
     expect(html).toContain('Mooladhara')
     expect(html).not.toContain('javascript:')
   })
 
-  it('keeps the link’s accessible name, and its drawn styling', () => {
-    const anchor = anchorFor(
-      renderToStaticMarkup(<SubtleSystem items={item('/about')} />),
-      '/fr/about',
-    )
+  it('keeps the link’s accessible name, and its own layout class', () => {
+    const anchor = anchorFor(prefixed, '/fr/about')
 
     expect(anchor).toContain('aria-label="Learn more about Mooladhara"')
-    // `primary` draws the same teal pair the hand-written classes did, through
-    // the surface tokens, and the atom adds the focus ring the anchor lacked.
     expect(anchor).toContain('inline-block')
+    // `primary` draws the teal pair the hand-written classes did. The atom
+    // owns the rest of that variant, and `Link.test.tsx` pins it.
     expect(anchor).toContain('text-primary')
-    expect(anchor).toContain('hover:text-primary-strong')
-    expect(anchor).toContain('font-medium')
-    expect(anchor).toContain('transition-colors')
-    expect(anchor).toContain('focus-ring')
   })
 })

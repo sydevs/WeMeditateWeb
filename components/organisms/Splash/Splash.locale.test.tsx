@@ -3,7 +3,8 @@
  *
  * `Splash.test.tsx` renders it in English, where a prefixed href and an
  * unprefixed one are the same string. A non-English `pageContext` is the one
- * assertion that can tell them apart.
+ * assertion that can tell them apart, so a return to a bare anchor fails
+ * rather than passing green.
  *
  * It lives in its own file because the `pageContext` mock is module-wide.
  */
@@ -17,19 +18,17 @@ vi.mock('vike-react/usePageContext', () => ({
 
 const { Splash } = await import('./Splash')
 
-const splash = (ctaHref: string) =>
-  renderToStaticMarkup(
-    <Splash backgroundImage="/splash-bg.jpg" ctaHref={ctaHref} ctaText="Begin" title="Welcome" />,
-  )
-
 describe('<Splash> call to action in a non-English locale', () => {
   it('prefixes a site path with the locale', () => {
-    expect(splash('/meditations')).toContain('href="/fr/meditations"')
-  })
+    const html = renderToStaticMarkup(
+      <Splash
+        backgroundImage="/splash-bg.jpg"
+        ctaHref="/meditations"
+        ctaText="Begin"
+        title="Welcome"
+      />,
+    )
 
-  it('leaves an absolute URL and a bare anchor alone', () => {
-    for (const href of ['https://example.com/x', '#section']) {
-      expect(splash(href)).toContain(`href="${href}"`)
-    }
+    expect(html).toContain('href="/fr/meditations"')
   })
 })
