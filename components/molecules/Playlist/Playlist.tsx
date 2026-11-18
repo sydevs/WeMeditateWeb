@@ -68,7 +68,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
             size="inherit"
             className={`text-xs truncate self-start mt-1 ${
               isCurrentTrack
-                ? 'text-teal-100 hover:text-white'
+                ? 'text-teal-100 hover:text-white transition-colors duration-200'
                 : ''
             }`}
             onClick={(e) => e.stopPropagation()}

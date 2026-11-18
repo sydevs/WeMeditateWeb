@@ -71,11 +71,15 @@ export function localeFromPath(pathname: string): PathLocale {
 /**
  * True if the URL parses and uses an http(s) scheme.
  *
- * ⚠ **The gate on any URL this site did not author itself**, and the only
- * thing standing between a configured value and `javascript:` or `data:`
- * running in our origin. Two values need it today: the status-page link
- * (`ErrorFallback`) and an authored form's redirect (`lib/submissions.ts`),
- * which reaches `window.location.href` on a successful submission.
+ * ⚠ **A gate on a URL this site did not author itself**, and the strictest of
+ * the three: it admits nothing but http(s), so a configured `javascript:` or
+ * `data:` value cannot run in our origin. Reach for it where the URL must be
+ * absolute — an `href` takes {@link isSafeLinkHref} instead. Three callers
+ * need it today: the status-page link (`ErrorFallback`), an authored form's
+ * redirect (`FormBuilder`, through {@link isSafeNavigationUrl}), which reaches
+ * `window.location.href` on a successful submission, and everything the atlas
+ * sends — a region's canonical and a class's own room or website link
+ * (`pages/map/_components/AtlasContent.tsx`).
  *
  * It lives here because a scheme is how a URL is spelled, which this module
  * owns.
@@ -98,13 +102,58 @@ export function isSafeHttpUrl(url: string): boolean {
  * likely one — `/thank-you` is a path, which `new URL` alone cannot parse.
  *
  * ⚠ **This gates the scheme, not the destination.** An editor is allowed to
- * send a visitor to another site, so an off-site URL passes. Anything that
- * tries to read as a path and leave anyway — `//host`, or `/\host`, which
- * browsers fold to `//host` — is therefore not a case worth excluding: the
- * plain spelling of the same destination is already allowed.
+ * send a visitor to another site, so an off-site URL passes — but by its own
+ * spelling. {@link isSitePath} decides what counts as a path here, so
+ * `//host` is read as the origin it names rather than as a path, and
+ * {@link isSafeLinkHref} cannot answer the same string differently.
+ *
+ * `/\host`, which browsers fold to `//host`, still reads as a path. That is
+ * {@link isSitePath}'s limit, not a second view of one here.
  */
 export function isSafeNavigationUrl(url: string): boolean {
-  return url.startsWith('/') || isSafeHttpUrl(url)
+  return isSitePath(url) || isSafeHttpUrl(url)
+}
+
+/** The schemes a link on this site may carry. */
+const LINK_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:'])
+
+/**
+ * True if the href is one the `Link` atom may render.
+ *
+ * ⚠ **The gate on every href the site did not author**, and the widest of the
+ * three: an editor's link legitimately spells a site path, a bare `#anchor`,
+ * `mailto:` or `tel:`, all of which {@link isSafeHttpUrl} and
+ * {@link isSafeNavigationUrl} reject. `Link` is where every such href
+ * converges, so this is what keeps a configured `javascript:` or `data:` value
+ * out of an `href` in our origin.
+ *
+ * A scheme is the whole test. Where the link goes is the editor's business,
+ * as on {@link isSafeNavigationUrl}.
+ *
+ * Two spellings fall outside the allowlist on purpose. A protocol-relative
+ * `//host` names another origin and inherits our scheme; the plain `https://`
+ * spelling of the same destination is already allowed. And an empty href
+ * reloads the current page, which is never what an unset SahajCloud field
+ * meant.
+ */
+export function isSafeLinkHref(href: string): boolean {
+  if (href.startsWith('#') || isSitePath(href)) {
+    return true
+  }
+
+  // Refused ahead of the parse because `new URL` answers both by throwing, and
+  // a caught `TypeError` carries a captured stack trace — some twenty times
+  // the cost of rendering the whole link. An unset SahajCloud field arrives
+  // here as `''`, which `Playlist` and `AudioPlayer` hand over per track.
+  if (href === '' || href.startsWith('//')) {
+    return false
+  }
+
+  try {
+    return LINK_SCHEMES.has(new URL(href).protocol)
+  } catch {
+    return false
+  }
 }
 
 /**

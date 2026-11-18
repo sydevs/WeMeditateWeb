@@ -13,6 +13,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { AtlasSeoResponse } from '../../../server/atlas-types'
+import { anchorFor } from '../../../tests/_helpers/markup'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -116,6 +117,36 @@ describe('an atlas page in English', () => {
     expect(html).toContain(`href="/map/gb"`)
     expect(html).toContain(`href="/map/gb/london/1204"`)
     expect(html).not.toContain('/en/map/')
+  })
+})
+
+describe('a link that leaves this site', () => {
+  // The sibling suite proves this with no origin, where every canonical reads
+  // as foreign. Only a known origin tells "off-origin" from "cannot tell".
+  it('opens a foreign canonical in a new tab, and withholds the referrer', () => {
+    ctx.locale = 'en'
+    const html = render(
+      regionSeo({
+        breadcrumbs: [
+          { name: 'United Kingdom', route: '/gb', url: 'https://other.org/classes/gb' },
+          { name: 'Londres', route: '/gb/london', url: `${ORIGIN}/map/gb/london` },
+        ],
+      }),
+    )
+    const rung = anchorFor(html, 'https://other.org/classes/gb')
+
+    expect(rung).toContain('target="_blank"')
+    expect(rung).toContain('rel="noopener noreferrer"')
+  })
+
+  it('leaves a canonical this site serves as an ordinary internal link', () => {
+    ctx.locale = 'en'
+    const html = render(regionSeo())
+
+    // Positive first: `not.toContain` on an empty match passes vacuously.
+    expect(anchorFor(html, '/map/gb')).toContain('href="/map/gb"')
+    expect(html).not.toContain('target=')
+    expect(html).not.toContain('rel=')
   })
 })
 

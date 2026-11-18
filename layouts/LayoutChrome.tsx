@@ -11,6 +11,13 @@ import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 import { localeEndonym } from '../lib/locale-names'
 import { useT } from '../hooks/useT'
 
+interface RouteData {
+  settings?: WebConfig
+  page?: Page
+  collection?: string
+  initialData?: Page
+}
+
 /**
  * LayoutChrome — the full site chrome (Header, nav, Footer) around page content.
  *
@@ -19,22 +26,8 @@ import { useT } from '../hooks/useT'
  * Sentry error boundary. Embed routes omit it entirely and render bare.
  */
 export default function LayoutChrome({ children }: { children: React.ReactNode }) {
-  const data = useData<{
-    settings?: WebConfig
-    page?: Page
-    collection?: string
-    initialData?: Page
-  }>()
-  const { locale, urlPathname } = usePageContext()
-  const t = useT()
+  const data = useData<RouteData>()
   const settings = data?.settings
-
-  // When the page leads with a Splash, overlay the header on it: transparent,
-  // on the splash's surface, flush with the top. The Splash reserves `pt-60` for
-  // exactly this. This works on content routes ([slug], `page`) and on the
-  // live-preview route (/preview, `initialData`), so preview matches the
-  // published layout. See leadSplashFromRouteData.
-  const leadSplash = leadSplashFromRouteData(data)
 
   // SahajCloud-down or error-page fallback. When settings are unavailable (the
   // _error page carries no data, or SahajCloud is unreachable), render the
@@ -44,6 +37,36 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   if (!settings) {
     return <>{children}</>
   }
+
+  return (
+    <Chrome data={data} settings={settings}>
+      {children}
+    </Chrome>
+  )
+}
+
+/**
+ * Split from the export so `useSiteNav` is never called conditionally.
+ * LayoutMap splits the same way, for the same reason.
+ */
+function Chrome({
+  data,
+  settings,
+  children,
+}: {
+  data: RouteData
+  settings: WebConfig
+  children: React.ReactNode
+}) {
+  const { locale, urlPathname } = usePageContext()
+  const t = useT()
+
+  // When the page leads with a Splash, overlay the header on it: transparent,
+  // on the splash's surface, flush with the top. The Splash reserves `pt-60` for
+  // exactly this. This works on content routes ([slug], `page`) and on the
+  // live-preview route (/preview, `initialData`), so preview matches the
+  // published layout. See leadSplashFromRouteData.
+  const leadSplash = leadSplashFromRouteData(data)
 
   // Degrade gracefully when the SahajCloud config is incomplete. A missing nav group
   // must never take the whole page down with a 500 (an assert used to throw
@@ -64,7 +87,7 @@ export default function LayoutChrome({ children }: { children: React.ReactNode }
   // highlights.
   const { navItems, actionLinkHref, actionLinkText } = useSiteNav(
     settings,
-    activeFeaturedSlug(data?.page?.slug, settings),
+    activeFeaturedSlug(data.page?.slug, settings),
   )
 
   // Build footer hero links from featured pages

@@ -139,7 +139,8 @@ Apply this to every molecule and organism. Apply it to an atom whenever it has l
 implications (a container, a spacer, a complex button). Use judgment for a simple atom (plain
 text, an icon). Never skip it for a template or a page-level organism.
 
-Every interactive element needs a touch target of at least 44×44px on mobile.
+Every interactive element needs a touch target of at least 44×44px on mobile — see
+[docs/rules/design-system.md](docs/rules/design-system.md) for the two utilities that give it.
 
 See [docs/rules/design-system.md](docs/rules/design-system.md) for the Icon, Button, Link, and
 Divider component conventions, and the route-announcer rule for client-side navigation.
@@ -425,6 +426,10 @@ import { Icon } from './components/atoms'
 
 <Icon icon={HeartIcon} size="lg" color="primary" />
 ```
+
+An icon with no `aria-label` is decorative: `Icon` marks it `aria-hidden`. Pass `aria-label` when
+the icon carries meaning on its own, and the wrapper becomes `role="img"` so the name reaches the
+accessibility tree — ARIA forbids naming the bare `<span>` a decorative icon renders as.
 
 ## Component stories
 

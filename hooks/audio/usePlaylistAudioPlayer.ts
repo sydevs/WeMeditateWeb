@@ -72,13 +72,25 @@ export function usePlaylistAudioPlayer({
     }
   }, [isShuffleOn, tracks.length])
 
-  // Effect Event that handles track end (advances to the next track)
-  const handleTrackEnd = useEffectEvent(() => {
+  // Howler holds this callback from the load that registered it and fires it
+  // when the track ends, so it reads the order through a ref. An Effect Event
+  // cannot carry it: it is passed into `load`, never called from an Effect.
+  const playOrderRef = useRef(playOrder)
+
+  useEffect(() => {
+    playOrderRef.current = playOrder
+  }, [playOrder])
+
+  // Advances to the next track in play order.
+  const handleTrackEnd = () => {
     setHasEnded(true)
-    const currentOrderIndex = playOrder.indexOf(currentTrackIndex)
-    const nextOrderIndex = currentOrderIndex < playOrder.length - 1 ? currentOrderIndex + 1 : 0
-    setCurrentTrackIndex(playOrder[nextOrderIndex])
-  })
+    setCurrentTrackIndex((current) => {
+      const order = playOrderRef.current
+      const at = order.indexOf(current)
+
+      return order[at < order.length - 1 ? at + 1 : 0]
+    })
+  }
 
   // Effect Event that loads the current track
   const loadCurrentTrack = useEffectEvent(() => {
