@@ -49,6 +49,12 @@ A component over a different element declares `ref?: Ref<HTMLDivElement>` itself
 `no-forward-ref`, `no-use-context`, `no-context-provider`, `naming-convention-ref-name` and
 `use-state` are errors, so `pnpm lint` stops a new one (#250).
 
+`no-array-index-key`, `set-state-in-effect` and `exhaustive-deps` are errors too, and those three
+are judgements rather than renames. Every site in the repo has had the call made once, so a new one
+either changes the code or carries an `eslint-disable-next-line` stating why the rule is wrong
+there. Put that reason at the site, not in a `files` block — a block states one reason over every
+site in the file, including the next one, whose reason will differ.
+
 **A ref that stops being *wired* is reported by nothing that stops you.** `forwardRef`'s absence
 was a type error; today a destructured-but-unused `ref` is one `no-unused-vars` warning among
 twenty, and a `ref` left out of the destructure still reaches the element through `{...props}`.

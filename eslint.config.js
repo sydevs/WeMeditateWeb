@@ -170,6 +170,14 @@ export default defineConfig([
       '@eslint-react/no-context-provider': 'error',
       '@eslint-react/naming-convention-ref-name': 'error',
       '@eslint-react/use-state': 'error',
+      // These three are judgements rather than mechanical replacements, so an
+      // `error` does force a new author to either change the code or write a
+      // disable carrying a reason. That is the point: every site in the repo
+      // has had that call made once, and `warn` would let the next one land
+      // unexamined among two thousand warnings nobody reads (#250).
+      '@eslint-react/no-array-index-key': 'error',
+      '@eslint-react/set-state-in-effect': 'error',
+      '@eslint-react/exhaustive-deps': 'error',
       '@stylistic/jsx-self-closing-comp': 'warn',
       // The groups reproduce the previous rule's `reservedFirst`,
       // `shorthandFirst` and `callbacksLast`, and `ignoreCase: false` its
