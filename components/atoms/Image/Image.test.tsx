@@ -138,6 +138,31 @@ describe('<Image> forceAspectRatio', () => {
     expect(html).not.toContain('aspect-video')
     expect(html).not.toContain('w-full h-full')
   })
+
+  // A blank src reaches the same branch as a failed load at first render,
+  // which is what makes this state reachable from a server render at all.
+  it('falls back to the given ratio when only the placeholder renders', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} src="" />,
+    )
+
+    expect(html).toContain('aspect-video')
+    expect(html).not.toContain('<img')
+  })
+
+  it('leaves an unboxed placeholder with no aspectRatio unboxed', () => {
+    const html = renderToStaticMarkup(<Image alt="test" forceAspectRatio={false} src="" />)
+
+    expect(html).not.toContain('aspect-')
+  })
+
+  it('reserves no box for a placeholder the caller suppressed', () => {
+    const html = renderToStaticMarkup(
+      <Image alt="test" aspectRatio="video" forceAspectRatio={false} showLoading={false} src="" />,
+    )
+
+    expect(html).not.toContain('aspect-video')
+  })
 })
 
 describe('buildLightboxSlide', () => {

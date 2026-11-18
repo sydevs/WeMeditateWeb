@@ -276,17 +276,6 @@ export function Image({
   // still fetching an optimized variant.
   const boxed = Boolean(aspectRatio) && forceAspectRatio
 
-  const aspectRatioStyles =
-    boxed && aspectRatio
-      ? {
-          square: 'aspect-square',
-          video: 'aspect-video',
-          '4-3': 'aspect-[4/3]',
-          '3-2': 'aspect-[3/2]',
-          ultrawide: 'aspect-[21/9]',
-        }[aspectRatio]
-      : ''
-
   const objectFitStyles = {
     cover: 'object-cover',
     contain: 'object-contain',
@@ -320,7 +309,27 @@ export function Image({
   // <img> and let the placeholder show.
   const hasSrc = typeof imageSrc === 'string' && imageSrc.trim() !== ''
 
-  // `aspectRatioStyles` is '' unless boxed, so one literal covers both cases.
+  const hasImg = !hasError && hasSrc
+
+  const showPlaceholder = showLoading && (isLoading || !hasImg)
+
+  // The placeholder is `absolute inset-0`, so an unboxed container has no
+  // height and the error icon is invisible (#212). Only while there is no
+  // <img>: `overflow-hidden` below would clip a natural-flow <img> taller
+  // than the box, loading or loaded.
+  const aspectRatioStyles =
+    aspectRatio && (boxed || (showLoading && !hasImg))
+      ? {
+          square: 'aspect-square',
+          video: 'aspect-video',
+          '4-3': 'aspect-[4/3]',
+          '3-2': 'aspect-[3/2]',
+          ultrawide: 'aspect-[21/9]',
+        }[aspectRatio]
+      : ''
+
+  // One literal for both cases: an empty `aspectRatioStyles` still leaves the
+  // separating space, so the unboxed container's class list is unaffected.
   const containerClasses = `relative ${aspectRatioStyles} ${roundedStyles} overflow-hidden`
 
   const imageClasses = `${objectFitStyles} ${
@@ -336,17 +345,24 @@ export function Image({
           top-left, overflowing or clipping instead of matching the rendered
           image box. The <img>'s own width and height attributes reserve
           layout space and prevent shift. */}
-      {showLoading && (isLoading || hasError || !hasSrc) && (
-        <Placeholder
-          animate={!hasError && hasSrc}
-          className="absolute inset-0"
-          variant={placeholderVariant}
-        >
-          {hasError && <Icon icon={ExclamationCircleIcon} size="lg" />}
+      {showPlaceholder && (
+        <Placeholder animate={hasImg} className="absolute inset-0" variant={placeholderVariant}>
+          {hasError && (
+            <>
+              <Icon
+                aria-label={t('errors.a11y.error_icon')}
+                icon={ExclamationCircleIcon}
+                size="lg"
+              />
+              {/* The failed <img> takes its `alt` out of the document with it,
+                  so the only description of what is missing would be gone. */}
+              {alt && <span className="sr-only">{alt}</span>}
+            </>
+          )}
         </Placeholder>
       )}
 
-      {!hasError && hasSrc && (
+      {hasImg && (
         <img
           ref={imgRef}
           alt={alt}
