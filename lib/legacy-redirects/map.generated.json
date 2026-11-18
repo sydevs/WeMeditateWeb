@@ -1,50 +1,185 @@
 {
   "pages": {
-    "1": ["",""],
-    "3": ["contact-us",""],
-    "4": ["shri-mataji",""],
-    "5": ["chakras-channels","ru it es fr de pt-BR cs uk bg"],
-    "7": ["inspiration",""],
-    "9": ["music-for-meditation",""],
-    "10": ["meditate-now",""],
-    "11": ["classes-near-me",""],
-    "12": ["privacy-notice",""],
-    "13": ["meditate-america","fr pt-BR cs bg"],
-    "14": ["live-meditations","ru fr uk bg"],
-    "17": ["app-privacy-policy","uk"],
-    "19": ["illustrations-divya-zeiss","ru it fr pt-BR uk"],
-    "20": ["global-motifs-jahnavi","ru it fr pt-BR cs"],
-    "21": ["sculpture-aradhana-tomashevskyi","ru it fr pt-BR cs uk"],
-    "22": ["rabindrath-tagore","ru it fr pt-BR cs"],
-    "23": ["watercolours-nick-tobias","ru it fr pt-BR uk"],
-    "26": ["poetry-diana-robertson","it es pt-BR"],
-    "28": ["poetry-alice-tomlinson","it fr pt-BR bg"],
-    "33": ["blossom-time","it es pt-BR"],
-    "34": ["i-meditate-to-regenerate","it es fr pt-BR bg"],
-    "35": ["i-wish-to-be","it es fr pt-BR"],
-    "37": ["happiness-and-joy","it es fr pt-BR uk"],
-    "40": ["shri-mataji-un-conference-on-women","ru it es fr pt-BR cs uk bg"],
-    "41": ["brilliant-florals-holly-firth","ru it es fr pt-BR cs uk bg"],
-    "42": ["colourful-collages-ben-morgan","ru it es fr pt-BR cs uk"],
-    "43": ["claes-nobel-tribute-shri-mataji","ru it es fr pt-BR cs uk bg"],
-    "44": ["what-is-meditation","ru it fr de pt-BR cs uk bg"],
-    "45": ["course-videos","bg"],
-    "47": ["history-of-meditation","bg"],
-    "49": ["meditation-experiences",""],
-    "51": ["best-time-to-meditate-how-to-find-the-best-time-for-you","bg"],
-    "52": ["mooladhara-chakra",""],
-    "53": ["swadhistan-chakra",""],
-    "54": ["nabhi-chakra",""],
-    "55": ["void-chakra",""],
-    "56": ["heart-chakra",""],
-    "57": ["vishuddhi-chakra",""],
-    "58": ["agnya-chakra",""],
-    "59": ["sahasrara-chakra",""],
-    "60": ["right-channel",""],
-    "61": ["left-channel",""],
-    "62": ["central-channel",""],
-    "63": ["kundalini","ru fr uk bg"],
-    "74": ["techniques",""]
+    "1": [
+      "",
+      ""
+    ],
+    "3": [
+      "contact-us",
+      ""
+    ],
+    "4": [
+      "shri-mataji",
+      ""
+    ],
+    "5": [
+      "chakras-channels",
+      "ru it es fr de pt-BR cs uk bg"
+    ],
+    "7": [
+      "inspiration",
+      ""
+    ],
+    "9": [
+      "music-for-meditation",
+      ""
+    ],
+    "10": [
+      "meditate-now",
+      ""
+    ],
+    "11": [
+      "classes-near-me",
+      ""
+    ],
+    "12": [
+      "privacy-notice",
+      ""
+    ],
+    "13": [
+      "meditate-america",
+      "fr pt-BR cs bg"
+    ],
+    "14": [
+      "live-meditations",
+      "ru fr uk bg"
+    ],
+    "17": [
+      "app-privacy-policy",
+      "uk"
+    ],
+    "19": [
+      "illustrations-divya-zeiss",
+      "ru it fr pt-BR uk"
+    ],
+    "20": [
+      "global-motifs-jahnavi",
+      "ru it fr pt-BR cs"
+    ],
+    "21": [
+      "sculpture-aradhana-tomashevskyi",
+      "ru it fr pt-BR cs uk"
+    ],
+    "22": [
+      "rabindrath-tagore",
+      "ru it fr pt-BR cs"
+    ],
+    "23": [
+      "watercolours-nick-tobias",
+      "ru it fr pt-BR uk"
+    ],
+    "26": [
+      "poetry-diana-robertson",
+      "it es pt-BR"
+    ],
+    "28": [
+      "poetry-alice-tomlinson",
+      "it fr pt-BR bg"
+    ],
+    "33": [
+      "blossom-time",
+      "it es pt-BR"
+    ],
+    "34": [
+      "i-meditate-to-regenerate",
+      "it es fr pt-BR bg"
+    ],
+    "35": [
+      "i-wish-to-be",
+      "it es fr pt-BR"
+    ],
+    "37": [
+      "happiness-and-joy",
+      "it es fr pt-BR uk"
+    ],
+    "40": [
+      "shri-mataji-un-conference-on-women",
+      "ru it es fr pt-BR cs uk bg"
+    ],
+    "41": [
+      "brilliant-florals-holly-firth",
+      "ru it es fr pt-BR cs uk bg"
+    ],
+    "42": [
+      "colourful-collages-ben-morgan",
+      "ru it es fr pt-BR cs uk"
+    ],
+    "43": [
+      "claes-nobel-tribute-shri-mataji",
+      "ru it es fr pt-BR cs uk bg"
+    ],
+    "44": [
+      "what-is-meditation",
+      "ru it fr de pt-BR cs uk bg"
+    ],
+    "45": [
+      "course-videos",
+      "bg"
+    ],
+    "47": [
+      "history-of-meditation",
+      "bg"
+    ],
+    "49": [
+      "meditation-experiences",
+      ""
+    ],
+    "51": [
+      "best-time-to-meditate-how-to-find-the-best-time-for-you",
+      "bg"
+    ],
+    "52": [
+      "mooladhara-chakra",
+      ""
+    ],
+    "53": [
+      "swadhistan-chakra",
+      ""
+    ],
+    "54": [
+      "nabhi-chakra",
+      ""
+    ],
+    "55": [
+      "void-chakra",
+      ""
+    ],
+    "56": [
+      "heart-chakra",
+      ""
+    ],
+    "57": [
+      "vishuddhi-chakra",
+      ""
+    ],
+    "58": [
+      "agnya-chakra",
+      ""
+    ],
+    "59": [
+      "sahasrara-chakra",
+      ""
+    ],
+    "60": [
+      "right-channel",
+      ""
+    ],
+    "61": [
+      "left-channel",
+      ""
+    ],
+    "62": [
+      "central-channel",
+      ""
+    ],
+    "63": [
+      "kundalini",
+      "ru fr uk bg"
+    ],
+    "74": [
+      "techniques",
+      ""
+    ]
   },
   "roles": {
     "home": 1,
@@ -63,21 +198,175 @@
     "classes": 11
   },
   "words": {
-    "en": {"inspiration":"inspiration","articles":"articles","meditations":"meditations","techniques":"techniques","subtle-system":"subtle_system","music":"music","all":"archive","first-experience":"self_realization","classes":"classes","live":"streams","about":"about","contact":"contact","shri-mataji":"shri_mataji","sahaja-yoga":"sahaja_yoga","privacy":"privacy","streams":"streams","home":"home","random":"random"},
-    "bg": {"вдъхновение":"inspiration","статии":"articles","медитации":"meditations","техники":"techniques","фина-система":"subtle_system","музика":"music","всичко":"archive","първо-преживяване":"self_realization","занятия":"classes","на-живо":"streams","за-нас":"about","контакти":"contact","шри-матаджи":"shri_mataji","сахаджа-йога":"sahaja_yoga","политика-за-поверителност":"privacy"},
-    "cs": {"o-nas":"about","kontakt":"contact","sri-matadzi":"shri_mataji","sahadza-joga":"sahaja_yoga","ochrana-osobnich-udaju":"privacy"},
-    "de": {"artikel":"articles","meditation":"meditations","techniken":"techniques","subtiles-system":"subtle_system","musik":"music","alles":"archive","erste-erfahrung":"self_realization","lektionen":"classes","ueber":"about","kontaktiere":"contact"},
-    "el": {"έμπνευση":"inspiration","άρθρα":"articles","διαλογισμοί":"meditations","τεχνικές":"techniques","το-λεπτό-σύστημα":"subtle_system","μουσική":"music","όλα":"archive","η-πρώτη-εμπειρία":"self_realization","μαθήματα":"classes"},
-    "fa": {"الهامات":"inspiration","مقالات":"articles","مدیتیشن-ها":"meditations","تکنیک-ها":"techniques","سیستم-ظریف":"subtle_system","موسیقی":"music","همه":"archive","نخستین-تجربه":"self_realization","کلاس-ها":"classes","پخش-زنده":"streams"},
-    "fr": {"méditations":"meditations","système-subtil":"subtle_system","musique":"music","tout":"archive","première-expérience":"self_realization","a-propos-de-nous":"about","contactez":"contact","politique-de-confidentialite":"privacy"},
-    "hy": {"մեր-մասին":"about","հետադարձ-կապ":"contact","շրի-մատաջի":"shri_mataji","սահաջա-յոգա":"sahaja_yoga","գաղտնի-նախացգուշացում":"privacy"},
-    "it": {"ispirazione":"inspiration","articoli":"articles","meditazioni":"meditations","tecniche":"techniques","sistema-sottile":"subtle_system","musica":"music","tutto":"archive","realizzazione-del-sé":"self_realization","chi-siamo":"about"},
-    "pl": {"inspiracja":"inspiration","artykuły":"articles","medytacje":"meditations","techniki":"techniques","system-subtelny":"subtle_system","muzyka":"music","poprzednie-materiały":"archive","doświadczenie-samorealizacji":"self_realization","lekcje-medytacji":"classes","na-żywo":"streams"},
-    "pt-br": {"contate":"contact"},
-    "ro": {"inspirație":"inspiration","articole":"articles","meditații":"meditations","tehnici":"techniques","sistemul-subtil":"subtle_system","muzică":"music","toate":"archive","prima-experiență":"self_realization","cursuri":"classes","despre":"about","notificare-de-confidentialitate":"privacy"},
-    "ru": {"o-proekte":"about"},
-    "tr": {"ilham":"inspiration","makaleler":"articles","meditasyonlar":"meditations","teknikler":"techniques","süptil-sistem":"subtle_system","müzik":"music","tümü":"archive","ilk-deneyim":"self_realization","sınıflar":"classes","canlı":"streams","hakkimizda":"about","bizimle-iletisime-gecin":"contact","gizlilik-politikası":"privacy"},
-    "uk": {"надхнення":"inspiration","статті":"articles","медитації":"meditations","техніки":"techniques","тонка-система":"subtle_system","музика":"music","все":"archive","перший-досвід":"self_realization","заняття":"classes","наживо":"streams","зв'язатися-з-нами":"contact","шрі-матаджі":"shri_mataji","сахаджа-йога":"sahaja_yoga","повідомлення-про-конфіденційність":"privacy"}
+    "en": {
+      "inspiration": "inspiration",
+      "articles": "articles",
+      "meditations": "meditations",
+      "techniques": "techniques",
+      "subtle-system": "subtle_system",
+      "music": "music",
+      "all": "archive",
+      "first-experience": "self_realization",
+      "classes": "classes",
+      "live": "streams",
+      "about": "about",
+      "contact": "contact",
+      "shri-mataji": "shri_mataji",
+      "sahaja-yoga": "sahaja_yoga",
+      "privacy": "privacy",
+      "streams": "streams",
+      "home": "home",
+      "random": "random"
+    },
+    "bg": {
+      "вдъхновение": "inspiration",
+      "статии": "articles",
+      "медитации": "meditations",
+      "техники": "techniques",
+      "фина-система": "subtle_system",
+      "музика": "music",
+      "всичко": "archive",
+      "първо-преживяване": "self_realization",
+      "занятия": "classes",
+      "на-живо": "streams",
+      "за-нас": "about",
+      "контакти": "contact",
+      "шри-матаджи": "shri_mataji",
+      "сахаджа-йога": "sahaja_yoga",
+      "политика-за-поверителност": "privacy"
+    },
+    "cs": {
+      "o-nas": "about",
+      "kontakt": "contact",
+      "sri-matadzi": "shri_mataji",
+      "sahadza-joga": "sahaja_yoga",
+      "ochrana-osobnich-udaju": "privacy"
+    },
+    "de": {
+      "artikel": "articles",
+      "meditation": "meditations",
+      "techniken": "techniques",
+      "subtiles-system": "subtle_system",
+      "musik": "music",
+      "alles": "archive",
+      "erste-erfahrung": "self_realization",
+      "lektionen": "classes",
+      "ueber": "about",
+      "kontaktiere": "contact"
+    },
+    "el": {
+      "έμπνευση": "inspiration",
+      "άρθρα": "articles",
+      "διαλογισμοί": "meditations",
+      "τεχνικές": "techniques",
+      "το-λεπτό-σύστημα": "subtle_system",
+      "μουσική": "music",
+      "όλα": "archive",
+      "η-πρώτη-εμπειρία": "self_realization",
+      "μαθήματα": "classes"
+    },
+    "fa": {
+      "الهامات": "inspiration",
+      "مقالات": "articles",
+      "مدیتیشن-ها": "meditations",
+      "تکنیک-ها": "techniques",
+      "سیستم-ظریف": "subtle_system",
+      "موسیقی": "music",
+      "همه": "archive",
+      "نخستین-تجربه": "self_realization",
+      "کلاس-ها": "classes",
+      "پخش-زنده": "streams"
+    },
+    "fr": {
+      "méditations": "meditations",
+      "système-subtil": "subtle_system",
+      "musique": "music",
+      "tout": "archive",
+      "première-expérience": "self_realization",
+      "a-propos-de-nous": "about",
+      "contactez": "contact",
+      "politique-de-confidentialite": "privacy"
+    },
+    "hy": {
+      "մեր-մասին": "about",
+      "հետադարձ-կապ": "contact",
+      "շրի-մատաջի": "shri_mataji",
+      "սահաջա-յոգա": "sahaja_yoga",
+      "գաղտնի-նախացգուշացում": "privacy"
+    },
+    "it": {
+      "ispirazione": "inspiration",
+      "articoli": "articles",
+      "meditazioni": "meditations",
+      "tecniche": "techniques",
+      "sistema-sottile": "subtle_system",
+      "musica": "music",
+      "tutto": "archive",
+      "realizzazione-del-sé": "self_realization",
+      "chi-siamo": "about"
+    },
+    "pl": {
+      "inspiracja": "inspiration",
+      "artykuły": "articles",
+      "medytacje": "meditations",
+      "techniki": "techniques",
+      "system-subtelny": "subtle_system",
+      "muzyka": "music",
+      "poprzednie-materiały": "archive",
+      "doświadczenie-samorealizacji": "self_realization",
+      "lekcje-medytacji": "classes",
+      "na-żywo": "streams"
+    },
+    "pt-br": {
+      "contate": "contact"
+    },
+    "ro": {
+      "inspirație": "inspiration",
+      "articole": "articles",
+      "meditații": "meditations",
+      "tehnici": "techniques",
+      "sistemul-subtil": "subtle_system",
+      "muzică": "music",
+      "toate": "archive",
+      "prima-experiență": "self_realization",
+      "cursuri": "classes",
+      "despre": "about",
+      "notificare-de-confidentialitate": "privacy"
+    },
+    "ru": {
+      "o-proekte": "about"
+    },
+    "tr": {
+      "ilham": "inspiration",
+      "makaleler": "articles",
+      "meditasyonlar": "meditations",
+      "teknikler": "techniques",
+      "süptil-sistem": "subtle_system",
+      "müzik": "music",
+      "tümü": "archive",
+      "ilk-deneyim": "self_realization",
+      "sınıflar": "classes",
+      "canlı": "streams",
+      "hakkimizda": "about",
+      "bizimle-iletisime-gecin": "contact",
+      "gizlilik-politikası": "privacy"
+    },
+    "uk": {
+      "надхнення": "inspiration",
+      "статті": "articles",
+      "медитації": "meditations",
+      "техніки": "techniques",
+      "тонка-система": "subtle_system",
+      "музика": "music",
+      "все": "archive",
+      "перший-досвід": "self_realization",
+      "заняття": "classes",
+      "наживо": "streams",
+      "зв'язатися-з-нами": "contact",
+      "шрі-матаджі": "shri_mataji",
+      "сахаджа-йога": "sahaja_yoga",
+      "повідомлення-про-конфіденційність": "privacy"
+    }
   },
   "exact": {
     "article": {

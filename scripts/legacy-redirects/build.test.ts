@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { LAUNCH_LOCALES, lookupIn } from '../../lib/legacy-redirects/core'
 import { buildRedirectMap, type Inventory, type LegacyRoutes, type NewSite } from './build'
-import { stringifyMap } from './map-format'
+import { stringifyMap } from './json'
 import { renderCoverage } from './report'
 
 const read = (path: string): string =>

@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { buildRedirectMap, type Inventory, type LegacyRoutes, type NewSite } from './build'
-import { stringifyMap } from './map-format'
+import { stringifyMap } from './json'
 import { renderCoverage } from './report'
 
 const root = (path: string): string => fileURLToPath(new URL(`../../${path}`, import.meta.url))
