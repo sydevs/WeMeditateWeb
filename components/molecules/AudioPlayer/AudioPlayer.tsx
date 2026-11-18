@@ -13,6 +13,7 @@ import { Button, Image, Link } from '../../atoms'
 import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import type { Track } from './types'
 import { useT } from '../../../hooks/useT'
+import { formatDuration } from '../../../lib/duration'
 
 export type { Track } from './types'
 
@@ -73,14 +74,6 @@ function AudioPlayerInner({
     onTrackChange,
   })
 
-  const formatTime = (seconds: number) => {
-    if (!isFinite(seconds)) return '0:00'
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
   // Add shuffle to disabled controls when shuffle is enabled
   const effectiveDisabledControls = shuffle
     ? [...disabledControls, 'shuffle' as AudioControl]
@@ -138,8 +131,8 @@ function AudioPlayerInner({
             onChange={(e) => playerControls.seek(parseFloat(e.target.value))}
           />
           <div className="flex justify-between text-xs font-number text-gray-700 mt-1">
-            <span>{formatTime(state.currentTime)}</span>
-            <span>{formatTime(state.duration)}</span>
+            <span>{formatDuration(state.currentTime)}</span>
+            <span>{formatDuration(state.duration)}</span>
           </div>
         </div>
       )}

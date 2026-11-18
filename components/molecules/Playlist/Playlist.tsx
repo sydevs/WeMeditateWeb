@@ -2,6 +2,7 @@ import { ComponentProps } from 'react'
 import { Link, Button } from '../../atoms'
 import type { Track } from '../AudioPlayer/types'
 import type { HeroIcon } from '../../atoms/Icon/Icon'
+import { formatDuration } from '../../../lib/duration'
 
 export interface MusicFilter {
   /** Filter identifier, for example 'strings', 'vocal', 'wind' */
@@ -46,13 +47,6 @@ interface PlaylistItemProps {
 }
 
 function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistItemProps) {
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
   return (
     <button
       className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
