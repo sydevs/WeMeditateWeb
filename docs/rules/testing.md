@@ -60,6 +60,11 @@ See [components/atoms/Image/Image.test.tsx](../../components/atoms/Image/Image.t
 full example. `useState` and `useMemo` work under this kind of SSR render, but `useEffect` does
 not run — plan each assertion around the first-render state.
 
+**A `ref` never attaches either**, and it is not an attribute, so it reaches neither the callback
+nor the HTML. Where a ref is the thing under test, assert the type by rendering with one and let
+`tsc` judge it, and read the wiring from the source —
+[tests/guards/form-atom-refs.test.tsx](../../tests/guards/form-atom-refs.test.tsx) does both.
+
 **Narrow the string before asserting an attribute.** `toContain('target="_blank"')` over a whole
 page passes when any element carries it, not the one under test. `anchorFor(html, href)` in
 [tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) returns that href's opening `<a>` tag.
