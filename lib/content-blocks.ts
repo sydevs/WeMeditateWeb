@@ -1,14 +1,12 @@
 /**
- * App-side types and pure helpers for the custom Lexical blocks embedded in
- * `pages.content`.
+ * App-side helpers for the custom Lexical blocks embedded in `pages.content`.
  *
  * The lexical tree types a block's `fields` as `[k: string]: unknown`, so a
- * converter casts them to the matching `*BlockFields` type here. Each one
- * derives from the generated `*Block` interface in `payload-types.ts`, so a
- * field `pnpm types:cms` renames or removes becomes a compile error where it
- * is read. `ContentIndexBlockFields` alone is restated, under a type test. A
- * generated interface describes a saved block, while live preview renders an
- * unsaved one, so a converter still guards a field the schema requires.
+ * converter casts them to the generated `*Block` interface in
+ * `payload-types.ts` and imports it from there. A field `pnpm types:cms`
+ * renames or removes is then a compile error where it is read. A generated
+ * interface describes a saved block, while live preview renders an unsaved
+ * one, so a converter still guards a field the schema requires.
  *
  * Helpers that turn block fields into component props live here, not in
  * the converters, so they stay unit-testable without rendering.
@@ -16,17 +14,12 @@
 
 import type {
   Album,
-  ButtonBlock,
   Image,
   ImageGalleryBlock,
-  LayoutBlock,
-  QuoteBlock,
   ShowcaseBlock,
   SongTag,
   SplashBlock,
   SubtleSystemBlock,
-  TableOfContentsBlock,
-  TextBoxBlock,
   UserChoice,
 } from '../server/payload-types'
 import type { Meditation, Page } from '../server/sahajcloud-types'
@@ -38,47 +31,11 @@ import type { TranslationKey } from './i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
-// --- Field shapes (derived from the generated `*Block` interfaces) ---
-
-/** A block's own fields, without the envelope every block carries. */
-type BlockFields<B> = Omit<B, 'id' | 'blockName' | 'blockType'>
-
-/** `textbox` — TextBoxBlock. */
-export type TextBoxBlockFields = BlockFields<TextBoxBlock>
-
-/** `quote` — QuoteBlock. */
-export type QuoteBlockFields = BlockFields<QuoteBlock>
-
-/** `button` — ButtonBlock. */
-export type ButtonBlockFields = BlockFields<ButtonBlock>
-
-/** `image-gallery` — ImageGalleryBlock (3–15 uploads). */
-export type ImageGalleryBlockFields = BlockFields<ImageGalleryBlock>
-
-/** `showcase` — ShowcaseBlock (3–6 polymorphic relationships). */
-export type ShowcaseBlockFields = BlockFields<ShowcaseBlock>
-
-/** A polymorphic showcase relationship entry. */
-export type ShowcaseItem = NonNullable<ShowcaseBlockFields['items']>[number]
-export type ShowcaseRelationTo = ShowcaseItem['relationTo']
-
-/** `subtle-system` — SubtleSystemBlock (12 single `pages` relationships). */
-export type SubtleSystemBlockFields = BlockFields<SubtleSystemBlock>
-
-/** `splash` — SplashBlock. */
-export type SplashBlockFields = BlockFields<SplashBlock>
-
-/** `layout` — LayoutBlock. */
-export type LayoutBlockFields = BlockFields<LayoutBlock>
-
-/** `layout` — LayoutBlock item. */
-export type LayoutItem = NonNullable<LayoutBlockFields['items']>[number]
-
-/** `table-of-contents` — TableOfContentsBlock. */
-export type TableOfContentsBlockFields = BlockFields<TableOfContentsBlock>
-
-/** A single entry in a `table-of-contents` block. */
-export type TocHeading = NonNullable<TableOfContentsBlockFields['headings']>[number]
+/**
+ * A polymorphic showcase relationship entry. The generated `ShowcaseBlock`
+ * leaves its array member anonymous, so this is the one name for it.
+ */
+export type ShowcaseItem = NonNullable<ShowcaseBlock['items']>[number]
 
 /** The `pages` collection's tag enum (drives page content-index facets). */
 export type PageTag = NonNullable<Page['tags']>[number]
@@ -106,7 +63,7 @@ export type PageTagLabels = Partial<Record<PageTag, string>>
  * `+data`. The editor never stores them. The `*Filters` fields mirror the
  * SahajCloud schema, but rendering does not use them: facets come from the
  * resolved items' own `tags` instead. */
-// shortcut: hand-written until #293 lands; then extend BlockFields<ContentIndexBlock> instead.
+// shortcut: hand-written until #293 lands; then extend ContentIndexBlock instead.
 export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
   limit: number
@@ -169,7 +126,7 @@ export function populatedImage(ref: unknown): PopulatedImage | null {
 }
 
 /** Resolves the uploads of an `image-gallery` block to renderable images. */
-export function galleryImages(images: ImageGalleryBlockFields['items']): PopulatedImage[] {
+export function galleryImages(images: ImageGalleryBlock['items']): PopulatedImage[] {
   const result: PopulatedImage[] = []
 
   for (const ref of images ?? []) {
@@ -206,7 +163,7 @@ export function textColorToSurface(
  * Defaults to `'dark'` (light text over a dark hero) when the field is
  * absent. This matches the splash's historical hardcoded treatment.
  */
-export function splashSurface(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
+export function splashSurface(textColor?: SplashBlock['textColor']): 'light' | 'dark' {
   return textColorToSurface(textColor, 'dark')
 }
 
@@ -229,9 +186,7 @@ export interface LeadSplash {
  * duplicate title, and supplying the heading an untitled splash does not draw).
  */
 export function getLeadSplash(content: Page['content']): LeadSplash | null {
-  const first = content?.root?.children?.[0] as
-    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
-    | undefined
+  const first = content?.root?.children?.[0] as { type?: string; fields?: SplashBlock } | undefined
 
   if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
     return null
@@ -316,7 +271,7 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
 }
 
 /** Maps showcase relationships to cards. Drops unresolvable or thumbnail-less refs. */
-export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCardItem[] {
+export function showcaseItems(items: ShowcaseBlock['items']): ResolvedCardItem[] {
   const cards: ResolvedCardItem[] = []
 
   for (const item of items ?? []) {
@@ -330,8 +285,12 @@ export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCard
   return cards
 }
 
-/** Maps a SahajCloud field name to the SVG node ID the `SubtleSystem` organism consumes. */
-const SUBTLE_SYSTEM_NODE_IDS: Record<string, string> = {
+/** A `subtle-system` block's own relationship fields, without the block envelope. */
+type SubtleSystemField = keyof Omit<SubtleSystemBlock, 'id' | 'blockName' | 'blockType'>
+
+/** Maps a SahajCloud field name to the SVG node ID the `SubtleSystem` organism consumes.
+ * `satisfies` is what fails the build when upstream renames, adds or drops one. */
+const SUBTLE_SYSTEM_NODE_IDS = {
   left: 'channel_left',
   right: 'channel_right',
   center: 'channel_center',
@@ -344,7 +303,7 @@ const SUBTLE_SYSTEM_NODE_IDS: Record<string, string> = {
   agnya: 'chakra_6',
   sahasrara: 'chakra_7',
   kundalini: 'kundalini',
-}
+} as const satisfies Record<SubtleSystemField, string>
 
 /** An item for the `SubtleSystem` organism (structurally `SubtleSystemItem`). */
 export interface SubtleSystemNodeItem {
@@ -360,11 +319,11 @@ export interface SubtleSystemNodeItem {
  * unroutable pages (bare IDs or missing slugs), so the chart never links
  * to `/undefined`.
  */
-export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystemNodeItem[] {
+export function subtleSystemItems(fields: SubtleSystemBlock): SubtleSystemNodeItem[] {
   const items: SubtleSystemNodeItem[] = []
 
   for (const [field, nodeId] of Object.entries(SUBTLE_SYSTEM_NODE_IDS)) {
-    const page = (fields as Record<string, unknown>)[field]
+    const page = fields[field as SubtleSystemField]
 
     if (!isPopulated<Page>(page)) {
       continue

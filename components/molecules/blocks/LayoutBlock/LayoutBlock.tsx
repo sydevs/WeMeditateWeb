@@ -3,11 +3,15 @@ import { Accordion, type AccordionItemData } from '../../Accordion'
 import { ColumnCarousel } from '../../ColumnCarousel'
 import type { ColumnProps } from '../../Column'
 import { Heading, Image, Link } from '../../../atoms'
-import {
-  populatedImage,
-  type LayoutBlockFields,
-  type LayoutItem,
-} from '../../../../lib/content-blocks'
+import { populatedImage } from '../../../../lib/content-blocks'
+// Aliased: this file's own component takes the unprefixed name.
+import type { LayoutBlock as LayoutBlockSchema } from '../../../../server/payload-types'
+
+/**
+ * One layout item. The generated `LayoutBlock` leaves its array member
+ * anonymous, so this is the one name for it.
+ */
+export type LayoutItem = NonNullable<LayoutBlockSchema['items']>[number]
 
 /**
  * The level an item's own title takes. A section with a heading of its own
@@ -18,7 +22,7 @@ type ItemHeadingLevel = 'h2' | 'h3'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */
-  style: LayoutBlockFields['style']
+  style: LayoutBlockSchema['style']
   /** Optional section heading shown above the items. */
   title?: string
   /** Tabs only: lay tabs out as side-by-side columns on desktop. */

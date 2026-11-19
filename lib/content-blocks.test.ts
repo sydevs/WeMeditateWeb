@@ -127,6 +127,7 @@ describe('subtleSystemItems', () => {
   it('maps SahajCloud field names to SVG node ids, dropping unpublished refs', () => {
     // The schema requires all twelve; an unpublished page arrives as a bare id.
     const items = subtleSystemItems({
+      blockType: 'subtle-system',
       left: page(61, 'left-channel', 'Left Channel', 'The left side') as never,
       right: 62,
       center: 63,

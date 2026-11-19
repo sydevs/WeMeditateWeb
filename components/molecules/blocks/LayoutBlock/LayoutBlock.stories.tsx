@@ -1,7 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
-import { LayoutBlock } from './LayoutBlock'
+import { LayoutBlock, type LayoutItem } from './LayoutBlock'
 import { StoryWrapper, StorySection } from '../../../ladle'
-import type { LayoutItem } from '../../../../lib/content-blocks'
 
 export default {
   title: 'Molecules',
