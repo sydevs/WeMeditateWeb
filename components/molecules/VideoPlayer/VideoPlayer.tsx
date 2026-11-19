@@ -12,13 +12,22 @@ import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 import { posterURL } from './poster'
 
 /**
- * Player accent, scoped to this instance, with no global CSS. `--media-accent-color` is one of
- * the eight custom properties a packaged Video.js skin treats as public, and the vendored skin
- * derives every active state from it. Sourcing it from the brand token keeps the player in step
- * with the design system instead of duplicating the hex value.
+ * Player theming, scoped to this instance, with no global CSS.
+ *
+ * `--media-accent-color` is one of the eight custom properties a packaged Video.js skin treats
+ * as public, and the vendored skin derives every active state from it. Sourcing it from the
+ * brand token keeps the player in step with the design system instead of duplicating the hex
+ * value.
+ *
+ * `--media-control-size` is the skin's own, and it ships at 36px — under the 44×44 this project
+ * requires of every interactive element (docs/rules/design-system.md). Raising the token grows
+ * every control at once, which is what the skin's buttons size themselves from; the `44px` is
+ * the floor itself and not a design value, so it is written here rather than taken from a
+ * spacing token.
  */
 const PLAYER_STYLE = {
   '--media-accent-color': 'var(--color-teal-500)',
+  '--media-control-size': '44px',
 } as CSSProperties
 
 export interface VideoPlayerProps {

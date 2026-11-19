@@ -5,9 +5,17 @@
  *
  * This file is the skin's only `@theme`, so it must be imported by the Tailwind entry
  * (layouts/tailwind.css); the skin's other stylesheets are plain CSS its components import.
+ *
+ * ⚠ `@theme inline`, and the Shadcn CLI would write a plain `@theme`. Almost every token here
+ * reads a `--media-*` property that `styles/themes/theme.css` declares on `.media-skin`. A plain
+ * `@theme` substitutes that read at `:root`, where the property does not exist, so the token
+ * resolves to the guaranteed-invalid value and the utility silently does nothing: measured, the
+ * control bar's buttons came out 18x18 — their icon's size — instead of the `--media-control-size`
+ * they ask for. `inline` puts the read in the utility, where `.media-skin` is an ancestor.
+ * Nothing in this folder reads these tokens as variables, which is what makes `inline` safe.
  */
 
-@theme {
+@theme inline {
   --color-media-accent: var(--media-accent);
   --color-media-background: var(--media-background);
   --color-media-border: var(--media-border);

@@ -55,6 +55,11 @@ export function DefaultVideoControls({ renderThumbnail }: DefaultVideoControlsPr
               'pointer-events-auto group-not-data-visible/center:pointer-events-none',
               'rounded-media-pill!',
               'size-auto! p-4! media-max-360:p-3!',
+              // wm: at a container under 360px the skin shrinks both the icon and the padding,
+              // which measured 42x42 — under the 44x44 this project requires
+              // (docs/rules/design-system.md). The floor is the control size every other button
+              // already takes.
+              'min-h-media-control! min-w-media-control!',
               'bg-media-primary! text-media-primary-foreground! media-high-contrast:bg-media-primary!',
               'hover:bg-[color-mix(in_oklab,var(--media-primary)_85%,var(--media-primary-foreground))]!',
               'focus-visible:bg-[color-mix(in_oklab,var(--media-primary)_85%,var(--media-primary-foreground))]!',
