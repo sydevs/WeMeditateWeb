@@ -104,10 +104,17 @@ interface DeadUtility {
  * `border-box`, `text-top` and `text-bottom` sit under watched roots — React
  * spells the keys beside them in camelCase, so no class can be in there.
  *
- * The third is an arbitrary value's own brackets, whose contents are CSS and
- * routinely a list of property names: `transition-[outline-color,outline-offset]`.
- * Only the contents are blanked, so the utility around them keeps the shape
- * that puts an arbitrary value out of scope in the first place.
+ * The third and fourth are the brackets of an arbitrary value and of an
+ * arbitrary property, whose contents are CSS and routinely a list of property
+ * names: `transition-[outline-color,outline-offset]` and
+ * `[transition-property:color,outline-offset]`. Only the contents are blanked,
+ * so the utility around them keeps the shape that puts an arbitrary value out
+ * of scope in the first place.
+ *
+ * Each is anchored so a JavaScript array literal is not one: a value's bracket
+ * follows a `-`, which every arbitrary value and every `data-[…]` variant has,
+ * and a property's content opens on `<name>:`. `['bg-error-light']` matches
+ * neither and stays in scope.
  *
  * The `style` prop is non-greedy to the first `}}`, which can only end the prop
  * early: a `}}` the object does not close cannot exist before the one that
@@ -116,7 +123,8 @@ interface DeadUtility {
 const CSS_REGIONS = [
   /<style\b[^>]*>[\s\S]*?<\/style>/g,
   /\bstyle=\{\{[\s\S]*?\}\}/g,
-  /(?<=\[)[^\]\n]*(?=\])/g,
+  /(?<=-\[)[^\]\n]*(?=\])/g,
+  /(?<=\[)[a-z-]+:[^\]\n]*(?=\])/g,
 ]
 
 /**
@@ -193,6 +201,18 @@ describe('theme utilities', () => {
     expect(
       utilitiesIn("<div className=\"transition-[outline-color,outline-offset] text-teal-500\" />"),
     ).toEqual([])
+  })
+
+  it('ignores the CSS inside an arbitrary property', () => {
+    expect(
+      utilitiesIn('<div className="[transition-property:color,outline-offset] text-teal-500" />'),
+    ).toEqual([])
+  })
+
+  it('still reads a class inside an array literal', () => {
+    expect(utilitiesIn("const styles = ['bg-error-light', 'text-teal-500']")).toEqual([
+      'bg-error-light',
+    ])
   })
 
   it('ignores a quoted object key', () => {

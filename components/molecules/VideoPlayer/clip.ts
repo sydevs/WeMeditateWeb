@@ -90,3 +90,28 @@ export function replayFrom(window: ClipWindow | null, currentTime: number): numb
 
   return currentTime >= window.end - END_TOLERANCE ? window.start : null
 }
+
+/**
+ * Seconds as an ISO 8601 duration, for a `<time>` element's `dateTime`. The player's own
+ * `Time.Value` renders a `<time>` carrying one, so the window's displays match it.
+ */
+export function secondsToIsoDuration(seconds: number): string {
+  const total = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0))
+  const hours = Math.floor(total / 3600)
+  const minutes = Math.floor((total % 3600) / 60)
+
+  return `PT${hours > 0 ? `${hours}H` : ''}${minutes > 0 ? `${minutes}M` : ''}${total % 60}S`
+}
+
+/**
+ * Where a `0`–`9`, `Home` or `End` keypress should seek to inside the window, or `null` for a
+ * key that is none of those.
+ *
+ * The skin's own percent hotkeys are media-scaled, and Vidstack's clipping rescaled them, so a
+ * clip needs this: `5` means halfway through the window, not halfway through the lecture.
+ */
+export function percentSeek(start: number, length: number, key: string): number | null {
+  const percent = key === 'Home' ? 0 : key === 'End' ? 100 : Number.parseInt(key, 10) * 10
+
+  return Number.isNaN(percent) ? null : start + (length * percent) / 100
+}

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { formatClock, holdInWindow, replayFrom, resolveClipWindow } from './clip'
+import {
+  formatClock,
+  holdInWindow,
+  percentSeek,
+  replayFrom,
+  resolveClipWindow,
+  secondsToIsoDuration,
+} from './clip'
 
 describe('resolveClipWindow', () => {
   // A full lecture carries neither bound (`lib/lecture-shape.ts`), and must get no seek and no
@@ -111,5 +118,36 @@ describe('replayFrom', () => {
     ['a window with no stop', { start: 5, end: null }],
   ])('leaves %s alone', (_label, window) => {
     expect(replayFrom(window, 9_999)).toBeNull()
+  })
+})
+
+describe('secondsToIsoDuration', () => {
+  it.each([
+    [0, 'PT0S'],
+    [45, 'PT45S'],
+    [90, 'PT1M30S'],
+    [3661, 'PT1H1M1S'],
+    [3600, 'PT1H0S'],
+    [Number.NaN, 'PT0S'],
+  ])('renders %s as %s', (seconds, expected) => {
+    expect(secondsToIsoDuration(seconds)).toBe(expected)
+  })
+})
+
+describe('percentSeek', () => {
+
+  // Vidstack's clipping rescaled the percent hotkeys, so `5` means halfway through the window.
+  it.each([
+    ['0', 100],
+    ['5', 150],
+    ['9', 190],
+    ['Home', 100],
+    ['End', 200],
+  ])('seeks %s to %i', (key, expected) => {
+    expect(percentSeek(100, 100, key)).toBe(expected)
+  })
+
+  it.each([['k'], ['ArrowLeft'], ['']])('ignores %s', (key) => {
+    expect(percentSeek(100, 100, key)).toBeNull()
   })
 })

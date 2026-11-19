@@ -23,13 +23,27 @@ Everything in `styles/` is scoped to `.media-skin`, so none of it reaches the re
 
 ## Our edits
 
-Two, both in `video/layout/controls.tsx`, and both marked `wm:` in that file:
+Every one is marked `wm:` in its own file — `grep -rn 'wm:' .` is the list. There are four, and
+three of them exist because Video.js 10 has no clipping:
 
-- The time display and the time slider read a playback window from `ClipWindowContext`
-  ([clip-window.tsx](../clip-window.tsx)) and subtract its start.
-- Nothing else. Keep it that way: the smaller this diff, the cheaper the next version is.
+| Where | What |
+| --- | --- |
+| `video/layout/controls.tsx` | The elapsed time, the duration and the time slider read a playback window from `ClipWindowContext` ([clip-window.tsx](../clip-window.tsx)) and subtract its start |
+| `video/behaviors/playback-hotkeys.tsx` | The `0`–`9`, `Home` and `End` keys seek by a share of the media, so a window takes them over |
+| `video/layout/controls.tsx` | A 44×44 floor on the centre play button, which measured 42×42 under a 360px container |
+| `styles/tailwind.css` | `@theme inline`, not `@theme`. Its own header carries why, and it is the one file here that is generated rather than copied |
+
+Nothing else. Keep it that way: the smaller this diff, the cheaper the next version is.
+
+## Reading the code in here
+
+**A comment inside this tree describes upstream's repo, not this one.** `lib/resolve-class-name.ts`
+says a test keeps its theme table equal to `styles/tailwind.css`; that test is upstream's, and
+nothing here holds the two equal. Take such a line as a note about where the file came from.
 
 ## Upgrading
 
-Re-fetch the registry at the new version, re-apply the two edits, and diff. A `pnpm update` of
+Re-fetch the registry at the new version, re-apply the four edits, and diff. A `pnpm update` of
 `@videojs/react` alone does **not** update these files — they are source, not a dependency.
+Re-measure the touch targets afterwards: two of the four edits exist because a measurement found
+a control under 44×44.

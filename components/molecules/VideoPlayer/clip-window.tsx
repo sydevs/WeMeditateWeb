@@ -1,14 +1,14 @@
 'use client'
 
 import { createContext } from 'react'
-import { Slider } from '@videojs/react'
+import { Slider, useHotkey } from '@videojs/react'
 // Spelled `translate` at every call site, never `t`: these keys are the player's own, and `t` is
 // how the site's SahajCloud copy reads — `tests/guards/translation-keys.test.ts` matches the name.
 import { useTranslator } from '@videojs/react/i18n'
 import { usePlayer } from '@videojs/react/video'
 import { SliderFill, SliderThumb, SliderTrack } from './skin/ui/slider'
 import { cn } from './skin/lib/resolve-class-name'
-import { formatClock, type ClipWindow } from './clip'
+import { formatClock, percentSeek, secondsToIsoDuration, type ClipWindow } from './clip'
 
 /**
  * The ambient playback window, `null` for a video that plays end to end. It is what lets the
@@ -42,16 +42,22 @@ export interface ClipTimeProps {
   className?: string
 }
 
-/** The window's elapsed time, in place of the media position the skin would show. */
+/**
+ * The window's elapsed time, in place of the media position the skin would show.
+ *
+ * A `<time>` carrying an `aria-label` and a `dateTime`, which is what the skin's own
+ * `Time.Value` renders — a plain `<div>` has a generic role, and a generic role cannot be named,
+ * so the label would be dropped.
+ */
 export function ClipElapsed({ window, className }: ClipTimeProps) {
   const translate = useTranslator()
   const { start, length } = useWindowBounds(window)
   const elapsed = useElapsed(start, length)
 
   return (
-    <div aria-label={translate('time.current')} className={className} role="timer">
+    <time aria-label={translate('time.current')} className={className} dateTime={secondsToIsoDuration(elapsed)}>
       {formatClock(elapsed, length)}
-    </div>
+    </time>
   )
 }
 
@@ -61,10 +67,39 @@ export function ClipDuration({ window, className }: ClipTimeProps) {
   const { length } = useWindowBounds(window)
 
   return (
-    <div aria-label={translate('time.duration')} className={className}>
+    <time aria-label={translate('time.duration')} className={className} dateTime={secondsToIsoDuration(length)}>
       {formatClock(length, length)}
-    </div>
+    </time>
   )
+}
+
+/**
+ * The percent hotkeys, rescaled to the window.
+ *
+ * `0`–`9`, `Home` and `End` seek by a share of the *media* in the skin's own hotkeys, which
+ * Vidstack's clipping rescaled for a clip — so `5` on a clip would land outside the window and
+ * the clamp would turn it into a pause. The skin leaves these three to us whenever a window is
+ * mounted, and the rest of its hotkeys need no change: a step, a toggle and the volume keys all
+ * mean the same thing inside a window.
+ */
+export function ClipHotkeys({ window }: { window: ClipWindow }) {
+  const seek = usePlayer((state) => state.seek)
+  const { start, length } = useWindowBounds(window)
+
+  useHotkey({
+    keys: '0-9',
+    onActivate: (_event, key) => {
+      const to = percentSeek(start, length, key)
+
+      if (to !== null) {
+        void seek(to)
+      }
+    },
+  })
+  useHotkey({ keys: 'Home', onActivate: () => void seek(start) })
+  useHotkey({ keys: 'End', onActivate: () => void seek(start + length) })
+
+  return null
 }
 
 /**

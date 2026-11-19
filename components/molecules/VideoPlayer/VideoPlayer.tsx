@@ -28,6 +28,7 @@ import { posterURL } from './poster'
 const PLAYER_STYLE = {
   '--media-accent-color': 'var(--color-teal-500)',
   '--media-control-size': '44px',
+  '--media-slider-height': '44px',
 } as CSSProperties
 
 export interface VideoPlayerProps {
@@ -58,7 +59,7 @@ export interface VideoPlayerProps {
   subtitleTracks?: { locale: string; url: string }[]
   /** Which `subtitleTracks` locale to mark as the default, active track. */
   defaultSubtitleLang?: string
-  /** Accessible label for the video (not shown visually). */
+  /** The video's title. The skin draws it across the top of the player, and names it. */
   title?: string
   /**
    * Which language the player's own controls speak. Defaults to the page's locale, which is
@@ -82,23 +83,39 @@ export interface VideoPlayerProps {
  * Video.js restores the last track a viewer chose, then one matching the *browser's* language,
  * then the first track — so the `default` attribute alone no longer decides, and a Russian
  * browser would read English subtitles on a Russian page. This applies the page's preference
- * once, the first time tracks attach, and then leaves the viewer's own choices alone. With no
- * matching track it turns subtitles off, which is what the `default` attribute used to mean.
+ * once and then leaves the viewer's own choices alone. With no matching track it turns subtitles
+ * off, which is what the `default` attribute used to mean.
+ *
+ * It waits for `expected`, the languages of the tracks this player mounted, rather than for the
+ * list to be non-empty: `textTrackList` also carries whatever the HLS manifest declares and
+ * tracks of other kinds, so a manifest's own track would otherwise spend the one shot before a
+ * fetched blob `<track>` had attached.
  */
-function SubtitlePreference({ lang }: { lang?: string }) {
+function SubtitlePreference({ lang, expected }: { lang?: string; expected: string[] }) {
   const tracks = usePlayer((state) => state.textTrackList)
   const selectSubtitlesTrack = usePlayer((state) => state.selectSubtitlesTrack)
   const appliedRef = useRef(false)
+  const expectedKey = expected.join(' ')
 
   useEffect(() => {
-    if (appliedRef.current || tracks.length === 0) {
+    if (appliedRef.current) {
+      return
+    }
+    const subtitles = tracks.filter(
+      (track) => track.kind === 'subtitles' || track.kind === 'captions',
+    )
+    const waiting = expectedKey
+      ? expectedKey.split(' ').some((locale) => !subtitles.some((t) => t.language === locale))
+      : subtitles.length === 0
+
+    if (waiting) {
       return
     }
     appliedRef.current = true
-    const match = lang ? tracks.find((track) => track.language === lang) : undefined
+    const match = lang ? subtitles.find((track) => track.language === lang) : undefined
 
     void selectSubtitlesTrack(match?.id ?? null)
-  }, [tracks, lang, selectSubtitlesTrack])
+  }, [tracks, lang, expectedKey, selectSubtitlesTrack])
 
   return null
 }
@@ -192,6 +209,10 @@ export function VideoPlayer({
       }),
     ).then((results) => {
       if (cancelled) {
+        // The fetches outlive the effect, so the URLs they minted were created after the
+        // cleanup had already run and nothing else would ever revoke them.
+        revoke()
+
         return
       }
       setTrackBlobs(results.filter((r) => r !== null))
@@ -287,7 +308,10 @@ export function VideoPlayer({
                   />
                 ))}
               </HlsJsVideo>
-              <SubtitlePreference lang={inlineVtt ? subtitleLang : defaultSubtitleLang} />
+              <SubtitlePreference
+                expected={trackBlobs.map((track) => track.locale)}
+                lang={inlineVtt ? subtitleLang : defaultSubtitleLang}
+              />
             </VideoSkin>
           </VideoJsPlayer>
         </ClipWindowContext>
