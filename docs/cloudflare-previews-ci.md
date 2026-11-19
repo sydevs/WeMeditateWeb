@@ -72,8 +72,12 @@ Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and eve
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
-  `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
+  `types/*`, `server/sahajcloud-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
   `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
+
+  ⚠ Both Cloudflare triggers still include `server/cms-types*`, the name that file lost in #131.
+  Until they are edited in Cloudflare (they are not in this repo), a push touching only
+  `server/sahajcloud-types.ts` builds no Ladle preview while `Smoke (ladle)` waits out its window.
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so
