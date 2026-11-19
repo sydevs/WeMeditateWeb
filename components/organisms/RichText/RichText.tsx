@@ -15,11 +15,20 @@ import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
+import { TechniqueCard } from '../TechniqueCard'
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
-import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
+import {
+  cardHeadingLevel,
+  cardRun,
+  getNodeText,
+  pageCard,
+  relationshipLabel,
+  slugify,
+  uploadFigureClass,
+} from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
@@ -158,14 +167,40 @@ const CONVERTERS: JSXConverters = {
   },
 
   // A relationship node links to the referenced document through the mapper,
-  // with one exception: a `forms` reference is the form itself, embedded by
-  // the editor to be filled in, so it renders rather than linking. Every
-  // other collection with no public route degrades to its plain label.
-  relationship: ({ node }) => {
+  // with two exceptions. A `forms` reference is the form itself, embedded by
+  // the editor to be filled in, so it renders rather than linking. A page
+  // with an image and a description draws a TechniqueCard, the legacy
+  // /techniques list: numbered within its run of consecutive cards (a lone
+  // card carries no number), alternating sides from the left. Every other
+  // collection with no public route degrades to its plain label.
+  relationship: ({ node, parent, childIndex }) => {
     if (node.relationTo === 'forms') {
       return isPopulated<EmbeddedForm>(node.value) ? (
         <FormBuilder className={BLOCK_SPACING} form={node.value} />
       ) : null
+    }
+    const card = pageCard(node)
+
+    if (card) {
+      const siblings = (parent as { children?: unknown[] }).children ?? [node]
+      const { position, length } = cardRun(siblings, childIndex)
+
+      return (
+        <TechniqueCard
+          align={position % 2 === 1 ? 'left' : 'right'}
+          // The number hangs 7rem above the image from `md`, so the top
+          // margin clears it.
+          className="clear-both my-16 md:mt-40"
+          description={card.description}
+          headingLevel={cardHeadingLevel(siblings, childIndex)}
+          href={card.href}
+          imageAlt={card.image.alt}
+          imageAspectRatio={nearestAspectRatio(card.image.width, card.image.height)}
+          imageSrc={card.image.url}
+          number={length > 1 ? String(position).padStart(2, '0') : undefined}
+          title={card.title}
+        />
+      )
     }
     const label = relationshipLabel(node.value)
 

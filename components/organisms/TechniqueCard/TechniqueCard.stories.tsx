@@ -20,7 +20,6 @@ export const Default: Story = () => (
         imageSrc="https://picsum.photos/seed/technique1/400/400"
         imageAlt="Foot soaking relaxation technique"
         href="/techniques/foot-soak"
-        buttonText="Learn more"
         align="left"
         className="mt-32"
       />
@@ -34,9 +33,24 @@ export const Default: Story = () => (
         imageSrc="https://picsum.photos/seed/technique2/400/400"
         imageAlt="Ice on liver meditation technique"
         href="/techniques/ice-on-liver"
-        buttonText="Learn more"
         align="right"
         className="mt-32"
+      />
+    </StorySection>
+
+    {/*
+      What a lone page relationship in rich text draws: no number, the image at
+      the ratio nearest its own, and the description's line break kept.
+    */}
+    <StorySection title="Without a Number">
+      <TechniqueCard
+        className="mt-32"
+        description={'Good for:\nBetter sleep, overall daily cleansing, cooling the right channel'}
+        href="/footsoaking"
+        imageAlt="Footsoaking - watercolor overlay"
+        imageAspectRatio="4-3"
+        imageSrc="https://picsum.photos/seed/technique3/840/660"
+        title="Footsoaking"
       />
     </StorySection>
 

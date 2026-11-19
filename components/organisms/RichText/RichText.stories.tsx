@@ -442,6 +442,28 @@ const pageContent = editorState(
       ],
     }),
 
+    // Consecutive page relationships with an image and a description → numbered
+    // TechniqueCards (the /techniques page). The bare relationship further up has
+    // neither, so it stays an inline link.
+    heading('h3', 'Cleansing techniques'),
+    relationshipNode(
+      'pages',
+      pageRef(
+        69,
+        'footsoaking',
+        'Footsoaking',
+        'Good for:\nBetter sleep, cooling the right channel',
+      ),
+    ),
+    relationshipNode(
+      'pages',
+      pageRef(67, 'candle-treatment', 'Candle treatment', 'Good for:\nRemoving heaviness'),
+    ),
+    relationshipNode(
+      'pages',
+      pageRef(71, 'ice-pack', 'Ice Pack', 'Good for:\nCalming mental or physical activity'),
+    ),
+
     // Showcase — populated relationships
     block('showcase', {
       items: [
