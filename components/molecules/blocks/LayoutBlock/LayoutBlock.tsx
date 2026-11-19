@@ -122,7 +122,7 @@ export function LayoutBlock({
     return (
       <section className={className}>
         {heading}
-        <Accordion items={accordionItems} />
+        <Accordion headingLevel={itemHeadingLevel} items={accordionItems} />
       </section>
     )
   }

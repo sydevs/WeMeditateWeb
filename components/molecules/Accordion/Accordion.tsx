@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { Heading } from '../../atoms/Heading'
 import { Icon } from '../../atoms/Icon'
 
 export interface AccordionItemData {
@@ -32,6 +33,13 @@ export interface AccordionProps {
   /** Callback when an item is toggled */
   onToggle?: (itemId: string, isOpen: boolean) => void
 
+  /**
+   * The level each item's title takes: one under the section heading above
+   * the accordion, or `h2` where there is none.
+   * @default 'h3'
+   */
+  headingLevel?: 'h2' | 'h3'
+
   /** Additional CSS classes for the accordion container */
   className?: string
 }
@@ -44,9 +52,9 @@ export interface AccordionProps {
  *
  * Features:
  * - Single or multiple items can be open at once
- * - Smooth expand/collapse animations
- * - Keyboard accessible (Space/Enter to toggle)
- * - Screen reader friendly with ARIA attributes
+ * - Each header is a native `<button>`, so Enter and Space toggle it
+ * - A closed panel is `hidden`: out of the accessibility tree and the tab
+ *   order, not merely collapsed to no height
  *
  * @example
  * const items = [
@@ -64,53 +72,43 @@ export function Accordion({
   allowMultiple = false,
   defaultOpenItems = [],
   onToggle,
+  headingLevel = 'h3',
   className = '',
 }: AccordionProps) {
   const [openItems, setOpenItems] = useState<Set<string>>(() => new Set(defaultOpenItems))
 
+  // The callback stays out of a state updater: React may run an updater
+  // twice, and the caller would hear one click as two toggles.
   const toggleItem = (itemId: string) => {
-    setOpenItems((prev) => {
-      const newOpenItems = new Set(prev)
-      const isCurrentlyOpen = newOpenItems.has(itemId)
+    const isOpening = !openItems.has(itemId)
+    const next = new Set(allowMultiple ? openItems : [])
 
-      if (isCurrentlyOpen) {
-        newOpenItems.delete(itemId)
-      } else {
-        if (!allowMultiple) {
-          newOpenItems.clear()
-        }
-        newOpenItems.add(itemId)
-      }
-
-      onToggle?.(itemId, !isCurrentlyOpen)
-
-      return newOpenItems
-    })
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent, itemId: string) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      toggleItem(itemId)
+    if (isOpening) {
+      next.add(itemId)
+    } else {
+      next.delete(itemId)
     }
+
+    setOpenItems(next)
+    onToggle?.(itemId, isOpening)
   }
 
   return (
-    <div className={`mx-auto max-w-full sm:max-w-3xl ${className}`} role="region">
+    <div className={`mx-auto max-w-full sm:max-w-3xl ${className}`}>
       {items.map((item, index) => {
         const isOpen = openItems.has(item.id)
         const isLastItem = index === items.length - 1
 
         return (
           <article key={item.id} className={`${!isLastItem ? 'border-b border-gray-300' : ''}`}>
-            <h3>
+            <Heading level={headingLevel} styleAs="none">
               <button
                 aria-controls={`accordion-content-${item.id}`}
                 aria-expanded={isOpen}
                 className="relative w-full text-left py-3 sm:py-4 pr-6 sm:pr-8 cursor-pointer group flex items-center justify-between"
+                id={`accordion-header-${item.id}`}
                 type="button"
                 onClick={() => toggleItem(item.id)}
-                onKeyDown={(e) => handleKeyDown(e, item.id)}
               >
                 <span
                   className={`text-xl font-medium transition-colors ${
@@ -129,13 +127,11 @@ export function Accordion({
                   size="md"
                 />
               </button>
-            </h3>
+            </Heading>
 
             <div
               aria-labelledby={`accordion-header-${item.id}`}
-              className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
+              hidden={!isOpen}
               id={`accordion-content-${item.id}`}
               role="region"
             >
