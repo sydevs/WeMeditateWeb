@@ -122,7 +122,6 @@ export function MobileMenu({
                     out a pointer has: the trap has the trigger inert. */}
                 <div className="flex min-h-14 shrink-0 items-center justify-between px-6">
                   <Logo
-                    aria-label={t('common.general.site_title')}
                     className="shrink-0 touch-target"
                     href={logoHref}
                     size="lg"

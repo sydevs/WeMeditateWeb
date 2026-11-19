@@ -135,7 +135,7 @@ describe('Header', () => {
       const bar = classFor(html, 'min-h-14')
 
       expect(bar).not.toContain('min-h-11')
-      expect(tagFor(html, 'a', 'aria-label="We Meditate"')).toContain('touch-target')
+      expect(anchorFor(html.slice(html.indexOf('<nav')), '/')).toContain('touch-target')
       expect(html.slice(html.indexOf('<nav'))).toContain(
         'flex touch-target items-center justify-center',
       )
@@ -170,7 +170,7 @@ describe('Header', () => {
       // auto margin spends that space instead, and the trigger is last in the
       // row, so it holds the edge the map pin takes once stuck.
       const html = render()
-      const logo = tagFor(html, 'a', 'aria-label="We Meditate"')
+      const logo = anchorFor(html.slice(html.indexOf('<nav')), '/')
 
       expect(logo).toContain('max-lg:mr-auto')
       expect(html.indexOf('aria-label="Menu"')).toBeGreaterThan(html.lastIndexOf('href="/classes"'))
@@ -186,14 +186,17 @@ describe('Header', () => {
       expect(classesWith(html, 'lg:invisible')).toHaveLength(2)
     })
 
-    it('names both controls', () => {
-      // `common.general.site_title` in lib/translations.en.json. The pin takes
-      // the class page's own already-translated title as words, drawn from
-      // `xl:` and read by a screen reader at every width.
-      const html = render()
+    it('names both controls by their own words', () => {
+      // The logo by its wordmark, from `common.general.site_title`. An
+      // `aria-label` beside visible words is a second name, and axe's
+      // label-content-name-mismatch asks for review of every one. The pin
+      // takes the class page's own already-translated title, drawn from `xl:`
+      // and read by a screen reader at every width.
+      const bar = render().slice(render().indexOf('<nav'))
 
-      expect(html).toContain('aria-label="We Meditate"')
-      expect(html).toContain('<span class="sr-only xl:not-sr-only">Classes near me</span>')
+      expect(anchorFor(bar, '/')).not.toContain('aria-label')
+      expect(bar).toContain('>We meditate</span>')
+      expect(bar).toContain('<span class="sr-only xl:not-sr-only">Classes near me</span>')
     })
   })
 

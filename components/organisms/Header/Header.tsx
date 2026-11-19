@@ -198,9 +198,10 @@ export function Header({
                 `::before` to 44×31 (#202).
 
                 `max-lg:mr-auto` eats the free space, which groups the controls
-                after it on the right edge. */}
+                after it on the right edge. The wordmark names the link: an
+                `aria-label` beside it would be a second name to keep in step
+                (SC 2.5.3). */}
             <Logo
-              aria-label={t('common.general.site_title')}
               className={`shrink-0 touch-target max-lg:mr-auto lg:justify-self-start ${compactControl}`}
               href={logoHref}
               size="lg"
