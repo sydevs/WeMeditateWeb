@@ -20,8 +20,8 @@ const navItems: NavItem[] = [
   },
 ]
 
-const open = () => {
-  const { container } = render(<MobileMenu navItems={navItems} />)
+const open = (props: Partial<React.ComponentProps<typeof MobileMenu>> = {}) => {
+  const { container } = render(<MobileMenu navItems={navItems} {...props} />)
   const trigger = screen.getByRole('button', { name: 'Menu' })
 
   // A tap or a keypress focuses the button before it activates, and
@@ -40,19 +40,102 @@ describe('MobileMenu · opening and closing', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('dialog', { name: 'Menu' })).toBeTruthy()
 
-    const rows = screen
-      .getAllByRole('link')
-      .map((link) => [link.textContent, link.getAttribute('href')])
+    const rows = () =>
+      screen.getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])
 
-    expect(rows).toEqual([
+    // The panel's own bar repeats the header's logo first.
+    expect(rows()).toEqual([
+      ['We meditate', '/'],
       ['Meditate Now', '/meditate'],
       ['Music', '/music'],
+    ])
+
+    // The mega-menu item carries a `dropdown` payload instead of an `href`, so
+    // it discloses its links rather than being a destination itself.
+    fireEvent.click(screen.getByRole('button', { name: 'About Meditation' }))
+
+    expect(rows().slice(3)).toEqual([
       ['History of Meditation', '/history-of-meditation'],
       ['Inner Energy', '/inner-energy'],
     ])
-    // The mega-menu item carries a `dropdown` payload instead of an `href`, so
-    // it heads its links rather than being a destination itself.
-    expect(screen.getByRole('heading', { name: 'About Meditation' })).toBeTruthy()
+  })
+
+  it('discloses the mega-menu item under one heading, not two', () => {
+    open()
+    const disclosure = screen.getByRole('button', { name: 'About Meditation' })
+    const list = document.getElementById(disclosure.getAttribute('aria-controls') ?? '')
+
+    expect(disclosure.getAttribute('aria-expanded')).toBe('false')
+    expect(list?.hidden).toBe(true)
+
+    fireEvent.click(disclosure)
+
+    expect(disclosure.getAttribute('aria-expanded')).toBe('true')
+    expect(list?.hidden).toBe(false)
+    expect(screen.queryByRole('heading', { name: 'About Meditation' })).toBeNull()
+  })
+
+  it('marks the current page', () => {
+    render(<MobileMenu navItems={[{ label: 'Meditate Now', href: '/meditate', active: true }]} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
+
+    expect(screen.getByRole('link', { name: 'Meditate Now' }).getAttribute('aria-current')).toBe(
+      'page',
+    )
+  })
+
+  it('paints above the sticky nav and the splash overlay', () => {
+    // At `z-index: auto` the nav's `z-50` and the splash wrapper's `z-30`
+    // painted over the panel, and a tap on × reached the bar's map pin.
+    open()
+
+    expect(screen.getByRole('dialog').closest('.z-60')).toBeTruthy()
+  })
+
+  it('offers the action link, and closes when it is taken', () => {
+    open({ actionLinkHref: '/classes', actionLinkText: 'Classes near me' })
+
+    const link = screen.getByRole('link', { name: 'Classes near me' })
+
+    expect(link.getAttribute('href')).toBe('/classes')
+
+    fireEvent.click(link)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('lists each language in its own name, linking to this page in it', () => {
+    open({
+      currentLanguage: 'en',
+      languages: [
+        { code: 'en', label: 'English', href: '/chakras' },
+        { code: 'es', label: 'Español', href: '/chakras' },
+      ],
+    })
+
+    // `footer.languages` in lib/translations.en.json.
+    fireEvent.click(screen.getByRole('button', { name: 'Languages' }))
+
+    const spanish = screen.getByRole('link', { name: 'Español' })
+    const english = screen.getByRole('link', { name: 'English' })
+
+    expect(spanish.getAttribute('href')).toBe('/es/chakras')
+    expect(spanish.querySelector('[lang="es"]')).toBeTruthy()
+    expect(english.getAttribute('aria-current')).toBe('true')
+    expect(spanish.getAttribute('aria-current')).toBeNull()
+  })
+
+  it('offers no language list to a site with one language', () => {
+    open({ languages: [{ code: 'en', label: 'English', href: '/' }] })
+
+    expect(screen.queryByRole('button', { name: 'Languages' })).toBeNull()
+  })
+
+  it('links the social profiles', () => {
+    open({ socialLinks: [{ platform: 'instagram', href: 'https://instagram.com/wemeditate' }] })
+
+    expect(screen.getByRole('link', { name: /Instagram/ }).getAttribute('href')).toBe(
+      'https://instagram.com/wemeditate',
+    )
   })
 
   it('takes the page behind it out of reach while it is open', () => {

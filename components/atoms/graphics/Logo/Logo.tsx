@@ -5,7 +5,7 @@ import { useT } from '../../../../hooks/useT'
 
 export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'> {
   /** Logo variant */
-  variant?: 'icon' | 'square' | 'circle' | 'text'
+  variant?: 'icon' | 'square' | 'circle' | 'text' | 'inline'
   /** Size of the logo */
   size?: 'sm' | 'md' | 'lg' | 'xl'
   /** Text alignment (only applies to text variant) */
@@ -18,6 +18,7 @@ export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'
  * Logo component with multiple variants for different contexts.
  * - icon: Just the lotus icon
  * - text: Icon above the site-title wordmark (stacked vertically)
+ * - inline: Icon beside the wordmark, on one line, for a bar
  * - square: Icon in a colored square container
  * - circle: Icon in a colored circular container
  */
@@ -30,6 +31,12 @@ export function Logo({
   ...props
 }: LogoProps) {
   const t = useT()
+
+  // The wordmark is the site title in the mark's own typography, derived from
+  // the one translated string rather than restated per locale: an initial
+  // capital with the rest lower-case.
+  const title = t('common.general.site_title')
+  const wordmark = title.charAt(0) + title.slice(1).toLowerCase()
 
   // Size configurations for different elements
   const iconSizes = {
@@ -71,21 +78,22 @@ export function Logo({
       right: 'items-end text-right',
     }
 
-    // The wordmark is the site title in the mark's own typography, derived from
-    // the one translated string rather than restated per locale: an initial
-    // capital with the rest lower-case, and a line per word where the lockup is
-    // stacked against a left or right edge.
-    const title = t('common.general.site_title')
-    const wordmark = title.charAt(0) + title.slice(1).toLowerCase()
+    // A line per word where the lockup is stacked against a left or right edge.
     const textContent = align === 'center' ? wordmark : wordmark.replace(/ /g, '\n')
 
     variantStyles = `flex-col gap-1 ${alignmentStyles[align]} ${href ? 'no-underline hover:opacity-80 transition-opacity' : ''}`
     content = (
       <>
         <LogoSvg className={iconSizes[size]} />
-        <span className={`font-normal ${textSizes[size]} whitespace-pre-line`}>
-          {textContent}
-        </span>
+        <span className={`font-normal ${textSizes[size]} whitespace-pre-line`}>{textContent}</span>
+      </>
+    )
+  } else if (variant === 'inline') {
+    variantStyles = `items-center gap-2.5 ${href ? 'no-underline hover:opacity-80 transition-opacity' : ''}`
+    content = (
+      <>
+        <LogoSvg className={`shrink-0 ${iconSizes[size]}`} />
+        <span className={`font-normal ${textSizes[size]} whitespace-nowrap`}>{wordmark}</span>
       </>
     )
   } else if (variant === 'square' || variant === 'circle') {

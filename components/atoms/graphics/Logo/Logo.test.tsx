@@ -21,4 +21,15 @@ describe('Logo', () => {
       expect(left).toContain('>We\nmeditate<')
     })
   })
+
+  describe('the inline variant', () => {
+    it('sets the wordmark beside the icon, on one line', () => {
+      // The header bar is a single 56px row, so the lockup cannot stack.
+      const html = renderToStaticMarkup(<Logo variant="inline" />)
+
+      expect(html).toContain('>We meditate<')
+      expect(html).toContain('whitespace-nowrap')
+      expect(html).not.toContain('flex-col')
+    })
+  })
 })

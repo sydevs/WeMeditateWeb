@@ -28,6 +28,16 @@ describe('HeaderNavDropdown', () => {
     expect(html).toContain('aria-expanded="false"')
   })
 
+  it('draws a chevron, since the trigger opens a panel rather than a page', () => {
+    const html = renderToStaticMarkup(
+      <HeaderNavDropdown dropdown={dropdown} label="About Meditation" />,
+    )
+    const trigger = html.slice(html.indexOf('<button'), html.indexOf('</button>'))
+
+    // Label first, chevron after it.
+    expect(trigger.indexOf('<svg')).toBeGreaterThan(trigger.indexOf('About Meditation'))
+  })
+
   it('does not render the panel until opened (closed by default)', () => {
     const html = renderToStaticMarkup(
       <HeaderNavDropdown dropdown={dropdown} label="About Meditation" />,

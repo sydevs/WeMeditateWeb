@@ -11,6 +11,7 @@ import {
   safePolygon,
   FloatingPortal,
 } from '@floating-ui/react'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Button } from '../../atoms'
 import { HeaderDropdown, type HeaderDropdownProps } from '../HeaderDropdown'
 
@@ -71,7 +72,16 @@ export function HeaderNavDropdown({ label, dropdown }: HeaderNavDropdownProps) {
 
   return (
     <>
-      <Button ref={refs.setReference} size="sm" variant="ghost" {...getReferenceProps()}>
+      {/* The chevron says this opens a panel rather than a page: the item has
+          no href of its own. */}
+      <Button
+        ref={refs.setReference}
+        icon={ChevronDownIcon}
+        iconPosition="trailing"
+        size="sm"
+        variant="ghost"
+        {...getReferenceProps()}
+      >
         {label}
       </Button>
 

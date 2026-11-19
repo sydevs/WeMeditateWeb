@@ -1,5 +1,6 @@
 import { Header } from '../components/organisms/Header'
 import { useData } from 'vike-react/useData'
+import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig } from '../server/sahajcloud-types'
 import { useSiteNav } from './useSiteNav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
@@ -43,7 +44,8 @@ export default function LayoutMap({ children }: { children: React.ReactNode }) {
  * settings guard above returns before any hook would run.
  */
 function MapChrome({ settings, children }: { settings: WebConfig; children: React.ReactNode }) {
-  const { navItems, actionLinkHref, actionLinkText } = useSiteNav(settings)
+  const { navItems, actionLinkHref, actionLinkText, languages, socialLinks } = useSiteNav(settings)
+  const { locale } = usePageContext()
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -51,8 +53,11 @@ function MapChrome({ settings, children }: { settings: WebConfig; children: Reac
         condensed
         actionLinkHref={actionLinkHref}
         actionLinkText={actionLinkText}
+        currentLanguage={locale}
+        languages={languages}
         logoHref="/"
         navItems={navItems}
+        socialLinks={socialLinks}
       />
 
       {/* `tabIndex={-1}` makes this element focusable by script, without
