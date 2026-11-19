@@ -49,6 +49,9 @@ paths:
    `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
    classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
+   A read the page can do without turns a failure into its fallback in one place, `degrade` in
+   the same file, outside the retry. `degrade` reports the failure once per key per isolate, so
+   the `withRetry` inside it passes `reportFailure: false` — see `getMeditationSongs`.
    A 404 on a by-id read is an empty result the SDK reports as a throw — `getDocumentById` reads
    the status with `readStatus` and answers `null`. Nothing else may swallow a status.
 

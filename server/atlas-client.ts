@@ -24,9 +24,8 @@
  * widget and its own `<head>`. It only loses the server-rendered half.
  */
 
-import * as Sentry from '@sentry/cloudflare'
 import { sahajCloudFetch, sahajCloudFetchOptional } from './sahajcloud-fetch'
-import { withRetry } from './error-utils'
+import { degrade, warnOnce, withRetry } from './error-utils'
 import type { Locale } from './sahajcloud-types'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from './atlas-types'
 import type { SitemapUrl } from './sitemap'
@@ -74,16 +73,18 @@ export async function getAtlasSeo(options: {
   // under a region still asks for the spelling it was given.
   const upstreamRoute = target.kind === 'root' ? '/' : options.route
 
-  try {
+  const read = async () => {
     // A 404 means the route named nothing upstream: a stale inbound link, or
     // a region that has since been unpublished. `sahajCloudFetchOptional` answers it
     // with `null`, which reads the same as the no-target case above.
-    const answer = await withRetry(() =>
-      sahajCloudFetchOptional<AtlasSeoResponse>(
-        `/api/atlas/seo?route=${encodeURIComponent(upstreamRoute)}` +
-          `&locale=${encodeURIComponent(options.locale)}`,
-        `getAtlasSeo(${upstreamRoute})`,
-      ),
+    const answer = await withRetry(
+      () =>
+        sahajCloudFetchOptional<AtlasSeoResponse>(
+          `/api/atlas/seo?route=${encodeURIComponent(upstreamRoute)}` +
+            `&locale=${encodeURIComponent(options.locale)}`,
+          `getAtlasSeo(${upstreamRoute})`,
+        ),
+      { reportFailure: false },
     )
 
     // The root answer is built from a global rather than a document, so it has
@@ -91,33 +92,32 @@ export async function getAtlasSeo(options: {
     // upstream, not that an inbound link went stale. Left silent it restores
     // the undescribed `/map` of #64 with nothing to say why.
     if (!answer && target.kind === 'root') {
-      Sentry.captureMessage('getAtlasSeo got no document for the atlas root', {
-        level: 'warning',
-        tags: { source: 'getAtlasSeo' },
+      console.warn(`[getAtlasSeo] no document for the atlas root (asked for ${options.route})`)
+      warnOnce(options.locale, 'getAtlasSeo got no document for the atlas root', {
+        source: 'getAtlasSeo',
         extra: { askedFor: options.route, locale: options.locale },
       })
     }
 
     return answer
-  } catch (error) {
-    // Crawlers and no-JS visitors rely on the server-rendered half. The
-    // widget still works without it. Losing it must not take the page down.
-    console.warn(`[getAtlasSeo] degrading to widget-only for ${options.route}:`, error)
-    Sentry.captureMessage('getAtlasSeo failed; rendering the atlas without server content', {
-      level: 'warning',
-      tags: { source: 'getAtlasSeo' },
-      // Both: the request carries the normalized route, so an event naming
-      // only the asked-for one cannot be matched to the failing URL.
-      extra: {
-        route: upstreamRoute,
-        askedFor: options.route,
-        locale: options.locale,
-        target: target.kind,
-      },
-    })
-
-    return null
   }
+
+  // Crawlers and no-JS visitors rely on the server-rendered half. The widget
+  // still works without it. Losing it must not take the page down.
+  return degrade(read, {
+    source: 'getAtlasSeo',
+    message: 'getAtlasSeo failed; rendering the atlas without server content',
+    key: upstreamRoute,
+    fallback: null,
+    // Both: the request carries the normalized route, so an event naming
+    // only the asked-for one cannot be matched to the failing URL.
+    extra: {
+      route: upstreamRoute,
+      askedFor: options.route,
+      locale: options.locale,
+      target: target.kind,
+    },
+  })
 }
 
 /**
@@ -149,57 +149,54 @@ const SITEMAP_URL_CAP = 45_000
  * @param origin - The origin serving the request, e.g. `https://wemeditate.com`
  */
 export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]> {
-  try {
-    return await withRetry(async () => {
-      const body = await sahajCloudFetch<AtlasSitemapResponse>(
-        '/api/atlas/sitemap',
-        'getAtlasSitemapUrls',
-      )
+  const read = async () => {
+    const body = await sahajCloudFetch<AtlasSitemapResponse>(
+      '/api/atlas/sitemap',
+      'getAtlasSitemapUrls',
+    )
 
-      // A 200 whose shape drifted reads exactly like a client that owns no
-      // subtree, so it would empty the atlas half with nothing logged. These
-      // types are hand-mirrored, which is precisely what `pnpm types:cms`
-      // cannot catch.
-      if (!Array.isArray(body?.urls)) {
-        throw new Error('getAtlasSitemapUrls: the response carried no urls array')
-      }
+    // A 200 whose shape drifted reads exactly like a client that owns no
+    // subtree, so it would empty the atlas half with nothing logged. These
+    // types are hand-mirrored, which is precisely what `pnpm types:cms`
+    // cannot catch.
+    if (!Array.isArray(body?.urls)) {
+      throw new Error('getAtlasSitemapUrls: the response carried no urls array')
+    }
 
-      const rows = body.urls
-      const owned = rows.filter(
-        (row) => typeof row?.loc === 'string' && row.loc.startsWith(`${origin}/`),
-      )
+    const rows = body.urls
+    const owned = rows.filter(
+      (row) => typeof row?.loc === 'string' && row.loc.startsWith(`${origin}/`),
+    )
 
-      // Upstream named URLs and the guard rejected every one: this key's
-      // client canonicalizes to some other host. Left silent it is an empty
-      // atlas section, which reads exactly like owning nothing.
-      if (rows.length > 0 && owned.length === 0) {
-        Sentry.captureMessage('getAtlasSitemapUrls dropped every URL as off-origin', {
-          level: 'warning',
-          tags: { source: 'getAtlasSitemapUrls' },
-          extra: { origin, returned: rows.length, sample: rows[0]?.loc ?? null },
-        })
-      }
+    // Upstream named URLs and the guard rejected every one: this key's
+    // client canonicalizes to some other host. Left silent it is an empty
+    // atlas section, which reads exactly like owning nothing.
+    if (rows.length > 0 && owned.length === 0) {
+      console.warn(`[getAtlasSitemapUrls] every URL is off-origin for ${origin}`)
+      warnOnce(origin, 'getAtlasSitemapUrls dropped every URL as off-origin', {
+        source: 'getAtlasSitemapUrls',
+        extra: { origin, returned: rows.length, sample: rows[0]?.loc ?? null },
+      })
+    }
 
-      if (owned.length > SITEMAP_URL_CAP) {
-        Sentry.captureMessage('getAtlasSitemapUrls hit the sitemap cap; atlas URLs are truncated', {
-          level: 'warning',
-          tags: { source: 'getAtlasSitemapUrls' },
-          extra: { origin, owned: owned.length, cap: SITEMAP_URL_CAP },
-        })
-      }
+    if (owned.length > SITEMAP_URL_CAP) {
+      console.warn(`[getAtlasSitemapUrls] ${owned.length} URLs truncated to ${SITEMAP_URL_CAP}`)
+      warnOnce(origin, 'getAtlasSitemapUrls hit the sitemap cap; atlas URLs are truncated', {
+        source: 'getAtlasSitemapUrls',
+        extra: { origin, owned: owned.length, cap: SITEMAP_URL_CAP },
+      })
+    }
 
-      return owned
-        .slice(0, SITEMAP_URL_CAP)
-        .map((row) => ({ loc: row.loc, lastmod: row.lastmod ?? null }))
-    })
-  } catch (error) {
-    console.warn('[getAtlasSitemapUrls] omitting the atlas half of the sitemap:', error)
-    Sentry.captureMessage('getAtlasSitemapUrls failed; sitemap omits atlas URLs', {
-      level: 'warning',
-      tags: { source: 'getAtlasSitemapUrls' },
-      extra: { origin },
-    })
-
-    return []
+    return owned
+      .slice(0, SITEMAP_URL_CAP)
+      .map((row) => ({ loc: row.loc, lastmod: row.lastmod ?? null }))
   }
+
+  return degrade(() => withRetry(read, { reportFailure: false }), {
+    source: 'getAtlasSitemapUrls',
+    message: 'getAtlasSitemapUrls failed; sitemap omits atlas URLs',
+    key: origin,
+    fallback: [],
+    extra: { origin },
+  })
 }

@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as Sentry from '@sentry/react'
-import { detectErrorType, ErrorType, withRetry } from './error-utils'
+import { degrade, detectErrorType, ErrorType, warnOnce, withRetry } from './error-utils'
 
 vi.mock('@sentry/react', () => ({
   addBreadcrumb: vi.fn(),
@@ -328,5 +328,91 @@ describe('withRetry reporting', () => {
     expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
       expect.objectContaining({ category: 'retry', message: 'attempt 1/3 failed (NETWORK)' }),
     )
+  })
+
+  it('leaves the report to a caller that degrades', async () => {
+    await exhaust({ reportFailure: false })
+
+    expect(Sentry.captureException).not.toHaveBeenCalled()
+  })
+})
+
+describe('warnOnce', () => {
+  it('sends a signature once per isolate, at warning', () => {
+    warnOnce('gap-a', 'A gap', { source: 'warnOnce.test', extra: { id: 1 } })
+    warnOnce('gap-a', 'A gap', { source: 'warnOnce.test', extra: { id: 1 } })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('A gap', {
+      level: 'warning',
+      tags: { source: 'warnOnce.test' },
+      extra: { id: 1 },
+    })
+  })
+
+  it('keeps two sources apart when their signatures match', () => {
+    warnOnce('gap-b', 'A gap', { source: 'warnOnce.test.one' })
+    warnOnce('gap-b', 'A gap', { source: 'warnOnce.test.two' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+  })
+
+  it('forgets everything past its cap, so a live gap reports again rather than never', () => {
+    warnOnce('gap-c', 'A gap', { source: 'warnOnce.test.cap' })
+
+    for (let index = 0; index < 128; index++) {
+      warnOnce(`filler-${index}`, 'Filler', { source: 'warnOnce.test.cap' })
+    }
+
+    vi.mocked(Sentry.captureMessage).mockClear()
+    warnOnce('gap-c', 'A gap', { source: 'warnOnce.test.cap' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('degrade', () => {
+  const songs = (key: string) => ({
+    source: 'degrade.test',
+    message: 'Songs failed; rendering voice-only',
+    key,
+    fallback: [] as string[],
+    extra: { meditationId: key },
+  })
+
+  it('answers the read when it succeeds, and reports nothing', async () => {
+    expect(await degrade(async () => ['raga'], songs('1'))).toEqual(['raga'])
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('answers the fallback when the read fails, rather than throwing', async () => {
+    const badGateway = Object.assign(new Error('songs failed: 502'), { status: 502 })
+
+    expect(await degrade(() => Promise.reject(badGateway), songs('2'))).toEqual([])
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('Songs failed; rendering voice-only', {
+      level: 'warning',
+      tags: { error_type: ErrorType.SERVER, source: 'degrade.test' },
+      extra: { meditationId: '2', status: 502, error: 'songs failed: 502' },
+    })
+  })
+
+  it('logs every failure but reports a key once per isolate', async () => {
+    // These reads run per render and nothing caches them, so a standing
+    // failure reported per call bills one event per page view.
+    const failing = () => Promise.reject(new Error('fetch failed'))
+
+    await degrade(failing, songs('3'))
+    await degrade(failing, songs('3'))
+
+    expect(console.warn).toHaveBeenCalledTimes(2)
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports a key it has not seen, and a key whose failure changed kind', async () => {
+    await degrade(() => Promise.reject(new Error('fetch failed')), songs('4'))
+    await degrade(() => Promise.reject(new Error('fetch failed')), songs('5'))
+    await degrade(() => Promise.reject(Object.assign(new Error('x'), { status: 403 })), songs('5'))
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(3)
   })
 })

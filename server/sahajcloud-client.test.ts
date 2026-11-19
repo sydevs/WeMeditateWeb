@@ -22,9 +22,14 @@ vi.mock('./payload-client', () => ({
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Silence the Sentry warning emitted on unresolved page references, and keep
-// its calls countable: the warning is rate-limited per isolate.
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// Silence the Sentry warnings, and keep their calls countable: each is
+// rate-limited per isolate. Both SDKs re-export `@sentry/core`'s one
+// `captureMessage`, so one spy stands for both: `degrade` and `warnOnce`
+// report through `@sentry/react` (see error-utils.ts).
+const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
+
+vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
+vi.mock('@sentry/react', () => ({ captureMessage }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the config visible to the tests that assert one, and
 // `retried.error` the error the ladder was handed, which is what decides
@@ -528,5 +533,32 @@ describe('every custom-endpoint read', () => {
     await read()
 
     expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
+  })
+
+  it.each([
+    ['getMeditationSongs', (id: string) => getMeditationSongs({ id, locale: 'en' })],
+    ['getRelatedMeditations', (id: string) => getRelatedMeditations({ id, locale: 'en' })],
+    [
+      'getRelatedLectures',
+      (id: string) => getRelatedLectures({ id, locale: 'en', audiences: [1] }),
+    ],
+  ])('reports %s failing once per id per isolate, not once per render', async (label, read) => {
+    // Each runs per render and nothing caches it, so a standing upstream
+    // fault reported per call would bill one event per page view.
+    captureMessage.mockClear()
+    retrySpy.mockClear()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
+
+    await read('7001')
+    await read('7001')
+    await read('7002')
+
+    expect(captureMessage).toHaveBeenCalledTimes(2)
+    expect(captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining(`${label} failed`),
+      expect.objectContaining({ level: 'warning' }),
+    )
+    // The retry ladder is still owed, and leaves the report to `degrade`.
+    expect(retrySpy).toHaveBeenCalledWith({ reportFailure: false })
   })
 })

@@ -18,7 +18,7 @@
 import type { Hono } from 'hono'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
-import { withRetry } from './error-utils'
+import { degrade, withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './sahajcloud-client'
 import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, type SitemapUrl } from './sitemap'
@@ -65,15 +65,18 @@ function lastmodOf(doc: { updatedAt?: string | null }): string | null {
  * complete.
  */
 async function getSiteAnnotation(): Promise<{ offered: Locale[]; homeSlug: string | null }> {
-  try {
-    const settings = await getWebConfig({ locale: DEFAULT_LOCALE })
+  return degrade(
+    async () => {
+      const settings = await getWebConfig({ locale: DEFAULT_LOCALE })
 
-    return { offered: settings.availableLocales, homeSlug: settings.homePage?.slug ?? null }
-  } catch (error) {
-    console.warn('[getSiteAnnotation] falling back to English-only alternates:', error)
-
-    return { offered: [DEFAULT_LOCALE], homeSlug: null }
-  }
+      return { offered: settings.availableLocales, homeSlug: settings.homePage?.slug ?? null }
+    },
+    {
+      source: 'getSiteAnnotation',
+      message: 'getSiteAnnotation failed; sitemap alternates are English-only',
+      fallback: { offered: [DEFAULT_LOCALE], homeSlug: null },
+    },
+  )
 }
 
 /** The three content reads, cached as the documents they return. */
@@ -114,10 +117,19 @@ async function readContentDocs() {
  * translation claim to make.
  */
 async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
-  try {
+  // A sitemap that lists less than everything still helps. One that 500s
+  // does not — and the home page is listable without reading anything.
+  const degradation = {
+    source: 'getContentSitemapUrls',
+    message: 'getContentSitemapUrls failed; sitemap lists only the home page',
+    key: origin,
+    fallback: [{ loc: `${origin}/` }],
+  }
+
+  return degrade(async () => {
     const [{ offered, homeSlug }, docs] = await Promise.all([
       getSiteAnnotation(),
-      withRetry(readContentDocs),
+      withRetry(readContentDocs, { reportFailure: false }),
     ])
 
     // `/` serves the config's `homePage`, so it advertises that page's
@@ -156,13 +168,7 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
         lastmod: lastmodOf(doc),
       })),
     ]
-  } catch (error) {
-    // A sitemap that lists less than everything still helps. One that 500s
-    // does not — and the home page is listable without reading anything.
-    console.warn('[getContentSitemapUrls] omitting site content from the sitemap:', error)
-
-    return [{ loc: `${origin}/` }]
-  }
+  }, degradation)
 }
 
 export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {

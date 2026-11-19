@@ -6,7 +6,13 @@ import { detectErrorType, ErrorType } from './error-utils'
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// Both SDKs re-export `@sentry/core`'s one `captureMessage`, so one spy stands
+// for both: `degrade` and `warnOnce` report through `@sentry/react` (see
+// error-utils.ts).
+const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
+
+vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
+vi.mock('@sentry/react', () => ({ captureMessage }))
 
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one, and
@@ -114,7 +120,8 @@ describe('getAtlasSeo', () => {
       await getAtlasSeo({ route: '/gb/london', locale: 'en' })
 
       expect(retrySpy).toHaveBeenCalledTimes(1)
-      expect(retrySpy.mock.calls[0][0]).toBeUndefined()
+      // Every default attempt, with the report left to `degrade`.
+      expect(retrySpy.mock.calls[0][0]).toEqual({ reportFailure: false })
     })
 
     it('does not spend the retry ladder on a 404', async () => {
@@ -152,6 +159,22 @@ describe('getAtlasSeo', () => {
 
       expect(await getAtlasSeo({ route: '/', locale: 'en' })).toEqual(rootAnswer)
       expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    })
+
+    it('reports a root with no document once per isolate, since every /map view meets it', async () => {
+      // A misconfigured root stands until someone fixes it upstream.
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        fetchResponse(404, { errors: [] }) as unknown as Response,
+      )
+
+      expect(await getAtlasSeo({ route: '/', locale: 'en' })).toBeNull()
+      expect(await getAtlasSeo({ route: '/search', locale: 'en' })).toBeNull()
+
+      expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+      expect(Sentry.captureMessage).toHaveBeenCalledWith(
+        'getAtlasSeo got no document for the atlas root',
+        expect.objectContaining({ level: 'warning' }),
+      )
     })
 
     it.each([
@@ -196,10 +219,13 @@ describe('getAtlasSeo', () => {
       expect(Sentry.captureMessage).not.toHaveBeenCalled()
     })
 
+    // Each failing case asks for its own route: a failure is reported once
+    // per route per isolate, and a case another test already failed stays
+    // silent here.
     it.each([
-      ['a 403 from a client without the atlas role', 403],
-      ['a server fault', 500],
-    ])('degrades to widget-only and warns Sentry on %s', async (_label, status) => {
+      ['a 403 from a client without the atlas role', 403, '/gb/refused'],
+      ['a server fault', 500, '/gb/faulted'],
+    ])('degrades to widget-only and warns Sentry on %s', async (_label, status, route) => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(
         fetchResponse(status, { errors: [] }) as unknown as Response,
       )
@@ -207,11 +233,25 @@ describe('getAtlasSeo', () => {
       // The page must still render. The widget works without server
       // rendering, and a lost server-rendered half makes a degraded page,
       // not a broken one.
-      expect(await getAtlasSeo({ route: '/gb/london', locale: 'en' })).toBeNull()
+      expect(await getAtlasSeo({ route, locale: 'en' })).toBeNull()
       expect(Sentry.captureMessage).toHaveBeenCalledWith(
         expect.stringContaining('getAtlasSeo failed'),
         expect.objectContaining({ level: 'warning' }),
       )
+    })
+
+    it('reports a failing route once per isolate, and logs it every render', async () => {
+      // `/map` renders this per request and nothing caches it, so a standing
+      // fault reported per call bills one event per page view.
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        fetchResponse(500, { errors: [] }) as unknown as Response,
+      )
+
+      await getAtlasSeo({ route: '/gb/standing', locale: 'en' })
+      await getAtlasSeo({ route: '/gb/standing', locale: 'fr' })
+
+      expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+      expect(console.warn).toHaveBeenCalledTimes(2)
     })
 
     it('throws a 522 the retry ladder classifies as SERVER, not UNKNOWN', async () => {
@@ -354,7 +394,8 @@ describe('getAtlasSitemapUrls', () => {
     await getAtlasSitemapUrls('https://wemeditate.com')
 
     expect(retrySpy).toHaveBeenCalledTimes(1)
-    expect(retrySpy.mock.calls[0][0]).toBeUndefined()
+    // Every default attempt, with the report left to `degrade`.
+    expect(retrySpy.mock.calls[0][0]).toEqual({ reportFailure: false })
   })
 
   it('carries the status so a Cloudflare 5xx still classifies as retryable', async () => {
@@ -387,7 +428,9 @@ describe('getAtlasSitemapUrls', () => {
   it('degrades to an empty list rather than failing the sitemap', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('upstream is down'))
 
-    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
+    // Its own origin: a failure is reported once per origin per isolate, and
+    // the case above already failed the same way for wemeditate.com.
+    expect(await getAtlasSitemapUrls('https://sahajayoga.nl')).toEqual([])
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       expect.stringContaining('getAtlasSitemapUrls failed'),
       expect.objectContaining({ level: 'warning' }),

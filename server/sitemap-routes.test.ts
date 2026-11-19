@@ -13,7 +13,13 @@ vi.stubGlobal('fetch', fetchMock)
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// Both SDKs re-export `@sentry/core`'s one `captureMessage`, so one spy stands
+// for both: `degrade` and `warnOnce` report through `@sentry/react` (see
+// error-utils.ts).
+const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
+
+vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
+vi.mock('@sentry/react', () => ({ captureMessage }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one.
@@ -165,7 +171,7 @@ describe('/sitemap.xml', () => {
     // degrades quietly (#98), so an unretried blip drops a whole section
     // from a response that still answers 200.
     expect(retrySpy).toHaveBeenCalledTimes(3)
-    expect(retrySpy.mock.calls.every(([config]) => config === undefined)).toBe(true)
+    expect(retrySpy.mock.calls.every(([config]) => config?.maxAttempts === undefined)).toBe(true)
   })
 
   describe('hreflang alternates', () => {
@@ -361,6 +367,22 @@ describe('/sitemap.xml', () => {
       // No need to read SahajCloud for a document this response will not fill.
       expect(find).not.toHaveBeenCalled()
       expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('reports a lost content half to Sentry, once per origin per isolate', async () => {
+      // Its own origin: the cases above already lost the content half for
+      // wemeditate.com, and that failure is reported once.
+      captureMessage.mockClear()
+      find.mockRejectedValue(new Error('SahajCloud unavailable'))
+
+      await get('/sitemap.xml', 'https://sahajayoga.nl')
+      await get('/sitemap.xml', 'https://sahajayoga.nl')
+
+      expect(captureMessage).toHaveBeenCalledTimes(1)
+      expect(captureMessage).toHaveBeenCalledWith(
+        'getContentSitemapUrls failed; sitemap lists only the home page',
+        expect.objectContaining({ level: 'warning' }),
+      )
     })
   })
 })
