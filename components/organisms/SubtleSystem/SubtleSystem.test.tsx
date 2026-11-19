@@ -65,6 +65,10 @@ describe('<SubtleSystem> on the server', () => {
     expect(viewBox).toBeTruthy()
     expect(openTag(html, 'svg')).toBe(`<svg aria-hidden="true" viewBox="${viewBox}">`)
   })
+
+  it('takes every closed preview out of the tab order and the a11y tree', () => {
+    expect(html.split('inert=""')).toHaveLength(NODE_IDS.length + 1)
+  })
 })
 
 describe('the drawing’s chunk', () => {
