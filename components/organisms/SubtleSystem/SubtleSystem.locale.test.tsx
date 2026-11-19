@@ -9,11 +9,17 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
+import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { anchorFor } from '../../../tests/_helpers/markup'
 
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'fr', urlPathname: '/fr/index' }),
+}))
+
+// What the server renders: vike strips `ClientOnly`'s children from that build.
+vi.mock('vike-react/ClientOnly', () => ({
+  ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
 }))
 
 const { SubtleSystem } = await import('./SubtleSystem')
@@ -25,7 +31,6 @@ const render = (linkHref: string) =>
     />,
   )
 
-// The component inlines a 325 KB SVG, so each render is an expensive string.
 const prefixed = render('/about')
 
 describe('<SubtleSystem> in a non-English locale', () => {
