@@ -21,9 +21,7 @@ describe('pageToArticle', () => {
       page({
         title: 'History',
         slug: 'history',
-        meta: {
-          image: { url: 'https://imagedelivery.net/x/y/' } as NonNullable<NavPage['meta']>['image'],
-        },
+        meta: { image: { url: 'https://imagedelivery.net/x/y/' } as NonNullable<NavPage['meta']>['image'] },
       }),
     )
 
