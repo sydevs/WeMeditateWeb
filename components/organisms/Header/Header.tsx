@@ -165,30 +165,33 @@ export function Header({
       {!condensed && <div ref={sentinelRef} aria-hidden="true" className="h-0" />}
 
       {/* Main navigation menu - sticky on scroll (outside header so it can stick globally) */}
-      {navItems.length > 0 && (
-        <nav
-          aria-label={t('common.a11y.primary_navigation')}
-          // Once stuck, the nav paints its own white surface over whatever the
-          // header was overlaid on. Un-stuck it takes the layout's page band,
-          // which a wrapper cannot give it: see `bandClassName`. The top rule
-          // only ever divides it from the banner, so it is drawn neither below
-          // `lg:` nor once stuck, where it would sit on the viewport's top edge.
-          className={`sticky top-0 z-50 ${clickable} border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
-            isSticky ? 'surface-light full-bleed bg-white' : `lg:border-t ${bandClassName}`
-          }`}
-        >
-          {/* Stuck, the row restates the band's width and gutter, so the logo
+      <nav
+        aria-label={t('common.a11y.primary_navigation')}
+        // Once stuck, the nav paints its own white surface over whatever the
+        // header was overlaid on. Un-stuck it takes the layout's page band,
+        // which a wrapper cannot give it: see `bandClassName`. The top rule
+        // only ever divides it from the banner, so it is drawn neither below
+        // `lg:` nor once stuck, where it would sit on the viewport's top edge.
+        //
+        // Drawn with no nav items too: below `lg:` it is the whole header, so
+        // a SahajCloud config missing its nav groups would leave a phone no
+        // logo and no way home. At `lg:` the banner carries both.
+        className={`sticky top-0 z-50 ${clickable} border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
+          isSticky ? 'surface-light full-bleed bg-white' : `lg:border-t ${bandClassName}`
+        } ${navItems.length > 0 ? '' : 'lg:hidden'}`}
+      >
+        {/* Stuck, the row restates the band's width and gutter, so the logo
               holds the edge the banner's logo had rather than jumping inward
               at the moment of sticking.
 
               A grid at `lg:`, so the links centre on the page whatever the two
               sides hold. */}
-          <div
-            className={`${barRow} gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr] ${
-              isSticky ? 'max-w-7xl mx-auto px-6' : ''
-            }`}
-          >
-            {/* Growing the box to 44×44 beats hanging an overlay off the icon:
+        <div
+          className={`${barRow} gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr] ${
+            isSticky ? 'max-w-7xl mx-auto px-6' : ''
+          }`}
+        >
+          {/* Growing the box to 44×44 beats hanging an overlay off the icon:
                 the bar is pinned at `top-0`, so the viewport clipped a centred
                 `::before` to 44×31 (#202).
 
@@ -196,14 +199,14 @@ export function Header({
                 after it on the right edge. The wordmark names the link: an
                 `aria-label` beside it would be a second name to keep in step
                 (SC 2.5.3). */}
-            <Logo
-              className={`shrink-0 max-lg:mr-auto lg:justify-self-start ${compactControl}`}
-              href={logoHref}
-              size="lg"
-              variant="inline"
-            />
+          <Logo
+            className={`shrink-0 max-lg:mr-auto lg:justify-self-start ${compactControl}`}
+            href={logoHref}
+            size="lg"
+            variant="inline"
+          />
 
-            {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
+          {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
                 cannot shrink below their min-content width, and nothing in
                 `LayoutChrome` clips it — below `lg:` it pushed the document
                 sideways (#202).
@@ -211,64 +214,65 @@ export function Header({
                 Each item is sized by its own label. `basis-1/4` forced four
                 equal columns against a list `useSiteNav` builds from
                 `featuredPages`, so a fifth entry wrapped every label. */}
-            <div className="hidden lg:flex items-stretch justify-center gap-2">
-              {navItems.map((item, index) =>
-                item.dropdown ? (
-                  <HeaderNavDropdown
-                    // eslint-disable-next-line @eslint-react/no-array-index-key -- a nav item holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
-                    key={index}
-                    dropdown={item.dropdown}
-                    label={item.label}
-                  />
-                ) : (
-                  <Button
-                    // eslint-disable-next-line @eslint-react/no-array-index-key -- a nav item holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
-                    key={index}
-                    href={item.href}
-                    isActive={item.active}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    {item.label}
-                  </Button>
-                ),
-              )}
-            </div>
-
-            {/* At `lg:` the pin is last, and `justify-end` puts its drawn icon on
-                the gutter, level with the logo opposite. */}
-            <div className="flex shrink-0 items-center lg:justify-self-end">
-              {actionLinkText && actionLinkHref && (
-                <Link
-                  className={`justify-center lg:justify-end ${actionLink} ${compactControl}`}
-                  href={actionLinkHref}
+          <div className="hidden lg:flex items-stretch justify-center gap-2">
+            {navItems.map((item, index) =>
+              item.dropdown ? (
+                <HeaderNavDropdown
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a nav item holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
+                  key={index}
+                  dropdown={item.dropdown}
+                  label={item.label}
+                />
+              ) : (
+                <Button
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a nav item holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
+                  key={index}
+                  href={item.href}
+                  isActive={item.active}
                   size="sm"
-                  variant="unstyled"
+                  variant="ghost"
                 >
-                  <Icon icon={MapPinIcon} size="md" />
-                  {/* Worded from `xl:` only. A fifth featured page fills the
+                  {item.label}
+                </Button>
+              ),
+            )}
+          </div>
+
+          {/* At `lg:` the pin is last, and `justify-end` puts its drawn icon on
+                the gutter, level with the logo opposite. */}
+          {/* `gap-0.5` keeps the ☰'s 44px overlay, 2px wider than its box
+                each side, off the pin's own box (docs/rules/design-system.md). */}
+          <div className="flex shrink-0 items-center gap-0.5 lg:justify-self-end">
+            {actionLinkText && actionLinkHref && (
+              <Link
+                className={`justify-center lg:justify-end ${actionLink} ${compactControl}`}
+                href={actionLinkHref}
+                size="sm"
+                variant="unstyled"
+              >
+                <Icon icon={MapPinIcon} size="md" />
+                {/* Worded from `xl:` only. A fifth featured page fills the
                       stuck row at 1024, and a grid that cannot fit its row
                       pushes the document sideways (#202). */}
-                  <span className="sr-only xl:not-sr-only">{actionLinkText}</span>
-                </Link>
-              )}
+                <span className="sr-only xl:not-sr-only">{actionLinkText}</span>
+              </Link>
+            )}
 
-              {/* Un-gated by `compactControl`: the menu must be reachable before
+            {/* Un-gated by `compactControl`: the menu must be reachable before
                   the nav sticks. Last in the row, so it holds the right edge,
                   under the thumb. */}
-              <MobileMenu
-                actionLinkHref={actionLinkHref}
-                actionLinkText={actionLinkText}
-                className={`lg:hidden ${trailingIconInset}`}
-                languages={languages}
-                logoHref={logoHref}
-                navItems={navItems}
-                socialLinks={socialLinks}
-              />
-            </div>
+            <MobileMenu
+              actionLinkHref={actionLinkHref}
+              actionLinkText={actionLinkText}
+              className={`lg:hidden ${trailingIconInset}`}
+              languages={languages}
+              logoHref={logoHref}
+              navItems={navItems}
+              socialLinks={socialLinks}
+            />
           </div>
-        </nav>
-      )}
+        </div>
+      </nav>
 
       {/* Breadcrumbs - below nav to preserve correct ordering */}
       {breadcrumbs && breadcrumbs.length > 0 && (

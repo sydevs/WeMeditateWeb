@@ -66,8 +66,15 @@ describe('Header', () => {
       expect(classesWith(normal, 'lg:invisible')).toHaveLength(2)
     })
 
-    it('renders nothing extra when there are no nav items', () => {
-      expect(render({ condensed: true, navItems: [] })).not.toContain('<nav')
+    it('keeps the bar for a phone, and only for a phone, when there are no nav items', () => {
+      // Below `lg:` the bar is the whole header, so a config missing its nav
+      // groups must still leave a phone the logo and the action link.
+      const html = render({ condensed: true, navItems: [] })
+
+      expect(navClasses(html)).toContain('lg:hidden')
+      expect(anchorFor(barOf(html), '/')).not.toBe('')
+      expect(anchorFor(barOf(html), '/classes')).not.toBe('')
+      expect(navClasses(render())).not.toContain('lg:hidden')
     })
   })
 
