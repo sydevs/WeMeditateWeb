@@ -67,10 +67,31 @@ nor the HTML. Where a ref is the thing under test, assert the type by rendering 
 [tests/guards/form-atom-refs.test.tsx](../../tests/guards/form-atom-refs.test.tsx) does both.
 
 **Narrow the string before asserting an attribute.** `toContain('target="_blank"')` over a whole
-page passes when any element carries it, not the one under test. `anchorFor(html, href)` in
-[tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) returns that href's opening `<a>` tag.
-Assert something positive about the result first: it answers the empty string when nothing
-matches, and `not.toContain` passes on that whatever it is given.
+page passes when any element carries it, not the one under test.
+[tests/_helpers/markup.ts](../../tests/_helpers/markup.ts) holds the primitives that narrow it,
+and they are the whole vocabulary — a hand-written regex over the markup belongs in one of them
+instead:
+
+| Primitive | Keyed on | Answers |
+| --- | --- | --- |
+| `anchorFor(html, href)` | an href the test passed in | that link's opening `<a>` tag |
+| `openTag(html, tag)` | a tag name | that element's whole opening tag, for an attribute other than `class` |
+| `classFor(html, class)` | one class naming the element | that element's class list |
+| `classesWith(html, class)` | one class | every such list, so a count is assertable |
+| `classOf(html, marker)` | an opening tag (`'<nav'`) or the element's own text | that element's class list |
+
+Assert something positive about the result first: each answers the empty string, or no entries,
+when nothing matches, and `not.toContain` passes on that whatever it is given.
+
+**Name an element by one class, never by two sitting together.** Nothing in this repo fixes the
+order of a class list — there is no `prettier-plugin-tailwindcss` here, and `perfectionist` sorts
+JSX props rather than the classes inside one — so `max-w-3xl flex-1` pins an adjacency the next
+edit to that list breaks. Where no single class names the element, name the element: `classOf`
+takes its tag or its text, as `anchorFor` takes its href.
+
+**Split a class list before asserting membership.** These answer a space-separated string, so
+`toContain('order-1')` also passes on `order-10`, and `toContain('opacity-0')` on
+`after:opacity-0`. `expect(list.split(' ')).toContain('order-1')` matches the whole class.
 
 **Attribute casing**: React 19 keeps most camelCase props as authored — `srcSet`,
 `fetchPriority`, `referrerPolicy` and `playsInline` all survive — and lowercases a few, such as

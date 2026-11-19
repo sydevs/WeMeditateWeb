@@ -67,7 +67,7 @@ describe('<PageTemplate> hideTitle', () => {
 
     // The untitled one gets the stand-in; the titled one leaves the `<h1>` to
     // the splash, which `RichText` renders and this template does not.
-    expect(classOf(untitled, 'h1')).toContain('sr-only')
+    expect(classOf(untitled, '<h1').split(' ')).toContain('sr-only')
     expect(titled).not.toContain('<h1')
   })
 
@@ -76,7 +76,7 @@ describe('<PageTemplate> hideTitle', () => {
 
     // `hideTitle` suppresses a banner a visitor does not need, not the page's
     // only `<h1>` — a featured-nav page with no lead splash had none (#278).
-    expect(classOf(html, 'h1')).toContain('sr-only')
+    expect(classOf(html, '<h1').split(' ')).toContain('sr-only')
     expect(html).toContain('Meditate Now')
     // The banner's own gradient box is what goes.
     expect(html).not.toContain('before:to-teal-200/30')
