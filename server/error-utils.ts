@@ -152,6 +152,7 @@ export async function withRetry<T>(
       const result = await fn()
 
       if (attempt > 0) {
+        // eslint-disable-next-line no-console -- a recovery, not a failure: each failed attempt warned
         console.log(`Request succeeded after ${attempt} ${attempt === 1 ? 'retry' : 'retries'}`)
         Sentry.captureMessage(`Request succeeded after ${attempt} retries`, {
           level: 'info',
@@ -167,7 +168,7 @@ export async function withRetry<T>(
       if (!isLastAttempt && finalConfig.shouldRetry(error)) {
         const delay = calculateBackoffDelay(attempt, finalConfig.baseDelayMs, finalConfig.maxDelayMs)
 
-        console.log(
+        console.warn(
           `Request failed (attempt ${attempt + 1}/${finalConfig.maxAttempts}), ` +
           `error type: ${errorType}, retrying in ${delay}ms...`
         )
