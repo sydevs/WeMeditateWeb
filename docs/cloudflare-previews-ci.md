@@ -30,11 +30,13 @@ CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.y
 ## Two Cloudflare previews per PR
 
 The repo connects to two Cloudflare projects, distinguished by URL host. Neither produces a
-GitHub deployment or commit status — the preview URL appears only in the
-`cloudflare-workers-and-pages[bot]` PR comment. Workers Builds does post one check run per
-Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.cloudflare.com`
-build page and carries no preview address. Check-run output, deployments and commit statuses
-stay wired as fallbacks that have never yet yielded a URL here.
+GitHub deployment or commit status. The preview URL appears in two places: the
+`cloudflare-workers-and-pages[bot]` PR comment, and the check run Workers Builds posts on the
+commit for each Worker, named `Workers Builds: <worker>`. That check run's `output.summary`
+carries `Preview URL: https://<version>-<worker>.<acct>.workers.dev`, the address of that
+commit's own build, so it is the fallback discovery reaches when the comment still names an
+earlier commit. Its `details_url` is only the `dash.cloudflare.com` build page. Deployments and
+commit statuses stay wired as fallbacks that have never yet yielded a URL here.
 
 ⚠ The ladle preview is the `wemeditate-design` Worker. Discovery accepts a `workers.dev` host and
 nothing else, because a PR opened before 2026-11-02 still carries a `wemeditate-design` **Pages**
@@ -72,8 +74,16 @@ Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and eve
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
-  `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
+  `types/*`, `server/sahajcloud-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
   `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
+
+  ⚠ On 2026-11-19 both Cloudflare triggers still included `server/cms-types*`, the name that file
+  lost in #131, in place of `server/sahajcloud-types*`. They are edited in the Cloudflare
+  dashboard, not in this repo. Until they are, a push touching only `server/sahajcloud-types.ts`
+  passes `WATCH` but gets no Ladle build. `Smoke (ladle)` then waits out its 12-minute window and
+  tests the derived branch host, which serves the branch's previous Ladle build, without the
+  change, so the lane is green without having tested it. On a branch with no earlier Ladle build
+  that host never answers, and the lane goes red after the 5-minute reachability wait.
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so

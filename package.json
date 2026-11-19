@@ -9,6 +9,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:smoke": "vitest run --config vitest.smoke.config.ts tests/smoke/web",
     "test:smoke:ladle": "vitest run --config vitest.smoke.config.ts tests/smoke/ladle",
     "prod": "vike build && wrangler dev ./dist/server/index.js -c ./dist/server/wrangler.json",
@@ -62,10 +63,11 @@
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
-    "@types/node": "^22.20.5",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "@vitest/coverage-v8": "^5.1.0",
     "@vitest/ui": "^5.1.0",
     "axe-core": "^4.14.0",
     "eslint": "^10.15.0",
@@ -85,7 +87,9 @@
   },
   "pnpm": {
     "overrides": {
+      "glob@>=9.0.0 <14.0.2": "14.0.6",
       "happy-dom@<21.0.4": "21.0.4",
+      "ts-deepmerge@<8.0.0": "8.0.0",
       "undici@>=7.18.0 <7.30.1": "7.30.1"
     }
   },

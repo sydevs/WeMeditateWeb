@@ -15,7 +15,7 @@ permissions:
   contents: read
   pull-requests: read # primary: Cloudflare posts the preview URL in a PR comment
   issues: read # needed: GitHub serves PR comments through the issues/{n}/comments endpoint
-  checks: read # fallback: `Workers Builds: <worker>` posts only a dashboard details_url, never a preview
+  checks: read # fallback: `Workers Builds: <worker>` names this commit's preview in its output summary
   deployments: read # fallback: a Workers-Builds-style deployment environment_url
   statuses: read # fallback: a preview URL posted as a commit status
 
@@ -106,7 +106,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASE: ${{ github.event.action == 'synchronize' && github.event.before || github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
-          WATCH: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(cms-types|error-utils)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
+          WATCH: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils|sitemap)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
           IGNORE: '\.(test\.tsx?|spec\.ts|md)$'
         run: |
           if ! diff=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '"\(.total_commits) \(.files | length)", .files[].filename'); then

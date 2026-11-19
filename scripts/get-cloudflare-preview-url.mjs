@@ -301,6 +301,10 @@ export {
   slugifyBranch,
   accountSubdomain,
   fromDerivedBranchHost,
+  fromPrComments,
+  discoverUrl,
+  waitReachable,
+  main,
 }
 
 // tests/guards/preview-discovery.test.ts imports the helpers above, so the work runs only for a
