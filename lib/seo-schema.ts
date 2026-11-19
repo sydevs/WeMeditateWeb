@@ -57,6 +57,12 @@ export interface SeoAuthor {
   image: string | null
 }
 
+/** One question-and-answer pair of a page that asks and answers. */
+export interface SeoQuestion {
+  question: string
+  answer: string
+}
+
 /** One node of a page's `@graph`, beyond `Organization` and `WebSite`. */
 export type SeoNode =
   | {
@@ -95,6 +101,7 @@ export type SeoNode =
       embedUrl: string | null
     }
   | { type: 'breadcrumb'; trail: readonly SeoCrumb[] }
+  | { type: 'faq'; questions: readonly SeoQuestion[] }
   | { type: 'itemList'; entries: readonly SeoListEntry[] }
 
 /** Everything the generator needs to build one page's linked `@graph`. */

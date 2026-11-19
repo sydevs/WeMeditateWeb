@@ -28,12 +28,24 @@ import type { SeoDocument } from './head'
 import type { TFunction } from './i18n'
 import { buildAlternates } from './hreflang'
 import { isKnowledgePage } from './featured-nav'
-import { contentIndexBlocks, type ResolvedCardItem } from './content-blocks'
+import {
+  contentBlocks,
+  contentIndexBlocks,
+  type LayoutBlockFields,
+  type ResolvedCardItem,
+} from './content-blocks'
 import { getImageURL, getVariantName, getVariantWidth } from './cloudflare-images'
 import { isPopulated, populatedImageUrl } from './payload-relationships'
 import { absoluteHref, isSitePath, localeUrl, normalizeContentPath } from './urls'
 import { documentEmbedHref } from './document-routes'
-import type { SeoAuthor, SeoCrumb, SeoImage, SeoListEntry, SeoNode } from './seo-schema'
+import type {
+  SeoAuthor,
+  SeoCrumb,
+  SeoImage,
+  SeoListEntry,
+  SeoNode,
+  SeoQuestion,
+} from './seo-schema'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
 import { PLAYER_HEIGHT, PLAYER_WIDTH } from './embed-player'
@@ -363,6 +375,23 @@ function composeTitle(name: string | null, siteName: string): string {
   return name ? `${name} | ${siteName}` : siteName
 }
 
+/**
+ * The questions a page both asks and answers, from its accordions.
+ *
+ * An accordion is the shape an FAQ is authored in — a heading that opens one
+ * answer — and the class pages use it. Any other `layout` style is a visual
+ * arrangement, not a question, so only `accordion` counts. An item with no
+ * answer text is not a question a result could show.
+ */
+function pageQuestions(content: unknown): SeoQuestion[] {
+  return contentBlocks<LayoutBlockFields>(content, 'layout')
+    .filter((block) => block.style === 'accordion')
+    .flatMap((block) => block.items ?? [])
+    .flatMap((item) =>
+      item.title && item.text ? [{ question: item.title, answer: item.text }] : [],
+    )
+}
+
 /** Absolute URLs for the cards a content-index block server-rendered. */
 function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): SeoListEntry[] {
   const { origin, locale } = route
@@ -458,6 +487,12 @@ export function pageSeo(options: {
 
   if (trail.length > 0) {
     nodes.push({ type: 'breadcrumb', trail })
+  }
+
+  const questions = pageQuestions(page.content)
+
+  if (questions.length > 0) {
+    nodes.push({ type: 'faq', questions })
   }
 
   for (const block of contentIndexBlocks(page.content)) {

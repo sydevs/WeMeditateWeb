@@ -191,7 +191,18 @@ export interface ContentIndexBlockFields {
  * lets the first caller fill them in.
  */
 export function contentIndexBlocks(content: unknown): ContentIndexBlockFields[] {
-  const found: ContentIndexBlockFields[] = []
+  return contentBlocks<ContentIndexBlockFields>(content, 'content-index')
+}
+
+/**
+ * Every block of one `blockType` in a lexical tree, in document order.
+ *
+ * ⚠ **The `fields` objects come back by reference**, which is what lets
+ * `server/content-index.ts` fill each block's resolved list in place before
+ * SSR. A walker that copied them would break that.
+ */
+export function contentBlocks<T>(content: unknown, blockType: string): T[] {
+  const found: T[] = []
   const walk = (node: unknown): void => {
     if (Array.isArray(node)) {
       node.forEach(walk)
@@ -201,8 +212,8 @@ export function contentIndexBlocks(content: unknown): ContentIndexBlockFields[] 
     if (node && typeof node === 'object') {
       const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
 
-      if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
-        found.push(candidate.fields as ContentIndexBlockFields)
+      if (candidate.type === 'block' && candidate.fields?.blockType === blockType) {
+        found.push(candidate.fields as T)
       }
       Object.values(node).forEach(walk)
     }
@@ -307,8 +318,7 @@ export function splashSurface(textColor?: SplashBlockFields['textColor']): 'ligh
  */
 export function getLeadSplash(content: Page['content']): { surface: 'light' | 'dark' } | null {
   const first = content?.root?.children?.[0] as
-    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
-    | undefined
+    { type?: string; fields?: SplashBlockFields & { blockType?: string } } | undefined
 
   if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
     return null

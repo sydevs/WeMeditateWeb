@@ -462,6 +462,68 @@ describe('the player a media route advertises', () => {
   })
 })
 
+describe('a page that asks and answers', () => {
+  const accordion = (items: { title?: string; text?: string }[]) => ({
+    root: {
+      children: [{ type: 'block', fields: { blockType: 'layout', style: 'accordion', items } }],
+    },
+  })
+
+  const faqFor = (content: unknown) => seoFor({ page: page({ content } as Partial<Page>) })
+
+  it('publishes an FAQPage with one Question per accordion item', () => {
+    const seo = faqFor(
+      accordion([
+        { title: 'What is Sahaja Yoga?', text: 'A method of meditation.' },
+        { title: 'Is it free?', text: 'Always.' },
+      ]),
+    )
+    const nodes = graph(seo)
+    const webPage = nodes.find((node) => String(node['@type']).includes('WebPage'))
+    const questions = nodes.filter((node) => node['@type'] === 'Question')
+
+    // Google reads the result off the FAQPage type plus `mainEntity`, not off
+    // loose Question nodes. Unhead writes that link once the type says FAQPage.
+    expect(webPage?.['@type']).toEqual(['WebPage', 'FAQPage'])
+    expect(webPage?.mainEntity).toEqual(questions.map((question) => ({ '@id': question['@id'] })))
+    expect(questions.map((question) => question['@id'])).toEqual([
+      `${ORIGIN}/about#question-1`,
+      `${ORIGIN}/about#question-2`,
+    ])
+    expect(questions.map((question) => question.name)).toEqual([
+      'What is Sahaja Yoga?',
+      'Is it free?',
+    ])
+    expect(questions[1]?.acceptedAnswer).toEqual({ '@type': 'Answer', text: 'Always.' })
+  })
+
+  it('skips an item with no answer, which no result could show', () => {
+    const seo = faqFor(accordion([{ title: 'Unanswered' }, { text: 'Orphan answer' }]))
+
+    expect(typesIn(seo)).not.toContain('Question')
+    expect(typesIn(seo)).toContain('WebPage')
+  })
+
+  it('reads only an accordion, never another layout style', () => {
+    const grid = {
+      root: {
+        children: [
+          {
+            type: 'block',
+            fields: {
+              blockType: 'layout',
+              style: 'grid',
+              items: [{ title: 'A heading', text: 'Some prose.' }],
+            },
+          },
+        ],
+      },
+    }
+
+    expect(typesIn(faqFor(grid))).not.toContain('Question')
+  })
+})
+
 describe('the App Store banner', () => {
   it('offers the app on a content route', () => {
     expect(metaValues(seoFor(), 'apple-itunes-app')).toEqual(['app-id=6465684494'])

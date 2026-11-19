@@ -37,9 +37,11 @@ import {
   defineItemList,
   defineOrganization,
   definePerson,
+  defineQuestion,
   defineVideo,
   defineWebPage,
   defineWebSite,
+  type UseSchemaOrgInput,
 } from '@unhead/schema-org'
 import type { PageContextServer } from 'vike/types'
 import { seoDocument } from './head-settings'
@@ -84,17 +86,17 @@ function duration(seconds: number | null) {
 }
 
 /**
- * The `@id` the page's main entity takes.
+ * The `@id` of the player this page is mainly about, if it has one.
  *
- * Minted here rather than left to Unhead, because the `WebPage` has to point
- * at it and the media helpers mint their own ids after the fact.
+ * ⚠ **Minted here rather than left to Unhead**, because the `WebPage` has to
+ * point at it and the media helpers mint their own ids after the fact. An
+ * FAQ needs no entry: Unhead links a `Question` into an `FAQPage`'s
+ * `mainEntity` itself, and naming them here lists each one twice.
  */
-function mainEntityId(canonical: string | null, node: SeoNode | undefined): string | undefined {
-  if (!canonical || !node) {
-    return undefined
-  }
+function mainEntityId(canonical: string | null, nodes: readonly SeoNode[]): string | undefined {
+  const media = nodes.find((node) => node.type === 'audio' || node.type === 'video')
 
-  return node.type === 'audio' ? `${canonical}#audio` : `${canonical}#video`
+  return canonical && media ? `${canonical}#${media.type}` : undefined
 }
 
 /** What a node needs to know about the page it sits on. */
@@ -102,84 +104,117 @@ interface NodeContext {
   inLanguage: string
   /** The page's own URL, which a media node names as its own. */
   url: string | undefined
-  /** The `@id` of the page's main entity, where it has one. */
+  /** The `@id` of the player the page is mainly about, where it has one. */
   mainEntity: string | undefined
+  /** True where the page asks and answers, which types the WebPage. */
+  isFaq: boolean
 }
 
-/** The schema-org input for one {@link SeoNode}. */
-function schemaNode(node: SeoNode, context: NodeContext) {
+/** One node as `useSchemaOrg` takes it: a helper's output, or a plain node. */
+type SchemaOrgNodeInput = Exclude<UseSchemaOrgInput, readonly unknown[]>
+
+/**
+ * The schema-org input for one {@link SeoNode}.
+ *
+ * Always a list, because one descriptor may contribute several nodes: an FAQ
+ * emits one `Question` per item.
+ */
+function schemaNode(node: SeoNode, context: NodeContext): SchemaOrgNodeInput[] {
   const { inLanguage, mainEntity, url } = context
 
   switch (node.type) {
     case 'webPage':
-      return defineWebPage({
-        // ⚠ **Pinned, because Unhead infers a subtype from the URL.** A page
-        // at `/about` would be typed `AboutPage`, and `/contact`
-        // `ContactPage` — a claim read off a slug the editor owns and may
-        // change, which is why the ticket left both out.
-        '@type': 'WebPage',
-        name: node.name,
-        description: node.description ?? undefined,
-        // Unhead falls back to the Organization logo as the page's primary
-        // image. That is a claim about this document, so a page with no
-        // picture of its own publishes none.
-        primaryImageOfPage: imageNode(node.image),
-        mainEntity: mainEntity ? { '@id': mainEntity } : undefined,
-        inLanguage,
-      })
+      return [
+        defineWebPage({
+          // ⚠ **Pinned, because Unhead infers a subtype from the URL.** A page
+          // at `/about` would be typed `AboutPage`, and `/contact`
+          // `ContactPage` — a claim read off a slug the editor owns and may
+          // change, which is why the ticket left both out. A page that asks
+          // and answers really is an FAQPage, and Google reads that result off
+          // the type plus `mainEntity`.
+          '@type': context.isFaq ? ['WebPage', 'FAQPage'] : 'WebPage',
+          name: node.name,
+          description: node.description ?? undefined,
+          // Unhead falls back to the Organization logo as the page's primary
+          // image. That is a claim about this document, so a page with no
+          // picture of its own publishes none.
+          primaryImageOfPage: imageNode(node.image),
+          mainEntity: mainEntity ? { '@id': mainEntity } : undefined,
+          inLanguage,
+        }),
+      ]
     case 'article':
-      return defineArticle({
-        headline: node.headline,
-        description: node.description ?? undefined,
-        image: imageNode(node.image) ?? undefined,
-        author: personNode(node.author) ?? undefined,
-        datePublished: node.datePublished ?? undefined,
-        dateModified: node.dateModified ?? undefined,
-        inLanguage,
-      })
+      return [
+        defineArticle({
+          headline: node.headline,
+          description: node.description ?? undefined,
+          image: imageNode(node.image) ?? undefined,
+          author: personNode(node.author) ?? undefined,
+          datePublished: node.datePublished ?? undefined,
+          dateModified: node.dateModified ?? undefined,
+          inLanguage,
+        }),
+      ]
     // ⚠ **No `defineAudio` exists**, so this is a plain node rather than a
     // helper's output. It joins the same graph, and the `@id` is minted above
     // because the `WebPage` names it as its main entity.
     case 'audio':
-      return {
-        '@type': 'AudioObject' as const,
-        ...(mainEntity ? { '@id': mainEntity } : {}),
-        name: node.name,
-        ...(url ? { url } : {}),
-        ...(node.description ? { description: node.description } : {}),
-        ...(node.thumbnailUrl ? { thumbnailUrl: node.thumbnailUrl } : {}),
-        ...(duration(node.durationSeconds) ? { duration: duration(node.durationSeconds) } : {}),
-        ...(node.embedUrl ? { embedUrl: node.embedUrl } : {}),
-        inLanguage,
-      }
+      return [
+        {
+          '@type': 'AudioObject' as const,
+          ...(mainEntity ? { '@id': mainEntity } : {}),
+          name: node.name,
+          ...(url ? { url } : {}),
+          ...(node.description ? { description: node.description } : {}),
+          ...(node.thumbnailUrl ? { thumbnailUrl: node.thumbnailUrl } : {}),
+          ...(duration(node.durationSeconds) ? { duration: duration(node.durationSeconds) } : {}),
+          ...(node.embedUrl ? { embedUrl: node.embedUrl } : {}),
+          inLanguage,
+        },
+      ]
     case 'video':
-      return defineVideo({
-        ...(mainEntity ? { '@id': mainEntity } : {}),
-        name: node.name,
-        url,
-        // `defineVideo` substitutes the literal `No description` for an
-        // absent one, so the field is always supplied.
-        description: node.description ?? undefined,
-        thumbnailUrl: node.thumbnailUrl ?? undefined,
-        uploadDate: node.uploadDate ?? undefined,
-        duration: duration(node.durationSeconds),
-        embedUrl: node.embedUrl ?? undefined,
-        inLanguage,
-      })
+      return [
+        defineVideo({
+          ...(mainEntity ? { '@id': mainEntity } : {}),
+          name: node.name,
+          url,
+          // `defineVideo` substitutes the literal `No description` for an
+          // absent one, so the field is always supplied.
+          description: node.description ?? undefined,
+          thumbnailUrl: node.thumbnailUrl ?? undefined,
+          uploadDate: node.uploadDate ?? undefined,
+          duration: duration(node.durationSeconds),
+          embedUrl: node.embedUrl ?? undefined,
+          inLanguage,
+        }),
+      ]
     case 'breadcrumb':
-      return defineBreadcrumb({
-        itemListElement: node.trail.map((crumb) => ({
-          name: crumb.name,
-          item: crumb.url ?? undefined,
-        })),
-      })
+      return [
+        defineBreadcrumb({
+          itemListElement: node.trail.map((crumb) => ({
+            name: crumb.name,
+            item: crumb.url ?? undefined,
+          })),
+        }),
+      ]
+    case 'faq':
+      return node.questions.map((question, index) =>
+        defineQuestion({
+          ...(url ? { '@id': `${url}#question-${index + 1}` } : {}),
+          name: question.question,
+          acceptedAnswer: question.answer,
+          inLanguage,
+        }),
+      )
     case 'itemList':
-      return defineItemList({
-        itemListElement: node.entries.map((entry) => ({
-          name: entry.name,
-          url: entry.url,
-        })),
-      })
+      return [
+        defineItemList({
+          itemListElement: node.entries.map((entry) => ({
+            name: entry.name,
+            url: entry.url,
+          })),
+        }),
+      ]
   }
 }
 
@@ -200,10 +235,8 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
   const context: NodeContext = {
     inLanguage: seo.schema.inLanguage,
     url: seo.canonical ?? undefined,
-    mainEntity: mainEntityId(
-      seo.canonical,
-      seo.schema.nodes.find((node) => node.type === 'audio' || node.type === 'video'),
-    ),
+    mainEntity: mainEntityId(seo.canonical, seo.schema.nodes),
+    isFaq: seo.schema.nodes.some((node) => node.type === 'faq'),
   }
 
   pushHead(head, {
@@ -245,7 +278,8 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
         description: seo.schema.site.description,
         inLanguage: seo.schema.inLanguage,
       }),
-      ...seo.schema.nodes.map((node) => schemaNode(node, context)),
+      // A node kind may contribute several, which `faq` does.
+      ...seo.schema.nodes.flatMap((node) => schemaNode(node, context)),
     ],
     // The plugin's own default is `bodyClose`, where a crawler that reads only
     // the head never sees it.
