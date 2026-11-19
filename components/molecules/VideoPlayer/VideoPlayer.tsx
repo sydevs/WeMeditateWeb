@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { I18nProvider } from '@videojs/react/i18n'
 import { HlsJsVideo } from '@videojs/react/media/hlsjs-video'
-import { VideoPlayer as VideoJsPlayer, usePlayer } from '@videojs/react/video'
+import { VideoPlayer as VideoJsPlayer, VideoSkin, usePlayer } from '@videojs/react/video'
+import '@videojs/react/video/skin.css'
 import { useLocale } from '../../../hooks/usePageContext'
 import { holdInWindow, replayFrom, resolveClipWindow, type ClipWindow } from './clip'
-import { ClipWindowContext } from './clip-window'
-import { VideoSkin } from './skin/video/skin'
+import { ClipTimeline } from './clip-window'
 import { cuesToVtt, type VideoSubtitleCue } from './vtt'
 import { posterURL } from './poster'
 
@@ -15,9 +15,8 @@ import { posterURL } from './poster'
  * Player theming, scoped to this instance, with no global CSS.
  *
  * `--media-accent-color` is one of the eight custom properties a packaged Video.js skin treats
- * as public, and the vendored skin derives every active state from it. Sourcing it from the
- * brand token keeps the player in step with the design system instead of duplicating the hex
- * value.
+ * as public, and every active state derives from it. Sourcing it from the brand token keeps the
+ * player in step with the design system instead of duplicating the hex value.
  *
  * `--media-control-size` is the skin's own, and it ships at 36px — under the 44×44 this project
  * requires of every interactive element (docs/rules/design-system.md). Raising the token grows
@@ -280,47 +279,50 @@ export function VideoPlayer({
       className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}
     >
       <I18nProvider locale={locale ?? pageLocale}>
-        <ClipWindowContext value={clip}>
-          <VideoJsPlayer poster={posterURL(poster)} title={title}>
-            {/* Video.js 10 ships no default box, and `index.tsx` matches its SSR poster to this
-                one so hydration does not jump. */}
-            <VideoSkin className="aspect-video w-full" style={PLAYER_STYLE}>
-              <HlsJsVideo
-                playsInline
-                preload={autoLoad && visible ? 'auto' : 'none'}
-                src={hlsUrl}
-                onLoadedMetadata={(event) => {
-                  if (clip && clip.start > 0) {
-                    event.currentTarget.currentTime = clip.start
-                  }
-                }}
-                onPlay={(event) => {
-                  const from = replayFrom(clip, event.currentTarget.currentTime)
+        <VideoJsPlayer poster={posterURL(poster)} title={title}>
+          {/* Video.js 10 ships no default box, and `index.tsx` matches its SSR poster to this
+              one so hydration does not jump. */}
+          <VideoSkin
+            className="aspect-video w-full"
+            data-wm-clip={clip ? '' : undefined}
+            style={PLAYER_STYLE}
+          >
+            <HlsJsVideo
+              playsInline
+              preload={autoLoad && visible ? 'auto' : 'none'}
+              src={hlsUrl}
+              onLoadedMetadata={(event) => {
+                if (clip && clip.start > 0) {
+                  event.currentTarget.currentTime = clip.start
+                }
+              }}
+              onPlay={(event) => {
+                const from = replayFrom(clip, event.currentTarget.currentTime)
 
-                  if (from !== null) {
-                    event.currentTarget.currentTime = from
-                  }
-                }}
-                onTimeUpdate={(event) => holdWindow(event.currentTarget)}
-              >
-                {trackBlobs.map((track) => (
-                  <track
-                    key={track.locale}
-                    default={track.locale === (inlineVtt ? subtitleLang : defaultSubtitleLang)}
-                    kind="subtitles"
-                    label={track.locale.toUpperCase()}
-                    src={track.url}
-                    srcLang={track.locale}
-                  />
-                ))}
-              </HlsJsVideo>
-              <SubtitlePreference
-                expected={trackBlobs.map((track) => track.locale)}
-                lang={inlineVtt ? subtitleLang : defaultSubtitleLang}
-              />
-            </VideoSkin>
-          </VideoJsPlayer>
-        </ClipWindowContext>
+                if (from !== null) {
+                  event.currentTarget.currentTime = from
+                }
+              }}
+              onTimeUpdate={(event) => holdWindow(event.currentTarget)}
+            >
+              {trackBlobs.map((track) => (
+                <track
+                  key={track.locale}
+                  default={track.locale === (inlineVtt ? subtitleLang : defaultSubtitleLang)}
+                  kind="subtitles"
+                  label={track.locale.toUpperCase()}
+                  src={track.url}
+                  srcLang={track.locale}
+                />
+              ))}
+            </HlsJsVideo>
+            <SubtitlePreference
+              expected={trackBlobs.map((track) => track.locale)}
+              lang={inlineVtt ? subtitleLang : defaultSubtitleLang}
+            />
+            {clip ? <ClipTimeline window={clip} /> : null}
+          </VideoSkin>
+        </VideoJsPlayer>
       </I18nProvider>
     </div>
   )

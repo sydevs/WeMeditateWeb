@@ -18,12 +18,6 @@
 /* A SahajCloud author picks a form field's width, so the span is computed at runtime
    and the scanner never sees the class in any source file. */
 @source inline("sm:col-span-{1..12}");
-/* The vendored Video.js skin is its own Tailwind root
-   (components/molecules/VideoPlayer/skin/styles/skin-theme.css), imported by the skin's entry
-   component so its `media-*` layer rides the player's lazy chunk instead of this stylesheet.
-   Excluded from the scan above for the same reason: scanned here, the utilities its 45 files
-   write would be emitted here too. See components/molecules/VideoPlayer/skin/README.md. */
-@source not "../components/molecules/VideoPlayer";
 
 @theme {
   /* Primary brand colors (Teal) */

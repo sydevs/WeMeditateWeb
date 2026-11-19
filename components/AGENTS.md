@@ -31,19 +31,10 @@ so a lazily imported package's *paths* are in there by design — `@videojs/core
 put 330 hits on a bare `videojs` with none of its code present. `media-skin` and `HlsJsAdapter`
 are the player's symbols; `Hls` alone also hits the meditation player's own `isHlsSource`.
 
-**The vendored Video.js skin source is part of that graph**, not an exception to it:
-`components/molecules/VideoPlayer/skin/` imports `@videojs/react`, so only the barrel may reach
-it. Its own stylesheets ride the same client chunk, its Tailwind layer included.
-
-**That layer is where the rule nearly leaked, and CSS is why.** `@theme`, `@utility` and
-`@custom-variant` are compile-time Tailwind directives, so they need a stylesheet that imports
-Tailwind — which the Shadcn CLI, and the first cut of this player, took to mean the site entry.
-It does not: `skin/styles/skin-theme.css` is a second root, scanning only the player's folder and
-imported by `skin/video/skin.tsx`. In the entry the layer measured 85,479 → 153,670 bytes on the
-stylesheet every page loads, for a player no page without a video mounts — the same cost in CSS
-that this rule exists to prevent in JS, and one `grep dist/server` cannot see. Check it the
-matching way: `wc -c dist/client/assets/static/layouts_tailwind-*.css` must not move when the
-player changes. See [molecules/VideoPlayer/skin/README.md](molecules/VideoPlayer/skin/README.md).
+**A stylesheet obeys the same rule, and `grep dist/server` cannot see it.** `VideoPlayer.tsx`
+imports `@videojs/react/video/skin.css`, so the skin's ~80 KB rides the player's lazy chunk; a
+page with no video loads none of it. Check that the matching way — `wc -c
+dist/client/assets/static/layouts_tailwind-*.css` must not move when the player changes.
 
 ## What a visitor without JavaScript gets instead
 
@@ -56,7 +47,7 @@ reads for the "content everyone can reach" line. The rule above owns *why*
 
 | Component | Deferred because | Without JavaScript |
 | --- | --- | --- |
-| [molecules/VideoPlayer](molecules/VideoPlayer/index.tsx) | Vidstack and hls.js need browser media APIs | The poster, at the player's own box and the full srcset ladder. The video itself is unreachable |
+| [molecules/VideoPlayer](molecules/VideoPlayer/index.tsx) | Video.js and the hls.js engine it bundles need browser media APIs | The poster, at the player's own box and the full srcset ladder. The video itself is unreachable |
 | [molecules/Lightbox](molecules/Lightbox/index.tsx) | `yet-another-react-lightbox` is browser-only | Nothing, and nothing is lost: it is an enlargement of an image already on the page |
 | [molecules/EmbedButton](molecules/EmbedButton/index.tsx) | It reads `window.location.origin` and the Clipboard API | Nothing. It offers a snippet for embedding this page elsewhere, which is not the page's content |
 | [molecules/LocationSearch](molecules/LocationSearch/index.tsx) | `@mapbox/search-js-react` needs `document` and `window` | Nothing — and **no page renders it today.** Only the `molecules` barrel and `.ladle/components.tsx` reach it. A page that adopts it owes a no-JavaScript path of its own, because an address field with nothing behind it is a dead end rather than a missing extra |

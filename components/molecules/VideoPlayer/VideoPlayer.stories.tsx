@@ -42,8 +42,8 @@ const SUBTITLE_TRACKS = [
 ]
 
 /**
- * VideoPlayer is a client-only HLS player, built on Video.js 10 and the skin
- * source vendored beside it: brand-teal (#61aaa0) through
+ * VideoPlayer is a client-only HLS player, built on Video.js 10 and its
+ * packaged video skin: brand-teal (#61aaa0) through
  * `--media-accent-color`, touch-friendly controls with a captions menu and a
  * settings menu, over a native `<video>` that `HlsJsVideo` drives. It
  * supports a poster, an optional [startTime, stopTime] window, and subtitles

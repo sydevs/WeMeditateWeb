@@ -1,6 +1,10 @@
+import { createRequire } from 'node:module'
+import { readFileSync } from 'node:fs'
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
+
+const require = createRequire(import.meta.url)
 
 // The player is wrapped in vike-react's ClientOnly: server-side it renders
 // only the poster fallback, because the implementation, Video.js and the
@@ -31,7 +35,7 @@ describe('<VideoPlayer> server-side fallback', () => {
     // the server HTML, and the route's LCP image (#152).
     expect(html).toContain('loading="eager"')
     // The player itself must not render on the server. `media-skin` is the
-    // class its container always carries (skin/ui/container.tsx).
+    // class the packaged skin's container always carries.
     expect(html).not.toContain('media-skin')
   })
 
@@ -49,7 +53,7 @@ describe('<VideoPlayer> server-side fallback', () => {
 
 describe('VideoPlayer implementation (browser-only)', () => {
   it('imports server-safe and renders nothing without an hlsUrl', async () => {
-    // Importing the impl pulls in @videojs/react and the vendored skin. This
+    // Importing the impl pulls in @videojs/react and its video preset. This
     // test checks that they resolve in a non-DOM environment, and that the
     // empty-source guard returns before any player mounts. It uses a dynamic
     // import, so a resolution failure stays isolated to this test.
@@ -57,6 +61,30 @@ describe('VideoPlayer implementation (browser-only)', () => {
 
     expect(typeof Impl).toBe('function')
     expect(renderToStaticMarkup(<Impl hlsUrl="" />)).toBe('')
+  })
+})
+
+describe('the packaged skin hooks the clip window depends on', () => {
+  // The clip window replaces the skin's three time controls in their own row, and dresses its
+  // own with the skin's slider classes. None of the five names is in the library's public API,
+  // so an upgrade that renames one would leave the controls unstyled, or stacked on top of
+  // upstream's, with nothing else failing. `clip-window.css` and `clip-window.tsx` are the two
+  // readers (#279).
+  const stylesheet = readFileSync(
+    require.resolve('@videojs/react/video/skin.css'),
+    'utf8',
+  )
+
+  it.each([
+    'video-time-slider-group',
+    'media-slider',
+    'media-slider-track',
+    'media-slider-fill',
+    'media-slider-buffer',
+    'media-slider-thumb',
+    'media-time-value',
+  ])('still styles .%s', (className) => {
+    expect(stylesheet).toContain(`.${className}`)
   })
 })
 

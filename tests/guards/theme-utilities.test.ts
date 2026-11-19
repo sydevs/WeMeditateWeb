@@ -35,9 +35,6 @@ import {
   blank,
   layoutsDir,
   loadTailwindStylesheet,
-  skinSourceDir,
-  skinStylesDir,
-  skinStylesheet,
   themeStylesheet,
 } from './_source-scan'
 
@@ -50,21 +47,6 @@ const designSystem = await __unstable__loadDesignSystem(themeStylesheet, {
   base: layoutsDir,
   loadStylesheet: loadTailwindStylesheet,
 })
-
-/**
- * The second root. The player's folder is `@source not`-excluded from the entry,
- * so its candidates are dead against `designSystem` by construction and the
- * guard would report all 190 of them. Which stylesheet a file compiles against
- * is part of what this guard checks, not a detail it can average over.
- */
-const skinDesignSystem = await __unstable__loadDesignSystem(skinStylesheet, {
-  base: skinStylesDir,
-  loadStylesheet: loadTailwindStylesheet,
-})
-
-/** The root a file's classes are compiled by, which its path alone decides. */
-const systemFor = (file: string) =>
-  file.startsWith(`${skinSourceDir}/`) ? skinDesignSystem : designSystem
 
 /**
  * Probed with a declared colour token rather than hand-listed. Probing the
@@ -96,17 +78,11 @@ const WATCHED_PREFIXES = ((): string[] => {
  * nothing, `stroke-width` and `font-family` among them. A declaration, an
  * arbitrary property (`[stroke-width:2px]`) and an SVG attribute all put a
  * separator straight after the name; a class never has one there.
- *
- * One quote may sit between the name and the `:`, because a quoted object key
- * is a key and not a class — `'text-shadow': [...]` in the vendored player
- * skin's theme table. The cost is a `clsx`-style `{ 'text-error-light': on }`,
- * where the key really is a class; nothing in this repo composes classes that
- * way, and the `cn()` and template-string sites stay covered.
  */
 const CANDIDATE = new RegExp(
   `(?<![a-z0-9-])(?:${[...WATCHED_PREFIXES]
     .sort((a, b) => b.length - a.length)
-    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9:=-])(?!['"]:)`,
+    .join('|')})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:/[a-z0-9.]+)?!?(?![a-z0-9:=-])`,
   'g',
 )
 
@@ -116,34 +92,16 @@ interface DeadUtility {
 }
 
 /**
- * The three regions where a component writes CSS rather than classes. An inline
+ * The two regions where a component writes CSS rather than classes. An inline
  * `<style>` block is a stylesheet, so `stroke-width` there is a property name;
  * `AnimatedLogoSvg` is the one such block. A `style` prop holds CSS values, and
  * `border-box`, `text-top` and `text-bottom` sit under watched roots — React
  * spells the keys beside them in camelCase, so no class can be in there.
  *
- * The third and fourth are the brackets of an arbitrary value and of an
- * arbitrary property, whose contents are CSS and routinely a list of property
- * names: `transition-[outline-color,outline-offset]` and
- * `[transition-property:color,outline-offset]`. Only the contents are blanked,
- * so the utility around them keeps the shape that puts an arbitrary value out
- * of scope in the first place.
- *
- * Each is anchored so a JavaScript array literal is not one: a value's bracket
- * follows a `-`, which every arbitrary value and every `data-[…]` variant has,
- * and a property's content opens on `<name>:`. `['bg-error-light']` matches
- * neither and stays in scope.
- *
- * The `style` prop is non-greedy to the first `}}`, which can only end the prop
- * early: a `}}` the object does not close cannot exist before the one that
- * closes it.
+ * Non-greedy to the first `}}`, which can only end the prop early: a `}}` the
+ * object does not close cannot exist before the one that closes it.
  */
-const CSS_REGIONS = [
-  /<style\b[^>]*>[\s\S]*?<\/style>/g,
-  /\bstyle=\{\{[\s\S]*?\}\}/g,
-  /(?<=-\[)[^\]\n]*(?=\])/g,
-  /(?<=\[)[a-z-]+:[^\]\n]*(?=\])/g,
-]
+const CSS_REGIONS = [/<style\b[^>]*>[\s\S]*?<\/style>/g, /\bstyle=\{\{[\s\S]*?\}\}/g]
 
 /**
  * Blanks both, here rather than in `_source-scan`: the other guards read a file
@@ -154,19 +112,19 @@ function stripCss(source: string): string {
   return CSS_REGIONS.reduce(blank, source)
 }
 
-/** Every watched utility in `source` that `system` compiles to nothing. */
-function findDeadUtilities(source: string, system = designSystem): DeadUtility[] {
+/** Every watched utility in `source` that the real stylesheet compiles to nothing. */
+function findDeadUtilities(source: string): DeadUtility[] {
   const found = [...stripCss(source).matchAll(CANDIDATE)].map((match) => ({
     utility: match[0],
     index: match.index,
   }))
-  const css = system.candidatesToCss(found.map(({ utility }) => utility))
+  const css = designSystem.candidatesToCss(found.map(({ utility }) => utility))
 
   return found.filter((_, i) => css[i] === null)
 }
 
-const utilitiesIn = (source: string, system = designSystem): string[] =>
-  findDeadUtilities(source, system).map(({ utility }) => utility)
+const utilitiesIn = (source: string): string[] =>
+  findDeadUtilities(source).map(({ utility }) => utility)
 
 describe('theme utilities', () => {
   it('compiles against the real stylesheet', () => {
@@ -175,25 +133,6 @@ describe('theme utilities', () => {
     // Ours, Tailwind's own (`@theme` extends rather than replaces), and a
     // project `@utility` — all three must reach the compiler.
     expect(utilitiesIn('text-gray-900 text-gray-950 bg-bg-warm text-glow-light')).toEqual([])
-  })
-
-  /**
-   * The two roots, and that neither covers the other. A `media-*` utility
-   * compiles only against the skin's root, and a site token only against the
-   * entry — which is what makes the entry's `@source not` line safe to keep and
-   * fails the moment either half is rewired.
-   */
-  it('compiles the skin against its own root, and only there', () => {
-    const skinClasses = 'rounded-media-pill bg-media-popover text-media-controls-foreground'
-
-    expect(utilitiesIn(skinClasses, skinDesignSystem)).toEqual([])
-    expect(utilitiesIn(skinClasses)).toEqual([
-      'rounded-media-pill',
-      'bg-media-popover',
-      'text-media-controls-foreground',
-    ])
-    expect(utilitiesIn('bg-bg-warm')).toEqual([])
-    expect(utilitiesIn('bg-bg-warm', skinDesignSystem)).toEqual(['bg-bg-warm'])
   })
 
   it('flags the utilities #176 removed', () => {
@@ -232,28 +171,6 @@ describe('theme utilities', () => {
   /** Out of scope: an arbitrary value names no token, and a slug is not a utility. */
   it('ignores an arbitrary value and a hyphenated slug', () => {
     expect(utilitiesIn('text-[16px] bg-(--surface-tint) how-to-begin my-rounded-thing')).toEqual([])
-  })
-
-  it('ignores the CSS inside an arbitrary value', () => {
-    expect(
-      utilitiesIn("<div className=\"transition-[outline-color,outline-offset] text-teal-500\" />"),
-    ).toEqual([])
-  })
-
-  it('ignores the CSS inside an arbitrary property', () => {
-    expect(
-      utilitiesIn('<div className="[transition-property:color,outline-offset] text-teal-500" />'),
-    ).toEqual([])
-  })
-
-  it('still reads a class inside an array literal', () => {
-    expect(utilitiesIn("const styles = ['bg-error-light', 'text-teal-500']")).toEqual([
-      'bg-error-light',
-    ])
-  })
-
-  it('ignores a quoted object key', () => {
-    expect(utilitiesIn("const groups = { 'text-shadow': ['media'] }")).toEqual([])
   })
 
   it('ignores a CSS property and an attribute name', () => {
@@ -324,7 +241,7 @@ describe('theme utilities', () => {
     const offences = files.flatMap((file) => {
       const source = readSource(join(repoRoot, file))
 
-      return findDeadUtilities(source, systemFor(file)).map(
+      return findDeadUtilities(source).map(
         ({ utility, index }) => `${file}:${lineAt(source, index)} — ${utility}`,
       )
     })

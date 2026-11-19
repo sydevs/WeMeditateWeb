@@ -14,31 +14,6 @@ the `@theme` directive:
 - Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
 - Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
-**There is a second Tailwind root, and it is deliberately not the entry.** The vendored Video.js
-skin's `media-*` tokens, utilities and container-query variants live in
-[components/molecules/VideoPlayer/skin/styles/tailwind.css](../../components/molecules/VideoPlayer/skin/styles/tailwind.css),
-behind
-[skin-theme.css](../../components/molecules/VideoPlayer/skin/styles/skin-theme.css) — a root that
-imports Tailwind's `theme` and `utilities` layers itself, scans only the player's folder, and is
-imported by `skin/video/skin.tsx` so it rides the player's lazy chunk. `@theme`, `@utility` and
-`@custom-variant` are compile-time directives and need *a* root; they do not need *this* one.
-Imported into the entry, the layer went into the stylesheet every page loads: 85,479 → 153,670
-bytes, for a player no page without a video mounts. So the entry carries
-`@source not "../components/molecules/VideoPlayer"` instead, because scanning that tree here
-emits those utilities here too.
-
-**Two roots means two compilers, and a class compiles against exactly one of them.**
-`tests/guards/theme-utilities.test.ts` loads both and picks by path, so a `media-*` utility is
-checked against the skin's root and a site token against the entry. A skin class moved out of
-the player's folder, or a site class moved into it, compiles to nothing — and the guard says so
-rather than leaving it silent.
-
-The skin's theme is `@theme **inline**`, and that is load-bearing for the same reason the surface
-tokens below are: nearly every token reads a property the skin declares on `.media-skin`, and a
-plain `@theme` would resolve it at `:root`, where it does not exist. That failure is silent —
-the utility emits nothing and the control keeps its content size. See
-[that folder's README](../../components/molecules/VideoPlayer/skin/README.md).
-
 **There is no JavaScript config file, and adding one back changes nothing on its own.** v4 reads
 a config file only through an `@config` directive, so a `tailwind.config.ts` that no stylesheet
 points at is dead — which is what #176 deleted.
