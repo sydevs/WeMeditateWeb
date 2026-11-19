@@ -15,6 +15,7 @@
  * head mechanism here, not two.
  */
 
+import type { PageContext } from 'vike/types'
 import { useConfig } from 'vike-react/useConfig'
 import { getImageURL, getVariantName } from './cloudflare-images'
 import { populatedImageUrl } from './payload-relationships'
@@ -136,29 +137,25 @@ export function ContentHeadTags({
 }
 
 /**
- * The canonical and `hreflang` cluster for whichever content route is
- * rendering. Declared as `Head: ContentHead` in a route's `+config.ts`,
- * beside its `Layout: LayoutChrome`.
+ * The URL a content route publishes — its origin, its path in
+ * `normalizeContentPath`'s spelling, and the canonical the two make — or
+ * `null` where it publishes none.
  *
- * That is the level this belongs at. "This route is an indexable content
- * URL" is route identity, exactly like "this route wears the site chrome",
- * and a new content route opts in with one declarative line instead of
- * remembering a hook call. It is also why this is not set from a template:
- * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared
- * with the `embed` routes and the live preview, and none of those is a URL
- * to point a crawler at.
- *
- * `alternateLocales` comes off the route's data (`pages/[slug]/+data.ts`).
- * A route that publishes none — a meditation or a lecture, neither of which
- * carries per-locale publish state upstream — advertises nothing and gets
- * its canonical alone.
- *
- * Renders nothing at all when the origin is unknown, which is the case
- * outside a Vike app. A guessed canonical is worse than none.
+ * `ContentHead` emits that canonical and the page's share row shares it, so
+ * a shared link names the URL search engines are pointed at.
  */
-export function ContentHead() {
-  const pageContext = useOptionalPageContext()
-  const origin = pageContext?.urlParsed?.origin
+export function publishedContentUrl(
+  pageContext: PageContext | null,
+): { origin: string; path: string; canonical: string } | null {
+  if (!pageContext) {
+    return null
+  }
+
+  // ⚠ The browser's `pageContext` parses a path-only URL, so its origin is
+  // null there. The window's own stands in: without it the share row exists
+  // on the server only, and React discards the server markup to re-render.
+  const origin =
+    pageContext.urlParsed?.origin ?? (typeof window === 'undefined' ? null : window.location.origin)
 
   if (!origin) {
     return null
@@ -181,13 +178,47 @@ export function ContentHead() {
   }
 
   const path = normalizeContentPath(pageContext.urlPathname)
-  const { locale } = pageContext
-  const { alternateLocales } = (pageContext.data ?? {}) as { alternateLocales?: readonly Locale[] }
+
+  return { origin, path, canonical: localeUrl(origin, pageContext.locale, path) }
+}
+
+/**
+ * The canonical and `hreflang` cluster for whichever content route is
+ * rendering. Declared as `Head: ContentHead` in a route's `+config.ts`,
+ * beside its `Layout: LayoutChrome`.
+ *
+ * That is the level this belongs at. "This route is an indexable content
+ * URL" is route identity, exactly like "this route wears the site chrome",
+ * and a new content route opts in with one declarative line instead of
+ * remembering a hook call. It is also why this is not set from a template:
+ * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared
+ * with the `embed` routes and the live preview, and none of those is a URL
+ * to point a crawler at.
+ *
+ * `alternateLocales` comes off the route's data (`pages/[slug]/+data.ts`).
+ * A route that publishes none — a meditation or a lecture, neither of which
+ * carries per-locale publish state upstream — advertises nothing and gets
+ * its canonical alone.
+ *
+ * Renders nothing at all where {@link publishedContentUrl} answers `null`:
+ * outside a Vike app, where the origin is unknown and a guessed canonical is
+ * worse than none, and under an open live preview.
+ */
+export function ContentHead() {
+  const pageContext = useOptionalPageContext()
+  const url = publishedContentUrl(pageContext)
+
+  if (!url) {
+    return null
+  }
+
+  const { origin, path, canonical } = url
+  const { alternateLocales } = (pageContext?.data ?? {}) as { alternateLocales?: readonly Locale[] }
 
   return (
     <ContentHeadTags
       alternates={buildAlternates({ origin, path, locales: alternateLocales ?? [] })}
-      canonical={localeUrl(origin, locale, path)}
+      canonical={canonical}
     />
   )
 }

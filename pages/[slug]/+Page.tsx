@@ -2,13 +2,21 @@
 
 import { useData } from 'vike-react/useData'
 import { PageData } from './+data'
+import { Container } from '../../components/atoms'
+import { SocialShare } from '../../components/molecules'
+import { DiscoverMeditation } from '../../components/organisms'
 import { PageTemplate } from '../../components/templates'
+import { useOptionalPageContext } from '../../hooks/usePageContext'
 import { getLeadSplash } from '../../lib/content-blocks'
 import { isFeaturedNavPage } from '../../lib/featured-nav'
+import { publishedContentUrl } from '../../lib/head'
 import { LivePreviewDocument } from '../../lib/live-preview/document'
 
 export function Page() {
   const { page: initialPage, settings } = useData<PageData>()
+  // The canonical `ContentHead` emits, so a share names the indexed URL. It is
+  // `null` under an open live preview, which takes the share row with it.
+  const shareUrl = publishedContentUrl(useOptionalPageContext())?.canonical
 
   // Off-preview this renders `initialPage` and mounts nothing at all; under an
   // open session it renders the admin's unsaved edits. See
@@ -20,15 +28,32 @@ export function Page() {
         // full-bleed hero sit flush at the top, under the overlaid header (see
         // LayoutChrome).
         const leadSplash = getLeadSplash(page.content)
+        // `/` serves the configured home page, and only `/` does: its own slug
+        // redirects there (`+data.ts`).
+        const isHome = page.slug === settings.homePage?.slug
 
         return (
-          // Horizontal gutters now come from the Container inside
-          // PageTemplate/RichText, so no px here (avoids over-narrowing content).
-          <div className={`min-h-screen ${leadSplash ? 'pb-12' : 'py-12'}`}>
-            {/* On featured nav pages the highlighted nav link already names the
-                page, so suppress the redundant PageTitle banner. */}
-            <PageTemplate hideTitle={isFeaturedNavPage(page, settings)} page={page} />
-          </div>
+          <>
+            {/* Horizontal gutters now come from the Container inside
+                PageTemplate/RichText, so no px here (avoids over-narrowing content). */}
+            <div className={`min-h-screen ${leadSplash ? 'pb-12' : 'py-12'}`}>
+              {/* On featured nav pages the highlighted nav link already names the
+                  page, so suppress the redundant PageTitle banner. */}
+              <PageTemplate hideTitle={isFeaturedNavPage(page, settings)} page={page} />
+
+              {shareUrl && !isHome ? (
+                <Container className="mt-12" maxWidth="md">
+                  <SocialShare title={page.title} url={shareUrl} />
+                </Container>
+              ) : null}
+            </div>
+
+            {/* After the padded column, whose bottom padding would otherwise
+                open a second gap between the section and the footer. */}
+            {isHome ? (
+              <DiscoverMeditation className="full-bleed" pages={settings.classPages} />
+            ) : null}
+          </>
         )
       }}
     </LivePreviewDocument>
