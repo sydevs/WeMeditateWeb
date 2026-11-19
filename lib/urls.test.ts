@@ -159,7 +159,7 @@ const NOT_SITE_PATHS = [
 
 describe('localeHref', () => {
   it('drops a trailing slash, so a link agrees with the page canonical', () => {
-    // `/about/` and `/about` are one page, and ContentHead emits `/fr/about`.
+    // `/about/` and `/about` are one page, and the cluster emits `/fr/about`.
     expect(localeHref('fr', '/about/')).toBe('/fr/about')
     expect(localeHref('en', '/about/')).toBe('/about')
     expect(localeHref('pt-BR', '/about/')).toBe('/pt-BR/about')

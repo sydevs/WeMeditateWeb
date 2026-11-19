@@ -58,12 +58,11 @@ export interface SeoDocument extends SeoHead {
 /**
  * Whether a pre-serialized JSON-LD string is safe to emit verbatim.
  *
- * `serializeJsonLd` (lib/structured-data.ts) and SahajCloud's own
- * `jsonLdEscape()` both neutralize `</script>` and `<!--`, with JSON escapes
- * that round-trip to the same characters. This is why the string is handed to
- * the generator whole instead of re-escaped. HTML-escaping a JSON string
- * would corrupt it, and running it through `JSON.parse` and `stringify`
- * would drop the escaping that makes it safe.
+ * SahajCloud's own `jsonLdEscape()` neutralizes `</script>` and `<!--`, with
+ * JSON escapes that round-trip to the same characters. This is why the string
+ * is handed to the generator whole instead of re-escaped. HTML-escaping a
+ * JSON string would corrupt it, and running it through `JSON.parse` and
+ * `stringify` would drop the escaping that makes it safe.
  *
  * This check is the belt to that braces. The sink is a `<script>` block
  * carrying SahajCloud-authored text, so a regression in either producer would

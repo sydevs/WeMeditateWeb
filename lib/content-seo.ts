@@ -2,11 +2,11 @@
  * The `<head>` document a content route publishes.
  *
  * One builder per content type, each called from that route's `+data.ts`
- * with the document already in hand. The result is a {@link SeoDocument}:
- * `lib/head.tsx` renders it, and reads nothing about pages, meditations or
- * lectures itself. `/map` reaches the same renderer with the document
- * SahajCloud serves (`lib/atlas-head.tsx`), so the whole site has one head
- * shape and one renderer.
+ * with the document already in hand. The result is a {@link SeoDocument}, and
+ * `lib/seo-head-html.ts` generates the head from it knowing nothing about
+ * pages, meditations or lectures. `/map` builds the same document out of the
+ * answer SahajCloud serves (`lib/atlas-seo.ts`), so the whole site has one
+ * head shape and one generator.
  *
  * ⚠ **A field is emitted only when SahajCloud returned it.** Everything that
  * does fall back falls back to the site's own name and description, never to
@@ -370,8 +370,8 @@ function baseDocument(
           ]
         : [],
     // The generator serializes the graph (lib/seo-head-html.ts), so no route
-    // carries a second one of its own. `/map` is the exception and builds its
-    // own `jsonLd` from the answer SahajCloud serves (lib/atlas-head.tsx).
+    // built here carries a second one of its own. `/map` is the exception:
+    // its graph arrives already serialized (lib/atlas-seo.ts).
     jsonLd: '',
     schema: {
       site: {
