@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { OrnateTextBox } from './OrnateTextBox'
+import { classFor, classOf } from '../../../tests/_helpers/markup'
+import { enT } from '../../../lib/i18n'
 
 const BASE = {
   title: 'Sacred Teachings',
@@ -43,34 +45,51 @@ describe('<OrnateTextBox>', () => {
     expect(html).toContain('Timeless teachings')
   })
 
-  it('defaults the decorative sidetext to "Ancient Wisdom"', () => {
+  it('takes the decorative sidetext from the content system when none is given', () => {
+    // Which key, not whether it resolves — `tests/guards/translation-keys.test.ts`
+    // owns that half, so a reworded upstream string does not break this case.
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
-    expect(html).toContain('Ancient Wisdom')
+    expect(html).toContain(enT('blocks.general.wisdom_sidetext'))
   })
 
   it('honours a custom sidetext label', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} sidetext="Ancient Knowledge" />)
 
     expect(html).toContain('Ancient Knowledge')
-    expect(html).not.toContain('Ancient Wisdom')
+    expect(html).not.toContain(enT('blocks.general.wisdom_sidetext'))
   })
 
-  it('floats the image left so the body text wraps around it', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
+  it('renders no sidetext at all for an empty label', () => {
+    // An empty string is a caller suppressing the decoration, so it must not
+    // fall through to the translation the way an absent prop does.
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} sidetext="" />)
 
-    expect(html).toContain('lg:float-left')
-    expect(html).toContain('lg:mr-12')
-    expect(html).not.toContain('lg:float-right')
+    expect(html).not.toContain('[writing-mode:vertical-rl]')
   })
 
-  it('floats the image right under align="right"', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
+  // The image takes a grid column of its own, and the header and body share
+  // the one beside it. Placement is explicit because grid auto-placement
+  // follows source order, which here is title, subtitle, image, body.
+  it.each([
+    ['left', 'lg:grid-cols-[44%_1fr]', 'lg:col-start-1', 'lg:col-start-2'],
+    ['right', 'lg:grid-cols-[1fr_44%]', 'lg:col-start-2', 'lg:col-start-1'],
+  ] as const)(
+    'gives the %s layout an image column and a text column',
+    (align, columns, imageColumn, textColumn) => {
+      const html = renderToStaticMarkup(
+        <OrnateTextBox {...BASE} align={align} subtitle="Timeless teachings" />,
+      )
 
-    expect(html).toContain('lg:float-right')
-    expect(html).toContain('lg:ml-12')
-    expect(html).not.toContain('lg:float-left')
-  })
+      // `lg:row-span-2` is the image wrapper's alone, and `lg:mb-6` the
+      // header's: neither column class names an element on its own, since
+      // the two columns swap with `align`.
+      expect(classFor(html, 'lg:pr-24').split(' ')).toContain(columns)
+      expect(classFor(html, 'lg:row-span-2').split(' ')).toContain(imageColumn)
+      expect(classFor(html, 'lg:mb-6').split(' ')).toContain(textColumn)
+      expect(classFor(html, 'space-y-5').split(' ')).toContain(textColumn)
+    },
+  )
 
   it('defaults to the left layout, so an omitted align renders as align="left"', () => {
     expect(renderToStaticMarkup(<OrnateTextBox {...BASE} />)).toEqual(
@@ -84,14 +103,15 @@ describe('<OrnateTextBox>', () => {
   // peach stop on the band's inner edge from `right-0`.
   it('keeps the warm gradient on the image side, angled inward', () => {
     // `-top-24` is the warm band's alone; the brown ground is a gradient too.
-    const band = (html: string) => html.match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
-
-    const left = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />))
+    const left = classFor(renderToStaticMarkup(<OrnateTextBox {...BASE} align="left" />), '-top-24')
 
     expect(left).toContain('left-0')
     expect(left).toContain('linear-gradient(90deg')
 
-    const right = band(renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />))
+    const right = classFor(
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />),
+      '-top-24',
+    )
 
     expect(right).toContain('right-0')
     expect(right).toContain('linear-gradient(270deg')
@@ -104,10 +124,10 @@ describe('<OrnateTextBox>', () => {
     ['left', '90deg'],
     ['right', '270deg'],
   ] as const)('runs the %s band faint below lg and full from lg up', (align, angle) => {
-    const band =
-      renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />).match(
-        /class="([^"]*-top-24[^"]*)"/,
-      )?.[1] ?? ''
+    const band = classFor(
+      renderToStaticMarkup(<OrnateTextBox {...BASE} align={align} />),
+      '-top-24',
+    )
 
     expect(band).toContain(`bg-[linear-gradient(${angle},rgba(255,255,255,0.01)`)
     expect(band).toContain(`lg:bg-[linear-gradient(${angle},rgba(255,255,255,0.02)`)
@@ -115,26 +135,54 @@ describe('<OrnateTextBox>', () => {
     expect(band).toContain('rgba(255,196,175,0.6)_100%)]')
   })
 
-  // The body copy's AA floor is a composite of the brown ground, the graphic
-  // and the band, so `layouts/tailwind.test.ts` cannot reach it — the class
-  // values are all there is to pin. The worst cell measures 5.19:1 (#205).
-  // Any alpha on the body copy is what takes it back under the bar; the root
-  // already paints white, so the token the wrapper carries is not the subject.
-  it('keeps the graphic faint and the body copy free of alpha', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
-    const body = html.match(/class="([^"]*space-y-5[^"]*)"/)?.[1] ?? ''
+  // These AA floors are a composite of the brown ground, the graphic and the
+  // band, so `layouts/tailwind.test.ts` cannot reach them — the class values
+  // are all there is to pin. The worst body cell measures 5.19:1 (#205), and
+  // `text-white/80` left the subtitle at 3.94:1 against a 4.5:1 bar even in
+  // the layout the band is clear of (#262). Any alpha is what takes either
+  // back under its bar; the root already paints white, so the token the body
+  // wrapper carries is not the subject.
+  it('keeps the graphic faint and the subtitle and body copy free of alpha', () => {
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Timeless teachings" />)
+    const body = classFor(html, 'space-y-5')
+    const subtitle = classOf(html, 'Timeless teachings')
 
     expect(ornateImg(html)).toContain('opacity-25')
     expect(body).toContain('leading-relaxed')
     expect(body).not.toContain('text-white/')
+    expect(subtitle).toContain('font-light')
+    expect(subtitle).not.toContain('text-white/')
   })
 
-  it('renders the title above the body (header precedes the image)', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
+  // A screen reader reads source order, which no `order-*` reorder changes
+  // (Flexbox §5.4, WCAG SC 1.3.2). A float would have had to precede the
+  // header to put it in the text column — across the band instead the title
+  // measures 2.47:1 against a 3:1 bar (#262) — so the grid is what lets one
+  // order serve both the eye and the reader, at every width.
+  it('renders title, subtitle, image then body in source order, with no reorder', () => {
+    const html = renderToStaticMarkup(
+      <OrnateTextBox {...BASE} subtitle="Timeless teachings" />,
+    )
 
-    // Title and subtitle appear before the floated image in document order.
-    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('lg:float-left'))
-    expect(html.indexOf('Sub')).toBeLessThan(html.indexOf('lg:float-left'))
+    // A missing marker indexes as -1, which satisfies `toBeLessThan` against
+    // anything, so each one is pinned as present before it is ordered.
+    expect(html).toContain('Sacred Teachings')
+    expect(html).toContain('Timeless teachings')
+    expect(html).toContain('picsum')
+    expect(html).toContain('timeless wisdom')
+    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('Timeless teachings'))
+    expect(html.indexOf('Timeless teachings')).toBeLessThan(html.indexOf('picsum'))
+    expect(html.indexOf('picsum')).toBeLessThan(html.indexOf('timeless wisdom'))
+
+    // `not.toContain('order-')` would pass on `border-white`, so each of the
+    // three children is asked for its own order class instead.
+    for (const marker of ['lg:row-span-2', 'lg:mb-6', 'space-y-5']) {
+      const classes = classFor(html, marker).split(' ')
+
+      expect(classes).toContain(marker)
+      expect(classes.filter((name) => /(^|:)order-/.test(name))).toEqual([])
+      expect(classes.filter((name) => /(^|:)float-/.test(name))).toEqual([])
+    }
   })
 
   it('renders the CTA only when both text and href are set', () => {
