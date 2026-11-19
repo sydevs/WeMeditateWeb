@@ -765,8 +765,11 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
  * Gets the UI strings for a locale, from the `wm-web-translations` global.
  *
  * SahajCloud fills a blank or missing key from English on every API-client
- * read (SahajCloud #705), so the site does no merge of its own: what comes
- * back is already complete for the locale.
+ * read (SahajCloud #705), so the site does no merge of its own. That fill
+ * reaches only inside a group the locale's document already carries: a
+ * locale missing a whole group gets it back missing, and `createT` renders
+ * those keys as their own key paths. A locale with no published document at
+ * all reads as `{}`, even with a fallback locale.
  *
  * Errors propagate; `loadSiteContext` degrades to the committed English
  * snapshot rather than failing the page.

@@ -75,7 +75,7 @@ const QUERY_BY_TYPE: Record<
     // `populate[images][filename]` lets the album artwork's url compute. A
     // url-only populate returns null.
     select:
-      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true&select[filename]=true',
+      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[duration]=true&select[thumbnailURL]=true&select[filename]=true',
     populate:
       // `song-tags[title]` is what the filter pills show. Without it the
       // label had to be title-cased from the slug, which was English-only.

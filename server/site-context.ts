@@ -56,9 +56,13 @@ function isEmpty(translations: WebTranslations): boolean {
  *
  * - the read fails, and
  * - the read succeeds but the global is empty, which is what an unseeded
- *   SahajCloud returns. Per-key gaps are not this function's business — SahajCloud
- *   fills a blank key from English on every API-client read (SahajCloud
- *   #705) — but a global with nothing in it is not usable at all.
+ *   SahajCloud returns. A global with nothing in it is not usable at all.
+ *
+ * ⚠ A partly published locale passes both tests. SahajCloud's English fill
+ * reaches only inside a group the document already carries (SahajCloud
+ * #705), so a locale holding one group of fourteen renders the other
+ * thirteen as key paths. A locale is published with every group present,
+ * even blank.
  *
  * Both paths log a Sentry warning, so the gap stays visible.
  */

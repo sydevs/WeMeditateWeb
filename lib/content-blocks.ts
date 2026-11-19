@@ -659,8 +659,8 @@ export function meditationCardsFromUserChoices(
 /**
  * Maps a content-index `songs` API document to a playable {@link Track}
  * for the MusicLibrary organism. Songs with no playable URL are skipped.
- * `duration` is `0`: the Song SahajCloud type has no duration field, so
- * AudioPlayer derives it from the audio element at load. `tags` are the
+ * `duration` is `0` where SahajCloud stores no usable length; AudioPlayer
+ * derives the playing track's own from the audio element. `tags` are the
  * populated SongTag slugs, matched against MusicLibrary's filter IDs.
  */
 export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
@@ -691,7 +691,7 @@ export function contentIndexTrack(doc: Record<string, unknown>): Track | null {
     credit: album?.artist ?? '',
     creditURL: album?.artistUrl ?? '',
     thumbnailURL: artwork?.url ?? songThumbnail,
-    duration: 0,
+    duration: typeof doc.duration === 'number' ? doc.duration : 0,
     tags,
   }
 }
