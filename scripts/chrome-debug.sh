@@ -19,7 +19,8 @@ echo "🔍 Checking if Chrome is already running on port $PORT..."
 # Check whether the port is already in use. Never stop what holds it: another session may be
 # driving that Chrome (AGENTS.md).
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
-    if curl -s http://localhost:$PORT/json/version > /dev/null 2>&1; then
+    # Any HTTP server answers this path; only a DevTools endpoint names a debugger socket.
+    if curl -s http://localhost:$PORT/json/version 2>/dev/null | grep -q webSocketDebuggerUrl; then
         echo "✅ Chrome is already running on port $PORT"
         echo "🌐 Debug endpoint: http://localhost:$PORT"
         exit 0
