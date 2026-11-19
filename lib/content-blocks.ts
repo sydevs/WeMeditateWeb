@@ -4,8 +4,9 @@
  *
  * The lexical tree types a block's `fields` as `[k: string]: unknown`, so a
  * converter casts them to the matching `*BlockFields` type here. Each one
- * derives from the generated `*Block` interface in `payload-types.ts`, so
- * `pnpm types:cms` turns an upstream schema change into a compile error. A
+ * derives from the generated `*Block` interface in `payload-types.ts`, so a
+ * field `pnpm types:cms` renames or removes becomes a compile error where it
+ * is read. `ContentIndexBlockFields` alone is restated, under a type test. A
  * generated interface describes a saved block, while live preview renders an
  * unsaved one, so a converter still guards a field the schema requires.
  *
@@ -16,7 +17,6 @@
 import type {
   Album,
   ButtonBlock,
-  ContentIndexBlock,
   Image,
   ImageGalleryBlock,
   LayoutBlock,
@@ -37,9 +37,6 @@ import { documentHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
-
-/** A relationship or upload field: a populated document or a bare ID. */
-export type Ref<T> = number | T
 
 // --- Field shapes (derived from the generated `*Block` interfaces) ---
 
@@ -109,9 +106,18 @@ export type PageTagLabels = Partial<Record<PageTag, string>>
  * `+data`. The editor never stores them. The `*Filters` fields mirror the
  * SahajCloud schema, but rendering does not use them: facets come from the
  * resolved items' own `tags` instead. */
-export interface ContentIndexBlockFields extends BlockFields<ContentIndexBlock> {
-  // shortcut: restated rather than derived while #293 widens it; derive it once that lands.
+// shortcut: hand-written until #293 lands; then extend BlockFields<ContentIndexBlock> instead.
+export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
+  limit: number
+  /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
+  pageFilters?: PageTag[] | null
+  /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
+  userChoiceFilters?: (number | UserChoice)[] | null
+  /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
+  songFilters?: (number | SongTag)[] | null
+  /** Virtual field computed by SahajCloud (path, filters, and limit). */
+  apiEndpoint?: string | null
   /** Cards for pages, lectures, and meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */

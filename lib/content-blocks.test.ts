@@ -153,11 +153,11 @@ describe('subtleSystemItems', () => {
 })
 
 describe('ContentIndexBlockFields', () => {
-  it('names exactly the content-index types the SahajCloud schema allows', () => {
-    // `tsc` is the guard. `type` is the one field restated rather than derived,
-    // and `extends` only stops it naming a type the schema lacks: a type
-    // `pnpm types:cms` adds would otherwise reach no reader.
-    expectTypeOf<ContentIndexBlockFields['type']>().toEqualTypeOf<ContentIndexBlock['type']>()
+  it('restates exactly the stored fields the SahajCloud schema defines', () => {
+    // `tsc` is the guard. This interface alone is hand-written, so a field or
+    // content-index type `pnpm types:cms` adds would otherwise reach no reader.
+    type Stored = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'>
+    expectTypeOf<Omit<ContentIndexBlockFields, `resolved${string}`>>().toEqualTypeOf<Stored>()
   })
 })
 
