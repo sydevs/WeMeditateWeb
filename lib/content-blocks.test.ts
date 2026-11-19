@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, expectTypeOf } from 'vitest'
 import {
   contentIndexCard,
   contentIndexTrack,
@@ -11,8 +11,10 @@ import {
   splashSurface,
   subtleSystemItems,
   textColorToSurface,
+  type ContentIndexBlockFields,
   type ShowcaseItem,
 } from './content-blocks'
+import type { ContentIndexBlock } from '../server/payload-types'
 import type { Page } from '../server/sahajcloud-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
@@ -147,6 +149,15 @@ describe('subtleSystemItems', () => {
       description: 'The left side',
       linkHref: '/left-channel',
     })
+  })
+})
+
+describe('ContentIndexBlockFields', () => {
+  it('names exactly the content-index types the SahajCloud schema allows', () => {
+    // `tsc` is the guard. `type` is the one field restated rather than derived,
+    // and `extends` only stops it naming a type the schema lacks: a type
+    // `pnpm types:cms` adds would otherwise reach no reader.
+    expectTypeOf<ContentIndexBlockFields['type']>().toEqualTypeOf<ContentIndexBlock['type']>()
   })
 })
 
