@@ -50,12 +50,12 @@
       "breadcrumb": "Breadcrumb",
       "close": "Close",
       "dismiss": "Dismiss",
-    "footer_navigation": "Footer menu",
+      "footer_navigation": "Footer menu",
       "next": "Next",
       "opens_in_new_tab": "%{label} (opens in new tab)",
       "opens_in_new_tab_suffix": "(opens in new tab)",
       "previous": "Previous",
-    "primary_navigation": "Main menu",
+      "primary_navigation": "Main menu",
       "show_more_items_one": "Show %{count} more item",
       "show_more_items_other": "Show %{count} more items"
     },
@@ -64,7 +64,7 @@
       "show_more": "Show More",
       "site_description": "Discover free guided meditations, music, and articles to learn and deepen your meditation practice.",
       "site_title": "We Meditate",
-    "skip_to_main": "Skip to main content"
+      "skip_to_main": "Skip to main content"
     }
   },
   "discover": {
@@ -202,6 +202,7 @@
   "meditation": {
     "a11y": {
       "audio_settings": "Audio settings",
+      "finder_region": "Choose how you feel",
       "music_volume": "Music volume",
       "mute_music": "Mute music",
       "mute_voice": "Mute voice",
@@ -212,11 +213,16 @@
       "voice_volume": "Voice volume"
     },
     "general": {
+      "all_meditations": "All meditations",
       "change_music": "Change background music track",
+      "finder_question": "How are you feeling?",
+      "finder_unavailable": "We can't load the meditations just now. Please try again shortly.",
       "founder_name": "Shri Mataji Nirmala Devi",
       "founder_role": "founder",
       "label": "Meditation",
       "missing_audio": "This meditation is missing a required audio URL.",
+      "mood_meditation_label_one": "%{mood} · %{count} min",
+      "mood_meditation_label_other": "%{mood} · %{count} min",
       "music": "Music",
       "related_lectures": "Related lectures",
       "untitled": "Untitled Meditation",
