@@ -7,20 +7,8 @@
 import { describe, it, expect } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { axeViolations } from '../../../tests/_helpers/axe'
+import { openPanel } from '../../../tests/_helpers/popover'
 import { Dropdown, DropdownItem } from './Dropdown'
-
-/** Click the trigger, and hand back it and the panel it says it controls. */
-function open(name: string) {
-  const trigger = screen.getByRole('button', { name })
-
-  fireEvent.click(trigger)
-
-  const panel = document.getElementById(trigger.getAttribute('aria-controls') ?? '')
-
-  if (!panel) throw new Error('the trigger controls no rendered panel')
-
-  return { trigger, panel }
-}
 
 describe('Dropdown, open', () => {
   it('discloses a list of links by default, with no popup role on either side', async () => {
@@ -37,7 +25,7 @@ describe('Dropdown, open', () => {
       </Dropdown>,
     )
 
-    const { trigger, panel } = open('Open')
+    const { trigger, panel } = openPanel('Open')
 
     // A `menu` promises arrow-key navigation between `menuitem`s, which this
     // atom does not implement — a list of links is a disclosure.
@@ -66,7 +54,7 @@ describe('Dropdown, open', () => {
       </Dropdown>,
     )
 
-    const { trigger, panel } = open('Settings')
+    const { trigger, panel } = openPanel('Settings')
 
     expect(trigger.getAttribute('aria-expanded')).toBe('true')
     expect(trigger.getAttribute('aria-haspopup')).toBe('dialog')
@@ -87,7 +75,7 @@ describe('Dropdown, open', () => {
       </Dropdown>,
     )
 
-    const { trigger } = open('Open')
+    const { trigger } = openPanel('Open')
 
     fireEvent.click(trigger)
 

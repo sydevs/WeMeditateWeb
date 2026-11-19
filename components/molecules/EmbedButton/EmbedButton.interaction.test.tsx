@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { EN_TRANSLATIONS } from '../../../lib/i18n'
 import { axeViolations } from '../../../tests/_helpers/axe'
+import { openPanel } from '../../../tests/_helpers/popover'
 import { EmbedButton } from './EmbedButton'
 
 const { media } = EN_TRANSLATIONS
@@ -23,16 +24,12 @@ describe('EmbedButton, open', () => {
       />,
     )
 
-    const trigger = screen.getByRole('button', { name: media.general.embed })
-
-    fireEvent.click(trigger)
-
-    const dialog = screen.getByRole('dialog', { name: 'Embed “Letting The Day Settle”' })
+    const { trigger, panel: dialog } = openPanel(media.general.embed)
 
     // A snippet, a field and a button are not a `menu`'s `menuitem`s.
     expect(screen.queryByRole('menu')).toBeNull()
     expect(trigger.getAttribute('aria-haspopup')).toBe('dialog')
-    expect(trigger.getAttribute('aria-controls')).toBe(dialog.id)
+    expect(screen.getByRole('dialog', { name: 'Embed “Letting The Day Settle”' })).toBe(dialog)
     expect(within(dialog).getByRole('textbox', { name: media.a11y.embed_code })).toBeTruthy()
     expect(within(dialog).getByRole('button', { name: media.general.copy })).toBeTruthy()
     expect(await axeViolations()).toEqual([])

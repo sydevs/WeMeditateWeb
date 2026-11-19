@@ -5,8 +5,9 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { axeViolations } from '../../../tests/_helpers/axe'
+import { openPanel } from '../../../tests/_helpers/popover'
 
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'fr', translations: EN_TRANSLATIONS }),
@@ -25,13 +26,7 @@ describe('LanguageDropdown, open', () => {
   it('discloses a plain list of links, and marks the page being read', async () => {
     render(<LanguageDropdown currentLanguage="fr" languages={languages} />)
 
-    const trigger = screen.getByRole('button', { name: EN_TRANSLATIONS.footer.languages })
-
-    fireEvent.click(trigger)
-
-    const panel = document.getElementById(trigger.getAttribute('aria-controls') ?? '')
-
-    if (!panel) throw new Error('the trigger controls no rendered panel')
+    const { trigger, panel } = openPanel(EN_TRANSLATIONS.footer.languages)
 
     expect(trigger.getAttribute('aria-expanded')).toBe('true')
     expect(screen.queryByRole('menu')).toBeNull()
