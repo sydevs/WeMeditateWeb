@@ -23,9 +23,10 @@ import { describe, it, expect, vi, afterAll, beforeEach, afterEach } from 'vites
 import { writeFileSync } from 'node:fs'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import axe, { type Result, type RunOptions } from 'axe-core'
+import axe, { type Result } from 'axe-core'
 import { EN_TRANSLATIONS } from '../../lib/i18n'
 import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
+import { AXE_TAGS, axeOptions } from '../_helpers/axe'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
 
 /** Route data, swapped per target before the render. */
@@ -54,9 +55,6 @@ const { Page: MapPage } = await import('../../pages/map/+Page')
 const { Page: MeditationEmbedPage } = await import('../../pages/meditations/[id]/embed/+Page')
 const { Page: LectureEmbedPage } = await import('../../pages/lectures/[id]/embed/+Page')
 
-// ⚠ `tests/_helpers/axe.ts` mirrors these tags for component fragments; change both together.
-const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
-
 /**
  * Rules jsdom cannot decide, disabled by name so they are visibly out of scope
  * rather than silently not firing.
@@ -83,13 +81,6 @@ const UNDECIDABLE = [
  * and no menu to skip past. Nothing else is relaxed for them.
  */
 const CHROME_ONLY = ['region', 'bypass']
-
-function options(exclude: string[]): RunOptions {
-  return {
-    runOnly: { type: 'tag', values: TAGS },
-    rules: Object.fromEntries(exclude.map((id) => [id, { enabled: false }])),
-  }
-}
 
 /**
  * Everything a server render can put in the tab order. `[tabindex]` covers both
@@ -217,7 +208,7 @@ async function violationsFor(target: (typeof TARGETS)[number]): Promise<string[]
   // fragment. Three of this goal's own lines are those rules.
   const result = await axe.run(
     document,
-    options(target.chrome ? UNDECIDABLE : [...UNDECIDABLE, ...CHROME_ONLY]),
+    axeOptions(target.chrome ? UNDECIDABLE : [...UNDECIDABLE, ...CHROME_ONLY]),
   )
   // `incomplete` counts too. axe decides `page-has-heading-one` and
   // `landmark-one-main` from a check that answers `undefined` rather than
@@ -265,9 +256,9 @@ describe('accessibility · page types', () => {
   it('runs the rule set the goal asks for, with only the undecidable rules off', () => {
     // Without this, dropping `best-practice` would silently stop the gate
     // seeing `heading-order` and `landmark-unique`, two of the goal's own lines.
-    expect(TAGS).toContain('best-practice')
+    expect(AXE_TAGS).toContain('best-practice')
 
-    // The literal lists, not `options()`'s own output: that is built from the
+    // The literal lists, not `axeOptions()`'s own output: that is built from the
     // array handed to it, so comparing the two restates the input and would
     // pass with any rule added to either list.
     expect(UNDECIDABLE).toEqual([
