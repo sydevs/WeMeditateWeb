@@ -345,6 +345,10 @@ describe('lectureSeo', () => {
   const seoFor = (overrides: Partial<ResolvedLecture> = {}) =>
     lectureSeo({ lecture: lecture(overrides), route: route({ path: '/lectures/1' }) })
 
+  /** The lecture's own media descriptor, which Unhead renders (lib/seo-head-html.ts). */
+  const videoNode = (seo: ReturnType<typeof seoFor>) =>
+    seo.schema?.nodes.find((node) => node.type === 'video')
+
   it('serves its own name and the video page type', () => {
     const seo = seoFor()
 
@@ -352,14 +356,13 @@ describe('lectureSeo', () => {
     expect(metaValues(seo, 'og:type')).toEqual(['video.other'])
   })
 
-  it('shares its poster, and names the same render in the VideoObject', () => {
+  it('shares its poster, and names the same render in the video node', () => {
     // `resolveLecture` hands back a URL, so the share variant is taken here.
     // A non-Cloudflare poster passes through untouched.
     const seo = seoFor()
-    const video = graph(seo).find((node) => node['@type'] === 'VideoObject')
 
     expect(metaValues(seo, 'og:image')).toEqual(['https://video.test/poster.jpg'])
-    expect(video?.thumbnailUrl).toBe('https://video.test/poster.jpg')
+    expect(videoNode(seo)?.thumbnailUrl).toBe('https://video.test/poster.jpg')
   })
 
   it('resolves a Cloudflare poster to the share variant, as a meditation does', () => {
@@ -368,32 +371,34 @@ describe('lectureSeo', () => {
     expect(metaValues(seo, 'og:image')).toEqual([SHARE_VARIANT])
   })
 
-  it('describes itself as a VideoObject playing the whole source', () => {
-    const video = graph(seoFor()).find((node) => node['@type'] === 'VideoObject')
+  it('plays the whole source, and advertises its embed route as the player', () => {
+    const video = videoNode(seoFor())
 
-    expect(video?.duration).toBe('PT30M')
-    expect(video?.url).toBe(`${ORIGIN}/lectures/1`)
+    expect(video?.durationSeconds).toBe(1800)
+    expect(video?.embedUrl).toBe(`${ORIGIN}/lectures/1/embed`)
   })
 
   it("publishes a clip's own window, the length the page shows", () => {
-    const video = graph(seoFor({ startTime: 60, stopTime: 150, type: 'clip' })).find(
-      (node) => node['@type'] === 'VideoObject',
+    expect(videoNode(seoFor({ startTime: 60, stopTime: 150, type: 'clip' }))?.durationSeconds).toBe(
+      90,
     )
-
-    expect(video?.duration).toBe('PT1M30S')
   })
 
   it('describes no video at all where the lecture has not synced a name', () => {
     const seo = seoFor({ title: null })
 
     expect(seo.title).toBe('We Meditate')
-    expect(typesIn(seo)).toEqual(['Organization', 'WebSite'])
+    expect(videoNode(seo)).toBeUndefined()
+    expect(seo.schema?.nodes.map((node) => node.type)).toEqual(['webPage'])
   })
 
   it('never publishes an uploadDate, because nothing upstream stores one', () => {
     // `lastSyncedAt` is when we read the lecture, not when it was published.
-    expect(
-      graph(seoFor()).find((node) => node['@type'] === 'VideoObject')?.uploadDate,
-    ).toBeUndefined()
+    expect(videoNode(seoFor())?.uploadDate).toBeNull()
+  })
+
+  it("serializes no JSON-LD of its own: the generator owns this route's graph", () => {
+    // lib/seo-head-html.test.ts covers what that graph says.
+    expect(seoFor().jsonLd).toBe('')
   })
 })

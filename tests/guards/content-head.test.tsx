@@ -84,6 +84,14 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
   })
 
   it('carries JSON-LD that parses, describing the organisation and the site', () => {
+    // A route whose head Unhead generates carries its graph as descriptors
+    // instead; `lib/seo-head-html.test.ts` renders and asserts that one.
+    if (seo.schema) {
+      expect(seo.schema.nodes.length).toBeGreaterThan(0)
+
+      return
+    }
+
     const block = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)?.[1]
 
     expect(block, 'every content route emits a JSON-LD block').toBeTruthy()
@@ -103,9 +111,17 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
 })
 
 describe('every route that declares a content head', () => {
-  const configs = sourceFiles(['pages/**/+config.ts']).filter((file) =>
-    stripComments(readSource(file)).includes('Head: ContentHead'),
-  )
+  // Two mechanisms, one requirement. `Head: ContentHead` renders the document
+  // the route's data carries; `headHtmlEnd: seoHeadHtml` generates it with
+  // Unhead. Either way the route owes a document, and a route that declares
+  // the head and builds none emits nothing at all, which no rendered test
+  // can catch.
+  const HEAD_DECLARATIONS = ['Head: ContentHead', 'headHtmlEnd: seoHeadHtml']
+  const configs = sourceFiles(['pages/**/+config.ts']).filter((file) => {
+    const source = stripComments(readSource(file))
+
+    return HEAD_DECLARATIONS.some((declaration) => source.includes(declaration))
+  })
 
   it('is a list this guard actually found', () => {
     // An empty list would pass every assertion below without reading a file.
@@ -117,9 +133,6 @@ describe('every route that declares a content head', () => {
     (config) => {
       const data = join(repoRoot, dirname(config), '+data.ts')
 
-      // `ContentHead` renders the document the route's data carries. A route
-      // that declares the head and builds no document emits nothing at all,
-      // which no rendered test can catch.
       expect(stripComments(readSource(data))).toMatch(/\bseo:\s*\w+Seo\(/)
     },
   )

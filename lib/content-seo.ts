@@ -32,6 +32,8 @@ import { contentIndexBlocks, type ResolvedCardItem } from './content-blocks'
 import { getImageURL, getVariantName } from './cloudflare-images'
 import { isPopulated, populatedImageUrl } from './payload-relationships'
 import { absoluteHref, isSitePath, localeUrl, normalizeContentPath } from './urls'
+import { documentEmbedHref } from './document-routes'
+import type { SeoNode } from './seo-schema'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
 import {
@@ -163,6 +165,12 @@ function baseDocument(
     locales: readonly Locale[]
     /** Nodes beyond `Organization` and `WebSite`, in the order they are emitted. */
     nodes: readonly Thing[]
+    /**
+     * The same `@graph`, as the descriptors Unhead's generator reads
+     * (lib/seo-head-html.ts). A route supplies this instead of `nodes` once
+     * it has moved; `jsonLd` then stays empty.
+     */
+    schema?: readonly SeoNode[]
   },
 ): SeoDocument {
   const { origin, path, locale, t } = route
@@ -203,20 +211,38 @@ function baseDocument(
     canonical,
     alternates: origin ? buildAlternates({ origin, path, locales: options.locales }) : [],
     meta,
-    jsonLd: origin
-      ? serializeJsonLd([
-          organization,
-          // The site's own description, never the page's: this node describes
-          // the site, and a crawler reading one page's summary as the whole
-          // site's is a worse claim than no description at all.
-          webSiteNode({
-            name: siteName,
-            url: origin,
-            description: t('common.general.site_description'),
-          }),
-          ...options.nodes,
-        ])
-      : '',
+    ...(options.schema
+      ? {
+          schema: {
+            site: {
+              name: siteName,
+              description: t('common.general.site_description'),
+              logo: absoluteImage(origin, logoUrl) ?? '',
+              sameAs: SOCIAL_PROFILES.map((profile) => profile.href),
+            },
+            inLanguage: locale,
+            nodes: options.schema,
+          },
+        }
+      : {}),
+    // A route that supplies descriptors serializes nothing here: Unhead's
+    // generator builds its graph, and two graphs on one page would claim the
+    // same document twice.
+    jsonLd:
+      !origin || options.schema
+        ? ''
+        : serializeJsonLd([
+            organization,
+            // The site's own description, never the page's: this node describes
+            // the site, and a crawler reading one page's summary as the whole
+            // site's is a worse claim than no description at all.
+            webSiteNode({
+              name: siteName,
+              url: origin,
+              description: t('common.general.site_description'),
+            }),
+            ...options.nodes,
+          ]),
   }
 }
 
@@ -377,7 +403,14 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
   })
 }
 
-/** The head document for `/lectures/:id`. */
+/**
+ * The head document for `/lectures/:id`.
+ *
+ * The one route whose head Unhead generates, as a graph of linked nodes
+ * (`lib/seo-head-html.ts`). It carries `schema` descriptors rather than
+ * serialized `jsonLd`, and its `+config.ts` declares `headHtmlEnd` rather
+ * than `Head: ContentHead`.
+ */
 export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute }): SeoDocument {
   const { lecture, route } = options
   const { t } = route
@@ -387,25 +420,48 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
   const poster = lecture.thumbnailUrl
     ? absoluteImage(route.origin, shareVariant(lecture.thumbnailUrl))
     : null
+  const description = t('common.general.site_description')
+  const embedPath = documentEmbedHref('lectures', lecture.id)
+  const embedUrl =
+    route.origin && embedPath ? absoluteHref(route.origin, route.locale, embedPath) : null
 
   return baseDocument(route, {
     title: composeTitle(lecture.title, t('common.general.site_title')),
-    description: t('common.general.site_description'),
+    description,
     image: shareImage(route, poster),
     ogType: 'video.other',
     // `lectures` omits `_status` entirely upstream (lib/hreflang.ts).
     locales: [],
+    nodes: [],
     // A lecture that has not synced carries no name, and a VideoObject named
-    // after the site would describe the wrong thing.
-    nodes: lecture.title
-      ? [
-          videoObjectNode({
-            name: lecture.title,
-            url: canonicalUrl(route) ?? '',
-            thumbnailUrl: poster,
-            durationSeconds: lecturePlaybackSeconds(lecture),
-          }),
-        ]
-      : [],
+    // after the site would describe the wrong thing. The WebPage node still
+    // stands: the URL exists either way.
+    schema: [
+      {
+        type: 'webPage',
+        name: composeTitle(lecture.title, t('common.general.site_title')),
+        description,
+        // A lecture's poster is the video's still, not a picture of the page,
+        // so the WebPage node claims none of its own.
+        image: null,
+      },
+      ...(lecture.title
+        ? ([
+            {
+              type: 'video',
+              name: lecture.title,
+              description,
+              thumbnailUrl: poster,
+              // ⚠ Nothing upstream records when a lecture was published.
+              // `LectureMetadata` carries `lastSyncedAt`, which is when we
+              // read it, and Google would rather have no date than a wrong
+              // one. Emitting this needs an upstream field first.
+              uploadDate: null,
+              durationSeconds: lecturePlaybackSeconds(lecture),
+              embedUrl,
+            },
+          ] as const)
+        : []),
+    ],
   })
 }

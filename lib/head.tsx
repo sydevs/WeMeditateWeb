@@ -25,6 +25,7 @@
 import { useOptionalPageContext } from '../hooks/usePageContext'
 import { seoDocument } from './head-settings'
 import type { Alternate } from './hreflang'
+import type { SeoSchema } from './seo-schema'
 
 /** The `<head>` tags a URL contributes beyond vike-react's own settings. */
 export interface SeoHead {
@@ -35,6 +36,12 @@ export interface SeoHead {
   meta: readonly (readonly [string, string])[]
   /** A serialized `application/ld+json` body, or `''` for none. */
   jsonLd: string
+  /**
+   * The `@graph` as plain data, for a route whose head Unhead generates
+   * (`lib/seo-head-html.ts`). Absent on a route still serializing its own
+   * {@link jsonLd}; a route sets one or the other, never both.
+   */
+  schema?: SeoSchema
 }
 
 /** A whole head: the two vike-react settings, plus the tags around them. */

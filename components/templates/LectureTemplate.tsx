@@ -20,6 +20,7 @@ import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { useT } from '../../hooks/useT'
 import type { TFunction } from '../../lib/i18n'
 import { lecturePlaybackSeconds } from '../../lib/lecture-shape'
+import { documentEmbedHref } from '../../lib/document-routes'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -132,7 +133,7 @@ export function LectureTemplate({
         {showEmbedButton ? (
           <EmbedButton
             className="ml-auto"
-            embedPath={`/lectures/${lecture.id}/embed`}
+            embedPath={documentEmbedHref('lectures', lecture.id) ?? ''}
             locale={locale}
             title={lecture.title ?? undefined}
           />
