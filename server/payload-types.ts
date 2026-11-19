@@ -738,6 +738,10 @@ export type TableOfContentsHeadings = {
   slug: string;
   text: string;
   level: number;
+  /**
+   * Which of the headings sharing this slug this one is, counted from 0 in document order over top-level headings with non-empty text. Absent means unknown, never 0.
+   */
+  occurrence?: number;
   [k: string]: unknown;
 }[];
 /**
@@ -5717,6 +5721,10 @@ export interface WmWebTranslationsCommonA11YStrings {
    * Not shown on screen; read by screen readers. Warns that a link opens a new browser tab, and is read directly after the link's own words. Takes no placeholder, because the link's text is arbitrary. Keep the brackets if the language uses them.
    */
   opens_in_new_tab_suffix?: string;
+  /**
+   * Not shown on screen; read by screen readers. Names the button in the top bar that opens the site menu on a phone. The same name is read whether the menu is open or closed.
+   */
+  menu?: string;
 }
 export interface WmWebTranslationsNavigationStrings {
   /**
@@ -6497,6 +6505,9 @@ export interface WmWebTranslationsBlocksGeneralStrings {
    * Label under the seconds figure of a countdown.
    */
   seconds?: string;
+  // shortcut: typed by hand, because sydevs/SahajCloud#1218 declares the key
+  // and has not merged. Every contract sync re-derives this file and drops
+  // this entry, so re-type it until that PR lands (sydevs/WeMeditateWeb#269).
   /**
    * Ornamental words set on their side along the outer edge of an “Ancient Wisdom” text box. Decorative, so an evocative short phrase beats a literal translation — and it stands vertically in one line, which is what the limit is for.
    */
