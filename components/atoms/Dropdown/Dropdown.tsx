@@ -31,15 +31,18 @@ export type DropdownSide = 'top' | 'bottom' | 'left' | 'right'
  */
 export type DropdownAlign = 'start' | 'center' | 'end' | 'left' | 'right'
 
-/** ARIA role applied to the panel (and wired into the trigger). */
-export type DropdownRole = 'menu' | 'dialog' | 'listbox'
+/**
+ * What the panel is to assistive tech, and so what the trigger says it opens.
+ * `'disclosure'` is a pattern, not an ARIA role: the panel takes none.
+ */
+export type DropdownRole = 'disclosure' | 'dialog' | 'listbox'
 
 /** Props for the Dropdown component */
 export interface DropdownProps {
   /**
    * Renders the control that opens the panel. **Spread the props it is handed
    * onto that control**, so the caller's own interactive element is the one
-   * that carries `aria-haspopup`, `aria-expanded` and the reference — a
+   * that carries `aria-expanded`, any `aria-haspopup` and the reference — a
    * wrapper carrying `role="button"` around it is axe `nested-interactive` and
    * a second tab stop (#278).
    *
@@ -62,9 +65,11 @@ export interface DropdownProps {
    */
   align?: DropdownAlign
   /**
-   * ARIA role for the panel — `'menu'` for action lists, `'listbox'` for
-   * autocomplete results, `'dialog'` for rich content panels.
-   * @default 'menu'
+   * `'disclosure'` for a list of links (`DropdownItem`s), `'dialog'` for rich
+   * content such as a field or a slider, `'listbox'` for autocomplete results.
+   * There is no `'menu'`: a menu promises arrow-key navigation between
+   * `menuitem`s, which this atom does not implement.
+   * @default 'disclosure'
    */
   role?: DropdownRole
   /**
@@ -147,7 +152,7 @@ function toPlacement(side: DropdownSide, align: DropdownAlign): Placement {
  * for autocomplete), and both controlled and uncontrolled open state.
  *
  * @example
- * // Uncontrolled menu (default)
+ * // Uncontrolled list of links (a disclosure, the default)
  * <Dropdown trigger={(props) => <button {...props}>Open Menu</button>}>
  *   <DropdownItem href="/link1">Link 1</DropdownItem>
  * </Dropdown>
@@ -177,7 +182,7 @@ export function Dropdown({
   children,
   side = 'bottom',
   align = 'start',
-  role: roleProp = 'menu',
+  role: roleProp = 'disclosure',
   ariaLabel,
   size: sizeVariant = 'md',
   className = '',
@@ -229,9 +234,21 @@ export function Dropdown({
   // <input/>, gets focus.
   const click = useClick(context, { enabled: !openOnFocus })
   const dismiss = useDismiss(context)
-  const role = useRole(context, { role: roleProp })
+  const isDisclosure = roleProp === 'disclosure'
+  const role = useRole(context, {
+    enabled: !isDisclosure,
+    role: isDisclosure ? undefined : roleProp,
+  })
 
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss, role])
+
+  // `useRole` has no disclosure. The APG pattern is a trigger that says only
+  // whether it is expanded and what it expands — no `aria-haspopup`. In focus
+  // mode the caller's own control states that, so the wrapper adds nothing.
+  const disclosureProps =
+    isDisclosure && !openOnFocus
+      ? { 'aria-expanded': isOpen, 'aria-controls': isOpen ? context.floatingId : undefined }
+      : {}
 
   const focusProps = openOnFocus
     ? {
@@ -270,7 +287,9 @@ export function Dropdown({
           openOnFocus ? '' : 'cursor-pointer'
         } ${className}`}
       >
-        {trigger(openOnFocus ? {} : { ref: refs.setReference, ...getReferenceProps() })}
+        {trigger(
+          openOnFocus ? {} : { ref: refs.setReference, ...getReferenceProps(disclosureProps) },
+        )}
       </div>
 
       {isOpen && (
@@ -291,7 +310,7 @@ export function Dropdown({
             <div
               ref={refs.setFloating}
               style={floatingStyles}
-              {...getFloatingProps({ 'aria-label': ariaLabel })}
+              {...getFloatingProps({ 'aria-label': ariaLabel, id: context.floatingId })}
               className={`z-50 rounded-lg border border-gray-200 bg-white shadow-xl ${
                 fullWidth ? '' : sizeWidthStyles[sizeVariant]
               }`}

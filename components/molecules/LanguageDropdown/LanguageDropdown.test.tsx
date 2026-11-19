@@ -11,8 +11,10 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 // The dropdown renders its panel behind a click, so the options are not in
-// the SSR markup. Reduce Dropdown to a passthrough to assert on the links.
-vi.mock('../../atoms/Dropdown', () => ({
+// the SSR markup. Reduce Dropdown to a passthrough to assert on the links;
+// `DropdownItem` stays real, because it is what renders them.
+vi.mock('../../atoms/Dropdown', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../atoms/Dropdown')>()),
   Dropdown: ({
     children,
     trigger,

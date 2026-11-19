@@ -1,8 +1,7 @@
-import { Dropdown } from '../../atoms/Dropdown'
+import { Dropdown, DropdownItem } from '../../atoms/Dropdown'
 import type { Locale } from '../../../server/sahajcloud-types'
 import { useT } from '../../../hooks/useT'
 import { LanguageFlag } from '../../atoms/graphics/LanguageFlag'
-import { Link } from '../../atoms/Link'
 import { GlobeAltIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { Icon } from '../../atoms/Icon'
 
@@ -72,24 +71,33 @@ export function LanguageDropdown({
         </button>
       )}
     >
-      <div className="flex flex-col py-2">
-        {languages.map((language) => (
-          <Link
-            key={language.code}
-            className={`px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 ${
-              language.code === currentLanguage ? 'bg-gray-50' : ''
-            }`}
-            href={language.href}
-            locale={language.code}
-          >
-            <LanguageFlag language={language.code} size="sm" />
-            <span className="text-sm font-light text-gray-700">{language.label}</span>
-            {language.code === currentLanguage && (
-              <Icon className="ml-auto text-teal-600" icon={CheckIcon} size="xs" />
-            )}
-          </Link>
-        ))}
-      </div>
+      <ul className="flex flex-col py-2">
+        {languages.map((language) => {
+          const isCurrent = language.code === currentLanguage
+
+          return (
+            <li key={language.code}>
+              {/* Each option links to this page in its own language, so the
+                  current one is this page. */}
+              <DropdownItem
+                aria-current={isCurrent ? 'page' : undefined}
+                className={isCurrent ? 'bg-gray-50' : ''}
+                href={language.href}
+                locale={language.code}
+                size="sm"
+              >
+                <span className="flex items-center gap-3">
+                  <LanguageFlag language={language.code} size="sm" />
+                  <span className="text-sm font-light text-gray-700">{language.label}</span>
+                  {isCurrent && (
+                    <Icon className="ml-auto text-teal-600" icon={CheckIcon} size="xs" />
+                  )}
+                </span>
+              </DropdownItem>
+            </li>
+          )
+        })}
+      </ul>
     </Dropdown>
   )
 }

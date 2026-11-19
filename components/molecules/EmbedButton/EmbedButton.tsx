@@ -71,10 +71,18 @@ export function EmbedButton({
 
   const { copy, copied } = useClipboard()
 
+  const heading = title
+    ? t('media.general.embed_title', { title })
+    : t('media.general.embed_player')
+
+  // A snippet, a field and a button are no `menu`: the panel is a non-modal
+  // dialog, named by the heading it shows.
   return (
     <Dropdown
       align="right"
+      ariaLabel={heading}
       className={className}
+      role="dialog"
       size="lg"
       trigger={(props) => (
         <Button icon={CodeBracketIcon} size="sm" variant="ghost" {...props}>
@@ -83,9 +91,7 @@ export function EmbedButton({
       )}
     >
       <div className="flex flex-col gap-3 p-4">
-        <p className="text-sm font-medium text-gray-700">
-          {title ? t('media.general.embed_title', { title }) : t('media.general.embed_player')}
-        </p>
+        <p className="text-sm font-medium text-gray-700">{heading}</p>
         <textarea
           readOnly
           aria-label={t('media.a11y.embed_code')}

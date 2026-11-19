@@ -275,14 +275,21 @@ the empty string an unset SahajCloud field leaves behind.
 ### Dropdown
 
 `trigger` is a function, and **the control it renders must spread the props it is handed**. They
-carry the reference, `aria-haspopup`, `aria-expanded` and the click handler, so the caller's own
-`<button>` is the single interactive element and the single tab stop. A wrapper carrying
+carry the reference, `aria-expanded`, any `aria-haspopup` and the click handler, so the caller's
+own `<button>` is the single interactive element and the single tab stop. A wrapper carrying
 `role="button"` around a focusable control is axe `nested-interactive`, serious (#278), and the
 atom no longer has one to fall back on — a trigger that renders a `<span>` is operable by nothing.
 
 ```tsx
 <Dropdown trigger={(props) => <Button {...props}>Open</Button>}>
 ```
+
+`role` says what the panel is. The default, `disclosure`, is a list of `DropdownItem` links: the
+panel takes no role and the trigger names no popup, the APG disclosure pattern (`LanguageDropdown`).
+Anything else — a field, a button, a slider — is a non-modal `dialog` named by `ariaLabel`
+(`EmbedButton`, the meditation player's audio settings). There is no `menu`: it promises arrow-key
+navigation between `menuitem`s that the atom does not implement, and axe reports a `menu` holding
+links as `aria-required-children`.
 
 `openOnFocus` is the autocomplete mode: focus arrives at a child of the trigger, so the wrapper
 keeps the reference and the trigger is handed an empty object.

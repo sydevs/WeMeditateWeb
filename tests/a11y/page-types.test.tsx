@@ -289,7 +289,14 @@ describe('accessibility · page types', () => {
 
     mountDocument(renderToStaticMarkup(home.render()))
 
-    expect(document.querySelectorAll('[aria-haspopup="menu"]')).toHaveLength(1)
+    // A disclosure: its trigger says it is collapsed and names no popup role.
+    const languages = [...document.querySelectorAll('button[aria-expanded]')].filter(
+      (button) => button.textContent === EN_TRANSLATIONS.footer.languages,
+    )
+
+    expect(languages).toHaveLength(1)
+    expect(languages[0].getAttribute('aria-expanded')).toBe('false')
+    expect(languages[0].hasAttribute('aria-haspopup')).toBe(false)
   })
 
   it.each(TARGETS.map((target) => [target.name, target] as const))(
