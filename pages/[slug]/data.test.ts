@@ -10,7 +10,11 @@ import type { PageContextServer } from 'vike/types'
 
 const getPageBySlug = vi.fn()
 const getPageLocaleStatus = vi.fn()
-const settings = { homePage: null as { slug: string } | null, availableLocales: ['en'], audiences: [] }
+const settings = {
+  homePage: null as { slug: string } | null,
+  availableLocales: ['en'] as string[],
+  audiences: [],
+}
 
 vi.mock('../../server/sahajcloud-client', () => ({
   getPageBySlug: (...args: unknown[]) => getPageBySlug(...args),
@@ -34,6 +38,25 @@ interface AbortError {
   _pageContextAbort?: { _urlRedirect?: { url: string; statusCode: number } }
 }
 
+/**
+ * Whether the request renders the 404 state rather than redirecting.
+ *
+ * `redirectOf` rethrows a `render()` abort, because a 404 where a redirect was
+ * expected is a failure worth reading the stack of. The cases below want the
+ * 404 itself, so they ask for it by name.
+ */
+async function renders404(slug: string, locale = 'en') {
+  try {
+    await data({ locale, routeParams: { slug } } as unknown as PageContextServer)
+  } catch (error) {
+    const abort = (error as AbortError)._pageContextAbort
+
+    return abort !== undefined && abort._urlRedirect === undefined
+  }
+
+  return false
+}
+
 /** The redirect a request throws, or `null` when it renders instead. */
 async function redirectOf(slug: string, locale = 'en') {
   try {
@@ -51,6 +74,7 @@ async function redirectOf(slug: string, locale = 'en') {
 
 beforeEach(() => {
   settings.homePage = null
+  settings.availableLocales = ['en']
   getPageBySlug.mockResolvedValue({ id: 7, slug: 'about', content: [] })
   getPageLocaleStatus.mockResolvedValue({})
 })
@@ -108,5 +132,57 @@ describe('Pages data', () => {
     expect(getPageBySlug).toHaveBeenLastCalledWith({ slug: '', locale: 'fr' })
     expect(getPageLocaleStatus).toHaveBeenLastCalledWith({ slug: '' })
     expect(result.page).toMatchObject({ id: 1 })
+  })
+})
+
+describe('a page the reader’s language has no translation of', () => {
+  beforeEach(() => {
+    settings.availableLocales = ['en', 'it']
+    getPageBySlug.mockResolvedValue(null)
+    getPageLocaleStatus.mockResolvedValue({ en: 'published' })
+  })
+
+  it('lands on the English page instead of a 404', async () => {
+    expect(await redirectOf('about', 'it')).toEqual({ url: '/about', status: 302 })
+  })
+
+  it('is a 302, so publishing the translation changes where the URL lands', async () => {
+    // A 301 would be cached indefinitely, pinning the reader to English for
+    // as long as the browser keeps it.
+    expect((await redirectOf('about', 'it'))?.status).toBe(302)
+  })
+
+  it('sends the home page to `/`, not to `/index`', async () => {
+    settings.homePage = { slug: 'welcome' }
+
+    // `/` routes as `index`, which is a routing spelling and never a URL.
+    expect(await redirectOf('index', 'it')).toEqual({ url: '/', status: 302 })
+  })
+
+  it('leaves the 404 standing when the status read failed', async () => {
+    // `getPageLocaleStatus` answers `{}` on failure. Reading that as "English
+    // is not published" is right: nothing is known, so nothing is claimed.
+    getPageLocaleStatus.mockResolvedValue({})
+
+    expect(await renders404('about', 'it')).toBe(true)
+  })
+
+  it('leaves the 404 standing when English itself is unpublished', async () => {
+    getPageLocaleStatus.mockResolvedValue({ it: 'published' })
+
+    expect(await renders404('about', 'it')).toBe(true)
+  })
+
+  it('leaves the 404 standing for an English request', async () => {
+    // Nothing to fall back to, and `/about` → `/about` would loop.
+    expect(await renders404('about', 'en')).toBe(true)
+  })
+
+  it('leaves the 404 standing when the site does not offer English', async () => {
+    // `advertisedLocales` wants both halves: a locale this site switched off
+    // has no URL to point at, and `server/site-context.ts` would 404 it.
+    settings.availableLocales = ['it']
+
+    expect(await renders404('about', 'it')).toBe(true)
   })
 })
