@@ -53,6 +53,7 @@ import type {
   PageStatus,
   WebConfig,
   WebTranslations,
+  Meditation,
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
@@ -273,6 +274,55 @@ const MEDITATION_SELECT = {
   thumbnail: true,
   _status: true,
 } satisfies MeditationsSelect<true>
+
+/**
+ * The keyframe fields `MeditationTemplate` reads, and all a keyframe keeps of
+ * the `frames` document SahajCloud merges into it.
+ *
+ * ⚠ **No query narrows `frames`, so this list does.** It is a JSON field
+ * SahajCloud fills in its own afterRead hook, with a `frames` read that takes
+ * no `select`, `populate` or `depth` from ours. A chakra keyframe therefore
+ * carries its node's whole `page` document whatever is asked for here
+ * (verified against production at depths 0-3, and with `populate` entries for
+ * `frames`, `subtle-system-nodes` and `pages`).
+ *
+ * `downloadUrl` is not a `Frame` field: the template reads it for a video's
+ * fallback, and no frame carries it today.
+ */
+const MEDITATION_FRAME_FIELDS = [
+  'id',
+  'timestamp',
+  'url',
+  'mimeType',
+  'duration',
+  'downloadUrl',
+] as const
+
+/**
+ * A meditation with each keyframe cut down to `MEDITATION_FRAME_FIELDS`.
+ *
+ * Still the collection's own shape, so it can seed live preview's
+ * `initialData`: a streamed document arrives whole from the populate proxy and
+ * renders the same.
+ */
+export function narrowMeditationFrames(meditation: Meditation): Meditation {
+  if (!Array.isArray(meditation.frames)) return meditation
+
+  return {
+    ...meditation,
+    frames: meditation.frames.map((frame: unknown) => {
+      // A JSON field: nothing upstream guarantees an entry is an object.
+      if (!frame || typeof frame !== 'object') return frame
+
+      return Object.fromEntries(
+        MEDITATION_FRAME_FIELDS.filter((key) => Object.hasOwn(frame, key)).map((key) => [
+          key,
+          (frame as Record<string, unknown>)[key],
+        ]),
+      )
+    }) as Meditation['frames'],
+  }
+}
 
 /**
  * Fields for a Lecture. `fullLecture` is selected so a clip can reach its

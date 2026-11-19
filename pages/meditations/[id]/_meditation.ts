@@ -1,11 +1,20 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
 import type { Locale, Meditation, MeditationSong } from '../../../server/sahajcloud-types'
-import { getDocumentById, getMeditationSongs } from '../../../server/sahajcloud-client'
+import {
+  getDocumentById,
+  getMeditationSongs,
+  narrowMeditationFrames,
+} from '../../../server/sahajcloud-client'
 import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface MeditationData {
+  /**
+   * Keyframes cut down to what the player reads (`narrowMeditationFrames`):
+   * this is serialised into the page, and a chakra keyframe otherwise brings
+   * a whole page document with it.
+   */
   meditation: Meditation
   /**
    * Background-music tracks layered under the guided voice in the player. Empty
@@ -48,5 +57,5 @@ export async function loadMeditation(pageContext: PageContextServer): Promise<Me
     throw render(404, `Meditation with ID "${id}" not found.`)
   }
 
-  return { meditation, musicTracks, locale, id }
+  return { meditation: narrowMeditationFrames(meditation), musicTracks, locale, id }
 }
