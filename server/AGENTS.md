@@ -86,8 +86,10 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
   and nothing here caches them, and a gap this warning catches stands until an editor fixes the
   data — so a bare `captureMessage` bills the Sentry quota per page view. `getWebConfig` sends one
   event per distinct gap per isolate (`reportedConfigGaps`) and keeps `console.warn` on every
-  request. Lower the volume, never the level: a warning nobody can afford to leave on gets turned
-  off, and then the gap is invisible again.
+  request; `warnOnce` in [error-utils.ts](error-utils.ts) is the same bound for any other
+  warning, with one memo per source, so one source's churn cannot re-arm another's. Lower the
+  volume, never the level: a warning nobody can afford to leave on gets turned off, and then the
+  gap is invisible again.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
   anyway is scrubbed in `entry.ts`, not where it is captured.** That module pins the v10 baseline
@@ -125,8 +127,10 @@ legitimately has nothing to list.
 
 Three rules still apply:
 
-- **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
-  `server/atlas-client.ts`.
+- **Degrade on failure, through `degrade`** ([error-utils.ts](error-utils.ts)): render without
+  the data, and report the failure once per key per isolate. Key it on a small set (an id, an
+  origin), never on the visitor's URL: `getAtlasSeo` passes no key, so a site-wide 403 is one
+  event, not one per crawled route. See `getAtlasSeo` in `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).

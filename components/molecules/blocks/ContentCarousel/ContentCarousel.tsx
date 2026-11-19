@@ -1,8 +1,8 @@
-import { ComponentProps, useCallback, useState, useEffect } from 'react'
-import useEmblaCarousel from 'embla-carousel-react'
+import { ComponentProps } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ContentCard, ContentCardProps } from '../../ContentCard/ContentCard'
 import { Button } from '../../../atoms/Button/Button'
+import { useCarousel } from '../../../../hooks/useCarousel'
 import { useT } from '../../../../hooks/useT'
 import { ASPECT_RATIO_VALUES, type AspectRatio } from '../../../../lib/cloudflare-images'
 
@@ -116,63 +116,15 @@ export function ContentCarousel({
   const t = useT()
   const { imageHeight, card, slideGap } = CAROUSEL_SIZES[size]
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: 'center',
-    slidesToScroll: 1,
-    containScroll: 'trimSnaps',
-    // A slide counts as "in view", full opacity and interactive, once it is
-    // nearly fully visible (~0.95). This bases focus on actual visibility,
-    // not a single centered index, so every fully-visible card stays bright
-    // and only edge-clipped peekers fade, however many slides fit in the
-    // current viewport.
-    inViewThreshold: 0.95,
-  })
-
-  const [slidesInView, setSlidesInView] = useState<number[]>([])
-  // Whether the carousel can scroll further in each direction. This drives
-  // hiding the previous and next arrows at the first and last slide.
-  const [canScrollPrev, setCanScrollPrev] = useState(false)
-  const [canScrollNext, setCanScrollNext] = useState(false)
-
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev()
-  }, [emblaApi])
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
-
-  const updateState = useCallback(() => {
-    if (!emblaApi) return
-    setSlidesInView(emblaApi.slidesInView())
-    setCanScrollPrev(emblaApi.canScrollPrev())
-    setCanScrollNext(emblaApi.canScrollNext())
-  }, [emblaApi])
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      if (emblaApi) emblaApi.scrollTo(index)
-    },
-    [emblaApi],
-  )
-
-  useEffect(() => {
-    if (!emblaApi) return
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount; an empty `slidesInView` already renders every slide in view (below)
-    updateState()
-    emblaApi.on('select', updateState)
-    // slidesInView fires as slides enter or leave the viewport while scrolling.
-    emblaApi.on('slidesInView', updateState)
-    // reInit fires when the slides change, for example when items load in,
-    // so arrow visibility and in-view state stay correct after a late data fetch.
-    emblaApi.on('reInit', updateState)
-
-    return () => {
-      emblaApi.off('select', updateState)
-      emblaApi.off('slidesInView', updateState)
-      emblaApi.off('reInit', updateState)
-    }
-  }, [emblaApi, updateState])
+  const { emblaRef, slidesInView, canScrollPrev, canScrollNext, scrollPrev, scrollNext, scrollTo } =
+    useCarousel({
+      // A slide counts as "in view", full opacity and interactive, once it is
+      // nearly fully visible (~0.95). This bases focus on actual visibility,
+      // not a single centered index, so every fully-visible card stays bright
+      // and only edge-clipped peekers fade, however many slides fit in the
+      // current viewport.
+      inViewThreshold: 0.95,
+    })
 
   return (
     <div className={`relative ${className}`} {...props}>
@@ -235,6 +187,9 @@ export function ContentCarousel({
                   }`}
                   // A clipped or edge slide scrolls into view on click. A
                   // fully visible slide keeps its own links and play button clickable.
+                  // shortcut: passes the slide index as a snap index, which overshoots once a wide
+                  // viewport puts several leading slides on snap 0; map it through
+                  // `internalEngine().slideRegistry` when a clicked slide is seen staying dimmed.
                   onClick={inView ? undefined : () => scrollTo(index)}
                 >
                   <div className={inView ? '' : 'pointer-events-none'}>
