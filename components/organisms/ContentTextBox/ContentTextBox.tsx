@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
-import { Button, Image } from '../../atoms'
+import { Button, CircleDecorationSvg, Image, TriangleDecorationSvg } from '../../atoms'
+import type { TextBoxDecoration } from '../../../lib/textbox-decorations'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
@@ -53,6 +54,15 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
    * @default 'left'
    */
   align?: 'left' | 'right'
+
+  /**
+   * An ornament drawn from `lg` up, always behind the box and never over its
+   * text. Omitted, none is drawn.
+   * - circle: a leaf ring behind the image's inner lower corner
+   * - triangle: hangs off the image's outer lower corner
+   * - gradient: a teal wash running below the image's outer half
+   */
+  decoration?: TextBoxDecoration
 }
 
 /**
@@ -90,6 +100,7 @@ export function ContentTextBox({
   imageHeight,
   imageAspectRatio,
   align = 'left',
+  decoration,
   className = '',
   ...props
 }: ContentTextBoxProps) {
@@ -113,18 +124,46 @@ export function ContentTextBox({
           Mobile: fill the column width, capped to a 1:1 aspect (height ≤ width, via
           the captured page width `--page-width` minus the page gutters) and
           `object-cover` so portrait images crop to ≤ square rather than running
-          tall. Desktop (lg): the original contained, container-height behavior. */}
-      <Image
-        alt={imageAlt}
-        aspectRatio={imageAspectRatio}
-        className="w-full max-h-[calc(var(--page-width)-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
-        forceAspectRatio={false}
-        height={imageHeight}
-        objectFit="cover"
-        sizes="(max-width: 1024px) 100vw, 600px"
-        src={imageSrc}
-        width={imageWidth}
-      />
+          tall. Desktop (lg): the original contained, container-height behavior.
+          From lg the wrapper spans the root's height, centring the image as
+          the root did, so an ornament takes the image's sides but the root's
+          bottom: the image can overflow a root capped at 700px. `isolate`
+          keeps the ornaments drawn behind the image above the page. */}
+      <div className="relative isolate lg:grid lg:items-center lg:self-stretch">
+        <Image
+          alt={imageAlt}
+          aspectRatio={imageAspectRatio}
+          className="w-full max-h-[calc(var(--page-width)-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
+          forceAspectRatio={false}
+          height={imageHeight}
+          objectFit="cover"
+          sizes="(max-width: 1024px) 100vw, 600px"
+          src={imageSrc}
+          width={imageWidth}
+        />
+
+        {/* Each ornament reaches at most 7rem below the root, inside its
+            `lg:my-32`, so it never reaches the next block's text. The wash
+            fades out below the image; above that the image hides it. */}
+        {decoration === 'triangle' && (
+          <TriangleDecorationSvg
+            aria-hidden="true"
+            className={`pointer-events-none absolute bottom-0 hidden h-auto w-60 translate-y-1/3 lg:block 2xl:w-72 ${align === 'right' ? 'right-6' : 'left-6'}`}
+          />
+        )}
+        {decoration === 'gradient' && (
+          <div
+            aria-hidden="true"
+            className={`pointer-events-none absolute -bottom-28 -z-10 hidden h-56 from-teal-100 to-transparent mask-b-from-50% lg:block ${align === 'right' ? 'right-0 left-[40%] bg-linear-to-r' : 'right-[40%] left-0 bg-linear-to-l'}`}
+          />
+        )}
+        {decoration === 'circle' && (
+          <CircleDecorationSvg
+            aria-hidden="true"
+            className={`pointer-events-none absolute -bottom-24 -z-10 hidden h-auto w-80 text-line-subtle lg:block ${align === 'right' ? '-left-24' : '-right-24'}`}
+          />
+        )}
+      </div>
 
       {/* Content - natural stack on mobile, positioned and centered on desktop */}
       <div className={`lg:z-10 ${contentContainerClasses}`}>

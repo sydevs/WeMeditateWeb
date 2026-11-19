@@ -236,6 +236,41 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
+    <StorySection
+      description="Drawn from lg up. On a page, RichText decides which text boxes carry one (lib/textbox-decorations.ts): the triangle takes the lower corner away from the text and hangs a third below the image, and the block's bottom margin grows to hold it."
+      title="Decoration"
+    >
+      <div className="flex flex-col gap-8">
+        <StorySection title="Text Left, Triangle Right" variant="subsection">
+          <ContentOverlay
+            align="left"
+            className="full-bleed"
+            ctaHref="#"
+            ctaText="Learn More"
+            decoration="triangle"
+            imageAlt="Decorated overlay, text on the left"
+            imageSrc="https://picsum.photos/seed/textbox-overlay-left/1600/900"
+            surface="dark"
+            text="Shri Mataji Nirmala Devi maintained that there is a powerful, yet loving energy lying within each human being."
+            title="Making History"
+          />
+        </StorySection>
+
+        <StorySection title="Text Right, Triangle Left" variant="subsection">
+          <ContentOverlay
+            align="right"
+            className="full-bleed"
+            decoration="triangle"
+            imageAlt="Decorated overlay, text on the right"
+            imageSrc="https://picsum.photos/seed/textbox-overlay-right/1600/900"
+            surface="dark"
+            text="Meditation brings a balance to the whole personality, and its effects reach well beyond the practice itself."
+            title="Beyond the Practice"
+          />
+        </StorySection>
+      </div>
+    </StorySection>
+
     <div />
   </StoryWrapper>
 )

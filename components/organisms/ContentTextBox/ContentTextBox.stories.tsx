@@ -95,6 +95,54 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
+    <StorySection
+      description="Drawn from lg up, behind the box and never over its text. On a page, RichText decides which text boxes carry one (lib/textbox-decorations.ts): the first side box opens with the circle, then an image on the left takes the triangle and an image on the right the wash, and no two neighbours repeat one."
+      title="Decorations"
+    >
+      <div className="flex flex-col gap-16">
+        <StorySection title="Circle" variant="subsection">
+          <ContentTextBox
+            align="left"
+            ctaHref="#"
+            ctaText="Meditate Now"
+            decoration="circle"
+            description="Whether you're looking to de-stress, boost your self-esteem, or simply seeking a moment to pause, follow our easy yet effective guided meditations."
+            imageAlt="Person meditating with eyes closed"
+            imageHeight={1200}
+            imageSrc="https://picsum.photos/seed/textbox-circle/900/1200"
+            imageWidth={900}
+            title="Choose your meditation"
+          />
+        </StorySection>
+
+        <StorySection title="Triangle" variant="subsection">
+          <ContentTextBox
+            align="left"
+            decoration="triangle"
+            description="Shri Mataji not only founded and spread the method of Sahaja Yoga far across the world but also created many non-profit organizations in various fields of public life."
+            imageAlt="Shri Mataji among a crowd"
+            imageHeight={1200}
+            imageSrc="https://picsum.photos/seed/textbox-triangle/900/1200"
+            imageWidth={900}
+            title="A life dedicated to humanity"
+          />
+        </StorySection>
+
+        <StorySection title="Wash" variant="subsection">
+          <ContentTextBox
+            align="right"
+            decoration="gradient"
+            description="Since birth Shri Mataji was surrounded by exceptional people. Her parents were scholars and political activists who played an important role in the liberation movement of India."
+            imageAlt="Shri Mataji with her family"
+            imageHeight={1200}
+            imageSrc="https://picsum.photos/seed/textbox-wash/900/1200"
+            imageWidth={900}
+            title="Life among great people"
+          />
+        </StorySection>
+      </div>
+    </StorySection>
+
     <StorySection inContext={true} title="Constrained Width">
       <div className="max-w-7xl mx-auto px-4">
         <ContentTextBox
