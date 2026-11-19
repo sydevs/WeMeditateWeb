@@ -390,7 +390,7 @@ animation from interactions at AAA (2.3.3), and 2.2.2 Pause, Stop, Hide starts a
 
 [layouts/tailwind.css](./layouts/tailwind.css) holds the theme: the teal, coral and gray scales,
 the standalone semantic colors (accent, error, success, info), the warm background, the
-Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
+Raleway/Futura Book font families with weights 200–700, and three custom animations. Everything else
 uses Tailwind's defaults.
 
 There is no `tailwind.config.ts`, and adding one changes nothing without an `@config` directive

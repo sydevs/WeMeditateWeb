@@ -336,6 +336,7 @@ export const blockConverters: BlockConverters = {
         className={FULL_BLEED_SPLASH}
         ctaHref={fields.actionURL ?? undefined}
         ctaText={fields.actionText ?? undefined}
+        loader={isLead}
         priority={isLead}
         subtitle={fields.subtitle ?? undefined}
         surface={splashSurface(fields.textColor)}

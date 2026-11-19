@@ -11,7 +11,8 @@ Tailwind v4.1.16 runs through the `@tailwindcss/vite` plugin, with CSS-first con
 the `@theme` directive:
 - Brand colors — teal, coral, and gray palettes, plus semantic colors (error, success, info)
 - Typography — Raleway and Futura Book, weights 200–700
-- Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
+- Three custom animations — `--animate-pulse-scale`, `--animate-shimmer` and
+  `--animate-splash-loader-exit`
 - Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
 **There is no JavaScript config file, and adding one back changes nothing on its own.** v4 reads

@@ -5,7 +5,7 @@ import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
 import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import type { Track } from '../../molecules'
-import { classFor } from '../../../tests/_helpers/markup'
+import { classFor, classesWith } from '../../../tests/_helpers/markup'
 import { enT } from '../../../lib/i18n'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
@@ -269,6 +269,18 @@ describe('splash block converter — LCP priority', () => {
 
     expect(html).toContain('loading="lazy"')
     expect(html).not.toContain('fetchPriority')
+  })
+})
+
+describe('splash block converter — loader', () => {
+  it('covers the lead splash with the loader', () => {
+    expect(classesWith(renderSplash(0), 'animate-splash-loader-exit')).toHaveLength(1)
+  })
+
+  it('leaves every other splash uncovered', () => {
+    expect(renderSplash(1)).toContain('Inner Peace')
+    expect(classesWith(renderSplash(1), 'animate-splash-loader-exit')).toEqual([])
+    expect(classesWith(renderSplash(0, 'block'), 'animate-splash-loader-exit')).toEqual([])
   })
 })
 

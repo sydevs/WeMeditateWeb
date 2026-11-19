@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Splash } from './Splash'
+import { anchorFor, classFor, classesWith } from '../../../tests/_helpers/markup'
 
 const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
 
@@ -41,5 +42,63 @@ describe('<Splash> call to action', () => {
 
     expect(html).toContain('transition-transform')
     expect(html).not.toContain('transition-colors')
+  })
+})
+
+describe('<Splash loader> in the server’s HTML', () => {
+  const lead = (surface: 'light' | 'dark' = 'dark') =>
+    renderToStaticMarkup(
+      <Splash
+        loader
+        priority
+        backgroundImage={CF_PUBLIC_URL}
+        ctaHref="/meditations"
+        ctaText="Begin"
+        surface={surface}
+        title="Welcome"
+      />,
+    )
+
+  it('ends on a CSS timer, so a visitor without JavaScript is not left under it', () => {
+    const overlay = classFor(lead(), 'animate-splash-loader-exit').split(' ')
+
+    expect(overlay).toContain('absolute')
+    expect(overlay).toContain('motion-reduce:hidden')
+    expect(overlay).toContain('pointer-events-none')
+    expect(overlay).toContain('group-focus-within/splash:hidden')
+  })
+
+  it('covers the content from above it, and the content stays in the markup', () => {
+    const html = lead()
+
+    expect(classFor(html, 'animate-splash-loader-exit').split(' ')).toContain('z-20')
+    expect(html.indexOf('Welcome')).toBeGreaterThan(-1)
+    expect(html.indexOf('Welcome')).toBeLessThan(html.indexOf('animate-splash-loader-exit'))
+    expect(anchorFor(html, '/meditations')).not.toBe('')
+  })
+
+  it('repeats the hero’s own URL as an <img>, so the page still preloads one image', () => {
+    const html = lead()
+    const variant = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/width=2048'
+
+    // The hero, the loader's copy, and the one hoisted preload's href.
+    expect(html.split(variant)).toHaveLength(4)
+    expect(html.split('rel="preload"')).toHaveLength(2)
+    expect(html).not.toContain('background-image')
+  })
+
+  it('tints a dark splash with the brand’s dark coral, and a light one with the warm wash', () => {
+    expect(classFor(lead('dark'), 'mix-blend-multiply').split(' ')).toContain('bg-coral-900')
+    expect(classFor(lead('light'), 'mix-blend-multiply').split(' ')).toContain('bg-bg-warm')
+    expect(classFor(lead('light'), 'animate-splash-loader-exit').split(' ')).toContain(
+      'surface-light',
+    )
+  })
+
+  it('is absent without the prop', () => {
+    const html = renderToStaticMarkup(<Splash priority backgroundImage={CF_PUBLIC_URL} />)
+
+    expect(html).toContain('fetchPriority="high"')
+    expect(classesWith(html, 'mix-blend-multiply')).toEqual([])
   })
 })

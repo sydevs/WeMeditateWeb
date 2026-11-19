@@ -1,5 +1,6 @@
 import { ComponentProps, useEffect, useState } from 'react'
 import { AnimatedLogoSvg } from '../graphics/svgs/AnimatedLogoSvg'
+import { surface } from '../surface'
 import {
   type AspectRatio,
   type ImageSize,
@@ -13,9 +14,10 @@ export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> 
    * - `primary`: Dark teal
    * - `secondary`: Dark coral
    * - `neutral`: Dark gray
+   * - `warm`: The light warm background, for a loader over a light image
    * - `none`: No color overlay
    */
-  color?: 'primary' | 'secondary' | 'neutral' | 'none'
+  color?: 'primary' | 'secondary' | 'neutral' | 'warm' | 'none'
 
   /**
    * Size variant for the logo and text.
@@ -45,8 +47,17 @@ export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> 
    */
   imageSize?: ImageSize
 
-  /** When true, triggers the fade-out animation and removes the component. */
+  /** When false, triggers the fade-out animation and removes the component. */
   isLoading?: boolean
+
+  /**
+   * Fades the overlay out on its own a few seconds after it paints, in CSS.
+   * For a loader the server renders: a visitor whose JavaScript never runs
+   * cannot set `isLoading`, and would otherwise stay under it.
+   * `isLoading={false}` still ends it sooner.
+   * @default false
+   */
+  autoExit?: boolean
 
   /** Optional text to display below the animated logo. */
   text?: string
@@ -77,6 +88,7 @@ export function SplashLoader({
   imageAspectRatio = 'ultrawide',
   imageSize = 'xlarge',
   isLoading = true,
+  autoExit = false,
   text,
   className = '',
   ...props
@@ -105,6 +117,7 @@ export function SplashLoader({
     primary: 'bg-teal-900',
     secondary: 'bg-coral-900',
     neutral: 'bg-gray-900',
+    warm: 'bg-bg-warm',
     none: '',
   }
 
@@ -130,18 +143,29 @@ export function SplashLoader({
     ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
     : undefined
 
-  const backgroundImageStyle = resolvedBackgroundImage
-    ? { backgroundImage: `url(${resolvedBackgroundImage})` }
-    : {}
+  const surfaceClass = surface(color === 'warm' ? 'light' : 'dark')
+  const exitClass = autoExit ? 'animate-splash-loader-exit' : ''
 
   return (
     <div
-      className={`absolute inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+      className={`absolute inset-0 isolate flex items-center justify-center transition-opacity duration-500 ${surfaceClass} ${
         isLoading ? 'opacity-100' : 'opacity-0'
-      } ${className}`}
-      style={backgroundImageStyle}
+      } ${exitClass} ${className}`}
       {...props}
     >
+      {/* An <img>, not a CSS background: laid over a hero, this repeats the
+          hero's URL, and the hero rule (DESIGN_SYSTEM.md, Performance) keeps
+          every painting of it an <img> that shares the hero's one preload. */}
+      {resolvedBackgroundImage && (
+        <img
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          src={resolvedBackgroundImage}
+        />
+      )}
+
       {/* Color overlay with multiply blend mode */}
       <div
         className={`absolute inset-0 mix-blend-multiply ${colorClasses[color]}`}
@@ -149,11 +173,9 @@ export function SplashLoader({
 
       {/* Centered animated logo and text */}
       <div className={`relative z-10 flex flex-col items-center ${sizeClasses[size].gap}`}>
-        <AnimatedLogoSvg className={`text-white ${sizeClasses[size].logo}`} />
+        <AnimatedLogoSvg className={`text-fg ${sizeClasses[size].logo}`} />
         {text && (
-          <p className={`text-white font-light text-center px-4 ${sizeClasses[size].text}`}>
-            {text}
-          </p>
+          <p className={`text-fg font-light text-center px-4 ${sizeClasses[size].text}`}>{text}</p>
         )}
       </div>
     </div>

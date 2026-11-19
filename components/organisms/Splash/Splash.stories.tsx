@@ -1,4 +1,5 @@
 import type { Story, StoryDefault } from '@ladle/react'
+import { useState } from 'react'
 import { Splash } from './Splash'
 import { Header } from '../Header'
 import { Countdown, Button, Input } from '../../atoms'
@@ -110,6 +111,10 @@ export const Default: Story = () => {
         </div>
       </StorySection>
 
+      <StorySection inContext={true} title="Lead Splash Loader">
+        <LeadSplashLoader />
+      </StorySection>
+
       <StorySection inContext={true} title="Countdown Timer">
         <div className="relative full-bleed">
           <Splash
@@ -182,3 +187,46 @@ export const Default: Story = () => {
 }
 
 Default.storyName = 'Splash'
+
+/**
+ * `loader` covers the splash until its image loads, so it is gone almost at
+ * once here. Replay remounts it; throttle the network to watch it longer.
+ */
+function LeadSplashLoader() {
+  const [run, setRun] = useState(0)
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <Button variant="primary" onClick={() => setRun(run + 1)}>
+          Replay
+        </Button>
+      </div>
+      <div className="relative full-bleed">
+        <Splash
+          key={`dark-${run}`}
+          loader
+          priority
+          backgroundImage={`https://picsum.photos/id/1018/1920/1080?run=${run}`}
+          ctaHref="/start"
+          ctaText="Try it now"
+          subtitle="A dark splash: the loader is the old site's dark brown."
+          surface="dark"
+          title="Meditate for Better Mental Health"
+        />
+      </div>
+      <div className="relative full-bleed">
+        <Splash
+          key={`light-${run}`}
+          loader
+          backgroundImage={`https://picsum.photos/id/1015/1920/1080?run=${run}`}
+          ctaHref="/start"
+          ctaText="Begin now"
+          subtitle="A light splash: the loader is the warm wash, so dark header text stays legible."
+          surface="light"
+          title="Discover Inner Peace"
+        />
+      </div>
+    </div>
+  )
+}

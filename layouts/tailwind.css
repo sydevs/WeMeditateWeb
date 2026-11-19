@@ -99,8 +99,18 @@
     }
   }
 
+  /* `SplashLoader`'s exit for a visitor without JavaScript. `visibility` goes
+     with the opacity, so the spent overlay is neither drawn nor hit-tested. */
+  @keyframes splash-loader-exit {
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
   --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
   --animate-shimmer: shimmer 2s ease-in-out infinite;
+  --animate-splash-loader-exit: splash-loader-exit 500ms ease-out 3s forwards;
 }
 
 /* Custom text glow utilities for content overlays */

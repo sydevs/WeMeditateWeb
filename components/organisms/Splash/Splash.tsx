@@ -1,6 +1,7 @@
-import { ComponentProps, ReactNode } from 'react'
+import { ComponentProps, ReactNode, useEffect, useRef, useState } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
 import { Link } from '../../atoms/Link'
+import { SplashLoader } from '../../atoms/SplashLoader'
 import { surface, type Surface } from '../../atoms/surface'
 import { isSafeLinkHref } from '../../../lib/urls'
 import {
@@ -50,6 +51,13 @@ export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
    * @default false
    */
   priority?: boolean
+  /**
+   * Covers the splash with `SplashLoader` until its background image loads,
+   * the way the old site opened its home page. For the splash a visitor lands
+   * on: the page's lead splash.
+   * @default false
+   */
+  loader?: boolean
   /** Optional content to display between subtitle and CTA, for example a countdown timer or search input */
   children?: ReactNode
 }
@@ -80,10 +88,21 @@ export function Splash({
   surface: surfaceValue = 'light',
   pulsate = false,
   priority = false,
+  loader = false,
   children,
   className = '',
   ...props
 }: SplashProps) {
+  const imageRef = useRef<HTMLImageElement>(null)
+  const [imageSettled, setImageSettled] = useState(false)
+
+  // An image that finished before hydration fired its `load` with no React
+  // listener attached yet. `complete` covers a failed image too.
+  useEffect(() => {
+    if (imageRef.current?.complete) {
+      setImageSettled(true)
+    }
+  }, [])
 
   const resolvedBackgroundImage = getImageURL(
     backgroundImage,
@@ -92,7 +111,7 @@ export function Splash({
 
   return (
     <div
-      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${surface(surfaceValue)} ${className}`}
+      className={`group/splash relative min-h-screen flex items-center justify-center overflow-hidden ${surface(surfaceValue)} ${className}`}
       {...props}
     >
       {/* Not a CSS background (invisible to the preload scanner, and it cannot
@@ -100,12 +119,15 @@ export function Splash({
           the layout and `className` reaches the image, so it cannot fill this
           parent — #145 deferred a fill mode). */}
       <img
+        ref={imageRef}
         alt=""
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover"
         fetchPriority={priority ? 'high' : undefined}
         loading={priority ? 'eager' : 'lazy'}
         src={resolvedBackgroundImage}
+        onError={() => setImageSettled(true)}
+        onLoad={() => setImageSettled(true)}
       />
 
       {/* Content Container */}
@@ -157,6 +179,27 @@ export function Splash({
           )}
         </div>
       </div>
+
+      {/* Over the content, under the overlaid header (`LayoutChrome`, z-30).
+          It hides the text a moment, so it must never strand anyone there: a
+          CSS timer ends it without JavaScript, clicks pass through, focus
+          entering the splash hides it at once, and reduced motion skips it.
+          The dark brand colour is the old site's brown; a light splash gets
+          the light warm wash, or the overlaid header's dark text would sit on
+          a dark loader. */}
+      {loader && (
+        <SplashLoader
+          autoExit
+          aria-hidden="true"
+          backgroundImage={backgroundImage}
+          className="z-20 pointer-events-none motion-reduce:hidden group-focus-within/splash:hidden"
+          color={surfaceValue === 'dark' ? 'secondary' : 'warm'}
+          imageAspectRatio={imageAspectRatio}
+          imageSize={imageSize}
+          isLoading={!imageSettled}
+          size="lg"
+        />
+      )}
     </div>
   )
 }

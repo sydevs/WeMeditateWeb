@@ -27,9 +27,10 @@ import { SplashLoader } from '..'
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Sets the logo and text scale. |
-| `color` | `'primary' \| 'secondary' \| 'neutral' \| 'none'` | `'primary'` | Background color, blended with `backgroundImage` in multiply mode. `none` shows no color overlay. |
+| `color` | `'primary' \| 'secondary' \| 'neutral' \| 'warm' \| 'none'` | `'primary'` | Background color, blended with `backgroundImage` in multiply mode. `warm` is the light warm background, for a light image, and draws the logo dark. `none` shows no color overlay. |
 | `backgroundImage` | `string` | — | URL of a background image, blended with `color`. |
 | `isLoading` | `boolean` | `true` | Set to `false` to start the fade-out. The component unmounts once the transition ends. |
+| `autoExit` | `boolean` | `false` | Fades the overlay out in CSS three seconds after it paints, whatever `isLoading` says. Set it on a loader the server renders: without JavaScript nothing else ends it. |
 | `text` | `string` | — | Optional text below the logo. Renders in white, centered. |
 
 ## Important notes
@@ -38,7 +39,9 @@ import { SplashLoader } from '..'
   or the overlay positions against the nearest positioned ancestor instead.
 - **Blend mode**: `mix-blend-multiply` combines the image and color into a darkened, tinted
   effect. It works best with a light-to-medium image, paired with a dark color variant (teal-900,
-  coral-900, gray-900).
+  coral-900, gray-900). The root isolates the blend, so the tint never reaches what lies behind.
+- **The image is an `<img>`, not a CSS background.** Laid over a hero, it repeats the hero's URL,
+  and React folds the two into one preload — see DESIGN_SYSTEM.md, Performance.
 - **Loading state**: when `isLoading` becomes `false`, the component fades out, then unmounts
   after 500ms. You do not need to remove it from the DOM yourself.
 
@@ -52,9 +55,12 @@ import { SplashLoader } from '..'
 
 ## Accessibility
 
-The animated logo inherits `currentColor`, and defaults to white for visibility. The component
-needs no ARIA attributes — it is a visual loading indicator that removes itself once loading
-completes.
+The animated logo draws in the surface's `text-fg`: white over the dark colors, gray over `warm`.
+
+A loader laid over content that is already there — `Splash`'s `loader` — is decoration: pass
+`aria-hidden="true"`, and keep it from stranding anyone. `Splash` lets clicks through
+(`pointer-events-none`), hides it the moment focus enters the splash, skips it under
+`prefers-reduced-motion`, and sets `autoExit`.
 
 ## Related components
 
