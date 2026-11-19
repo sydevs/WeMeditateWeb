@@ -64,6 +64,10 @@ const MEDITATION_QUERY = [
   'select[durationMinutes]=true',
   'select[duration]=true',
   'select[thumbnail]=true',
+  // A draft does come back from a `find` on this client contract — see the
+  // same check at `server/sahajcloud-client.ts`. Without this it renders as a
+  // live tile.
+  'select[_status]=true',
   'populate[images][url]=true',
   'populate[images][filename]=true',
   'populate[images][width]=true',
@@ -139,6 +143,7 @@ interface MeditationDoc {
   durationMinutes?: number | null
   duration?: number | null
   thumbnail?: unknown
+  _status?: unknown
 }
 
 /**
@@ -231,20 +236,23 @@ async function moodCardsFromDocs(
     if (typeof moodId !== 'number' || moodTitle.length === 0) continue
 
     const meditationId = meditationRef(doc, each)
-    const meditation = meditationId === null ? undefined : meditations.get(String(meditationId))
+    const found = meditationId === null ? undefined : meditations.get(String(meditationId))
+    const meditation = found?._status === 'draft' ? undefined : found
 
     const href = meditation ? documentHref('meditations', { id: meditation.id }) : null
     const minutes = meditation ? meditationDurationMinutes(meditation) : undefined
 
-    // No meditation, no route, or no length: the label names the meditation by
-    // its length, so all three leave nothing to render. Never a dead link, and
-    // never the "nothing for now" message this goal puts out of scope.
+    // Unpublished, no meditation, no route, or no length: the label names the
+    // meditation by its length, so all four leave nothing to render. Never a
+    // dead link, and never the "nothing for now" message this goal puts out of
+    // scope.
     if (!meditation || !href || minutes === undefined) {
       warnOnce(`meditation:${moodId}:${each}`, 'a featured mood has no meditation for its slot', {
         moodId,
         moodTitle,
         slot: each,
         meditationId,
+        status: asText(found?._status) || null,
         durationMinutes: minutes ?? null,
       })
       continue

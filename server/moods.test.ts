@@ -35,9 +35,14 @@ const DURATIONS: Record<number, number> = { 69: 15, 101: 13, 85: 20, 102: 18, 37
 
 /**
  * Answers the moods read with `docs`, and the meditations read with whichever
- * of `available` the query asked for.
+ * of `available` the query asked for. Any id in `drafts` comes back
+ * unpublished, which a `find` on this client contract does return.
  */
-function mockReads(docs: unknown[], available: Record<number, number> = DURATIONS) {
+function mockReads(
+  docs: unknown[],
+  available: Record<number, number> = DURATIONS,
+  drafts: number[] = [],
+) {
   return vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
     const url = String(input)
 
@@ -52,7 +57,11 @@ function mockReads(docs: unknown[], available: Record<number, number> = DURATION
     const meditations = ids
       .map(Number)
       .filter((id) => id in available)
-      .map((id) => ({ id, durationMinutes: available[id] }))
+      .map((id) => ({
+        id,
+        durationMinutes: available[id],
+        _status: drafts.includes(id) ? 'draft' : 'published',
+      }))
 
     return Promise.resolve({
       ok: true,
@@ -109,7 +118,10 @@ describe('featuredMoodCards · the reads', () => {
 
     await featuredMoodCards({ locale: 'fr', slot: 'morning' })
 
-    expect(String(fetchSpy.mock.calls[1][0])).toContain('locale=en')
+    const meditationsUrl = String(fetchSpy.mock.calls[1][0])
+    expect(meditationsUrl).toContain('locale=en')
+    // Nothing below can tell a draft apart without it.
+    expect(meditationsUrl).toContain('select[_status]=true')
   })
 
   it('degrades to an empty list, with one warning, when the moods read fails', async () => {
@@ -202,6 +214,20 @@ describe('featuredMoodCards · the tiles', () => {
     expect(captureMessage).toHaveBeenCalledWith(
       'a featured mood has no meditation for its slot',
       expect.objectContaining({ level: 'warning' }),
+    )
+  })
+
+  it('drops an unpublished meditation, and warns', async () => {
+    mockReads(MORNING, DURATIONS, [101])
+
+    const cards = await featuredMoodCards({ slot: 'morning' })
+
+    expect(cards.map((card) => card.moodId)).toEqual([1, 3, 4])
+    expect(captureMessage).toHaveBeenCalledWith(
+      'a featured mood has no meditation for its slot',
+      expect.objectContaining({
+        extra: expect.objectContaining({ moodId: 2, status: 'draft' }),
+      }),
     )
   })
 
