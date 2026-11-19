@@ -123,11 +123,20 @@ describe('showcaseItems', () => {
 
 describe('subtleSystemItems', () => {
   it('maps SahajCloud field names to SVG node ids, dropping unpublished refs', () => {
+    // The schema requires all twelve; an unpublished page arrives as a bare id.
     const items = subtleSystemItems({
       left: page(61, 'left-channel', 'Left Channel', 'The left side') as never,
+      right: 62,
+      center: 63,
       mooladhara: page(52, 'mooladhara-chakra', 'Mooladhara') as never,
+      kundalini: 99,
+      swadhistan: 53,
+      nabhi: 54,
       void: page(55, 'void-chakra', 'Void') as never,
-      kundalini: 99, // bare id → dropped
+      anahat: 56,
+      vishuddhi: 57,
+      agnya: 58,
+      sahasrara: 59,
     })
 
     expect(items.map((i) => i.id)).toEqual(['channel_left', 'chakra_1', 'chakra_3b'])

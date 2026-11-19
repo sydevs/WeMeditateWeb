@@ -2,17 +2,33 @@
  * App-side types and pure helpers for the custom Lexical blocks embedded in
  * `pages.content`.
  *
- * The block field shapes are not in the generated `payload-types.ts`. The
- * editor stores them loosely, as `[k: string]: unknown`, inside the
- * lexical tree. So the interfaces here are authored from the upstream
- * SahajCloud block definitions (`src/lib/richEditor/blocks/*`). Keep them
- * in sync with that source.
+ * The lexical tree types a block's `fields` as `[k: string]: unknown`, so a
+ * converter casts them to the matching `*BlockFields` type here. Each one
+ * derives from the generated `*Block` interface in `payload-types.ts`, so
+ * `pnpm types:cms` turns an upstream schema change into a compile error. A
+ * generated interface describes a saved block, while live preview renders an
+ * unsaved one, so a converter still guards a field the schema requires.
  *
  * Helpers that turn block fields into component props live here, not in
  * the converters, so they stay unit-testable without rendering.
  */
 
-import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
+import type {
+  Album,
+  ButtonBlock,
+  ContentIndexBlock,
+  Image,
+  ImageGalleryBlock,
+  LayoutBlock,
+  QuoteBlock,
+  ShowcaseBlock,
+  SongTag,
+  SplashBlock,
+  SubtleSystemBlock,
+  TableOfContentsBlock,
+  TextBoxBlock,
+  UserChoice,
+} from '../server/payload-types'
 import type { Meditation, Page } from '../server/sahajcloud-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
@@ -25,117 +41,47 @@ import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 /** A relationship or upload field: a populated document or a bare ID. */
 export type Ref<T> = number | T
 
-// --- Field shapes (mirror sy-devs SahajCloud `richEditor/blocks/*`) ---
+// --- Field shapes (derived from the generated `*Block` interfaces) ---
+
+/** A block's own fields, without the envelope every block carries. */
+type BlockFields<B> = Omit<B, 'id' | 'blockName' | 'blockType'>
 
 /** `textbox` — TextBoxBlock. */
-export interface TextBoxBlockFields {
-  image?: Ref<Image> | null
-  imagePosition: 'left' | 'right' | 'overlay'
-  /** Only meaningful for `imagePosition: 'overlay'`. */
-  textPosition?: 'left' | 'right' | 'center'
-  /** Only meaningful for `imagePosition: 'overlay'`. */
-  textColor?: 'dark' | 'light'
-  wisdomStyle?: boolean | null
-  title?: string | null
-  subtitle?: string | null
-  text?: string | null
-  buttonText?: string | null
-  buttonUrl?: string | null
-}
+export type TextBoxBlockFields = BlockFields<TextBoxBlock>
 
 /** `quote` — QuoteBlock. */
-export interface QuoteBlockFields {
-  title?: string | null
-  text: string
-  credit?: string | null
-  caption?: string | null
-}
+export type QuoteBlockFields = BlockFields<QuoteBlock>
 
 /** `button` — ButtonBlock. */
-export interface ButtonBlockFields {
-  text: string
-  url: string
-}
+export type ButtonBlockFields = BlockFields<ButtonBlock>
 
 /** `image-gallery` — ImageGalleryBlock (3–15 uploads). */
-export interface ImageGalleryBlockFields {
-  items?: Ref<Image>[] | null
-}
-
-/** A polymorphic showcase relationship entry. */
-export type ShowcaseRelationTo = 'meditations' | 'pages' | 'lectures' | 'app-cards'
-export interface ShowcaseItem {
-  relationTo: ShowcaseRelationTo
-  value: Ref<Meditation | Page | Lecture | AppCard>
-}
+export type ImageGalleryBlockFields = BlockFields<ImageGalleryBlock>
 
 /** `showcase` — ShowcaseBlock (3–6 polymorphic relationships). */
-export interface ShowcaseBlockFields {
-  items?: ShowcaseItem[] | null
-}
+export type ShowcaseBlockFields = BlockFields<ShowcaseBlock>
+
+/** A polymorphic showcase relationship entry. */
+export type ShowcaseItem = NonNullable<ShowcaseBlockFields['items']>[number]
+export type ShowcaseRelationTo = ShowcaseItem['relationTo']
 
 /** `subtle-system` — SubtleSystemBlock (12 single `pages` relationships). */
-export interface SubtleSystemBlockFields {
-  left?: Ref<Page> | null
-  right?: Ref<Page> | null
-  center?: Ref<Page> | null
-  mooladhara?: Ref<Page> | null
-  kundalini?: Ref<Page> | null
-  swadhistan?: Ref<Page> | null
-  nabhi?: Ref<Page> | null
-  void?: Ref<Page> | null
-  anahat?: Ref<Page> | null
-  vishuddhi?: Ref<Page> | null
-  agnya?: Ref<Page> | null
-  sahasrara?: Ref<Page> | null
-}
+export type SubtleSystemBlockFields = BlockFields<SubtleSystemBlock>
 
 /** `splash` — SplashBlock. */
-export interface SplashBlockFields {
-  layout: 'default' | 'countdown' | 'app' | 'map-search'
-  images?: Ref<Image>[] | null
-  title?: string | null
-  subtitle?: string | null
-  actionText?: string | null
-  actionURL?: string | null
-  /**
-   * Describes the text color (dark or light), mirroring the `textbox`
-   * overlay convention. Not yet authored in SahajCloud (see SahajCloud
-   * ticket). Absent is treated as light text on a dark hero (`surface: 'dark'`).
-   */
-  textColor?: 'dark' | 'light' | null
-}
-
-/** `layout` — LayoutBlock item. */
-export interface LayoutItem {
-  id?: string
-  image?: Ref<Image> | null
-  title?: string | null
-  titleUrl?: string | null
-  text?: string | null
-}
+export type SplashBlockFields = BlockFields<SplashBlock>
 
 /** `layout` — LayoutBlock. */
-export interface LayoutBlockFields {
-  style: 'grid' | 'tabs' | 'accordion' | 'list' | 'textList'
-  title?: string | null
-  defaultTab?: string | null
-  useColumnsOnDesktop?: boolean | null
-  items?: LayoutItem[] | null
-}
+export type LayoutBlockFields = BlockFields<LayoutBlock>
 
-/** A single entry in a `table-of-contents` block (matches the SahajCloud field). */
-export interface TocHeading {
-  slug: string
-  text: string
-  level: number
-}
+/** `layout` — LayoutBlock item. */
+export type LayoutItem = NonNullable<LayoutBlockFields['items']>[number]
 
 /** `table-of-contents` — TableOfContentsBlock. */
-export interface TableOfContentsBlockFields {
-  title?: string | null
-  headings?: TocHeading[] | null
-}
+export type TableOfContentsBlockFields = BlockFields<TableOfContentsBlock>
+
+/** A single entry in a `table-of-contents` block. */
+export type TocHeading = NonNullable<TableOfContentsBlockFields['headings']>[number]
 
 /** The `pages` collection's tag enum (drives page content-index facets). */
 export type PageTag = NonNullable<Page['tags']>[number]
@@ -163,17 +109,9 @@ export type PageTagLabels = Partial<Record<PageTag, string>>
  * `+data`. The editor never stores them. The `*Filters` fields mirror the
  * SahajCloud schema, but rendering does not use them: facets come from the
  * resolved items' own `tags` instead. */
-export interface ContentIndexBlockFields {
+export interface ContentIndexBlockFields extends BlockFields<ContentIndexBlock> {
+  // shortcut: restated rather than derived while #293 widens it; derive it once that lands.
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
-  limit: number
-  /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
-  pageFilters?: PageTag[] | null
-  /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
-  userChoiceFilters?: (number | UserChoice)[] | null
-  /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
-  songFilters?: (number | SongTag)[] | null
-  /** Virtual field computed by SahajCloud (path, filters, and limit). */
-  apiEndpoint?: string | null
   /** Cards for pages, lectures, and meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
