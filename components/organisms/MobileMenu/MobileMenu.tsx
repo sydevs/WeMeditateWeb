@@ -138,57 +138,61 @@ export function MobileMenu({
                   />
                 </div>
 
-                <ul className="px-6 pt-10">
-                  {navItems.map((item) => (
-                    <li key={item.label}>
-                      {item.dropdown ? (
-                        <Disclosure label={item.label} triggerClassName={row}>
-                          {item.dropdown.links.map((link) => (
-                            <li key={link.href}>
-                              <Link
-                                className={subRow}
-                                href={link.href}
-                                variant="unstyled"
-                                onClick={close}
-                              >
-                                {link.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </Disclosure>
-                      ) : (
-                        item.href && (
-                          <Link
-                            aria-current={item.active ? 'page' : undefined}
-                            className={`${row} aria-[current=page]:text-primary`}
-                            href={item.href}
-                            variant="unstyled"
-                            onClick={close}
-                          >
-                            {item.label}
-                          </Link>
-                        )
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                {/* `my-auto` centres the list in the room the bar and the foot
+                    leave, and collapses to nothing on a short screen —
+                    `justify-center` would push the first rows above the
+                    scroll origin, out of reach. */}
+                <div className="my-auto py-8">
+                  <ul className="px-6">
+                    {navItems.map((item) => (
+                      <li key={item.label}>
+                        {item.dropdown ? (
+                          <Disclosure label={item.label} triggerClassName={row}>
+                            {item.dropdown.links.map((link) => (
+                              <li key={link.href}>
+                                <Link
+                                  className={subRow}
+                                  href={link.href}
+                                  variant="unstyled"
+                                  onClick={close}
+                                >
+                                  {link.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </Disclosure>
+                        ) : (
+                          item.href && (
+                            <Link
+                              aria-current={item.active ? 'page' : undefined}
+                              className={`${row} aria-[current=page]:text-primary`}
+                              href={item.href}
+                              variant="unstyled"
+                              onClick={close}
+                            >
+                              {item.label}
+                            </Link>
+                          )
+                        )}
+                      </li>
+                    ))}
+                  </ul>
 
-                {actionLinkText && actionLinkHref && (
-                  <div className="flex justify-center px-6 pt-7">
-                    <Button
-                      href={actionLinkHref}
-                      icon={MapPinIcon}
-                      variant="outline"
-                      onClick={close}
-                    >
-                      {actionLinkText}
-                    </Button>
-                  </div>
-                )}
+                  {actionLinkText && actionLinkHref && (
+                    <div className="flex justify-center px-6 pt-7">
+                      <Button
+                        href={actionLinkHref}
+                        icon={MapPinIcon}
+                        variant="outline"
+                        onClick={close}
+                      >
+                        {actionLinkText}
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
-                {/* `mt-auto` holds these to the foot of a tall screen, and lets
-                    them follow the list on a short one. */}
-                <div className="mt-auto flex flex-col items-center gap-1 px-6 pt-12">
+                <div className="flex flex-col items-center gap-1 px-6">
                   {socialLinks.length > 0 && (
                     <div className="flex">
                       {socialLinks.map((social) => (
