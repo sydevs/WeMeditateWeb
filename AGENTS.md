@@ -107,9 +107,11 @@ These rules apply whether or not the matching rule file or skill is loaded.
   crawler at. A URL advertises only the locales its own document is published in —
   [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
   `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
-  set, never the set itself. A locale the document is **not** published in is still not a dead
-  URL: `pages/[slug]/+data.ts` 302s it to the English page, which is why the language dropdown
-  offers every `availableLocales` entry rather than the filtered set.
+  set, never the set itself. On the `[slug]` route a locale the document is **not** published in is
+  still not a dead URL: `pages/[slug]/+data.ts` 302s it to the English page, which is why the
+  language dropdown offers every `availableLocales` entry rather than the filtered set. No other
+  route has that fallback, and none needs one — `/meditations/:id` and `/lectures/:id` are
+  id-addressed, so their 404s do not depend on the locale.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
   answer from there. Never restate one of these rules at a call site. A **scheme** is part of that

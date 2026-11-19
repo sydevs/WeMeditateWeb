@@ -134,10 +134,12 @@ function Chrome({
   // Which locales each one lists is a separate question, and they differ on
   // purpose. The cluster carries published ∩ offered (`advertisedLocales`),
   // because a crawler must never be told a translation exists. This list
-  // carries every locale the site serves: an entry for a page with no
+  // carries every locale the site serves: on a `[slug]` page an entry with no
   // translation yet reaches the English page, through `pages/[slug]/+data.ts`'s
   // 302, and reaches the reader's own language the moment an editor publishes
-  // it. Filtering here would hide the language switch instead.
+  // it. Filtering here would hide the language switch instead. The 302 is that
+  // route's alone; `/meditations/:id` and `/lectures/:id` are id-addressed, so
+  // a switch there lands on the document either way.
   const languages = (settings.availableLocales ?? []).map((code) => ({
     code,
     label: localeEndonym(code),
