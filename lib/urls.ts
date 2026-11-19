@@ -227,6 +227,30 @@ export function sitePathFromUrl(url: string, origin: string | null | undefined):
   }
 }
 
+/** A place a visitor picked in a place search. */
+export interface MapPlace {
+  name: string
+  coordinates: { lat: number; lng: number }
+}
+
+/**
+ * Where picking a place in a Splash block's map search lands: the class map,
+ * searching around that place.
+ *
+ * The search rides in `?atlas=`, the widget's query routing: `center` is
+ * `<lng>,<lat>` and drives the results, and `q` is only the label its search
+ * box shows. `q` is encoded once more inside the route, so a name carrying `&`
+ * or `#` stays one value.
+ *
+ * shortcut: query routing only, which `/map`'s path routing ignores once the client record names a canonical embed; spell the path form once SahajAtlasWeb documents one that pre-fills.
+ */
+export function classMapSearchHref(locale: Locale, place: MapPlace): string {
+  const { lat, lng } = place.coordinates
+  const route = `/search?center=${lng},${lat}&q=${encodeURIComponent(place.name)}`
+
+  return localeHref(locale, `${MAP_PREFIX}?atlas=${encodeURIComponent(route)}`)
+}
+
 /**
  * The path a locale serves an already-normalized path at, origin-relative.
  *
@@ -276,32 +300,4 @@ export function localeHref(locale: Locale, href: string): string {
   const suffix = suffixAt === -1 ? '' : href.slice(suffixAt)
 
   return localePath(locale, normalizeContentPath(path)) + suffix
-}
-
-/** A place a visitor picked in a place search. */
-export interface MapPlace {
-  name: string
-  coordinates: { lat: number; lng: number }
-}
-
-/**
- * Where picking a place in a Splash block's map search lands: the class map,
- * searching around that place.
- *
- * The search rides in `?atlas=`, the widget's query routing: `center` is
- * `<lng>,<lat>` and drives the results, and `q` is only the label its search
- * box shows. `q` is encoded once more inside the route, so a name carrying `&`
- * or `#` stays one value.
- *
- * shortcut: query routing only. `/map` asks for path routing
- * (`lib/atlas-embed.ts`), which ignores a `?atlas=` starting with `/` and falls
- * back to query routing only while the client record names no canonical embed,
- * so where it names one the visitor lands on the map without the place. Spell
- * the path form here once SahajAtlasWeb documents one that pre-fills.
- */
-export function classMapSearchHref(locale: Locale, place: MapPlace): string {
-  const { lat, lng } = place.coordinates
-  const route = `/search?center=${lng},${lat}&q=${encodeURIComponent(place.name)}`
-
-  return localeHref(locale, `${MAP_PREFIX}?atlas=${encodeURIComponent(route)}`)
 }

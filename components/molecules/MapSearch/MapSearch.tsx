@@ -48,9 +48,13 @@ export function MapSearch({ label, className = '' }: MapSearchProps) {
 
   // The label rather than the placeholder carries the wording: the
   // placeholder's grey is held under 4.5:1 on the strength of a visible label
-  // beside every field (DESIGN_SYSTEM.md, #199).
+  // beside every field (DESIGN_SYSTEM.md, #199). The minimum height is the
+  // search's own (a one-line label, its margin and the 50px field), so the
+  // splash content around it does not jump when it replaces the fallback.
   return (
-    <div className={`mx-auto w-full max-w-md text-left ${className}`}>
+    <div
+      className={`mx-auto flex w-full max-w-md flex-col justify-center text-left ${wording ? 'min-h-24' : 'min-h-12.5'} ${className}`}
+    >
       <LocationSearch
         fallback={fallback}
         label={wording}

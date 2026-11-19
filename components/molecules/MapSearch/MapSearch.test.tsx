@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import { anchorFor, classFor } from '../../../tests/_helpers/markup'
 
 interface StubProps {
   fallback?: ReactNode
@@ -69,6 +69,17 @@ describe('<MapSearch> without JavaScript', () => {
   it('offers nothing it has no words for, a blank field included', () => {
     expect(renderToStaticMarkup(<MapSearch />)).not.toContain('<a')
     expect(renderToStaticMarkup(<MapSearch label="   " />)).not.toContain('<a')
+  })
+
+  // Measured in Ladle: 96px before and after the search replaces the fallback
+  // with a label, 50px without one, at 1280 and 375 wide.
+  it('holds the search’s height, so the splash does not jump when it arrives', () => {
+    const box = (label?: string) =>
+      classFor(renderToStaticMarkup(<MapSearch label={label} />), 'max-w-md').split(' ')
+
+    expect(box('Find a class near you')).toContain('min-h-24')
+    expect(box()).toContain('min-h-12.5')
+    expect(box('   ')).toContain('min-h-12.5')
   })
 })
 
