@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { isSafeJsonLd, SeoHeadTags, type SeoHead } from './head'
+import { isOpenGraphKey, isSafeJsonLd, NoIndexHead, SeoHeadTags, type SeoHead } from './head'
 import { seoDocument } from './head-settings'
 import { buildAlternates } from './hreflang'
 
@@ -118,5 +118,27 @@ describe('seoDocument', () => {
     // the head settings then fall back to the site's own name.
     expect(seoDocument(undefined)).toBeNull()
     expect(seoDocument({})).toBeNull()
+  })
+})
+
+describe('isOpenGraphKey', () => {
+  it.each(['og:url', 'og:image', 'article:published_time'])(
+    'spells %s on `property`, the one vocabulary that keys that way',
+    (key) => {
+      expect(isOpenGraphKey(key)).toBe(true)
+    },
+  )
+
+  it.each(['twitter:card', 'robots', 'apple-itunes-app', 'description'])(
+    'spells %s on `name`',
+    (key) => {
+      expect(isOpenGraphKey(key)).toBe(false)
+    },
+  )
+})
+
+describe('NoIndexHead', () => {
+  it('refuses the embed routes, which robots.txt must keep fetchable', () => {
+    expect(renderToStaticMarkup(<NoIndexHead />)).toBe('<meta content="noindex" name="robots"/>')
   })
 })

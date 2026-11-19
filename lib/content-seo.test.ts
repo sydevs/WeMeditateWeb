@@ -328,6 +328,23 @@ describe('meditationSeo', () => {
   })
 })
 
+describe('the robots meta every content route carries', () => {
+  it('lets the real site show a large share image in a result', () => {
+    expect(metaValues(seoFor(), 'robots')).toEqual(['max-image-preview:large'])
+  })
+
+  it.each([
+    ['a preview Worker', 'https://claude-feat-273.wemeditate-web.workers.dev'],
+    ['the dev server', 'http://localhost:5173'],
+  ])('refuses %s, which robots.txt already refuses wholesale', (_label, origin) => {
+    expect(metaValues(seoFor({ route: route({ origin }) }), 'robots')).toEqual(['noindex'])
+  })
+
+  it('refuses a document built with no origin at all', () => {
+    expect(metaValues(seoFor({ route: route({ origin: null }) }), 'robots')).toEqual(['noindex'])
+  })
+})
+
 describe('lectureSeo', () => {
   const lecture = (overrides: Partial<ResolvedLecture> = {}): ResolvedLecture => ({
     id: 1,

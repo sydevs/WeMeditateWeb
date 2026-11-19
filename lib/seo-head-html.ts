@@ -39,7 +39,7 @@ import {
 import type { PageContextServer } from 'vike/types'
 import { seoDocument } from './head-settings'
 import { isoDuration } from './structured-data'
-import type { SeoHead } from './head'
+import { isOpenGraphKey, type SeoHead } from './head'
 import type { SeoNode, SeoSchema } from './seo-schema'
 
 /** The schema-org input for one {@link SeoNode}. */
@@ -100,11 +100,8 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
         href: alternate.href,
       })),
     ],
-    // Open Graph keys on `property`, Twitter on `name`. vike-react spells the
-    // `twitter:card` it emits for `/map` the second way, so spelling ours the
-    // first would leave one tag with two spellings on one site.
     meta: seo.meta.map(([key, content]) =>
-      key.startsWith('twitter:') ? { name: key, content } : { property: key, content },
+      isOpenGraphKey(key) ? { property: key, content } : { name: key, content },
     ),
   })
 

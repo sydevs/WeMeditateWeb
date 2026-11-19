@@ -36,6 +36,7 @@ import { documentEmbedHref } from './document-routes'
 import type { SeoNode } from './seo-schema'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
+import { isCanonicalOrigin } from '../server/sitemap'
 import {
   articleNode,
   audioObjectNode,
@@ -191,6 +192,12 @@ function baseDocument(
     // carrying none renders as an empty box.
     meta.push(['og:image', options.image], ['twitter:card', 'summary_large_image'])
   }
+  // ⚠ **Only the real site may be indexed.** `robots.txt` refuses a preview
+  // Worker and a dev host wholesale, and this is what a crawler reaching one
+  // of their URLs some other way reads — a pasted link, a referrer log. On the
+  // real site the tag is the opposite claim: let the share image be shown at
+  // full size in a result.
+  meta.push(['robots', origin && isCanonicalOrigin(origin) ? 'max-image-preview:large' : 'noindex'])
   // Exactly the locales the cluster lists, from the one derivation that
   // builds it. Two readings of "which translations exist" would eventually
   // disagree, and a crawler would see the page claim both.

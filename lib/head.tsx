@@ -72,6 +72,18 @@ export function isSafeJsonLd(jsonLd: string): boolean {
 }
 
 /**
+ * Whether a meta key belongs to the Open Graph vocabulary, which is the one
+ * that keys on `property` rather than `name`.
+ *
+ * `og:` and `article:` are both Open Graph namespaces; everything else a
+ * route publishes — `twitter:*`, `robots`, `apple-itunes-app` — is a plain
+ * meta name.
+ */
+export function isOpenGraphKey(key: string): boolean {
+  return key.startsWith('og:') || key.startsWith('article:')
+}
+
+/**
  * One `<link rel="alternate" hreflang>` per row of a cluster.
  *
  * The single owner of how an alternate is spelled, used by the content
@@ -120,14 +132,15 @@ export function SeoHeadTags({ seo }: { seo: SeoHead }) {
 
       <HreflangLinks alternates={seo.alternates} />
 
-      {seo.meta.map(([property, content]) =>
-        // Open Graph keys on `property`, Twitter on `name`. vike-react spells
-        // the `twitter:card` it emits for `/map` the second way, so spelling
-        // ours the first would leave one tag with two spellings on one site.
-        property.startsWith('twitter:') ? (
-          <meta key={`${property}:${content}`} content={content} name={property} />
+      {seo.meta.map(([key, content]) =>
+        // Open Graph is the one vocabulary that keys on `property`; `twitter:`
+        // and plain names such as `robots` key on `name`. vike-react spells the
+        // `twitter:card` it emits for `/map` that way too, so a Twitter tag
+        // cannot end up with two spellings on one site.
+        isOpenGraphKey(key) ? (
+          <meta key={`${key}:${content}`} content={content} property={key} />
         ) : (
-          <meta key={`${property}:${content}`} content={content} property={property} />
+          <meta key={`${key}:${content}`} content={content} name={key} />
         ),
       )}
 
@@ -178,4 +191,17 @@ export function ContentHead() {
   }
 
   return <SeoHeadTags seo={seo} />
+}
+
+/**
+ * `noindex`, for a route that renders a real document at a URL no crawler
+ * should keep: the two `embed` routes.
+ *
+ * An iframe target is a page, so a crawler that finds the URL — in a pasted
+ * snippet, in a referrer log — will index it and then rank a bare player
+ * against the page it belongs to. `robots.txt` cannot say this, because the
+ * embed paths must stay fetchable for the iframe itself.
+ */
+export function NoIndexHead() {
+  return <meta content="noindex" name="robots" />
 }

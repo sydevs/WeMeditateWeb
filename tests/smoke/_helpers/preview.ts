@@ -251,24 +251,36 @@ export function metaContent(html: string, key: string): string[] {
   return (
     [...html.matchAll(/<meta[^>]*>/gi)]
       .map((match) => match[0])
-      // Open Graph keys on `property`, Twitter on `name`.
+      // Open Graph keys on `property`; everything else keys on `name`.
       .filter((tag) => tag.includes(`property="${key}"`) || tag.includes(`name="${key}"`))
       .map((tag) => tag.match(/content="([^"]*)"/)?.[1] ?? '')
   )
 }
 
-/** Every JSON-LD block on the page, parsed. Throws on one that does not parse. */
-export function jsonLdBlocks(html: string): { '@graph'?: { '@type': string }[] }[] {
-  return [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((match) =>
-    JSON.parse(match[1]),
+/** One node of a page's `@graph`, read structurally rather than by schema. */
+export type JsonLdNode = Record<string, unknown> & { '@type': string }
+
+/**
+ * Every JSON-LD block on the page, parsed. Throws on one that does not parse.
+ *
+ * ⚠ **The opening tag carries attributes.** Unhead's generated block adds
+ * `data-hid`, so a pattern anchored on `…ld+json">` reads a generated graph as
+ * no graph at all, and every assertion over it passes vacuously.
+ */
+export function jsonLdBlocks(html: string): { '@graph'?: JsonLdNode[] }[] {
+  return [...html.matchAll(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)].map(
+    (match) => JSON.parse(match[1]),
   )
+}
+
+/** Every node the page's JSON-LD names, across all its blocks. */
+export function jsonLdGraph(html: string): JsonLdNode[] {
+  return jsonLdBlocks(html).flatMap((graph) => graph['@graph'] ?? [])
 }
 
 /** Every `@type` the page's JSON-LD names, across all its blocks. */
 export function jsonLdTypes(html: string): string[] {
-  return jsonLdBlocks(html)
-    .flatMap((graph) => graph['@graph'] ?? [])
-    .map((node) => node['@type'])
+  return jsonLdGraph(html).map((node) => node['@type'])
 }
 
 /** The opening `<html>` tag, which carries `lang` and `dir`. */
