@@ -253,6 +253,27 @@ At equal specificity the atom's own would have won on source order.
 Two spellings stopped reaching an `href` when the gate landed: a protocol-relative `//host`, and
 the empty string an unset SahajCloud field leaves behind.
 
+### Dropdown
+
+`trigger` is a function, and **the control it renders must spread the props it is handed**. They
+carry the reference, `aria-haspopup`, `aria-expanded` and the click handler, so the caller's own
+`<button>` is the single interactive element and the single tab stop. A wrapper carrying
+`role="button"` around a focusable control is axe `nested-interactive`, serious (#278), and the
+atom no longer has one to fall back on — a trigger that renders a `<span>` is operable by nothing.
+
+```tsx
+<Dropdown trigger={(props) => <Button {...props}>Open</Button>}>
+```
+
+`openOnFocus` is the autocomplete mode: focus arrives at a child of the trigger, so the wrapper
+keeps the reference and the trigger is handed an empty object.
+
+### Heading
+
+`level` is the outline; `styleAs` is the size. **`styleAs="none"` emits no type classes at all**,
+for a heading whose size its own `className` draws — without it the atom's `levelStyles` win on
+source order, which is why three callers used to open their own element and so owned the level too.
+
 ### Surfaces
 
 A component never takes a `theme` prop. Anything that should change on a dark background — text,
