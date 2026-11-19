@@ -28,10 +28,12 @@ export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'
   color?: 'gray' | 'primary' | 'secondary' | 'brand'
 
   /**
-   * Social platforms to display
+   * Social platforms to display, in this order
    * @default ['facebook', 'pinterest', 'linkedin', 'bluesky']
    */
-  platforms?: Array<'facebook' | 'pinterest' | 'whatsapp' | 'telegram' | 'linkedin' | 'bluesky'>
+  platforms?: ReadonlyArray<
+    'facebook' | 'pinterest' | 'whatsapp' | 'telegram' | 'linkedin' | 'bluesky'
+  >
 }
 
 /**
@@ -100,7 +102,7 @@ export function SocialShare({
       {/* No gap: each icon's own box is already 44×44 (`touch-target`), so
           abutting boxes cannot share a hit strip and the row stays compact. */}
       <div className="flex flex-wrap items-center" role="group" aria-label={t('blocks.a11y.share_group')}>
-        {platforms.sort().map((platform) => (
+        {platforms.map((platform) => (
           <SocialIcon
             key={platform}
             platform={platform}
