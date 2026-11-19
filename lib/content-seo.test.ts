@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { join } from 'node:path'
 import { renderSeoHead } from './seo-head-html'
 import type { SeoDocument } from './head'
 import type { Image, Meditation, Page, ResolvedLecture } from '../server/sahajcloud-types'
@@ -7,6 +8,7 @@ import { enT } from './i18n'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
 import { CF_BASE, CF_PUBLIC_URL } from '../tests/_helpers/cloudflare-images'
+import { pngSize } from '../tests/_helpers/png'
 
 const ORIGIN = 'https://wemeditate.com'
 const SHARE_VARIANT = `${CF_BASE}/width=1024`
@@ -172,7 +174,7 @@ describe('pageSeo', () => {
   })
 
   it('serves the default share image where the page has none', () => {
-    expect(metaValues(seoFor(), 'og:image')).toEqual([`${ORIGIN}/images/metadata/preview.png`])
+    expect(metaValues(seoFor(), 'og:image')).toEqual([`${ORIGIN}/images/metadata/share.png`])
     expect(metaValues(seoFor(), 'twitter:card')).toEqual(['summary_large_image'])
   })
 
@@ -431,7 +433,7 @@ describe('meditationSeo', () => {
   })
 
   it('shares its thumbnail, and the default image where it has none', () => {
-    expect(metaValues(seoFor(), 'og:image')).toEqual([`${ORIGIN}/images/metadata/preview.png`])
+    expect(metaValues(seoFor(), 'og:image')).toEqual([`${ORIGIN}/images/metadata/share.png`])
     expect(metaValues(seoFor({ thumbnail: CF_IMAGE }), 'og:image')).toEqual([
       `${CF_BASE}/width=1024`,
     ])
@@ -468,13 +470,20 @@ describe("the share image's own geometry and words", () => {
     expect(metaValues(seo, 'og:image:alt')).toEqual(['A photo of the subtle system'])
   })
 
-  it('states the default asset\'s own square geometry, and no words for it', () => {
+  it("states the default asset's own 1.91:1 geometry, and no words for it", () => {
     // The fallback is a file in this repository, so its pixels are known and
     // a consumer lays the card out before it has fetched them. Its alt text
     // would be a literal, and every string the site renders is SahajCloud's.
     expect(metaValues(seoFor(), 'og:image:width')).toEqual(['1200'])
-    expect(metaValues(seoFor(), 'og:image:height')).toEqual(['1200'])
+    expect(metaValues(seoFor(), 'og:image:height')).toEqual(['630'])
     expect(metaValues(seoFor(), 'og:image:alt')).toEqual([])
+  })
+
+  it('states the geometry the asset on disk actually has', () => {
+    const [url] = metaValues(seoFor(), 'og:image')
+    const path = join(import.meta.dirname, '../public', url.slice(ORIGIN.length))
+
+    expect(pngSize(path)).toEqual({ width: 1200, height: 630 })
   })
 })
 

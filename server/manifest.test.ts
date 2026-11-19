@@ -27,10 +27,10 @@ describe('buildWebManifest', () => {
     expect(manifest().theme_color).toBe(THEME_COLOR)
     expect(manifest().icons).toEqual([
       {
-        src: '/images/metadata/preview.png',
-        sizes: '1200x1200',
+        src: '/images/metadata/icon.png',
+        sizes: '1024x1024',
         type: 'image/png',
-        purpose: 'any',
+        purpose: 'any maskable',
       },
     ])
   })

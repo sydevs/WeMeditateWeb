@@ -32,9 +32,11 @@ export const BACKGROUND_COLOR = '#ffffff'
  * The square render the platforms want: a home-screen icon, an
  * apple-touch-icon, and the manifest's own icon.
  *
- * It is the share image, which is already a centred logo on white at
- * 1200×1200. A platform downscales it; none of them upscales, so one asset
- * answers every size.
+ * The lotus mark alone, not the lockup the share card carries: a home screen
+ * draws this at 48–180px, where a wordmark is a grey smudge. Its ink spans
+ * 70% of the canvas, which is inside the maskable safe zone, so one asset
+ * answers both `purpose` values. A platform downscales it and none upscales,
+ * so one size answers every slot.
  */
-export const APP_ICON = '/images/metadata/preview.png'
-export const APP_ICON_SIZE = 1200
+export const APP_ICON = '/images/metadata/icon.png'
+export const APP_ICON_SIZE = 1024

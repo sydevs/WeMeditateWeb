@@ -41,9 +41,10 @@ export function buildWebManifest(options: {
         src: APP_ICON,
         sizes: `${APP_ICON_SIZE}x${APP_ICON_SIZE}`,
         type: 'image/png',
-        // Not `maskable`: the asset is a centred logo on white, and a
-        // maskable icon must fill its canvas or a platform crops the logo.
-        purpose: 'any',
+        // Both purposes from one asset: the mark's ink sits inside the
+        // maskable safe zone, so a platform that crops to its own shape
+        // still keeps the whole lotus.
+        purpose: 'any maskable',
       },
     ],
   }

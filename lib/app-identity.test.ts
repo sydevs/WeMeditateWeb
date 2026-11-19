@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+  APP_ICON,
+  APP_ICON_SIZE,
   APP_STORE_ID,
   APP_STORE_URL,
   PLAY_STORE_ID,
   PLAY_STORE_URL,
   THEME_COLOR,
 } from './app-identity'
+import { pngSize } from '../tests/_helpers/png'
 
 describe('app-identity', () => {
   it('builds each store URL from the id that store keys on', () => {
@@ -23,5 +26,12 @@ describe('app-identity', () => {
 
     expect(teal).toBeTruthy()
     expect(THEME_COLOR.toLowerCase()).toBe(teal?.toLowerCase())
+  })
+
+  it('declares the icon asset\'s own pixels, so the manifest cannot lie', () => {
+    expect(pngSize(join(import.meta.dirname, '../public', APP_ICON))).toEqual({
+      width: APP_ICON_SIZE,
+      height: APP_ICON_SIZE,
+    })
   })
 })

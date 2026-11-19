@@ -61,7 +61,7 @@ import { isCanonicalOrigin } from '../server/sitemap'
  * shared links would have no preview at all. Served from `public/`, so the
  * absolute URL is the request origin plus this path.
  */
-const DEFAULT_SHARE_IMAGE = '/images/metadata/preview.png'
+const DEFAULT_SHARE_IMAGE = '/images/metadata/share.png'
 
 /**
  * The default asset's own pixels, stated because the file is ours.
@@ -69,10 +69,15 @@ const DEFAULT_SHARE_IMAGE = '/images/metadata/preview.png'
  * A card that carries its geometry renders at the right size before the
  * scraper has fetched the bytes. An upload's geometry comes from SahajCloud;
  * this one is in the repository, so it is read from the asset once here.
- * It is square, which is what makes it serve as the app icon too
- * (`lib/app-identity.ts`), and a 1.91:1 consumer centre-crops it.
+ *
+ * ⚠ **1.91:1, the ratio every consumer crops to.** A square asset served
+ * here is centre-cropped to this box anyway, so the uncropped half was
+ * margin that made the card read as empty at feed size. The app icon is a
+ * separate square asset (`lib/app-identity.ts`) for the same reason: neither
+ * ratio is the other's.
  */
-const DEFAULT_SHARE_IMAGE_SIZE = 1200
+const DEFAULT_SHARE_IMAGE_WIDTH = 1200
+const DEFAULT_SHARE_IMAGE_HEIGHT = 630
 
 /** The width `shareVariant` renders at, which `og:image:width` states. */
 const SHARE_IMAGE_WIDTH = getVariantWidth('video', 'large')
@@ -154,8 +159,8 @@ function shareImage(route: SeoRoute, own: SeoImage | null): SeoImage | null {
   return fallback
     ? {
         url: fallback,
-        width: DEFAULT_SHARE_IMAGE_SIZE,
-        height: DEFAULT_SHARE_IMAGE_SIZE,
+        width: DEFAULT_SHARE_IMAGE_WIDTH,
+        height: DEFAULT_SHARE_IMAGE_HEIGHT,
         alt: null,
       }
     : null
