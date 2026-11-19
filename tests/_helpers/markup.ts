@@ -36,6 +36,18 @@ export function tagFor(html: string, tag: string, attribute = ''): string {
 }
 
 /**
+ * The opening `<tag>` of the first one in `html`, or the empty string.
+ *
+ * The whole tag, so an assertion about an attribute other than `class` reads
+ * off one element rather than the whole page.
+ */
+export function openTag(html: string, tag: string): string {
+  const at = html.indexOf(`<${tag}`)
+
+  return at === -1 ? '' : html.slice(at, html.indexOf('>', at) + 1)
+}
+
+/**
  * Every class list carrying this class, in document order.
  *
  * The class is matched whole, so `opacity-0` passes over `after:opacity-0`

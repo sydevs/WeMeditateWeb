@@ -172,6 +172,7 @@ export function Header({
       {/* Main navigation menu - sticky on scroll (outside header so it can stick globally) */}
       {navItems.length > 0 && (
         <nav
+          aria-label={t('common.a11y.primary_navigation')}
           // Once stuck, the nav paints its own white surface over whatever the
           // header was overlaid on. Un-stuck it takes the layout's page band,
           // which a wrapper cannot give it: see `bandClassName`. The top rule

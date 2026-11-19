@@ -97,7 +97,9 @@ export function SocialShare({
           {label}
         </span>
       )}
-      <div className="flex items-center gap-2" role="group" aria-label={t('blocks.a11y.share_group')}>
+      {/* No gap: each icon's own box is already 44×44 (`touch-target`), so
+          abutting boxes cannot share a hit strip and the row stays compact. */}
+      <div className="flex flex-wrap items-center" role="group" aria-label={t('blocks.a11y.share_group')}>
         {platforms.sort().map((platform) => (
           <SocialIcon
             key={platform}
