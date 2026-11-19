@@ -160,6 +160,28 @@ describe('<RichText>', () => {
     expect(html).toContain('rel="noopener noreferrer"')
   })
 
+  it('opens an internal link in a new tab when the editor asked for one', () => {
+    const internal = (slug: string, newTab: boolean) => ({
+      type: 'link',
+      fields: {
+        linkType: 'internal',
+        newTab,
+        doc: { relationTo: 'pages', value: { id: 1, slug } },
+      },
+      children: [text(slug)],
+      version: 1,
+    })
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([paragraph([internal('about', true), internal('faq', false)])])}
+      />,
+    )
+
+    expect(anchorFor(html, '/about')).toContain('target="_blank"')
+    expect(anchorFor(html, '/faq')).not.toBe('')
+    expect(anchorFor(html, '/faq')).not.toContain('target=')
+  })
+
   it('degrades an internal link to an unroutable collection to plain text (no dead link)', () => {
     const html = renderToStaticMarkup(
       <RichText

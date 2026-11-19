@@ -142,7 +142,13 @@ const CONVERTERS: JSXConverters = {
     if (fields?.linkType === 'internal' && fields.doc) {
       const href = documentHref(fields.doc.relationTo ?? '', fields.doc.value as RelationValue)
 
-      return href ? <Link href={href}>{children}</Link> : <>{children}</>
+      return href ? (
+        <Link external={Boolean(fields.newTab)} href={href}>
+          {children}
+        </Link>
+      ) : (
+        <>{children}</>
+      )
     }
     const url = fields?.url
 
