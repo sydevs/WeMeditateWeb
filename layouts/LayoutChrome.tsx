@@ -15,8 +15,6 @@ import { useT } from '../hooks/useT'
 interface RouteData {
   settings?: WebConfig
   page?: Page
-  collection?: string
-  initialData?: Page
 }
 
 /**
@@ -64,9 +62,9 @@ function Chrome({
 
   // When the page leads with a Splash, overlay the header on it: transparent,
   // on the splash's surface, flush with the top. The Splash reserves `pt-60` for
-  // exactly this. This works on content routes ([slug], `page`) and on the
-  // live-preview route (/preview, `initialData`), so preview matches the
-  // published layout. See leadSplashFromRouteData.
+  // exactly this. It reads the server's page, so a splash an editor adds in the
+  // preview panel overlays the header only after a save. See
+  // leadSplashFromRouteData.
   const leadSplash = leadSplashFromRouteData(data)
 
   // Degrade gracefully when the SahajCloud config is incomplete. A missing nav group

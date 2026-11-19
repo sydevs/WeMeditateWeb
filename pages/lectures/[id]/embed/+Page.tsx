@@ -1,6 +1,7 @@
 import { useData } from 'vike-react/useData'
 import type { LectureEmbedPageData } from './+data'
 import { LecturePlayer } from '../../../../components/templates'
+import { resolveLecture } from '../../../../lib/lecture-shape'
 
 /**
  * Lecture embed page (/lectures/:id/embed) — designed for iframe embedding.
@@ -15,5 +16,5 @@ import { LecturePlayer } from '../../../../components/templates'
 export function Page() {
   const { lecture, locale } = useData<LectureEmbedPageData>()
 
-  return <LecturePlayer lecture={lecture} locale={locale} posterSizes="100vw" />
+  return <LecturePlayer lecture={resolveLecture(lecture)} locale={locale} posterSizes="100vw" />
 }

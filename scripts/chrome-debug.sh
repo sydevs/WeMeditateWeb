@@ -16,23 +16,31 @@ fi
 
 echo "🔍 Checking if Chrome is already running on port $PORT..."
 
-# Check whether the port is already in use
+# Check whether the port is already in use. Never stop what holds it: another session may be
+# driving that Chrome (AGENTS.md).
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
-    echo "✅ Chrome is already running on port $PORT"
-    echo "🌐 Debug endpoint: http://localhost:$PORT"
-    exit 0
+    # Any HTTP server answers this path; only a DevTools endpoint names a debugger socket.
+    if curl -s http://localhost:$PORT/json/version 2>/dev/null | grep -q webSocketDebuggerUrl; then
+        echo "✅ Chrome is already running on port $PORT"
+        echo "🌐 Debug endpoint: http://localhost:$PORT"
+        exit 0
+    fi
+    echo "❌ Port $PORT is taken by something other than Chrome's debugger. Not launching."
+    echo "💡 Pass a free port: ./scripts/chrome-debug.sh <port>"
+    exit 1
+fi
+
+# A Chrome already on this profile would take the launch over and never open the port.
+if pgrep -f "user-data-dir=$DEBUG_PROFILE" >/dev/null 2>&1 ; then
+    echo "❌ A Chrome using $DEBUG_PROFILE is running without port $PORT open. Not launching."
+    echo "💡 Reuse its port, or quit that Chrome yourself if nobody else is using it."
+    exit 1
 fi
 
 echo "🚀 Launching Chrome with remote debugging on port $PORT..."
 echo "📁 Using profile: $DEBUG_PROFILE"
 echo "🔧 Chrome path: $CHROME_PATH"
 echo ""
-
-# Kill any existing Chrome processes to avoid conflicts
-pkill -f "Google Chrome" 2>/dev/null
-
-# Wait a moment for old processes to exit
-sleep 1
 
 # Launch Chrome with debugging enabled
 "$CHROME_PATH" \
