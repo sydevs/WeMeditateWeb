@@ -27,6 +27,9 @@ import { sahajCloudFetch } from './sahajcloud-fetch'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import type { Locale } from './sahajcloud-types'
 
+/** Every slot the site offers, in the order a day runs. */
+const ALL_SLOTS: TimeOfDay[] = ['morning', 'afternoon', 'evening']
+
 /** The meditation slot a mood names for each time of day. */
 const SLOT_FIELD: Record<TimeOfDay, string> = {
   morning: 'morningMeditation',
@@ -185,14 +188,28 @@ function meditationRef(doc: MoodDoc, slot: TimeOfDay): number | string | null {
   return typeof value === 'number' || typeof value === 'string' ? value : null
 }
 
-/** The `(mood, slot)` pairs a set of moods offers, in the moods' own order. */
+/**
+ * The `(mood, slot)` pairs a set of moods offers, in the moods' own order.
+ *
+ * Keyed on `timings`, never on which slot fields happen to be filled: a mood
+ * that names a time of day owes it a meditation, and a slot it names but has
+ * not filled is the gap the caller reports. Pairing on the fields instead would
+ * emit the same meditation twice for a mood holding one in two slots, and would
+ * make the commonest gap unreportable.
+ */
 function moodSlotPairs(docs: MoodDoc[], slot?: TimeOfDay): Array<[MoodDoc, TimeOfDay]> {
-  const slots: TimeOfDay[] = slot ? [slot] : ['morning', 'afternoon', 'evening']
   const pairs: Array<[MoodDoc, TimeOfDay]> = []
 
   for (const doc of docs) {
-    for (const candidate of slots) {
-      if (meditationRef(doc, candidate) !== null) pairs.push([doc, candidate])
+    // `moodsForSlot` already kept only the moods naming `slot`.
+    if (slot) {
+      pairs.push([doc, slot])
+      continue
+    }
+    for (const candidate of ALL_SLOTS) {
+      if (Array.isArray(doc.timings) && doc.timings.includes(candidate)) {
+        pairs.push([doc, candidate])
+      }
     }
   }
 
@@ -232,9 +249,26 @@ export async function moodCardsFromDocs(
   const forSlot = moodsForSlot(docs, slot)
   const capped = typeof limit === 'number' && limit >= 0 ? forSlot.slice(0, limit) : forSlot
   const pairs = moodSlotPairs(capped, slot)
-  const meditations = await readMeditations(
-    pairs.map(([doc, each]) => meditationRef(doc, each)).filter((id): id is number | string => id !== null),
-  )
+  const ids = pairs
+    .map(([doc, each]) => meditationRef(doc, each))
+    .filter((id): id is number | string => id !== null)
+
+  // The block path reaches this without `featuredMoodCards`'s own catch, and
+  // `resolveContentIndexBlocks` is awaited in `data()` with none either — so a
+  // failed second read must degrade here, not throw the whole page away.
+  let meditations: Map<string, MeditationDoc>
+
+  try {
+    meditations = await readMeditations(ids)
+  } catch (error) {
+    Sentry.captureMessage('mood finder could not read the meditations', {
+      level: 'warning',
+      tags: { source: 'featuredMoodCards' },
+      extra: { slot: slot ?? null, error: error instanceof Error ? error.message : String(error) },
+    })
+
+    return []
+  }
   const cards: MoodCard[] = []
 
   for (const [doc, each] of pairs) {
@@ -245,6 +279,7 @@ export async function moodCardsFromDocs(
 
     const meditationId = meditationRef(doc, each)
     const meditation = meditationId === null ? undefined : meditations.get(String(meditationId))
+
     const href = meditation ? documentHref('meditations', { id: meditation.id }) : null
     const minutes = meditation ? durationMinutes(meditation) : undefined
 

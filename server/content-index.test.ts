@@ -335,7 +335,7 @@ describe('fetchContentIndexDocs retry', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('reports one Sentry event for a failed read, not one per attempt', async () => {
+  it('reports the degrade once, outside the retry loop', async () => {
     // `vi.mock` keeps its call log across cases; this counts only this read.
     vi.mocked(Sentry.captureMessage).mockClear()
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
@@ -346,6 +346,8 @@ describe('fetchContentIndexDocs retry', () => {
       apiEndpoint: '/api/pages?limit=10',
     })
 
+    // One message for the block that degraded. `withRetry` reports each retried
+    // attempt itself, as it does for every caller — see the PR's question thread.
     expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledTimes(1)
   })
 })
@@ -407,5 +409,22 @@ describe('a moods block', () => {
     expect(fields.resolvedMoods).toHaveLength(1)
     expect(fields.resolvedMoods?.[0]).toMatchObject({ moodId: 16, href: '/meditations/89' })
     expect(fields.resolvedItems).toBeUndefined()
+  })
+})
+
+describe('an unknown block type', () => {
+  it('degrades to an empty list instead of throwing the page away', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    // A type SahajCloud offers before this build knows it: `pages/[slug]/+data.ts`
+    // awaits this with no catch, so a throw here would 500 the whole page.
+    const items = await resolveContentIndexItems({
+      type: 'albums' as ContentIndexBlockFields['type'],
+      limit: 10,
+      apiEndpoint: '/api/albums?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

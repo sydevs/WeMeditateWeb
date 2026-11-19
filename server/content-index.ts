@@ -145,7 +145,16 @@ async function fetchContentIndexDocs(
   if (type === 'lectures' && audiences.length === 0) {
     return { docs: [] }
   }
-  const { select, populate, depth } = QUERY_BY_TYPE[type]
+  // ⚠ A type this build does not know about must degrade, not throw. The lookup
+  // sits above the `try`, and `pages/[slug]/+data.ts` awaits this with no catch,
+  // so a block type SahajCloud offers before the site ships support for it would
+  // 500 the whole page rather than render one empty region.
+  const query = QUERY_BY_TYPE[type]
+
+  if (!query) {
+    return { docs: [] }
+  }
+  const { select, populate, depth } = query
   // Strip any depth SahajCloud baked into the endpoint so ours is the only one.
   const endpoint = stripQueryParam(apiEndpoint, 'depth')
   const separator = endpoint.includes('?') ? '&' : '?'
@@ -159,8 +168,9 @@ async function fetchContentIndexDocs(
     // for the block, so a 404 is a data gap rather than an answer.
     //
     // `withRetry` classifies structurally off the error's own status, so a 5xx
-    // and a Cloudflare-origin 520/522/524 retry and a 4xx does not. The Sentry
-    // warning stays outside it, so one failed read is one event.
+    // and a Cloudflare-origin 520/522/524 retry and a 4xx does not. The degrade
+    // below is reported once, outside the loop. The wrapper reports each
+    // retried attempt itself, as it does for every caller.
     const json = await withRetry(() =>
       sahajCloudFetch<{ docs?: Record<string, unknown>[]; totalDocs?: number }>(
         path,

@@ -183,3 +183,41 @@ describe('featuredMoodCards', () => {
     )
   })
 })
+
+describe('moodCardsFromDocs · the second read', () => {
+  it('degrades to an empty list rather than throwing out of data()', async () => {
+    const response = { ok: false, status: 400, statusText: '', json: async () => ({ errors: [] }) }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ...response,
+      clone: () => response,
+    } as never)
+
+    await expect(moodCardsFromDocs(MORNING, { slot: 'morning' })).resolves.toEqual([])
+    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+      'mood finder could not read the meditations',
+      expect.objectContaining({ level: 'warning' }),
+    )
+  })
+
+  it('pairs a mood with the slots its timings name, not its filled fields', async () => {
+    mockMeditations({ 69: 15 })
+
+    // Upstream fills one slot per featured mood, but nothing stops a second
+    // field carrying the same id — which would otherwise list it twice.
+    const twoFields = [mood(1, ['morning'], { morningMeditation: 69, eveningMeditation: 69 })]
+
+    expect(await moodCardsFromDocs(twoFields)).toHaveLength(1)
+  })
+
+  it('warns for a slot a mood names but has not filled', async () => {
+    mockMeditations(DURATIONS)
+
+    const unfilled = [mood(7, ['evening'], {})]
+
+    expect(await moodCardsFromDocs(unfilled, { slot: 'evening' })).toEqual([])
+    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+      'a featured mood has no meditation for its slot',
+      expect.objectContaining({ extra: expect.objectContaining({ moodId: 7, slot: 'evening' }) }),
+    )
+  })
+})
