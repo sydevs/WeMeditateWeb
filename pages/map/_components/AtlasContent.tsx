@@ -77,9 +77,9 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
   const t = useT()
   const origin = useOrigin()
 
-  // `?? []`: the type is hand-mirrored, so a trail that stops arriving
-  // renders no breadcrumb rather than 500ing the page.
-  if ((trail ?? []).length < 2) {
+  // The type is hand-mirrored, so a trail that stops arriving renders no
+  // breadcrumb rather than 500ing the page.
+  if (!trail || trail.length < 2) {
     return null
   }
 
