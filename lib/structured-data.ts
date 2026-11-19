@@ -8,8 +8,8 @@
  *
  * ⚠ **Emit a field only when SahajCloud returned it.** A `datePublished` or an
  * `image` invented to fill a slot is a claim about the document, and a wrong
- * one is worse to a crawler than an absent one. Every builder drops an
- * absent value rather than defaulting it.
+ * one is worse to a crawler than an absent one. `compact` is where that
+ * happens, once, for every builder.
  *
  * `lib/content-seo.ts` chooses which nodes a route contributes. This module
  * only knows how one node is shaped.
@@ -20,12 +20,28 @@ import type {
   AudioObject,
   BreadcrumbList,
   ItemList,
+  ListItem,
   Organization,
   Thing,
   VideoObject,
   WebPage,
   WebSite,
 } from 'schema-dts'
+
+/**
+ * The module's one rule, in one place: a field SahajCloud did not answer is
+ * left out of the node rather than emitted as `null`.
+ *
+ * `Nullable` is what lets a builder hand an upstream `string | null` straight
+ * to the field it belongs to, so no builder restates the rule per field.
+ */
+type Nullable<T> = { [K in keyof T]: T[K] | null | undefined }
+
+function compact<T extends object>(node: Nullable<T>): T {
+  return Object.fromEntries(
+    Object.entries(node).filter(([, value]) => value != null && value !== ''),
+  ) as T
+}
 
 /** A rung of a breadcrumb trail. A rung with no URL of its own omits `url`. */
 export interface Breadcrumb {
@@ -84,12 +100,12 @@ export function webSiteNode(options: {
   url: string
   description?: string | null
 }): WebSite {
-  return {
+  return compact<WebSite>({
     '@type': 'WebSite',
     name: options.name,
     url: options.url,
-    ...(options.description ? { description: options.description } : {}),
-  }
+    description: options.description,
+  })
 }
 
 export function webPageNode(options: {
@@ -98,13 +114,13 @@ export function webPageNode(options: {
   description?: string | null
   image?: string | null
 }): WebPage {
-  return {
+  return compact<WebPage>({
     '@type': 'WebPage',
     name: options.name,
     url: options.url,
-    ...(options.description ? { description: options.description } : {}),
-    ...(options.image ? { image: options.image } : {}),
-  }
+    description: options.description,
+    image: options.image,
+  })
 }
 
 export function articleNode(options: {
@@ -115,26 +131,28 @@ export function articleNode(options: {
   authorName?: string | null
   datePublished?: string | null
 }): Article {
-  return {
+  return compact<Article>({
     '@type': 'Article',
     headline: options.headline,
     mainEntityOfPage: options.url,
-    ...(options.description ? { description: options.description } : {}),
-    ...(options.image ? { image: options.image } : {}),
-    ...(options.authorName ? { author: { '@type': 'Person', name: options.authorName } } : {}),
-    ...(options.datePublished ? { datePublished: options.datePublished } : {}),
-  }
+    description: options.description,
+    image: options.image,
+    author: options.authorName ? { '@type': 'Person', name: options.authorName } : null,
+    datePublished: options.datePublished,
+  })
 }
 
 export function breadcrumbNode(trail: readonly Breadcrumb[]): BreadcrumbList {
   return {
     '@type': 'BreadcrumbList',
-    itemListElement: trail.map((rung, index) => ({
-      '@type': 'ListItem' as const,
-      position: index + 1,
-      name: rung.name,
-      ...(rung.url ? { item: rung.url } : {}),
-    })),
+    itemListElement: trail.map((rung, index) =>
+      compact<ListItem>({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: rung.name,
+        item: rung.url,
+      }),
+    ),
   }
 }
 
@@ -146,13 +164,13 @@ export function audioObjectNode(options: {
 }): AudioObject {
   const duration = options.durationSeconds == null ? null : isoDuration(options.durationSeconds)
 
-  return {
+  return compact<AudioObject>({
     '@type': 'AudioObject',
     name: options.name,
     url: options.url,
-    ...(options.thumbnailUrl ? { thumbnailUrl: options.thumbnailUrl } : {}),
-    ...(duration ? { duration } : {}),
-  }
+    thumbnailUrl: options.thumbnailUrl,
+    duration,
+  })
 }
 
 /**
@@ -168,13 +186,13 @@ export function videoObjectNode(options: {
 }): VideoObject {
   const duration = options.durationSeconds == null ? null : isoDuration(options.durationSeconds)
 
-  return {
+  return compact<VideoObject>({
     '@type': 'VideoObject',
     name: options.name,
     url: options.url,
-    ...(options.thumbnailUrl ? { thumbnailUrl: options.thumbnailUrl } : {}),
-    ...(duration ? { duration } : {}),
-  }
+    thumbnailUrl: options.thumbnailUrl,
+    duration,
+  })
 }
 
 export function itemListNode(entries: readonly ListEntry[]): ItemList {

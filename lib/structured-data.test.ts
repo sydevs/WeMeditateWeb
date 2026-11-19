@@ -31,22 +31,24 @@ describe('node builders', () => {
   it('drops every field SahajCloud did not return', () => {
     // The rule the whole module rests on: an invented date or image is a
     // false claim about the document, and worse than an absent one.
-    expect(articleNode({ headline: 'A', url: 'https://x.test/a' })).toEqual({
+    // `toStrictEqual`, because `toEqual` passes on a key present and
+    // undefined — which is the one way `compact` could fail silently.
+    expect(articleNode({ headline: 'A', url: 'https://x.test/a' })).toStrictEqual({
       '@type': 'Article',
       headline: 'A',
       mainEntityOfPage: 'https://x.test/a',
     })
-    expect(audioObjectNode({ name: 'M', url: 'https://x.test/m' })).toEqual({
+    expect(audioObjectNode({ name: 'M', url: 'https://x.test/m' })).toStrictEqual({
       '@type': 'AudioObject',
       name: 'M',
       url: 'https://x.test/m',
     })
-    expect(videoObjectNode({ name: 'L', url: 'https://x.test/l' })).toEqual({
+    expect(videoObjectNode({ name: 'L', url: 'https://x.test/l' })).toStrictEqual({
       '@type': 'VideoObject',
       name: 'L',
       url: 'https://x.test/l',
     })
-    expect(webPageNode({ name: 'P', url: 'https://x.test/p' })).toEqual({
+    expect(webPageNode({ name: 'P', url: 'https://x.test/p' })).toStrictEqual({
       '@type': 'WebPage',
       name: 'P',
       url: 'https://x.test/p',
