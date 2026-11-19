@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Countdown } from "./Countdown";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Countdown } from './Countdown'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /** Countdown component showcasing various timing durations and sizes. */
 export const Default: Story = () => {
@@ -13,7 +13,7 @@ export const Default: Story = () => {
   const target = (seconds: number) => ({
     targetDate: new Date(Date.now() + seconds * 1000),
     initialRemainingMs: seconds * 1000,
-  });
+  })
 
   return (
     <StoryWrapper>
@@ -114,7 +114,7 @@ export const Default: Story = () => {
 
       <div />
     </StoryWrapper>
-  );
-};
+  )
+}
 
-Default.storyName = "Countdown"
+Default.storyName = 'Countdown'
