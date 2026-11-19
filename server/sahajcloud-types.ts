@@ -59,11 +59,9 @@ export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../
 /**
  * One lecture read, in both the shapes a route needs.
  *
- * ⚠ **The live-preview stream merges into the raw document, never into the
- * view model.** `mergeData` applies unsaved form fields to whatever it was
- * given, so a subscriber handed a `ResolvedLecture` would take a clip's own
- * empty `metadata` over the parent's playback source. The full route
- * subscribes to `document` and re-runs `resolveLecture` on what arrives.
+ * A live preview subscribes to `document`, because the stream merges into the
+ * collection's own shape — see `LivePreviewDocument`'s `initialData`. One read
+ * answers both, so the subscriber costs no second fetch.
  */
 export interface LectureRead {
   document: Lecture

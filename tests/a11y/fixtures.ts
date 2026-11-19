@@ -131,15 +131,13 @@ export const meditation = {
 } as unknown as Meditation
 
 /**
- * The raw lecture, as the full route subscribes to it.
+ * The raw lecture, as a SahajCloud read returns one.
  *
- * **Pre-mortem.** This assumes a full lecture carries its playback source in
- * the untyped `metadata` json, and that `LECTURE_SELECT` returns `type`,
- * `title`, `thumbnail` and `metadata`. Checked against `LECTURE_SELECT` in
+ * **Pre-mortem.** Checked against `LECTURE_SELECT` in
  * `server/sahajcloud-client.ts` and `parseLectureMetadata` in
  * `lib/lecture-shape.ts`.
  */
-export const lectureDocument = {
+const lectureDocument = {
   id: 42,
   type: 'full',
   title: 'Attention And Awareness',

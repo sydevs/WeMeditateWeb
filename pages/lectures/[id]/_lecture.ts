@@ -13,12 +13,13 @@ export interface LectureData {
 
 export interface LectureLoad extends LectureData {
   /**
-   * The document `lecture` was resolved from. The full route subscribes to
-   * this shape, because it is the one SahajCloud streams unsaved edits in.
-   * Only a route that mounts the subscriber passes it on: it is a second copy
-   * of the lecture in the hydration payload.
+   * The document `lecture` was resolved from, and `null` off-preview. The raw
+   * lecture is the larger of the two shapes — a clip carries its whole parent —
+   * so it rides into the browser only where a subscriber will read it. The
+   * condition is `previewArgs`', which is what `useDocumentPreviewActive()`
+   * decides on the other side.
    */
-  document: Lecture
+  document: Lecture | null
 }
 
 /**
@@ -42,12 +43,13 @@ export async function loadLecture(pageContext: PageContextServer): Promise<Lectu
   // header keeps the read out of the edge cache, which is what lets an
   // editor see a save they just made.
   const preview = await loadLivePreview(pageContext)
+  const args = previewArgs(preview)
 
-  const read = await getLecture({ id, locale, ...previewArgs(preview) })
+  const read = await getLecture({ id, locale, ...args })
 
   if (!read) {
     throw render(404, `Lecture with ID "${id}" not found.`)
   }
 
-  return { lecture: read.resolved, document: read.document, locale, id }
+  return { lecture: read.resolved, document: args.preview ? read.document : null, locale, id }
 }

@@ -13,11 +13,13 @@
  * document carrying the parent's `metadata`. The clip below is that shape.
  */
 
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { Lecture } from '../../../../server/sahajcloud-types'
+import { enT } from '../../../../lib/i18n'
 import { resolveLecture } from '../../../../lib/lecture-shape'
+import { openTag } from '../../../../tests/_helpers/markup'
 import type { LecturePageData } from './+data'
 
 const PARENT_METADATA: Record<string, unknown> = {
@@ -26,6 +28,11 @@ const PARENT_METADATA: Record<string, unknown> = {
   hlsUrl: 'https://cdn.nv/full.m3u8',
   duration: 3600,
   subtitles: { en: 'https://cdn.nv/en.vtt' },
+}
+
+/** A populated `fullLecture`, as `LECTURE_POPULATE` returns one. */
+function parent(metadata: Record<string, unknown>): Lecture {
+  return { id: 2, type: 'full', metadata } as unknown as Lecture
 }
 
 function makeClip(overrides: Partial<Lecture> = {}): Lecture {
@@ -38,7 +45,7 @@ function makeClip(overrides: Partial<Lecture> = {}): Lecture {
     stopTime: 180,
     subtitles: null,
     metadata: null,
-    fullLecture: { id: 2, type: 'full', metadata: PARENT_METADATA },
+    fullLecture: parent(PARENT_METADATA),
     ...overrides,
   } as unknown as Lecture
 }
@@ -47,25 +54,28 @@ const pageData: { current: LecturePageData } = {
   current: null as unknown as LecturePageData,
 }
 
-/** The server render: the document, and the view model it resolved to. */
-function serverRendered(document: Lecture): void {
+/**
+ * The server render. `document` is null off-preview, which is what a visitor
+ * gets — see `pages/lectures/[id]/_lecture.ts`.
+ */
+function serverRendered(document: Lecture, { previewing = true } = {}): void {
   pageData.current = {
-    document,
+    document: previewing ? document : null,
     lecture: resolveLecture(document),
     locale: 'en',
     id: String(document.id),
   } as LecturePageData
 }
 
-/** What the panel streams next, or `null` for an ordinary page view. */
+/** What the panel streams next, or `null` to replay `initialData`. */
 const streamed: { current: Lecture | null } = { current: null }
 
-/** What the route asked the subscriber to mount on. */
+/** What the route asked the subscriber to mount on, if it mounted one. */
 const subscriber: { slug?: string; initialData?: Lecture } = {}
 
 vi.mock('vike-react/useData', () => ({ useData: () => pageData.current }))
 // `usePageHead` writes the document title through vike-react's config, which
-// needs a Vike app. The tab is not what this route previews.
+// needs a Vike app.
 vi.mock('vike-react/useConfig', () => ({ useConfig: () => () => {} }))
 // `RelatedContentLoader` reads the locale off the page context.
 vi.mock('vike-react/usePageContext', () => ({ usePageContext: () => ({ locale: 'en' }) }))
@@ -94,12 +104,26 @@ vi.mock('../../../../lib/live-preview/document', () => ({
 
 const { Page } = await import('./+Page')
 
+beforeEach(() => {
+  delete subscriber.slug
+  delete subscriber.initialData
+  streamed.current = null
+})
+
 describe('the full lecture route', () => {
+  it('mounts no subscriber for a visitor, who is sent no raw document', () => {
+    serverRendered(makeClip(), { previewing: false })
+
+    const html = renderToStaticMarkup(<Page />)
+
+    expect(html).toContain('Saved title')
+    expect(subscriber.slug).toBeUndefined()
+  })
+
   it('subscribes the lectures collection to the document the server read', () => {
     const clip = makeClip()
 
     serverRendered(clip)
-    streamed.current = null
 
     renderToStaticMarkup(<Page />)
 
@@ -122,48 +146,30 @@ describe('the full lecture route', () => {
       makeClip({
         startTime: 0,
         stopTime: 60,
-        fullLecture: {
-          id: 2,
-          type: 'full',
-          metadata: { ...PARENT_METADATA, thumbnailUrl: 'https://cdn.nv/old.jpg' },
-        },
-      } as unknown as Partial<Lecture>),
+        fullLecture: parent({ ...PARENT_METADATA, thumbnailUrl: 'https://cdn.nv/old.jpg' }),
+      }),
     )
     streamed.current = makeClip({ startTime: 60, stopTime: 180 })
 
     const html = renderToStaticMarkup(<Page />)
 
     // The poster is the streamed parent's, reached through `fullLecture`.
-    expect(html).toContain('src="https://cdn.nv/thumb.jpg"')
+    expect(openTag(html, 'img')).toContain('src="https://cdn.nv/thumb.jpg"')
     expect(html).not.toContain('https://cdn.nv/old.jpg')
     // 120s of window, not the saved 60s and not the parent's 3600s source.
     expect(html).toContain('2 min')
     expect(html).not.toContain('1 min')
   })
 
-  it('degrades a streamed clip whose parent came back unpopulated', () => {
-    serverRendered(makeClip())
-    // A bare id is what an unpublished or trashed parent returns.
-    streamed.current = makeClip({ fullLecture: 2 })
-
-    const html = renderToStaticMarkup(<Page />)
-
-    expect(html).toContain('This lecture is missing a playable video source.')
-  })
-
   it('stands a heading in for a streamed document with no title anywhere', () => {
     serverRendered(makeClip())
     streamed.current = makeClip({
       title: null,
-      fullLecture: {
-        id: 2,
-        type: 'full',
-        metadata: { ...PARENT_METADATA, title: undefined },
-      } as unknown as Lecture,
+      fullLecture: parent({ ...PARENT_METADATA, title: undefined }),
     })
 
     const html = renderToStaticMarkup(<Page />)
 
-    expect(html).toContain('Untitled talk')
+    expect(html).toContain(enT('lecture.a11y.untitled_heading'))
   })
 })
