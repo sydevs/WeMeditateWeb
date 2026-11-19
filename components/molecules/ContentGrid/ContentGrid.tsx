@@ -24,6 +24,14 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
   cardVariant?: 'default' | 'hero'
   /** Custom breakpoints for responsive columns (defaults to 1 mobile, 2 tablet, 3 desktop) */
   breakpointCols?: number | { default: number; [key: number]: number }
+
+  /**
+   * The heading level every card title takes. A grid that is a page's whole
+   * content sits under its `<h1>` and wants `h2`; the default suits a grid
+   * under a section heading.
+   * @default 'h3'
+   */
+  headingLevel?: ContentGridItem['headingLevel']
 }
 
 /**
@@ -77,6 +85,7 @@ export function ContentGrid({
   items,
   sizes,
   cardVariant = 'default',
+  headingLevel,
   breakpointCols = {
     default: 3, // Desktop: 3 columns (1024px+)
     1023: 2, // Tablet: 2 columns (640px - 1023px)
@@ -117,7 +126,12 @@ export function ContentGrid({
               {/* `??`, not a pre-spread default: an item built by spreading a
                   wider shape can carry an explicit `sizes: undefined`, which
                   a spread would hand on as the card's own (#206). */}
-              <ContentCard {...cardProps} sizes={itemSizes ?? sizes} variant={cardVariant} />
+              <ContentCard
+                {...cardProps}
+                headingLevel={cardProps.headingLevel ?? headingLevel}
+                sizes={itemSizes ?? sizes}
+                variant={cardVariant}
+              />
             </div>
           )
         })}

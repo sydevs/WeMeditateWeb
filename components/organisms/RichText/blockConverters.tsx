@@ -22,6 +22,7 @@ import {
 import { ContentIndex } from '../ContentIndex'
 import { ContentOverlay } from '../ContentOverlay'
 import { ContentTextBox } from '../ContentTextBox'
+import { MoodFinder } from '../MoodFinder'
 import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import { OrnateTextBox } from '../OrnateTextBox'
 import { Splash } from '../Splash'
@@ -363,6 +364,19 @@ export const blockConverters: BlockConverters = {
       return (
         <div className={FULL_BLEED_BLOCK}>
           <MusicLibrary filters={songMusicFilters(tracks)} tracks={tracks} />
+        </div>
+      )
+    }
+
+    // ⚠ The moods branch renders even on an empty list, unlike every other
+    // type: sydevs/WeMeditateWeb#272 requires the page to say it cannot load
+    // the meditations rather than leave a blank space where the finder is.
+    if (fields.type === 'moods') {
+      return (
+        <div className={FULL_BLEED_BLOCK}>
+          <Container maxWidth="xl">
+            <MoodFinder moods={fields.resolvedMoods ?? []} />
+          </Container>
         </div>
       )
     }

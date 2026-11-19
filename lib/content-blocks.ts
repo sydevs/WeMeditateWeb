@@ -158,13 +158,32 @@ export const PAGE_TAGS = Object.keys(PAGE_TAG_KEYS) as PageTag[]
 /** Visible label per page tag, resolved from SahajCloud by the caller. */
 export type PageTagLabels = Partial<Record<PageTag, string>>
 
+/**
+ * One mood tile. The label is not here: `t('meditation.general.mood_meditation_label')`
+ * composes it from `moodTitle` and `durationMinutes` in the component, so this
+ * module stays free of the translations layer.
+ */
+export interface MoodCard {
+  moodId: number
+  moodTitle: string
+  /** The mood record is itself an SVG upload — there is no separate icon field. */
+  iconUrl: string | null
+  /** Editor-chosen accent. It carries no contrast contract, so it never backs text. */
+  color: string | null
+  href: string
+  /** Required: the label names the meditation by its length, so a card
+   * without one has nothing to render. */
+  durationMinutes: number
+  thumbnail: PopulatedImage | null
+}
+
 /** `content-index` — ContentIndexBlock. `resolvedItems` and
  * `resolvedTracks` are attached by the server-side pre-resolve pass in
  * `+data`. The editor never stores them. The `*Filters` fields mirror the
  * SahajCloud schema, but rendering does not use them: facets come from the
  * resolved items' own `tags` instead. */
 export interface ContentIndexBlockFields {
-  type: 'meditations' | 'pages' | 'songs' | 'lectures'
+  type: 'meditations' | 'pages' | 'songs' | 'lectures' | 'moods'
   limit: number
   /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
   pageFilters?: PageTag[] | null
@@ -178,6 +197,9 @@ export interface ContentIndexBlockFields {
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
   resolvedTracks?: Track[] | null
+  /** Mood tiles for the moods type (attached in +data). Carries a per-mood
+   * icon and accent colour, which a card has no slot for. */
+  resolvedMoods?: MoodCard[] | null
 }
 
 // --- Shared card shape + helpers ---
@@ -501,7 +523,7 @@ function cardHref(
   id: string | number,
 ): string | null {
   if (type === 'meditations') {
-    return `/meditations/${id}`
+    return documentHref('meditations', { id })
   }
   if (type === 'pages' || type === 'lectures') {
     return documentHref(type, doc as RelationValue)
@@ -619,10 +641,16 @@ export function meditationCardsFromUserChoices(
       const img = populatedImage(med.thumbnail)
       const medTitle = asText(med.title) || asText(med.label)
 
+      const href = documentHref('meditations', { id: med.id })
+
+      if (!href) {
+        continue
+      }
+
       byId.set(med.id, {
         id: med.id,
         title: medTitle,
-        href: `/meditations/${med.id}`,
+        href,
         thumbnailSrc: img?.url ?? '',
         // Meditation thumbnails are populated without `alt`. Fall back to
         // the title (`||`, so an empty alt still falls through).

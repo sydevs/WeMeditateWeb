@@ -262,6 +262,21 @@ describe('/sitemap.xml', () => {
       )
     })
 
+    it('lists /meditations once, in every locale the site offers', async () => {
+      // A code route with no document behind it: nothing publishes it per
+      // locale, and it renders in every language, so there is nothing to
+      // filter. The page head derives the same cluster from `routeLocales`.
+      stubConfig({ availableLocales: ['en', 'fr', 'de'] })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml.match(/<loc>https:\/\/wemeditate\.com\/meditations<\/loc>/g)).toHaveLength(1)
+      expect(xml).toContain('hreflang="en" href="https://wemeditate.com/meditations"')
+      expect(xml).toContain('hreflang="fr" href="https://wemeditate.com/fr/meditations"')
+      expect(xml).toContain('hreflang="de" href="https://wemeditate.com/de/meditations"')
+      expect(xml).toContain('hreflang="x-default" href="https://wemeditate.com/meditations"')
+    })
+
     it('leaves meditations and lectures unannotated', async () => {
       // Neither collection opts into per-locale publish state upstream, so
       // neither has a per-document translation claim to make.

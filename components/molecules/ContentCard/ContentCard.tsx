@@ -4,6 +4,7 @@ import { Image } from '../../atoms/Image/Image'
 import { Link } from '../../atoms/Link'
 import { Button } from '../../atoms/Button/Button'
 import { Badge } from '../../atoms/Badge/Badge'
+import { Heading } from '../../atoms/Heading/Heading'
 import { useT } from '../../../hooks/useT'
 import { Placeholder } from '../../atoms/Placeholder/Placeholder'
 import { Logo } from '../../atoms/graphics/Logo/Logo'
@@ -75,6 +76,15 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
 
   /** Custom class name for the card container. */
   className?: string
+
+  /**
+   * The card title's heading level. `h3` suits a grid under a section
+   * heading, which is where most of them sit; a grid that is a page's whole
+   * content sits directly under its `<h1>` and takes `h2`, or the outline
+   * skips a level. Mirrors `Column`'s own prop.
+   * @default 'h3'
+   */
+  headingLevel?: 'h2' | 'h3'
 }
 
 /**
@@ -138,6 +148,7 @@ export function ContentCard({
   badgeUrl,
   locale,
   className = '',
+  headingLevel = 'h3',
   ...props
 }: ContentCardProps) {
   const t = useT()
@@ -224,8 +235,8 @@ export function ContentCard({
           image's natural width. `w-0 min-w-full` constrains the text to that
           width, so a wide title cannot stretch the card. */}
       <div className={`flex flex-col ${contentGap} ${imageHeight ? 'w-0 min-w-full' : ''}`}>
-        {/* Title style depends on the variant. */}
-        <h3 className={`${titleClasses} wrap-break-word`}>
+        {/* Title style depends on the variant; the level is the caller's. */}
+        <Heading className={`${titleClasses} wrap-break-word`} level={headingLevel} styleAs="none">
           <Link
             className={
               isHeroVariant
@@ -239,7 +250,7 @@ export function ContentCard({
           >
             {title}
           </Link>
-        </h3>
+        </Heading>
 
         {/* Optional description */}
         {description && (

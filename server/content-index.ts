@@ -17,12 +17,15 @@
 
 import * as Sentry from '@sentry/cloudflare'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
+import { withRetry } from './error-utils'
+import { moodCardsFromDocs, visitorTimeOfDay, type MoodDoc } from './moods'
 import type { Audience } from './payload-types'
 import type { Locale } from './sahajcloud-types'
 import {
   contentIndexCard,
   contentIndexTrack,
   meditationCardsFromUserChoices,
+  type MoodCard,
   type ContentIndexBlockFields,
   type ResolvedCardItem,
   type PageTagLabels,
@@ -65,6 +68,15 @@ const QUERY_BY_TYPE: Record<
     select: 'select[title]=true&select[thumbnail]=true&select[userChoices]=true',
     populate: 'populate[user-choices][title]=true',
     depth: 1,
+  },
+  // A `moods` block resolves to featured user-choice moods, each carrying its
+  // own SVG (the record *is* the upload, so `url` needs `filename`), its accent
+  // colour, and the meditation id it names per time of day. Those meditations
+  // are read separately, at `locale=en` — see `server/moods.ts`.
+  moods: {
+    select:
+      'select[title]=true&select[timings]=true&select[order]=true&select[color]=true&select[url]=true&select[filename]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true',
+    depth: 0,
   },
   songs: {
     // A Song is an upload. `url` and `thumbnailURL` are virtual fields the
@@ -119,11 +131,11 @@ function stripQueryParam(endpoint: string, key: string): string {
 async function fetchContentIndexDocs(
   fields: ContentIndexBlockFields,
   options: ResolveOptions,
-): Promise<Record<string, unknown>[]> {
+): Promise<{ docs: Record<string, unknown>[]; totalDocs?: number }> {
   const { type, limit, apiEndpoint } = fields
 
   if (!apiEndpoint) {
-    return []
+    return { docs: [] }
   }
   // Lectures resolve through the /for-audience feed, keyed on the site's
   // fixed audiences. With none configured, the block degrades to empty.
@@ -131,7 +143,7 @@ async function fetchContentIndexDocs(
   const audiences = type === 'lectures' ? audienceIdList(options.audiences) : []
 
   if (type === 'lectures' && audiences.length === 0) {
-    return []
+    return { docs: [] }
   }
   const { select, populate, depth } = QUERY_BY_TYPE[type]
   // Strip any depth SahajCloud baked into the endpoint so ours is the only one.
@@ -145,14 +157,26 @@ async function fetchContentIndexDocs(
   try {
     // `sahajCloudFetch`, not `sahajCloudFetchOptional`: this endpoint is one SahajCloud computed
     // for the block, so a 404 is a data gap rather than an answer.
-    const json = await sahajCloudFetch<{ docs?: Record<string, unknown>[] }>(
-      path,
-      `fetchContentIndexDocs(${type})`,
+    //
+    // `withRetry` classifies structurally off the error's own status, so a 5xx
+    // and a Cloudflare-origin 520/522/524 retry and a 4xx does not. The Sentry
+    // warning stays outside it, so one failed read is one event.
+    const json = await withRetry(() =>
+      sahajCloudFetch<{ docs?: Record<string, unknown>[]; totalDocs?: number }>(
+        path,
+        `fetchContentIndexDocs(${type})`,
+      ),
     )
     const docs = json.docs ?? []
+
+    // ⚠ A `moods` block's limit caps the moods *for the visitor's time of day*,
+    // which only `moodCardsFromDocs` can see. Slicing here would starve a slot.
+    if (type === 'moods') {
+      return { docs, totalDocs: json.totalDocs }
+    }
     const cap = typeof limit === 'number' ? limit : docs.length
 
-    return docs.slice(0, cap)
+    return { docs: docs.slice(0, cap), totalDocs: json.totalDocs }
   } catch (error) {
     Sentry.captureMessage('content-index fetch failed', {
       level: 'warning',
@@ -164,7 +188,7 @@ async function fetchContentIndexDocs(
       },
     })
 
-    return []
+    return { docs: [] }
   }
 }
 
@@ -173,7 +197,7 @@ export async function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
-  const docs = await fetchContentIndexDocs(fields, options)
+  const { docs } = await fetchContentIndexDocs(fields, options)
 
   // Meditations resolve to user-choice categories, then flatten into a
   // deduped, facet-tagged grid. Pages and lectures map one card per doc.
@@ -186,12 +210,31 @@ export async function resolveContentIndexItems(
     .filter((card): card is ResolvedCardItem => card !== null)
 }
 
+/**
+ * Gets and maps a `moods` content-index block's list to mood tiles for the
+ * visitor's own time of day.
+ */
+export async function resolveContentIndexMoods(
+  fields: ContentIndexBlockFields,
+  options: ResolveOptions = {},
+): Promise<MoodCard[]> {
+  const { docs, totalDocs } = await fetchContentIndexDocs(fields, options)
+
+  // The slot resolves here, inside the `data()` call that awaits this —
+  // never in `+onBeforeRoute`, which also runs in the browser.
+  return moodCardsFromDocs(docs as MoodDoc[], {
+    slot: visitorTimeOfDay(),
+    limit: typeof fields.limit === 'number' ? fields.limit : undefined,
+    totalDocs,
+  })
+}
+
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
 export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  const docs = await fetchContentIndexDocs(fields, options)
+  const { docs } = await fetchContentIndexDocs(fields, options)
 
   return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
@@ -263,6 +306,8 @@ export async function resolveContentIndexBlocks<T>(
       // other type feeds a card grid.
       if (fields.type === 'songs') {
         fields.resolvedTracks = await resolveContentIndexTracks(fields, options)
+      } else if (fields.type === 'moods') {
+        fields.resolvedMoods = await resolveContentIndexMoods(fields, options)
       } else {
         fields.resolvedItems = await resolveContentIndexItems(fields, options)
       }

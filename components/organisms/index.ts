@@ -49,5 +49,8 @@ export type { RichTextProps } from './RichText'
 export { ContentIndex } from './ContentIndex'
 export type { ContentIndexProps } from './ContentIndex'
 
+export { MoodFinder } from './MoodFinder'
+export type { MoodFinderProps } from './MoodFinder'
+
 export { RelatedContent, RelatedContentLoader } from './RelatedContent'
 export type { RelatedContentProps, RelatedContentLoaderProps } from './RelatedContent'

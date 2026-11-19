@@ -7,6 +7,7 @@ vi.mock('./sahajcloud-context', () => ({
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 
+import * as Sentry from '@sentry/cloudflare'
 import {
   resolveContentIndexItems,
   resolveContentIndexTracks,
@@ -304,5 +305,47 @@ describe('resolveContentIndexBlocks', () => {
     }
 
     expect(await resolveContentIndexBlocks(content, {})).toBe(content)
+  })
+})
+
+describe('fetchContentIndexDocs retry', () => {
+  it('retries a 500 before degrading to an empty list', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
+
+    const items = await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not retry a 400', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(400))
+
+    const items = await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports one Sentry event for a failed read, not one per attempt', async () => {
+    // `vi.mock` keeps its call log across cases; this counts only this read.
+    vi.mocked(Sentry.captureMessage).mockClear()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
+
+    await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledTimes(1)
   })
 })

@@ -95,6 +95,25 @@ export function documentHref(
 }
 
 /**
+ * The segment `/meditations` and `/meditations/:id` share.
+ *
+ * `pages/[slug]/+route.ts` excludes it by this constant rather than by a
+ * string, so the exclusion cannot point at a path that moved.
+ */
+export const MEDITATIONS_SEGMENT = 'meditations'
+
+/**
+ * Matches `/meditations` itself — the list of the meditations the mood finder
+ * offers — with an optional locale prefix, and nothing under it.
+ *
+ * It lives here because `/meditations/:id` does: the two patterns must stay
+ * mutually exclusive, and a copy in the route file would be free to drift.
+ */
+export function matchMeditationsIndexRoute(urlPathname: string): boolean {
+  return MEDITATIONS_INDEX_ROUTE.test(urlPathname)
+}
+
+/**
  * Matches an incoming URL path against a collection's document route, and
  * returns the Vike route params (`{ id }`), or `false`. The matching
  * inverse of {@link documentHref} for the full and embed routes, so the path
@@ -122,16 +141,22 @@ export function matchDocumentRoute(
 // space is the fixed set of document collections × {full, embed}.
 const DOCUMENT_ROUTE_PATTERNS = new Map<string, RegExp>()
 
+/**
+ * The optional locale prefix every route here allows. It carries a region for a
+ * compound code (`pt-BR`, `en-AU`), upper-case exactly as SahajCloud stores it:
+ * `/pt-br/...` is not a locale prefix.
+ */
+const LOCALE_PREFIX = '^(?:/[a-z]{2}(?:-[A-Z]{2})?)?'
+
+const MEDITATIONS_INDEX_ROUTE = new RegExp(`${LOCALE_PREFIX}/${MEDITATIONS_SEGMENT}/?$`)
+
 function documentRoutePattern(collection: string, embed: boolean): RegExp {
   const suffix = embed ? '/embed' : ''
   const key = `${collection}${suffix}`
   let pattern = DOCUMENT_ROUTE_PATTERNS.get(key)
 
   if (!pattern) {
-    // The optional locale prefix carries a region for a compound code
-    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as SahajCloud
-    // stores it: `/pt-br/...` is not a locale prefix.
-    pattern = new RegExp(`^(?:/[a-z]{2}(?:-[A-Z]{2})?)?/${collection}/([^/]+)${suffix}/?$`)
+    pattern = new RegExp(`${LOCALE_PREFIX}/${collection}/([^/]+)${suffix}/?$`)
     DOCUMENT_ROUTE_PATTERNS.set(key, pattern)
   }
 

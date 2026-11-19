@@ -65,6 +65,19 @@ export function advertisedLocales(status: unknown, offered: readonly Locale[]): 
 }
 
 /**
+ * The locales a **code route** advertises: every locale the site offers.
+ *
+ * A route with no SahajCloud document behind it — `/meditations` — has no
+ * per-locale publish state to read, and it renders in every language the site
+ * offers, so there is nothing to filter. It is deliberately a named export
+ * beside `advertisedLocales` rather than an expression at a call site: the
+ * page head and `/sitemap.xml` both annotate this URL and must not disagree.
+ */
+export function routeLocales(offered: readonly Locale[]): Locale[] {
+  return [...offered]
+}
+
+/**
  * The cluster for one URL: a row per advertised locale, plus `x-default`.
  *
  * Every member carries the same cluster, so the annotation is reciprocal
