@@ -166,8 +166,10 @@ describe('onBeforeRoute with the route functions', () => {
   // A prefix this hook does not strip is not a locale, so no route may take
   // the path under it: each would be a second address of a real page.
   it.each([
+    '/zz/meditations',
     '/zz/meditations/105',
     '/zz/meditations/105/embed',
+    '/zz/lectures',
     '/zz/lectures/162',
     '/zz/lectures/162/embed',
     '/zz/map',
