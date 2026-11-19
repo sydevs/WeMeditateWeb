@@ -69,6 +69,14 @@ describe('ContentGrid layout', () => {
     expect(classFor(html, 'masonry').split(' ')).toContain('w-full')
     expect(html).not.toContain('style=')
   })
+
+  // A row gap spaces rows only, so the grid would end 32px shorter than the
+  // per-card margin left it.
+  it('keeps the space under the last row', () => {
+    const html = renderToStaticMarkup(<ContentGrid items={four} sizes={GRID_SIZES} />)
+
+    expect(classFor(html, 'masonry').split(' ')).toContain('pb-8')
+  })
 })
 
 describe('ContentGrid sizes', () => {

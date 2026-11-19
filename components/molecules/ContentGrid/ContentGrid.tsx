@@ -74,7 +74,8 @@ export function ContentGrid({
       : 'gap-x-4 sm:gap-x-5 lg:gap-x-6'
 
   return (
-    <div className={`w-full masonry gap-y-8 ${gapClasses} ${className}`} {...props}>
+    // `pb-8` keeps the 32px under the last row that each card's `mb-8` used to add.
+    <div className={`w-full masonry gap-y-8 pb-8 ${gapClasses} ${className}`} {...props}>
       {items.map((item) => {
         const { id, sizes: itemSizes, ...cardProps } = item
 
