@@ -800,6 +800,52 @@ describe('<RichText>', () => {
     expect(html).toContain('float-right')
   })
 
+  it('keeps the bold, links and line breaks inside a lexical blockquote', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'quote',
+            children: [
+              text('A '),
+              text('wise', 1),
+              text(' saying'),
+              { type: 'linebreak', version: 1 },
+              {
+                type: 'link',
+                fields: { linkType: 'custom', url: 'https://example.com', newTab: false },
+                children: [text('its source')],
+                version: 1,
+              },
+            ],
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+    expect(html).toContain('<strong>wise</strong>')
+    expect(html).toContain(' saying<br/>')
+    expect(anchorFor(html, 'https://example.com')).not.toBe('')
+    expect(html).toContain('its source</a>')
+  })
+
+  it('renders nothing for a lexical blockquote with no text (live on /terms-conditions)', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          paragraph([text('Before')]),
+          { type: 'quote', children: [], version: 1 },
+          { type: 'quote', children: [{ type: 'linebreak', version: 1 }], version: 1 },
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Before')
+    expect(html).not.toContain('<blockquote')
+    expect(html).not.toContain('float-right')
+  })
+
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
     // Vitest runs with import.meta.env.DEV === true.
     const html = renderToStaticMarkup(

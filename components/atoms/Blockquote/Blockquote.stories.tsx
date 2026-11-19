@@ -1,5 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Blockquote } from './Blockquote'
+import { Link } from '../Link'
 import {
   StoryWrapper,
   StorySection,
@@ -35,52 +36,66 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>With Credit</StoryGridCell>
             <StoryGridCell>
-              <Blockquote
-                align="left"
-                text="This Kundalini is the spiritual mother of every individual."
-                credit="Shri Mataji Nirmala Devi"
-              />
+              <Blockquote align="left" credit="Shri Mataji Nirmala Devi">
+                This Kundalini is the spiritual mother of every individual.
+              </Blockquote>
             </StoryGridCell>
             <StoryGridCell>
-              <Blockquote
-                align="right"
-                text="This Kundalini is the spiritual mother of every individual."
-                credit="Shri Mataji Nirmala Devi"
-              />
+              <Blockquote align="right" credit="Shri Mataji Nirmala Devi">
+                This Kundalini is the spiritual mother of every individual.
+              </Blockquote>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Without Credit</StoryGridCell>
             <StoryGridCell>
-              <Blockquote
-                align="left"
-                text="Meditation is not a way of making your mind quiet. It is a way of entering into the quiet that is already there."
-              />
+              <Blockquote align="left">
+                Meditation is not a way of making your mind quiet. It is a way of entering into the
+                quiet that is already there.
+              </Blockquote>
             </StoryGridCell>
             <StoryGridCell>
-              <Blockquote
-                align="right"
-                text="Meditation is not a way of making your mind quiet. It is a way of entering into the quiet that is already there."
-              />
+              <Blockquote align="right">
+                Meditation is not a way of making your mind quiet. It is a way of entering into the
+                quiet that is already there.
+              </Blockquote>
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Long Quote</StoryGridCell>
             <StoryGridCell>
-              <Blockquote
-                align="left"
-                text="The beauty of meditation is that it allows us to discover our inner self, to understand our true nature, and to find peace within the chaos of daily life. Through regular practice, we develop a deeper connection with ourselves."
-                credit="Traditional Wisdom"
-              />
+              <Blockquote align="left" credit="Traditional Wisdom">
+                The beauty of meditation is that it allows us to discover our inner self, to
+                understand our true nature, and to find peace within the chaos of daily life.
+                Through regular practice, we develop a deeper connection with ourselves.
+              </Blockquote>
             </StoryGridCell>
             <StoryGridCell>
-              <Blockquote
-                align="right"
-                text="The beauty of meditation is that it allows us to discover our inner self, to understand our true nature, and to find peace within the chaos of daily life. Through regular practice, we develop a deeper connection with ourselves."
-                credit="Traditional Wisdom"
-              />
+              <Blockquote align="right" credit="Traditional Wisdom">
+                The beauty of meditation is that it allows us to discover our inner self, to
+                understand our true nature, and to find peace within the chaos of daily life.
+                Through regular practice, we develop a deeper connection with ourselves.
+              </Blockquote>
+            </StoryGridCell>
+          </StoryGridRow>
+
+          <StoryGridRow>
+            <StoryGridCell isLabel>Inline Content</StoryGridCell>
+            <StoryGridCell>
+              <Blockquote align="left">
+                The quieter you become, the <strong>more</strong> you hear.
+                <br />
+                Read about <Link href="/kundalini">the Kundalini</Link>.
+              </Blockquote>
+            </StoryGridCell>
+            <StoryGridCell>
+              <Blockquote align="right">
+                The quieter you become, the <strong>more</strong> you hear.
+                <br />
+                Read about <Link href="/kundalini">the Kundalini</Link>.
+              </Blockquote>
             </StoryGridCell>
           </StoryGridRow>
         </StoryGridBody>
@@ -97,12 +112,9 @@ export const Default: Story = () => (
           At the base of this system lies the Kundalini, a dormant spiritual energy that,
           when awakened, rises through the chakras to unite us with our higher consciousness.
         </p>
-        <Blockquote
-          align="right"
-          text="This Kundalini is the spiritual mother of every individual."
-          credit="Shri Mataji Nirmala Devi"
-          className="my-6 ml-6"
-        />
+        <Blockquote align="right" className="my-6 ml-6" credit="Shri Mataji Nirmala Devi">
+          This Kundalini is the spiritual mother of every individual.
+        </Blockquote>
         <p className="text-gray-700 mt-6">
           This profound energy is present in all of us, waiting to be awakened through meditation.
           When activated, it brings about a transformation that affects every aspect of our being.
@@ -119,12 +131,10 @@ export const Default: Story = () => (
           beneath the noise of our thoughts. This subtle distinction is important for anyone
           beginning their meditation practice.
         </p>
-        <Blockquote
-          align="left"
-          text="Meditation is not a way of making your mind quiet. It is a way of entering into the quiet that is already there."
-          credit="Deepak Chopra"
-          className="my-6 mr-6"
-        />
+        <Blockquote align="left" className="my-6 mr-6" credit="Deepak Chopra">
+          Meditation is not a way of making your mind quiet. It is a way of entering into the quiet
+          that is already there.
+        </Blockquote>
         <p className="text-gray-700 mt-4">
           As we continue our practice, we learn to access this inner quietude more easily,
           finding that it becomes a refuge we can return to whenever we need clarity or peace.

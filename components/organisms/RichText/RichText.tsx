@@ -119,14 +119,17 @@ const CONVERTERS: JSXConverters = {
   },
 
   // Lexical blockquotes (distinct from the `quote` custom block, which
-  // renders as HeroQuote) render through the Blockquote atom. The atom
-  // floats to match the node's alignment, and it takes only plain text, so
-  // inline formatting inside a blockquote is flattened. This is rare in practice.
-  quote: ({ node }) => {
+  // renders as HeroQuote) render through the Blockquote atom, which floats
+  // to match the node's alignment. One with no text renders nothing: the atom
+  // would otherwise float an empty gradient box beside the copy.
+  quote: ({ node, nodesToJSX }) => {
+    if (!getNodeText(node.children).trim()) {
+      return null
+    }
     const format = (node as { format?: string }).format
     const align = format === 'left' || format === 'start' ? 'left' : 'right'
 
-    return <Blockquote align={align} text={getNodeText(node.children)} />
+    return <Blockquote align={align}>{nodesToJSX({ nodes: node.children })}</Blockquote>
   },
 
   // Render links through the locale-aware Link atom. An internal link

@@ -1,8 +1,8 @@
 import React from 'react'
 
 export interface BlockquoteProps {
-  /** The quote text content */
-  text: string
+  /** The quote itself: text, or inline content such as bold, links and line breaks. */
+  children: React.ReactNode
   /** Optional credit/attribution for the quote */
   credit?: string
   /** Alignment of the blockquote. Affects gradient direction and text alignment. */
@@ -19,14 +19,12 @@ export interface BlockquoteProps {
  *
  * @example
  * ```tsx
- * <Blockquote
- *   text="This Kundalini is the spiritual mother of every individual."
- *   credit="Shri Mataji Nirmala Devi"
- *   align="right"
- * />
+ * <Blockquote credit="Shri Mataji Nirmala Devi" align="right">
+ *   This Kundalini is the spiritual mother of every individual.
+ * </Blockquote>
  * ```
  */
-export function Blockquote({ text, credit, align = 'right', className = '' }: BlockquoteProps) {
+export function Blockquote({ children, credit, align = 'right', className = '' }: BlockquoteProps) {
   const isLeft = align === 'left'
 
   return (
@@ -54,7 +52,7 @@ export function Blockquote({ text, credit, align = 'right', className = '' }: Bl
         `.trim()}
       >
         <div className={`text-base font-medium`}>
-          <p>{text}</p>
+          <p>{children}</p>
         </div>
         {credit && <div className={`mt-4 text-sm font-light`}>{credit}</div>}
       </blockquote>

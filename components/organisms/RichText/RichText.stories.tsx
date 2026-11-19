@@ -269,6 +269,19 @@ const pageContent = editorState(
       'Stillness is where creativity and solutions are found. When the surface of the mind settles, what was murky becomes clear, and answers that striving could never force arrive on their own — quietly, unhurried, and complete — as though they had been waiting all along for us to stop and listen.',
       'left',
     ),
+    // A blockquote keeps its inline formatting, links and line breaks.
+    {
+      ...quote(''),
+      children: [
+        text('Meditation is '),
+        text('effortless attention', FORMAT.bold),
+        text('.'),
+        { type: 'linebreak', version: 1 },
+        text('Read more on the '),
+        internalLink('about page', 'about'),
+        text('.'),
+      ],
+    },
     uploadImage(FIGURE_IMAGE, 'A misty forest', 'A left-aligned figure', 'left'),
     paragraph([text(FILLER[1])]),
     uploadImage(FIGURE_IMAGE, 'A meadow at dawn', 'A right-aligned figure', 'right'),
