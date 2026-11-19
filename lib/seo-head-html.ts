@@ -1,5 +1,5 @@
 /**
- * The `<head>` a content route publishes, rendered as HTML by Unhead.
+ * The `<head>` an indexable route publishes, rendered as HTML by Unhead.
  *
  * Declared as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`, and nowhere
  * else: the setting is global as well as cumulative, so a second declaration
@@ -9,6 +9,11 @@
  * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared with
  * the `embed` routes and the live preview, so a hook called from a template
  * would publish a head for a URL that must claim nothing.
+ *
+ * Every route that publishes a URL comes through here, `/map` included: a
+ * content route hands it descriptors to link (`lib/seo-schema.ts`), and
+ * `/map` hands it the block SahajCloud already serialized
+ * (`lib/atlas-seo.ts`).
  *
  * What Unhead is here for is the `@graph`: it mints an `@id` per node and
  * links them — `WebPage.isPartOf` the `WebSite`, the `WebSite.publisher` the
@@ -48,7 +53,7 @@ import {
 import type { PageContextServer } from 'vike/types'
 import { seoDocument } from './head-settings'
 import { isoDuration } from './structured-data'
-import { isOpenGraphKey, type SeoHead } from './head'
+import { isOpenGraphKey, isSafeJsonLd, type SeoHead } from './head'
 import type { SeoAuthor, SeoImage, SeoNode, SeoSchema } from './seo-schema'
 
 /**
@@ -257,18 +262,8 @@ function schemaNode(node: SeoNode, context: NodeContext): SchemaOrgNodeInput[] {
  * Takes the host explicitly rather than reading the canonical, because the
  * schema-org plugin resolves every `@id` and relative URL against it.
  */
-export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string): string {
-  const head = createHead({
-    disableDefaults: true,
-    plugins: [UnheadSchemaOrg({ host })],
-  })
-
-  const context: NodeContext = {
-    inLanguage: seo.schema.inLanguage,
-    url: seo.canonical ?? undefined,
-    mainEntity: mainEntityId(seo.canonical, seo.schema.nodes),
-    isFaq: seo.schema.nodes.some((node) => node.type === 'faq'),
-  }
+export function renderSeoHead(seo: SeoHead, host: string): string {
+  const head = seoHead(host)
 
   pushHead(head, {
     link: [
@@ -293,31 +288,71 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
     ),
   })
 
+  if (seo.schema) {
+    pushGraph(head, seo.schema, seo.canonical, host)
+  } else if (isSafeJsonLd(seo.jsonLd)) {
+    // ⚠ **The block is pushed whole, not rebuilt.** `/map`'s graph is
+    // serialized upstream, where the ownership walk that mints its ids lives,
+    // and a round trip through `JSON.parse` here would drop the escaping that
+    // makes it safe to embed. Unhead neutralizes `</script` inside an
+    // `innerHTML` and emits the rest verbatim, which is what this needs.
+    pushHead(head, {
+      script: [{ type: 'application/ld+json', innerHTML: seo.jsonLd }],
+    })
+  }
+
+  return head.render().headTags
+}
+
+/**
+ * One head instance per request.
+ *
+ * ⚠ **`disableDefaults` is load-bearing** — see this module's own note.
+ */
+function seoHead(host: string) {
+  return createHead({
+    disableDefaults: true,
+    plugins: [UnheadSchemaOrg({ host })],
+  })
+}
+
+/** The `@graph` a route described as descriptors, as linked schema.org nodes. */
+function pushGraph(
+  head: ReturnType<typeof seoHead>,
+  schema: SeoSchema,
+  canonical: string | null,
+  host: string,
+): void {
+  const context: NodeContext = {
+    inLanguage: schema.inLanguage,
+    url: canonical ?? undefined,
+    mainEntity: mainEntityId(canonical, schema.nodes),
+    isFaq: schema.nodes.some((node) => node.type === 'faq'),
+  }
+
   pushSchemaOrg(
     head,
     [
       defineOrganization({
-        name: seo.schema.site.name,
+        name: schema.site.name,
         url: host,
-        logo: seo.schema.site.logo,
-        sameAs: [...seo.schema.site.sameAs],
+        logo: schema.site.logo,
+        sameAs: [...schema.site.sameAs],
       }),
       // The site's own description, never the page's: a crawler reading one
       // page's summary as the whole site's is a worse claim than none.
       defineWebSite({
-        name: seo.schema.site.name,
-        description: seo.schema.site.description,
-        inLanguage: seo.schema.inLanguage,
+        name: schema.site.name,
+        description: schema.site.description,
+        inLanguage: schema.inLanguage,
       }),
       // A node kind may contribute several, which `faq` does.
-      ...seo.schema.nodes.flatMap((node) => schemaNode(node, context)),
+      ...schema.nodes.flatMap((node) => schemaNode(node, context)),
     ],
     // The plugin's own default is `bodyClose`, where a crawler that reads only
     // the head never sees it.
     { tagPosition: 'head' },
   )
-
-  return head.render().headTags
 }
 
 /**
@@ -334,9 +369,11 @@ export function seoHeadHtml(pageContext: PageContextServer): string {
   const seo = seoDocument(pageContext.data)
   const host = pageContext.urlParsed.origin
 
-  if (!seo?.schema || !host || pageContext.livePreview?.active) {
+  // A document with neither a graph nor a serialized block is a route that
+  // publishes no URL claim: an `embed` route, the error page.
+  if (!seo || (!seo.schema && !seo.jsonLd) || !host || pageContext.livePreview?.active) {
     return ''
   }
 
-  return renderSeoHead({ ...seo, schema: seo.schema }, host)
+  return renderSeoHead(seo, host)
 }

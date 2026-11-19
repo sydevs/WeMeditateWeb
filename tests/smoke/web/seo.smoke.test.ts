@@ -189,6 +189,24 @@ describe('web preview share metadata', () => {
     await expect(response.json()).resolves.toMatchObject({ lang: 'fr', display: 'browser' })
   })
 
+  it('/map publishes one head, through the same generator', async (ctx) => {
+    // `/map` is the one document whose graph arrives already serialized, from
+    // the atlas endpoint. Only the preview proves it reaches the markup
+    // through `headHtmlEnd` rather than the component head it used to render.
+    const map = await fetchPage('/map')
+    const canonicals = map.html.match(/rel="canonical"/g) ?? []
+
+    ctx.skip(
+      canonicals.length === 0,
+      'the atlas endpoint resolved no document for /map on this preview',
+    )
+
+    expect(canonicals, 'the canonical appears once').toHaveLength(1)
+    expect(map.html.match(/application\/ld\+json/g) ?? [], 'one graph').toHaveLength(1)
+    expect(jsonLdGraph(map.html).length, 'the upstream graph parses').toBeGreaterThan(0)
+    expect(metaContent(map.html, 'robots'), 'a preview is not the real site').toEqual(['noindex'])
+  })
+
   it('a preview host refuses crawlers in the markup too', async () => {
     const home = await fetchPage('/')
 

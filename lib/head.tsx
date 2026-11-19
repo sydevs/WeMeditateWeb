@@ -11,14 +11,14 @@
  *   navigation, which no `Head` component gets to do.
  * - Everything else — the canonical, the `hreflang` cluster, the rest of
  *   Open Graph, and JSON-LD — is raw head HTML, because `useConfig` emits no
- *   `<link>` and no `<script>`. A content route generates it with Unhead
- *   (`lib/seo-head-html.ts`); `/map` renders the answer SahajCloud serves
- *   through {@link SeoHeadTags} (`lib/atlas-head.tsx`).
+ *   `<link>` and no `<script>`. One generator renders it for every route,
+ *   with Unhead (`lib/seo-head-html.ts`).
  *
  * Both halves read one {@link SeoDocument}, built server-side in the route's
- * `+data.ts` by `lib/content-seo.ts`. A route that builds none — an `embed`
- * route, the error page — serves the site's own title and description and
- * publishes no URL claim at all.
+ * `+data.ts` — by `lib/content-seo.ts` for a content route, and by
+ * `lib/atlas-seo.ts` from the answer SahajCloud serves for `/map`. A route
+ * that builds none — an `embed` route, the error page — serves the site's own
+ * title and description and publishes no URL claim at all.
  *
  * See https://vike.dev/useConfig and https://vike.dev/title
  */
@@ -60,10 +60,10 @@ export interface SeoDocument extends SeoHead {
  *
  * `serializeJsonLd` (lib/structured-data.ts) and SahajCloud's own
  * `jsonLdEscape()` both neutralize `</script>` and `<!--`, with JSON escapes
- * that round-trip to the same characters. This is why the string is emitted
- * with `dangerouslySetInnerHTML` instead of re-escaped. HTML-escaping a JSON
- * string would corrupt it, and running it through `JSON.parse` and
- * `stringify` would drop the escaping that makes it safe.
+ * that round-trip to the same characters. This is why the string is handed to
+ * the generator whole instead of re-escaped. HTML-escaping a JSON string
+ * would corrupt it, and running it through `JSON.parse` and `stringify`
+ * would drop the escaping that makes it safe.
  *
  * This check is the belt to that braces. The sink is a `<script>` block
  * carrying SahajCloud-authored text, so a regression in either producer would
@@ -85,76 +85,6 @@ export function isSafeJsonLd(jsonLd: string): boolean {
  */
 export function isOpenGraphKey(key: string): boolean {
   return key.startsWith('og:') || key.startsWith('article:')
-}
-
-/**
- * One `<link rel="alternate" hreflang>` per row of a cluster.
- *
- * The single owner of how an alternate is spelled, used by the content
- * pages here and by `/map`. The two clusters are built very differently —
- * content alternates are path prefixes, atlas alternates are `?locale=`
- * query variants — but they are rendered identically, and a spelling that
- * drifted between them would annotate half the site one way and half the
- * other.
- *
- * Rendered as a component, instead of assembled as strings, so React does
- * the ordinary attribute escaping on every value.
- */
-export function HreflangLinks({ alternates }: { alternates: readonly Alternate[] }) {
-  return (
-    <>
-      {alternates.map((alternate) => (
-        // The lowercase spelling is spread in deliberately. React emits the
-        // `hrefLang` prop as authored, and while an HTML parser lowercases
-        // attribute names anyway, these tags exist for other crawlers to
-        // read, and some of them pattern-match instead of parsing.
-        <link
-          key={alternate.hreflang}
-          rel="alternate"
-          {...{ hreflang: alternate.hreflang }}
-          href={alternate.href}
-        />
-      ))}
-    </>
-  )
-}
-
-/**
- * Every head tag a published URL carries: its canonical, its cluster, its
- * Open Graph and Twitter properties, and its JSON-LD.
- *
- * The canonical and the cluster ship together. An `hreflang` cluster whose
- * members are not self-canonical is one Google discards.
- *
- * Rendered as a component, instead of assembled as strings, so React does
- * the ordinary attribute escaping on every value.
- */
-export function SeoHeadTags({ seo }: { seo: SeoHead }) {
-  return (
-    <>
-      {seo.canonical && <link href={seo.canonical} rel="canonical" />}
-
-      <HreflangLinks alternates={seo.alternates} />
-
-      {seo.meta.map(([key, content]) =>
-        // Open Graph is the one vocabulary that keys on `property`; `twitter:`
-        // and plain names such as `robots` key on `name`. vike-react spells the
-        // `twitter:card` it emits for `/map` that way too, so a Twitter tag
-        // cannot end up with two spellings on one site.
-        isOpenGraphKey(key) ? (
-          <meta key={`${key}:${content}`} content={content} property={key} />
-        ) : (
-          <meta key={`${key}:${content}`} content={content} name={key} />
-        ),
-      )}
-
-      {isSafeJsonLd(seo.jsonLd) && (
-        // Emitted verbatim: see `isSafeJsonLd` for why this is neither
-        // re-escaped nor re-serialized.
-        <script dangerouslySetInnerHTML={{ __html: seo.jsonLd }} type="application/ld+json" />
-      )}
-    </>
-  )
 }
 
 /**

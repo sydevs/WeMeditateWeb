@@ -3,6 +3,8 @@ import { lectureSeo, pageSeo, seoRoute } from './content-seo'
 import { renderSeoHead, seoHeadHtml } from './seo-head-html'
 import { enT } from './i18n'
 import type { Page, ResolvedLecture } from '../server/sahajcloud-types'
+import type { SeoHead } from './head'
+import { buildAlternates } from './hreflang'
 import { CF_PUBLIC_URL } from '../tests/_helpers/cloudflare-images'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -167,5 +169,109 @@ describe('the claims Unhead would invent, and does not', () => {
       '@id': `${ORIGIN}/lectures/163#video`,
     })
     expect(nodeOf(html, 'VideoObject')?.['@id']).toBe(`${ORIGIN}/lectures/163#video`)
+  })
+})
+
+
+/** A head with nothing but the tags under test, so each one stands alone. */
+function bare(overrides: Partial<SeoHead> = {}): SeoHead {
+  return {
+    canonical: `${ORIGIN}/about`,
+    alternates: [],
+    meta: [],
+    jsonLd: '',
+    ...overrides,
+  }
+}
+
+describe('the tags around the graph', () => {
+  const cluster = (locales: Parameters<typeof buildAlternates>[0]['locales']) =>
+    renderSeoHead(
+      bare({ alternates: buildAlternates({ origin: ORIGIN, path: '/about', locales }) }),
+      ORIGIN,
+    )
+
+  it('emits the canonical alone where there is no cluster', () => {
+    // A meditation or a lecture carries no per-locale publish state. It still
+    // needs a canonical — and an hreflang cluster whose members are not
+    // self-canonical is one Google discards, so these ship together.
+    const html = cluster([])
+
+    expect(html).toContain('rel="canonical"')
+    expect(html).toContain(`href="${ORIGIN}/about"`)
+    expect(html).not.toContain('rel="alternate"')
+  })
+
+  it('omits the canonical entirely where the route publishes none', () => {
+    expect(renderSeoHead(bare({ canonical: null }), ORIGIN)).not.toContain('rel="canonical"')
+  })
+
+  it('emits one alternate per advertised locale, plus x-default', () => {
+    const html = cluster(['en', 'fr'])
+
+    expect(html).toContain(`<link rel="alternate" hreflang="en" href="${ORIGIN}/about">`)
+    expect(html).toContain(`<link rel="alternate" hreflang="fr" href="${ORIGIN}/fr/about">`)
+    expect(html).toContain(`<link rel="alternate" hreflang="x-default" href="${ORIGIN}/about">`)
+  })
+
+  it('spells the attribute lowercase, for crawlers that pattern-match', () => {
+    const html = cluster(['en'])
+
+    expect(html).toContain('hreflang=')
+    expect(html).not.toContain('hrefLang=')
+  })
+
+  it('emits every meta pair it is given, repeats included', () => {
+    // `og:locale:alternate` is the reason `meta` is a list and not a record.
+    const html = renderSeoHead(
+      bare({
+        meta: [
+          ['og:locale:alternate', 'fr'],
+          ['og:locale:alternate', 'de'],
+        ],
+      }),
+      ORIGIN,
+    )
+
+    expect(html).toContain('<meta property="og:locale:alternate" content="fr">')
+    expect(html).toContain('<meta property="og:locale:alternate" content="de">')
+  })
+})
+
+describe('a graph that arrives already serialized', () => {
+  // `/map`'s, built upstream where the ownership walk that mints its ids is.
+  it('emits the block verbatim, unescaped', () => {
+    const html = renderSeoHead(
+      bare({ jsonLd: '{"@context":"https://schema.org","@graph":[{"@type":"City"}]}' }),
+      ORIGIN,
+    )
+
+    expect(html).toContain('application/ld+json')
+    // Not HTML-escaped: `&quot;` here would be invalid JSON-LD.
+    expect(html).toContain('{"@context":"https://schema.org"')
+    expect(html).not.toContain('&quot;')
+    expect(graph(html)[0]).toEqual({ '@type': 'City' })
+  })
+
+  it('leaves an upstream escape alone rather than turning it back into a tag', () => {
+    const html = renderSeoHead(
+      bare({ jsonLd: '{"name":"\\u003c/script\\u003ealert(1)"}' }),
+      ORIGIN,
+    )
+
+    expect(html).toContain('\\u003c/script\\u003e')
+    expect(html).not.toContain('</script>alert(1)')
+  })
+
+  it.each([
+    ['a raw closing script tag', '{"name":"</script><img src=x onerror=alert(1)>"}'],
+    ['a raw comment opener', '{"name":"<!--"}'],
+  ])('drops the block entirely on %s', (_label, jsonLd) => {
+    // Fail closed. Reaching here means a producer's escaping regressed. A page
+    // that is merely less richly described beats one that executes CMS text.
+    const html = renderSeoHead(bare({ jsonLd }), ORIGIN)
+
+    expect(html).not.toContain('application/ld+json')
+    expect(html).not.toContain('onerror')
   })
 })

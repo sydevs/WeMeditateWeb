@@ -109,9 +109,9 @@ These rules apply whether or not the matching rule file or skill is loaded.
   [lib/head-settings.ts](lib/head-settings.ts), which has to be a separate module and says why.
   **Never a head hook in a component**: `PageTemplate`, `MeditationTemplate` and
   `LectureTemplate` are shared with the `embed` routes and the live preview, and none of those is
-  a URL to point a crawler at. `/map` is the one route still rendering its head as a component —
-  `SeoHeadTags` in [lib/head.tsx](lib/head.tsx), over the pre-serialized answer SahajCloud sends
-  ([lib/atlas-head.tsx](lib/atlas-head.tsx)).
+  a URL to point a crawler at. `/map` publishes through the same generator, from the document
+  [lib/atlas-seo.ts](lib/atlas-seo.ts) adapts out of the answer SahajCloud serves; its `@graph`
+  arrives already serialized, which is the one way that document differs.
   A URL advertises only the locales its own document is published in —
   [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the page head, the
   `og:locale:alternate` list and `/sitemap.xml`, so the three cannot disagree. The site's

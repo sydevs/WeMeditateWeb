@@ -9,11 +9,11 @@
  * that is merely empty.
  */
 import { describe, it, expect } from 'vitest'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { relative } from 'node:path'
 import type { Meditation, Page, ResolvedLecture } from '../../server/sahajcloud-types'
 import { lectureSeo, meditationSeo, pageSeo } from '../../lib/content-seo'
-import { SeoHeadTags, type SeoDocument } from '../../lib/head'
+import type { SeoDocument } from '../../lib/head'
+import { renderSeoHead } from '../../lib/seo-head-html'
 import { enT } from '../../lib/i18n'
 import { readSource, repoRoot, sourceFiles, stripComments } from './_source-scan'
 
@@ -68,11 +68,13 @@ const DOCUMENTS: [string, SeoDocument][] = [
 ]
 
 describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
-  const html = renderToStaticMarkup(<SeoHeadTags seo={seo} />)
+  // Through the one generator the site declares, so what this guard reads is
+  // the markup the Worker serves.
+  const html = renderSeoHead(seo, ORIGIN)
 
   it('names its own URL, as a canonical and as og:url', () => {
     expect(html).toContain(`rel="canonical"`)
-    expect(html).toContain(`<meta content="${seo.canonical}" property="og:url"/>`)
+    expect(html).toContain(`<meta property="og:url" content="${seo.canonical}">`)
   })
 
   it('carries a share image', () => {
@@ -84,15 +86,7 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
   })
 
   it('carries JSON-LD that parses, describing the organisation and the site', () => {
-    // A route whose head Unhead generates carries its graph as descriptors
-    // instead; `lib/seo-head-html.test.ts` renders and asserts that one.
-    if (seo.schema) {
-      expect(seo.schema.nodes.length).toBeGreaterThan(0)
-
-      return
-    }
-
-    const block = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)?.[1]
+    const block = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s)?.[1]
 
     expect(block, 'every content route emits a JSON-LD block').toBeTruthy()
 
@@ -104,7 +98,7 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
   })
 
   it('leaves no unescaped < inside the JSON-LD block', () => {
-    const block = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)?.[1] ?? ''
+    const block = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s)?.[1] ?? ''
 
     expect(block).not.toContain('<')
   })
@@ -126,17 +120,19 @@ describe('the generated head', () => {
 
 describe('the routes that publish a URL', () => {
   const building = sourceFiles(['pages/**/+data.ts'])
-    .filter((file) => /\bseo:\s*\w+Seo\(/.test(stripComments(readSource(file))))
+    .filter((file) => /\b\w+Seo\(/.test(stripComments(readSource(file))))
     .map((file) => relative(repoRoot, file))
     .sort()
 
   // Building the document is the opt-in, now that the generator is declared
   // once for the whole site: a route that stops building one goes quiet
-  // rather than red. A new indexable route belongs on this list.
-  it('are the content routes, and every one of them', () => {
+  // rather than red. A new indexable route belongs on this list. `/map`
+  // builds one too, from the answer the atlas endpoint serves.
+  it('are the indexable routes, and every one of them', () => {
     expect(building).toEqual([
       'pages/[slug]/+data.ts',
       'pages/lectures/[id]/(full)/+data.ts',
+      'pages/map/+data.ts',
       'pages/meditations/[id]/(full)/+data.ts',
     ])
   })

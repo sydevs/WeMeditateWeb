@@ -617,9 +617,9 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
 /**
  * The head document for `/lectures/:id`.
  *
- * It carries `schema` descriptors rather than serialized `jsonLd`, which is
- * what hands the graph to the generator (`lib/seo-head-html.ts`) instead of
- * to `SeoHeadTags`. `/map` is the one document still built the other way.
+ * It carries `schema` descriptors rather than serialized `jsonLd`. Every
+ * route built here does; `/map` is the one document whose graph arrives
+ * already serialized, from upstream (`lib/atlas-seo.ts`).
  */
 export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute }): SeoDocument {
   const { lecture, route } = options
