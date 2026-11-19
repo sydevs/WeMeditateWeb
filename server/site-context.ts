@@ -57,8 +57,9 @@ const reportedDegrades = new Set<string>()
  * The locales the site offered at this isolate's last config read.
  *
  * An embed or an error page renders without reading the config, so this is
- * how it tells a locale the site offers from one that 404s. Empty until the
- * first chromed render, and nothing is reported from those renders until then.
+ * how it tells a locale the site offers from one it does not. Empty until
+ * the first chromed render, and nothing is reported from those renders until
+ * then.
  */
 let lastOfferedLocales: readonly Locale[] = []
 
@@ -119,8 +120,9 @@ function isEmpty(translations: WebTranslations): boolean {
  * A locale is published with every group present, even blank.
  *
  * Either degrade logs on every request, and reaches Sentry once per locale
- * and reason per isolate — and only for a locale the site offers, since a
- * request in any other locale 404s.
+ * and reason per isolate — and only for a locale the site offers: a chromed
+ * request in any other locale 404s, and an embed in one renders the snapshot
+ * by design.
  */
 export async function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const { translations, degraded } = await readTranslations(pageContext)

@@ -59,7 +59,7 @@ describe('loadTranslations', () => {
   })
 
   it('degrades to the English snapshot when the global is empty', async () => {
-    // What an unseeded SahajCloud returns. Rendering it would print every key path.
+    // What an unseeded SahajCloud returns. Rendering it would report every key as missing.
     vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
 
     expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toBe(EN_TRANSLATIONS)
