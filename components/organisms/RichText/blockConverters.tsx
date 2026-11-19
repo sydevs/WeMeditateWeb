@@ -44,6 +44,7 @@ import {
   type TableOfContentsBlockFields,
   type TextBoxBlockFields,
 } from '../../../lib/content-blocks'
+import { textBoxDecorationAt } from '../../../lib/textbox-decorations'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -115,7 +116,9 @@ export const blockConverters: BlockConverters = {
   //   imagePosition 'overlay'      → ContentOverlay (text over the image)
   //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
   //   otherwise (left or right)    → ContentTextBox (side box overlapping image)
-  textbox: ({ node }) => {
+  // Its ornament follows from its place among the page's text boxes: see
+  // lib/textbox-decorations.ts.
+  textbox: ({ node, parent }) => {
     const fields = node.fields as unknown as TextBoxBlockFields
     const img = populatedImage(fields.image)
 
@@ -127,6 +130,7 @@ export const blockConverters: BlockConverters = {
     const subtitle = fields.subtitle ?? undefined
     const title = fields.title ?? ''
     const description = fields.text ?? ''
+    const decoration = textBoxDecorationAt(parent, node)
 
     // Overlay: text sits over the image. The SahajCloud `textColor` describes the
     // *text* (dark or light), while `surface` describes the *background* the
@@ -138,6 +142,7 @@ export const blockConverters: BlockConverters = {
           className={FULL_BLEED_BLOCK}
           ctaHref={ctaHref}
           ctaText={ctaText}
+          decoration={decoration === 'triangle' ? decoration : undefined}
           imageAlt={img.alt}
           imageSrc={img.url}
           subtitle={subtitle}
@@ -177,7 +182,12 @@ export const blockConverters: BlockConverters = {
       // owns the spacing and centering.
       <div className={FULL_BLEED_BLOCK}>
         <Container maxWidth="xl">
-          <ContentTextBox {...sideProps} align={fields.imagePosition} className="" />
+          <ContentTextBox
+            {...sideProps}
+            align={fields.imagePosition}
+            className=""
+            decoration={decoration}
+          />
         </Container>
       </div>
     )
