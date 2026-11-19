@@ -265,6 +265,25 @@ describe('getPageBySlug query shape', () => {
     // The config is serialised into every page's HTML, and renders no credit.
     expect(findGlobal.mock.calls[0][0].populate.images.credit).toBeUndefined()
   })
+
+  it('reports an image the page body drops, on a public read only', async () => {
+    resetReadState()
+    vi.mocked(Sentry.captureMessage).mockClear()
+    const content = {
+      root: { children: [{ type: 'upload', relationTo: 'images', value: 9201 }] },
+    }
+    const find = vi.fn().mockResolvedValue({
+      docs: [{ id: 1, slug: 'sushumna', _status: 'published', content }],
+    })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find } as never)
+
+    await getPageBySlug({ slug: 'sushumna', locale: 'en', preview: true, previewToken: 't' })
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+
+    await getPageBySlug({ slug: 'sushumna', locale: 'en' })
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('getPageLocaleStatus', () => {

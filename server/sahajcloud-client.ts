@@ -59,6 +59,7 @@ import type {
   RelatedLectureCard,
 } from './sahajcloud-types'
 import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './sahajcloud-types'
+import { reportDroppedImages } from './dropped-images'
 
 // --- Common Options Interfaces ---
 
@@ -433,6 +434,12 @@ export async function getPageBySlug(
       // preview it is exactly what we asked for.
       if (!isPreview && page._status === 'draft') {
         return null
+      }
+
+      // Not under preview: an editor mid-edit is looking at the page already,
+      // and a draft's gap is not yet anyone else's.
+      if (!isPreview) {
+        reportDroppedImages(page, options.locale)
       }
 
       return page
