@@ -53,7 +53,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="An optional subtitle sits under the title; the sidetext label is decorative and customisable (defaults to 'Ancient Wisdom')."
+      description="An optional subtitle sits under the title; the sidetext label is decorative and customisable, and falls back to `blocks.general.wisdom_sidetext` when no label is passed."
       title="With Subtitle & CTA"
     >
       <OrnateTextBox

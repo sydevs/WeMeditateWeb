@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { OrnateTextBox } from './OrnateTextBox'
 import { classFor, classOf } from '../../../tests/_helpers/markup'
+import { enT } from '../../../lib/i18n'
 
 const BASE = {
   title: 'Sacred Teachings',
@@ -44,17 +45,27 @@ describe('<OrnateTextBox>', () => {
     expect(html).toContain('Timeless teachings')
   })
 
-  it('defaults the decorative sidetext to "Ancient Wisdom"', () => {
+  it('takes the decorative sidetext from the content system when none is given', () => {
+    // Which key, not whether it resolves — `tests/guards/translation-keys.test.ts`
+    // owns that half, so a reworded upstream string does not break this case.
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
 
-    expect(html).toContain('Ancient Wisdom')
+    expect(html).toContain(enT('blocks.general.wisdom_sidetext'))
   })
 
   it('honours a custom sidetext label', () => {
     const html = renderToStaticMarkup(<OrnateTextBox {...BASE} sidetext="Ancient Knowledge" />)
 
     expect(html).toContain('Ancient Knowledge')
-    expect(html).not.toContain('Ancient Wisdom')
+    expect(html).not.toContain(enT('blocks.general.wisdom_sidetext'))
+  })
+
+  it('renders no sidetext at all for an empty label', () => {
+    // An empty string is a caller suppressing the decoration, so it must not
+    // fall through to the translation the way an absent prop does.
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} sidetext="" />)
+
+    expect(html).not.toContain('[writing-mode:vertical-rl]')
   })
 
   // The image takes a grid column of its own, and the header and body share
