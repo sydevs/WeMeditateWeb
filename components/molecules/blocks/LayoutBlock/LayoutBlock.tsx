@@ -10,12 +10,6 @@ import {
   type LayoutItem,
 } from '../../../../lib/content-blocks'
 
-/**
- * The level an item's own title takes. A section with a heading of its own
- * nests its items one level under it; a section with none has to start the
- * level itself, or the items read as orphans (axe `heading-order`).
- */
-
 export interface LayoutBlockProps {
   /** Presentation style for the items. */
   style: LayoutBlockFields['style']
