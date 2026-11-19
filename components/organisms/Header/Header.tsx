@@ -128,18 +128,20 @@ export function Header({
 
   return (
     <>
-      {/* Desktop-only: below `lg:` the compact bar is the whole header, and a
-          banner over it would push the page 80px down for a logo the bar
-          already shows. */}
+      {/* The element itself is rendered at every width, empty below `lg:`: it
+          is the page's only `banner`, and `<nav>` cannot carry that role
+          beside its own. `condensed` already renders it empty on `/map`. */}
       <header
-        className={['max-lg:hidden', clickable, bandClassName, className].filter(Boolean).join(' ')}
+        className={[clickable, bandClassName, className].filter(Boolean).join(' ')}
         {...props}
       >
-        {/* Top banner with logo, illustration, and action link. Omitted when
-            condensed — the compact nav below carries the logo and action link
-            itself, so rendering both would duplicate them. */}
+        {/* Top banner with logo, illustration, and action link. Hidden below
+            `lg:`, where the compact bar is the whole header and a band over it
+            would push the page 80px down for a logo the bar already shows.
+            Omitted when condensed — the compact nav below carries the logo and
+            action link itself, so rendering both would duplicate them. */}
         {!condensed && (
-          <div className="flex items-center justify-between gap-8 py-4 text-fg-muted">
+          <div className="max-lg:hidden flex items-center justify-between gap-8 py-4 text-fg-muted">
             <Logo align="left" className="shrink-0" href={logoHref} size="sm" variant="text" />
 
             <div className="flex-1 mx-8">

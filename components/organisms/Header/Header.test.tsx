@@ -32,8 +32,14 @@ describe('Header', () => {
   })
 
   describe('the banner', () => {
-    it('is desktop-only, so a phone starts on the compact bar', () => {
-      expect(classOf(render(), '<header').split(' ')).toContain('max-lg:hidden')
+    it('keeps the banner landmark a phone would otherwise have none of', () => {
+      // `<nav>` cannot carry `banner` beside its own role, and #204 rules out a
+      // wrapper above it, so the element stays and only its band is hidden.
+      expect(classOf(render(), '<header').split(' ')).not.toContain('max-lg:hidden')
+    })
+
+    it('hides its band below `lg:`, so a phone starts on the compact bar', () => {
+      expect(render()).toContain('<div class="max-lg:hidden flex items-center')
     })
 
     it('words the action link on one line, beside a pin', () => {
@@ -202,7 +208,7 @@ describe('Header', () => {
       // stop pinning one header-height down the page (#204).
       const html = render({ bandClassName: band })
 
-      expect(html).toContain(`<header class="max-lg:hidden pointer-events-auto ${band}"`)
+      expect(html).toContain(`<header class="pointer-events-auto ${band}"`)
       expect(classOf(html, '<nav')).toContain(band)
     })
 
@@ -219,7 +225,7 @@ describe('Header', () => {
       // below its clicks back, and these two take theirs.
       const html = render()
 
-      expect(html).toContain('<header class="max-lg:hidden pointer-events-auto"')
+      expect(html).toContain('<header class="pointer-events-auto"')
       expect(navClasses(html)).toContain('pointer-events-auto')
     })
   })
