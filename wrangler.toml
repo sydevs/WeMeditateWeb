@@ -26,10 +26,7 @@ main = "virtual:photon:cloudflare:server-entry"
 
 # ⚠ Cloudflare Workers Builds deploys this Worker from `main`, and a custom
 # domain overwrites the zone's DNS record for that hostname. So merging this
-# block is what moves wemeditate.com off the old Rails site. It needs the
-# legacy redirect map (#276), the analytics tag (#103), wemeditate.com on the
-# Turnstile widget's hostname allowlist, and the launch locales (#163) already
-# in place.
+# block is what moves wemeditate.com off the old Rails site.
 #
 # `www` and all five country hosts (.it, .fr, .ru, .cz and ua.) already
 # redirect to the apex at Cloudflare, before an origin is chosen, so none of
