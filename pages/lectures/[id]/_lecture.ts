@@ -1,29 +1,27 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Lecture, Locale, ResolvedLecture } from '../../../server/sahajcloud-types'
+import type { Lecture, Locale } from '../../../server/sahajcloud-types'
 import { getLecture } from '../../../server/sahajcloud-client'
 import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface LectureData {
-  lecture: ResolvedLecture
+  /**
+   * The collection's own shape, as both sibling preview routes carry theirs.
+   * `resolveLecture` flattens it at render, which is where a streamed message
+   * has to be flattened too — `mergeData` lays unsaved fields over the
+   * document, so a view model in its place would take raw fields on top of
+   * itself.
+   */
+  lecture: Lecture
   locale: Locale
   id: string
-  /**
-   * The document `lecture` was resolved from, and `null` off-preview. The raw
-   * lecture is the larger of the two shapes — a clip carries its whole parent —
-   * so it rides into the browser only where a subscriber will read it. The
-   * condition is `previewArgs`', which is what `useDocumentPreviewActive()`
-   * decides on the other side.
-   */
-  lectureDocument: Lecture | null
 }
 
 /**
  * Validate the route id and fetch the lecture. Shared by the full
  * (/lectures/:id) and embed (/lectures/:id/embed) routes so the two stay in
- * lockstep. getLecture normalizes full lectures and clips into the same shape.
- * Throws a 404 for an invalid id or a missing lecture.
+ * lockstep. Throws a 404 for an invalid id or a missing lecture.
  */
 export async function loadLecture(pageContext: PageContextServer): Promise<LectureData> {
   const { locale, routeParams } = pageContext
@@ -40,18 +38,12 @@ export async function loadLecture(pageContext: PageContextServer): Promise<Lectu
   // header keeps the read out of the edge cache, which is what lets an
   // editor see a save they just made.
   const preview = await loadLivePreview(pageContext)
-  const args = previewArgs(preview)
 
-  const read = await getLecture({ id, locale, ...args })
+  const lecture = await getLecture({ id, locale, ...previewArgs(preview) })
 
-  if (!read) {
+  if (!lecture) {
     throw render(404, `Lecture with ID "${id}" not found.`)
   }
 
-  return {
-    lecture: read.resolved,
-    lectureDocument: args.preview ? read.document : null,
-    locale,
-    id,
-  }
+  return { lecture, locale, id }
 }

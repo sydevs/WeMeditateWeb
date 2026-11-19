@@ -15,16 +15,15 @@ import type { Locale, ResolvedLecture } from '../../../../server/sahajcloud-type
  * ## It is also what the SahajCloud preview panel points at
  *
  * `/lectures/:id/embed` is not a preview target, so this subscriber is the
- * lecture's only one. Off-preview the server sends no raw document at all
- * (`../_lecture.ts`), which is what the branch below renders.
+ * lecture's only one. It mounts unconditionally, as `/[slug]`'s and the
+ * meditation embed's do: `LivePreviewDocument` owns the off-preview case and
+ * then renders `children(initialData)` with no subscription at all.
  */
 export function Page() {
-  const { lectureDocument: initialLecture, lecture, locale } = useData<LecturePageData>()
-
-  if (!initialLecture) return <LectureBody lecture={lecture} locale={locale} />
+  const { lecture, locale } = useData<LecturePageData>()
 
   return (
-    <LivePreviewDocument initialData={initialLecture} slug="lectures">
+    <LivePreviewDocument initialData={lecture} slug="lectures">
       {(liveLecture) => <LectureBody lecture={resolveLecture(liveLecture)} locale={locale} />}
     </LivePreviewDocument>
   )
@@ -34,7 +33,7 @@ export function Page() {
  * The page itself, from a resolved lecture.
  *
  * A component rather than a fragment, because `usePageHead` is a hook and the
- * branch above is an early return. Inside the subscriber that also makes the
+ * callback above is not a component. Rendering it there also makes the
  * `<title>` follow the stream, as `PageTemplate` already does on `/[slug]`.
  *
  * The `<title>` is set here rather than in `LectureTemplate`, which the embed

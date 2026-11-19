@@ -18,7 +18,6 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { Lecture } from '../../../../server/sahajcloud-types'
 import { enT } from '../../../../lib/i18n'
-import { resolveLecture } from '../../../../lib/lecture-shape'
 import { openTag } from '../../../../tests/_helpers/markup'
 import type { LecturePageData } from './+data'
 
@@ -54,14 +53,10 @@ const pageData: { current: LecturePageData } = {
   current: null as unknown as LecturePageData,
 }
 
-/**
- * The server render. `lectureDocument` is null off-preview, which is what a
- * visitor gets — see `pages/lectures/[id]/_lecture.ts`.
- */
-function serverRendered(document: Lecture, { previewing = true } = {}): void {
+/** The server render: the raw document, which is what both routes carry. */
+function serverRendered(document: Lecture): void {
   pageData.current = {
-    lectureDocument: previewing ? document : null,
-    lecture: resolveLecture(document),
+    lecture: document,
     locale: 'en',
     id: String(document.id),
   } as LecturePageData
@@ -70,7 +65,7 @@ function serverRendered(document: Lecture, { previewing = true } = {}): void {
 /** What the panel streams next, or `null` to replay `initialData`. */
 const streamed: { current: Lecture | null } = { current: null }
 
-/** What the route asked the subscriber to mount on, if it mounted one. */
+/** What the route asked the subscriber to mount on. */
 const subscriber: { slug?: string; initialData?: Lecture } = {}
 
 vi.mock('vike-react/useData', () => ({ useData: () => pageData.current }))
@@ -111,13 +106,12 @@ beforeEach(() => {
 })
 
 describe('the full lecture route', () => {
-  it('mounts no subscriber for a visitor, who is sent no raw document', () => {
-    serverRendered(makeClip(), { previewing: false })
+  it('renders the saved lecture when the panel streams nothing', () => {
+    serverRendered(makeClip())
 
     const html = renderToStaticMarkup(<Page />)
 
     expect(html).toContain('Saved title')
-    expect(subscriber.slug).toBeUndefined()
   })
 
   it('subscribes the lectures collection to the document the server read', () => {

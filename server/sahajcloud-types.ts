@@ -6,7 +6,6 @@
  * like the Locale type and list-item types.
  */
 
-import type { ResolvedLecture } from '../lib/lecture-shape'
 import type {
   Config,
   Form,
@@ -55,18 +54,6 @@ export type EmbeddedFormSelect = { [K in Exclude<keyof EmbeddedForm, 'id'>]: tru
 // module is shared by the server fetcher and the client live preview.
 // See lib/lecture-shape.ts.
 export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../lib/lecture-shape'
-
-/**
- * One lecture read, in both the shapes a route needs.
- *
- * A live preview subscribes to `document`, because the stream merges into the
- * collection's own shape — see `LivePreviewDocument`'s `initialData`. One read
- * answers both, so the subscriber costs no second fetch.
- */
-export interface LectureRead {
-  document: Lecture
-  resolved: ResolvedLecture
-}
 
 /**
  * A page as the site config populates it: a nav link's label and target, plus
