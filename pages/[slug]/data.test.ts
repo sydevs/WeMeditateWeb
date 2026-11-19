@@ -23,8 +23,13 @@ vi.mock('../../server/sahajcloud-client', () => ({
 vi.mock('../../server/site-context', () => ({
   loadSiteContext: async () => ({ settings, t: () => '' }),
 }))
+// `LivePreviewSession` is `{ active, scope, token }` (server/live-preview.ts),
+// so an inactive session is `active: false` — not the `enabled` this fixture
+// used to carry, which nothing reads.
+const preview = { active: false, scope: null, token: null }
+
 vi.mock('../../server/live-preview', () => ({
-  loadLivePreview: async () => ({ enabled: false }),
+  loadLivePreview: async () => preview,
   previewArgs: () => ({}),
 }))
 vi.mock('../../server/content-index', () => ({
@@ -39,11 +44,8 @@ interface AbortError {
 }
 
 /**
- * Whether the request renders the 404 state rather than redirecting.
- *
- * `redirectOf` rethrows a `render()` abort, because a 404 where a redirect was
- * expected is a failure worth reading the stack of. The cases below want the
- * 404 itself, so they ask for it by name.
+ * Whether the request renders the 404 state rather than redirecting. Separate
+ * from `redirectOf`, which rethrows a `render()` abort on purpose.
  */
 async function renders404(slug: string, locale = 'en') {
   try {
@@ -75,6 +77,7 @@ async function redirectOf(slug: string, locale = 'en') {
 beforeEach(() => {
   settings.homePage = null
   settings.availableLocales = ['en']
+  preview.active = false
   getPageBySlug.mockResolvedValue({ id: 7, slug: 'about', content: [] })
   getPageLocaleStatus.mockResolvedValue({})
 })
@@ -143,13 +146,10 @@ describe('a page the reader’s language has no translation of', () => {
   })
 
   it('lands on the English page instead of a 404', async () => {
-    expect(await redirectOf('about', 'it')).toEqual({ url: '/about', status: 302 })
-  })
-
-  it('is a 302, so publishing the translation changes where the URL lands', async () => {
     // A 301 would be cached indefinitely, pinning the reader to English for
-    // as long as the browser keeps it.
-    expect((await redirectOf('about', 'it'))?.status).toBe(302)
+    // as long as the browser keeps it, so publishing the translation later
+    // could not change where the URL lands.
+    expect(await redirectOf('about', 'it')).toEqual({ url: '/about', status: 302 })
   })
 
   it('sends the home page to `/`, not to `/index`', async () => {
@@ -176,6 +176,14 @@ describe('a page the reader’s language has no translation of', () => {
   it('leaves the 404 standing for an English request', async () => {
     // Nothing to fall back to, and `/about` → `/about` would loop.
     expect(await renders404('about', 'en')).toBe(true)
+  })
+
+  it('leaves the 404 standing under preview, so the session survives', async () => {
+    // An editor asking for a locale with no document at all sees that, rather
+    // than being moved to the English URL and losing their preview token.
+    preview.active = true
+
+    expect(await renders404('about', 'it')).toBe(true)
   })
 
   it('leaves the 404 standing when the site does not offer English', async () => {

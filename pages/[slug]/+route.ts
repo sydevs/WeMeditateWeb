@@ -28,12 +28,9 @@ export default function route(pageContext: { urlPathname: string }) {
     return false
   }
 
-  // Do not match a path still carrying a locale-shaped prefix when it reaches
-  // the matcher. There is no `pages/[locale]/` directory: `+onBeforeRoute`
-  // strips a known locale into `urlLogical`, so this one matcher serves every
-  // locale. What is left for this guard is a locale-shaped prefix nothing
-  // stripped, which is an unoffered or misspelt code — it must 404 through the
-  // route it really matched, never be read as a page slug.
+  // There is no `pages/[locale]/` directory: `+onBeforeRoute` strips a known
+  // locale into `urlLogical`. So what reaches this guard is a locale-shaped
+  // prefix nothing stripped — an unoffered or misspelt code.
   // A compound code carries an upper-case region (`/pt-BR/`, `/en-AU/`).
   if (urlPathname.match(/^\/[a-z]{2}(-[A-Z]{2})?\//)) {
     return false

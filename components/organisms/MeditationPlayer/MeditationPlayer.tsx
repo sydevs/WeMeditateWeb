@@ -46,15 +46,7 @@ const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 // Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
 
-// The bare domain is the web arm's link text — a brand name, not copy. It is
-// all that is left of it: this app serves wemeditate.com, so both links below
-// are site paths, and `Link` spells each one through `localeHref` like any
-// other.
-//
-// They stay `external` all the same, and that is the whole reason this line
-// exists. `external` is what opens a new tab, and the only route that renders
-// the upsell is the embed — an iframe on someone else's page. A same-tab link
-// would replace the player with this entire site inside that frame.
+// The web arm's link text — a brand name, not copy.
 const WEMEDITATE_DOMAIN = 'wemeditate.com'
 
 // Placeholder image for when no frames are available (teal gradient)
@@ -831,7 +823,13 @@ function MeditationPlayerInner({
           </div>
         </div>
 
-        {/* Upsell Message */}
+        {/* Upsell Message. Both links are site paths, which `Link` spells
+            through `localeHref`, and both stay `external`: that is what opens
+            a new tab, and only the embed renders this line — inside an iframe
+            on someone else's page, where a same-tab link would draw the whole
+            site into the frame.
+            shortcut: `/app` 404s until SahajCloud publishes a page slugged
+            `app`; the slug is settled (#280), so the page is what is missing. */}
         {upsell && (
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-700">

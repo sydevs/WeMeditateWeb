@@ -130,35 +130,14 @@ describe('LayoutChrome', () => {
     expect(html).not.toContain('Music[dropdown]')
   })
 
-  it('hands the language dropdown the raw pathname, for Link to spell', () => {
+  it('offers every locale the site serves, with the raw pathname for Link to spell', () => {
     // `/index` is routing-internal, and the dropdown hands it on as written:
     // `Link` is what resolves it, to `/` for English and `/fr` for French.
-    ctx.settings = {
-      availableLocales: ['en', 'fr'],
-      featuredPages: [],
-      knowledgePages: [],
-      featuredArticles: [],
-      classPages: [],
-      infoPages: [],
-    }
-    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
-
-    expect(html).toContain('en:/index,fr:/index')
-  })
-
-  it('offers every locale the site serves, including an untranslated one', () => {
-    // The hreflang cluster lists published ∩ offered; this list deliberately
-    // does not. `pages/[slug]/+data.ts` 302s an untranslated locale to the
-    // English page, so the entry leads somewhere — and filtering the list
-    // would hide the language switch from the readers who most need it.
-    ctx.settings = {
-      availableLocales: ['en', 'it', 'fr'],
-      featuredPages: [],
-      knowledgePages: [],
-      featuredArticles: [],
-      classPages: [],
-      infoPages: [],
-    }
+    //
+    // Every offered locale appears, whether or not the page is translated
+    // into it. The hreflang cluster lists published ∩ offered; this list
+    // deliberately does not.
+    ctx.settings = { ...navSettings, availableLocales: ['en', 'it', 'fr'] }
     const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
 
     expect(html).toContain('en:/index,it:/index,fr:/index')

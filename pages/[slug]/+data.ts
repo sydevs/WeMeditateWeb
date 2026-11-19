@@ -10,7 +10,7 @@ import { advertisedLocales } from '../../lib/hreflang'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
-import { localePath, normalizeContentPath } from '../../lib/urls'
+import { localeHref, localePath } from '../../lib/urls'
 import { redirect, render } from 'vike/abort'
 
 export interface PageData {
@@ -79,22 +79,21 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   }
 
   if (!page) {
-    // A page not translated into the reader's language yet lands on the
-    // English one, and becomes their own language the moment an editor
-    // publishes the translation. One rule for every language.
+    // 302, not 301: a later publish has to change where this URL lands.
     //
-    // 302, not 301: that publish has to change where the URL lands, and a
-    // 301 is cached indefinitely. `advertisedLocales` is asked rather than
-    // `status` indexed, because English must be both published upstream and
-    // offered by this site — a locale the site does not offer has no URL to
-    // point at, and `server/site-context.ts` would 404 the target too. A
-    // failed status read answers `{}`, which advertises nothing, so the 404
-    // below stands rather than guessing the English page is there.
+    // `advertisedLocales`, not `status[DEFAULT_LOCALE]`: a locale this site
+    // does not offer has no URL to point at, and the `{}` of a failed read
+    // advertises nothing, so the 404 stands.
+    //
+    // Not under preview, for the reason `server/site-context.ts`'s locale gate
+    // is not either: `getPageLocaleStatus` reports published status only, and
+    // moving an editor to the English URL would end their preview session.
     if (
+      !preview.active &&
       locale !== DEFAULT_LOCALE &&
       advertisedLocales(status, settings.availableLocales).includes(DEFAULT_LOCALE)
     ) {
-      throw redirect(localePath(DEFAULT_LOCALE, normalizeContentPath(`/${slug}`)), 302)
+      throw redirect(localeHref(DEFAULT_LOCALE, `/${slug}`), 302)
     }
 
     // Page not found. This is a valid 404 state, not an error.
