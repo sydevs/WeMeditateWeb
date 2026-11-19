@@ -46,14 +46,15 @@ const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 // Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
 
-// The public site an embedded player sends a visitor back to: today the legacy
-// Rails app on its own origin, which localizes its own slugs (`/fr/méditations`),
-// so `lib/urls.ts` cannot spell these and both links stay on the English entry
-// points. The bare domain is the web arm's link text — a brand name, not copy.
-// shortcut: absolute and unlocalized while this domain is somebody else's. Once
-// this app serves wemeditate.com, `Link` stops passing these through as external
-// and both become unprefixed self-links in every locale — route them through
-// `localeHref` then.
+// The bare domain is the web arm's link text — a brand name, not copy. It is
+// all that is left of it: this app serves wemeditate.com, so both links below
+// are site paths, and `Link` spells each one through `localeHref` like any
+// other.
+//
+// They stay `external` all the same, and that is the whole reason this line
+// exists. `external` is what opens a new tab, and the only route that renders
+// the upsell is the embed — an iframe on someone else's page. A same-tab link
+// would replace the player with this entire site inside that frame.
 const WEMEDITATE_DOMAIN = 'wemeditate.com'
 
 // Placeholder image for when no frames are available (teal gradient)
@@ -840,7 +841,7 @@ function MeditationPlayerInner({
                       <Link
                         key="upsell"
                         external
-                        href={`https://${WEMEDITATE_DOMAIN}/meditations`}
+                        href="/meditate-now"
                         variant="primary"
                       >
                         {WEMEDITATE_DOMAIN}
@@ -852,7 +853,7 @@ function MeditationPlayerInner({
                       <Link
                         key="upsell"
                         external
-                        href={`https://${WEMEDITATE_DOMAIN}/app`}
+                        href="/app"
                         variant="primary"
                       >
                         {t('meditation.general.upsell_app_link')}
