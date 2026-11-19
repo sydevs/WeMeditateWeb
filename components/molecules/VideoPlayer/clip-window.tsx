@@ -73,6 +73,12 @@ export function ClipDuration({ window, className }: ClipTimeProps) {
   )
 }
 
+export interface ClipHotkeysProps {
+  window: ClipWindow
+  /** Matches the `disabled` every `Hotkey` on the skin's list takes, so the two cannot diverge. */
+  disabled?: boolean | undefined
+}
+
 /**
  * The percent hotkeys, rescaled to the window.
  *
@@ -81,11 +87,12 @@ export function ClipDuration({ window, className }: ClipTimeProps) {
  * these three to us whenever a window is mounted, and the rest of its hotkeys need no change: a
  * step, a toggle and the volume keys all mean the same thing inside a window.
  */
-export function ClipHotkeys({ window }: { window: ClipWindow }) {
+export function ClipHotkeys({ window, disabled = false }: ClipHotkeysProps) {
   const seek = usePlayer((state) => state.seek)
   const { start, length } = useWindowBounds(window)
 
   useHotkey({
+    disabled,
     keys: '0-9',
     onActivate: (_event, key) => {
       const to = percentSeek(start, length, key)
@@ -95,8 +102,8 @@ export function ClipHotkeys({ window }: { window: ClipWindow }) {
       }
     },
   })
-  useHotkey({ keys: 'Home', onActivate: () => void seek(start) })
-  useHotkey({ keys: 'End', onActivate: () => void seek(start + length) })
+  useHotkey({ disabled, keys: 'Home', onActivate: () => void seek(start) })
+  useHotkey({ disabled, keys: 'End', onActivate: () => void seek(start + length) })
 
   return null
 }

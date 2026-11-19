@@ -27,7 +27,7 @@ export function PlaybackHotkeys({ disabled = false }: PlaybackHotkeysProps = {})
       <Hotkey action="volumeStep" disabled={disabled} keys="ArrowDown" />
       {/* wm: these three seek by a share of the media, which a window has to rescale. */}
       {clip ? (
-        <ClipHotkeys window={clip} />
+        <ClipHotkeys disabled={disabled} window={clip} />
       ) : (
         <>
           <Hotkey action="seekToPercent" disabled={disabled} keys="0-9" />
