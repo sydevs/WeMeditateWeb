@@ -82,7 +82,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
       <button
         aria-current={isCurrentTrack ? 'true' : undefined}
         aria-labelledby={titleId}
-        className="absolute inset-0 rounded cursor-pointer"
+        className="absolute inset-0 rounded cursor-pointer focus-ring"
         onClick={() => onTrackClick(index)}
       />
       <div className="flex items-center justify-between gap-3">
@@ -166,8 +166,10 @@ export function Playlist({
         </div>
       )}
 
-      {/* Playlist items */}
-      <div className="relative flex-1 overflow-y-auto space-y-2">
+      {/* A scroll container clips at its padding box, and each row's focus
+          ring draws 4px outside it: `p-1` makes that room, `-m-1` keeps the
+          rows where they were. */}
+      <div className="relative flex-1 overflow-y-auto space-y-2 -m-1 p-1">
         {visibleTracks(tracks, selectedFilter).map(({ track, index }) => (
           <PlaylistItem
             // shortcut: Track carries no id, so the audio url stands in as the

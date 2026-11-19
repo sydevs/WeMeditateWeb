@@ -191,6 +191,14 @@ describe('Playlist rows — the play button and the credit link', () => {
     expect(result.violations.map((violation) => violation.id)).toEqual([])
   })
 
+  it('draws the focus ring on the play button', () => {
+    mount()
+
+    expect(screen.getByRole('button', { name: 'Flute Meditation' }).className.split(' ')).toContain(
+      'focus-ring',
+    )
+  })
+
   it('plays the track the row names, by its index in the full list', () => {
     const { onTrackClick } = mount()
 
