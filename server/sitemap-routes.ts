@@ -21,7 +21,7 @@ import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './sahajcloud-client'
-import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
+import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, type SitemapUrl } from './sitemap'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './sahajcloud-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
@@ -180,7 +180,7 @@ export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
 
     // A preview origin already tells crawlers to stay out. Serving it a
     // full sitemap would only invite the indexing that robots.txt just refused.
-    if (!isIndexableHost(new URL(origin).hostname)) {
+    if (!isCanonicalOrigin(origin)) {
       c.header('Content-Type', 'application/xml; charset=utf-8')
 
       return c.body(buildSitemapXml([]))

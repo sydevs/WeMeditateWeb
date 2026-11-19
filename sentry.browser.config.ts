@@ -27,7 +27,7 @@ export const sentryBrowserConfig = () => {
       dataCollection: sentryDataCollection,
       integrations: [Sentry.replayIntegration()],
       tracesSampleRate: 1.0,
-      tracePropagationTargets: [/^\//, /^https:\/\/yourserver\.io\/api/],
+      tracePropagationTargets: [/^\//],
       replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
     })
