@@ -181,8 +181,11 @@ See a component's own README for its full API — for example
 [components/atoms/README.md](components/atoms/README.md) for the atom index.
 
 **ContentGrid vs. MasonryGrid**: `ContentGrid` renders `ContentCard` items in a responsive
-masonry layout and always shows every item. `MasonryGrid` renders text content with a "Show
-More" control. Do not use them interchangeably.
+masonry layout and always shows every item. `MasonryGrid` renders the layout block's `grid`
+items — an optional image, a title, a link and text — and holds all but the first three behind
+a "Show More" control. Do not use them interchangeably. Both lay out through the `masonry`
+utility in [layouts/tailwind.css](layouts/tailwind.css): CSS only, so nothing reflows when the
+page hydrates.
 
 ## File organization
 

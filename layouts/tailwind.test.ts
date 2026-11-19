@@ -28,7 +28,7 @@ async function build(candidates: string[]): Promise<string> {
 const rule = (css: string, selector: string): string =>
   [
     ...css.matchAll(
-      new RegExp(`(?:^|[\\s}])${selector.replace(/[.:]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'),
+      new RegExp(`(?:^|[\\s}])${selector.replace(/[.:[\]]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'),
     ),
   ]
     .map(([, block]) => block)
@@ -195,5 +195,47 @@ describe('the spacing scale', () => {
 
     expect(css).toContain('--spacing: 0.25rem;')
     expect(declared(rule(css, '.h-56'), 'height')).toBe('calc(var(--spacing) * 56)')
+  })
+})
+
+describe('masonry', () => {
+  // A script-built masonry drew three columns on the server and recounted them only
+  // after mount, so a phone loaded three slivers and then reflowed. A media
+  // query is the server's answer and the browser's alike.
+  it('starts at one column and widens by media query, with no script', async () => {
+    const css = await build(['masonry'])
+    // The declarations ahead of the first nested at-rule.
+    const base = css.match(/\.masonry \{([^@}]*)/)?.[1] ?? ''
+
+    expect(declared(base, 'display')).toBe('grid')
+    expect(declared(base, 'grid-template-columns')).toBe('minmax(0, 1fr)')
+    expect(css).toMatch(
+      /@media \(width >= 40rem\) \{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    )
+    expect(css).toMatch(
+      /@media \(width >= 64rem\) \{\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    )
+  })
+
+  // A browser without Grid Level 3 keeps the plain grid rows above.
+  it('packs into lanes only where the browser has them', async () => {
+    const css = await build(['masonry'])
+
+    expect(css).toMatch(/@supports \(display: grid-lanes\) \{\s*display: grid-lanes;\s*\}/)
+  })
+
+  // "Show More" is a click handler, so with scripting off it did nothing and
+  // MasonryGrid's items past the first page stayed hidden for good. Preflight's
+  // `[hidden]` is an `!important` in `base`, which only `base` can override.
+  it('shows every hidden MasonryGrid item and drops its button with scripting off', async () => {
+    const css = await build([])
+    const at = css.indexOf('@media (scripting: none)')
+    const noScript = css.slice(at)
+
+    expect(at).toBeGreaterThan(css.indexOf('@layer base'))
+    expect(declared(rule(noScript, '[data-masonry-grid] > li[hidden]'), 'display')).toBe(
+      'block !important',
+    )
+    expect(declared(rule(noScript, '[data-masonry-show-more]'), 'display')).toBe('none')
   })
 })

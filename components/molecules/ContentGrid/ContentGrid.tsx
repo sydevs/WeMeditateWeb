@@ -1,5 +1,4 @@
 import { ComponentProps } from 'react'
-import Masonry from 'react-masonry-css'
 import { ContentCard, ContentCardProps } from '../ContentCard/ContentCard'
 
 export interface ContentGridItem extends Omit<ContentCardProps, 'className' | 'id' | 'sizes'> {
@@ -16,14 +15,11 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
    * `sizes` for every card's thumbnail, describing one column of this grid.
    *
    * The caller's, not the grid's: a column is `(container + gutter) / n −
-   * gutter`, and only the caller knows the container it put the grid in, or
-   * the `breakpointCols` it passed (#206).
+   * gutter`, and only the caller knows the container it put the grid in (#206).
    */
   sizes: string
   /** Card variant to apply to all cards in the grid */
   cardVariant?: 'default' | 'hero'
-  /** Custom breakpoints for responsive columns (defaults to 1 mobile, 2 tablet, 3 desktop) */
-  breakpointCols?: number | { default: number; [key: number]: number }
 }
 
 /**
@@ -32,9 +28,13 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
  * Similar to MasonryGrid but composes ContentCard components instead of plain text items.
  * Always displays all cards without pagination or "Show More" functionality.
  *
+ * One, two, then three columns at `sm` and `lg`, through the `masonry` utility
+ * (layouts/tailwind.css): CSS only, so the server's columns are the ones a
+ * phone keeps after hydration, and the cards stay in reading order.
+ *
  * The outer `w-full` div takes the spread props, `ref` among them, and that is
- * a contract: ContentIndex animates that element. Moving the spread onto the
- * Masonry breaks the fade and its spec silently.
+ * a contract: ContentIndex animates that element. Moving the spread elsewhere
+ * breaks the fade and its spec silently.
  *
  * @example
  * // Basic usage with meditation cards
@@ -59,69 +59,35 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
  *     }
  *   ]}
  * />
- *
- * @example
- * // Custom breakpoints (2 columns mobile, 3 tablet, 4 desktop)
- * <ContentGrid
- *   items={contentItems}
- *   sizes="(max-width: 639px) 50vw, (max-width: 1279px) 33vw, 270px"
- *   breakpointCols={{
- *     default: 4,
- *     1280: 3,
- *     768: 2,
- *     640: 2
- *   }}
- * />
  */
 export function ContentGrid({
   items,
   sizes,
   cardVariant = 'default',
-  breakpointCols = {
-    default: 3, // Desktop: 3 columns (1024px+)
-    1023: 2, // Tablet: 2 columns (640px - 1023px)
-    639: 1, // Mobile: 1 column (< 640px)
-  },
   className = '',
   ...props
 }: ContentGridProps) {
-  // Determine gap size based on variant
-  // Default: 16px mobile, 20px tablet, 24px desktop
-  // Hero: 24px mobile, 30px tablet, 36px desktop (50% larger)
-  const isHero = cardVariant === 'hero'
-  const gapClasses = isHero
-    ? '-ml-6 sm:-ml-[1.875rem] lg:-ml-9' // 24px, 30px, 36px
-    : '-ml-4 sm:-ml-5 lg:-ml-6' // 16px, 20px, 24px
-  const columnGapClasses = isHero
-    ? 'pl-6 sm:pl-[1.875rem] lg:pl-9' // 24px, 30px, 36px
-    : 'pl-4 sm:pl-5 lg:pl-6' // 16px, 20px, 24px
+  // Hero cards take a gutter half as wide again: 24/30/36px against 16/20/24px.
+  const gapClasses =
+    cardVariant === 'hero'
+      ? 'gap-x-6 sm:gap-x-[1.875rem] lg:gap-x-9'
+      : 'gap-x-4 sm:gap-x-5 lg:gap-x-6'
 
   return (
-    // The Masonry must fill this wrapper, not act as a shrink-to-fit flex
-    // child: react-masonry-css sizes each column to 100%/columns, so a
-    // content-collapsed container makes its columns, and their cards,
-    // collapse to the cards' min-content, for example the title. A plain
-    // block wrapper, with w-full Masonry, keeps columns at a consistent
-    // fraction of the available width, regardless of item count.
-    <div className={`w-full ${className}`} {...props}>
-      <Masonry
-        breakpointCols={breakpointCols}
-        className={`flex ${gapClasses} w-full`}
-        columnClassName={`${columnGapClasses} bg-clip-padding`}
-      >
-        {items.map((item) => {
-          const { id, sizes: itemSizes, ...cardProps } = item
+    // `pb-8` keeps the 32px under the last row that each card's `mb-8` used to add.
+    <div className={`w-full masonry gap-y-8 pb-8 ${gapClasses} ${className}`} {...props}>
+      {items.map((item) => {
+        const { id, sizes: itemSizes, ...cardProps } = item
 
-          return (
-            <div key={id} className="mb-8 flex justify-center">
-              {/* `??`, not a pre-spread default: an item built by spreading a
-                  wider shape can carry an explicit `sizes: undefined`, which
-                  a spread would hand on as the card's own (#206). */}
-              <ContentCard {...cardProps} sizes={itemSizes ?? sizes} variant={cardVariant} />
-            </div>
-          )
-        })}
-      </Masonry>
+        return (
+          <div key={id} className="flex justify-center">
+            {/* `??`, not a pre-spread default: an item built by spreading a
+                wider shape can carry an explicit `sizes: undefined`, which
+                a spread would hand on as the card's own (#206). */}
+            <ContentCard {...cardProps} sizes={itemSizes ?? sizes} variant={cardVariant} />
+          </div>
+        )
+      })}
     </div>
   )
 }

@@ -210,6 +210,34 @@
 }
 
 /**
+ * Masonry: one, two, then three columns, each item dropped into the shortest
+ * one. Pure CSS, so the server's markup is the layout and nothing reflows on
+ * hydration, and the DOM order stays the reading and tab order.
+ *
+ * `grid-lanes` is CSS Grid Level 3; a browser without it lays the same
+ * columns out as plain grid rows. `fit-tolerance` stays at its `normal` (1em):
+ * the property was `flow-tolerance` until the 2026 drafts, and the default is
+ * what both spellings mean.
+ */
+@utility masonry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+
+  @variant sm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @variant lg {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @supports (display: grid-lanes) {
+    display: grid-lanes;
+  }
+}
+
+/**
  * Surfaces — the colours that depend on what an element sits on.
  *
  * A component never takes a `theme` prop for its colours. It uses these
@@ -257,6 +285,19 @@
 @layer base {
   :root {
     @apply surface-light;
+  }
+
+  /* Without JavaScript, MasonryGrid's "Show More" can run nothing, so every
+     item shows and the button goes. In `base` because preflight's `[hidden]`
+     is an `!important` there, which no later layer can override. */
+  @media (scripting: none) {
+    [data-masonry-grid] > li[hidden] {
+      display: block !important;
+    }
+
+    [data-masonry-show-more] {
+      display: none;
+    }
   }
 }
 

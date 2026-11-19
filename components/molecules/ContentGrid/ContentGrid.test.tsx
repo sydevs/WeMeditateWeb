@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentGrid, type ContentGridItem } from './ContentGrid'
 import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { classFor } from '../../../tests/_helpers/markup'
 
 const GRID_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
 
@@ -39,6 +40,42 @@ describe('ContentGrid first-render visibility', () => {
 
     expect(html).not.toContain('opacity:0')
     expect(html).not.toContain('opacity: 0')
+  })
+})
+
+describe('ContentGrid layout', () => {
+  const four: ContentGridItem[] = ['Alpha', 'Beta', 'Gamma', 'Delta'].map((title, i) => ({
+    id: i,
+    title,
+    href: `#${i}`,
+    thumbnailSrc: CF_PUBLIC_URL,
+  }))
+
+  // A script-built masonry deals cards out to columns, so the fourth card sat
+  // second in the markup: what a screen reader and the tab key followed.
+  it('keeps the cards in the order given', () => {
+    const html = renderToStaticMarkup(<ContentGrid items={four} sizes={GRID_SIZES} />)
+    const at = four.map(({ title }) => html.indexOf(title))
+
+    expect(at.every((index) => index > -1)).toBe(true)
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+  })
+
+  // The server's columns were three wherever the browser was, then recounted
+  // after mount: a phone loaded three slivers and reflowed.
+  it('leaves the column count to the stylesheet', () => {
+    const html = renderToStaticMarkup(<ContentGrid items={four} sizes={GRID_SIZES} />)
+
+    expect(classFor(html, 'masonry').split(' ')).toContain('w-full')
+    expect(html).not.toContain('style=')
+  })
+
+  // A row gap spaces rows only, so the grid would end 32px shorter than the
+  // per-card margin left it.
+  it('keeps the space under the last row', () => {
+    const html = renderToStaticMarkup(<ContentGrid items={four} sizes={GRID_SIZES} />)
+
+    expect(classFor(html, 'masonry').split(' ')).toContain('pb-8')
   })
 })
 

@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ColumnCarousel } from './ColumnCarousel'
+import { classesWith } from '../../../tests/_helpers/markup'
 
 const columns = (count: number) =>
   Array.from({ length: count }, (_, index) => ({
@@ -98,6 +99,43 @@ describe('ColumnCarousel breakpoints', () => {
 
   it.each([4, 5])('keeps the carousel at tablet for %i columns', (count) => {
     expect(wrapper(count)).not.toContain('md:hidden')
+  })
+
+  it.each([3, 5])('hands %i columns to the flex row on a wide screen', (count) => {
+    expect(wrapper(count)).toContain('lg:hidden')
+  })
+
+  // SahajCloud allows twelve tabs; this kept five and dropped the rest with
+  // only a console warning.
+  it('keeps every column past five, in a carousel at every width', () => {
+    const html = renderToStaticMarkup(<ColumnCarousel columns={columns(8)} />)
+
+    expect(dotButtons(html)).toHaveLength(8)
+    expect(html).toContain('Column 8')
+    expect(wrapper(8)).not.toContain('lg:hidden')
+    // The flex row carries `lg:flex!` up to five columns, and nothing past.
+    expect(
+      classesWith(renderToStaticMarkup(<ColumnCarousel columns={columns(5)} />), 'lg:flex!'),
+    ).toHaveLength(1)
+    expect(classesWith(html, 'lg:flex!')).toEqual([])
+  })
+})
+
+describe('ColumnCarousel start', () => {
+  const pressed = (html: string) =>
+    dotButtons(html)
+      .filter((dot) => dot.includes('aria-pressed="true"'))
+      .map((dot) => /Go to column (\d+)/.exec(dot)?.[1])
+
+  it('opens on the middle column by default', () => {
+    expect(pressed(renderToStaticMarkup(<ColumnCarousel columns={columns(3)} />))).toEqual(['2'])
+  })
+
+  // /mooladhara-chakra lists its centre aspect first and opens on it.
+  it('opens on the column it is told to', () => {
+    expect(
+      pressed(renderToStaticMarkup(<ColumnCarousel columns={columns(3)} startIndex={0} />)),
+    ).toEqual(['1'])
   })
 })
 

@@ -212,6 +212,33 @@ describe('content-index block converter — dispatch', () => {
   })
 })
 
+describe('layout block converter', () => {
+  const layout = blockConverters.layout as unknown as CIConverter
+
+  // SahajCloud stores the tab to open on, and the converter never passed it,
+  // so /mooladhara-chakra opened on its second tab.
+  it('opens a tabs block on its default tab', () => {
+    const element = layout({
+      node: {
+        fields: {
+          blockType: 'layout',
+          style: 'tabs',
+          defaultTab: '#center-aspect',
+          items: [
+            { id: 'c', title: 'Center aspect', titleUrl: '#center-aspect', text: 'Innocence.' },
+            { id: 'l', title: 'Left Aspect', titleUrl: '#left-aspect', text: 'Chastity.' },
+            { id: 'r', title: 'Right Aspect', titleUrl: '#right-aspect', text: 'Dynamism.' },
+          ],
+        },
+      },
+    })
+
+    expect(renderToStaticMarkup(element)).toContain(
+      'aria-label="Go to column 1: Center aspect" aria-pressed="true"',
+    )
+  })
+})
+
 // The splash converter reads its position in the tree too. `childIndex: i` and
 // `parent: data.root` are what `convertLexicalNodesToJSX` really dispatches.
 type SplashConverter = (args: {

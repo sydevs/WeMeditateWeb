@@ -55,7 +55,7 @@ sits outside that check — `assets/chart.svg` styles its own `cls-N`.
 
 **A named bundle of classes is an `@utility`, not a copied class string.** The project utilities
 live in [layouts/tailwind.css](../../layouts/tailwind.css): `text-glow-light`, `text-glow-dark`,
-`full-bleed`, `focus-ring`, the two touch-target utilities that
+`full-bleed`, `focus-ring`, `masonry`, the two touch-target utilities that
 [design-system](design-system.md) documents, and the `surface-light` / `surface-dark` pair whose
 tokens `@theme inline` exposes as colours (`text-fg`, `text-primary`, `border-line`, …). A rule
 with a name is greppable and lintable; the same eight classes pasted into three components are
