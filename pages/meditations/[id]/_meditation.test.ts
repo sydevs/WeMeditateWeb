@@ -260,6 +260,18 @@ describe('loadMeditation', () => {
     expect(getMeditationSongs).toHaveBeenCalledWith({ id: '17', locale: 'en' })
   })
 
+  it('reads the published meditation while the panel is previewing a global', async () => {
+    const session: LivePreviewSession = { active: true, scope: 'wm-web-config', token: 't' }
+
+    loadLivePreview.mockResolvedValue(session)
+
+    await loadMeditation(pageContext('17'))
+
+    expect(getDocumentById).toHaveBeenCalledWith(
+      expect.objectContaining({ preview: false, previewToken: undefined }),
+    )
+  })
+
   it('ships each keyframe with only the fields the player reads', async () => {
     const { meditation } = await loadMeditation(pageContext('17'))
 

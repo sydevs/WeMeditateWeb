@@ -288,6 +288,10 @@ const MEDITATION_SELECT = {
  *
  * `downloadUrl` is not a `Frame` field: the template reads it for a video's
  * fallback, and no frame carries it today.
+ *
+ * shortcut: the Worker still downloads every keyframe whole; drop this list once the
+ * `frames` afterRead hook in sydevs/SahajCloud `src/collections/Meditations/Meditations.ts`
+ * passes `select` or `depth` to its read.
  */
 const MEDITATION_FRAME_FIELDS = [
   'id',
