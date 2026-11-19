@@ -2,6 +2,9 @@
 
 'use client'
 
+// wm: the skin's Tailwind root, here rather than in the site entry so the `media-*` layer
+// rides this chunk (../styles/skin-theme.css).
+import '../styles/skin-theme.css'
 import '../styles/video/base.css'
 import type { ComponentProps, ReactNode } from 'react'
 

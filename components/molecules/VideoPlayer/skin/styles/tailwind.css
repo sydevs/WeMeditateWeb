@@ -3,8 +3,10 @@
  * Tailwind integration as the registry item's `cssVars.theme` and `css` rather than as a file.
  * Regenerate from https://shadcn.videojs.org/r/react/_style-theme.json rather than editing.
  *
- * This file is the skin's only `@theme`, so it must be imported by the Tailwind entry
- * (layouts/tailwind.css); the skin's other stylesheets are plain CSS its components import.
+ * This file is the skin's only `@theme`, so it must be imported by a stylesheet that imports
+ * Tailwind itself. That is `skin-theme.css` beside it, the skin's own Tailwind root, and not the
+ * site entry: scanned from there, the layer below shipped on every page. The skin's other
+ * stylesheets are plain CSS its components import.
  *
  * ⚠ `@theme inline`, and the Shadcn CLI would write a plain `@theme`. Almost every token here
  * reads a `--media-*` property that `styles/themes/theme.css` declares on `.media-skin`. A plain

@@ -1,0 +1,26 @@
+/*
+ * The skin's Tailwind root.
+ *
+ * `@theme`, `@utility` and `@custom-variant` are compile-time directives, so they only work in
+ * a stylesheet that imports Tailwind itself. That used to mean the site entry
+ * (layouts/tailwind.css) — which put every `media-*` utility, and the plain utilities only the
+ * 45 vendored files use, into the stylesheet every page loads: measured, 85,479 -> 153,670
+ * bytes, for a player no page without a video mounts.
+ *
+ * A second root fixes that without moving a directive: this file imports Tailwind's layers
+ * itself, scans only the player's folder, and is imported by `skin/video/skin.tsx`, so it rides
+ * the player's own lazy chunk (components/AGENTS.md).
+ *
+ * No preflight: the entry already emits it, and a second copy in a chunk loaded later would
+ * re-reset the page around the player.
+ */
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+/* The player's own tree, and nothing else — `clip-window.tsx` and `VideoPlayer.tsx` write
+   `media-*` classes too. */
+@source "../../";
+
+@import "./tailwind.css";

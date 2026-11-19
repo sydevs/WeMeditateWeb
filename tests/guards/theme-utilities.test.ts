@@ -35,6 +35,9 @@ import {
   blank,
   layoutsDir,
   loadTailwindStylesheet,
+  skinSourceDir,
+  skinStylesDir,
+  skinStylesheet,
   themeStylesheet,
 } from './_source-scan'
 
@@ -47,6 +50,21 @@ const designSystem = await __unstable__loadDesignSystem(themeStylesheet, {
   base: layoutsDir,
   loadStylesheet: loadTailwindStylesheet,
 })
+
+/**
+ * The second root. The player's folder is `@source not`-excluded from the entry,
+ * so its candidates are dead against `designSystem` by construction and the
+ * guard would report all 190 of them. Which stylesheet a file compiles against
+ * is part of what this guard checks, not a detail it can average over.
+ */
+const skinDesignSystem = await __unstable__loadDesignSystem(skinStylesheet, {
+  base: skinStylesDir,
+  loadStylesheet: loadTailwindStylesheet,
+})
+
+/** The root a file's classes are compiled by, which its path alone decides. */
+const systemFor = (file: string) =>
+  file.startsWith(`${skinSourceDir}/`) ? skinDesignSystem : designSystem
 
 /**
  * Probed with a declared colour token rather than hand-listed. Probing the
@@ -136,19 +154,19 @@ function stripCss(source: string): string {
   return CSS_REGIONS.reduce(blank, source)
 }
 
-/** Every watched utility in `source` that the real stylesheet compiles to nothing. */
-function findDeadUtilities(source: string): DeadUtility[] {
+/** Every watched utility in `source` that `system` compiles to nothing. */
+function findDeadUtilities(source: string, system = designSystem): DeadUtility[] {
   const found = [...stripCss(source).matchAll(CANDIDATE)].map((match) => ({
     utility: match[0],
     index: match.index,
   }))
-  const css = designSystem.candidatesToCss(found.map(({ utility }) => utility))
+  const css = system.candidatesToCss(found.map(({ utility }) => utility))
 
   return found.filter((_, i) => css[i] === null)
 }
 
-const utilitiesIn = (source: string): string[] =>
-  findDeadUtilities(source).map(({ utility }) => utility)
+const utilitiesIn = (source: string, system = designSystem): string[] =>
+  findDeadUtilities(source, system).map(({ utility }) => utility)
 
 describe('theme utilities', () => {
   it('compiles against the real stylesheet', () => {
@@ -157,6 +175,25 @@ describe('theme utilities', () => {
     // Ours, Tailwind's own (`@theme` extends rather than replaces), and a
     // project `@utility` — all three must reach the compiler.
     expect(utilitiesIn('text-gray-900 text-gray-950 bg-bg-warm text-glow-light')).toEqual([])
+  })
+
+  /**
+   * The two roots, and that neither covers the other. A `media-*` utility
+   * compiles only against the skin's root, and a site token only against the
+   * entry — which is what makes the entry's `@source not` line safe to keep and
+   * fails the moment either half is rewired.
+   */
+  it('compiles the skin against its own root, and only there', () => {
+    const skinClasses = 'rounded-media-pill bg-media-popover text-media-controls-foreground'
+
+    expect(utilitiesIn(skinClasses, skinDesignSystem)).toEqual([])
+    expect(utilitiesIn(skinClasses)).toEqual([
+      'rounded-media-pill',
+      'bg-media-popover',
+      'text-media-controls-foreground',
+    ])
+    expect(utilitiesIn('bg-bg-warm')).toEqual([])
+    expect(utilitiesIn('bg-bg-warm', skinDesignSystem)).toEqual(['bg-bg-warm'])
   })
 
   it('flags the utilities #176 removed', () => {
@@ -283,7 +320,7 @@ describe('theme utilities', () => {
     const offences = files.flatMap((file) => {
       const source = readSource(join(repoRoot, file))
 
-      return findDeadUtilities(source).map(
+      return findDeadUtilities(source, systemFor(file)).map(
         ({ utility, index }) => `${file}:${lineAt(source, index)} — ${utility}`,
       )
     })

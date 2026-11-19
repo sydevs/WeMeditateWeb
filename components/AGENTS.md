@@ -33,7 +33,14 @@ are the player's symbols; `Hls` alone also hits the meditation player's own `isH
 
 **The vendored Video.js skin source is part of that graph**, not an exception to it:
 `components/molecules/VideoPlayer/skin/` imports `@videojs/react`, so only the barrel may reach
-it. Its own stylesheets ride the same client chunk. One file is the exception, and it is CSS, not
-code: `skin/styles/tailwind.css` is `@import`ed by `layouts/tailwind.css`, because `@theme`,
-`@utility` and `@custom-variant` are compile-time Tailwind directives and have to sit in the
-entry. See [molecules/VideoPlayer/skin/README.md](molecules/VideoPlayer/skin/README.md).
+it. Its own stylesheets ride the same client chunk, its Tailwind layer included.
+
+**That layer is where the rule nearly leaked, and CSS is why.** `@theme`, `@utility` and
+`@custom-variant` are compile-time Tailwind directives, so they need a stylesheet that imports
+Tailwind — which the Shadcn CLI, and the first cut of this player, took to mean the site entry.
+It does not: `skin/styles/skin-theme.css` is a second root, scanning only the player's folder and
+imported by `skin/video/skin.tsx`. In the entry the layer measured 85,479 → 153,670 bytes on the
+stylesheet every page loads, for a player no page without a video mounts — the same cost in CSS
+that this rule exists to prevent in JS, and one `grep dist/server` cannot see. Check it the
+matching way: `wc -c dist/client/assets/static/layouts_tailwind-*.css` must not move when the
+player changes. See [molecules/VideoPlayer/skin/README.md](molecules/VideoPlayer/skin/README.md).

@@ -15,9 +15,13 @@ relative paths. The CLI itself is not used: this repo has no `components.json`, 
 
 `styles/tailwind.css` is generated rather than copied. The registry carries the skin's Tailwind
 integration as the `_style-theme` item's `cssVars.theme` and `css` fields, which the CLI merges
-into the project's global stylesheet. It is the skin's only `@theme`, so
-[layouts/tailwind.css](../../../../layouts/tailwind.css) imports it; every other stylesheet here
-is plain CSS that a component imports.
+into the project's global stylesheet. **We do not put it there.** It is the skin's only `@theme`,
+so it needs a stylesheet that imports Tailwind itself — `styles/skin-theme.css`, a second Tailwind
+root that scans only this player's folder and is imported by `video/skin.tsx`. Merged into the
+site entry instead, as the CLI would, its 52 `@utility` and `@custom-variant` rules and the plain
+utilities only these 45 files use went into the stylesheet every page loads: measured, 85,479 →
+153,670 bytes for a player no page without a video mounts. Every other stylesheet here is plain
+CSS that a component imports.
 
 Everything in `styles/` is scoped to `.media-skin`, so none of it reaches the rest of the site.
 

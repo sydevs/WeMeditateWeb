@@ -24,6 +24,23 @@ export const layoutsDir = join(repoRoot, 'layouts')
 export const themeStylesheet = readFileSync(join(layoutsDir, 'tailwind.css'), 'utf8')
 
 /**
+ * The vendored player skin is a Tailwind root of its own, so the `media-*` layer its 45 files
+ * write rides the player's lazy chunk instead of the stylesheet every page loads
+ * (components/AGENTS.md). Its tree is `@source not`-excluded from the entry's scan, so a
+ * candidate from there compiles against this root and against nothing else.
+ */
+export const skinStylesDir = join(
+  repoRoot,
+  'components/molecules/VideoPlayer/skin/styles',
+)
+
+/** `skin/styles/skin-theme.css` — the skin's own `@import`, `@source` and `@theme`. */
+export const skinStylesheet = readFileSync(join(skinStylesDir, 'skin-theme.css'), 'utf8')
+
+/** The tree that root scans, repo-relative, and the one the entry excludes. */
+export const skinSourceDir = 'components/molecules/VideoPlayer'
+
+/**
  * Blanks every match of `pattern`, keeping the newlines, so a reported line
  * number still points at the real line.
  */
