@@ -6,10 +6,9 @@
  * renders the head twice on every page. Vike calls it once per request, on
  * the server, for every route; the document the route's `+data.ts` built is
  * what decides whether it returns anything. **Never a component hook**:
- * `PageTemplate`,
- * `MeditationTemplate` and `LectureTemplate` are shared with the `embed`
- * routes and the live preview, so a hook called from a template would
- * publish a head for a URL that must claim nothing.
+ * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared with
+ * the `embed` routes and the live preview, so a hook called from a template
+ * would publish a head for a URL that must claim nothing.
  *
  * What Unhead is here for is the `@graph`: it mints an `@id` per node and
  * links them — `WebPage.isPartOf` the `WebSite`, the `WebSite.publisher` the
@@ -217,6 +216,35 @@ function schemaNode(node: SeoNode, context: NodeContext): SchemaOrgNodeInput[] {
             url: entry.url,
           })),
         }),
+      ]
+    // ⚠ **No `defineMusicPlaylist` exists**, so the playlist and each of its
+    // recordings are plain nodes, as `AudioObject` is.
+    case 'musicPlaylist':
+      return [
+        {
+          '@type': 'MusicPlaylist' as const,
+          name: node.name,
+          numTracks: node.tracks.length,
+          track: node.tracks.map((track) => ({
+            '@type': 'MusicRecording' as const,
+            name: track.name,
+            // No `inLanguage`: the page's locale is the language of the
+            // track's name, not of a recording that may be instrumental.
+            ...(track.artist
+              ? {
+                  byArtist: {
+                    '@type': 'MusicGroup' as const,
+                    name: track.artist,
+                    ...(track.artistUrl ? { url: track.artistUrl } : {}),
+                  },
+                }
+              : {}),
+            ...(duration(track.durationSeconds)
+              ? { duration: duration(track.durationSeconds) }
+              : {}),
+          })),
+          inLanguage,
+        },
       ]
   }
 }

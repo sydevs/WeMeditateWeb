@@ -34,9 +34,10 @@ import {
   type LayoutBlockFields,
   type ResolvedCardItem,
 } from './content-blocks'
+import type { Track } from '../components/molecules/AudioPlayer/types'
 import { getImageURL, getVariantName, getVariantWidth } from './cloudflare-images'
 import { isPopulated, populatedImageUrl } from './payload-relationships'
-import { absoluteHref, isSitePath, localeUrl, normalizeContentPath } from './urls'
+import { absoluteHref, isSafeHttpUrl, isSitePath, localeUrl, normalizeContentPath } from './urls'
 import { documentEmbedHref } from './document-routes'
 import type {
   SeoAuthor,
@@ -45,6 +46,7 @@ import type {
   SeoListEntry,
   SeoNode,
   SeoQuestion,
+  SeoTrack,
 } from './seo-schema'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
@@ -406,6 +408,25 @@ function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): SeoLi
 }
 
 /**
+ * The recordings a music-library block server-rendered.
+ *
+ * A `duration` of `0` is the absence SahajCloud stores for a song with no
+ * usable length, not a recording of no length. The artist's link is an
+ * off-site URL an editor typed, so it passes the scheme gate before it is
+ * published.
+ */
+function playlistTracks(tracks: readonly Track[]): SeoTrack[] {
+  return tracks
+    .filter((track) => track.title.length > 0)
+    .map((track) => ({
+      name: track.title,
+      artist: track.credit || null,
+      artistUrl: isSafeHttpUrl(track.creditURL) ? track.creditURL : null,
+      durationSeconds: track.duration > 0 ? track.duration : null,
+    }))
+}
+
+/**
  * Home → About Meditation → this page, for a page the knowledge menu lists.
  *
  * The middle rung is the menu itself, which is a heading rather than a page,
@@ -500,6 +521,12 @@ export function pageSeo(options: {
 
     if (entries.length > 0) {
       nodes.push({ type: 'itemList', entries })
+    }
+
+    const tracks = playlistTracks(block.resolvedTracks ?? [])
+
+    if (tracks.length > 0) {
+      nodes.push({ type: 'musicPlaylist', name: nodeName, tracks })
     }
   }
 

@@ -4,6 +4,7 @@ import type { SeoDocument } from './head'
 import type { Image, Meditation, Page, ResolvedLecture } from '../server/sahajcloud-types'
 import { lectureSeo, meditationSeo, pageSeo, resolveOgImageUrl, type SeoRoute } from './content-seo'
 import { enT } from './i18n'
+import type { Track } from '../components/molecules/AudioPlayer/types'
 
 import { CF_BASE, CF_PUBLIC_URL } from '../tests/_helpers/cloudflare-images'
 
@@ -77,6 +78,17 @@ function graph(seo: SeoDocument): { '@type': string; [key: string]: unknown }[] 
 }
 
 const typesIn = (seo: SeoDocument) => graph(seo).map((node) => node['@type'])
+
+/** A lexical tree holding one songs content-index block, tracks already resolved. */
+function songsBlock(resolvedTracks: Track[]): Page['content'] {
+  return {
+    root: {
+      children: [
+        { type: 'block', fields: { blockType: 'content-index', type: 'songs', resolvedTracks } },
+      ],
+    },
+  } as unknown as Page['content']
+}
 
 describe('resolveOgImageUrl', () => {
   it('appends a large video variant to a Cloudflare image URL', () => {
@@ -299,6 +311,74 @@ describe('pageSeo', () => {
       { '@type': 'ListItem', position: 1, name: 'Morning', url: `${ORIGIN}/meditations/5` },
       { '@type': 'ListItem', position: 2, name: 'Evening', url: `${ORIGIN}/meditations/6` },
     ])
+  })
+
+  it('publishes the music library as a playlist of recordings', () => {
+    const content = songsBlock([
+      {
+        url: 'https://audio.test/bhairavi.mp3',
+        title: 'Raga Bhairavi',
+        credit: 'Nirmal Sangeet',
+        creditURL: 'https://artist.test/nirmal',
+        thumbnailURL: '',
+        duration: 325,
+      },
+      // No populated album, so no artist, and no length stored upstream.
+      {
+        url: 'https://audio.test/evening.mp3',
+        title: 'Evening',
+        credit: '',
+        creditURL: '',
+        thumbnailURL: '',
+        duration: 0,
+      },
+    ])
+    const playlist = graph(seoFor({ page: page({ content }) })).find(
+      (node) => node['@type'] === 'MusicPlaylist',
+    )
+
+    expect(playlist?.numTracks).toBe(2)
+    expect(playlist?.track).toStrictEqual([
+      {
+        '@type': 'MusicRecording',
+        name: 'Raga Bhairavi',
+        byArtist: {
+          '@type': 'MusicGroup',
+          name: 'Nirmal Sangeet',
+          url: 'https://artist.test/nirmal',
+        },
+        duration: 'PT5M25S',
+      },
+      { '@type': 'MusicRecording', name: 'Evening' },
+    ])
+  })
+
+  it('refuses an artist link that is not an http URL', () => {
+    const content = songsBlock([
+      {
+        url: 'https://audio.test/bhairavi.mp3',
+        title: 'Raga Bhairavi',
+        credit: 'Nirmal Sangeet',
+        creditURL: 'javascript:alert(1)',
+        thumbnailURL: '',
+        duration: 0,
+      },
+    ])
+    const playlist = graph(seoFor({ page: page({ content }) })).find(
+      (node) => node['@type'] === 'MusicPlaylist',
+    )
+
+    expect(playlist?.track).toStrictEqual([
+      {
+        '@type': 'MusicRecording',
+        name: 'Raga Bhairavi',
+        byArtist: { '@type': 'MusicGroup', name: 'Nirmal Sangeet' },
+      },
+    ])
+  })
+
+  it('publishes no playlist for a page with no music library', () => {
+    expect(typesIn(seoFor())).not.toContain('MusicPlaylist')
   })
 
   it('publishes nothing at all where the origin is unknown', () => {

@@ -57,6 +57,20 @@ export interface SeoAuthor {
   image: string | null
 }
 
+/**
+ * One recording of a page's music library.
+ *
+ * The artist is the album's, which only a populated album carries, and the
+ * duration is absent for a song SahajCloud stores no length for.
+ */
+export interface SeoTrack {
+  name: string
+  artist: string | null
+  /** The artist's own page elsewhere on the web, absolute. */
+  artistUrl: string | null
+  durationSeconds: number | null
+}
+
 /** One question-and-answer pair of a page that asks and answers. */
 export interface SeoQuestion {
   question: string
@@ -103,6 +117,12 @@ export type SeoNode =
   | { type: 'breadcrumb'; trail: readonly SeoCrumb[] }
   | { type: 'faq'; questions: readonly SeoQuestion[] }
   | { type: 'itemList'; entries: readonly SeoListEntry[] }
+  | {
+      type: 'musicPlaylist'
+      /** The page's own name: a block carries no title of its own. */
+      name: string
+      tracks: readonly SeoTrack[]
+    }
 
 /** Everything the generator needs to build one page's linked `@graph`. */
 export interface SeoSchema {
