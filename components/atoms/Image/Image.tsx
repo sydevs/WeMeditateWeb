@@ -9,7 +9,7 @@ import {
   getImageURL,
   getVariantName,
 } from '../../../lib/cloudflare-images'
-import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
+import { useLightbox, type LightboxSlide } from './lightbox-context'
 import { useT } from '../../../hooks/useT'
 
 export interface ImageProps extends ComponentProps<'img'> {

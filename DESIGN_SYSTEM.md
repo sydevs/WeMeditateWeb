@@ -170,6 +170,10 @@ components/
 └── templates/       # Page layout structures
 ```
 
+A component imports from its own level or a lower one, never a higher one: an atom's contract
+with a molecule lives with the atom, as the `Image` atom's lightbox context does.
+[tests/guards/atomic-imports.test.ts](tests/guards/atomic-imports.test.ts) holds the rule.
+
 | Level | Example components |
 | --- | --- |
 | Atoms | Button, Input, Label, Heading, Text, Link, Icon, Image, Divider, Checkbox, Radio, Select, Toggle. Also Spinner, SplashLoader, Badge, Tag, Container, Breadcrumbs, Countdown, LanguageFlag, SocialIcon, Logo, Avatar, PageTitle. |
