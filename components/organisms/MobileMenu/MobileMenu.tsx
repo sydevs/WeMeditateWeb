@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import {
   Bars3Icon,
   CheckIcon,
@@ -88,6 +88,22 @@ export function MobileMenu({
 
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss, role])
 
+  // The trigger is `lg:hidden`, so a panel left open when a tablet turns to
+  // landscape would hold the scroll lock and the trap over a page that offers
+  // no way back to it. `64rem` is Tailwind's `lg`.
+  useEffect(() => {
+    if (!isOpen || typeof window.matchMedia !== 'function') return
+
+    const desktop = window.matchMedia('(min-width: 64rem)')
+    const closeOnDesktop = () => {
+      if (desktop.matches) setIsOpen(false)
+    }
+
+    desktop.addEventListener('change', closeOnDesktop)
+
+    return () => desktop.removeEventListener('change', closeOnDesktop)
+  }, [isOpen])
+
   const label = t('common.a11y.menu')
   const close = () => setIsOpen(false)
 
@@ -145,9 +161,9 @@ export function MobileMenu({
                     scroll origin, out of reach. */}
                 <div className="my-auto py-8">
                   <ul className="px-6">
-                    {navItems.map((item) => (
-                      <li key={item.label}>
-                        {item.dropdown ? (
+                    {navItems.map((item) =>
+                      item.dropdown ? (
+                        <li key={item.label}>
                           <Disclosure label={item.label} triggerClassName={row}>
                             {item.dropdown.links.map((link) => (
                               <li key={link.href}>
@@ -162,8 +178,10 @@ export function MobileMenu({
                               </li>
                             ))}
                           </Disclosure>
-                        ) : (
-                          item.href && (
+                        </li>
+                      ) : (
+                        item.href && (
+                          <li key={item.href}>
                             <Link
                               aria-current={item.active ? 'page' : undefined}
                               className={`${row} aria-[current=page]:text-primary`}
@@ -173,10 +191,10 @@ export function MobileMenu({
                             >
                               {item.label}
                             </Link>
-                          )
-                        )}
-                      </li>
-                    ))}
+                          </li>
+                        )
+                      ),
+                    )}
                   </ul>
 
                   {actionLinkText && actionLinkHref && (

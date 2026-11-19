@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import { MobileMenu } from './MobileMenu'
 import type { NavItem } from '../Header'
 
@@ -121,6 +121,37 @@ describe('MobileMenu · opening and closing', () => {
     expect(spanish.querySelector('[lang="es"]')).toBeTruthy()
     expect(english.getAttribute('aria-current')).toBe('true')
     expect(spanish.getAttribute('aria-current')).toBeNull()
+  })
+
+  it('closes when the viewport grows to lg, where its trigger is hidden', () => {
+    // jsdom has no matchMedia, so this stands one in with a `change` to drive.
+    let notify = () => {}
+    let matches = false
+    window.matchMedia = ((query: string) => ({
+      get matches() {
+        return matches
+      },
+      media: query,
+      addEventListener: (_: string, listener: () => void) => {
+        notify = listener
+      },
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia
+
+    open()
+    expect(screen.getByRole('dialog')).toBeTruthy()
+
+    matches = true
+    act(() => notify())
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    delete (window as { matchMedia?: unknown }).matchMedia
+  })
+
+  it('draws no row for an item with nowhere to go', () => {
+    open({ navItems: [{ label: 'Meditate Now', href: '/meditate' }, { label: 'Nowhere' }] })
+
+    expect(screen.getByRole('dialog').querySelectorAll('li')).toHaveLength(1)
   })
 
   it('offers no language list to a site with one language', () => {
