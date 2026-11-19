@@ -12,7 +12,7 @@ import type { LivePreviewState } from '../lib/live-preview/protocol'
  * Vite embeds client-side (PUBLIC__*) variables at build time. In dev,
  * server-side variables come from .env.local.
  *
- * @see env.ts for validation schemas
+ * @see .env.example for which side reads each variable and where production's value comes from
  */
 interface ImportMetaEnv {
   // ===== Client-side (browser) environment variables =====
