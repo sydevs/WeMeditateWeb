@@ -77,12 +77,11 @@ export const FULL_BLEED_SPLASH = 'full-bleed clear-both'
  * `Container maxWidth="xl"` below — so the length lives beside the container
  * that sets it.
  *
- * `react-masonry-css` gives each column `100%/n` of the track and the track
- * carries a negative gutter margin, so a card is `(content + gutter) / n −
- * gutter`: 357px at the widest three-column band, against a 1120px content
- * column and a 24px gutter. The queries are `639` and `1023`, not `640` and
- * `1024`, because the library switches on `innerWidth <= breakpoint`, so the
- * breakpoint itself belongs to the narrower band. 360px is the first round
+ * A column of `ContentGrid`'s `masonry` grid is `(content − (n − 1) ×
+ * gutter) / n`: 357px at the widest three-column band, against a 1120px
+ * content column and a 24px gutter. The queries are `639` and `1023` because
+ * the grid widens at `sm` and `lg`, `min-width` 640px and 1024px, so each
+ * breakpoint itself belongs to the wider band. 360px is the first round
  * number above the widest card, and it shares a srcset rung with 357px at
  * DPR 1, 2 and 3 — rounding further costs real bytes, since Cloudflare
  * upscales rather than capping at the source width (#206).

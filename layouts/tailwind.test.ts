@@ -197,3 +197,30 @@ describe('the spacing scale', () => {
     expect(declared(rule(css, '.h-56'), 'height')).toBe('calc(var(--spacing) * 56)')
   })
 })
+
+describe('masonry', () => {
+  // A script-built masonry drew three columns on the server and recounted them only
+  // after mount, so a phone loaded three slivers and then reflowed. A media
+  // query is the server's answer and the browser's alike.
+  it('starts at one column and widens by media query, with no script', async () => {
+    const css = await build(['masonry'])
+    // The declarations ahead of the first nested at-rule.
+    const base = css.match(/\.masonry \{([^@}]*)/)?.[1] ?? ''
+
+    expect(declared(base, 'display')).toBe('grid')
+    expect(declared(base, 'grid-template-columns')).toBe('minmax(0, 1fr)')
+    expect(css).toMatch(
+      /@media \(width >= 40rem\) \{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    )
+    expect(css).toMatch(
+      /@media \(width >= 64rem\) \{\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    )
+  })
+
+  // A browser without Grid Level 3 keeps the plain grid rows above.
+  it('packs into lanes only where the browser has them', async () => {
+    const css = await build(['masonry'])
+
+    expect(css).toMatch(/@supports \(display: grid-lanes\) \{\s*display: grid-lanes;\s*\}/)
+  })
+})

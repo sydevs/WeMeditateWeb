@@ -6,13 +6,8 @@ export default {
   title: "Molecules"
 } satisfies StoryDefault;
 
-// One column of each story grid, in the Ladle story frame. A `breakpointCols`
-// change moves these with it — which is the reason the length belongs to the
-// caller that sets both.
+// One column of the story grid, in the Ladle story frame.
 const THREE_COLUMN = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw'
-const FOUR_COLUMN =
-  '(max-width: 639px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw'
-const TWO_COLUMN = '(max-width: 639px) 100vw, 50vw'
 
 /** ContentGrid component showcasing content cards in responsive masonry layouts. */
 export const Default: Story = () => {
@@ -116,37 +111,6 @@ export const Default: Story = () => {
         description="Larger cards with bold titles and increased spacing"
       >
         <ContentGrid items={mixedContent} cardVariant="hero" sizes={THREE_COLUMN} />
-      </StorySection>
-
-      <StorySection
-        title="4 Column Layout"
-        description="More columns for wider viewports"
-      >
-        <ContentGrid
-          items={mixedContent}
-          breakpointCols={{
-            default: 4,   // Desktop: 4 columns
-            1280: 3,      // Large tablets: 3 columns
-            768: 2,       // Tablets: 2 columns
-            640: 1,       // Mobile: 1 column
-          }}
-          sizes={FOUR_COLUMN}
-        />
-      </StorySection>
-
-      <StorySection
-        title="2 Column Layout"
-        description="Narrower layout for sidebar contexts"
-      >
-        <ContentGrid
-          items={mixedContent.slice(0, 6)}
-          breakpointCols={{
-            default: 2,   // Desktop: 2 columns
-            768: 2,       // Tablets: 2 columns
-            640: 1,       // Mobile: 1 column
-          }}
-          sizes={TWO_COLUMN}
-        />
       </StorySection>
 
       <div />
