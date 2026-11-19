@@ -6,7 +6,7 @@ import chartSvg from '../../../assets/chart.svg?raw'
  * can reach its nodes.
  *
  * It is a module of its own, reached only through `React.lazy`: the markup is
- * ~325 KB, and a static import put it in the RichText chunk every page loads.
+ * ~325 KB, and a static import would put it in the RichText chunk every page loads.
  */
 export function SubtleSystemChart({ ref }: { ref?: Ref<HTMLDivElement> }) {
   return <div dangerouslySetInnerHTML={{ __html: chartSvg }} ref={ref} />

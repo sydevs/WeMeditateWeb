@@ -8,6 +8,7 @@ import {
   Suspense,
   ComponentProps,
 } from 'react'
+import * as Sentry from '@sentry/react'
 import { ClientOnly } from 'vike-react/ClientOnly'
 import { Button } from '../../atoms/Button'
 import { Link } from '../../atoms/Link'
@@ -166,13 +167,13 @@ export function SubtleSystem({
   const handleNodeFocus = useCallback(
     (nodeId: string) => {
       handleNodeHoverEnd()
-      // Set unconditionally: a listener can still hold the render before a
-      // hover moved the selection, and its `activeNode` would skip the set.
+      // No `nodeId === activeNode` check, unlike hover: a listener can still
+      // hold the render before the pointer moved the selection, and would skip both.
       setIsAnimated(false)
       setActiveNode(nodeId)
-      if (nodeId !== activeNode) onNodeSelect?.(nodeId)
+      onNodeSelect?.(nodeId)
     },
-    [activeNode, onNodeSelect, handleNodeHoverEnd],
+    [onNodeSelect, handleNodeHoverEnd],
   )
 
   /** Handle node click */
@@ -388,9 +389,12 @@ export function SubtleSystem({
         {/* SVG Chart */}
         <div className="subtle-system-chart min-h-[400px] max-h-[550px] sm:h-[550px] sm:max-h-[80vh] max-w-full block mx-auto">
           <ClientOnly fallback={CHART_PLACEHOLDER}>
-            <Suspense fallback={CHART_PLACEHOLDER}>
-              <SubtleSystemChart ref={setChart} />
-            </Suspense>
+            {/* A chunk that fails to load costs the picture; the root boundary would take the page. */}
+            <Sentry.ErrorBoundary fallback={CHART_PLACEHOLDER}>
+              <Suspense fallback={CHART_PLACEHOLDER}>
+                <SubtleSystemChart ref={setChart} />
+              </Suspense>
+            </Sentry.ErrorBoundary>
           </ClientOnly>
         </div>
 

@@ -95,16 +95,35 @@ describe('<SubtleSystem> from the keyboard', () => {
   })
 
   it('reopens the focused node’s preview when the pointer has moved to another', async () => {
-    await renderChart()
+    const { onNodeSelect } = await renderChart()
+
     act(() => node('chakra_1').focus())
     fireEvent.mouseOver(node('chakra_4'))
     await waitFor(() => expect(isOpen('chakra_4')).toBe(true))
+    expect(onNodeSelect).toHaveBeenLastCalledWith('chakra_4')
 
     fireEvent.keyDown(node('chakra_1'), { key: 'Enter' })
 
     await waitFor(() => expect(document.activeElement).toBe(link('chakra_1')))
     expect(isOpen('chakra_1')).toBe(true)
     expect(isOpen('chakra_4')).toBe(false)
+    expect(onNodeSelect).toHaveBeenLastCalledWith('chakra_1')
+  })
+
+  it('reports the selection to a listener bound before the pointer moved it', async () => {
+    const { onNodeSelect } = await renderChart()
+
+    act(() => node('chakra_1').focus())
+    // One batch: the keydown reaches the listener bound while chakra_1 was selected.
+    act(() => {
+      node('chakra_4').dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      node('chakra_1').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(isOpen('chakra_1')).toBe(true)
+    expect(onNodeSelect).toHaveBeenLastCalledWith('chakra_1')
   })
 
   it('moves the stops with the view', async () => {
