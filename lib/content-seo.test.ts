@@ -468,8 +468,12 @@ describe("the share image's own geometry and words", () => {
     expect(metaValues(seo, 'og:image:alt')).toEqual(['A photo of the subtle system'])
   })
 
-  it('states nothing at all where the page has no image of its own', () => {
-    expect(metaValues(seoFor(), 'og:image:width')).toEqual([])
+  it('states the default asset\'s own square geometry, and no words for it', () => {
+    // The fallback is a file in this repository, so its pixels are known and
+    // a consumer lays the card out before it has fetched them. Its alt text
+    // would be a literal, and every string the site renders is SahajCloud's.
+    expect(metaValues(seoFor(), 'og:image:width')).toEqual(['1200'])
+    expect(metaValues(seoFor(), 'og:image:height')).toEqual(['1200'])
     expect(metaValues(seoFor(), 'og:image:alt')).toEqual([])
   })
 })

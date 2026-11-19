@@ -63,6 +63,17 @@ import { isCanonicalOrigin } from '../server/sitemap'
  */
 const DEFAULT_SHARE_IMAGE = '/images/metadata/preview.png'
 
+/**
+ * The default asset's own pixels, stated because the file is ours.
+ *
+ * A card that carries its geometry renders at the right size before the
+ * scraper has fetched the bytes. An upload's geometry comes from SahajCloud;
+ * this one is in the repository, so it is read from the asset once here.
+ * It is square, which is what makes it serve as the app icon too
+ * (`lib/app-identity.ts`), and a 1.91:1 consumer centre-crops it.
+ */
+const DEFAULT_SHARE_IMAGE_SIZE = 1200
+
 /** The width `shareVariant` renders at, which `og:image:width` states. */
 const SHARE_IMAGE_WIDTH = getVariantWidth('video', 'large')
 
@@ -127,13 +138,27 @@ function absoluteImage(origin: string | null, url: string | null): string | null
 }
 
 /**
- * The URL this route shares: its own image, else the site's default.
+ * The image this route shares: its own, else the site's default.
  *
  * Null only where the origin is unknown, because an og:image a scraper
- * cannot resolve is no share image at all.
+ * cannot resolve is no share image at all. The card's geometry and words
+ * travel with the URL, so whichever image wins states its own.
  */
-function shareImage(route: SeoRoute, own: string | null): string | null {
-  return absoluteImage(route.origin, own) ?? absoluteImage(route.origin, DEFAULT_SHARE_IMAGE)
+function shareImage(route: SeoRoute, own: SeoImage | null): SeoImage | null {
+  if (own) {
+    return own
+  }
+
+  const fallback = absoluteImage(route.origin, DEFAULT_SHARE_IMAGE)
+
+  return fallback
+    ? {
+        url: fallback,
+        width: DEFAULT_SHARE_IMAGE_SIZE,
+        height: DEFAULT_SHARE_IMAGE_SIZE,
+        alt: null,
+      }
+    : null
 }
 
 /**
@@ -208,21 +233,16 @@ function shareGeometry(image: { width?: number; height?: number }): {
  * A card that states its dimensions renders without waiting for the fetch,
  * and `twitter:image:alt` is what a screen reader announces in a timeline.
  */
-function imageMeta(image: SeoImage | null): (readonly [string, string])[] {
-  if (!image) {
-    return []
+function imageMeta(image: SeoImage): [string, string][] {
+  const meta: [string, string][] = []
+
+  if (image.width) meta.push(['og:image:width', String(image.width)])
+  if (image.height) meta.push(['og:image:height', String(image.height)])
+  if (image.alt) {
+    meta.push(['og:image:alt', image.alt], ['twitter:image:alt', image.alt])
   }
 
-  return [
-    ...(image.width ? ([['og:image:width', String(image.width)]] as const) : []),
-    ...(image.height ? ([['og:image:height', String(image.height)]] as const) : []),
-    ...(image.alt
-      ? ([
-          ['og:image:alt', image.alt],
-          ['twitter:image:alt', image.alt],
-        ] as const)
-      : []),
-  ]
+  return meta
 }
 
 /** An article's byline, where SahajCloud populated one. */
@@ -254,8 +274,8 @@ function baseDocument(
   options: {
     title: string
     description: string | null
-    /** The absolute `og:image` URL, or null where the route advertises none. */
-    image: string | null
+    /** The share card's image, or null where the route advertises none. */
+    image: SeoImage | null
     ogType: string
     /** The locales the `hreflang` cluster advertises. */
     locales: readonly Locale[]
@@ -290,7 +310,10 @@ function baseDocument(
     // `twitter:card` rides the image: a card promising a large image and
     // carrying none renders as an empty box. A route with a player upgrades
     // that card below, where the player URL is also what makes it valid.
-    meta.push(['og:image', options.image], ['twitter:card', 'summary_large_image'])
+    meta.push(['og:image', options.image.url], ['twitter:card', 'summary_large_image'])
+    // Open Graph's structured properties belong to the `og:image` above them,
+    // so they are pushed here rather than left to a caller.
+    meta.push(...imageMeta(options.image))
   }
   if (options.playerUrl) {
     meta.push(
@@ -533,12 +556,11 @@ export function pageSeo(options: {
   return baseDocument(route, {
     title,
     description,
-    image: shareImage(route, ownImage?.url ?? null),
+    image: shareImage(route, ownImage),
     ogType: isArticle ? 'article' : 'website',
     locales: options.locales,
     nodes,
     extraMeta: [
-      ...imageMeta(ownImage),
       // Open Graph's own article namespace, which a scraper reads without
       // parsing JSON-LD. Only an article carries them.
       ...(isArticle
@@ -564,7 +586,7 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
   return baseDocument(route, {
     title: composeTitle(name, t('common.general.site_title')),
     description,
-    image: shareImage(route, thumbnail?.url ?? null),
+    image: shareImage(route, thumbnail),
     // The new meditations are audio, so `video.other` would misdescribe them
     // and Open Graph has no audio page type.
     ogType: 'website',
@@ -588,7 +610,6 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
         embedUrl: playerUrl,
       },
     ],
-    extraMeta: imageMeta(thumbnail),
     playerUrl,
   })
 }
@@ -616,7 +637,7 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
   return baseDocument(route, {
     title,
     description,
-    image: shareImage(route, poster),
+    image: shareImage(route, poster ? { url: poster, width: null, height: null, alt: null } : null),
     ogType: 'video.other',
     // `lectures` omits `_status` entirely upstream (lib/hreflang.ts).
     locales: [],
