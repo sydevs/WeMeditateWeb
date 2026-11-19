@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { report, summarize, translationDrift, typeDrift } from './contract-drift'
+import { CONTRACTS, report, summarize, translationDrift, typeDrift } from './contract-drift'
 
 const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`
 
@@ -261,5 +261,31 @@ describe('report', () => {
     expect(() => report('package.json', process.cwd(), undefined)).toThrow(
       'Not a SahajCloud contract file',
     )
+  })
+})
+
+describe('the gate steps that run it', () => {
+  const lines = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8')
+    .split('\n')
+    .map((line) => line.trim())
+
+  it('diff every contract file after regenerating it', () => {
+    for (const path of Object.keys(CONTRACTS)) {
+      expect(lines).toContain(`git diff --exit-code ${path}`)
+    }
+  })
+
+  it('cut each fetch off, so a stalled one is retried instead of running into the job timeout', () => {
+    const fetches = lines.filter((line) => /pnpm (types:cms|sync:translations)\b/.test(line))
+
+    expect(fetches).toHaveLength(2)
+    for (const line of fetches) expect(line).toMatch(/^timeout \d+ pnpm /)
+  })
+
+  it('leave the verdict to git diff when the summary itself cannot run', () => {
+    const summaries = lines.filter((line) => line.includes('scripts/contract-drift.ts'))
+
+    expect(summaries).toHaveLength(2)
+    for (const line of summaries) expect(line).toMatch(/ \|\|$/)
   })
 })

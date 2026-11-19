@@ -57,9 +57,13 @@ Then each open PR needs `main` brought in (GitHub's **Update branch**): a re-run
 the merge commit it was first given, which still holds the old copy. That cost is accepted: the
 gate is blocking on purpose.
 
-- **Retries.** Each generator gets four tries, 5, 10 and 15 seconds apart. A fetch that never
-  succeeds fails with a message saying so — that is the network, or the key (read the
-  `[PayloadCMS] … → <status>` lines), never drift.
+- **Retries.** Each generator gets four tries, 5, 10 and 15 seconds apart, and each try is cut
+  off after 60 seconds, since neither generator sets a timeout and a stalled fetch would otherwise
+  run into the job's. A fetch that never succeeds fails with a message saying so — that is the
+  network, the key (read the `[PayloadCMS] … → <status>` lines), or for the types a moved
+  upstream path (a curl 404), never drift.
+- **`git diff` alone decides.** The summary script never fails a step: if it cannot run, the step
+  warns and the diff still gives the verdict.
 - **No secret, no mirror check.** The translations step needs the `SAHAJCLOUD_API_KEY` secret,
   which GitHub withholds from a fork's pull request and from Dependabot's. There that one step
   skips with a warning; the types step needs no secret and still runs. On any other run an empty

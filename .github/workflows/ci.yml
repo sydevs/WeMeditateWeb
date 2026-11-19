@@ -66,20 +66,22 @@ jobs:
       # The contract gate (docs/cloudflare-previews-ci.md): each step regenerates a file SahajCloud
       # owns, names the drifted keys in the summary, and lets `git diff` fail on any difference.
       # Last on purpose: an upstream change reddens every open PR at once, and here it cannot also
-      # skip the Ladle build and the wrangler check above. Four tries per fetch, so a network blip
-      # is not reported as drift.
+      # skip the Ladle build and the wrangler check above. Four tries per fetch, each cut off at 60 s
+      # (neither generator sets a timeout of its own), so a blip or a stall is not reported as drift.
+      # Only `git diff` decides: a summary that cannot run warns and leaves the verdict to it.
       - name: SahajCloud types match SahajCloud main
         id: contract-types
         run: |
           for attempt in 1 2 3 4; do
-            pnpm types:cms && break
+            timeout 60 pnpm types:cms && break
             if [ "$attempt" = 4 ]; then
-              echo "::error::Could not fetch payload-types.ts from SahajCloud main after 4 tries. That is a network failure, not drift: re-run the job."
+              echo "::error::Could not fetch payload-types.ts from SahajCloud main after 4 tries. That is not drift: a curl 404 above means the upstream path moved (fix types:cms in package.json); anything else is the network, so re-run the job."
               exit 1
             fi
             sleep $((attempt * 5))
           done
-          pnpm exec tsx scripts/contract-drift.ts server/payload-types.ts
+          pnpm exec tsx scripts/contract-drift.ts server/payload-types.ts ||
+            echo "::warning::contract-drift could not summarize server/payload-types.ts. The diff below decides."
           git diff --exit-code server/payload-types.ts
 
       # Runs whether or not the types step above passed, so one red run names both drifts.
@@ -102,14 +104,15 @@ jobs:
             exit 1
           fi
           for attempt in 1 2 3 4; do
-            pnpm sync:translations && break
+            timeout 60 pnpm sync:translations && break
             if [ "$attempt" = 4 ]; then
               echo "::error::Could not read wm-web-translations from production SahajCloud after 4 tries. Read the [PayloadCMS] lines above: a 401 or 403 is the key, anything else is the network. Neither is drift."
               exit 1
             fi
             sleep $((attempt * 5))
           done
-          pnpm exec tsx scripts/contract-drift.ts lib/translations.en.json
+          pnpm exec tsx scripts/contract-drift.ts lib/translations.en.json ||
+            echo "::warning::contract-drift could not summarize lib/translations.en.json. The diff below decides."
           git diff --exit-code lib/translations.en.json
 
   # This repo has two Cloudflare previews per PR. The URL host tells them apart:
