@@ -3,7 +3,7 @@ import { Heading, Image, Link } from '../../atoms'
 import type { MoodCard } from '../../../lib/content-blocks'
 import { MEDITATIONS_INDEX_PATH } from '../../../lib/document-routes'
 import { useT } from '../../../hooks/useT'
-import type { TFunction } from '../../../lib/i18n'
+import { moodCardKey, moodCardLabel } from './moodCard'
 
 /** Drawn at 56px, and at 2× on a retina screen. */
 const ICON_SIZES = '56px'
@@ -17,27 +17,6 @@ const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i
  */
 function accentColor(color: string | null): string | undefined {
   return color !== null && HEX_COLOR.test(color) ? color : undefined
-}
-
-/**
- * What a mood tile is called on screen: the feeling it is for and how long it
- * runs, as one parameterised key.
- *
- * `/meditations` renders the same fourteen in a plain grid, and a visitor can
- * compare the two side by side — so the name is composed once, here, rather
- * than assembled the same way in two places. Never a sentence built from a
- * visible label: only English builds one that way (`AGENTS.md`).
- */
-export function moodCardLabel(t: TFunction, mood: MoodCard): string {
-  return t('meditation.general.mood_meditation_label', {
-    mood: mood.moodTitle,
-    count: mood.durationMinutes,
-  })
-}
-
-/** What makes a tile unique: a mood may name a different meditation per slot. */
-export function moodCardKey(mood: MoodCard): string {
-  return `${mood.moodId}-${mood.href}`
 }
 
 export interface MoodFinderProps extends Omit<ComponentProps<'section'>, 'children'> {
