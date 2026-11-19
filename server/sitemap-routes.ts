@@ -177,7 +177,10 @@ const manifestHandler = async (c: Context<SahajCloudEnv>) => {
   c.header('Content-Type', 'application/manifest+json; charset=utf-8')
   c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
 
-  return c.json(buildWebManifest({ origin, locale, t }))
+  // ⚠ `c.json()` replaces the Content-Type with `application/json`, whatever
+  // was set before it. The spec's own type is what a browser installs a
+  // manifest by, so the body is serialized here, as `/robots.txt` does.
+  return c.body(JSON.stringify(buildWebManifest({ origin, locale, t })))
 }
 
 export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {

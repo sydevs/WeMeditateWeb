@@ -25,8 +25,13 @@ import {
 /** A URL without its trailing slash, so `https://host/` and `https://host` compare equal. */
 const bare = (url: string) => url.replace(/\/$/, '')
 
-/** The assertions every content route owes, whatever it serves. */
-function expectShareable(page: PageResult, path: string) {
+/**
+ * The assertions every content route owes, whatever it serves.
+ *
+ * A route carrying a player upgrades its card to `player`, which is the whole
+ * point of the player tags, so the expected card is the caller's to name.
+ */
+function expectShareable(page: PageResult, path: string, card = 'summary_large_image') {
   const origin = new URL(page.finalUrl).origin
   const [ogUrl] = metaContent(page.html, 'og:url')
   const [ogImage] = metaContent(page.html, 'og:image')
@@ -42,7 +47,7 @@ function expectShareable(page: PageResult, path: string) {
   expect(
     metaContent(page.html, 'twitter:card')[0],
     `${path} should declare a Twitter card beside its image`,
-  ).toBe('summary_large_image')
+  ).toBe(card)
 
   const types = jsonLdTypes(page.html)
 
@@ -81,7 +86,7 @@ describe('web preview share metadata', () => {
 
     const page = await fetchPage(`/meditations/${id}`)
 
-    expectShareable(page, `/meditations/${id}`)
+    expectShareable(page, `/meditations/${id}`, 'player')
     // The bug this ticket closes: every meditation served the site default.
     expect(titleOf(page.html), 'a meditation should carry its own name').not.toBe('We Meditate')
     expect(jsonLdTypes(page.html)).toContain('AudioObject')
@@ -94,7 +99,7 @@ describe('web preview share metadata', () => {
 
     const page = await fetchPage(`/lectures/${id}`)
 
-    expectShareable(page, `/lectures/${id}`)
+    expectShareable(page, `/lectures/${id}`, 'player')
     expect(metaContent(page.html, 'og:type')[0]).toBe('video.other')
     expect(jsonLdTypes(page.html)).toContain('VideoObject')
   })

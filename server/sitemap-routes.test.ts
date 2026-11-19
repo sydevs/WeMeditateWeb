@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Hono } from 'hono'
+import { EN_TRANSLATIONS } from '../lib/i18n'
 import type { SahajCloudEnv } from './sahajcloud-context'
 
 const find = vi.fn()
@@ -55,7 +56,7 @@ function stubCollections(docs: Record<string, unknown[]>) {
 
 /** The `wm-web-config` global, which supplies the locale set and `/`'s page. */
 function stubConfig(config: Record<string, unknown> = {}) {
-  findGlobal.mockResolvedValue({
+  const webConfig = {
     availableLocales: ['en'],
     homePage: null,
     featuredPages: [],
@@ -64,7 +65,14 @@ function stubConfig(config: Record<string, unknown> = {}) {
     knowledgePages: [],
     infoPages: [],
     ...config,
-  })
+  }
+
+  // The manifest route reads `wm-web-translations` through this same client,
+  // and a config object standing in for it renders every name as its own key
+  // path. So the stub answers per slug.
+  findGlobal.mockImplementation(async ({ slug }: { slug: string }) =>
+    slug === 'wm-web-translations' ? EN_TRANSLATIONS : webConfig,
+  )
 }
 
 /**
@@ -117,6 +125,22 @@ describe('/robots.txt', () => {
     const response = await get('/robots.txt', 'https://wemeditate-web-pr-62.workers.dev')
 
     await expect(response.text()).resolves.toContain('Disallow: /')
+  })
+})
+
+describe('/manifest.webmanifest', () => {
+  it('serves the type the spec names, not the one `c.json` would set', async () => {
+    const response = await get('/manifest.webmanifest')
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Content-Type')).toContain('application/manifest+json')
+  })
+
+  it('answers in the language of the URL it was asked on', async () => {
+    const manifest = await (await get('/fr/manifest.webmanifest')).json()
+
+    expect(manifest).toMatchObject({ lang: 'fr', display: 'browser' })
+    expect(manifest.name, 'the name comes from the translations').not.toMatch(/^common\./)
   })
 })
 

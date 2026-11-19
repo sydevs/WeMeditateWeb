@@ -257,6 +257,25 @@ export function metaContent(html: string, key: string): string[] {
   )
 }
 
+/**
+ * Every `<link rel="…">` on the page, as its attributes, in document order.
+ *
+ * ⚠ **The attribute order is the generator's.** Unhead writes `rel` before
+ * `href` and closes a void element bare, where the React head wrote the
+ * reverse, so a test matching a whole tag asserts a spelling rather than the
+ * claim the tag makes.
+ */
+export function linkAttrs(html: string, rel: string): Record<string, string>[] {
+  return [...html.matchAll(/<link[^>]*>/gi)]
+    .map((match) => match[0])
+    .filter((tag) => tag.includes(`rel="${rel}"`))
+    .map((tag) =>
+      Object.fromEntries(
+        [...tag.matchAll(/([a-zA-Z-]+)="([^"]*)"/g)].map(([, name, value]) => [name, value]),
+      ),
+    )
+}
+
 /** One node of a page's `@graph`, read structurally rather than by schema. */
 export type JsonLdNode = Record<string, unknown> & { '@type': string }
 
