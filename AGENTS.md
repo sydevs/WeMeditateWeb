@@ -96,15 +96,16 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **A string composed in English is still an English string.** `` `Mute ${label.toLowerCase()}` ``
   and `` `Loading ${title.toLowerCase()}` `` build a sentence only English builds that way. Take
   the finished label as a prop or a key, never assemble one from a visible label.
-- **An indexable content route builds its head in `+data.ts` and declares
-  `headHtmlEnd: seoHeadHtml` in its `+config.ts`**, beside its `Layout: LayoutChrome`. The
+- **An indexable content route builds its head in `+data.ts`, and that is its whole opt-in.** The
   `+data.ts` builds one `SeoDocument` through [lib/content-seo.ts](lib/content-seo.ts) — the
   title, the canonical, the `hreflang` cluster, Open Graph, Twitter and a `@graph` described as
   plain data ([lib/seo-schema.ts](lib/seo-schema.ts)) — and
   [lib/seo-head-html.ts](lib/seo-head-html.ts) generates the head string from it with Unhead, on
   the server, once per request. A route that builds none publishes no URL claim at all, which is
-  what keeps the `embed` routes and the error page bare. `<title>` and `description` are the
-  exception: they are vike-react settings, declared site-wide in `pages/+config.ts` from
+  what keeps the `embed` routes and the error page bare. **The generator is declared once**, as
+  `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`: vike-react's setting is global as well as
+  cumulative, so a second declaration on one route adds a second copy of the whole head to every
+  page of the site. `<title>` and `description` sit beside it, from
   [lib/head-settings.ts](lib/head-settings.ts), which has to be a separate module and says why.
   **Never a head hook in a component**: `PageTemplate`, `MeditationTemplate` and
   `LectureTemplate` are shared with the `embed` routes and the live preview, and none of those is
@@ -115,8 +116,8 @@ These rules apply whether or not the matching rule file or skill is loaded.
   [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the page head, the
   `og:locale:alternate` list and `/sitemap.xml`, so the three cannot disagree. The site's
   `availableLocales` is a filter on that set, never the set itself.
-  `tests/guards/content-head.test.tsx` is what keeps a new content route from declaring the head
-  and building no document.
+  `tests/guards/content-head.test.tsx` holds both halves: the head is declared in one file, and
+  the routes that build a document are the ones listed there.
 - **Nothing site-wide goes in `public/`, so a site-wide document is a route.** `/robots.txt`,
   `/sitemap.xml` and `/manifest.webmanifest` are all Hono routes
   ([server/sitemap-routes.ts](server/sitemap-routes.ts)) for that reason, and being routes is also

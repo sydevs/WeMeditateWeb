@@ -10,7 +10,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { dirname, join, relative } from 'node:path'
+import { relative } from 'node:path'
 import type { Meditation, Page, ResolvedLecture } from '../../server/sahajcloud-types'
 import { lectureSeo, meditationSeo, pageSeo } from '../../lib/content-seo'
 import { SeoHeadTags, type SeoDocument } from '../../lib/head'
@@ -110,25 +110,34 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
   })
 })
 
-describe('every route that declares a content head', () => {
-  // The generator renders the document the route's data carries, so a route
-  // that declares the head and builds none emits nothing at all — the failure
-  // no rendered test can see.
-  const configs = sourceFiles(['pages/**/+config.ts']).filter((file) =>
-    stripComments(readSource(file)).includes('headHtmlEnd: seoHeadHtml'),
-  )
+describe('the generated head', () => {
+  const declaring = sourceFiles(['pages/**/+config.ts'])
+    .filter((file) => stripComments(readSource(file)).includes('headHtmlEnd'))
+    .map((file) => relative(repoRoot, file))
 
-  it('is a list this guard actually found', () => {
-    // An empty list would pass every assertion below without reading a file.
-    expect(configs.length).toBeGreaterThan(0)
+  // `headHtmlEnd` is global as well as cumulative, so a declaration on one
+  // route adds a second copy of the whole head to every page of the site.
+  // Three route declarations served three canonicals, three `robots` metas
+  // and three `@graph` blocks on the deployed preview (#282).
+  it('is declared once, in the root config', () => {
+    expect(declaring).toEqual(['pages/+config.ts'])
   })
+})
 
-  it.each(configs.map((file) => relative(repoRoot, file)))(
-    '%s builds a seo document in its +data.ts',
-    (config) => {
-      const data = join(repoRoot, dirname(config), '+data.ts')
+describe('the routes that publish a URL', () => {
+  const building = sourceFiles(['pages/**/+data.ts'])
+    .filter((file) => /\bseo:\s*\w+Seo\(/.test(stripComments(readSource(file))))
+    .map((file) => relative(repoRoot, file))
+    .sort()
 
-      expect(stripComments(readSource(data))).toMatch(/\bseo:\s*\w+Seo\(/)
-    },
-  )
+  // Building the document is the opt-in, now that the generator is declared
+  // once for the whole site: a route that stops building one goes quiet
+  // rather than red. A new indexable route belongs on this list.
+  it('are the content routes, and every one of them', () => {
+    expect(building).toEqual([
+      'pages/[slug]/+data.ts',
+      'pages/lectures/[id]/(full)/+data.ts',
+      'pages/meditations/[id]/(full)/+data.ts',
+    ])
+  })
 })

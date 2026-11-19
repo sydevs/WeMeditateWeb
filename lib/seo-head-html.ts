@@ -1,9 +1,12 @@
 /**
  * The `<head>` a content route publishes, rendered as HTML by Unhead.
  *
- * Declared as `headHtmlEnd: seoHeadHtml` in a route's `+config.ts`. Vike
- * calls it once per request, on the server, with the document the route's
- * `+data.ts` built. **Never a component hook**: `PageTemplate`,
+ * Declared as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`, and nowhere
+ * else: the setting is global as well as cumulative, so a second declaration
+ * renders the head twice on every page. Vike calls it once per request, on
+ * the server, for every route; the document the route's `+data.ts` built is
+ * what decides whether it returns anything. **Never a component hook**:
+ * `PageTemplate`,
  * `MeditationTemplate` and `LectureTemplate` are shared with the `embed`
  * routes and the live preview, so a hook called from a template would
  * publish a head for a URL that must claim nothing.

@@ -124,13 +124,19 @@ describe('web preview share metadata', () => {
     )
   })
 
-  it('every head duplicates nothing vike-react already writes', async () => {
+  it('every head is emitted once, duplicating nothing vike-react writes', async () => {
     const home = await fetchPage('/')
 
     for (const [tag, pattern] of [
       ['<title>', /<title>/g],
       ['charset', /charset=/g],
       ['the viewport meta', /name="viewport"/g],
+      // vike-react's `headHtmlEnd` is global as well as cumulative, so a
+      // declaration on one route adds a second copy of the whole head to
+      // every page of the site. Only a deployed build shows that.
+      ['the canonical', /rel="canonical"/g],
+      ['og:url', /property="og:url"/g],
+      ['the JSON-LD block', /application\/ld\+json/g],
     ] as const) {
       expect(home.html.match(pattern) ?? [], `${tag} appears once`).toHaveLength(1)
     }

@@ -569,10 +569,9 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
 /**
  * The head document for `/lectures/:id`.
  *
- * The one route whose head Unhead generates, as a graph of linked nodes
- * (`lib/seo-head-html.ts`). It carries `schema` descriptors rather than
- * serialized `jsonLd`, and its `+config.ts` declares `headHtmlEnd` rather
- * than `Head: ContentHead`.
+ * It carries `schema` descriptors rather than serialized `jsonLd`, which is
+ * what hands the graph to the generator (`lib/seo-head-html.ts`) instead of
+ * to `SeoHeadTags`. `/map` is the one document still built the other way.
  */
 export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute }): SeoDocument {
   const { lecture, route } = options
