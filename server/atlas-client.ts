@@ -107,7 +107,9 @@ export async function getAtlasSeo(options: {
   return degrade(read, {
     source: 'getAtlasSeo',
     message: 'getAtlasSeo failed; rendering the atlas without server content',
-    key: upstreamRoute,
+    // No key: a crawl walks up to SITEMAP_URL_CAP routes, so a site-wide 403
+    // or 5xx is one event per kind, and the route rides in `extra`.
+    subject: upstreamRoute,
     fallback: null,
     // Both: the request carries the normalized route, so an event naming
     // only the asked-for one cannot be matched to the failing URL.
@@ -129,7 +131,7 @@ export async function getAtlasSeo(options: {
  * content half, which shares the file. Crossing the cap is reported rather
  * than silent — an unnoticed truncation is the whole of #123.
  */
-const SITEMAP_URL_CAP = 45_000
+export const SITEMAP_URL_CAP = 45_000
 
 /**
  * Every atlas URL this site is the canonical home of.

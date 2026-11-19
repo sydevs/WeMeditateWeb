@@ -48,10 +48,13 @@ paths:
    it degrades quietly; that is the case that needs it most. Let SDK errors propagate into it.
    `@payloadcms/sdk` throws a `PayloadSDKError`
    carrying the HTTP status, which [server/error-utils.ts](../../server/error-utils.ts)
-   classifies. Return `null` (or an empty array) only for an empty result, never for a failure.
-   A read the page can do without turns a failure into its fallback in one place, `degrade` in
-   the same file, outside the retry. `degrade` reports the failure once per key per isolate, so
-   the `withRetry` inside it passes `reportFailure: false` — see `getMeditationSongs`.
+   classifies. Let a failure throw: return `null` (or an empty array) only for an empty result.
+   The exception is a read the page can do without, which turns a failure into its fallback in
+   one place, `degrade` in the same file, outside the retry. `degrade` reports the failure once
+   per key per isolate, so the `withRetry` inside it passes `reportFailure: false` — see
+   `getMeditationSongs`. Where a caller must tell that fallback from an empty answer, make it a
+   distinct sentinel: the related reads answer `null` for a failure and `[]` for nothing related,
+   so their route never caches the failure.
    A 404 on a by-id read is an empty result the SDK reports as a throw — `getDocumentById` reads
    the status with `readStatus` and answers `null`. Nothing else may swallow a status.
 

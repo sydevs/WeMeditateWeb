@@ -12,7 +12,7 @@ import {
 } from './sahajcloud-client'
 import { createPayloadClient } from './payload-client'
 import * as Sentry from '@sentry/cloudflare'
-import { detectErrorType, ErrorType } from './error-utils'
+import { detectErrorType, ErrorType, forgetReportedWarnings } from './error-utils'
 import type { Locale, Page, PageStatus } from './sahajcloud-types'
 
 // Stub the SDK factory to capture the query.
@@ -75,6 +75,7 @@ function fetchResponse(status: number, body: unknown) {
 /** Silences the request log and error dump, and forgets the previous read's error. */
 function resetReadState() {
   retried.error = undefined
+  forgetReportedWarnings()
   vi.restoreAllMocks()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})

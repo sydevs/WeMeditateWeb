@@ -224,17 +224,19 @@ export async function withRetry<T>(
 }
 
 /**
- * The warnings this isolate has already sent, by source, message and signature.
+ * The warnings this isolate has already sent: per source, each message and
+ * signature.
  *
  * A Workers isolate is reused across requests and dropped without notice,
  * which is the bound wanted: often enough that a standing gap cannot go
  * unreported, rare enough that it cannot bill the quota per render.
  */
-const reportedWarnings = new Set<string>()
+const reportedWarnings = new Map<string, Set<string>>()
 
 /**
- * Past this the memo is emptied rather than pruned: re-reporting a live gap
- * is the harmless direction.
+ * Past this a source's memo is emptied rather than pruned: re-reporting a live
+ * gap is the harmless direction. Per source, so one source's churn re-arms no
+ * other source's warnings.
  */
 const MAX_REPORTED_WARNINGS = 128
 
@@ -245,24 +247,38 @@ const MAX_REPORTED_WARNINGS = 128
  * For a gap met on every render that stands until someone fixes it: a bare
  * `captureMessage` there bills one event per page view (server/AGENTS.md).
  * It bounds the volume, never the level — so log every occurrence yourself.
+ * `source` names the reader, and a signature comes from a small set (an id,
+ * an origin, a locale), never from the visitor's URL.
  */
 export function warnOnce(
   signature: string,
   message: string,
   context: { source: string; tags?: Record<string, string>; extra?: Record<string, unknown> },
 ): void {
-  const key = JSON.stringify([context.source, message, signature])
+  let reported = reportedWarnings.get(context.source)
 
-  if (reportedWarnings.has(key)) return
+  if (!reported) {
+    reported = new Set()
+    reportedWarnings.set(context.source, reported)
+  }
 
-  if (reportedWarnings.size >= MAX_REPORTED_WARNINGS) reportedWarnings.clear()
+  const key = JSON.stringify([message, signature])
 
-  reportedWarnings.add(key)
+  if (reported.has(key)) return
+
+  if (reported.size >= MAX_REPORTED_WARNINGS) reported.clear()
+
+  reported.add(key)
   Sentry.captureMessage(message, {
     level: 'warning',
     tags: { ...context.tags, source: context.source },
     extra: context.extra,
   })
+}
+
+/** Forgets every warning sent, as a fresh isolate does. For tests. */
+export function forgetReportedWarnings(): void {
+  reportedWarnings.clear()
 }
 
 /** What {@link degrade} says about a read it gave up on. */
@@ -272,11 +288,14 @@ export interface Degradation<F> {
   /** What failed and what renders instead, as the log line and the Sentry message. */
   message: string
   /**
-   * What the read was for — an id, a route, an origin. Sentry hears of each
-   * key once per isolate, and again when its failure changes kind. Omit it
-   * where every call reads the same thing.
+   * What the read was for — an id, an origin. Sentry hears of each key once
+   * per isolate, and again when its failure changes kind. Omit it where every
+   * call reads the same thing, or where the set has no ceiling, such as a
+   * visitor's route: each kind of failure is then one event for the source.
    */
   key?: string
+  /** What the log line names, where that is not `key`. */
+  subject?: string
   /** What the caller renders without the data. */
   fallback: F
   /** Context for the event. Only the first call per key reaches Sentry. */
@@ -301,14 +320,15 @@ export async function degrade<T, F>(
   try {
     return await read()
   } catch (error) {
-    const { source, message, key = '', extra } = degradation
+    const { source, message, key = '', subject = key, extra } = degradation
     const errorType = detectErrorType(error)
+    const status = readStatus(error) ?? null
 
-    console.warn(key ? `${message} (${key}):` : `${message}:`, error)
-    warnOnce(`${key} ${errorType}`, message, {
+    console.warn(subject ? `${message} (${subject}):` : `${message}:`, error)
+    warnOnce(`${key} ${errorType} ${status}`, message, {
       source,
       tags: { error_type: errorType },
-      extra: { ...extra, status: readStatus(error) ?? null, error: errorText(error) },
+      extra: { ...extra, status, error: errorText(error) },
     })
 
     return degradation.fallback

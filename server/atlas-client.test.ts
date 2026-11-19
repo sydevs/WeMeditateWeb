@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getAtlasSeo, getAtlasSitemapUrls } from './atlas-client'
 import * as Sentry from '@sentry/cloudflare'
-import { detectErrorType, ErrorType } from './error-utils'
+import { detectErrorType, ErrorType, forgetReportedWarnings } from './error-utils'
 
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
@@ -74,6 +74,7 @@ beforeEach(() => {
   // calls in place — so without this a test cannot assert Sentry stayed
   // silent.
   vi.mocked(Sentry.captureMessage).mockClear()
+  forgetReportedWarnings()
   vi.restoreAllMocks()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -219,13 +220,10 @@ describe('getAtlasSeo', () => {
       expect(Sentry.captureMessage).not.toHaveBeenCalled()
     })
 
-    // Each failing case asks for its own route: a failure is reported once
-    // per route per isolate, and a case another test already failed stays
-    // silent here.
     it.each([
-      ['a 403 from a client without the atlas role', 403, '/gb/refused'],
-      ['a server fault', 500, '/gb/faulted'],
-    ])('degrades to widget-only and warns Sentry on %s', async (_label, status, route) => {
+      ['a 403 from a client without the atlas role', 403],
+      ['a server fault', 500],
+    ])('degrades to widget-only and warns Sentry on %s', async (_label, status) => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(
         fetchResponse(status, { errors: [] }) as unknown as Response,
       )
@@ -233,25 +231,42 @@ describe('getAtlasSeo', () => {
       // The page must still render. The widget works without server
       // rendering, and a lost server-rendered half makes a degraded page,
       // not a broken one.
-      expect(await getAtlasSeo({ route, locale: 'en' })).toBeNull()
+      expect(await getAtlasSeo({ route: '/gb/london', locale: 'en' })).toBeNull()
       expect(Sentry.captureMessage).toHaveBeenCalledWith(
         expect.stringContaining('getAtlasSeo failed'),
         expect.objectContaining({ level: 'warning' }),
       )
     })
 
-    it('reports a failing route once per isolate, and logs it every render', async () => {
-      // `/map` renders this per request and nothing caches it, so a standing
-      // fault reported per call bills one event per page view.
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fetchResponse(500, { errors: [] }) as unknown as Response,
-      )
+    it('reports a standing fault once per kind, however many routes a crawl asks for', async () => {
+      // `/map` renders this per request and nothing caches it, and a crawl
+      // walks every atlas route: an event per route would grow with the
+      // crawl, not with the causes.
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(fetchResponse(403, { errors: [] }) as unknown as Response)
 
-      await getAtlasSeo({ route: '/gb/standing', locale: 'en' })
-      await getAtlasSeo({ route: '/gb/standing', locale: 'fr' })
+      await getAtlasSeo({ route: '/gb/london', locale: 'en' })
+      await getAtlasSeo({ route: '/nl/amsterdam', locale: 'en' })
+      await getAtlasSeo({ route: '/gb/london', locale: 'fr' })
 
       expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
-      expect(console.warn).toHaveBeenCalledTimes(2)
+      expect(Sentry.captureMessage).toHaveBeenCalledWith(
+        expect.stringContaining('getAtlasSeo failed'),
+        expect.objectContaining({ extra: expect.objectContaining({ route: '/gb/london' }) }),
+      )
+      // Every render still logs, naming its own route.
+      expect(console.warn).toHaveBeenCalledTimes(3)
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('(/nl/amsterdam)'),
+        expect.anything(),
+      )
+
+      // A different failure is a different cause, and reported.
+      fetchSpy.mockResolvedValue(fetchResponse(500, { errors: [] }) as unknown as Response)
+      await getAtlasSeo({ route: '/nl/amsterdam', locale: 'en' })
+
+      expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
     })
 
     it('throws a 522 the retry ladder classifies as SERVER, not UNKNOWN', async () => {
@@ -428,9 +443,7 @@ describe('getAtlasSitemapUrls', () => {
   it('degrades to an empty list rather than failing the sitemap', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('upstream is down'))
 
-    // Its own origin: a failure is reported once per origin per isolate, and
-    // the case above already failed the same way for wemeditate.com.
-    expect(await getAtlasSitemapUrls('https://sahajayoga.nl')).toEqual([])
+    expect(await getAtlasSitemapUrls('https://wemeditate.com')).toEqual([])
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       expect.stringContaining('getAtlasSitemapUrls failed'),
       expect.objectContaining({ level: 'warning' }),

@@ -2,7 +2,14 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as Sentry from '@sentry/react'
-import { degrade, detectErrorType, ErrorType, warnOnce, withRetry } from './error-utils'
+import {
+  degrade,
+  detectErrorType,
+  ErrorType,
+  forgetReportedWarnings,
+  warnOnce,
+  withRetry,
+} from './error-utils'
 
 vi.mock('@sentry/react', () => ({
   addBreadcrumb: vi.fn(),
@@ -11,6 +18,7 @@ vi.mock('@sentry/react', () => ({
 }))
 
 beforeEach(() => {
+  forgetReportedWarnings()
   vi.mocked(Sentry.addBreadcrumb).mockClear()
   vi.mocked(Sentry.captureException).mockClear()
   vi.mocked(Sentry.captureMessage).mockClear()
@@ -369,6 +377,19 @@ describe('warnOnce', () => {
 
     expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
   })
+
+  it('lets one source fill its memo without re-arming another source', () => {
+    warnOnce('gap-d', 'A gap', { source: 'warnOnce.test.quiet' })
+
+    for (let index = 0; index < 128; index++) {
+      warnOnce(`/route-${index}`, 'Filler', { source: 'warnOnce.test.noisy' })
+    }
+
+    vi.mocked(Sentry.captureMessage).mockClear()
+    warnOnce('gap-d', 'A gap', { source: 'warnOnce.test.quiet' })
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
 })
 
 describe('degrade', () => {
@@ -414,5 +435,29 @@ describe('degrade', () => {
     await degrade(() => Promise.reject(Object.assign(new Error('x'), { status: 403 })), songs('5'))
 
     expect(Sentry.captureMessage).toHaveBeenCalledTimes(3)
+  })
+
+  it('reports a keyless failure once per kind, and names its subject in every log line', async () => {
+    const atlas = (subject: string) => ({
+      source: 'degrade.test.keyless',
+      message: 'Atlas failed; rendering the widget alone',
+      subject,
+      fallback: null,
+    })
+    const refused = Object.assign(new Error('refused'), { status: 403 })
+
+    await degrade(() => Promise.reject(refused), atlas('/gb/london'))
+    await degrade(() => Promise.reject(refused), atlas('/nl/amsterdam'))
+    await degrade(
+      () => Promise.reject(Object.assign(new Error('unauthorized'), { status: 401 })),
+      atlas('/gb/london'),
+    )
+
+    // A 403 and a 401 are both CLIENT, and still two causes.
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+    expect(console.warn).toHaveBeenCalledWith(
+      'Atlas failed; rendering the widget alone (/nl/amsterdam):',
+      refused,
+    )
   })
 })
