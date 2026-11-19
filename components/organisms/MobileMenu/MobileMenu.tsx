@@ -66,7 +66,6 @@ export function MobileMenu({
   const [isOpen, setIsOpen] = useState(false)
   const [reference, setReference] = useState<Element | null>(null)
   const [floating, setFloating] = useState<HTMLElement | null>(null)
-  const locale = useLocale()
   const t = useT()
 
   // The interactions context alone: nothing here is positioned. An anchored
@@ -160,40 +159,9 @@ export function MobileMenu({
                     scroll origin, out of reach. */}
                 <div className="my-auto py-8">
                   <ul className="px-6">
-                    {navItems.map((item) =>
-                      item.dropdown ? (
-                        <li key={item.label}>
-                          <Disclosure label={item.label} triggerClassName={row}>
-                            {item.dropdown.links.map((link) => (
-                              <li key={link.href}>
-                                <Link
-                                  className={subRow}
-                                  href={link.href}
-                                  variant="unstyled"
-                                  onClick={close}
-                                >
-                                  {link.label}
-                                </Link>
-                              </li>
-                            ))}
-                          </Disclosure>
-                        </li>
-                      ) : (
-                        item.href && (
-                          <li key={item.href}>
-                            <Link
-                              aria-current={item.active ? 'page' : undefined}
-                              className={`${row} aria-[current=page]:text-primary`}
-                              href={item.href}
-                              variant="unstyled"
-                              onClick={close}
-                            >
-                              {item.label}
-                            </Link>
-                          </li>
-                        )
-                      ),
-                    )}
+                    {navItems.map((item) => (
+                      <NavRow key={item.label} item={item} onNavigate={close} />
+                    ))}
                   </ul>
 
                   {actionLinkText && actionLinkHref && (
@@ -210,57 +178,107 @@ export function MobileMenu({
                   )}
                 </div>
 
-                <div className="flex flex-col items-center gap-1 px-6">
-                  {socialLinks.length > 0 && (
-                    <div className="flex flex-wrap justify-center">
-                      {socialLinks.map((social) => (
-                        <SocialIcon
-                          key={social.platform}
-                          href={social.href}
-                          platform={social.platform}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Inline rather than `LanguageDropdown`: its list portals at
-                      `z-50`, under this panel. */}
-                  {languages.length > 1 && (
-                    <Disclosure
-                      label={
-                        <>
-                          <Icon icon={GlobeAltIcon} size="sm" />
-                          {t('footer.languages')}
-                        </>
-                      }
-                      triggerClassName={`${subRow} px-2`}
-                    >
-                      {languages.map((language) => (
-                        <li key={language.code}>
-                          <Link
-                            aria-current={language.code === locale ? 'true' : undefined}
-                            className={subRow}
-                            href={language.href}
-                            locale={language.code}
-                            variant="unstyled"
-                            onClick={close}
-                          >
-                            <span lang={language.code}>{language.label}</span>
-                            {language.code === locale && (
-                              <Icon className="text-primary" icon={CheckIcon} size="xs" />
-                            )}
-                          </Link>
-                        </li>
-                      ))}
-                    </Disclosure>
-                  )}
-                </div>
+                <MenuFoot languages={languages} socialLinks={socialLinks} onNavigate={close} />
               </div>
             </FloatingFocusManager>
           </FloatingOverlay>
         </FloatingPortal>
       )}
     </>
+  )
+}
+
+/** One top-level destination: a link, or a disclosure over a mega menu's links. */
+function NavRow({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+  if (item.dropdown) {
+    return (
+      <li>
+        <Disclosure label={item.label} triggerClassName={row}>
+          {item.dropdown.links.map((link) => (
+            <li key={link.href}>
+              <Link className={subRow} href={link.href} variant="unstyled" onClick={onNavigate}>
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </Disclosure>
+      </li>
+    )
+  }
+
+  // A mega-menu item has no `href` of its own; so has a malformed one.
+  if (!item.href) return null
+
+  return (
+    <li>
+      <Link
+        aria-current={item.active ? 'page' : undefined}
+        className={`${row} aria-[current=page]:text-primary`}
+        href={item.href}
+        variant="unstyled"
+        onClick={onNavigate}
+      >
+        {item.label}
+      </Link>
+    </li>
+  )
+}
+
+/** The panel's foot: the social row, and the languages this page is published in. */
+function MenuFoot({
+  languages,
+  socialLinks,
+  onNavigate,
+}: {
+  languages: LanguageOption[]
+  socialLinks: SocialLink[]
+  onNavigate: () => void
+}) {
+  const locale = useLocale()
+  const t = useT()
+
+  return (
+    <div className="flex flex-col items-center gap-1 px-6">
+      {socialLinks.length > 0 && (
+        <div className="flex flex-wrap justify-center">
+          {socialLinks.map((social) => (
+            <SocialIcon key={social.platform} href={social.href} platform={social.platform} />
+          ))}
+        </div>
+      )}
+
+      {/* Inline rather than `LanguageDropdown`: its list portals at `z-50`,
+          under this panel. */}
+      {languages.length > 1 && (
+        <Disclosure
+          label={
+            <>
+              <Icon icon={GlobeAltIcon} size="sm" />
+              {t('footer.languages')}
+            </>
+          }
+          triggerClassName={`${subRow} px-2`}
+        >
+          {languages.map((language) => (
+            <li key={language.code}>
+              <Link
+                aria-current={language.code === locale ? 'true' : undefined}
+                className={subRow}
+                href={language.href}
+                locale={language.code}
+                variant="unstyled"
+                onClick={onNavigate}
+              >
+                <span lang={language.code}>{language.label}</span>
+                {language.code === locale && (
+                  <Icon className="text-primary" icon={CheckIcon} size="xs" />
+                )}
+              </Link>
+            </li>
+          ))}
+        </Disclosure>
+      )}
+    </div>
   )
 }
 
