@@ -36,6 +36,19 @@ describe('slugify — Latin', () => {
   ])('%j still spells %j', (heading, anchor) => {
     expect(slugify(heading)).toBe(anchor)
   })
+
+  // So does an emoji's variation selector or keycap, a mark after a Latin
+  // letter outside U+0300–U+036F, and the micro sign, which decomposes to a
+  // Greek letter.
+  it.each([
+    ['We \u2764\ufe0f meditation', 'we-meditation'],
+    ['Step 1\ufe0f\u20e3', 'step-1'],
+    ['\u{1f9d8}\u200d\u2640\ufe0f Yoga', 'yoga'],
+    ['Vector v\u20d7 field', 'vector-v-field'],
+    ['Tip: 5\u00b5m', 'tip-5-m'],
+  ])('%j still spells %j', (heading, anchor) => {
+    expect(slugify(heading)).toBe(anchor)
+  })
 })
 
 describe('slugify — other scripts', () => {
@@ -66,7 +79,10 @@ describe('slugify — other scripts', () => {
 })
 
 describe('slugify — no anchor', () => {
-  it.each(['', '   ', '?!', '— · —', '🧘'])('%j has no letter or digit, so it is ""', (heading) => {
-    expect(slugify(heading)).toBe('')
-  })
+  it.each(['', '   ', '?!', '— · —', '🧘', '\u2764\ufe0f', '\u{1f9d8}\u200d\u2640\ufe0f'])(
+    '%j has no letter or digit, so it is ""',
+    (heading) => {
+      expect(slugify(heading)).toBe('')
+    },
+  )
 })
