@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode, useEffect, useRef, useState } from 'react'
+import { ComponentProps, ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { LeafSvg } from '../../atoms/graphics/svgs'
 import { Link } from '../../atoms/Link'
 import { SplashLoader } from '../../atoms/SplashLoader'
@@ -10,6 +10,18 @@ import {
   getImageURL,
   getVariantName,
 } from '../../../lib/cloudflare-images'
+
+/**
+ * Ends the loader the moment the hero settles, without waiting for React: the
+ * preloaded hero usually lands well before hydration, and until then React's
+ * own `onLoad` cannot fire. Only the server's HTML runs it, since React never
+ * executes a script it renders itself. The inline `opacity` it writes is not
+ * React's, hence `suppressHydrationWarning` on the loader.
+ */
+const settleLoaderScript = (heroId: string, loaderId: string) =>
+  `(function(h,l){if(!h||!l)return;function d(){l.style.opacity='0'}` +
+  `if(h.complete)d();else{h.addEventListener('load',d);h.addEventListener('error',d)}})` +
+  `(document.getElementById(${JSON.stringify(heroId)}),document.getElementById(${JSON.stringify(loaderId)}))`
 
 export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**
@@ -95,6 +107,8 @@ export function Splash({
 }: SplashProps) {
   const imageRef = useRef<HTMLImageElement>(null)
   const [imageSettled, setImageSettled] = useState(false)
+  const loaderId = useId()
+  const heroId = `${loaderId}-hero`
 
   // An image that finished before hydration fired its `load` with no React
   // listener attached yet. `complete` covers a failed image too.
@@ -124,6 +138,7 @@ export function Splash({
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover"
         fetchPriority={priority ? 'high' : undefined}
+        id={loader ? heroId : undefined}
         loading={priority ? 'eager' : 'lazy'}
         src={resolvedBackgroundImage}
         onError={() => setImageSettled(true)}
@@ -181,24 +196,34 @@ export function Splash({
       </div>
 
       {/* Over the content, under the overlaid header (`LayoutChrome`, z-30).
-          It hides the text a moment, so it must never strand anyone there: a
-          CSS timer ends it without JavaScript, clicks pass through, focus
-          entering the splash hides it at once, and reduced motion skips it.
+          It hides the text a moment, so it must never strand anyone there: the
+          script ends it when the hero settles, a CSS timer ends it without
+          JavaScript, clicks pass through, focus entering the splash hides it
+          at once, and reduced motion skips it. Focus hides it with
+          `invisible`, not `hidden`: a `display` toggle restarts the timer.
           The dark brand colour is the old site's brown; a light splash gets
           the light warm wash, or the overlaid header's dark text would sit on
           a dark loader. */}
       {loader && (
-        <SplashLoader
-          autoExit
-          aria-hidden="true"
-          backgroundImage={backgroundImage}
-          className="z-20 pointer-events-none motion-reduce:hidden group-focus-within/splash:hidden"
-          color={surfaceValue === 'dark' ? 'secondary' : 'warm'}
-          imageAspectRatio={imageAspectRatio}
-          imageSize={imageSize}
-          isLoading={!imageSettled}
-          size="lg"
-        />
+        <>
+          <SplashLoader
+            autoExit
+            suppressHydrationWarning
+            aria-hidden="true"
+            backgroundImage={backgroundImage}
+            className="z-20 pointer-events-none motion-reduce:hidden group-focus-within/splash:invisible"
+            color={surfaceValue === 'dark' ? 'secondary' : 'warm'}
+            id={loaderId}
+            imageAspectRatio={imageAspectRatio}
+            imageSize={imageSize}
+            isLoading={!imageSettled}
+            size="lg"
+          />
+          <script
+            // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- a constant script of ours; its only inputs are two `useId` values, JSON-encoded
+            dangerouslySetInnerHTML={{ __html: settleLoaderScript(heroId, loaderId) }}
+          />
+        </>
       )}
     </div>
   )

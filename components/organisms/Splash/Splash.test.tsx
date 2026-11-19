@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Splash } from './Splash'
-import { anchorFor, classFor, classesWith } from '../../../tests/_helpers/markup'
+import { anchorFor, classFor, classesWith, openTag } from '../../../tests/_helpers/markup'
 
 const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
 
@@ -65,7 +65,19 @@ describe('<Splash loader> in the server’s HTML', () => {
     expect(overlay).toContain('absolute')
     expect(overlay).toContain('motion-reduce:hidden')
     expect(overlay).toContain('pointer-events-none')
-    expect(overlay).toContain('group-focus-within/splash:hidden')
+    // `visibility`, not `display`: an element shown again from `display: none`
+    // restarts its animation, so leaving the splash would re-arm the timer.
+    expect(overlay).toContain('group-focus-within/splash:invisible')
+    expect(overlay).not.toContain('group-focus-within/splash:hidden')
+  })
+
+  it('carries the script that ends it when the hero settles, before hydration', () => {
+    const html = lead()
+
+    // The parser runs it where it stands, so it must follow both elements it
+    // reads. The jsdom spec runs it.
+    expect(openTag(html, 'script')).toBe('<script>')
+    expect(html.indexOf('<script>')).toBeGreaterThan(html.indexOf('animate-splash-loader-exit'))
   })
 
   it('covers the content from above it, and the content stays in the markup', () => {
@@ -100,5 +112,7 @@ describe('<Splash loader> in the server’s HTML', () => {
 
     expect(html).toContain('fetchPriority="high"')
     expect(classesWith(html, 'mix-blend-multiply')).toEqual([])
+    expect(openTag(html, 'script')).toBe('')
+    expect(openTag(html, 'img')).not.toContain(' id=')
   })
 })

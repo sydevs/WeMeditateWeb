@@ -16,7 +16,7 @@
  * helper in the tag — the atom's own `<img>` is the pipeline, one paints a
  * bundled SVG, and three reach the helper a hop away. A measurement nothing
  * checks is the defect this guard exists to catch, so the population is
- * pinned: a seventh is a red test and a decision, not a silent over-fetch.
+ * pinned: an eighth is a red test and a decision, not a silent over-fetch.
  */
 
 import { describe, it, expect } from 'vitest'

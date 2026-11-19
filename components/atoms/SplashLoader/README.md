@@ -31,7 +31,7 @@ import { SplashLoader } from '..'
 | `backgroundImage` | `string` | — | URL of a background image, blended with `color`. |
 | `isLoading` | `boolean` | `true` | Set to `false` to start the fade-out. The component unmounts once the transition ends. |
 | `autoExit` | `boolean` | `false` | Fades the overlay out in CSS three seconds after it paints, whatever `isLoading` says. Set it on a loader the server renders: without JavaScript nothing else ends it. |
-| `text` | `string` | — | Optional text below the logo. Renders in white, centered. |
+| `text` | `string` | — | Optional text below the logo, centered, in the surface's `text-fg`: white over the dark colors, gray over `warm`. |
 
 ## Important notes
 
@@ -60,7 +60,8 @@ The animated logo draws in the surface's `text-fg`: white over the dark colors, 
 A loader laid over content that is already there — `Splash`'s `loader` — is decoration: pass
 `aria-hidden="true"`, and keep it from stranding anyone. `Splash` lets clicks through
 (`pointer-events-none`), hides it the moment focus enters the splash, skips it under
-`prefers-reduced-motion`, and sets `autoExit`.
+`prefers-reduced-motion`, ends it from an inline script as soon as its image settles (before
+hydration), and sets `autoExit`.
 
 ## Related components
 
