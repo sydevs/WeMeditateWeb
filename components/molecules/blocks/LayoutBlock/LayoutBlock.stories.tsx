@@ -50,10 +50,31 @@ const cards: LayoutItem[] = [
   },
 ]
 
+// Tabs as SahajCloud sends them: each `titleUrl` is the tab's own anchor.
+const aspects: LayoutItem[] = [
+  { id: 'a1', title: 'Center aspect', titleUrl: '#center-aspect', text: 'Innocence and wisdom.' },
+  { id: 'a2', title: 'Left Aspect', titleUrl: '#left-aspect', text: 'A pure desire to grow.' },
+  { id: 'a3', title: 'Right Aspect', titleUrl: '#right-aspect', text: 'Dynamism and discipline.' },
+]
+
+const moments: LayoutItem[] = [
+  { id: 'm1', title: 'Italy, 1986', text: 'Proclaimed Personality of the Year.' },
+  {
+    id: 'm2',
+    title: 'Moscow, 1989',
+    text: 'Full government support,\nincluding research funding.',
+  },
+  { id: 'm3', title: 'St. Petersburg, 1993', text: 'Honorary member of the Petrovsky Academy.' },
+  { id: 'm4', title: 'Brasilia, 1994', text: 'Presented with the key to the city.' },
+  { id: 'm5', title: 'New York, 1994', text: 'A day declared in her honour.' },
+]
+
 /**
- * LayoutBlock renders the `layout` block in one of five styles. `accordion`
- * and `tabs` reuse the Accordion and ColumnCarousel molecules. `grid`,
- * `list`, and `textList` render with a card subcomponent and simple lists.
+ * LayoutBlock renders the `layout` block in one of five styles. `accordion`,
+ * `tabs` and `grid` reuse the Accordion, ColumnCarousel and MasonryGrid
+ * molecules. `list` and `textList` render with a card subcomponent and a
+ * simple list. Tabs are columns on a wide screen and a carousel on a narrow
+ * one, opening on `defaultTab`, as wemeditate.com drew them.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -71,18 +92,29 @@ export const Default: Story = () => (
             text: 'No equipment is required — just an open mind.',
           },
           { id: 'q3', title: 'Do I need experience?', text: 'None at all. Everyone is welcome.' },
+          {
+            id: 'q4',
+            title: 'Where are the classes?',
+            text: 'Online, and in cities around the world.',
+            titleUrl: 'classes-near-me',
+            image: imageRef('lay4', 'A class in a park'),
+          },
         ]}
         style="accordion"
         title="Frequently asked"
       />
     </StorySection>
 
-    <StorySection title="Tabs">
-      <LayoutBlock items={cards} style="tabs" title="Three qualities" />
+    <StorySection description="Opens on its default tab below lg: the first here" title="Tabs">
+      <LayoutBlock defaultTab="#center-aspect" items={aspects} style="tabs" />
     </StorySection>
 
     <StorySection title="Grid">
       <LayoutBlock items={cards} style="grid" title="Explore the chakras" />
+    </StorySection>
+
+    <StorySection description="Five items: three, then Show More" title="Grid with Show More">
+      <LayoutBlock items={moments} style="grid" />
     </StorySection>
 
     <StorySection title="List">
