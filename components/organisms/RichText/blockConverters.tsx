@@ -224,6 +224,11 @@ export const blockConverters: BlockConverters = {
   // gallery is its own lightbox group, keyed by the block id, so the
   // overlay's previous and next navigation and thumbnail strip stay scoped
   // to that gallery.
+  //
+  // A tile with known dimensions keeps the image's own ratio, as the legacy
+  // gallery did: snapped to the nearest configured ratio, a portrait became a
+  // square and lost up to half its height. Its width and height reserve the
+  // box. The ratio still picks the srcset ladder.
   'image-gallery': ({ node }) => {
     const fields = node.fields as unknown as ImageGalleryBlockFields
     const images = galleryImages(fields.items)
@@ -246,11 +251,14 @@ export const blockConverters: BlockConverters = {
               alt={img.alt}
               aspectRatio={img.aspectRatio}
               className="w-full"
+              forceAspectRatio={!(img.width && img.height)}
+              height={img.height}
               lightboxGroup={group}
               lightboxIndex={index}
               rounded="rounded"
               sizes="(max-width: 1024px) 50vw, 33vw"
               src={img.url}
+              width={img.width}
             />
             {img.credit ? (
               <figcaption className="mt-1">

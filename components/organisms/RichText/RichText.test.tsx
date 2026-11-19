@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { getLeadSplash } from '../../../lib/content-blocks'
 import type { Page } from '../../../server/sahajcloud-types'
-import { classOf } from '../../../tests/_helpers/markup'
+import { classesWith, classOf, openTag } from '../../../tests/_helpers/markup'
 
 // RichText mounts the lightbox provider, whose barrel is client-only, and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
@@ -444,6 +444,28 @@ describe('<RichText>', () => {
     expect(html).toContain('aria-label="View image: Two"')
     expect(html).toContain('aria-haspopup="dialog"')
     expect(html).toContain('columns-2')
+  })
+
+  it('draws each gallery tile at its image’s own ratio', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [
+              img({ id: 1, alt: 'Portrait', width: 600, height: 800 }),
+              img({ id: 2, alt: 'Landscape' }),
+            ],
+          }),
+        ])}
+      />,
+    )
+    const portrait = openTag(html, 'img alt="Portrait"')
+
+    expect(portrait).toContain('width="600"')
+    expect(portrait).toContain('height="800"')
+    // Snapped, the 3:4 portrait drew as a square and the 3:2 landscape as 3:2.
+    expect(classesWith(html, 'aspect-square')).toEqual([])
+    expect(classesWith(html, 'aspect-[3/2]')).toEqual([])
   })
 
   it('prints a gallery image’s credit under its tile, and nothing under an uncredited one', () => {

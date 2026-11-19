@@ -100,10 +100,11 @@ const ASPECT_RATIO_ENTRIES = Object.entries(ASPECT_RATIO_VALUES) as [AspectRatio
 /**
  * Picks the supported AspectRatio closest to an image's intrinsic dimensions.
  *
- * The ratio sets the box `<Image>` crops into and the widths its srcset
- * offers. For a content image of arbitrary dimensions (for example, an
- * inline article upload), the ratio is not known ahead of time. This
- * function snaps to the nearest supported ratio, to minimize cropping.
+ * The ratio picks the widths `<Image>`'s srcset offers, and the box it crops
+ * into only where the caller keeps `forceAspectRatio` (for example, a text-box
+ * image). For a content image of arbitrary dimensions the ratio is not known
+ * ahead of time, so this snaps to the nearest supported one, to minimize
+ * cropping.
  *
  * Falls back to `video` (a safe landscape default) when the dimensions
  * are missing or invalid.
