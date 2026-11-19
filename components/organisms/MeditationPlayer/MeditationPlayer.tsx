@@ -71,6 +71,26 @@ const PLACEHOLDER_IMAGE =
   </svg>
 `)
 
+// How far each key moves the progress handle, in seconds. Home and End go to
+// either end.
+const SEEK_KEY_STEPS: Record<string, number> = {
+  ArrowRight: 5,
+  ArrowUp: 5,
+  ArrowLeft: -5,
+  ArrowDown: -5,
+  PageUp: 30,
+  PageDown: -30,
+}
+
+/** Where a key moves the playhead, or null for a key the progress handle leaves alone. */
+function seekTargetForKey(key: string, time: number, duration: number): number | null {
+  if (key === 'Home') return 0
+  if (key === 'End') return duration
+  if (!Object.hasOwn(SEEK_KEY_STEPS, key)) return null
+
+  return Math.min(duration, Math.max(0, time + SEEK_KEY_STEPS[key]))
+}
+
 export interface MeditationFrame {
   /** Timestamp in seconds when this frame should be displayed */
   timestamp: number
@@ -359,6 +379,7 @@ function MeditationPlayerInner({
   ...props
 }: MeditationPlayerProps) {
   const t = useT()
+  const seekLabelId = useId()
   // react-use-audio-player caches Howl instances in a module-global map,
   // keyed by `src`. So multiple players on one page that share a track URL,
   // for example the Ladle story, would drive one shared audio instance:
@@ -638,7 +659,10 @@ function MeditationPlayerInner({
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
-              <p className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase">
+              <p
+                className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase"
+                id={seekLabelId}
+              >
                 {t('meditation.general.label')}
               </p>
             </div>
@@ -761,12 +785,32 @@ function MeditationPlayerInner({
                   <SimpleLeafSvg className="w-6 h-6" />
                 </div>
 
-                {/* Draggable handle at end of progress - larger click area for better touch/mouse interaction */}
+                {/* The progress handle: dragged by mouse or touch, and a slider
+                    for the keyboard. Its hit area is larger than the dot.
+                    `aria-labelledby` reads the narrow-layout label even where
+                    the wide layout hides it, because it names it directly.
+                    shortcut: named by the player's visible "Meditation" label,
+                    the only title it draws, until `media.a11y.progress` lands
+                    (sydevs/SahajCloud#1222) — take the name from that key then. */}
                 <div
-                  className="absolute w-11 h-11 cursor-grab active:cursor-grabbing -translate-1/2 z-15"
+                  aria-labelledby={seekLabelId}
+                  aria-valuemax={Math.round(effectiveDuration)}
+                  aria-valuemin={0}
+                  aria-valuenow={Math.round(Math.min(displayTime, effectiveDuration))}
+                  aria-valuetext={formatDuration(displayTime)}
+                  className="absolute w-11 h-11 rounded-full cursor-grab active:cursor-grabbing -translate-1/2 z-15 focus-ring"
+                  role="slider"
                   style={{
                     left: `${handleX}%`,
                     top: `${handleY}%`,
+                  }}
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    const target = seekTargetForKey(event.key, displayTime, effectiveDuration)
+
+                    if (target === null) return
+                    event.preventDefault()
+                    handleSeek(target)
                   }}
                   onMouseDown={(e) => {
                     e.stopPropagation()
