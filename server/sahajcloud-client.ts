@@ -28,7 +28,7 @@
 import { createPayloadClient } from './payload-client'
 import { readStatus, withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
-import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
+import { resolveLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
 import type {
   Config,
@@ -46,6 +46,7 @@ import type {
 } from './payload-types'
 import type {
   EmbeddedFormSelect,
+  Lecture,
   Locale,
   NavPage,
   NavPageSelect,
@@ -569,16 +570,18 @@ export async function getDocumentById<C extends FindByIdCollection>(
 }
 
 /**
- * Gets a lecture by ID and normalizes it into a flat `ResolvedLecture`.
+ * Gets a lecture by ID.
  *
- * Full lectures and clips resolve to the same shape. A clip inherits its
- * playback source (HLS URL, duration, base subtitles, thumbnail fallback)
- * from its parent `fullLecture`, populated at depth 2 (see LECTURE_POPULATE).
+ * Returns the collection's own shape, which `resolveLecture` flattens at
+ * render — on the server and, under live preview, again per streamed message.
+ * A clip inherits its playback source (HLS URL, duration, base subtitles,
+ * thumbnail fallback) from its parent `fullLecture`, populated at depth 2
+ * (see LECTURE_POPULATE).
  *
  * @param options.id - The lecture document ID
  * @param options.locale - The locale to retrieve the lecture in
  * @param options.preview - If true, fetch draft data
- * @returns The normalized lecture or null if not found
+ * @returns The lecture document, or null if not found
  */
 export async function getLecture(
   options: LocalizedQueryOptions & {
@@ -586,7 +589,7 @@ export async function getLecture(
     preview?: boolean
     previewToken?: string
   },
-): Promise<ResolvedLecture | null> {
+): Promise<Lecture | null> {
   const lecture = await getDocumentById({ collection: 'lectures', ...options })
 
   if (!lecture) return null
@@ -609,7 +612,7 @@ export async function getLecture(
     })
   }
 
-  return resolved
+  return lecture
 }
 
 // --- Global Settings ---
