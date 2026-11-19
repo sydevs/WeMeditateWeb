@@ -4,8 +4,8 @@
  * `pnpm lint` fails on a single warning, and Claude Code checks out whole branches under
  * `.claude/worktrees/`. Prettier learns that from .gitignore; ESLint does not, so without its own
  * ignore the gate fails on another branch's warnings, and `eslint --fix` rewrites that branch.
- * Prettier's own ignores leave generated files to their generators and Markdown's code samples
- * intact.
+ * Prettier's own ignores leave generated files to their generators, Markdown's code samples
+ * intact, and a protected path to an attended write.
  */
 import { fileURLToPath } from 'node:url'
 import { describe, it, expect } from 'vitest'
@@ -35,6 +35,7 @@ describe('Prettier', () => {
     'server/payload-types.ts',
     'lib/translations.en.json',
     'pnpm-lock.yaml',
+    '.mcp.json',
     'AGENTS.md',
     'docs/rules/design-system.md',
   ])('leaves %s alone', async (path) => {

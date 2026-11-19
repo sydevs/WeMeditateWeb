@@ -23,8 +23,10 @@ docs/rules/code-comments.md
 .github/workflows/workflow-state.yml
 
 # Claude Code's Protected Paths guard holds every write here for approval (AGENTS.md), so a
-# repo-wide `prettier --write` would stall an unattended run.
+# repo-wide `prettier --write` would stall an unattended run, or route around the guard. `.npmrc`
+# is the third tracked protected path and needs no line: Prettier infers no parser for it.
 .claude/
+.mcp.json
 
 # Markdown is written by people, but Prettier rewrites a fenced tsx sample as a statement
 # (`;<Icon … />`, a JSX attribute as `className = '…'`) and pads every table. Nothing checks
