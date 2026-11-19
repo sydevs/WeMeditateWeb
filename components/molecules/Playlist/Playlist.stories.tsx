@@ -42,6 +42,16 @@ const sampleTracks: Track[] = [
     duration: 318,
     tags: [{ id: 'vocal', label: 'Vocal' }],
   },
+  // Keeps the no-duration row visible beside real lengths.
+  {
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3',
+    title: 'Unmeasured Drone',
+    credit: 'Meera Joshi',
+    creditURL: '#',
+    thumbnailURL: 'https://picsum.photos/seed/track13/200/200',
+    duration: 0,
+    tags: [{ id: 'strings', label: 'Strings' }],
+  },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
     title: 'Morning Melody',
@@ -113,8 +123,6 @@ const musicFilters: MusicFilter[] = [
   },
 ]
 
-// Every song reaches the site this way: SahajCloud's Song type has no duration
-// field, so `contentIndexTrack` sets 0.
 const undatedTracks: Track[] = sampleTracks.map((track) => ({ ...track, duration: 0 }))
 
 /** Playlist molecule showcasing track list with filters and current track highlighting. */
@@ -154,7 +162,7 @@ export const Default: Story = () => {
         <div className="max-w-md">
           <Playlist
             currentTrackIndex={0}
-            title="Songs From SahajCloud"
+            title="Unmeasured Songs"
             tracks={undatedTracks}
             onTrackClick={() => {}}
           />
