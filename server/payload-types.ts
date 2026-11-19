@@ -6482,6 +6482,13 @@ export interface WmWebTranslationsBlocksGeneralStrings {
    * Label under the seconds figure of a countdown.
    */
   seconds?: string;
+  // shortcut: typed by hand, because sydevs/SahajCloud#1218 declares the key
+  // and has not merged. Every contract sync re-derives this file and drops
+  // this entry, so re-type it until that PR lands (sydevs/WeMeditateWeb#269).
+  /**
+   * Ornamental words set on their side along the outer edge of an “Ancient Wisdom” text box. Decorative, so an evocative short phrase beats a literal translation — and it stands vertically in one line, which is what the limit is for.
+   */
+  wisdom_sidetext?: string;
 }
 export interface WmWebTranslationsBlocksA11YStrings {
   /**
