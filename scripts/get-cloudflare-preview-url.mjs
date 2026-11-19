@@ -99,6 +99,31 @@ async function ghFetch(path) {
 // those rather than failing, since comments are only the first source tried.
 const PREVIEW_COMMENT_AUTHORS = ['cloudflare-workers-and-pages[bot]']
 
+/**
+ * Does this comment's deployment table name the commit under test?
+ *
+ * Cloudflare rewrites one comment per Worker in place, so between a push and that build
+ * finishing it still names the previous commit — and the address beside it is that build's.
+ * Discovery took it, and the smoke lane then measured the build before the one on trial: five
+ * specs failed on routes the commit adds, while a head it emitted three times went unseen
+ * (#282). Sources 2 to 4 are keyed on the SHA already; only this one and the derived branch
+ * host are not.
+ *
+ * A comment naming no commit at all is still accepted. The column is Cloudflare's to rename,
+ * and a wrong address is caught by the specs, where no address at all stops the lane.
+ */
+function namesCommit(body, sha) {
+  if (!sha) return true
+  // The short SHA is a cell of its own in the table. Every other hex run in the comment — the
+  // account id, the build id — shares a cell with the link around it.
+  const cells = [...String(body ?? '').matchAll(/\|\s*([0-9a-f]{7,40})\s*\|/gi)].map((m) =>
+    m[1].toLowerCase(),
+  )
+  if (!cells.length) return true
+  const head = sha.toLowerCase()
+  return cells.some((cell) => head.startsWith(cell) || cell.startsWith(head))
+}
+
 async function fromPrComments() {
   if (!PR_NUMBER) return []
   const comments = await ghFetch(`/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100`)
@@ -109,6 +134,10 @@ async function fromPrComments() {
     const author = c.user?.login ?? '?'
     if (!PREVIEW_COMMENT_AUTHORS.includes(author)) {
       console.error(`skipping ${url} [pr-comment(${author})] — not a preview bot`)
+      continue
+    }
+    if (!namesCommit(c.body, SHA)) {
+      console.error(`skipping ${url} [pr-comment(${author})] — names another commit, not ${SHA}`)
       continue
     }
     const project = (c.body || '').match(/Deploying\s+([a-z0-9._-]+)\s+with/i)?.[1] ?? null
@@ -268,6 +297,7 @@ export {
   PREVIEW_URL_RE,
   extractPreviewUrl,
   matchesTarget,
+  namesCommit,
   slugifyBranch,
   accountSubdomain,
   fromDerivedBranchHost,

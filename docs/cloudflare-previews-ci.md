@@ -48,6 +48,14 @@ branch's latest successful build rather than this commit, so running it earlier 
 specs the previous build while this commit's own was still deploying. The address still has to
 answer before it reaches the specs. Read the `selected …` and `skipping …` lines the step prints.
 
+⚠ **A comment is only accepted while it names the commit under test.** Cloudflare rewrites one
+comment per Worker in place, so between a push and that build finishing the comment still carries
+the previous commit's address, and discovery used to take it — the smoke lane then measured the
+build before the one on trial, reporting failures for routes the commit adds and missing what it
+broke (#282). Discovery now reads the comment's `Latest Commit` cell and keeps polling until it
+matches `PR_HEAD_SHA`. The other sources are keyed on the SHA already; the derived branch host is
+not, which is a second reason it runs only after the window closes.
+
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
 | web | Workers Builds | `…-wemeditate-web.<acct>.workers.dev` | `wemeditate-web` | [wrangler.toml](../wrangler.toml) |

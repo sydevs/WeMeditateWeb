@@ -69,6 +69,38 @@ describe('the derived branch host', () => {
   })
 })
 
+describe('the commit a preview comment names', () => {
+  // Cloudflare's real comment for this pull request, one Worker's row.
+  const comment = (sha: string) =>
+    `| Status | Name | Latest Commit | Preview URL | Updated (UTC) |\n| -|-|-|-|-|\n` +
+    `| ✅ Deployment successful! <br>[View logs](https://dash.cloudflare.com/?to=/c66c53a69689eb030b228c450515fff2/workers/services/view/wemeditate-web/production/builds/3e67b208-bec5-4c58-acb0-808cd52fdc30) ` +
+    `| wemeditate-web | ${sha} | <a href='https://786c3f75-wemeditate-web.contact-c66.workers.dev'>Commit Preview URL</a> | Nov 19 2026, 03:58 AM |`
+
+  const HEAD = 'c221df7f593aca1e0b85ba31ecd7d0fc190cf8d3'
+
+  it('accepts the short SHA of the commit under test', () => {
+    expect(discovery.namesCommit(comment('c221df7f'), HEAD)).toBe(true)
+  })
+
+  it('refuses the commit before it, whose address the comment still carries', () => {
+    expect(discovery.namesCommit(comment('b60f0acf'), HEAD)).toBe(false)
+  })
+
+  it('reads the commit cell, not the account or build id beside it', () => {
+    // Both are hex runs in the same comment, and neither is a cell of its own.
+    expect(discovery.namesCommit(comment('c221df7f'), 'c66c53a69689eb030b228c450515fff2')).toBe(
+      false,
+    )
+  })
+
+  it('accepts a comment that names no commit, and any comment when the SHA is unknown', () => {
+    expect(discovery.namesCommit('https://x-wemeditate-web.contact-c66.workers.dev', HEAD)).toBe(
+      true,
+    )
+    expect(discovery.namesCommit(comment('b60f0acf'), undefined)).toBe(true)
+  })
+})
+
 describe('target matching', () => {
   it('keeps the two Workers apart', () => {
     expect(
