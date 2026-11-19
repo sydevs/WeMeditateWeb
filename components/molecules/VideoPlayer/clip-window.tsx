@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import { Slider, useHotkey } from '@videojs/react'
+import { Slider, useContainer, useHotkey } from '@videojs/react'
 // Spelled `translate` at every call site, never `t`: these keys are the player's own, and `t` is
 // how the site's SahajCloud copy reads — `tests/guards/translation-keys.test.ts` matches the name.
 import { useTranslator } from '@videojs/react/i18n'
@@ -21,8 +21,8 @@ import {
  *
  * The class is emitted by `@videojs/react@10.5.0`'s video preset and documented nowhere, so
  * `VideoPlayer.test.tsx` reads the shipped stylesheet and fails when an upgrade drops it.
- * Upstream's own three controls are dropped by `skin-overrides.css`, so the row keeps its gap, its
- * padding and its container queries with ours in their place.
+ * Upstream's own three controls are dropped by `skin-overrides.css`, so the row keeps its gap,
+ * its padding and its container queries with ours in their place.
  */
 const TIME_SLIDER_GROUP = '.video-time-slider-group'
 const CLIP_CONTROL = { 'data-wm-clip': '' }
@@ -51,44 +51,36 @@ export interface ClipTimeProps {
   window: ClipWindow
 }
 
+/** The label and the upstream class of each readout the skin lays out beside its time slider. */
+const TIME_READOUT = {
+  current: { label: 'time.current', className: 'video-controls-current-time-value' },
+  duration: { label: 'time.duration', className: 'video-controls-remaining-time-value' },
+} as const
+
 /**
- * The window's elapsed time, in place of the media position the skin would show.
+ * One of the window's two time readouts: where playback sits in it, or how long it runs. Both
+ * replace a media time the skin would otherwise show.
  *
  * A `<time>` carrying an `aria-label` and a `dateTime`, which is what the skin's own
  * `Time.Value` renders — a plain `<div>` has a generic role, and a generic role cannot be named,
  * so the label would be dropped. The class list is upstream's, so this keeps the skin's
- * typography and the container query that hides the position on a narrow player.
+ * typography and the container query that hides a readout on a narrow player.
  */
-export function ClipElapsed({ window }: ClipTimeProps) {
+function ClipTime({ type, window }: ClipTimeProps & { type: keyof typeof TIME_READOUT }) {
   const translate = useTranslator()
   const { start, length } = useWindowBounds(window)
   const elapsed = useElapsed(start, length)
+  const readout = TIME_READOUT[type]
+  const seconds = type === 'current' ? elapsed : length
 
   return (
     <time
-      aria-label={translate('time.current')}
-      className="media-time-value video-controls-current-time-value"
-      dateTime={secondsToIsoDuration(elapsed)}
+      aria-label={translate(readout.label)}
+      className={`media-time-value ${readout.className}`}
+      dateTime={secondsToIsoDuration(seconds)}
       {...CLIP_CONTROL}
     >
-      {formatClock(elapsed, length)}
-    </time>
-  )
-}
-
-/** The window's own length, in place of the media duration the skin would show. */
-export function ClipDuration({ window }: ClipTimeProps) {
-  const translate = useTranslator()
-  const { length } = useWindowBounds(window)
-
-  return (
-    <time
-      aria-label={translate('time.duration')}
-      className="media-time-value video-controls-remaining-time-value"
-      dateTime={secondsToIsoDuration(length)}
-      {...CLIP_CONTROL}
-    >
-      {formatClock(length, length)}
+      {formatClock(seconds, length)}
     </time>
   )
 }
@@ -103,23 +95,23 @@ export function ClipDuration({ window }: ClipTimeProps) {
  * `children` before its own controls. Mounting this anywhere but inside the skin reverses that.
  * The rest of the skin's hotkeys need no change — a step, a toggle and the volume keys all mean
  * the same thing inside a window.
+ *
+ * Each pattern is registered on its own: `useHotkey` takes one, and only `0-9` expands.
  */
-export function ClipHotkeys({ window }: ClipTimeProps) {
+function ClipHotkeys({ window }: ClipTimeProps) {
   const seek = usePlayer((state) => state.seek)
   const { start, length } = useWindowBounds(window)
+  const seekToKey = (key: string) => {
+    const to = percentSeek(start, length, key)
 
-  useHotkey({
-    keys: '0-9',
-    onActivate: (_event, key) => {
-      const to = percentSeek(start, length, key)
+    if (to !== null) {
+      void seek(to)
+    }
+  }
 
-      if (to !== null) {
-        void seek(to)
-      }
-    },
-  })
-  useHotkey({ keys: 'Home', onActivate: () => void seek(start) })
-  useHotkey({ keys: 'End', onActivate: () => void seek(start + length) })
+  useHotkey({ keys: '0-9', onActivate: (_event, key) => seekToKey(key) })
+  useHotkey({ keys: 'Home', onActivate: () => seekToKey('Home') })
+  useHotkey({ keys: 'End', onActivate: () => seekToKey('End') })
 
   return null
 }
@@ -127,8 +119,8 @@ export function ClipHotkeys({ window }: ClipTimeProps) {
 /**
  * A time slider over the window rather than the media.
  *
- * `TimeSlider` takes its scale from the player store's `currentTime` and `duration`, with no
- * prop that shifts either, so a window needs the generic `Slider` and an offset of our own:
+ * `TimeSlider` marks `min`, `max` and `value` `@internal` — "not user-settable", each derived
+ * from the player store — so a window needs the generic `Slider` and an offset of our own:
  * `min` of 0, `max` of the window length, and a seek that adds the start back. The skin's own
  * slider classes dress it, so it draws as the media slider it replaces.
  *
@@ -136,7 +128,7 @@ export function ClipHotkeys({ window }: ClipTimeProps) {
  * tracks fill and pointer, so the generic `Slider` would leave the buffer at 0 and a clip's
  * scrubber would show no buffered range where a full lecture's does.
  */
-export function ClipTimeSlider({ window }: ClipTimeProps) {
+function ClipTimeSlider({ window }: ClipTimeProps) {
   const translate = useTranslator()
   const seek = usePlayer((state) => state.seek)
   const buffered = usePlayer((state) => state.buffered)
@@ -151,7 +143,9 @@ export function ClipTimeSlider({ window }: ClipTimeProps) {
       max={length}
       min={0}
       style={
-        { '--media-slider-buffer': `${bufferedPercent(window, length, buffered)}%` } as CSSProperties
+        {
+          '--media-slider-buffer': `${bufferedPercent(window, length, buffered)}%`,
+        } as CSSProperties
       }
       value={elapsed}
       onValueChange={(value) => void seek(start + value)}
@@ -178,25 +172,20 @@ export function ClipTimeSlider({ window }: ClipTimeProps) {
  * three controls and the hotkeys read the same player as the bar they land in.
  */
 export function ClipTimeline({ window }: ClipTimeProps) {
-  const anchorRef = useRef<HTMLSpanElement>(null)
-  const [group, setGroup] = useState<Element | null>(null)
-
-  useEffect(() => {
-    const skin = anchorRef.current?.parentElement
-
-    setGroup(skin?.querySelector(TIME_SLIDER_GROUP) ?? null)
-  }, [])
+  // The skin's root element is the player's registered container — it carries `media-skin` and
+  // `media-container` together — so the row is always inside what this hook hands back, and the
+  // whole bar is in the DOM by the time the container registers and this renders again.
+  const group = useContainer()?.querySelector(TIME_SLIDER_GROUP) ?? null
 
   return (
     <>
-      <span ref={anchorRef} hidden />
       <ClipHotkeys window={window} />
       {group
         ? createPortal(
             <>
-              <ClipElapsed window={window} />
+              <ClipTime type="current" window={window} />
               <ClipTimeSlider window={window} />
-              <ClipDuration window={window} />
+              <ClipTime type="duration" window={window} />
             </>,
             group,
           )
