@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Story, StoryDefault } from '@ladle/react'
 import { VideoPlayer } from './VideoPlayer'
 import { StoryWrapper, StorySection } from '../../ladle'
@@ -6,8 +7,9 @@ export default {
   title: 'Molecules',
 } satisfies StoryDefault
 
-// Vidstack's public demo HLS stream and assets, so the player actually
-// loads, and the captions menu has real per-locale .vtt tracks to switch between in Ladle.
+// A public demo HLS stream and its assets, so the player actually loads, and the captions menu
+// has real per-locale .vtt tracks to switch between in Ladle. They outlived the player they came
+// with and are fixtures, not a dependency.
 const HLS_URL = 'https://files.vidstack.io/sprite-fight/hls/stream.m3u8'
 const POSTER = 'https://files.vidstack.io/sprite-fight/poster.webp'
 
@@ -17,6 +19,22 @@ const SUBTITLES = [
   { content: 'Let the breath find its own rhythm.', startTimeMs: 8000, endTimeMs: 12000 },
 ]
 
+/**
+ * The ten launch locales, spelled as `server/sahajcloud-types.ts` spells them. Each has its own
+ * pack in `@videojs/core`, and all ten key sets match English's.
+ */
+const LAUNCH_LOCALES = ['en', 'ru', 'it', 'es', 'fr', 'de', 'pt-BR', 'cs', 'uk', 'bg']
+
+/** The language's own name, which is never a translation. */
+const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
+const localeLabel = (locale: string) => `${languageNames.of(locale) ?? locale} (${locale})`
+
+/**
+ * The skin shows only the large play button before playback starts, so the labels under review
+ * here would need ten videos played to read. This is the one public property that reveals them.
+ */
+const CONTROLS_ALWAYS_VISIBLE = { '--media-controls-before-start': 'visible' } as CSSProperties
+
 // Per-locale external WebVTT tracks (the Lecture subtitle shape).
 const SUBTITLE_TRACKS = [
   { locale: 'en', url: 'https://files.vidstack.io/sprite-fight/subs/english.vtt' },
@@ -24,17 +42,20 @@ const SUBTITLE_TRACKS = [
 ]
 
 /**
- * VideoPlayer is a client-only HLS player, built on Vidstack's
- * `<MediaPlayer>` and its default layout: brand-teal (#61aaa0),
- * touch-friendly controls with a captions menu, over a native `<video>`.
- * HLS plays natively on Safari or iOS, or otherwise through this project's
- * bundled hls.js. It supports a poster, an optional [startTime, stopTime]
- * window, relinearized through Vidstack clipping, and subtitles through
- * either inline cues (Video collection) or per-locale external .vtt URLs
- * (Lectures).
+ * VideoPlayer is a client-only HLS player, built on Video.js 10 and its
+ * packaged video skin: brand-teal (#61aaa0) through
+ * `--media-accent-color`, touch-friendly controls with a captions menu and a
+ * settings menu, over a native `<video>` that `HlsJsVideo` drives. It
+ * supports a poster, an optional [startTime, stopTime] window, and subtitles
+ * through either inline cues (Video collection) or per-locale external .vtt
+ * URLs (Lectures).
+ *
+ * The control labels come from Video.js's own locale packs, so they read in
+ * the visitor's language with nothing for this repo to translate. The
+ * Languages section below is where that is checked.
  *
  * Note: these stories import the raw player. In the app it is wrapped in
- * ClientOnly, so Vidstack and hls.js stay out of the SSR/Workers bundle.
+ * ClientOnly, so Video.js stays out of the SSR/Workers bundle.
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -61,7 +82,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="A [startTime, stopTime] window (a clip) is passed to Vidstack's clipStartTime/clipEndTime: the timeline is relinearized to 0:00 → the window length (0:10 here), not the underlying media position, and playback seeks to the start and pauses at the stop. Used by Lecture clips."
+      description="A [startTime, stopTime] window (a clip). Video.js 10 has no clipping, so the window is this repo's: the elapsed time and the scrubber run 0:00 to the window's length (0:10 here) rather than showing the media position, playback seeks to the start and pauses at the stop, and pressing play again restarts the window. Used by Lecture clips."
       title="Playback window (clip)"
     >
       <div className="max-w-2xl">
@@ -81,6 +102,26 @@ export const Default: Story = () => (
           subtitleTracks={SUBTITLE_TRACKS}
           title="Lecture with per-locale subtitles"
         />
+      </div>
+    </StorySection>
+
+    <StorySection
+      description="The control labels, tooltips and menus come from Video.js's own locale packs, one lazy chunk per locale. Open each player's settings and captions menus and read every label: none may be in English. The controls are pinned visible here, which they are not before playback starts."
+      title="Languages"
+    >
+      <div className="grid gap-8 md:grid-cols-2" style={CONTROLS_ALWAYS_VISIBLE}>
+        {LAUNCH_LOCALES.map((locale) => (
+          <StorySection key={locale} title={localeLabel(locale)} variant="subsection">
+            <VideoPlayer
+              hlsUrl={HLS_URL}
+              locale={locale}
+              poster={POSTER}
+              subtitleLang="en"
+              subtitles={SUBTITLES}
+              title="Guided breathing practice"
+            />
+          </StorySection>
+        ))}
       </div>
     </StorySection>
 
