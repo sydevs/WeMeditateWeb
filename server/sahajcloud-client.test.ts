@@ -400,21 +400,21 @@ describe('getRelatedMeditations', () => {
 
     const cards = await getRelatedMeditations({ id: '163', locale: 'en' })
 
-    expect(cards.map((c) => c.id)).toEqual([3])
+    expect(cards?.map((c) => c.id)).toEqual([3])
     // narratorName is optional in the payload. It defaults to '', so the card type holds.
-    expect(cards[0].narratorName).toBe('')
+    expect(cards?.[0].narratorName).toBe('')
   })
 
-  it('degrades to [] on an unknown lecture id (404)', async () => {
+  it('answers [] for an unknown lecture id (404), which is an answer', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(404, {})))
 
     expect(await getRelatedMeditations({ id: '999999', locale: 'en' })).toEqual([])
   })
 
-  it('degrades to [] (never throws) on a server error', async () => {
+  it('degrades to null (never throws) on a server error, so the route can tell it from []', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
 
-    expect(await getRelatedMeditations({ id: '163', locale: 'en' })).toEqual([])
+    expect(await getRelatedMeditations({ id: '163', locale: 'en' })).toBeNull()
   })
 })
 
@@ -481,10 +481,10 @@ describe('getRelatedLectures', () => {
     expect(url).toContain('limit=6')
   })
 
-  it('degrades to [] on a server error', async () => {
+  it('degrades to null on a server error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
 
-    expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })).toEqual([])
+    expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })).toBeNull()
   })
 })
 

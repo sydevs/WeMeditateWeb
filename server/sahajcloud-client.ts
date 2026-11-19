@@ -921,8 +921,10 @@ async function readRelatedCards(path: string, label: string): Promise<RelatedDoc
  * so the internal `label` never leaks. Meditation titles are not localized,
  * so the endpoint returns an empty list for a non-English locale. The
  * caller then renders no related section — this is graceful, not an error.
- * The function also returns `[]` for an unknown lecture ID (404), and for
- * any failure that survives retries.
+ * The function also returns `[]` for an unknown lecture ID (404).
+ *
+ * `null` is a failure that survived the retries, never an empty answer: the
+ * route caches an answer and must not cache that.
  *
  * @param options.id - The lecture document ID (the anchor)
  * @param options.locale - The locale to retrieve meditation cards in
@@ -933,7 +935,7 @@ export async function getRelatedMeditations(
     id: string
     limit?: number
   },
-): Promise<RelatedMeditationCard[]> {
+): Promise<RelatedMeditationCard[] | null> {
   const limit = options.limit ?? 8
 
   const read = async () => {
@@ -957,7 +959,7 @@ export async function getRelatedMeditations(
     source: 'getRelatedMeditations',
     message: 'getRelatedMeditations failed; rendering lecture without related',
     key: options.id,
-    fallback: [],
+    fallback: null,
     extra: { lectureId: options.id, locale: options.locale },
   })
 }
@@ -973,8 +975,8 @@ export async function getRelatedMeditations(
  * The endpoint returns the full lecture player projection, ranked by node
  * overlap with an audience-and-recency fallback. This function returns only
  * the card subset: ID, title, thumbnail, and playable duration. It returns
- * `[]` for an unknown meditation ID (404), and for any failure that
- * survives retries.
+ * `[]` for an unknown meditation ID (404), and `null` for a failure that
+ * survives retries, as {@link getRelatedMeditations} does.
  *
  * @param options.id - The meditation document ID (the anchor)
  * @param options.locale - The locale to retrieve lecture cards in
@@ -987,7 +989,7 @@ export async function getRelatedLectures(
     audiences: WebConfig['audiences']
     limit?: number
   },
-): Promise<RelatedLectureCard[]> {
+): Promise<RelatedLectureCard[] | null> {
   const audiences = audienceIdList(options.audiences)
 
   // Audience-gated. With none configured, the site cannot call the endpoint
@@ -1019,7 +1021,7 @@ export async function getRelatedLectures(
     source: 'getRelatedLectures',
     message: 'getRelatedLectures failed; rendering meditation without related',
     key: options.id,
-    fallback: [],
+    fallback: null,
     extra: { meditationId: options.id, locale: options.locale },
   })
 }
