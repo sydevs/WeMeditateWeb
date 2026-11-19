@@ -11,6 +11,13 @@ import { Logo } from '../../atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 import type { Locale } from '../../../server/sahajcloud-types'
 
+/**
+ * The heading level a card title takes. `h3` suits a card under a section
+ * heading; a grid that is a page's whole content sits under its `<h1>` and
+ * takes `h2`, or the outline skips a level.
+ */
+export type ItemHeadingLevel = 'h2' | 'h3'
+
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /** Card title. */
   title: string
@@ -77,14 +84,8 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
   /** Custom class name for the card container. */
   className?: string
 
-  /**
-   * The card title's heading level. `h3` suits a grid under a section
-   * heading, which is where most of them sit; a grid that is a page's whole
-   * content sits directly under its `<h1>` and takes `h2`, or the outline
-   * skips a level. Mirrors `Column`'s own prop.
-   * @default 'h3'
-   */
-  headingLevel?: 'h2' | 'h3'
+  /** @default 'h3' */
+  headingLevel?: ItemHeadingLevel
 }
 
 /**

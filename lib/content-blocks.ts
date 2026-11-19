@@ -346,7 +346,7 @@ export function leadSplashFromRouteData(
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */
-function asText(value: unknown): string {
+export function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
@@ -582,7 +582,7 @@ const USER_CHOICE_MEDITATION_SLOTS = [
  * `durationMinutes`, else derived from `duration` (seconds), else omitted.
  * A value below 1 (a sub-minute duration, or `0`) is omitted, since a
  * "0 min" badge is meaningless. */
-function meditationDurationMinutes(med: {
+export function meditationDurationMinutes(med: {
   durationMinutes?: number | null
   duration?: number | null
 }): number | undefined {

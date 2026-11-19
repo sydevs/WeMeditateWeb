@@ -103,6 +103,13 @@ export function documentHref(
 export const MEDITATIONS_SEGMENT = 'meditations'
 
 /**
+ * The list page's own path. Every href to it reads this, for the same reason
+ * `ROUTE_BUILDERS` above exists: the matcher and the links it serves move
+ * together or the links break while the route still answers.
+ */
+export const MEDITATIONS_INDEX_PATH = `/${MEDITATIONS_SEGMENT}`
+
+/**
  * Matches `/meditations` itself — the list of the meditations the mood finder
  * offers — with an optional locale prefix, and nothing under it.
  *

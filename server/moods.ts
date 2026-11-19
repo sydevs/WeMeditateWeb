@@ -17,29 +17,33 @@
  * distinct values across these fourteen rows.
  */
 
-import * as Sentry from '@sentry/cloudflare'
-import { getContext } from 'hono/context-storage'
-import { populatedImage, type MoodCard } from '../lib/content-blocks'
+import {
+  asText,
+  meditationDurationMinutes,
+  populatedImage,
+  type MoodCard,
+} from '../lib/content-blocks'
 import { documentHref } from '../lib/document-routes'
 import { timeOfDaySlot, type TimeOfDay } from '../lib/time-of-day'
 import { withRetry } from './error-utils'
+import { createWarnOnce } from './warn-once'
 import { sahajCloudFetch } from './sahajcloud-fetch'
-import type { SahajCloudEnv } from './sahajcloud-context'
+import { tryGetContext } from './sahajcloud-context'
 import type { Locale } from './sahajcloud-types'
 
 /** Every slot the site offers, in the order a day runs. */
 const ALL_SLOTS: TimeOfDay[] = ['morning', 'afternoon', 'evening']
 
-/** The meditation slot a mood names for each time of day. */
-const SLOT_FIELD: Record<TimeOfDay, string> = {
-  morning: 'morningMeditation',
-  afternoon: 'afternoonMeditation',
-  evening: 'eveningMeditation',
-}
+/** The field a mood names its meditation for one time of day in. */
+const slotField = (slot: TimeOfDay) => `${slot}Meditation` as const
 
 /**
- * The featured-mood filter the `content-index` block computes upstream.
- * `/meditations` has no block, so it spells the same query here.
+ * The featured-mood filter, and the only place the site spells it.
+ *
+ * It is the same filter the `content-index` block computes upstream, but the
+ * site reads it here for both surfaces rather than following the block's
+ * `apiEndpoint`: `/meditations` carries no block at all, and a second spelling
+ * is one only the block path would keep in step.
  */
 const FEATURED_MOODS_ENDPOINT =
   '/api/user-choices?where[isFeatured][equals]=true&where[type][equals]=mood'
@@ -47,7 +51,6 @@ const FEATURED_MOODS_ENDPOINT =
 const MOOD_SELECT = [
   'select[title]=true',
   'select[timings]=true',
-  'select[order]=true',
   'select[color]=true',
   // `url` is a virtual upload field and returns null without `filename`.
   'select[url]=true',
@@ -61,39 +64,29 @@ const MEDITATION_QUERY = [
   'select[durationMinutes]=true',
   'select[duration]=true',
   'select[thumbnail]=true',
-  'select[_status]=true',
   'populate[images][url]=true',
   'populate[images][filename]=true',
   'populate[images][width]=true',
   'populate[images][height]=true',
 ].join('&')
 
-/** A mood document, as the user-choices read above returns it. */
-export interface MoodDoc extends Record<string, unknown> {
-  id?: unknown
+/** A mood document, as the read above returns it. */
+interface MoodDoc {
+  id?: number
   title?: unknown
   timings?: unknown
   color?: unknown
   url?: unknown
+  morningMeditation?: unknown
+  afternoonMeditation?: unknown
+  eveningMeditation?: unknown
 }
 
 /**
- * Bounds the Sentry volume. This runs per render and nothing here caches it,
- * and a gap stands until an editor fixes the data, so one event per distinct
- * gap per isolate is what keeps a warning affordable enough to leave on
- * (`server/AGENTS.md`). Past the cap the set is emptied rather than pruned:
- * re-reporting a live gap is the harmless direction.
+ * Every warning this module sends. Each is on the SSR hot path and nothing
+ * caches these reads, so all of them are bounded, not only the data gaps.
  */
-const reportedMoodGaps = new Set<string>()
-const MAX_REPORTED_MOOD_GAPS = 64
-
-function warnOnce(signature: string, message: string, extra: Record<string, unknown>): void {
-  if (reportedMoodGaps.has(signature)) return
-  if (reportedMoodGaps.size >= MAX_REPORTED_MOOD_GAPS) reportedMoodGaps.clear()
-
-  reportedMoodGaps.add(signature)
-  Sentry.captureMessage(message, { level: 'warning', tags: { source: 'featuredMoodCards' }, extra })
-}
+const warnOnce = createWarnOnce('featuredMoodCards')
 
 /**
  * The visitor's own time of day, resolved from Cloudflare's `cf.timezone`.
@@ -107,20 +100,12 @@ function warnOnce(signature: string, message: string, extra: Record<string, unkn
  * moods, rather than to nothing.
  */
 export function visitorTimeOfDay(now: Date = new Date()): TimeOfDay {
-  let timezone: string | undefined
-
-  try {
-    // `cf` is untyped in this repo and this is its only reader, so it is
-    // narrowed here rather than widened globally for one field.
-    const raw = getContext<SahajCloudEnv>().req.raw as { cf?: { timezone?: unknown } }
-    const value = raw.cf?.timezone
-
-    timezone = typeof value === 'string' ? value : undefined
-  } catch {
-    // Outside a request (Ladle, a unit render) there is no context to read.
-    timezone = undefined
-  }
-
+  // `cf` is untyped in this repo and this is its only reader, so it is narrowed
+  // here rather than widened globally for one field. Outside a request (Ladle,
+  // a unit render) there is no context, and `tryGetContext` answers undefined.
+  const raw = tryGetContext()?.req.raw as { cf?: { timezone?: unknown } } | undefined
+  const value = raw?.cf?.timezone
+  const timezone = typeof value === 'string' ? value : undefined
   const slot = timeOfDaySlot(timezone, now)
 
   if (slot === null) {
@@ -134,11 +119,19 @@ export function visitorTimeOfDay(now: Date = new Date()): TimeOfDay {
   return slot
 }
 
-/** The moods whose `timings` include `slot`, or every mood when none is given. */
-export function moodsForSlot(docs: MoodDoc[], slot?: TimeOfDay): MoodDoc[] {
-  if (!slot) return docs
+/**
+ * The times of day a mood offers, narrowed to `slot` when one is given.
+ *
+ * Read off `timings`, never off which slot fields happen to be filled: a mood
+ * that names a time of day owes it a meditation, and a slot it names but has
+ * not filled is the gap the caller reports. Reading the fields instead would
+ * list one meditation twice for a mood holding it in two slots, and would make
+ * the commonest gap unreportable, because there would be nothing to report on.
+ */
+function moodSlots(doc: MoodDoc, slot?: TimeOfDay): TimeOfDay[] {
+  const named = Array.isArray(doc.timings) ? doc.timings : []
 
-  return docs.filter((doc) => Array.isArray(doc.timings) && doc.timings.includes(slot))
+  return (slot ? [slot] : ALL_SLOTS).filter((candidate) => named.includes(candidate))
 }
 
 interface MeditationDoc {
@@ -146,7 +139,6 @@ interface MeditationDoc {
   durationMinutes?: number | null
   duration?: number | null
   thumbnail?: unknown
-  _status?: unknown
 }
 
 /**
@@ -166,54 +158,10 @@ async function readMeditations(ids: (number | string)[]): Promise<Map<string, Me
   return new Map((json.docs ?? []).map((doc) => [String(doc.id), doc]))
 }
 
-/** Minutes for a card: the explicit field, else derived from seconds. */
-function durationMinutes(doc: MeditationDoc): number | undefined {
-  const minutes =
-    typeof doc.durationMinutes === 'number'
-      ? doc.durationMinutes
-      : typeof doc.duration === 'number' && doc.duration > 0
-        ? Math.round(doc.duration / 60)
-        : undefined
-
-  return minutes !== undefined && minutes >= 1 ? minutes : undefined
-}
-
-function asString(value: unknown): string {
-  return typeof value === 'string' ? value : ''
-}
-
 function meditationRef(doc: MoodDoc, slot: TimeOfDay): number | string | null {
-  const value = doc[SLOT_FIELD[slot]]
+  const value = doc[slotField(slot)]
 
   return typeof value === 'number' || typeof value === 'string' ? value : null
-}
-
-/**
- * The `(mood, slot)` pairs a set of moods offers, in the moods' own order.
- *
- * Keyed on `timings`, never on which slot fields happen to be filled: a mood
- * that names a time of day owes it a meditation, and a slot it names but has
- * not filled is the gap the caller reports. Pairing on the fields instead would
- * emit the same meditation twice for a mood holding one in two slots, and would
- * make the commonest gap unreportable.
- */
-function moodSlotPairs(docs: MoodDoc[], slot?: TimeOfDay): Array<[MoodDoc, TimeOfDay]> {
-  const pairs: Array<[MoodDoc, TimeOfDay]> = []
-
-  for (const doc of docs) {
-    // `moodsForSlot` already kept only the moods naming `slot`.
-    if (slot) {
-      pairs.push([doc, slot])
-      continue
-    }
-    for (const candidate of ALL_SLOTS) {
-      if (Array.isArray(doc.timings) && doc.timings.includes(candidate)) {
-        pairs.push([doc, candidate])
-      }
-    }
-  }
-
-  return pairs
 }
 
 /**
@@ -223,16 +171,15 @@ function moodSlotPairs(docs: MoodDoc[], slot?: TimeOfDay): Array<[MoodDoc, TimeO
  * featured mood's meditation for every slot it names — which is each of the
  * fourteen once, since a mood names exactly one meditation per time of day.
  *
- * ⚠ **`limit` caps the filtered set, not the read.** The editor's number means
- * "how many moods to show", and the fourteen featured moods are interleaved by
- * `order` upstream — so slicing before the slot filter starves the slot. The
- * block's own endpoint carries the server-side cap.
+ * ⚠ **`limit` caps the moods shown, after the slot filter, never the read.**
+ * The fourteen featured moods are interleaved by `order` upstream, so capping
+ * before the filter starves the time of day the visitor is actually in.
  *
  * A mood whose slot meditation does not come back is dropped rather than
  * linked to `/undefined`, and a response short of what the data holds is
  * reported rather than rendered as a silently short list.
  */
-export async function moodCardsFromDocs(
+async function moodCardsFromDocs(
   docs: MoodDoc[],
   options: { slot?: TimeOfDay; limit?: number; totalDocs?: number } = {},
 ): Promise<MoodCard[]> {
@@ -246,25 +193,31 @@ export async function moodCardsFromDocs(
     })
   }
 
-  const forSlot = moodsForSlot(docs, slot)
+  const forSlot = docs.filter((doc) => moodSlots(doc, slot).length > 0)
   const capped = typeof limit === 'number' && limit >= 0 ? forSlot.slice(0, limit) : forSlot
-  const pairs = moodSlotPairs(capped, slot)
-  const ids = pairs
-    .map(([doc, each]) => meditationRef(doc, each))
-    .filter((id): id is number | string => id !== null)
+  const pairs = capped.flatMap((doc) =>
+    moodSlots(doc, slot).map((each): [MoodDoc, TimeOfDay] => [doc, each]),
+  )
+  // Deduped: two moods may name one meditation, and `limit` is then the exact
+  // number of documents the read expects back.
+  const ids = [
+    ...new Set(
+      pairs
+        .map(([doc, each]) => meditationRef(doc, each))
+        .filter((id): id is number | string => id !== null),
+    ),
+  ]
 
-  // The block path reaches this without `featuredMoodCards`'s own catch, and
-  // `resolveContentIndexBlocks` is awaited in `data()` with none either — so a
-  // failed second read must degrade here, not throw the whole page away.
+  // `data()` awaits this with no catch of its own, so the second read degrades
+  // here rather than throwing the whole page away.
   let meditations: Map<string, MeditationDoc>
 
   try {
     meditations = await readMeditations(ids)
   } catch (error) {
-    Sentry.captureMessage('mood finder could not read the meditations', {
-      level: 'warning',
-      tags: { source: 'featuredMoodCards' },
-      extra: { slot: slot ?? null, error: error instanceof Error ? error.message : String(error) },
+    warnOnce(`meditations-read:${slot ?? 'all'}`, 'mood finder could not read the meditations', {
+      slot: slot ?? null,
+      error: error instanceof Error ? error.message : String(error),
     })
 
     return []
@@ -273,7 +226,7 @@ export async function moodCardsFromDocs(
 
   for (const [doc, each] of pairs) {
     const moodId = doc.id
-    const moodTitle = asString(doc.title)
+    const moodTitle = asText(doc.title)
 
     if (typeof moodId !== 'number' || moodTitle.length === 0) continue
 
@@ -281,7 +234,7 @@ export async function moodCardsFromDocs(
     const meditation = meditationId === null ? undefined : meditations.get(String(meditationId))
 
     const href = meditation ? documentHref('meditations', { id: meditation.id }) : null
-    const minutes = meditation ? durationMinutes(meditation) : undefined
+    const minutes = meditation ? meditationDurationMinutes(meditation) : undefined
 
     // No meditation, no route, or no length: the label names the meditation by
     // its length, so all three leave nothing to render. Never a dead link, and
@@ -300,8 +253,8 @@ export async function moodCardsFromDocs(
     cards.push({
       moodId,
       moodTitle,
-      iconUrl: asString(doc.url) || null,
-      color: asString(doc.color) || null,
+      iconUrl: asText(doc.url) || null,
+      color: asText(doc.color) || null,
       href,
       durationMinutes: minutes,
       thumbnail: populatedImage(meditation.thumbnail),
@@ -312,10 +265,12 @@ export async function moodCardsFromDocs(
 }
 
 /**
- * The featured moods, resolved to tiles.
+ * The featured moods, resolved to tiles. The one entry point: the finder block
+ * and `/meditations` both come through here.
  *
  * With a `slot`, the moods that offer that time of day — the finder's set.
  * Without one, every featured mood's meditation — the `/meditations` list.
+ * `limit` caps what is shown, never what is read.
  */
 export async function featuredMoodCards(options: {
   locale?: Locale
@@ -335,10 +290,9 @@ export async function featuredMoodCards(options: {
 
     return await moodCardsFromDocs(json.docs ?? [], { slot, limit, totalDocs: json.totalDocs })
   } catch (error) {
-    Sentry.captureMessage('featured moods read failed', {
-      level: 'warning',
-      tags: { source: 'featuredMoodCards' },
-      extra: { slot: slot ?? null, error: error instanceof Error ? error.message : String(error) },
+    warnOnce(`moods-read:${slot ?? 'all'}`, 'featured moods read failed', {
+      slot: slot ?? null,
+      error: error instanceof Error ? error.message : String(error),
     })
 
     return []

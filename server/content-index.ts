@@ -18,7 +18,7 @@
 import * as Sentry from '@sentry/cloudflare'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import { withRetry } from './error-utils'
-import { moodCardsFromDocs, visitorTimeOfDay, type MoodDoc } from './moods'
+import { featuredMoodCards, visitorTimeOfDay } from './moods'
 import type { Audience } from './payload-types'
 import type { Locale } from './sahajcloud-types'
 import {
@@ -41,10 +41,12 @@ import type { Track } from '../components/molecules/AudioPlayer/types'
  *   song album credit, artwork, and tags, or lecture user-choice titles.
  * - `depth` reaches those relations (songs need depth 2, for album to
  *   artwork).
+ *
+ * `moods` is deliberately absent: it does not read through this pipeline at
+ * all (see `resolveContentIndexMoods`).
  */
-const QUERY_BY_TYPE: Record<
-  ContentIndexBlockFields['type'],
-  { select: string; populate?: string; depth: number }
+const QUERY_BY_TYPE: Partial<
+  Record<ContentIndexBlockFields['type'], { select: string; populate?: string; depth: number }>
 > = {
   pages: {
     select: 'select[title]=true&select[slug]=true&select[meta]=true&select[tags]=true',
@@ -68,15 +70,6 @@ const QUERY_BY_TYPE: Record<
     select: 'select[title]=true&select[thumbnail]=true&select[userChoices]=true',
     populate: 'populate[user-choices][title]=true',
     depth: 1,
-  },
-  // A `moods` block resolves to featured user-choice moods, each carrying its
-  // own SVG (the record *is* the upload, so `url` needs `filename`), its accent
-  // colour, and the meditation id it names per time of day. Those meditations
-  // are read separately, at `locale=en` — see `server/moods.ts`.
-  moods: {
-    select:
-      'select[title]=true&select[timings]=true&select[order]=true&select[color]=true&select[url]=true&select[filename]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true',
-    depth: 0,
   },
   songs: {
     // A Song is an upload. `url` and `thumbnailURL` are virtual fields the
@@ -131,11 +124,11 @@ function stripQueryParam(endpoint: string, key: string): string {
 async function fetchContentIndexDocs(
   fields: ContentIndexBlockFields,
   options: ResolveOptions,
-): Promise<{ docs: Record<string, unknown>[]; totalDocs?: number }> {
+): Promise<Record<string, unknown>[]> {
   const { type, limit, apiEndpoint } = fields
 
   if (!apiEndpoint) {
-    return { docs: [] }
+    return []
   }
   // Lectures resolve through the /for-audience feed, keyed on the site's
   // fixed audiences. With none configured, the block degrades to empty.
@@ -143,7 +136,7 @@ async function fetchContentIndexDocs(
   const audiences = type === 'lectures' ? audienceIdList(options.audiences) : []
 
   if (type === 'lectures' && audiences.length === 0) {
-    return { docs: [] }
+    return []
   }
   // ⚠ A type this build does not know about must degrade, not throw. The lookup
   // sits above the `try`, and `pages/[slug]/+data.ts` awaits this with no catch,
@@ -152,7 +145,7 @@ async function fetchContentIndexDocs(
   const query = QUERY_BY_TYPE[type]
 
   if (!query) {
-    return { docs: [] }
+    return []
   }
   const { select, populate, depth } = query
   // Strip any depth SahajCloud baked into the endpoint so ours is the only one.
@@ -172,21 +165,15 @@ async function fetchContentIndexDocs(
     // below is reported once, outside the loop. The wrapper reports each
     // retried attempt itself, as it does for every caller.
     const json = await withRetry(() =>
-      sahajCloudFetch<{ docs?: Record<string, unknown>[]; totalDocs?: number }>(
+      sahajCloudFetch<{ docs?: Record<string, unknown>[] }>(
         path,
         `fetchContentIndexDocs(${type})`,
       ),
     )
     const docs = json.docs ?? []
-
-    // ⚠ A `moods` block's limit caps the moods *for the visitor's time of day*,
-    // which only `moodCardsFromDocs` can see. Slicing here would starve a slot.
-    if (type === 'moods') {
-      return { docs, totalDocs: json.totalDocs }
-    }
     const cap = typeof limit === 'number' ? limit : docs.length
 
-    return { docs: docs.slice(0, cap), totalDocs: json.totalDocs }
+    return docs.slice(0, cap)
   } catch (error) {
     Sentry.captureMessage('content-index fetch failed', {
       level: 'warning',
@@ -198,7 +185,7 @@ async function fetchContentIndexDocs(
       },
     })
 
-    return { docs: [] }
+    return []
   }
 }
 
@@ -207,7 +194,7 @@ export async function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
-  const { docs } = await fetchContentIndexDocs(fields, options)
+  const docs = await fetchContentIndexDocs(fields, options)
 
   // Meditations resolve to user-choice categories, then flatten into a
   // deduped, facet-tagged grid. Pages and lectures map one card per doc.
@@ -221,21 +208,26 @@ export async function resolveContentIndexItems(
 }
 
 /**
- * Gets and maps a `moods` content-index block's list to mood tiles for the
- * visitor's own time of day.
+ * The mood tiles for a `moods` block, for the visitor's own time of day.
+ *
+ * ⚠ This does **not** follow the block's computed `apiEndpoint`, and that is
+ * the point: `/meditations` renders the same tiles with no block at all, so
+ * `server/moods.ts` owns the featured-mood query for both and there is no
+ * second spelling for only one of them to keep in step. The editor's `limit`
+ * still reaches it — as what to show, which is all it can mean once the read
+ * is capped at the API's own ceiling.
+ *
+ * The slot resolves inside the `data()` call that awaits this, never in
+ * `+onBeforeRoute`, which also runs in the browser.
  */
-export async function resolveContentIndexMoods(
+function resolveContentIndexMoods(
   fields: ContentIndexBlockFields,
-  options: ResolveOptions = {},
+  options: ResolveOptions,
 ): Promise<MoodCard[]> {
-  const { docs, totalDocs } = await fetchContentIndexDocs(fields, options)
-
-  // The slot resolves here, inside the `data()` call that awaits this —
-  // never in `+onBeforeRoute`, which also runs in the browser.
-  return moodCardsFromDocs(docs as MoodDoc[], {
+  return featuredMoodCards({
+    locale: options.locale,
     slot: visitorTimeOfDay(),
     limit: typeof fields.limit === 'number' ? fields.limit : undefined,
-    totalDocs,
   })
 }
 
@@ -244,7 +236,7 @@ export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  const { docs } = await fetchContentIndexDocs(fields, options)
+  const docs = await fetchContentIndexDocs(fields, options)
 
   return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }

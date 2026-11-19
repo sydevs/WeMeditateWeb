@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { ItemHeadingLevel } from '../../ContentCard/ContentCard'
 import { Accordion, type AccordionItemData } from '../../Accordion'
 import { ColumnCarousel } from '../../ColumnCarousel'
 import type { ColumnProps } from '../../Column'
@@ -14,7 +15,6 @@ import {
  * nests its items one level under it; a section with none has to start the
  * level itself, or the items read as orphans (axe `heading-order`).
  */
-type ItemHeadingLevel = 'h2' | 'h3'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */

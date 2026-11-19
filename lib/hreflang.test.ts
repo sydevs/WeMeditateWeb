@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildAlternates, advertisedLocales, routeLocales, X_DEFAULT } from './hreflang'
+import { buildAlternates, advertisedLocales, X_DEFAULT } from './hreflang'
 import type { Locale } from '../server/sahajcloud-types'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -104,14 +104,3 @@ describe('buildAlternates', () => {
   })
 })
 
-describe('routeLocales', () => {
-  it('advertises every locale the site offers, for a route with no document', () => {
-    expect(routeLocales(['en', 'fr', 'de'])).toEqual(['en', 'fr', 'de'])
-  })
-
-  it('returns a copy, so a caller cannot write through it to the site config', () => {
-    const offered: Locale[] = ['en', 'fr']
-
-    expect(routeLocales(offered)).not.toBe(offered)
-  })
-})

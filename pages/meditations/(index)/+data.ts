@@ -1,5 +1,4 @@
 import type { PageContextServer } from 'vike/types'
-import { routeLocales } from '../../../lib/hreflang'
 import type { MoodCard } from '../../../lib/content-blocks'
 import { featuredMoodCards } from '../../../server/moods'
 import { loadSiteContext } from '../../../server/site-context'
@@ -7,9 +6,13 @@ import type { Locale, WebConfig } from '../../../server/sahajcloud-types'
 
 export interface MeditationsIndexData {
   moods: MoodCard[]
-  locale: Locale
   settings: WebConfig
-  alternateLocales: Locale[]
+  /**
+   * Every locale the site offers. `/meditations` has no SahajCloud document, so
+   * nothing publishes it per locale and there is no `advertisedLocales` filter
+   * to apply — it renders in all of them.
+   */
+  alternateLocales: readonly Locale[]
 }
 
 /**
@@ -18,13 +21,16 @@ export interface MeditationsIndexData {
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationsIndexData> {
   const { locale } = pageContext
-  const site = await loadSiteContext(pageContext)
-  const moods = await featuredMoodCards({ locale })
+  // In parallel: `featuredMoodCards` reads only the locale, so waiting on the
+  // site context would add a round trip to TTFB.
+  const [site, moods] = await Promise.all([
+    loadSiteContext(pageContext),
+    featuredMoodCards({ locale }),
+  ])
 
   return {
     moods,
-    locale,
     settings: site.settings,
-    alternateLocales: routeLocales(site.settings.availableLocales),
+    alternateLocales: site.settings.availableLocales,
   }
 }

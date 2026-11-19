@@ -1,8 +1,9 @@
 import { ComponentProps } from 'react'
 import Masonry from 'react-masonry-css'
-import { ContentCard, ContentCardProps } from '../ContentCard/ContentCard'
+import { ContentCard, ContentCardProps, ItemHeadingLevel } from '../ContentCard/ContentCard'
 
-export interface ContentGridItem extends Omit<ContentCardProps, 'className' | 'id' | 'sizes'> {
+export interface ContentGridItem
+  extends Omit<ContentCardProps, 'className' | 'id' | 'sizes' | 'headingLevel'> {
   /** Unique identifier for the item */
   id: string | number
   /** `sizes` for this item's thumbnail. Overrides the grid's own. */
@@ -31,7 +32,7 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
    * under a section heading.
    * @default 'h3'
    */
-  headingLevel?: ContentGridItem['headingLevel']
+  headingLevel?: ItemHeadingLevel
 }
 
 /**
@@ -128,7 +129,7 @@ export function ContentGrid({
                   a spread would hand on as the card's own (#206). */}
               <ContentCard
                 {...cardProps}
-                headingLevel={cardProps.headingLevel ?? headingLevel}
+                headingLevel={headingLevel}
                 sizes={itemSizes ?? sizes}
                 variant={cardVariant}
               />

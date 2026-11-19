@@ -4,6 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // warnings on the degrade paths.
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
+  // No request in this lane, so the finder's slot falls back to evening.
+  tryGetContext: () => undefined,
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 

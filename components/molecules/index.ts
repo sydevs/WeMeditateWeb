@@ -18,7 +18,7 @@ export type { ColumnProps } from './Column'
 export { ColumnCarousel } from './ColumnCarousel'
 export type { ColumnCarouselProps } from './ColumnCarousel'
 export { ContentCard } from './ContentCard/ContentCard'
-export type { ContentCardProps } from './ContentCard/ContentCard'
+export type { ContentCardProps, ItemHeadingLevel } from './ContentCard/ContentCard'
 
 export { HeroQuote } from './blocks/HeroQuote/HeroQuote'
 export type { HeroQuoteProps } from './blocks/HeroQuote/HeroQuote'

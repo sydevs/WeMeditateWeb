@@ -2,6 +2,7 @@ import { useData } from 'vike-react/useData'
 import type { MeditationsIndexData } from './+data'
 import { Container, Heading } from '../../../components/atoms'
 import { ContentGrid } from '../../../components/molecules'
+import { moodCardKey, moodCardLabel } from '../../../components/organisms/MoodFinder/MoodFinder'
 import { useT } from '../../../hooks/useT'
 import { usePageHead } from '../../../lib/head'
 
@@ -31,11 +32,8 @@ export function Page() {
 
       <ContentGrid
         items={moods.map((mood) => ({
-          id: `${mood.moodId}-${mood.href}`,
-          title: t('meditation.general.mood_meditation_label', {
-            mood: mood.moodTitle,
-            count: mood.durationMinutes,
-          }),
+          id: moodCardKey(mood),
+          title: moodCardLabel(t, mood),
           href: mood.href,
           thumbnailSrc: mood.thumbnail?.url ?? '',
           thumbnailAlt: mood.thumbnail?.alt || mood.moodTitle,

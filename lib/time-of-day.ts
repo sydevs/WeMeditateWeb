@@ -34,11 +34,7 @@ export function timeOfDaySlot(timezone: string | undefined, now: Date): TimeOfDa
   }
 
   try {
-    const hour = Number(
-      new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: timezone })
-        .formatToParts(now)
-        .find((part) => part.type === 'hour')?.value,
-    )
+    const hour = Number(hourFormat(timezone).format(now))
 
     // `hourCycle: h23` is what `hour12: false` asks for, but some runtimes
     // answer `24` for midnight, which is hour 0.
@@ -46,4 +42,29 @@ export function timeOfDaySlot(timezone: string | undefined, now: Date): TimeOfDa
   } catch {
     return null
   }
+}
+
+/**
+ * One formatter per zone.
+ *
+ * An `Intl` constructor is among the most expensive calls in a Worker isolate
+ * (`lib/i18n.ts` says the same of `Intl.PluralRules`), and this runs on every
+ * render that carries the finder. The map is keyed only after the constructor
+ * accepted the zone, so its key space is the IANA list and cannot grow past it.
+ */
+const HOUR_FORMATS = new Map<string, Intl.DateTimeFormat>()
+
+function hourFormat(timezone: string): Intl.DateTimeFormat {
+  const existing = HOUR_FORMATS.get(timezone)
+  if (existing) return existing
+
+  const format = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone: timezone,
+  })
+
+  HOUR_FORMATS.set(timezone, format)
+
+  return format
 }

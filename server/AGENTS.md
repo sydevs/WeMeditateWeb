@@ -143,7 +143,11 @@ Three rules still apply:
   `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
   without a body dump. Four of the eight reads take the optional form; `fetchContentIndexDocs`,
   `getAtlasSitemapUrls` and the mood finder's two (`server/moods.ts`) take `sahajCloudFetch`,
-  because a 404 from any of them is a data gap, not an answer. The status rides on the error because `detectErrorType` reads it
+  because a 404 from any of them is a data gap, not an answer.
+  ⚠ **A warning on one of these reads goes through `createWarnOnce`**
+  (`server/warn-once.ts`), which reports each distinct gap once per isolate. It is the Worker SDK
+  deliberately: `server/error-utils.ts` is reachable from the browser and so reaches Sentry
+  through `@sentry/react` instead. The status rides on the error because `detectErrorType` reads it
   structurally and otherwise falls back to matching `50[0-9]` in the message — a plain `Error`
   classifies a Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one
   shape a Railway restart behind the edge produces.
