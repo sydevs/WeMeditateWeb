@@ -20,7 +20,6 @@ import {
 import { Button, Icon, Link, Logo } from '../../atoms'
 import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 import type { NavItem } from '../Header'
-import { barRow, trailingIconInset } from '../Header/bar'
 import type { SocialLink } from '../Footer'
 import type { LanguageOption } from '../../molecules/LanguageDropdown'
 import { useLocale } from '../../../hooks/usePageContext'
@@ -138,7 +137,7 @@ export function MobileMenu({
                 {/* The header bar's own geometry — height, gutter, the ☰'s
                     offset — so × replaces ☰ in place. It is also the only way
                     out a pointer has: the trap has the trigger inert. */}
-                <div className={`${barRow} shrink-0 justify-between px-6`}>
+                <div className="flex min-h-14 shrink-0 items-center justify-between px-6">
                   <Logo
                     className="shrink-0"
                     href={logoHref}
@@ -148,7 +147,7 @@ export function MobileMenu({
                   />
                   <Button
                     aria-label={t('common.a11y.close')}
-                    className={trailingIconInset}
+                    className="-mr-2.5"
                     icon={XMarkIcon}
                     variant="ghost"
                     onClick={close}

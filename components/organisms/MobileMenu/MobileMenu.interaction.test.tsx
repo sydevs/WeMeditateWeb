@@ -231,6 +231,17 @@ describe('MobileMenu · opening and closing', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
+  it('opens on a copy of the bar, so the close control lands where the trigger was', () => {
+    // The other half of this pair is asserted on the bar itself, in
+    // `Header.test.tsx`. Both rows draw `min-h-14` and both trailing controls
+    // `-mr-2.5`; × sits on ☰ only while the two agree.
+    open()
+    const row = screen.getByRole('dialog').firstElementChild
+
+    expect(row?.className.split(' ')).toContain('min-h-14')
+    expect(screen.getByRole('button', { name: 'Close' }).className.split(' ')).toContain('-mr-2.5')
+  })
+
   it('draws the close control a covered trigger leaves it owing', () => {
     open()
 
