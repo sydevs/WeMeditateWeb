@@ -5,6 +5,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
 import type { SahajCloudEnv } from './sahajcloud-context'
+import { SUBMISSION_BODY_LIMIT, submissionSchema } from './validation'
 
 /**
  * ⚠ The gate on `/api/live-preview/populate`, which is new attack surface.
@@ -223,7 +224,9 @@ describe('POST /api/live-preview/populate — the forward', () => {
  * prose.
  */
 
-function submit(options: { body?: unknown; token?: string; clientIp?: string } = {}) {
+function submit(
+  options: { body?: unknown; token?: string; clientIp?: string; contentType?: string } = {},
+) {
   const app = new Hono<SahajCloudEnv>()
 
   registerApiRoutes(app)
@@ -231,7 +234,7 @@ function submit(options: { body?: unknown; token?: string; clientIp?: string } =
   return app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': options.contentType ?? 'application/json',
       Origin: 'https://wemeditate.com',
       Referer: 'https://wemeditate.com/contact',
       ...(options.token ? { [TURNSTILE_TOKEN_HEADER]: options.token } : {}),
@@ -362,17 +365,97 @@ describe('POST /api/submissions — the body gate', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses a non-JSON body, without calling SahajCloud', async () => {
+  it('refuses a body that does not parse, without calling SahajCloud', async () => {
     const app = new Hono<SahajCloudEnv>()
 
     registerApiRoutes(app)
 
     const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: 'not json',
     })
 
     expect(response.status).toBe(400)
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('refuses a body not declared JSON, without calling SahajCloud', async () => {
+    const response = await submit({ token: 'turnstile-token', contentType: 'text/plain' })
+
+    expect(response.status).toBe(415)
+    expect(await response.json()).toEqual({ ok: false, code: 'invalid_request' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('takes a JSON content type with parameters', async () => {
+    const response = await submit({
+      token: 'turnstile-token',
+      contentType: 'Application/JSON; charset=utf-8',
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  it('refuses a body past the size bound unread, without calling SahajCloud', async () => {
+    const response = await submit({
+      token: 'turnstile-token',
+      body: {
+        form: 12,
+        type: 'contact',
+        submissionData: [{ field: 'message', value: 'x'.repeat(SUBMISSION_BODY_LIMIT) }],
+      },
+    })
+
+    expect(response.status).toBe(413)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(await response.json()).toEqual({ ok: false, code: 'invalid_request' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('never refuses a body the schema accepts for its size', async () => {
+    // Every bound at its maximum, in the character JSON escapes longest.
+    const worst = '\u0001'
+    const body = {
+      form: 12,
+      type: 'contact',
+      senderEmail: `${'a'.repeat(64)}@${'b'.repeat(185)}.org`,
+      submissionData: Array.from({ length: 40 }, (_, index) => ({
+        field: `${index}`.padEnd(100, worst),
+        value: worst.repeat(5000),
+      })),
+    }
+
+    expect(submissionSchema.safeParse(body).success).toBe(true)
+
+    const response = await submit({ token: 'turnstile-token', body })
+
+    expect(response.status).toBe(200)
+    expect(request).toHaveBeenCalledOnce()
+  })
+})
+
+describe('POST /api/submissions — the captcha token', () => {
+  it('answers a tokenless submission as SahajCloud would, without calling it', async () => {
+    const response = await submit()
+
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({ ok: false, code: 'captcha_failed' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('reads an empty token as none', async () => {
+    const app = new Hono<SahajCloudEnv>()
+
+    registerApiRoutes(app)
+
+    const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', [TURNSTILE_TOKEN_HEADER]: '' },
+      body: JSON.stringify({ form: 12, type: 'contact', submissionData: [] }),
+    })
+
+    expect(response.status).toBe(403)
     expect(request).not.toHaveBeenCalled()
   })
 })

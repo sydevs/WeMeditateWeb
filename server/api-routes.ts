@@ -20,7 +20,8 @@
  * normally.
  */
 
-import type { Hono } from 'hono'
+import type { Context, Hono } from 'hono'
+import { bodyLimit } from 'hono/body-limit'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import {
   documentReadArgs,
@@ -39,7 +40,7 @@ import {
 } from '../lib/submissions'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
-import { idSchema, submissionSchema } from './validation'
+import { idSchema, SUBMISSION_BODY_LIMIT, submissionSchema } from './validation'
 import type { Locale } from './sahajcloud-types'
 import { isLocale } from './sahajcloud-types'
 
@@ -201,6 +202,26 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
 }
 
 /**
+ * A refusal the submission route answers itself, without calling SahajCloud.
+ *
+ * `bodyLimit` answers before the handler runs, so this sets `no-store` too.
+ */
+function refuseSubmission(
+  c: Context<SahajCloudEnv>,
+  code: 'captcha_failed' | 'invalid_request',
+  status: 400 | 403 | 413 | 415,
+) {
+  c.header('Cache-Control', 'no-store')
+
+  return c.json<SubmissionResult>({ ok: false, code }, status)
+}
+
+/** Whether a request's `Content-Type` names JSON, whatever its parameters. */
+function isJson(contentType: string | undefined): boolean {
+  return contentType?.split(';')[0].trim().toLowerCase() === 'application/json'
+}
+
+/**
  * The public intake, proxied same-origin.
  *
  * The browser cannot post to `POST /api/user-submissions` itself: the create
@@ -222,17 +243,37 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
  * Nothing of the created row is echoed back. An API client holds create and
  * no read on `user-submissions` on purpose, and the browser needs only
  * whether it landed.
+ *
+ * A body is refused unread past `SUBMISSION_BODY_LIMIT`, and unparsed unless
+ * it is declared JSON, so neither costs a buffer the schema would refuse.
  */
 function registerSubmissions(app: Hono<SahajCloudEnv>): void {
+  // Registered before the handler, so it runs first.
+  app.use(
+    SUBMISSION_PATH,
+    bodyLimit({
+      maxSize: SUBMISSION_BODY_LIMIT,
+      onError: (c) => refuseSubmission(c, 'invalid_request', 413),
+    }),
+  )
+
   app.post(SUBMISSION_PATH, async (c) => {
     c.header('Cache-Control', 'no-store')
 
+    if (!isJson(c.req.header('content-type'))) {
+      return refuseSubmission(c, 'invalid_request', 415)
+    }
+
     const body = submissionSchema.safeParse(await c.req.json().catch(() => null))
 
-    if (!body.success) {
-      return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
-    }
+    if (!body.success) return refuseSubmission(c, 'invalid_request', 400)
+
     const token = c.req.header(TURNSTILE_TOKEN_HEADER)
+
+    // SahajCloud refuses every public write without a token, so this is its
+    // answer, given without spending the round trip.
+    if (!token) return refuseSubmission(c, 'captcha_failed', 403)
+
     const clientIp = c.req.header('cf-connecting-ip')
 
     try {
@@ -246,7 +287,7 @@ function registerSubmissions(app: Hono<SahajCloudEnv>): void {
         json: body.data,
         init: {
           headers: {
-            ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
+            [TURNSTILE_TOKEN_HEADER]: token,
             ...(clientIp ? { [CLIENT_IP_HEADER]: clientIp } : {}),
           },
         },
