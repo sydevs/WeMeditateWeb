@@ -54,6 +54,7 @@ const { Page: MapPage } = await import('../../pages/map/+Page')
 const { Page: MeditationEmbedPage } = await import('../../pages/meditations/[id]/embed/+Page')
 const { Page: LectureEmbedPage } = await import('../../pages/lectures/[id]/embed/+Page')
 
+// ⚠ `tests/_helpers/axe.ts` mirrors these tags for component fragments; change both together.
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 
 /**
@@ -280,7 +281,7 @@ describe('accessibility · page types', () => {
 
   it('keeps the Dropdown atom on the path the gate walks', () => {
     // `nested-interactive` is one of this gate's own lines, and the `Dropdown`
-    // atom is where that defect lived. The footer's language menu is the only
+    // atom is where that defect lived. The footer's language picker is the only
     // thing any target renders through it, so without this the rule could go
     // on passing over a tree that no longer holds the element it is aimed at.
     const home = TARGETS.find((target) => target.name === 'home')

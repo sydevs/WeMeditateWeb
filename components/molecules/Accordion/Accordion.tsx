@@ -81,7 +81,7 @@ export function Accordion({
   // twice, and the caller would hear one click as two toggles.
   const toggleItem = (itemId: string) => {
     const isOpening = !openItems.has(itemId)
-    const next = new Set(allowMultiple ? openItems : [])
+    const next = new Set(isOpening && !allowMultiple ? [] : openItems)
 
     if (isOpening) {
       next.add(itemId)

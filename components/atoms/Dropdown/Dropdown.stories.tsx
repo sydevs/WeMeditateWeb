@@ -16,7 +16,11 @@ export default {
   title: 'Atoms',
 } satisfies StoryDefault
 
-/** Dropdown component for creating accessible dropdown menus with keyboard support. */
+/**
+ * A popover panel on a trigger: by default a disclosure of links, or with
+ * `role="dialog"` a non-modal dialog for rich content. It is never an ARIA
+ * menu, so it has no arrow-key navigation; Tab moves through the panel.
+ */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Sizes">

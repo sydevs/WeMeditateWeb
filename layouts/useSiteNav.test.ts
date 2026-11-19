@@ -10,8 +10,7 @@ import { renderHook } from '@testing-library/react'
 import type { WebConfig } from '../server/sahajcloud-types'
 import { useSiteNav } from './useSiteNav'
 
-// A real request's context, so the hook can read it directly rather than
-// through the optional accessor a bare component render needs.
+// A request's page context, for whatever in the hook reads one.
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'en', urlPathname: '/' }),
 }))

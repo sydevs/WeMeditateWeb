@@ -93,6 +93,15 @@ describe('Accordion', () => {
     expect(header('What do I bring?').getAttribute('aria-expanded')).toBe('true')
   })
 
+  it('closes only the item clicked, whatever else opened by default', () => {
+    render(<Accordion defaultOpenItems={['cost', 'bring']} items={items} />)
+
+    fireEvent.click(header('How much does it cost?'))
+
+    expect(header('How much does it cost?').getAttribute('aria-expanded')).toBe('false')
+    expect(header('What do I bring?').getAttribute('aria-expanded')).toBe('true')
+  })
+
   it('reports each toggle once, even where React runs an updater twice', () => {
     const onToggle = vi.fn()
 
