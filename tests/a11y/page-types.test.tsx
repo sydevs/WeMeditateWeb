@@ -26,7 +26,6 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
 import { EN_TRANSLATIONS } from '../../lib/i18n'
 import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
-import { A11Y_REPORT_PATH } from './report-path'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
 
 /** Route data, swapped per target before the render. */
@@ -242,6 +241,12 @@ async function violationsFor(target: (typeof TARGETS)[number]): Promise<string[]
  */
 const report: { target: string; violations: string[] }[] = []
 
+/**
+ * Where the counts land. `scripts/a11y-summary.mjs` defaults to this name and
+ * `.gitignore` lists it, so the three have to agree.
+ */
+const A11Y_REPORT_PATH = 'a11y-report.json'
+
 describe('accessibility · page types', () => {
   afterAll(() => {
     writeFileSync(A11Y_REPORT_PATH, `${JSON.stringify({ targets: report }, null, 2)}\n`)
@@ -260,6 +265,7 @@ describe('accessibility · page types', () => {
     // Without this, dropping `best-practice` would silently stop the gate
     // seeing `heading-order` and `landmark-unique`, two of the goal's own lines.
     expect(TAGS).toContain('best-practice')
+
     expect(Object.keys(options(UNDECIDABLE).rules ?? {})).toEqual(UNDECIDABLE)
   })
 
