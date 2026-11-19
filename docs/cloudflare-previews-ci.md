@@ -13,19 +13,59 @@ CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.y
 
 - **`gate`** — runs `pnpm lint`, `pnpm typecheck`, and `pnpm test:run` (unit tests only —
   `vitest.config.ts` excludes the smoke specs), then writes the accessibility results to the job
-  summary, then `pnpm ladle:build` and `pnpm check:wrangler`. **The accessibility gate is one of
+  summary, then `pnpm ladle:build` and `pnpm check:wrangler`, and last the two
+  [contract steps](#the-contract-gate). **The accessibility gate is one of
   those unit specs** — [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
   `axe-core` over every page type and fails on any finding, so it blocks a change the way any
   spec does. It is here rather than in `smoke` because `Smoke (web)` skips silently when no
   preview is discoverable, and a check that can skip cannot stop a change. `scripts/a11y-summary.mjs`
   only reports: it runs on a red test step too, because the per-page counts are what a reviewer
-  needs most then. The last is a `wrangler deploy --dry-run` over
+  needs most then. `check:wrangler` is a `wrangler deploy --dry-run` over
   [wrangler.design.jsonc](../wrangler.design.jsonc): nothing else in this repo reads that file,
   so without it a typo or an `assets.directory` that drifts from what `ladle:build` writes would
   surface only in a Cloudflare build log, on `main`. It must follow `ladle:build`, which writes
   the `build/` the dry run reads, and it needs no credential and no network.
 - **`smoke`** — a 2-target matrix that fetch-tests the deployed Cloudflare previews. CI runs no
   production build of the app. Cloudflare builds the previews itself.
+
+## The contract gate
+
+Two committed files belong to SahajCloud, not to this repo: `server/payload-types.ts`, which
+`pnpm types:cms` downloads from SahajCloud `main`, and `lib/translations.en.json`, which
+`pnpm sync:translations` reads from production SahajCloud. The last two steps of `gate` run each
+generator and fail when the committed file differs from what it wrote (`git diff --exit-code`).
+First, [scripts/contract-drift.ts](../scripts/contract-drift.ts) lists every differing key in the
+job summary — a translation key path, or a type member such as
+`TableOfContentsHeadings[].occurrence` — and annotates the file.
+
+**What fails it:** a hand edit to either file, and a SahajCloud change this repo has not synced.
+Typecheck and the unit tests cannot catch either, because both read the committed copy. That is
+how `blocks.general.wisdom_sidetext`, hand-added ahead of sydevs/SahajCloud#1218, passed every
+check while the deployed `/heart-chakra` rendered the key path itself.
+
+**The one fix:** land the producer first — the schema merged to SahajCloud `main` for the types,
+and the English copy published in production SahajCloud for the mirror. Then run
+`pnpm types:cms`, or `PUBLIC__SAHAJCLOUD_URL=https://cloud.sydevelopers.com pnpm sync:translations`
+with `SAHAJCLOUD_API_KEY` set, and commit what it writes. Never edit either file to turn the gate
+green. The lean local gate (`.claude/skills/pr-prep/check.sh`) runs neither generator, so run
+them yourself to see what CI will.
+
+⚠ **One upstream change reddens every open PR at once.** The comparison is with SahajCloud when
+the job runs, not when the branch was cut: a schema merge on SahajCloud `main`, or an editor
+rewording English copy in production, fails every PR's `gate` until a re-sync PR lands on `main`.
+Then each open PR needs `main` brought in (GitHub's **Update branch**): a re-run alone checks out
+the merge commit it was first given, which still holds the old copy. That cost is accepted: the
+gate is blocking on purpose.
+
+- **Retries.** Each generator gets four tries, 5, 10 and 15 seconds apart. A fetch that never
+  succeeds fails with a message saying so — that is the network, or the key (read the
+  `[PayloadCMS] … → <status>` lines), never drift.
+- **No secret, no mirror check.** The translations step needs the `SAHAJCLOUD_API_KEY` secret,
+  which GitHub withholds from a fork's pull request and from Dependabot's. There that one step
+  skips with a warning; the types step needs no secret and still runs. On any other run an empty
+  secret fails the step, since a deleted secret would otherwise switch the check off unnoticed.
+- **Last in the job.** A red contract never skips the Ladle build or the wrangler check above it,
+  and the translations step runs even when the types step failed, so one run names both drifts.
 
 ## Two Cloudflare previews per PR
 

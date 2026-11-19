@@ -63,6 +63,55 @@ jobs:
           WRANGLER_SEND_METRICS: 'false'
         run: pnpm check:wrangler
 
+      # The contract gate (docs/cloudflare-previews-ci.md): each step regenerates a file SahajCloud
+      # owns, names the drifted keys in the summary, and lets `git diff` fail on any difference.
+      # Last on purpose: an upstream change reddens every open PR at once, and here it cannot also
+      # skip the Ladle build and the wrangler check above. Four tries per fetch, so a network blip
+      # is not reported as drift.
+      - name: SahajCloud types match SahajCloud main
+        id: contract-types
+        run: |
+          for attempt in 1 2 3 4; do
+            pnpm types:cms && break
+            if [ "$attempt" = 4 ]; then
+              echo "::error::Could not fetch payload-types.ts from SahajCloud main after 4 tries. That is a network failure, not drift: re-run the job."
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
+          pnpm exec tsx scripts/contract-drift.ts server/payload-types.ts
+          git diff --exit-code server/payload-types.ts
+
+      # Runs whether or not the types step above passed, so one red run names both drifts.
+      - name: English mirror matches production SahajCloud
+        if: ${{ !cancelled() && steps.contract-types.outcome != 'skipped' }}
+        env:
+          PUBLIC__SAHAJCLOUD_URL: https://cloud.sydevelopers.com
+          SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
+          # GitHub withholds repository secrets from a fork's PR and from Dependabot's.
+          NO_SECRETS_BY_DESIGN: ${{ github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]') }}
+        run: |
+          if [ -z "$SAHAJCLOUD_API_KEY" ]; then
+            if [ "$NO_SECRETS_BY_DESIGN" = "true" ]; then
+              MSG="This pull request gets no SAHAJCLOUD_API_KEY (a fork's or Dependabot's), so lib/translations.en.json was NOT compared with production SahajCloud."
+              echo "::warning::$MSG"
+              printf '### SahajCloud contract: `lib/translations.en.json`\n\n⚠️ %s\n\n' "$MSG" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::error::The SAHAJCLOUD_API_KEY repository secret is empty, so the English mirror cannot be checked. Restore the secret."
+            exit 1
+          fi
+          for attempt in 1 2 3 4; do
+            pnpm sync:translations && break
+            if [ "$attempt" = 4 ]; then
+              echo "::error::Could not read wm-web-translations from production SahajCloud after 4 tries. Read the [PayloadCMS] lines above: a 401 or 403 is the key, anything else is the network. Neither is drift."
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
+          pnpm exec tsx scripts/contract-drift.ts lib/translations.en.json
+          git diff --exit-code lib/translations.en.json
+
   # This repo has two Cloudflare previews per PR. The URL host tells them apart:
   #   - web   → the Vike app, Workers Builds        (…-wemeditate-web.<acct>.workers.dev)
   #   - ladle → the design system, Workers Builds   (…-wemeditate-design.<acct>.workers.dev)

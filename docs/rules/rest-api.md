@@ -92,7 +92,9 @@ SahajCloud-owned" section of [AGENTS.md](../../AGENTS.md) for the rule and
 Run `pnpm sync:translations` after the SahajCloud English copy changes, and commit the diff. It
 needs both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin,
 and it prints the API client the key belongs to before writing — a snapshot silently taken from a
-local SahajCloud would commit placeholder English. It is not run in CI.
+local SahajCloud would commit placeholder English. CI runs it against production too, and fails
+the PR when the committed mirror differs — see "The contract gate" in
+[docs/cloudflare-previews-ci.md](../cloudflare-previews-ci.md#the-contract-gate).
 
 ## Update PayloadCMS types
 
@@ -100,7 +102,8 @@ Run this command when the SahajCloud schema changes:
 ```bash
 pnpm types:cms
 ```
-It downloads the latest `payload-types.ts` from SahajCloud.
+It downloads the latest `payload-types.ts` from SahajCloud `main`. CI runs it too, and fails the
+PR when the committed file differs, a hand edit included.
 
 ## API authentication
 

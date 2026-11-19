@@ -15,8 +15,9 @@
  * the API client the key belongs to before it writes anything, so a local
  * key pointed at production (or the reverse) is visible in the output.
  *
- * This script is not run in CI. An operator runs it after the SahajCloud English
- * copy changes, and commits the diff.
+ * An operator runs it after the SahajCloud English copy changes, and commits the
+ * diff. CI's `gate` runs it too and fails when the committed snapshot differs (see
+ * "The contract gate" in docs/cloudflare-previews-ci.md).
  */
 
 import { writeFile } from 'node:fs/promises'

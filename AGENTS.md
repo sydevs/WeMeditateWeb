@@ -50,6 +50,11 @@ pnpm sync:translations
 .claude/skills/pr-prep/check.sh
 ```
 
+**CI fails a PR whose SahajCloud-generated files have drifted.** `gate` re-runs `pnpm types:cms`
+(SahajCloud `main`) and `pnpm sync:translations` (production) and fails on any difference, a hand
+edit included. The lean gate above runs neither. The one fix — land the producer first, then
+regenerate — is in [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md#the-contract-gate).
+
 ## Environment Setup
 
 [.env.example](.env.example) lists every variable. It states which side uses each variable and
