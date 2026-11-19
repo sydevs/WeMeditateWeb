@@ -1,12 +1,19 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Locale, ResolvedLecture } from '../../../server/sahajcloud-types'
+import type { Lecture, Locale } from '../../../server/sahajcloud-types'
 import { getLecture } from '../../../server/sahajcloud-client'
 import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface LectureData {
-  lecture: ResolvedLecture
+  /**
+   * The collection's own shape, as both sibling preview routes carry theirs.
+   * `resolveLecture` flattens it at render, which is where a streamed message
+   * has to be flattened too — `mergeData` lays unsaved fields over the
+   * document, so a view model in its place would take raw fields on top of
+   * itself.
+   */
+  lecture: Lecture
   locale: Locale
   id: string
 }
@@ -14,8 +21,7 @@ export interface LectureData {
 /**
  * Validate the route id and fetch the lecture. Shared by the full
  * (/lectures/:id) and embed (/lectures/:id/embed) routes so the two stay in
- * lockstep. getLecture normalizes full lectures and clips into the same shape.
- * Throws a 404 for an invalid id or a missing lecture.
+ * lockstep. Throws a 404 for an invalid id or a missing lecture.
  */
 export async function loadLecture(pageContext: PageContextServer): Promise<LectureData> {
   const { locale, routeParams } = pageContext

@@ -29,16 +29,17 @@ describe('lecture embed page', () => {
   // a 1280-1920px iframe with a 1024px poster (#146).
   it('declares the poster at the iframe width, not the bounded default', () => {
     pageData.current = {
+      // The raw document the route carries, which it resolves at render.
       lecture: {
         id: 1,
         type: 'full',
         title: 'The Subtle System',
-        hlsUrl: 'https://cdn.nv/full.m3u8',
-        thumbnailUrl: `${CF_BASE}/public`,
-        duration: 600,
-        startTime: null,
-        stopTime: null,
-        subtitles: [],
+        thumbnail: null,
+        metadata: {
+          hlsUrl: 'https://cdn.nv/full.m3u8',
+          thumbnailUrl: `${CF_BASE}/public`,
+          duration: 600,
+        },
       },
       locale: 'en',
     } as unknown as LectureEmbedPageData

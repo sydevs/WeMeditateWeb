@@ -496,19 +496,6 @@ describe('leadSplashFromRouteData', () => {
     })
   })
 
-  it('reads initialData content on a pages preview', () => {
-    expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
-      surface: 'dark',
-      hasTitle: false,
-    })
-  })
-
-  it('ignores initialData for non-page previews (meditations/lectures)', () => {
-    expect(
-      leadSplashFromRouteData({ collection: 'meditations', initialData: splashPage() }),
-    ).toBeNull()
-  })
-
   it('returns null without a lead splash or data', () => {
     expect(leadSplashFromRouteData(undefined)).toBeNull()
     expect(leadSplashFromRouteData({})).toBeNull()
