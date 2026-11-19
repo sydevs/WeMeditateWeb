@@ -7,7 +7,6 @@ import { Slider, useHotkey } from '@videojs/react'
 // how the site's SahajCloud copy reads — `tests/guards/translation-keys.test.ts` matches the name.
 import { useTranslator } from '@videojs/react/i18n'
 import { usePlayer } from '@videojs/react/video'
-import './clip-window.css'
 import {
   bufferedPercent,
   formatClock,
@@ -22,7 +21,7 @@ import {
  *
  * The class is emitted by `@videojs/react@10.5.0`'s video preset and documented nowhere, so
  * `VideoPlayer.test.tsx` reads the shipped stylesheet and fails when an upgrade drops it.
- * Upstream's own three controls are dropped by `clip-window.css`, so the row keeps its gap, its
+ * Upstream's own three controls are dropped by `skin-overrides.css`, so the row keeps its gap, its
  * padding and its container queries with ours in their place.
  */
 const TIME_SLIDER_GROUP = '.video-time-slider-group'

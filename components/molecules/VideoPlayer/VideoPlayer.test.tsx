@@ -68,7 +68,7 @@ describe('the packaged skin hooks the clip window depends on', () => {
   // The clip window replaces the skin's three time controls in their own row, and dresses its
   // own with the skin's slider classes. None of the five names is in the library's public API,
   // so an upgrade that renames one would leave the controls unstyled, or stacked on top of
-  // upstream's, with nothing else failing. `clip-window.css` and `clip-window.tsx` are the two
+  // upstream's, with nothing else failing. `skin-overrides.css` and `clip-window.tsx` are the two
   // readers (#279).
   const stylesheet = readFileSync(
     require.resolve('@videojs/react/video/skin.css'),
