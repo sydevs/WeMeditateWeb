@@ -52,6 +52,18 @@ function parseLocale(raw: string | undefined): Locale {
  * edge-cached upstream. stale-while-revalidate keeps repeat views instant. */
 const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=1800'
 
+/**
+ * A related section's answer. `null` is a read that failed: it answers an
+ * empty section and is never cached, since `CACHE_CONTROL` would hold that
+ * empty section for up to half an hour after SahajCloud recovered.
+ */
+function relatedAnswer(items: unknown[] | null): Response {
+  return Response.json(
+    { items: items ?? [] },
+    { headers: { 'Cache-Control': items ? CACHE_CONTROL : 'no-store' } },
+  )
+}
+
 /** Turns Payload's POST body into the GET SahajCloud actually answers. */
 const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'
 
@@ -281,11 +293,9 @@ export function registerApiRoutes(app: Hono<SahajCloudEnv>): void {
     try {
       const cards = await getRelatedMeditations({ id, locale: parseLocale(c.req.query('locale')) })
 
-      c.header('Cache-Control', CACHE_CONTROL)
-
-      return c.json({ items: relatedMeditationsToCards(cards) })
+      return relatedAnswer(cards && relatedMeditationsToCards(cards))
     } catch {
-      return c.json({ items: [] })
+      return relatedAnswer(null)
     }
   })
 
@@ -308,11 +318,9 @@ export function registerApiRoutes(app: Hono<SahajCloudEnv>): void {
       const settings = await getWebConfig({ locale })
       const cards = await getRelatedLectures({ id, locale, audiences: settings.audiences })
 
-      c.header('Cache-Control', CACHE_CONTROL)
-
-      return c.json({ items: relatedLecturesToCards(cards) })
+      return relatedAnswer(cards && relatedLecturesToCards(cards))
     } catch {
-      return c.json({ items: [] })
+      return relatedAnswer(null)
     }
   })
 }
