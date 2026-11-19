@@ -421,6 +421,47 @@ describe("an article's Open Graph namespace", () => {
   })
 })
 
+describe('the player a media route advertises', () => {
+  const meditation = () =>
+    meditationSeo({
+      meditation: { id: 105, title: 'Morning', thumbnail: CF_IMAGE } as Meditation,
+      route: route({ path: '/meditations/105' }),
+    })
+
+  it('upgrades the share card to a playable one, with the dimensions it needs', () => {
+    const seo = meditation()
+
+    // A player card with no dimensions falls back to a plain link.
+    expect(metaValues(seo, 'twitter:card')).toEqual(['summary_large_image', 'player'])
+    expect(metaValues(seo, 'twitter:player')).toEqual([`${ORIGIN}/meditations/105/embed`])
+    expect(metaValues(seo, 'twitter:player:width')).toEqual(['560'])
+    expect(metaValues(seo, 'twitter:player:height')).toEqual(['315'])
+  })
+
+  it('names the same player as og:video, with its type', () => {
+    const seo = meditation()
+
+    expect(metaValues(seo, 'og:video')).toEqual([`${ORIGIN}/meditations/105/embed`])
+    expect(metaValues(seo, 'og:video:type')).toEqual(['text/html'])
+  })
+
+  it('publishes the oEmbed discovery link a paste looks for', () => {
+    expect(meditation().links).toEqual([
+      {
+        rel: 'alternate',
+        type: 'application/json+oembed',
+        href: `${ORIGIN}/oembed?url=${encodeURIComponent(`${ORIGIN}/meditations/105`)}`,
+      },
+    ])
+  })
+
+  it('publishes none of it on a page, which has no player', () => {
+    expect(metaValues(seoFor(), 'twitter:player')).toEqual([])
+    expect(metaValues(seoFor(), 'og:video')).toEqual([])
+    expect(seoFor().links).toEqual([])
+  })
+})
+
 describe('the robots meta every content route carries', () => {
   it('lets the real site show a large share image in a result', () => {
     expect(metaValues(seoFor(), 'robots')).toEqual(['max-image-preview:large'])

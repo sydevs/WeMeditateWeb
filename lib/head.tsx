@@ -33,6 +33,11 @@ export interface SeoHead {
   alternates: readonly Alternate[]
   /** `[property, content]` pairs — a list, because `og:locale:alternate` repeats. */
   meta: readonly (readonly [string, string])[]
+  /**
+   * `<link>` tags beyond the canonical and the `hreflang` cluster: today the
+   * oEmbed discovery link a media route publishes.
+   */
+  links?: readonly { rel: string; type: string; href: string }[]
   /** A serialized `application/ld+json` body, or `''` for none. */
   jsonLd: string
   /**

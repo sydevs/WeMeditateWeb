@@ -216,6 +216,13 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
         hreflang: alternate.hreflang,
         href: alternate.href,
       })),
+      // `rel="alternate"` with a `type` and no `hreflang` is the oEmbed
+      // discovery shape, which is why it is not a cluster row.
+      ...(seo.links ?? []).map((link) => ({
+        rel: link.rel as 'alternate',
+        type: link.type,
+        href: link.href,
+      })),
     ],
     meta: seo.meta.map(([key, content]) =>
       isOpenGraphKey(key) ? { property: key, content } : { name: key, content },

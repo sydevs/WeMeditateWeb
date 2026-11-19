@@ -136,6 +136,39 @@ describe('web preview share metadata', () => {
     }
   })
 
+  it('a lecture advertises a playable card and an oEmbed endpoint that answers', async (ctx) => {
+    const id = (await discoverFromSahajCloud())?.lectureId
+
+    ctx.skip(!id, 'no SahajCloud lecture; set the SAHAJCLOUD_API_KEY secret')
+
+    const page = await fetchPage(`/lectures/${id}`)
+    const [player] = metaContent(page.html, 'twitter:player')
+
+    expect(player, 'the card names a player').toContain(`/lectures/${id}/embed`)
+    expect(metaContent(page.html, 'twitter:player:width')[0]).toBeTruthy()
+    expect(metaContent(page.html, 'og:video')[0]).toBe(player)
+
+    const discovery = page.html.match(
+      /<link[^>]*type="application\/json\+oembed"[^>]*href="([^"]*)"/,
+    )?.[1]
+
+    expect(discovery, 'a paste looks for this link before it calls /oembed').toBeTruthy()
+
+    // Only the preview proves the endpoint is routed ahead of the page
+    // catch-all, which no unit test can see.
+    const answer = await fetch(discovery!.replaceAll('&amp;', '&'))
+
+    expect(answer.status).toBe(200)
+    await expect(answer.json()).resolves.toMatchObject({ version: '1.0', type: 'video' })
+  })
+
+  it('oembed refuses a URL that is not a player on this site', async () => {
+    const origin = new URL((await fetchPage('/')).finalUrl).origin
+    const refused = await fetch(`${origin}/oembed?url=${encodeURIComponent('https://evil.test/')}`)
+
+    expect(refused.status).toBe(404)
+  })
+
   it('a preview host refuses crawlers in the markup too', async () => {
     const home = await fetchPage('/')
 

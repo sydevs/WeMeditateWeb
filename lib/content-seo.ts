@@ -36,6 +36,7 @@ import { documentEmbedHref } from './document-routes'
 import type { SeoAuthor, SeoCrumb, SeoImage, SeoListEntry, SeoNode } from './seo-schema'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
+import { PLAYER_HEIGHT, PLAYER_WIDTH } from './embed-player'
 import { isCanonicalOrigin } from '../server/sitemap'
 
 /**
@@ -250,6 +251,11 @@ function baseDocument(
      * dates, a share image's geometry. `[key, content]`, as `meta` is.
      */
     extraMeta?: readonly (readonly [string, string])[]
+    /**
+     * The absolute player URL, for a route that has one. It turns the share
+     * card into a playable one and publishes the oEmbed discovery link.
+     */
+    playerUrl?: string | null
   },
 ): SeoDocument {
   const { origin, path, locale, t } = route
@@ -267,8 +273,24 @@ function baseDocument(
   }
   if (options.image) {
     // `twitter:card` rides the image: a card promising a large image and
-    // carrying none renders as an empty box.
+    // carrying none renders as an empty box. A route with a player upgrades
+    // that card below, where the player URL is also what makes it valid.
     meta.push(['og:image', options.image], ['twitter:card', 'summary_large_image'])
+  }
+  if (options.playerUrl) {
+    meta.push(
+      // ⚠ **A `player` card needs all four.** Twitter refuses a player card
+      // with no dimensions and falls back to a link, and the same numbers are
+      // what the oEmbed answer and the paste-ready snippet use.
+      ['twitter:card', 'player'],
+      ['twitter:player', options.playerUrl],
+      ['twitter:player:width', String(PLAYER_WIDTH)],
+      ['twitter:player:height', String(PLAYER_HEIGHT)],
+      ['og:video', options.playerUrl],
+      ['og:video:type', 'text/html'],
+      ['og:video:width', String(PLAYER_WIDTH)],
+      ['og:video:height', String(PLAYER_HEIGHT)],
+    )
   }
   // ⚠ **Only the real site may be indexed.** `robots.txt` refuses a preview
   // Worker and a dev host wholesale, and this is what a crawler reaching one
@@ -293,6 +315,18 @@ function baseDocument(
     canonical,
     alternates: origin ? buildAlternates({ origin, path, locales: options.locales }) : [],
     meta,
+    // What a paste into WordPress or a chat client looks for before it calls
+    // `/oembed`. Only a route with a player publishes one.
+    links:
+      canonical && options.playerUrl
+        ? [
+            {
+              rel: 'alternate',
+              type: 'application/json+oembed',
+              href: `${origin}/oembed?url=${encodeURIComponent(canonical)}`,
+            },
+          ]
+        : [],
     // The generator serializes the graph (lib/seo-head-html.ts), so no route
     // carries a second one of its own. `/map` is the exception and builds its
     // own `jsonLd` from the answer SahajCloud serves (lib/atlas-head.tsx).
@@ -458,7 +492,7 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
   const name = meditation.title || t('meditation.general.untitled')
   const description = t('common.general.site_description')
   const thumbnail = resolveSeoImage(route.origin, meditation.thumbnail)
-  const embedPath = documentEmbedHref('meditations', meditation.id)
+  const playerUrl = absoluteEmbedUrl(route, documentEmbedHref('meditations', meditation.id))
 
   return baseDocument(route, {
     title: composeTitle(name, t('common.general.site_title')),
@@ -484,10 +518,11 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
         thumbnailUrl: thumbnail?.url ?? null,
         durationSeconds:
           meditation.durationMinutes == null ? null : meditation.durationMinutes * 60,
-        embedUrl: absoluteEmbedUrl(route, embedPath),
+        embedUrl: playerUrl,
       },
     ],
     extraMeta: imageMeta(thumbnail),
+    playerUrl,
   })
 }
 
@@ -510,6 +545,7 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
     : null
   const description = t('common.general.site_description')
   const title = composeTitle(lecture.title, t('common.general.site_title'))
+  const playerUrl = absoluteEmbedUrl(route, documentEmbedHref('lectures', lecture.id))
 
   return baseDocument(route, {
     title,
@@ -538,10 +574,11 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
               // one. Emitting this needs an upstream field first.
               uploadDate: null,
               durationSeconds: lecturePlaybackSeconds(lecture),
-              embedUrl: absoluteEmbedUrl(route, documentEmbedHref('lectures', lecture.id)),
+              embedUrl: playerUrl,
             },
           ] as const)
         : []),
     ],
+    playerUrl,
   })
 }
