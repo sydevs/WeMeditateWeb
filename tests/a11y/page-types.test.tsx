@@ -266,7 +266,16 @@ describe('accessibility · page types', () => {
     // seeing `heading-order` and `landmark-unique`, two of the goal's own lines.
     expect(TAGS).toContain('best-practice')
 
-    expect(Object.keys(options(UNDECIDABLE).rules ?? {})).toEqual(UNDECIDABLE)
+    // The literal lists, not `options()`'s own output: that is built from the
+    // array handed to it, so comparing the two restates the input and would
+    // pass with any rule added to either list.
+    expect(UNDECIDABLE).toEqual([
+      'color-contrast',
+      'target-size',
+      'page-has-heading-one',
+      'landmark-one-main',
+    ])
+    expect(CHROME_ONLY).toEqual(['region', 'bypass'])
   })
 
   it.each(TARGETS.map((target) => [target.name, target] as const))(
