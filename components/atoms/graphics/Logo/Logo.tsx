@@ -115,7 +115,10 @@ export function Logo({
   )
 }
 
-/** What only an `<a>` understands, so the unlinked mark's `<div>` never receives it. */
+/**
+ * What only an `<a>` understands, so the unlinked mark's `<div>` never receives it.
+ * `ref` is typed for an anchor, so the unlinked mark takes no ref on purpose.
+ */
 type AnchorOnlyProps = Pick<
   ComponentProps<'a'>,
   'download' | 'hrefLang' | 'media' | 'ping' | 'ref' | 'referrerPolicy' | 'rel' | 'target' | 'type'

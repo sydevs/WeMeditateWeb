@@ -34,10 +34,7 @@ export const Default: Story = () => (
           <Input type="email" id="basic-email" placeholder="you@example.com" />
         </FormField>
 
-        <FormField
-          id="basic-message"
-          label="Message"
-        >
+        <FormField id="basic-message" label="Message">
           <Textarea id="basic-message" rows={4} placeholder="Type your message here..." />
         </FormField>
       </div>
@@ -179,18 +176,11 @@ export const Default: Story = () => (
               <Input type="text" id="example-name" placeholder="John Doe" />
             </FormField>
 
-            <FormField
-              id="example-email"
-              label="Email address"
-              required
-            >
+            <FormField id="example-email" label="Email address" required>
               <Input type="email" id="example-email" placeholder="john@example.com" />
             </FormField>
 
-            <FormField
-              id="example-phone"
-              label="Phone number"
-            >
+            <FormField id="example-phone" label="Phone number">
               <Input type="tel" id="example-phone" placeholder="+1 (555) 123-4567" />
             </FormField>
           </div>
@@ -215,10 +205,7 @@ export const Default: Story = () => (
               </Select>
             </FormField>
 
-            <FormField
-              id="example-language"
-              label="Preferred language"
-            >
+            <FormField id="example-language" label="Preferred language">
               <Select id="example-language" defaultValue="en">
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
@@ -233,10 +220,7 @@ export const Default: Story = () => (
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Textarea</h3>
           <div className="flex flex-col gap-4">
-            <FormField
-              id="example-bio"
-              label="Bio"
-            >
+            <FormField id="example-bio" label="Bio">
               <Textarea id="example-bio" rows={4} placeholder="I am a meditation practitioner..." />
             </FormField>
 
@@ -253,10 +237,7 @@ export const Default: Story = () => (
         {/* Checkbox Group Example */}
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Checkbox Group</h3>
-          <FormField
-            id="example-interests"
-            label="Interests"
-          >
+          <FormField id="example-interests" label="Interests">
             <div className="flex flex-col gap-2">
               <Checkbox id="interest-meditation" label="Guided Meditations" defaultChecked />
               <Checkbox id="interest-music" label="Meditation Music" defaultChecked />

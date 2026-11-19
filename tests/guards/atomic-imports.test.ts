@@ -4,9 +4,8 @@
  * Atoms compose into molecules, molecules into organisms, organisms into
  * templates. An import running the other way makes the lower level depend on
  * the higher one, so the higher one can no longer be changed, moved or deleted
- * without reaching under it. The `Image` atom once read its lightbox context
- * out of `molecules/Lightbox`; the contract between the two now lives with the
- * atom, which the molecule is free to import.
+ * without reaching under it. A contract a lower level shares with a higher
+ * one lives at the lower level, where both can import it.
  *
  * Read from the source, because an import is a fact about the code and a
  * render never shows one.
@@ -26,7 +25,7 @@ function levelOf(path: string): number | null {
   return root === 'components' ? LEVELS.indexOf(level as (typeof LEVELS)[number]) : null
 }
 
-/** Every module specifier `source` names: static imports, re-exports and `import()`. */
+/** Every module specifier `source` names: imports, re-exports, `import()` and `import('…')` types. */
 export function specifiers(source: string): string[] {
   const found: string[] = []
 
@@ -44,6 +43,12 @@ export function specifiers(source: string): string[] {
       ts.isStringLiteralLike(node.arguments[0])
     ) {
       found.push(node.arguments[0].text)
+    } else if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteral(node.argument.literal)
+    ) {
+      found.push(node.argument.literal.text)
     }
   })
 
@@ -90,8 +95,10 @@ describe('atomic imports', () => {
       "export { C } from '../c'",
       "const D = lazy(() => import('../d'))",
       "import '../e.css'",
+      "type F = import('../f').G",
+      "type H = typeof import('../h')",
     ].join('\n')
 
-    expect(specifiers(sample)).toEqual(['../a', '../b', '../c', '../d', '../e.css'])
+    expect(specifiers(sample)).toEqual(['../a', '../b', '../c', '../d', '../e.css', '../f', '../h'])
   })
 })
