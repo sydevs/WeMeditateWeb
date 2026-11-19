@@ -15,7 +15,7 @@
  */
 
 import type { PageContext } from 'vike/types'
-import { pageContextT } from '../hooks/useT'
+import { pageContextT } from './i18n'
 import type { SeoDocument } from './head'
 
 /**
