@@ -113,6 +113,15 @@ describe('pageSeo', () => {
     )
   })
 
+  it('names the home page by its composed title, never by its SahajCloud title', () => {
+    // Production's home page is titled `Home Page`, which is an internal name.
+    const seo = seoFor({ page: page({ title: 'Home Page' }), route: route({ path: '/' }) })
+    const [webPage] = graph(seo).filter((node) => node['@type'] === 'WebPage')
+
+    expect(webPage.name).toBe(seo.title)
+    expect(seo.jsonLd).not.toContain('Home Page')
+  })
+
   it('serves a self-referential canonical and og:url', () => {
     const seo = seoFor()
 

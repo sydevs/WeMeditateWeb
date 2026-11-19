@@ -302,12 +302,19 @@ export function pageSeo(options: {
   const author = isPopulated<{ name?: string }>(page.author) ? page.author.name : null
   const isArticle = Boolean(author) || (page.tags?.length ?? 0) > 0
   const url = canonicalUrl(route) ?? ''
-  const nodes: Thing[] = [webPageNode({ name, url, description, image: ownImage })]
+  const title = isHome
+    ? `${siteName} | ${page.meta?.title || tagline}`
+    : composeTitle(name, siteName)
+  // The home page's own SahajCloud title is an internal name — `Home Page` in
+  // production — so the composed title is the only name it may publish. Every
+  // other page's name is the name it was given.
+  const nodeName = isHome ? title : name
+  const nodes: Thing[] = [webPageNode({ name: nodeName, url, description, image: ownImage })]
 
   if (isArticle) {
     nodes.push(
       articleNode({
-        headline: name,
+        headline: nodeName,
         url,
         description,
         image: ownImage,
@@ -332,7 +339,7 @@ export function pageSeo(options: {
   }
 
   return baseDocument(route, {
-    title: isHome ? `${siteName} | ${page.meta?.title || tagline}` : composeTitle(name, siteName),
+    title,
     description,
     image: shareImage(route, ownImage),
     ogType: isArticle ? 'article' : 'website',
