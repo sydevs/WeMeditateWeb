@@ -77,7 +77,9 @@ function Breadcrumbs({ trail }: { trail: AtlasSeoBreadcrumb[] }) {
   const t = useT()
   const origin = useOrigin()
 
-  if (trail.length < 2) {
+  // `?? []`: the type is hand-mirrored, so a trail that stops arriving
+  // renders no breadcrumb rather than 500ing the page.
+  if ((trail ?? []).length < 2) {
     return null
   }
 
@@ -155,6 +157,9 @@ function RegionContent({
   breadcrumbs: AtlasSeoBreadcrumb[]
 }) {
   const t = useT()
+  // `?? []`, as in EventContent: a listing that stops arriving renders the
+  // region with no classes rather than 500ing the page.
+  const events = content.events ?? []
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -163,20 +168,20 @@ function RegionContent({
       <h1 className="text-2xl font-semibold text-gray-800 sm:text-3xl">{content.name}</h1>
       {content.subtitle && <p className="mt-2 text-gray-700">{content.subtitle}</p>}
 
-      {content.events.length > 0 ? (
+      {events.length > 0 ? (
         <section className="mt-8">
           <h2 className="sr-only">{t('map.a11y.classes_heading')}</h2>
           <ul className="list-none">
-            {content.events.map((card) => (
+            {events.map((card) => (
               <EventCard key={card.id} card={card} />
             ))}
           </ul>
           {/* The listing is capped upstream. `eventCount` is the true
               total, so a partial page never reads as a complete one. */}
-          {content.eventCount > content.events.length && (
+          {content.eventCount > events.length && (
             <p className="mt-4 text-sm text-gray-700">
               {t('map.general.classes_shown', {
-                shown: content.events.length,
+                shown: events.length,
                 count: content.eventCount,
               })}
             </p>
