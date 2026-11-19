@@ -12,21 +12,14 @@ export const Default: Story = () => {
     name: string
     coordinates: { lat: number; lng: number }
   }) => {
+    // eslint-disable-next-line no-console -- shows the callback's payload
     console.log('Location selected:', location)
     alert(
       `Selected: ${location.name}\nCoordinates: ${location.coordinates.lat}, ${location.coordinates.lng}`,
     )
   }
 
-  // Debug: Check if access token is available
-  const accessToken = import.meta.env.PUBLIC__MAPBOX_ACCESS_TOKEN
-  const hasToken = !!accessToken
-
-  console.log('Mapbox Access Token Status:', {
-    isDefined: hasToken,
-    length: accessToken?.length || 0,
-    prefix: accessToken?.substring(0, 8) + '...' || 'N/A',
-  })
+  const hasToken = !!import.meta.env.PUBLIC__MAPBOX_ACCESS_TOKEN
 
   return (
     <StoryWrapper>
