@@ -1,0 +1,30 @@
+/* What this player changes about the packaged skin's own stylesheet. Both rules are scoped to
+   `.media-skin`, the class the skin's container always carries, so neither reaches anything else
+   on the page. The skin's own rules are all `:where(...)`-wrapped and so carry no specificity.
+
+   `VideoPlayer.tsx` imports this once, for the whole player. */
+
+/* The clip window's three time controls replace the media's, in the skin's own row.
+   `.video-time-slider-group` is where `@videojs/react@10.5.0`'s video preset lays its position,
+   time slider and duration out; neither that class nor this rule is part of its public API, so
+   an upgrade re-checks both against `@videojs/react/video/skin.css`.
+
+   Upstream's three are dropped rather than hidden: `display: none` leaves the row's gap, padding
+   and container queries to size ours exactly as it sized theirs, where a hidden element would
+   hold space and a second copy of every control. */
+.media-skin[data-wm-clip] .video-time-slider-group > :not([data-wm-clip]) {
+  display: none;
+}
+
+/* The centre play button is the one control the skin sizes from its content rather than from
+   `--media-control-size`: `width`/`height` are `auto`, and under a 360px container it shrinks its
+   icon and its padding together. Measured at a 390px viewport that is 42x42, under the 44x44 this
+   project requires of every interactive element (docs/rules/design-system.md). The floor is the
+   control size every other button already takes, so it changes nothing on a wider player.
+
+   This needs no `!important` despite the one upstream puts on `width` and `height`, because
+   `min-*` is a different property. */
+.media-skin .video-controls-center-play {
+  min-width: var(--media-control-size);
+  min-height: var(--media-control-size);
+}
