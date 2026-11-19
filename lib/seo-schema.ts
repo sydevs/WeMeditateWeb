@@ -22,6 +22,41 @@ export interface SeoSiteIdentity {
   sameAs: readonly string[]
 }
 
+/**
+ * An image as a node can describe it, rather than as a URL alone.
+ *
+ * The dimensions and the alt text come from the upload SahajCloud returned
+ * (`IMAGE_POPULATE`), so a share card can state its own geometry and a
+ * crawler reads the same words a reader would.
+ */
+export interface SeoImage {
+  url: string
+  width: number | null
+  height: number | null
+  alt: string | null
+}
+
+/** A rung of a breadcrumb trail. A rung that is a heading carries no URL. */
+export interface SeoCrumb {
+  name: string
+  url: string | null
+}
+
+/** One entry of a listing page's `ItemList`, as the page server-rendered it. */
+export interface SeoListEntry {
+  name: string
+  url: string
+}
+
+/** The byline of an article, where SahajCloud named one. */
+export interface SeoAuthor {
+  name: string
+  /** A professional title, for example `Artist, writer and stylist`. */
+  jobTitle: string | null
+  description: string | null
+  image: string | null
+}
+
 /** One node of a page's `@graph`, beyond `Organization` and `WebSite`. */
 export type SeoNode =
   | {
@@ -29,7 +64,25 @@ export type SeoNode =
       name: string
       description: string | null
       /** This document's own picture, never a site-wide default. */
-      image: string | null
+      image: SeoImage | null
+    }
+  | {
+      type: 'article'
+      headline: string
+      description: string | null
+      image: SeoImage | null
+      author: SeoAuthor | null
+      datePublished: string | null
+      dateModified: string | null
+    }
+  | {
+      type: 'audio'
+      name: string
+      description: string | null
+      thumbnailUrl: string | null
+      durationSeconds: number | null
+      /** The player URL a consumer may embed, absolute. */
+      embedUrl: string | null
     }
   | {
       type: 'video'
@@ -39,9 +92,10 @@ export type SeoNode =
       /** An ISO 8601 date, or null where nothing upstream recorded one. */
       uploadDate: string | null
       durationSeconds: number | null
-      /** The player URL a consumer may embed, absolute. */
       embedUrl: string | null
     }
+  | { type: 'breadcrumb'; trail: readonly SeoCrumb[] }
+  | { type: 'itemList'; entries: readonly SeoListEntry[] }
 
 /** Everything the generator needs to build one page's linked `@graph`. */
 export interface SeoSchema {

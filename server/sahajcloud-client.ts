@@ -110,6 +110,8 @@ const PAGE_SELECT = {
   content: true,
   slug: true,
   createdAt: true,
+  // `dateModified` on an article, beside `datePublished` from `createdAt`.
+  updatedAt: true,
   _status: true,
   author: true,
   featuredVideo: true,
@@ -131,6 +133,8 @@ const PAGE_STATUS_SELECT = { _status: true } satisfies PagesSelect<true>
 const AUTHOR_POPULATE = {
   name: true,
   title: true,
+  // The `Person` node an article's byline publishes.
+  description: true,
   slug: true,
   countryCode: true,
   yearsMeditating: true,

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { lectureSeo, seoRoute } from './content-seo'
+import { lectureSeo, pageSeo, seoRoute } from './content-seo'
 import { renderSeoHead, seoHeadHtml } from './seo-head-html'
 import { enT } from './i18n'
-import type { ResolvedLecture } from '../server/sahajcloud-types'
+import type { Page, ResolvedLecture } from '../server/sahajcloud-types'
 import { CF_PUBLIC_URL } from '../tests/_helpers/cloudflare-images'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -50,6 +50,16 @@ function graph(html: string): Record<string, unknown>[] {
 }
 
 const nodeOf = (html: string, type: string) => graph(html).find((node) => node['@type'] === type)
+
+/** A `/:slug` document, for the claims that are a page's rather than a lecture's. */
+function pageDocument(path: string) {
+  return pageSeo({
+    page: { id: 1, title: 'About', slug: 'about', createdAt: 'x', updatedAt: 'x' } as Page,
+    settings: { knowledgePages: [] } as unknown as Parameters<typeof pageSeo>[0]['settings'],
+    route: seoRoute({ urlParsed: { origin: ORIGIN }, urlPathname: path, locale: 'en' }, enT),
+    locales: [],
+  })
+}
 
 describe('renderSeoHead', () => {
   it('emits one JSON-LD block, and the document serializes none of its own', () => {
@@ -136,5 +146,26 @@ describe('seoHeadHtml', () => {
 
   it('publishes the head for a content route', () => {
     expect(seoHeadHtml(context({}))).toContain('application/ld+json')
+  })
+})
+
+describe('the claims Unhead would invent, and does not', () => {
+  it('types a page at /about as a WebPage, never an AboutPage', () => {
+    // Unhead reads a subtype off the URL. The slug is the editor's to change,
+    // so the type is pinned instead.
+    const seo = pageDocument('/about')
+    const html = renderSeoHead({ ...seo, schema: seo.schema! }, ORIGIN)
+
+    expect(nodeOf(html, 'WebPage')).toBeDefined()
+    expect(html).not.toContain('AboutPage')
+  })
+
+  it('names the page as the main entity of its own media', () => {
+    const html = head()
+
+    expect(nodeOf(html, 'WebPage')?.mainEntity).toEqual({
+      '@id': `${ORIGIN}/lectures/163#video`,
+    })
+    expect(nodeOf(html, 'VideoObject')?.['@id']).toBe(`${ORIGIN}/lectures/163#video`)
   })
 })

@@ -31,7 +31,12 @@ import { useHead as pushHead } from 'unhead'
 import {
   UnheadSchemaOrg,
   useSchemaOrg as pushSchemaOrg,
+  defineArticle,
+  defineBreadcrumb,
+  defineImage,
+  defineItemList,
   defineOrganization,
+  definePerson,
   defineVideo,
   defineWebPage,
   defineWebSite,
@@ -40,37 +45,140 @@ import type { PageContextServer } from 'vike/types'
 import { seoDocument } from './head-settings'
 import { isoDuration } from './structured-data'
 import { isOpenGraphKey, type SeoHead } from './head'
-import type { SeoNode, SeoSchema } from './seo-schema'
+import type { SeoAuthor, SeoImage, SeoNode, SeoSchema } from './seo-schema'
+
+/**
+ * An image node, so a crawler reads its geometry and its words rather than
+ * only its URL. Unhead hoists it to its own `ImageObject` and links it.
+ */
+function imageNode(image: SeoImage | null) {
+  if (!image) {
+    return null
+  }
+
+  return defineImage({
+    url: image.url,
+    width: image.width ?? undefined,
+    height: image.height ?? undefined,
+    caption: image.alt ?? undefined,
+  })
+}
+
+/** The byline, as the `Person` an `Article` points at. */
+function personNode(author: SeoAuthor | null) {
+  if (!author) {
+    return null
+  }
+
+  return definePerson({
+    name: author.name,
+    jobTitle: author.jobTitle ?? undefined,
+    description: author.description ?? undefined,
+    image: author.image ?? undefined,
+  })
+}
+
+/** Seconds as the ISO 8601 duration schema.org's `duration` expects. */
+function duration(seconds: number | null) {
+  return seconds == null ? undefined : (isoDuration(seconds) ?? undefined)
+}
+
+/**
+ * The `@id` the page's main entity takes.
+ *
+ * Minted here rather than left to Unhead, because the `WebPage` has to point
+ * at it and the media helpers mint their own ids after the fact.
+ */
+function mainEntityId(canonical: string | null, node: SeoNode | undefined): string | undefined {
+  if (!canonical || !node) {
+    return undefined
+  }
+
+  return node.type === 'audio' ? `${canonical}#audio` : `${canonical}#video`
+}
+
+/** What a node needs to know about the page it sits on. */
+interface NodeContext {
+  inLanguage: string
+  /** The page's own URL, which a media node names as its own. */
+  url: string | undefined
+  /** The `@id` of the page's main entity, where it has one. */
+  mainEntity: string | undefined
+}
 
 /** The schema-org input for one {@link SeoNode}. */
-function schemaNode(node: SeoNode, schema: SeoSchema) {
-  const { inLanguage } = schema
+function schemaNode(node: SeoNode, context: NodeContext) {
+  const { inLanguage, mainEntity, url } = context
 
   switch (node.type) {
     case 'webPage':
       return defineWebPage({
+        // ⚠ **Pinned, because Unhead infers a subtype from the URL.** A page
+        // at `/about` would be typed `AboutPage`, and `/contact`
+        // `ContactPage` — a claim read off a slug the editor owns and may
+        // change, which is why the ticket left both out.
+        '@type': 'WebPage',
         name: node.name,
         description: node.description ?? undefined,
         // Unhead falls back to the Organization logo as the page's primary
         // image. That is a claim about this document, so a page with no
         // picture of its own publishes none.
-        primaryImageOfPage: node.image ?? null,
+        primaryImageOfPage: imageNode(node.image),
+        mainEntity: mainEntity ? { '@id': mainEntity } : undefined,
         inLanguage,
       })
+    case 'article':
+      return defineArticle({
+        headline: node.headline,
+        description: node.description ?? undefined,
+        image: imageNode(node.image) ?? undefined,
+        author: personNode(node.author) ?? undefined,
+        datePublished: node.datePublished ?? undefined,
+        dateModified: node.dateModified ?? undefined,
+        inLanguage,
+      })
+    // ⚠ **No `defineAudio` exists**, so this is a plain node rather than a
+    // helper's output. It joins the same graph, and the `@id` is minted above
+    // because the `WebPage` names it as its main entity.
+    case 'audio':
+      return {
+        '@type': 'AudioObject' as const,
+        ...(mainEntity ? { '@id': mainEntity } : {}),
+        name: node.name,
+        ...(url ? { url } : {}),
+        ...(node.description ? { description: node.description } : {}),
+        ...(node.thumbnailUrl ? { thumbnailUrl: node.thumbnailUrl } : {}),
+        ...(duration(node.durationSeconds) ? { duration: duration(node.durationSeconds) } : {}),
+        ...(node.embedUrl ? { embedUrl: node.embedUrl } : {}),
+        inLanguage,
+      }
     case 'video':
       return defineVideo({
+        ...(mainEntity ? { '@id': mainEntity } : {}),
         name: node.name,
+        url,
         // `defineVideo` substitutes the literal `No description` for an
         // absent one, so the field is always supplied.
         description: node.description ?? undefined,
         thumbnailUrl: node.thumbnailUrl ?? undefined,
         uploadDate: node.uploadDate ?? undefined,
-        duration:
-          node.durationSeconds == null
-            ? undefined
-            : (isoDuration(node.durationSeconds) ?? undefined),
+        duration: duration(node.durationSeconds),
         embedUrl: node.embedUrl ?? undefined,
         inLanguage,
+      })
+    case 'breadcrumb':
+      return defineBreadcrumb({
+        itemListElement: node.trail.map((crumb) => ({
+          name: crumb.name,
+          item: crumb.url ?? undefined,
+        })),
+      })
+    case 'itemList':
+      return defineItemList({
+        itemListElement: node.entries.map((entry) => ({
+          name: entry.name,
+          url: entry.url,
+        })),
       })
   }
 }
@@ -88,6 +196,15 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
     disableDefaults: true,
     plugins: [UnheadSchemaOrg({ host })],
   })
+
+  const context: NodeContext = {
+    inLanguage: seo.schema.inLanguage,
+    url: seo.canonical ?? undefined,
+    mainEntity: mainEntityId(
+      seo.canonical,
+      seo.schema.nodes.find((node) => node.type === 'audio' || node.type === 'video'),
+    ),
+  }
 
   pushHead(head, {
     link: [
@@ -121,7 +238,7 @@ export function renderSeoHead(seo: SeoHead & { schema: SeoSchema }, host: string
         description: seo.schema.site.description,
         inLanguage: seo.schema.inLanguage,
       }),
-      ...seo.schema.nodes.map((node) => schemaNode(node, seo.schema)),
+      ...seo.schema.nodes.map((node) => schemaNode(node, context)),
     ],
     // The plugin's own default is `bodyClose`, where a crawler that reads only
     // the head never sees it.

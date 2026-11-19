@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { renderSeoHead } from './seo-head-html'
+import type { SeoDocument } from './head'
 import type { Image, Meditation, Page, ResolvedLecture } from '../server/sahajcloud-types'
 import { lectureSeo, meditationSeo, pageSeo, resolveOgImageUrl, type SeoRoute } from './content-seo'
 import { enT } from './i18n'
@@ -20,7 +22,12 @@ const SHARE_VARIANT = `${CF_BASE}/width=1024`
  *   `server/payload-types.ts`, which `PAGE_SELECT` now requests.
  */
 /** A populated upload, narrowed to the fields `IMAGE_POPULATE` returns. */
-const CF_IMAGE = { url: CF_PUBLIC_URL } as unknown as Image
+const CF_IMAGE = {
+  url: CF_PUBLIC_URL,
+  width: 2000,
+  height: 1200,
+  alt: 'A photo of the subtle system',
+} as unknown as Image
 
 function route(overrides: Partial<SeoRoute> = {}): SeoRoute {
   return { origin: ORIGIN, path: '/about', locale: 'en', t: enT, ...overrides }
@@ -54,11 +61,22 @@ function metaValues(seo: { meta: readonly (readonly [string, string])[] }, prope
   return seo.meta.filter(([key]) => key === property).map(([, value]) => value)
 }
 
-function graph(seo: { jsonLd: string }): { '@type': string; [key: string]: unknown }[] {
-  return JSON.parse(seo.jsonLd)['@graph']
+/**
+ * The `@graph` a document publishes, rendered as the route serves it.
+ *
+ * The builders here describe their nodes as plain data; Unhead mints the
+ * `@id`s and the links between them (`lib/seo-head-html.ts`). Asserting the
+ * rendered graph is what keeps these cases about what a crawler reads, rather
+ * than about the shape of a descriptor.
+ */
+function graph(seo: SeoDocument): { '@type': string; [key: string]: unknown }[] {
+  const html = renderSeoHead({ ...seo, schema: seo.schema! }, ORIGIN)
+  const block = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s)?.[1]
+
+  return JSON.parse(block ?? '{}')['@graph'] ?? []
 }
 
-const typesIn = (seo: { jsonLd: string }) => graph(seo).map((node) => node['@type'])
+const typesIn = (seo: SeoDocument) => graph(seo).map((node) => node['@type'])
 
 describe('resolveOgImageUrl', () => {
   it('appends a large video variant to a Cloudflare image URL', () => {
@@ -158,8 +176,17 @@ describe('pageSeo', () => {
     const withImage = graph(seoFor({ page: page({ meta: { image: CF_IMAGE } }) }))
     const without = graph(seoFor())
 
-    expect(withImage.find((node) => node['@type'] === 'WebPage')?.image).toBe(SHARE_VARIANT)
-    expect(without.find((node) => node['@type'] === 'WebPage')?.image).toBeUndefined()
+    // The claim is an ImageObject now, not a URL: it carries the render's own
+    // geometry and the alt text the editor wrote.
+    const webPage = withImage.find((node) => node['@type'] === 'WebPage')
+
+    expect(webPage?.primaryImageOfPage).toMatchObject({
+      '@type': 'ImageObject',
+      url: SHARE_VARIANT,
+      width: 1024,
+      caption: 'A photo of the subtle system',
+    })
+    expect(without.find((node) => node['@type'] === 'WebPage')?.primaryImageOfPage).toBeUndefined()
   })
 
   it('spells a regional locale the Open Graph way, and invents no territory', () => {
@@ -190,7 +217,10 @@ describe('pageSeo', () => {
     const seo = seoFor()
 
     expect(metaValues(seo, 'og:type')).toEqual(['website'])
-    expect(typesIn(seo)).toEqual(['Organization', 'WebSite', 'WebPage'])
+    // The trailing ImageObject is the organization's logo, which Unhead
+    // hoists out of the Organization node.
+    expect(typesIn(seo)).toEqual(['Organization', 'WebSite', 'WebPage', 'ImageObject'])
+    expect(typesIn(seo)).not.toContain('Article')
   })
 
   it.each([
@@ -207,8 +237,12 @@ describe('pageSeo', () => {
     const seo = seoFor({ page: page({ author: { id: 3, name: 'Jo Smith' } as Page['author'] }) })
     const article = graph(seo).find((node) => node['@type'] === 'Article')
 
-    expect(article?.author).toEqual({ '@type': 'Person', name: 'Jo Smith' })
+    const person = graph(seo).find((node) => node['@type'] === 'Person')
+
+    expect(person?.name).toBe('Jo Smith')
+    expect(article?.author).toEqual({ '@id': person?.['@id'] })
     expect(article?.datePublished).toBe('2026-01-02T03:04:05.000Z')
+    expect(article?.dateModified).toBe('2026-01-02T03:04:05.000Z')
   })
 
   it('names no author where the relationship came back as a bare id', () => {
@@ -218,7 +252,9 @@ describe('pageSeo', () => {
     const article = graph(seo).find((node) => node['@type'] === 'Article')
 
     expect(article).toBeDefined()
-    expect(article?.author).toBeUndefined()
+    // Unhead names the organization as the author of an unattributed article,
+    // which is a true claim. What must not exist is a Person built from `3`.
+    expect(typesIn(seo)).not.toContain('Person')
   })
 
   it('trails Home → About Meditation → page for a page the knowledge menu lists', () => {
@@ -301,7 +337,8 @@ describe('meditationSeo', () => {
     const seo = seoFor({ durationMinutes: 20, thumbnail: CF_IMAGE })
     const audio = graph(seo).find((node) => node['@type'] === 'AudioObject')
 
-    expect(typesIn(seo)).toEqual(['Organization', 'WebSite', 'AudioObject'])
+    expect(typesIn(seo)).toContain('AudioObject')
+    expect(typesIn(seo)).not.toContain('VideoObject')
     expect(audio?.duration).toBe('PT20M')
     expect(audio?.url).toBe(`${ORIGIN}/meditations/105`)
     expect(audio?.thumbnailUrl).toBe(SHARE_VARIANT)
@@ -325,6 +362,62 @@ describe('meditationSeo', () => {
 
     expect(seo.alternates).toEqual([])
     expect(metaValues(seo, 'og:locale:alternate')).toEqual([])
+  })
+})
+
+describe("the share image's own geometry and words", () => {
+  it('states the render width, the height at the source ratio, and the alt text', () => {
+    const seo = seoFor({ page: page({ meta: { image: CF_IMAGE } }) })
+
+    // A flexible variant constrains the width alone, so 2000×1200 renders
+    // 1024 wide and keeps its ratio.
+    expect(metaValues(seo, 'og:image:width')).toEqual(['1024'])
+    expect(metaValues(seo, 'og:image:height')).toEqual(['614'])
+    expect(metaValues(seo, 'og:image:alt')).toEqual(['A photo of the subtle system'])
+    expect(metaValues(seo, 'twitter:image:alt')).toEqual(['A photo of the subtle system'])
+  })
+
+  it('states no geometry for a source narrower than the render', () => {
+    // Whether Cloudflare upscales is unverified, so one of two answers is no
+    // answer. The alt text is unaffected by that.
+    const narrow = { ...CF_IMAGE, width: 600, height: 400 } as typeof CF_IMAGE
+    const seo = seoFor({ page: page({ meta: { image: narrow } }) })
+
+    expect(metaValues(seo, 'og:image:width')).toEqual([])
+    expect(metaValues(seo, 'og:image:height')).toEqual([])
+    expect(metaValues(seo, 'og:image:alt')).toEqual(['A photo of the subtle system'])
+  })
+
+  it('states nothing at all where the page has no image of its own', () => {
+    expect(metaValues(seoFor(), 'og:image:width')).toEqual([])
+    expect(metaValues(seoFor(), 'og:image:alt')).toEqual([])
+  })
+})
+
+describe("an article's Open Graph namespace", () => {
+  const article = () =>
+    seoFor({
+      page: page({
+        author: { id: 3, name: 'Jo Smith', title: 'Writer' } as Page['author'],
+        updatedAt: '2026-03-04T05:06:07.000Z',
+      }),
+    })
+
+  it('names its dates and its author, which a scraper reads without JSON-LD', () => {
+    expect(metaValues(article(), 'article:published_time')).toEqual(['2026-01-02T03:04:05.000Z'])
+    expect(metaValues(article(), 'article:modified_time')).toEqual(['2026-03-04T05:06:07.000Z'])
+    expect(metaValues(article(), 'article:author')).toEqual(['Jo Smith'])
+  })
+
+  it('publishes the byline as a Person, with the job title SahajCloud returned', () => {
+    const person = graph(article()).find((node) => node['@type'] === 'Person')
+
+    expect(person).toMatchObject({ name: 'Jo Smith', jobTitle: 'Writer' })
+  })
+
+  it('names none of them on a standing page', () => {
+    expect(metaValues(seoFor(), 'article:published_time')).toEqual([])
+    expect(metaValues(seoFor(), 'article:author')).toEqual([])
   })
 })
 

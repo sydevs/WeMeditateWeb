@@ -10,20 +10,19 @@
  *   `description` and `og:description`, and re-applies them on a client-side
  *   navigation, which no `Head` component gets to do.
  * - Everything else — the canonical, the `hreflang` cluster, the rest of
- *   Open Graph, and JSON-LD — is a `Head` component, because `useConfig`
- *   emits no `<link>` and no `<script>`.
+ *   Open Graph, and JSON-LD — is raw head HTML, because `useConfig` emits no
+ *   `<link>` and no `<script>`. A content route generates it with Unhead
+ *   (`lib/seo-head-html.ts`); `/map` renders the answer SahajCloud serves
+ *   through {@link SeoHeadTags} (`lib/atlas-head.tsx`).
  *
  * Both halves read one {@link SeoDocument}, built server-side in the route's
- * `+data.ts`: `lib/content-seo.ts` for a content route, the upstream answer
- * for `/map` (`lib/atlas-head.tsx`). A route that builds none — an `embed`
+ * `+data.ts` by `lib/content-seo.ts`. A route that builds none — an `embed`
  * route, the error page — serves the site's own title and description and
  * publishes no URL claim at all.
  *
  * See https://vike.dev/useConfig and https://vike.dev/title
  */
 
-import { useOptionalPageContext } from '../hooks/usePageContext'
-import { seoDocument } from './head-settings'
 import type { Alternate } from './hreflang'
 import type { SeoSchema } from './seo-schema'
 
@@ -151,46 +150,6 @@ export function SeoHeadTags({ seo }: { seo: SeoHead }) {
       )}
     </>
   )
-}
-
-/**
- * The head tags for whichever content route is rendering. Declared as
- * `Head: ContentHead` in a route's `+config.ts`, beside its
- * `Layout: LayoutChrome`.
- *
- * That is the level this belongs at. "This route is an indexable content
- * URL" is route identity, exactly like "this route wears the site chrome",
- * and a new content route opts in with one declarative line instead of
- * remembering a hook call. It is also why this is not set from a template:
- * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared
- * with the `embed` routes and the live preview, and none of those is a URL
- * to point a crawler at.
- */
-export function ContentHead() {
-  const pageContext = useOptionalPageContext()
-  const seo = seoDocument(pageContext?.data)
-
-  if (!seo) {
-    return null
-  }
-
-  // ⚠ **A live preview is not a URL to point a crawler at** — the repo
-  // convention that kept this out of the templates in the first place,
-  // because they are shared with the `embed` routes and with preview.
-  //
-  // Preview used to be its own route, which declared no `Head` at all. Now it
-  // is the real route with a token on it, so the suppression has to happen
-  // here instead. Without it, previewing a DRAFT page emits a canonical and a
-  // full hreflang cluster pointing at a URL that 404s publicly — and under
-  // `draft: true` the alternates would advertise unpublished locales too.
-  //
-  // `X-Robots-Tag: noindex` also rides the response, but a canonical is a
-  // claim about another URL and is worth not making at all.
-  if (pageContext?.livePreview?.active) {
-    return null
-  }
-
-  return <SeoHeadTags seo={seo} />
 }
 
 /**

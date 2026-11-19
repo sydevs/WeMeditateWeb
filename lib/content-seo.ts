@@ -29,28 +29,14 @@ import type { TFunction } from './i18n'
 import { buildAlternates } from './hreflang'
 import { isKnowledgePage } from './featured-nav'
 import { contentIndexBlocks, type ResolvedCardItem } from './content-blocks'
-import { getImageURL, getVariantName } from './cloudflare-images'
+import { getImageURL, getVariantName, getVariantWidth } from './cloudflare-images'
 import { isPopulated, populatedImageUrl } from './payload-relationships'
 import { absoluteHref, isSitePath, localeUrl, normalizeContentPath } from './urls'
 import { documentEmbedHref } from './document-routes'
-import type { SeoNode } from './seo-schema'
+import type { SeoAuthor, SeoCrumb, SeoImage, SeoListEntry, SeoNode } from './seo-schema'
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
 import { isCanonicalOrigin } from '../server/sitemap'
-import {
-  articleNode,
-  audioObjectNode,
-  breadcrumbNode,
-  itemListNode,
-  organizationNode,
-  serializeJsonLd,
-  videoObjectNode,
-  webPageNode,
-  webSiteNode,
-  type Breadcrumb,
-  type ListEntry,
-} from './structured-data'
-import type { Thing } from 'schema-dts'
 
 /**
  * The share image a URL carries when its document has none of its own.
@@ -60,6 +46,9 @@ import type { Thing } from 'schema-dts'
  * absolute URL is the request origin plus this path.
  */
 const DEFAULT_SHARE_IMAGE = '/images/metadata/preview.png'
+
+/** The width `shareVariant` renders at, which `og:image:width` states. */
+const SHARE_IMAGE_WIDTH = getVariantWidth('video', 'large')
 
 /** Where a URL is published, and the language it is published in. */
 export interface SeoRoute {
@@ -153,6 +142,96 @@ function openGraphLocale(locale: Locale): string {
   return locale.replace('-', '_')
 }
 
+/**
+ * A `meta.image` relationship as a node and a share card both need it.
+ *
+ * Null when the image is missing or unpopulated (a bare id), which is what
+ * lets the default share image take over. `IMAGE_POPULATE` is what makes the
+ * geometry and the alt text available (`server/sahajcloud-client.ts`); an
+ * upload read without it answers `url: null`.
+ */
+export function resolveSeoImage(origin: string | null, image: unknown): SeoImage | null {
+  const url = absoluteImage(origin, resolveOgImageUrl(image))
+
+  if (!url || !isPopulated<{ width?: number; height?: number; alt?: string }>(image)) {
+    return null
+  }
+
+  return { url, ...shareGeometry(image), alt: image.alt || null }
+}
+
+/**
+ * The pixels the share render actually measures, or nothing.
+ *
+ * ⚠ **A flexible variant constrains the width alone**, so the height is the
+ * source's ratio at that width, not the variant's name. Whether Cloudflare
+ * upscales a source narrower than the variant is unverified, so an upload
+ * below the variant width states no dimensions at all rather than one of two
+ * possible answers.
+ */
+function shareGeometry(image: { width?: number; height?: number }): {
+  width: number | null
+  height: number | null
+} {
+  const { width, height } = image
+
+  if (!width || !height || width < SHARE_IMAGE_WIDTH) {
+    return { width: null, height: null }
+  }
+
+  return {
+    width: SHARE_IMAGE_WIDTH,
+    height: Math.round(height * (SHARE_IMAGE_WIDTH / width)),
+  }
+}
+
+/**
+ * `og:image`'s geometry and words, which a scraper reads without parsing
+ * JSON-LD.
+ *
+ * A card that states its dimensions renders without waiting for the fetch,
+ * and `twitter:image:alt` is what a screen reader announces in a timeline.
+ */
+function imageMeta(image: SeoImage | null): (readonly [string, string])[] {
+  if (!image) {
+    return []
+  }
+
+  return [
+    ...(image.width ? ([['og:image:width', String(image.width)]] as const) : []),
+    ...(image.height ? ([['og:image:height', String(image.height)]] as const) : []),
+    ...(image.alt
+      ? ([
+          ['og:image:alt', image.alt],
+          ['twitter:image:alt', image.alt],
+        ] as const)
+      : []),
+  ]
+}
+
+/** An article's byline, where SahajCloud populated one. */
+function resolveAuthor(origin: string | null, value: unknown): SeoAuthor | null {
+  if (
+    !isPopulated<{ name?: string; title?: string; description?: string; photo?: unknown }>(value)
+  ) {
+    return null
+  }
+
+  return value.name
+    ? {
+        name: value.name,
+        jobTitle: value.title || null,
+        description: value.description || null,
+        image: absoluteImage(origin, resolveOgImageUrl(value.photo)),
+      }
+    : null
+}
+
+/** The absolute player URL a media node advertises, where the route has one. */
+function absoluteEmbedUrl(route: SeoRoute, embedPath: string | null): string | null {
+  return route.origin && embedPath ? absoluteHref(route.origin, route.locale, embedPath) : null
+}
+
 /** The parts every content route shares, before its own type is considered. */
 function baseDocument(
   route: SeoRoute,
@@ -164,14 +243,13 @@ function baseDocument(
     ogType: string
     /** The locales the `hreflang` cluster advertises. */
     locales: readonly Locale[]
-    /** Nodes beyond `Organization` and `WebSite`, in the order they are emitted. */
-    nodes: readonly Thing[]
+    /** The `@graph`, as the descriptors Unhead's generator reads. */
+    nodes: readonly SeoNode[]
     /**
-     * The same `@graph`, as the descriptors Unhead's generator reads
-     * (lib/seo-head-html.ts). A route supplies this instead of `nodes` once
-     * it has moved; `jsonLd` then stays empty.
+     * Open Graph beyond the properties every route carries — an article's
+     * dates, a share image's geometry. `[key, content]`, as `meta` is.
      */
-    schema?: readonly SeoNode[]
+    extraMeta?: readonly (readonly [string, string])[]
   },
 ): SeoDocument {
   const { origin, path, locale, t } = route
@@ -205,12 +283,9 @@ function baseDocument(
     meta.push(['og:locale:alternate', openGraphLocale(advertised)])
   }
 
-  const organization = organizationNode({
-    name: siteName,
-    url: origin ?? '',
-    logo: absoluteImage(origin, logoUrl) ?? '',
-    sameAs: SOCIAL_PROFILES.map((profile) => profile.href),
-  })
+  for (const [key, content] of options.extraMeta ?? []) {
+    meta.push([key, content])
+  }
 
   return {
     title: options.title,
@@ -218,38 +293,23 @@ function baseDocument(
     canonical,
     alternates: origin ? buildAlternates({ origin, path, locales: options.locales }) : [],
     meta,
-    ...(options.schema
-      ? {
-          schema: {
-            site: {
-              name: siteName,
-              description: t('common.general.site_description'),
-              logo: absoluteImage(origin, logoUrl) ?? '',
-              sameAs: SOCIAL_PROFILES.map((profile) => profile.href),
-            },
-            inLanguage: locale,
-            nodes: options.schema,
-          },
-        }
-      : {}),
-    // A route that supplies descriptors serializes nothing here: Unhead's
-    // generator builds its graph, and two graphs on one page would claim the
-    // same document twice.
-    jsonLd:
-      !origin || options.schema
-        ? ''
-        : serializeJsonLd([
-            organization,
-            // The site's own description, never the page's: this node describes
-            // the site, and a crawler reading one page's summary as the whole
-            // site's is a worse claim than no description at all.
-            webSiteNode({
-              name: siteName,
-              url: origin,
-              description: t('common.general.site_description'),
-            }),
-            ...options.nodes,
-          ]),
+    // The generator serializes the graph (lib/seo-head-html.ts), so no route
+    // carries a second one of its own. `/map` is the exception and builds its
+    // own `jsonLd` from the answer SahajCloud serves (lib/atlas-head.tsx).
+    jsonLd: '',
+    schema: {
+      site: {
+        name: siteName,
+        // The site's own description, never the page's: this node describes
+        // the site, and a crawler reading one page's summary as the whole
+        // site's is a worse claim than no description at all.
+        description: t('common.general.site_description'),
+        logo: absoluteImage(origin, logoUrl) ?? '',
+        sameAs: SOCIAL_PROFILES.map((profile) => profile.href),
+      },
+      inLanguage: locale,
+      nodes: options.nodes,
+    },
   }
 }
 
@@ -265,7 +325,7 @@ function composeTitle(name: string | null, siteName: string): string {
 }
 
 /** Absolute URLs for the cards a content-index block server-rendered. */
-function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): ListEntry[] {
+function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute): SeoListEntry[] {
   const { origin, locale } = route
 
   if (!origin) {
@@ -288,7 +348,7 @@ function knowledgeTrail(
   settings: Pick<WebConfig, 'knowledgePages'>,
   route: SeoRoute,
   name: string,
-): Breadcrumb[] {
+): SeoCrumb[] {
   const { origin, locale, t } = route
 
   if (!origin || !isKnowledgePage(page, settings)) {
@@ -297,8 +357,8 @@ function knowledgeTrail(
 
   return [
     { name: t('common.general.site_title'), url: localeUrl(origin, locale, '/') },
-    { name: t('navigation.about_meditation') },
-    { name },
+    { name: t('navigation.about_meditation'), url: null },
+    { name, url: null },
   ]
 }
 
@@ -321,20 +381,19 @@ export function pageSeo(options: {
   const tagline = t('common.general.site_description')
   const name = page.meta?.title || page.title
   const description = page.meta?.description || tagline
-  // ⚠ Two different images. The JSON-LD describes **this document**, so it
-  // carries the page's own or nothing; the default would claim the site's
-  // preview as the article's picture. `og:image` is a share card and takes
-  // the default, because a link with no preview is worse than a generic one.
-  const ownImage = absoluteImage(route.origin, resolveOgImageUrl(page.meta?.image))
+  // ⚠ Two different images. A node describes **this document**, so it carries
+  // the page's own or nothing; the default would claim the site's preview as
+  // the article's picture. `og:image` is a share card and takes the default,
+  // because a link with no preview is worse than a generic one.
+  const ownImage = resolveSeoImage(route.origin, page.meta?.image)
   // `/` normalizes to `/`, and `/index` with it, so the route's own path is
   // the predicate — no caller can pass the wrong answer.
   const isHome = route.path === '/'
   // An author or an article tag is what makes a page an article rather than
   // a standing page of the site. Both come from SahajCloud; neither is inferred
   // from the slug, which is the editor's to change.
-  const author = isPopulated<{ name?: string }>(page.author) ? page.author.name : null
+  const author = resolveAuthor(route.origin, page.author)
   const isArticle = Boolean(author) || (page.tags?.length ?? 0) > 0
-  const url = canonicalUrl(route) ?? ''
   const title = isHome
     ? `${siteName} | ${page.meta?.title || tagline}`
     : composeTitle(name, siteName)
@@ -342,42 +401,53 @@ export function pageSeo(options: {
   // production — so the composed title is the only name it may publish. Every
   // other page's name is the name it was given.
   const nodeName = isHome ? title : name
-  const nodes: Thing[] = [webPageNode({ name: nodeName, url, description, image: ownImage })]
+  const nodes: SeoNode[] = [{ type: 'webPage', name: nodeName, description, image: ownImage }]
 
   if (isArticle) {
-    nodes.push(
-      articleNode({
-        headline: nodeName,
-        url,
-        description,
-        image: ownImage,
-        authorName: author,
-        datePublished: page.createdAt,
-      }),
-    )
+    nodes.push({
+      type: 'article',
+      headline: nodeName,
+      description,
+      image: ownImage,
+      author,
+      datePublished: page.createdAt,
+      dateModified: page.updatedAt,
+    })
   }
 
   const trail = knowledgeTrail(page, settings, route, name)
 
   if (trail.length > 0) {
-    nodes.push(breadcrumbNode(trail))
+    nodes.push({ type: 'breadcrumb', trail })
   }
 
   for (const block of contentIndexBlocks(page.content)) {
     const entries = listEntries(block.resolvedItems ?? [], route)
 
     if (entries.length > 0) {
-      nodes.push(itemListNode(entries))
+      nodes.push({ type: 'itemList', entries })
     }
   }
 
   return baseDocument(route, {
     title,
     description,
-    image: shareImage(route, ownImage),
+    image: shareImage(route, ownImage?.url ?? null),
     ogType: isArticle ? 'article' : 'website',
     locales: options.locales,
     nodes,
+    extraMeta: [
+      ...imageMeta(ownImage),
+      // Open Graph's own article namespace, which a scraper reads without
+      // parsing JSON-LD. Only an article carries them.
+      ...(isArticle
+        ? ([
+            ['article:published_time', page.createdAt],
+            ['article:modified_time', page.updatedAt],
+            ...(author ? ([['article:author', author.name]] as const) : []),
+          ] as const)
+        : []),
+    ],
   })
 }
 
@@ -386,12 +456,14 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
   const { meditation, route } = options
   const { t } = route
   const name = meditation.title || t('meditation.general.untitled')
-  const thumbnail = absoluteImage(route.origin, resolveOgImageUrl(meditation.thumbnail))
+  const description = t('common.general.site_description')
+  const thumbnail = resolveSeoImage(route.origin, meditation.thumbnail)
+  const embedPath = documentEmbedHref('meditations', meditation.id)
 
   return baseDocument(route, {
     title: composeTitle(name, t('common.general.site_title')),
-    description: t('common.general.site_description'),
-    image: shareImage(route, thumbnail),
+    description,
+    image: shareImage(route, thumbnail?.url ?? null),
     // The new meditations are audio, so `video.other` would misdescribe them
     // and Open Graph has no audio page type.
     ogType: 'website',
@@ -399,14 +471,23 @@ export function meditationSeo(options: { meditation: Meditation; route: SeoRoute
     // claims no translations at all (lib/hreflang.ts).
     locales: [],
     nodes: [
-      audioObjectNode({
+      {
+        type: 'webPage',
+        name: composeTitle(name, t('common.general.site_title')),
+        description,
+        image: null,
+      },
+      {
+        type: 'audio',
         name,
-        url: canonicalUrl(route) ?? '',
-        thumbnailUrl: thumbnail,
+        description,
+        thumbnailUrl: thumbnail?.url ?? null,
         durationSeconds:
           meditation.durationMinutes == null ? null : meditation.durationMinutes * 60,
-      }),
+        embedUrl: absoluteEmbedUrl(route, embedPath),
+      },
     ],
+    extraMeta: imageMeta(thumbnail),
   })
 }
 
@@ -428,30 +509,22 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
     ? absoluteImage(route.origin, shareVariant(lecture.thumbnailUrl))
     : null
   const description = t('common.general.site_description')
-  const embedPath = documentEmbedHref('lectures', lecture.id)
-  const embedUrl =
-    route.origin && embedPath ? absoluteHref(route.origin, route.locale, embedPath) : null
+  const title = composeTitle(lecture.title, t('common.general.site_title'))
 
   return baseDocument(route, {
-    title: composeTitle(lecture.title, t('common.general.site_title')),
+    title,
     description,
     image: shareImage(route, poster),
     ogType: 'video.other',
     // `lectures` omits `_status` entirely upstream (lib/hreflang.ts).
     locales: [],
-    nodes: [],
     // A lecture that has not synced carries no name, and a VideoObject named
     // after the site would describe the wrong thing. The WebPage node still
     // stands: the URL exists either way.
-    schema: [
-      {
-        type: 'webPage',
-        name: composeTitle(lecture.title, t('common.general.site_title')),
-        description,
-        // A lecture's poster is the video's still, not a picture of the page,
-        // so the WebPage node claims none of its own.
-        image: null,
-      },
+    nodes: [
+      // A lecture's poster is the video's still, not a picture of the page,
+      // so the WebPage node claims none of its own.
+      { type: 'webPage', name: title, description, image: null },
       ...(lecture.title
         ? ([
             {
@@ -465,7 +538,7 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
               // one. Emitting this needs an upstream field first.
               uploadDate: null,
               durationSeconds: lecturePlaybackSeconds(lecture),
-              embedUrl,
+              embedUrl: absoluteEmbedUrl(route, documentEmbedHref('lectures', lecture.id)),
             },
           ] as const)
         : []),

@@ -111,17 +111,12 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
 })
 
 describe('every route that declares a content head', () => {
-  // Two mechanisms, one requirement. `Head: ContentHead` renders the document
-  // the route's data carries; `headHtmlEnd: seoHeadHtml` generates it with
-  // Unhead. Either way the route owes a document, and a route that declares
-  // the head and builds none emits nothing at all, which no rendered test
-  // can catch.
-  const HEAD_DECLARATIONS = ['Head: ContentHead', 'headHtmlEnd: seoHeadHtml']
-  const configs = sourceFiles(['pages/**/+config.ts']).filter((file) => {
-    const source = stripComments(readSource(file))
-
-    return HEAD_DECLARATIONS.some((declaration) => source.includes(declaration))
-  })
+  // The generator renders the document the route's data carries, so a route
+  // that declares the head and builds none emits nothing at all — the failure
+  // no rendered test can see.
+  const configs = sourceFiles(['pages/**/+config.ts']).filter((file) =>
+    stripComments(readSource(file)).includes('headHtmlEnd: seoHeadHtml'),
+  )
 
   it('is a list this guard actually found', () => {
     // An empty list would pass every assertion below without reading a file.
