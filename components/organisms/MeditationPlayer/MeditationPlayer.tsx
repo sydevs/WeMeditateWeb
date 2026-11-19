@@ -70,8 +70,7 @@ const PLACEHOLDER_IMAGE =
   </svg>
 `)
 
-// How far each key moves the progress handle, in seconds. Home and End go to
-// either end.
+// How far each key moves the progress handle, in seconds.
 const SEEK_KEY_STEPS: Record<string, number> = {
   ArrowRight: 5,
   ArrowUp: 5,
@@ -784,13 +783,10 @@ export function MeditationPlayer({
                   <SimpleLeafSvg className="w-6 h-6" />
                 </div>
 
-                {/* The progress handle: dragged by mouse or touch, and a slider
-                    for the keyboard. Its hit area is larger than the dot.
-                    `aria-labelledby` reads the narrow-layout label even where
-                    the wide layout hides it, because it names it directly.
-                    shortcut: named by the player's visible "Meditation" label,
-                    the only title it draws, until `media.a11y.progress` lands
-                    (sydevs/SahajCloud#1222) — take the name from that key then. */}
+                {/* `aria-labelledby` still names the slider where the wide
+                    layout hides that label: a node referenced directly counts
+                    even when hidden.
+                    shortcut: named by the "Meditation" label, swap to `media.a11y.progress` when sydevs/SahajCloud#1222 lands. */}
                 <div
                   aria-labelledby={seekLabelId}
                   aria-valuemax={Math.round(effectiveDuration)}
