@@ -128,9 +128,16 @@ function Chrome({
 
   // The locales SahajCloud says this site offers, each linking to the current
   // page in that language rather than to its home page. `Link` spells each
-  // href through `lib/urls.ts`, and so does the hreflang cluster, so the
-  // dropdown and the `<head>` cannot disagree about where a locale switch
-  // leads.
+  // href through `lib/urls.ts`, and so does the hreflang cluster, so the two
+  // cannot disagree about how a locale switch is spelled.
+  //
+  // Which locales each one lists is a separate question, and they differ on
+  // purpose. The cluster carries published ∩ offered (`advertisedLocales`),
+  // because a crawler must never be told a translation exists. This list
+  // carries every locale the site serves: an entry for a page with no
+  // translation yet reaches the English page, through `pages/[slug]/+data.ts`'s
+  // 302, and reaches the reader's own language the moment an editor publishes
+  // it. Filtering here would hide the language switch instead.
   const languages = (settings.availableLocales ?? []).map((code) => ({
     code,
     label: localeEndonym(code),

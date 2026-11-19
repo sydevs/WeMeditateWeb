@@ -146,6 +146,24 @@ describe('LayoutChrome', () => {
     expect(html).toContain('en:/index,fr:/index')
   })
 
+  it('offers every locale the site serves, including an untranslated one', () => {
+    // The hreflang cluster lists published ∩ offered; this list deliberately
+    // does not. `pages/[slug]/+data.ts` 302s an untranslated locale to the
+    // English page, so the entry leads somewhere — and filtering the list
+    // would hide the language switch from the readers who most need it.
+    ctx.settings = {
+      availableLocales: ['en', 'it', 'fr'],
+      featuredPages: [],
+      knowledgePages: [],
+      featuredArticles: [],
+      classPages: [],
+      infoPages: [],
+    }
+    const html = renderToStaticMarkup(<LayoutChrome>page content</LayoutChrome>)
+
+    expect(html).toContain('en:/index,it:/index,fr:/index')
+  })
+
   describe('the sticky nav', () => {
     // Measured in Chromium at 1200px of scroll: `top` was -1153 without a lead
     // splash and -1107 with one, at 390px and at 1280px. The nav never reached
