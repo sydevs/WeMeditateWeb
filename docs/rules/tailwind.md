@@ -14,6 +14,17 @@ the `@theme` directive:
 - Two custom animations — `--animate-pulse-scale` and `--animate-shimmer`
 - Everything else uses Tailwind's defaults for spacing, font sizes and shadows
 
+**The entry carries one `@import` of a second theme**, the vendored Video.js skin's
+`media-*` tokens, utilities and container-query variants
+([components/molecules/VideoPlayer/skin/styles/tailwind.css](../../components/molecules/VideoPlayer/skin/styles/tailwind.css)).
+It is here because `@theme`, `@utility` and `@custom-variant` are compile-time directives that
+only work in the entry's own graph — the skin's other stylesheets are plain CSS its components
+import. It is `@theme **inline**`, and that is load-bearing for the same reason the surface
+tokens below are: nearly every token reads a property the skin declares on `.media-skin`, and a
+plain `@theme` would resolve it at `:root`, where it does not exist. That failure is silent —
+the utility emits nothing and the control keeps its content size. See
+[that folder's README](../../components/molecules/VideoPlayer/skin/README.md).
+
 **There is no JavaScript config file, and adding one back changes nothing on its own.** v4 reads
 a config file only through an `@config` directive, so a `tailwind.config.ts` that no stylesheet
 points at is dead — which is what #176 deleted.
