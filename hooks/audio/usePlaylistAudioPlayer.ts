@@ -194,6 +194,7 @@ export function usePlaylistAudioPlayer({
     seek: playerControls.seek,
     setVolume: playerControls.setVolume,
     toggleMute: playerControls.toggleMute,
+    unmute: playerControls.unmute,
     toggleShuffle,
     selectTrack,
   }

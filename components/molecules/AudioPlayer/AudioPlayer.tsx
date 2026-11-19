@@ -180,7 +180,12 @@ export function AudioPlayer({
               step="0.01"
               type="range"
               value={state.isMuted ? 0 : state.volume}
-              onChange={(e) => playerControls.setVolume(parseFloat(e.target.value))}
+              // Howler's volume never clears its mute, and the slider reads 0
+              // while muted, so without the unmute a drag snaps straight back.
+              onChange={(e) => {
+                playerControls.setVolume(parseFloat(e.target.value))
+                playerControls.unmute()
+              }}
             />
           </div>
         )}
