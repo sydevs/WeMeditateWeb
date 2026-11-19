@@ -98,15 +98,17 @@ export function Accordion({
       {items.map((item, index) => {
         const isOpen = openItems.has(item.id)
         const isLastItem = index === items.length - 1
+        const headerId = `accordion-header-${item.id}`
+        const panelId = `accordion-content-${item.id}`
 
         return (
           <article key={item.id} className={`${!isLastItem ? 'border-b border-gray-300' : ''}`}>
             <Heading level={headingLevel} styleAs="none">
               <button
-                aria-controls={`accordion-content-${item.id}`}
+                aria-controls={panelId}
                 aria-expanded={isOpen}
                 className="relative w-full text-left py-3 sm:py-4 pr-6 sm:pr-8 cursor-pointer group flex items-center justify-between"
-                id={`accordion-header-${item.id}`}
+                id={headerId}
                 type="button"
                 onClick={() => toggleItem(item.id)}
               >
@@ -129,12 +131,7 @@ export function Accordion({
               </button>
             </Heading>
 
-            <div
-              aria-labelledby={`accordion-header-${item.id}`}
-              hidden={!isOpen}
-              id={`accordion-content-${item.id}`}
-              role="region"
-            >
+            <div aria-labelledby={headerId} hidden={!isOpen} id={panelId} role="region">
               <div className="pb-4 sm:pb-6 pr-6 sm:pr-8 text-base leading-relaxed text-gray-700">
                 {item.content}
               </div>
