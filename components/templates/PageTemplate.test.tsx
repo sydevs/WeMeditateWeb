@@ -42,6 +42,35 @@ describe('<PageTemplate> hideTitle', () => {
     expect(html).toContain('Meditate Now')
   })
 
+  it('gives a page leading with an untitled splash its one heading', () => {
+    // `Splash` draws its own `<h1>` only when it carries a title, and the
+    // field is optional upstream — so a lead splash is not on its own proof
+    // that the page has a heading (#278).
+    const splash = (title?: string) => ({
+      root: {
+        type: 'root',
+        children: [
+          {
+            type: 'block',
+            fields: { blockType: 'splash', ...(title === undefined ? {} : { title }) },
+          },
+        ],
+      },
+    })
+
+    const untitled = renderToStaticMarkup(
+      <PageTemplate page={makePage({ content: splash() } as unknown as Partial<Page>)} />,
+    )
+    const titled = renderToStaticMarkup(
+      <PageTemplate page={makePage({ content: splash('Discover it') } as unknown as Partial<Page>)} />,
+    )
+
+    // The untitled one gets the stand-in; the titled one leaves the `<h1>` to
+    // the splash, which `RichText` renders and this template does not.
+    expect(classOf(untitled, 'h1')).toContain('sr-only')
+    expect(titled).not.toContain('<h1')
+  })
+
   it('omits the PageTitle banner when hideTitle is true, keeping one heading', () => {
     const html = renderToStaticMarkup(<PageTemplate hideTitle page={makePage()} />)
 

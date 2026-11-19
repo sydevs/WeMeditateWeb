@@ -1,6 +1,5 @@
 import {
   cloneElement,
-  Fragment,
   isValidElement,
   useState,
   type ReactElement,
@@ -21,7 +20,21 @@ import {
   FloatingFocusManager,
   type Placement,
 } from '@floating-ui/react'
+import { Button } from '../Button'
 import { Link, type LinkProps } from '../Link'
+
+/**
+ * Elements a keyboard can already reach and activate. `Button` is here because
+ * it renders one of them, and it is the trigger three of this atom's four
+ * callers pass.
+ */
+const OPERABLE_TAGS = new Set(['a', 'button', 'input', 'select', 'textarea'])
+
+function isOperable(trigger: ReactNode): boolean {
+  const { type } = trigger as ReactElement
+
+  return (typeof type === 'string' && OPERABLE_TAGS.has(type)) || type === Button
+}
 
 /** Side of the trigger the panel opens on. */
 export type DropdownSide = 'top' | 'bottom' | 'left' | 'right'
@@ -253,11 +266,15 @@ export function Dropdown({
   // a second tab stop, and can only be named by what it contains (#278). In
   // focus mode the inner control — an `Input` — already owns focus, so the
   // wrapper stays transparent and keeps the reference.
-  // A fragment passes `isValidElement` and then swallows every prop cloned
-  // onto it, which would leave the trigger operable by nothing at all.
-  const triggerOwnsInteraction =
-    !openOnFocus && isValidElement(trigger) && trigger.type !== Fragment
   const triggerElement = trigger as ReactElement<Record<string, unknown>>
+
+  // The trigger takes the interaction only when it is already operable by a
+  // keyboard. A fragment passes `isValidElement` and then swallows every prop
+  // cloned onto it, and a bare `<span>` — the "With Text Trigger" story — would
+  // take `aria-expanded` onto an element with no role and no tab stop. Either
+  // way the wrapper keeps `role="button"` instead, which is what makes such a
+  // trigger operable at all.
+  const triggerOwnsInteraction = !openOnFocus && isValidElement(trigger) && isOperable(trigger)
 
   return (
     <>

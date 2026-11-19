@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
+import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { anchorFor, openTag } from '../../../tests/_helpers/markup'
+import { Button } from '../Button'
 import { Dropdown, DropdownItem } from './Dropdown'
 
 /**
@@ -31,24 +33,34 @@ describe('Dropdown', () => {
     expect(html).not.toContain('Panel content')
   })
 
-  it('falls back to a focusable wrapper when the trigger is not one element', () => {
-    // Nothing in the repo passes a fragment, but the prop is `ReactNode`, so
-    // the wrapper is still what makes such a trigger operable at all.
-    const html = renderToStaticMarkup(
-      <Dropdown
-        trigger={
-          <>
-            <span>Open</span>
-            <span>me</span>
-          </>
-        }
-      >
-        <div>Panel content</div>
+  /** Rendered through a thunk, so no JSX element sits in an array literal. */
+  const withTrigger = (trigger: () => ReactElement) =>
+    renderToStaticMarkup(
+      <Dropdown trigger={trigger()}>
+        <div>Panel</div>
       </Dropdown>,
     )
 
+  it.each([
+    ['a fragment', () => <>{'Open'}</>],
+    ['a bare span', () => <span>Open</span>],
+  ])('falls back to a focusable wrapper for %s', (_what, trigger) => {
+    // A fragment swallows cloned props, and a span has neither a role nor a
+    // tab stop — so for either the wrapper is what makes the trigger operable.
+    const html = withTrigger(trigger)
+
     expect(html).toContain('role="button"')
     expect(html).toContain('tabindex="0"')
+  })
+
+  it.each([
+    ['a native <button>', () => <button type="button">Open</button>],
+    ['the Button atom', () => <Button>Open</Button>],
+  ])('wires %s directly, with no role on the wrapper', (_what, trigger) => {
+    const html = withTrigger(trigger)
+
+    expect(openTag(html, 'button')).toContain('aria-expanded="false"')
+    expect(html).not.toContain('role="button"')
   })
 
   it('does not turn the wrapper into a button in focus (autocomplete) mode', () => {

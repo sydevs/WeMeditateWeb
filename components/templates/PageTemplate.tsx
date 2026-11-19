@@ -44,8 +44,10 @@ export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
   // nav pages, where the highlighted nav link already names the page.
   const showTitle = !leadSplash && !hideTitle
   // `hideTitle` suppresses a banner a visitor does not need, not the page's
-  // only heading. A lead splash draws its own `<h1>`; nothing else here does.
-  const srOnlyTitle = !leadSplash && !showTitle
+  // only heading. A lead splash draws its own `<h1>` only when it carries a
+  // title, and that field is optional upstream — so an untitled splash needs
+  // this too.
+  const srOnlyTitle = !showTitle && !leadSplash?.hasTitle
   const hasVideo = Boolean(video && video.hlsUrl)
   const hasHeader = hasVideo || showTitle || Boolean(author)
 

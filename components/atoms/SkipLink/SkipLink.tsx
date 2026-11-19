@@ -23,6 +23,20 @@ export function SkipLink() {
       href={`#${MAIN_CONTENT_ID}`}
       variant="unstyled"
       className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-60 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-primary focus:shadow-lg"
+      // Vike's client router intercepts the click and scrolls to the hash
+      // without moving focus, so the browser's own fragment behaviour never
+      // runs and the keyboard would stay on this link. Moving focus is the
+      // whole point of the control, so it is done here. `<main>` already
+      // carries the `tabIndex={-1}` the route announcer focuses it by.
+      onClick={(event) => {
+        const main = document.getElementById(MAIN_CONTENT_ID)
+
+        if (!main) return
+
+        event.preventDefault()
+        main.focus()
+        main.scrollIntoView()
+      }}
     >
       {t('common.general.skip_to_main')}
     </Link>

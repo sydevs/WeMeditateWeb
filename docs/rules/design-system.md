@@ -32,7 +32,7 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   `loading="lazy"` is what preloads. `pnpm lint` rejects it through `local/img-loading`
   ([eslint-rules/index.js](../../eslint-rules/index.js)), stories excepted.
 
-**The keyboard walk-through**: [accessibility-walkthrough.md](accessibility-walkthrough.md) is the
+**The keyboard walk-through**: [accessibility-walkthrough.md](../accessibility-walkthrough.md) is the
 script a person runs for the two things no automatic check can answer — a hit area and a focus
 outline, both of which need a drawn page. The axe gate in CI
 ([tests/a11y/page-types.test.tsx](../../tests/a11y/page-types.test.tsx)) covers everything else and

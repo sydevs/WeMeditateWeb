@@ -59,8 +59,9 @@ page** (`/meditations/<id>`), and **the classes map** (`/map`).
    Escape closes whatever opened, and focus returns to the control that opened
    it.
 6. **On a meditation page, start playback and Tab from the top again.** The
-   play/pause button is faded out while it plays, and Tab must not reach it.
-   Hover the frame and it comes back, reachable.
+   play/pause button is faded out while it plays, and it keeps its tab stop:
+   it is the only play/pause a keyboard can reach. So when focus lands on it,
+   it must become visible. A stop you cannot see here is a finding.
 7. **Turn JavaScript off and reload.** The page still shows its title, its body
    text and its forms. What is missing should be only what
    [components/AGENTS.md](../components/AGENTS.md) says is missing.
