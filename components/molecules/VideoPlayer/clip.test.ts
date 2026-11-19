@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  bufferedPercent,
   formatClock,
   holdInWindow,
   percentSeek,
@@ -149,5 +150,26 @@ describe('percentSeek', () => {
 
   it.each([['k'], ['ArrowLeft'], ['']])('ignores %s', (key) => {
     expect(percentSeek(100, 100, key)).toBeNull()
+  })
+})
+
+describe('bufferedPercent', () => {
+  const window = { start: 100, end: 200 }
+
+  // The ranges are absolute, so the share shown is measured from the window's own start.
+  it.each([
+    ['nothing buffered', [], 0],
+    ['buffered short of the start', [[0, 80]] as [number, number][], 0],
+    ['buffered to the middle', [[0, 150]] as [number, number][], 50],
+    ['buffered to the end', [[0, 200]] as [number, number][], 100],
+    ['buffered past the end', [[0, 900]] as [number, number][], 100],
+    ['several ranges, the last one counting', [[0, 110], [140, 175]] as [number, number][], 75],
+  ])('reports %s as %i%%', (_label, buffered, expected) => {
+    expect(bufferedPercent(window, 100, buffered)).toBe(expected)
+  })
+
+  // `length` is 0 until the media reports a duration, which is the nothing-to-show state.
+  it('reports nothing while the duration is unknown', () => {
+    expect(bufferedPercent(window, 0, [[0, 900]])).toBe(0)
   })
 })

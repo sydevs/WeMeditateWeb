@@ -104,6 +104,28 @@ export function secondsToIsoDuration(seconds: number): string {
 }
 
 /**
+ * How much of the window has buffered, as a 0–100 percentage.
+ *
+ * The media's buffered ranges are absolute, so only the last one's end matters — which is what
+ * the skin's own `TimeSlider` reads — and inside a window that end is measured from the start
+ * and capped at the length. A `length` of 0 is the duration-unknown state, where there is
+ * nothing to show.
+ */
+export function bufferedPercent(
+  window: ClipWindow,
+  length: number,
+  buffered: readonly (readonly [number, number])[],
+): number {
+  if (length <= 0 || buffered.length === 0) {
+    return 0
+  }
+
+  const end = buffered[buffered.length - 1][1]
+
+  return (Math.min(Math.max(end - window.start, 0), length) / length) * 100
+}
+
+/**
  * Where a `0`–`9`, `Home` or `End` keypress should seek to inside the window, or `null` for a
  * key that is none of those.
  *

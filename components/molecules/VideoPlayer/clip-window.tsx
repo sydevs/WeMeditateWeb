@@ -1,14 +1,20 @@
 'use client'
 
-import { createContext } from 'react'
+import { createContext, type CSSProperties } from 'react'
 import { Slider, useHotkey } from '@videojs/react'
 // Spelled `translate` at every call site, never `t`: these keys are the player's own, and `t` is
 // how the site's SahajCloud copy reads — `tests/guards/translation-keys.test.ts` matches the name.
 import { useTranslator } from '@videojs/react/i18n'
 import { usePlayer } from '@videojs/react/video'
-import { SliderFill, SliderThumb, SliderTrack } from './skin/ui/slider'
+import { SliderBuffer, SliderFill, SliderThumb, SliderTrack } from './skin/ui/slider'
 import { cn } from './skin/lib/resolve-class-name'
-import { formatClock, percentSeek, secondsToIsoDuration, type ClipWindow } from './clip'
+import {
+  bufferedPercent,
+  formatClock,
+  percentSeek,
+  secondsToIsoDuration,
+  type ClipWindow,
+} from './clip'
 
 /**
  * The ambient playback window, `null` for a video that plays end to end. It is what lets the
@@ -114,10 +120,15 @@ export function ClipHotkeys({ window, disabled = false }: ClipHotkeysProps) {
  * `TimeSlider` takes its scale from the player store's `currentTime` and `duration`, with no
  * prop that shifts either, so a window needs the generic `Slider` and an offset of our own:
  * `min` of 0, `max` of the window length, and a seek that adds the start back.
+ *
+ * `--media-slider-buffer` is set here because only `TimeSlider` computes one: `SliderCore`
+ * tracks fill and pointer, so the generic `Slider` would leave `SliderBuffer` clipped to 0 and
+ * a clip's scrubber would show no buffered range where a full lecture's does.
  */
 export function ClipTimeSlider({ window, className }: ClipTimeProps) {
   const translate = useTranslator()
   const seek = usePlayer((state) => state.seek)
+  const buffered = usePlayer((state) => state.buffered)
   const { start, length } = useWindowBounds(window)
   const elapsed = useElapsed(start, length)
 
@@ -126,17 +137,21 @@ export function ClipTimeSlider({ window, className }: ClipTimeProps) {
       className={cn(
         'group/slider relative flex flex-1 cursor-pointer items-center justify-center outline-hidden',
         'h-(--media-slider-height,--spacing(8)) min-w-18 rounded-media-pill',
-        'transition-[--media-slider-fill] duration-media-slider ease-out data-dragging:duration-0',
+        'transition-[--media-slider-fill,--media-slider-buffer] duration-media-slider ease-out data-dragging:duration-0',
         className,
       )}
       disabled={length === 0}
       label={{ key: 'slider.seek', text: translate('slider.seek') }}
       max={length}
       min={0}
+      style={
+        { '--media-slider-buffer': `${bufferedPercent(window, length, buffered)}%` } as CSSProperties
+      }
       value={elapsed}
       onValueChange={(value) => void seek(start + value)}
     >
       <SliderTrack className="min-h-0 min-w-0 flex-1">
+        <SliderBuffer />
         <SliderFill />
       </SliderTrack>
       <SliderThumb />
