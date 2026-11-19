@@ -5,9 +5,10 @@
  * global, threaded through `pageContext.translations`. This module turns
  * that object into `t('tab.sub.key', params)`.
  *
- * English is not special here. It is the SahajCloud `en` locale, mirrored into
- * `lib/translations.en.json` by `pnpm sync:translations` for tests, Ladle,
- * and the SahajCloud-unreachable last resort.
+ * English is the SahajCloud `en` locale, mirrored into `lib/translations.en.json`
+ * by `pnpm sync:translations`. The mirror is the fixture for tests and Ladle,
+ * the SahajCloud-unreachable last resort, and what renders for any one key the
+ * locale's own strings lack (see `createT`).
  *
  * `interpolate` and `pluralize` mirror SahajCloud's
  * `src/lib/translations/emailStrings.ts:91-125`, so a string renders the
@@ -155,47 +156,97 @@ export interface TFunction {
   rich: (key: TranslationKey, nodes: Record<string, ReactNode>) => ReactNode[]
 }
 
+/** A key the locale's own strings could not answer. */
+export interface MissingTranslation {
+  key: string
+  locale: Locale
+  /** True when the English mirror filled the gap; false when nothing could. */
+  inMirror: boolean
+}
+
+let reportMissing: ((gap: MissingTranslation) => void) | undefined
+
+/**
+ * Installs what `createT` calls on every miss.
+ *
+ * `lib/` ships to the browser, so it cannot import a Sentry SDK: the server
+ * installs a reporter that can (`server/site-context.ts`), and the browser
+ * installs none.
+ */
+export function setMissingTranslationReporter(
+  reporter: ((gap: MissingTranslation) => void) | undefined,
+): void {
+  reportMissing = reporter
+}
+
+/** Resolves a key, plural family included, from one translations object. */
+function resolve(
+  source: WebTranslations,
+  path: readonly string[],
+  params: TranslationParams | undefined,
+  locale: Locale,
+): string | undefined {
+  const direct = readPath(source, path)
+
+  if (typeof direct === 'string' && direct.length > 0) {
+    return interpolate(direct, params)
+  }
+
+  // A plural key is stored expanded. Resolve the family from its parent
+  // group when `count` is supplied.
+  if (params && typeof params.count === 'number') {
+    const parent = readPath(source, path.slice(0, -1))
+    const base = path[path.length - 1]
+
+    if (parent !== null && typeof parent === 'object') {
+      const group = parent as Record<string, unknown>
+      const forms: Partial<Record<PluralSuffix, string | undefined>> = {}
+
+      for (const suffix of PLURAL_SUFFIXES) {
+        const form = group[`${base}_${suffix}`]
+
+        if (typeof form === 'string') forms[suffix] = form
+      }
+
+      const picked = pluralize(forms, params.count, locale)
+
+      if (picked) return interpolate(picked, params)
+    }
+  }
+
+  return undefined
+}
+
 /**
  * Builds the accessor for one locale's translations.
  *
- * A missing key resolves to its own key path, so a gap is visible in the
- * page instead of rendering as a blank. In development it also warns once
- * per lookup.
+ * A key the locale lacks renders the English mirror's value: a visitor must
+ * never read a key path. A key the mirror lacks too renders as nothing in
+ * production, and as its key path in development, where a gap should be
+ * loud. Every miss reaches the installed reporter and, in development, the
+ * console.
  */
 export function createT(translations: WebTranslations, locale: Locale): TFunction {
   const lookup = (key: TranslationKey, params?: TranslationParams): string => {
     const path = String(key).split('.')
-    const direct = readPath(translations, path)
+    const own = resolve(translations, path, params, locale)
 
-    if (typeof direct === 'string' && direct.length > 0) {
-      return interpolate(direct, params)
-    }
+    if (own !== undefined) return own
 
-    // A plural key is stored expanded. Resolve the family from its parent
-    // group when `count` is supplied.
-    if (params && typeof params.count === 'number') {
-      const parent = readPath(translations, path.slice(0, -1))
-      const base = path[path.length - 1]
+    // English forms take English plural rules: Russian's `one` covers 21,
+    // English's does not.
+    const mirrored =
+      translations === EN_TRANSLATIONS ? undefined : resolve(EN_TRANSLATIONS, path, params, 'en')
 
-      if (parent !== null && typeof parent === 'object') {
-        const group = parent as Record<string, unknown>
-        const forms: Partial<Record<PluralSuffix, string | undefined>> = {}
-
-        for (const suffix of PLURAL_SUFFIXES) {
-          const form = group[`${base}_${suffix}`]
-          if (typeof form === 'string') forms[suffix] = form
-        }
-
-        const picked = pluralize(forms, params.count, locale)
-        if (picked) return interpolate(picked, params)
-      }
-    }
+    reportMissing?.({ key: String(key), locale, inMirror: mirrored !== undefined })
 
     if (import.meta.env?.DEV) {
       console.warn(`[i18n] missing translation "${key}" for locale "${locale}"`)
     }
 
-    return String(key)
+    if (mirrored !== undefined) return mirrored
+
+    return import.meta.env?.DEV ? String(key) : ''
   }
 
   const t = lookup as TFunction

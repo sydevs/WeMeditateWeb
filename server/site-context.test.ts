@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
 import { hookViews } from '../tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import type { WebConfig, WebTranslations } from './sahajcloud-types'
-import { EN_TRANSLATIONS } from '../lib/i18n'
+import { createT, EN_TRANSLATIONS } from '../lib/i18n'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('./sahajcloud-client', () => ({
@@ -99,5 +100,26 @@ describe('loadSiteContext', () => {
     const { inData } = await hookViews({ locale: 'fr' })
 
     await expect(loadSiteContext(inData)).rejects.toThrow()
+  })
+})
+
+describe('a translation key SahajCloud lacks', () => {
+  it('reaches Sentry once per key per isolate, from every render that misses it', () => {
+    // Importing this module is what installs the reporter: `lib/` cannot.
+    vi.mocked(Sentry.captureMessage).mockClear()
+    const live = { blocks: { general: { learn_more: 'Mehr' } } } as unknown as WebTranslations
+
+    createT(live, 'de')('blocks.general.wisdom_sidetext')
+    createT(live, 'de')('blocks.general.wisdom_sidetext')
+    createT({ ...live }, 'fr')('blocks.general.wisdom_sidetext')
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translation key missing from SahajCloud',
+      expect.objectContaining({
+        tags: { source: 'i18n', fallback: 'mirror' },
+        extra: { key: 'blocks.general.wisdom_sidetext', locale: 'de' },
+      }),
+    )
   })
 })

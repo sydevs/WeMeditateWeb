@@ -23,7 +23,7 @@ import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
-import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
+import { EN_TRANSLATIONS, getT, setMissingTranslationReporter, type TFunction } from '../lib/i18n'
 
 export interface SiteContext {
   settings: WebConfig
@@ -35,6 +35,29 @@ export interface SiteContext {
 
 const translationsCache = new WeakMap<object, Promise<WebTranslations>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
+
+/**
+ * The keys this isolate has already reported missing. A missing key recurs on
+ * every render until SahajCloud declares it, so it reports once per isolate
+ * (server/AGENTS.md). The set is bounded by the keys the code asks for, so it
+ * needs no cap.
+ */
+const reportedMissingKeys = new Set<string>()
+
+// Installed on import: every route's `+onBeforeRender` imports this module,
+// so it is in place before the first lookup.
+setMissingTranslationReporter(({ key, locale, inMirror }) => {
+  if (reportedMissingKeys.has(key)) return
+
+  reportedMissingKeys.add(key)
+  Sentry.captureMessage('Translation key missing from SahajCloud', {
+    level: 'warning',
+    tags: { source: 'i18n', fallback: inMirror ? 'mirror' : 'none' },
+    // The locale of the render that first missed it in this isolate, not the
+    // only one affected.
+    extra: { key, locale },
+  })
+})
 
 /** True when the global carries no strings at all, at any depth. */
 function isEmpty(translations: WebTranslations): boolean {
@@ -51,18 +74,17 @@ function isEmpty(translations: WebTranslations): boolean {
 /**
  * Loads the locale's UI strings, once per request.
  *
- * Degrades to the committed English snapshot in two cases, both of which
- * would otherwise render every string as its own key path:
+ * Degrades to the committed English snapshot in two cases:
  *
  * - the read fails, and
  * - the read succeeds but the global is empty, which is what an unseeded
- *   SahajCloud returns. A global with nothing in it is not usable at all.
+ *   SahajCloud returns, and what a locale nobody has translated reads as.
  *
  * ⚠ A partly published locale passes both tests. SahajCloud's English fill
  * reaches only inside a group the document already carries (SahajCloud
  * #705), so a locale holding one group of fourteen renders the other
- * thirteen as key paths. A locale is published with every group present,
- * even blank.
+ * thirteen from this repo's English mirror, which trails the live English.
+ * A locale is published with every group present, even blank.
  *
  * Both paths log a Sentry warning, so the gap stays visible.
  */
