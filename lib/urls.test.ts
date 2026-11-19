@@ -10,6 +10,7 @@ import {
   normalizeContentPath,
   localeHref,
   sitePathFromUrl,
+  editorLinkHref,
 } from './urls'
 
 const ORIGIN = 'https://wemeditate.com'
@@ -228,6 +229,28 @@ describe('isSitePath', () => {
     expect(isSitePath('mailto:hello@example.com')).toBe(false)
     expect(isSitePath('tel:+1234567890')).toBe(false)
     expect(isSitePath('about')).toBe(false)
+  })
+})
+
+describe('editorLinkHref', () => {
+  // Three of the six live `titleUrl` values on a layout block are bare, and
+  // each drew a link-styled <a> with no href.
+  it('reads a bare slug as the site path it names', () => {
+    expect(editorLinkHref('techniques')).toBe('/techniques')
+    expect(editorLinkHref('subtle-system')).toBe('/subtle-system')
+    expect(editorLinkHref('lectures/42')).toBe('/lectures/42')
+    expect(editorLinkHref('медитация')).toBe('/медитация')
+    expect(isSafeLinkHref(editorLinkHref('techniques'))).toBe(true)
+  })
+
+  it('leaves every other spelling for the link gate to judge', () => {
+    expect(editorLinkHref('/techniques')).toBe('/techniques')
+    expect(editorLinkHref('#left-aspect')).toBe('#left-aspect')
+    expect(editorLinkHref('https://example.com/x')).toBe('https://example.com/x')
+    expect(editorLinkHref('mailto:hello@example.com')).toBe('mailto:hello@example.com')
+    expect(editorLinkHref('example.com')).toBe('example.com')
+    expect(editorLinkHref('javascript:alert(1)')).toBe('javascript:alert(1)')
+    expect(editorLinkHref('')).toBe('')
   })
 })
 

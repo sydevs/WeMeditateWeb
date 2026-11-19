@@ -276,3 +276,20 @@ export function localeHref(locale: Locale, href: string): string {
 
   return localePath(locale, normalizeContentPath(path)) + suffix
 }
+
+/** A slug, or slugs joined by slashes: letters, digits, `-` and `_` only. */
+const BARE_SLUG = /^[\p{L}\p{N}][\p{L}\p{N}_-]*(?:\/[\p{L}\p{N}_-]+)*\/?$/u
+
+/**
+ * An editor's free-text link field as an href, reading a bare slug as the
+ * site path it names.
+ *
+ * The layout block's `titleUrl` holds `techniques` as readily as
+ * `/techniques`. A bare word has no scheme and no leading slash, so
+ * {@link isSafeLinkHref} refuses it and `Link` would draw it inert. With no
+ * dot, colon or space in it, it can only be one of our slugs, so it gains
+ * the slash; anything else comes back as written, for the gate to judge.
+ */
+export function editorLinkHref(href: string): string {
+  return BARE_SLUG.test(href) ? `/${href}` : href
+}
