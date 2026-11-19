@@ -169,6 +169,15 @@ describe('web preview share metadata', () => {
     expect(refused.status).toBe(404)
   })
 
+  it('serves a manifest in the language of the URL, from a route and not public/', async () => {
+    const origin = new URL((await fetchPage('/')).finalUrl).origin
+    const response = await fetch(`${origin}/fr/manifest.webmanifest`)
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('application/manifest+json')
+    await expect(response.json()).resolves.toMatchObject({ lang: 'fr', display: 'browser' })
+  })
+
   it('a preview host refuses crawlers in the markup too', async () => {
     const home = await fetchPage('/')
 

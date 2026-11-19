@@ -462,6 +462,12 @@ describe('the player a media route advertises', () => {
   })
 })
 
+describe('the App Store banner', () => {
+  it('offers the app on a content route', () => {
+    expect(metaValues(seoFor(), 'apple-itunes-app')).toEqual(['app-id=6465684494'])
+  })
+})
+
 describe('the robots meta every content route carries', () => {
   it('lets the real site show a large share image in a result', () => {
     expect(metaValues(seoFor(), 'robots')).toEqual(['max-image-preview:large'])

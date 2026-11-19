@@ -37,6 +37,7 @@ import type { SeoAuthor, SeoCrumb, SeoImage, SeoListEntry, SeoNode } from './seo
 import { lecturePlaybackSeconds } from './lecture-shape'
 import { SOCIAL_PROFILES, TWITTER_HANDLE } from './site-identity'
 import { PLAYER_HEIGHT, PLAYER_WIDTH } from './embed-player'
+import { APP_STORE_ID } from './app-identity'
 import { isCanonicalOrigin } from '../server/sitemap'
 
 /**
@@ -304,6 +305,10 @@ function baseDocument(
   for (const advertised of options.locales) {
     meta.push(['og:locale:alternate', openGraphLocale(advertised)])
   }
+
+  // The App Store banner, on a content route only. An `embed` route builds no
+  // document, so a player inside someone else's page never offers it.
+  meta.push(['apple-itunes-app', `app-id=${APP_STORE_ID}`])
 
   for (const [key, content] of options.extraMeta ?? []) {
     meta.push([key, content])

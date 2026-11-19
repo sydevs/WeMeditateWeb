@@ -15,13 +15,16 @@
  * `/robots.txt` as "crawl nothing".
  */
 
-import type { Hono } from 'hono'
+import type { Context, Hono } from 'hono'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
 import { withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
-import { getWebConfig } from './sahajcloud-client'
+import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, type SitemapUrl } from './sitemap'
+import { buildWebManifest } from './manifest'
+import { getT } from '../lib/i18n'
+import { localeFromPath } from '../lib/urls'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './sahajcloud-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
@@ -165,7 +168,24 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   }
 }
 
+/** `/manifest.webmanifest`, and its locale-prefixed spelling. */
+const manifestHandler = async (c: Context<SahajCloudEnv>) => {
+  const { origin, pathname } = new URL(c.req.url)
+  const { locale } = localeFromPath(pathname)
+  const t = getT(await getWebTranslations({ locale }), locale)
+
+  c.header('Content-Type', 'application/manifest+json; charset=utf-8')
+  c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
+
+  return c.json(buildWebManifest({ origin, locale, t }))
+}
+
 export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
+  // Two paths, one handler: the link in the head is locale-prefixed, so the
+  // manifest is in the language of the page that named it, and the bare path
+  // still answers for anything that guesses it.
+  app.get('/:locale{[a-z]{2}(?:-[A-Z]{2})?}/manifest.webmanifest', manifestHandler)
+  app.get('/manifest.webmanifest', manifestHandler)
   app.get('/robots.txt', (c) => {
     const origin = new URL(c.req.url).origin
 
