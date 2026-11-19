@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCreateTextTrack, type TextCueInit } from '@videojs/react'
 import { I18nProvider } from '@videojs/react/i18n'
 import { HlsJsVideo } from '@videojs/react/media/hlsjs-video'
 import { VideoPlayer as VideoJsPlayer, VideoSkin, usePlayer } from '@videojs/react/video'
@@ -9,7 +10,7 @@ import './touch-targets.css'
 import { useLocale } from '../../../hooks/usePageContext'
 import { holdInWindow, replayFrom, resolveClipWindow, type ClipWindow } from './clip'
 import { ClipTimeline } from './clip-window'
-import { cuesToVtt, type VideoSubtitleCue } from './vtt'
+import { toTextCues, type VideoSubtitleCue } from './subtitles'
 import { posterURL } from './poster'
 
 /**
@@ -53,14 +54,13 @@ export interface VideoPlayerProps {
   startTime?: number | null
   /** Seconds at which to pause playback (end of a playback window). */
   stopTime?: number | null
-  /** Inline subtitle cues from the Video collection (rendered as an inline VTT track). */
+  /** Inline subtitle cues from the Video collection. */
   subtitles?: VideoSubtitleCue[]
   /** BCP-47 language tag for the inline-cue subtitle track. @default 'en' */
   subtitleLang?: string
   /**
-   * Per-locale external WebVTT subtitle tracks (Lecture shape). The player
-   * fetches each `.vtt` URL and re-serves it as a same-origin blob
-   * `<track>`, as an alternative to the inline-cue `subtitles` adapter above.
+   * Per-locale external WebVTT subtitle tracks (Lecture shape), as an
+   * alternative to the inline-cue `subtitles` adapter above.
    */
   subtitleTracks?: { locale: string; url: string }[]
   /** Which `subtitleTracks` locale to mark as the default, active track. */
@@ -83,19 +83,38 @@ export interface VideoPlayerProps {
   className?: string
 }
 
+/** One subtitle track: inline cues from the Video collection, or a `.vtt` file to read them from. */
+interface SubtitleTrackInit {
+  language: string
+  cues?: TextCueInit[]
+  src?: string
+}
+
+/**
+ * Adds one subtitle track to the player for as long as this is mounted.
+ *
+ * An app track takes its cues as data, or a `src` the player fetches and parses itself. Neither
+ * puts a `<track>` on the media, so a cross-origin file forces no `crossorigin` — which would
+ * break native HLS playback in Safari — and a host that serves `.vtt` as `text/plain` is read
+ * all the same.
+ */
+function SubtitleTrack({ language, cues, src }: SubtitleTrackInit) {
+  useCreateTextTrack({ kind: 'subtitles', label: language.toUpperCase(), language, cues, src })
+
+  return null
+}
+
 /**
  * Turns the page's locale into the one subtitle track that shows, in place of the browser's.
  *
  * Video.js restores the last track a viewer chose, then one matching the *browser's* language,
- * then the first track — so the `default` attribute alone no longer decides, and a Russian
- * browser would read English subtitles on a Russian page. This applies the page's preference
- * once and then leaves the viewer's own choices alone. With no matching track it turns subtitles
- * off, which is what the `default` attribute used to mean.
+ * then the first track — so a Russian browser would read English subtitles on a Russian page.
+ * This applies the page's preference once and then leaves the viewer's own choices alone. With
+ * no matching track it turns subtitles off.
  *
- * It waits for `expected`, the languages of the tracks this player mounted, rather than for the
+ * It waits for `expected`, the languages of the tracks this player added, rather than for the
  * list to be non-empty: `textTrackList` also carries whatever the HLS manifest declares and
- * tracks of other kinds, so a manifest's own track would otherwise spend the one shot before a
- * fetched blob `<track>` had attached.
+ * tracks of other kinds, so a manifest's own track would otherwise spend the one shot.
  */
 function SubtitlePreference({ lang, expected }: { lang?: string; expected: string[] }) {
   const tracks = usePlayer((state) => state.textTrackList)
@@ -126,12 +145,6 @@ function SubtitlePreference({ lang, expected }: { lang?: string; expected: strin
   return null
 }
 
-/** The subtitle tracks the player renders: one blob URL per language, plus which is default. */
-interface TrackBlob {
-  locale: string
-  url: string
-}
-
 export function VideoPlayer({
   hlsUrl,
   poster,
@@ -152,87 +165,21 @@ export function VideoPlayer({
     [startTime, stopTime],
   )
 
-  // Inline cues (Video collection) → one WebVTT document, served through the same blob
-  // mechanism as the external tracks below, so there is one subtitle code path.
-  const inlineVtt = useMemo(
-    () => (subtitles && subtitles.length ? cuesToVtt(subtitles) : null),
-    [subtitles],
+  // Both subtitle shapes reach the player as app text tracks: the Video collection's inline cues
+  // as data, a Lecture's per-locale files as URLs the player reads.
+  //
+  // Keyed on content rather than array identity. The live preview re-resolves these props on
+  // every render, and a fresh `cues` array makes the player drop and re-add the track, which
+  // would turn the viewer's subtitles off mid-playback.
+  const tracksKey = JSON.stringify([subtitles ?? null, subtitleLang, subtitleTracks ?? null])
+  const tracks = useMemo<SubtitleTrackInit[]>(
+    () =>
+      subtitles?.length
+        ? [{ language: subtitleLang, cues: toTextCues(subtitles) }]
+        : (subtitleTracks ?? []).map((track) => ({ language: track.locale, src: track.url })),
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- `tracksKey` encodes every cue and every track URL, so a re-resolved prop differs only in array identity
+    [tracksKey],
   )
-
-  // The external per-locale .vtt files are re-served as same-origin `text/vtt` blobs. Linking
-  // the URLs directly is brittle in two ways. Some hosts serve .vtt as `text/plain`. And a
-  // cross-origin track forces `crossorigin` on the media, which can break native HLS playback
-  // in Safari. Blobs are same-origin, so this needs no crossOrigin, and the video plays
-  // everywhere.
-  const [trackBlobs, setTrackBlobs] = useState<TrackBlob[]>([])
-
-  // Stable key, so a fresh `subtitleTracks` array identity, for example one
-  // re-resolved on every live-preview render, does not trigger a redundant refetch.
-  const tracksKey = (subtitleTracks ?? []).map((t) => `${t.locale} ${t.url}`).join('')
-
-  useEffect(() => {
-    const created: string[] = []
-    const toBlobUrl = (vtt: string): string => {
-      const url = URL.createObjectURL(new Blob([vtt], { type: 'text/vtt' }))
-
-      created.push(url)
-
-      return url
-    }
-    const revoke = () => created.forEach((url) => URL.revokeObjectURL(url))
-
-    if (inlineVtt) {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect -- the blob URL only exists once the effect has made it, so there is nothing to compute during render
-      setTrackBlobs([{ locale: subtitleLang, url: toBlobUrl(inlineVtt) }])
-
-      return revoke
-    }
-
-    const tracks = subtitleTracks ?? []
-
-    if (tracks.length === 0) {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect -- a no-op on mount, since `trackBlobs` starts empty; it clears blobs only when the tracks go away
-      setTrackBlobs([])
-
-      return revoke
-    }
-
-    let cancelled = false
-
-    void Promise.all(
-      tracks.map(async (track) => {
-        try {
-          const res = await fetch(track.url)
-
-          if (!res.ok) {
-            return null
-          }
-
-          return { locale: track.locale, url: toBlobUrl(await res.text()) }
-        } catch {
-          return null
-        }
-      }),
-    ).then((results) => {
-      if (cancelled) {
-        // The fetches outlive the effect, so the URLs they minted were created after the
-        // cleanup had already run and nothing else would ever revoke them.
-        revoke()
-
-        return
-      }
-      setTrackBlobs(results.filter((r) => r !== null))
-    })
-
-    return () => {
-      cancelled = true
-      revoke()
-    }
-    // Keyed on the track URLs only (`tracksKey`), not on `defaultSubtitleLang`.
-    // The active track is chosen once the tracks attach, so switching locale never
-    // refetches or revokes a blob URL that a mounted <track> still points to.
-    // eslint-disable-next-line @eslint-react/exhaustive-deps -- `tracksKey` encodes every track's locale and url, so a stale `subtitleTracks` differs only in array identity
-  }, [tracksKey, inlineVtt, subtitleLang])
 
   // `load="visible"` is gone (videojs/video.js#3043) and media loads as soon as it attaches, so
   // `preload="none"` holds every player at the poster and this observer is what lets an
@@ -305,21 +252,13 @@ export function VideoPlayer({
                 }
               }}
               onTimeUpdate={(event) => holdWindow(event.currentTarget)}
-            >
-              {trackBlobs.map((track) => (
-                <track
-                  key={track.locale}
-                  default={track.locale === (inlineVtt ? subtitleLang : defaultSubtitleLang)}
-                  kind="subtitles"
-                  label={track.locale.toUpperCase()}
-                  src={track.url}
-                  srcLang={track.locale}
-                />
-              ))}
-            </HlsJsVideo>
+            />
+            {tracks.map((track) => (
+              <SubtitleTrack key={track.language} {...track} />
+            ))}
             <SubtitlePreference
-              expected={trackBlobs.map((track) => track.locale)}
-              lang={inlineVtt ? subtitleLang : defaultSubtitleLang}
+              expected={tracks.map((track) => track.language)}
+              lang={subtitles?.length ? subtitleLang : defaultSubtitleLang}
             />
             {clip ? <ClipTimeline window={clip} /> : null}
           </VideoSkin>

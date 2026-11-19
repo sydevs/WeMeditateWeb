@@ -77,4 +77,4 @@ export function VideoPlayer(props: VideoPlayerProps) {
 }
 
 export type { VideoPlayerProps } from './VideoPlayer'
-export { cuesToVtt, msToVttTimestamp, type VideoSubtitleCue } from './vtt'
+export type { VideoSubtitleCue } from './subtitles'
