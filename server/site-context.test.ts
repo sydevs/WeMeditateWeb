@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
-import { hookViews } from '../tests/_helpers/page-context'
+import { abortForkViews, hookViews } from '../tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
-import type { WebConfig, WebTranslations } from './sahajcloud-types'
+import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
 import { createT, EN_TRANSLATIONS } from '../lib/i18n'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
@@ -100,6 +100,90 @@ describe('loadSiteContext', () => {
     const { inData } = await hookViews({ locale: 'fr' })
 
     await expect(loadSiteContext(inData)).rejects.toThrow()
+  })
+})
+
+/**
+ * The degrade warnings run on every render, so each is bounded per isolate.
+ *
+ * The isolate's memo outlives a test, so each case below degrades a locale no
+ * other case uses: a reused one would already be reported.
+ */
+describe('translations degrade reporting', () => {
+  const offering = (...locales: Locale[]) =>
+    vi.mocked(getWebConfig).mockResolvedValue({ availableLocales: locales } as WebConfig)
+
+  beforeEach(() => {
+    vi.mocked(Sentry.captureMessage).mockClear()
+    vi.restoreAllMocks()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  it('sends one event per locale and reason, however many requests degrade', async () => {
+    offering('de')
+    vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
+
+    for (let request = 0; request < 3; request++) {
+      const { inData, inOnBeforeRender } = await hookViews({ locale: 'de' })
+
+      await loadSiteContext(inData)
+      await loadTranslations(inOnBeforeRender)
+    }
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translations global is empty; rendering the English snapshot',
+      expect.objectContaining({ extra: { locale: 'de' } }),
+    )
+    // The request log keeps the full record.
+    expect(console.warn).toHaveBeenCalledTimes(3)
+  })
+
+  it('reports a second reason for the same locale', async () => {
+    offering('it')
+    vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
+    await loadSiteContext((await hookViews({ locale: 'it' })).inData)
+
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
+    await loadSiteContext((await hookViews({ locale: 'it' })).inData)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+  })
+
+  it('says nothing to Sentry about a locale the site does not offer', async () => {
+    // A crawler walking `/nl/…` reads an empty global on every request, and
+    // each one 404s, error page included.
+    offering('en')
+    vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
+
+    const request = await hookViews({ locale: 'nl' })
+
+    await expect(loadSiteContext(request.inData)).rejects.toThrow()
+    await loadTranslations((await abortForkViews(request.target)).inOnBeforeRender)
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  it('reports from a render that reads no config, once the locale is known to be offered', async () => {
+    // An embed: `+onBeforeRender` is the only reader.
+    offering('en')
+    await loadSiteContext((await hookViews({ locale: 'en' })).inData)
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
+    await loadTranslations((await hookViews({ locale: 'ru' })).inOnBeforeRender)
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+
+    offering('en', 'ru')
+    vi.mocked(getWebTranslations).mockResolvedValue(TRANSLATIONS)
+    await loadSiteContext((await hookViews({ locale: 'ru' })).inData)
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
+    await loadTranslations((await hookViews({ locale: 'ru' })).inOnBeforeRender)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translations read failed; rendering the English snapshot',
+      expect.objectContaining({ extra: { locale: 'ru' } }),
+    )
   })
 })
 

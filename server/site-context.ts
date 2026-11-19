@@ -33,16 +33,34 @@ export interface SiteContext {
   t: TFunction
 }
 
-const translationsCache = new WeakMap<object, Promise<WebTranslations>>()
+/** Why a read rendered the English snapshot instead of the locale's strings. */
+type Degrade = 'empty' | 'failed'
+
+interface TranslationsRead {
+  translations: WebTranslations
+  degraded?: Degrade
+}
+
+const translationsCache = new WeakMap<object, Promise<TranslationsRead>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
 
 /**
- * The keys this isolate has already reported missing. A missing key recurs on
- * every render until SahajCloud declares it, so it reports once per isolate
- * (server/AGENTS.md). The set is bounded by the keys the code asks for, so it
- * needs no cap.
+ * What this isolate has already sent to Sentry. Both gaps recur on every
+ * render until someone fixes them upstream, so each reports once per isolate
+ * (server/AGENTS.md). Each set is bounded by a finite domain — the keys the
+ * code asks for, the locales times two reasons — so neither needs a cap.
  */
 const reportedMissingKeys = new Set<string>()
+const reportedDegrades = new Set<string>()
+
+/**
+ * The locales the site offered at this isolate's last config read.
+ *
+ * An embed or an error page renders without reading the config, so this is
+ * how it tells a locale the site offers from one that 404s. Empty until the
+ * first chromed render, and nothing is reported from those renders until then.
+ */
+let lastOfferedLocales: readonly Locale[] = []
 
 // Installed on import: every route's `+onBeforeRender` imports this module,
 // so it is in place before the first lookup.
@@ -58,6 +76,20 @@ setMissingTranslationReporter(({ key, locale, inMirror }) => {
     extra: { key, locale },
   })
 })
+
+function reportDegrade(locale: Locale, reason: Degrade): void {
+  const signature = `${locale}:${reason}`
+
+  if (reportedDegrades.has(signature)) return
+
+  reportedDegrades.add(signature)
+  Sentry.captureMessage(
+    reason === 'empty'
+      ? 'Translations global is empty; rendering the English snapshot'
+      : 'Translations read failed; rendering the English snapshot',
+    { level: 'warning', tags: { source: 'loadTranslations' }, extra: { locale } },
+  )
+}
 
 /** True when the global carries no strings at all, at any depth. */
 function isEmpty(translations: WebTranslations): boolean {
@@ -86,9 +118,21 @@ function isEmpty(translations: WebTranslations): boolean {
  * thirteen from this repo's English mirror, which trails the live English.
  * A locale is published with every group present, even blank.
  *
- * Both paths log a Sentry warning, so the gap stays visible.
+ * Either degrade logs on every request, and reaches Sentry once per locale
+ * and reason per isolate — and only for a locale the site offers, since a
+ * request in any other locale 404s.
  */
-export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
+export async function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
+  const { translations, degraded } = await readTranslations(pageContext)
+
+  if (degraded && lastOfferedLocales.includes(pageContext.locale)) {
+    reportDegrade(pageContext.locale, degraded)
+  }
+
+  return translations
+}
+
+function readTranslations(pageContext: PageContextServer): Promise<TranslationsRead> {
   const locale = pageContext.locale
 
   return perRequest(translationsCache, pageContext, () =>
@@ -99,29 +143,19 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
         // ordinary visitor sees, not a second document's unsaved edits.
         getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
       )
-      .then((translations) => {
-        if (!isEmpty(translations)) return translations
+      .then((translations): TranslationsRead => {
+        if (!isEmpty(translations)) return { translations }
 
         console.warn(
           `[loadTranslations] "${locale}" returned no strings; using the English snapshot`,
         )
-        Sentry.captureMessage('Translations global is empty; rendering the English snapshot', {
-          level: 'warning',
-          tags: { source: 'loadTranslations' },
-          extra: { locale },
-        })
 
-        return EN_TRANSLATIONS
+        return { translations: EN_TRANSLATIONS, degraded: 'empty' }
       })
-      .catch((error: unknown) => {
+      .catch((error: unknown): TranslationsRead => {
         console.warn(`[loadTranslations] read failed for "${locale}":`, error)
-        Sentry.captureMessage('Translations read failed; rendering the English snapshot', {
-          level: 'warning',
-          tags: { source: 'loadTranslations' },
-          extra: { locale },
-        })
 
-        return EN_TRANSLATIONS
+        return { translations: EN_TRANSLATIONS, degraded: 'failed' }
       }),
   )
 }
@@ -145,10 +179,13 @@ async function load(pageContext: PageContextServer): Promise<SiteContext> {
 
   const preview = await loadLivePreview(pageContext)
 
-  const [settings, translations] = await Promise.all([
+  const [settings, { translations, degraded }] = await Promise.all([
     getWebConfig({ locale }),
-    loadTranslations(pageContext),
+    readTranslations(pageContext),
   ])
+
+  lastOfferedLocales = settings.availableLocales
+  const offered = settings.availableLocales.includes(locale)
 
   // A locale prefix the site does not offer is not a page. 404 rather than
   // rendering English under a French URL.
@@ -158,9 +195,11 @@ async function load(pageContext: PageContextServer): Promise<SiteContext> {
   // before rendering a single string — the one case they most need to see.
   // The gate exists to stop the PUBLIC meeting a half-translated site; an
   // authenticated preview is precisely who it should not apply to.
-  if (!preview.active && !settings.availableLocales.includes(locale)) {
+  if (!preview.active && !offered) {
     throw render(404, `Locale "${locale}" is not available.`)
   }
+
+  if (degraded && offered) reportDegrade(locale, degraded)
 
   // `getT`, not `createT`: `useT()` builds the component tree's accessor the
   // same way, so both sides of a render share one closure pair per request.
