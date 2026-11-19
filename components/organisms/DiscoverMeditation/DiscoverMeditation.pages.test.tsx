@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { NavPage } from '../../../server/sahajcloud-types'
-import { anchorFor, classesWith, openTag } from '../../../tests/_helpers/markup'
+import { anchorFor, classOf, classesWith, openTag } from '../../../tests/_helpers/markup'
 import { DiscoverMeditation } from './DiscoverMeditation'
 
 const page = (id: number, slug: string, title: string, meta?: NavPage['meta']): NavPage => ({
@@ -94,5 +94,20 @@ describe('DiscoverMeditation actions', () => {
 
     expect(openTag(withoutImage, 'img')).toBe('')
     expect(openTag(withoutImage, 'svg')).toContain('aria-hidden="true"')
+  })
+
+  // jsdom computes no colour, and the text-contrast guard reads a gray step
+  // against white, not against this photo — where gray-700 measured 3.8:1.
+  it('draws its heading and subtitle in gray-900, the step that clears 4.5:1 on the photo', () => {
+    const html = render(CLASS_PAGES)
+
+    expect(classOf(html, '<section').split(/\s+/)).toContain('text-gray-900')
+
+    for (const tag of ['<h2', '<p']) {
+      const classes = classOf(html, tag)
+
+      expect(classes).not.toBe('')
+      expect(classes).not.toMatch(/\btext-gray-\d+/)
+    }
   })
 })

@@ -60,7 +60,7 @@ export function DiscoverMeditation({
       className={`
         relative min-h-screen
         flex items-center justify-center
-        text-center text-gray-700
+        text-center text-gray-900
         py-24 lg:pb-48
         ${className}
       `}
@@ -75,20 +75,21 @@ export function DiscoverMeditation({
         }}
       />
 
-      {/* Gradient Overlay - left side, extends 65px below component */}
+      {/* Gradient Overlay - left side */}
       <div
-        className="absolute inset-0 -bottom-16 bg-linear-to-r from-transparent to-teal-100/30 w-[30%]"
+        className="absolute inset-0 bg-linear-to-r from-transparent to-teal-100/30 w-[30%]"
         role="presentation"
       />
 
       {/* Main Content */}
       <div className="relative z-10 p-6">
-        {/* Header Section */}
+        {/* Header Section: the section's gray-900, not gray-700. Under `md` the
+            subtitle is normal-size text on the photo, where gray-700 measured 3.8:1. */}
         <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-normal text-gray-700 mb-8">
+          <h2 className="text-3xl md:text-4xl font-normal mb-8">
             {title ?? t('discover.general.title')}
           </h2>
-          <p className="text-xl md:text-2xl font-light text-gray-700 max-w-lg mx-auto">
+          <p className="text-xl md:text-2xl font-light max-w-lg mx-auto">
             {subtitle ?? t('discover.general.subtitle')}
           </p>
         </div>

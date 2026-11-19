@@ -54,7 +54,6 @@ export const Default: Story = () => (
         <DiscoverMeditation className="full-bleed" pages={DESCRIBED} />
       </StorySection>
     </StorySection>
-    <div />
   </StoryWrapper>
 )
 
