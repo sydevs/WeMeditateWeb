@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { vi } from 'vitest'
 import type useEmblaCarousel from 'embla-carousel-react'
 
@@ -76,13 +76,25 @@ function createFakeEmbla(options: Options): FakeEmbla {
  *     }))
  */
 export function useFakeEmblaCarousel(options?: Options) {
-  const [api] = useState(() => {
-    const fake = createFakeEmbla(options)
+  const optionsRef = useRef(options)
+  const [viewport, setViewport] = useState<HTMLElement | null>(null)
+  const [api, setApi] = useState<FakeEmbla>()
+
+  // As the real hook does, the API arrives only after the ref attaches to a
+  // viewport, so a carousel's first render always sees `undefined`.
+  useEffect(() => {
+    if (!viewport) {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- mirrors embla-carousel-react, which drops the API when the viewport detaches
+      setApi(undefined)
+
+      return
+    }
+
+    const fake = createFakeEmbla(optionsRef.current)
 
     carousels.push(fake)
+    setApi(fake)
+  }, [viewport])
 
-    return fake
-  })
-
-  return [() => {}, api] as const
+  return [setViewport, api] as const
 }
