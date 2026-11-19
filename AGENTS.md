@@ -105,6 +105,11 @@ These rules apply whether or not the matching rule file or skill is loaded.
   [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
   `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
   set, never the set itself.
+  **A route with no SahajCloud document behind it is the one exception**, and it is a different
+  derivation rather than a relaxed one: nothing publishes `/meditations` per locale, and it
+  renders in every language the site offers, so `routeLocales` advertises `availableLocales`
+  whole. That export lives beside `advertisedLocales` for the same reason the rule above exists —
+  the head and the sitemap must not disagree.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
   answer from there. Never restate one of these rules at a call site. A **scheme** is part of that

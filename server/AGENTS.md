@@ -128,8 +128,12 @@ Three rules still apply:
 - **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
   `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
-  A read that degrades silently still needs `withRetry`, which the cache used to supply.
-  `fetchContentIndexDocs` is the one read still missing it (#128).
+  A read that degrades silently still needs `withRetry`, which the cache used to supply. Every
+  one of them has it (#128).
+  ⚠ **The wrapper reports each retried attempt itself**, at `warning`, so a caller that also
+  reports its own degrade spends three events on one failed read. Capture the degrade **outside**
+  the wrapper all the same: inside, the same failure is reported once per attempt by the caller
+  too.
 - **Never branch on a status. Pick the reader that matches the read.** This is the rule for
   `sahajCloudFetch`'s callers. The SDK has no such pair, so `getDocumentById` reads the status
   itself — through `readStatus`, the one place a status is read off an error — to answer an
@@ -137,9 +141,9 @@ Three rules still apply:
   `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
   where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
   `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
-  without a body dump. Four of the six reads take the optional form; `fetchContentIndexDocs` and
-  `getAtlasSitemapUrls` take `sahajCloudFetch`, because a 404 from either endpoint is a data
-  gap, not an answer. The status rides on the error because `detectErrorType` reads it
+  without a body dump. Four of the eight reads take the optional form; `fetchContentIndexDocs`,
+  `getAtlasSitemapUrls` and the mood finder's two (`server/moods.ts`) take `sahajCloudFetch`,
+  because a 404 from any of them is a data gap, not an answer. The status rides on the error because `detectErrorType` reads it
   structurally and otherwise falls back to matching `50[0-9]` in the message — a plain `Error`
   classifies a Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one
   shape a Railway restart behind the edge produces.
