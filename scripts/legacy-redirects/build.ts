@@ -69,7 +69,19 @@ export interface NewSite {
   meditations: { id: number; label: string; title: string | null; locale: string }[]
 }
 
-type MatchHow = 'slug' | 'history' | 'title' | 'other-locale slug'
+type MatchHow = 'slug' | 'history' | 'title' | 'other-locale slug' | 'curated'
+
+/**
+ * Judgement matches the owner approved where no slug, history or title
+ * agrees. Keyed `<record kind>:<old id>`, valued by the new page's slug; each
+ * applies in every language the old record exists in.
+ */
+const CURATED_MATCHES: Record<string, string> = {
+  'treatment:1': 'footsoaking',
+  'treatment:2': 'ice-pack',
+  'treatment:3': 'candle-treatment',
+  'static:2': 'about-meditation',
+}
 
 export type Match =
   | { kind: 'match'; target: number; how: MatchHow }
@@ -285,6 +297,19 @@ export function buildRedirectMap(
     ['static', inventory.staticPages],
   ]
 
+  const curatedMatch = (type: OldRecord['type'], id: number): Match | null => {
+    const slug = CURATED_MATCHES[`${type}:${id}`]
+
+    if (!slug) return null
+
+    const page = pagesBySlug.get(slug)
+
+    if (!page)
+      throw new Error(`curated match ${type}:${id}: page ${slug} is missing from new-site.json`)
+
+    return { kind: 'match', target: page.id, how: 'curated' }
+  }
+
   const records: OldRecord[] = []
 
   for (const [type, table] of tables) {
@@ -306,7 +331,7 @@ export function buildRedirectMap(
         id,
         rows,
         history: recordHistory,
-        match: matchRecord(type, rows, recordHistory),
+        match: curatedMatch(type, id) ?? matchRecord(type, rows, recordHistory),
       })
     }
   }

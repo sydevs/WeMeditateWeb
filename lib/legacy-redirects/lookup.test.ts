@@ -229,7 +229,7 @@ describe('lookupLegacyRedirect', () => {
     expect(lookupLegacyRedirect('/privacy')).toBe('/privacy-notice')
     expect(lookupLegacyRedirect('/contact')).toBe('/contact-us')
     expect(lookupLegacyRedirect('/articles')).toBe('/inspiration')
-    expect(lookupLegacyRedirect('/techniques/foot-soak')).toBe('/techniques')
+    expect(lookupLegacyRedirect('/techniques/foot-soak')).toBe('/footsoaking')
     expect(lookupLegacyRedirect('/subtle-system/heart-chakra')).toBe('/heart-chakra')
   })
 

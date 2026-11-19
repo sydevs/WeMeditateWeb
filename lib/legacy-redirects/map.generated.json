@@ -176,8 +176,24 @@
       "kundalini",
       "ru fr uk bg"
     ],
+    "67": [
+      "candle-treatment",
+      ""
+    ],
+    "69": [
+      "footsoaking",
+      ""
+    ],
+    "71": [
+      "ice-pack",
+      ""
+    ],
     "74": [
       "techniques",
+      ""
+    ],
+    "98": [
+      "about-meditation",
       ""
     ]
   },
@@ -190,7 +206,7 @@
     "subtle_system": 5,
     "music": 9,
     "streams": 14,
-    "about": 1,
+    "about": 98,
     "contact": 3,
     "shri_mataji": 4,
     "sahaja_yoga": 1,
@@ -936,96 +952,96 @@
     },
     "treatment": {
       "bg": {
-        "candle-flame": -1,
-        "foot-soak": -1,
+        "candle-flame": 67,
+        "foot-soak": 69,
         "hand-on-chakra": -1,
-        "ice-on-liver": -1
+        "ice-on-liver": 71
       },
       "cs": {
-        "koupel-nohou": -1,
-        "led-na-jatra": -1,
+        "koupel-nohou": 69,
+        "led-na-jatra": 71,
         "mantry": -1,
-        "plamen-svicky": -1,
+        "plamen-svicky": 67,
         "ruka-na-čakře": -1
       },
       "de": {
-        "candle-flame": -1,
+        "candle-flame": 67,
         "chakra-treatment": -1,
-        "foot-soak": -1,
+        "foot-soak": 69,
         "hand-on-chakra": -1,
-        "ice-on-liver": -1,
+        "ice-on-liver": 71,
         "mantras": -1,
         "releasing-guilt": -1
       },
       "en": {
-        "candle-flame": -1,
+        "candle-flame": 67,
         "chakra-treatment": -1,
-        "foot-soak": -1,
+        "foot-soak": 69,
         "hand-on-chakra": -1,
-        "ice-on-liver": -1,
+        "ice-on-liver": 71,
         "mantras": -1,
         "releasing-guilt": -1
       },
       "fr": {
-        "du-froid-sur-le-foie": -1,
-        "la-bougie": -1,
-        "le-bain-de-pieds": -1,
+        "du-froid-sur-le-foie": 71,
+        "la-bougie": 67,
+        "le-bain-de-pieds": 69,
         "mettre-une-main-sur-un-chakra": -1
       },
       "it": {
-        "candle-flame": -1,
+        "candle-flame": 67,
         "hand-on-chakra": -1,
-        "ice-on-liver": -1,
-        "pediluvio": -1
+        "ice-on-liver": 71,
+        "pediluvio": 69
       },
       "ru": {
-        "candle-flame": -1,
-        "foot-soak": -1,
+        "candle-flame": 67,
+        "foot-soak": 69,
         "hand-on-chakra": -1,
-        "ice-on-liver": -1
+        "ice-on-liver": 71
       },
       "tr": {
-        "184c26cb-6ddd-4cbb-9bed-daf1c77fa9a9": -1,
-        "25c37c67-5840-4203-8976-47de45dc05e9": -1,
-        "36d954ef-e033-4551-91c7-f0634bfe0e9b": -1,
+        "184c26cb-6ddd-4cbb-9bed-daf1c77fa9a9": 71,
+        "25c37c67-5840-4203-8976-47de45dc05e9": 67,
+        "36d954ef-e033-4551-91c7-f0634bfe0e9b": 67,
         "3fe9dc01-0c7a-4901-b6ae-20f6ef536c32": -1,
         "41033fec-05a1-41ea-acb0-5f3e23ea3e05": -1,
-        "508dd501-65bc-4e33-aaf3-14381a379b42": -1,
-        "51172fb8-706a-41e1-abac-0e02039acafb": -1,
+        "508dd501-65bc-4e33-aaf3-14381a379b42": 69,
+        "51172fb8-706a-41e1-abac-0e02039acafb": 71,
         "552814f2-2c52-4900-8b6c-aafbca11aef8": -1,
-        "56c9e989-2758-4a1a-bff8-5b3bc1875c75": -1,
+        "56c9e989-2758-4a1a-bff8-5b3bc1875c75": 69,
         "5af012c9-51d0-4153-aef3-5c47214e486b": -1,
         "5cf2d30d-42e6-4f17-b213-eac8af866a0f": -1,
-        "61b793c6-4248-4e4d-8cf6-4d74c6fa31c4": -1,
-        "6490a8d3-5c79-4e25-a90c-f219672a313c": -1,
-        "6b84a86f-2a96-4fd6-a595-8ef93057c976": -1,
+        "61b793c6-4248-4e4d-8cf6-4d74c6fa31c4": 71,
+        "6490a8d3-5c79-4e25-a90c-f219672a313c": 67,
+        "6b84a86f-2a96-4fd6-a595-8ef93057c976": 69,
         "830a1862-76d4-4a5c-8ed7-bf046f37686d": -1,
-        "99c13fa4-636b-42d4-bf6c-ba890fcd3b55": -1,
-        "a0da3432-037f-4857-9e5d-1acec6c6c835": -1,
+        "99c13fa4-636b-42d4-bf6c-ba890fcd3b55": 71,
+        "a0da3432-037f-4857-9e5d-1acec6c6c835": 71,
         "a18cf6e7-f25c-40c1-abe0-98f232ad1996": -1,
         "ac5c2306-39f3-4db4-9f4b-9f5d1b9b9dbf": -1,
-        "bc849078-b0c0-4323-b567-4bab6dfbeaab": -1,
-        "bfc59244-1f11-4b98-97a3-4b8a2d698a32": -1,
+        "bc849078-b0c0-4323-b567-4bab6dfbeaab": 71,
+        "bfc59244-1f11-4b98-97a3-4b8a2d698a32": 69,
         "cakra-uzerine-elimizi-koyma": -1,
         "cakra-uzerıne-el-koymak": -1,
         "d6e2881a-caee-41db-828a-565efea42564": -1,
-        "dc04b42c-585f-4783-9ae2-487cad0f9442": -1,
+        "dc04b42c-585f-4783-9ae2-487cad0f9442": 67,
         "fa358562-bdd6-4490-b399-fc37f4baae59": -1,
-        "karacigere-buz-torbasi": -1,
+        "karacigere-buz-torbasi": 71,
         "mantralar": -1,
-        "mum-isigi": -1,
+        "mum-isigi": 67,
         "suclulugu-birakmak": -1,
-        "tuzlu-su-uygulamasi": -1,
-        "tuzlu-suyla-ayak-banyosu": -1
+        "tuzlu-su-uygulamasi": 69,
+        "tuzlu-suyla-ayak-banyosu": 69
       },
       "uk": {
-        "candle-flame": -1,
-        "foot-soak": -1,
+        "candle-flame": 67,
+        "foot-soak": 69,
         "hand-on-chakra": -1,
-        "ice-on-liver": -1,
-        "вимочування-ніг": -1,
-        "лід-на-печінку": -1,
-        "полум'я-свічки": -1,
+        "ice-on-liver": 71,
+        "вимочування-ніг": 69,
+        "лід-на-печінку": 71,
+        "полум'я-свічки": 67,
         "руку-на-чакру": -1
       }
     },

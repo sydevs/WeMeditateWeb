@@ -8,7 +8,7 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 
 - 1247 old addresses enumerated from the records (734 the old site answered or 301ed when exported, 513 it did not: archived, unpublished or scheduled records, languages it sent to its maintenance page, and the `/articles/category/<slug>` route, which has no controller action. All are kept so a link to them still lands somewhere).
 - 1241 of them redirect. 6 already are a live page on the new site, so the lookup returns `null` for them.
-- The map holds 828 exact slugs and 45 pages. Fixed routes cost no entry of their own.
+- The map holds 828 exact slugs and 49 pages. Fixed routes cost no entry of their own.
 
 ## By kind of address
 
@@ -18,46 +18,46 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 | article (event, root path) | 1 | 0 | 0 | 0 | 13 | 0 | 0 | 0 | 14 |
 | category | 0 | 0 | 0 | 0 | 58 | 0 | 0 | 0 | 58 |
 | meditation | 0 | 3 | 0 | 15 | 180 | 0 | 0 | 0 | 198 |
-| technique | 0 | 0 | 0 | 0 | 75 | 0 | 0 | 0 | 75 |
+| technique | 0 | 3 | 24 | 18 | 30 | 0 | 0 | 0 | 75 |
 | subtle system | 0 | 18 | 91 | 65 | 0 | 0 | 0 | 0 | 174 |
 | live stream | 0 | 0 | 0 | 0 | 22 | 0 | 0 | 0 | 22 |
 | promo page (root path) | 2 | 1 | 0 | 0 | 23 | 0 | 0 | 0 | 26 |
-| fixed route | 3 | 0 | 0 | 0 | 0 | 313 | 20 | 63 | 399 |
-| **all** | 6 | 182 | 91 | 137 | 435 | 313 | 20 | 63 | 1247 |
+| fixed route | 3 | 0 | 0 | 0 | 0 | 334 | 20 | 42 | 399 |
+| **all** | 6 | 185 | 115 | 155 | 390 | 334 | 20 | 42 | 1247 |
 
 ## By old language
 
 |  | already a live page (no redirect) | matching page, in the old address's language | matching page, English (launch language, page not published in it) | matching page, English (language not launching) | no matching page, nearest section | fixed route, its own page | fixed route, the nearest section | fixed route, home page | total |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `bg` | 0 | 77 | 11 | 3 | 34 | 15 | 1 | 3 | 144 |
-| `cs` | 0 | 6 | 12 | 3 | 56 | 15 | 1 | 3 | 96 |
-| `de` | 0 | 0 | 12 | 0 | 9 | 15 | 1 | 3 | 40 |
-| `el` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `en` | 6 | 36 | 0 | 0 | 74 | 13 | 0 | 3 | 132 |
-| `en-au` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `es` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `fa` | 0 | 0 | 0 | 10 | 0 | 15 | 1 | 3 | 29 |
-| `fr` | 0 | 14 | 11 | 3 | 52 | 15 | 1 | 3 | 99 |
-| `hi` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `hy` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `it` | 0 | 16 | 12 | 3 | 65 | 15 | 1 | 3 | 115 |
-| `ko` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `nl` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `pl` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `pt-br` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `ro` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `ru` | 0 | 10 | 11 | 1 | 53 | 15 | 1 | 3 | 94 |
-| `sv` | 0 | 0 | 0 | 0 | 0 | 15 | 1 | 3 | 19 |
-| `tr` | 0 | 0 | 0 | 112 | 54 | 15 | 1 | 3 | 185 |
-| `uk` | 0 | 23 | 22 | 2 | 38 | 15 | 1 | 3 | 104 |
-| **all** | 6 | 182 | 91 | 137 | 435 | 313 | 20 | 63 | 1247 |
+| `bg` | 0 | 77 | 14 | 3 | 31 | 16 | 1 | 2 | 144 |
+| `cs` | 0 | 6 | 15 | 3 | 53 | 16 | 1 | 2 | 96 |
+| `de` | 0 | 0 | 15 | 0 | 6 | 16 | 1 | 2 | 40 |
+| `el` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `en` | 6 | 39 | 0 | 0 | 71 | 14 | 0 | 2 | 132 |
+| `en-au` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `es` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `fa` | 0 | 0 | 0 | 10 | 0 | 16 | 1 | 2 | 29 |
+| `fr` | 0 | 14 | 14 | 3 | 49 | 16 | 1 | 2 | 99 |
+| `hi` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `hy` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `it` | 0 | 16 | 15 | 3 | 62 | 16 | 1 | 2 | 115 |
+| `ko` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `nl` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `pl` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `pt-br` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `ro` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `ru` | 0 | 10 | 14 | 1 | 50 | 16 | 1 | 2 | 94 |
+| `sv` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
+| `tr` | 0 | 0 | 0 | 130 | 36 | 16 | 1 | 2 | 185 |
+| `uk` | 0 | 23 | 28 | 2 | 32 | 16 | 1 | 2 | 104 |
+| **all** | 6 | 185 | 115 | 155 | 390 | 334 | 20 | 42 | 1247 |
 
 ## Fixed routes
 
 | route key | lands on | how |
 | --- | --- | --- |
 | `home` | `/` | home page |
-| `about` | `/` | no page matches; home |
+| `about` | `/about-meditation` | static page 2, curated |
 | `contact` | `/contact-us` | static page 3, slug |
 | `shri_mataji` | `/shri-mataji` | static page 4, slug |
 | `subtle_system` | `/chakras-channels` | static page 5, slug |
@@ -73,16 +73,16 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 
 ## How records matched
 
-| kind | records | by slug | by slug history | by title | other-language slug | ambiguous | no match |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| article | 49 | 19 | 0 | 1 | 0 | 0 | 29 |
-| category | 5 | 0 | 0 | 0 | 0 | 0 | 5 |
-| meditation | 37 | 0 | 0 | 3 | 0 | 1 | 33 |
-| treatment | 7 | 0 | 0 | 0 | 0 | 0 | 7 |
-| subtle | 12 | 12 | 0 | 0 | 0 | 0 | 0 |
-| stream | 13 | 0 | 0 | 0 | 0 | 0 | 13 |
-| promo | 23 | 1 | 1 | 0 | 0 | 0 | 21 |
-| static | 26 | 11 | 0 | 1 | 0 | 0 | 14 |
+| kind | records | by slug | by slug history | by title | curated | other-language slug | ambiguous | no match |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| article | 49 | 19 | 0 | 1 | 0 | 0 | 0 | 29 |
+| category | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 5 |
+| meditation | 37 | 0 | 0 | 3 | 0 | 0 | 1 | 33 |
+| treatment | 7 | 0 | 0 | 0 | 3 | 0 | 0 | 4 |
+| subtle | 12 | 12 | 0 | 0 | 0 | 0 | 0 | 0 |
+| stream | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 13 |
+| promo | 23 | 1 | 1 | 0 | 0 | 0 | 0 | 21 |
+| static | 26 | 11 | 0 | 1 | 1 | 0 | 0 | 13 |
 
 ### Matches that were not an exact slug
 
@@ -92,6 +92,9 @@ Review these: a title or history match is a judgement.
 - meditation 14 `fulfilled-10-min` "Feel Fulfilled | 10 min" → page 33 (title)
 - meditation 15 `fulfilled-5-min` "Feel Fulfilled | 5 min" → page 32 (title)
 - meditation 31 `harmony-5-min` "Feel Harmony | 5 min" → page 35 (title)
+- treatment 1 `foot-soak` "Foot Soak" → page 69 (curated)
+- treatment 2 `ice-on-liver` "Ice on Liver" → page 71 (curated)
+- treatment 3 `candle-flame` "Candle Flame" → page 67 (curated)
 - promo 21 `privacy-policy-app` "We Meditate App - Privacy Policy" → page 17 (history)
 
 ### Ambiguous matches (no redirect to a page; the section takes them)
@@ -151,11 +154,8 @@ Records with no matching page. Every old address of these goes to its nearest se
 The old site's meditations are videos; the new site's 121 are audio. These 34 have no single new meditation with the same title, and go to the Meditate Now page.
 
 
-### technique (7 records, 5 answered by the old site)
+### technique (4 records, 2 answered by the old site)
 
-- treatment 1 `foot-soak` "Foot Soak", 9 languages, 15 addresses
-- treatment 2 `ice-on-liver` "Ice on Liver", 9 languages, 16 addresses
-- treatment 3 `candle-flame` "Candle Flame", 9 languages, 14 addresses
 - treatment 4 `hand-on-chakra` "Hand on Chakra", 9 languages, 17 addresses
 - treatment 5 `mantras` "Mantras", 4 languages, 7 addresses
 - treatment 6 `releasing-guilt` "Releasing Guilt", 3 languages, 4 addresses, not live
