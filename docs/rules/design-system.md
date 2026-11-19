@@ -32,6 +32,12 @@ mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion co
   `loading="lazy"` is what preloads. `pnpm lint` rejects it through `local/img-loading`
   ([eslint-rules/index.js](../../eslint-rules/index.js)), stories excepted.
 
+**The keyboard walk-through**: [accessibility-walkthrough.md](../accessibility-walkthrough.md) is the
+script a person runs for the two things no automatic check can answer — a hit area and a focus
+outline, both of which need a drawn page. The axe gate in CI
+([tests/a11y/page-types.test.tsx](../../tests/a11y/page-types.test.tsx)) covers everything else and
+blocks a change on any violation.
+
 ## Two component shapes `pnpm lint` rejects
 
 `@eslint-react` reports both as errors, and neither message names the shape that satisfies it.
@@ -106,6 +112,25 @@ that mechanism; read it before you expect the floor to shrink a button.
 Each `ColumnCarousel` dot is a 44×44 `<button>` drawing an 8px `<span>`, with no gap between
 cells, so adjacent cells cannot overlap by construction. There is no documented exception to the
 44px minimum. Measure the row in a browser before you propose one.
+
+## A faded control keeps or drops its tab stop deliberately
+
+`opacity-0 pointer-events-none` takes an element out of the pointer flow. It does **not** take it
+out of the tab order, so a focusable child keeps a stop a keyboard lands on and nobody can see
+(WCAG 2.1 SC 2.4.7). Which fix is right turns on one question — can the action still be taken?
+
+| The action | Do |
+| --- | --- |
+| **Available**, and the fade is only chrome over something else | Restore both properties on `focus-within:` — `focus-within:opacity-100 focus-within:pointer-events-auto`. The stop becomes visible when focus arrives |
+| **Unavailable**, so there is nothing to reach | Drop the stop and the a11y tree together: `tabIndex={-1}` and `aria-hidden` on the element that fades |
+
+Both are in the tree. `MeditationPlayer`'s play/pause reveals on focus, because it is the only
+play/pause a keyboard can reach — `invisible` there would leave no way to pause (#278).
+`ContentCarousel`'s arrows withdraw, because each hides at its end of the carousel, where pressing
+it would do nothing.
+
+`tests/guards/faded-controls.test.ts` holds the choice. It reads the class list from the source,
+since jsdom computes no CSS and neither branch survives a render.
 
 ## Route changes are already announced — do not add a second announcer
 
@@ -246,6 +271,27 @@ At equal specificity the atom's own would have won on source order.
 
 Two spellings stopped reaching an `href` when the gate landed: a protocol-relative `//host`, and
 the empty string an unset SahajCloud field leaves behind.
+
+### Dropdown
+
+`trigger` is a function, and **the control it renders must spread the props it is handed**. They
+carry the reference, `aria-haspopup`, `aria-expanded` and the click handler, so the caller's own
+`<button>` is the single interactive element and the single tab stop. A wrapper carrying
+`role="button"` around a focusable control is axe `nested-interactive`, serious (#278), and the
+atom no longer has one to fall back on — a trigger that renders a `<span>` is operable by nothing.
+
+```tsx
+<Dropdown trigger={(props) => <Button {...props}>Open</Button>}>
+```
+
+`openOnFocus` is the autocomplete mode: focus arrives at a child of the trigger, so the wrapper
+keeps the reference and the trigger is handed an empty object.
+
+### Heading
+
+`level` is the outline; `styleAs` is the size. **`styleAs="none"` emits no type classes at all**,
+for a heading whose size its own `className` draws — without it the atom's `levelStyles` win on
+source order, which is why three callers used to open their own element and so owned the level too.
 
 ### Surfaces
 

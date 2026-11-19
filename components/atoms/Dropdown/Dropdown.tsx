@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -16,6 +16,12 @@ import {
 } from '@floating-ui/react'
 import { Link, type LinkProps } from '../Link'
 
+/**
+ * What the trigger must spread onto the control it renders: the reference, the
+ * popup state and the click handler.
+ */
+export type DropdownTriggerProps = Record<string, unknown>
+
 /** Side of the trigger the panel opens on. */
 export type DropdownSide = 'top' | 'bottom' | 'left' | 'right'
 
@@ -30,8 +36,17 @@ export type DropdownRole = 'menu' | 'dialog' | 'listbox'
 
 /** Props for the Dropdown component */
 export interface DropdownProps {
-  /** The trigger element that opens/closes the dropdown */
-  trigger: ReactNode
+  /**
+   * Renders the control that opens the panel. **Spread the props it is handed
+   * onto that control**, so the caller's own interactive element is the one
+   * that carries `aria-haspopup`, `aria-expanded` and the reference — a
+   * wrapper carrying `role="button"` around it is axe `nested-interactive` and
+   * a second tab stop (#278).
+   *
+   * In `openOnFocus` mode the wrapper owns the reference instead, because
+   * focus arrives at a child of the trigger, so the object is empty there.
+   */
+  trigger: (props: DropdownTriggerProps) => ReactNode
   /** The content to display in the dropdown */
   children: ReactNode
   /**
@@ -133,13 +148,13 @@ function toPlacement(side: DropdownSide, align: DropdownAlign): Placement {
  *
  * @example
  * // Uncontrolled menu (default)
- * <Dropdown trigger={<button>Open Menu</button>}>
+ * <Dropdown trigger={(props) => <button {...props}>Open Menu</button>}>
  *   <DropdownItem href="/link1">Link 1</DropdownItem>
  * </Dropdown>
  *
  * @example
  * // Rich panel opening above and centered on the trigger
- * <Dropdown side="top" align="center" role="dialog" trigger={<IconButton />}>
+ * <Dropdown side="top" align="center" role="dialog" trigger={(props) => <Button {...props} />}>
  *   <VolumeControls />
  * </Dropdown>
  *
@@ -152,7 +167,7 @@ function toPlacement(side: DropdownSide, align: DropdownAlign): Placement {
  *   closeOnBlur
  *   fullWidth
  *   role="listbox"
- *   trigger={<Input />}
+ *   trigger={() => <Input />}
  * >
  *   {suggestions}
  * </Dropdown>
@@ -240,22 +255,22 @@ export function Dropdown({
       }
     : {}
 
+  // The interaction belongs to the control the caller renders, never to a
+  // wrapper around it: a wrapper carrying `role="button"` around a real
+  // `<button>` is axe `nested-interactive`, takes a second tab stop, and can
+  // only be named by what it contains (#278). In focus mode the inner control
+  // — an `Input` — already owns focus, so the wrapper keeps the reference and
+  // the trigger is handed nothing.
   return (
     <>
       <div
-        ref={refs.setReference}
-        {...getReferenceProps({
-          ...focusProps,
-          // In click mode the wrapper is the focusable button (callers may keep
-          // their inner control out of the tab order). In focus mode the inner
-          // control, for example an Input, owns focus, so the wrapper stays transparent.
-          ...(openOnFocus ? {} : { role: 'button', tabIndex: 0 }),
-        })}
+        ref={openOnFocus ? refs.setReference : undefined}
+        {...(openOnFocus ? getReferenceProps(focusProps) : {})}
         className={`${fullWidth ? 'w-full' : 'inline-block'} ${
           openOnFocus ? '' : 'cursor-pointer'
         } ${className}`}
       >
-        {trigger}
+        {trigger(openOnFocus ? {} : { ref: refs.setReference, ...getReferenceProps() })}
       </div>
 
       {isOpen && (

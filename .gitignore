@@ -153,3 +153,6 @@ sahajcloud-api.json
 
 # Worktrees from /implement-ticket — a second checkout of this repo, never source
 .claude/worktrees/
+
+# Per-page counts the axe gate writes for the job summary (tests/a11y/)
+a11y-report.json

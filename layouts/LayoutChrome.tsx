@@ -5,6 +5,7 @@ import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig, Page } from '../server/sahajcloud-types'
 import { leadSplashFromRouteData } from '../lib/content-blocks'
 import { surface } from '../components/atoms/surface'
+import { SkipLink } from '../components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
@@ -146,6 +147,8 @@ function Chrome({
 
   return (
     <div className={`flex flex-col min-h-screen ${leadSplash ? 'relative' : ''}`}>
+      <SkipLink />
+
       {leadSplash ? (
         // Overlay the header transparently on the lead splash. The box spans the
         // whole column rather than the header, so the nav inside it still has the

@@ -1,6 +1,7 @@
 import { Header } from '../components/organisms/Header'
 import { useData } from 'vike-react/useData'
 import type { WebConfig } from '../server/sahajcloud-types'
+import { SkipLink } from '../components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 
@@ -47,6 +48,8 @@ function MapChrome({ settings, children }: { settings: WebConfig; children: Reac
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
+      <SkipLink />
+
       <Header
         condensed
         actionLinkHref={actionLinkHref}

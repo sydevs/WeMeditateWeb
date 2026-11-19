@@ -4,8 +4,9 @@
  * Both regular pages ([slug]) and the live-preview route use it, so
  * rendering stays consistent. Following Atomic Design, templates represent
  * page layout structures. It composes the article chrome: featured video,
- * title, author byline, rich-text body, and SEO `<head>` tags from the
- * page's SahajCloud meta.
+ * title, author byline and rich-text body. The head is built in the route's
+ * `+data.ts`, never here: the live preview and the embed routes share this
+ * template and neither is a URL to point a crawler at.
  *
  * @example
  * <PageTemplate page={pageData} />
@@ -14,7 +15,7 @@
 import type { Page, Author, Video } from '../../server/sahajcloud-types'
 import { RichText } from '../organisms'
 import { VideoPlayer, Author as AuthorByline } from '../molecules'
-import { Container, PageTitle } from '../atoms'
+import { Container, Heading, PageTitle } from '../atoms'
 import { isPopulated, populatedImageUrl } from '../../lib/payload-relationships'
 import { getLeadSplash } from '../../lib/content-blocks'
 
@@ -34,10 +35,16 @@ export interface PageTemplateProps {
 export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
   const author = isPopulated<Author>(page.author) ? page.author : null
   const video = isPopulated<Video>(page.featuredVideo) ? page.featuredVideo : null
+  const leadSplash = getLeadSplash(page.content)
   // A lead splash renders its own full-bleed title, so skip the PageTitle banner
   // to avoid showing the title twice. `hideTitle` also suppresses it on featured
   // nav pages, where the highlighted nav link already names the page.
-  const showTitle = !getLeadSplash(page.content) && !hideTitle
+  const showTitle = !leadSplash && !hideTitle
+  // `hideTitle` suppresses a banner a visitor does not need, not the page's
+  // only heading. A lead splash draws its own `<h1>` only when it carries a
+  // title, and that field is optional upstream — so an untitled splash needs
+  // this too.
+  const srOnlyTitle = !showTitle && !leadSplash?.hasTitle
   const hasVideo = Boolean(video && video.hlsUrl)
   const hasHeader = hasVideo || showTitle || Boolean(author)
 
@@ -47,6 +54,12 @@ export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
   // rendering stays consistent in stories.
   return (
     <article>
+      {srOnlyTitle ? (
+        <Heading className="sr-only" level="h1">
+          {page.title}
+        </Heading>
+      ) : null}
+
       {hasHeader && (
         <Container maxWidth="md">
           {video && video.hlsUrl ? (

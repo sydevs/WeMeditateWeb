@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { Page } from '../../server/sahajcloud-types'
+import { classOf } from '../../tests/_helpers/markup'
 import { PageTemplate } from './PageTemplate'
 
 // VideoPlayer is wrapped in vike-react's ClientOnly; render its fallback (what
@@ -35,10 +36,44 @@ describe('<PageTemplate> hideTitle', () => {
     expect(html).toContain('Meditate Now')
   })
 
-  it('omits the PageTitle when hideTitle is true', () => {
+  it('gives a page leading with an untitled splash its one heading', () => {
+    // `Splash` draws its own `<h1>` only when it carries a title, and the
+    // field is optional upstream — so a lead splash is not on its own proof
+    // that the page has a heading (#278).
+    const splash = (title?: string) => ({
+      root: {
+        type: 'root',
+        children: [
+          {
+            type: 'block',
+            fields: { blockType: 'splash', ...(title === undefined ? {} : { title }) },
+          },
+        ],
+      },
+    })
+
+    const untitled = renderToStaticMarkup(
+      <PageTemplate page={makePage({ content: splash() } as unknown as Partial<Page>)} />,
+    )
+    const titled = renderToStaticMarkup(
+      <PageTemplate page={makePage({ content: splash('Discover it') } as unknown as Partial<Page>)} />,
+    )
+
+    // The untitled one gets the stand-in; the titled one leaves the `<h1>` to
+    // the splash, which `RichText` renders and this template does not.
+    expect(classOf(untitled, '<h1').split(' ')).toContain('sr-only')
+    expect(titled).not.toContain('<h1')
+  })
+
+  it('omits the PageTitle banner when hideTitle is true, keeping one heading', () => {
     const html = renderToStaticMarkup(<PageTemplate hideTitle page={makePage()} />)
 
-    expect(html).not.toContain('Meditate Now')
+    // `hideTitle` suppresses a banner a visitor does not need, not the page's
+    // only `<h1>` — a featured-nav page with no lead splash had none (#278).
+    expect(classOf(html, '<h1').split(' ')).toContain('sr-only')
+    expect(html).toContain('Meditate Now')
+    // The banner's own gradient box is what goes.
+    expect(html).not.toContain('before:to-teal-200/30')
   })
 
   it('still renders the header (author byline) when hideTitle hides only the title', () => {
@@ -48,8 +83,8 @@ describe('<PageTemplate> hideTitle', () => {
 
     const html = renderToStaticMarkup(<PageTemplate hideTitle page={page} />)
 
-    // Title suppressed, but the byline keeps the header container present.
-    expect(html).not.toContain('Meditate Now')
+    // Banner suppressed, but the byline keeps the header container present.
+    expect(html).not.toContain('before:to-teal-200/30')
     expect(html).toContain('Shri Mataji')
   })
 })
