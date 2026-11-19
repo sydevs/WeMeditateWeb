@@ -113,6 +113,25 @@ Each `ColumnCarousel` dot is a 44×44 `<button>` drawing an 8px `<span>`, with n
 cells, so adjacent cells cannot overlap by construction. There is no documented exception to the
 44px minimum. Measure the row in a browser before you propose one.
 
+## A faded control keeps or drops its tab stop deliberately
+
+`opacity-0 pointer-events-none` takes an element out of the pointer flow. It does **not** take it
+out of the tab order, so a focusable child keeps a stop a keyboard lands on and nobody can see
+(WCAG 2.1 SC 2.4.7). Which fix is right turns on one question — can the action still be taken?
+
+| The action | Do |
+| --- | --- |
+| **Available**, and the fade is only chrome over something else | Restore both properties on `focus-within:` — `focus-within:opacity-100 focus-within:pointer-events-auto`. The stop becomes visible when focus arrives |
+| **Unavailable**, so there is nothing to reach | Drop the stop and the a11y tree together: `tabIndex={-1}` and `aria-hidden` on the element that fades |
+
+Both are in the tree. `MeditationPlayer`'s play/pause reveals on focus, because it is the only
+play/pause a keyboard can reach — `invisible` there would leave no way to pause (#278).
+`ContentCarousel`'s arrows withdraw, because each hides at its end of the carousel, where pressing
+it would do nothing.
+
+`tests/guards/faded-controls.test.ts` holds the choice. It reads the class list from the source,
+since jsdom computes no CSS and neither branch survives a render.
+
 ## Route changes are already announced — do not add a second announcer
 
 Vike Client Routing swaps the page under `<main>` while the site chrome stays in place. So a
