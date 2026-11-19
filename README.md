@@ -6,7 +6,7 @@ Cloudflare Workers.
 ## Quick start
 
 ### Prerequisites
-- Node.js `22.17.0` (see `.node-version`)
+- Node.js `24.22.1` (see `.node-version`)
 - pnpm (`npm install -g pnpm`)
 
 ### Setup
