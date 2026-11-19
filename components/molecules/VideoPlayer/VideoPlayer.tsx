@@ -24,6 +24,12 @@ import { posterURL } from './poster'
  * every control at once, which is what the skin's buttons size themselves from; the `44px` is
  * the floor itself and not a design value, so it is written here rather than taken from a
  * spacing token.
+ *
+ * `--media-slider-height` takes that same floor, for the time and volume sliders. Their root is
+ * the drag surface, and the skin ships it at 32px; the drawn track is a 4px `::before` centred
+ * in that box. So raising it grows the hit area and nothing a viewer sees — measured at a 390px
+ * viewport, the track stays 4px and the control bar stays the 48px the 44px buttons already
+ * hold it at.
  */
 const PLAYER_STYLE = {
   '--media-accent-color': 'var(--color-teal-500)',
