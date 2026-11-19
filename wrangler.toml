@@ -24,6 +24,20 @@ main = "virtual:photon:cloudflare:server-entry"
 # Note: [vars] in this file are runtime-only. Vite cannot read them at build
 # time. Put client-visible PUBLIC__* values in .env.production instead.
 
+# ⚠ Cloudflare Workers Builds deploys this Worker from `main`, and a custom
+# domain overwrites the zone's DNS record for that hostname. So merging this
+# block is what moves wemeditate.com off the old Rails site. It needs the
+# legacy redirect map (#276), the analytics tag (#103), wemeditate.com on the
+# Turnstile widget's hostname allowlist, and the launch locales (#163) already
+# in place.
+#
+# `www` and all five country hosts (.it, .fr, .ru, .cz and ua.) already
+# redirect to the apex at Cloudflare, before an origin is chosen, so none of
+# them needs a route of its own. All seven zones sit in one account.
+[[routes]]
+pattern = "wemeditate.com"
+custom_domain = true
+
 [vars]
 PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"
 PUBLIC__STATUS_PAGE_URL = "https://stats.uptimerobot.com/oJ9B8UX9lA"
