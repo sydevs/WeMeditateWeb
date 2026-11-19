@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { FormBuilder } from './FormBuilder'
 import { enT } from '../../../lib/i18n'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
@@ -9,11 +9,14 @@ import type { EmbeddedForm } from '../../../server/sahajcloud-types'
  * What a visitor's submit does: which answers reach `/api/submissions`, which
  * stop at the field, and what a refusal or a redirect leaves on screen.
  *
- * The widget is replaced by one that solves itself on mount with a token
- * numbered by mount, so a spent token and a fresh challenge are observable.
+ * The widget is replaced by one the test solves, with a token numbered by
+ * mount, so a spent token and a fresh challenge are observable. It is solved
+ * inside `act`, never on mount: the widget a refusal remounts would otherwise
+ * hand over its token outside `act`, and a submit made before React commits
+ * it still sends the previous render's token.
  */
 
-const turnstile = vi.hoisted(() => ({ mounts: 0 }))
+const turnstile = vi.hoisted(() => ({ mounts: 0, solve: (): void => undefined }))
 
 vi.mock('@marsidev/react-turnstile', async () => {
   const { useEffect } = await import('react')
@@ -22,13 +25,18 @@ vi.mock('@marsidev/react-turnstile', async () => {
     Turnstile: ({ onSuccess }: { onSuccess: (token: string) => void }) => {
       useEffect(() => {
         turnstile.mounts += 1
-        onSuccess(`token-${turnstile.mounts}`)
+        const token = `token-${turnstile.mounts}`
+
+        turnstile.solve = () => onSuccess(token)
       }, [onSuccess])
 
       return null
     },
   }
 })
+
+/** Solves the widget on screen, and commits its token before the test goes on. */
+const solve = () => act(() => turnstile.solve())
 
 const SITE_KEY = '1x00000000000000000000AA'
 
@@ -77,8 +85,15 @@ function fillRequired() {
 const submit = () =>
   fireEvent.click(screen.getByRole('button', { name: enT('forms.general.submit') }))
 
+/** The form, with its first challenge already solved. */
+function renderForm(embedded: EmbeddedForm) {
+  render(<FormBuilder form={embedded} siteKey={SITE_KEY} />)
+  solve()
+}
+
 beforeEach(() => {
   turnstile.mounts = 0
+  turnstile.solve = () => undefined
   fetchMock.mockReset()
   answer(200, { ok: true })
   vi.stubGlobal('fetch', fetchMock)
@@ -90,7 +105,7 @@ afterEach(() => {
 
 describe('FormBuilder — a submission', () => {
   it('posts the answers with the solved token, then thanks the visitor', async () => {
-    render(<FormBuilder form={form} siteKey={SITE_KEY} />)
+    renderForm(form)
     fillRequired()
     submit()
 
@@ -109,7 +124,7 @@ describe('FormBuilder — a submission', () => {
 
   it('shows one message on a refusal, and re-challenges rather than resend a spent token', async () => {
     answer(403, { ok: false, code: 'captcha_failed' })
-    render(<FormBuilder form={form} siteKey={SITE_KEY} />)
+    renderForm(form)
     fillRequired()
     submit()
 
@@ -118,10 +133,12 @@ describe('FormBuilder — a submission', () => {
       enT('forms.general.submit_error'),
     )
     expect(screen.queryByText(enT('forms.general.thank_you'))).toBeNull()
-    expect(turnstile.mounts).toBe(2)
+    // The refusal remounted the widget, whose effect runs after that commit.
+    await waitFor(() => expect(turnstile.mounts).toBe(2))
 
     answer(200, { ok: true })
     fetchMock.mockClear()
+    solve()
     submit()
 
     await screen.findByText(enT('forms.general.thank_you'))
@@ -129,7 +146,7 @@ describe('FormBuilder — a submission', () => {
   })
 
   it('stops at an empty required field without posting', async () => {
-    render(<FormBuilder form={form} siteKey={SITE_KEY} />)
+    renderForm(form)
     submit()
 
     await screen.findByText(enT('forms.general.field_required', { field: 'Your email' }))
@@ -152,7 +169,7 @@ describe('FormBuilder — the redirect confirmation', () => {
       redirect: { url: '/#thanks' },
     } satisfies EmbeddedForm
 
-    render(<FormBuilder form={redirecting} siteKey={SITE_KEY} />)
+    renderForm(redirecting)
     fillRequired()
     submit()
 
@@ -168,7 +185,7 @@ describe('FormBuilder — the redirect confirmation', () => {
       redirect: { url: 'javascript:alert(1)' },
     } satisfies EmbeddedForm
 
-    render(<FormBuilder form={hostile} siteKey={SITE_KEY} />)
+    renderForm(hostile)
     fillRequired()
     submit()
 
@@ -187,7 +204,7 @@ describe('FormBuilder — a required checkbox', () => {
   } satisfies EmbeddedForm
 
   it('stops an unticked one, and names the error on the control', async () => {
-    render(<FormBuilder form={consenting} siteKey={SITE_KEY} />)
+    renderForm(consenting)
     fillRequired()
     submit()
 
@@ -201,7 +218,7 @@ describe('FormBuilder — a required checkbox', () => {
   })
 
   it('posts a ticked one', async () => {
-    render(<FormBuilder form={consenting} siteKey={SITE_KEY} />)
+    renderForm(consenting)
     fillRequired()
     fireEvent.click(screen.getByRole('checkbox', { name: 'I agree' }))
     submit()
@@ -221,7 +238,7 @@ describe('FormBuilder — a select', () => {
       ],
     } satisfies EmbeddedForm
 
-    render(<FormBuilder form={asking} siteKey={SITE_KEY} />)
+    renderForm(asking)
 
     expect(screen.getByRole<HTMLSelectElement>('combobox', { name: /Topic/ }).value).toBe('')
 
@@ -241,7 +258,7 @@ describe('FormBuilder — a select', () => {
       ],
     } satisfies EmbeddedForm
 
-    render(<FormBuilder form={defaulted} siteKey={SITE_KEY} />)
+    renderForm(defaulted)
     fillRequired()
     submit()
 
