@@ -55,7 +55,7 @@ export function Page() {
           costs nothing, and keeps this on the supported path. Without a
           key, the page is still a complete, indexable document. It just
           does not upgrade. */}
-      {embedKey && <script src={atlasEmbedSrc({ key: embedKey, atlasRoute })} type="module" />}
+      {embedKey && <script src={atlasEmbedSrc({ key: embedKey, atlasRoute, routing: 'path' })} type="module" />}
     </>
   )
 }

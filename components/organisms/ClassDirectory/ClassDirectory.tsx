@@ -1,0 +1,71 @@
+import { useLocale } from '../../../hooks/usePageContext'
+import { atlasEmbedSrc } from '../../../lib/atlas-embed'
+
+export interface ClassDirectoryProps {
+  /** Where the directory opens, e.g. `/gb/london` or `/1506`. */
+  atlasRoute?: string | null
+  /** Whether the map is drawn. */
+  showMap?: boolean
+  /** Open filtered to online classes. A visitor can still clear it. */
+  onlineOnly?: boolean
+}
+
+/**
+ * The Sahaj Atlas class directory, placed on an ordinary content page.
+ *
+ * The widget adopts the `<sahaj-atlas>` element the server rendered and takes
+ * every setting off the loader's query string, so this component is the markup
+ * and `atlasEmbedSrc` is the configuration.
+ *
+ * Three things it deliberately does not do:
+ *
+ * - ⚠ **It writes nothing to the `<head>`.** `ContentHead` builds the canonical
+ *   from `urlPathname` alone, so a `?atlas=` the widget adds as a visitor
+ *   browses is never indexed apart. Never wire `useAtlasHead` or `getAtlasSeo`
+ *   in: that pair is for a host owning its route, and emits the atlas's own
+ *   canonical at `/map` for every route.
+ * - **It sets no language of its own.** The directory follows the page it sits
+ *   on. The widget matches `langs` by exact code, so this sends the locale's
+ *   primary subtag — `pt-BR` opens `pt`.
+ * - ⚠ **It does not suppress the widget's own language cog**, which writes
+ *   `?locale=` and outranks this. That is the point: a visitor's switch travels
+ *   in a link they copy, while the page around it stays in its own language.
+ */
+export function ClassDirectory({
+  atlasRoute,
+  showMap = true,
+  onlineOnly = false,
+}: ClassDirectoryProps) {
+  const locale = useLocale()
+  const embedKey = import.meta.env.PUBLIC__SAHAJ_ATLAS_KEY
+
+  return (
+    <div className="w-full">
+      {/* ⚠ `height`, never `min-height`. A `min-height` box has a non-zero
+          rect, so containment engages — but the widget's own `height: 100%`
+          then resolves against an `auto` parent as zero, and it renders
+          uncontained. `pages/map/+Page.tsx` owns the long form of this.
+          A map-less embed has no viewport to fill, so it takes a fixed box
+          above the widget's own 360x420 floor, below which it degrades to a
+          card that opens the full interface. */}
+      <sahaj-atlas
+        className={showMap ? 'block h-[80vh] overflow-y-auto' : 'block h-[560px] overflow-y-auto'}
+      />
+
+      {/* `type="module"` is required: the loader is an ES module. Without a
+          key the page is still a complete document; it just does not upgrade. */}
+      {embedKey && (
+        <script
+          src={atlasEmbedSrc({
+            key: embedKey,
+            atlasRoute,
+            map: showMap,
+            langs: locale.split('-')[0] ?? locale,
+            format: onlineOnly ? 'online' : undefined,
+          })}
+          type="module"
+        />
+      )}
+    </div>
+  )
+}

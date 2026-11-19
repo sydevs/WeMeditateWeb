@@ -8,8 +8,12 @@ export default {
 
 /** Countdown component showcasing various timing durations and sizes. */
 export const Default: Story = () => {
-  // Helper function to create countdown targets
-  const createTarget = (seconds: number) => new Date(Date.now() + seconds * 1000);
+  // A story renders in the browser only, so one helper supplies both the
+  // target and the seed the server would have computed.
+  const target = (seconds: number) => ({
+    targetDate: new Date(Date.now() + seconds * 1000),
+    initialRemainingMs: seconds * 1000,
+  });
 
   return (
     <StoryWrapper>
@@ -18,19 +22,19 @@ export const Default: Story = () => {
           {/* Small */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">Small</p>
-            <Countdown targetDate={createTarget(3600)} size="sm" />
+            <Countdown {...target(3600)} size="sm" />
           </div>
 
           {/* Medium */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">Medium</p>
-            <Countdown targetDate={createTarget(3600)} size="md" />
+            <Countdown {...target(3600)} size="md" />
           </div>
 
           {/* Large */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">Large (default)</p>
-            <Countdown targetDate={createTarget(3600)} size="lg" />
+            <Countdown {...target(3600)} size="lg" />
           </div>
         </div>
       </StorySection>
@@ -40,37 +44,59 @@ export const Default: Story = () => {
           {/* 10 seconds */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">10 seconds</p>
-            <Countdown targetDate={createTarget(10)} />
+            <Countdown {...target(10)} />
           </div>
 
           {/* 1 minute */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">1 minute</p>
-            <Countdown targetDate={createTarget(60)} />
+            <Countdown {...target(60)} />
           </div>
 
           {/* 10 minutes */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">10 minutes</p>
-            <Countdown targetDate={createTarget(600)} />
+            <Countdown {...target(600)} />
           </div>
 
           {/* 1 hour */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">1 hour</p>
-            <Countdown targetDate={createTarget(3600)} />
+            <Countdown {...target(3600)} />
           </div>
 
           {/* 10 hours */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">10 hours</p>
-            <Countdown targetDate={createTarget(36000)} />
+            <Countdown {...target(36000)} />
           </div>
 
           {/* 24 hours */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">24 hours</p>
-            <Countdown targetDate={createTarget(86400)} />
+            <Countdown {...target(86400)} />
+          </div>
+        </div>
+      </StorySection>
+
+      <StorySection title="States">
+        <div className="flex flex-col gap-12 bg-gray-100 p-8 rounded-lg">
+          <div>
+            <p className="text-gray-900 text-sm mb-4 text-center">
+              Over a day away — the days cell appears and hours stay 0&ndash;23
+            </p>
+            <Countdown {...target(200000)} size="md" />
+          </div>
+
+          <div>
+            <p className="text-gray-900 text-sm mb-4 text-center">
+              With the sentence a screen reader reads instead of the digits
+            </p>
+            <Countdown
+              announcement="The next session is Tuesday at 7:00 pm, in 1 hour."
+              {...target(3600)}
+              size="md"
+            />
           </div>
         </div>
       </StorySection>
@@ -82,7 +108,7 @@ export const Default: Story = () => {
         description="White text for dark backgrounds"
       >
         <div className="text-center">
-          <Countdown targetDate={createTarget(3600)} />
+          <Countdown {...target(3600)} />
         </div>
       </StorySection>
 

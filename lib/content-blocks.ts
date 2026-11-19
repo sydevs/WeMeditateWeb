@@ -13,12 +13,13 @@
  */
 
 import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
-import type { Meditation, Page } from '../server/sahajcloud-types'
+import type { Meditation, Page, SessionEvent } from '../server/sahajcloud-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '../components/molecules/AudioPlayer/types'
 import { documentHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
+import { readSessionClass } from './live-session'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
@@ -93,6 +94,12 @@ export interface SubtleSystemBlockFields {
 /** `splash` — SplashBlock. */
 export interface SplashBlockFields {
   layout: 'default' | 'countdown' | 'app' | 'map-search'
+  /**
+   * The online class the `countdown` layout counts down to. Narrowed upstream
+   * to an online, not-finished, not-inactive class, and still optional: an
+   * editor may place the block before picking one.
+   */
+  event?: Ref<SessionEvent> | null
   images?: Ref<Image>[] | null
   title?: string | null
   subtitle?: string | null
@@ -104,6 +111,66 @@ export interface SplashBlockFields {
    * ticket). Absent is treated as light text on a dark hero (`surface: 'dark'`).
    */
   textColor?: 'dark' | 'light' | null
+}
+
+/**
+ * `class-directory` — ClassDirectoryBlock. Where the directory opens, whether
+ * the map is drawn, and whether it opens filtered to online classes. No
+ * language: it follows the page it sits on.
+ */
+export interface ClassDirectoryBlockFields {
+  opensAt?: ClassDirectoryTarget | null
+  showMap?: boolean | null
+  onlineOnly?: boolean | null
+}
+
+/** A polymorphic `opensAt` entry, the shape {@link ShowcaseItem} already models. */
+export interface ClassDirectoryTarget {
+  relationTo: 'regions' | 'events'
+  value: Ref<DirectoryRegion | SessionEvent>
+}
+
+/** The one column a `regions` relationship is populated with: its atlas slug. */
+export interface DirectoryRegion {
+  id: number
+  slug?: string | null
+}
+
+/**
+ * Whether this block is the first on the page to draw the class directory.
+ *
+ * ⚠ **A second `<sahaj-atlas>` on a page shows nothing** (SahajAtlasWeb's
+ * `docs/embedding.md`), and two blocks can ask for one: a `class-directory`,
+ * and a `countdown` splash falling back to the directory because its class is
+ * missing. So the question is asked of the page, not of the block, and the
+ * answer is decided here from the sibling list — in the converter, so it holds
+ * in the live preview too, where `+data` resolution never runs.
+ */
+export function isFirstDirectoryBlock(parent: unknown, childIndex: number): boolean {
+  const siblings = isPopulated<{ children?: unknown[] }>(parent) ? (parent.children ?? []) : []
+
+  for (let index = 0; index < siblings.length && index < childIndex; index += 1) {
+    if (drawsDirectory(siblings[index])) return false
+  }
+
+  return true
+}
+
+/** True for a block that puts a `<sahaj-atlas>` element on the page. */
+function drawsDirectory(node: unknown): boolean {
+  if (!isPopulated<{ type?: string; fields?: Record<string, unknown> }>(node)) return false
+  if (node.type !== 'block') return false
+
+  const fields = node.fields
+
+  if (!isPopulated<Record<string, unknown>>(fields)) return false
+  if (fields.blockType === 'class-directory') return true
+
+  return (
+    fields.blockType === 'splash' &&
+    fields.layout === 'countdown' &&
+    readSessionClass(fields.event).kind === 'gap'
+  )
 }
 
 /** `layout` — LayoutBlock item. */

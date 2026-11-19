@@ -19,6 +19,11 @@ import {
   TableOfContents,
   type Track,
 } from '../../molecules'
+import type { ReactNode } from 'react'
+import { readSessionClass } from '../../../lib/live-session'
+import { isPopulated } from '../../../lib/payload-relationships'
+import { LiveSession } from '../../molecules'
+import { ClassDirectory } from '../ClassDirectory'
 import { ContentIndex } from '../ContentIndex'
 import { ContentOverlay } from '../ContentOverlay'
 import { ContentTextBox } from '../ContentTextBox'
@@ -37,6 +42,9 @@ import {
   type ContentIndexBlockFields,
   type ImageGalleryBlockFields,
   type LayoutBlockFields,
+  isFirstDirectoryBlock,
+  type ClassDirectoryBlockFields,
+  type ClassDirectoryTarget,
   type QuoteBlockFields,
   type ShowcaseBlockFields,
   type SplashBlockFields,
@@ -44,6 +52,46 @@ import {
   type TableOfContentsBlockFields,
   type TextBoxBlockFields,
 } from '../../../lib/content-blocks'
+
+/**
+ * The `atlas=` route a `class-directory` block opens at.
+ *
+ * An atlas route is resolved by its terminal segment alone — a region slug is
+ * globally unique and an event id needs no ancestry (`lib/atlas-route.ts`), so
+ * one segment is the whole route. An unpublished or removed target arrives as a
+ * bare id, and answers `null`: the directory then opens at its usual starting
+ * point rather than at an error.
+ */
+function directoryRoute(target: ClassDirectoryTarget | null | undefined): string | null {
+  if (!target) return null
+
+  const value = target.value
+
+  if (target.relationTo === 'regions') {
+    const region = isPopulated<{ slug?: string | null }>(value) ? value.slug : null
+
+    return region ? `/${region}` : null
+  }
+
+  const event = isPopulated<{ id?: number }>(value) ? value.id : null
+
+  return typeof event === 'number' ? `/${event}` : null
+}
+
+/**
+ * What a `countdown` splash puts in the hero's content slot: the live-session
+ * panel, or — where the block names no usable class — that language's online
+ * classes, which is what the goal degrades to rather than an empty hero.
+ */
+function countdownSlot(fields: SplashBlockFields, parent: unknown, childIndex: number): ReactNode {
+  const source = readSessionClass(fields.event)
+
+  if (source.kind === 'schedule') return <LiveSession schedule={source.schedule} />
+
+  return isFirstDirectoryBlock(parent, childIndex) ? (
+    <ClassDirectory onlineOnly showMap={false} />
+  ) : null
+}
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -311,10 +359,11 @@ export const blockConverters: BlockConverters = {
     return <SubtleSystem className={FULL_BLEED_BLOCK} items={items} />
   },
 
-  // splash → full-bleed Splash. The block's countdown, app, and map-search
-  // layouts lack the extra data (a target date, store links, a search
-  // target) to render their interactive extras. So every layout renders the
-  // shared hero with the available title, subtitle, and CTA over the first image.
+  // splash → full-bleed Splash. The `app` and `map-search` layouts still lack
+  // the extra data (store links, a search target) to render their interactive
+  // extras, so they render the shared hero with the available title, subtitle,
+  // and CTA over the first image. `countdown` now carries a class, and fills
+  // the hero's content slot with the live-session panel.
   splash: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as SplashBlockFields
     const bg = populatedImage(fields.images?.[0])
@@ -340,7 +389,28 @@ export const blockConverters: BlockConverters = {
         subtitle={fields.subtitle ?? undefined}
         surface={splashSurface(fields.textColor)}
         title={fields.title ?? undefined}
-      />
+      >
+        {fields.layout === 'countdown' && countdownSlot(fields, parent, childIndex)}
+      </Splash>
+    )
+  },
+
+  // class-directory → the Sahaj Atlas widget, in the page's own language.
+  'class-directory': ({ childIndex, node, parent }) => {
+    const fields = node.fields as unknown as ClassDirectoryBlockFields
+
+    if (!isFirstDirectoryBlock(parent, childIndex)) {
+      return null
+    }
+
+    return (
+      <div className={FULL_BLEED_BLOCK}>
+        <ClassDirectory
+          atlasRoute={directoryRoute(fields.opensAt)}
+          onlineOnly={fields.onlineOnly === true}
+          showMap={fields.showMap !== false}
+        />
+      </div>
     )
   },
 

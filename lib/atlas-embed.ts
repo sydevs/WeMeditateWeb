@@ -12,13 +12,13 @@
 const ATLAS_LOADER_ORIGIN = 'https://sahajatlas.com'
 
 /**
- * Builds the loader URL for one atlas route.
+ * Builds the loader URL for one embed.
  *
- * Two parameters beyond the key, and the pairing is deliberate:
+ * Two parameters beyond the key on `/map`, and the pairing is deliberate:
  *
  * - `routing=path`, so the widget's route lives in this site's pathname
  *   and matches the SSR routes exactly. This is the only mode consistent
- *   with these URLs. Under the default `query` mode, the widget would find
+ *   with those URLs. Under the default `query` mode, the widget would find
  *   no `?atlas=` on `/map/nl/amsterdam`, open the atlas root, and replace
  *   the very content just server-rendered. The page's `<head>` would then
  *   describe Amsterdam while its body showed the world.
@@ -31,15 +31,36 @@ const ATLAS_LOADER_ORIGIN = 'https://sahajatlas.com'
  *   console. This parameter is what still lands the visitor on the right
  *   region, instead of the atlas root.
  *
+ * **A `class-directory` block on a content page sends neither.** That page's
+ * route is its own, not the atlas's, so the widget keeps what it opens in the
+ * query string — `routing=query` is already its default, so saying it would
+ * only add a byte — and a block with no `opensAt` names no route to default to.
+ *
+ * Only a parameter that changes the widget's own default is emitted, so
+ * `/map`'s URL is unchanged by every later caller.
+ *
  * @param options.key - The published client key (public by design)
- * @param options.atlasRoute - The route this page is of, e.g. `/nl/amsterdam`
+ * @param options.atlasRoute - The route to open at, e.g. `/nl/amsterdam`
+ * @param options.routing - Where the widget keeps its route. Default `query`
+ * @param options.map - Whether the map is drawn. Default `true`
+ * @param options.langs - One language code, matched exactly by the widget
+ * @param options.format - Narrows the directory to online classes
  */
-export function atlasEmbedSrc(options: { key: string; atlasRoute: string }): string {
-  const params = new URLSearchParams({
-    key: options.key,
-    routing: 'path',
-    atlas: options.atlasRoute,
-  })
+export function atlasEmbedSrc(options: {
+  key: string
+  atlasRoute?: string | null
+  routing?: 'path' | 'query'
+  map?: boolean
+  langs?: string
+  format?: 'online'
+}): string {
+  const params = new URLSearchParams({ key: options.key })
+
+  if (options.routing === 'path') params.set('routing', 'path')
+  if (options.atlasRoute) params.set('atlas', options.atlasRoute)
+  if (options.map === false) params.set('map', 'false')
+  if (options.langs) params.set('langs', options.langs)
+  if (options.format) params.set('format', options.format)
 
   return `${ATLAS_LOADER_ORIGIN}/auto.js?${params.toString()}`
 }

@@ -105,6 +105,7 @@ const KNOWN_BLOCK_TYPES = [
   'subtle-system',
   'splash',
   'content-index',
+  'class-directory',
 ] as const
 
 // The content-index converter reads `node.fields`; narrow to the callable shape.
