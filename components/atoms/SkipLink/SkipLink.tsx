@@ -14,6 +14,9 @@ import { MAIN_CONTENT_ID } from '../../../lib/route-announcer'
  * `LayoutMap`'s root clips overflow; `z-60` because the sticky nav sits at
  * `z-50` and is painted later. The focused padding stands in for
  * `touch-target`, whose `min-height` would fight `sr-only`'s 1px box.
+ *
+ * `text-fg` over the white band rather than `text-primary`: `teal-600` reads
+ * about 3.7:1 there, and the axe gate has `color-contrast` off.
  */
 export function SkipLink() {
   const t = useT()
@@ -22,7 +25,7 @@ export function SkipLink() {
     <Link
       href={`#${MAIN_CONTENT_ID}`}
       variant="unstyled"
-      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-60 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-primary focus:shadow-lg"
+      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-60 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-fg focus:shadow-lg"
       // Vike's client router intercepts the click and scrolls to the hash
       // without moving focus, so the browser's own fragment behaviour never
       // runs and the keyboard would stay on this link. Moving focus is the
