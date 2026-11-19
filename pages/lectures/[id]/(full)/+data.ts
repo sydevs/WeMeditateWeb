@@ -3,6 +3,7 @@ import type { WebConfig } from '../../../../server/sahajcloud-types'
 import { loadSiteContext } from '../../../../server/site-context'
 import { loadLecture, type LectureData } from '../_lecture'
 import { lectureSeo, seoRoute } from '../../../../lib/content-seo'
+import { resolveLecture } from '../../../../lib/lecture-shape'
 import type { SeoDocument } from '../../../../lib/head'
 
 export interface LecturePageData extends LectureData {
@@ -29,6 +30,11 @@ export async function data(pageContext: PageContextServer): Promise<LecturePageD
   return {
     ...base,
     settings: site.settings,
-    seo: lectureSeo({ lecture: base.lecture, route: seoRoute(pageContext, site.t) }),
+    // The head publishes the flat view model, as the page renders it: a clip's
+    // player source and poster live on its parent, not on the clip document.
+    seo: lectureSeo({
+      lecture: resolveLecture(base.lecture),
+      route: seoRoute(pageContext, site.t),
+    }),
   }
 }

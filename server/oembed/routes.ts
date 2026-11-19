@@ -17,6 +17,7 @@ import type { SahajCloudEnv } from '../sahajcloud-context'
 import { getDocumentById, getLecture, getWebTranslations } from '../sahajcloud-client'
 import type { Locale } from '../sahajcloud-types'
 import { documentEmbedHref } from '../../lib/document-routes'
+import { resolveLecture } from '../../lib/lecture-shape'
 import { absoluteHref, localeFromPath } from '../../lib/urls'
 import {
   buildOEmbedResponse,
@@ -37,7 +38,15 @@ async function readMedia(
   if (target.collection === 'lectures') {
     const lecture = await getLecture({ id: target.id, locale })
 
-    return lecture ? { title: lecture.title, thumbnailUrl: lecture.thumbnailUrl } : null
+    if (!lecture) {
+      return null
+    }
+
+    // A clip reads its title and poster from its parent, so the player
+    // advertises the same two the page does.
+    const resolved = resolveLecture(lecture)
+
+    return { title: resolved.title, thumbnailUrl: resolved.thumbnailUrl }
   }
 
   const meditation = await getDocumentById({
