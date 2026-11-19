@@ -16,6 +16,7 @@ import {
   ContentCarousel,
   HeroQuote,
   LayoutBlock,
+  MapSearch,
   TableOfContents,
   type Track,
 } from '../../molecules'
@@ -31,6 +32,7 @@ import {
   populatedImage,
   showcaseItems,
   splashSurface,
+  splashTitle,
   subtleSystemItems,
   textColorToSurface,
   type ButtonBlockFields,
@@ -311,10 +313,11 @@ export const blockConverters: BlockConverters = {
     return <SubtleSystem className={FULL_BLEED_BLOCK} items={items} />
   },
 
-  // splash → full-bleed Splash. The block's countdown, app, and map-search
-  // layouts lack the extra data (a target date, store links, a search
-  // target) to render their interactive extras. So every layout renders the
-  // shared hero with the available title, subtitle, and CTA over the first image.
+  // splash → full-bleed Splash. The map-search layout holds a place search
+  // that opens the class map: SahajCloud hides its title, subtitle and action
+  // URL, and its action text labels the search. The countdown and app
+  // layouts lack the data their extras need (a target date, store links), so
+  // they render the shared hero with the title, subtitle, and CTA.
   splash: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as SplashBlockFields
     const bg = populatedImage(fields.images?.[0])
@@ -327,6 +330,7 @@ export const blockConverters: BlockConverters = {
     // the LCP candidate. `getLeadSplash` answers the same question from
     // `page.content`, but nothing threads its answer into a converter.
     const isLead = childIndex === 0 && parent?.type === 'root'
+    const isMapSearch = fields.layout === 'map-search'
 
     return (
       <Splash
@@ -334,14 +338,16 @@ export const blockConverters: BlockConverters = {
         // Full-bleed and flush: a lead splash sits at the top of the page under
         // the overlaid header (see LayoutChrome and getLeadSplash).
         className={FULL_BLEED_SPLASH}
-        ctaHref={fields.actionURL ?? undefined}
-        ctaText={fields.actionText ?? undefined}
+        ctaHref={isMapSearch ? undefined : (fields.actionURL ?? undefined)}
+        ctaText={isMapSearch ? undefined : (fields.actionText ?? undefined)}
         loader={isLead}
         priority={isLead}
-        subtitle={fields.subtitle ?? undefined}
+        subtitle={isMapSearch ? undefined : (fields.subtitle ?? undefined)}
         surface={splashSurface(fields.textColor)}
-        title={fields.title ?? undefined}
-      />
+        title={splashTitle(fields)}
+      >
+        {isMapSearch ? <MapSearch label={fields.actionText ?? undefined} /> : null}
+      </Splash>
     )
   },
 

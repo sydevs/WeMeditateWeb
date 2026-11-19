@@ -50,7 +50,7 @@ reads for the "content everyone can reach" line. The rule above owns *why*
 | [molecules/VideoPlayer](molecules/VideoPlayer/index.tsx) | Video.js and the hls.js engine it bundles need browser media APIs | The poster, at the player's own box and the full srcset ladder. The video itself is unreachable |
 | [molecules/Lightbox](molecules/Lightbox/index.tsx) | `yet-another-react-lightbox` is browser-only | Nothing, and nothing is lost: it is an enlargement of an image already on the page |
 | [molecules/EmbedButton](molecules/EmbedButton/index.tsx) | It reads `window.location.origin` and the Clipboard API | Nothing. It offers a snippet for embedding this page elsewhere, which is not the page's content |
-| [molecules/LocationSearch](molecules/LocationSearch/index.tsx) | `@mapbox/search-js-react` needs `document` and `window` | Nothing — and **no page renders it today.** Only the `molecules` barrel and `.ladle/components.tsx` reach it. A page that adopts it owes a no-JavaScript path of its own, because an address field with nothing behind it is a dead end rather than a missing extra |
+| [molecules/LocationSearch](molecules/LocationSearch/index.tsx) | `@mapbox/search-js-react` needs `document` and `window` | Its `fallback`: a page that adopts it owes one, because an address field with nothing behind it is a dead end rather than a missing extra. The one adopter, a `map-search` splash's `MapSearch`, falls back to a link to the class map in the block's action text — and to nothing when the editor left that empty, since no translation names the link |
 
 A page's title, its body copy and its forms all server-render, so none of the
 four is on that path. `FormBuilder` deliberately stays in the SSR graph for

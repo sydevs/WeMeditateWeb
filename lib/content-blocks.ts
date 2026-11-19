@@ -266,6 +266,22 @@ export function splashSurface(textColor?: SplashBlockFields['textColor']): 'ligh
   return textColorToSurface(textColor, 'dark')
 }
 
+/**
+ * The title a splash block draws, or `undefined` for none. Shared by the
+ * converter and {@link getLeadSplash}, which must agree on whether the page
+ * has a splash `<h1>`.
+ *
+ * SahajCloud hides `title` under the `map-search` layout but keeps a value
+ * typed before the switch, so a title the editor can no longer see is absent.
+ */
+export function splashTitle(
+  fields: Pick<SplashBlockFields, 'layout' | 'title'>,
+): string | undefined {
+  if (fields.layout === 'map-search') return undefined
+
+  return fields.title?.trim() || undefined
+}
+
 /** What a page's lead `splash` block tells its consumers. */
 export interface LeadSplash {
   surface: 'light' | 'dark'
@@ -295,7 +311,7 @@ export function getLeadSplash(content: Page['content']): LeadSplash | null {
 
   return {
     surface: splashSurface(first.fields.textColor),
-    hasTitle: Boolean(first.fields.title?.trim()),
+    hasTitle: splashTitle(first.fields) !== undefined,
   }
 }
 

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense, type ReactNode } from 'react'
 import { ClientOnly } from 'vike-react/ClientOnly'
 import type { LocationSearchProps } from './LocationSearch'
 
@@ -8,10 +8,24 @@ const LocationSearchLazy = React.lazy(() =>
 
 // Client-only wrapper to avoid SSR issues with @mapbox/search-js-react.
 // The Mapbox library requires browser APIs (document, window) that are not available during SSR.
-export function LocationSearch(props: LocationSearchProps) {
+export function LocationSearch({
+  fallback = null,
+  ...props
+}: LocationSearchProps & {
+  /**
+   * What renders until the search can: on the server, for a visitor without
+   * JavaScript, and while the chunk loads. An address field with nothing
+   * behind it is a dead end, so a page adopting this owes one.
+   */
+  fallback?: ReactNode
+}) {
   return (
-    <ClientOnly fallback={null}>
-      <LocationSearchLazy {...props} />
+    <ClientOnly fallback={fallback}>
+      {/* A boundary of its own, so the fallback stays while the chunk loads
+          instead of a boundary further up taking over. */}
+      <Suspense fallback={fallback}>
+        <LocationSearchLazy {...props} />
+      </Suspense>
     </ClientOnly>
   )
 }

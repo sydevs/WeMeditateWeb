@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Splash } from './Splash'
 import { Header } from '../Header'
 import { Countdown, Button, Input } from '../../atoms'
+import { MapSearch } from '../../molecules'
 import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
@@ -113,6 +114,16 @@ export const Default: Story = () => {
 
       <StorySection inContext={true} title="Lead Splash Loader">
         <LeadSplashLoader />
+      </StorySection>
+
+      <StorySection inContext={true} title="Map Search">
+        {/* The block's `map-search` layout: no title, subtitle or call to
+            action, and its action text as the search's label. */}
+        <div className="relative full-bleed">
+          <Splash backgroundImage="https://picsum.photos/id/1019/1920/1080" surface="dark">
+            <MapSearch label="Find a class near you" />
+          </Splash>
+        </div>
       </StorySection>
 
       <StorySection inContext={true} title="Countdown Timer">

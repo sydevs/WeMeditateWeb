@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useId, useRef, type ReactNode } from 'react'
 import { useSearchBoxCore, useSearchSession } from '@mapbox/search-js-react'
 import type {
   SearchBoxSuggestion,
@@ -31,6 +31,15 @@ export interface LocationSearchProps {
    * @default 'Search for a location...'
    */
   placeholder?: string
+
+  /**
+   * A visible label above the field, which names it for everyone. Without
+   * one, the field is named for screen readers only.
+   */
+  label?: string
+
+  /** Classes for the visible label */
+  labelClassName?: string
 
   /** Initial value for the input */
   defaultValue?: string
@@ -68,6 +77,8 @@ export function LocationSearch({
   onLocationSelect,
   accessToken = import.meta.env.PUBLIC__MAPBOX_ACCESS_TOKEN,
   placeholder,
+  label,
+  labelClassName = '',
   defaultValue = '',
   className = '',
   proximity,
@@ -86,6 +97,7 @@ export function LocationSearch({
   const [error, setError] = useState<string>('')
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const inputId = useId()
 
   // Initialize Mapbox Search Box Core
   const searchBoxCore = useSearchBoxCore({
@@ -223,15 +235,28 @@ export function LocationSearch({
   // Show dropdown when ready and input is focused
   const shouldShowDropdown = isDropdownOpen && isReady
 
+  const withLabel = (field: ReactNode) =>
+    label ? (
+      <div>
+        <label className={`block ${labelClassName}`} htmlFor={inputId}>
+          {label}
+        </label>
+        {field}
+      </div>
+    ) : (
+      field
+    )
+
   // Render read-only mode if location is selected
   if (selectedLocation) {
-    return (
+    return withLabel(
       <div className={`flex gap-2 ${className}`}>
         <Input
           disabled
           readOnly
           aria-label={t('location.a11y.selected_label')}
           className="flex-1"
+          id={inputId}
           value={selectedLocation.name}
         />
         <button
@@ -242,11 +267,11 @@ export function LocationSearch({
         >
           {t('location.general.change')}
         </button>
-      </div>
+      </div>,
     )
   }
 
-  return (
+  return withLabel(
     <Dropdown
       closeOnBlur={true}
       fullWidth={true}
@@ -257,9 +282,10 @@ export function LocationSearch({
           aria-autocomplete="list"
           aria-controls="location-search-listbox"
           aria-expanded={shouldShowDropdown}
-          aria-label={t('location.a11y.search_label')}
+          aria-label={label ? undefined : t('location.a11y.search_label')}
           className={className}
           disabled={!isReady}
+          id={inputId}
           placeholder={resolvedPlaceholder}
           value={inputValue}
           onChange={handleInputChange}
@@ -325,6 +351,6 @@ export function LocationSearch({
             </button>
           ))}
       </div>
-    </Dropdown>
+    </Dropdown>,
   )
 }

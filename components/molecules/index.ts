@@ -33,6 +33,8 @@ export { FormField } from './FormField'
 export type { FormFieldProps } from './FormField'
 export { LocationSearch } from './LocationSearch'
 export type { LocationSearchProps, SelectedLocation } from './LocationSearch'
+export { MapSearch } from './MapSearch'
+export type { MapSearchProps } from './MapSearch'
 
 export { ErrorFallback } from './ErrorFallback'
 export type { ErrorFallbackProps } from './ErrorFallback'
