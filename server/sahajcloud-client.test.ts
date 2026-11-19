@@ -251,6 +251,20 @@ describe('getPageBySlug query shape', () => {
     expect(args.populate.pages.slug).toBe(true)
     expect(args.populate.pages.content).toBeUndefined()
   })
+
+  it('selects an image’s credit for the page’s figures, and only on the page read', async () => {
+    const find = vi.fn().mockResolvedValue({ docs: [{ id: 1, slug: 'x', _status: 'published' }] })
+    const findGlobal = vi.fn().mockResolvedValue({ id: 1 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ find, findGlobal } as never)
+
+    await getPageBySlug({ slug: 'x', locale: 'en' })
+    await getWebConfig({ locale: 'en' })
+
+    expect(find.mock.calls[0][0].populate.images).toMatchObject({ url: true, credit: true })
+    // The config is serialised into every page's HTML, and renders no credit.
+    expect(findGlobal.mock.calls[0][0].populate.images.credit).toBeUndefined()
+  })
 })
 
 describe('getPageLocaleStatus', () => {

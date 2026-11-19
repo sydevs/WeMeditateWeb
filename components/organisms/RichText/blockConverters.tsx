@@ -26,6 +26,7 @@ import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import { OrnateTextBox } from '../OrnateTextBox'
 import { Splash } from '../Splash'
 import { SubtleSystem } from '../SubtleSystem'
+import { ImageCredit } from './ImageCredit'
 import {
   galleryImages,
   populatedImage,
@@ -236,18 +237,27 @@ export const blockConverters: BlockConverters = {
     return (
       <div className={`${BLOCK_SPACING} columns-2 gap-3 lg:columns-3 *:mb-3`}>
         {images.map((img, index) => (
-          <Image
+          <figure
             // eslint-disable-next-line @eslint-react/no-array-index-key -- the url leads the key; the index only separates one image used twice in a gallery
             key={`${img.url}-${index}`}
-            alt={img.alt}
-            aspectRatio={img.aspectRatio}
-            className="w-full"
-            lightboxGroup={group}
-            lightboxIndex={index}
-            rounded="rounded"
-            sizes="(max-width: 1024px) 50vw, 33vw"
-            src={img.url}
-          />
+            className="break-inside-avoid"
+          >
+            <Image
+              alt={img.alt}
+              aspectRatio={img.aspectRatio}
+              className="w-full"
+              lightboxGroup={group}
+              lightboxIndex={index}
+              rounded="rounded"
+              sizes="(max-width: 1024px) 50vw, 33vw"
+              src={img.url}
+            />
+            {img.credit ? (
+              <figcaption className="mt-1">
+                <ImageCredit>{img.credit}</ImageCredit>
+              </figcaption>
+            ) : null}
+          </figure>
         ))}
       </div>
     )

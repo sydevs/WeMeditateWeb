@@ -12,6 +12,8 @@ import {
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Blockquote, Container, Image, Link } from '../../atoms'
+import { imageCredit } from '../../../lib/content-blocks'
+import { ImageCredit } from './ImageCredit'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
@@ -31,6 +33,7 @@ interface PopulatedImage {
   alt?: string | null
   width?: number | null
   height?: number | null
+  credit?: string | null
 }
 
 /** Sizes hint: article body images are at most the article column width. */
@@ -178,7 +181,8 @@ const CONVERTERS: JSXConverters = {
   },
 
   // Upload images render through the Cloudflare-aware Image atom, inside a
-  // <figure>. This honors the SahajCloud caption and alignment fields.
+  // <figure>. This honors the SahajCloud caption and alignment fields, and
+  // prints the image's credit above the caption, where the legacy site put it.
   upload: ({ node }) => {
     const value = node.value
 
@@ -193,6 +197,7 @@ const CONVERTERS: JSXConverters = {
     const fields = node.fields as
       { caption?: unknown; align?: string | null; alt?: string | null } | undefined
     const caption = renderCaption(fields?.caption)
+    const credit = imageCredit(image.credit)
     // `wide` images break out to the full content width. They get no
     // rounding, because they meet the edges, and a full-width `sizes` hint,
     // so the browser fetches a large variant.
@@ -210,7 +215,12 @@ const CONVERTERS: JSXConverters = {
           src={image.url}
           width={image.width ?? undefined}
         />
-        {caption ? <figcaption className="mt-2 text-sm text-gray-700">{caption}</figcaption> : null}
+        {caption || credit ? (
+          <figcaption className="mt-2 text-sm text-gray-700">
+            {credit ? <ImageCredit className={caption ? 'mb-1' : ''}>{credit}</ImageCredit> : null}
+            {caption}
+          </figcaption>
+        ) : null}
       </figure>
     )
   },

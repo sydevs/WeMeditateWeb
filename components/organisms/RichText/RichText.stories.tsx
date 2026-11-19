@@ -101,10 +101,11 @@ const uploadImage = (
   alt: string,
   caption: string,
   align: 'left' | 'center' | 'right' | 'wide',
+  credit = '',
 ) => ({
   type: 'upload',
   relationTo: 'images',
-  value: { id: 7, url, alt, width: 1200, height: 800 },
+  value: { id: 7, url, alt, width: 1200, height: 800, credit },
   fields: { align, caption },
   version: 1,
 })
@@ -276,7 +277,7 @@ const pageContent = editorState(
     uploadImage(FIGURE_IMAGE, 'A wide vista', 'A wide (full-width) figure', 'wide'),
     paragraph([text(FILLER[0])]),
     paragraph([text(FILLER[1])]),
-    uploadImage(FIGURE_IMAGE, 'A calm landscape', 'A centered figure', 'center'),
+    uploadImage(FIGURE_IMAGE, 'A calm landscape', 'A centered figure', 'center', 'Katya Denisova'),
 
     // Text box: all three image positions (left, right side layouts, and overlay)
     block('textbox', {
@@ -331,7 +332,7 @@ const pageContent = editorState(
     block('image-gallery', {
       items: [
         imageRef('g1', 'Gallery one', 800, 600),
-        imageRef('g2', 'Gallery two', 600, 800),
+        { ...imageRef('g2', 'Gallery two', 600, 800), credit: 'Prasad Beaven' },
         imageRef('g3', 'Gallery three', 1200, 800),
         imageRef('g4', 'Gallery four', 800, 800),
         imageRef('g5', 'Gallery five', 900, 1200),

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { getLeadSplash } from '../../../lib/content-blocks'
 import type { Page } from '../../../server/sahajcloud-types'
+import { classOf } from '../../../tests/_helpers/markup'
 
 // RichText mounts the lightbox provider, whose barrel is client-only, and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
@@ -300,6 +301,44 @@ describe('<RichText>', () => {
     expect(html).not.toContain('<img')
   })
 
+  /** One `images` upload node, centered unless `fields` says otherwise. */
+  const upload = (value: Record<string, unknown>, fields: Record<string, unknown> = {}) =>
+    renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'upload',
+            relationTo: 'images',
+            value: img(value),
+            fields: { align: 'center', ...fields },
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+  it('prints an uploaded image’s credit in its figcaption, above the caption', () => {
+    const html = upload({ credit: 'Yoshitoshi, 1887' }, { caption: 'Bodhidharma in meditation' })
+    const figcaption = html.slice(html.indexOf('<figcaption'), html.indexOf('</figcaption>'))
+
+    expect(figcaption).toContain('<small')
+    expect(figcaption).toContain('Yoshitoshi, 1887')
+    expect(figcaption.indexOf('Yoshitoshi, 1887')).toBeLessThan(
+      figcaption.indexOf('Bodhidharma in meditation'),
+    )
+  })
+
+  it('gives a credit with no caption a figcaption of its own, and a blank credit none', () => {
+    // SahajCloud stores an unset credit as "", and a typed one can end in a space.
+    const credited = upload({ credit: 'Prasad Beaven ' }, { align: 'left' })
+    const blank = upload({ credit: '' })
+
+    expect(credited).toContain('<figcaption')
+    expect(credited).toContain('>Prasad Beaven</small>')
+    expect(blank).toContain('<figure')
+    expect(blank).not.toContain('<figcaption')
+  })
+
   it('renders a textbox block via ContentTextBox (title, text, CTA, image)', () => {
     const html = renderToStaticMarkup(
       <RichText
@@ -405,6 +444,31 @@ describe('<RichText>', () => {
     expect(html).toContain('aria-label="View image: Two"')
     expect(html).toContain('aria-haspopup="dialog"')
     expect(html).toContain('columns-2')
+  })
+
+  it('prints a gallery image’s credit under its tile, and nothing under an uncredited one', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [
+              img({ id: 1, alt: 'One', credit: 'Katya Denisova' }),
+              img({ id: 2, alt: 'Two', credit: '' }),
+              img({ id: 3, alt: 'Three' }),
+            ],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html.split('<figure').length - 1).toBe(3)
+    expect(html.split('<figcaption').length - 1).toBe(1)
+    expect(html).toContain('>Katya Denisova</small>')
+
+    const credit = classOf(html, 'Katya Denisova')
+
+    expect(credit.split(' ')).toContain('text-fg-muted')
+    expect(credit).toBe(credit.trim())
   })
 
   it('wraps the standalone upload image in a lightbox trigger inside its figure', () => {
