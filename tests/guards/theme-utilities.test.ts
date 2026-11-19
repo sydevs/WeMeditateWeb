@@ -205,6 +205,10 @@ describe('theme utilities', () => {
    * `dangerouslySetInnerHTML` needs no `@source` line. `.claude` is ignored
    * because `git worktree add .claude/worktrees/<slug>` puts a whole second
    * checkout there, which `globSync` walks and `.gitignore` does not stop.
+   *
+   * The literal is matched anywhere in the file, so a helper that only *reads*
+   * a class list trips this by naming a parameter `className`. Name it
+   * something else rather than widening the scan set.
    */
   it('scans every directory whose .ts/.tsx authors a className', () => {
     const ignored = new Set(['node_modules', 'dist', 'build', '.git', '.claude'])

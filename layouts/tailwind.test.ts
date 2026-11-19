@@ -12,6 +12,7 @@ import {
 } from '../tests/guards/_source-scan'
 import { OrnateTextBox } from '../components/organisms/OrnateTextBox/OrnateTextBox'
 import { contrast } from '../tests/_helpers/contrast'
+import { classFor } from '../tests/_helpers/markup'
 
 /** Compiles the real stylesheet for the given class candidates. */
 async function build(candidates: string[]): Promise<string> {
@@ -150,7 +151,7 @@ describe('an arbitrary value written out, not interpolated', () => {
   // Each align carries two: the faint one below `lg`, and the `lg:` override
   // at full strength.
   const bandCandidate = (align: 'left' | 'right', prefix: '' | 'lg:') =>
-    (
+    classFor(
       renderToStaticMarkup(
         createElement(OrnateTextBox, {
           align,
@@ -159,7 +160,8 @@ describe('an arbitrary value written out, not interpolated', () => {
           imageSrc: 'https://picsum.photos/seed/x/900/1200',
           title: 'Sacred Teachings',
         }),
-      ).match(/class="([^"]*-top-24[^"]*)"/)?.[1] ?? ''
+      ),
+      '-top-24',
     )
       .split(' ')
       .find((candidate) => candidate.startsWith(`${prefix}bg-[linear-gradient`)) ?? ''
