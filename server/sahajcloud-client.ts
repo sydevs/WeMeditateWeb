@@ -285,8 +285,8 @@ const MEDITATION_SELECT = {
  * no `select`, `populate` or `depth` from ours, so a chakra keyframe carries
  * its node's whole `page` document whatever a query asks for (verified against
  * production at depths 0-3, and with `populate` entries for `frames`,
- * `subtle-system-nodes` and `pages`). `narrowMeditationFrames` applies it to
- * the answer instead.
+ * `subtle-system-nodes` and `pages`). `getDocumentById` applies it to the
+ * answer instead — see `COLLECTION_BY_ID_CONFIG`.
  *
  * Three keys are outside `FramesSelect` and named in the type for that reason:
  * `id` and `timestamp` come from the meditation's own JSON rather than the
@@ -313,7 +313,7 @@ const MEDITATION_FRAME_SELECT = {
  * `initialData`: a streamed document arrives whole from the populate proxy and
  * renders the same.
  */
-export function narrowMeditationFrames(meditation: Meditation): Meditation {
+function narrowMeditationFrames(meditation: Meditation): Meditation {
   if (!Array.isArray(meditation.frames)) return meditation
 
   const kept = Object.keys(MEDITATION_FRAME_SELECT)
@@ -364,6 +364,13 @@ const LECTURE_POPULATE = {
  * Configuration for collections that support findById queries.
  * Maps PayloadCMS collection slugs to the select/populate shapes required
  * by the backend query-validation hook.
+ *
+ * `narrow` is the same read shape for a field the query cannot reach, applied
+ * by `getDocumentById` to the answer. A collection needs one only where
+ * SahajCloud assembles a field after it has validated the query — today just
+ * a meditation's `frames` (see `MEDITATION_FRAME_SELECT`). `documentReadArgs`
+ * does not carry it: live preview's populate proxy answers an editor's own
+ * browser, and the panel streams the whole document back anyway.
  */
 const COLLECTION_BY_ID_CONFIG = {
   pages: {
@@ -373,6 +380,7 @@ const COLLECTION_BY_ID_CONFIG = {
   meditations: {
     select: MEDITATION_SELECT,
     populate: IMAGE_POPULATE,
+    narrow: narrowMeditationFrames,
   },
   lectures: {
     select: LECTURE_SELECT,
@@ -620,6 +628,10 @@ export async function getDocumentById<C extends FindByIdCollection>(
       const status = (result as { _status?: string })._status
 
       if (!isPreview && status === 'draft') return null
+
+      // TypeScript cannot correlate the union-typed config to the generic
+      // collection `C`, as with select/populate above.
+      if ('narrow' in config) return config.narrow(result as never) as Config['collections'][C]
 
       return result
     },
