@@ -320,6 +320,16 @@ describe('<RichText>', () => {
       expect(html).not.toContain('>03</div>')
     })
 
+    it('keeps counting across a blank paragraph left between two cards', () => {
+      const html = renderToStaticMarkup(
+        <RichText content={editorState([FIVE[0], paragraph([]), FIVE[1]])} />,
+      )
+      const sides = cards(html).map((c) => c.split(/\s+/).includes('md:flex-row-reverse'))
+
+      expect(sides).toEqual([false, true])
+      expect(html).toContain('>02</div>')
+    })
+
     it('keeps the link for a page with no description or no image', () => {
       const bare = (meta: Record<string, unknown>) => ({
         ...FIVE[0],

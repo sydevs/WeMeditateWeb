@@ -132,23 +132,42 @@ interface CardRun {
   length: number
 }
 
+/** A paragraph with no text, which Lexical routinely leaves beside a decorator node. */
+function isBlankParagraph(node: unknown): boolean {
+  return (
+    isPopulated<{ type?: unknown; children?: unknown }>(node) &&
+    node.type === 'paragraph' &&
+    !getNodeText(node.children).trim()
+  )
+}
+
 /**
  * Where the card at `index` sits among the cards on either side of it: its
- * 1-based `position` and the run's `length`. Any sibling that is not a card
- * ends the run, so a list separated by a paragraph numbers from one again.
+ * 1-based `position` and the run's `length`. Any other sibling ends the run,
+ * so a list separated by a paragraph numbers from one again — except a blank
+ * paragraph, which draws no visible break between two cards.
  */
 export function cardRun(siblings: readonly unknown[], index: number): CardRun {
-  let start = index
-  let end = index
+  let position = 1
+  let length = 1
 
-  while (start > 0 && pageCard(siblings[start - 1])) {
-    start--
+  for (let i = index - 1; i >= 0; i--) {
+    if (pageCard(siblings[i])) {
+      position++
+      length++
+    } else if (!isBlankParagraph(siblings[i])) {
+      break
+    }
   }
-  while (end < siblings.length - 1 && pageCard(siblings[end + 1])) {
-    end++
+  for (let i = index + 1; i < siblings.length; i++) {
+    if (pageCard(siblings[i])) {
+      length++
+    } else if (!isBlankParagraph(siblings[i])) {
+      break
+    }
   }
 
-  return { position: index - start + 1, length: end - start + 1 }
+  return { position, length }
 }
 
 type SubheadingLevel = 'h2' | 'h3' | 'h4' | 'h5' | 'h6'

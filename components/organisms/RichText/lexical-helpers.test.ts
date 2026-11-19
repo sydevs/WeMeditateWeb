@@ -50,10 +50,18 @@ describe('cardRun', () => {
   })
 
   it('starts a new run after anything that is not a card', () => {
-    const siblings = [card, card, para, card]
+    const words = { type: 'paragraph', children: [{ type: 'text', text: 'Between' }] }
+    const siblings = [card, card, words, card]
 
     expect(cardRun(siblings, 1)).toEqual({ position: 2, length: 2 })
     expect(cardRun(siblings, 3)).toEqual({ position: 1, length: 1 })
+  })
+
+  it('runs on across a blank paragraph between two cards', () => {
+    const breakOnly = { type: 'paragraph', children: [{ type: 'linebreak' }] }
+
+    expect(cardRun([card, para, card], 2)).toEqual({ position: 2, length: 2 })
+    expect(cardRun([card, breakOnly, card, para], 0)).toEqual({ position: 1, length: 2 })
   })
 })
 
