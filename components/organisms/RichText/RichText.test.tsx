@@ -280,8 +280,7 @@ describe('<RichText>', () => {
 
     expect(html).toContain('<figure')
     expect(html).toContain('mx-auto')
-    // 1600×900 ≈ 16:9 → snaps to the `video` box, and its width ladder (only `video` has 640).
-    expect(html).toContain('aspect-video')
+    // 1600×900 ≈ 16:9 → the `video` width ladder (only `video` has 640).
     expect(html).toContain('imagedelivery.net/acct/img123/width=640 640w')
     expect(html).toContain('alt="A sunrise"')
     expect(html).toContain('<figcaption')
@@ -337,6 +336,24 @@ describe('<RichText>', () => {
     expect(credited).toContain('>Prasad Beaven</small>')
     expect(blank).toContain('<figure')
     expect(blank).not.toContain('<figcaption')
+  })
+
+  it('draws an upload with known dimensions whole, at its own ratio', () => {
+    // The 800×1652 scroll on /history-of-meditation: snapped to `square`, it
+    // lost half its height.
+    const html = upload({ width: 800, height: 1652 })
+    const tag = openTag(html, 'img')
+
+    expect(tag).toContain('width="800"')
+    expect(tag).toContain('height="1652"')
+    expect(classOf(html, '<img').split(' ')).not.toContain('absolute')
+    expect(classOf(html, '<button').split(' ')).not.toContain('aspect-square')
+  })
+
+  it('keeps the snapped box for an upload with no dimensions, so nothing shifts on load', () => {
+    const html = upload({ width: null, height: null })
+
+    expect(classOf(html, '<button').split(' ')).toContain('aspect-video')
   })
 
   it('renders a textbox block via ContentTextBox (title, text, CTA, image)', () => {

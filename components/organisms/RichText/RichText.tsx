@@ -183,6 +183,8 @@ const CONVERTERS: JSXConverters = {
   // Upload images render through the Cloudflare-aware Image atom, inside a
   // <figure>. This honors the SahajCloud caption and alignment fields, and
   // prints the image's credit above the caption, where the legacy site put it.
+  // Known dimensions draw the image whole, at its own ratio (see the
+  // `image-gallery` converter).
   upload: ({ node }) => {
     const value = node.value
 
@@ -208,6 +210,8 @@ const CONVERTERS: JSXConverters = {
         <Image
           alt={fields?.alt ?? image.alt ?? ''}
           aspectRatio={nearestAspectRatio(image.width, image.height)}
+          className="w-full"
+          forceAspectRatio={!(image.width && image.height)}
           height={image.height ?? undefined}
           lightboxGroup={`upload-${image.url}`}
           rounded={isWide ? 'none' : 'rounded'}
