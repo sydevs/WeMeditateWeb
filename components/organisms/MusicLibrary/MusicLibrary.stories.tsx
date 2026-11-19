@@ -94,6 +94,16 @@ const sampleTracks: Track[] = [
     duration: 289,
     tags: [{ id: 'vocal', label: 'Vocal' }],
   },
+  // Keeps the no-duration row visible beside real lengths.
+  {
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3',
+    title: 'Unmeasured Drone',
+    credit: 'Meera Joshi',
+    creditURL: '#',
+    thumbnailURL: 'https://picsum.photos/seed/track13/800/800',
+    duration: 0,
+    tags: [{ id: 'wind', label: 'Wind' }],
+  },
   {
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
     title: 'Sitar Dreams',

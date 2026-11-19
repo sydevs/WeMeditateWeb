@@ -237,11 +237,12 @@ describe('contentIndexTrack', () => {
     ...over,
   })
 
-  it('maps a song doc to a playable Track (duration 0, tags as id/label facets)', () => {
+  it('maps a song doc to a playable Track (stored duration, tags as id/label facets)', () => {
     const track = contentIndexTrack({
       id: 10,
       title: 'Raga',
       url: 'https://cdn/audio.mp3',
+      duration: 212,
       album: album(),
       tags: [
         { id: 1, slug: 'strings', title: 'Strings' },
@@ -256,12 +257,20 @@ describe('contentIndexTrack', () => {
       credit: 'Nightingale',
       creditURL: 'https://example.com/artist',
       thumbnailURL: 'https://imagedelivery.net/acct/img/',
-      duration: 0,
+      duration: 212,
       tags: [
         { id: 'strings', label: 'Strings' },
         { id: 'vocal', label: 'Vocal' },
       ],
     })
+  })
+
+  it('falls back to 0 for a song SahajCloud stores no length for', () => {
+    // `0` is what Playlist reads as "unknown" and prints nothing for.
+    // SahajCloud stores null for a song whose audio it could not measure.
+    const song = { id: 10, title: 'Raga', url: 'https://cdn/audio.mp3' }
+
+    expect(contentIndexTrack({ ...song, duration: null })?.duration).toBe(0)
   })
 
   it('labels a song tag from its SahajCloud title, falling back to the slug', () => {
@@ -412,15 +421,33 @@ describe('splashSurface', () => {
 })
 
 describe('getLeadSplash', () => {
-  const splashBlock = (textColor?: 'dark' | 'light') => ({
+  const splashBlock = (textColor?: 'dark' | 'light', title?: string) => ({
     type: 'block',
-    fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
+    fields: {
+      blockType: 'splash',
+      ...(textColor ? { textColor } : {}),
+      ...(title === undefined ? {} : { title }),
+    },
   })
 
   it('returns the derived surface when content leads with a splash block', () => {
-    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark' })
-    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({ surface: 'light' })
-    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({ surface: 'dark' })
+    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark', hasTitle: false })
+    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({
+      surface: 'light',
+      hasTitle: false,
+    })
+    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({
+      surface: 'dark',
+      hasTitle: false,
+    })
+  })
+
+  it('reports whether the splash draws a heading of its own', () => {
+    // `Splash` renders its `<h1>` only for a non-empty title, so a blank one
+    // is the same as none: `PageTemplate` owes the page a heading either way.
+    expect(getLeadSplash(leadContent(splashBlock(undefined, 'Discover it')))?.hasTitle).toBe(true)
+    expect(getLeadSplash(leadContent(splashBlock(undefined, '   ')))?.hasTitle).toBe(false)
+    expect(getLeadSplash(leadContent(splashBlock(undefined, '')))?.hasTitle).toBe(false)
   })
 
   it('returns null when the first block is not a splash', () => {
@@ -443,12 +470,16 @@ describe('leadSplashFromRouteData', () => {
   })
 
   it('reads page content on content routes ([slug])', () => {
-    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ surface: 'light' })
+    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({
+      surface: 'light',
+      hasTitle: false,
+    })
   })
 
   it('reads initialData content on a pages preview', () => {
     expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
       surface: 'dark',
+      hasTitle: false,
     })
   })
 
