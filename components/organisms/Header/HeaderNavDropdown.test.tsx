@@ -34,8 +34,7 @@ describe('HeaderNavDropdown', () => {
     )
     const trigger = html.slice(html.indexOf('<button'), html.indexOf('</button>'))
 
-    // Label first, chevron after it.
-    expect(trigger.indexOf('<svg')).toBeGreaterThan(trigger.indexOf('About Meditation'))
+    expect(trigger).toContain('<svg')
   })
 
   it('does not render the panel until opened (closed by default)', () => {

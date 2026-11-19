@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MobileMenu } from './MobileMenu'
 import type { NavItem } from '../Header'
-import { tagFor } from '../../../tests/_helpers/markup'
+import { openTag } from '../../../tests/_helpers/markup'
 
 const navItems: NavItem[] = [
   { label: 'Meditate Now', href: '/meditate' },
@@ -22,7 +22,7 @@ describe('MobileMenu', () => {
   it('names its trigger from the content system, in the closed state', () => {
     // `common.a11y.menu` in lib/translations.en.json. The same name is read in
     // both states, so `aria-expanded` is what carries the state.
-    const trigger = tagFor(render(), 'button')
+    const trigger = openTag(render(), 'button')
 
     expect(trigger).toContain('aria-label="Menu"')
     expect(trigger).toContain('aria-expanded="false"')

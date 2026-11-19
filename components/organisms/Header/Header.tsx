@@ -3,11 +3,9 @@ import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
 import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
-import { MobileMenu } from '../MobileMenu'
+import { MobileMenu, type MobileMenuProps } from '../MobileMenu'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
-import type { SocialLink } from '../Footer'
-import type { LanguageOption } from '../../molecules/LanguageDropdown'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { barRow, trailingIconInset } from './bar'
 import { useT } from '../../../hooks/useT'
 
 /**
@@ -32,7 +30,14 @@ export interface NavItem {
  */
 const clickable = 'pointer-events-auto'
 
-export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> {
+/** The action link, worded in the banner and a pin in the bar. */
+const actionLink =
+  'flex touch-target items-center gap-2 whitespace-nowrap font-medium no-underline hover:opacity-75 transition-opacity'
+
+export interface HeaderProps
+  extends
+    Omit<ComponentProps<'header'>, 'children'>,
+    Pick<MobileMenuProps, 'languages' | 'socialLinks'> {
   /** Logo href (default: "/") */
   logoHref?: string
   /** Action link text, for example "Classes near me" */
@@ -62,12 +67,6 @@ export interface HeaderProps extends Omit<ComponentProps<'header'>, 'children'> 
    * @default false
    */
   condensed?: boolean
-  /** Languages the phone menu offers, each linking to the current page in that language. */
-  languages?: LanguageOption[]
-  /** The language the page is in, marked in the phone menu's list. */
-  currentLanguage?: Locale
-  /** Social profiles the phone menu links to. */
-  socialLinks?: SocialLink[]
 }
 
 /**
@@ -88,7 +87,6 @@ export function Header({
   bandClassName = '',
   condensed = false,
   languages,
-  currentLanguage,
   socialLinks,
   className = '',
   ...props
@@ -105,12 +103,9 @@ export function Header({
   // nav sticks. Below `lg:` there is no banner, so they show in every state.
   // `invisible` is what keeps them out of the tab order and the a11y tree
   // meanwhile — `pointer-events-none` stops only the mouse, so at `lg:` un-stuck
-  // a keyboard reached two named links nobody can see (SC 2.4.7). They hide at
-  // once rather than fading: `Logo`'s own `transition-opacity` wins over a list
-  // set here.
-  const compactControl = `transition-opacity duration-200 ${
-    isSticky ? '' : 'lg:opacity-0 lg:invisible'
-  }`
+  // a keyboard reached two named links nobody can see (SC 2.4.7). Each carries
+  // its own `transition-opacity`, so they fade in and hide at once.
+  const compactControl = `duration-200 ${isSticky ? '' : 'lg:opacity-0 lg:invisible'}`
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -153,7 +148,7 @@ export function Header({
 
             {actionLinkText && actionLinkHref && (
               <Link
-                className="flex shrink-0 touch-target items-center gap-2 whitespace-nowrap font-medium no-underline hover:opacity-75 transition-opacity"
+                className={`shrink-0 ${actionLink}`}
                 href={actionLinkHref}
                 size="sm"
                 variant="unstyled"
@@ -177,7 +172,7 @@ export function Header({
           // header was overlaid on. Un-stuck it takes the layout's page band,
           // which a wrapper cannot give it: see `bandClassName`. The top rule
           // only ever divides it from the banner, so it is drawn neither below
-          // `lg:` nor once stuck, where it ran along the viewport's top edge.
+          // `lg:` nor once stuck, where it would sit on the viewport's top edge.
           className={`sticky top-0 z-50 ${clickable} border-b border-line-subtle text-fg-muted transition-colors duration-200 ${
             isSticky ? 'surface-light full-bleed bg-white' : `lg:border-t ${bandClassName}`
           }`}
@@ -189,7 +184,7 @@ export function Header({
               A grid at `lg:`, so the links centre on the page whatever the two
               sides hold. */}
           <div
-            className={`flex min-h-14 items-center gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr] ${
+            className={`${barRow} gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr] ${
               isSticky ? 'max-w-7xl mx-auto px-6' : ''
             }`}
           >
@@ -202,7 +197,7 @@ export function Header({
                 `aria-label` beside it would be a second name to keep in step
                 (SC 2.5.3). */}
             <Logo
-              className={`shrink-0 touch-target max-lg:mr-auto lg:justify-self-start ${compactControl}`}
+              className={`shrink-0 max-lg:mr-auto lg:justify-self-start ${compactControl}`}
               href={logoHref}
               size="lg"
               variant="inline"
@@ -240,13 +235,12 @@ export function Header({
               )}
             </div>
 
-            {/* The negative margin puts the drawn ☰, not its 44px box, on the
-                gutter, level with the logo opposite. At `lg:` the pin is last,
-                and `justify-end` does the same for it. */}
-            <div className="flex shrink-0 items-center max-lg:-mr-2.5 lg:justify-self-end">
+            {/* At `lg:` the pin is last, and `justify-end` puts its drawn icon on
+                the gutter, level with the logo opposite. */}
+            <div className="flex shrink-0 items-center lg:justify-self-end">
               {actionLinkText && actionLinkHref && (
                 <Link
-                  className={`flex touch-target items-center justify-center gap-2 whitespace-nowrap font-medium no-underline hover:opacity-75 transition-opacity lg:justify-end ${compactControl}`}
+                  className={`justify-center lg:justify-end ${actionLink} ${compactControl}`}
                   href={actionLinkHref}
                   size="sm"
                   variant="unstyled"
@@ -265,8 +259,7 @@ export function Header({
               <MobileMenu
                 actionLinkHref={actionLinkHref}
                 actionLinkText={actionLinkText}
-                className="lg:hidden"
-                currentLanguage={currentLanguage}
+                className={`lg:hidden ${trailingIconInset}`}
                 languages={languages}
                 logoHref={logoHref}
                 navItems={navItems}

@@ -22,20 +22,6 @@ export function anchorFor(html: string, href: string): string {
 }
 
 /**
- * The opening `<tag>` carrying this attribute text, or the empty string.
- */
-export function tagFor(html: string, tag: string, attribute = ''): string {
-  // Matched forwards over the tag's own openings, never backwards from the
-  // attribute: an attribute any element may carry would otherwise return a
-  // slice spanning two of them.
-  for (const [opening] of html.matchAll(new RegExp(`<${tag}\\b[^>]*>`, 'g'))) {
-    if (opening.includes(attribute)) return opening
-  }
-
-  return ''
-}
-
-/**
  * The opening `<tag>` of the first one in `html`, or the empty string.
  *
  * The whole tag, so an assertion about an attribute other than `class` reads

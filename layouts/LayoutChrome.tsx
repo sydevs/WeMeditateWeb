@@ -127,7 +127,6 @@ function Chrome({
       actionLinkHref={actionLinkHref}
       actionLinkText={actionLinkText}
       bandClassName={`max-w-7xl mx-auto px-6 w-full ${surface(leadSplash?.surface)}`}
-      currentLanguage={locale}
       languages={languages}
       logoHref="/"
       navItems={navItems}

@@ -1,6 +1,5 @@
 import { Header } from '../components/organisms/Header'
 import { useData } from 'vike-react/useData'
-import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig } from '../server/sahajcloud-types'
 import { SkipLink } from '../components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
@@ -46,7 +45,6 @@ export default function LayoutMap({ children }: { children: React.ReactNode }) {
  */
 function MapChrome({ settings, children }: { settings: WebConfig; children: React.ReactNode }) {
   const { navItems, actionLinkHref, actionLinkText, languages, socialLinks } = useSiteNav(settings)
-  const { locale } = usePageContext()
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -56,7 +54,6 @@ function MapChrome({ settings, children }: { settings: WebConfig; children: Reac
         condensed
         actionLinkHref={actionLinkHref}
         actionLinkText={actionLinkText}
-        currentLanguage={locale}
         languages={languages}
         logoHref="/"
         navItems={navItems}

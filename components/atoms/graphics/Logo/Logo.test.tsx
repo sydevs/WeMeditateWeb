@@ -31,5 +31,10 @@ describe('Logo', () => {
       expect(html).toContain('whitespace-nowrap')
       expect(html).not.toContain('flex-col')
     })
+
+    it('floors a linked lockup at 44px, and only a linked one', () => {
+      expect(renderToStaticMarkup(<Logo href="/" variant="inline" />)).toContain('touch-target')
+      expect(renderToStaticMarkup(<Logo variant="inline" />)).not.toContain('touch-target')
+    })
   })
 })

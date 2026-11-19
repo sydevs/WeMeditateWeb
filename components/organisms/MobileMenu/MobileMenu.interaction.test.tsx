@@ -76,8 +76,7 @@ describe('MobileMenu · opening and closing', () => {
   })
 
   it('marks the current page', () => {
-    render(<MobileMenu navItems={[{ label: 'Meditate Now', href: '/meditate', active: true }]} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
+    open({ navItems: [{ label: 'Meditate Now', href: '/meditate', active: true }] })
 
     expect(screen.getByRole('link', { name: 'Meditate Now' }).getAttribute('aria-current')).toBe(
       'page',
@@ -104,8 +103,8 @@ describe('MobileMenu · opening and closing', () => {
   })
 
   it('lists each language in its own name, linking to this page in it', () => {
+    // Outside a Vike render the page's locale is the default, English.
     open({
-      currentLanguage: 'en',
       languages: [
         { code: 'en', label: 'English', href: '/chakras' },
         { code: 'es', label: 'Español', href: '/chakras' },

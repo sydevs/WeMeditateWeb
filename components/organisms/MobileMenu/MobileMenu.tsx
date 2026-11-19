@@ -8,7 +8,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import {
-  useFloating,
+  useFloatingRootContext,
   useClick,
   useDismiss,
   useRole,
@@ -20,9 +20,10 @@ import {
 import { Button, Icon, Link, Logo } from '../../atoms'
 import { SocialIcon } from '../../atoms/graphics/SocialIcon'
 import type { NavItem } from '../Header'
+import { barRow, trailingIconInset } from '../Header/bar'
 import type { SocialLink } from '../Footer'
 import type { LanguageOption } from '../../molecules/LanguageDropdown'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { useLocale } from '../../../hooks/usePageContext'
 import { useT } from '../../../hooks/useT'
 
 export interface MobileMenuProps {
@@ -35,19 +36,16 @@ export interface MobileMenuProps {
   actionLinkHref?: string
   /** Languages to offer, each linking to the current page in that language. */
   languages?: LanguageOption[]
-  /** The language the page is in, marked in the list. */
-  currentLanguage?: Locale
   /** Social profiles, as the footer lists them. */
   socialLinks?: SocialLink[]
   /** Extra classes for the trigger. */
   className?: string
 }
 
-const row =
-  'flex w-full touch-target items-center justify-center gap-2.5 py-3.5 text-xl text-fg no-underline transition-colors hover:text-primary focus-ring'
-
-const subRow =
-  'flex touch-target items-center justify-center gap-2 text-base text-fg-muted no-underline transition-colors hover:text-primary focus-ring'
+const rowBase =
+  'flex touch-target items-center justify-center no-underline transition-colors hover:text-primary'
+const row = `${rowBase} w-full gap-2.5 py-3.5 text-xl text-fg`
+const subRow = `${rowBase} gap-2 text-base text-fg-muted`
 
 /**
  * The site menu on a phone: a trigger in the compact header bar, and a calm,
@@ -63,21 +61,25 @@ export function MobileMenu({
   actionLinkText,
   actionLinkHref,
   languages = [],
-  currentLanguage,
   socialLinks = [],
   className,
 }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [reference, setReference] = useState<Element | null>(null)
+  const [floating, setFloating] = useState<HTMLElement | null>(null)
+  const locale = useLocale()
   const t = useT()
 
   // The interactions context alone: nothing here is positioned. An anchored
   // `top` measures the `sticky` nav, and the scroll lock below puts
   // `position: fixed` on `<body>` on iOS, which takes that nav's scroll
   // container away and drags the bar — and any top measured from it — off the
-  // top of the screen.
-  const { refs, context } = useFloating({
+  // top of the screen. `useFloating` would still compute a position on open,
+  // and re-render the panel to store it.
+  const context = useFloatingRootContext({
     open: isOpen,
     onOpenChange: setIsOpen,
+    elements: { reference, floating },
   })
 
   const click = useClick(context)
@@ -92,7 +94,7 @@ export function MobileMenu({
   return (
     <>
       <Button
-        ref={refs.setReference}
+        ref={setReference}
         aria-label={label}
         className={className}
         icon={Bars3Icon}
@@ -111,7 +113,7 @@ export function MobileMenu({
                 covers the page, so there is nothing behind it to reach. */}
             <FloatingFocusManager context={context}>
               <div
-                ref={refs.setFloating}
+                ref={setFloating}
                 {...getFloatingProps({ 'aria-label': label })}
                 // Insets rather than a width: `w-screen` counts the scrollbar
                 // and would add a horizontal one of its own.
@@ -120,9 +122,9 @@ export function MobileMenu({
                 {/* The header bar's own geometry — height, gutter, the ☰'s
                     offset — so × replaces ☰ in place. It is also the only way
                     out a pointer has: the trap has the trigger inert. */}
-                <div className="flex min-h-14 shrink-0 items-center justify-between px-6">
+                <div className={`${barRow} shrink-0 justify-between px-6`}>
                   <Logo
-                    className="shrink-0 touch-target"
+                    className="shrink-0"
                     href={logoHref}
                     size="lg"
                     variant="inline"
@@ -130,7 +132,7 @@ export function MobileMenu({
                   />
                   <Button
                     aria-label={t('common.a11y.close')}
-                    className="-mr-2.5"
+                    className={trailingIconInset}
                     icon={XMarkIcon}
                     variant="ghost"
                     onClick={close}
@@ -193,11 +195,10 @@ export function MobileMenu({
 
                 <div className="flex flex-col items-center gap-1 px-6">
                   {socialLinks.length > 0 && (
-                    <div className="flex">
+                    <div className="flex flex-wrap justify-center">
                       {socialLinks.map((social) => (
                         <SocialIcon
                           key={social.platform}
-                          className="touch-target"
                           href={social.href}
                           platform={social.platform}
                         />
@@ -205,9 +206,8 @@ export function MobileMenu({
                     </div>
                   )}
 
-                  {/* Inline rather than `LanguageDropdown`: that one portals
-                      its list, and the trap has everything outside the panel
-                      inert. */}
+                  {/* Inline rather than `LanguageDropdown`: its list portals at
+                      `z-50`, under this panel. */}
                   {languages.length > 1 && (
                     <Disclosure
                       label={
@@ -221,7 +221,7 @@ export function MobileMenu({
                       {languages.map((language) => (
                         <li key={language.code}>
                           <Link
-                            aria-current={language.code === currentLanguage ? 'true' : undefined}
+                            aria-current={language.code === locale ? 'true' : undefined}
                             className={subRow}
                             href={language.href}
                             locale={language.code}
@@ -229,7 +229,7 @@ export function MobileMenu({
                             onClick={close}
                           >
                             <span lang={language.code}>{language.label}</span>
-                            {language.code === currentLanguage && (
+                            {language.code === locale && (
                               <Icon className="text-primary" icon={CheckIcon} size="xs" />
                             )}
                           </Link>
@@ -265,7 +265,7 @@ function Disclosure({
       <button
         aria-controls={listId}
         aria-expanded={isOpen}
-        className={`${triggerClassName} cursor-pointer`}
+        className={`${triggerClassName} cursor-pointer focus-ring`}
         type="button"
         onClick={() => setIsOpen((open) => !open)}
       >

@@ -66,6 +66,7 @@ export function Logo({
   // Variant-specific styles
   let variantStyles = ''
   let content = null
+  const lockupLinkStyles = href ? 'no-underline hover:opacity-80 transition-opacity' : ''
 
   if (variant === 'icon') {
     variantStyles = href ? 'hover:opacity-80 transition-opacity' : ''
@@ -81,7 +82,7 @@ export function Logo({
     // A line per word where the lockup is stacked against a left or right edge.
     const textContent = align === 'center' ? wordmark : wordmark.replace(/ /g, '\n')
 
-    variantStyles = `flex-col gap-1 ${alignmentStyles[align]} ${href ? 'no-underline hover:opacity-80 transition-opacity' : ''}`
+    variantStyles = `flex-col gap-1 ${alignmentStyles[align]} ${lockupLinkStyles}`
     content = (
       <>
         <LogoSvg className={iconSizes[size]} />
@@ -89,7 +90,8 @@ export function Logo({
       </>
     )
   } else if (variant === 'inline') {
-    variantStyles = `items-center gap-2.5 ${href ? 'no-underline hover:opacity-80 transition-opacity' : ''}`
+    // A bar is what this lockup is for, and a linked one there owes the 44px floor.
+    variantStyles = `items-center gap-2.5 ${lockupLinkStyles} ${href ? 'touch-target' : ''}`
     content = (
       <>
         <LogoSvg className={`shrink-0 ${iconSizes[size]}`} />

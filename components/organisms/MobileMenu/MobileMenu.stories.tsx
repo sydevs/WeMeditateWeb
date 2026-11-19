@@ -60,7 +60,6 @@ export const Default: Story = () => (
       <MobileMenu
         actionLinkHref="#/classes"
         actionLinkText="Classes Near Me"
-        currentLanguage="en"
         languages={languages}
         navItems={navItems}
         socialLinks={socialLinks}
@@ -68,26 +67,10 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="A single-language site has no language list, and a site with no class page has no action link."
+      description="A single-language site has no language list, and a site with no class page has no action link. The Header story shows the trigger in its bar: narrow the window below 1024px."
       title="States"
     >
       <MobileMenu navItems={navItems} />
-    </StorySection>
-
-    <StorySection
-      description="In the header, the trigger is `lg:hidden` and holds the compact bar's right edge, after the logo and the map pin. The boxes before it stand in for their layout only — nothing here is pinned to the viewport, so this section cannot measure a hit area. Narrow the window below 1024px to see it."
-      inContext={true}
-      title="Examples"
-    >
-      <div className="border-b border-line-subtle">
-        <div className="flex min-h-14 items-center gap-2 px-6">
-          <span className="touch-target mr-auto shrink-0" />
-          <div className="flex shrink-0 items-center -mr-2.5">
-            <span className="touch-target shrink-0" />
-            <MobileMenu className="lg:hidden" navItems={navItems} />
-          </div>
-        </div>
-      </div>
     </StorySection>
   </StoryWrapper>
 )
