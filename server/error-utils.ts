@@ -1,13 +1,13 @@
 /**
  * Error handling utilities for graceful degradation when SahajCloud is unreachable.
  *
- * Provides error type detection, retry logic with exponential backoff,
- * and user-friendly message generation.
+ * Provides error type detection, retry logic with exponential backoff, and
+ * the volume-bounded Sentry report a degraded read goes through.
  */
 
 // ⚠ `@sentry/react`, unlike the rest of `server/`: `ErrorFallback` imports this
 // module in the browser, where `@sentry/cloudflare` does not build. On the
-// server `withRetry`'s calls still reach the Worker's client, because both SDKs
+// server its calls still reach the Worker's client, because both SDKs
 // re-export one `@sentry/core` — so keep the two packages on the same version.
 import * as Sentry from '@sentry/react'
 
@@ -31,6 +31,12 @@ export interface RetryConfig {
   maxDelayMs?: number
   /** Function that decides whether to retry an error (default: retry only network or server errors) */
   shouldRetry?: (error: unknown) => boolean
+  /**
+   * Whether the final failure is reported to Sentry here (default: true). A read
+   * wrapped in {@link degrade} passes `false`: `degrade` reports that failure
+   * once per key per isolate, where this would report it on every render.
+   */
+  reportFailure?: boolean
 }
 
 const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
@@ -42,6 +48,7 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
 
     return errorType === ErrorType.NETWORK || errorType === ErrorType.SERVER
   },
+  reportFailure: true,
 }
 
 /** Shape of an HTTP-like error this module can read a status code from. */
@@ -64,6 +71,10 @@ export function readStatus(error: unknown): number | undefined {
   if (typeof e.status === 'number') return e.status
 
   return undefined
+}
+
+function errorText(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
 
 // Error code patterns, matched as substrings. A code like ECONNREFUSED can
@@ -134,7 +145,8 @@ function calculateBackoffDelay(attempt: number, baseDelayMs: number, maxDelayMs:
  *
  * This function retries only when `shouldRetry(error)` returns true. By
  * default, it retries NETWORK and SERVER errors, but not CLIENT or
- * UNKNOWN. It reports every attempt to Sentry.
+ * UNKNOWN. It reports one outcome to Sentry — a read that recovered, or the
+ * final failure — and each retried attempt rides on it as a breadcrumb.
  *
  * @example
  * ```typescript
@@ -181,14 +193,13 @@ export async function withRetry<T>(fn: () => Promise<T>, config: RetryConfig = {
             `error type: ${errorType}, retrying in ${delay}ms...`,
         )
 
-        Sentry.captureException(error, {
+        // A breadcrumb, not an event: the outcome event carries it, and an
+        // event per attempt would bill one read `maxAttempts` times.
+        Sentry.addBreadcrumb({
+          category: 'retry',
           level: 'warning',
-          tags: {
-            retry_attempt: attempt + 1,
-            max_attempts: finalConfig.maxAttempts,
-            error_type: errorType,
-          },
-          extra: { delay_ms: delay, will_retry: true },
+          message: `attempt ${attempt + 1}/${finalConfig.maxAttempts} failed (${errorType})`,
+          data: { delay_ms: delay, error: errorText(error) },
         })
 
         await sleep(delay)
@@ -200,15 +211,17 @@ export async function withRetry<T>(fn: () => Promise<T>, config: RetryConfig = {
           `error type: ${errorType}`,
       )
 
-      Sentry.captureException(error, {
-        level: 'error',
-        tags: {
-          retry_attempt: attempt + 1,
-          max_attempts: finalConfig.maxAttempts,
-          error_type: errorType,
-        },
-        extra: { will_retry: false, exhausted_retries: isLastAttempt },
-      })
+      if (finalConfig.reportFailure) {
+        Sentry.captureException(error, {
+          level: 'error',
+          tags: {
+            retry_attempt: attempt + 1,
+            max_attempts: finalConfig.maxAttempts,
+            error_type: errorType,
+          },
+          extra: { will_retry: false, exhausted_retries: isLastAttempt },
+        })
+      }
 
       throw error
     }
@@ -217,4 +230,116 @@ export async function withRetry<T>(fn: () => Promise<T>, config: RetryConfig = {
   // Unreachable. The loop either returns or throws on every iteration.
   // TypeScript requires a terminator because it cannot prove maxAttempts >= 1.
   throw new Error('withRetry: unreachable')
+}
+
+/**
+ * The warnings this isolate has already sent: per source, each message and
+ * signature.
+ *
+ * A Workers isolate is reused across requests and dropped without notice,
+ * which is the bound wanted: often enough that a standing gap cannot go
+ * unreported, rare enough that it cannot bill the quota per render.
+ */
+const reportedWarnings = new Map<string, Set<string>>()
+
+/**
+ * Past this a source's memo is emptied rather than pruned: re-reporting a live
+ * gap is the harmless direction. Per source, so one source's churn re-arms no
+ * other source's warnings.
+ */
+const MAX_REPORTED_WARNINGS = 128
+
+/**
+ * Sends a Sentry warning once per isolate for each distinct `signature` of
+ * one source's `message`.
+ *
+ * For a gap met on every render that stands until someone fixes it: a bare
+ * `captureMessage` there bills one event per page view (server/AGENTS.md).
+ * It bounds the volume, never the level — so log every occurrence yourself.
+ * `source` names the reader, and a signature comes from a small set (an id,
+ * an origin, a locale), never from the visitor's URL.
+ */
+export function warnOnce(
+  signature: string,
+  message: string,
+  context: { source: string; tags?: Record<string, string>; extra?: Record<string, unknown> },
+): void {
+  let reported = reportedWarnings.get(context.source)
+
+  if (!reported) {
+    reported = new Set()
+    reportedWarnings.set(context.source, reported)
+  }
+
+  const key = JSON.stringify([message, signature])
+
+  if (reported.has(key)) return
+
+  if (reported.size >= MAX_REPORTED_WARNINGS) reported.clear()
+
+  reported.add(key)
+  Sentry.captureMessage(message, {
+    level: 'warning',
+    tags: { ...context.tags, source: context.source },
+    extra: context.extra,
+  })
+}
+
+/** Forgets every warning sent, as a fresh isolate does. For tests. */
+export function forgetReportedWarnings(): void {
+  reportedWarnings.clear()
+}
+
+/** What {@link degrade} says about a read it gave up on. */
+export interface Degradation<F> {
+  /** The read's name, as the Sentry `source` tag. */
+  source: string
+  /** What failed and what renders instead, as the log line and the Sentry message. */
+  message: string
+  /**
+   * What the read was for — an id, an origin. Sentry hears of each key once
+   * per isolate, and again when its failure changes kind. Omit it where every
+   * call reads the same thing, or where the set has no ceiling, such as a
+   * visitor's route: each kind of failure is then one event for the source.
+   */
+  key?: string
+  /** What the log line names, where that is not `key`. */
+  subject?: string
+  /** What the caller renders without the data. */
+  fallback: F
+  /** Context for the event. Only the first call per key reaches Sentry. */
+  extra?: Record<string, unknown>
+}
+
+/**
+ * Runs a read the response can do without, and answers `fallback` if it fails.
+ *
+ * Background music, related content, the atlas body, a sitemap half: none may
+ * fail what it decorates, and each failure must stay visible. Every failure is
+ * logged, and reported through {@link warnOnce}, because these reads run per
+ * render and nothing caches them.
+ *
+ * Hand it the read already in `withRetry` with `reportFailure: false`: the
+ * retry is still owed (CACHING.md), and this is the one report of the failure.
+ */
+export async function degrade<T, F>(
+  read: () => Promise<T>,
+  degradation: Degradation<F>,
+): Promise<T | F> {
+  try {
+    return await read()
+  } catch (error) {
+    const { source, message, key = '', subject = key, extra } = degradation
+    const errorType = detectErrorType(error)
+    const status = readStatus(error) ?? null
+
+    console.warn(subject ? `${message} (${subject}):` : `${message}:`, error)
+    warnOnce(`${key} ${errorType} ${status}`, message, {
+      source,
+      tags: { error_type: errorType },
+      extra: { ...extra, status, error: errorText(error) },
+    })
+
+    return degradation.fallback
+  }
 }

@@ -1,5 +1,15 @@
-import { useState, useEffect, useRef, useCallback, ComponentProps } from 'react'
-import chartSvg from '../../../assets/chart.svg?raw'
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useId,
+  lazy,
+  Suspense,
+  ComponentProps,
+} from 'react'
+import * as Sentry from '@sentry/react'
+import { ClientOnly } from 'vike-react/ClientOnly'
 import { Button } from '../../atoms/Button'
 import { Link } from '../../atoms/Link'
 import { ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline'
@@ -16,6 +26,35 @@ const NESTED_CHAKRAS = {
   chakra_2: ['chakra_3b'],
   chakra_3: ['chakra_3b'],
 } as const
+
+const SubtleSystemChart = lazy(() =>
+  import('./SubtleSystemChart').then((mod) => ({ default: mod.SubtleSystemChart })),
+)
+
+// The drawing's own viewBox, so the `.subtle-system-chart svg` rule sizes this
+// empty stand-in exactly as it sizes the chart, and nothing moves when it lands.
+const CHART_PLACEHOLDER = <svg aria-hidden="true" viewBox="0 0 442.49 558.05" />
+
+const panelId = (prefix: string, nodeId: string) => `${prefix}-${nodeId}`
+
+/** A node that opens a panel is a button for it; any other node is no tab stop at all. */
+function setNodeKeyboard(
+  node: Element,
+  panel: { id: string; title: string; expanded: boolean } | null,
+) {
+  if (!panel) {
+    for (const name of ['tabindex', 'role', 'aria-label', 'aria-controls', 'aria-expanded']) {
+      node.removeAttribute(name)
+    }
+
+    return
+  }
+  node.setAttribute('tabindex', '0')
+  node.setAttribute('role', 'button')
+  node.setAttribute('aria-label', panel.title)
+  node.setAttribute('aria-controls', panel.id)
+  node.setAttribute('aria-expanded', String(panel.expanded))
+}
 
 /** Article preview item for SubtleSystem component */
 export interface SubtleSystemItem {
@@ -48,6 +87,11 @@ export interface SubtleSystemProps extends Omit<ComponentProps<'div'>, 'children
  * - Article previews with title, description, and "Learn More" button
  * - Mobile: previews below chart with auto-scroll
  * - Fullscreen mode
+ * - Keyboard: a node with a preview is a button; focus shows its preview, and
+ *   Enter or Space moves focus into it
+ *
+ * The drawing loads in the browser only (see `SubtleSystemChart`); the
+ * previews, and their links, are in the server HTML.
  */
 export function SubtleSystem({
   items,
@@ -61,9 +105,11 @@ export function SubtleSystem({
   const [activeNode, setActiveNode] = useState<string | null>(null)
   const [isAnimated, setIsAnimated] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [chart, setChart] = useState<HTMLDivElement | null>(null)
+  const [focusRequest, setFocusRequest] = useState<{ nodeId: string } | null>(null)
+  const panelBaseId = useId()
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const svgRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   /** Check if target node is nested within current node */
@@ -115,6 +161,19 @@ export function SubtleSystem({
       hoverTimeoutRef.current = null
     }
   }, [])
+
+  /** Focus selects at once: the nested-chakra delay is for a pointer crossing overlapping shapes. */
+  const handleNodeFocus = useCallback(
+    (nodeId: string) => {
+      handleNodeHoverEnd()
+      // No `nodeId === activeNode` check, unlike hover: a listener can still
+      // hold the render before the pointer moved the selection, and would skip both.
+      setIsAnimated(false)
+      setActiveNode(nodeId)
+      onNodeSelect?.(nodeId)
+    },
+    [onNodeSelect, handleNodeHoverEnd],
+  )
 
   /** Handle node click */
   const handleNodeClick = useCallback(
@@ -179,11 +238,18 @@ export function SubtleSystem({
     }
   }, [])
 
+  /** Move focus into the panel a node opened: the only way a keyboard reaches its link. */
+  useEffect(() => {
+    if (!focusRequest) return
+
+    containerRef.current
+      ?.querySelector<HTMLElement>(`[data-node-id="${focusRequest.nodeId}"] a`)
+      ?.focus()
+  }, [focusRequest])
+
   /** Setup SVG hover listeners and update active classes */
   useEffect(() => {
-    if (!svgRef.current) return
-
-    const svg = svgRef.current.querySelector('svg')
+    const svg = chart?.querySelector('svg')
 
     if (!svg) return
 
@@ -193,6 +259,7 @@ export function SubtleSystem({
     if (!hoverContainer) return
 
     const nodes = Array.from(hoverContainer.children) as SVGElement[]
+    const itemsById = new Map(items.map((item) => [item.id, item]))
 
     // Update active classes
     nodes.forEach((node) => {
@@ -201,6 +268,23 @@ export function SubtleSystem({
       } else {
         node.classList.remove('active')
       }
+    })
+
+    // Both views, because `kundalini` and `chakra_7` stay drawn in the channels
+    // view, where no handler is bound to them and so no tab stop may be either.
+    svg.querySelectorAll('#hover_chakras > *, #hover_channels > *').forEach((node) => {
+      const item = node.parentElement === hoverContainer ? itemsById.get(node.id) : undefined
+
+      setNodeKeyboard(
+        node,
+        item
+          ? {
+              id: panelId(panelBaseId, item.id),
+              title: item.title,
+              expanded: item.id === activeNode,
+            }
+          : null,
+      )
     })
 
     // Setup event listeners
@@ -220,10 +304,29 @@ export function SubtleSystem({
       handleNodeClick(target.id)
     }
 
+    const handleFocus = (event: Event) => {
+      handleNodeFocus((event.currentTarget as SVGElement).id)
+    }
+
+    const handleKeyDown = (event: Event) => {
+      const { key } = event as KeyboardEvent
+
+      if (key !== 'Enter' && key !== ' ') return
+
+      // Space would scroll the page, as it does for any element that is not a native button.
+      event.preventDefault()
+      const nodeId = (event.currentTarget as SVGElement).id
+
+      handleNodeFocus(nodeId)
+      setFocusRequest({ nodeId })
+    }
+
     nodes.forEach((node) => {
       node.addEventListener('mouseover', handleMouseOver)
       node.addEventListener('mouseout', handleMouseOut)
       node.addEventListener('click', handleClick)
+      node.addEventListener('focus', handleFocus)
+      node.addEventListener('keydown', handleKeyDown)
     })
 
     // Cleanup
@@ -232,9 +335,21 @@ export function SubtleSystem({
         node.removeEventListener('mouseover', handleMouseOver)
         node.removeEventListener('mouseout', handleMouseOut)
         node.removeEventListener('click', handleClick)
+        node.removeEventListener('focus', handleFocus)
+        node.removeEventListener('keydown', handleKeyDown)
       })
     }
-  }, [activeView, activeNode, handleNodeHover, handleNodeHoverEnd, handleNodeClick])
+  }, [
+    chart,
+    items,
+    panelBaseId,
+    activeView,
+    activeNode,
+    handleNodeHover,
+    handleNodeHoverEnd,
+    handleNodeClick,
+    handleNodeFocus,
+  ])
 
   return (
     <div
@@ -270,11 +385,16 @@ export function SubtleSystem({
       {/* SVG Chart Container */}
       <div className="relative max-w-[1200px] mx-auto mb-[100px]">
         {/* SVG Chart */}
-        <div
-          dangerouslySetInnerHTML={{ __html: chartSvg }}
-          ref={svgRef}
-          className="subtle-system-chart min-h-[400px] max-h-[550px] sm:h-[550px] sm:max-h-[80vh] max-w-full block mx-auto"
-        />
+        <div className="subtle-system-chart min-h-[400px] max-h-[550px] sm:h-[550px] sm:max-h-[80vh] max-w-full block mx-auto">
+          <ClientOnly fallback={CHART_PLACEHOLDER}>
+            {/* A chunk that fails to load costs the picture; the root boundary would take the page. */}
+            <Sentry.ErrorBoundary fallback={CHART_PLACEHOLDER}>
+              <Suspense fallback={CHART_PLACEHOLDER}>
+                <SubtleSystemChart ref={setChart} />
+              </Suspense>
+            </Sentry.ErrorBoundary>
+          </ClientOnly>
+        </div>
 
         {/* Fullscreen Button */}
         <div className="absolute top-4 right-4">
@@ -294,15 +414,23 @@ export function SubtleSystem({
           {items.map((item, index) => {
             const isActive = item.id === activeNode
 
+            // Only a closing panel transitions `visibility`, to stay drawn while it
+            // fades. An opening one is visible in the commit that opens it, so
+            // Enter can focus its link there. `inert` takes a closing panel out of
+            // reach at once, where `invisible` would leave it reachable for the fade.
             return (
               <div
                 key={item.id}
-                className={`hidden sm:block opacity-0 invisible transition-[visibility,opacity] duration-500 ease-in-out ${
-                  isActive ? 'delay-0 block! opacity-100! visible!' : 'delay-0'
+                className={`hidden sm:block opacity-0 invisible duration-500 ease-in-out ${
+                  isActive
+                    ? 'delay-0 block! opacity-100! visible! transition-opacity'
+                    : 'delay-0 transition-[visibility,opacity]'
                 } bg-white/50 shadow-[0_0_10px_5px_rgba(255,255,255,0.5)] sm:absolute sm:top-16 sm:w-80 sm:max-w-[45%] sm:mt-[70px] ${
                   index % 2 === 0 ? 'sm:left-0 sm:pr-0' : 'sm:right-0 sm:pl-0'
                 } p-4 sm:p-8`}
                 data-node-id={item.id}
+                id={panelId(panelBaseId, item.id)}
+                inert={!isActive}
               >
                 <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
                 <p className="text-base mb-4 text-gray-700">{item.description}</p>

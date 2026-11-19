@@ -1,8 +1,8 @@
-import { useCallback, useState, useEffect } from 'react'
-import useEmblaCarousel from 'embla-carousel-react'
+import { useEffect } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Button } from '../../atoms/Button'
 import { Column, ColumnProps } from '../Column'
+import { useCarousel } from '../../../hooks/useCarousel'
 import { useT } from '../../../hooks/useT'
 
 export interface ColumnCarouselProps {
@@ -90,45 +90,9 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
   // Initialize to center column
   const centerIndex = Math.floor(columns.length / 2)
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: 'center',
-    slidesToScroll: 1,
-    containScroll: 'trimSnaps',
+  const { emblaRef, selectedIndex, scrollPrev, scrollNext, scrollTo } = useCarousel({
     startIndex: centerIndex,
   })
-
-  const [selectedIndex, setSelectedIndex] = useState(centerIndex)
-
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev()
-  }, [emblaApi])
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setSelectedIndex(emblaApi.selectedScrollSnap())
-  }, [emblaApi])
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      if (emblaApi) emblaApi.scrollTo(index)
-    },
-    [emblaApi],
-  )
-
-  useEffect(() => {
-    if (!emblaApi) return
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount, and it reports the `startIndex` the state already holds
-    onSelect()
-    emblaApi.on('select', onSelect)
-
-    return () => {
-      emblaApi.off('select', onSelect)
-    }
-  }, [emblaApi, onSelect])
 
   // Warn if columns were truncated (only log once when count changes)
   useEffect(() => {

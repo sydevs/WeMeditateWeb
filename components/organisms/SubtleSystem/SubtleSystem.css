@@ -62,6 +62,15 @@
   opacity: 1;
 }
 
+/* `focus-ring` draws a box-shadow, which an SVG element does not take. The
+   opacity keeps the ring drawn once a hover moves `.active` to another node. */
+#hover_channels > :focus-visible,
+#hover_chakras > :focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--surface-ring);
+  outline-offset: 2px;
+}
+
 /* Hide core hotspots */
 #hot_spots_core {
   display: none;

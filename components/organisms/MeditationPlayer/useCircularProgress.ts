@@ -113,17 +113,26 @@ export function useCircularProgress({
       }
     }
     const onUp = () => setIsDragging(false)
+    // The browser or the system took the touch back, so nothing was released
+    // and nothing is seeked. Left listening, the drag would swallow the next
+    // touch scroll anywhere on the page.
+    const onTouchCancel = () => {
+      setSeekPosition(null)
+      setIsDragging(false)
+    }
 
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onUp)
     window.addEventListener('touchmove', onTouchMove, { passive: false })
     window.addEventListener('touchend', onUp)
+    window.addEventListener('touchcancel', onTouchCancel)
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onUp)
       window.removeEventListener('touchmove', onTouchMove)
       window.removeEventListener('touchend', onUp)
+      window.removeEventListener('touchcancel', onTouchCancel)
     }
   }, [isDragging, duration, getSeekTimeFromCoords])
 

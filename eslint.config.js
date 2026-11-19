@@ -228,9 +228,9 @@ export default defineConfig([
   // ever turned off repo-wide.
   {
     // Two authored HTML strings, neither of which takes visitor input:
-    // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystem` renders
-    // SahajCloud's own rich text.
-    files: ['lib/atlas-head.tsx', 'components/organisms/SubtleSystem/SubtleSystem.tsx'],
+    // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystemChart`
+    // injects `assets/chart.svg`, an asset this repo ships.
+    files: ['lib/atlas-head.tsx', 'components/organisms/SubtleSystem/SubtleSystemChart.tsx'],
     rules: { '@eslint-react/dom-no-dangerously-set-innerhtml': 'off' },
   },
   {
