@@ -63,6 +63,10 @@ export function readStatus(error: unknown): number | undefined {
   return undefined
 }
 
+function errorText(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 // Error code patterns, matched as substrings. A code like ECONNREFUSED can
 // appear mid-token, for example "connect ECONNREFUSED 127.0.0.1".
 const NETWORK_CODE_PATTERNS = [
@@ -127,7 +131,8 @@ function calculateBackoffDelay(attempt: number, baseDelayMs: number, maxDelayMs:
  *
  * This function retries only when `shouldRetry(error)` returns true. By
  * default, it retries NETWORK and SERVER errors, but not CLIENT or
- * UNKNOWN. It reports every attempt to Sentry.
+ * UNKNOWN. It reports one outcome to Sentry — a read that recovered, or the
+ * final failure — and each retried attempt rides on it as a breadcrumb.
  *
  * @example
  * ```typescript
@@ -172,14 +177,13 @@ export async function withRetry<T>(
           `error type: ${errorType}, retrying in ${delay}ms...`
         )
 
-        Sentry.captureException(error, {
+        // A breadcrumb, not an event: the outcome event carries it, and an
+        // event per attempt would bill one read `maxAttempts` times.
+        Sentry.addBreadcrumb({
+          category: 'retry',
           level: 'warning',
-          tags: {
-            retry_attempt: attempt + 1,
-            max_attempts: finalConfig.maxAttempts,
-            error_type: errorType,
-          },
-          extra: { delay_ms: delay, will_retry: true },
+          message: `attempt ${attempt + 1}/${finalConfig.maxAttempts} failed (${errorType})`,
+          data: { delay_ms: delay, error: errorText(error) },
         })
 
         await sleep(delay)

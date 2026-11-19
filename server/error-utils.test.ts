@@ -1,11 +1,23 @@
 /** Tests for error handling utilities */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import {
-  detectErrorType,
-  ErrorType,
-  withRetry,
-} from './error-utils'
+import * as Sentry from '@sentry/react'
+import { detectErrorType, ErrorType, withRetry } from './error-utils'
+
+vi.mock('@sentry/react', () => ({
+  addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+}))
+
+beforeEach(() => {
+  vi.mocked(Sentry.addBreadcrumb).mockClear()
+  vi.mocked(Sentry.captureException).mockClear()
+  vi.mocked(Sentry.captureMessage).mockClear()
+  vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+})
 
 describe('detectErrorType', () => {
   describe('Network Errors', () => {
@@ -279,5 +291,42 @@ describe('withRetry', () => {
 
     await expect(withRetry(mockFn)).rejects.toEqual({ response: { status: 400 } })
     expect(mockFn).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('withRetry reporting', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  /** Runs a read that fails on every attempt to the end, past its backoff. */
+  async function exhaust(config: Parameters<typeof withRetry>[1] = {}) {
+    const read = vi.fn().mockRejectedValue(new Error('fetch failed'))
+    const run = withRetry(read, { maxAttempts: 3, baseDelayMs: 100, ...config })
+
+    await Promise.allSettled([run, vi.runAllTimersAsync()])
+  }
+
+  it('sends one event for a read that failed on every attempt, not one per attempt', async () => {
+    await exhaust()
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1)
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ level: 'error' }),
+    )
+  })
+
+  it('carries each retried attempt on that event as a breadcrumb', async () => {
+    await exhaust()
+
+    expect(Sentry.addBreadcrumb).toHaveBeenCalledTimes(2)
+    expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
+      expect.objectContaining({ category: 'retry', message: 'attempt 1/3 failed (NETWORK)' }),
+    )
   })
 })
