@@ -193,6 +193,7 @@ describe('resolveContentIndexTracks', () => {
           id: 9,
           title: 'Raga',
           url: 'https://cdn/audio.mp3',
+          duration: 212,
           album: { id: 1, artist: 'Nightingale', artwork: { id: 2, url: 'https://cdn/art.jpg' } },
           tags: [{ id: 5, slug: 'strings', title: 'Strings' }],
         },
@@ -211,7 +212,7 @@ describe('resolveContentIndexTracks', () => {
         credit: 'Nightingale',
         creditURL: '',
         thumbnailURL: 'https://cdn/art.jpg',
-        duration: 0,
+        duration: 212,
         tags: [{ id: 'strings', label: 'Strings' }],
       },
     ])
@@ -219,6 +220,8 @@ describe('resolveContentIndexTracks', () => {
     const url = fetchSpy.mock.calls[0][0] as string
 
     expect(url).toContain('select[url]=true')
+    // Unselected, the row comes back without a duration and prints no length.
+    expect(url).toContain('select[duration]=true')
     expect(url).toContain('populate[albums][artwork]=true')
     expect(url).toContain('depth=2')
     // `url` and `thumbnailURL` are upload virtuals derived from `filename`.
