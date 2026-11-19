@@ -23,7 +23,7 @@ import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
 import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
-import type { MeditationSong } from '../../../server/sahajcloud-types'
+import { DEFAULT_LOCALE, type MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
 import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 import { useT } from '../../../hooks/useT'
@@ -828,6 +828,13 @@ function MeditationPlayerInner({
             a new tab, and only the embed renders this line — inside an iframe
             on someone else's page, where a same-tab link would draw the whole
             site into the frame.
+
+            `DEFAULT_LOCALE`, not the visitor's: the embed route fetches no
+            settings, so it renders under any `KNOWN_LOCALES` code, including
+            one outside `availableLocales` — and `server/site-context.ts` 404s
+            such a prefix before the page is read. English is the one locale
+            the site always offers, so these two hrefs cannot go dead. The
+            cost is a translated embed pointing at the English page.
             shortcut: `/app` 404s until SahajCloud publishes a page slugged
             `app`; the slug is settled (#280), so the page is what is missing. */}
         {upsell && (
@@ -840,6 +847,7 @@ function MeditationPlayerInner({
                         key="upsell"
                         external
                         href="/meditate-now"
+                        locale={DEFAULT_LOCALE}
                         variant="primary"
                       >
                         {WEMEDITATE_DOMAIN}
@@ -852,6 +860,7 @@ function MeditationPlayerInner({
                         key="upsell"
                         external
                         href="/app"
+                        locale={DEFAULT_LOCALE}
                         variant="primary"
                       >
                         {t('meditation.general.upsell_app_link')}

@@ -55,8 +55,10 @@ describe('the MeditationPlayer upsell in a non-English locale', () => {
     // anchor is `external` and `Link` closes it with its own sr-only
     // new-tab announcement.
     expect(html).toContain('>wemeditate.com<')
-    // A site path now, so `Link` locale-prefixes it like any other href.
-    expect(html).toContain('href="/fr/meditate-now"')
+    // Pinned to English, not prefixed with the render's locale: the embed
+    // route reads no settings, so it cannot know whether `fr` is offered.
+    expect(html).toContain('href="/meditate-now"')
+    expect(html).not.toContain('href="/fr/meditate-now"')
   })
 
   it('renders the SahajCloud app sentence and its translated link text', () => {
@@ -66,6 +68,7 @@ describe('the MeditationPlayer upsell in a non-English locale', () => {
     expect(html).not.toContain('Find interactive meditations')
     expect(html).toContain('application gratuite')
     expect(html).not.toContain('free app')
-    expect(html).toContain('href="/fr/app"')
+    expect(html).toContain('href="/app"')
+    expect(html).not.toContain('href="/fr/app"')
   })
 })
