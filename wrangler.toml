@@ -26,4 +26,3 @@ main = "virtual:photon:cloudflare:server-entry"
 
 [vars]
 PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"
-PUBLIC__STATUS_PAGE_URL = "https://stats.uptimerobot.com/oJ9B8UX9lA"
