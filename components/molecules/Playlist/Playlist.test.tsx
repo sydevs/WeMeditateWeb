@@ -162,7 +162,7 @@ describe('Playlist durations', () => {
   })
 
   it('prints no duration where a song states none', () => {
-    // `contentIndexTrack` hands every song `duration: 0`.
+    // `contentIndexTrack` hands over `0` where SahajCloud stores no duration.
     const undated = tracks.map((track) => ({ ...track, duration: 0 }))
 
     expect(markup(null, 0, undated)).not.toContain('0:00')
