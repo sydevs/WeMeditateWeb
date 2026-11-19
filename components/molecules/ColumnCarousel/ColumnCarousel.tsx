@@ -6,16 +6,21 @@ import { Column, ColumnProps } from '../Column'
 import { useT } from '../../../hooks/useT'
 
 export interface ColumnCarouselProps {
-  /** Array of column data to display (maximum 5 columns) */
+  /** Array of column data to display (maximum 12 columns) */
   columns: ColumnProps[]
+
+  /** The index of the column the carousel opens on. Defaults to the middle one. */
+  startIndex?: number
 
   /** Additional CSS classes */
   className?: string
 }
 
-const MAX_COLUMNS = 5
+// SahajCloud's own limit on a layout block's items.
+const MAX_COLUMNS = 12
 const MOBILE_CAROUSEL_THRESHOLD = 3
 const TABLET_CAROUSEL_THRESHOLD = 4
+const DESKTOP_CAROUSEL_THRESHOLD = 6
 
 interface CarouselNavButtonProps {
   direction: 'prev' | 'next'
@@ -63,15 +68,15 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
  * Responsive behavior based on column count:
  * - Mobile (< 768px): Carousel for 3+ columns, stacked for 1-2 columns
  * - Tablet (768px-1024px): Carousel for 4+ columns, flex row for 1-3 columns
- * - Desktop (≥ 1024px): Flex row for all column counts
+ * - Desktop (≥ 1024px): Carousel for 6+ columns, flex row for 1-5 columns
  *
  * Carousel features:
  * - Navigation buttons showing adjacent column titles
  * - Dot indicators showing position
- * - Starts focused on center column
+ * - Starts on `startIndex`, else the center column
  * - Swipe gestures supported
  *
- * Maximum 5 columns allowed. Additional columns will be truncated with a warning.
+ * Maximum 12 columns allowed. Additional columns will be truncated with a warning.
  *
  * @example
  * <ColumnCarousel
@@ -82,13 +87,17 @@ function CarouselNavButton({ direction, column, onClick, disabled }: CarouselNav
  *   ]}
  * />
  */
-export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCarouselProps) {
+export function ColumnCarousel({
+  columns: rawColumns,
+  startIndex,
+  className = '',
+}: ColumnCarouselProps) {
   const t = useT()
-  // Enforce maximum of 5 columns
+  // Enforce maximum of 12 columns
   const columns = rawColumns.slice(0, MAX_COLUMNS)
 
-  // Initialize to center column
-  const centerIndex = Math.floor(columns.length / 2)
+  // The column the carousel centres on first.
+  const centerIndex = startIndex ?? Math.floor(columns.length / 2)
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
@@ -147,6 +156,8 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
   // Carousel usage based on column count and breakpoint
   const useCarouselMobile = columns.length >= MOBILE_CAROUSEL_THRESHOLD
   const useCarouselTablet = columns.length >= TABLET_CAROUSEL_THRESHOLD
+  // SahajCloud allows twelve tabs, and six columns side by side no longer fit.
+  const useCarouselDesktop = columns.length >= DESKTOP_CAROUSEL_THRESHOLD
 
   // The tablet threshold is the higher of the two, so it implies the mobile
   // one and adds nothing here.
@@ -154,14 +165,16 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
 
   return (
     <div className={className}>
-      {/* Consolidated Carousel (Mobile: 3+ cols, Tablet: 4+ cols) */}
+      {/* Consolidated Carousel (Mobile: 3+ cols, Tablet: 4+ cols, Desktop: 6+ cols) */}
       {showCarousel && (
         <div
-          // Keyed on the tablet threshold, which is the one that decides
+          // Keyed on the tablet and desktop thresholds, the ones that decide
           // anything here: inside this branch the mobile one is always true,
           // so it emitted no class and three columns kept the carousel at
           // tablet, against the behaviour above (#201).
-          className={useCarouselTablet ? 'lg:hidden' : 'md:hidden lg:hidden'}
+          className={
+            useCarouselDesktop ? '' : useCarouselTablet ? 'lg:hidden' : 'md:hidden lg:hidden'
+          }
         >
           {/* Navigation controls above carousel */}
           <div className="flex items-center">
@@ -229,12 +242,12 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
       {/* Consolidated Non-Carousel Layout */}
       {/* Mobile: stacked (1-2 cols) or hidden (3+ cols use carousel) */}
       {/* Tablet: hidden (4+ cols use carousel) or flex row (1-3 cols) */}
-      {/* Desktop: always flex row */}
+      {/* Desktop: hidden (6+ cols use carousel) or flex row (1-5 cols) */}
       <div
         className={`
           ${useCarouselMobile ? 'hidden' : 'flex flex-col'}
           ${useCarouselTablet ? 'md:hidden!' : 'md:flex md:flex-row'}
-          lg:flex! lg:flex-row
+          ${useCarouselDesktop ? '' : 'lg:flex! lg:flex-row'}
           items-start justify-center gap-8
         `}
       >
