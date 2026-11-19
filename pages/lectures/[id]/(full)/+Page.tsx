@@ -19,7 +19,7 @@ import type { Locale, ResolvedLecture } from '../../../../server/sahajcloud-type
  * (`../_lecture.ts`), which is what the branch below renders.
  */
 export function Page() {
-  const { document: initialLecture, lecture, locale } = useData<LecturePageData>()
+  const { lectureDocument: initialLecture, lecture, locale } = useData<LecturePageData>()
 
   if (!initialLecture) return <LectureBody lecture={lecture} locale={locale} />
 

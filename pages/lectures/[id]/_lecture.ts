@@ -19,7 +19,7 @@ export interface LectureLoad extends LectureData {
    * condition is `previewArgs`', which is what `useDocumentPreviewActive()`
    * decides on the other side.
    */
-  document: Lecture | null
+  lectureDocument: Lecture | null
 }
 
 /**
@@ -51,5 +51,10 @@ export async function loadLecture(pageContext: PageContextServer): Promise<Lectu
     throw render(404, `Lecture with ID "${id}" not found.`)
   }
 
-  return { lecture: read.resolved, document: args.preview ? read.document : null, locale, id }
+  return {
+    lecture: read.resolved,
+    lectureDocument: args.preview ? read.document : null,
+    locale,
+    id,
+  }
 }

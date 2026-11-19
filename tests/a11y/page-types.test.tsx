@@ -142,7 +142,7 @@ const TARGETS = [
     chrome: true,
     render: () => {
       // `document` is null off-preview, which is the page a visitor gets.
-      routeData.current = { settings: webConfig, document: null, lecture, locale: 'en' }
+      routeData.current = { settings: webConfig, lectureDocument: null, lecture, locale: 'en' }
 
       return (
         <LayoutChrome>

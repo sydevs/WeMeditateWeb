@@ -55,12 +55,12 @@ const pageData: { current: LecturePageData } = {
 }
 
 /**
- * The server render. `document` is null off-preview, which is what a visitor
- * gets — see `pages/lectures/[id]/_lecture.ts`.
+ * The server render. `lectureDocument` is null off-preview, which is what a
+ * visitor gets — see `pages/lectures/[id]/_lecture.ts`.
  */
 function serverRendered(document: Lecture, { previewing = true } = {}): void {
   pageData.current = {
-    document: previewing ? document : null,
+    lectureDocument: previewing ? document : null,
     lecture: resolveLecture(document),
     locale: 'en',
     id: String(document.id),
