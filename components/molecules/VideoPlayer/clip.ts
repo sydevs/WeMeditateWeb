@@ -107,8 +107,8 @@ export function secondsToIsoDuration(seconds: number): string {
  * Where a `0`–`9`, `Home` or `End` keypress should seek to inside the window, or `null` for a
  * key that is none of those.
  *
- * The skin's own percent hotkeys are media-scaled, and Vidstack's clipping rescaled them, so a
- * clip needs this: `5` means halfway through the window, not halfway through the lecture.
+ * The skin's own percent hotkeys seek by a share of the media, so a window rescales them: `5`
+ * means halfway through the window.
  */
 export function percentSeek(start: number, length: number, key: string): number | null {
   const percent = key === 'Home' ? 0 : key === 'End' ? 100 : Number.parseInt(key, 10) * 10

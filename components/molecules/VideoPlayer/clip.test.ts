@@ -136,7 +136,7 @@ describe('secondsToIsoDuration', () => {
 
 describe('percentSeek', () => {
 
-  // Vidstack's clipping rescaled the percent hotkeys, so `5` means halfway through the window.
+  // The percent hotkeys seek by a share of the window, not of the media: `5` is halfway through it.
   it.each([
     ['0', 100],
     ['5', 150],

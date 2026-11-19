@@ -76,11 +76,10 @@ export function ClipDuration({ window, className }: ClipTimeProps) {
 /**
  * The percent hotkeys, rescaled to the window.
  *
- * `0`–`9`, `Home` and `End` seek by a share of the *media* in the skin's own hotkeys, which
- * Vidstack's clipping rescaled for a clip — so `5` on a clip would land outside the window and
- * the clamp would turn it into a pause. The skin leaves these three to us whenever a window is
- * mounted, and the rest of its hotkeys need no change: a step, a toggle and the volume keys all
- * mean the same thing inside a window.
+ * `0`–`9`, `Home` and `End` seek by a share of the *media* in the skin's own hotkeys, so `5` on
+ * a clip would land outside the window and the clamp would turn it into a pause. The skin leaves
+ * these three to us whenever a window is mounted, and the rest of its hotkeys need no change: a
+ * step, a toggle and the volume keys all mean the same thing inside a window.
  */
 export function ClipHotkeys({ window }: { window: ClipWindow }) {
   const seek = usePlayer((state) => state.seek)
