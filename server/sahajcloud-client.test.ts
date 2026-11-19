@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getDocumentById,
+  getLecture,
   getMeditationSongs,
   getPageBySlug,
   getPageLocaleStatus,
@@ -560,5 +561,45 @@ describe('every custom-endpoint read', () => {
     )
     // The retry ladder is still owed, and leaves the report to `degrade`.
     expect(retrySpy).toHaveBeenCalledWith({ reportFailure: false })
+  })
+})
+
+describe('getLecture', () => {
+  beforeEach(resetReadState)
+
+  /** A clip whose parent lecture came back as a bare id: no HLS source to play. */
+  function orphanClip(id: number) {
+    const findByID = vi.fn().mockResolvedValue({ id, type: 'clip', fullLecture: 1 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findByID } as never)
+  }
+
+  it('reports a clip with no HLS source once per isolate, and logs it every render', async () => {
+    // The gap stands until an editor fixes the parent, and this read runs on
+    // every render of the clip's page.
+    captureMessage.mockClear()
+    orphanClip(8001)
+
+    await getLecture({ id: '8001', locale: 'en' })
+    await getLecture({ id: '8001', locale: 'fr' })
+
+    expect(captureMessage).toHaveBeenCalledTimes(1)
+    expect(captureMessage).toHaveBeenCalledWith(
+      'Lecture clip has an unresolved parent (no HLS source)',
+      expect.objectContaining({ level: 'warning', tags: { source: 'getLecture' } }),
+    )
+    expect(console.warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports a clip it has not seen before', async () => {
+    captureMessage.mockClear()
+
+    orphanClip(8002)
+    await getLecture({ id: '8002', locale: 'en' })
+
+    orphanClip(8003)
+    await getLecture({ id: '8003', locale: 'en' })
+
+    expect(captureMessage).toHaveBeenCalledTimes(2)
   })
 })

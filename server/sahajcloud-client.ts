@@ -30,7 +30,7 @@ import { readStatus, withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
-import { degrade } from './error-utils'
+import { degrade, warnOnce } from './error-utils'
 import type {
   Config,
   PagesSelect,
@@ -603,9 +603,10 @@ export async function getLecture(
     console.warn(
       `[getLecture] clip ${resolved.id} has no resolvable HLS source (unpopulated or unsynced parent lecture)`,
     )
-    Sentry.captureMessage('Lecture clip has an unresolved parent (no HLS source)', {
-      level: 'warning',
-      tags: { source: 'getLecture' },
+    // The gap stands until an editor fixes the parent, and this runs per
+    // render. The locale is the first render's in this isolate, not the only one.
+    warnOnce(String(resolved.id), 'Lecture clip has an unresolved parent (no HLS source)', {
+      source: 'getLecture',
       extra: { lectureId: resolved.id, locale: options.locale ?? null },
     })
   }
