@@ -8,8 +8,8 @@ import { ContentHead } from '../../lib/head.js'
  *
  * They are also indexable URLs, so they declare a canonical and the
  * `hreflang` cluster of the locales `+data.ts` says the page is published
- * in. The live-preview route renders the same template and declares
- * neither: a draft preview is not a URL to point a crawler at.
+ * in. A preview is this same URL carrying `?live-preview=`, and `ContentHead`
+ * declares neither there: a draft preview is not a URL to point a crawler at.
  */
 export default {
   Head: ContentHead,

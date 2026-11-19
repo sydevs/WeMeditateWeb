@@ -1,8 +1,8 @@
 import { getImageSrcSet, getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 
 /**
- * Vidstack's `poster` takes one URL and no srcset, so this width covers the
- * player's widest in-app box on its own: `max-w-4xl`, 896px.
+ * The mounted player's own poster takes one URL and no srcset, so this width
+ * covers the player's widest in-app box on its own: `max-w-4xl`, 896px.
  */
 const POSTER_VARIANT = getVariantName('video', 'large')
 
