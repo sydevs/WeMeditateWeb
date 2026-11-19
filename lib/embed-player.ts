@@ -5,7 +5,7 @@
  * Three surfaces name the same player: the paste-ready snippet
  * (`EmbedButton`), the `twitter:player` and `og:video` tags on the content
  * route (`lib/content-seo.ts`), and the oEmbed endpoint
- * (`server/oembed-routes.ts`). A width that differed between them would
+ * (`server/oembed/`). A width that differed between them would
  * letterbox the player in one consumer and crop it in another.
  *
  * `lib/document-routes.ts` owns which URL the iframe points at.

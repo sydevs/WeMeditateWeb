@@ -129,7 +129,7 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **One geometry for the embedded player.** [lib/embed-player.ts](lib/embed-player.ts) owns the
   iframe and its size, because three surfaces name the same player: the paste-ready snippet
   (`EmbedButton`), the `twitter:player` and `og:video` tags, and `GET /oembed`
-  ([server/oembed.ts](server/oembed.ts)). A width that differed between them would letterbox the
+  ([server/oembed/](server/oembed/)). A width that differed between them would letterbox the
   player in one consumer and crop it in another. Which URL the iframe points at is
   `documentEmbedHref`'s, in [lib/document-routes.ts](lib/document-routes.ts).
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,

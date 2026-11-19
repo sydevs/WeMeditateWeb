@@ -7,11 +7,11 @@
  * about anything else is told the resource is not one we embed, which the
  * spec spells as a 404.
  *
- * The route handler is `oembed-routes.ts`. This module reads nothing.
+ * The route handler is `routes.ts` beside it. This module reads nothing.
  */
 
-import { matchDocumentRoute } from '../lib/document-routes'
-import { PLAYER_HEIGHT, PLAYER_WIDTH, playerIframe } from '../lib/embed-player'
+import { matchDocumentRoute } from '../../lib/document-routes'
+import { PLAYER_HEIGHT, PLAYER_WIDTH, playerIframe } from '../../lib/embed-player'
 
 /** The collections that have a player, and the order their routes are tried. */
 const EMBEDDABLE = ['meditations', 'lectures'] as const

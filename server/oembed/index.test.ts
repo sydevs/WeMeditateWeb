@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildOEmbedResponse, positiveInteger, resolveOEmbedTarget } from './oembed'
+import { buildOEmbedResponse, positiveInteger, resolveOEmbedTarget } from '.'
 
 const ORIGIN = 'https://wemeditate.com'
 
