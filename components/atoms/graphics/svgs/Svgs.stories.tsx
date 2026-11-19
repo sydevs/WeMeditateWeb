@@ -5,6 +5,7 @@ import { LotusDotsSvg } from './LotusDotsSvg'
 import { FloralDividerSvg } from './FloralDividerSvg'
 import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 import { TriangleDecorationSvg } from './TriangleDecorationSvg'
+import { CircleDecorationSvg } from './CircleDecorationSvg'
 import { AnimatedLogoSvg } from './AnimatedLogoSvg'
 import { StoryWrapper, StorySection } from '../../../ladle'
 
@@ -100,6 +101,17 @@ export const Default: Story = () => (
             </p>
             <p className="text-xs text-coral-500 mt-1">
               Note: Colors are fixed and cannot be changed via currentColor
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <CircleDecorationSvg className="w-80 h-auto text-gray-400" />
+          <div>
+            <p className="font-medium text-gray-700">CircleDecorationSvg</p>
+            <p className="text-sm text-gray-700">
+              Ring of line-drawn leaves (default: w-80 h-auto). Text boxes draw it in
+              text-line-subtle.
             </p>
           </div>
         </div>
