@@ -108,6 +108,7 @@ export function Logo({
   }
 
   // When rendering as div, filter out anchor-specific props
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- named only to keep them off the div
   const { target, rel, referrerPolicy, download, ping, hrefLang, type, ...divProps } = props as any
 
   return (

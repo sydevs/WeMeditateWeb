@@ -97,7 +97,6 @@ function LayoutCard({
 export function LayoutBlock({
   style,
   title,
-  useColumnsOnDesktop,
   items,
   className = '',
 }: LayoutBlockProps) {

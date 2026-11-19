@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { LeafDivider } from './LeafDivider'
-import { StoryWrapper, StorySection, StoryGrid } from '../../ladle'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
   title: 'Atoms'
