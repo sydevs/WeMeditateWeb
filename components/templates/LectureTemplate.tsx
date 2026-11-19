@@ -1,9 +1,10 @@
 /**
  * LectureTemplate renders a lecture.
  *
- * Both the lecture routes (/lectures/:id, /lectures/:id/embed) and the
- * live-preview route use it, so rendering stays consistent. Following
- * Atomic Design, templates represent page-level layout structures.
+ * Both lecture routes (/lectures/:id, /lectures/:id/embed) render it, and
+ * /lectures/:id renders it under the preview panel too, so an editor sees the
+ * page. Following Atomic Design, templates represent page-level layout
+ * structures.
  *
  * It consumes a normalized `ResolvedLecture` (see lib/lecture-shape.ts), so
  * it never branches on full or clip: a clip already carries its inherited

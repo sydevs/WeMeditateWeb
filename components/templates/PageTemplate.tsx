@@ -1,8 +1,8 @@
 /**
  * PageTemplate renders page content.
  *
- * Both regular pages ([slug]) and the live-preview route use it, so
- * rendering stays consistent. Following Atomic Design, templates represent
+ * `[slug]` renders it published and under the preview panel alike, so an
+ * editor sees the page. Following Atomic Design, templates represent
  * page layout structures. It composes the article chrome: featured video,
  * title, author byline, rich-text body, and SEO `<head>` tags from the
  * page's SahajCloud meta.
