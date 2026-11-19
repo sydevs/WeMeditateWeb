@@ -1,9 +1,9 @@
 import type { PageContextServer } from 'vike/types'
 import type { WebConfig } from '../../../../server/sahajcloud-types'
 import { loadSiteContext } from '../../../../server/site-context'
-import { loadLecture, type LectureLoad } from '../_lecture'
+import { loadLecture, type LectureData } from '../_lecture'
 
-export interface LecturePageData extends LectureLoad {
+export interface LecturePageData extends LectureData {
   settings: WebConfig
 }
 

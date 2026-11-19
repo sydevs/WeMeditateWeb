@@ -8,12 +8,10 @@ export type LectureEmbedPageData = LectureData
  * LayoutRoot, not LayoutChrome. Unlike the full route, it does not fetch
  * WeMeditateWebSettings. There is no nav to populate.
  *
- * It drops the raw document the loader returns. SahajCloud points its preview
- * panel at `/lectures/:id`, so nothing here subscribes, and a second copy of
- * the lecture would ride into the browser for a stream this route never opens.
+ * SahajCloud points its preview panel at `/lectures/:id`, so this route mounts
+ * no subscriber and `lectureDocument` reaches it null on every request a
+ * visitor or the panel makes.
  */
 export async function data(pageContext: PageContextServer): Promise<LectureEmbedPageData> {
-  const { lecture, locale, id } = await loadLecture(pageContext)
-
-  return { lecture, locale, id }
+  return loadLecture(pageContext)
 }

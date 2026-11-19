@@ -9,9 +9,6 @@ export interface LectureData {
   lecture: ResolvedLecture
   locale: Locale
   id: string
-}
-
-export interface LectureLoad extends LectureData {
   /**
    * The document `lecture` was resolved from, and `null` off-preview. The raw
    * lecture is the larger of the two shapes — a clip carries its whole parent —
@@ -28,7 +25,7 @@ export interface LectureLoad extends LectureData {
  * lockstep. getLecture normalizes full lectures and clips into the same shape.
  * Throws a 404 for an invalid id or a missing lecture.
  */
-export async function loadLecture(pageContext: PageContextServer): Promise<LectureLoad> {
+export async function loadLecture(pageContext: PageContextServer): Promise<LectureData> {
   const { locale, routeParams } = pageContext
 
   let id: string
