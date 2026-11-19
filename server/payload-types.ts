@@ -6501,10 +6501,6 @@ export interface WmWebTranslationsBlocksGeneralStrings {
    * Label under the seconds figure of a countdown.
    */
   seconds?: string;
-  /**
-   * Ornamental words set on their side along the outer edge of an “Ancient Wisdom” text box. Decorative, so an evocative short phrase beats a literal translation — and it stands vertically in one line, which is what the limit is for.
-   */
-  wisdom_sidetext?: string;
 }
 export interface WmWebTranslationsBlocksA11YStrings {
   /**
