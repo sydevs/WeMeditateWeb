@@ -6,6 +6,7 @@
  * like the Locale type and list-item types.
  */
 
+import type { ResolvedLecture } from '../lib/lecture-shape'
 import type {
   Config,
   Form,
@@ -54,6 +55,20 @@ export type EmbeddedFormSelect = { [K in Exclude<keyof EmbeddedForm, 'id'>]: tru
 // module is shared by the server fetcher and the client live preview.
 // See lib/lecture-shape.ts.
 export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../lib/lecture-shape'
+
+/**
+ * One lecture read, in both the shapes a route needs.
+ *
+ * ⚠ **The live-preview stream merges into the raw document, never into the
+ * view model.** `mergeData` applies unsaved form fields to whatever it was
+ * given, so a subscriber handed a `ResolvedLecture` would take a clip's own
+ * empty `metadata` over the parent's playback source. The full route
+ * subscribes to `document` and re-runs `resolveLecture` on what arrives.
+ */
+export interface LectureRead {
+  document: Lecture
+  resolved: ResolvedLecture
+}
 
 /**
  * A page as the site config populates it: a nav link's label and target, plus

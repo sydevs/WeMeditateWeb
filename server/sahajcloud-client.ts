@@ -28,7 +28,7 @@
 import { createPayloadClient } from './payload-client'
 import { readStatus, withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
-import { resolveLecture, type ResolvedLecture } from '../lib/lecture-shape'
+import { resolveLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
 import type {
   Config,
@@ -46,6 +46,7 @@ import type {
 } from './payload-types'
 import type {
   EmbeddedFormSelect,
+  LectureRead,
   Locale,
   NavPage,
   NavPageSelect,
@@ -569,16 +570,20 @@ export async function getDocumentById<C extends FindByIdCollection>(
 }
 
 /**
- * Gets a lecture by ID and normalizes it into a flat `ResolvedLecture`.
+ * Gets a lecture by ID, normalized into a flat `ResolvedLecture` and paired
+ * with the document it was normalized from.
  *
  * Full lectures and clips resolve to the same shape. A clip inherits its
  * playback source (HLS URL, duration, base subtitles, thumbnail fallback)
  * from its parent `fullLecture`, populated at depth 2 (see LECTURE_POPULATE).
  *
+ * The raw document rides along because live preview streams that shape and
+ * merges into it — see {@link LectureRead}. One read answers both.
+ *
  * @param options.id - The lecture document ID
  * @param options.locale - The locale to retrieve the lecture in
  * @param options.preview - If true, fetch draft data
- * @returns The normalized lecture or null if not found
+ * @returns The document and its view model, or null if not found
  */
 export async function getLecture(
   options: LocalizedQueryOptions & {
@@ -586,7 +591,7 @@ export async function getLecture(
     preview?: boolean
     previewToken?: string
   },
-): Promise<ResolvedLecture | null> {
+): Promise<LectureRead | null> {
   const lecture = await getDocumentById({ collection: 'lectures', ...options })
 
   if (!lecture) return null
@@ -609,7 +614,7 @@ export async function getLecture(
     })
   }
 
-  return resolved
+  return { document: lecture, resolved }
 }
 
 // --- Global Settings ---

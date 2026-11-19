@@ -19,6 +19,7 @@
  */
 
 import type { AtlasSeoResponse } from '../../server/atlas-types'
+import { resolveLecture } from '../../lib/lecture-shape'
 import type { Lecture, Meditation, Page, WebConfig } from '../../server/sahajcloud-types'
 
 const IMAGE = {
@@ -129,14 +130,28 @@ export const meditation = {
   frames: null,
 } as unknown as Meditation
 
-export const lecture = {
+/**
+ * The raw lecture, as the full route subscribes to it.
+ *
+ * **Pre-mortem.** This assumes a full lecture carries its playback source in
+ * the untyped `metadata` json, and that `LECTURE_SELECT` returns `type`,
+ * `title`, `thumbnail` and `metadata`. Checked against `LECTURE_SELECT` in
+ * `server/sahajcloud-client.ts` and `parseLectureMetadata` in
+ * `lib/lecture-shape.ts`.
+ */
+export const lectureDocument = {
   id: 42,
+  type: 'full',
   title: 'Attention And Awareness',
-  hlsUrl: 'https://example.invalid/hls/42.m3u8',
-  durationSeconds: 900,
-  subtitles: null,
   thumbnail: IMAGE,
+  metadata: {
+    hlsUrl: 'https://example.invalid/hls/42.m3u8',
+    duration: 900,
+  },
 } as unknown as Lecture
+
+/** The view model both lecture routes render. Derived, so the two cannot drift. */
+export const lecture = resolveLecture(lectureDocument)
 
 /**
  * `/map`'s landing document — the body a crawler reads before the widget mounts.
