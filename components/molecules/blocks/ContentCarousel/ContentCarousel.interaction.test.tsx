@@ -118,6 +118,8 @@ describe('<ContentCarousel> with Embla mounted', () => {
     fireEvent.click(slide('Two'))
     fireEvent.click(slide('Three'))
 
+    // The stand-in gives every slide its own snap, so slide 2 is snap 2. A real
+    // wide viewport can merge the leading slides onto snap 0, and then it is not.
     expect(embla().scrollTo).toHaveBeenCalledExactlyOnceWith(2)
   })
 

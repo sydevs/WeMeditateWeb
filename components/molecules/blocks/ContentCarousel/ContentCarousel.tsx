@@ -187,6 +187,9 @@ export function ContentCarousel({
                   }`}
                   // A clipped or edge slide scrolls into view on click. A
                   // fully visible slide keeps its own links and play button clickable.
+                  // shortcut: passes the slide index as a snap index, which overshoots once a wide
+                  // viewport puts several leading slides on snap 0; map it through
+                  // `internalEngine().slideRegistry` when a clicked slide is seen staying dimmed.
                   onClick={inView ? undefined : () => scrollTo(index)}
                 >
                   <div className={inView ? '' : 'pointer-events-none'}>

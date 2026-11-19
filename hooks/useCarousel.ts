@@ -18,6 +18,10 @@ const EVENTS = [
  *
  * `options` adds what one carousel needs beyond that. Before Embla mounts,
  * `selectedIndex` is the `startIndex` and `slidesInView` is empty.
+ *
+ * `selectedIndex` and `scrollTo` count Embla's snaps, `slidesInView` counts
+ * slides. The two agree only while every slide has a snap of its own:
+ * `trimSnaps` puts every slide that fits at the start on snap 0.
  */
 export function useCarousel(options: CarouselOptions = {}) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -34,7 +38,7 @@ export function useCarousel(options: CarouselOptions = {}) {
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
-  const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi])
+  const scrollTo = useCallback((snap: number) => emblaApi?.scrollTo(snap), [emblaApi])
 
   useEffect(() => {
     if (!emblaApi) return
