@@ -286,8 +286,7 @@ export interface LeadSplash {
  */
 export function getLeadSplash(content: Page['content']): LeadSplash | null {
   const first = content?.root?.children?.[0] as
-    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
-    | undefined
+    { type?: string; fields?: SplashBlockFields & { blockType?: string } } | undefined
 
   if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
     return null

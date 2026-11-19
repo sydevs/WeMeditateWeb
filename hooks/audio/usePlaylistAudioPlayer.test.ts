@@ -6,7 +6,12 @@ import type { AudioPlayerControls, AudioPlayerState } from './useAudioPlayer'
 import type { Track } from '../../components/molecules/AudioPlayer/types'
 
 // Howler never plays under jsdom, so the core hook is replaced by a recorder.
-const player = vi.hoisted(() => ({ load: vi.fn(), play: vi.fn(), pause: vi.fn(), isPlaying: false }))
+const player = vi.hoisted(() => ({
+  load: vi.fn(),
+  play: vi.fn(),
+  pause: vi.fn(),
+  isPlaying: false,
+}))
 
 vi.mock('./useAudioPlayer', () => ({
   useAudioPlayer: () => [

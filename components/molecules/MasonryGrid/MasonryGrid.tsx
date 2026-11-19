@@ -35,9 +35,9 @@ export function MasonryGrid({
   items,
   initialItemCount = 3,
   breakpointCols = {
-    default: 3,  // Desktop: 3 columns (1024px+)
-    1023: 2,     // Tablet: 2 columns (640px - 1023px)
-    639: 1,      // Mobile: 1 column (< 640px)
+    default: 3, // Desktop: 3 columns (1024px+)
+    1023: 2, // Tablet: 2 columns (640px - 1023px)
+    639: 1, // Mobile: 1 column (< 640px)
   },
   className = '',
   ...props
@@ -61,9 +61,9 @@ export function MasonryGrid({
           <div key={item.id} className="mb-12">
             {item.href ? (
               <Link
-                href={item.href}
-                variant='primary'
                 className="mb-4 text-xl font-medium tracking-wide block"
+                href={item.href}
+                variant="primary"
               >
                 {item.heading}
               </Link>
@@ -72,9 +72,7 @@ export function MasonryGrid({
                 {item.heading}
               </h3>
             )}
-            <p className="text-base font-light text-gray-700 leading-relaxed">
-              {item.content}
-            </p>
+            <p className="text-base font-light text-gray-700 leading-relaxed">{item.content}</p>
           </div>
         ))}
       </Masonry>

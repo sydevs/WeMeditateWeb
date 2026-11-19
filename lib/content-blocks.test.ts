@@ -195,15 +195,22 @@ describe('contentIndexCard', () => {
 
   it('falls back to the enum value when a page-tag label is missing', () => {
     // A SahajCloud gap must show the identifier, not an empty pill.
-    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages')
+    const card = contentIndexCard(
+      { id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] },
+      'pages',
+    )
 
     expect(card?.tags).toEqual([{ id: 'wisdom', label: 'wisdom' }])
   })
 
   it('labels page-tag facets from SahajCloud, in the page locale', () => {
-    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages', {
-      wisdom: 'Sagesse',
-    })
+    const card = contentIndexCard(
+      { id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] },
+      'pages',
+      {
+        wisdom: 'Sagesse',
+      },
+    )
 
     expect(card?.tags).toEqual([{ id: 'wisdom', label: 'Sagesse' }])
   })

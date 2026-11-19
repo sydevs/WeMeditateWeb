@@ -166,17 +166,17 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
           {/* Navigation controls above carousel */}
           <div className="flex items-center">
             <CarouselNavButton
-              direction="prev"
               column={prevColumn}
-              onClick={scrollPrev}
+              direction="prev"
               disabled={!hasPrev}
+              onClick={scrollPrev}
             />
 
             <CarouselNavButton
-              direction="next"
               column={nextColumn}
-              onClick={scrollNext}
+              direction="next"
               disabled={!hasNext}
+              onClick={scrollNext}
             />
           </div>
 
@@ -190,19 +190,17 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
               <button
                 // eslint-disable-next-line @eslint-react/no-array-index-key -- a dot indicator over a fixed `columns` array: the position is the identity
                 key={index}
-                onClick={() => scrollTo(index)}
                 aria-label={t('blocks.a11y.go_to_column', {
                   number: index + 1,
                   title: columns[index].title,
                 })}
                 aria-pressed={index === selectedIndex}
                 className="group flex w-11 h-11 items-center justify-center focus-ring"
+                onClick={() => scrollTo(index)}
               >
                 <span
                   className={`w-2 h-2 rounded-full transition-colors ${
-                    index === selectedIndex
-                      ? 'bg-teal-600'
-                      : 'bg-gray-300 group-hover:bg-gray-400'
+                    index === selectedIndex ? 'bg-teal-600' : 'bg-gray-300 group-hover:bg-gray-400'
                   }`}
                 />
               </button>

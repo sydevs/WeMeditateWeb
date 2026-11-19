@@ -10,7 +10,7 @@ import { SocialIcon } from './SocialIcon'
 describe('<SocialIcon> new-tab announcement', () => {
   it('names the platform and the new tab', () => {
     const html = renderToStaticMarkup(
-      <SocialIcon platform="facebook" href="https://facebook.com/wemeditate" />,
+      <SocialIcon href="https://facebook.com/wemeditate" platform="facebook" />,
     )
 
     expect(html).toContain('aria-label="Facebook (opens in new tab)"')
@@ -23,9 +23,9 @@ describe('<SocialIcon> new-tab announcement', () => {
     // it — and spreading `props` over a finished one dropped it (#238).
     const html = renderToStaticMarkup(
       <SocialIcon
-        platform="facebook"
-        href="https://facebook.com/wemeditate"
         aria-label="Share on Facebook"
+        href="https://facebook.com/wemeditate"
+        platform="facebook"
       />,
     )
 
@@ -36,7 +36,7 @@ describe('<SocialIcon> new-tab announcement', () => {
     // `layouts/Footer.tsx` feeds this prop a SahajCloud-configured URL.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    const html = renderToStaticMarkup(<SocialIcon platform="facebook" href="javascript:alert(1)" />)
+    const html = renderToStaticMarkup(<SocialIcon href="javascript:alert(1)" platform="facebook" />)
 
     expect(html).not.toContain('href')
     expect(html).not.toContain('javascript')

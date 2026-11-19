@@ -46,11 +46,7 @@ export interface HeaderNavDropdownProps {
  * The positioning and interaction props live on the wrapping element
  * instead, because Button does not forward a ref.
  */
-export function HeaderNavDropdown({
-  label,
-  dropdown,
-  className = '',
-}: HeaderNavDropdownProps) {
+export function HeaderNavDropdown({ label, dropdown, className = '' }: HeaderNavDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const { refs, floatingStyles, context } = useFloating({
@@ -85,12 +81,7 @@ export function HeaderNavDropdown({
        * assistive-tech user lands on.
        */}
       <span ref={refs.setReference} className={`flex ${className}`}>
-        <Button
-          className="w-full"
-          size="sm"
-          variant="ghost"
-          {...getReferenceProps()}
-        >
+        <Button className="w-full" size="sm" variant="ghost" {...getReferenceProps()}>
           {label}
         </Button>
       </span>

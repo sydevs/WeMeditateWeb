@@ -23,7 +23,6 @@ export interface SpinnerProps extends ComponentProps<'div'> {
    */
   color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
 
-
   /**
    * Accessible label for the loading state
    * @default 'Loading...'
@@ -93,10 +92,10 @@ export function Spinner({
   if (variant === 'logo') {
     return (
       <div
-        role="status"
-        aria-live="polite"
         aria-label={resolvedLabel}
+        aria-live="polite"
         className={`inline-block ${className}`}
+        role="status"
         {...props}
       >
         <AnimatedLogoSvg className={`${logoSizeStyles[size]} ${logoColorStyles[color]}`} />
@@ -107,10 +106,10 @@ export function Spinner({
 
   return (
     <div
-      role="status"
-      aria-live="polite"
       aria-label={resolvedLabel}
+      aria-live="polite"
       className={`inline-block ${className}`}
+      role="status"
       {...props}
     >
       <div

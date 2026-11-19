@@ -10,7 +10,11 @@ import type { PageContextServer } from 'vike/types'
 
 const getPageBySlug = vi.fn()
 const getPageLocaleStatus = vi.fn()
-const settings = { homePage: null as { slug: string } | null, availableLocales: ['en'], audiences: [] }
+const settings = {
+  homePage: null as { slug: string } | null,
+  availableLocales: ['en'],
+  audiences: [],
+}
 
 vi.mock('../../server/sahajcloud-client', () => ({
   getPageBySlug: (...args: unknown[]) => getPageBySlug(...args),

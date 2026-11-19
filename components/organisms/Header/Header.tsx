@@ -116,7 +116,10 @@ export function Header({
 
   return (
     <>
-      <header className={[clickable, bandClassName, className].filter(Boolean).join(' ')} {...props}>
+      <header
+        className={[clickable, bandClassName, className].filter(Boolean).join(' ')}
+        {...props}
+      >
         {/* Top banner with logo, illustration, and action link. Omitted when
             condensed — the compact nav below carries the logo and action link
             itself, so rendering both would duplicate them. */}

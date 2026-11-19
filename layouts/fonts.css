@@ -12,8 +12,9 @@
   font-weight: 200;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/raleway/RalewayExtraLight.woff2') format('woff2'),
-       url('/fonts/raleway/RalewayExtraLight.woff') format('woff');
+  src:
+    url('/fonts/raleway/RalewayExtraLight.woff2') format('woff2'),
+    url('/fonts/raleway/RalewayExtraLight.woff') format('woff');
 }
 
 /* Raleway Light - 300 */
@@ -22,8 +23,9 @@
   font-weight: 300;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/raleway/RalewayLight.woff2') format('woff2'),
-       url('/fonts/raleway/RalewayLight.woff') format('woff');
+  src:
+    url('/fonts/raleway/RalewayLight.woff2') format('woff2'),
+    url('/fonts/raleway/RalewayLight.woff') format('woff');
 }
 
 /* Raleway Regular - 400 */
@@ -32,8 +34,9 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/raleway/RalewayRegular.woff2') format('woff2'),
-       url('/fonts/raleway/RalewayRegular.woff') format('woff');
+  src:
+    url('/fonts/raleway/RalewayRegular.woff2') format('woff2'),
+    url('/fonts/raleway/RalewayRegular.woff') format('woff');
 }
 
 /* Raleway Medium - 500 */
@@ -42,8 +45,9 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/raleway/RalewayMedium.woff2') format('woff2'),
-       url('/fonts/raleway/RalewayMedium.woff') format('woff');
+  src:
+    url('/fonts/raleway/RalewayMedium.woff2') format('woff2'),
+    url('/fonts/raleway/RalewayMedium.woff') format('woff');
 }
 
 /* Raleway Semi Bold - 600 */
@@ -52,8 +56,9 @@
   font-weight: 600;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/raleway/RalewaySemiBold.woff2') format('woff2'),
-       url('/fonts/raleway/RalewaySemiBold.woff') format('woff');
+  src:
+    url('/fonts/raleway/RalewaySemiBold.woff2') format('woff2'),
+    url('/fonts/raleway/RalewaySemiBold.woff') format('woff');
 }
 
 /* Raleway Bold - 700 */
@@ -62,8 +67,9 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/raleway/RalewayBold.woff2') format('woff2'),
-       url('/fonts/raleway/RalewayBold.woff') format('woff');
+  src:
+    url('/fonts/raleway/RalewayBold.woff2') format('woff2'),
+    url('/fonts/raleway/RalewayBold.woff') format('woff');
 }
 
 /* Futura Book - 400 */
@@ -72,6 +78,7 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/futura-book/FuturaBook.woff2') format('woff2'),
-       url('/fonts/futura-book/FuturaBook.woff') format('woff');
+  src:
+    url('/fonts/futura-book/FuturaBook.woff2') format('woff2'),
+    url('/fonts/futura-book/FuturaBook.woff') format('woff');
 }

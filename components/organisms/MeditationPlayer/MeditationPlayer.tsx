@@ -260,8 +260,8 @@ function AudioControls({
       <div className="flex w-64 flex-col gap-4 p-4 text-left">
         <VolumeRow
           label={t('meditation.general.voice')}
-          muteLabel={t('meditation.a11y.mute_voice')}
           muted={voiceMuted}
+          muteLabel={t('meditation.a11y.mute_voice')}
           unmuteLabel={t('meditation.a11y.unmute_voice')}
           volume={voiceVolume}
           volumeLabel={t('meditation.a11y.voice_volume')}
@@ -285,8 +285,8 @@ function AudioControls({
               ) : undefined
             }
             label={t('meditation.general.music')}
-            muteLabel={t('meditation.a11y.mute_music')}
             muted={musicMuted}
+            muteLabel={t('meditation.a11y.mute_music')}
             sublabel={musicTrackTitle}
             unmuteLabel={t('meditation.a11y.unmute_music')}
             volume={musicVolume}

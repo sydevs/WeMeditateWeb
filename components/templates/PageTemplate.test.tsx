@@ -62,7 +62,9 @@ describe('<PageTemplate> hideTitle', () => {
       <PageTemplate page={makePage({ content: splash() } as unknown as Partial<Page>)} />,
     )
     const titled = renderToStaticMarkup(
-      <PageTemplate page={makePage({ content: splash('Discover it') } as unknown as Partial<Page>)} />,
+      <PageTemplate
+        page={makePage({ content: splash('Discover it') } as unknown as Partial<Page>)}
+      />,
     )
 
     // The untitled one gets the stand-in; the titled one leaves the `<h1>` to

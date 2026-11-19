@@ -29,9 +29,9 @@ export default function HeadDefault() {
 
   return (
     <>
-      <link rel="preconnect" href="https://assets.sydevelopers.com" crossOrigin="anonymous" />
-      <link rel="preconnect" href="https://cloud.sydevelopers.com" />
-      <link rel="icon" href={logoUrl} />
+      <link crossOrigin="anonymous" href="https://assets.sydevelopers.com" rel="preconnect" />
+      <link href="https://cloud.sydevelopers.com" rel="preconnect" />
+      <link href={logoUrl} rel="icon" />
 
       {/* Vike's client routing swaps the page with no document load, and a
           document load is all Fathom counts by default. */}

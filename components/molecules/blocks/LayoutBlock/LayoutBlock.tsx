@@ -94,12 +94,7 @@ function LayoutCard({
  * reuse the Accordion and ColumnCarousel molecules. `grid`, `list`, and
  * `textList` render with the LayoutCard subcomponent and simple lists.
  */
-export function LayoutBlock({
-  style,
-  title,
-  items,
-  className = '',
-}: LayoutBlockProps) {
+export function LayoutBlock({ style, title, items, className = '' }: LayoutBlockProps) {
   const withTitle = items.filter((it) => it.title?.trim())
 
   if (items.length === 0) {

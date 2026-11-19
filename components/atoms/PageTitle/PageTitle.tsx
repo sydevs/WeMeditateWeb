@@ -39,7 +39,8 @@ export const PageTitle = ({
   const gradientClasses = {
     left: 'before:left-0 before:bg-gradient-to-r before:w-1/2 sm:before:w-80',
     center: 'before:left-0 before:bg-gradient-to-r before:w-1/2',
-    right: 'before:left-0 before:bg-gradient-to-r before:w-1/2 sm:before:right-0 sm:before:left-auto sm:before:bg-gradient-to-l sm:before:w-80',
+    right:
+      'before:left-0 before:bg-gradient-to-r before:w-1/2 sm:before:right-0 sm:before:left-auto sm:before:bg-gradient-to-l sm:before:w-80',
   }
 
   return (
@@ -57,11 +58,7 @@ export const PageTitle = ({
       <Component className="relative font-sans text-4xl font-semibold tracking-wider">
         {title}
       </Component>
-      {subtitle && (
-        <p className="relative mt-4 font-sans text-lg font-medium">
-          {subtitle}
-        </p>
-      )}
+      {subtitle && <p className="relative mt-4 font-sans text-lg font-medium">{subtitle}</p>}
     </div>
   )
 }

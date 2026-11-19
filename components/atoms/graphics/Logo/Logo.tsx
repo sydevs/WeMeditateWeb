@@ -83,14 +83,13 @@ export function Logo({
     content = (
       <>
         <LogoSvg className={iconSizes[size]} />
-        <span className={`font-normal ${textSizes[size]} whitespace-pre-line`}>
-          {textContent}
-        </span>
+        <span className={`font-normal ${textSizes[size]} whitespace-pre-line`}>{textContent}</span>
       </>
     )
   } else if (variant === 'square' || variant === 'circle') {
     const shapeStyles = variant === 'circle' ? 'rounded-full' : ''
     const hoverStyles = href ? 'hover:bg-coral-600 transition-colors' : ''
+
     variantStyles = `items-center justify-center ${buttonSizes[size]} ${shapeStyles} bg-coral-500 text-white ${hoverStyles}`
     content = <LogoSvg className={iconSizes[size]} />
   }
@@ -101,7 +100,7 @@ export function Logo({
   // Render as link or div depending on href prop
   if (href) {
     return (
-      <Link href={href} variant="unstyled" className={allStyles} {...props}>
+      <Link className={allStyles} href={href} variant="unstyled" {...props}>
         {content}
       </Link>
     )

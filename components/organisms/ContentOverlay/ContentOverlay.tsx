@@ -158,12 +158,7 @@ export function ContentOverlay({
 
       {ctaText && ctaHref && (
         <div className="mt-6">
-          <Button
-            className={buttonClassName}
-            href={ctaHref}
-            size="md"
-            variant={buttonVariant}
-          >
+          <Button className={buttonClassName} href={ctaHref} size="md" variant={buttonVariant}>
             {ctaText}
           </Button>
         </div>

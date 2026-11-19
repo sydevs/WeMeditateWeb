@@ -376,12 +376,10 @@ export function FormBuilder({
             <Turnstile
               key={attempt}
               options={{ execution: 'render', theme: 'light', language: locale }}
-              onSuccess={setToken}
               // A failed, expired or unreachable challenge all leave the form
               // without a token. SahajCloud refuses that submission, which is the
               // same outcome as an unsolved challenge — nothing to recover.
               siteKey={siteKey}
-              onExpire={() => setToken(null)}
               // ⚠ `execution: 'render'` is what survives a client-side
               // navigation. Cloudflare's automatic scan runs once per document
               // load, and Vike swaps the page under `<main>` without reloading,
@@ -392,6 +390,8 @@ export function FormBuilder({
               // visitor reading the Spanish site in an English browser would
               // get an English challenge mid-form. Pass the page locale.
               onError={() => setToken(null)}
+              onExpire={() => setToken(null)}
+              onSuccess={setToken}
             />
           </div>
         )}

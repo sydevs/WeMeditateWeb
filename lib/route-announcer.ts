@@ -53,6 +53,7 @@ export interface RouteChange {
  */
 export function announceRouteChange(doc: AnnouncerDocument, { isBackwardNavigation }: RouteChange) {
   const announcer = doc.getElementById(ROUTE_ANNOUNCER_ID)
+
   if (announcer) {
     // Assigning `textContent` is what the live region reacts to.
     announcer.textContent = doc.title
@@ -61,6 +62,7 @@ export function announceRouteChange(doc: AnnouncerDocument, { isBackwardNavigati
   if (isBackwardNavigation) return
 
   const main = doc.getElementById(MAIN_CONTENT_ID)
+
   // `preventScroll`, because the element is already at the top of the
   // new page. Letting the browser scroll to it fights the router's own scroll reset.
   main?.focus?.({ preventScroll: true })

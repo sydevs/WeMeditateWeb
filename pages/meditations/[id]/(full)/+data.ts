@@ -17,7 +17,10 @@ export interface MeditationPageData extends MeditationData {
  * (RelatedContentLoader, through the template's showRelated flag).
  */
 export async function data(pageContext: PageContextServer): Promise<MeditationPageData> {
-  const [base, site] = await Promise.all([loadMeditation(pageContext), loadSiteContext(pageContext)])
+  const [base, site] = await Promise.all([
+    loadMeditation(pageContext),
+    loadSiteContext(pageContext),
+  ])
 
   return { ...base, settings: site.settings }
 }

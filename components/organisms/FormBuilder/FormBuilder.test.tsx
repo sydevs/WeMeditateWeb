@@ -65,7 +65,7 @@ describe('FormBuilder', () => {
     expect(renderToStaticMarkup(<FormBuilder form={form} />)).not.toContain('disabled=""')
 
     const withCaptcha = renderToStaticMarkup(
-      <FormBuilder form={form} siteKey="1x00000000000000000000AA" />
+      <FormBuilder form={form} siteKey="1x00000000000000000000AA" />,
     )
 
     expect(withCaptcha).not.toContain('disabled=""')

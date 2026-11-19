@@ -132,9 +132,7 @@ describe('getAtlasSeo', () => {
       // 520/522/524 come from the edge in front of SahajCloud. They reach
       // `detectErrorType` only as a structured status — the message fallback
       // matches `50[0-9]` and would call them UNKNOWN, dropping the retry.
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fetchResponse(522, {}) as unknown as Response,
-      )
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchResponse(522, {}) as unknown as Response)
 
       await getAtlasSeo({ route: '/gb/london', locale: 'en' })
 
@@ -361,9 +359,7 @@ describe('getAtlasSitemapUrls', () => {
     // 520/522/524 come from the edge in front of SahajCloud. They reach
     // `detectErrorType` only as a structured status — the message fallback
     // matches `50[0-9]` and would call them UNKNOWN, dropping the retry.
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      fetchResponse(522, {}) as unknown as Response,
-    )
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchResponse(522, {}) as unknown as Response)
 
     await getAtlasSitemapUrls('https://wemeditate.com')
 

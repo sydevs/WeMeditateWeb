@@ -7,7 +7,12 @@ const navItems = [{ label: 'Meditate Now', href: '/meditate' }]
 
 const render = (props: Partial<React.ComponentProps<typeof Header>> = {}) =>
   renderToStaticMarkup(
-    <Header actionLinkHref="/classes" actionLinkText="Classes near me" navItems={navItems} {...props} />,
+    <Header
+      actionLinkHref="/classes"
+      actionLinkText="Classes near me"
+      navItems={navItems}
+      {...props}
+    />,
   )
 
 describe('Header', () => {

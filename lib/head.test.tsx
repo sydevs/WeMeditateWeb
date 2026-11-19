@@ -55,7 +55,9 @@ describe('ContentHeadTags', () => {
   it('emits one alternate per advertised locale, plus x-default', () => {
     const html = cluster(['en', 'fr'])
 
-    expect(html).toContain('<link rel="alternate" hreflang="en" href="https://wemeditate.com/about"/>')
+    expect(html).toContain(
+      '<link rel="alternate" hreflang="en" href="https://wemeditate.com/about"/>',
+    )
     expect(html).toContain(
       '<link rel="alternate" hreflang="fr" href="https://wemeditate.com/fr/about"/>',
     )
@@ -72,5 +74,4 @@ describe('ContentHeadTags', () => {
     expect(html).toContain('hreflang=')
     expect(html).not.toContain('hrefLang=')
   })
-
 })
