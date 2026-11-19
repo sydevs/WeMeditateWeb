@@ -88,7 +88,8 @@ function MasonryGridCard({
  * Every item is in the server's markup. Those past `initialItemCount` carry
  * `hidden`, which keeps them out of the accessibility tree and the tab order
  * until "Show More" reveals them, and focus then moves to the first of them,
- * since the button it was on is gone.
+ * since the button it was on is gone. Without JavaScript, `tailwind.css`
+ * shows them all and drops the button, keyed on the `data-masonry-*` hooks.
  */
 export function MasonryGrid({
   items,
@@ -111,7 +112,7 @@ export function MasonryGrid({
 
   return (
     <div className={className} {...props}>
-      <ul className="masonry gap-x-8 gap-y-12">
+      <ul className="masonry gap-x-8 gap-y-12" data-masonry-grid="">
         {items.map((item, index) => (
           <li
             key={item.id}
@@ -126,14 +127,14 @@ export function MasonryGrid({
       </ul>
 
       {hiddenCount > 0 && (
-        <div className="mt-8 text-center md:mt-12">
+        <div className="mt-8 text-center md:mt-12" data-masonry-show-more="">
           {/* The count is a description, not the name: a name must contain
               the visible label, which WCAG 2.1 2.5.3 Label in Name requires
               (#201). */}
           <Button aria-describedby={countId} variant="outline" onClick={() => setShowAll(true)}>
             {t('common.general.show_more')}
           </Button>
-          <span className="sr-only" id={countId}>
+          <span hidden id={countId}>
             {t('common.a11y.show_more_items', { count: hiddenCount })}
           </span>
         </div>

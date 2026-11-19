@@ -286,6 +286,19 @@
   :root {
     @apply surface-light;
   }
+
+  /* Without JavaScript, MasonryGrid's "Show More" can run nothing, so every
+     item shows and the button goes. In `base` because preflight's `[hidden]`
+     is an `!important` there, which no later layer can override. */
+  @media (scripting: none) {
+    [data-masonry-grid] > li[hidden] {
+      display: block !important;
+    }
+
+    [data-masonry-show-more] {
+      display: none;
+    }
+  }
 }
 
 @theme inline {

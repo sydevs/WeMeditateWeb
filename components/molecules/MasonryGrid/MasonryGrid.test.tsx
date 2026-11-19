@@ -33,6 +33,24 @@ describe('MasonryGrid', () => {
     expect(html).toContain(`id="${describedBy}">Show 2 more items</span>`)
   })
 
+  // An `sr-only` description sits in the reading order right after the button,
+  // so browse mode read the count twice; a hidden one is still computed.
+  it('keeps the count out of the reading order', () => {
+    const html = renderToStaticMarkup(<MasonryGrid items={items} initialItemCount={3} />)
+
+    expect(openTag(html, 'span')).toMatch(/^<span hidden="" id="/)
+  })
+
+  // With scripting off, `tailwind.css` keys on these to show every item and
+  // drop the button that would do nothing.
+  it('marks the grid and its button for the no-script stylesheet', () => {
+    const html = renderToStaticMarkup(<MasonryGrid items={items} initialItemCount={3} />)
+
+    expect(openTag(html, 'ul')).toContain('data-masonry-grid=""')
+    expect(html.indexOf('data-masonry-show-more=""')).toBeLessThan(html.indexOf('<button'))
+    expect(html.indexOf('data-masonry-show-more=""')).toBeGreaterThan(-1)
+  })
+
   // The old site showed three of the eleven timeline entries and a button.
   // Every entry still reaches the server's markup; the rest wait hidden, out
   // of the accessibility tree and the tab order.

@@ -28,7 +28,7 @@ async function build(candidates: string[]): Promise<string> {
 const rule = (css: string, selector: string): string =>
   [
     ...css.matchAll(
-      new RegExp(`(?:^|[\\s}])${selector.replace(/[.:]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'),
+      new RegExp(`(?:^|[\\s}])${selector.replace(/[.:[\]]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g'),
     ),
   ]
     .map(([, block]) => block)
@@ -222,5 +222,20 @@ describe('masonry', () => {
     const css = await build(['masonry'])
 
     expect(css).toMatch(/@supports \(display: grid-lanes\) \{\s*display: grid-lanes;\s*\}/)
+  })
+
+  // "Show More" is a click handler, so with scripting off it did nothing and
+  // MasonryGrid's items past the first page stayed hidden for good. Preflight's
+  // `[hidden]` is an `!important` in `base`, which only `base` can override.
+  it('shows every hidden MasonryGrid item and drops its button with scripting off', async () => {
+    const css = await build([])
+    const at = css.indexOf('@media (scripting: none)')
+    const noScript = css.slice(at)
+
+    expect(at).toBeGreaterThan(css.indexOf('@layer base'))
+    expect(declared(rule(noScript, '[data-masonry-grid] > li[hidden]'), 'display')).toBe(
+      'block !important',
+    )
+    expect(declared(rule(noScript, '[data-masonry-show-more]'), 'display')).toBe('none')
   })
 })
