@@ -32,6 +32,7 @@ Open `http://localhost:5173`.
 | `pnpm lint` | Run ESLint across the codebase. |
 | `pnpm test` | Run tests in watch mode. |
 | `pnpm test:run` | Run tests once (CI style). |
+| `pnpm test:coverage` | Run tests once with V8 coverage, written to `coverage/` (local only, no thresholds). |
 | `pnpm test:ui` | Open the Vitest UI runner. |
 | `pnpm ladle` | Run the component library locally. |
 | `pnpm ladle:build` | Build the component library for static hosting. |
