@@ -76,12 +76,8 @@ beforeEach(() => {
   createdWith.length = 0
   request.mockReset()
   request.mockResolvedValue(new Response(JSON.stringify({ id: 98, title: 'Edited' })))
-  vi.mocked(Sentry.captureMessage).mockClear()
   vi.stubEnv('PUBLIC__LIVE_PREVIEW_VERIFY_KEY', verifyKeyBase64)
 })
-
-/** Every argument of every Sentry call so far, as one string to search. */
-const reported = () => JSON.stringify(vi.mocked(Sentry.captureMessage).mock.calls)
 
 function populate(options: { token?: string; endpoint?: string; body?: unknown } = {}) {
   const app = new Hono<SahajCloudEnv>()
@@ -204,20 +200,6 @@ describe('POST /api/live-preview/populate — the forward', () => {
 
     expect(response.status).toBe(502)
     expect(await response.text()).toBe('')
-  })
-
-  it('reports a failed draft read to Sentry, without the token', async () => {
-    const token = await sign(NOW() + 600)
-
-    request.mockRejectedValue(new Error('SahajCloud down'))
-    await populate({ token })
-
-    expect(Sentry.captureMessage).toHaveBeenCalledWith('The live-preview populate proxy failed', {
-      level: 'error',
-      tags: { source: 'live-preview populate' },
-      extra: { status: null, code: null, error: 'Error' },
-    })
-    expect(reported()).not.toContain(token)
   })
 
   it('reads an unknown locale as English rather than passing it on', async () => {
@@ -479,45 +461,28 @@ describe('POST /api/submissions — the captcha token', () => {
   })
 })
 
-describe('POST /api/submissions — a refusal', () => {
-  it('passes the intake code through, and never its message', async () => {
-    request.mockRejectedValue(sdkError(403, 'captcha_failed'))
+describe('Both proxies — what reaches Sentry', () => {
+  /** Every argument of every Sentry call so far, as one string to search. */
+  const reported = () => JSON.stringify(vi.mocked(Sentry.captureMessage).mock.calls)
 
-    const response = await submit({ token: 'stale' })
-
-    expect(response.status).toBe(403)
-    expect(await response.json()).toEqual({ ok: false, code: 'captcha_failed' })
+  beforeEach(() => {
+    vi.mocked(Sentry.captureMessage).mockClear()
   })
 
-  it('keeps a 400 a 400, so a refused pair still reads as the caller’s fault', async () => {
-    request.mockRejectedValue(sdkError(400, 'submission_data_invalid'))
+  it('reports a failed draft read, without the token', async () => {
+    const token = await sign(NOW() + 600)
 
-    const response = await submit({ token: 'turnstile-token' })
+    request.mockRejectedValue(new Error('SahajCloud down'))
+    await populate({ token })
 
-    expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({ ok: false, code: 'submission_data_invalid' })
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The live-preview populate proxy failed', {
+      level: 'error',
+      tags: { source: 'live-preview populate' },
+      extra: { status: null, code: null, error: 'Error' },
+    })
+    expect(reported()).not.toContain(token)
   })
 
-  it('reads a SahajCloud fault as 502, not as the browser sending a bad request', async () => {
-    request.mockRejectedValue(sdkError(500, 'internal'))
-
-    const response = await submit({ token: 'turnstile-token' })
-
-    expect(response.status).toBe(502)
-    expect(await response.json()).toEqual({ ok: false })
-  })
-
-  it('reads an unreachable SahajCloud as 502', async () => {
-    request.mockRejectedValue(new Error('fetch failed'))
-
-    const response = await submit({ token: 'turnstile-token' })
-
-    expect(response.status).toBe(502)
-    expect(await response.json()).toEqual({ ok: false })
-  })
-})
-
-describe('POST /api/submissions — what reaches Sentry', () => {
   it('reports a SahajCloud fault every time, with no body, token or address', async () => {
     request.mockRejectedValue(sdkError(500, 'internal'))
 
@@ -578,5 +543,43 @@ describe('POST /api/submissions — what reaches Sentry', () => {
     await submit({ body: { form: 'contact-form' }, token: 'turnstile-token' })
 
     expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+})
+
+describe('POST /api/submissions — a refusal', () => {
+  it('passes the intake code through, and never its message', async () => {
+    request.mockRejectedValue(sdkError(403, 'captcha_failed'))
+
+    const response = await submit({ token: 'stale' })
+
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({ ok: false, code: 'captcha_failed' })
+  })
+
+  it('keeps a 400 a 400, so a refused pair still reads as the caller’s fault', async () => {
+    request.mockRejectedValue(sdkError(400, 'submission_data_invalid'))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ ok: false, code: 'submission_data_invalid' })
+  })
+
+  it('reads a SahajCloud fault as 502, not as the browser sending a bad request', async () => {
+    request.mockRejectedValue(sdkError(500, 'internal'))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(502)
+    expect(await response.json()).toEqual({ ok: false })
+  })
+
+  it('reads an unreachable SahajCloud as 502', async () => {
+    request.mockRejectedValue(new Error('fetch failed'))
+
+    const response = await submit({ token: 'turnstile-token' })
+
+    expect(response.status).toBe(502)
+    expect(await response.json()).toEqual({ ok: false })
   })
 })
