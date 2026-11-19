@@ -81,6 +81,9 @@ describe('Header', () => {
       expect(bar).not.toContain('min-h-11')
       expect(html).toContain('shrink-0 touch-target items-center')
       expect(html).toContain('flex touch-target items-center justify-end')
+      // The menu trigger brings exactly one overlay into the bar, and the bar
+      // is still the clipping edge. A second is the #202 shape again.
+      expect(html.match(/touch-target-overlay/g)).toHaveLength(1)
     })
 
     it('is drawn before it sticks, because the menu trigger lives in it', () => {
