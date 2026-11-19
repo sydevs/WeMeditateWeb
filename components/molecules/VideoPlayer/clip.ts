@@ -2,8 +2,8 @@
  * A lecture clip's playback window, and how its clock reads.
  *
  * Video.js 10 has no clipping (videojs/video.js#3040), so the window is this repo's to resolve,
- * to enforce and to display. This file stays pure, for unit testing and so `index.tsx` can take
- * a value from it without importing the browser-only player (components/AGENTS.md).
+ * to enforce and to display. This file stays pure so each decision is unit-testable on its own,
+ * away from the player that applies it.
  */
 
 /** A `[start, end]` playback window, in seconds of the underlying media. */
