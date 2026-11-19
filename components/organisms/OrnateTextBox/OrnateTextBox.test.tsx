@@ -57,21 +57,28 @@ describe('<OrnateTextBox>', () => {
     expect(html).not.toContain('Ancient Wisdom')
   })
 
-  it('floats the image left so the body text wraps around it', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} />)
+  // The image takes a grid column of its own, and the header and body share
+  // the one beside it. Placement is explicit because grid auto-placement
+  // follows source order, which here is title, subtitle, image, body.
+  it.each([
+    ['left', 'lg:grid-cols-[44%_1fr]', 'lg:col-start-1', 'lg:col-start-2'],
+    ['right', 'lg:grid-cols-[1fr_44%]', 'lg:col-start-2', 'lg:col-start-1'],
+  ] as const)(
+    'gives the %s layout an image column and a text column',
+    (align, columns, imageColumn, textColumn) => {
+      const html = renderToStaticMarkup(
+        <OrnateTextBox {...BASE} align={align} subtitle="Timeless teachings" />,
+      )
 
-    expect(html).toContain('lg:float-left')
-    expect(html).toContain('lg:mr-12')
-    expect(html).not.toContain('lg:float-right')
-  })
-
-  it('floats the image right under align="right"', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} align="right" />)
-
-    expect(html).toContain('lg:float-right')
-    expect(html).toContain('lg:ml-12')
-    expect(html).not.toContain('lg:float-left')
-  })
+      // `lg:row-span-2` is the image wrapper's alone, and `lg:mb-6` the
+      // header's: neither column class names an element on its own, since
+      // the two columns swap with `align`.
+      expect(classFor(html, 'lg:pr-24').split(' ')).toContain(columns)
+      expect(classFor(html, 'lg:row-span-2').split(' ')).toContain(imageColumn)
+      expect(classFor(html, 'lg:mb-6').split(' ')).toContain(textColumn)
+      expect(classFor(html, 'space-y-5').split(' ')).toContain(textColumn)
+    },
+  )
 
   it('defaults to the left layout, so an omitted align renders as align="left"', () => {
     expect(renderToStaticMarkup(<OrnateTextBox {...BASE} />)).toEqual(
@@ -136,35 +143,35 @@ describe('<OrnateTextBox>', () => {
     expect(subtitle).not.toContain('text-white/')
   })
 
-  // A float only affects what follows it, so the header can only share the
-  // body's column by coming after the image in source order. Across the band
-  // instead, the title measures 2.47:1 against a 3:1 bar (#262). The
-  // block-formatting context is then what keeps the header out of the float's
-  // margin box, whichever way the float points (#193).
-  it("puts the floated image before the header, in the header's own BFC", () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
+  // A screen reader reads source order, which no `order-*` reorder changes
+  // (Flexbox §5.4, WCAG SC 1.3.2). A float would have had to precede the
+  // header to put it in the text column — across the band instead the title
+  // measures 2.47:1 against a 3:1 bar (#262) — so the grid is what lets one
+  // order serve both the eye and the reader, at every width.
+  it('renders title, subtitle, image then body in source order, with no reorder', () => {
+    const html = renderToStaticMarkup(
+      <OrnateTextBox {...BASE} subtitle="Timeless teachings" />,
+    )
 
     // A missing marker indexes as -1, which satisfies `toBeLessThan` against
     // anything, so each one is pinned as present before it is ordered.
-    expect(html).toContain('lg:float-left')
-    expect(html.indexOf('lg:float-left')).toBeLessThan(html.indexOf('Sacred Teachings'))
-    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('timeless wisdom'))
-    expect(classFor(html, 'lg:mb-6').split(' ')).toContain('lg:flow-root')
-  })
+    expect(html).toContain('Sacred Teachings')
+    expect(html).toContain('Timeless teachings')
+    expect(html).toContain('picsum')
+    expect(html).toContain('timeless wisdom')
+    expect(html.indexOf('Sacred Teachings')).toBeLessThan(html.indexOf('Timeless teachings'))
+    expect(html.indexOf('Timeless teachings')).toBeLessThan(html.indexOf('picsum'))
+    expect(html.indexOf('picsum')).toBeLessThan(html.indexOf('timeless wisdom'))
 
-  // Source order is image, header, body; the reading order below `lg` is
-  // title, subtitle, image, body. `order-*` reconciles the two, and needs a
-  // flex container to act in. At `lg` the container is `flow-root` instead,
-  // which both makes `order-*` inert and contains the float's height.
-  it('restores the reading order below lg, and drops to flow-root at lg', () => {
-    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Sub" />)
-    const container = classFor(html, 'lg:pr-24')
+    // `not.toContain('order-')` would pass on `border-white`, so each of the
+    // three children is asked for its own order class instead.
+    for (const marker of ['lg:row-span-2', 'lg:mb-6', 'space-y-5']) {
+      const classes = classFor(html, marker).split(' ')
 
-    expect(container.split(' ')).toContain('flex-col')
-    expect(container.split(' ')).toContain('lg:flow-root')
-    expect(classFor(html, 'lg:float-left').split(' ')).toContain('order-2')
-    expect(classFor(html, 'lg:mb-6').split(' ')).toContain('order-1')
-    expect(classFor(html, 'space-y-5').split(' ')).toContain('order-3')
+      expect(classes).toContain(marker)
+      expect(classes.filter((name) => /(^|:)order-/.test(name))).toEqual([])
+      expect(classes.filter((name) => /(^|:)float-/.test(name))).toEqual([])
+    }
   })
 
   it('renders the CTA only when both text and href are set', () => {

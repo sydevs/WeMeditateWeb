@@ -50,7 +50,7 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   sidetext?: string
 
   /**
-   * Which side the image floats to, at `lg` and above. The warm gradient
+   * Which side the image column takes, at `lg` and above. The warm gradient
    * follows it at every width, faint below `lg` and full from `lg` up; the
    * floral graphic and the sidetext never move.
    * - left: image on the left, body column on the right
@@ -76,11 +76,11 @@ function toParagraphs(text: string): string[] {
  * lightens the image's edge and bleeds above the block, light text, and a
  * faded vertical sidetext label.
  *
- * The layout is full-width, at least 80vh tall. The title and subtitle sit
- * above the body. The image floats to the `align` side, and the body sits in
- * its own column beside it, clear of the gradient. This reuses the `Image`
- * and `Button` atoms and the bundled `assets/ornate.svg` graphic. It stacks
- * on mobile.
+ * The layout is full-width, at least 80vh tall. At `lg` it is two grid
+ * columns: the image on the `align` side, and the title, subtitle and body
+ * stacked in the column beside it, clear of the gradient. This reuses the
+ * `Image` and `Button` atoms and the bundled `assets/ornate.svg` graphic. It
+ * stacks on mobile, in source order.
  *
  * @example
  * <OrnateTextBox
@@ -125,7 +125,19 @@ export function OrnateTextBox({
       ? 'bg-[linear-gradient(270deg,rgba(255,255,255,0.01)_0%,rgba(255,255,255,0.02)_25%,rgba(255,196,175,0.08)_100%)] lg:bg-[linear-gradient(270deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
       : 'bg-[linear-gradient(90deg,rgba(255,255,255,0.01)_0%,rgba(255,255,255,0.02)_25%,rgba(255,196,175,0.08)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.18)_25%,rgba(255,196,175,0.6)_100%)]'
 
-  const imageFloat = align === 'right' ? 'lg:float-right lg:ml-12' : 'lg:float-left lg:mr-12'
+  // The `lg` layout is a two-column grid rather than a float, so the source
+  // order is the reading order at every width: title, subtitle, image, body.
+  // A float would have had to come before the header to put it in the text
+  // column, which no `order-*` reorder fixes for a screen reader — it reads
+  // source order (Flexbox §5.4, WCAG SC 1.3.2). Placement is explicit on all
+  // three children because auto-placement follows source order, which is the
+  // one thing this layout must not do. Each column pair is written out whole:
+  // Tailwind v4 emits an arbitrary value only for a candidate it finds
+  // verbatim in a scanned file (#262).
+  const gridColumns =
+    align === 'right' ? 'lg:grid-cols-[1fr_44%]' : 'lg:grid-cols-[44%_1fr]'
+  const imageColumn = align === 'right' ? 'lg:col-start-2' : 'lg:col-start-1'
+  const textColumn = align === 'right' ? 'lg:col-start-1' : 'lg:col-start-2'
 
   return (
     <div
@@ -181,17 +193,24 @@ export function OrnateTextBox({
           where the sidetext sits, so this reserves a right gutter
           (lg:pr-24) to keep the body clear of it.
 
-          The float comes first among its children because a float only
-          affects what follows it, which is what puts the header in the text
-          column rather than across the band. `order-*` holds the reading
-          order below `lg`, where nothing floats, and `lg:flow-root` contains
-          the float's height (#262). */}
+          Below `lg` this is ordinary block flow, so the three children stack
+          in source order. The `lg:gap-x-12` matches the gutter the image's
+          own margin used to hold (#262). */}
       <Container
-        className="relative z-10 flex flex-col py-12 lg:flow-root lg:py-20 lg:pr-24"
+        className={`relative z-10 py-12 lg:grid lg:gap-x-12 ${gridColumns} lg:py-20 lg:pr-24`}
         maxWidth="md"
       >
-        {/* Feature image — floats to the `align` side, beside the text column */}
-        <div className={`order-2 mb-6 w-full ${imageFloat} lg:mb-4 lg:w-[44%]`}>
+        {/* Title and subtitle header, in the text column beside the image.
+            Across the band instead, the title measures 2.47:1 against a 3:1
+            bar (#262). */}
+        <div className={`mb-8 ${textColumn} lg:row-start-1 lg:mb-6`}>
+          <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
+          {subtitle && <p className="mt-2 text-base font-light">{subtitle}</p>}
+        </div>
+
+        {/* Feature image — its own column on the `align` side, spanning the
+            header's row and the body's */}
+        <div className={`mb-6 w-full ${imageColumn} lg:row-span-2 lg:row-start-1 lg:mb-0`}>
           <Image
             alt={imageAlt}
             aspectRatio={imageAspectRatio}
@@ -205,17 +224,11 @@ export function OrnateTextBox({
           />
         </div>
 
-        {/* Title and subtitle header. Same BFC reason as the body below. */}
-        <div className="order-1 mb-8 lg:mb-6 lg:flow-root">
-          <h2 className="text-2xl font-light lg:text-3xl">{title}</h2>
-          {subtitle && <p className="mt-2 text-base font-light">{subtitle}</p>}
-        </div>
-
-        {/* Body: its own block-formatting context, so it stays a clean
-            column beside the gradient and never wraps back under the image.
-            Such a box cannot overlap a float's margin box on either side, so
-            this holds whichever way the float points. */}
-        <div className="order-3 space-y-5 text-base font-light leading-relaxed text-white lg:flow-root">
+        {/* Body: the text column's second row, so it stays a clean column
+            clear of the gradient whichever side the image takes. */}
+        <div
+          className={`space-y-5 text-base font-light leading-relaxed text-white ${textColumn} lg:row-start-2`}
+        >
           {paragraphs.map((paragraph, index) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
             <p key={index}>{paragraph}</p>

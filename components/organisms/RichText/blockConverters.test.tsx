@@ -5,6 +5,7 @@ import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
 import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import type { Track } from '../../molecules'
+import { classFor } from '../../../tests/_helpers/markup'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.
@@ -73,8 +74,9 @@ describe('textbox block converter — routing', () => {
     const html = renderTextbox({ imagePosition: 'right', wisdomStyle: true, title: 'Wisdom' })
 
     expect(html).toContain('#6b5340') // still the ornate branch
-    expect(html).toContain('lg:float-right')
-    expect(html).not.toContain('lg:float-left')
+    // The image side is the grid's column pair, which mirrors with `align`.
+    expect(classFor(html, 'lg:pr-24').split(' ')).toContain('lg:grid-cols-[1fr_44%]')
+    expect(classFor(html, 'lg:pr-24').split(' ')).not.toContain('lg:grid-cols-[44%_1fr]')
   })
 
   it('overlay takes precedence over wisdomStyle (no ornate ground)', () => {
