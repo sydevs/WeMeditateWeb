@@ -45,7 +45,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="In the header, the trigger is `lg:hidden` and sits in the compact bar between the logo box and the map pin. Narrow the window below 1024px to see it."
+      description="In the header, the trigger is `lg:hidden` and sits in the compact bar between the logo box and the map pin. The two boxes either side stand in for their layout only — nothing here is pinned to the viewport, so this section cannot measure a hit area. Narrow the window below 1024px to see it."
       inContext={true}
       title="Examples"
     >
