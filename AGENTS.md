@@ -60,7 +60,10 @@ public. Tokens like `PUBLIC__MAPBOX_ACCESS_TOKEN` stay secret. Restrict them by 
 
 ## Cloudflare Workers Deployment
 
-The Worker holds no bindings and no persistent state.
+The Worker holds no bindings and no persistent state. Its one route is
+`wemeditate.com`, a Workers Custom Domain in [wrangler.toml](wrangler.toml), so a merge to `main`
+deploys straight to the apex: Workers Builds does the deploy, and CI runs no production build of
+the app.
 
 A second, assets-only Worker is configured here for the Ladle playground
 (`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
@@ -104,7 +107,9 @@ These rules apply whether or not the matching rule file or skill is loaded.
   crawler at. A URL advertises only the locales its own document is published in —
   [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
   `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
-  set, never the set itself.
+  set, never the set itself. A locale the document is **not** published in is still not a dead
+  URL: `pages/[slug]/+data.ts` 302s it to the English page, which is why the language dropdown
+  offers every `availableLocales` entry rather than the filtered set.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
   answer from there. Never restate one of these rules at a call site. A **scheme** is part of that
