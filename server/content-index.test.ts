@@ -349,3 +349,63 @@ describe('fetchContentIndexDocs retry', () => {
     expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('a moods block', () => {
+  it('attaches resolvedMoods, filtered to the slot, and no resolvedItems', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input)
+      const docs = url.includes('/api/meditations')
+        ? [{ id: 89, durationMinutes: 15 }]
+        : [
+            {
+              id: 16,
+              title: 'Had a great day',
+              color: '#DF8E79',
+              url: 'https://assets.test/16.svg',
+              timings: ['evening'],
+              eveningMeditation: 89,
+            },
+            {
+              id: 1,
+              title: 'Excited for the day!',
+              color: '#FFD591',
+              url: 'https://assets.test/1.svg',
+              timings: ['morning'],
+              morningMeditation: 69,
+            },
+          ]
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ docs, totalDocs: docs.length }),
+      } as never)
+    })
+
+    const content = {
+      root: {
+        children: [
+          {
+            type: 'block',
+            fields: {
+              blockType: 'content-index',
+              id: 'ci-moods',
+              type: 'moods',
+              limit: 20,
+              apiEndpoint:
+                '/api/user-choices?where[isFeatured][equals]=true&where[type][equals]=mood&limit=20',
+            },
+          },
+        ],
+      },
+    }
+
+    const resolved = await resolveContentIndexBlocks(content, {})
+    const fields = (resolved as typeof content).root.children[0].fields as ContentIndexBlockFields
+
+    // No request context in the lane, so the slot falls back to evening.
+    expect(fields.resolvedMoods).toHaveLength(1)
+    expect(fields.resolvedMoods?.[0]).toMatchObject({ moodId: 16, href: '/meditations/89' })
+    expect(fields.resolvedItems).toBeUndefined()
+  })
+})
