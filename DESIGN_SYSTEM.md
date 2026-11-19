@@ -172,7 +172,7 @@ components/
 
 | Level | Example components |
 | --- | --- |
-| Atoms | Button, Input, Label, Heading, Text, Link, Icon, Image, Divider, Checkbox, Radio, Select, Toggle. Also Spinner, SplashLoader, Badge, Tag, Container, Spacer, Box, Breadcrumbs, Countdown, LanguageFlag, SocialIcon, Logo, Avatar, PageTitle. |
+| Atoms | Button, Input, Label, Heading, Text, Link, Icon, Image, Divider, Checkbox, Radio, Select, Toggle. Also Spinner, SplashLoader, Badge, Tag, Container, Breadcrumbs, Countdown, LanguageFlag, SocialIcon, Logo, Avatar, PageTitle. |
 | Molecules | FormField, SearchBar, FormGroup, InputWithIcon, LocationSearch, NavItem, Dropdown, LanguageSelector, ContentCard, MediaCard, Stat, Quote, Alert, ContentGrid, MasonryGrid, AudioPlayer, VideoPlayer, Accordion, Tooltip |
 | Organisms | Header, Footer, Sidebar, MobileMenu, Hero, TechniqueCard, MeditationGrid, ArticleList, TestimonialCarousel, FeatureSection, CTASection, ContactForm, NewsletterSignup, SearchInterface, ArticleContent, AudioLibrary, VideoGallery, RelatedContent |
 | Templates | DefaultLayout, FullWidthLayout, ArticleLayout, GridLayout, SplitLayout |

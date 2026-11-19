@@ -35,13 +35,9 @@ export type { PlaceholderProps } from './Placeholder'
 export type { BadgeProps } from './Badge'
 
 export { Container } from './Container'
-export { Spacer } from './Spacer'
-export { Box } from './Box'
 export { LeafDivider } from './LeafDivider/LeafDivider'
 export { Breadcrumbs } from './Breadcrumbs'
 export type { ContainerProps } from './Container'
-export type { SpacerProps } from './Spacer'
-export type { BoxProps } from './Box'
 export type { LeafDividerProps } from './LeafDivider/LeafDivider'
 export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 
