@@ -29,7 +29,7 @@ Open `http://localhost:5173`.
 | `pnpm preview` | Preview the production build locally. |
 | `pnpm prod` | Build and run the production server locally with Wrangler. |
 | `pnpm deploy` | Build and deploy to Cloudflare. |
-| `pnpm lint` | Run ESLint across the codebase. |
+| `pnpm lint` | Run ESLint across the codebase. Any warning fails it. |
 | `pnpm test` | Run tests in watch mode. |
 | `pnpm test:run` | Run tests once (CI style). |
 | `pnpm test:ui` | Open the Vitest UI runner. |
