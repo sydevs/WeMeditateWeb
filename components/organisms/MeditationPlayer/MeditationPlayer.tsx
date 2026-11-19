@@ -247,14 +247,15 @@ function AudioControls({
       ariaLabel={t('meditation.a11y.audio_settings')}
       role="dialog"
       side="top"
-      trigger={
+      trigger={(props) => (
         <Button
           aria-label={t('meditation.a11y.audio_settings')}
           icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
           size="lg"
           variant="ghost"
+          {...props}
         />
-      }
+      )}
     >
       <div className="flex w-64 flex-col gap-4 p-4 text-left">
         <VolumeRow

@@ -76,15 +76,11 @@ export function EmbedButton({
       align="right"
       className={className}
       size="lg"
-      trigger={
-        <Button
-          icon={CodeBracketIcon}
-          size="sm"
-          variant="ghost"
-        >
+      trigger={(props) => (
+        <Button icon={CodeBracketIcon} size="sm" variant="ghost" {...props}>
           {t('media.general.embed')}
         </Button>
-      }
+      )}
     >
       <div className="flex flex-col gap-3 p-4">
         <p className="text-sm font-medium text-gray-700">

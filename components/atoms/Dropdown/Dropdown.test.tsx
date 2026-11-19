@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { anchorFor, openTag } from '../../../tests/_helpers/markup'
 import { Button } from '../Button'
@@ -12,16 +11,22 @@ import { Dropdown, DropdownItem } from './Dropdown'
  * placement, flip/shift, dismiss) is verified in Ladle / the browser.
  */
 describe('Dropdown', () => {
-  it('wires the trigger element itself, and keeps the panel closed', () => {
+  it("hands the popup state to the caller's own control, and keeps the panel closed", () => {
     const html = renderToStaticMarkup(
-      <Dropdown trigger={<button type="button">Open</button>}>
+      <Dropdown
+        trigger={(props) => (
+          <button type="button" {...props}>
+            Open
+          </button>
+        )}
+      >
         <div>Panel content</div>
       </Dropdown>,
     )
 
-    // The caller's own control carries the popup state. A wrapper carrying
-    // `role="button"` around it was axe `nested-interactive` and a second tab
-    // stop (#278), so the wrapper must stay transparent here.
+    // A wrapper carrying `role="button"` around the caller's control was axe
+    // `nested-interactive` and a second tab stop (#278). There is no wrapper
+    // role to fall back to now: whatever the trigger renders is the control.
     const trigger = openTag(html, 'button')
 
     expect(trigger).toContain('aria-haspopup="menu"')
@@ -33,31 +38,14 @@ describe('Dropdown', () => {
     expect(html).not.toContain('Panel content')
   })
 
-  /** Rendered through a thunk, so no JSX element sits in an array literal. */
-  const withTrigger = (trigger: () => ReactElement) =>
-    renderToStaticMarkup(
-      <Dropdown trigger={trigger()}>
+  it('wires the Button atom the same way, through its own props', () => {
+    // `Button` reaches its `<button>` by spreading, and React 19 carries `ref`
+    // along with the rest — so the atom needs no special case for it.
+    const html = renderToStaticMarkup(
+      <Dropdown trigger={(props) => <Button {...props}>Open</Button>}>
         <div>Panel</div>
       </Dropdown>,
     )
-
-  it.each([
-    ['a fragment', () => <>{'Open'}</>],
-    ['a bare span', () => <span>Open</span>],
-  ])('falls back to a focusable wrapper for %s', (_what, trigger) => {
-    // A fragment swallows cloned props, and a span has neither a role nor a
-    // tab stop — so for either the wrapper is what makes the trigger operable.
-    const html = withTrigger(trigger)
-
-    expect(html).toContain('role="button"')
-    expect(html).toContain('tabindex="0"')
-  })
-
-  it.each([
-    ['a native <button>', () => <button type="button">Open</button>],
-    ['the Button atom', () => <Button>Open</Button>],
-  ])('wires %s directly, with no role on the wrapper', (_what, trigger) => {
-    const html = withTrigger(trigger)
 
     expect(openTag(html, 'button')).toContain('aria-expanded="false"')
     expect(html).not.toContain('role="button"')
@@ -65,7 +53,7 @@ describe('Dropdown', () => {
 
   it('does not turn the wrapper into a button in focus (autocomplete) mode', () => {
     const html = renderToStaticMarkup(
-      <Dropdown openOnFocus role="listbox" trigger={<input aria-label="Search" />}>
+      <Dropdown openOnFocus role="listbox" trigger={() => <input aria-label="Search" />}>
         <div>suggestions</div>
       </Dropdown>,
     )

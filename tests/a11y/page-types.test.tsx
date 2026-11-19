@@ -278,6 +278,20 @@ describe('accessibility · page types', () => {
     expect(CHROME_ONLY).toEqual(['region', 'bypass'])
   })
 
+  it('keeps the Dropdown atom on the path the gate walks', () => {
+    // `nested-interactive` is one of this gate's own lines, and the `Dropdown`
+    // atom is where that defect lived. The footer's language menu is the only
+    // thing any target renders through it, so without this the rule could go
+    // on passing over a tree that no longer holds the element it is aimed at.
+    const home = TARGETS.find((target) => target.name === 'home')
+
+    if (!home) throw new Error('the home target is gone')
+
+    mountDocument(renderToStaticMarkup(home.render()))
+
+    expect(document.querySelectorAll('[aria-haspopup="menu"]')).toHaveLength(1)
+  })
+
   it.each(TARGETS.map((target) => [target.name, target] as const))(
     '%s renders the structural contract axe cannot decide here',
     (_name, target) => {

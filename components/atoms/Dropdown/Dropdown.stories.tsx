@@ -22,7 +22,14 @@ export const Default: Story = () => (
     <StorySection title="Sizes">
       <div className="flex flex-col gap-8">
         <StorySection title="Small" variant="subsection">
-          <Dropdown size="sm" trigger={<Button variant="secondary">Small Dropdown</Button>}>
+          <Dropdown
+            size="sm"
+            trigger={(props) => (
+              <Button variant="secondary" {...props}>
+                Small Dropdown
+              </Button>
+            )}
+          >
             <DropdownItem href="#" size="sm">
               Menu Item 1
             </DropdownItem>
@@ -36,7 +43,14 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Medium (Default)" variant="subsection">
-          <Dropdown size="md" trigger={<Button variant="secondary">Medium Dropdown</Button>}>
+          <Dropdown
+            size="md"
+            trigger={(props) => (
+              <Button variant="secondary" {...props}>
+                Medium Dropdown
+              </Button>
+            )}
+          >
             <DropdownItem href="#" size="md">
               Menu Item 1
             </DropdownItem>
@@ -50,7 +64,14 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="Large" variant="subsection">
-          <Dropdown size="lg" trigger={<Button variant="secondary">Large Dropdown</Button>}>
+          <Dropdown
+            size="lg"
+            trigger={(props) => (
+              <Button variant="secondary" {...props}>
+                Large Dropdown
+              </Button>
+            )}
+          >
             <DropdownItem href="#" size="lg">
               Menu Item 1
             </DropdownItem>
@@ -68,7 +89,13 @@ export const Default: Story = () => (
     <StorySection title="Basic Dropdown">
       <div className="flex flex-col gap-8">
         <StorySection title="With Button Trigger" variant="subsection">
-          <Dropdown trigger={<Button variant="secondary">Open Menu</Button>}>
+          <Dropdown
+            trigger={(props) => (
+              <Button variant="secondary" {...props}>
+                Open Menu
+              </Button>
+            )}
+          >
             <DropdownItem href="#">Menu Item 1</DropdownItem>
             <DropdownItem href="#">Menu Item 2</DropdownItem>
             <DropdownItem href="#">Menu Item 3</DropdownItem>
@@ -77,12 +104,15 @@ export const Default: Story = () => (
 
         <StorySection title="With Icon Trigger" variant="subsection">
           <Dropdown
-            trigger={
-              <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            trigger={(props) => (
+              <button
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                {...props}
+              >
                 <Icon icon={GlobeAltIcon} size="sm" />
                 <span className="text-sm">Options</span>
               </button>
-            }
+            )}
           >
             <DropdownItem href="#">Option 1</DropdownItem>
             <DropdownItem href="#">Option 2</DropdownItem>
@@ -91,11 +121,14 @@ export const Default: Story = () => (
 
         <StorySection title="With Text Trigger" variant="subsection">
           <Dropdown
-            trigger={
-              <span className="text-gray-700 hover:text-gray-900 cursor-pointer text-sm">
+            trigger={(props) => (
+              <button
+                className="touch-target text-gray-700 hover:text-gray-900 cursor-pointer text-sm"
+                {...props}
+              >
                 Click me ▼
-              </span>
-            }
+              </button>
+            )}
           >
             <DropdownItem href="#">Item A</DropdownItem>
             <DropdownItem href="#">Item B</DropdownItem>
@@ -108,7 +141,14 @@ export const Default: Story = () => (
     <StorySection title="Alignment">
       <div className="flex flex-col gap-8">
         <StorySection title="Left Aligned (Default)" variant="subsection">
-          <Dropdown align="left" trigger={<Button variant="secondary">Left Aligned</Button>}>
+          <Dropdown
+            align="left"
+            trigger={(props) => (
+              <Button variant="secondary" {...props}>
+                Left Aligned
+              </Button>
+            )}
+          >
             <DropdownItem href="#">This dropdown opens to the left</DropdownItem>
             <DropdownItem href="#">Perfect for left-side triggers</DropdownItem>
           </Dropdown>
@@ -116,7 +156,14 @@ export const Default: Story = () => (
 
         <StorySection title="Right Aligned" variant="subsection">
           <div className="flex justify-end">
-            <Dropdown align="right" trigger={<Button variant="secondary">Right Aligned</Button>}>
+            <Dropdown
+              align="right"
+              trigger={(props) => (
+                <Button variant="secondary" {...props}>
+                  Right Aligned
+                </Button>
+              )}
+            >
               <DropdownItem href="#">This dropdown opens to the right</DropdownItem>
               <DropdownItem href="#">Perfect for right-side triggers</DropdownItem>
             </Dropdown>
@@ -138,7 +185,11 @@ export const Default: Story = () => (
             <Dropdown
               align="center"
               side={side}
-              trigger={<Button variant="secondary">Open {side}</Button>}
+              trigger={(props) => (
+                <Button variant="secondary" {...props}>
+                  Open {side}
+                </Button>
+              )}
             >
               <DropdownItem href="#">Menu Item 1</DropdownItem>
               <DropdownItem href="#">Menu Item 2</DropdownItem>
@@ -159,11 +210,11 @@ export const Default: Story = () => (
         ariaLabel="Display settings"
         role="dialog"
         side="top"
-        trigger={
-          <Button icon={Cog6ToothIcon} variant="secondary">
+        trigger={(props) => (
+          <Button icon={Cog6ToothIcon} variant="secondary" {...props}>
             Settings
           </Button>
-        }
+        )}
       >
         <div className="flex w-64 flex-col gap-3 p-4 text-left">
           <p className="text-sm font-medium text-gray-700">Display options</p>
@@ -188,13 +239,16 @@ export const Default: Story = () => (
           <h3 className="text-sm font-semibold mb-4 text-gray-700">User Menu</h3>
           <Dropdown
             align="right"
-            trigger={
-              <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+            trigger={(props) => (
+              <button
+                className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                {...props}
+              >
                 <Icon icon={UserIcon} size="sm" />
                 <span className="text-sm">John Doe</span>
                 <Icon icon={ChevronDownIcon} size="xs" />
               </button>
-            }
+            )}
           >
             <DropdownItem className="flex items-center gap-2" href="#">
               <Icon icon={UserIcon} size="sm" />
@@ -215,11 +269,11 @@ export const Default: Story = () => (
         <div>
           <h3 className="text-sm font-semibold mb-4 text-gray-700">Action Menu</h3>
           <Dropdown
-            trigger={
-              <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            trigger={(props) => (
+              <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50" {...props}>
                 <Icon icon={EllipsisVerticalIcon} size="sm" />
               </button>
-            }
+            )}
           >
             <DropdownItem href="#">Edit</DropdownItem>
             <DropdownItem href="#">Duplicate</DropdownItem>
