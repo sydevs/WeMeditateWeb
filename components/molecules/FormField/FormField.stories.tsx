@@ -21,7 +21,7 @@ export default {
   title: "Molecules"
 } satisfies StoryDefault;
 
-/** FormField molecule combining label, input, optional error message, and optional description. */
+/** FormField molecule combining label, input and optional error message. */
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Basic Examples">
@@ -37,21 +37,8 @@ export const Default: Story = () => (
         <FormField
           id="basic-message"
           label="Message"
-          description="Please provide detailed information"
         >
           <Textarea id="basic-message" rows={4} placeholder="Type your message here..." />
-        </FormField>
-      </div>
-    </StorySection>
-
-    <StorySection title="Alignment">
-      <div className="flex flex-col gap-6 max-w-md">
-        <FormField id="align-left" label="Left aligned (default)" align="left">
-          <Input type="text" id="align-left" placeholder="Left aligned" />
-        </FormField>
-
-        <FormField id="align-center" label="Center aligned" align="center">
-          <Input type="text" id="align-center" placeholder="Center aligned" />
         </FormField>
       </div>
     </StorySection>
@@ -196,7 +183,6 @@ export const Default: Story = () => (
               id="example-email"
               label="Email address"
               required
-              description="We'll never share your email with anyone else"
             >
               <Input type="email" id="example-email" placeholder="john@example.com" />
             </FormField>
@@ -204,7 +190,6 @@ export const Default: Story = () => (
             <FormField
               id="example-phone"
               label="Phone number"
-              description="Include country code"
             >
               <Input type="tel" id="example-phone" placeholder="+1 (555) 123-4567" />
             </FormField>
@@ -233,7 +218,6 @@ export const Default: Story = () => (
             <FormField
               id="example-language"
               label="Preferred language"
-              description="Choose your preferred language for notifications"
             >
               <Select id="example-language" defaultValue="en">
                 <option value="en">English</option>
@@ -252,7 +236,6 @@ export const Default: Story = () => (
             <FormField
               id="example-bio"
               label="Bio"
-              description="Tell us a little about yourself (max 500 characters)"
             >
               <Textarea id="example-bio" rows={4} placeholder="I am a meditation practitioner..." />
             </FormField>
@@ -273,7 +256,6 @@ export const Default: Story = () => (
           <FormField
             id="example-interests"
             label="Interests"
-            description="Select all that apply"
           >
             <div className="flex flex-col gap-2">
               <Checkbox id="interest-meditation" label="Guided Meditations" defaultChecked />

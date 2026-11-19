@@ -3,27 +3,15 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { FormField } from './FormField'
 
 describe('<FormField>', () => {
-  it('points the control at its description', () => {
+  it('points the control at its error', () => {
     const html = renderToStaticMarkup(
-      <FormField description="We never share it" id="email" label="Email">
-        <input id="email" />
-      </FormField>,
-    )
-
-    expect(html).toContain('id="email-description"')
-    expect(html).toContain('aria-describedby="email-description"')
-  })
-
-  it('points the control at its error, and not at the description it replaces', () => {
-    const html = renderToStaticMarkup(
-      <FormField description="We never share it" error="Required" id="email" label="Email">
+      <FormField error="Required" id="email" label="Email">
         <input id="email" />
       </FormField>,
     )
 
     expect(html).toContain('id="email-error"')
     expect(html).toContain('aria-describedby="email-error"')
-    expect(html).not.toContain('email-description')
   })
 
   it('keeps a description the control already names', () => {
@@ -36,7 +24,7 @@ describe('<FormField>', () => {
     expect(html).toContain('aria-describedby="hint email-error"')
   })
 
-  it('sets nothing when there is neither a description nor an error', () => {
+  it('sets nothing when there is no error', () => {
     const html = renderToStaticMarkup(
       <FormField id="email" label="Email">
         <input id="email" />

@@ -23,9 +23,6 @@ export interface FormFieldProps {
    */
   error?: string
 
-  /** Optional description or help text */
-  description?: string
-
   /**
    * The form input element
    * Can be Input, Select, Textarea, Checkbox, Radio, etc.
@@ -40,16 +37,10 @@ export interface FormFieldProps {
    * @default false
    */
   disabled?: boolean
-
-  /**
-   * Text alignment for the form field
-   * @default 'left'
-   */
-  align?: 'left' | 'center'
 }
 
 /**
- * FormField molecule that combines a label, input, optional error message, and optional description.
+ * FormField molecule that combines a label, input and optional error message.
  *
  * Provides consistent form field layout with proper accessibility attributes.
  * Handles validation states and displays error messages in red.
@@ -60,12 +51,7 @@ export interface FormFieldProps {
  * </FormField>
  *
  * @example
- * <FormField
- *   id="message"
- *   label="Message"
- *   description="Please provide detailed information"
- *   error="Message is required"
- * >
+ * <FormField id="message" label="Message" error="Message is required">
  *   <Textarea id="message" />
  * </FormField>
  */
@@ -74,47 +60,39 @@ export function FormField({
   label,
   required = false,
   error,
-  description,
   children,
   className = '',
   disabled = false,
-  align = 'left',
 }: FormFieldProps) {
   const t = useT()
 
-  const alignStyles = align === 'center' ? 'text-center' : 'text-left'
   const labelStyles = 'block text-sm font-medium text-gray-900 mb-1'
   const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : ''
-  const descriptionStyles = 'mt-1 text-sm text-gray-700'
   const errorStyles = 'mt-1 text-sm text-error'
 
-  // Only what this component actually renders: an error hides the description,
-  // and `aria-describedby` pointing at a missing id announces nothing.
-  const descriptionId = description && !error ? `${id}-description` : undefined
   const errorId = error ? `${id}-error` : undefined
-  const ariaDescribedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined
 
-  // The description and the error are siblings of the control, so nothing
-  // connects them to it but this attribute. A control that already names its
-  // own description keeps that too.
+  // The error is a sibling of the control, so nothing connects it to the
+  // control but this attribute. A control that already names its own
+  // description keeps that too.
   // shortcut: only a single element child is reached, so a field wrapping a
   // fragment or several controls gets nothing. Upgrade to a context when a
   // call site needs one — every one today renders one control.
   const describedChildren =
-    ariaDescribedBy && isValidElement<{ 'aria-describedby'?: string }>(children)
+    errorId && isValidElement<{ 'aria-describedby'?: string }>(children)
       ? // The control is the caller's element, so nothing but `cloneElement`
         // can put an attribute on it. A wrapper cannot carry
         // `aria-describedby`: it has to sit on the control the label names.
         // eslint-disable-next-line @eslint-react/no-clone-element
         cloneElement(children, {
-          'aria-describedby':
-            [children.props['aria-describedby'], ariaDescribedBy].filter(Boolean).join(' ') ||
-            undefined,
+          'aria-describedby': [children.props['aria-describedby'], errorId]
+            .filter(Boolean)
+            .join(' '),
         })
       : children
 
   return (
-    <div className={`${alignStyles} ${className}`}>
+    <div className={`text-left ${className}`}>
       <label className={`${labelStyles} ${disabledStyles}`} htmlFor={id}>
         {label}
         {required && (
@@ -124,13 +102,7 @@ export function FormField({
         )}
       </label>
 
-      {description && !error && (
-        <p className={descriptionStyles} id={descriptionId}>
-          {description}
-        </p>
-      )}
-
-      <div className={description && !error ? 'mt-1' : ''}>{describedChildren}</div>
+      <div>{describedChildren}</div>
 
       {error && (
         <p className={errorStyles} id={errorId} role="alert">
