@@ -44,12 +44,24 @@ interface AbortError {
 }
 
 /**
+ * The pageContext the hook reads. `searchOriginal` is `null` off a query
+ * string, which is Vike's own spelling and not the empty string.
+ */
+function context(slug: string, locale: string, search: string) {
+  return {
+    locale,
+    routeParams: { slug },
+    urlParsed: { searchOriginal: search || null },
+  } as unknown as PageContextServer
+}
+
+/**
  * Whether the request renders the 404 state rather than redirecting. Separate
  * from `redirectOf`, which rethrows a `render()` abort on purpose.
  */
 async function renders404(slug: string, locale = 'en') {
   try {
-    await data({ locale, routeParams: { slug } } as unknown as PageContextServer)
+    await data(context(slug, locale, ''))
   } catch (error) {
     const abort = (error as AbortError)._pageContextAbort
 
@@ -60,9 +72,9 @@ async function renders404(slug: string, locale = 'en') {
 }
 
 /** The redirect a request throws, or `null` when it renders instead. */
-async function redirectOf(slug: string, locale = 'en') {
+async function redirectOf(slug: string, locale = 'en', search = '') {
   try {
-    await data({ locale, routeParams: { slug } } as unknown as PageContextServer)
+    await data(context(slug, locale, search))
   } catch (error) {
     const target = (error as AbortError)._pageContextAbort?._urlRedirect
 
@@ -157,6 +169,24 @@ describe('a page the reader’s language has no translation of', () => {
 
     // `/` routes as `index`, which is a routing spelling and never a URL.
     expect(await redirectOf('index', 'it')).toEqual({ url: '/', status: 302 })
+  })
+
+  it('carries the request’s query string to the English URL', async () => {
+    // The legacy layer's 301 keeps the search (#276) and may hand off to this
+    // 302, so dropping it here loses a campaign tag mid-chain.
+    expect(await redirectOf('about', 'it', '?utm_source=x&utm_medium=y')).toEqual({
+      url: '/about?utm_source=x&utm_medium=y',
+      status: 302,
+    })
+  })
+
+  it('reattaches the query string after normalizing the home path', async () => {
+    settings.homePage = { slug: 'welcome' }
+
+    expect(await redirectOf('index', 'it', '?utm_source=x')).toEqual({
+      url: '/?utm_source=x',
+      status: 302,
+    })
   })
 
   it('leaves the 404 standing when the status read failed', async () => {

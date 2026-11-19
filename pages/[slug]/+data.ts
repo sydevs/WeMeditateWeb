@@ -88,12 +88,19 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     // Not under preview, for the reason `server/site-context.ts`'s locale gate
     // is not either: `getPageLocaleStatus` reports published status only, and
     // moving an editor to the English URL would end their preview session.
+    //
+    // The search string rides along, as the legacy layer's own 301 carries it
+    // (#276). A cutover's inbound links are campaign links, and the two hops
+    // chain: without this, `/it/articles/x?utm=y` keeps the tag over the 301
+    // and drops it here. `localeHref` reattaches it after normalizing.
     if (
       !preview.active &&
       locale !== DEFAULT_LOCALE &&
       advertisedLocales(status, settings.availableLocales).includes(DEFAULT_LOCALE)
     ) {
-      throw redirect(localeHref(DEFAULT_LOCALE, `/${slug}`), 302)
+      const search = pageContext.urlParsed.searchOriginal ?? ''
+
+      throw redirect(localeHref(DEFAULT_LOCALE, `/${slug}${search}`), 302)
     }
 
     // Page not found. This is a valid 404 state, not an error.
