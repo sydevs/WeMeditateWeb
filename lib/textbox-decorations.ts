@@ -17,8 +17,8 @@
  *    did: a triangle hanging off the lower corner when the image is on the
  *    left, a wash down the edge when it is on the right. An overlay hangs a
  *    triangle off the lower corner away from its text.
- * 4. A box whose pick matches the previous text box's draws nothing, so no
- *    two neighbours repeat an ornament.
+ * 4. A box whose pick matches the ornament the previous text box drew draws
+ *    nothing, so no two neighbours repeat an ornament.
  *
  * Each organism places and sizes its own ornament, and hides it below `lg`.
  */
