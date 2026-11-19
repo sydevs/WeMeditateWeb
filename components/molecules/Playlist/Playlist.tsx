@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, useId } from 'react'
 import { Link, Button } from '../../atoms'
 import type { Track } from '../AudioPlayer/types'
 import type { HeroIcon } from '../../atoms/Icon/Icon'
@@ -65,28 +65,39 @@ interface PlaylistItemProps {
 }
 
 function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistItemProps) {
+  const titleId = useId()
+
+  // The play button and the credit link are siblings, never one inside the
+  // other (axe `nested-interactive`, #289). The button covers the whole row,
+  // so a click anywhere on it still plays; the link is positioned too, and
+  // later in the tree, so it paints above the button and takes its own clicks.
   return (
-    <button
-      aria-current={isCurrentTrack ? 'true' : undefined}
-      className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
+    <div
+      className={`relative p-3 rounded transition-all ${
         isCurrentTrack
           ? 'bg-teal-700 text-white shadow-md'
           : 'bg-white/80 hover:bg-gray-100 text-gray-900'
       }`}
-      onClick={() => onTrackClick(index)}
     >
+      <button
+        aria-current={isCurrentTrack ? 'true' : undefined}
+        aria-labelledby={titleId}
+        className="absolute inset-0 rounded cursor-pointer"
+        onClick={() => onTrackClick(index)}
+      />
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h4 className="text-sm font-medium truncate">{track.title}</h4>
+          <h4 className="text-sm font-medium truncate" id={titleId}>
+            {track.title}
+          </h4>
           <Link
             external
-            className={`text-xs truncate self-start mt-1 ${
+            className={`relative text-xs truncate self-start mt-1 ${
               isCurrentTrack ? 'text-teal-50 hover:text-white transition-colors duration-200' : ''
             }`}
             href={track.creditURL}
             size="inherit"
             variant={isCurrentTrack ? 'unstyled' : 'primary'}
-            onClick={(e) => e.stopPropagation()}
           >
             {track.credit}
           </Link>
@@ -102,7 +113,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
           </span>
         )}
       </div>
-    </button>
+    </div>
   )
 }
 
