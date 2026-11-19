@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { Image, Link } from '../../atoms'
+import { Heading, Image, Link } from '../../atoms'
 
 export interface ColumnProps {
   /** Column title */
@@ -42,12 +42,10 @@ export function Column({
   headingLevel = 'h3',
   className = '',
 }: ColumnProps) {
-  const Title = headingLevel
-
   // A linked column used to contribute no heading at all, so one column of a
   // row joined the outline and the next did not (#278).
   const titleElement = (
-    <Title className="text-xl font-medium text-gray-700">
+    <Heading className="text-xl font-medium text-gray-700" level={headingLevel} styleAs="none">
       {href ? (
         <Link
           className="hover:text-teal-600 transition-colors"
@@ -60,7 +58,7 @@ export function Column({
       ) : (
         title
       )}
-    </Title>
+    </Heading>
   )
 
   return (

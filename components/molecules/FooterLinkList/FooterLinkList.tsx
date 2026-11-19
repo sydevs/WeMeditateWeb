@@ -1,4 +1,4 @@
-import { Link } from '../../atoms'
+import { Heading, Link } from '../../atoms'
 import { useT } from '../../../hooks/useT'
 import type { Locale } from '../../../server/sahajcloud-types'
 
@@ -57,7 +57,9 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
     <div className="flex flex-col gap-3">
       {/* Title (only for default variant) */}
       {title && !isHero && (
-        <h3 className="text-base font-semibold text-gray-700 mb-1">{title}</h3>
+        <Heading className="text-base font-semibold text-gray-700 mb-1" level="h3" styleAs="none">
+          {title}
+        </Heading>
       )}
 
       {/* Links */}

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Accordion, type AccordionItemData } from '../../Accordion'
 import { ColumnCarousel } from '../../ColumnCarousel'
 import type { ColumnProps } from '../../Column'
-import { Image, Link } from '../../../atoms'
+import { Heading, Image, Link } from '../../../atoms'
 import {
   populatedImage,
   type LayoutBlockFields,
@@ -44,7 +44,6 @@ function LayoutCard({
   orientation: 'grid' | 'list'
   headingLevel: ItemHeadingLevel
 }) {
-  const Title = headingLevel
   const img = populatedImage(item.image)
   const title = item.title ?? ''
   const heading = item.titleUrl ? (
@@ -75,7 +74,15 @@ function LayoutCard({
         </div>
       )}
       <div className="flex flex-col gap-2">
-        {title && <Title className="text-lg font-semibold text-gray-800">{heading}</Title>}
+        {title && (
+          <Heading
+            className="text-lg font-semibold text-gray-800"
+            level={headingLevel}
+            styleAs="none"
+          >
+            {heading}
+          </Heading>
+        )}
         {itemText(item.text)}
       </div>
     </div>
