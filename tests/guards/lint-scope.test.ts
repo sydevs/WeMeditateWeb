@@ -5,8 +5,11 @@
  * `.claude/worktrees/`. Prettier learns that from .gitignore; ESLint does not, so without its own
  * ignore the gate fails on another branch's warnings, and `eslint --fix` rewrites that branch.
  * Prettier's own ignores leave generated files to their generators, Markdown's code samples
- * intact, and a protected path to an attended write.
+ * intact, and a protected path to an attended write. Those ignores are load-bearing because
+ * `pnpm lint` ends in `prettier --check .`: ESLint's prettier rule reaches only the files ESLint
+ * lints, which leaves the CSS, the JSONC and the JSON this repo also formats unheld.
  */
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, it, expect } from 'vitest'
 import { ESLint } from 'eslint'
@@ -44,5 +47,17 @@ describe('Prettier', () => {
 
   it('formats the app', async () => {
     expect(await ignored('lib/urls.ts')).toBe(false)
+  })
+})
+
+describe('the lint script', () => {
+  const lint = JSON.parse(readFileSync(`${root}package.json`, 'utf8')).scripts.lint as string
+
+  it('holds every formatted file, not only the ones ESLint lints', () => {
+    expect(lint).toContain('prettier --check .')
+  })
+
+  it('still fails on a single ESLint warning', () => {
+    expect(lint).toContain('--max-warnings 0')
   })
 })
