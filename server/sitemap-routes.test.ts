@@ -40,6 +40,8 @@ vi.mock('./error-utils', async (importOriginal) => {
 })
 
 const { registerSitemapRoutes } = await import('./sitemap-routes')
+const { SITEMAP_URL_CAP } = await import('./atlas-client')
+const { forgetReportedWarnings } = await import('./error-utils')
 
 function app() {
   const instance = new Hono<SahajCloudEnv>()
@@ -100,6 +102,8 @@ function stubAtlas(urls: { loc: string; lastmod?: string }[], status = 200) {
 
 beforeEach(() => {
   retrySpy.mockClear()
+  captureMessage.mockClear()
+  forgetReportedWarnings()
   find.mockReset()
   findGlobal.mockReset()
   fetchMock.mockReset()
@@ -291,6 +295,9 @@ describe('/sitemap.xml', () => {
 
       expect(xml).toContain('<loc>https://wemeditate.com/</loc>')
       expect(xml).toContain('<loc>https://wemeditate.com/about</loc>')
+      // `getWebConfig`'s own retry reports this failure; a second report here
+      // would spend two events on one cause.
+      expect(captureMessage).not.toHaveBeenCalled()
     })
 
     it('still lists the home page when the content reads fail', async () => {
@@ -370,13 +377,10 @@ describe('/sitemap.xml', () => {
     })
 
     it('reports a lost content half to Sentry, once per origin per isolate', async () => {
-      // Its own origin: the cases above already lost the content half for
-      // wemeditate.com, and that failure is reported once.
-      captureMessage.mockClear()
       find.mockRejectedValue(new Error('SahajCloud unavailable'))
 
-      await get('/sitemap.xml', 'https://sahajayoga.nl')
-      await get('/sitemap.xml', 'https://sahajayoga.nl')
+      await get('/sitemap.xml')
+      await get('/sitemap.xml')
 
       expect(captureMessage).toHaveBeenCalledTimes(1)
       expect(captureMessage).toHaveBeenCalledWith(
@@ -399,8 +403,7 @@ describe('/sitemap.xml', () => {
     }
 
     it('lists a collection past one read, a page at a time', async () => {
-      // One read is 500 documents. Listing only the first page left every
-      // later document out of the sitemap, with nothing to say so.
+      // A collection larger than one read must still be listed in full.
       stubPages('lectures', [[{ id: 1 }], [{ id: 2 }]])
 
       const xml = await (await get('/sitemap.xml')).text()
@@ -417,20 +420,36 @@ describe('/sitemap.xml', () => {
     })
 
     it('stops at its ceiling and reports the truncation rather than hiding it', async () => {
-      captureMessage.mockClear()
       stubPages(
         'meditations',
-        Array.from({ length: 12 }, (_, index) => [{ id: index + 1 }]),
+        Array.from({ length: 5 }, (_, index) => [{ id: index + 1 }]),
       )
 
       const xml = await (await get('/sitemap.xml')).text()
 
-      expect(xml).toContain('<loc>https://wemeditate.com/meditations/10</loc>')
-      expect(xml).not.toContain('<loc>https://wemeditate.com/meditations/11</loc>')
+      expect(xml).toContain('<loc>https://wemeditate.com/meditations/3</loc>')
+      expect(xml).not.toContain('<loc>https://wemeditate.com/meditations/4</loc>')
       expect(captureMessage).toHaveBeenCalledWith(
         expect.stringContaining('truncated'),
         expect.objectContaining({ level: 'warning' }),
       )
+    })
+
+    it('keeps the content half inside the room the atlas cap leaves in one file', async () => {
+      // A sitemap file holds 50,000 URLs and the atlas half may take
+      // SITEMAP_URL_CAP of them. A crawler refuses a file past the limit whole.
+      let next = 0
+
+      find.mockImplementation(async () => ({
+        docs: Array.from({ length: 500 }, () => ({ id: ++next, slug: `page-${next}` })),
+        hasNextPage: true,
+      }))
+
+      const xml = await (await get('/sitemap.xml')).text()
+      const listed = xml.match(/<loc>/g)?.length ?? 0
+
+      expect(listed).toBeGreaterThan(1500)
+      expect(listed).toBeLessThanOrEqual(50_000 - SITEMAP_URL_CAP)
     })
   })
 })

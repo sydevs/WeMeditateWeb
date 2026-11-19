@@ -30,12 +30,14 @@ import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-t
 const CONTENT_READ_LIMIT = 500
 
 /**
- * Pages one collection's walk may take, because it runs in a Worker request.
+ * Pages one collection's walk may take. The atlas half takes up to 45,000 of
+ * the 50,000 URLs one sitemap file may hold (`SITEMAP_URL_CAP`), so the three
+ * collections share the other 5,000: 3 × 3 × 500 = 4,500.
  *
- * shortcut: a collection past 5,000 documents is listed to here and reported,
- * so split the sitemap into an index before one gets there.
+ * shortcut: a collection past 1,500 documents (4,500 for all three) is listed
+ * to here and reported, so split the sitemap into an index before one gets there.
  */
-const MAX_CONTENT_PAGES = 10
+const MAX_CONTENT_PAGES = 3
 
 /**
  * Field selections for the sitemap reads.
@@ -73,18 +75,16 @@ function lastmodOf(doc: { updatedAt?: string | null }): string | null {
  * complete.
  */
 async function getSiteAnnotation(): Promise<{ offered: Locale[]; homeSlug: string | null }> {
-  return degrade(
-    async () => {
-      const settings = await getWebConfig({ locale: DEFAULT_LOCALE })
+  try {
+    const settings = await getWebConfig({ locale: DEFAULT_LOCALE })
 
-      return { offered: settings.availableLocales, homeSlug: settings.homePage?.slug ?? null }
-    },
-    {
-      source: 'getSiteAnnotation',
-      message: 'getSiteAnnotation failed; sitemap alternates are English-only',
-      fallback: { offered: [DEFAULT_LOCALE], homeSlug: null },
-    },
-  )
+    return { offered: settings.availableLocales, homeSlug: settings.homePage?.slug ?? null }
+  } catch (error) {
+    // Logged, not reported: `getWebConfig`'s own retry already reports this.
+    console.warn('[getSiteAnnotation] falling back to English-only alternates:', error)
+
+    return { offered: [DEFAULT_LOCALE], homeSlug: null }
+  }
 }
 
 /** Every document of one collection, a page at a time, up to the ceiling. */
