@@ -1,10 +1,23 @@
 import { ComponentProps } from 'react'
-import { Link } from '../../atoms'
-import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { Image, Link } from '../../atoms'
+import { LeafSvg } from '../../atoms/graphics/svgs'
+import type { Locale, NavPage } from '../../../server/sahajcloud-types'
 import { useT } from '../../../hooks/useT'
+import { documentHref } from '../../../lib/document-routes'
+import { populatedImageUrl } from '../../../lib/payload-relationships'
+
+/** Upstream's `maxRows` on `classPages`, restated so a looser schema cannot widen the row. */
+const MAX_ACTIONS = 5
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
+  /**
+   * The pages to offer, in the order an editor set: `wm-web-config.classPages`.
+   * Each becomes one action, named by the page's own title. Its `meta.description`
+   * is the line under that title and its `meta.image` the picture above it; a
+   * page with neither still gets its action, with a leaf in place of the picture.
+   */
+  pages: readonly NavPage[]
+
   /** Overrides `discover.general.title`. */
   title?: string
 
@@ -17,10 +30,13 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
 
 /**
  * Full-height call-to-action section encouraging users to discover meditation.
- * Features a serene background image with three action items: recorded meditations,
- * live meditations, and in-person classes.
+ * Features a serene background image with one action per configured page.
+ *
+ * Renders nothing when no page resolves to a link: a call to action with no
+ * action is a dead end.
  */
 export function DiscoverMeditation({
+  pages,
   title,
   subtitle,
   locale,
@@ -28,6 +44,16 @@ export function DiscoverMeditation({
   ...props
 }: DiscoverMeditationProps) {
   const t = useT()
+
+  const actions = pages.slice(0, MAX_ACTIONS).flatMap((page) => {
+    const href = documentHref('pages', page)
+
+    return href ? [{ page, href }] : []
+  })
+
+  if (actions.length === 0) {
+    return null
+  }
 
   return (
     <section
@@ -68,46 +94,27 @@ export function DiscoverMeditation({
         </div>
 
         {/* Action Items */}
-        <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-center justify-center mt-12 lg:mt-24">
-          <ActionItem
-            href="/meditations"
-            icon={PlayCircleIcon}
-            locale={locale}
-            subtitle={t('discover.general.meditate_now_subtitle')}
-            title={t('discover.general.meditate_now')}
-          />
-
-          <ActionItem
-            href="/live"
-            icon={ComputerDesktopIcon}
-            locale={locale}
-            subtitle={t('discover.general.live_guidance_subtitle')}
-            title={t('discover.general.live_guidance')}
-          />
-
-          <ActionItem
-            href="/classes"
-            icon={MapPinIcon}
-            locale={locale}
-            subtitle={t('discover.general.classes_near_me_subtitle')}
-            title={t('discover.general.classes_near_me')}
-          />
+        <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-start justify-center mt-12 lg:mt-24">
+          {actions.map(({ page, href }) => (
+            <ActionItem key={page.id} href={href} locale={locale} page={page} />
+          ))}
         </div>
       </div>
     </section>
   )
 }
 
-/** Individual action item with icon, title, and subtitle */
 interface ActionItemProps {
+  page: NavPage
   href: string
   locale?: Locale
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  title: string
-  subtitle: string
 }
 
-function ActionItem({ href, locale, icon: Icon, title, subtitle }: ActionItemProps) {
+/** One configured page: its picture, its title, and its description. */
+function ActionItem({ page, href, locale }: ActionItemProps) {
+  const image = populatedImageUrl(page.meta?.image)
+  const description = page.meta?.description?.trim()
+
   return (
     <Link
       className="flex flex-col items-center gap-3 group"
@@ -116,15 +123,31 @@ function ActionItem({ href, locale, icon: Icon, title, subtitle }: ActionItemPro
       variant="neutral"
     >
       <div className="w-16 h-16 group-hover:scale-105 transition-transform">
-        <Icon className="w-full h-full stroke-current stroke-[0.5]" />
+        {image ? (
+          // Decorative: the title under it already names the link.
+          <Image
+            alt=""
+            aspectRatio="square"
+            rounded="circle"
+            size="xsmall"
+            sizes="64px"
+            src={image}
+          />
+        ) : (
+          <LeafSvg className="w-full h-full" />
+        )}
       </div>
-      <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/40 backdrop-blur-xs transition-colors duration-200 group-hover:bg-white/60">
+      {/* 85% white: a phone stacks the last action over the photo's dark rock,
+          where 40% measured 3.1:1 and this measures 5.5:1. */}
+      <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/85 backdrop-blur-xs transition-colors duration-200 group-hover:bg-white/95">
         <span className="text-lg font-medium text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
-          {title}
+          {page.title}
         </span>
-        <span className="text-sm font-light text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
-          {subtitle}
-        </span>
+        {description ? (
+          <span className="max-w-60 line-clamp-2 text-sm font-light text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+            {description}
+          </span>
+        ) : null}
       </div>
     </Link>
   )
