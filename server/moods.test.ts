@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
@@ -8,8 +8,6 @@ vi.mock('./sahajcloud-context', () => ({
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
 
-import * as Sentry from '@sentry/cloudflare'
-import { featuredMoodCards } from './moods'
 
 /** A featured mood, as the user-choices read returns one. */
 const mood = (id: number, timings: string[], slots: Record<string, number>) => ({
@@ -71,11 +69,25 @@ const errorResponse = (status: number) => {
   return { ...response, clone: () => response } as never
 }
 
-beforeEach(() => {
+/**
+ * Both are re-imported per test, never imported at the top of the file.
+ *
+ * `createWarnOnce` holds its reported signatures in module state, so a test
+ * that trips `meditation:2:morning` silences the next test asserting it — and
+ * the suppression reads as a missing warning, not as an ordering bug. Resetting
+ * the registry also rebuilds the Sentry mock, so the spy has to come from the
+ * same fresh graph as the code under test.
+ */
+let featuredMoodCards: typeof import('./moods').featuredMoodCards
+let captureMessage: Mock
+
+beforeEach(async () => {
   vi.restoreAllMocks()
-  vi.mocked(Sentry.captureMessage).mockClear()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'error').mockImplementation(() => {})
+  vi.resetModules()
+  ;({ featuredMoodCards } = await import('./moods'))
+  captureMessage = vi.mocked((await import('@sentry/cloudflare')).captureMessage)
 })
 
 describe('featuredMoodCards · the reads', () => {
@@ -104,7 +116,7 @@ describe('featuredMoodCards · the reads', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(400))
 
     expect(await featuredMoodCards({ slot: 'evening' })).toEqual([])
-    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+    expect(captureMessage).toHaveBeenCalledWith(
       'featured moods read failed',
       expect.objectContaining({ level: 'warning' }),
     )
@@ -122,7 +134,7 @@ describe('featuredMoodCards · the reads', () => {
     )
 
     await expect(featuredMoodCards({ slot: 'morning' })).resolves.toEqual([])
-    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+    expect(captureMessage).toHaveBeenCalledWith(
       'mood finder could not read the meditations',
       expect.objectContaining({ level: 'warning' }),
     )
@@ -187,7 +199,7 @@ describe('featuredMoodCards · the tiles', () => {
 
     expect(cards.map((card) => card.moodId)).toEqual([1, 3, 4])
     expect(cards.every((card) => !card.href.includes('undefined'))).toBe(true)
-    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+    expect(captureMessage).toHaveBeenCalledWith(
       'a featured mood has no meditation for its slot',
       expect.objectContaining({ level: 'warning' }),
     )
@@ -197,7 +209,7 @@ describe('featuredMoodCards · the tiles', () => {
     mockReads([mood(7, ['evening'], {})])
 
     expect(await featuredMoodCards({ slot: 'evening' })).toEqual([])
-    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+    expect(captureMessage).toHaveBeenCalledWith(
       'a featured mood has no meditation for its slot',
       expect.objectContaining({ extra: expect.objectContaining({ moodId: 7, slot: 'evening' }) }),
     )
@@ -217,7 +229,7 @@ describe('featuredMoodCards · the tiles', () => {
 
     await featuredMoodCards({ slot: 'morning' })
 
-    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledWith(
+    expect(captureMessage).toHaveBeenCalledWith(
       'mood finder read fewer moods than the data holds',
       expect.objectContaining({ extra: expect.objectContaining({ returned: 5, totalDocs: 14 }) }),
     )
