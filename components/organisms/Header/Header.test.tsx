@@ -107,6 +107,20 @@ describe('Header', () => {
       expect(trigger).not.toContain('opacity-0')
     })
 
+    it('lands the trigger on the right edge rather than between the two controls', () => {
+      // `justify-between` over three space-taking boxes centred it. The logo's
+      // auto margin spends that space instead, and the trigger is last in the
+      // row, so it holds the edge the map pin takes once stuck.
+      const html = render()
+      const logo = tagFor(html, 'a', 'aria-label="We Meditate"')
+
+      expect(logo).toContain('max-lg:mr-auto')
+      expect(html).toContain('aria-label="Classes near me"')
+      expect(html.indexOf('aria-label="Menu"')).toBeGreaterThan(
+        html.indexOf('aria-label="Classes near me"'),
+      )
+    })
+
     it('takes both faded controls out of the tab order', () => {
       // `pointer-events-none` stopped the mouse and nothing else, so at `lg:`
       // un-stuck a keyboard reached two invisible named links (SC 2.4.7).

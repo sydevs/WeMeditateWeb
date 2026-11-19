@@ -175,18 +175,19 @@ export function Header({
                 hanging an overlay off the 16px icon: the bar is pinned at `top-0`,
                 so below `lg:` the viewport clipped a centred `::before` to 44×31
                 (#202). The grown box floors the bar from its own content too, and
-                `items-center` holds the drawn icon where it was. */}
+                `items-center` holds the drawn icon where it was.
+
+                `max-lg:mr-auto` eats the free space, which groups the two
+                controls after it on the right edge. Not at `lg:`: the link row's
+                `max-w-3xl` caps its growth, so free space survives there and
+                `justify-between` spends it on centring the row. */}
             <Logo
               aria-label={t('common.general.site_title')}
-              className={`shrink-0 touch-target items-center ${compactControl}`}
+              className={`shrink-0 touch-target items-center max-lg:mr-auto ${compactControl}`}
               href={logoHref}
               size="sm"
               variant="icon"
             />
-
-            {/* Un-gated by `compactControl`: that string is `opacity-0 invisible`
-                until the nav sticks, and the menu must be reachable before it does. */}
-            <MobileMenu className="lg:hidden" navItems={navItems} />
 
             {/* Navigation buttons. Desktop-only: the labels do not wrap, so the row
                 cannot shrink below their min-content width, and nothing in
@@ -224,7 +225,9 @@ export function Header({
 
             {/* Map pin icon - only visible when sticky and action link exists.
                 `justify-end` keeps the drawn pin on the bar's right padding edge
-                now that `touch-target` makes its box 44px wide. */}
+                now that `touch-target` makes its box 44px wide — at `lg:`, where
+                the trigger after it is `display: none`. Below `lg:` the trigger
+                holds that edge and the pin sits one slot in. */}
             {actionLinkText && actionLinkHref && (
               <div className={`shrink-0 ${compactControl}`}>
                 <Link
@@ -237,6 +240,12 @@ export function Header({
                 </Link>
               </div>
             )}
+
+            {/* Un-gated by `compactControl`: that string is `opacity-0 invisible`
+                until the nav sticks, and the menu must be reachable before it
+                does. Last in the row, so below `lg:` it holds the right padding
+                edge — under the thumb, and where the pin lands once stuck. */}
+            <MobileMenu className="lg:hidden" navItems={navItems} />
           </div>
         </nav>
       )}
