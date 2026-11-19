@@ -35,9 +35,8 @@ export interface AudioPlayerProps extends Omit<ComponentProps<'div'>, 'children'
  * AudioPlayer is a molecule: the transport controls for a playlist.
  *
  * It renders what `usePlaylistAudioPlayer` holds and calls back into it. The
- * owning component calls that hook, inside an `AudioPlayerProvider`, so the
- * playing track has one owner that the player, a playlist and album art all
- * read (#249).
+ * owning component calls that hook, so the playing track has one owner that
+ * the player, a playlist and album art all read (#249).
  *
  * Features:
  * - Configurable controls through props

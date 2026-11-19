@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { AudioPlayerProvider } from 'react-use-audio-player'
 import {
   PlayIcon,
   PauseIcon,
@@ -364,7 +363,7 @@ function AudioControls({
  *   onPlaybackTimeUpdate={handlePlaybackUpdate}
  * />
  */
-function MeditationPlayerInner({
+export function MeditationPlayer({
   track,
   subtitle,
   frames,
@@ -915,14 +914,5 @@ function MeditationPlayerInner({
         )}
       </div>
     </div>
-  )
-}
-
-/** MeditationPlayer with AudioPlayerProvider context wrapper */
-export function MeditationPlayer(props: MeditationPlayerProps) {
-  return (
-    <AudioPlayerProvider>
-      <MeditationPlayerInner {...props} />
-    </AudioPlayerProvider>
   )
 }

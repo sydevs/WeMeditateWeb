@@ -1,6 +1,5 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { useState } from 'react'
-import { AudioPlayerProvider } from 'react-use-audio-player'
 import { AudioPlayer, Track, AudioControl } from './AudioPlayer'
 import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import { StoryWrapper, StorySection } from '../../ladle'
@@ -51,23 +50,14 @@ interface PlaylistPlayerProps {
   disabledControls?: AudioControl[]
 }
 
-function PlaylistPlayerInner({ tracks, disabledControls }: PlaylistPlayerProps) {
+/**
+ * The wiring every consumer writes: the hook held by whichever component owns
+ * the playing track. `AudioPlayer` itself only renders what the hook holds.
+ */
+function PlaylistPlayer({ tracks, disabledControls }: PlaylistPlayerProps) {
   const [state, controls] = usePlaylistAudioPlayer({ tracks })
 
   return <AudioPlayer controls={controls} disabledControls={disabledControls} state={state} />
-}
-
-/**
- * The wiring every consumer writes: the hook inside an `AudioPlayerProvider`,
- * held by whichever component owns the playing track. `AudioPlayer` itself only
- * renders what the hook holds.
- */
-function PlaylistPlayer(props: PlaylistPlayerProps) {
-  return (
-    <AudioPlayerProvider>
-      <PlaylistPlayerInner {...props} />
-    </AudioPlayerProvider>
-  )
 }
 
 /** AudioPlayer component showcasing audio playback controls and playlist management. */
