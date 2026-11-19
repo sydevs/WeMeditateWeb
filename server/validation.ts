@@ -49,7 +49,8 @@ export const idSchema = z.coerce
 /**
  * ⚠ The loosest bounds SahajCloud allows (`src/collections/UserSubmissions/
  * submissionData.ts`: 40 entries, 100-character keys, and 5000 for its
- * longest-valued key), in characters.
+ * longest-valued key), in characters. `email` is not one of them: it is
+ * RFC 5321's longest address.
  */
 const SUBMISSION_BOUNDS = { entries: 40, field: 100, value: 5000, email: 254 } as const
 

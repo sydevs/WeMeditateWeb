@@ -208,9 +208,14 @@ const MAX_REPORTED_REFUSALS = 64
  * Reports a failed SahajCloud call from one of the two proxies.
  *
  * A failure that is not the caller's — a 5xx, a timeout, an unreachable
- * SahajCloud, a key it refuses — reports every time. Of the caller's, a 403 or
- * 429 is a failed captcha or a rate limit, which is the gate working, and is
- * not reported; a 400 reports once per code.
+ * SahajCloud, a key it refuses — reports every time. A rate limit, or the
+ * intake refusing the visitor with a coded 403 (a failed captcha), is the gate
+ * working and is not reported; a 400 reports once per code.
+ *
+ * ⚠ A refused key is an **uncoded** 403 — Payload's own Forbidden, never a
+ * 401 (verified against production) — so only the intake's code makes a 403
+ * the caller's. The populate proxy has verified its caller before it calls,
+ * so a 403 there is always ours.
  *
  * ⚠ Only the status, the code and the error's name reach the event: the body
  * is the visitor's message, the token is a credential, the address is
@@ -219,7 +224,9 @@ const MAX_REPORTED_REFUSALS = 64
 function reportProxyFailure(proxy: 'submissions' | 'live-preview populate', error: unknown): void {
   const { code, status } = upstreamRefusal(error)
 
-  if (status === 403 || status === 429) return
+  if (status === 429) return
+
+  if (status === 403 && proxy === 'submissions' && code) return
 
   if (status === 400) {
     const signature = `${proxy}:${code ?? ''}`

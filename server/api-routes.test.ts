@@ -522,6 +522,34 @@ describe('Both proxies — what reaches Sentry', () => {
     expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })
 
+  it('reports an uncoded 403 every time: that is SahajCloud refusing our key', async () => {
+    // What production answers a key it does not accept: Payload's Forbidden,
+    // `{ errors: [{ message }] }`, with no code.
+    request.mockRejectedValue(sdkError(403))
+
+    await submit({ token: 'turnstile-token' })
+    await submit({ token: 'turnstile-token' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The submissions proxy failed', {
+      level: 'error',
+      tags: { source: 'submissions' },
+      extra: { status: 403, code: null, error: 'Error' },
+    })
+  })
+
+  it('reports a refused draft read, whose caller it has already verified', async () => {
+    request.mockRejectedValue(sdkError(403))
+
+    await populate({ token: await sign(NOW() + 600) })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The live-preview populate proxy failed', {
+      level: 'error',
+      tags: { source: 'live-preview populate' },
+      extra: { status: 403, code: null, error: 'Error' },
+    })
+  })
+
   it('reports a 400 once per code per isolate', async () => {
     // Codes no other case uses: the memo outlives a test.
     request.mockRejectedValueOnce(sdkError(400, 'disposable_email'))
