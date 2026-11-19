@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Header } from './Header'
-import { tagFor } from '../../../tests/_helpers/markup'
+import { classesWith, classFor, classOf, tagFor } from '../../../tests/_helpers/markup'
 
 const navItems = [{ label: 'Meditate Now', href: '/meditate' }]
 
@@ -38,12 +38,11 @@ describe('Header', () => {
       const condensed = render({ condensed: true })
       const normal = render()
 
-      // `opacity-0 invisible` is the exact hidden state the compact logo and
-      // map-pin carry until the nav sticks. Asserted as the whole pair because
-      // `opacity-0` alone also matches unrelated Button classes.
+      // `invisible` is the hidden state the compact logo and map-pin carry
+      // until the nav sticks, and nothing else in the header carries it.
       expect(condensed).toContain('bg-white')
-      expect(condensed).not.toContain('opacity-0 invisible')
-      expect(normal).toContain('opacity-0 invisible')
+      expect(classesWith(condensed, 'invisible')).toHaveLength(0)
+      expect(classesWith(normal, 'invisible')).toHaveLength(2)
     })
 
     it('renders nothing extra when there are no nav items', () => {
@@ -53,10 +52,10 @@ describe('Header', () => {
 
   describe('the sticky nav row', () => {
     it('renders only at lg and above', () => {
-      // The pair, not `hidden` alone, which also matches `lg:hidden`.
-      const row = render().match(/<div class="([^"]*max-w-3xl flex-1[^"]*)"/)?.[1]
+      const row = classFor(render(), 'max-w-3xl').split(' ')
 
-      expect(row).toContain('hidden lg:flex')
+      expect(row).toContain('hidden')
+      expect(row).toContain('lg:flex')
     })
 
     it('sizes every item by its own label rather than by a count', () => {
@@ -76,7 +75,7 @@ describe('Header', () => {
       // hidden — the viewport clipped a centred `::before` to 44x31. A grown box
       // cannot be clipped, and it floors the bar from its own content.
       const html = render()
-      const bar = html.match(/<div class="([^"]*max-w-5xl mx-auto px-6[^"]*)"/)?.[1]
+      const bar = classFor(html, 'max-w-5xl')
 
       expect(bar).not.toContain('min-h-11')
       expect(html).toContain('shrink-0 touch-target items-center')
@@ -90,10 +89,10 @@ describe('Header', () => {
       // The trigger inside it is visible and un-gated, so a bar that hid itself
       // below `lg:` would leave a phone no menu at all until it scrolled past
       // the banner.
-      const navClass = (html: string) => html.match(/<nav class="([^"]*)"/)?.[1]
+      const navClasses = (html: string) => classOf(html, '<nav').split(' ')
 
-      expect(navClass(render())).not.toContain('hidden')
-      expect(navClass(render({ condensed: true }))).not.toContain('hidden')
+      expect(navClasses(render())).not.toContain('hidden')
+      expect(navClasses(render({ condensed: true }))).not.toContain('hidden')
     })
 
     it('carries the menu trigger, un-gated by the sticky state', () => {
@@ -126,10 +125,9 @@ describe('Header', () => {
       // un-stuck a keyboard reached two invisible named links (SC 2.4.7).
       const html = render()
 
-      // Both controls, matched as the pair: `Button` carries a
-      // `disabled:pointer-events-none` of its own, so the absence of the old
-      // class is not assertable here.
-      expect(html.match(/opacity-0 invisible/g)).toHaveLength(2)
+      // Both controls: `Button` carries a `disabled:pointer-events-none` of
+      // its own, so the absence of the old class is not assertable here.
+      expect(classesWith(html, 'invisible')).toHaveLength(2)
     })
 
     it('names both controls, since each renders an icon alone', () => {
@@ -151,11 +149,11 @@ describe('Header', () => {
       const html = render({ bandClassName: band })
 
       expect(html).toContain(`<header class="pointer-events-auto ${band}"`)
-      expect(html.match(/<nav class="([^"]*)"/)?.[1]).toContain(band)
+      expect(classOf(html, '<nav')).toContain(band)
     })
 
     it('gives way to full-bleed once the nav sticks', () => {
-      const nav = render({ bandClassName: band, condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
+      const nav = classOf(render({ bandClassName: band, condensed: true }), '<nav').split(' ')
 
       expect(nav).toContain('full-bleed')
       expect(nav).not.toContain('max-w-7xl')
@@ -168,7 +166,7 @@ describe('Header', () => {
       const html = render()
 
       expect(html).toContain('<header class="pointer-events-auto"')
-      expect(html.match(/<nav class="([^"]*)"/)?.[1]).toContain('pointer-events-auto')
+      expect(classOf(html, '<nav').split(' ')).toContain('pointer-events-auto')
     })
   })
 
@@ -183,7 +181,7 @@ describe('Header', () => {
     })
 
     it('turns the sticky nav light, since it paints itself white', () => {
-      const nav = render({ condensed: true }).match(/<nav class="([^"]*)"/)?.[1]
+      const nav = classOf(render({ condensed: true }), '<nav').split(' ')
 
       expect(nav).toContain('surface-light')
       expect(nav).toContain('bg-white')

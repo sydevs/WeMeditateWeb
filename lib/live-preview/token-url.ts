@@ -5,7 +5,7 @@
  * carry a header. That puts it in `location.href`, and `location.href` is what
  * in-page third-party JavaScript reads:
  *
- * - **Plausible** reads it and posts it with every pageview. No response
+ * - **Fathom** reads it and posts it with every pageview. No response
  *   header reaches that — `Referrer-Policy` governs what the browser sends,
  *   not what a script chooses to read.
  * - **Sentry session replay** records request URLs and navigation breadcrumbs,
@@ -35,7 +35,7 @@
  *
  * Sentry is handled here: `sentryBrowserConfig` calls the scrub as its own
  * first statement, so it can only ever initialise against a clean URL.
- * Plausible is **not** — its `<script defer>` in `pages/+Head.tsx` runs the
+ * Fathom is **not** — its `<script defer>` in `pages/+Head.tsx` runs the
  * moment parsing ends, and the client entry is an `async` module at the end of
  * `<body>` that dynamically imports a hashed chunk, so the scrub loses that
  * race every time. `+Head.tsx` therefore omits the tag entirely under a

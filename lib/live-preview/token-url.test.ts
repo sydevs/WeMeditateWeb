@@ -5,7 +5,7 @@ import { livePreviewToken, scrubTokenFromLocation, stripLivePreviewToken } from 
 /**
  * ⚠ The token rides in a query string because an iframe navigation cannot
  * carry a header — so it lands in `location.href`, which in-page third-party
- * JavaScript reads: Plausible posts it with every pageview, and Sentry replay
+ * JavaScript reads: Fathom posts it with every pageview, and Sentry replay
  * records request URLs. Not the address bar: a preview is an iframe inside the
  * SahajCloud admin, and its URL is never displayed.
  */

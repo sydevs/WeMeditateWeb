@@ -20,9 +20,12 @@ paid for that is a Railway round trip every 600s per colo, instead of once per T
 
 Two things follow for anyone adding a read:
 
-- **A new slug caches only once SahajCloud's Cache Rule covers its path.** The rule enumerates
-  paths with `eq`/`starts_with` — see `DEPLOYMENT.md` in `sydevs/SahajCloud`. A path outside it is
-  `DYNAMIC` at the edge, which means no cache at all, not a slower one.
+- **A new path caches only once SahajCloud stamps it.** The Cache Rule matches every `/api/**` read
+  and delegates the yes/no to the response headers, so `CACHE_TTLS` in SahajCloud's
+  `src/plugins/cache/policy.ts` is the single source of truth: adding a collection, a global or a
+  root endpoint there is the whole change, and no Cloudflare dashboard edit is needed. A path the
+  app does not stamp sends no `Cache-Control`, so Cloudflare bypasses it — no cache at all, not a
+  slower one. See `DEPLOYMENT.md` §Edge Cache in `sydevs/SahajCloud`.
 - **Nothing in this repo needs a TTL, a cache key, or a purge step.** Add the query function and
   stop. `docs/rules/rest-api.md` shows the shape.
 
