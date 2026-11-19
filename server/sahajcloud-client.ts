@@ -34,6 +34,7 @@ import type {
   Config,
   PagesSelect,
   MeditationsSelect,
+  FramesSelect,
   LecturesSelect,
   AlbumsSelect,
   AppCardsSelect,
@@ -276,34 +277,37 @@ const MEDITATION_SELECT = {
 } satisfies MeditationsSelect<true>
 
 /**
- * The keyframe fields `MeditationTemplate` reads, and all a keyframe keeps of
- * the `frames` document SahajCloud merges into it.
+ * A keyframe's read shape, in the one place a collection's read shape lives.
+ * Each key is a field `MeditationTemplate` reads.
  *
- * ⚠ **No query narrows `frames`, so this list does.** It is a JSON field
- * SahajCloud fills in its own afterRead hook, with a `frames` read that takes
- * no `select`, `populate` or `depth` from ours. A chakra keyframe therefore
- * carries its node's whole `page` document whatever is asked for here
- * (verified against production at depths 0-3, and with `populate` entries for
- * `frames`, `subtle-system-nodes` and `pages`).
+ * ⚠ **No query sends this, because no query narrows `frames`.** It is a JSON
+ * field SahajCloud fills in its own afterRead hook, whose `frames` read takes
+ * no `select`, `populate` or `depth` from ours, so a chakra keyframe carries
+ * its node's whole `page` document whatever a query asks for (verified against
+ * production at depths 0-3, and with `populate` entries for `frames`,
+ * `subtle-system-nodes` and `pages`). `narrowMeditationFrames` applies it to
+ * the answer instead.
  *
- * `downloadUrl` is not a `Frame` field: the template reads it for a video's
- * fallback, and no frame carries it today.
+ * Three keys are outside `FramesSelect` and named in the type for that reason:
+ * `id` and `timestamp` come from the meditation's own JSON rather than the
+ * Frame document, and `downloadUrl` is a field the template reads for a
+ * video's fallback that no frame carries today.
  *
  * shortcut: the Worker still downloads every keyframe whole; drop this list once the
  * `frames` afterRead hook in sydevs/SahajCloud `src/collections/Meditations/Meditations.ts`
  * passes `select` or `depth` to its read.
  */
-const MEDITATION_FRAME_FIELDS = [
-  'id',
-  'timestamp',
-  'url',
-  'mimeType',
-  'duration',
-  'downloadUrl',
-] as const
+const MEDITATION_FRAME_SELECT = {
+  id: true,
+  timestamp: true,
+  url: true,
+  mimeType: true,
+  duration: true,
+  downloadUrl: true,
+} satisfies Partial<Record<keyof FramesSelect<true> | 'id' | 'timestamp' | 'downloadUrl', true>>
 
 /**
- * A meditation with each keyframe cut down to `MEDITATION_FRAME_FIELDS`.
+ * A meditation with each keyframe cut down to `MEDITATION_FRAME_SELECT`.
  *
  * Still the collection's own shape, so it can seed live preview's
  * `initialData`: a streamed document arrives whole from the populate proxy and
@@ -312,6 +316,8 @@ const MEDITATION_FRAME_FIELDS = [
 export function narrowMeditationFrames(meditation: Meditation): Meditation {
   if (!Array.isArray(meditation.frames)) return meditation
 
+  const kept = Object.keys(MEDITATION_FRAME_SELECT)
+
   return {
     ...meditation,
     frames: meditation.frames.map((frame: unknown) => {
@@ -319,10 +325,9 @@ export function narrowMeditationFrames(meditation: Meditation): Meditation {
       if (!frame || typeof frame !== 'object') return frame
 
       return Object.fromEntries(
-        MEDITATION_FRAME_FIELDS.filter((key) => Object.hasOwn(frame, key)).map((key) => [
-          key,
-          (frame as Record<string, unknown>)[key],
-        ]),
+        kept
+          .filter((key) => Object.hasOwn(frame, key))
+          .map((key) => [key, (frame as Record<string, unknown>)[key]]),
       )
     }) as Meditation['frames'],
   }
