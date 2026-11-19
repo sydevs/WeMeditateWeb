@@ -247,17 +247,15 @@ function AudioControls({
       ariaLabel={t('meditation.a11y.audio_settings')}
       role="dialog"
       side="top"
-      trigger={
+      trigger={(props) => (
         <Button
           aria-label={t('meditation.a11y.audio_settings')}
           icon={voiceMuted ? SpeakerXMarkIcon : SpeakerWaveIcon}
           size="lg"
           variant="ghost"
-          // The Dropdown wrapper is the focusable trigger (role=button,
-          // aria-expanded). Keep this inner button out of the tab order.
-          tabIndex={-1}
+          {...props}
         />
-      }
+      )}
     >
       <div className="flex w-64 flex-col gap-4 p-4 text-left">
         <VolumeRow
@@ -711,9 +709,18 @@ function MeditationPlayerInner({
                     <div className="absolute inset-0 bg-teal-700/20" />
                   )}
 
-                  {/* Play/Pause Button - Fades in/out when paused or hovering */}
+                  {/* Play/Pause Button - Fades in/out when paused or hovering.
+                      It is the only play/pause a keyboard can reach: the other
+                      `handlePlayPause` site is this frame's own non-focusable
+                      `<div onClick>`. So it keeps its tab stop while it is faded
+                      out, and `focus-within:` is what makes that stop visible
+                      (SC 2.4.7) — never `invisible`, which would take the tab
+                      stop with it and leave no keyboard path to pause.
+                      `Header`'s compact bar does use `invisible` for the same
+                      fade, correctly: every control in it duplicates a link
+                      reachable elsewhere, so losing the stop loses nothing. */}
                   <div
-                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100'}`}
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!state.isPlaying || state.isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100 focus-within:opacity-100 focus-within:pointer-events-auto'}`}
                   >
                     <Button
                       aria-label={state.isPlaying ? t('media.a11y.pause') : t('media.a11y.play')}

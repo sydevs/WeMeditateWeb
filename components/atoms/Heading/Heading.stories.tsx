@@ -21,6 +21,17 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
+    <StorySection title="Variants">
+      <div className="flex flex-col gap-4">
+        <Heading level="h3" styleAs="h1">
+          An h3 drawn at h1 size
+        </Heading>
+        <Heading className="text-lg font-semibold" level="h3" styleAs="none">
+          An h3 drawing its own size, with no type classes from the atom
+        </Heading>
+      </div>
+    </StorySection>
+
     <StorySection title="Examples" inContext={true}>
       <article className="max-w-2xl">
         <Heading level="h1" className="mb-4">

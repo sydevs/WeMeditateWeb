@@ -252,7 +252,7 @@ export function LocationSearch({
       fullWidth={true}
       isOpen={shouldShowDropdown}
       openOnFocus={true}
-      trigger={
+      trigger={() => (
         <Input
           aria-autocomplete="list"
           aria-controls="location-search-listbox"
@@ -265,7 +265,7 @@ export function LocationSearch({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
         />
-      }
+      )}
       onOpenChange={setIsDropdownOpen}
     >
       <div className="max-h-80 overflow-y-auto" id="location-search-listbox" role="listbox">

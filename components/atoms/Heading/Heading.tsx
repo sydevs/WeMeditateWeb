@@ -8,10 +8,13 @@ export interface HeadingProps extends ComponentProps<'h1'> {
   level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 
   /**
-   * Visual style variant
+   * Visual style variant. `'none'` emits no type classes at all, for a heading
+   * whose size is drawn by its own `className` — without it the atom's
+   * `levelStyles` win on source order and the caller has to hand-roll the
+   * element to keep its look.
    * @default matches the level
    */
-  styleAs?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+  styleAs?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'none'
 }
 
 /**
@@ -24,6 +27,7 @@ export interface HeadingProps extends ComponentProps<'h1'> {
  * <Heading level="h1">Page Title</Heading>
  * <Heading level="h2" styleAs="h1">Visually large h2</Heading>
  * <Heading level="h3" className="text-teal-600">Custom colored heading</Heading>
+ * <Heading level="h3" styleAs="none" className="text-lg font-semibold">Own size</Heading>
  */
 export function Heading({
   level = 'h2',
@@ -44,6 +48,7 @@ export function Heading({
     h4: 'text-xl sm:text-2xl lg:text-3xl font-medium leading-snug',
     h5: 'text-lg sm:text-xl lg:text-2xl font-medium leading-normal',
     h6: 'text-base sm:text-lg lg:text-xl font-medium leading-normal',
+    none: '',
   }
 
   return (

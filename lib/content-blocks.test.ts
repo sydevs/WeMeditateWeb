@@ -421,15 +421,33 @@ describe('splashSurface', () => {
 })
 
 describe('getLeadSplash', () => {
-  const splashBlock = (textColor?: 'dark' | 'light') => ({
+  const splashBlock = (textColor?: 'dark' | 'light', title?: string) => ({
     type: 'block',
-    fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
+    fields: {
+      blockType: 'splash',
+      ...(textColor ? { textColor } : {}),
+      ...(title === undefined ? {} : { title }),
+    },
   })
 
   it('returns the derived surface when content leads with a splash block', () => {
-    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark' })
-    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({ surface: 'light' })
-    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({ surface: 'dark' })
+    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark', hasTitle: false })
+    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({
+      surface: 'light',
+      hasTitle: false,
+    })
+    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({
+      surface: 'dark',
+      hasTitle: false,
+    })
+  })
+
+  it('reports whether the splash draws a heading of its own', () => {
+    // `Splash` renders its `<h1>` only for a non-empty title, so a blank one
+    // is the same as none: `PageTemplate` owes the page a heading either way.
+    expect(getLeadSplash(leadContent(splashBlock(undefined, 'Discover it')))?.hasTitle).toBe(true)
+    expect(getLeadSplash(leadContent(splashBlock(undefined, '   ')))?.hasTitle).toBe(false)
+    expect(getLeadSplash(leadContent(splashBlock(undefined, '')))?.hasTitle).toBe(false)
   })
 
   it('returns null when the first block is not a splash', () => {
@@ -452,12 +470,16 @@ describe('leadSplashFromRouteData', () => {
   })
 
   it('reads page content on content routes ([slug])', () => {
-    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ surface: 'light' })
+    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({
+      surface: 'light',
+      hasTitle: false,
+    })
   })
 
   it('reads initialData content on a pages preview', () => {
     expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
       surface: 'dark',
+      hasTitle: false,
     })
   })
 

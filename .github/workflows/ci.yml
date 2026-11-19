@@ -37,6 +37,14 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:run # unit tests only. vitest.config.ts excludes smoke specs.
+
+      # The axe gate blocks a change through `pnpm test:run` above, like any
+      # other spec. This makes its result readable without opening the log, and
+      # runs on a red step too — a reviewer reading "the gate failed" needs the
+      # counts most then (#278).
+      - name: Accessibility results
+        if: ${{ !cancelled() }}
+        run: node scripts/a11y-summary.mjs
       - run: pnpm ladle:build # fail the gate on a broken story, and write build/ for the step below
 
       # Validates the design Worker's config against the pinned wrangler's own schema. Nothing

@@ -75,6 +75,7 @@ instead:
 | Primitive | Keyed on | Answers |
 | --- | --- | --- |
 | `anchorFor(html, href)` | an href the test passed in | that link's opening `<a>` tag |
+| `openTag(html, tag)` | a tag name | that element's whole opening tag, for an attribute other than `class` |
 | `classFor(html, class)` | one class naming the element | that element's class list |
 | `classesWith(html, class)` | one class | every such list, so a count is assertable |
 | `classOf(html, marker)` | an opening tag (`'<nav'`) or the element's own text | that element's class list |

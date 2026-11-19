@@ -12,8 +12,14 @@ alwaysApply: false
 CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.yml):
 
 - **`gate`** — runs `pnpm lint`, `pnpm typecheck`, and `pnpm test:run` (unit tests only —
-  `vitest.config.ts` excludes the smoke specs), then `pnpm ladle:build` and
-  `pnpm check:wrangler`. The last is a `wrangler deploy --dry-run` over
+  `vitest.config.ts` excludes the smoke specs), then writes the accessibility results to the job
+  summary, then `pnpm ladle:build` and `pnpm check:wrangler`. **The accessibility gate is one of
+  those unit specs** — [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
+  `axe-core` over every page type and fails on any finding, so it blocks a change the way any
+  spec does. It is here rather than in `smoke` because `Smoke (web)` skips silently when no
+  preview is discoverable, and a check that can skip cannot stop a change. `scripts/a11y-summary.mjs`
+  only reports: it runs on a red test step too, because the per-page counts are what a reviewer
+  needs most then. The last is a `wrangler deploy --dry-run` over
   [wrangler.design.jsonc](../wrangler.design.jsonc): nothing else in this repo reads that file,
   so without it a typo or an `assets.directory` that drifts from what `ladle:build` writes would
   surface only in a Cloudflare build log, on `main`. It must follow `ladle:build`, which writes

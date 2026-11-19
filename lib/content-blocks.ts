@@ -266,13 +266,25 @@ export function splashSurface(textColor?: SplashBlockFields['textColor']): 'ligh
   return textColorToSurface(textColor, 'dark')
 }
 
+/** What a page's lead `splash` block tells its consumers. */
+export interface LeadSplash {
+  surface: 'light' | 'dark'
+  /**
+   * Whether the splash draws a heading of its own. `Splash` renders its `<h1>`
+   * only when `title` is set, and the field is optional upstream — so a page
+   * leading with an untitled splash has no heading unless something else
+   * supplies one.
+   */
+  hasTitle: boolean
+}
+
 /**
- * Returns the surface a page's background paints when its content leads with
- * a `splash` block, or `null` otherwise. Shared by the layout (header
- * overlay surface), the page wrappers (flush-to-top spacing), and
- * PageTemplate (skipping the duplicate title).
+ * Returns what a page's lead `splash` block paints, or `null` when its content
+ * does not lead with one. Shared by the layout (header overlay surface), the
+ * page wrappers (flush-to-top spacing), and PageTemplate (skipping the
+ * duplicate title, and supplying the heading an untitled splash does not draw).
  */
-export function getLeadSplash(content: Page['content']): { surface: 'light' | 'dark' } | null {
+export function getLeadSplash(content: Page['content']): LeadSplash | null {
   const first = content?.root?.children?.[0] as
     | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
     | undefined
@@ -281,7 +293,10 @@ export function getLeadSplash(content: Page['content']): { surface: 'light' | 'd
     return null
   }
 
-  return { surface: splashSurface(first.fields.textColor) }
+  return {
+    surface: splashSurface(first.fields.textColor),
+    hasTitle: Boolean(first.fields.title?.trim()),
+  }
 }
 
 /**
