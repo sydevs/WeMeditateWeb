@@ -18,7 +18,7 @@
 import type { Hono } from 'hono'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
-import { degrade, withRetry } from './error-utils'
+import { degrade, warnOnce, withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
 import { getWebConfig } from './sahajcloud-client'
 import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, type SitemapUrl } from './sitemap'
@@ -26,8 +26,16 @@ import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './sahajcloud-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
-/** Bounded because this runs in a Worker request. */
+/** Documents per content read. Each page of a walk is one subrequest. */
 const CONTENT_READ_LIMIT = 500
+
+/**
+ * Pages one collection's walk may take, because it runs in a Worker request.
+ *
+ * shortcut: a collection past 5,000 documents is listed to here and reported,
+ * so split the sitemap into an index before one gets there.
+ */
+const MAX_CONTENT_PAGES = 10
 
 /**
  * Field selections for the sitemap reads.
@@ -79,25 +87,59 @@ async function getSiteAnnotation(): Promise<{ offered: Locale[]; homeSlug: strin
   )
 }
 
-/** The three content reads, cached as the documents they return. */
+/** Every document of one collection, a page at a time, up to the ceiling. */
+async function readEvery<T>(
+  collection: string,
+  readPage: (page: number) => Promise<{ docs?: T[]; hasNextPage?: boolean } | undefined>,
+): Promise<T[]> {
+  const docs: T[] = []
+
+  for (let page = 1; page <= MAX_CONTENT_PAGES; page++) {
+    const result = await readPage(page)
+
+    docs.push(...(result?.docs ?? []))
+
+    if (!result?.hasNextPage) return docs
+  }
+
+  console.warn(`[getContentSitemapUrls] ${collection} truncated at ${docs.length} documents`)
+  warnOnce(collection, 'Sitemap content read hit its page ceiling; the sitemap is truncated', {
+    source: 'getContentSitemapUrls',
+    extra: { collection, listed: docs.length },
+  })
+
+  return docs
+}
+
+/** Every page, meditation and lecture, with what the sitemap lists of each. */
 async function readContentDocs() {
   const client = createPayloadClient()
-  const read = { limit: CONTENT_READ_LIMIT, depth: 0, locale: 'en' as const }
+  // Sorted by id so a document created mid-walk lands on the last page,
+  // rather than shifting every later page by one.
+  const read = { limit: CONTENT_READ_LIMIT, depth: 0, locale: 'en' as const, sort: 'id' }
 
   const [pages, meditations, lectures] = await Promise.all([
     // `locale: 'all'` makes `_status` arrive as a per-locale map, and adds
     // no query: `slug` and `updatedAt` are not localized, so they come back
     // as plain values in the same response.
-    client.find({ collection: 'pages', ...read, locale: 'all', select: PAGE_SITEMAP_SELECT }),
-    client.find({ collection: 'meditations', ...read, select: MEDITATION_SITEMAP_SELECT }),
-    client.find({ collection: 'lectures', ...read, select: LECTURE_SITEMAP_SELECT }),
+    readEvery('pages', (page) =>
+      client.find({
+        collection: 'pages',
+        ...read,
+        page,
+        locale: 'all',
+        select: PAGE_SITEMAP_SELECT,
+      }),
+    ),
+    readEvery('meditations', (page) =>
+      client.find({ collection: 'meditations', ...read, page, select: MEDITATION_SITEMAP_SELECT }),
+    ),
+    readEvery('lectures', (page) =>
+      client.find({ collection: 'lectures', ...read, page, select: LECTURE_SITEMAP_SELECT }),
+    ),
   ])
 
-  return {
-    pages: pages?.docs ?? [],
-    meditations: meditations?.docs ?? [],
-    lectures: lectures?.docs ?? [],
-  }
+  return { pages, meditations, lectures }
 }
 
 /**

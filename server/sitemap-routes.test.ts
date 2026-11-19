@@ -385,4 +385,52 @@ describe('/sitemap.xml', () => {
       )
     })
   })
+
+  describe('the content walk', () => {
+    /** A `find` answering `pages[n]` for page n + 1 of one collection, and nothing for the rest. */
+    function stubPages(collection: string, pages: { id: number }[][]) {
+      find.mockImplementation(async (args: { collection: string; page?: number }) => {
+        const index = (args.page ?? 1) - 1
+
+        if (args.collection !== collection) return { docs: [], hasNextPage: false }
+
+        return { docs: pages[index] ?? [], hasNextPage: index < pages.length - 1 }
+      })
+    }
+
+    it('lists a collection past one read, a page at a time', async () => {
+      // One read is 500 documents. Listing only the first page left every
+      // later document out of the sitemap, with nothing to say so.
+      stubPages('lectures', [[{ id: 1 }], [{ id: 2 }]])
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/lectures/1</loc>')
+      expect(xml).toContain('<loc>https://wemeditate.com/lectures/2</loc>')
+
+      const lectureReads = find.mock.calls.filter(([args]) => args.collection === 'lectures')
+
+      expect(lectureReads.map(([args]) => args.page)).toEqual([1, 2])
+      // A document created mid-walk lands on the last page, rather than
+      // shifting every later page by one.
+      expect(lectureReads[1][0]).toMatchObject({ limit: 500, sort: 'id' })
+    })
+
+    it('stops at its ceiling and reports the truncation rather than hiding it', async () => {
+      captureMessage.mockClear()
+      stubPages(
+        'meditations',
+        Array.from({ length: 12 }, (_, index) => [{ id: index + 1 }]),
+      )
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/meditations/10</loc>')
+      expect(xml).not.toContain('<loc>https://wemeditate.com/meditations/11</loc>')
+      expect(captureMessage).toHaveBeenCalledWith(
+        expect.stringContaining('truncated'),
+        expect.objectContaining({ level: 'warning' }),
+      )
+    })
+  })
 })
