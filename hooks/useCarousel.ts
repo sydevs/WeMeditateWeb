@@ -25,6 +25,9 @@ const EVENTS = [
  */
 export function useCarousel(options: CarouselOptions = {}) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
+    // These three are Embla's own defaults, restated to pin them: both
+    // carousels read `align` and `containScroll` as part of their contract,
+    // and a default is the maintainer's to change in a major.
     align: 'center',
     slidesToScroll: 1,
     containScroll: 'trimSnaps',
