@@ -30,8 +30,8 @@ const navItems: NavItem[] = [
 
 /**
  * The site menu on a phone. The trigger lives in the header's compact bar; the
- * panel it opens covers the screen under that bar and lists every destination
- * the `lg:` link row reaches, with the mega-menu item's pages inline.
+ * panel it opens covers the screen and lists every destination the `lg:` link
+ * row reaches, with the mega-menu item's pages inline.
  *
  * Open it to see the panel. Escape closes it and returns focus to the trigger.
  */

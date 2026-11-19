@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import {
   useFloating,
-  autoUpdate,
   useClick,
   useDismiss,
   useRole,
@@ -23,8 +22,8 @@ export interface MobileMenuProps {
 }
 
 /**
- * The site menu on a phone: a trigger in the compact header bar, and a
- * full-screen panel under it, one row per `navItems` destination. A nav item
+ * The site menu on a phone: a trigger in the compact header bar, and a panel
+ * covering the viewport over it, one row per `navItems` destination. A nav item
  * that opens a mega menu has no `href`, so its own label becomes a heading and
  * its `dropdown.links` are listed inline beneath it. The mega menu's featured
  * articles are editorial picks rather than nav, and are not repeated here.
@@ -33,14 +32,14 @@ export function MobileMenu({ navItems, className }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const t = useT()
 
-  const { refs, floatingStyles, context } = useFloating({
+  // The interactions context alone: nothing here is positioned. An anchored
+  // `top` measures the `sticky` nav, and the scroll lock below puts
+  // `position: fixed` on `<body>` on iOS, which takes that nav's scroll
+  // container away and drags the bar — and any top measured from it — off the
+  // top of the screen.
+  const { refs, context } = useFloating({
     open: isOpen,
     onOpenChange: setIsOpen,
-    placement: 'bottom',
-    // No transform, so the classes below can pin the other three sides.
-    strategy: 'fixed',
-    transform: false,
-    whileElementsMounted: autoUpdate,
   })
 
   const click = useClick(context)
@@ -65,24 +64,21 @@ export function MobileMenu({ navItems, className }: MobileMenuProps) {
 
       {isOpen && (
         <FloatingPortal>
-          {/* The lock is what holds `top` still: the page scrolling behind an
-              open panel flips the nav's sticky state under it. */}
+          {/* A `fixed` panel leaves the page behind it scrollable, so without
+              the lock the panel's own scroll chains into it. */}
           <FloatingOverlay lockScroll>
             {/* Trapped, unlike `Dropdown` and `HeaderNavDropdown`: the panel
                 covers the page, so there is nothing behind it to reach. */}
             <FloatingFocusManager context={context}>
               <div
                 ref={refs.setFloating}
-                // `inset-x-0` rather than a width: the viewport's content area,
-                // excluding the scrollbar, so the open panel adds no horizontal
-                // scrollbar. Floating UI supplies only `top`.
-                style={{ top: floatingStyles.top }}
                 {...getFloatingProps({ 'aria-label': label })}
-                className="surface-light fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-white py-2"
+                // Insets rather than a width: `w-screen` counts the scrollbar
+                // and would add a horizontal one of its own.
+                className="surface-light fixed inset-0 z-50 overflow-y-auto bg-white py-2"
               >
-                {/* The trigger closes the panel too, but it is covered at `lg:`,
-                  where a viewer who rotated a tablet past the breakpoint would
-                  otherwise have only Escape. */}
+                {/* The only way out a pointer has: the panel covers the
+                    trigger, and the trap has it inert meanwhile. */}
                 <div className="flex justify-end px-4">
                   <Button
                     aria-label={t('common.a11y.close')}

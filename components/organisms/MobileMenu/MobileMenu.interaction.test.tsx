@@ -94,6 +94,19 @@ describe('MobileMenu · opening and closing', () => {
     expect(panel.className).toContain('fixed')
   })
 
+  it('measures nothing on the bar, so it takes the whole viewport', () => {
+    // An anchored top reads the `sticky` nav's viewport position, and the
+    // scroll lock puts `position: fixed` on `<body>` on iOS — which drags that
+    // nav off the top of the screen, panel edge behind it. #204's mechanism,
+    // on the one platform this panel exists for, and jsdom takes the other
+    // branch of that lock, so only this assertion stands between.
+    open()
+    const panel = screen.getByRole('dialog')
+
+    expect(panel.className).toContain('inset-0')
+    expect(panel.style.top).toBe('')
+  })
+
   it('closes when a destination is taken', () => {
     open()
 
@@ -105,7 +118,7 @@ describe('MobileMenu · opening and closing', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  it('draws a close control, for the viewer whose trigger the breakpoint hid', () => {
+  it('draws the close control a covered trigger leaves it owing', () => {
     open()
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
@@ -114,8 +127,8 @@ describe('MobileMenu · opening and closing', () => {
   })
 
   it('holds the page still while it is open', () => {
-    // The nav is `position: sticky`, so a page scrolling behind the panel flips
-    // the sticky state under it and the panel's own top edge jumps.
+    // A `fixed` panel leaves the page behind it scrollable, so the panel's own
+    // scroll would chain into it.
     const before = document.body.style.overflow
 
     open()
