@@ -253,16 +253,11 @@ export const blockConverters: BlockConverters = {
   },
 
   // layout → grid, tabs, accordion, list, or textList.
-  //
-  // shortcut: `useColumnsOnDesktop` is not read, and tabs are columns on a
-  // wide screen whatever it says. All seven live tabs blocks store the
-  // field's default `false`, imported from the old site's column blocks,
-  // which it drew as columns. Honour it once SahajCloud defaults it to true
-  // and those seven carry it.
   layout: ({ node }) => {
     const fields = node.fields as unknown as LayoutBlockFields
 
     return (
+      // shortcut: useColumnsOnDesktop is ignored (tabs draw desktop columns, as the old site did), honour it once SahajCloud defaults it to true and backfills the tabs blocks
       <LayoutBlock
         className={BLOCK_SPACING}
         defaultTab={fields.defaultTab ?? undefined}

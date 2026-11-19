@@ -12,9 +12,9 @@ export default {
  * Responsive behavior based on column count:
  * - Mobile (< 768px): Carousel for 3+ columns, stacked for 1-2 columns
  * - Tablet (768px-1024px): Carousel for 4+ columns, flex row for 1-3 columns
- * - Desktop (≥ 1024px): Flex row for all column counts
+ * - Desktop (≥ 1024px): Carousel for 6+ columns, flex row for 1-5 columns
  *
- * Maximum 5 columns allowed.
+ * Maximum 12 columns allowed, SahajCloud's cap on a tabs layout block.
  */
 export const Default: Story = () => {
   const threeColumns = [
@@ -123,9 +123,21 @@ export const Default: Story = () => {
   ]
 
   // Four is the count that turns the tablet carousel on
-  // (TABLET_CAROUSEL_THRESHOLD), and the only one between the mobile
-  // threshold and MAX_COLUMNS with no section of its own.
+  // (TABLET_CAROUSEL_THRESHOLD).
   const fourColumns = fiveColumns.slice(0, 4)
+
+  // Six turns the desktop carousel on (DESKTOP_CAROUSEL_THRESHOLD): six
+  // columns do not fit the desktop row.
+  const sixColumns = [
+    ...fiveColumns,
+    {
+      title: 'Gratitude',
+      description:
+        'Closing each sitting with a moment of gratitude settles what the practice has given, and carries its quiet into the hours that follow.',
+      imageUrl: 'https://picsum.photos/id/77/200/200',
+      imageAlt: 'Gratitude',
+    },
+  ]
 
   const twoColumns = [
     {
@@ -203,6 +215,10 @@ export const Default: Story = () => {
 
       <StorySection title="Five Columns">
         <ColumnCarousel columns={fiveColumns} />
+      </StorySection>
+
+      <StorySection title="Six Columns (Carousel at Every Width)">
+        <ColumnCarousel columns={sixColumns} />
       </StorySection>
 
       <StorySection title="Two Columns (Stacked on Mobile)">
