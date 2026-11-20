@@ -12,6 +12,8 @@
 
 import { matchDocumentRoute } from '../../lib/document-routes'
 import { PLAYER_HEIGHT, PLAYER_WIDTH, playerIframe } from '../../lib/embed-player'
+import { localeFromPath } from '../../lib/urls'
+import type { Locale } from '../sahajcloud-types'
 
 /** The collections that have a player, and the order their routes are tried. */
 const EMBEDDABLE = ['meditations', 'lectures'] as const
@@ -22,6 +24,8 @@ export type EmbeddableCollection = (typeof EMBEDDABLE)[number]
 export interface OEmbedTarget {
   collection: EmbeddableCollection
   id: string
+  /** The language the consumer's own URL asked for, which the player keeps. */
+  locale: Locale
 }
 
 /**
@@ -46,11 +50,17 @@ export function resolveOEmbedTarget(url: string, origin: string): OEmbedTarget |
     return null
   }
 
+  // ⚠ **The locale comes off here.** `matchDocumentRoute` takes a bare path:
+  // Vike strips a real locale before a route function runs, and this is a Hono
+  // route where nothing has (#315). Only a code SahajCloud defines is stripped,
+  // so `/zz/lectures/163` stays unmatched and is refused.
+  const { locale, pathWithoutLocale } = localeFromPath(parsed.pathname)
+
   for (const collection of EMBEDDABLE) {
-    const matched = matchDocumentRoute(collection, parsed.pathname)
+    const matched = matchDocumentRoute(collection, pathWithoutLocale)
 
     if (matched) {
-      return { collection, id: matched.routeParams.id }
+      return { collection, id: matched.routeParams.id, locale }
     }
   }
 

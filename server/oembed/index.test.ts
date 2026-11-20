@@ -5,12 +5,16 @@ const ORIGIN = 'https://wemeditate.com'
 
 describe('resolveOEmbedTarget', () => {
   it.each([
-    ['a meditation', `${ORIGIN}/meditations/142`, { collection: 'meditations', id: '142' }],
-    ['a lecture', `${ORIGIN}/lectures/163`, { collection: 'lectures', id: '163' }],
     [
-      'a locale-prefixed media URL',
+      'a meditation',
+      `${ORIGIN}/meditations/142`,
+      { collection: 'meditations', id: '142', locale: 'en' },
+    ],
+    ['a lecture', `${ORIGIN}/lectures/163`, { collection: 'lectures', id: '163', locale: 'en' }],
+    [
+      'a locale-prefixed media URL, whose locale the player keeps',
       `${ORIGIN}/fr/lectures/163`,
-      { collection: 'lectures', id: '163' },
+      { collection: 'lectures', id: '163', locale: 'fr' },
     ],
   ])('resolves %s', (_label, url, expected) => {
     expect(resolveOEmbedTarget(url, ORIGIN)).toEqual(expected)
@@ -27,6 +31,9 @@ describe('resolveOEmbedTarget', () => {
     ['the home page', `${ORIGIN}/`],
     ['an embed route, which is the player itself', `${ORIGIN}/meditations/142/embed`],
     ['the sitemap', `${ORIGIN}/sitemap.xml`],
+    // A prefix SahajCloud does not define is a path segment, not a locale, so
+    // this endpoint refuses it exactly as the page routes do (#315).
+    ['a media path under a prefix that is not a language', `${ORIGIN}/zz/lectures/163`],
     ['something that is not a URL', 'meditations/142'],
   ])('refuses %s', (_label, url) => {
     expect(resolveOEmbedTarget(url, ORIGIN)).toBeNull()

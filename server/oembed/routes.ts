@@ -15,10 +15,9 @@
 import type { Hono } from 'hono'
 import type { SahajCloudEnv } from '../sahajcloud-context'
 import { getDocumentById, getLecture, getWebTranslations } from '../sahajcloud-client'
-import type { Locale } from '../sahajcloud-types'
 import { documentEmbedHref } from '../../lib/document-routes'
 import { resolveLecture } from '../../lib/lecture-shape'
-import { absoluteHref, localeFromPath } from '../../lib/urls'
+import { absoluteHref } from '../../lib/urls'
 import {
   buildOEmbedResponse,
   positiveInteger,
@@ -33,8 +32,9 @@ const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=1800'
 /** The title and poster a player advertises, or nulls where the read found none. */
 async function readMedia(
   target: OEmbedTarget,
-  locale: Locale,
 ): Promise<{ title: string | null; thumbnailUrl: string | null } | null> {
+  const { locale } = target
+
   if (target.collection === 'lectures') {
     const lecture = await getLecture({ id: target.id, locale })
 
@@ -88,7 +88,7 @@ export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
       return c.json({ error: 'That URL is not a player on this site.' }, 404)
     }
 
-    const locale = localeOf(url ?? '')
+    const { locale } = target
     const embedPath = documentEmbedHref(target.collection, target.id)
 
     if (!embedPath) {
@@ -96,7 +96,7 @@ export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
     }
 
     const [media, translations] = await Promise.all([
-      readMedia(target, locale),
+      readMedia(target),
       getWebTranslations({ locale }),
     ])
 
@@ -120,13 +120,4 @@ export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
       }),
     )
   })
-}
-
-/** The locale the consumer's own URL was prefixed with, else the default. */
-function localeOf(url: string): Locale {
-  try {
-    return localeFromPath(new URL(url).pathname).locale
-  } catch {
-    return 'en'
-  }
 }
