@@ -66,6 +66,13 @@ Two things about `form` and the visitor's IP that only show in production:
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
   `server/sahajcloud-client.ts`.
+- ⚠ **A field SahajCloud assembles after it has validated the query cannot be narrowed by one.**
+  A meditation's `frames` is the case: an afterRead hook fills it from its own `frames` read,
+  which takes no `select`, `populate` or `depth` from ours, so a chakra keyframe arrives carrying
+  its node's whole `page` document at every depth. The read shape carries a `narrow` step for
+  that — `COLLECTION_BY_ID_CONFIG` in `server/sahajcloud-client.ts`, applied to the answer rather
+  than sent. Add one only after a query variant has been tried against production and come back
+  unchanged.
 - ⚠ **Return the shape the `select` asked for, never the generated document.** A read narrowed
   to four fields that hands back a `Page` lets every consumer typecheck `page.content` and read
   `undefined` at runtime. Pair the narrow type with a select type derived from it, so neither can
