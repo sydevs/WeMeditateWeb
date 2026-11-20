@@ -14,6 +14,8 @@ const settings = {
   homePage: null as { slug: string } | null,
   availableLocales: ['en'],
   audiences: [],
+  // `getWebConfig` always returns an array here, so the head reads one.
+  knowledgePages: [],
 }
 
 vi.mock('../../server/sahajcloud-client', () => ({
@@ -38,10 +40,25 @@ interface AbortError {
   _pageContextAbort?: { _urlRedirect?: { url: string; statusCode: number } }
 }
 
+/**
+ * A request for one slug. `urlParsed` and `urlPathname` are the two fields
+ * the head document is built from — Vike sets both on every real request.
+ */
+function request(slug: string, locale: string): PageContextServer {
+  const path = slug === 'index' ? '/index' : `/${slug}`
+
+  return {
+    locale,
+    routeParams: { slug },
+    urlPathname: path,
+    urlParsed: { origin: 'https://wemeditate.com' },
+  } as unknown as PageContextServer
+}
+
 /** The redirect a request throws, or `null` when it renders instead. */
 async function redirectOf(slug: string, locale = 'en') {
   try {
-    await data({ locale, routeParams: { slug } } as unknown as PageContextServer)
+    await data(request(slug, locale))
   } catch (error) {
     const target = (error as AbortError)._pageContextAbort?._urlRedirect
 
@@ -107,7 +124,7 @@ describe('Pages data', () => {
     settings.homePage = { slug: '' }
     getPageBySlug.mockResolvedValue({ id: 1, slug: '', content: [] })
 
-    const result = await data({ locale: 'fr', routeParams: { slug: 'index' } } as never)
+    const result = await data(request('index', 'fr'))
 
     expect(getPageBySlug).toHaveBeenLastCalledWith({ slug: '', locale: 'fr' })
     expect(getPageLocaleStatus).toHaveBeenLastCalledWith({ slug: '' })

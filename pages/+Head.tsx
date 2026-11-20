@@ -2,8 +2,10 @@
 
 //# BATI.has("mantine")
 import logoUrl from '../assets/logo.svg'
-import { useOptionalPageContext, useOrigin } from '../hooks/usePageContext'
+import { useLocale, useOptionalPageContext, useOrigin } from '../hooks/usePageContext'
 import { isCanonicalOrigin } from '../server/sitemap'
+import { APP_ICON, THEME_COLOR } from '../lib/site-identity'
+import { localeHref } from '../lib/urls'
 
 export default function HeadDefault() {
   // ⚠ **The analytics script is omitted entirely under a live preview**, and
@@ -26,12 +28,19 @@ export default function HeadDefault() {
   // production, so only the host tells a real pageview from one of ours —
   // the same answer `/robots.txt` and `/sitemap.xml` already give.
   const origin = useOrigin()
+  const locale = useLocale()
 
   return (
     <>
       <link crossOrigin="anonymous" href="https://assets.sydevelopers.com" rel="preconnect" />
       <link href="https://cloud.sydevelopers.com" rel="preconnect" />
       <link href={logoUrl} rel="icon" />
+      {/* The home-screen icon and the manifest. The manifest is a route, not
+          a file in `public/`, because both builds ship `public/` and the
+          Ladle playground is not this app. */}
+      <link href={APP_ICON} rel="apple-touch-icon" />
+      <link href={localeHref(locale, '/manifest.webmanifest')} rel="manifest" />
+      <meta content={THEME_COLOR} name="theme-color" />
 
       {/* Vike's client routing swaps the page with no document load, and a
           document load is all Fathom counts by default. */}

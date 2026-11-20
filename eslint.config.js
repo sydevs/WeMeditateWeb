@@ -227,10 +227,11 @@ export default defineConfig([
   // that site is, so its reason sits beside the code it is about. Neither is
   // ever turned off repo-wide.
   {
-    // Two authored HTML strings, neither of which takes visitor input:
-    // `atlas-head` emits JSON-LD it builds itself, and `SubtleSystemChart`
-    // injects `assets/chart.svg`, an asset this repo ships.
-    files: ['lib/atlas-head.tsx', 'components/organisms/SubtleSystem/SubtleSystemChart.tsx'],
+    // One authored HTML string, which takes no visitor input:
+    // `SubtleSystemChart` injects `assets/chart.svg`, an asset this repo
+    // ships. The head's JSON-LD sink is no longer one of these: it is a
+    // string Unhead renders into vike's `headHtmlEnd`, not a React prop.
+    files: ['components/organisms/SubtleSystem/SubtleSystemChart.tsx'],
     rules: { '@eslint-react/dom-no-dangerously-set-innerhtml': 'off' },
   },
   {

@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
 import { Button, Container, Image } from '../../atoms'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
+import { toParagraphs } from '../../../lib/paragraphs'
 import ornateBackground from '../../../assets/ornate.svg'
 import { useT } from '../../../hooks/useT'
 
@@ -11,10 +12,7 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   /** Secondary line rendered directly below the title. */
   subtitle?: string
 
-  /**
-   * Description text. Blank-line or newline separated runs render as
-   * separate paragraphs.
-   */
+  /** Description text. Each line break starts a new paragraph. */
   description: string
 
   /** Call-to-action button text. When omitted, no CTA button is rendered. */
@@ -60,14 +58,6 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
    * @default 'left'
    */
   align?: 'left' | 'right'
-}
-
-/** Split a textarea string into paragraph runs on blank lines or newlines. */
-function toParagraphs(text: string): string[] {
-  return text
-    .split(/\n+/)
-    .map((p) => p.trim())
-    .filter(Boolean)
 }
 
 /**

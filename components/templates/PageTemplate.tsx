@@ -4,8 +4,9 @@
  * `[slug]` renders it published and under the preview panel alike, so an
  * editor sees the page. Following Atomic Design, templates represent
  * page layout structures. It composes the article chrome: featured video,
- * title, author byline, rich-text body, and SEO `<head>` tags from the
- * page's SahajCloud meta.
+ * title, author byline and rich-text body. The head is built in the route's
+ * `+data.ts`, never here: the live preview and the embed routes share this
+ * template and neither is a URL to point a crawler at.
  *
  * @example
  * <PageTemplate page={pageData} />
@@ -15,7 +16,6 @@ import type { Page, Author, Video } from '../../server/sahajcloud-types'
 import { RichText } from '../organisms'
 import { VideoPlayer, Author as AuthorByline } from '../molecules'
 import { Container, Heading, PageTitle } from '../atoms'
-import { usePageHead } from '../../lib/head'
 import { isPopulated, populatedImageUrl } from '../../lib/payload-relationships'
 import { getLeadSplash } from '../../lib/content-blocks'
 
@@ -33,9 +33,6 @@ export interface PageTemplateProps {
 }
 
 export function PageTemplate({ page, hideTitle = false }: PageTemplateProps) {
-  // Set <title>/description/og:image from SahajCloud meta (must run unconditionally).
-  usePageHead({ meta: page.meta, fallbackTitle: page.title })
-
   const author = isPopulated<Author>(page.author) ? page.author : null
   const video = isPopulated<Video>(page.featuredVideo) ? page.featuredVideo : null
   const leadSplash = getLeadSplash(page.content)

@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
 import { Button, Container, Image } from '../../atoms'
 import { surface, type Surface } from '../../atoms/surface'
+import { toParagraphs } from '../../../lib/paragraphs'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Main heading text */
@@ -12,7 +13,7 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
    */
   subtitle?: string
 
-  /** Body text content (can be string or array of paragraphs) */
+  /** Body text: an array of paragraphs, or a string whose line breaks start new ones. */
   text: string | string[]
 
   /** Background image URL */
@@ -110,8 +111,7 @@ export function ContentOverlay({
         ? 'border-white text-white [&:not(:hover)]:text-glow-dark'
         : 'border-gray-900 text-gray-900 [&:not(:hover)]:text-glow-light'
 
-  // Convert text to array for consistent handling
-  const textParagraphs = Array.isArray(text) ? text : [text]
+  const textParagraphs = Array.isArray(text) ? text : toParagraphs(text)
 
   // Alignment classes for the content wrapper (desktop only)
   const alignmentClasses = {
