@@ -23,14 +23,15 @@
  * Each organism places and sizes its own ornament, and hides it below `lg`.
  */
 
-import { populatedImage, type TextBoxBlockFields } from './content-blocks'
+import { populatedImage } from './content-blocks'
+import type { TextBoxBlock } from '../server/payload-types'
 
 export type TextBoxDecoration = 'circle' | 'gradient' | 'triangle'
 
 /** `ornate` is the wisdom box's built-in graphic: it counts as a neighbour. */
 type Pick = TextBoxDecoration | 'ornate' | undefined
 
-function pickFor(box: TextBoxBlockFields, first: boolean): Pick {
+function pickFor(box: TextBoxBlock, first: boolean): Pick {
   if (box.imagePosition === 'overlay') {
     return first ? undefined : 'triangle'
   }
@@ -46,7 +47,7 @@ function pickFor(box: TextBoxBlockFields, first: boolean): Pick {
 
 /** The ornament each of a page's rendered text boxes draws, in page order. */
 export function textBoxDecorations(
-  boxes: readonly TextBoxBlockFields[],
+  boxes: readonly TextBoxBlock[],
 ): (TextBoxDecoration | undefined)[] {
   let previous: Pick
 
@@ -64,11 +65,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
 /** The fields of a `textbox` block node that renders, or `null`. */
-function renderedTextBox(node: unknown): TextBoxBlockFields | null {
+function renderedTextBox(node: unknown): TextBoxBlock | null {
   if (!isRecord(node) || node.type !== 'block' || !isRecord(node.fields)) {
     return null
   }
-  const fields = node.fields as unknown as TextBoxBlockFields & { blockType?: unknown }
+  const fields = node.fields as unknown as TextBoxBlock
 
   return fields.blockType === 'textbox' && populatedImage(fields.image) ? fields : null
 }
@@ -82,7 +83,7 @@ export function textBoxDecorationAt(parent: unknown, node: unknown): TextBoxDeco
     isRecord(parent) && Array.isArray(parent.children) && parent.children.includes(node)
       ? parent.children
       : [node]
-  const boxes: TextBoxBlockFields[] = []
+  const boxes: TextBoxBlock[] = []
   let index = -1
 
   for (const sibling of siblings) {

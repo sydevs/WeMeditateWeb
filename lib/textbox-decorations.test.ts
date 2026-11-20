@@ -1,16 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { textBoxDecorationAt, textBoxDecorations } from './textbox-decorations'
-import type { TextBoxBlockFields } from './content-blocks'
+import type { TextBoxBlock } from '../server/payload-types'
 
 const IMAGE = { id: 1, url: 'https://imagedelivery.net/acct/img-id/public', alt: '' }
 
-const side = (imagePosition: 'left' | 'right', wisdomStyle = false): TextBoxBlockFields => ({
-  image: IMAGE as unknown as TextBoxBlockFields['image'],
+const side = (imagePosition: 'left' | 'right', wisdomStyle = false): TextBoxBlock => ({
+  blockType: 'textbox',
+  image: IMAGE as unknown as TextBoxBlock['image'],
   imagePosition,
   wisdomStyle,
 })
-const overlay = (): TextBoxBlockFields => ({
-  image: IMAGE as unknown as TextBoxBlockFields['image'],
+const overlay = (): TextBoxBlock => ({
+  blockType: 'textbox',
+  image: IMAGE as unknown as TextBoxBlock['image'],
   imagePosition: 'overlay',
   textPosition: 'left',
 })

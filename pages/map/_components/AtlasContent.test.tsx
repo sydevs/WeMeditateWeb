@@ -207,6 +207,22 @@ describe('a region page', () => {
     expect(html).toContain('href="https://wemeditate.com/map/gb"')
     expect(html).toContain('aria-current="page"')
   })
+
+  it('renders the region without classes, rather than throwing, when the listing goes missing', () => {
+    // `AtlasSeoResponse` is mirrored from upstream by hand, so a field that
+    // stops being sent compiles here and must not turn the page into a 500.
+    const html = render(regionSeo({ events: undefined, eventCount: undefined }))
+
+    expect(html).toContain('Greater London')
+    expect(html).toContain('No meditation classes are listed here yet.')
+  })
+
+  it('renders the page without a breadcrumb, rather than throwing, when the trail goes missing', () => {
+    const html = render({ ...regionSeo(), breadcrumbs: undefined } as unknown as AtlasSeoResponse)
+
+    expect(html).toContain('Greater London')
+    expect(html).not.toContain('aria-label="Breadcrumb"')
+  })
 })
 
 describe('a class page', () => {
