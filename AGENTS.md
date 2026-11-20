@@ -2,9 +2,8 @@
 
 This file gives AI coding agents guidance for this repository.
 
-> `CLAUDE.md` is a symlink to this file for Claude Code compatibility. The nested guides under
-> `server/`, `components/` and `pages/` use the same symlink pattern. Claude-specific features
-> (hooks, skills, settings) stay in the `.claude/` folder.
+> `CLAUDE.md` is a symlink to this file for Claude Code compatibility, as beside each nested
+> guide. Claude-specific features (hooks, skills, settings) stay in the `.claude/` folder.
 
 This guide stays short on purpose. It states only facts that apply everywhere and that the code
 does not show directly. Rules for one part of the tree, or steps for a procedure, load on demand
@@ -69,9 +68,10 @@ wrangler does not auto-discover, so `pnpm deploy` keeps resolving `wrangler.toml
 and `design.wemeditate.com` as a Workers Custom Domain (sydevs/SahajAtlasWeb#266). See
 [docs/cloudflare-previews-ci.md](docs/cloudflare-previews-ci.md).
 
-Content reads are cached by the **Cloudflare edge in front of SahajCloud** for 600s, which a
-`Cache-Tag` purge on write may shorten but never guarantees. Nothing in this repo caches them. See
-[server/CACHING.md](server/CACHING.md) before you add a read.
+Content reads are cached by the **Cloudflare edge in front of SahajCloud**. Its TTL is the
+guarantee; a `Cache-Tag` purge on write may shorten it but never promises to. Nothing in this repo
+caches them. Read [server/CACHING.md](server/CACHING.md), which owns the figures, before you add a
+read.
 
 Keep browser-only libraries out of the Worker bundle: [components/AGENTS.md](components/AGENTS.md).
 
@@ -106,12 +106,12 @@ These rules apply whether or not the matching rule file or skill is loaded.
   **The generator is declared once**, as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`:
   vike-react's setting is global as well as cumulative, so a second declaration adds a second copy
   of the whole head to every page; `tests/guards/content-head.test.tsx` holds that.
-  **Never a head hook in a component**: `PageTemplate`, `MeditationTemplate` and
-  `LectureTemplate` are shared with the `embed` routes and the live preview. `/map` publishes
-  through the same generator from [lib/atlas-seo.ts](lib/atlas-seo.ts); its `@graph` arrives
-  already serialized. A URL advertises only the locales its own document is published in —
-  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the head, `og:locale:alternate` and
-  `/sitemap.xml`. The site's `availableLocales` is a filter on that set, never the set itself.
+  **Never a head hook in a component**: the content templates are shared with the `embed` routes
+  and the live preview. `/map` publishes through the same generator from
+  [lib/atlas-seo.ts](lib/atlas-seo.ts); its `@graph` arrives already serialized. A URL advertises
+  only the locales its own document is published in — [lib/hreflang.ts](lib/hreflang.ts) owns that
+  derivation for the head, `og:locale:alternate` and `/sitemap.xml`. The site's `availableLocales`
+  is a filter on that set, never the set itself.
 - **A site-wide document is a route, because `public/` is shipped by both builds** (see below).
   `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest` are Hono routes
   ([server/sitemap-routes.ts](server/sitemap-routes.ts)). The theme colour, the home-screen icon and
@@ -125,30 +125,22 @@ These rules apply whether or not the matching rule file or skill is loaded.
   answer from there. Never restate one of these rules at a call site. **An absolute URL for one of
   our own pages is `absoluteHref`**, not an origin glued onto `localeHref`: the embed snippet and
   a content-index card's `ItemList` entry both need one, and it leaves an off-site URL alone.
-  A **scheme** is part of that spelling: `isSafeHttpUrl`, `isSafeNavigationUrl` and
-  `isSafeLinkHref` live there too, and any URL
-  the site did not author itself passes one of them before it reaches an `href` or
-  `window.location` — they are what stops a configured `javascript:` value running in our origin.
-  Which one is the destination's: `window.location` takes the first two, and an `href` takes
-  `isSafeLinkHref`, the only one that admits what an editor legitimately types — a site path, a
-  bare `#anchor`, `mailto:` and `tel:`. **The `Link` atom applies that one itself**, so an href
-  reaching an anchor through `Link`, or through an atom that delegates to it, is already gated and
-  the call site adds nothing. `tests/guards/bare-anchors.test.ts` is what keeps that true: no
-  component may open an `<a>` outside the atom, and its allowlist is the whole exception list.
+  A **scheme** is part of that spelling: any URL the site did not author itself passes one of the
+  `isSafe*` gates there before it reaches an `href` or `window.location` — they are what stops a
+  configured `javascript:` value running in our origin. The destination picks the gate; each one's
+  header says which.
+  **The `Link` atom applies the `href` gate itself**, so an href reaching an anchor through `Link`,
+  or through an atom that delegates to it, is already gated and the call site adds nothing.
+  `tests/guards/bare-anchors.test.ts` keeps that true: no component may open an `<a>` outside the
+  atom, and its allowlist is the whole exception list.
 
   **One exception, and it is about what renders, not about safety.** A call site gates a value it
-  also passes to `Link` when a refused URL must render **nothing** — `Splash`'s call to action,
-  `AtlasContent`'s website link and `ErrorFallback`'s status page all do, because the atom renders
-  the words inert and words inviting a click that goes nowhere are worse than an absent element.
-  `isSafeHttpUrl` is the gate where the URL must additionally be absolute: a status page in
-  `target="_blank"` (`ErrorFallback`), and anything the atlas publishes, whose canonical
-  `sitePathFromUrl` parses.
+  also passes to `Link` when a refused URL must render **nothing**: the atom renders the words
+  inert, and words inviting a click that goes nowhere are worse than an absent element.
 
-  An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it, so
-  `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path
-  under such a URL in `normalizeContentPath`'s spelling, ready for the caller to locale-prefix,
-  and `null` for every other URL and for an unknown origin. Upstream canonicals arrive this way.
-  `atlasHref` is its only caller, and `Link` passes such a URL through untouched by design (#124).
+  An **absolute URL on our own origin** is ours to spell, so `Link` passes it through untouched by
+  design (#124). Upstream canonicals arrive this way; `sitePathFromUrl` turns one back into a site
+  path.
 - **`/index` is routing-internal, never a URL.** A redirect target, a canonical and an `hreflang`
   href all go through `normalizeContentPath`, and a request spelling `/index` itself 301s to its
   locale's home page.
@@ -217,7 +209,8 @@ Path-scoped and procedural guidance does not live in this file. It loads on dema
 places.
 
 **Path-scoped rules** (`.claude/rules/`) apply to one part of the tree. Claude Code injects a
-rule when it reads a matching file. A rule with no `paths:` loads in every session. The prose
+rule when it reads a file matching the rule's `paths:` frontmatter, which is its scope. A rule with
+no `paths:` loads in every session. The prose
 text lives in `docs/rules/`. `.claude/rules/` holds only symlinks to those files, and Claude Code
 cites the `docs/rules/` target.
 
@@ -226,23 +219,22 @@ for any write under `.claude/`, ahead of `permissions.allow`. A rule body stored
 stall an unattended run that tries to update it. The same file under `docs/` stays freely
 editable. **Do not move a rule body back into `.claude/`.**
 
-| Rule | Scope | Covers |
-| --- | --- | --- |
-| [code-comments](docs/rules/code-comments.md) | every session (no `paths:`) | When a comment earns its place, and the comments never to delete. Synced from `claude-workflow`: edit the canonical block there |
-| [design-system](docs/rules/design-system.md) | `components/**`, `layouts/**`, `pages/**` | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
-| [component-stories](docs/rules/component-stories.md) | `**/*.stories.tsx`, `components/ladle/**` | Ladle story structure, utility components, standard section order |
-| [testing](docs/rules/testing.md) | `**/*.test.ts(x)`, `tests/**` | Vitest in `node` env, jsdom per file for interaction, SSR-string assertions, the `+`-prefix trap under `pages/` |
-| [zod-validation](docs/rules/zod-validation.md) | `server/validation.ts`, `pages/**/+data.ts`, FormBuilder | Schema locations, Zod 4 syntax, which status codes Vike's `render()` accepts |
-| [rest-api](docs/rules/rest-api.md) | `server/sahajcloud-client.ts` and friends | Adding a query function, `pnpm types:cms`, API-key auth |
-| [tailwind](docs/rules/tailwind.md) | `layouts/*.css` | v4 CSS-first `@theme` configuration, the `@source` scan set, fonts |
+| Rule | Covers |
+| --- | --- |
+| [code-comments](docs/rules/code-comments.md) | When a comment earns its place, and the comments never to delete. Synced from `claude-workflow`: edit the canonical block there |
+| [design-system](docs/rules/design-system.md) | Atomic-design classification, mobile-first requirements, Icon/Button/Link/Divider patterns, refactoring to variants |
+| [component-stories](docs/rules/component-stories.md) | Ladle story structure, utility components, standard section order |
+| [testing](docs/rules/testing.md) | Vitest in `node` env, jsdom per file for interaction, SSR-string assertions, the `+`-prefix trap under `pages/` |
+| [zod-validation](docs/rules/zod-validation.md) | Schema locations, Zod 4 syntax, which status codes Vike's `render()` accepts |
+| [rest-api](docs/rules/rest-api.md) | Adding a query function, `pnpm types:cms`, API-key auth |
+| [tailwind](docs/rules/tailwind.md) | v4 CSS-first `@theme` configuration, the `@source` scan set, fonts |
 
 **Nested guides** are an `AGENTS.md` file with a `CLAUDE.md` symlink beside it. Its folder
 location defines its scope, so it needs no frontmatter. Codex and Cursor read it, as well as
 Claude Code.
 
-- [server/AGENTS.md](server/AGENTS.md) covers `server/**`. PayloadCMS reads must send `select`
-  (plus `populate` at depth > 1) and `locale`. Filter out unpublished relationships that return a
-  bare id, and log a Sentry warning instead of rendering a dead link.
+- [server/AGENTS.md](server/AGENTS.md) covers `server/**`: SahajCloud reads and the submission
+  proxy.
 - [components/AGENTS.md](components/AGENTS.md) covers `components/**`: browser-only libraries.
 - [pages/AGENTS.md](pages/AGENTS.md) covers `pages/**`: the `[slug]` matcher's exclusions.
 
