@@ -83,9 +83,10 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render and
   nothing here caches them, and a gap this warning catches stands until an editor fixes the data —
   so a bare `captureMessage` bills the Sentry quota per page view. Send one event per distinct gap
-  per isolate, and keep `console.warn` on every request. `warnOnce` in
-  [error-utils.ts](error-utils.ts) is that bound for a new warning; `getWebConfig` holds its own
-  memo, and one source's churn must never re-arm another's. Lower the volume, never the level: a
+  per isolate, and keep `console.warn` on every request. `createWarnOnce`
+  ([warn-once.ts](warn-once.ts)) is that bound for a new server warning, one memo per source, so
+  one source's churn cannot re-arm another's; `warnOnce` in [error-utils.ts](error-utils.ts) is
+  the same bound where the browser reaches the warning too. Lower the volume, never the level: a
   warning nobody can afford to leave on gets turned off, and then the gap is invisible again.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
