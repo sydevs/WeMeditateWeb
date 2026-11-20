@@ -100,12 +100,16 @@ export function documentHref(
  * inverse of {@link documentHref} for the full and embed routes, so the path
  * shapes live in one tested place:
  *
- * - full:  `/meditations/:id`        (plus an optional `/:locale` prefix)
- * - embed: `/meditations/:id/embed`  (plus an optional `/:locale` prefix)
+ * - full:  `/meditations/:id`
+ * - embed: `/meditations/:id/embed`
  *
  * The id is a single path segment (`[^/]+`), so the full matcher never
  * swallows the embed route, and the embed matcher requires the trailing
  * `/embed`.
+ *
+ * ⚠ No locale prefix: Vike hands a route the path `+onBeforeRoute` left after
+ * stripping a real one, so a prefix that still reaches here is not a locale.
+ * Tolerating one would serve `/zz/meditations/105` as a second address of the page.
  */
 export function matchDocumentRoute(
   collection: string,
@@ -128,10 +132,7 @@ function documentRoutePattern(collection: string, embed: boolean): RegExp {
   let pattern = DOCUMENT_ROUTE_PATTERNS.get(key)
 
   if (!pattern) {
-    // The optional locale prefix carries a region for a compound code
-    // (`pt-BR`, `en-AU`). The region is upper-case, exactly as SahajCloud
-    // stores it: `/pt-br/...` is not a locale prefix.
-    pattern = new RegExp(`^(?:/[a-z]{2}(?:-[A-Z]{2})?)?/${collection}/([^/]+)${suffix}/?$`)
+    pattern = new RegExp(`^/${collection}/([^/]+)${suffix}/?$`)
     DOCUMENT_ROUTE_PATTERNS.set(key, pattern)
   }
 
