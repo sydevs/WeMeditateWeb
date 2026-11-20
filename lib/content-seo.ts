@@ -28,12 +28,8 @@ import type { SeoDocument } from './head'
 import type { TFunction } from './i18n'
 import { buildAlternates } from './hreflang'
 import { isKnowledgePage } from './featured-nav'
-import {
-  contentBlocks,
-  contentIndexBlocks,
-  type LayoutBlockFields,
-  type ResolvedCardItem,
-} from './content-blocks'
+import { contentBlocks, contentIndexBlocks, type ResolvedCardItem } from './content-blocks'
+import type { LayoutBlock } from '../server/payload-types'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 import { getImageURL, getVariantName, getVariantWidth } from './cloudflare-images'
 import { isPopulated, populatedImageUrl } from './payload-relationships'
@@ -414,7 +410,7 @@ function composeTitle(name: string | null, siteName: string): string {
  * answer text is not a question a result could show.
  */
 function pageQuestions(content: unknown): SeoQuestion[] {
-  return contentBlocks<LayoutBlockFields>(content, 'layout')
+  return contentBlocks<LayoutBlock>(content, 'layout')
     .filter((block) => block.style === 'accordion')
     .flatMap((block) => block.items ?? [])
     .flatMap((item) =>
