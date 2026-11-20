@@ -158,9 +158,6 @@ describe('matchMapRoute', () => {
     ['/map/search', '/search'],
     ['/map/nl/amsterdam/add', '/nl/amsterdam/add'],
     ['/map/nl/amsterdam/1204/correct', '/nl/amsterdam/1204/correct'],
-    // onBeforeRoute normally strips the locale, but the matcher stands alone.
-    ['/fr/map/nl/amsterdam', '/nl/amsterdam'],
-    ['/fr/map', '/'],
   ])('matches %s to the atlas route %s', (pathname, atlasRoute) => {
     expect(matchMapRoute(pathname)).toEqual({ routeParams: { atlasRoute } })
   })
@@ -172,6 +169,11 @@ describe('matchMapRoute', () => {
     // is a Pages document, not the atlas.
     ['a page whose slug starts with map', '/maps'],
     ['a nested non-atlas route', '/meditations/142'],
+    // `+onBeforeRoute` strips a real locale first, so a prefix that reaches
+    // the matcher is not one, and the atlas must not answer under it.
+    ['the atlas under an unknown code', '/zz/map'],
+    ['an atlas route under an unknown code', '/zz/map/nl/amsterdam'],
+    ['the atlas under a locale-shaped code', '/fr/map'],
   ])('does not match %s', (_label, pathname) => {
     expect(matchMapRoute(pathname)).toBe(false)
   })
