@@ -23,16 +23,19 @@ import type { LivePreviewState } from '../lib/live-preview/protocol'
 const context = vi.hoisted(() => ({
   livePreview: null as LivePreviewState | null,
   origin: null as string | null,
+  locale: 'en' as string,
 }))
 
 vi.mock('../hooks/usePageContext', () => ({
   useOptionalPageContext: () => ({ livePreview: context.livePreview }),
   useOrigin: () => context.origin,
+  useLocale: () => context.locale,
 }))
 
 beforeEach(() => {
   context.livePreview = null
   context.origin = 'https://wemeditate.com'
+  context.locale = 'en'
 })
 
 describe('HeadDefault', () => {
@@ -71,5 +74,25 @@ describe('HeadDefault', () => {
     context.origin = null
 
     expect(renderToStaticMarkup(<HeadDefault />)).not.toContain('usefathom')
+  })
+})
+
+describe('the device identity every page carries', () => {
+  it('names the manifest in the locale of the page, and the home-screen icon', () => {
+    context.locale = 'fr'
+
+    const html = renderToStaticMarkup(<HeadDefault />)
+
+    // The manifest is a route, so it can answer in the page's language. A file
+    // in `public/` could not, and both builds ship `public/`.
+    expect(html).toContain('href="/fr/manifest.webmanifest"')
+    expect(html).toContain('rel="apple-touch-icon"')
+    expect(html).toContain('name="theme-color"')
+  })
+
+  it('carries them under a live preview too, because none is a URL claim', () => {
+    context.livePreview = { active: true } as LivePreviewState
+
+    expect(renderToStaticMarkup(<HeadDefault />)).toContain('rel="manifest"')
   })
 })

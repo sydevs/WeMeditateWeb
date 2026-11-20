@@ -195,6 +195,12 @@ They ship from `.ladle/static/` rather than `public/`, which the app's build cop
 [server/sitemap.ts](../server/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
 named as hosts that must never be indexed.
 
+**The app does carry a `<meta robots>`, and that is not a contradiction.** Every content route
+reads the same `isCanonicalOrigin` and says `noindex` off the real site
+([lib/content-seo.ts](../lib/content-seo.ts)), because a crawler can reach a preview URL without
+ever fetching `robots.txt` — from a pasted link, or a referrer log. The playground has no such
+per-page head to put one in, which is what the line above is about.
+
 ⚠ Ladle copies Vite's `publicDir` for free and Storybook does not. A move to Storybook
 (sydevs/SahajCloud#902) has to carry both the `public/` copy (`staticDirs`) and this plugin, or
 the playground silently becomes indexable again.

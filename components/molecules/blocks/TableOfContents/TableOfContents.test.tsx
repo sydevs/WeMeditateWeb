@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TableOfContents } from './TableOfContents'
+import { anchorFor } from '../../../../tests/_helpers/markup'
 
 describe('<TableOfContents>', () => {
   it('renders nothing when there are no headings', () => {
@@ -21,6 +22,21 @@ describe('<TableOfContents>', () => {
     expect(html).not.toContain('stale-slug')
     expect(html).toContain('When to do it?')
     expect(html).toContain('Explore below')
+  })
+
+  it('links a heading in a non-Latin script to its anchor, not to "#"', () => {
+    const html = renderToStaticMarkup(
+      <TableOfContents
+        headings={[
+          { slug: 'a', text: 'Какво е Кундалини?', level: 2 },
+          { slug: 'b', text: 'Մաս 1. Ուղիներ', level: 2 },
+        ]}
+      />,
+    )
+
+    expect(anchorFor(html, '#какво-е-кундалини')).not.toBe('')
+    expect(anchorFor(html, '#մաս-1-ուղիներ')).not.toBe('')
+    expect(html).not.toContain('href="#"')
   })
 
   it('indents headings by level relative to the shallowest one', () => {

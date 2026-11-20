@@ -116,7 +116,7 @@ jobs:
           - target: ladle
             project: wemeditate-design
             script: test:smoke:ladle
-            watch: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
+            watch: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils|sitemap)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
             ignore: '\.(test\.tsx?|spec\.ts|md)$'
             # Quoted on purpose. A bare YAML boolean reaches the `if:` below as a value whose
             # type GitHub does not promise, and the string "false" is truthy there — which
