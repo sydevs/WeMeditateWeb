@@ -136,9 +136,10 @@ Three rules still apply:
   where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
   `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
   without a body dump. A read where a 404 is a data gap, not an answer, takes `sahajCloudFetch`.
-  The status rides on the error because `detectErrorType` reads it structurally: a plain `Error`
-  classifies a Cloudflare-origin 52x as UNKNOWN, and `withRetry` then refuses the one shape a
-  Railway restart behind the edge produces.
+  The status rides on the error because `detectErrorType` reads it structurally, and its message
+  fallback recognises only 50x phrasing: a plain `Error` therefore classifies a Cloudflare-origin
+  52x as UNKNOWN, and `withRetry` then refuses the one shape a Railway restart behind the edge
+  produces.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See
