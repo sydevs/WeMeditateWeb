@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/cloudflare'
 import { Hono } from 'hono'
 import { SignJWT } from 'jose'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -5,6 +6,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '../lib/live-preview/protocol'
 import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../lib/submissions'
 import type { SahajCloudEnv } from './sahajcloud-context'
+import { SUBMISSION_BODY_LIMIT, submissionSchema } from './validation'
 
 /**
  * ⚠ The gate on `/api/live-preview/populate`, which is new attack surface.
@@ -223,7 +225,9 @@ describe('POST /api/live-preview/populate — the forward', () => {
  * prose.
  */
 
-function submit(options: { body?: unknown; token?: string; clientIp?: string } = {}) {
+function submit(
+  options: { body?: unknown; token?: string; clientIp?: string; contentType?: string } = {},
+) {
   const app = new Hono<SahajCloudEnv>()
 
   registerApiRoutes(app)
@@ -231,7 +235,7 @@ function submit(options: { body?: unknown; token?: string; clientIp?: string } =
   return app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': options.contentType ?? 'application/json',
       Origin: 'https://wemeditate.com',
       Referer: 'https://wemeditate.com/contact',
       ...(options.token ? { [TURNSTILE_TOKEN_HEADER]: options.token } : {}),
@@ -362,18 +366,211 @@ describe('POST /api/submissions — the body gate', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it('refuses a non-JSON body, without calling SahajCloud', async () => {
+  it('refuses a body that does not parse, without calling SahajCloud', async () => {
     const app = new Hono<SahajCloudEnv>()
 
     registerApiRoutes(app)
 
     const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: 'not json',
     })
 
     expect(response.status).toBe(400)
     expect(request).not.toHaveBeenCalled()
+  })
+
+  it('refuses a body not declared JSON, without calling SahajCloud', async () => {
+    const response = await submit({ token: 'turnstile-token', contentType: 'text/plain' })
+
+    expect(response.status).toBe(415)
+    expect(await response.json()).toEqual({ ok: false, code: 'invalid_request' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('takes a JSON content type with parameters', async () => {
+    const response = await submit({
+      token: 'turnstile-token',
+      contentType: 'Application/JSON; charset=utf-8',
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  it('refuses a body past the size bound unread, without calling SahajCloud', async () => {
+    const response = await submit({
+      token: 'turnstile-token',
+      body: {
+        form: 12,
+        type: 'contact',
+        submissionData: [{ field: 'message', value: 'x'.repeat(SUBMISSION_BODY_LIMIT) }],
+      },
+    })
+
+    expect(response.status).toBe(413)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(await response.json()).toEqual({ ok: false, code: 'invalid_request' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('never refuses a body the schema accepts for its size', async () => {
+    // Every bound at its maximum, in the character JSON escapes longest.
+    const worst = '\u0001'
+    const body = {
+      form: 12,
+      type: 'contact',
+      senderEmail: `${'a'.repeat(64)}@${'b'.repeat(185)}.org`,
+      submissionData: Array.from({ length: 40 }, (_, index) => ({
+        field: `${index}`.padEnd(100, worst),
+        value: worst.repeat(5000),
+      })),
+    }
+
+    expect(submissionSchema.safeParse(body).success).toBe(true)
+
+    const response = await submit({ token: 'turnstile-token', body })
+
+    expect(response.status).toBe(200)
+    expect(request).toHaveBeenCalledOnce()
+  })
+})
+
+describe('POST /api/submissions — the captcha token', () => {
+  it('answers a tokenless submission as SahajCloud would, without calling it', async () => {
+    const response = await submit()
+
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({ ok: false, code: 'captcha_failed' })
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('reads an empty token as none', async () => {
+    const app = new Hono<SahajCloudEnv>()
+
+    registerApiRoutes(app)
+
+    const response = await app.request(`https://wemeditate.com${SUBMISSION_PATH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', [TURNSTILE_TOKEN_HEADER]: '' },
+      body: JSON.stringify({ form: 12, type: 'contact', submissionData: [] }),
+    })
+
+    expect(response.status).toBe(403)
+    expect(request).not.toHaveBeenCalled()
+  })
+})
+
+describe('Both proxies — what reaches Sentry', () => {
+  /** Every argument of every Sentry call so far, as one string to search. */
+  const reported = () => JSON.stringify(vi.mocked(Sentry.captureMessage).mock.calls)
+
+  beforeEach(() => {
+    vi.mocked(Sentry.captureMessage).mockClear()
+  })
+
+  it('reports a failed draft read, without the token', async () => {
+    const token = await sign(NOW() + 600)
+
+    request.mockRejectedValue(new Error('SahajCloud down'))
+    await populate({ token })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The live-preview populate proxy failed', {
+      level: 'error',
+      tags: { source: 'live-preview populate' },
+      extra: { status: null, code: null, error: 'Error' },
+    })
+    expect(reported()).not.toContain(token)
+  })
+
+  it('reports a SahajCloud fault every time, with no body, token or address', async () => {
+    request.mockRejectedValue(sdkError(500, 'internal'))
+
+    await submit({ token: 'turnstile-token', clientIp: '203.0.113.7' })
+    await submit({ token: 'turnstile-token', clientIp: '203.0.113.7' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The submissions proxy failed', {
+      level: 'error',
+      tags: { source: 'submissions' },
+      extra: { status: 500, code: 'internal', error: 'Error' },
+    })
+
+    for (const secret of ['ada@example.org', 'Hello', 'turnstile-token', '203.0.113.7']) {
+      expect(reported()).not.toContain(secret)
+    }
+  })
+
+  it('reports an unreachable SahajCloud', async () => {
+    request.mockRejectedValue(new TypeError('fetch failed'))
+
+    await submit({ token: 'turnstile-token' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'The submissions proxy failed',
+      expect.objectContaining({ extra: { status: null, code: null, error: 'TypeError' } }),
+    )
+  })
+
+  it('leaves a failed captcha and a rate limit unreported: that is the gate working', async () => {
+    request.mockRejectedValueOnce(sdkError(403, 'captcha_failed'))
+    request.mockRejectedValueOnce(sdkError(429, 'rate_limited'))
+
+    await submit({ token: 'stale' })
+    await submit({ token: 'turnstile-token' })
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('reports an uncoded 403 every time: that is SahajCloud refusing our key', async () => {
+    // What production answers a key it does not accept: Payload's Forbidden,
+    // `{ errors: [{ message }] }`, with no code.
+    request.mockRejectedValue(sdkError(403))
+
+    await submit({ token: 'turnstile-token' })
+    await submit({ token: 'turnstile-token' })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The submissions proxy failed', {
+      level: 'error',
+      tags: { source: 'submissions' },
+      extra: { status: 403, code: null, error: 'Error' },
+    })
+  })
+
+  it('reports a refused draft read, whose caller it has already verified', async () => {
+    request.mockRejectedValue(sdkError(403))
+
+    await populate({ token: await sign(NOW() + 600) })
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith('The live-preview populate proxy failed', {
+      level: 'error',
+      tags: { source: 'live-preview populate' },
+      extra: { status: 403, code: null, error: 'Error' },
+    })
+  })
+
+  it('reports a 400 once per code per isolate', async () => {
+    // Codes no other case uses: the memo outlives a test.
+    request.mockRejectedValueOnce(sdkError(400, 'disposable_email'))
+    request.mockRejectedValueOnce(sdkError(400, 'disposable_email'))
+    request.mockRejectedValueOnce(sdkError(400, 'urls_not_allowed'))
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      expect((await submit({ token: 'turnstile-token' })).status).toBe(400)
+    }
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+    expect(reported()).toContain('"code":"disposable_email"')
+    expect(reported()).toContain('"code":"urls_not_allowed"')
+    expect(vi.mocked(Sentry.captureMessage).mock.calls[0][1]).toMatchObject({ level: 'warning' })
+  })
+
+  it('reports none of the refusals it answers itself', async () => {
+    await submit()
+    await submit({ body: { form: 'contact-form' }, token: 'turnstile-token' })
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })
 })
 

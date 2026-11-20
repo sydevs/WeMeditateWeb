@@ -322,27 +322,14 @@ export function getLeadSplash(content: Page['content']): LeadSplash | null {
 }
 
 /**
- * Resolves the lead splash from a layout route's data, whose shape
- * differs by route. A content route ([slug]) carries the page as `page`.
- * The live-preview route (/preview) carries the previewed document as
- * `initialData`. Only a `pages` preview has splash-leading content
- * (meditation and lecture previews never do). Lets LayoutChrome apply the
- * same overlaid-header treatment in preview as on the published page.
+ * Resolves the lead splash from a layout route's data. `pages` is the only
+ * collection whose content can lead with one, so `[slug]`'s `page` is the only
+ * shape to read; every other layout route gets no overlaid header.
  */
 export function leadSplashFromRouteData(
-  data:
-    | {
-        page?: Pick<Page, 'content'> | null
-        collection?: string
-        initialData?: Pick<Page, 'content'> | null
-      }
-    | null
-    | undefined,
+  data: { page?: Pick<Page, 'content'> | null } | null | undefined,
 ): { surface: 'light' | 'dark' } | null {
-  const content =
-    data?.page?.content ?? (data?.collection === 'pages' ? data?.initialData?.content : undefined)
-
-  return getLeadSplash(content)
+  return getLeadSplash(data?.page?.content)
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */

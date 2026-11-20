@@ -13,7 +13,13 @@ vi.stubGlobal('fetch', fetchMock)
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// Both SDKs re-export `@sentry/core`'s one `captureMessage`, so one spy stands
+// for both: `degrade` and `warnOnce` report through `@sentry/react` (see
+// error-utils.ts).
+const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
+
+vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
+vi.mock('@sentry/react', () => ({ captureMessage }))
 vi.mock('./payload-client', () => ({ createPayloadClient: () => ({ find, findGlobal }) }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one.
@@ -34,6 +40,8 @@ vi.mock('./error-utils', async (importOriginal) => {
 })
 
 const { registerSitemapRoutes } = await import('./sitemap-routes')
+const { SITEMAP_URL_CAP } = await import('./atlas-client')
+const { forgetReportedWarnings } = await import('./error-utils')
 
 function app() {
   const instance = new Hono<SahajCloudEnv>()
@@ -94,6 +102,8 @@ function stubAtlas(urls: { loc: string; lastmod?: string }[], status = 200) {
 
 beforeEach(() => {
   retrySpy.mockClear()
+  captureMessage.mockClear()
+  forgetReportedWarnings()
   find.mockReset()
   findGlobal.mockReset()
   fetchMock.mockReset()
@@ -165,7 +175,7 @@ describe('/sitemap.xml', () => {
     // degrades quietly (#98), so an unretried blip drops a whole section
     // from a response that still answers 200.
     expect(retrySpy).toHaveBeenCalledTimes(3)
-    expect(retrySpy.mock.calls.every(([config]) => config === undefined)).toBe(true)
+    expect(retrySpy.mock.calls.every(([config]) => config?.maxAttempts === undefined)).toBe(true)
   })
 
   describe('hreflang alternates', () => {
@@ -300,6 +310,9 @@ describe('/sitemap.xml', () => {
 
       expect(xml).toContain('<loc>https://wemeditate.com/</loc>')
       expect(xml).toContain('<loc>https://wemeditate.com/about</loc>')
+      // `getWebConfig`'s own retry reports this failure; a second report here
+      // would spend two events on one cause.
+      expect(captureMessage).not.toHaveBeenCalled()
     })
 
     it('still lists the home page when the content reads fail', async () => {
@@ -376,6 +389,82 @@ describe('/sitemap.xml', () => {
       // No need to read SahajCloud for a document this response will not fill.
       expect(find).not.toHaveBeenCalled()
       expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('reports a lost content half to Sentry, once per origin per isolate', async () => {
+      find.mockRejectedValue(new Error('SahajCloud unavailable'))
+
+      await get('/sitemap.xml')
+      await get('/sitemap.xml')
+
+      expect(captureMessage).toHaveBeenCalledTimes(1)
+      expect(captureMessage).toHaveBeenCalledWith(
+        'getContentSitemapUrls failed; sitemap lists only the home page',
+        expect.objectContaining({ level: 'warning' }),
+      )
+    })
+  })
+
+  describe('the content walk', () => {
+    /** A `find` answering `pages[n]` for page n + 1 of one collection, and nothing for the rest. */
+    function stubPages(collection: string, pages: { id: number }[][]) {
+      find.mockImplementation(async (args: { collection: string; page?: number }) => {
+        const index = (args.page ?? 1) - 1
+
+        if (args.collection !== collection) return { docs: [], hasNextPage: false }
+
+        return { docs: pages[index] ?? [], hasNextPage: index < pages.length - 1 }
+      })
+    }
+
+    it('lists a collection past one read, a page at a time', async () => {
+      // A collection larger than one read must still be listed in full.
+      stubPages('lectures', [[{ id: 1 }], [{ id: 2 }]])
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/lectures/1</loc>')
+      expect(xml).toContain('<loc>https://wemeditate.com/lectures/2</loc>')
+
+      const lectureReads = find.mock.calls.filter(([args]) => args.collection === 'lectures')
+
+      expect(lectureReads.map(([args]) => args.page)).toEqual([1, 2])
+      // A document created mid-walk lands on the last page, rather than
+      // shifting every later page by one.
+      expect(lectureReads[1][0]).toMatchObject({ limit: 500, sort: 'id' })
+    })
+
+    it('stops at its ceiling and reports the truncation rather than hiding it', async () => {
+      stubPages(
+        'meditations',
+        Array.from({ length: 5 }, (_, index) => [{ id: index + 1 }]),
+      )
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/meditations/3</loc>')
+      expect(xml).not.toContain('<loc>https://wemeditate.com/meditations/4</loc>')
+      expect(captureMessage).toHaveBeenCalledWith(
+        expect.stringContaining('truncated'),
+        expect.objectContaining({ level: 'warning' }),
+      )
+    })
+
+    it('keeps the content half inside the room the atlas cap leaves in one file', async () => {
+      // A sitemap file holds 50,000 URLs and the atlas half may take
+      // SITEMAP_URL_CAP of them. A crawler refuses a file past the limit whole.
+      let next = 0
+
+      find.mockImplementation(async () => ({
+        docs: Array.from({ length: 500 }, () => ({ id: ++next, slug: `page-${next}` })),
+        hasNextPage: true,
+      }))
+
+      const xml = await (await get('/sitemap.xml')).text()
+      const listed = xml.match(/<loc>/g)?.length ?? 0
+
+      expect(listed).toBeGreaterThan(1500)
+      expect(listed).toBeLessThanOrEqual(50_000 - SITEMAP_URL_CAP)
     })
   })
 })

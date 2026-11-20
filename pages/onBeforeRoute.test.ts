@@ -132,3 +132,51 @@ describe('onBeforeRoute', () => {
     expect(routeOf('/pt-br/about')).toEqual({ locale: 'en', path: '/pt-br/about' })
   })
 })
+
+/** Every route function under `pages/`, keyed by its file. */
+const ROUTE_FUNCTIONS = import.meta.glob<{
+  default: (pageContext: { urlPathname: string }) => unknown
+}>('./**/+route.ts', { eager: true })
+
+/** The route files that claim a request, given the path this hook leaves the router. */
+function routesClaiming(pathname: string): string[] {
+  const urlPathname = routeOf(pathname).path
+
+  return Object.entries(ROUTE_FUNCTIONS)
+    .filter(([, route]) => route.default({ urlPathname }))
+    .map(([file]) => file)
+}
+
+describe('onBeforeRoute with the route functions', () => {
+  it('finds the route functions', () => {
+    expect(Object.keys(ROUTE_FUNCTIONS)).toContain('./map/+route.ts')
+  })
+
+  it.each([
+    ['/fr/meditations', './meditations/(index)/+route.ts'],
+    ['/fr/meditations/105', './meditations/[id]/(full)/+route.ts'],
+    ['/fr/meditations/105/embed', './meditations/[id]/embed/+route.ts'],
+    ['/pt-BR/lectures/162', './lectures/[id]/(full)/+route.ts'],
+    ['/ru/lectures/162/embed', './lectures/[id]/embed/+route.ts'],
+    ['/de/map', './map/+route.ts'],
+    ['/de/map/nl/amsterdam', './map/+route.ts'],
+  ])('routes %s under a real locale', (pathname, file) => {
+    expect(routesClaiming(pathname)).toEqual([file])
+  })
+
+  // A prefix this hook does not strip is not a locale, so no route may take
+  // the path under it: each would be a second address of a real page.
+  it.each([
+    '/zz/meditations',
+    '/zz/meditations/105',
+    '/zz/meditations/105/embed',
+    '/zz/lectures',
+    '/zz/lectures/162',
+    '/zz/lectures/162/embed',
+    '/zz/map',
+    '/zz/map/nl/amsterdam',
+    '/zz/about',
+  ])('routes nothing for %s', (pathname) => {
+    expect(routesClaiming(pathname)).toEqual([])
+  })
+})

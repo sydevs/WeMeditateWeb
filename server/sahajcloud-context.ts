@@ -40,7 +40,7 @@ export interface SahajCloudContext {
  */
 const sahajCloudContextSchema = z.object({
   apiKey: apiKeySchema,
-  baseURL: baseUrlSchema,
+  baseURL: z.string('PUBLIC__SAHAJCLOUD_URL is not set in this build').pipe(baseUrlSchema),
 })
 
 /**
@@ -62,7 +62,8 @@ export function tryGetContext(): Context<SahajCloudEnv> | undefined {
  *
  * Configuration sources:
  * - apiKey: Cloudflare Workers context (runtime secret) or import.meta.env (dev)
- * - baseURL: import.meta.env (build-time, from .env.production or .env.local)
+ * - baseURL: import.meta.env (build-time, from .env.production or .env.local);
+ *   only development falls back to a local SahajCloud
  *
  * @returns SahajCloud configuration with apiKey and baseURL
  * @throws Error if configuration validation fails
@@ -72,7 +73,11 @@ export function getSahajCloudContext(): SahajCloudContext {
 
   const apiKey = context?.env?.SAHAJCLOUD_API_KEY || import.meta.env.SAHAJCLOUD_API_KEY
 
-  const baseURL = import.meta.env.PUBLIC__SAHAJCLOUD_URL || 'http://localhost:3000'
+  // A production build without the URL fails here, on its first read, rather than send every
+  // read to a localhost no Worker can reach and surface as a network outage.
+  const baseURL =
+    import.meta.env.PUBLIC__SAHAJCLOUD_URL ||
+    (import.meta.env.DEV ? 'http://localhost:3000' : undefined)
 
   const result = sahajCloudContextSchema.safeParse({ apiKey, baseURL })
 

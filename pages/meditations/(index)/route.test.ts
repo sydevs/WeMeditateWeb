@@ -13,14 +13,11 @@ import documentRoute from '../[id]/(full)/+route'
 const matches = (urlPathname: string) => route({ urlPathname })
 
 describe('/meditations route', () => {
-  it.each(['/meditations', '/meditations/', '/fr/meditations', '/pt-BR/meditations'])(
-    'matches %s',
-    (path) => {
-      expect(matches(path)).toBe(true)
-    },
-  )
+  it.each(['/meditations', '/meditations/'])('matches %s', (path) => {
+    expect(matches(path)).toBe(true)
+  })
 
-  it.each(['/meditations/105', '/fr/meditations/105', '/meditations/105/embed', '/meditate-now'])(
+  it.each(['/meditations/105', '/meditations/105/embed', '/meditate-now'])(
     'does not match %s',
     (path) => {
       expect(matches(path)).toBe(false)
@@ -32,7 +29,13 @@ describe('/meditations route', () => {
     expect(documentRoute({ urlPathname: '/meditations/105' })).not.toBe(false)
   })
 
-  it('does not treat a lower-case region as a locale prefix', () => {
-    expect(matches('/pt-br/meditations')).toBe(false)
-  })
+  // `+onBeforeRoute` strips a real locale before any route runs, so a prefix
+  // reaching here is not one, and taking it would mint a second address of the
+  // list. `pages/onBeforeRoute.test.ts` pins the hook-plus-route pair.
+  it.each(['/fr/meditations', '/pt-BR/meditations', '/pt-br/meditations', '/zz/meditations'])(
+    'refuses the unstripped prefix %s',
+    (path) => {
+      expect(matches(path)).toBe(false)
+    },
+  )
 })

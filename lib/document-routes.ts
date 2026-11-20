@@ -111,10 +111,12 @@ export const MEDITATIONS_INDEX_PATH = `/${MEDITATIONS_SEGMENT}`
 
 /**
  * Matches `/meditations` itself — the list of the meditations the mood finder
- * offers — with an optional locale prefix, and nothing under it.
+ * offers — and nothing under it.
  *
  * It lives here because `/meditations/:id` does: the two patterns must stay
  * mutually exclusive, and a copy in the route file would be free to drift.
+ *
+ * ⚠ No locale prefix, for the reason {@link matchDocumentRoute} gives.
  */
 export function matchMeditationsIndexRoute(urlPathname: string): boolean {
   return MEDITATIONS_INDEX_ROUTE.test(urlPathname)
@@ -126,12 +128,16 @@ export function matchMeditationsIndexRoute(urlPathname: string): boolean {
  * inverse of {@link documentHref} for the full and embed routes, so the path
  * shapes live in one tested place:
  *
- * - full:  `/meditations/:id`        (plus an optional `/:locale` prefix)
- * - embed: `/meditations/:id/embed`  (plus an optional `/:locale` prefix)
+ * - full:  `/meditations/:id`
+ * - embed: `/meditations/:id/embed`
  *
  * The id is a single path segment (`[^/]+`), so the full matcher never
  * swallows the embed route, and the embed matcher requires the trailing
  * `/embed`.
+ *
+ * ⚠ No locale prefix: Vike hands a route the path `+onBeforeRoute` left after
+ * stripping a real one, so a prefix that still reaches here is not a locale.
+ * Tolerating one would serve `/zz/meditations/105` as a second address of the page.
  */
 export function matchDocumentRoute(
   collection: string,
@@ -148,14 +154,7 @@ export function matchDocumentRoute(
 // space is the fixed set of document collections × {full, embed}.
 const DOCUMENT_ROUTE_PATTERNS = new Map<string, RegExp>()
 
-/**
- * The optional locale prefix every route here allows. It carries a region for a
- * compound code (`pt-BR`, `en-AU`), upper-case exactly as SahajCloud stores it:
- * `/pt-br/...` is not a locale prefix.
- */
-const LOCALE_PREFIX = '^(?:/[a-z]{2}(?:-[A-Z]{2})?)?'
-
-const MEDITATIONS_INDEX_ROUTE = new RegExp(`${LOCALE_PREFIX}/${MEDITATIONS_SEGMENT}/?$`)
+const MEDITATIONS_INDEX_ROUTE = new RegExp(`^/${MEDITATIONS_SEGMENT}/?$`)
 
 function documentRoutePattern(collection: string, embed: boolean): RegExp {
   const suffix = embed ? '/embed' : ''
@@ -163,7 +162,7 @@ function documentRoutePattern(collection: string, embed: boolean): RegExp {
   let pattern = DOCUMENT_ROUTE_PATTERNS.get(key)
 
   if (!pattern) {
-    pattern = new RegExp(`${LOCALE_PREFIX}/${collection}/([^/]+)${suffix}/?$`)
+    pattern = new RegExp(`^/${collection}/([^/]+)${suffix}/?$`)
     DOCUMENT_ROUTE_PATTERNS.set(key, pattern)
   }
 
