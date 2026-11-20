@@ -10,6 +10,7 @@ const player = vi.hoisted(() => ({
   load: vi.fn(),
   play: vi.fn(),
   pause: vi.fn(),
+  unmute: vi.fn(),
   isPlaying: false,
 }))
 
@@ -30,6 +31,7 @@ vi.mock('./useAudioPlayer', () => ({
       load: player.load,
       play: player.play,
       pause: player.pause,
+      unmute: player.unmute,
     } satisfies Partial<AudioPlayerControls>,
   ],
 }))
@@ -56,6 +58,7 @@ beforeEach(() => {
   player.load.mockClear()
   player.play.mockClear()
   player.pause.mockClear()
+  player.unmute.mockClear()
   player.isPlaying = false
 })
 
@@ -145,5 +148,17 @@ describe('usePlaylistAudioPlayer — selectTrack', () => {
     act(() => result.current[1].next())
 
     expect(lastLoad().autoplay).toBe(true)
+  })
+})
+
+describe('usePlaylistAudioPlayer — unmute', () => {
+  // AudioPlayer's volume slider calls it on every move, so a muted playlist
+  // becomes audible again by moving the slider.
+  it('unmutes the core player', () => {
+    const { result } = renderHook(() => usePlaylistAudioPlayer({ tracks }))
+
+    act(() => result.current[1].unmute())
+
+    expect(player.unmute).toHaveBeenCalledOnce()
   })
 })

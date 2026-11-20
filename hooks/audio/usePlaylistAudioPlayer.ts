@@ -19,12 +19,13 @@ export interface UsePlaylistAudioPlayerOptions {
  * Playlist wrapper hook for useAudioPlayer.
  * Adds playlist management (tracks, shuffle, next/prev) on top of the core hook.
  *
- * Call it inside an `AudioPlayerProvider`, and hold it in whichever component
- * owns the playing track — the one that renders both the player and anything
- * else reading the track, such as a playlist or album art. It owns the index
- * outright: nothing passes one in, and a consumer asks for a track by calling
- * `selectTrack`. A second copy of the index synchronised by props is what
- * played and highlighted two different tracks (#249).
+ * Hold it in whichever component owns the playing track — the one that renders
+ * both the player and anything else reading the track, such as a playlist or
+ * album art. It owns the index outright: nothing passes one in, and a consumer
+ * asks for a track by calling `selectTrack`. A second copy of the index
+ * synchronised by props is what played and highlighted two different tracks
+ * (#249). No `AudioPlayerProvider` is needed: react-use-audio-player's own hook
+ * never reads that context.
  *
  * @example
  * const [state, controls] = usePlaylistAudioPlayer({ tracks, shuffle: true })
@@ -195,6 +196,7 @@ export function usePlaylistAudioPlayer({
     seek: playerControls.seek,
     setVolume: playerControls.setVolume,
     toggleMute: playerControls.toggleMute,
+    unmute: playerControls.unmute,
     toggleShuffle,
     selectTrack,
   }

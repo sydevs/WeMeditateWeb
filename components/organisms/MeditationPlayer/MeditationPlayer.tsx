@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { AudioPlayerProvider } from 'react-use-audio-player'
 import {
   PlayIcon,
   PauseIcon,
@@ -70,6 +69,25 @@ const PLACEHOLDER_IMAGE =
     <rect width="400" height="400" fill="url(#g)"/>
   </svg>
 `)
+
+// How far each key moves the progress handle, in seconds.
+const SEEK_KEY_STEPS: Record<string, number> = {
+  ArrowRight: 5,
+  ArrowUp: 5,
+  ArrowLeft: -5,
+  ArrowDown: -5,
+  PageUp: 30,
+  PageDown: -30,
+}
+
+/** Where a key moves the playhead, or null for a key the progress handle leaves alone. */
+function seekTargetForKey(key: string, time: number, duration: number): number | null {
+  if (key === 'Home') return 0
+  if (key === 'End') return duration
+  if (!Object.hasOwn(SEEK_KEY_STEPS, key)) return null
+
+  return Math.min(duration, Math.max(0, time + SEEK_KEY_STEPS[key]))
+}
 
 export interface MeditationFrame {
   /** Timestamp in seconds when this frame should be displayed */
@@ -344,7 +362,7 @@ function AudioControls({
  *   onPlaybackTimeUpdate={handlePlaybackUpdate}
  * />
  */
-function MeditationPlayerInner({
+export function MeditationPlayer({
   track,
   subtitle,
   frames,
@@ -359,6 +377,7 @@ function MeditationPlayerInner({
   ...props
 }: MeditationPlayerProps) {
   const t = useT()
+  const seekLabelId = useId()
   // react-use-audio-player caches Howl instances in a module-global map,
   // keyed by `src`. So multiple players on one page that share a track URL,
   // for example the Ladle story, would drive one shared audio instance:
@@ -638,7 +657,10 @@ function MeditationPlayerInner({
           {/* Label + Founder Info - Top on narrow, right on wide */}
           <div className="flex items-start justify-between @4xl:col-span-3 @4xl:flex-col @4xl:items-end @4xl:justify-start @4xl:order-3 @4xl:space-y-4">
             <div className="@4xl:hidden">
-              <p className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase">
+              <p
+                className="text-xs sm:text-sm tracking-widest text-gray-700 uppercase"
+                id={seekLabelId}
+              >
                 {t('meditation.general.label')}
               </p>
             </div>
@@ -761,12 +783,29 @@ function MeditationPlayerInner({
                   <SimpleLeafSvg className="w-6 h-6" />
                 </div>
 
-                {/* Draggable handle at end of progress - larger click area for better touch/mouse interaction */}
+                {/* `aria-labelledby` still names the slider where the wide
+                    layout hides that label: a node referenced directly counts
+                    even when hidden.
+                    shortcut: named by the "Meditation" label, swap to `media.a11y.progress` when sydevs/SahajCloud#1222 lands. */}
                 <div
-                  className="absolute w-11 h-11 cursor-grab active:cursor-grabbing -translate-1/2 z-15"
+                  aria-labelledby={seekLabelId}
+                  aria-valuemax={Math.round(effectiveDuration)}
+                  aria-valuemin={0}
+                  aria-valuenow={Math.round(Math.min(displayTime, effectiveDuration))}
+                  aria-valuetext={formatDuration(displayTime)}
+                  className="absolute w-11 h-11 rounded-full cursor-grab active:cursor-grabbing -translate-1/2 z-15 focus-ring"
+                  role="slider"
                   style={{
                     left: `${handleX}%`,
                     top: `${handleY}%`,
+                  }}
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    const target = seekTargetForKey(event.key, displayTime, effectiveDuration)
+
+                    if (target === null) return
+                    event.preventDefault()
+                    handleSeek(target)
                   }}
                   onMouseDown={(e) => {
                     e.stopPropagation()
@@ -871,14 +910,5 @@ function MeditationPlayerInner({
         )}
       </div>
     </div>
-  )
-}
-
-/** MeditationPlayer with AudioPlayerProvider context wrapper */
-export function MeditationPlayer(props: MeditationPlayerProps) {
-  return (
-    <AudioPlayerProvider>
-      <MeditationPlayerInner {...props} />
-    </AudioPlayerProvider>
   )
 }
