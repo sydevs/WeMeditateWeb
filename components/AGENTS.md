@@ -38,9 +38,9 @@ dist/client/assets/static/layouts_tailwind-*.css` must not move when the player 
 
 ## What a visitor without JavaScript gets instead
 
-Four components defer to the browser through `ClientOnly` + `React.lazy`, and
+Five components defer to the browser through `ClientOnly` + `React.lazy`, and
 each one is a hole in the server's HTML. This table is what a reader checks
-before adding a fifth, and what the accessibility walk-through
+before adding a sixth, and what the accessibility walk-through
 ([docs/accessibility-walkthrough.md](../docs/accessibility-walkthrough.md))
 reads for the "content everyone can reach" line. The rule above owns *why*
 `ClientOnly` rather than a dynamic `import()`; this owns what the hole costs.
@@ -51,8 +51,9 @@ reads for the "content everyone can reach" line. The rule above owns *why*
 | [molecules/Lightbox](molecules/Lightbox/index.tsx) | `yet-another-react-lightbox` is browser-only | Nothing, and nothing is lost: it is an enlargement of an image already on the page |
 | [molecules/EmbedButton](molecules/EmbedButton/index.tsx) | It reads `window.location.origin` and the Clipboard API | Nothing. It offers a snippet for embedding this page elsewhere, which is not the page's content |
 | [molecules/LocationSearch](molecules/LocationSearch/index.tsx) | `@mapbox/search-js-react` needs `document` and `window` | Nothing — and **no page renders it today.** Only the `molecules` barrel and `.ladle/components.tsx` reach it. A page that adopts it owes a no-JavaScript path of its own, because an address field with nothing behind it is a dead end rather than a missing extra |
+| [organisms/SubtleSystem](organisms/SubtleSystem/SubtleSystem.tsx) | Weight, not the browser: the drawing is ~325 KB of markup, and a static import would put it in the RichText chunk every page loads. Only the drawing defers — the previews and their links still server-render | An empty box at the drawing's size, so nothing moves when it lands; a chunk that fails to load leaves the same box. Without JavaScript the drawing never opened a preview, so what is lost is the picture, not a link |
 | [organisms/ClassDirectory](organisms/ClassDirectory/ClassDirectory.tsx) | Not deferred at all — the element server-renders. The Sahaj Atlas widget that fills it is a third-party loader, and it needs a browser | **An empty box.** `/map` renders its own `AtlasContent` inside the element; there is nothing equivalent to render here, because this block fetches no atlas document. So a visitor without JavaScript, one the loader cannot reach, and a deployment with no `PUBLIC__SAHAJ_ATLAS_KEY` all get a sized, labelled, empty region. The label is `map.a11y.classes_heading`, so it is at least announced. Giving it real fallback content needs a SahajCloud-owned string and a read this block does not make |
 
 A page's title, its body copy and its forms all server-render, so none of the
-first four is on that path. `FormBuilder` deliberately stays in the SSR graph for
+first five is on that path. `FormBuilder` deliberately stays in the SSR graph for
 exactly that reason — the rule above prices that trade.

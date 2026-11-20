@@ -20,7 +20,9 @@
  * normally.
  */
 
-import type { Hono } from 'hono'
+import * as Sentry from '@sentry/cloudflare'
+import type { Context, Hono } from 'hono'
+import { bodyLimit } from 'hono/body-limit'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import {
   documentReadArgs,
@@ -37,9 +39,10 @@ import {
   TURNSTILE_TOKEN_HEADER,
   type SubmissionResult,
 } from '../lib/submissions'
+import { readStatus } from './error-utils'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
-import { idSchema, submissionSchema } from './validation'
+import { idSchema, SUBMISSION_BODY_LIMIT, submissionSchema } from './validation'
 import type { Locale } from './sahajcloud-types'
 import { isLocale } from './sahajcloud-types'
 
@@ -51,6 +54,18 @@ function parseLocale(raw: string | undefined): Locale {
 /** Cache the JSON briefly in the browser and CDN. The heavy work is already
  * edge-cached upstream. stale-while-revalidate keeps repeat views instant. */
 const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=1800'
+
+/**
+ * A related section's answer. `null` is a read that failed: it answers an
+ * empty section and is never cached, since `CACHE_CONTROL` would hold that
+ * empty section for up to half an hour after SahajCloud recovered.
+ */
+function relatedAnswer(items: unknown[] | null): Response {
+  return Response.json(
+    { items: items ?? [] },
+    { headers: { 'Cache-Control': items ? CACHE_CONTROL : 'no-store' } },
+  )
+}
 
 /** Turns Payload's POST body into the GET SahajCloud actually answers. */
 const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'
@@ -163,7 +178,9 @@ function registerLivePreviewPopulate(app: Hono<SahajCloudEnv>): void {
       return new Response(await response.text(), {
         headers: { 'Cache-Control': 'no-store', 'Content-Type': 'application/json' },
       })
-    } catch {
+    } catch (error) {
+      reportProxyFailure('live-preview populate', error)
+
       // A draft read that fails is not a broken page. The browser keeps the
       // last good document on screen (see `lib/live-preview/document.tsx`).
       return c.body(null, 502)
@@ -172,13 +189,84 @@ function registerLivePreviewPopulate(app: Hono<SahajCloudEnv>): void {
 }
 
 /**
- * A refused submission, as one code and one status the browser may see.
+ * The status SahajCloud answered with, and the refusal code it named.
  *
  * SahajCloud answers a refusal with `{ errors: [{ message, data: { code } }] }`
- * and `@payloadcms/sdk` rethrows that array on its error. The **code** is
- * forwarded and the **message** is not: the message is SahajCloud's own English,
- * written for an integrator reading a log, while the visitor's copy is
- * SahajCloud-owned and rendered from a translation key.
+ * and `@payloadcms/sdk` rethrows that array on its error. A transport failure
+ * carries neither.
+ */
+function upstreamRefusal(error: unknown): { code?: string; status?: number } {
+  const { errors } = (error ?? {}) as { errors?: { data?: { code?: unknown } }[] }
+  const raw = errors?.[0]?.data?.code
+
+  return { code: typeof raw === 'string' ? raw : undefined, status: readStatus(error) }
+}
+
+/**
+ * The 400s this isolate has already reported, as `<proxy>:<code>`.
+ *
+ * A 400 is the caller's by status, but it is also how a contract drift shows:
+ * the intake refusing a key our form sends, or a read shape SahajCloud stopped
+ * accepting. One event per distinct code per isolate keeps that visible
+ * without billing one per visitor who typed a disposable address — the bound
+ * `reportOnce` in report-once.ts states. Past the cap the set is emptied rather
+ * than pruned: re-reporting is the harmless direction.
+ */
+const reportedRefusals = new Set<string>()
+
+const MAX_REPORTED_REFUSALS = 64
+
+/**
+ * Reports a failed SahajCloud call from one of the two proxies.
+ *
+ * A failure that is not the caller's — a 5xx, a timeout, an unreachable
+ * SahajCloud, a key it refuses — reports every time. A rate limit, or the
+ * intake refusing the visitor with a coded 403 (a failed captcha), is the gate
+ * working and is not reported; a 400 reports once per code.
+ *
+ * ⚠ A refused key is an **uncoded** 403 — Payload's own Forbidden, never a
+ * 401 (verified against production) — so only the intake's code makes a 403
+ * the caller's. The populate proxy has verified its caller before it calls,
+ * so a 403 there is always ours.
+ *
+ * ⚠ Only the status, the code and the error's name reach the event: the body
+ * is the visitor's message, the token is a credential, the address is
+ * personal, and SahajCloud's own message may quote any of them.
+ */
+function reportProxyFailure(proxy: 'submissions' | 'live-preview populate', error: unknown): void {
+  const { code, status } = upstreamRefusal(error)
+
+  if (status === 429) return
+
+  if (status === 403 && proxy === 'submissions' && code) return
+
+  if (status === 400) {
+    const signature = `${proxy}:${code ?? ''}`
+
+    if (reportedRefusals.has(signature)) return
+
+    if (reportedRefusals.size >= MAX_REPORTED_REFUSALS) reportedRefusals.clear()
+
+    reportedRefusals.add(signature)
+  }
+
+  Sentry.captureMessage(`The ${proxy} proxy failed`, {
+    level: status === 400 ? 'warning' : 'error',
+    tags: { source: proxy },
+    extra: {
+      status: status ?? null,
+      code: code ?? null,
+      error: error instanceof Error ? error.name : typeof error,
+    },
+  })
+}
+
+/**
+ * A refused submission, as one code and one status the browser may see.
+ *
+ * The **code** is forwarded and the **message** is not: the message is
+ * SahajCloud's own English, written for an integrator reading a log, while the
+ * visitor's copy is SahajCloud-owned and rendered from a translation key.
  *
  * A client error (a failed captcha, a disposable address, a key the form never
  * declared) is the caller's and keeps its status. Anything else — a 500, an
@@ -186,18 +274,33 @@ function registerLivePreviewPopulate(app: Hono<SahajCloudEnv>): void {
  * browser never sees our upstream's fault as its own bad request.
  */
 function submissionFailure(error: unknown): { code?: string; status: 400 | 403 | 429 | 502 } {
-  const { errors, status } = (error ?? {}) as {
-    errors?: { data?: { code?: unknown } }[]
-    status?: unknown
-  }
-  const raw = errors?.[0]?.data?.code
-  const code = typeof raw === 'string' ? raw : undefined
+  const { code, status } = upstreamRefusal(error)
 
   if (status === 403 || status === 429 || status === 400) {
     return { code, status }
   }
 
   return { status: 502 }
+}
+
+/**
+ * A refusal the submission route answers itself, without calling SahajCloud.
+ *
+ * `bodyLimit` answers before the handler runs, so this sets `no-store` too.
+ */
+function refuseSubmission(
+  c: Context<SahajCloudEnv>,
+  code: 'captcha_failed' | 'invalid_request',
+  status: 400 | 403 | 413 | 415,
+) {
+  c.header('Cache-Control', 'no-store')
+
+  return c.json<SubmissionResult>({ ok: false, code }, status)
+}
+
+/** Whether a request's `Content-Type` names JSON, whatever its parameters. */
+function isJson(contentType: string | undefined): boolean {
+  return contentType?.split(';')[0].trim().toLowerCase() === 'application/json'
 }
 
 /**
@@ -222,17 +325,37 @@ function submissionFailure(error: unknown): { code?: string; status: 400 | 403 |
  * Nothing of the created row is echoed back. An API client holds create and
  * no read on `user-submissions` on purpose, and the browser needs only
  * whether it landed.
+ *
+ * A body is refused unread past `SUBMISSION_BODY_LIMIT`, and unparsed unless
+ * it is declared JSON, so neither costs a buffer the schema would refuse.
  */
 function registerSubmissions(app: Hono<SahajCloudEnv>): void {
+  // Registered before the handler, so it runs first.
+  app.use(
+    SUBMISSION_PATH,
+    bodyLimit({
+      maxSize: SUBMISSION_BODY_LIMIT,
+      onError: (c) => refuseSubmission(c, 'invalid_request', 413),
+    }),
+  )
+
   app.post(SUBMISSION_PATH, async (c) => {
     c.header('Cache-Control', 'no-store')
 
+    if (!isJson(c.req.header('content-type'))) {
+      return refuseSubmission(c, 'invalid_request', 415)
+    }
+
     const body = submissionSchema.safeParse(await c.req.json().catch(() => null))
 
-    if (!body.success) {
-      return c.json<SubmissionResult>({ ok: false, code: 'invalid_request' }, 400)
-    }
+    if (!body.success) return refuseSubmission(c, 'invalid_request', 400)
+
     const token = c.req.header(TURNSTILE_TOKEN_HEADER)
+
+    // SahajCloud refuses every public write without a token, so this is its
+    // answer, given without spending the round trip.
+    if (!token) return refuseSubmission(c, 'captcha_failed', 403)
+
     const clientIp = c.req.header('cf-connecting-ip')
 
     try {
@@ -246,7 +369,7 @@ function registerSubmissions(app: Hono<SahajCloudEnv>): void {
         json: body.data,
         init: {
           headers: {
-            ...(token ? { [TURNSTILE_TOKEN_HEADER]: token } : {}),
+            [TURNSTILE_TOKEN_HEADER]: token,
             ...(clientIp ? { [CLIENT_IP_HEADER]: clientIp } : {}),
           },
         },
@@ -254,6 +377,8 @@ function registerSubmissions(app: Hono<SahajCloudEnv>): void {
 
       return c.json<SubmissionResult>({ ok: true })
     } catch (error) {
+      reportProxyFailure('submissions', error)
+
       const failure = submissionFailure(error)
 
       return c.json<SubmissionResult>(
@@ -281,11 +406,9 @@ export function registerApiRoutes(app: Hono<SahajCloudEnv>): void {
     try {
       const cards = await getRelatedMeditations({ id, locale: parseLocale(c.req.query('locale')) })
 
-      c.header('Cache-Control', CACHE_CONTROL)
-
-      return c.json({ items: relatedMeditationsToCards(cards) })
+      return relatedAnswer(cards && relatedMeditationsToCards(cards))
     } catch {
-      return c.json({ items: [] })
+      return relatedAnswer(null)
     }
   })
 
@@ -308,11 +431,9 @@ export function registerApiRoutes(app: Hono<SahajCloudEnv>): void {
       const settings = await getWebConfig({ locale })
       const cards = await getRelatedLectures({ id, locale, audiences: settings.audiences })
 
-      c.header('Cache-Control', CACHE_CONTROL)
-
-      return c.json({ items: relatedLecturesToCards(cards) })
+      return relatedAnswer(cards && relatedLecturesToCards(cards))
     } catch {
-      return c.json({ items: [] })
+      return relatedAnswer(null)
     }
   })
 }

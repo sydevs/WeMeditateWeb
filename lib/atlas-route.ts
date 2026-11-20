@@ -190,15 +190,14 @@ export const MAP_PREFIX = '/map'
  * instead of a filesystem route: an atlas route runs from zero to five
  * segments, and Vike's filesystem router matches a fixed shape.
  *
- * An optional locale prefix is tolerated for the same reason
- * `matchDocumentRoute` tolerates one. `onBeforeRoute` normally strips it
- * into `urlLogical` before the router runs, but matching it here keeps
- * the matcher correct on its own, not dependent on that ordering.
+ * No locale prefix, for the reason `matchDocumentRoute` takes none:
+ * `+onBeforeRoute` strips a real one before the router runs, so `/zz/map`
+ * must 404 rather than serve the atlas at a second address.
  */
 export function matchMapRoute(
   urlPathname: string,
 ): { routeParams: { atlasRoute: string } } | false {
-  const match = urlPathname.match(/^(?:\/[a-z]{2}(?:-[A-Z]{2})?)?\/map(\/.*)?$/)
+  const match = urlPathname.match(/^\/map(\/.*)?$/)
 
   if (!match) {
     return false

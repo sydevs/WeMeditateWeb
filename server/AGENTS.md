@@ -11,10 +11,11 @@ Every contact and subscribe form posts to `POST /api/submissions`
 - **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
   and SahajCloud answers a wildcard CORS origin with no credentials.
 - **A captcha token is required on every public write**, as the `x-turnstile-token` header, not
-  as document data. It is the only *browser* header the proxy forwards: `Origin` and `Referer` must
-  not cross over, because a server-to-server call is deliberately exempt from the client's
-  `allowedDomains` allowlist, which the API key stands in for. The proxy adds one header of its
-  own, the visitor's address — see below.
+  as document data. A request without one is answered by the proxy itself, with the 403
+  `captcha_failed` SahajCloud would send. It is the only *browser* header the proxy forwards:
+  `Origin` and `Referer` must not cross over, because a server-to-server call is deliberately
+  exempt from the client's `allowedDomains` allowlist, which the API key stands in for. The proxy
+  adds one header of its own, the visitor's address — see below.
 - **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape
   (`captcha_failed`, `disposable_email`, `urls_not_allowed`, `submission_data_invalid`, …). The
   code is forwarded to the browser and the message never is: it is SahajCloud's English, written for
@@ -85,11 +86,13 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render
   and nothing here caches them, and a gap this warning catches stands until an editor fixes the
   data — so a bare `captureMessage` bills the Sentry quota per page view. `getWebConfig` sends one
-  event per distinct gap per isolate through `reportOnce` and keeps `console.warn` on every
-  request. Lower the volume, never the level: a warning nobody can afford to leave on gets turned
-  off, and then the gap is invisible again. `reportOnce` ([report-once.ts](report-once.ts)) is that
-  bound, and the only one: `getWebConfig` and `reportLiveSessionGaps` both report through it, so a
-  third reporter inherits the rule instead of copying it.
+  event per distinct gap per isolate and keeps `console.warn` on every request. Lower the volume,
+  never the level: a warning nobody can afford to leave on gets turned off, and then the gap is
+  invisible again. Two memos hold that bound, each keyed per source so one source's churn cannot
+  re-arm another's: `reportOnce` ([report-once.ts](report-once.ts)), which takes the report to
+  send and is what `getWebConfig` and `reportLiveSessionGaps` use, and `warnOnce`
+  ([error-utils.ts](error-utils.ts)), which sends the warning itself and is what `degrade`, the
+  sitemap read and the atlas reads use. A third reporter picks one, and never writes a third.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
   anyway is scrubbed in `entry.ts`, not where it is captured.** That module pins the v10 baseline
@@ -127,8 +130,10 @@ legitimately has nothing to list.
 
 Three rules still apply:
 
-- **Degrade on failure.** Catch errors and render without the data. See `getAtlasSeo` in
-  `server/atlas-client.ts`.
+- **Degrade on failure, through `degrade`** ([error-utils.ts](error-utils.ts)): render without
+  the data, and report the failure once per key per isolate. Key it on a small set (an id, an
+  origin), never on the visitor's URL: `getAtlasSeo` passes no key, so a site-wide 403 is one
+  event, not one per crawled route. See `getAtlasSeo` in `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).
