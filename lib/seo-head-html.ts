@@ -222,12 +222,14 @@ function schemaNode(node: SeoNode, context: NodeContext): SchemaOrgNodeInput[] {
           })),
         }),
       ]
-    // ⚠ **No `defineMusicPlaylist` exists**, so the playlist and each of its
-    // recordings are plain nodes, as `AudioObject` is.
+    // ⚠ **`defineMusicPlaylist` and `defineMusicRecording` exist and are not
+    // used**: `track` is typed as a string or an `@id` reference, so a nested
+    // recording — which the resolver emits correctly — needs a cast.
     case 'musicPlaylist':
       return [
         {
           '@type': 'MusicPlaylist' as const,
+          ...(url ? { '@id': `${url}#playlist` } : {}),
           name: node.name,
           numTracks: node.tracks.length,
           track: node.tracks.map((track) => ({

@@ -339,6 +339,7 @@ describe('pageSeo', () => {
       (node) => node['@type'] === 'MusicPlaylist',
     )
 
+    expect(playlist?.['@id']).toBe(`${ORIGIN}/about#playlist`)
     expect(playlist?.numTracks).toBe(2)
     expect(playlist?.track).toStrictEqual([
       {
