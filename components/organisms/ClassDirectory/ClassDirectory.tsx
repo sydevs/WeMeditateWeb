@@ -57,10 +57,13 @@ export function ClassDirectory({
           its own server-side content inside one; there is none to render here,
           so a visitor without JavaScript, or one the loader cannot reach, gets
           an empty box. `components/AGENTS.md` carries that hole in its table.
-          The label is the one thing that can be given now: it names the region
-          for a screen reader rather than leaving it unannounced. */}
+          The label is the one thing that can be given now, and `role` is what
+          makes it real: a custom element carries no implicit role, and a name
+          on a generic element is dropped. axe does not flag that, so the
+          passing a11y gate is no evidence either. */}
       <sahaj-atlas
         aria-label={t('map.a11y.classes_heading')}
+        role="region"
         className={`block overflow-y-auto ${showMap ? 'h-[80vh]' : 'h-[560px]'}`}
       />
 
