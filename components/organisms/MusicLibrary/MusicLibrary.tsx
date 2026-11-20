@@ -1,5 +1,4 @@
 import { ComponentProps, useState } from 'react'
-import { AudioPlayerProvider } from 'react-use-audio-player'
 import { AudioPlayer, Playlist, Track, MusicFilter } from '../../molecules'
 import { usePlaylistAudioPlayer } from '../../../hooks/audio'
 import { useT } from '../../../hooks/useT'
@@ -31,7 +30,7 @@ export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children
  * - Integrated AudioPlayer
  * - Mobile-first responsive design
  */
-function MusicLibraryInner({
+export function MusicLibrary({
   tracks,
   filters,
   onFilterChange,
@@ -117,14 +116,5 @@ function MusicLibraryInner({
         </div>
       </div>
     </div>
-  )
-}
-
-/** MusicLibrary with the AudioPlayerProvider its player hook needs */
-export function MusicLibrary(props: MusicLibraryProps) {
-  return (
-    <AudioPlayerProvider>
-      <MusicLibraryInner {...props} />
-    </AudioPlayerProvider>
   )
 }

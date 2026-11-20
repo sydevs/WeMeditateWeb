@@ -58,7 +58,10 @@ const toggleWind = () => fireEvent.click(screen.getByRole('button', { name: 'Win
 const highlighted = () =>
   screen
     .queryAllByRole('button', { current: true })
-    .map((button) => button.querySelector('h4')?.textContent)
+    .map(
+      (button) =>
+        document.getElementById(button.getAttribute('aria-labelledby') ?? '')?.textContent,
+    )
 
 const lastLoad = () => {
   const [url, options] = player.load.mock.calls.at(-1) ?? []
@@ -97,7 +100,7 @@ describe('MusicLibrary — the playing track has one owner', () => {
 
     toggleWind()
 
-    expect(screen.getAllByRole('button', { name: /Artist/ })).toHaveLength(tracks.length)
+    expect(screen.getAllByRole('heading', { level: 4 })).toHaveLength(tracks.length)
     expect(highlighted()).toEqual(['Flute Meditation'])
     expect(player.load.mock.calls.length).toBe(loads)
   })
