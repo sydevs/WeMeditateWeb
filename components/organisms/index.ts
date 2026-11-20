@@ -3,6 +3,9 @@ export type { HeaderProps, NavItem } from './Header'
 export { HeaderNavDropdown } from './Header'
 export type { HeaderNavDropdownProps } from './Header'
 
+export { MobileMenu } from './MobileMenu'
+export type { MobileMenuProps } from './MobileMenu'
+
 export { Footer } from './Footer'
 export type { FooterProps, FooterSection, SocialLink } from './Footer'
 
