@@ -5946,34 +5946,6 @@ export interface WmWebTranslationsMeditationGeneralStrings {
    * The clickable words inside `upsell_app`, naming the mobile app and that it costs nothing. Translate as a noun phrase, not a sentence. `upsell_app` ends in a possessive, so inflect this phrase to follow it.
    */
   upsell_app_link?: string;
-  /**
-   * Heading above the mood picker on the Meditate now page, asking the visitor how they feel right now.
-   */
-  finder_question?: string;
-  /**
-   * Shown in place of the mood picker when the moods cannot be loaded. Say the visitor should try again shortly.
-   */
-  finder_unavailable?: string;
-  /**
-   * Links from the mood picker to the page listing every meditation it offers, and titles that page.
-   */
-  all_meditations?: string;
-  /**
-   * Names a meditation by the feeling it is for and how long it runs. `%{mood}` = the mood's own name, inflected as your language needs; `%{count}` = minutes, and selects the plural form. The limit counts the raw string, and `%{mood}` expands at render, so the slot is wider than it looks.
-   */
-  mood_meditation_label_one?: string;
-  /**
-   * Names a meditation by the feeling it is for and how long it runs. `%{mood}` = the mood's own name, inflected as your language needs; `%{count}` = minutes, and selects the plural form. The limit counts the raw string, and `%{mood}` expands at render, so the slot is wider than it looks.
-   */
-  mood_meditation_label_few?: string;
-  /**
-   * Names a meditation by the feeling it is for and how long it runs. `%{mood}` = the mood's own name, inflected as your language needs; `%{count}` = minutes, and selects the plural form. The limit counts the raw string, and `%{mood}` expands at render, so the slot is wider than it looks.
-   */
-  mood_meditation_label_many?: string;
-  /**
-   * Names a meditation by the feeling it is for and how long it runs. `%{mood}` = the mood's own name, inflected as your language needs; `%{count}` = minutes, and selects the plural form. The limit counts the raw string, and `%{mood}` expands at render, so the slot is wider than it looks.
-   */
-  mood_meditation_label_other?: string;
 }
 export interface WmWebTranslationsMeditationA11YStrings {
   /**
@@ -6012,10 +5984,6 @@ export interface WmWebTranslationsMeditationA11YStrings {
    * Not shown on screen; read by screen readers. Announced while the suggested talks are still loading.
    */
   related_lectures_loading?: string;
-  /**
-   * Not shown on screen; read by screen readers. Names the region of the page holding the mood picker.
-   */
-  finder_region?: string;
 }
 export interface WmWebTranslationsLectureGeneralStrings {
   /**
@@ -11440,7 +11408,7 @@ export interface TableOfContentsBlock {
  * via the `definition` "ContentIndexBlock".
  */
 export interface ContentIndexBlock {
-  type: 'meditations' | 'pages' | 'songs' | 'lectures' | 'moods';
+  type: 'meditations' | 'pages' | 'songs' | 'lectures';
   /**
    * Maximum number of items to return (1–100)
    */
