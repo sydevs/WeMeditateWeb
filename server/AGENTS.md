@@ -157,8 +157,8 @@ Three rules still apply:
 
 A read whose *response type* is hand-mirrored from SahajCloud (for example
 `server/atlas-types.ts`, mirroring its `responseTypes.ts`) is not covered by `pnpm types:cms`,
-which generates collection types only. Render these fields defensively: a missing field should
-degrade, not throw.
+which generates only the collection, global and block schema. Render these fields defensively:
+a missing field should degrade, not throw.
 
 ## `locale=all` returns a per-locale map, not a value
 
