@@ -2,6 +2,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FormBuilder } from './FormBuilder'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
+import { openTag } from '../../../tests/_helpers/markup'
 
 /**
  * `useEffect` does not run under `renderToStaticMarkup`, so the captcha here
@@ -54,6 +55,27 @@ describe('FormBuilder', () => {
     // single-column until sm.
     expect(html).toContain('sm:col-span-6')
     expect(html).toContain('grid-cols-1')
+  })
+
+  it('server-renders a select with no authored default on its placeholder', () => {
+    // Hydration starts from this selection. Without one the browser picks the
+    // first real option, which a required select then submits untouched.
+    const asking = {
+      ...form,
+      fields: [
+        {
+          blockType: 'select',
+          name: 'topic',
+          label: 'Topic',
+          required: true,
+          options: [{ label: 'Classes', value: 'classes' }],
+        },
+      ],
+    } satisfies EmbeddedForm
+    const placeholder = openTag(renderToStaticMarkup(<FormBuilder form={asking} />), 'option')
+
+    expect(placeholder).toContain('value=""')
+    expect(placeholder).toContain('selected=""')
   })
 
   it('leaves submit enabled with an unsolved captcha, and with none', () => {

@@ -11,10 +11,11 @@ Every contact and subscribe form posts to `POST /api/submissions`
 - **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
   and SahajCloud answers a wildcard CORS origin with no credentials.
 - **A captcha token is required on every public write**, as the `x-turnstile-token` header, not
-  as document data. It is the only *browser* header the proxy forwards: `Origin` and `Referer` must
-  not cross over, because a server-to-server call is deliberately exempt from the client's
-  `allowedDomains` allowlist, which the API key stands in for. The proxy adds one header of its
-  own, the visitor's address — see below.
+  as document data. A request without one is answered by the proxy itself, with the 403
+  `captcha_failed` SahajCloud would send. It is the only *browser* header the proxy forwards:
+  `Origin` and `Referer` must not cross over, because a server-to-server call is deliberately
+  exempt from the client's `allowedDomains` allowlist, which the API key stands in for. The proxy
+  adds one header of its own, the visitor's address — see below.
 - **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape
   (`captcha_failed`, `disposable_email`, `urls_not_allowed`, `submission_data_invalid`, …). The
   code is forwarded to the browser and the message never is: it is SahajCloud's English, written for
@@ -154,8 +155,8 @@ Three rules still apply:
 
 A read whose *response type* is hand-mirrored from SahajCloud (for example
 `server/atlas-types.ts`, mirroring its `responseTypes.ts`) is not covered by `pnpm types:cms`,
-which generates collection types only. Render these fields defensively: a missing field should
-degrade, not throw.
+which generates only the collection, global and block schema. Render these fields defensively:
+a missing field should degrade, not throw.
 
 ## `locale=all` returns a per-locale map, not a value
 
