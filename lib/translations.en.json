@@ -201,7 +201,6 @@
   "meditation": {
     "a11y": {
       "audio_settings": "Audio settings",
-      "finder_region": "Choose how you feel",
       "music_volume": "Music volume",
       "mute_music": "Mute music",
       "mute_voice": "Mute voice",
@@ -212,16 +211,11 @@
       "voice_volume": "Voice volume"
     },
     "general": {
-      "all_meditations": "All meditations",
       "change_music": "Change background music track",
-      "finder_question": "How are you feeling?",
-      "finder_unavailable": "We can't load the meditations just now. Please try again shortly.",
       "founder_name": "Shri Mataji Nirmala Devi",
       "founder_role": "founder",
       "label": "Meditation",
       "missing_audio": "This meditation is missing a required audio URL.",
-      "mood_meditation_label_one": "%{mood} · %{count} min",
-      "mood_meditation_label_other": "%{mood} · %{count} min",
       "music": "Music",
       "related_lectures": "Related lectures",
       "untitled": "Untitled Meditation",
