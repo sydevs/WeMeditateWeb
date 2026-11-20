@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
   getDocumentById,
+  getLecture,
   getMeditationSongs,
   getPageBySlug,
   getPageLocaleStatus,
@@ -13,7 +14,7 @@ import {
 } from './sahajcloud-client'
 import { createPayloadClient } from './payload-client'
 import * as Sentry from '@sentry/cloudflare'
-import { detectErrorType, ErrorType } from './error-utils'
+import { detectErrorType, ErrorType, forgetReportedWarnings } from './error-utils'
 import { MeditationTemplate } from '../components/templates/MeditationTemplate'
 import type { Locale, Meditation, Page, PageStatus } from './sahajcloud-types'
 
@@ -25,9 +26,14 @@ vi.mock('./payload-client', () => ({
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Silence the Sentry warning emitted on unresolved page references, and keep
-// its calls countable: the warning is rate-limited per isolate.
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// Silence the Sentry warnings, and keep their calls countable: each is
+// rate-limited per isolate. Both SDKs re-export `@sentry/core`'s one
+// `captureMessage`, so one spy stands for both: `degrade` and `warnOnce`
+// report through `@sentry/react` (see error-utils.ts).
+const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
+
+vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
+vi.mock('@sentry/react', () => ({ captureMessage }))
 /** Each `frames` prop the stubbed player was handed, in render order. */
 const { playerFrames } = vi.hoisted(() => ({ playerFrames: [] as unknown[] }))
 
@@ -85,6 +91,7 @@ function fetchResponse(status: number, body: unknown) {
 /** Silences the request log and error dump, and forgets the previous read's error. */
 function resetReadState() {
   retried.error = undefined
+  forgetReportedWarnings()
   vi.restoreAllMocks()
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -626,21 +633,21 @@ describe('getRelatedMeditations', () => {
 
     const cards = await getRelatedMeditations({ id: '163', locale: 'en' })
 
-    expect(cards.map((c) => c.id)).toEqual([3])
+    expect(cards?.map((c) => c.id)).toEqual([3])
     // narratorName is optional in the payload. It defaults to '', so the card type holds.
-    expect(cards[0].narratorName).toBe('')
+    expect(cards?.[0].narratorName).toBe('')
   })
 
-  it('degrades to [] on an unknown lecture id (404)', async () => {
+  it('answers [] for an unknown lecture id (404), which is an answer', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(404, {})))
 
     expect(await getRelatedMeditations({ id: '999999', locale: 'en' })).toEqual([])
   })
 
-  it('degrades to [] (never throws) on a server error', async () => {
+  it('degrades to null (never throws) on a server error, so the route can tell it from []', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
 
-    expect(await getRelatedMeditations({ id: '163', locale: 'en' })).toEqual([])
+    expect(await getRelatedMeditations({ id: '163', locale: 'en' })).toBeNull()
   })
 })
 
@@ -707,10 +714,10 @@ describe('getRelatedLectures', () => {
     expect(url).toContain('limit=6')
   })
 
-  it('degrades to [] on a server error', async () => {
+  it('degrades to null on a server error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
 
-    expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })).toEqual([])
+    expect(await getRelatedLectures({ id: '142', locale: 'en', audiences: [1] })).toBeNull()
   })
 })
 
@@ -760,5 +767,72 @@ describe('every custom-endpoint read', () => {
     await read()
 
     expect(detectErrorType(retried.error)).toBe(ErrorType.SERVER)
+  })
+
+  it.each([
+    ['getMeditationSongs', (id: string) => getMeditationSongs({ id, locale: 'en' })],
+    ['getRelatedMeditations', (id: string) => getRelatedMeditations({ id, locale: 'en' })],
+    [
+      'getRelatedLectures',
+      (id: string) => getRelatedLectures({ id, locale: 'en', audiences: [1] }),
+    ],
+  ])('reports %s failing once per id per isolate, not once per render', async (label, read) => {
+    // Each runs per render and nothing caches it, so a standing upstream
+    // fault reported per call would bill one event per page view.
+    captureMessage.mockClear()
+    retrySpy.mockClear()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fetchResponse(500, {})))
+
+    await read('7001')
+    await read('7001')
+    await read('7002')
+
+    expect(captureMessage).toHaveBeenCalledTimes(2)
+    expect(captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining(`${label} failed`),
+      expect.objectContaining({ level: 'warning' }),
+    )
+    // The retry ladder is still owed, and leaves the report to `degrade`.
+    expect(retrySpy).toHaveBeenCalledWith({ reportFailure: false })
+  })
+})
+
+describe('getLecture', () => {
+  beforeEach(resetReadState)
+
+  /** A clip whose parent lecture came back as a bare id: no HLS source to play. */
+  function orphanClip(id: number) {
+    const findByID = vi.fn().mockResolvedValue({ id, type: 'clip', fullLecture: 1 })
+
+    vi.mocked(createPayloadClient).mockReturnValue({ findByID } as never)
+  }
+
+  it('reports a clip with no HLS source once per isolate, and logs it every render', async () => {
+    // The gap stands until an editor fixes the parent, and this read runs on
+    // every render of the clip's page.
+    captureMessage.mockClear()
+    orphanClip(8001)
+
+    await getLecture({ id: '8001', locale: 'en' })
+    await getLecture({ id: '8001', locale: 'fr' })
+
+    expect(captureMessage).toHaveBeenCalledTimes(1)
+    expect(captureMessage).toHaveBeenCalledWith(
+      'Lecture clip has an unresolved parent (no HLS source)',
+      expect.objectContaining({ level: 'warning', tags: { source: 'getLecture' } }),
+    )
+    expect(console.warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports a clip it has not seen before', async () => {
+    captureMessage.mockClear()
+
+    orphanClip(8002)
+    await getLecture({ id: '8002', locale: 'en' })
+
+    orphanClip(8003)
+    await getLecture({ id: '8003', locale: 'en' })
+
+    expect(captureMessage).toHaveBeenCalledTimes(2)
   })
 })
