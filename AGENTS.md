@@ -105,7 +105,8 @@ These rules apply whether or not the matching rule file or skill is loaded.
   content templates are shared with the `embed` routes and the live preview. A URL advertises only
   the locales its own document is published in, and [lib/hreflang.ts](lib/hreflang.ts) owns that
   derivation wherever a URL is published. The site's `availableLocales` is a filter on that set,
-  never the set itself.
+  never the set itself. **A code route with no SahajCloud document is the one exception**: nothing
+  publishes `/meditations` per locale, so it advertises `availableLocales` whole.
 - **A site-wide document is a route, because `public/` is shipped by both builds** (see below):
   [server/sitemap-routes.ts](server/sitemap-routes.ts).
 - **One geometry for the embedded player.** [lib/embed-player.ts](lib/embed-player.ts) owns the

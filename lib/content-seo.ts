@@ -435,3 +435,31 @@ export function lectureSeo(options: { lecture: ResolvedLecture; route: SeoRoute 
     playerUrl: player,
   })
 }
+
+/**
+ * The head document for `/meditations`, the list the mood finder offers.
+ *
+ * The one route here with no SahajCloud document behind it, so there is no
+ * per-locale publish state to filter by: it advertises every locale the site
+ * offers, where every content route advertises the subset its own document is
+ * published in.
+ */
+export function meditationsIndexSeo(options: {
+  route: SeoRoute
+  locales: readonly Locale[]
+}): SeoDocument {
+  const { route, locales } = options
+  const { t } = route
+  const name = t('meditation.general.all_meditations')
+  const title = composeTitle(name, t('common.general.site_title'))
+  const description = t('common.general.site_description')
+
+  return baseDocument(route, {
+    title,
+    description,
+    image: shareImage(route, undefined),
+    ogType: 'website',
+    locales,
+    nodes: [{ type: 'webPage', name, description }],
+  })
+}

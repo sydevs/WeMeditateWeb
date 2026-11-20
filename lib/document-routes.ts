@@ -95,6 +95,34 @@ export function documentHref(
 }
 
 /**
+ * The segment `/meditations` and `/meditations/:id` share.
+ *
+ * `pages/[slug]/+route.ts` excludes it by this constant rather than by a
+ * string, so the exclusion cannot point at a path that moved.
+ */
+export const MEDITATIONS_SEGMENT = 'meditations'
+
+/**
+ * The list page's own path. Every href to it reads this, for the same reason
+ * `ROUTE_BUILDERS` above exists: the matcher and the links it serves move
+ * together or the links break while the route still answers.
+ */
+export const MEDITATIONS_INDEX_PATH = `/${MEDITATIONS_SEGMENT}`
+
+/**
+ * Matches `/meditations` itself — the list of the meditations the mood finder
+ * offers — and nothing under it.
+ *
+ * It lives here because `/meditations/:id` does: the two patterns must stay
+ * mutually exclusive, and a copy in the route file would be free to drift.
+ *
+ * ⚠ No locale prefix, for the reason {@link matchDocumentRoute} gives.
+ */
+export function matchMeditationsIndexRoute(urlPathname: string): boolean {
+  return MEDITATIONS_INDEX_ROUTE.test(urlPathname)
+}
+
+/**
  * The collections whose documents have an embed route beside the full one.
  *
  * ⚠ `matchDocumentRoute(..., { embed: true })` is the inverse: a collection
@@ -148,6 +176,8 @@ export function matchDocumentRoute(
 // (keyed by `collection[/embed]`) rather than on every match attempt. The key
 // space is the fixed set of document collections × {full, embed}.
 const DOCUMENT_ROUTE_PATTERNS = new Map<string, RegExp>()
+
+const MEDITATIONS_INDEX_ROUTE = new RegExp(`^/${MEDITATIONS_SEGMENT}/?$`)
 
 function documentRoutePattern(collection: string, embed: boolean): RegExp {
   const suffix = embed ? '/embed' : ''

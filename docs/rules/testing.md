@@ -110,6 +110,14 @@ Make `// @vitest-environment jsdom` the file's first line, then render with
 that loads it. Cleanup between tests is automatic, because Vitest's globals are on. See
 [MusicLibrary.test.tsx](../../components/organisms/MusicLibrary/MusicLibrary.test.tsx).
 
+**Module state outlives a test, so a memo makes assertions order-dependent.** A Vitest file is
+one module graph: `createWarnOnce` ([server/warn-once.ts](../../server/warn-once.ts)) reports each
+signature once, so the *second* test to trip a signature sees no warning — which reads as a missing
+capture, not as an ordering bug. Import the module under test inside `beforeEach`, after
+`vi.resetModules()`, and take the Sentry spy from that same fresh graph: resetting the registry
+re-runs a `vi.mock` factory, so a spy captured at the top of the file is no longer the one the code
+calls. [server/moods.test.ts](../../server/moods.test.ts) is the worked example.
+
 **What to test:**
 - Test pure utilities — logic, parsing, transforms. This is fast and high-value.
 - Test a component's markup contract — attributes, conditional children, accessibility markers.

@@ -26,7 +26,15 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
 import { EN_TRANSLATIONS } from '../../lib/i18n'
 import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
-import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
+import {
+  articlePage,
+  atlasSeo,
+  homePage,
+  lecture,
+  meditation,
+  moodCards,
+  webConfig,
+} from './fixtures'
 
 /** Route data, swapped per target before the render. */
 const routeData: { current: unknown } = { current: {} }
@@ -49,6 +57,7 @@ const { default: LayoutChrome } = await import('../../layouts/LayoutChrome')
 const { default: LayoutMap } = await import('../../layouts/LayoutMap')
 const { Page: HomeOrArticlePage } = await import('../../pages/[slug]/+Page')
 const { Page: MeditationPage } = await import('../../pages/meditations/[id]/(full)/+Page')
+const { Page: MeditationsIndexPage } = await import('../../pages/meditations/(index)/+Page')
 const { Page: LecturePage } = await import('../../pages/lectures/[id]/(full)/+Page')
 const { Page: MapPage } = await import('../../pages/map/+Page')
 const { Page: MeditationEmbedPage } = await import('../../pages/meditations/[id]/embed/+Page')
@@ -133,6 +142,19 @@ const TARGETS = [
       return (
         <LayoutChrome>
           <MeditationPage />
+        </LayoutChrome>
+      )
+    },
+  },
+  {
+    name: 'meditations index',
+    chrome: true,
+    render: () => {
+      routeData.current = { settings: webConfig, moods: moodCards, locale: 'en' }
+
+      return (
+        <LayoutChrome>
+          <MeditationsIndexPage />
         </LayoutChrome>
       )
     },

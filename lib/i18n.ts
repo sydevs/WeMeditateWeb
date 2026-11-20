@@ -17,12 +17,13 @@
 import type { ReactNode } from 'react'
 import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/sahajcloud-types'
 import snapshot from './translations.en.json'
+import { withPendingEnglish } from './translations.pending'
 
 /**
  * The committed English snapshot, used when the SahajCloud read fails and as the
  * fixture for tests and Ladle. Generated — see `scripts/sync-translations.mjs`.
  */
-export const EN_TRANSLATIONS = snapshot as unknown as WebTranslations
+export const EN_TRANSLATIONS = withPendingEnglish(snapshot) as unknown as WebTranslations
 
 /** CLDR plural categories, in the order SahajCloud stores them. */
 const PLURAL_SUFFIXES = ['one', 'few', 'many', 'other'] as const

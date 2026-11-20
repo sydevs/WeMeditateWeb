@@ -83,9 +83,10 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render and
   nothing here caches them, and a gap this warning catches stands until an editor fixes the data —
   so a bare `captureMessage` bills the Sentry quota per page view. Send one event per distinct gap
-  per isolate, and keep `console.warn` on every request. `warnOnce` in
-  [error-utils.ts](error-utils.ts) is that bound for a new warning; `getWebConfig` holds its own
-  memo, and one source's churn must never re-arm another's. Lower the volume, never the level: a
+  per isolate, and keep `console.warn` on every request. `createWarnOnce`
+  ([warn-once.ts](warn-once.ts)) is that bound for a new server warning, one memo per source, so
+  one source's churn cannot re-arm another's; `warnOnce` in [error-utils.ts](error-utils.ts) is
+  the same bound where the browser reaches the warning too. Lower the volume, never the level: a
   warning nobody can afford to leave on gets turned off, and then the gap is invisible again.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
@@ -126,8 +127,12 @@ Three rules still apply:
   origin), never on the visitor's URL: `getAtlasSeo` passes no key, so a site-wide 403 is one
   event, not one per crawled route. See `getAtlasSeo` in `server/atlas-client.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
-  A read that degrades silently still needs `withRetry`, which the cache used to supply.
-  `fetchContentIndexDocs` is the one read still missing it (#128).
+  A read that degrades silently still needs `withRetry`, which the cache used to supply. Every
+  one of them has it (#128).
+  ⚠ **The wrapper reports each retried attempt itself**, at `warning`, so a caller that also
+  reports its own degrade spends three events on one failed read. Capture the degrade **outside**
+  the wrapper all the same: inside, the same failure is reported once per attempt by the caller
+  too.
 - **Never branch on a status. Pick the reader that matches the read.** This is the rule for
   `sahajCloudFetch`'s callers. The SDK has no such pair, so `getDocumentById` reads the status
   itself — through `readStatus`, the one place a status is read off an error — to answer an
@@ -140,6 +145,9 @@ Three rules still apply:
   fallback recognises only 50x phrasing: a plain `Error` therefore classifies a Cloudflare-origin
   52x as UNKNOWN, and `withRetry` then refuses the one shape a Railway restart behind the edge
   produces.
+  ⚠ **A warning on one of these reads reports through the Worker SDK**, so it goes through
+  `createWarnOnce` ([warn-once.ts](warn-once.ts)): `error-utils.ts` is reachable from the browser
+  and so reaches Sentry through `@sentry/react` instead.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See

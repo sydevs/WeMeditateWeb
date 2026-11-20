@@ -192,6 +192,34 @@ type RequiredGroups<T> = {
 }
 
 /**
+ * Keys SahajCloud declares but has not merged, declared here rather than typed
+ * into `payload-types.ts`.
+ *
+ * That file is a copied contract: every `pnpm types:cms` re-derives it from
+ * SahajCloud `main` and drops an entry typed into it, and the contract check
+ * fails any PR that leaves one there. An augmentation survives both, so the
+ * keys reach `WebTranslations` — and `TranslationKey` with it — without the
+ * copy diverging from its source.
+ *
+ * shortcut: declared by sydevs/SahajCloud#1225, so delete this block once
+ * `pnpm types:cms` and `pnpm sync:translations` carry these keys.
+ */
+declare module './payload-types' {
+  interface WmWebTranslationsMeditationGeneralStrings {
+    finder_question?: string
+    finder_unavailable?: string
+    all_meditations?: string
+    mood_meditation_label_one?: string
+    mood_meditation_label_few?: string
+    mood_meditation_label_many?: string
+    mood_meditation_label_other?: string
+  }
+  interface WmWebTranslationsMeditationA11YStrings {
+    finder_region?: string
+  }
+}
+
+/**
  * Every translations tab the site renders. Typed against the generated
  * select interface, so a tab renamed upstream is a compile error here
  * rather than a silent group of missing strings. `WebTranslations` derives

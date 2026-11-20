@@ -163,6 +163,36 @@ describe('content-index block converter — dispatch', () => {
     expect(html).toContain('What Is Meditation?')
   })
 
+  it('moods → MoodFinder, asking the question and linking each mood', () => {
+    const html = renderToStaticMarkup(
+      convertCI({
+        type: 'moods',
+        resolvedMoods: [
+          {
+            moodId: 1,
+            moodTitle: 'Excited for the day!',
+            iconUrl: 'https://assets.test/mood-1.svg',
+            color: '#FFD591',
+            href: '/meditations/69',
+            durationMinutes: 15,
+            thumbnail: null,
+          },
+        ],
+      }),
+    )
+
+    expect(html).toContain('How are you feeling?')
+    expect(html).toContain('href="/meditations/69"')
+    // No facet pills: one card per mood makes them meaningless.
+    expect(html).not.toContain('Filter content by tag')
+  })
+
+  it('moods → the unavailable message, where every other type renders nothing', () => {
+    const html = renderToStaticMarkup(convertCI({ type: 'moods', resolvedMoods: [] }))
+
+    expect(html).toContain('load the meditations just now')
+  })
+
   it('lectures → ContentIndex cards linking to /lectures/:id (no pills without facets)', () => {
     const html = renderToStaticMarkup(
       convertCI({

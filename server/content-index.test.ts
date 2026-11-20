@@ -4,9 +4,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // warnings on the degrade paths.
 vi.mock('./sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
+  // No request in this lane, so the finder's slot falls back to evening.
+  tryGetContext: () => undefined,
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 
+import * as Sentry from '@sentry/cloudflare'
 import {
   resolveContentIndexItems,
   resolveContentIndexTracks,
@@ -304,5 +307,126 @@ describe('resolveContentIndexBlocks', () => {
     }
 
     expect(await resolveContentIndexBlocks(content, {})).toBe(content)
+  })
+})
+
+describe('fetchContentIndexDocs retry', () => {
+  it('retries a 500 before degrading to an empty list', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
+
+    const items = await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not retry a 400', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(400))
+
+    const items = await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports the degrade once, outside the retry loop', async () => {
+    // `vi.mock` keeps its call log across cases; this counts only this read.
+    vi.mocked(Sentry.captureMessage).mockClear()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
+
+    await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    // One message for the block that degraded. `withRetry` reports each retried
+    // attempt itself, as it does for every caller — see the PR's question thread.
+    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('a moods block', () => {
+  it('attaches resolvedMoods, filtered to the slot, and no resolvedItems', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input)
+      const docs = url.includes('/api/meditations')
+        ? [{ id: 89, durationMinutes: 15 }]
+        : [
+            {
+              id: 16,
+              title: 'Had a great day',
+              color: '#DF8E79',
+              url: 'https://assets.test/16.svg',
+              timings: ['evening'],
+              eveningMeditation: 89,
+            },
+            {
+              id: 1,
+              title: 'Excited for the day!',
+              color: '#FFD591',
+              url: 'https://assets.test/1.svg',
+              timings: ['morning'],
+              morningMeditation: 69,
+            },
+          ]
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ docs, totalDocs: docs.length }),
+      } as never)
+    })
+
+    const content = {
+      root: {
+        children: [
+          {
+            type: 'block',
+            fields: {
+              blockType: 'content-index',
+              id: 'ci-moods',
+              type: 'moods',
+              limit: 20,
+              apiEndpoint:
+                '/api/user-choices?where[isFeatured][equals]=true&where[type][equals]=mood&limit=20',
+            },
+          },
+        ],
+      },
+    }
+
+    const resolved = await resolveContentIndexBlocks(content, {})
+    const fields = (resolved as typeof content).root.children[0].fields as ContentIndexBlockFields
+
+    // No request context in the lane, so the slot falls back to evening.
+    expect(fields.resolvedMoods).toHaveLength(1)
+    expect(fields.resolvedMoods?.[0]).toMatchObject({ moodId: 16, href: '/meditations/89' })
+    expect(fields.resolvedItems).toBeUndefined()
+  })
+})
+
+describe('an unknown block type', () => {
+  it('degrades to an empty list instead of throwing the page away', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    // A type SahajCloud offers before this build knows it: `pages/[slug]/+data.ts`
+    // awaits this with no catch, so a throw here would 500 the whole page.
+    const items = await resolveContentIndexItems({
+      type: 'albums' as ContentIndexBlockFields['type'],
+      limit: 10,
+      apiEndpoint: '/api/albums?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
