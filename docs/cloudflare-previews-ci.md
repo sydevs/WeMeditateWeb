@@ -80,7 +80,7 @@ leg skips instead of waiting out the 12-minute discovery timeout.
 - **Exclude:** `*.md`, `docs/*`, `.claude/*`
 
 Tests and `.github/` stay included on purpose: a smoke-spec or CI change needs a preview to run
-against. [tests/guards/ladle-watch-paths.test.ts](../tests/guards/ladle-watch-paths.test.ts) pins
+against. [tests/guards/smoke-watch-paths.test.ts](../tests/guards/smoke-watch-paths.test.ts) pins
 the CI copy to docs-only paths.
 
 ⚠ The excludes are added in the Cloudflare dashboard (or API) **after** the CI change that mirrors
