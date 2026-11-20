@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { SahajCloudEnv } from '../../sahajcloud-context'
-import { stubUpstream } from './_testing'
+import type { SahajCloudEnv } from '../../../sahajcloud-context'
+import { stubUpstream } from '../_testing'
 
 /**
  * ⚠ The cache header is the contract under test. These answers are cached in
@@ -12,7 +12,7 @@ import { stubUpstream } from './_testing'
 
 const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
 
-vi.mock('../../sahajcloud-context', () => ({
+vi.mock('../../../sahajcloud-context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 // Both SDKs re-export `@sentry/core`'s one `captureMessage`; `degrade` reports
@@ -21,12 +21,12 @@ vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
 vi.mock('@sentry/react', () => ({ captureMessage }))
 // One attempt, so no test waits on real backoff. error-utils.test.ts covers
 // what withRetry itself does.
-vi.mock('../../error-utils', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../error-utils')>()),
+vi.mock('../../../error-utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../error-utils')>()),
   withRetry: (fn: () => unknown) => fn(),
 }))
 
-const { registerRelatedMeditations } = await import('./related-meditations')
+const { registerRelatedMeditations } = await import('./route')
 
 const CACHED = 'public, max-age=300, stale-while-revalidate=1800'
 

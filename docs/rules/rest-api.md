@@ -71,7 +71,7 @@ const { settings, translations } = await loadSiteContext(pageContext)
 `loadSiteContext` fetches both in parallel, memoizes the promise for the request through
 `perRequest` ([server/request-memo.ts](../../server/request-memo.ts)), and 404s a URL whose locale
 is not in `settings.availableLocales`. Adding a third global means adding
-it there, not adding a seventh call site. `server/routes/api/related-lectures.ts` is the exception
+it there, not adding a seventh call site. `server/routes/api/related-lectures/` is the exception
 — it has no `pageContext` — and calls `getWebConfig` directly.
 
 A global still needs a typed `select`, like a collection read. `findGlobal` takes no `where`, and

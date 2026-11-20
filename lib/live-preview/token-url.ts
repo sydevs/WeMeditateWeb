@@ -116,7 +116,7 @@ export function scrubTokenFromLocation(): void {
  *
  * ⚠ **A caller must not treat this as proof of anything.** It is whatever was
  * in the URL, and the URL is the visitor's. The populate proxy
- * (`server/routes/api/live-preview/populate.ts`) re-verifies the signature
+ * (`server/routes/api/live-preview/populate/route.ts`) re-verifies the signature
  * before it spends the server's API key, so a browser holding a forged or
  * expired value gets a 403, not draft content.
  */

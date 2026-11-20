@@ -18,8 +18,8 @@ vi.mock('../../sahajcloud-context', () => ({
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
 vi.mock('../../payload-client', () => ({ createPayloadClient: () => ({ request }) }))
 
-const { registerLivePreviewPopulate } = await import('./live-preview/populate')
-const { registerSubmissions } = await import('./submissions')
+const { registerLivePreviewPopulate } = await import('./live-preview/populate/route')
+const { registerSubmissions } = await import('./submissions/route')
 
 let verifyKeyBase64: string
 let sign: (exp: number) => Promise<string>

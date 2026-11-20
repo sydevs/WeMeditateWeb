@@ -1,6 +1,7 @@
 ---
 paths:
   - "server/validation.ts"
+  - "server/routes/api/**/schema.ts"
   - "server/sahajcloud-context.ts"
   - "pages/**/+data.ts"
   - "components/organisms/FormBuilder/**"
@@ -17,7 +18,7 @@ The project uses Zod 4 for runtime schema validation at critical data boundaries
 - `idSchema` — a numeric id. It coerces the value to a number, validates it, then returns a string
 - `collectionSchema` — a preview collection type (pages, meditations)
 
-**Request bodies** ([server/validation.ts](../../server/validation.ts)):
+**Request bodies** ([server/routes/api/submissions/schema.ts](../../server/routes/api/submissions/schema.ts)):
 - `submissionSchema` — one form submission the same-origin proxy will forward. Its bounds mirror
   SahajCloud's own, and are a cheap refusal at the edge rather than the enforcement: the
   collection re-checks every one per type, against the keys the form's author declared.
@@ -47,7 +48,8 @@ a validation error — an invalid slug or id means the resource does not exist.
 
 ## Add a new validation schema
 
-1. Add the schema to [server/validation.ts](../../server/validation.ts):
+1. Add the schema to [server/validation.ts](../../server/validation.ts) — or, when only one
+   `/api/*` route reads it, to a `schema.ts` in that route's folder:
    ```typescript
    export const mySchema = z.string().min(1).max(100)
    ```

@@ -1,18 +1,18 @@
 /**
  * `GET /api/related-lectures/:meditationId` — lectures related to a
  * meditation, for the meditation player. Client-loaded for the reason
- * `related-meditations.ts` gives.
+ * `related-meditations/route.ts` gives.
  *
  * Audience-gated: audiences come from the site config. getRelatedLectures
  * returns [] when none are set.
  */
 
 import type { Hono } from 'hono'
-import type { SahajCloudEnv } from '../../sahajcloud-context'
-import { getRelatedLectures, getWebConfig } from '../../sahajcloud-client'
-import { idSchema } from '../../validation'
-import { relatedLecturesToCards } from '../../../lib/related-content'
-import { parseLocale, relatedAnswer } from './_shared'
+import type { SahajCloudEnv } from '../../../sahajcloud-context'
+import { getRelatedLectures, getWebConfig } from '../../../sahajcloud-client'
+import { idSchema } from '../../../validation'
+import { relatedLecturesToCards } from '../../../../lib/related-content'
+import { parseLocale, relatedAnswer } from '../_shared'
 
 export function registerRelatedLectures(app: Hono<SahajCloudEnv>): void {
   app.get('/api/related-lectures/:meditationId', async (c) => {

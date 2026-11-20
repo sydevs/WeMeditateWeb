@@ -39,17 +39,17 @@
  */
 
 import type { Hono } from 'hono'
-import type { SahajCloudEnv } from '../../../sahajcloud-context'
-import { documentReadArgs, isDocumentCollection } from '../../../sahajcloud-client'
-import { verifyLivePreviewToken } from '../../../live-preview'
-import { createPayloadClient } from '../../../payload-client'
-import { idSchema } from '../../../validation'
+import type { SahajCloudEnv } from '../../../../sahajcloud-context'
+import { documentReadArgs, isDocumentCollection } from '../../../../sahajcloud-client'
+import { verifyLivePreviewToken } from '../../../../live-preview'
+import { createPayloadClient } from '../../../../payload-client'
+import { idSchema } from '../../../../validation'
 import {
   LIVE_PREVIEW_POPULATE_PATH,
   LIVE_PREVIEW_TOKEN_HEADER,
-} from '../../../../lib/live-preview/protocol'
-import { reportProxyFailure } from '../_proxy-failure'
-import { parseLocale } from '../_shared'
+} from '../../../../../lib/live-preview/protocol'
+import { reportProxyFailure } from '../../_proxy-failure'
+import { parseLocale } from '../../_shared'
 
 /** Turns Payload's POST body into the GET SahajCloud actually answers. */
 const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'

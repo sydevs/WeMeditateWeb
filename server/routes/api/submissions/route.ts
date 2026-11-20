@@ -4,7 +4,7 @@
  * The browser cannot post to `POST /api/user-submissions` itself: the create
  * is authenticated with `SAHAJCLOUD_API_KEY`, a server-only secret, and
  * SahajCloud answers a wildcard CORS origin with no credentials
- * (`live-preview/populate.ts` meets the same pairing).
+ * (`live-preview/populate/` meets the same pairing).
  *
  * ⚠ **Two headers cross over: the captcha token, and the visitor's address.**
  * Forwarding the browser's `Origin` or `Referer` would put this site's own
@@ -27,16 +27,16 @@
 
 import type { Context, Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
-import type { SahajCloudEnv } from '../../sahajcloud-context'
-import { createPayloadClient } from '../../payload-client'
-import { SUBMISSION_BODY_LIMIT, submissionSchema } from '../../validation'
+import type { SahajCloudEnv } from '../../../sahajcloud-context'
+import { createPayloadClient } from '../../../payload-client'
+import { SUBMISSION_BODY_LIMIT, submissionSchema } from './schema'
 import {
   CLIENT_IP_HEADER,
   SUBMISSION_PATH,
   TURNSTILE_TOKEN_HEADER,
   type SubmissionResult,
-} from '../../../lib/submissions'
-import { reportProxyFailure, upstreamRefusal } from './_proxy-failure'
+} from '../../../../lib/submissions'
+import { reportProxyFailure, upstreamRefusal } from '../_proxy-failure'
 
 /**
  * A refused submission, as one code and one status the browser may see.

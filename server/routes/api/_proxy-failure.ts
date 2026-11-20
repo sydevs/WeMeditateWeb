@@ -1,6 +1,6 @@
 /**
- * How the two SahajCloud proxies — `submissions.ts` and
- * `live-preview/populate.ts` — read and report a failed call.
+ * How the two SahajCloud proxies — `submissions/route.ts` and
+ * `live-preview/populate/route.ts` — read and report a failed call.
  */
 
 import * as Sentry from '@sentry/cloudflare'

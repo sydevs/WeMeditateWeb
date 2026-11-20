@@ -5,26 +5,27 @@ import type { SahajCloudEnv } from '../../sahajcloud-context'
 import { registerApiRoutes } from '.'
 
 /**
- * The folder is the route list: each route lives in the file its path names,
- * every route file registers one, and `index.ts` registers them all. A route
- * added anywhere else, or a file `index.ts` forgets, fails here.
+ * The folder is the route list: each route lives in the `route.ts` of the
+ * folder its path names, every `route.ts` registers one, every other file
+ * belongs to a route's folder or is a shared `_` file, and `index.ts`
+ * registers them all. A route added anywhere else, a stray file, or a route
+ * `index.ts` forgets fails here.
  */
 
 type RouteModule = Record<string, unknown>
 
-const routeFiles = Object.entries(import.meta.glob<RouteModule>('./**/*.ts')).filter(
-  ([file]) =>
-    file !== './index.ts' && !file.endsWith('.test.ts') && !file.split('/').at(-1)!.startsWith('_'),
-)
+const files = Object.keys(import.meta.glob('./**/*.ts'))
 
-/** `/api/live-preview/populate` → `./live-preview/populate.ts`; a `:param` adds nothing. */
+const routeFiles = Object.entries(import.meta.glob<RouteModule>('./**/route.ts'))
+
+/** `/api/live-preview/populate` → `./live-preview/populate/route.ts`; a `:param` adds nothing. */
 function fileFor(path: string): string {
   const segments = path
     .replace(/^\/api\//, '')
     .split('/')
     .filter((segment) => !segment.startsWith(':'))
 
-  return `./${segments.join('/')}.ts`
+  return `./${segments.join('/')}/route.ts`
 }
 
 /** Method and path of every handler `register` adds, middleware left out. */
@@ -53,7 +54,7 @@ describe('server/routes/api', () => {
     expect(routeFiles.length).toBeGreaterThan(0)
   })
 
-  it.each(routeFiles)('%s registers only the routes its path names', async (file, load) => {
+  it.each(routeFiles)('%s registers only the routes its folder names', async (file, load) => {
     const routes = routesOf(await registerOf(load))
 
     expect(routes.length).toBeGreaterThan(0)
@@ -63,6 +64,21 @@ describe('server/routes/api', () => {
 
       expect(path.startsWith('/api/'), route).toBe(true)
       expect(fileFor(path), route).toBe(file)
+    }
+  })
+
+  it('keeps every other file in a route folder, or shared under a `_` name', () => {
+    const routeFolders = routeFiles.map(([file]) => file.replace(/route\.ts$/, ''))
+
+    for (const file of files) {
+      if (file === './index.ts' || file === './index.test.ts') continue
+
+      if (file.split('/').at(-1)!.startsWith('_') && file.split('/').length === 2) continue
+
+      expect(
+        routeFolders.some((folder) => file.startsWith(folder)),
+        `${file} is in no route's folder`,
+      ).toBe(true)
     }
   })
 

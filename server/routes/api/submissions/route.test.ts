@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../../../lib/submissions'
-import type { SahajCloudEnv } from '../../sahajcloud-context'
-import { SUBMISSION_BODY_LIMIT, submissionSchema } from '../../validation'
-import { sdkError, submitRequest } from './_testing'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../../../../lib/submissions'
+import type { SahajCloudEnv } from '../../../sahajcloud-context'
+import { SUBMISSION_BODY_LIMIT, submissionSchema } from './schema'
+import { sdkError, submitRequest } from '../_testing'
 
 /**
  * ⚠ `/api/submissions` attaches `SAHAJCLOUD_API_KEY` on our side, so what it
@@ -17,16 +17,16 @@ import { sdkError, submitRequest } from './_testing'
 
 const { request } = vi.hoisted(() => ({ request: vi.fn() }))
 
-vi.mock('../../sahajcloud-context', () => ({
+vi.mock('../../../sahajcloud-context', () => ({
   getSahajCloudContext: () => ({
     apiKey: 'test-key',
     baseURL: 'https://sahajcloud.test',
   }),
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
-vi.mock('../../payload-client', () => ({ createPayloadClient: () => ({ request }) }))
+vi.mock('../../../payload-client', () => ({ createPayloadClient: () => ({ request }) }))
 
-const { registerSubmissions } = await import('./submissions')
+const { registerSubmissions } = await import('./route')
 
 beforeEach(() => {
   request.mockReset()

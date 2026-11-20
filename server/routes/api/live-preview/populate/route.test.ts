@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { SahajCloudEnv } from '../../../sahajcloud-context'
-import { NOW, populateRequest, previewTokenMinter } from '../_testing'
+import type { SahajCloudEnv } from '../../../../sahajcloud-context'
+import { NOW, populateRequest, previewTokenMinter } from '../../_testing'
 
 /**
  * ⚠ The gate on `/api/live-preview/populate`, which is new attack surface.
@@ -19,14 +19,14 @@ const { createdWith, request } = vi.hoisted(() => ({
   request: vi.fn(),
 }))
 
-vi.mock('../../../sahajcloud-context', () => ({
+vi.mock('../../../../sahajcloud-context', () => ({
   getSahajCloudContext: () => ({
     apiKey: 'test-key',
     baseURL: 'https://sahajcloud.test',
   }),
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
-vi.mock('../../../payload-client', () => ({
+vi.mock('../../../../payload-client', () => ({
   createPayloadClient: (config: unknown) => {
     createdWith.push(config)
 
@@ -34,7 +34,7 @@ vi.mock('../../../payload-client', () => ({
   },
 }))
 
-const { registerLivePreviewPopulate } = await import('./populate')
+const { registerLivePreviewPopulate } = await import('./route')
 
 let verifyKeyBase64: string
 let sign: (exp: number) => Promise<string>
