@@ -29,7 +29,9 @@ beforeAll(async () => {
 
 describe('preview URL extraction', () => {
   it('ignores a pages.dev host', () => {
-    expect(discovery.extractPreviewUrl("<a href='https://8c49b588.wm-design.pages.dev'>")).toBeNull()
+    expect(
+      discovery.extractPreviewUrl("<a href='https://8c49b588.wm-design.pages.dev'>"),
+    ).toBeNull()
   })
 
   it('reads a Workers preview host out of a bot comment', () => {
