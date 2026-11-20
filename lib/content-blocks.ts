@@ -16,6 +16,7 @@ import type {
   Album,
   Image,
   ImageGalleryBlock,
+  LayoutBlock,
   ShowcaseBlock,
   SongTag,
   SplashBlock,
@@ -32,10 +33,12 @@ import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
 /**
- * A polymorphic showcase relationship entry. The generated `ShowcaseBlock`
- * leaves its array member anonymous, so this is the one name for it.
+ * The two block shapes the generated schema leaves anonymous, so no consumer
+ * can import them: a `showcase` relationship entry and a `layout` item. Both
+ * are indexed straight out of the generated interface.
  */
 export type ShowcaseItem = NonNullable<ShowcaseBlock['items']>[number]
+export type LayoutItem = NonNullable<LayoutBlock['items']>[number]
 
 /** The `pages` collection's tag enum (drives page content-index facets). */
 export type PageTag = NonNullable<Page['tags']>[number]
