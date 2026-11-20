@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import * as Sentry from '@sentry/cloudflare'
+import * as Sentry from '@sentry/react'
+import { forgetReportedWarnings } from './error-utils'
 import { reportLiveSessionGaps } from './live-session'
 
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// `warnOnce` reports through `@sentry/react` (see error-utils.ts).
+vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
 const ONLINE = {
   eventType: 'online',
@@ -23,6 +25,7 @@ const content = (...events: unknown[]) => ({
 })
 
 beforeEach(() => {
+  forgetReportedWarnings()
   vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 })
 

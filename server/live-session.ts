@@ -13,10 +13,9 @@
  * unreadable is reported.
  */
 
-import * as Sentry from '@sentry/cloudflare'
 import { populatedImage } from '../lib/content-blocks'
 import { readSessionClass, type SessionGap } from '../lib/live-session'
-import { reportOnce } from './report-once'
+import { warnOnce } from './error-utils'
 import type { Locale } from './sahajcloud-types'
 
 /** What a gap is called in the warning. `absent` never reaches it. */
@@ -66,13 +65,14 @@ export function reportLiveSessionGaps(
     `[liveSession] ${gaps.length} countdown block(s) on "${options.slug}" name a class that is ${gaps.join(', ')}`,
   )
 
-  reportOnce('liveSession', `${options.slug}:${gaps.join(',')}`, () => {
-    Sentry.captureMessage('A countdown splash names a class it cannot count down to', {
-      level: 'warning',
-      tags: { source: 'liveSession' },
+  warnOnce(
+    `${options.slug}:${gaps.join(',')}`,
+    'A countdown splash names a class it cannot count down to',
+    {
+      source: 'liveSession',
       // The locale of the render that first saw this gap in this isolate, not
       // the only one affected.
       extra: { slug: options.slug, gaps, locale: options.locale ?? null },
-    })
-  })
+    },
+  )
 }

@@ -39,8 +39,7 @@ import {
   TURNSTILE_TOKEN_HEADER,
   type SubmissionResult,
 } from '../lib/submissions'
-import { readStatus } from './error-utils'
-import { reportOnce } from './report-once'
+import { readStatus, warnOnce } from './error-utils'
 import { verifyLivePreviewToken } from './live-preview'
 import { createPayloadClient } from './payload-client'
 import { idSchema, SUBMISSION_BODY_LIMIT, submissionSchema } from './validation'
@@ -212,7 +211,7 @@ function upstreamRefusal(error: unknown): { code?: string; status?: number } {
  * working and is not reported; a 400 reports once per code. A 400 is the
  * caller's by status, but it is also how a contract drift shows — the intake
  * refusing a key our form sends, or a read shape SahajCloud stopped accepting
- * — so it is reported, and the proxy is `reportOnce`'s source so one proxy's
+ * — so it is reported, and the proxy is `warnOnce`'s source so one proxy's
  * churn cannot re-arm the other's.
  *
  * ⚠ A refused key is an **uncoded** 403 — Payload's own Forbidden, never a
@@ -231,24 +230,20 @@ function reportProxyFailure(proxy: 'submissions' | 'live-preview populate', erro
 
   if (status === 403 && proxy === 'submissions' && code) return
 
-  const report = () =>
-    Sentry.captureMessage(`The ${proxy} proxy failed`, {
-      level: status === 400 ? 'warning' : 'error',
-      tags: { source: proxy },
-      extra: {
-        status: status ?? null,
-        code: code ?? null,
-        error: error instanceof Error ? error.name : typeof error,
-      },
-    })
+  const message = `The ${proxy} proxy failed`
+  const extra = {
+    status: status ?? null,
+    code: code ?? null,
+    error: error instanceof Error ? error.name : typeof error,
+  }
 
   if (status === 400) {
-    reportOnce(proxy, code ?? '', report)
+    warnOnce(code ?? '', message, { source: proxy, extra })
 
     return
   }
 
-  report()
+  Sentry.captureMessage(message, { level: 'error', tags: { source: proxy }, extra })
 }
 
 /**

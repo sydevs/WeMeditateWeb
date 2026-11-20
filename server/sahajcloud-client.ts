@@ -27,7 +27,6 @@
 
 import { createPayloadClient } from './payload-client'
 import { readStatus, withRetry } from './error-utils'
-import { reportOnce } from './report-once'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
@@ -690,7 +689,7 @@ export function partitionPublishedPages(pages: (number | NavPage)[] | null | und
  * so a *standing* gap — an editor leaving a referenced page unpublished, which
  * is precisely what the warning is for — would bill one event per page view
  * until someone publishes it. The gap must stay visible (server/AGENTS.md), so
- * what is bounded is volume, not level: `reportOnce` sends one event per
+ * what is bounded is volume, not level: `warnOnce` sends one event per
  * distinct gap per isolate, and `console.warn` still fires on every request.
  */
 const CONFIG_GAP_SOURCE = 'getWebConfig'
@@ -749,14 +748,11 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
         `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
       )
 
-      reportOnce(CONFIG_GAP_SOURCE, unresolved.join(','), () => {
-        Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
-          level: 'warning',
-          tags: { source: CONFIG_GAP_SOURCE },
-          // The locale of the render that first saw this gap in this isolate,
-          // not the only one affected.
-          extra: { unresolved, locale: options.locale ?? null },
-        })
+      warnOnce(unresolved.join(','), 'WebConfig references unpublished or unresolved pages', {
+        source: CONFIG_GAP_SOURCE,
+        // The locale of the render that first saw this gap in this isolate,
+        // not the only one affected.
+        extra: { unresolved, locale: options.locale ?? null },
       })
     }
 

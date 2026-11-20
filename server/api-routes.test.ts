@@ -29,7 +29,13 @@ vi.mock('./sahajcloud-context', () => ({
     baseURL: 'https://sahajcloud.test',
   }),
 }))
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
+// Both SDKs re-export `@sentry/core`'s one `captureMessage`, so one spy stands
+// for both: `warnOnce`, which the bounded 400 report goes through, reports
+// through `@sentry/react` (see error-utils.ts).
+const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
+
+vi.mock('@sentry/cloudflare', () => ({ captureMessage, captureException: vi.fn() }))
+vi.mock('@sentry/react', () => ({ captureMessage }))
 vi.mock('./payload-client', () => ({
   createPayloadClient: (config: unknown) => {
     createdWith.push(config)
