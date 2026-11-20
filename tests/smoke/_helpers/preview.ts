@@ -7,6 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
+import { JSDOM } from 'jsdom'
 import { DEFAULT_LOCALE, type Locale } from '../../../server/sahajcloud-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
@@ -241,54 +242,50 @@ export async function nonEnglishLocale(): Promise<Locale | null> {
   return (offered.find((code) => code !== DEFAULT_LOCALE) as Locale | undefined) ?? null
 }
 
+/**
+ * The page parsed as a browser would, so an assertion reads what the markup
+ * claims rather than how a generator happened to spell it.
+ *
+ * ⚠ A pattern over the raw string read Unhead's graph as no graph at all once
+ * its `<script>` carried a `data-hid` attribute, and every assertion over it
+ * passed vacuously. One page is parsed once, however many helpers read it.
+ */
+let parsed: { html: string; document: Document } | null = null
+
+function documentOf(html: string): Document {
+  if (parsed?.html !== html) {
+    parsed = { html, document: new JSDOM(html).window.document }
+  }
+
+  return parsed.document
+}
+
 /** The page's `<title>` text, trimmed, or the empty string. */
 export function titleOf(html: string): string {
-  return html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? ''
+  return documentOf(html).title.trim()
 }
 
-/** Every `content` value for one `og:`/`twitter:` key, in document order. */
+/** Every `content` value for one meta key, on `property` or `name`, in document order. */
 export function metaContent(html: string, key: string): string[] {
-  return (
-    [...html.matchAll(/<meta[^>]*>/gi)]
-      .map((match) => match[0])
-      // Open Graph keys on `property`; everything else keys on `name`.
-      .filter((tag) => tag.includes(`property="${key}"`) || tag.includes(`name="${key}"`))
-      .map((tag) => tag.match(/content="([^"]*)"/)?.[1] ?? '')
-  )
+  return [...documentOf(html).querySelectorAll('meta')]
+    .filter((meta) => meta.getAttribute('property') === key || meta.getAttribute('name') === key)
+    .map((meta) => meta.getAttribute('content') ?? '')
 }
 
-/**
- * Every `<link rel="…">` on the page, as its attributes, in document order.
- *
- * ⚠ **The attribute order is the generator's.** Unhead writes `rel` before
- * `href` and closes a void element bare, where the React head wrote the
- * reverse, so a test matching a whole tag asserts a spelling rather than the
- * claim the tag makes.
- */
+/** Every `<link rel="…">` on the page, as its attributes, in document order. */
 export function linkAttrs(html: string, rel: string): Record<string, string>[] {
-  return [...html.matchAll(/<link[^>]*>/gi)]
-    .map((match) => match[0])
-    .filter((tag) => tag.includes(`rel="${rel}"`))
-    .map((tag) =>
-      Object.fromEntries(
-        [...tag.matchAll(/([a-zA-Z-]+)="([^"]*)"/g)].map(([, name, value]) => [name, value]),
-      ),
-    )
+  return [...documentOf(html).querySelectorAll(`link[rel="${rel}"]`)].map((link) =>
+    Object.fromEntries([...link.attributes].map((attr) => [attr.name, attr.value])),
+  )
 }
 
 /** One node of a page's `@graph`, read structurally rather than by schema. */
 export type JsonLdNode = Record<string, unknown> & { '@type': string }
 
-/**
- * Every JSON-LD block on the page, parsed. Throws on one that does not parse.
- *
- * ⚠ **The opening tag carries attributes.** Unhead's generated block adds
- * `data-hid`, so a pattern anchored on `…ld+json">` reads a generated graph as
- * no graph at all, and every assertion over it passes vacuously.
- */
+/** Every JSON-LD block on the page, parsed. Throws on one that does not parse. */
 export function jsonLdBlocks(html: string): { '@graph'?: JsonLdNode[] }[] {
-  return [...html.matchAll(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)].map(
-    (match) => JSON.parse(match[1]),
+  return [...documentOf(html).querySelectorAll('script[type="application/ld+json"]')].map(
+    (script) => JSON.parse(script.textContent ?? ''),
   )
 }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { buildWebManifest } from './manifest'
 import { enT } from '../lib/i18n'
-import { THEME_COLOR } from '../lib/app-identity'
+import { THEME_COLOR } from '../lib/site-identity'
 
 const ORIGIN = 'https://wemeditate.com'
 

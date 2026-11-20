@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildOEmbedResponse, positiveInteger, resolveOEmbedTarget } from '.'
+import { buildOEmbedResponse, positiveInteger, resolveOEmbedTarget } from './oembed'
 
 const ORIGIN = 'https://wemeditate.com'
 
@@ -8,13 +8,17 @@ describe('resolveOEmbedTarget', () => {
     [
       'a meditation',
       `${ORIGIN}/meditations/142`,
-      { collection: 'meditations', id: '142', locale: 'en' },
+      { collection: 'meditations', id: '142', locale: 'en', embedPath: '/meditations/142/embed' },
     ],
-    ['a lecture', `${ORIGIN}/lectures/163`, { collection: 'lectures', id: '163', locale: 'en' }],
+    [
+      'a lecture',
+      `${ORIGIN}/lectures/163`,
+      { collection: 'lectures', id: '163', locale: 'en', embedPath: '/lectures/163/embed' },
+    ],
     [
       'a locale-prefixed media URL, whose locale the player keeps',
       `${ORIGIN}/fr/lectures/163`,
-      { collection: 'lectures', id: '163', locale: 'fr' },
+      { collection: 'lectures', id: '163', locale: 'fr', embedPath: '/lectures/163/embed' },
     ],
   ])('resolves %s', (_label, url, expected) => {
     expect(resolveOEmbedTarget(url, ORIGIN)).toEqual(expected)
@@ -86,6 +90,13 @@ describe('buildOEmbedResponse', () => {
 
     expect(response).not.toHaveProperty('title')
     expect(response).not.toHaveProperty('thumbnail_url')
+  })
+
+  it('names a thumbnail without a width the spec would require a height beside', () => {
+    const response = build()
+
+    expect(response.thumbnail_url).toBe('https://img.test/poster.jpg')
+    expect(response).not.toHaveProperty('thumbnail_width')
   })
 })
 

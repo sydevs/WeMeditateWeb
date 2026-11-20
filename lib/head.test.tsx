@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { isOpenGraphKey, isSafeJsonLd, NoIndexHead } from './head'
+import { isSafeJsonLd, NoIndexHead } from './head'
 import { seoDocument } from './head-settings'
 
 describe('isSafeJsonLd', () => {
@@ -13,6 +13,7 @@ describe('isSafeJsonLd', () => {
     ['</SCRIPT> in any case', '{"a":"</SCRIPT >"}'],
     ['a comment opener', '{"a":"<!--"}'],
     ['an empty string', ''],
+    ['nothing at all', undefined],
   ])('refuses %s', (_label, value) => {
     expect(isSafeJsonLd(value)).toBe(false)
   })
@@ -25,22 +26,6 @@ describe('seoDocument', () => {
     expect(seoDocument(undefined)).toBeNull()
     expect(seoDocument({})).toBeNull()
   })
-})
-
-describe('isOpenGraphKey', () => {
-  it.each(['og:url', 'og:image', 'article:published_time'])(
-    'spells %s on `property`, the one vocabulary that keys that way',
-    (key) => {
-      expect(isOpenGraphKey(key)).toBe(true)
-    },
-  )
-
-  it.each(['twitter:card', 'robots', 'apple-itunes-app', 'description'])(
-    'spells %s on `name`',
-    (key) => {
-      expect(isOpenGraphKey(key)).toBe(false)
-    },
-  )
 })
 
 describe('NoIndexHead', () => {

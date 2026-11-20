@@ -96,42 +96,30 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **A string composed in English is still an English string.** `` `Mute ${label.toLowerCase()}` ``
   and `` `Loading ${title.toLowerCase()}` `` build a sentence only English builds that way. Take
   the finished label as a prop or a key, never assemble one from a visible label.
-- **An indexable content route builds its head in `+data.ts`, and that is its whole opt-in.** The
-  `+data.ts` builds one `SeoDocument` through [lib/content-seo.ts](lib/content-seo.ts) — the
-  title, the canonical, the `hreflang` cluster, Open Graph, Twitter and a `@graph` described as
-  plain data ([lib/seo-schema.ts](lib/seo-schema.ts)) — and
-  [lib/seo-head-html.ts](lib/seo-head-html.ts) generates the head string from it with Unhead, on
-  the server, once per request. A route that builds none publishes no URL claim at all, which is
-  what keeps the `embed` routes and the error page bare. **The generator is declared once**, as
-  `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`: vike-react's setting is global as well as
-  cumulative, so a second declaration on one route adds a second copy of the whole head to every
-  page of the site. `<title>` and `description` sit beside it, from
-  [lib/head-settings.ts](lib/head-settings.ts), which has to be a separate module and says why.
+- **An indexable content route builds its head in `+data.ts`, and that is its whole opt-in.** It
+  builds one `SeoDocument` through [lib/content-seo.ts](lib/content-seo.ts): the title, the
+  canonical, the `hreflang` cluster, Open Graph and Twitter in Unhead's `useSeoMeta` spelling, and
+  a `@graph` described as plain data ([lib/seo-schema.ts](lib/seo-schema.ts)).
+  [lib/seo-head-html.ts](lib/seo-head-html.ts) renders it with Unhead on the server and adds the
+  tags every published URL carries (`robots`, `twitter:site`, `apple-itunes-app`). A route that
+  builds none publishes no URL claim, which keeps the `embed` routes and the error page bare.
+  **The generator is declared once**, as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`:
+  vike-react's setting is global as well as cumulative, so a second declaration adds a second copy
+  of the whole head to every page; `tests/guards/content-head.test.tsx` holds that.
   **Never a head hook in a component**: `PageTemplate`, `MeditationTemplate` and
-  `LectureTemplate` are shared with the `embed` routes and the live preview, and none of those is
-  a URL to point a crawler at. `/map` publishes through the same generator, from the document
-  [lib/atlas-seo.ts](lib/atlas-seo.ts) adapts out of the answer SahajCloud serves; its `@graph`
-  arrives already serialized, which is the one way that document differs.
-  A URL advertises only the locales its own document is published in —
-  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the page head, the
-  `og:locale:alternate` list and `/sitemap.xml`, so the three cannot disagree. The site's
-  `availableLocales` is a filter on that set, never the set itself.
-  `tests/guards/content-head.test.tsx` holds both halves: the head is declared in one file, and
-  the routes that build a document are the ones listed there.
-- **Nothing site-wide goes in `public/`, so a site-wide document is a route.** `/robots.txt`,
-  `/sitemap.xml` and `/manifest.webmanifest` are all Hono routes
-  ([server/sitemap-routes.ts](server/sitemap-routes.ts)) for that reason, and being routes is also
-  what lets the manifest answer in the language of the URL. The platform's own identifiers — the
-  store ids, the theme colour, the home-screen icon — live in
-  [lib/app-identity.ts](lib/app-identity.ts), which is not
-  [lib/site-identity.ts](lib/site-identity.ts): that one is who the site is on the web, the
-  profiles the footer links and `Organization` claims.
+  `LectureTemplate` are shared with the `embed` routes and the live preview. `/map` publishes
+  through the same generator from [lib/atlas-seo.ts](lib/atlas-seo.ts); its `@graph` arrives
+  already serialized. A URL advertises only the locales its own document is published in —
+  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the head, `og:locale:alternate` and
+  `/sitemap.xml`. The site's `availableLocales` is a filter on that set, never the set itself.
+- **A site-wide document is a route, because `public/` is shipped by both builds** (see below).
+  `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest` are Hono routes
+  ([server/sitemap-routes.ts](server/sitemap-routes.ts)). The theme colour, the home-screen icon and
+  the store id live in [lib/site-identity.ts](lib/site-identity.ts), beside the social profiles.
 - **One geometry for the embedded player.** [lib/embed-player.ts](lib/embed-player.ts) owns the
-  iframe and its size, because three surfaces name the same player: the paste-ready snippet
-  (`EmbedButton`), the `twitter:player` and `og:video` tags, and `GET /oembed`
-  ([server/oembed/](server/oembed/)). A width that differed between them would letterbox the
-  player in one consumer and crop it in another. Which URL the iframe points at is
-  `documentEmbedHref`'s, in [lib/document-routes.ts](lib/document-routes.ts).
+  iframe and its size, which the paste-ready snippet (`EmbedButton`), `twitter:player`/`og:video`
+  and `GET /oembed` ([server/oembed.ts](server/oembed.ts)) all name. `documentEmbedHref` in
+  [lib/document-routes.ts](lib/document-routes.ts) owns which URL it points at.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
   answer from there. Never restate one of these rules at a call site. **An absolute URL for one of

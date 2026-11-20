@@ -31,15 +31,7 @@ function document(lecture: ResolvedLecture = LECTURE) {
   })
 }
 
-function head(lecture: ResolvedLecture = LECTURE): string {
-  const seo = document(lecture)
-
-  if (!seo.schema) {
-    throw new Error('the lecture document carries no schema descriptors')
-  }
-
-  return renderSeoHead({ ...seo, schema: seo.schema }, ORIGIN)
-}
+const head = (lecture: ResolvedLecture = LECTURE) => renderSeoHead(document(lecture), ORIGIN)
 
 function graph(html: string): Record<string, unknown>[] {
   const match = html.match(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/)
@@ -67,7 +59,7 @@ describe('renderSeoHead', () => {
   it('emits one JSON-LD block, and the document serializes none of its own', () => {
     const html = head()
 
-    expect(document().jsonLd).toBe('')
+    expect(document().jsonLd).toBeUndefined()
     expect(html.match(/application\/ld\+json/g)).toHaveLength(1)
     expect(graph(html).length).toBeGreaterThan(1)
   })
@@ -156,7 +148,7 @@ describe('the claims Unhead would invent, and does not', () => {
     // Unhead reads a subtype off the URL. The slug is the editor's to change,
     // so the type is pinned instead.
     const seo = pageDocument('/about')
-    const html = renderSeoHead({ ...seo, schema: seo.schema! }, ORIGIN)
+    const html = renderSeoHead(seo, ORIGIN)
 
     expect(nodeOf(html, 'WebPage')).toBeDefined()
     expect(html).not.toContain('AboutPage')
@@ -172,14 +164,12 @@ describe('the claims Unhead would invent, and does not', () => {
   })
 })
 
-
 /** A head with nothing but the tags under test, so each one stands alone. */
 function bare(overrides: Partial<SeoHead> = {}): SeoHead {
   return {
     canonical: `${ORIGIN}/about`,
     alternates: [],
-    meta: [],
-    jsonLd: '',
+    seoMeta: {},
     ...overrides,
   }
 }
@@ -221,20 +211,29 @@ describe('the tags around the graph', () => {
     expect(html).not.toContain('hrefLang=')
   })
 
-  it('emits every meta pair it is given, repeats included', () => {
-    // `og:locale:alternate` is the reason `meta` is a list and not a record.
-    const html = renderSeoHead(
-      bare({
-        meta: [
-          ['og:locale:alternate', 'fr'],
-          ['og:locale:alternate', 'de'],
-        ],
-      }),
-      ORIGIN,
-    )
+  it('emits a repeated Open Graph property once per value', () => {
+    const html = renderSeoHead(bare({ seoMeta: { ogLocaleAlternate: ['fr', 'de'] } }), ORIGIN)
 
     expect(html).toContain('<meta property="og:locale:alternate" content="fr">')
     expect(html).toContain('<meta property="og:locale:alternate" content="de">')
+  })
+
+  it('keys Open Graph on property and everything else on name', () => {
+    const html = renderSeoHead(
+      bare({ seoMeta: { articleAuthor: ['Jo'], twitterCard: 'summary_large_image' } }),
+      ORIGIN,
+    )
+
+    expect(html).toContain('<meta property="article:author" content="Jo">')
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">')
+    expect(html).toContain('<meta name="robots"')
+  })
+
+  it('names the Twitter account and the App Store app on every published URL', () => {
+    const html = renderSeoHead(bare(), ORIGIN)
+
+    expect(html).toContain('<meta name="twitter:site" content="@wemeditate">')
+    expect(html).toContain('<meta name="apple-itunes-app" content="app-id=6465684494">')
   })
 })
 
@@ -254,10 +253,7 @@ describe('a graph that arrives already serialized', () => {
   })
 
   it('leaves an upstream escape alone rather than turning it back into a tag', () => {
-    const html = renderSeoHead(
-      bare({ jsonLd: '{"name":"\\u003c/script\\u003ealert(1)"}' }),
-      ORIGIN,
-    )
+    const html = renderSeoHead(bare({ jsonLd: '{"name":"\\u003c/script\\u003ealert(1)"}' }), ORIGIN)
 
     expect(html).toContain('\\u003c/script\\u003e')
     expect(html).not.toContain('</script>alert(1)')

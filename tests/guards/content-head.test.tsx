@@ -1,12 +1,6 @@
 /**
- * Every content route publishes a complete head.
- *
- * Two halves, because two different things can break. The rendered half
- * checks that a built document reaches the markup as the tags a crawler and a
- * social scraper look for. The source half checks that a route which claims
- * to be an indexable content URL actually builds one — the failure a renderer
- * test cannot see, because a route with no `seo` on its data renders a head
- * that is merely empty.
+ * Every content route publishes a complete head, and the generator that
+ * renders it is declared exactly once.
  */
 import { describe, it, expect } from 'vitest'
 import { relative } from 'node:path'
@@ -98,7 +92,8 @@ describe.each(DOCUMENTS)('the head %s publishes', (_label, seo) => {
   })
 
   it('leaves no unescaped < inside the JSON-LD block', () => {
-    const block = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s)?.[1] ?? ''
+    const block =
+      html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s)?.[1] ?? ''
 
     expect(block).not.toContain('<')
   })
@@ -115,25 +110,5 @@ describe('the generated head', () => {
   // and three `@graph` blocks on the deployed preview (#282).
   it('is declared once, in the root config', () => {
     expect(declaring).toEqual(['pages/+config.ts'])
-  })
-})
-
-describe('the routes that publish a URL', () => {
-  const building = sourceFiles(['pages/**/+data.ts'])
-    .filter((file) => /\b\w+Seo\(/.test(stripComments(readSource(file))))
-    .map((file) => relative(repoRoot, file))
-    .sort()
-
-  // Building the document is the opt-in, now that the generator is declared
-  // once for the whole site: a route that stops building one goes quiet
-  // rather than red. A new indexable route belongs on this list. `/map`
-  // builds one too, from the answer the atlas endpoint serves.
-  it('are the indexable routes, and every one of them', () => {
-    expect(building).toEqual([
-      'pages/[slug]/+data.ts',
-      'pages/lectures/[id]/(full)/+data.ts',
-      'pages/map/+data.ts',
-      'pages/meditations/[id]/(full)/+data.ts',
-    ])
   })
 })

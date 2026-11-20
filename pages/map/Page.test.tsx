@@ -35,7 +35,7 @@ function render(data: Partial<MapPageData>) {
   pageData.current = {
     atlasRoute: '/gb/london',
     atlas,
-    seo: atlas ? atlasSeo(atlas, 'https://wemeditate.com') : null,
+    seo: atlas ? atlasSeo(atlas) : null,
     settings: {} as MapPageData['settings'],
     ...data,
   }

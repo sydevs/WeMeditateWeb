@@ -10,7 +10,7 @@
  * in the language of the URL that asked for it.
  */
 
-import { APP_ICON, APP_ICON_SIZE, BACKGROUND_COLOR, THEME_COLOR } from '../lib/app-identity'
+import { APP_ICON, APP_ICON_SIZE, THEME_COLOR } from '../lib/site-identity'
 import type { TFunction } from '../lib/i18n'
 import { localeUrl } from '../lib/urls'
 import type { Locale } from './sahajcloud-types'
@@ -35,7 +35,7 @@ export function buildWebManifest(options: {
     // back. The native apps are what `standalone` would be pretending to be.
     display: 'browser',
     theme_color: THEME_COLOR,
-    background_color: BACKGROUND_COLOR,
+    background_color: '#ffffff',
     icons: [
       {
         src: APP_ICON,

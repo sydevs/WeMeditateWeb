@@ -88,25 +88,12 @@ export interface ContentIndexBlockFields {
  * Every `content-index` block's `fields` object in a lexical tree, in
  * document order.
  *
- * Two callers read the same blocks for different reasons: the server
- * attaches each block's resolved list before SSR (`server/content-index.ts`),
- * and the head describes those lists as `ItemList` JSON-LD
- * (`lib/content-seo.ts`). The objects come back by reference, which is what
- * lets the first caller fill them in.
+ * ⚠ **The objects come back by reference**, which is what lets
+ * `server/content-index.ts` fill each block's resolved list in place before
+ * SSR. The head reads the same lists (`lib/content-seo.ts`).
  */
 export function contentIndexBlocks(content: unknown): ContentIndexBlockFields[] {
-  return contentBlocks<ContentIndexBlockFields>(content, 'content-index')
-}
-
-/**
- * Every block of one `blockType` in a lexical tree, in document order.
- *
- * ⚠ **The `fields` objects come back by reference**, which is what lets
- * `server/content-index.ts` fill each block's resolved list in place before
- * SSR. A walker that copied them would break that.
- */
-export function contentBlocks<T>(content: unknown, blockType: string): T[] {
-  const found: T[] = []
+  const found: ContentIndexBlockFields[] = []
   const walk = (node: unknown): void => {
     if (Array.isArray(node)) {
       node.forEach(walk)
@@ -116,8 +103,8 @@ export function contentBlocks<T>(content: unknown, blockType: string): T[] {
     if (node && typeof node === 'object') {
       const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
 
-      if (candidate.type === 'block' && candidate.fields?.blockType === blockType) {
-        found.push(candidate.fields as T)
+      if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
+        found.push(candidate.fields as ContentIndexBlockFields)
       }
       Object.values(node).forEach(walk)
     }

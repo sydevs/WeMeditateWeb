@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { describe, expect, it, vi } from 'vitest'
-import type { SahajCloudEnv } from '../sahajcloud-context'
-import { EN_TRANSLATIONS } from '../../lib/i18n'
+import type { SahajCloudEnv } from './sahajcloud-context'
+import { EN_TRANSLATIONS } from '../lib/i18n'
 
 /**
  * The status codes `/oembed` answers with, and the one thing it must never do:
@@ -15,13 +15,13 @@ const { getLecture, getDocumentById } = vi.hoisted(() => ({
   getDocumentById: vi.fn(),
 }))
 
-vi.mock('../sahajcloud-client', () => ({
+vi.mock('./sahajcloud-client', () => ({
   getLecture,
   getDocumentById,
   getWebTranslations: vi.fn(async () => EN_TRANSLATIONS),
 }))
 
-const { registerOEmbedRoutes } = await import('./routes')
+const { registerOEmbedRoutes } = await import('./oembed-routes')
 
 const ORIGIN = 'https://wemeditate.com'
 

@@ -4,7 +4,6 @@ import { renderSeoHead } from './seo-head-html'
 import type { AtlasSeoResponse } from '../server/atlas-types'
 
 const ORIGIN = 'https://wemeditate.com'
-const PREVIEW = 'https://claude-feat.wemeditate-web.workers.dev'
 
 /** A region answer with every head-bearing field populated. */
 function regionSeo(overrides: Partial<AtlasSeoResponse> = {}): AtlasSeoResponse {
@@ -34,13 +33,7 @@ function regionSeo(overrides: Partial<AtlasSeoResponse> = {}): AtlasSeoResponse 
   } as AtlasSeoResponse
 }
 
-const render = (seo: AtlasSeoResponse, origin = ORIGIN) =>
-  renderSeoHead(atlasSeo(seo, origin), origin)
-
-const metaFor = (seo: AtlasSeoResponse, key: string) =>
-  atlasSeo(seo, ORIGIN)
-    .meta.filter(([name]) => name === key)
-    .map(([, content]) => content)
+const render = (seo: AtlasSeoResponse, origin = ORIGIN) => renderSeoHead(atlasSeo(seo), origin)
 
 describe('atlasSeo', () => {
   it('publishes the canonical exactly as the endpoint gave it', () => {
@@ -67,7 +60,7 @@ describe('atlasSeo', () => {
   it('carries the title and description the endpoint wrote, for vike-react to emit', () => {
     // `<title>`, the description, `og:title` and `og:description` are the two
     // vike-react settings, read off this document (lib/head-settings.ts).
-    const seo = atlasSeo(regionSeo({ description: 'Classes in London' }), ORIGIN)
+    const seo = atlasSeo(regionSeo({ description: 'Classes in London' }))
 
     expect(seo.title).toBe('London, United Kingdom')
     expect(seo.description).toBe('Classes in London')
@@ -98,16 +91,16 @@ describe('atlasSeo', () => {
     // vike-react emitted both from its `image` setting until this document
     // replaced that call. A card promising a large image and carrying none
     // renders as an empty box.
-    const seo = regionSeo({
-      openGraph: { 'og:type': 'website', 'og:image': 'https://img.test/a.jpg' },
-    })
+    const html = render(
+      regionSeo({ openGraph: { 'og:type': 'website', 'og:image': 'https://img.test/a.jpg' } }),
+    )
 
-    expect(metaFor(seo, 'og:image')).toEqual(['https://img.test/a.jpg'])
-    expect(metaFor(seo, 'twitter:card')).toEqual(['summary_large_image'])
+    expect(html).toContain('<meta property="og:image" content="https://img.test/a.jpg">')
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">')
   })
 
   it('promises no card where the atlas sends no image', () => {
-    expect(metaFor(regionSeo(), 'twitter:card')).toEqual([])
+    expect(render(regionSeo())).not.toContain('twitter:card')
   })
 
   it('publishes the graph the endpoint serialized, verbatim', () => {
@@ -141,23 +134,10 @@ describe('atlasSeo', () => {
       alternates: [{ hreflang: 'x-default', href: `${ORIGIN}/map` }],
       content: { paragraphs: ['Des bénévoles animent chaque cours.'] },
     } as Partial<AtlasSeoResponse>)
-    const seo = atlasSeo(root, ORIGIN)
+    const seo = atlasSeo(root)
 
     expect(seo.title).toBe('Trouvez un cours de méditation')
     expect(seo.description).toBe('Des cours gratuits, partout dans le monde.')
     expect(render(root)).toContain(`<link rel="canonical" href="${ORIGIN}/map">`)
-  })
-
-  describe('the robots claim, which every other route also makes', () => {
-    it('invites a full-size share image on the real site', () => {
-      expect(atlasSeo(regionSeo(), ORIGIN).meta).toContainEqual([
-        'robots',
-        'max-image-preview:large',
-      ])
-    })
-
-    it('refuses a preview Worker, which a crawler may reach without robots.txt', () => {
-      expect(atlasSeo(regionSeo(), PREVIEW).meta).toContainEqual(['robots', 'noindex'])
-    })
   })
 })

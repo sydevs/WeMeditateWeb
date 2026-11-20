@@ -97,31 +97,24 @@ export function documentHref(
 /**
  * The collections whose documents have an embed route beside the full one.
  *
- * `matchDocumentRoute(..., { embed: true })` is the inverse, and the two must
- * name the same set: a collection listed here with no `embed/` route under
- * `pages/` would advertise a player that 404s.
+ * ⚠ `matchDocumentRoute(..., { embed: true })` is the inverse: a collection
+ * listed here with no `embed/` route under `pages/` advertises a player that 404s.
  */
-const EMBEDDABLE: readonly RelationTo[] = ['meditations', 'lectures']
+export const EMBEDDABLE_COLLECTIONS = ['meditations', 'lectures'] as const
+
+export type EmbeddableCollection = (typeof EMBEDDABLE_COLLECTIONS)[number]
 
 /**
- * The embed route for a document, or null where the collection has none.
- *
- * The one owner of the `/embed` suffix. The player's paste-ready snippet
- * (`EmbedButton`) and the `og:video` / oEmbed tags that advertise it both
- * read it here, so an iframe src and a crawler's player URL cannot spell the
- * same route two ways.
+ * The embed route for a document: the one owner of the `/embed` suffix, which
+ * the paste-ready snippet, `og:video` and `/oembed` all read.
  */
 export function documentEmbedHref(
-  relationTo: string,
+  collection: EmbeddableCollection,
   value: RelationValue | null | undefined,
 ): string | null {
-  const href = documentHref(relationTo, value)
+  const href = documentHref(collection, value)
 
-  if (!href || !EMBEDDABLE.includes(relationTo as RelationTo)) {
-    return null
-  }
-
-  return `${href}/embed`
+  return href && `${href}/embed`
 }
 
 /**

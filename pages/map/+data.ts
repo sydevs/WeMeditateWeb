@@ -47,7 +47,7 @@ export async function data(pageContext: PageContextServer): Promise<MapPageData>
   return {
     atlasRoute,
     atlas,
-    seo: atlas ? atlasSeo(atlas, pageContext.urlParsed.origin) : null,
+    seo: atlas ? atlasSeo(atlas) : null,
     settings: site.settings,
   }
 }

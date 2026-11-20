@@ -4,7 +4,7 @@
 import logoUrl from '../assets/logo.svg'
 import { useLocale, useOptionalPageContext, useOrigin } from '../hooks/usePageContext'
 import { isCanonicalOrigin } from '../server/sitemap'
-import { APP_ICON, THEME_COLOR } from '../lib/app-identity'
+import { APP_ICON, THEME_COLOR } from '../lib/site-identity'
 import { localeHref } from '../lib/urls'
 
 export default function HeadDefault() {

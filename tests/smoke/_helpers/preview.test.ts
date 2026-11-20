@@ -6,7 +6,7 @@
  * detecting error pages fails before CI reaches a deployed preview.
  */
 import { describe, it, expect } from 'vitest'
-import { ERROR_MARKERS, linkAttrs, renderedHtml } from './preview'
+import { ERROR_MARKERS, jsonLdTypes, linkAttrs, metaContent, renderedHtml } from './preview'
 
 /** A healthy page: real content, plus the translations payload Vike embeds. */
 const payloadPage = `<!DOCTYPE html><html><head><title>Home Page</title></head><body>
@@ -74,5 +74,22 @@ describe('linkAttrs', () => {
     // `not.toContain` passes on an empty list, so a spec asserting an absence
     // needs this to be the real answer rather than a parse failure.
     expect(linkAttrs(head, 'preconnect')).toEqual([])
+  })
+})
+
+describe('the head readers', () => {
+  const head = `<head>
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="player">
+<script type="application/ld+json" data-hid="schema-org-graph">{"@graph":[{"@type":"WebPage"}]}</script>
+</head>`
+
+  it('reads a meta on property or name alike', () => {
+    expect(metaContent(head, 'og:type')).toEqual(['article'])
+    expect(metaContent(head, 'twitter:card')).toEqual(['player'])
+  })
+
+  it('reads a JSON-LD block whatever attributes its opening tag carries', () => {
+    expect(jsonLdTypes(head)).toEqual(['WebPage'])
   })
 })

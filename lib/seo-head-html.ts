@@ -1,40 +1,20 @@
 /**
  * The `<head>` an indexable route publishes, rendered as HTML by Unhead.
  *
- * Declared as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`, and nowhere
- * else: the setting is global as well as cumulative, so a second declaration
- * renders the head twice on every page. Vike calls it once per request, on
- * the server, for every route; the document the route's `+data.ts` built is
- * what decides whether it returns anything. **Never a component hook**:
- * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared with
- * the `embed` routes and the live preview, so a hook called from a template
- * would publish a head for a URL that must claim nothing.
+ * ⚠ **Declared once, as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`.**
+ * The setting is global as well as cumulative, so a second declaration renders
+ * the head twice on every page. A route opts in by building a `seo` document
+ * in its `+data.ts`. **Never a component hook**: the templates are shared with
+ * the `embed` routes and the live preview, which must claim nothing.
  *
- * Every route that publishes a URL comes through here, `/map` included: a
- * content route hands it descriptors to link (`lib/seo-schema.ts`), and
- * `/map` hands it the block SahajCloud already serialized
- * (`lib/atlas-seo.ts`).
- *
- * What Unhead is here for is the `@graph`: it mints an `@id` per node and
- * links them — `WebPage.isPartOf` the `WebSite`, the `WebSite.publisher` the
- * `Organization`, an image hoisted to its own `ImageObject` — which
- * hand-written nodes did not do. It also dedupes by key, so a tag pushed
- * twice is emitted once.
- *
- * ⚠ **`disableDefaults` is load-bearing.** Unhead's server default inserts
- * `<meta charset>`, the viewport meta and `<html lang>`, and vike-react
- * already writes all three plus `<title>` and the description. Without it
- * every page would carry each of them twice.
+ * Unhead is here for the `@graph`: it mints an `@id` per node and links them
+ * (`WebPage.isPartOf` the `WebSite`, its `publisher` the `Organization`).
  */
 
 import { createHead } from 'unhead/server'
-// ⚠ Both are aliased away from their `use` prefix. Unhead names them for its
-// Vue and React adapters, but these two take the head instance explicitly and
-// are plain functions — `@eslint-react/rules-of-hooks` reads the prefix as a
-// React hook and errors. Keeping the prefix here would also read as the
-// component-level head hook this repo forbids, which is the opposite of what
-// a server-only generator is.
-import { useHead as pushHead } from 'unhead'
+// ⚠ Aliased away from the `use` prefix: these take the head explicitly and are
+// plain functions, which `@eslint-react/rules-of-hooks` would read as hooks.
+import { useHead as pushHead, useSeoMeta as pushSeoMeta } from 'unhead'
 import {
   UnheadSchemaOrg,
   useSchemaOrg as pushSchemaOrg,
@@ -44,293 +24,165 @@ import {
   defineItemList,
   defineOrganization,
   definePerson,
-  defineQuestion,
   defineVideo,
   defineWebPage,
   defineWebSite,
   type UseSchemaOrgInput,
 } from '@unhead/schema-org'
 import type { PageContextServer } from 'vike/types'
+import { isCanonicalOrigin } from '../server/sitemap'
 import { seoDocument } from './head-settings'
 import { isoDuration } from './structured-data'
-import { isOpenGraphKey, isSafeJsonLd, type SeoHead } from './head'
-import type { SeoAuthor, SeoImage, SeoNode, SeoSchema } from './seo-schema'
+import { isSafeJsonLd, type SeoHead } from './head'
+import { APP_STORE_ID, TWITTER_HANDLE } from './site-identity'
+import type { SeoImage, SeoNode, SeoSchema } from './seo-schema'
 
-/**
- * An image node, so a crawler reads its geometry and its words rather than
- * only its URL. Unhead hoists it to its own `ImageObject` and links it.
- */
-function imageNode(image: SeoImage | null) {
-  if (!image) {
-    return null
-  }
+const imageNode = (image: SeoImage | undefined) =>
+  image &&
+  defineImage({ url: image.url, width: image.width, height: image.height, caption: image.alt })
 
-  return defineImage({
-    url: image.url,
-    width: image.width ?? undefined,
-    height: image.height ?? undefined,
-    caption: image.alt ?? undefined,
-  })
-}
+const duration = (seconds: number | undefined) =>
+  seconds == null ? undefined : (isoDuration(seconds) ?? undefined)
 
-/** The byline, as the `Person` an `Article` points at. */
-function personNode(author: SeoAuthor | null) {
-  if (!author) {
-    return null
-  }
-
-  return definePerson({
-    name: author.name,
-    jobTitle: author.jobTitle ?? undefined,
-    description: author.description ?? undefined,
-    image: author.image ?? undefined,
-  })
-}
-
-/** Seconds as the ISO 8601 duration schema.org's `duration` expects. */
-function duration(seconds: number | null) {
-  return seconds == null ? undefined : (isoDuration(seconds) ?? undefined)
-}
-
-/**
- * The `@id` of the player this page is mainly about, if it has one.
- *
- * ⚠ **Minted here rather than left to Unhead**, because the `WebPage` has to
- * point at it and the media helpers mint their own ids after the fact. An
- * FAQ needs no entry: Unhead links a `Question` into an `FAQPage`'s
- * `mainEntity` itself, and naming them here lists each one twice.
- */
-function mainEntityId(canonical: string | null, nodes: readonly SeoNode[]): string | undefined {
-  const media = nodes.find((node) => node.type === 'audio' || node.type === 'video')
-
-  return canonical && media ? `${canonical}#${media.type}` : undefined
-}
-
-/** What a node needs to know about the page it sits on. */
-interface NodeContext {
-  inLanguage: string
-  /** The page's own URL, which a media node names as its own. */
-  url: string | undefined
-  /** The `@id` of the player the page is mainly about, where it has one. */
-  mainEntity: string | undefined
-  /** True where the page asks and answers, which types the WebPage. */
-  isFaq: boolean
-}
-
-/** One node as `useSchemaOrg` takes it: a helper's output, or a plain node. */
 type SchemaOrgNodeInput = Exclude<UseSchemaOrgInput, readonly unknown[]>
 
 /**
  * The schema-org input for one {@link SeoNode}.
  *
- * Always a list, because one descriptor may contribute several nodes: an FAQ
- * emits one `Question` per item.
+ * `inLanguage` is set on the nodes Unhead does not fill from the plugin's own
+ * config: the `WebPage`, and the plain nodes no helper exists for.
  */
-function schemaNode(node: SeoNode, context: NodeContext): SchemaOrgNodeInput[] {
-  const { inLanguage, mainEntity, url } = context
+function schemaNode(
+  node: SeoNode,
+  context: { url: string | undefined; inLanguage: string; mainEntity: string | undefined },
+): SchemaOrgNodeInput {
+  const { url, inLanguage, mainEntity } = context
 
   switch (node.type) {
     case 'webPage':
-      return [
-        defineWebPage({
-          // ⚠ **Pinned, because Unhead infers a subtype from the URL.** A page
-          // at `/about` would be typed `AboutPage`, and `/contact`
-          // `ContactPage` — a claim read off a slug the editor owns and may
-          // change, which is why the ticket left both out. A page that asks
-          // and answers really is an FAQPage, and Google reads that result off
-          // the type plus `mainEntity`.
-          '@type': context.isFaq ? ['WebPage', 'FAQPage'] : 'WebPage',
-          name: node.name,
-          description: node.description ?? undefined,
-          // Unhead falls back to the Organization logo as the page's primary
-          // image. That is a claim about this document, so a page with no
-          // picture of its own publishes none.
-          primaryImageOfPage: imageNode(node.image),
-          mainEntity: mainEntity ? { '@id': mainEntity } : undefined,
-          inLanguage,
-        }),
-      ]
+      return defineWebPage({
+        // ⚠ Pinned: Unhead infers a subtype from the URL (`/about` →
+        // `AboutPage`), a claim read off a slug the editor owns.
+        '@type': 'WebPage',
+        name: node.name,
+        description: node.description,
+        // ⚠ Always supplied, `null` included: Unhead falls back to the Organization logo.
+        primaryImageOfPage: imageNode(node.image) ?? null,
+        mainEntity: mainEntity ? { '@id': mainEntity } : undefined,
+        inLanguage,
+      })
     case 'article':
-      return [
-        defineArticle({
-          headline: node.headline,
-          description: node.description ?? undefined,
-          image: imageNode(node.image) ?? undefined,
-          author: personNode(node.author) ?? undefined,
-          datePublished: node.datePublished ?? undefined,
-          dateModified: node.dateModified ?? undefined,
-          inLanguage,
-        }),
-      ]
-    // ⚠ **No `defineAudio` exists**, so this is a plain node rather than a
-    // helper's output. It joins the same graph, and the `@id` is minted above
-    // because the `WebPage` names it as its main entity.
+      return defineArticle({
+        headline: node.headline,
+        description: node.description,
+        image: imageNode(node.image),
+        author: node.author && definePerson({ ...node.author }),
+        datePublished: node.datePublished,
+        dateModified: node.dateModified,
+      })
+    // ⚠ No `defineAudio` exists, so this one is a plain node.
     case 'audio':
-      return [
-        {
-          '@type': 'AudioObject' as const,
-          ...(mainEntity ? { '@id': mainEntity } : {}),
-          name: node.name,
-          ...(url ? { url } : {}),
-          ...(node.description ? { description: node.description } : {}),
-          ...(node.thumbnailUrl ? { thumbnailUrl: node.thumbnailUrl } : {}),
-          ...(duration(node.durationSeconds) ? { duration: duration(node.durationSeconds) } : {}),
-          ...(node.embedUrl ? { embedUrl: node.embedUrl } : {}),
-          inLanguage,
-        },
-      ]
+      return {
+        '@type': 'AudioObject',
+        '@id': mainEntity,
+        name: node.name,
+        url,
+        description: node.description,
+        thumbnailUrl: node.thumbnailUrl,
+        duration: duration(node.durationSeconds),
+        embedUrl: node.embedUrl,
+        inLanguage,
+      }
     case 'video':
-      return [
-        defineVideo({
-          ...(mainEntity ? { '@id': mainEntity } : {}),
-          name: node.name,
-          url,
-          // `defineVideo` substitutes the literal `No description` for an
-          // absent one, so the field is always supplied.
-          description: node.description ?? undefined,
-          thumbnailUrl: node.thumbnailUrl ?? undefined,
-          uploadDate: node.uploadDate ?? undefined,
-          duration: duration(node.durationSeconds),
-          embedUrl: node.embedUrl ?? undefined,
-          inLanguage,
-        }),
-      ]
+      return defineVideo({
+        '@id': mainEntity,
+        name: node.name,
+        url,
+        // ⚠ Always supplied: `defineVideo` substitutes `No description`.
+        description: node.description,
+        thumbnailUrl: node.thumbnailUrl,
+        duration: duration(node.durationSeconds),
+        embedUrl: node.embedUrl,
+      })
     case 'breadcrumb':
-      return [
-        defineBreadcrumb({
-          itemListElement: node.trail.map((crumb) => ({
-            name: crumb.name,
-            item: crumb.url ?? undefined,
-          })),
-        }),
-      ]
-    case 'faq':
-      return node.questions.map((question, index) =>
-        defineQuestion({
-          ...(url ? { '@id': `${url}#question-${index + 1}` } : {}),
-          name: question.question,
-          acceptedAnswer: question.answer,
-          inLanguage,
-        }),
-      )
+      return defineBreadcrumb({
+        itemListElement: node.trail.map((crumb) => ({ name: crumb.name, item: crumb.url })),
+      })
     case 'itemList':
-      return [
-        defineItemList({
-          itemListElement: node.entries.map((entry) => ({
-            name: entry.name,
-            url: entry.url,
-          })),
-        }),
-      ]
-    // ⚠ **`defineMusicPlaylist` and `defineMusicRecording` exist and are not
-    // used**: `track` is typed as a string or an `@id` reference, so a nested
-    // recording — which the resolver emits correctly — needs a cast.
+      return defineItemList({ itemListElement: [...node.entries] })
+    // ⚠ `defineMusicPlaylist` types `track` as an `@id` reference, so a nested
+    // recording would need a cast. A plain node renders the same graph.
     case 'musicPlaylist':
-      return [
-        {
-          '@type': 'MusicPlaylist' as const,
-          ...(url ? { '@id': `${url}#playlist` } : {}),
-          name: node.name,
-          numTracks: node.tracks.length,
-          track: node.tracks.map((track) => ({
-            '@type': 'MusicRecording' as const,
-            name: track.name,
-            // No `inLanguage`: the page's locale is the language of the
-            // track's name, not of a recording that may be instrumental.
-            ...(track.artist
-              ? {
-                  byArtist: {
-                    '@type': 'MusicGroup' as const,
-                    name: track.artist,
-                    ...(track.artistUrl ? { url: track.artistUrl } : {}),
-                  },
-                }
-              : {}),
-            ...(duration(track.durationSeconds)
-              ? { duration: duration(track.durationSeconds) }
-              : {}),
-          })),
-          inLanguage,
-        },
-      ]
+      return {
+        '@type': 'MusicPlaylist',
+        '@id': url && `${url}#playlist`,
+        name: node.name,
+        numTracks: node.tracks.length,
+        track: node.tracks.map((track) => ({
+          '@type': 'MusicRecording',
+          name: track.name,
+          // No `inLanguage`: the page's locale is the language of the track's
+          // name, not of a recording that may be instrumental.
+          byArtist: track.artist && {
+            '@type': 'MusicGroup',
+            name: track.artist,
+            url: track.artistUrl,
+          },
+          duration: duration(track.durationSeconds),
+        })),
+        inLanguage,
+      }
   }
 }
 
-/**
- * Every tag a published URL contributes beyond vike-react's own settings:
- * the canonical, the `hreflang` cluster, Open Graph, Twitter, and the
- * `@graph`.
- *
- * Takes the host explicitly rather than reading the canonical, because the
- * schema-org plugin resolves every `@id` and relative URL against it.
- */
+/** Every tag a published URL contributes beyond vike-react's own settings. */
 export function renderSeoHead(seo: SeoHead, host: string): string {
-  const head = seoHead(host)
+  const head = createHead({
+    // ⚠ Load-bearing: Unhead's server defaults add a charset, a viewport and
+    // `<html lang>`, which vike-react already writes.
+    disableDefaults: true,
+    plugins: [UnheadSchemaOrg({ host, inLanguage: seo.schema?.inLanguage })],
+  })
 
   pushHead(head, {
     link: [
       ...(seo.canonical ? [{ rel: 'canonical' as const, href: seo.canonical }] : []),
-      // The lowercase spelling is deliberate: these tags exist for crawlers
-      // to read, and some pattern-match instead of parsing.
-      ...seo.alternates.map((alternate) => ({
-        rel: 'alternate' as const,
-        hreflang: alternate.hreflang,
-        href: alternate.href,
-      })),
-      // `rel="alternate"` with a `type` and no `hreflang` is the oEmbed
-      // discovery shape, which is why it is not a cluster row.
-      ...(seo.links ?? []).map((link) => ({
-        rel: link.rel as 'alternate',
-        type: link.type,
-        href: link.href,
-      })),
+      ...seo.alternates.map((alternate) => ({ rel: 'alternate' as const, ...alternate })),
+      ...(seo.links ?? []),
     ],
-    meta: seo.meta.map(([key, content]) =>
-      isOpenGraphKey(key) ? { property: key, content } : { name: key, content },
-    ),
+    meta: seo.meta,
+  })
+  pushSeoMeta(head, {
+    // ⚠ Only the real site may be indexed. A preview Worker or a dev host is
+    // refused by robots.txt too; this covers a crawler arriving some other way.
+    robots: isCanonicalOrigin(host) ? 'max-image-preview:large' : 'noindex',
+    twitterSite: TWITTER_HANDLE,
+    appleItunesApp: `app-id=${APP_STORE_ID}`,
+    ...seo.seoMeta,
   })
 
   if (seo.schema) {
-    pushGraph(head, seo.schema, seo.canonical, host)
+    pushGraph(head, seo.schema, seo.canonical ?? undefined, host)
   } else if (isSafeJsonLd(seo.jsonLd)) {
-    // ⚠ **The block is pushed whole, not rebuilt.** `/map`'s graph is
-    // serialized upstream, where the ownership walk that mints its ids lives,
-    // and a round trip through `JSON.parse` here would drop the escaping that
-    // makes it safe to embed. Unhead neutralizes `</script` inside an
-    // `innerHTML` and emits the rest verbatim, which is what this needs.
-    pushHead(head, {
-      script: [{ type: 'application/ld+json', innerHTML: seo.jsonLd }],
-    })
+    // ⚠ Pushed whole, not rebuilt: `/map`'s graph is serialized upstream, and
+    // a `JSON.parse` round trip would drop the escaping that makes it safe.
+    pushHead(head, { script: [{ type: 'application/ld+json', innerHTML: seo.jsonLd }] })
   }
 
   return head.render().headTags
 }
 
-/**
- * One head instance per request.
- *
- * ⚠ **`disableDefaults` is load-bearing** — see this module's own note.
- */
-function seoHead(host: string) {
-  return createHead({
-    disableDefaults: true,
-    plugins: [UnheadSchemaOrg({ host })],
-  })
-}
-
-/** The `@graph` a route described as descriptors, as linked schema.org nodes. */
 function pushGraph(
-  head: ReturnType<typeof seoHead>,
+  head: Parameters<typeof pushHead>[0],
   schema: SeoSchema,
-  canonical: string | null,
+  url: string | undefined,
   host: string,
 ): void {
-  const context: NodeContext = {
-    inLanguage: schema.inLanguage,
-    url: canonical ?? undefined,
-    mainEntity: mainEntityId(canonical, schema.nodes),
-    isFaq: schema.nodes.some((node) => node.type === 'faq'),
-  }
+  const { inLanguage } = schema
+  // The player the page is mainly about. Minted here because the WebPage names
+  // it, and the media helpers mint their ids after the fact.
+  const media = schema.nodes.find((node) => node.type === 'audio' || node.type === 'video')
+  const mainEntity = url && media ? `${url}#${media.type}` : undefined
 
   pushSchemaOrg(
     head,
@@ -341,39 +193,27 @@ function pushGraph(
         logo: schema.site.logo,
         sameAs: [...schema.site.sameAs],
       }),
-      // The site's own description, never the page's: a crawler reading one
-      // page's summary as the whole site's is a worse claim than none.
-      defineWebSite({
-        name: schema.site.name,
-        description: schema.site.description,
-        inLanguage: schema.inLanguage,
-      }),
-      // A node kind may contribute several, which `faq` does.
-      ...schema.nodes.flatMap((node) => schemaNode(node, context)),
+      // The site's own description, never the page's.
+      defineWebSite({ name: schema.site.name, description: schema.site.description }),
+      ...schema.nodes.map((node) => schemaNode(node, { url, inLanguage, mainEntity })),
     ],
-    // The plugin's own default is `bodyClose`, where a crawler that reads only
-    // the head never sees it.
+    // The plugin defaults to `bodyClose`, which a crawler reading only the head misses.
     { tagPosition: 'head' },
   )
 }
 
 /**
- * The `headHtmlEnd` hook: the head for whichever route is rendering, or the
- * empty string for a route that publishes no URL.
+ * The `headHtmlEnd` hook: the head for the rendering route, or `''` for one
+ * that publishes no URL.
  *
- * A live preview is not a URL to point a crawler at. Preview used to be its
- * own route, which declared no head at all; it is now the real route with a
- * token on it, so the suppression happens here. Without it, previewing a
- * draft page would emit a canonical and a full `hreflang` cluster for a URL
- * that 404s publicly.
+ * ⚠ A live preview is the real route with a token on it, so it builds the
+ * document too; it must not publish a canonical for a draft that 404s publicly.
  */
 export function seoHeadHtml(pageContext: PageContextServer): string {
   const seo = seoDocument(pageContext.data)
   const host = pageContext.urlParsed.origin
 
-  // A document with neither a graph nor a serialized block is a route that
-  // publishes no URL claim: an `embed` route, the error page.
-  if (!seo || (!seo.schema && !seo.jsonLd) || !host || pageContext.livePreview?.active) {
+  if (!seo || !host || pageContext.livePreview?.active) {
     return ''
   }
 

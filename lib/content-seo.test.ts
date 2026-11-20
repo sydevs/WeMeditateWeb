@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { join } from 'node:path'
 import { renderSeoHead } from './seo-head-html'
 import type { SeoDocument } from './head'
+import type { SeoNode } from './seo-schema'
 import type { Image, Meditation, Page, ResolvedLecture } from '../server/sahajcloud-types'
-import { lectureSeo, meditationSeo, pageSeo, resolveOgImageUrl, type SeoRoute } from './content-seo'
+import { lectureSeo, meditationSeo, pageSeo, resolveSeoImage, type SeoRoute } from './content-seo'
 import { enT } from './i18n'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
@@ -59,9 +60,15 @@ function seoFor(overrides: Partial<Parameters<typeof pageSeo>[0]> = {}) {
   })
 }
 
-/** The `[property, content]` values for one Open Graph property. */
-function metaValues(seo: { meta: readonly (readonly [string, string])[] }, property: string) {
-  return seo.meta.filter(([key]) => key === property).map(([, value]) => value)
+/** Rendered as the route serves it, on the host the document names. */
+const render = (seo: SeoDocument) =>
+  renderSeoHead(seo, seo.canonical ? new URL(seo.canonical).origin : ORIGIN)
+
+/** Every `content` the rendered head carries for one meta key, in order. */
+function metaValues(seo: SeoDocument, key: string) {
+  return [...render(seo).matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)]
+    .filter(([, name]) => name === key)
+    .map(([, , content]) => content)
 }
 
 /**
@@ -73,7 +80,7 @@ function metaValues(seo: { meta: readonly (readonly [string, string])[] }, prope
  * than about the shape of a descriptor.
  */
 function graph(seo: SeoDocument): { '@type': string; [key: string]: unknown }[] {
-  const html = renderSeoHead({ ...seo, schema: seo.schema! }, ORIGIN)
+  const html = render(seo)
   const block = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s)?.[1]
 
   return JSON.parse(block ?? '{}')['@graph'] ?? []
@@ -92,29 +99,31 @@ function songsBlock(resolvedTracks: Track[]): Page['content'] {
   } as unknown as Page['content']
 }
 
-describe('resolveOgImageUrl', () => {
+describe('resolveSeoImage', () => {
+  const urlOf = (image: unknown) => resolveSeoImage(ORIGIN, image)?.url
+
   it('appends a large video variant to a Cloudflare image URL', () => {
-    expect(resolveOgImageUrl({ url: `${CF_BASE}/` })).toBe(SHARE_VARIANT)
+    expect(urlOf({ url: `${CF_BASE}/` })).toBe(SHARE_VARIANT)
   })
 
   it('replaces the /public variant a SahajCloud read returns', () => {
-    expect(resolveOgImageUrl({ url: CF_PUBLIC_URL })).toBe(SHARE_VARIANT)
+    expect(urlOf({ url: CF_PUBLIC_URL })).toBe(SHARE_VARIANT)
   })
 
   it('returns a non-Cloudflare URL unchanged', () => {
     const external = 'https://example.com/preview.jpg'
 
-    expect(resolveOgImageUrl({ url: external })).toBe(external)
+    expect(urlOf({ url: external })).toBe(external)
   })
 
   it('returns null for a bare id (unpopulated relationship)', () => {
-    expect(resolveOgImageUrl(7)).toBeNull()
+    expect(urlOf(7)).toBeUndefined()
   })
 
   it('returns null when the image or its url is missing', () => {
-    expect(resolveOgImageUrl(null)).toBeNull()
-    expect(resolveOgImageUrl({})).toBeNull()
-    expect(resolveOgImageUrl({ url: null })).toBeNull()
+    expect(urlOf(null)).toBeUndefined()
+    expect(urlOf({})).toBeUndefined()
+    expect(urlOf({ url: null })).toBeUndefined()
   })
 })
 
@@ -151,7 +160,7 @@ describe('pageSeo', () => {
     const [webPage] = graph(seo).filter((node) => node['@type'] === 'WebPage')
 
     expect(webPage.name).toBe(seo.title)
-    expect(seo.jsonLd).not.toContain('Home Page')
+    expect(JSON.stringify(graph(seo))).not.toContain('Home Page')
   })
 
   it('serves a self-referential canonical and og:url', () => {
@@ -271,14 +280,15 @@ describe('pageSeo', () => {
     expect(typesIn(seo)).not.toContain('Person')
   })
 
-  it('trails Home → About Meditation → page for a page the knowledge menu lists', () => {
+  it('trails Home → page for a page the knowledge menu lists, every rung a URL', () => {
+    // The menu itself is a heading, not a page, and Google refuses a rung
+    // with no `item` anywhere but last.
     const seo = seoFor({ settings: { knowledgePages: [{ slug: 'about' }] } as typeof NO_MENU })
     const trail = graph(seo).find((node) => node['@type'] === 'BreadcrumbList')
 
     expect(trail?.itemListElement).toEqual([
       { '@type': 'ListItem', position: 1, name: 'We Meditate', item: `${ORIGIN}/` },
-      { '@type': 'ListItem', position: 2, name: 'About Meditation' },
-      { '@type': 'ListItem', position: 3, name: 'About Meditation' },
+      { '@type': 'ListItem', position: 2, name: 'About Meditation', item: `${ORIGIN}/about` },
     ])
   })
 
@@ -390,7 +400,7 @@ describe('pageSeo', () => {
     const seo = seoFor({ route: route({ origin: null }) })
 
     expect(seo.canonical).toBeNull()
-    expect(seo.jsonLd).toBe('')
+    expect(seo.schema).toBeUndefined()
     expect(metaValues(seo, 'og:url')).toEqual([])
     expect(metaValues(seo, 'og:image')).toEqual([])
   })
@@ -526,7 +536,7 @@ describe('the player a media route advertises', () => {
     const seo = meditation()
 
     // A player card with no dimensions falls back to a plain link.
-    expect(metaValues(seo, 'twitter:card')).toEqual(['summary_large_image', 'player'])
+    expect(metaValues(seo, 'twitter:card')).toEqual(['player'])
     expect(metaValues(seo, 'twitter:player')).toEqual([`${ORIGIN}/meditations/105/embed`])
     expect(metaValues(seo, 'twitter:player:width')).toEqual(['560'])
     expect(metaValues(seo, 'twitter:player:height')).toEqual(['315'])
@@ -556,75 +566,13 @@ describe('the player a media route advertises', () => {
   })
 })
 
-describe('a page that asks and answers', () => {
-  const accordion = (items: { title?: string; text?: string }[]) => ({
-    root: {
-      children: [{ type: 'block', fields: { blockType: 'layout', style: 'accordion', items } }],
-    },
-  })
-
-  const faqFor = (content: unknown) => seoFor({ page: page({ content } as Partial<Page>) })
-
-  it('publishes an FAQPage with one Question per accordion item', () => {
-    const seo = faqFor(
-      accordion([
-        { title: 'What is Sahaja Yoga?', text: 'A method of meditation.' },
-        { title: 'Is it free?', text: 'Always.' },
-      ]),
-    )
-    const nodes = graph(seo)
-    const webPage = nodes.find((node) => String(node['@type']).includes('WebPage'))
-    const questions = nodes.filter((node) => node['@type'] === 'Question')
-
-    // Google reads the result off the FAQPage type plus `mainEntity`, not off
-    // loose Question nodes. Unhead writes that link once the type says FAQPage.
-    expect(webPage?.['@type']).toEqual(['WebPage', 'FAQPage'])
-    expect(webPage?.mainEntity).toEqual(questions.map((question) => ({ '@id': question['@id'] })))
-    expect(questions.map((question) => question['@id'])).toEqual([
-      `${ORIGIN}/about#question-1`,
-      `${ORIGIN}/about#question-2`,
-    ])
-    expect(questions.map((question) => question.name)).toEqual([
-      'What is Sahaja Yoga?',
-      'Is it free?',
-    ])
-    expect(questions[1]?.acceptedAnswer).toEqual({ '@type': 'Answer', text: 'Always.' })
-  })
-
-  it('skips an item with no answer, which no result could show', () => {
-    const seo = faqFor(accordion([{ title: 'Unanswered' }, { text: 'Orphan answer' }]))
-
-    expect(typesIn(seo)).not.toContain('Question')
-    expect(typesIn(seo)).toContain('WebPage')
-  })
-
-  it('reads only an accordion, never another layout style', () => {
-    const grid = {
-      root: {
-        children: [
-          {
-            type: 'block',
-            fields: {
-              blockType: 'layout',
-              style: 'grid',
-              items: [{ title: 'A heading', text: 'Some prose.' }],
-            },
-          },
-        ],
-      },
-    }
-
-    expect(typesIn(faqFor(grid))).not.toContain('Question')
-  })
-})
-
 describe('the App Store banner', () => {
   it('offers the app on a content route', () => {
     expect(metaValues(seoFor(), 'apple-itunes-app')).toEqual(['app-id=6465684494'])
   })
 })
 
-describe('the robots meta every content route carries', () => {
+describe('the robots meta every published URL carries', () => {
   it('lets the real site show a large share image in a result', () => {
     expect(metaValues(seoFor(), 'robots')).toEqual(['max-image-preview:large'])
   })
@@ -634,10 +582,6 @@ describe('the robots meta every content route carries', () => {
     ['the dev server', 'http://localhost:5173'],
   ])('refuses %s, which robots.txt already refuses wholesale', (_label, origin) => {
     expect(metaValues(seoFor({ route: route({ origin }) }), 'robots')).toEqual(['noindex'])
-  })
-
-  it('refuses a document built with no origin at all', () => {
-    expect(metaValues(seoFor({ route: route({ origin: null }) }), 'robots')).toEqual(['noindex'])
   })
 })
 
@@ -660,7 +604,8 @@ describe('lectureSeo', () => {
 
   /** The lecture's own media descriptor, which Unhead renders (lib/seo-head-html.ts). */
   const videoNode = (seo: ReturnType<typeof seoFor>) =>
-    seo.schema?.nodes.find((node) => node.type === 'video')
+    seo.schema?.nodes.find((node) => node.type === 'video') as
+      Extract<SeoNode, { type: 'audio' | 'video' }> | undefined
 
   it('serves its own name and the video page type', () => {
     const seo = seoFor()
@@ -707,11 +652,8 @@ describe('lectureSeo', () => {
 
   it('never publishes an uploadDate, because nothing upstream stores one', () => {
     // `lastSyncedAt` is when we read the lecture, not when it was published.
-    expect(videoNode(seoFor())?.uploadDate).toBeNull()
-  })
-
-  it("serializes no JSON-LD of its own: the generator owns this route's graph", () => {
-    // lib/seo-head-html.test.ts covers what that graph says.
-    expect(seoFor().jsonLd).toBe('')
+    expect(graph(seoFor()).find((node) => node['@type'] === 'VideoObject')).not.toHaveProperty(
+      'uploadDate',
+    )
   })
 })

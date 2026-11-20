@@ -21,9 +21,9 @@ export interface PageData {
   slug: string
   /**
    * Everything the `<head>` publishes for this URL. Built here, where the
-   * document is in hand, and rendered by `lib/head.tsx`.
+   * document is in hand, and rendered by `lib/seo-head-html.ts`.
    *
-   * shortcut: the whole document, serialized JSON-LD included, rides `data`
+   * shortcut: the whole document, graph descriptors included, rides `data`
    * to the browser, which reads only its title and description — 1.5 KB on a
    * plain page, 5.7 KB on a listing with two content indexes. Move the
    * render-only half onto `pageContext` once a page's payload is measured as
