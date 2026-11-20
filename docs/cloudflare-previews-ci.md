@@ -119,8 +119,8 @@ built, because Cloudflare ignores path rules there.
 ⚠ A per-push compare can hide a red. A docs-only push after a code push whose smoke failed would
 skip, and the PR would turn green without anything being re-tested. So on a `synchronize` push
 the step skips only when the previous head's own `Smoke (<target>)` check concluded `success`.
-Failed, cancelled by a newer push, still running or never run all fall back to `built=true`: the
-12-minute wait, never a green that hides a red. On open the compare is the whole PR, so a PR that
+Every other conclusion falls back to the 12-minute wait rather than pass on a build it never
+tested, and the step's own ⚠ holds that list. On open the compare is the whole PR, so a PR that
 is docs-only from the start always skips.
 
 ⚠ Each list lives in **three** places: the Cloudflare build trigger, the leg's `watch`/`ignore` in
