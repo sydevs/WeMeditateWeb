@@ -123,6 +123,29 @@ export function matchMeditationsIndexRoute(urlPathname: string): boolean {
 }
 
 /**
+ * The collections whose documents have an embed route beside the full one.
+ *
+ * ⚠ `matchDocumentRoute(..., { embed: true })` is the inverse: a collection
+ * listed here with no `embed/` route under `pages/` advertises a player that 404s.
+ */
+export const EMBEDDABLE_COLLECTIONS = ['meditations', 'lectures'] as const
+
+export type EmbeddableCollection = (typeof EMBEDDABLE_COLLECTIONS)[number]
+
+/**
+ * The embed route for a document: the one owner of the `/embed` suffix, which
+ * the paste-ready snippet, `og:video` and `/oembed` all read.
+ */
+export function documentEmbedHref(
+  collection: EmbeddableCollection,
+  value: RelationValue | null | undefined,
+): string | null {
+  const href = documentHref(collection, value)
+
+  return href && `${href}/embed`
+}
+
+/**
  * Matches an incoming URL path against a collection's document route, and
  * returns the Vike route params (`{ id }`), or `false`. The matching
  * inverse of {@link documentHref} for the full and embed routes, so the path

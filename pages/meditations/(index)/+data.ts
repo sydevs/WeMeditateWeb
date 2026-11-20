@@ -1,18 +1,15 @@
 import type { PageContextServer } from 'vike/types'
 import type { MoodCard } from '../../../lib/content-blocks'
+import { meditationsIndexSeo, seoRoute } from '../../../lib/content-seo'
+import type { SeoDocument } from '../../../lib/head'
 import { featuredMoodCards } from '../../../server/moods'
 import { loadSiteContext } from '../../../server/site-context'
-import type { Locale, WebConfig } from '../../../server/sahajcloud-types'
+import type { WebConfig } from '../../../server/sahajcloud-types'
 
 export interface MeditationsIndexData {
   moods: MoodCard[]
   settings: WebConfig
-  /**
-   * Every locale the site offers. `/meditations` has no SahajCloud document, so
-   * nothing publishes it per locale and there is no `advertisedLocales` filter
-   * to apply — it renders in all of them.
-   */
-  alternateLocales: readonly Locale[]
+  seo: SeoDocument
 }
 
 /**
@@ -31,6 +28,11 @@ export async function data(pageContext: PageContextServer): Promise<MeditationsI
   return {
     moods,
     settings: site.settings,
-    alternateLocales: site.settings.availableLocales,
+    seo: meditationsIndexSeo({
+      // No `advertisedLocales` filter: nothing publishes this URL per locale,
+      // so every locale the site offers is a translation of it.
+      locales: site.settings.availableLocales,
+      route: seoRoute(pageContext, site.t),
+    }),
   }
 }

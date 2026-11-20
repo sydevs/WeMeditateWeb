@@ -4,7 +4,6 @@ import { Container, Heading } from '../../../components/atoms'
 import { ContentGrid } from '../../../components/molecules'
 import { moodCardKey, moodCardLabel } from '../../../components/organisms/MoodFinder'
 import { useT } from '../../../hooks/useT'
-import { usePageHead } from '../../../lib/head'
 
 /** One column of the grid below, at each breakpoint it draws. */
 const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
@@ -21,8 +20,6 @@ export function Page() {
   const { moods } = useData<MeditationsIndexData>()
   const t = useT()
   const title = t('meditation.general.all_meditations')
-
-  usePageHead({ meta: null, fallbackTitle: title })
 
   return (
     <Container className="py-12" maxWidth="xl">

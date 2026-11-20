@@ -15,7 +15,7 @@
  */
 
 import type { ReactNode } from 'react'
-import type { Locale, WebTranslations } from '../server/sahajcloud-types'
+import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/sahajcloud-types'
 import snapshot from './translations.en.json'
 
 /**
@@ -244,3 +244,21 @@ export function getT(translations: WebTranslations, locale: Locale): TFunction {
 
 /** The accessor bound to the committed English snapshot. */
 export const enT = getT(EN_TRANSLATIONS, 'en')
+
+/**
+ * The accessor for a `pageContext` held directly, rather than through a hook.
+ *
+ * `lib/head-settings.ts` composes the `<title>` and the description from a
+ * plain vike setting, where no hook may be called. It lives here, beside
+ * `getT`, so the locale and translations fallbacks are written once and
+ * `hooks/` holds only hooks.
+ */
+export function pageContextT(
+  pageContext: { locale?: Locale; translations?: unknown } | null | undefined,
+): TFunction {
+  const locale: Locale = pageContext?.locale ?? DEFAULT_LOCALE
+  const translations: WebTranslations =
+    (pageContext?.translations as WebTranslations | undefined) ?? EN_TRANSLATIONS
+
+  return getT(translations, locale)
+}

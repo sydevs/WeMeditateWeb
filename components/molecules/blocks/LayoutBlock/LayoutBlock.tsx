@@ -4,15 +4,13 @@ import { Accordion, type AccordionItemData } from '../../Accordion'
 import { ColumnCarousel } from '../../ColumnCarousel'
 import type { ColumnProps } from '../../Column'
 import { Heading, Image, Link } from '../../../atoms'
-import {
-  populatedImage,
-  type LayoutBlockFields,
-  type LayoutItem,
-} from '../../../../lib/content-blocks'
+import { populatedImage, type LayoutItem } from '../../../../lib/content-blocks'
+// Aliased: this file's own component takes the unprefixed name.
+import type { LayoutBlock as LayoutBlockSchema } from '../../../../server/payload-types'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */
-  style: LayoutBlockFields['style']
+  style: LayoutBlockSchema['style']
   /** Optional section heading shown above the items. */
   title?: string
   /** Tabs only: lay tabs out as side-by-side columns on desktop. */

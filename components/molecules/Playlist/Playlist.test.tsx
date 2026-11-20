@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest'
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+// Aliased: `render` below is this file's own SSR helper.
+import { render as renderInDom, screen, fireEvent } from '@testing-library/react'
+import axe from 'axe-core'
 import { Playlist, visibleTracks, type MusicFilter } from './Playlist'
 import type { Track } from '../AudioPlayer/types'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
@@ -153,6 +157,62 @@ describe('Playlist highlighting under a filter', () => {
   it('highlights the same track with and without a filter', () => {
     expect(playingTitles(render(null, 4))).toEqual(['Flute Meditation'])
     expect(playingTitles(render('wind', 4))).toEqual(['Flute Meditation'])
+  })
+})
+
+describe('Playlist rows — the play button and the credit link', () => {
+  const mount = (onTrackClick = vi.fn()) => {
+    const { container } = renderInDom(
+      <Playlist
+        currentTrackIndex={0}
+        filters={filters}
+        selectedFilter="wind"
+        title="Meditation Music"
+        tracks={tracks}
+        onTrackClick={onTrackClick}
+      />,
+    )
+
+    return { container, onTrackClick }
+  }
+
+  it('renders the credit link beside the play button, not inside it', async () => {
+    const { container } = mount()
+    const row = screen.getByRole('button', { name: 'Flute Meditation' })
+    const credit = screen.getByRole('link', { name: /Anna Schmidt/ })
+
+    expect(row.contains(credit)).toBe(false)
+    expect(row.parentElement?.contains(credit)).toBe(true)
+
+    const result = await axe.run(container, {
+      runOnly: { type: 'rule', values: ['nested-interactive'] },
+    })
+
+    expect(result.violations.map((violation) => violation.id)).toEqual([])
+  })
+
+  it('draws the focus ring on the play button', () => {
+    mount()
+
+    expect(screen.getByRole('button', { name: 'Flute Meditation' }).className.split(' ')).toContain(
+      'focus-ring',
+    )
+  })
+
+  it('plays the track the row names, by its index in the full list', () => {
+    const { onTrackClick } = mount()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Flute Meditation' }))
+
+    expect(onTrackClick).toHaveBeenCalledExactlyOnceWith(4)
+  })
+
+  it('opens the credit without playing the track', () => {
+    const { onTrackClick } = mount()
+
+    fireEvent.click(screen.getByRole('link', { name: /Anna Schmidt/ }))
+
+    expect(onTrackClick).not.toHaveBeenCalled()
   })
 })
 
