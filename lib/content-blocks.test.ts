@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, expectTypeOf } from 'vitest'
 import {
   contentIndexCard,
   contentIndexTrack,
@@ -11,8 +11,10 @@ import {
   splashSurface,
   subtleSystemItems,
   textColorToSurface,
+  type ContentIndexBlockFields,
   type ShowcaseItem,
 } from './content-blocks'
+import type { ContentIndexBlock } from '../server/payload-types'
 import type { Page } from '../server/sahajcloud-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
@@ -123,11 +125,21 @@ describe('showcaseItems', () => {
 
 describe('subtleSystemItems', () => {
   it('maps SahajCloud field names to SVG node ids, dropping unpublished refs', () => {
+    // The schema requires all twelve; an unpublished page arrives as a bare id.
     const items = subtleSystemItems({
+      blockType: 'subtle-system',
       left: page(61, 'left-channel', 'Left Channel', 'The left side') as never,
+      right: 62,
+      center: 63,
       mooladhara: page(52, 'mooladhara-chakra', 'Mooladhara') as never,
+      kundalini: 99,
+      swadhistan: 53,
+      nabhi: 54,
       void: page(55, 'void-chakra', 'Void') as never,
-      kundalini: 99, // bare id → dropped
+      anahat: 56,
+      vishuddhi: 57,
+      agnya: 58,
+      sahasrara: 59,
     })
 
     expect(items.map((i) => i.id)).toEqual(['channel_left', 'chakra_1', 'chakra_3b'])
@@ -138,6 +150,15 @@ describe('subtleSystemItems', () => {
       description: 'The left side',
       linkHref: '/left-channel',
     })
+  })
+})
+
+describe('ContentIndexBlockFields', () => {
+  it('restates exactly the stored fields the SahajCloud schema defines', () => {
+    // `tsc` is the guard. This interface alone is hand-written, so a field or
+    // content-index type `pnpm types:cms` adds would otherwise reach no reader.
+    type Stored = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'>
+    expectTypeOf<Omit<ContentIndexBlockFields, `resolved${string}`>>().toEqualTypeOf<Stored>()
   })
 })
 
@@ -237,11 +258,12 @@ describe('contentIndexTrack', () => {
     ...over,
   })
 
-  it('maps a song doc to a playable Track (duration 0, tags as id/label facets)', () => {
+  it('maps a song doc to a playable Track (stored duration, tags as id/label facets)', () => {
     const track = contentIndexTrack({
       id: 10,
       title: 'Raga',
       url: 'https://cdn/audio.mp3',
+      duration: 212,
       album: album(),
       tags: [
         { id: 1, slug: 'strings', title: 'Strings' },
@@ -256,12 +278,20 @@ describe('contentIndexTrack', () => {
       credit: 'Nightingale',
       creditURL: 'https://example.com/artist',
       thumbnailURL: 'https://imagedelivery.net/acct/img/',
-      duration: 0,
+      duration: 212,
       tags: [
         { id: 'strings', label: 'Strings' },
         { id: 'vocal', label: 'Vocal' },
       ],
     })
+  })
+
+  it('falls back to 0 for a song SahajCloud stores no length for', () => {
+    // `0` is what Playlist reads as "unknown" and prints nothing for.
+    // SahajCloud stores null for a song whose audio it could not measure.
+    const song = { id: 10, title: 'Raga', url: 'https://cdn/audio.mp3' }
+
+    expect(contentIndexTrack({ ...song, duration: null })?.duration).toBe(0)
   })
 
   it('labels a song tag from its SahajCloud title, falling back to the slug', () => {
@@ -412,15 +442,33 @@ describe('splashSurface', () => {
 })
 
 describe('getLeadSplash', () => {
-  const splashBlock = (textColor?: 'dark' | 'light') => ({
+  const splashBlock = (textColor?: 'dark' | 'light', title?: string) => ({
     type: 'block',
-    fields: { blockType: 'splash', ...(textColor ? { textColor } : {}) },
+    fields: {
+      blockType: 'splash',
+      ...(textColor ? { textColor } : {}),
+      ...(title === undefined ? {} : { title }),
+    },
   })
 
   it('returns the derived surface when content leads with a splash block', () => {
-    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark' })
-    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({ surface: 'light' })
-    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({ surface: 'dark' })
+    expect(getLeadSplash(leadContent(splashBlock()))).toEqual({ surface: 'dark', hasTitle: false })
+    expect(getLeadSplash(leadContent(splashBlock('dark')))).toEqual({
+      surface: 'light',
+      hasTitle: false,
+    })
+    expect(getLeadSplash(leadContent(splashBlock('light')))).toEqual({
+      surface: 'dark',
+      hasTitle: false,
+    })
+  })
+
+  it('reports whether the splash draws a heading of its own', () => {
+    // `Splash` renders its `<h1>` only for a non-empty title, so a blank one
+    // is the same as none: `PageTemplate` owes the page a heading either way.
+    expect(getLeadSplash(leadContent(splashBlock(undefined, 'Discover it')))?.hasTitle).toBe(true)
+    expect(getLeadSplash(leadContent(splashBlock(undefined, '   ')))?.hasTitle).toBe(false)
+    expect(getLeadSplash(leadContent(splashBlock(undefined, '')))?.hasTitle).toBe(false)
   })
 
   it('returns null when the first block is not a splash', () => {
@@ -443,19 +491,10 @@ describe('leadSplashFromRouteData', () => {
   })
 
   it('reads page content on content routes ([slug])', () => {
-    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({ surface: 'light' })
-  })
-
-  it('reads initialData content on a pages preview', () => {
-    expect(leadSplashFromRouteData({ collection: 'pages', initialData: splashPage() })).toEqual({
-      surface: 'dark',
+    expect(leadSplashFromRouteData({ page: splashPage('dark') })).toEqual({
+      surface: 'light',
+      hasTitle: false,
     })
-  })
-
-  it('ignores initialData for non-page previews (meditations/lectures)', () => {
-    expect(
-      leadSplashFromRouteData({ collection: 'meditations', initialData: splashPage() }),
-    ).toBeNull()
   })
 
   it('returns null without a lead splash or data', () => {

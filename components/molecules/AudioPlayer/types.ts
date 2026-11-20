@@ -10,7 +10,7 @@ export interface Track {
   creditURL: string
   /** Album art/thumbnail image URL */
   thumbnailURL: string
-  /** Duration in seconds, or 0 when unknown — SahajCloud's Song carries none */
+  /** Duration in seconds, or 0 where SahajCloud stores none for the song */
   duration: number
   /**
    * Optional filter facets. `id` is the tag slug — the stable filter id,
@@ -67,6 +67,8 @@ export interface PlaylistAudioPlayerControls {
   setVolume: (volume: number) => void
   /** Toggle mute on/off */
   toggleMute: () => void
+  /** Unmute (idempotent — a no-op when already unmuted) */
+  unmute: () => void
   /** Toggle shuffle mode on/off */
   toggleShuffle: () => void
   /** Play the track at this index in the tracks array, from a stopped player too */

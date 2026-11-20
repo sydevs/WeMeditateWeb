@@ -14,6 +14,7 @@ functional piece — it cannot divide into smaller pieces without losing its mea
 | Brand and graphics | Logo, LanguageFlag, SocialIcon, and the SVG icons in `graphics/svgs/` |
 | Feedback | Spinner, SplashLoader, Placeholder, Badge |
 | Layout | Container, Spacer, Box, LeafDivider, Breadcrumbs |
+| Navigation | SkipLink |
 | Specialty | Countdown |
 
 Typography patterns (sizing, weight, color) live in

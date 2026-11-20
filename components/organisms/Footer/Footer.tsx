@@ -37,7 +37,7 @@ export interface FooterProps {
   /** Footer sections with titles and links */
   sections: FooterSection[]
   /** Social media links */
-  socialLinks: SocialLink[]
+  socialLinks: readonly SocialLink[]
   /** Current language code */
   currentLanguage: Locale
   /** Available language options */
@@ -124,8 +124,10 @@ export function Footer({
 
           {/* Social + Language Section */}
           <div className="flex flex-col gap-6">
-            {/* Social Icons */}
-            <div className="flex items-center gap-4">
+            {/* Social Icons. Each icon's own box is 44×44 (`touch-target`), so
+                the row pays for that room with a tighter gap and wraps rather
+                than overflowing its grid column. */}
+            <div className="flex flex-wrap items-center gap-1">
               {socialLinks.map((social, index) => (
                 <SocialIcon
                   // eslint-disable-next-line @eslint-react/no-array-index-key -- a social icon holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else

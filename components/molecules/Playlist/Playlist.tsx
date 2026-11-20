@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, useId } from 'react'
 import { Link, Button } from '../../atoms'
 import type { Track } from '../AudioPlayer/types'
 import type { HeroIcon } from '../../atoms/Icon/Icon'
@@ -65,37 +65,44 @@ interface PlaylistItemProps {
 }
 
 function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistItemProps) {
+  const titleId = useId()
+
+  // The play button and the credit link are siblings, never one inside the
+  // other (axe `nested-interactive`, #289). The button covers the whole row,
+  // so a click anywhere on it still plays; the link is positioned too, and
+  // later in the tree, so it paints above the button and takes its own clicks.
   return (
-    <button
-      aria-current={isCurrentTrack ? 'true' : undefined}
-      className={`w-full text-left p-3 rounded transition-all cursor-pointer ${
+    <div
+      className={`relative p-3 rounded transition-all ${
         isCurrentTrack
           ? 'bg-teal-700 text-white shadow-md'
           : 'bg-white/80 hover:bg-gray-100 text-gray-900'
       }`}
-      onClick={() => onTrackClick(index)}
     >
+      <button
+        aria-current={isCurrentTrack ? 'true' : undefined}
+        aria-labelledby={titleId}
+        className="absolute inset-0 rounded cursor-pointer focus-ring"
+        onClick={() => onTrackClick(index)}
+      />
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h4 className="text-sm font-medium truncate">{track.title}</h4>
+          <h4 className="text-sm font-medium truncate" id={titleId}>
+            {track.title}
+          </h4>
           <Link
             external
-            className={`text-xs truncate self-start mt-1 ${
+            className={`relative text-xs truncate self-start mt-1 ${
               isCurrentTrack ? 'text-teal-50 hover:text-white transition-colors duration-200' : ''
             }`}
             href={track.creditURL}
             size="inherit"
             variant={isCurrentTrack ? 'unstyled' : 'primary'}
-            onClick={(e) => e.stopPropagation()}
           >
             {track.credit}
           </Link>
         </div>
-        {/*
-          `contentIndexTrack` hands every song `duration: 0`, because
-          SahajCloud's Song type has no duration field, so each production row
-          printed `0:00`. Only the fixtures' real durations hid it.
-        */}
+        {/* `0:00` is worse than a blank where SahajCloud stores no duration. */}
         {track.duration > 0 && (
           <span
             className={`text-sm font-number font-medium whitespace-nowrap flex items-center ${
@@ -106,7 +113,7 @@ function PlaylistItem({ track, index, isCurrentTrack, onTrackClick }: PlaylistIt
           </span>
         )}
       </div>
-    </button>
+    </div>
   )
 }
 
@@ -159,8 +166,10 @@ export function Playlist({
         </div>
       )}
 
-      {/* Playlist items */}
-      <div className="relative flex-1 overflow-y-auto space-y-2">
+      {/* A scroll container clips at its padding box, and each row's focus
+          ring draws 4px outside it: `p-1` makes that room, `-m-1` keeps the
+          rows where they were. */}
+      <div className="relative flex-1 overflow-y-auto space-y-2 -m-1 p-1">
         {visibleTracks(tracks, selectedFilter).map(({ track, index }) => (
           <PlaylistItem
             // shortcut: Track carries no id, so the audio url stands in as the

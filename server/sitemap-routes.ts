@@ -15,19 +15,32 @@
  * `/robots.txt` as "crawl nothing".
  */
 
-import type { Hono } from 'hono'
+import type { Context, Hono } from 'hono'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { createPayloadClient } from './payload-client'
-import { withRetry } from './error-utils'
+import { degrade, warnOnce, withRetry } from './error-utils'
 import { getAtlasSitemapUrls } from './atlas-client'
-import { getWebConfig } from './sahajcloud-client'
-import { buildRobotsTxt, buildSitemapXml, isIndexableHost, type SitemapUrl } from './sitemap'
+import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, type SitemapUrl } from './sitemap'
+import { buildWebManifest } from './manifest'
+import { getT } from '../lib/i18n'
+import { localeFromPath } from '../lib/urls'
 import { buildAlternates, advertisedLocales } from '../lib/hreflang'
 import { DEFAULT_LOCALE, type Locale } from './sahajcloud-types'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from './payload-types'
 
-/** Bounded because this runs in a Worker request. */
+/** Documents per content read. Each page of a walk is one subrequest. */
 const CONTENT_READ_LIMIT = 500
+
+/**
+ * Pages one collection's walk may take. The atlas half takes up to 45,000 of
+ * the 50,000 URLs one sitemap file may hold (`SITEMAP_URL_CAP`), so the three
+ * collections share the other 5,000: 3 × 3 × 500 = 4,500.
+ *
+ * shortcut: a collection past 1,500 documents (4,500 for all three) is listed
+ * to here and reported, so split the sitemap into an index before one gets there.
+ */
+const MAX_CONTENT_PAGES = 3
 
 /**
  * Field selections for the sitemap reads.
@@ -70,31 +83,66 @@ async function getSiteAnnotation(): Promise<{ offered: Locale[]; homeSlug: strin
 
     return { offered: settings.availableLocales, homeSlug: settings.homePage?.slug ?? null }
   } catch (error) {
+    // Logged, not reported: `getWebConfig`'s own retry already reports this.
     console.warn('[getSiteAnnotation] falling back to English-only alternates:', error)
 
     return { offered: [DEFAULT_LOCALE], homeSlug: null }
   }
 }
 
-/** The three content reads, cached as the documents they return. */
+/** Every document of one collection, a page at a time, up to the ceiling. */
+async function readEvery<T>(
+  collection: string,
+  readPage: (page: number) => Promise<{ docs?: T[]; hasNextPage?: boolean } | undefined>,
+): Promise<T[]> {
+  const docs: T[] = []
+
+  for (let page = 1; page <= MAX_CONTENT_PAGES; page++) {
+    const result = await readPage(page)
+
+    docs.push(...(result?.docs ?? []))
+
+    if (!result?.hasNextPage) return docs
+  }
+
+  console.warn(`[getContentSitemapUrls] ${collection} truncated at ${docs.length} documents`)
+  warnOnce(collection, 'Sitemap content read hit its page ceiling; the sitemap is truncated', {
+    source: 'getContentSitemapUrls',
+    extra: { collection, listed: docs.length },
+  })
+
+  return docs
+}
+
+/** Every page, meditation and lecture, with what the sitemap lists of each. */
 async function readContentDocs() {
   const client = createPayloadClient()
-  const read = { limit: CONTENT_READ_LIMIT, depth: 0, locale: 'en' as const }
+  // Sorted by id so a document created mid-walk lands on the last page,
+  // rather than shifting every later page by one.
+  const read = { limit: CONTENT_READ_LIMIT, depth: 0, locale: 'en' as const, sort: 'id' }
 
   const [pages, meditations, lectures] = await Promise.all([
     // `locale: 'all'` makes `_status` arrive as a per-locale map, and adds
     // no query: `slug` and `updatedAt` are not localized, so they come back
     // as plain values in the same response.
-    client.find({ collection: 'pages', ...read, locale: 'all', select: PAGE_SITEMAP_SELECT }),
-    client.find({ collection: 'meditations', ...read, select: MEDITATION_SITEMAP_SELECT }),
-    client.find({ collection: 'lectures', ...read, select: LECTURE_SITEMAP_SELECT }),
+    readEvery('pages', (page) =>
+      client.find({
+        collection: 'pages',
+        ...read,
+        page,
+        locale: 'all',
+        select: PAGE_SITEMAP_SELECT,
+      }),
+    ),
+    readEvery('meditations', (page) =>
+      client.find({ collection: 'meditations', ...read, page, select: MEDITATION_SITEMAP_SELECT }),
+    ),
+    readEvery('lectures', (page) =>
+      client.find({ collection: 'lectures', ...read, page, select: LECTURE_SITEMAP_SELECT }),
+    ),
   ])
 
-  return {
-    pages: pages?.docs ?? [],
-    meditations: meditations?.docs ?? [],
-    lectures: lectures?.docs ?? [],
-  }
+  return { pages, meditations, lectures }
 }
 
 /**
@@ -114,10 +162,19 @@ async function readContentDocs() {
  * translation claim to make.
  */
 async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
-  try {
+  // A sitemap that lists less than everything still helps. One that 500s
+  // does not — and the home page is listable without reading anything.
+  const degradation = {
+    source: 'getContentSitemapUrls',
+    message: 'getContentSitemapUrls failed; sitemap lists only the home page',
+    key: origin,
+    fallback: [{ loc: `${origin}/` }],
+  }
+
+  return degrade(async () => {
     const [{ offered, homeSlug }, docs] = await Promise.all([
       getSiteAnnotation(),
-      withRetry(readContentDocs),
+      withRetry(readContentDocs, { reportFailure: false }),
     ])
 
     // `/` serves the config's `homePage`, so it advertises that page's
@@ -156,16 +213,30 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
         lastmod: lastmodOf(doc),
       })),
     ]
-  } catch (error) {
-    // A sitemap that lists less than everything still helps. One that 500s
-    // does not — and the home page is listable without reading anything.
-    console.warn('[getContentSitemapUrls] omitting site content from the sitemap:', error)
+  }, degradation)
+}
 
-    return [{ loc: `${origin}/` }]
-  }
+/** `/manifest.webmanifest`, and its locale-prefixed spelling. */
+const manifestHandler = async (c: Context<SahajCloudEnv>) => {
+  const { origin, pathname } = new URL(c.req.url)
+  const { locale } = localeFromPath(pathname)
+  const t = getT(await getWebTranslations({ locale }), locale)
+
+  c.header('Content-Type', 'application/manifest+json; charset=utf-8')
+  c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
+
+  // ⚠ `c.json()` replaces the Content-Type with `application/json`, whatever
+  // was set before it. The spec's own type is what a browser installs a
+  // manifest by, so the body is serialized here, as `/robots.txt` does.
+  return c.body(JSON.stringify(buildWebManifest({ origin, locale, t })))
 }
 
 export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
+  // Two paths, one handler: the link in the head is locale-prefixed, so the
+  // manifest is in the language of the page that named it, and the bare path
+  // still answers for anything that guesses it.
+  app.get('/:locale{[a-z]{2}(?:-[A-Z]{2})?}/manifest.webmanifest', manifestHandler)
+  app.get('/manifest.webmanifest', manifestHandler)
   app.get('/robots.txt', (c) => {
     const origin = new URL(c.req.url).origin
 
@@ -180,7 +251,7 @@ export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
 
     // A preview origin already tells crawlers to stay out. Serving it a
     // full sitemap would only invite the indexing that robots.txt just refused.
-    if (!isIndexableHost(new URL(origin).hostname)) {
+    if (!isCanonicalOrigin(origin)) {
       c.header('Content-Type', 'application/xml; charset=utf-8')
 
       return c.body(buildSitemapXml([]))

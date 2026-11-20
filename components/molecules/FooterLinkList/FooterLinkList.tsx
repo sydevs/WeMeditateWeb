@@ -1,4 +1,5 @@
-import { Link } from '../../atoms'
+import { Heading, Link } from '../../atoms'
+import { useT } from '../../../hooks/useT'
 import type { Locale } from '../../../server/sahajcloud-types'
 
 /** A single link item */
@@ -49,17 +50,25 @@ export interface FooterLinkListProps {
  * ```
  */
 export function FooterLinkList({ title, links, variant = 'default', locale }: FooterLinkListProps) {
+  const t = useT()
   const isHero = variant === 'hero'
 
   return (
     <div className="flex flex-col gap-3">
       {/* Title (only for default variant) */}
       {title && !isHero && (
-        <h3 className="text-base font-semibold text-gray-700 mb-1">{title}</h3>
+        <Heading className="text-base font-semibold text-gray-700 mb-1" level="h3" styleAs="none">
+          {title}
+        </Heading>
       )}
 
       {/* Links */}
-      <nav className="flex flex-col gap-3">
+      {/* A titled column is named by the heading it already shows. The hero
+          column shows none, so it takes the one key for it. */}
+      <nav
+        aria-label={title && !isHero ? title : t('common.a11y.footer_navigation')}
+        className="flex flex-col gap-3"
+      >
         {links.map((link, index) => (
           <Link
             // eslint-disable-next-line @eslint-react/no-array-index-key -- a row of this list holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else

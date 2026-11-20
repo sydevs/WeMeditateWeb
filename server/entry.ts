@@ -5,6 +5,7 @@ import { contextStorage } from 'hono/context-storage'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { registerApiRoutes } from './api-routes'
 import { registerLegacyRedirects } from './legacy-redirects'
+import { registerOEmbedRoutes } from './oembed-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
 import { stripLivePreviewToken } from '../lib/live-preview/token-url'
@@ -138,6 +139,9 @@ function startServer() {
 
   // robots.txt / sitemap.xml, likewise before the page catch-all.
   registerSitemapRoutes(app)
+
+  // /oembed, which a consumer calls to embed one of our players.
+  registerOEmbedRoutes(app)
 
   apply(app, [])
 

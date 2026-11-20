@@ -20,6 +20,7 @@ import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
 import type { Audience } from './payload-types'
 import type { Locale } from './sahajcloud-types'
 import {
+  contentIndexBlocks,
   contentIndexCard,
   contentIndexTrack,
   meditationCardsFromUserChoices,
@@ -74,7 +75,7 @@ const QUERY_BY_TYPE: Record<
     // `populate[images][filename]` lets the album artwork's url compute. A
     // url-only populate returns null.
     select:
-      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[thumbnailURL]=true&select[filename]=true',
+      'select[title]=true&select[album]=true&select[url]=true&select[tags]=true&select[duration]=true&select[thumbnailURL]=true&select[filename]=true',
     populate:
       // `song-tags[title]` is what the filter pills show. Without it the
       // label had to be title-cased from the slug, which was English-only.
@@ -196,46 +197,6 @@ export async function resolveContentIndexTracks(
   return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
 
-/** Recursively collect every `content-index` block's `fields` object. */
-function collectContentIndexBlocks(node: unknown, out: ContentIndexBlockFields[]): void {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      collectContentIndexBlocks(child, out)
-    }
-
-    return
-  }
-  if (node && typeof node === 'object') {
-    const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
-
-    if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
-      out.push(candidate.fields as ContentIndexBlockFields)
-    }
-    for (const value of Object.values(node)) {
-      collectContentIndexBlocks(value, out)
-    }
-  }
-}
-
-/** Checks for at least one `content-index` block, and stops at the first
- * match. Avoids cloning content that has none, the common case. */
-function hasContentIndexBlock(node: unknown): boolean {
-  if (Array.isArray(node)) {
-    return node.some(hasContentIndexBlock)
-  }
-  if (node && typeof node === 'object') {
-    const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
-
-    if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
-      return true
-    }
-
-    return Object.values(node).some(hasContentIndexBlock)
-  }
-
-  return false
-}
-
 /**
  * Walks a page's lexical `content`, resolves every `content-index` block's
  * list, and returns content with `resolvedItems` attached. The input stays
@@ -247,15 +208,15 @@ export async function resolveContentIndexBlocks<T>(
   content: T,
   options: ResolveOptions = {},
 ): Promise<T> {
-  if (!content || typeof content !== 'object' || !hasContentIndexBlock(content)) {
+  // Walked before the clone, so content with no such block — the common
+  // case — is never cloned.
+  if (!content || typeof content !== 'object' || contentIndexBlocks(content).length === 0) {
     return content
   }
   // Clone so the caller's document is never mutated. Reached only when
   // there is at least one content-index block to resolve.
   const cloned = structuredClone(content)
-  const targets: ContentIndexBlockFields[] = []
-
-  collectContentIndexBlocks(cloned, targets)
+  const targets = contentIndexBlocks(cloned)
 
   await Promise.all(
     targets.map(async (fields) => {

@@ -5,6 +5,8 @@ import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
 import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import type { Track } from '../../molecules'
+import { classFor } from '../../../tests/_helpers/markup'
+import { enT } from '../../../lib/i18n'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.
@@ -65,7 +67,7 @@ describe('textbox block converter — routing', () => {
     const html = renderTextbox({ imagePosition: 'left', wisdomStyle: true, title: 'Wisdom' })
 
     expect(html).toContain('#6b5340') // warm ornate gradient ground
-    expect(html).toContain('Ancient Wisdom') // decorative sidetext
+    expect(html).toContain(enT('blocks.general.wisdom_sidetext')) // decorative sidetext
     expect(html).not.toContain('lg:bg-white') // not the plain ContentTextBox
   })
 
@@ -73,8 +75,9 @@ describe('textbox block converter — routing', () => {
     const html = renderTextbox({ imagePosition: 'right', wisdomStyle: true, title: 'Wisdom' })
 
     expect(html).toContain('#6b5340') // still the ornate branch
-    expect(html).toContain('lg:float-right')
-    expect(html).not.toContain('lg:float-left')
+    // The image side is the grid's column pair, which mirrors with `align`.
+    expect(classFor(html, 'lg:pr-24').split(' ')).toContain('lg:grid-cols-[1fr_44%]')
+    expect(classFor(html, 'lg:pr-24').split(' ')).not.toContain('lg:grid-cols-[44%_1fr]')
   })
 
   it('overlay takes precedence over wisdomStyle (no ornate ground)', () => {
@@ -85,6 +88,33 @@ describe('textbox block converter — routing', () => {
 
   it('renders nothing when the image is an unpopulated (bare-id) relationship', () => {
     expect(textbox({ node: { fields: { image: 123, title: 'Orphan' } } })).toBeNull()
+  })
+})
+
+describe('textbox block converter — paragraph breaks', () => {
+  // One treatment for every style an editor can pick (#286).
+  const STYLES = [
+    ['the white box', { imagePosition: 'left' }],
+    ['the ornate box', { imagePosition: 'left', wisdomStyle: true }],
+    ['the overlay', { imagePosition: 'overlay' }],
+  ] as const
+
+  it.each(STYLES)('%s renders each paragraph of the text as its own <p>', (_, style) => {
+    for (const text of [
+      'First paragraph.\n\nSecond paragraph.',
+      'First paragraph.\nSecond paragraph.',
+    ]) {
+      const html = renderTextbox({ ...style, title: 'Hi', text })
+
+      expect(html).toContain('First paragraph.</p>')
+      expect(html).toContain('>Second paragraph.</p>')
+    }
+  })
+
+  it.each(STYLES)('%s renders single-paragraph text in one <p>', (_, style) => {
+    const html = renderTextbox({ ...style, title: 'Hi', text: 'Only one paragraph here.' })
+
+    expect(html).toContain('>Only one paragraph here.</p>')
   })
 })
 

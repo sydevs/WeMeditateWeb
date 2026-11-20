@@ -1,9 +1,10 @@
 /**
  * LectureTemplate renders a lecture.
  *
- * Both the lecture routes (/lectures/:id, /lectures/:id/embed) and the
- * live-preview route use it, so rendering stays consistent. Following
- * Atomic Design, templates represent page-level layout structures.
+ * Both lecture routes (/lectures/:id, /lectures/:id/embed) render it, and
+ * /lectures/:id renders it under the preview panel too, so an editor sees the
+ * page. Following Atomic Design, templates represent page-level layout
+ * structures.
  *
  * It consumes a normalized `ResolvedLecture` (see lib/lecture-shape.ts), so
  * it never branches on full or clip: a clip already carries its inherited
@@ -19,11 +20,13 @@ import { Badge, PageTitle } from '../atoms'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { useT } from '../../hooks/useT'
 import type { TFunction } from '../../lib/i18n'
+import { lecturePlaybackSeconds } from '../../lib/lecture-shape'
+import { documentEmbedHref } from '../../lib/document-routes'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
-  /** Current locale. Selects which subtitle track is the default, active one. */
+  /** Current locale. Selects the default subtitle track, and the player controls' language. */
   locale?: Locale
   /** `sizes` for the server-rendered poster, where no layout bounds the player. */
   posterSizes?: string
@@ -50,6 +53,7 @@ export function LecturePlayer({ lecture, locale, posterSizes, className }: Lectu
       className={className}
       defaultSubtitleLang={locale}
       hlsUrl={lecture.hlsUrl}
+      locale={locale}
       poster={lecture.thumbnailUrl ?? undefined}
       posterSizes={posterSizes}
       startTime={lecture.startTime}
@@ -63,7 +67,7 @@ export function LecturePlayer({ lecture, locale, posterSizes, className }: Lectu
 export interface LectureTemplateProps {
   /** Normalized lecture view model (full or clip). */
   lecture: ResolvedLecture
-  /** Current locale. Selects which subtitle track is the default, active one. */
+  /** Current locale. Selects the default subtitle track, and the player controls' language. */
   locale?: Locale
   /**
    * Whether to show the Embed button (copy an iframe snippet for this lecture).
@@ -100,13 +104,7 @@ export function LectureTemplate({
   showRelated = false,
 }: LectureTemplateProps) {
   const t = useT()
-  // A clip shows its playable window length. A full lecture shows the whole
-  // source duration.
-  const windowSeconds =
-    lecture.startTime != null && lecture.stopTime != null && lecture.stopTime > lecture.startTime
-      ? lecture.stopTime - lecture.startTime
-      : null
-  const displaySeconds = windowSeconds ?? lecture.duration ?? 0
+  const displaySeconds = lecturePlaybackSeconds(lecture) ?? 0
 
   // A lecture with no resolvable HLS source cannot render a player. This
   // can happen for a clip whose parent metadata has not synced yet.
@@ -137,7 +135,7 @@ export function LectureTemplate({
         {showEmbedButton ? (
           <EmbedButton
             className="ml-auto"
-            embedPath={`/lectures/${lecture.id}/embed`}
+            embedPath={documentEmbedHref('lectures', lecture.id) ?? ''}
             locale={locale}
             title={lecture.title ?? undefined}
           />

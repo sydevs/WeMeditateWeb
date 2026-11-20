@@ -1,76 +1,35 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { ContentHeadTags, resolveOgImageUrl } from './head'
-import { buildAlternates } from './hreflang'
+import { isSafeJsonLd, NoIndexHead } from './head'
+import { seoDocument } from './head-settings'
 
-const CF_URL = 'https://imagedelivery.net/acct/abc123/'
-
-describe('resolveOgImageUrl', () => {
-  it('appends a large video variant to a Cloudflare image URL', () => {
-    expect(resolveOgImageUrl({ url: CF_URL })).toBe(`${CF_URL}width=1024`)
+describe('isSafeJsonLd', () => {
+  it('accepts a properly escaped document', () => {
+    expect(isSafeJsonLd('{"name":"\\u003c/script\\u003e"}')).toBe(true)
   })
 
-  it('replaces the /public variant a SahajCloud read returns', () => {
-    expect(resolveOgImageUrl({ url: `${CF_URL}public` })).toBe(`${CF_URL}width=1024`)
-  })
-
-  it('returns a non-Cloudflare URL unchanged', () => {
-    const external = 'https://example.com/preview.jpg'
-
-    expect(resolveOgImageUrl({ url: external })).toBe(external)
-  })
-
-  it('returns null for a bare id (unpopulated relationship)', () => {
-    expect(resolveOgImageUrl(7)).toBeNull()
-  })
-
-  it('returns null when the image or its url is missing', () => {
-    expect(resolveOgImageUrl(null)).toBeNull()
-    expect(resolveOgImageUrl(undefined)).toBeNull()
-    expect(resolveOgImageUrl({})).toBeNull()
-    expect(resolveOgImageUrl({ url: null })).toBeNull()
+  it.each([
+    ['</script>', '{"a":"</script>"}'],
+    ['</SCRIPT> in any case', '{"a":"</SCRIPT >"}'],
+    ['a comment opener', '{"a":"<!--"}'],
+    ['an empty string', ''],
+    ['nothing at all', undefined],
+  ])('refuses %s', (_label, value) => {
+    expect(isSafeJsonLd(value)).toBe(false)
   })
 })
 
-describe('ContentHeadTags', () => {
-  const ORIGIN = 'https://wemeditate.com'
-  const cluster = (locales: Parameters<typeof buildAlternates>[0]['locales']) =>
-    renderToStaticMarkup(
-      <ContentHeadTags
-        alternates={buildAlternates({ origin: ORIGIN, path: '/about', locales })}
-        canonical={`${ORIGIN}/about`}
-      />,
-    )
-
-  it('emits the canonical alone where there is no cluster', () => {
-    // A meditation or a lecture carries no per-locale publish state. It
-    // still needs a canonical — and an hreflang cluster whose members are
-    // not self-canonical is one Google discards, so these ship together.
-    const html = cluster([])
-
-    expect(html).toContain('<link href="https://wemeditate.com/about" rel="canonical"/>')
-    expect(html).not.toContain('rel="alternate"')
+describe('seoDocument', () => {
+  it('answers null for a route that built none', () => {
+    // Every embed route and the error page. They publish no URL claim, and
+    // the head settings then fall back to the site's own name.
+    expect(seoDocument(undefined)).toBeNull()
+    expect(seoDocument({})).toBeNull()
   })
+})
 
-  it('emits one alternate per advertised locale, plus x-default', () => {
-    const html = cluster(['en', 'fr'])
-
-    expect(html).toContain('<link rel="alternate" hreflang="en" href="https://wemeditate.com/about"/>')
-    expect(html).toContain(
-      '<link rel="alternate" hreflang="fr" href="https://wemeditate.com/fr/about"/>',
-    )
-    expect(html).toContain(
-      '<link rel="alternate" hreflang="x-default" href="https://wemeditate.com/about"/>',
-    )
+describe('NoIndexHead', () => {
+  it('refuses the embed routes, which robots.txt must keep fetchable', () => {
+    expect(renderToStaticMarkup(<NoIndexHead />)).toBe('<meta content="noindex" name="robots"/>')
   })
-
-  it('spells the attribute lowercase, for crawlers that pattern-match', () => {
-    // React emits the prop as authored, so `hrefLang` would ship as-is.
-    // Some crawlers match on the raw text instead of parsing.
-    const html = cluster(['en'])
-
-    expect(html).toContain('hreflang=')
-    expect(html).not.toContain('hrefLang=')
-  })
-
 })

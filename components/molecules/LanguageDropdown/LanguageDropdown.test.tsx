@@ -13,9 +13,15 @@ import { renderToStaticMarkup } from 'react-dom/server'
 // The dropdown renders its panel behind a click, so the options are not in
 // the SSR markup. Reduce Dropdown to a passthrough to assert on the links.
 vi.mock('../../atoms/Dropdown', () => ({
-  Dropdown: ({ children, trigger }: { children: React.ReactNode; trigger: React.ReactNode }) => (
+  Dropdown: ({
+    children,
+    trigger,
+  }: {
+    children: React.ReactNode
+    trigger: (props: Record<string, unknown>) => React.ReactNode
+  }) => (
     <div>
-      {trigger}
+      {trigger({})}
       {children}
     </div>
   ),

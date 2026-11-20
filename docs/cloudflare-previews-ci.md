@@ -12,8 +12,14 @@ alwaysApply: false
 CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.yml):
 
 - **`gate`** — runs `pnpm lint`, `pnpm typecheck`, and `pnpm test:run` (unit tests only —
-  `vitest.config.ts` excludes the smoke specs), then `pnpm ladle:build` and
-  `pnpm check:wrangler`. The last is a `wrangler deploy --dry-run` over
+  `vitest.config.ts` excludes the smoke specs), then writes the accessibility results to the job
+  summary, then `pnpm ladle:build` and `pnpm check:wrangler`. **The accessibility gate is one of
+  those unit specs** — [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
+  `axe-core` over every page type and fails on any finding, so it blocks a change the way any
+  spec does. It is here rather than in `smoke` because `Smoke (web)` skips silently when no
+  preview is discoverable, and a check that can skip cannot stop a change. `scripts/a11y-summary.mjs`
+  only reports: it runs on a red test step too, because the per-page counts are what a reviewer
+  needs most then. The last is a `wrangler deploy --dry-run` over
   [wrangler.design.jsonc](../wrangler.design.jsonc): nothing else in this repo reads that file,
   so without it a typo or an `assets.directory` that drifts from what `ladle:build` writes would
   surface only in a Cloudflare build log, on `main`. It must follow `ladle:build`, which writes
@@ -24,11 +30,13 @@ CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.y
 ## Two Cloudflare previews per PR
 
 The repo connects to two Cloudflare projects, distinguished by URL host. Neither produces a
-GitHub deployment or commit status — the preview URL appears only in the
-`cloudflare-workers-and-pages[bot]` PR comment. Workers Builds does post one check run per
-Worker, named `Workers Builds: <worker>`, but its `details_url` is the `dash.cloudflare.com`
-build page and carries no preview address. Check-run output, deployments and commit statuses
-stay wired as fallbacks that have never yet yielded a URL here.
+GitHub deployment or commit status. The preview URL appears in two places: the
+`cloudflare-workers-and-pages[bot]` PR comment, and the check run Workers Builds posts on the
+commit for each Worker, named `Workers Builds: <worker>`. That check run's `output.summary`
+carries `Preview URL: https://<version>-<worker>.<acct>.workers.dev`, the address of that
+commit's own build, so it is the fallback discovery reaches when the comment still names an
+earlier commit. Its `details_url` is only the `dash.cloudflare.com` build page. Deployments and
+commit statuses stay wired as fallbacks that have never yet yielded a URL here.
 
 ⚠ The ladle preview is the `wemeditate-design` Worker. Discovery accepts a `workers.dev` host and
 nothing else, because a PR opened before 2026-11-02 still carries a `wemeditate-design` **Pages**
@@ -41,6 +49,14 @@ preview the PR does carry. It waits out that window first because the branch ali
 branch's latest successful build rather than this commit, so running it earlier would hand the
 specs the previous build while this commit's own was still deploying. The address still has to
 answer before it reaches the specs. Read the `selected …` and `skipping …` lines the step prints.
+
+⚠ **A comment is only accepted while it names the commit under test.** Cloudflare rewrites one
+comment per Worker in place, so between a push and that build finishing the comment still carries
+the previous commit's address, and discovery used to take it — the smoke lane then measured the
+build before the one on trial, reporting failures for routes the commit adds and missing what it
+broke (#282). Discovery now reads the comment's `Latest Commit` cell and keeps polling until it
+matches `PR_HEAD_SHA`. The other sources are keyed on the SHA already; the derived branch host is
+not, which is a second reason it runs only after the window closes.
 
 | Target | Platform | URL host | Match substring | Config |
 | --- | --- | --- | --- | --- |
@@ -58,8 +74,16 @@ Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and eve
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
-  `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
+  `types/*`, `server/sahajcloud-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
   `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
+
+  ⚠ On 2026-11-19 both Cloudflare triggers still included `server/cms-types*`, the name that file
+  lost in #131, in place of `server/sahajcloud-types*`. They are edited in the Cloudflare
+  dashboard, not in this repo. Until they are, a push touching only `server/sahajcloud-types.ts`
+  passes `WATCH` but gets no Ladle build. `Smoke (ladle)` then waits out its 12-minute window and
+  tests the derived branch host, which serves the branch's previous Ladle build, without the
+  change, so the lane is green without having tested it. On a branch with no earlier Ladle build
+  that host never answers, and the lane goes red after the 5-minute reachability wait.
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so
@@ -141,6 +165,12 @@ They ship from `.ladle/static/` rather than `public/`, which the app's build cop
 `Disallow: /` there would answer on wemeditate.com. The app builds its own per-host refusal in
 [server/sitemap.ts](../server/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
 named as hosts that must never be indexed.
+
+**The app does carry a `<meta robots>`, and that is not a contradiction.** Every content route
+reads the same `isCanonicalOrigin` and says `noindex` off the real site
+([lib/content-seo.ts](../lib/content-seo.ts)), because a crawler can reach a preview URL without
+ever fetching `robots.txt` — from a pasted link, or a referrer log. The playground has no such
+per-page head to put one in, which is what the line above is about.
 
 ⚠ Ladle copies Vite's `publicDir` for free and Storybook does not. A move to Storybook
 (sydevs/SahajCloud#902) has to carry both the `public/` copy (`staticDirs`) and this plugin, or
