@@ -62,12 +62,15 @@ export function LanguageDropdown({
     <Dropdown
       align={align}
       className={className}
-      trigger={
-        <button className="flex touch-target items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors">
+      trigger={(props) => (
+        <button
+          className="flex touch-target items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+          {...props}
+        >
           <span className="text-sm font-light">{t('footer.languages')}</span>
           <Icon icon={GlobeAltIcon} size="sm" />
         </button>
-      }
+      )}
     >
       <div className="flex flex-col py-2">
         {languages.map((language) => (

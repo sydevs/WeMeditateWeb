@@ -3,25 +3,19 @@ import { Button, Dropdown } from '../../atoms'
 import { useClipboard } from '../../../hooks/useClipboard'
 import { useT } from '../../../hooks/useT'
 import { useLocale } from '../../../hooks/usePageContext'
-import { localeHref } from '../../../lib/urls'
+import { absoluteHref } from '../../../lib/urls'
+import { playerIframe } from '../../../lib/embed-player'
 import type { Locale } from '../../../server/sahajcloud-types'
-
-/** Fixed iframe geometry and permissions for the generated embed snippet. */
-const IFRAME_WIDTH = 560
-const IFRAME_HEIGHT = 315
-const IFRAME_ALLOW = 'autoplay; fullscreen; encrypted-media; picture-in-picture'
 
 /**
  * Build the ready-to-paste `<iframe>` snippet for an embed path.
  *
- * The path comes from `localeHref`, the same rule `Link` uses. Then it prepends
- * `origin`, so the `src` is absolute. The function stays pure and
- * origin-injectable, so it is unit-testable and deterministic in stories.
+ * The URL comes from `absoluteHref`, which spells the locale prefix the same
+ * way `Link` does. The function stays pure and origin-injectable, so it is
+ * unit-testable and deterministic in stories.
  */
 export function buildEmbedSnippet(embedPath: string, locale: Locale, origin: string): string {
-  const src = localeHref(locale, embedPath)
-
-  return `<iframe src="${origin}${src}" width="${IFRAME_WIDTH}" height="${IFRAME_HEIGHT}" frameborder="0" allow="${IFRAME_ALLOW}" allowfullscreen></iframe>`
+  return playerIframe(absoluteHref(origin, locale, embedPath))
 }
 
 export interface EmbedButtonProps {
@@ -76,18 +70,11 @@ export function EmbedButton({
       align="right"
       className={className}
       size="lg"
-      trigger={
-        <Button
-          icon={CodeBracketIcon}
-          size="sm"
-          // The Dropdown wrapper is the keyboard-focusable trigger
-          // (role=button, aria-expanded). Keep this inner button out of the tab order.
-          tabIndex={-1}
-          variant="ghost"
-        >
+      trigger={(props) => (
+        <Button icon={CodeBracketIcon} size="sm" variant="ghost" {...props}>
           {t('media.general.embed')}
         </Button>
-      }
+      )}
     >
       <div className="flex flex-col gap-3 p-4">
         <p className="text-sm font-medium text-gray-700">

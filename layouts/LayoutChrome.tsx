@@ -5,17 +5,17 @@ import { usePageContext } from 'vike-react/usePageContext'
 import type { WebConfig, Page } from '../server/sahajcloud-types'
 import { leadSplashFromRouteData } from '../lib/content-blocks'
 import { surface } from '../components/atoms/surface'
+import { SkipLink } from '../components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 import { localeEndonym } from '../lib/locale-names'
+import { SOCIAL_PROFILES } from '../lib/site-identity'
 import { useT } from '../hooks/useT'
 
 interface RouteData {
   settings?: WebConfig
   page?: Page
-  collection?: string
-  initialData?: Page
 }
 
 /**
@@ -63,9 +63,9 @@ function Chrome({
 
   // When the page leads with a Splash, overlay the header on it: transparent,
   // on the splash's surface, flush with the top. The Splash reserves `pt-60` for
-  // exactly this. This works on content routes ([slug], `page`) and on the
-  // live-preview route (/preview, `initialData`), so preview matches the
-  // published layout. See leadSplashFromRouteData.
+  // exactly this. It reads the server's page, so a splash an editor adds in the
+  // preview panel overlays the header only after a save. See
+  // leadSplashFromRouteData.
   const leadSplash = leadSplashFromRouteData(data)
 
   // Degrade gracefully when the SahajCloud config is incomplete. A missing nav group
@@ -119,13 +119,6 @@ function Chrome({
     })
   }
 
-  // TODO: Configure social links from settings when available
-  const socialLinks = [
-    { platform: 'facebook' as const, href: 'https://facebook.com/wemeditate' },
-    { platform: 'instagram' as const, href: 'https://instagram.com/wemeditate' },
-    { platform: 'youtube' as const, href: 'https://youtube.com/wemeditate' },
-  ]
-
   // The locales SahajCloud says this site offers, each linking to the current
   // page in that language rather than to its home page. `Link` spells each
   // href through `lib/urls.ts`, and so does the hreflang cluster, so the two
@@ -161,6 +154,8 @@ function Chrome({
 
   return (
     <div className={`flex flex-col min-h-screen ${leadSplash ? 'relative' : ''}`}>
+      <SkipLink />
+
       {leadSplash ? (
         // Overlay the header transparently on the lead splash. The box spans the
         // whole column rather than the header, so the nav inside it still has the
@@ -200,7 +195,7 @@ function Chrome({
         languages={languages}
         locale={locale}
         sections={footerSections}
-        socialLinks={socialLinks}
+        socialLinks={SOCIAL_PROFILES}
       />
     </div>
   )

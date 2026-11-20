@@ -1,5 +1,5 @@
 name = "wemeditate-web"
-compatibility_date = "2025-09-06"
+compatibility_date = "2026-11-16"
 compatibility_flags = ["nodejs_compat"]
 main = "virtual:photon:cloudflare:server-entry"
 
@@ -37,4 +37,3 @@ custom_domain = true
 
 [vars]
 PUBLIC__SAHAJCLOUD_URL = "https://cloud.sydevelopers.com"
-PUBLIC__STATUS_PAGE_URL = "https://stats.uptimerobot.com/oJ9B8UX9lA"

@@ -14,6 +14,8 @@ const settings = {
   homePage: null as { slug: string } | null,
   availableLocales: ['en'] as string[],
   audiences: [],
+  // `getWebConfig` always returns an array here, so the head reads one.
+  knowledgePages: [],
 }
 
 vi.mock('../../server/sahajcloud-client', () => ({
@@ -44,14 +46,19 @@ interface AbortError {
 }
 
 /**
- * The pageContext the hook reads. `searchOriginal` is `null` off a query
- * string, which is Vike's own spelling and not the empty string.
+ * A request for one slug. `urlPathname` and `urlParsed.origin` are the fields
+ * the head document is built from, and `searchOriginal` is `null` off a query
+ * string, which is Vike's own spelling and not the empty string. Vike sets all
+ * three on every real request.
  */
-function context(slug: string, locale: string, search: string) {
+function request(slug: string, locale: string, search = ''): PageContextServer {
+  const path = slug === 'index' ? '/index' : `/${slug}`
+
   return {
     locale,
     routeParams: { slug },
-    urlParsed: { searchOriginal: search || null },
+    urlPathname: path,
+    urlParsed: { origin: 'https://wemeditate.com', searchOriginal: search || null },
   } as unknown as PageContextServer
 }
 
@@ -61,7 +68,7 @@ function context(slug: string, locale: string, search: string) {
  */
 async function renders404(slug: string, locale = 'en') {
   try {
-    await data(context(slug, locale, ''))
+    await data(request(slug, locale))
   } catch (error) {
     const abort = (error as AbortError)._pageContextAbort
 
@@ -74,7 +81,7 @@ async function renders404(slug: string, locale = 'en') {
 /** The redirect a request throws, or `null` when it renders instead. */
 async function redirectOf(slug: string, locale = 'en', search = '') {
   try {
-    await data(context(slug, locale, search))
+    await data(request(slug, locale, search))
   } catch (error) {
     const target = (error as AbortError)._pageContextAbort?._urlRedirect
 
@@ -142,7 +149,7 @@ describe('Pages data', () => {
     settings.homePage = { slug: '' }
     getPageBySlug.mockResolvedValue({ id: 1, slug: '', content: [] })
 
-    const result = await data({ locale: 'fr', routeParams: { slug: 'index' } } as never)
+    const result = await data(request('index', 'fr'))
 
     expect(getPageBySlug).toHaveBeenLastCalledWith({ slug: '', locale: 'fr' })
     expect(getPageLocaleStatus).toHaveBeenLastCalledWith({ slug: '' })

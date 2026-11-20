@@ -152,7 +152,12 @@ export function SocialIcon({
       external
       variant="unstyled"
       aria-label={name}
-      className={`inline-flex items-center justify-center ${className}`}
+      // `touch-target` grows the box to the 44×44 floor
+      // (`docs/rules/design-system.md`); the svg keeps its drawn size. Growing
+      // beats an overlay here because two icons of a row sit closer than 44px
+      // apart, and overlapping overlays hand the shared strip to the later
+      // sibling. Both call rows tightened their gap to pay for the room.
+      className={`inline-flex touch-target items-center justify-center ${className}`}
     >
       <svg
         aria-hidden="true"

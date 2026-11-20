@@ -15,9 +15,10 @@ A file that needs a DOM — a click, an effect, a state change after mount — o
 
 **Commands:**
 ```bash
-pnpm test         # Watch mode
-pnpm test:run     # Single run (use this in scripts and CI)
-pnpm test:ui      # Vitest UI
+pnpm test           # Watch mode
+pnpm test:run       # Single run (use this in scripts and CI)
+pnpm test:coverage  # Single run with V8 coverage in coverage/ (local only, not a gate)
+pnpm test:ui        # Vitest UI
 ```
 
 **File conventions:**
@@ -75,6 +76,7 @@ instead:
 | Primitive | Keyed on | Answers |
 | --- | --- | --- |
 | `anchorFor(html, href)` | an href the test passed in | that link's opening `<a>` tag |
+| `openTag(html, tag)` | a tag name | that element's whole opening tag, for an attribute other than `class` |
 | `classFor(html, class)` | one class naming the element | that element's class list |
 | `classesWith(html, class)` | one class | every such list, so a count is assertable |
 | `classOf(html, marker)` | an opening tag (`'<nav'`) or the element's own text | that element's class list |

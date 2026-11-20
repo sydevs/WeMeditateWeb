@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import { anchorFor, openTag } from '../../../tests/_helpers/markup'
+import { Button } from '../Button'
 import { Dropdown, DropdownItem } from './Dropdown'
 
 /**
@@ -10,25 +11,49 @@ import { Dropdown, DropdownItem } from './Dropdown'
  * placement, flip/shift, dismiss) is verified in Ladle / the browser.
  */
 describe('Dropdown', () => {
-  it('renders the trigger as a focusable button and keeps the panel closed', () => {
+  it("hands the popup state to the caller's own control, and keeps the panel closed", () => {
     const html = renderToStaticMarkup(
-      <Dropdown trigger={<span>Open</span>}>
+      <Dropdown
+        trigger={(props) => (
+          <button type="button" {...props}>
+            Open
+          </button>
+        )}
+      >
         <div>Panel content</div>
       </Dropdown>,
     )
 
-    expect(html).toContain('role="button"')
-    expect(html).toContain('aria-haspopup="menu"')
-    expect(html).toContain('aria-expanded="false"')
-    expect(html).toContain('tabindex="0"')
+    // A wrapper carrying `role="button"` around the caller's control was axe
+    // `nested-interactive` and a second tab stop (#278). There is no wrapper
+    // role to fall back to now: whatever the trigger renders is the control.
+    const trigger = openTag(html, 'button')
+
+    expect(trigger).toContain('aria-haspopup="menu"')
+    expect(trigger).toContain('aria-expanded="false"')
+    expect(html).not.toContain('role="button"')
+    expect(html).not.toContain('tabindex="0"')
     expect(html).toContain('Open')
     // Closed by default → the panel (and its content) is not in the SSR output.
     expect(html).not.toContain('Panel content')
   })
 
+  it('wires the Button atom the same way, through its own props', () => {
+    // `Button` reaches its `<button>` by spreading, and React 19 carries `ref`
+    // along with the rest — so the atom needs no special case for it.
+    const html = renderToStaticMarkup(
+      <Dropdown trigger={(props) => <Button {...props}>Open</Button>}>
+        <div>Panel</div>
+      </Dropdown>,
+    )
+
+    expect(openTag(html, 'button')).toContain('aria-expanded="false"')
+    expect(html).not.toContain('role="button"')
+  })
+
   it('does not turn the wrapper into a button in focus (autocomplete) mode', () => {
     const html = renderToStaticMarkup(
-      <Dropdown openOnFocus role="listbox" trigger={<input aria-label="Search" />}>
+      <Dropdown openOnFocus role="listbox" trigger={() => <input aria-label="Search" />}>
         <div>suggestions</div>
       </Dropdown>,
     )

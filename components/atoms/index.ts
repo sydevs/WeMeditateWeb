@@ -45,5 +45,7 @@ export type { BoxProps } from './Box'
 export type { LeafDividerProps } from './LeafDivider/LeafDivider'
 export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs'
 
+export { SkipLink } from './SkipLink'
+
 export { Countdown } from './Countdown'
 export type { CountdownProps } from './Countdown'

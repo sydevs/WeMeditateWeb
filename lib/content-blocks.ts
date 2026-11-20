@@ -1,18 +1,28 @@
 /**
- * App-side types and pure helpers for the custom Lexical blocks embedded in
- * `pages.content`.
+ * App-side helpers for the custom Lexical blocks embedded in `pages.content`.
  *
- * The block field shapes are not in the generated `payload-types.ts`. The
- * editor stores them loosely, as `[k: string]: unknown`, inside the
- * lexical tree. So the interfaces here are authored from the upstream
- * SahajCloud block definitions (`src/lib/richEditor/blocks/*`). Keep them
- * in sync with that source.
+ * The lexical tree types a block's `fields` as `[k: string]: unknown`, so a
+ * converter casts them to the generated `*Block` interface in
+ * `payload-types.ts` and imports it from there. A field `pnpm types:cms`
+ * renames or removes is then a compile error where it is read. A generated
+ * interface describes a saved block, while live preview renders an unsaved
+ * one, so a converter still guards a field the schema requires.
  *
  * Helpers that turn block fields into component props live here, not in
  * the converters, so they stay unit-testable without rendering.
  */
 
-import type { AppCard, Album, Image, Lecture, SongTag, UserChoice } from '../server/payload-types'
+import type {
+  Album,
+  Image,
+  ImageGalleryBlock,
+  LayoutBlock,
+  ShowcaseBlock,
+  SongTag,
+  SplashBlock,
+  SubtleSystemBlock,
+  UserChoice,
+} from '../server/payload-types'
 import type { Meditation, Page } from '../server/sahajcloud-types'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
@@ -22,120 +32,13 @@ import type { TranslationKey } from './i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
-/** A relationship or upload field: a populated document or a bare ID. */
-export type Ref<T> = number | T
-
-// --- Field shapes (mirror sy-devs SahajCloud `richEditor/blocks/*`) ---
-
-/** `textbox` — TextBoxBlock. */
-export interface TextBoxBlockFields {
-  image?: Ref<Image> | null
-  imagePosition: 'left' | 'right' | 'overlay'
-  /** Only meaningful for `imagePosition: 'overlay'`. */
-  textPosition?: 'left' | 'right' | 'center'
-  /** Only meaningful for `imagePosition: 'overlay'`. */
-  textColor?: 'dark' | 'light'
-  wisdomStyle?: boolean | null
-  title?: string | null
-  subtitle?: string | null
-  text?: string | null
-  buttonText?: string | null
-  buttonUrl?: string | null
-}
-
-/** `quote` — QuoteBlock. */
-export interface QuoteBlockFields {
-  title?: string | null
-  text: string
-  credit?: string | null
-  caption?: string | null
-}
-
-/** `button` — ButtonBlock. */
-export interface ButtonBlockFields {
-  text: string
-  url: string
-}
-
-/** `image-gallery` — ImageGalleryBlock (3–15 uploads). */
-export interface ImageGalleryBlockFields {
-  items?: Ref<Image>[] | null
-}
-
-/** A polymorphic showcase relationship entry. */
-export type ShowcaseRelationTo = 'meditations' | 'pages' | 'lectures' | 'app-cards'
-export interface ShowcaseItem {
-  relationTo: ShowcaseRelationTo
-  value: Ref<Meditation | Page | Lecture | AppCard>
-}
-
-/** `showcase` — ShowcaseBlock (3–6 polymorphic relationships). */
-export interface ShowcaseBlockFields {
-  items?: ShowcaseItem[] | null
-}
-
-/** `subtle-system` — SubtleSystemBlock (12 single `pages` relationships). */
-export interface SubtleSystemBlockFields {
-  left?: Ref<Page> | null
-  right?: Ref<Page> | null
-  center?: Ref<Page> | null
-  mooladhara?: Ref<Page> | null
-  kundalini?: Ref<Page> | null
-  swadhistan?: Ref<Page> | null
-  nabhi?: Ref<Page> | null
-  void?: Ref<Page> | null
-  anahat?: Ref<Page> | null
-  vishuddhi?: Ref<Page> | null
-  agnya?: Ref<Page> | null
-  sahasrara?: Ref<Page> | null
-}
-
-/** `splash` — SplashBlock. */
-export interface SplashBlockFields {
-  layout: 'default' | 'countdown' | 'app' | 'map-search'
-  images?: Ref<Image>[] | null
-  title?: string | null
-  subtitle?: string | null
-  actionText?: string | null
-  actionURL?: string | null
-  /**
-   * Describes the text color (dark or light), mirroring the `textbox`
-   * overlay convention. Not yet authored in SahajCloud (see SahajCloud
-   * ticket). Absent is treated as light text on a dark hero (`surface: 'dark'`).
-   */
-  textColor?: 'dark' | 'light' | null
-}
-
-/** `layout` — LayoutBlock item. */
-export interface LayoutItem {
-  id?: string
-  image?: Ref<Image> | null
-  title?: string | null
-  titleUrl?: string | null
-  text?: string | null
-}
-
-/** `layout` — LayoutBlock. */
-export interface LayoutBlockFields {
-  style: 'grid' | 'tabs' | 'accordion' | 'list' | 'textList'
-  title?: string | null
-  defaultTab?: string | null
-  useColumnsOnDesktop?: boolean | null
-  items?: LayoutItem[] | null
-}
-
-/** A single entry in a `table-of-contents` block (matches the SahajCloud field). */
-export interface TocHeading {
-  slug: string
-  text: string
-  level: number
-}
-
-/** `table-of-contents` — TableOfContentsBlock. */
-export interface TableOfContentsBlockFields {
-  title?: string | null
-  headings?: TocHeading[] | null
-}
+/**
+ * The two block shapes the generated schema leaves anonymous, so no consumer
+ * can import them: a `showcase` relationship entry and a `layout` item. Both
+ * are indexed straight out of the generated interface.
+ */
+export type ShowcaseItem = NonNullable<ShowcaseBlock['items']>[number]
+export type LayoutItem = NonNullable<LayoutBlock['items']>[number]
 
 /** The `pages` collection's tag enum (drives page content-index facets). */
 export type PageTag = NonNullable<Page['tags']>[number]
@@ -163,6 +66,7 @@ export type PageTagLabels = Partial<Record<PageTag, string>>
  * `+data`. The editor never stores them. The `*Filters` fields mirror the
  * SahajCloud schema, but rendering does not use them: facets come from the
  * resolved items' own `tags` instead. */
+// shortcut: hand-written until #293 lands; then extend ContentIndexBlock instead.
 export interface ContentIndexBlockFields {
   type: 'meditations' | 'pages' | 'songs' | 'lectures'
   limit: number
@@ -178,6 +82,37 @@ export interface ContentIndexBlockFields {
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
   resolvedTracks?: Track[] | null
+}
+
+/**
+ * Every `content-index` block's `fields` object in a lexical tree, in
+ * document order.
+ *
+ * ⚠ **The objects come back by reference**, which is what lets
+ * `server/content-index.ts` fill each block's resolved list in place before
+ * SSR. The head reads the same lists (`lib/content-seo.ts`).
+ */
+export function contentIndexBlocks(content: unknown): ContentIndexBlockFields[] {
+  const found: ContentIndexBlockFields[] = []
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(walk)
+
+      return
+    }
+    if (node && typeof node === 'object') {
+      const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
+
+      if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
+        found.push(candidate.fields as ContentIndexBlockFields)
+      }
+      Object.values(node).forEach(walk)
+    }
+  }
+
+  walk(content)
+
+  return found
 }
 
 // --- Shared card shape + helpers ---
@@ -225,7 +160,7 @@ export function populatedImage(ref: unknown): PopulatedImage | null {
 }
 
 /** Resolves the uploads of an `image-gallery` block to renderable images. */
-export function galleryImages(images: ImageGalleryBlockFields['items']): PopulatedImage[] {
+export function galleryImages(images: ImageGalleryBlock['items']): PopulatedImage[] {
   const result: PopulatedImage[] = []
 
   for (const ref of images ?? []) {
@@ -262,50 +197,50 @@ export function textColorToSurface(
  * Defaults to `'dark'` (light text over a dark hero) when the field is
  * absent. This matches the splash's historical hardcoded treatment.
  */
-export function splashSurface(textColor?: SplashBlockFields['textColor']): 'light' | 'dark' {
+export function splashSurface(textColor?: SplashBlock['textColor']): 'light' | 'dark' {
   return textColorToSurface(textColor, 'dark')
 }
 
+/** What a page's lead `splash` block tells its consumers. */
+export interface LeadSplash {
+  surface: 'light' | 'dark'
+  /**
+   * Whether the splash draws a heading of its own. `Splash` renders its `<h1>`
+   * only when `title` is set, and the field is optional upstream — so a page
+   * leading with an untitled splash has no heading unless something else
+   * supplies one.
+   */
+  hasTitle: boolean
+}
+
 /**
- * Returns the surface a page's background paints when its content leads with
- * a `splash` block, or `null` otherwise. Shared by the layout (header
- * overlay surface), the page wrappers (flush-to-top spacing), and
- * PageTemplate (skipping the duplicate title).
+ * Returns what a page's lead `splash` block paints, or `null` when its content
+ * does not lead with one. Shared by the layout (header overlay surface), the
+ * page wrappers (flush-to-top spacing), and PageTemplate (skipping the
+ * duplicate title, and supplying the heading an untitled splash does not draw).
  */
-export function getLeadSplash(content: Page['content']): { surface: 'light' | 'dark' } | null {
-  const first = content?.root?.children?.[0] as
-    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
-    | undefined
+export function getLeadSplash(content: Page['content']): LeadSplash | null {
+  const first = content?.root?.children?.[0] as { type?: string; fields?: SplashBlock } | undefined
 
   if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
     return null
   }
 
-  return { surface: splashSurface(first.fields.textColor) }
+  return {
+    surface: splashSurface(first.fields.textColor),
+    hasTitle: Boolean(first.fields.title?.trim()),
+  }
 }
 
 /**
- * Resolves the lead splash from a layout route's data, whose shape
- * differs by route. A content route ([slug]) carries the page as `page`.
- * The live-preview route (/preview) carries the previewed document as
- * `initialData`. Only a `pages` preview has splash-leading content
- * (meditation and lecture previews never do). Lets LayoutChrome apply the
- * same overlaid-header treatment in preview as on the published page.
+ * Resolves the lead splash from a layout route's data. `pages` is the only
+ * collection whose content can lead with one, so `[slug]`'s `page` is the only
+ * shape to read; every other layout route gets no overlaid header.
  */
 export function leadSplashFromRouteData(
-  data:
-    | {
-        page?: Pick<Page, 'content'> | null
-        collection?: string
-        initialData?: Pick<Page, 'content'> | null
-      }
-    | null
-    | undefined,
+  data: { page?: Pick<Page, 'content'> | null } | null | undefined,
 ): { surface: 'light' | 'dark' } | null {
-  const content =
-    data?.page?.content ?? (data?.collection === 'pages' ? data?.initialData?.content : undefined)
-
-  return getLeadSplash(content)
+  return getLeadSplash(data?.page?.content)
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */
@@ -370,7 +305,7 @@ function showcaseCard(item: ShowcaseItem): ResolvedCardItem | null {
 }
 
 /** Maps showcase relationships to cards. Drops unresolvable or thumbnail-less refs. */
-export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCardItem[] {
+export function showcaseItems(items: ShowcaseBlock['items']): ResolvedCardItem[] {
   const cards: ResolvedCardItem[] = []
 
   for (const item of items ?? []) {
@@ -384,8 +319,12 @@ export function showcaseItems(items: ShowcaseBlockFields['items']): ResolvedCard
   return cards
 }
 
-/** Maps a SahajCloud field name to the SVG node ID the `SubtleSystem` organism consumes. */
-const SUBTLE_SYSTEM_NODE_IDS: Record<string, string> = {
+/** A `subtle-system` block's own relationship fields, without the block envelope. */
+type SubtleSystemField = keyof Omit<SubtleSystemBlock, 'id' | 'blockName' | 'blockType'>
+
+/** Maps a SahajCloud field name to the SVG node ID the `SubtleSystem` organism consumes.
+ * `satisfies` is what fails the build when upstream renames, adds or drops one. */
+const SUBTLE_SYSTEM_NODE_IDS = {
   left: 'channel_left',
   right: 'channel_right',
   center: 'channel_center',
@@ -398,7 +337,7 @@ const SUBTLE_SYSTEM_NODE_IDS: Record<string, string> = {
   agnya: 'chakra_6',
   sahasrara: 'chakra_7',
   kundalini: 'kundalini',
-}
+} as const satisfies Record<SubtleSystemField, string>
 
 /** An item for the `SubtleSystem` organism (structurally `SubtleSystemItem`). */
 export interface SubtleSystemNodeItem {
@@ -414,11 +353,11 @@ export interface SubtleSystemNodeItem {
  * unroutable pages (bare IDs or missing slugs), so the chart never links
  * to `/undefined`.
  */
-export function subtleSystemItems(fields: SubtleSystemBlockFields): SubtleSystemNodeItem[] {
+export function subtleSystemItems(fields: SubtleSystemBlock): SubtleSystemNodeItem[] {
   const items: SubtleSystemNodeItem[] = []
 
   for (const [field, nodeId] of Object.entries(SUBTLE_SYSTEM_NODE_IDS)) {
-    const page = (fields as Record<string, unknown>)[field]
+    const page = fields[field as SubtleSystemField]
 
     if (!isPopulated<Page>(page)) {
       continue

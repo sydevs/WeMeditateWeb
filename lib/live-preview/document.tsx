@@ -27,7 +27,7 @@ import { livePreviewToken } from './token-url'
  *    session. SahajCloud emits `scope=wm-web-config` / `scope=wm-web-translations`
  *    when the panel is editing a global, so a globals preview mounts no
  *    document subscriber at all.
- * 2. **Two call sites**, on routes that cannot both render.
+ * 2. **Three call sites**, on routes that cannot both render.
  * 3. **`useLivePreviewLinkGuard`** (`./navigation.ts`) inerts every anchor but
  *    `#hash`, so the iframe cannot navigate and `initialData` is fixed for the
  *    session.
@@ -157,7 +157,14 @@ type PreviewDocument = Record<string, any>
 interface DocumentProps<T> {
   /** Rendered with the live document, or with `initialData` off-preview. */
   children: (document: T) => ReactNode
-  /** The document the server rendered. */
+  /**
+   * The document the server rendered.
+   *
+   * ⚠ **The collection's own shape, never a view model derived from it.**
+   * `mergeData` applies the message's unsaved fields to whatever it is given,
+   * so a derived shape takes raw fields on top of itself. Derive inside
+   * `children`, where it re-runs per message.
+   */
   initialData: T
   /** Which collection this page is showing. */
   slug: string

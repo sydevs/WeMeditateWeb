@@ -99,23 +99,42 @@ These rules apply whether or not the matching rule file or skill is loaded.
 - **A string composed in English is still an English string.** `` `Mute ${label.toLowerCase()}` ``
   and `` `Loading ${title.toLowerCase()}` `` build a sentence only English builds that way. Take
   the finished label as a prop or a key, never assemble one from a visible label.
-- **An indexable content route declares `Head: ContentHead` in its `+config.ts`**, beside its
-  `Layout: LayoutChrome`. `ContentHead` ([lib/head.tsx](lib/head.tsx)) emits the canonical and the
-  `hreflang` cluster; `useConfig` cannot emit a `<link>`, so this goes through vike-react's `Head`.
-  Never set it from a template: `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are
-  shared with the `embed` routes and the live preview, and none of those is a URL to point a
-  crawler at. A URL advertises only the locales its own document is published in —
-  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for both the page head and
-  `/sitemap.xml`, so the two cannot disagree. The site's `availableLocales` is a filter on that
-  set, never the set itself. On the `[slug]` route a locale the document is **not** published in is
-  still not a dead URL: `pages/[slug]/+data.ts` 302s it to the English page, which is why the
-  language dropdown offers every `availableLocales` entry rather than the filtered set. No other
-  route has that fallback, and none needs one — `/meditations/:id` and `/lectures/:id` are
+- **An indexable content route builds its head in `+data.ts`, and that is its whole opt-in.** It
+  builds one `SeoDocument` through [lib/content-seo.ts](lib/content-seo.ts): the title, the
+  canonical, the `hreflang` cluster, Open Graph and Twitter in Unhead's `useSeoMeta` spelling, and
+  a `@graph` described as plain data ([lib/seo-schema.ts](lib/seo-schema.ts)).
+  [lib/seo-head-html.ts](lib/seo-head-html.ts) renders it with Unhead on the server and adds the
+  tags every published URL carries (`robots`, `twitter:site`, `apple-itunes-app`). A route that
+  builds none publishes no URL claim, which keeps the `embed` routes and the error page bare.
+  **The generator is declared once**, as `headHtmlEnd: seoHeadHtml` in `pages/+config.ts`:
+  vike-react's setting is global as well as cumulative, so a second declaration adds a second copy
+  of the whole head to every page; `tests/guards/content-head.test.tsx` holds that.
+  **Never a head hook in a component**: `PageTemplate`, `MeditationTemplate` and
+  `LectureTemplate` are shared with the `embed` routes and the live preview. `/map` publishes
+  through the same generator from [lib/atlas-seo.ts](lib/atlas-seo.ts); its `@graph` arrives
+  already serialized. A URL advertises only the locales its own document is published in —
+  [lib/hreflang.ts](lib/hreflang.ts) owns that derivation for the head, `og:locale:alternate` and
+  `/sitemap.xml`. The site's `availableLocales` is a filter on that set, never the set itself.
+  On the `[slug]` route a locale the document is **not** published in is still not a dead
+  URL: `pages/[slug]/+data.ts` 302s it to the English page, which is why the language
+  dropdown offers every `availableLocales` entry rather than the filtered set. No other route
+  has that fallback, and none needs one — `/meditations/:id` and `/lectures/:id` are
   id-addressed, so their 404s do not depend on the locale.
+- **A site-wide document is a route, because `public/` is shipped by both builds** (see below).
+  `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest` are Hono routes
+  ([server/sitemap-routes.ts](server/sitemap-routes.ts)). The theme colour, the home-screen icon and
+  the store id live in [lib/site-identity.ts](lib/site-identity.ts), beside the social profiles.
+- **One geometry for the embedded player.** [lib/embed-player.ts](lib/embed-player.ts) owns the
+  iframe and its size, which the paste-ready snippet (`EmbedButton`), `twitter:player`/`og:video`
+  and `GET /oembed` ([server/oembed.ts](server/oembed.ts)) all name. `documentEmbedHref` in
+  [lib/document-routes.ts](lib/document-routes.ts) owns which URL it points at.
 - **How a URL is spelled lives in [lib/urls.ts](lib/urls.ts), not in a consumer.** `Link`,
   `EmbedButton`, the language dropdown, the canonical and the `hreflang` cluster all read the same
-  answer from there. Never restate one of these rules at a call site. A **scheme** is part of that
-  spelling: `isSafeHttpUrl`, `isSafeNavigationUrl` and `isSafeLinkHref` live there too, and any URL
+  answer from there. Never restate one of these rules at a call site. **An absolute URL for one of
+  our own pages is `absoluteHref`**, not an origin glued onto `localeHref`: the embed snippet and
+  a content-index card's `ItemList` entry both need one, and it leaves an off-site URL alone.
+  A **scheme** is part of that spelling: `isSafeHttpUrl`, `isSafeNavigationUrl` and
+  `isSafeLinkHref` live there too, and any URL
   the site did not author itself passes one of them before it reaches an `href` or
   `window.location` — they are what stops a configured `javascript:` value running in our origin.
   Which one is the destination's: `window.location` takes the first two, and an `href` takes
