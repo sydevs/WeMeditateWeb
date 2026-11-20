@@ -40,6 +40,7 @@ import {
   type ContentIndexBlockFields,
   hasDirectoryBlock,
   isFirstDirectoryBlock,
+  isFirstFallbackSplash,
 } from '../../../lib/content-blocks'
 import type {
   ButtonBlock,
@@ -340,14 +341,15 @@ export const blockConverters: BlockConverters = {
     const isLead = childIndex === 0 && parent?.type === 'root'
     const session = readSessionClass(fields.event)
     // Where the block names no usable class the page falls back to that
-    // language's online classes — unless the page already carries a directory
-    // block of its own, since it may only draw one.
+    // language's online classes — unless another block already draws the
+    // widget, since the page may only draw one.
+    const mayFallBack = !hasDirectoryBlock(parent) && isFirstFallbackSplash(parent, childIndex)
     const countdown =
       session.kind === 'schedule' ? (
         <LiveSession schedule={session.schedule} />
-      ) : hasDirectoryBlock(parent) ? null : (
+      ) : mayFallBack ? (
         <ClassDirectory onlineOnly showMap={false} />
-      )
+      ) : null
 
     return (
       <Splash

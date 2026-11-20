@@ -29,6 +29,7 @@ import type { Meditation, Page } from '../server/sahajcloud-types'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 import { documentHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
+import { readSessionClass } from './live-session'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
@@ -42,19 +43,20 @@ export type LayoutItem = NonNullable<LayoutBlock['items']>[number]
 
 /**
  * ⚠ **A second `<sahaj-atlas>` on a page shows nothing** (SahajAtlasWeb's
- * `docs/embedding.md`), and two blocks can ask for one: a `class-directory`,
- * and a `countdown` splash whose class is missing, which falls back to the
- * directory. So precedence is decided from the sibling list rather than per
- * block — in the converter, so it holds in the live preview too, where
- * `+data` resolution never runs.
+ * `docs/embedding.md`), and any number of blocks can ask for one: every
+ * `class-directory`, and every `countdown` splash whose class is missing,
+ * which falls back to the directory. So precedence is decided from the
+ * sibling list rather than per block — in the converter, so it holds in the
+ * live preview too, where `+data` resolution never runs.
  *
  * The sibling list **is** the page: `pageBlocks` is attached to one rich-text
  * field and no page block carries a rich-text field of its own, so every block
  * is a child of the root.
  *
- * A `class-directory` block always wins, wherever it sits, so a countdown's
- * fallback asks {@link hasDirectoryBlock} and never has to re-derive another
- * block's render decision.
+ * A `class-directory` block always wins, wherever it sits, and among equals the
+ * first draws. So a countdown's fallback asks {@link hasDirectoryBlock} and
+ * {@link isFirstFallbackSplash}, and never has to re-derive another block's
+ * render decision.
  */
 export function hasDirectoryBlock(parent: unknown): boolean {
   return blockSiblings(parent).some(isDirectoryBlock)
@@ -65,18 +67,47 @@ export function isFirstDirectoryBlock(parent: unknown, childIndex: number): bool
   return !blockSiblings(parent).slice(0, childIndex).some(isDirectoryBlock)
 }
 
+/**
+ * Whether this is the first `countdown` splash on the page that falls back to
+ * the directory. A later one draws no widget.
+ */
+export function isFirstFallbackSplash(parent: unknown, childIndex: number): boolean {
+  return !blockSiblings(parent).slice(0, childIndex).some(isFallbackSplash)
+}
+
 function blockSiblings(parent: unknown): unknown[] {
   return parent !== null && typeof parent === 'object' && 'children' in parent
     ? ((parent as { children?: unknown[] }).children ?? [])
     : []
 }
 
-function isDirectoryBlock(node: unknown): boolean {
-  if (node === null || typeof node !== 'object') return false
+/** A block node's own `fields`, or `null` for any other lexical node. */
+function blockFields(node: unknown): { blockType?: unknown } | null {
+  if (node === null || typeof node !== 'object') return null
 
   const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
 
-  return candidate.type === 'block' && candidate.fields?.blockType === 'class-directory'
+  return candidate.type === 'block' ? (candidate.fields ?? null) : null
+}
+
+function isDirectoryBlock(node: unknown): boolean {
+  return blockFields(node)?.blockType === 'class-directory'
+}
+
+function isFallbackSplash(node: unknown): boolean {
+  const fields = blockFields(node)
+
+  if (fields?.blockType !== 'splash') return false
+
+  const splash = fields as unknown as SplashBlock
+
+  // A splash with no background image renders nothing at all, so it stands
+  // down rather than standing in the way.
+  return (
+    splash.layout === 'countdown' &&
+    populatedImage(splash.images?.[0]) !== null &&
+    readSessionClass(splash.event).kind === 'gap'
+  )
 }
 
 /** The `pages` collection's tag enum (drives page content-index facets). */

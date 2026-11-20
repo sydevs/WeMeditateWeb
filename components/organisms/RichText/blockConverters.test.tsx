@@ -308,13 +308,22 @@ const ONLINE_CLASS = {
   },
 }
 
-function renderCountdown(event: unknown, parent: Record<string, unknown> = { type: 'root' }) {
+function countdownNode(event?: unknown) {
+  return {
+    type: 'block',
+    fields: { blockType: 'splash', layout: 'countdown', images: [IMG], title: 'Live', event },
+  }
+}
+
+function renderCountdown(
+  event: unknown,
+  parent: Record<string, unknown> = { type: 'root' },
+  childIndex = 0,
+) {
   return renderToStaticMarkup(
     splash({
-      childIndex: 0,
-      node: {
-        fields: { blockType: 'splash', layout: 'countdown', images: [IMG], title: 'Live', event },
-      },
+      childIndex,
+      node: countdownNode(event),
       parent: parent as { type: string },
     }),
   )
@@ -348,6 +357,32 @@ describe('splash block converter — the countdown layout', () => {
 
     expect(html).toContain('No upcoming session')
     expect(html).not.toContain('sahaj-atlas')
+  })
+
+  it('falls back on the first gapped countdown only: the page may draw one widget', () => {
+    // Both splashes fall back, and a second `<sahaj-atlas>` shows nothing.
+    const page = [countdownNode(), countdownNode()]
+
+    expect(renderCountdown(undefined, { type: 'root', children: page }, 0)).toContain(
+      '<sahaj-atlas',
+    )
+    expect(renderCountdown(undefined, { type: 'root', children: page }, 1)).not.toContain(
+      '<sahaj-atlas',
+    )
+  })
+
+  it('is not blocked by an earlier countdown that draws no widget of its own', () => {
+    // An earlier splash with a live class, and one with no background image,
+    // each render no widget — so neither stands in this one's way.
+    const page = [
+      countdownNode(ONLINE_CLASS),
+      { type: 'block', fields: { blockType: 'splash', layout: 'countdown' } },
+      countdownNode(),
+    ]
+
+    expect(renderCountdown(undefined, { type: 'root', children: page }, 2)).toContain(
+      '<sahaj-atlas',
+    )
   })
 
   it.each([
