@@ -102,31 +102,50 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # watch/ignore mirror each Worker's Workers Builds trigger path_includes/path_excludes
+          # — see "Each preview builds only when its paths change" in
+          # docs/cloudflare-previews-ci.md, which holds the third copy.
           - target: web
             project: wemeditate-web
             script: test:smoke
             require_preview: 'false'
+            # Everything but docs. Tests and .github stay watched: a smoke-spec or CI change
+            # needs a preview to run against.
+            watch: '.'
+            ignore: '\.md$|^(docs|\.claude)/'
           - target: ladle
             project: wemeditate-design
             script: test:smoke:ladle
+            watch: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
+            ignore: '\.(test\.tsx?|spec\.ts|md)$'
             # Quoted on purpose. A bare YAML boolean reaches the `if:` below as a value whose
             # type GitHub does not promise, and the string "false" is truthy there — which
             # would redden the web leg for a preview it is not owed.
             require_preview: 'true'
     steps:
-      # wemeditate-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
-      # trigger's path_includes/path_excludes, mirrored in WATCH/IGNORE below and in the table
-      # in docs/cloudflare-previews-ci.md. With no build there is no preview, and discovery
-      # would wait out its 12-minute timeout before reporting anyway.
-      - name: Did Cloudflare build the ladle preview?
+      # Each Worker rebuilds only when a push touches one of its trigger's paths (the matrix's
+      # watch/ignore). With no build there is no preview, and discovery would wait out its
+      # 12-minute timeout before reporting anyway, so a push that touches none skips the leg.
+      #
+      # ⚠ The compare is per push, as Cloudflare's is. So a docs-only push after a code push
+      # whose smoke failed would otherwise turn the PR green without re-testing anything. A
+      # docs-only push therefore skips only when the previous head's own check for this leg
+      # passed. Anything else — failed, cancelled by a newer push, still running, never run —
+      # falls back to `built=true`, which is the wait this step exists to avoid, but never a
+      # green that hides a red.
+      - name: Did Cloudflare build the ${{ matrix.target }} preview?
         id: scope
-        if: matrix.target == 'ladle' && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          SYNCHRONIZE: ${{ github.event.action == 'synchronize' }}
+          BEFORE: ${{ github.event.before }}
           BASE: ${{ github.event.action == 'synchronize' && github.event.before || github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
-          WATCH: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
-          IGNORE: '\.(test\.tsx?|spec\.ts|md)$'
+          CHECK_NAME: Smoke (${{ matrix.target }})
+          PROJECT: ${{ matrix.project }}
+          WATCH: ${{ matrix.watch }}
+          IGNORE: ${{ matrix.ignore }}
         run: |
           if ! diff=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '"\(.total_commits) \(.files | length)", .files[].filename'); then
             echo "built=true" >> "$GITHUB_OUTPUT"
@@ -138,10 +157,19 @@ jobs:
           if (( count == 0 || count >= 300 || commits >= 20 )) ||
             tail -n +2 <<< "$diff" | grep -Ev "$IGNORE" | grep -Eq "$WATCH"; then
             echo "built=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "built=false" >> "$GITHUB_OUTPUT"
-            echo "No path Ladle reads changed in this push, so Cloudflare built no wemeditate-design preview and there is nothing to smoke." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+          if [[ "$SYNCHRONIZE" == true ]]; then
+            previous=$(gh api "repos/$GITHUB_REPOSITORY/commits/$BEFORE/check-runs" -f check_name="$CHECK_NAME" -X GET \
+              --jq '.check_runs | sort_by(.started_at) | last | .conclusion // "none"' 2>/dev/null || echo unreadable)
+            if [[ "$previous" != success ]]; then
+              echo "built=true" >> "$GITHUB_OUTPUT"
+              echo "This push changed no path $PROJECT builds from, but \`$CHECK_NAME\` on the previous head ${BEFORE:0:7} reads \`$previous\`, not \`success\`, so the leg runs anyway rather than pass on a build it never tested." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          fi
+          echo "built=false" >> "$GITHUB_OUTPUT"
+          echo "No path $PROJECT builds from changed in this push, so Cloudflare built no $PROJECT preview and there is nothing to smoke." >> "$GITHUB_STEP_SUMMARY"
 
       # Skip the whole setup with install: setup-node's post step fails the job
       # when it finds no pnpm store to cache.

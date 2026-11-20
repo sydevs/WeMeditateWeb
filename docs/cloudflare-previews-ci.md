@@ -68,7 +68,27 @@ over it. So renaming the `wemeditate-design` Worker means editing `CF_PROJECT_MA
 [ci.yml](../.github/workflows/ci.yml) and `EXCLUDE` in
 [the discovery script](../scripts/get-cloudflare-preview-url.mjs) in the same commit.
 
-## The Ladle preview builds only when the library changes
+## Each preview builds only when its paths change
+
+Both Workers' **Builds triggers** carry path rules, and `Smoke (<target>)` mirrors each in its
+matrix entry's `watch`/`ignore`. A push touching none of a Worker's paths gets no build, so the
+leg skips instead of waiting out the 12-minute discovery timeout.
+
+### `wemeditate-web`: everything but docs
+
+- **Include:** `*`
+- **Exclude:** `*.md`, `docs/*`, `.claude/*`
+
+Tests and `.github/` stay included on purpose: a smoke-spec or CI change needs a preview to run
+against. [tests/guards/ladle-watch-paths.test.ts](../tests/guards/ladle-watch-paths.test.ts) pins
+the CI copy to docs-only paths.
+
+⚠ The excludes are added in the Cloudflare dashboard (or API) **after** the CI change that mirrors
+them merges. Before then Cloudflare still builds a docs-only push, and `Smoke (web)` merely skips
+a preview it was not owed. The other order makes `Smoke (web)` wait out its window for a build
+that will never come.
+
+### `wemeditate-design`: only what Ladle reads
 
 Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and every other branch —
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
@@ -89,15 +109,24 @@ carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/Sah
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so
   merge-queue branches build a preview nothing reads, accepted in sydevs/SahajAtlasWeb#266.
 
-Cloudflare evaluates them per push, and `*` crosses `/`, so a push touching none of them gets no
-Ladle preview. `Smoke (ladle)` already checks the same paths first: the files
-changed since the push's `before` SHA (or since the PR base, on open). It skips discovery when
-none match, instead of waiting out the 12-minute discovery timeout.
+### How CI decides
 
-⚠ The list lives in **three** places: the Cloudflare build trigger, `WATCH`/`IGNORE` in
+Cloudflare evaluates the rules per push, and `*` crosses `/`. The `Did Cloudflare build the
+<target> preview?` step checks the same paths first: the files changed since the push's `before`
+SHA (or since the PR base, on open). It counts a push of 0 files, 300+ files or 20+ commits as
+built, because Cloudflare ignores path rules there.
+
+⚠ A per-push compare can hide a red. A docs-only push after a code push whose smoke failed would
+skip, and the PR would turn green without anything being re-tested. So on a `synchronize` push
+the step skips only when the previous head's own `Smoke (<target>)` check concluded `success`.
+Failed, cancelled by a newer push, still running or never run all fall back to `built=true`: the
+12-minute wait, never a green that hides a red. On open the compare is the whole PR, so a PR that
+is docs-only from the start always skips.
+
+⚠ Each list lives in **three** places: the Cloudflare build trigger, the leg's `watch`/`ignore` in
 [ci.yml](../.github/workflows/ci.yml), and the lists above. Change all three together. If the CI
-list is wider, `Smoke (ladle)` reddens for a preview that was never going to come. If it is
-narrower, a preview that does exist goes untested.
+list is wider, the leg waits for (and for `ladle`, reddens on) a preview that was never going to
+come. If it is narrower, a preview that does exist goes untested.
 
 ## The Ladle build opts out of one SWC check
 
