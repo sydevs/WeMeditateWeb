@@ -85,9 +85,11 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render
   and nothing here caches them, and a gap this warning catches stands until an editor fixes the
   data — so a bare `captureMessage` bills the Sentry quota per page view. `getWebConfig` sends one
-  event per distinct gap per isolate (`reportedConfigGaps`) and keeps `console.warn` on every
+  event per distinct gap per isolate through `reportOnce` and keeps `console.warn` on every
   request. Lower the volume, never the level: a warning nobody can afford to leave on gets turned
-  off, and then the gap is invisible again.
+  off, and then the gap is invisible again. `reportOnce` ([report-once.ts](report-once.ts)) is that
+  bound, and the only one: `getWebConfig` and `reportLiveSessionGaps` both report through it, so a
+  third reporter inherits the rule instead of copying it.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
   anyway is scrubbed in `entry.ts`, not where it is captured.** That module pins the v10 baseline

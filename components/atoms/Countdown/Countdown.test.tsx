@@ -7,9 +7,7 @@ const DAY = 86_400_000
 const HOUR = 3_600_000
 
 const render = (props: Partial<Parameters<typeof Countdown>[0]> = {}) =>
-  renderToStaticMarkup(
-    <Countdown initialRemainingMs={HOUR} targetDate="2026-10-20T18:00:00.000Z" {...props} />,
-  )
+  renderToStaticMarkup(<Countdown remainingMs={HOUR} {...props} />)
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -19,7 +17,7 @@ describe('Countdown', () => {
   it('counts down in days once a session is more than a day away', () => {
     // Six days out used to render as `167:59:59`, because every hour past the
     // first day was piled into the hours cell.
-    const html = render({ initialRemainingMs: 6 * DAY + 23 * HOUR })
+    const html = render({ remainingMs: 6 * DAY + 23 * HOUR })
 
     expect(html).toContain('>06<')
     expect(html).toContain('Days')
@@ -27,7 +25,7 @@ describe('Countdown', () => {
   })
 
   it('hides the days cell, and keeps hours 0-23, below a day', () => {
-    const html = render({ initialRemainingMs: 23 * HOUR })
+    const html = render({ remainingMs: 23 * HOUR })
 
     expect(html).not.toContain('Days')
     expect(html).toContain('>23<')
@@ -54,16 +52,17 @@ describe('Countdown', () => {
     expect(render()).not.toContain('aria-live')
   })
 
-  it('reads no clock while rendering, so the server and the browser agree', () => {
+  it('reads no clock at all, so the server and the browser agree', () => {
     // The atom seeded its state from a live `Date.now()` during render, so the
     // server and the first client render disagreed and React threw the
-    // server's markup away.
+    // server's markup away. The clock belongs to `LiveSession` now.
     const now = vi.spyOn(Date, 'now')
 
-    const first = render()
-    const second = render()
-
+    expect(render()).toBe(render())
     expect(now).not.toHaveBeenCalled()
-    expect(first).toBe(second)
+  })
+
+  it('shows zeroes rather than negative figures once the time is up', () => {
+    expect(render({ remainingMs: -5000 })).toContain('>00<')
   })
 })

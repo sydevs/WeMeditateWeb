@@ -1,12 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
-  countdownFigures,
-  countdownTickMs,
   readSessionClass,
   relativeToStart,
   sessionAt,
-  sessionEnd,
   sessionLineParts,
+  sessionTickMs,
   type SessionSchedule,
 } from './live-session'
 
@@ -49,24 +47,42 @@ describe('sessionLineParts', () => {
   })
 })
 
-describe('sessionEnd', () => {
-  it('applies endTime to the start instant, on its own day in the class zone', () => {
-    const end = sessionEnd(new Date(LONDON.starts[0]!), LONDON)
+describe('the join window', () => {
+  // `sessionEnd` is internal: `sessionAt` is what decides the window, and it
+  // hands the end back, so the rule is asserted where it is used.
+  const windowOf = (schedule: SessionSchedule, iso: string) => {
+    const session = sessionAt(schedule, new Date(iso))
 
-    // 19:00 → 20:30 is ninety minutes, whichever side of the transition.
-    expect(end.getTime() - Date.parse(LONDON.starts[0]!)).toBe(90 * 60_000)
-    expect(sessionEnd(new Date(LONDON.starts[1]!), LONDON).getTime()).toBe(
-      Date.parse(LONDON.starts[1]!) + 90 * 60_000,
-    )
+    if (session.phase === 'none') throw new Error('no session to measure')
+
+    return session.end.getTime() - session.start.getTime()
+  }
+
+  it('runs from the start to endTime on its own day in the class zone', () => {
+    // 19:00 to 20:30 is ninety minutes, whichever side of the transition.
+    expect(windowOf(LONDON, '2026-10-19T12:00:00.000Z')).toBe(90 * 60_000)
+    expect(windowOf(LONDON, '2026-10-21T12:00:00.000Z')).toBe(90 * 60_000)
   })
 
   it('falls back to an hour where endTime is absent, unparseable, or not after the start', () => {
-    const hour = 60 * 60_000
-    const start = new Date(LONDON.starts[0]!)
-
     for (const endTime of [null, 'half past eight', '18:00']) {
-      expect(sessionEnd(start, { ...LONDON, endTime }).getTime()).toBe(start.getTime() + hour)
+      expect(windowOf({ ...LONDON, endTime }, '2026-10-19T12:00:00.000Z')).toBe(60 * 60_000)
     }
+  })
+
+  // Verified against the real transition rather than reasoned about: the naive
+  // `start + (endMinutes - startMinutes)` ended a two-hour class one real hour
+  // in, so "Happening now" and the join button vanished mid-session.
+  it('holds its length through a transition that falls inside it', () => {
+    const newYork: SessionSchedule = {
+      // 01:00 EDT on the morning the clocks go back; 02:00 is an hour of real time away.
+      starts: ['2026-11-01T05:00:00.000Z'],
+      timeZone: 'America/New_York',
+      endTime: '02:00',
+      joinUrl: null,
+    }
+
+    expect(windowOf(newYork, '2026-11-01T04:00:00.000Z')).toBe(2 * 60 * 60_000)
   })
 })
 
@@ -76,6 +92,49 @@ describe('readSessionClass', () => {
     onlineUrl: 'https://example.invalid/room',
     schedule: { firstDate_tz: 'Europe/London', endTime: '20:30', upcomingDates: LONDON.starts },
   }
+
+  it('sorts the instants rather than trusting them to arrive in order', () => {
+    // An exclusion or a merged rule could leave the next session behind a
+    // later one, and then the page would advertise the wrong date.
+    const source = readSessionClass({
+      ...online,
+      schedule: { ...online.schedule, upcomingDates: [...LONDON.starts].reverse() },
+    })
+
+    expect(source.kind === 'schedule' && source.schedule.starts).toEqual(LONDON.starts)
+  })
+
+  it('degrades a zone the platform does not know, rather than throwing on render', () => {
+    // `sessionLineParts` runs on the server-render path, and `Intl` throws on a
+    // zone it does not know — which would be a 500 where the rule is to degrade.
+    const source = readSessionClass({
+      ...online,
+      schedule: { ...online.schedule, firstDate_tz: '' },
+    })
+
+    expect(source.kind === 'schedule' && source.schedule.timeZone).toBe('UTC')
+
+    // The boundary is the single guard: `sessionLineParts` is only ever handed
+    // a zone that came back from here, or none at all.
+    expect(() =>
+      sessionLineParts(
+        new Date(LONDON.starts[0]!),
+        'en-GB',
+        (source.kind === 'schedule' && source.schedule.timeZone) || undefined,
+      ),
+    ).not.toThrow()
+  })
+
+  it('ignores endTime where the class states no zone to read it in', () => {
+    // `endTime` is a wall clock in the class's own zone. Derived against UTC it
+    // made a 19:00 New York class read as twenty hours long.
+    const source = readSessionClass({
+      ...online,
+      schedule: { ...online.schedule, firstDate_tz: null },
+    })
+
+    expect(source.kind === 'schedule' && source.schedule.endTime).toBeNull()
+  })
 
   it('reads an online class', () => {
     const source = readSessionClass(online)
@@ -145,28 +204,31 @@ describe('relativeToStart', () => {
   })
 })
 
-describe('countdownFigures', () => {
-  it('carries whole days, so hours stay 0-23', () => {
-    expect(countdownFigures(6 * 86_400_000 + 23 * 3_600_000 + 59 * 60_000 + 59_000)).toEqual({
-      days: 6,
-      hours: 23,
-      minutes: 59,
-      seconds: 59,
-    })
-  })
+describe('sessionTickMs', () => {
+  const upcoming = (minutes: number) =>
+    sessionAt(
+      { ...LONDON, starts: [new Date(Date.UTC(2026, 9, 20, 12) + minutes * 60_000).toISOString()] },
+      new Date(Date.UTC(2026, 9, 20, 12)),
+    )
 
-  it('never goes negative', () => {
-    expect(countdownFigures(-5000)).toEqual({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-  })
-})
+  const now = new Date(Date.UTC(2026, 9, 20, 12))
 
-describe('countdownTickMs', () => {
   it('reaches seconds only inside the final hour', () => {
-    expect(countdownTickMs(3_600_000, false)).toBe(1000)
-    expect(countdownTickMs(3_600_001, false)).toBe(60_000)
+    expect(sessionTickMs(upcoming(60), now, false)).toBe(1000)
+    expect(sessionTickMs(upcoming(61), now, false)).toBe(60_000)
   })
 
   it('never beats a minute for a visitor who asked for less motion', () => {
-    expect(countdownTickMs(1000, true)).toBe(60_000)
+    expect(sessionTickMs(upcoming(10), now, true)).toBe(60_000)
+  })
+
+  it('wakes once a minute while a session is under way, only to notice its end', () => {
+    expect(sessionTickMs(sessionAt(LONDON, new Date('2026-10-20T18:10:00.000Z')), now, false)).toBe(
+      60_000,
+    )
+  })
+
+  it('stops the timer once nothing will change again', () => {
+    expect(sessionTickMs({ phase: 'none' }, now, false)).toBeNull()
   })
 })

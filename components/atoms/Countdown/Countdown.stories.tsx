@@ -8,12 +8,8 @@ export default {
 
 /** Countdown component showcasing various timing durations and sizes. */
 export const Default: Story = () => {
-  // A story renders in the browser only, so one helper supplies both the
-  // target and the seed the server would have computed.
-  const target = (seconds: number) => ({
-    targetDate: new Date(Date.now() + seconds * 1000),
-    initialRemainingMs: seconds * 1000,
-  })
+  // The atom holds no clock, so a story states the time left outright.
+  const target = (seconds: number) => ({ remainingMs: seconds * 1000 })
 
   return (
     <StoryWrapper>

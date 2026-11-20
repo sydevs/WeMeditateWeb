@@ -3,32 +3,28 @@
  * editor pointed it at.
  *
  * Pure and env-free, as `lib/atlas-route.ts` is, so the Worker and the browser
- * run the same code: the Worker renders the class's own schedule in words, and
- * the browser re-renders it in the visitor's clock and ticks. Nothing here
- * reads the clock itself — every function takes `now` — so a render is
- * reproducible and a test needs no fake timers.
+ * run the same code. **Nothing here reads the clock** — every function takes
+ * `now` — so a render is reproducible and no test needs fake timers.
  *
  * **The producer computes, this formats.** `schedule.upcomingDates` is ten UTC
- * instants SahajCloud expands from the recurrence, six months out, exclusions
- * applied and DST resolved by `rrule-temporal`. All ten are sent to the
- * browser, which re-picks on every tick — which is what makes the panel change
- * state within a minute of a session starting, and roll on to the next one
- * after it ends, with no second read.
+ * instants SahajCloud expands from the recurrence, exclusions applied and DST
+ * resolved upstream. All ten reach the browser, which re-picks on every tick,
+ * so the panel changes state as a session starts and rolls on to the next one
+ * after it ends with no second read.
  *
- * ⚠ **Nothing here caches, and nothing should.** "A coordinator's correction
- * reaches the page within ten minutes" comes from the Cloudflare edge's 600s
- * cache in front of SahajCloud (`server/CACHING.md`). A cache added here would
- * sit behind that one and make the wait unbounded.
+ * ⚠ **Nothing here caches a read, and nothing should.** A correction reaches
+ * the page within ten minutes because the Cloudflare edge in front of
+ * SahajCloud holds a read for 600s (`server/CACHING.md`). A cache added here
+ * would sit behind that one and make the wait unbounded.
  *
- * **No date library.** Five were weighed at 19–22 kB gzip on a path every page
- * pays, and `Temporal` is not Baseline. `Intl` answers every question asked
- * here.
+ * **No date library.** `Intl` answers every question asked here, and the five
+ * candidates weighed 19–22 kB gzip on a path every page pays.
  */
 
 import { isPopulated } from './payload-relationships'
 
 /** The columns a countdown reads off the class it names. */
-export interface SessionClass {
+interface SessionClass {
   onlineUrl?: string | null
   eventType?: ('offline' | 'online') | null
   inactive?: boolean | null
@@ -62,7 +58,7 @@ export interface SessionSchedule {
 }
 
 /** Where a session stands against `now`. */
-export type SessionPhase =
+type SessionPhase =
   | { phase: 'none' }
   | { phase: 'upcoming'; start: Date; end: Date }
   | { phase: 'live'; start: Date; end: Date }
@@ -82,14 +78,65 @@ function minutesOfDay(value: string): number | null {
 }
 
 /**
+ * Formatters, memoized on their own arguments.
+ *
+ * Constructing one resolves locale data, which is the expensive half of `Intl`;
+ * formatting with it is cheap, and the object is immutable. `sessionAt` asks
+ * the same zone question of up to ten instants and the panel re-renders on
+ * every tick, so without this a second inside the final hour builds a dozen.
+ * The keys are a locale and a class's own zone, both of which the content
+ * bounds — and the cap is there because every other per-isolate memo here has
+ * one, not because a page can reach it.
+ */
+const MAX_FORMATTERS = 64
+
+const formatters = new Map<string, Intl.DateTimeFormat | Intl.RelativeTimeFormat>()
+
+function memoized<T extends Intl.DateTimeFormat | Intl.RelativeTimeFormat>(
+  key: string,
+  build: () => T,
+): T {
+  const found = formatters.get(key)
+
+  if (found) return found as T
+
+  if (formatters.size >= MAX_FORMATTERS) formatters.clear()
+
+  const built = build()
+
+  formatters.set(key, built)
+
+  return built
+}
+
+function formatter(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  return memoized(
+    `d|${locale}|${JSON.stringify(options)}`,
+    () => new Intl.DateTimeFormat(locale, options),
+  )
+}
+
+/** True for a zone `Intl` knows. An unknown one throws rather than degrading. */
+function isKnownTimeZone(timeZone: string): boolean {
+  try {
+    formatter('en-GB', { timeZone })
+
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
  * The wall-clock parts of an instant in one zone, as numbers.
  *
  * `Intl` is the only zone database in the platform, so reading an instant's
- * local hour means formatting it and parsing the parts back.
+ * local hour means formatting it and parsing the parts back. A `firstDate_tz`
+ * the platform does not know throws, and answers `null`.
  */
 function zonedParts(instant: Date, timeZone: string): { hour: number; minute: number } | null {
   try {
-    const parts = new Intl.DateTimeFormat('en-GB', {
+    const parts = formatter('en-GB', {
       timeZone,
       hour: '2-digit',
       minute: '2-digit',
@@ -120,7 +167,7 @@ const DEFAULT_SESSION_MINUTES = 60
  * hour long, because neither of the two live classes runs past midnight in its
  * own city. Give it a real end when one does.`
  */
-export function sessionEnd(start: Date, schedule: SessionSchedule): Date {
+function sessionEnd(start: Date, schedule: SessionSchedule): Date {
   const hour = DEFAULT_SESSION_MINUTES * 60_000
   const endMinutes = schedule.endTime ? minutesOfDay(schedule.endTime) : null
 
@@ -134,7 +181,18 @@ export function sessionEnd(start: Date, schedule: SessionSchedule): Date {
 
   if (endMinutes <= startMinutes) return new Date(start.getTime() + hour)
 
-  return new Date(start.getTime() + (endMinutes - startMinutes) * 60_000)
+  const candidate = new Date(start.getTime() + (endMinutes - startMinutes) * 60_000)
+  const landed = zonedParts(candidate, schedule.timeZone)
+
+  if (!landed) return candidate
+
+  // A transition inside the session moves the zone's offset under us, so the
+  // wall clock the candidate lands on is an hour off what `endTime` asked for.
+  // Correcting by that difference is what keeps a two-hour class live for two
+  // hours on the day the clocks change.
+  const drift = endMinutes - (landed.hour * 60 + landed.minute)
+
+  return drift === 0 ? candidate : new Date(candidate.getTime() + drift * 60_000)
 }
 
 /** Reads the class a `countdown` block names, saying why when there is none. */
@@ -148,16 +206,32 @@ export function readSessionClass(event: unknown): SessionSource {
     return { kind: 'gap', reason: 'not-online' }
   }
 
-  const starts = (event.schedule?.upcomingDates ?? []).filter(
-    (value): value is string => typeof value === 'string' && !Number.isNaN(Date.parse(value)),
-  )
+  // Sorted, rather than trusted to arrive so: the producer expands one
+  // recurrence in order, but an exclusion or a merged rule could leave the
+  // next session behind a later one, and then the page would advertise the
+  // wrong date.
+  const starts = (event.schedule?.upcomingDates ?? [])
+    .filter(
+      (value): value is string => typeof value === 'string' && !Number.isNaN(Date.parse(value)),
+    )
+    .sort((left, right) => Date.parse(left) - Date.parse(right))
+
+  // ⚠ A zone is validated here, once, because `sessionLineParts` runs on the
+  // server-render path and `Intl` throws on a zone it does not know — which
+  // would be a 500 where the rule is to degrade (`server/AGENTS.md`).
+  const stated = event.schedule?.firstDate_tz
+  const timeZone = stated && isKnownTimeZone(stated) ? stated : null
 
   return {
     kind: 'schedule',
     schedule: {
       starts,
-      timeZone: event.schedule?.firstDate_tz ?? 'UTC',
-      endTime: event.schedule?.endTime ?? null,
+      timeZone: timeZone ?? 'UTC',
+      // `endTime` is a wall clock in the class's own zone, so it means nothing
+      // without one. The hour-long default is the honest answer there, rather
+      // than a window derived against UTC — which made a 19:00 New York class
+      // read as twenty hours long.
+      endTime: timeZone ? (event.schedule?.endTime ?? null) : null,
       joinUrl: event.onlineUrl ?? null,
     },
   }
@@ -183,7 +257,7 @@ export function sessionAt(schedule: SessionSchedule, now: Date): SessionPhase {
 }
 
 /** The pieces `blocks.live_session.schedule_line` interpolates. */
-export type SessionLineParts = {
+type SessionLineParts = {
   weekday: string
   time: string
   /** The platform's own name for the zone — never a hand-built city name. */
@@ -198,14 +272,10 @@ export type SessionLineParts = {
  */
 export function sessionLineParts(start: Date, locale: string, timeZone?: string): SessionLineParts {
   const base: Intl.DateTimeFormatOptions = timeZone ? { timeZone } : {}
-  const weekday = new Intl.DateTimeFormat(locale, { ...base, weekday: 'long' }).format(start)
-  const time = new Intl.DateTimeFormat(locale, {
-    ...base,
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(start)
+  const weekday = formatter(locale, { ...base, weekday: 'long' }).format(start)
+  const time = formatter(locale, { ...base, hour: 'numeric', minute: '2-digit' }).format(start)
   const zone =
-    new Intl.DateTimeFormat(locale, { ...base, timeZoneName: 'long' })
+    formatter(locale, { ...base, timeZoneName: 'long' })
       .formatToParts(start)
       .find((part) => part.type === 'timeZoneName')?.value ?? ''
 
@@ -222,7 +292,10 @@ const DAY = 24 * HOUR
  * so no English is composed here.
  */
 export function relativeToStart(start: Date, now: Date, locale: string): string {
-  const format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+  const format = memoized(
+    `r|${locale}`,
+    () => new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }),
+  )
   const difference = start.getTime() - now.getTime()
 
   if (Math.abs(difference) >= DAY) return format.format(Math.round(difference / DAY), 'day')
@@ -231,33 +304,22 @@ export function relativeToStart(start: Date, now: Date, locale: string): string 
   return format.format(Math.round(difference / MINUTE), 'minute')
 }
 
-/** A countdown's figures. `hours` stays 0–23 once `days` carries the rest. */
-export interface CountdownFigures {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-}
-
-/** Splits the time left into days, hours, minutes and seconds. Never negative. */
-export function countdownFigures(msRemaining: number): CountdownFigures {
-  const remaining = Math.max(0, msRemaining)
-
-  return {
-    days: Math.floor(remaining / DAY),
-    hours: Math.floor((remaining % DAY) / HOUR),
-    minutes: Math.floor((remaining % HOUR) / MINUTE),
-    seconds: Math.floor((remaining % MINUTE) / 1000),
-  }
-}
-
 /**
- * How often the countdown may redraw: whole minutes until the final hour, then
- * seconds — and never faster than a minute for a visitor who asked for less
- * motion.
+ * How long until the panel may redraw, or `null` once nothing will change
+ * again.
+ *
+ * Whole minutes until the final hour, then seconds — and never faster than a
+ * minute for a visitor who asked for less motion. A session under way needs
+ * only to notice its own end, and a class with nothing left never changes, so
+ * it stops the timer rather than waking to re-decide.
  */
-export function countdownTickMs(msRemaining: number, reducedMotion: boolean): number {
-  if (reducedMotion) return MINUTE
+export function sessionTickMs(
+  session: SessionPhase,
+  now: Date,
+  reducedMotion: boolean,
+): number | null {
+  if (session.phase === 'none') return null
+  if (reducedMotion || session.phase === 'live') return MINUTE
 
-  return msRemaining <= HOUR ? 1000 : MINUTE
+  return session.start.getTime() - now.getTime() <= HOUR ? 1000 : MINUTE
 }

@@ -433,17 +433,26 @@ describe('class-directory block converter', () => {
     const siblings = [directoryNode(), directoryNode()]
 
     expect(renderDirectory({}, 0, siblings)).toContain('<sahaj-atlas')
-    expect(directory({ childIndex: 1, node: directoryNode(), parent: { type: 'root', children: siblings } })).toBeNull()
+    expect(
+      directory({
+        childIndex: 1,
+        node: directoryNode(),
+        parent: { type: 'root', children: siblings },
+      }),
+    ).toBeNull()
   })
 
-  it('stands down behind a countdown splash that already fell back to it', () => {
-    const siblings = [
+  it('wins over a countdown splash that would otherwise fall back to it', () => {
+    // Only one `<sahaj-atlas>` may draw, and a block an editor placed on
+    // purpose beats a fallback — wherever on the page the two sit.
+    const page = [
       { type: 'block', fields: { blockType: 'splash', layout: 'countdown' } },
       directoryNode(),
     ]
 
-    expect(
-      directory({ childIndex: 1, node: directoryNode(), parent: { type: 'root', children: siblings } }),
-    ).toBeNull()
+    expect(renderDirectory({}, 1, page)).toContain('<sahaj-atlas')
+    expect(renderCountdown(undefined, { type: 'root', children: page })).not.toContain(
+      '<sahaj-atlas',
+    )
   })
 })

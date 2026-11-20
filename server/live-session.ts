@@ -14,22 +14,10 @@
  */
 
 import * as Sentry from '@sentry/cloudflare'
+import { populatedImage } from '../lib/content-blocks'
 import { readSessionClass, type SessionGap } from '../lib/live-session'
+import { reportOnce } from './report-once'
 import type { Locale } from './sahajcloud-types'
-
-/**
- * One event per distinct gap per isolate, with `console.warn` on every request.
- *
- * ⚠ **Volume, never level.** This read runs per render and nothing here caches
- * it, and a gap stands until an editor fixes the data — so an unbounded
- * `captureMessage` bills the Sentry quota per page view, and a warning nobody
- * can afford to leave on gets turned off. `getWebConfig` bounds its own the
- * same way, for the same reason (`server/AGENTS.md`).
- */
-const reportedSessionGaps = new Set<string>()
-
-/** Bounds that memo: one isolate serves every locale, and a gap differs per locale. */
-const MAX_REPORTED_SESSION_GAPS = 64
 
 /** What a gap is called in the warning. `absent` never reaches it. */
 const GAP_REASONS: Record<Exclude<SessionGap, 'absent'>, string> = {
@@ -37,27 +25,28 @@ const GAP_REASONS: Record<Exclude<SessionGap, 'absent'>, string> = {
   'not-online': 'no longer an online class',
 }
 
-/** Collects every `splash` block at `layout: countdown`, at any depth. */
-function collectCountdownBlocks(node: unknown, out: Record<string, unknown>[]): void {
-  if (Array.isArray(node)) {
-    for (const child of node) collectCountdownBlocks(child, out)
+/**
+ * The `splash` blocks at `layout: countdown`, read off the root's own children.
+ *
+ * One level, not a walk: `pageBlocks` is attached to one rich-text field
+ * upstream and no page block carries a rich-text field of its own, so every
+ * block is a child of the root. A deep walk would recurse through every text
+ * node and every populated relationship of a depth-3 document, on the TTFB
+ * path, for every page on the site.
+ */
+function countdownBlocks(content: unknown): Record<string, unknown>[] {
+  const root = (content as { root?: { children?: unknown[] } } | null)?.root
 
-    return
-  }
-
-  if (node && typeof node === 'object') {
-    const candidate = node as { type?: unknown; fields?: Record<string, unknown> }
-
-    if (
-      candidate.type === 'block' &&
-      candidate.fields?.blockType === 'splash' &&
-      candidate.fields.layout === 'countdown'
-    ) {
-      out.push(candidate.fields)
-    }
-
-    for (const value of Object.values(node)) collectCountdownBlocks(value, out)
-  }
+  return (
+    (root?.children ?? [])
+      .map((node) => (node as { type?: unknown; fields?: Record<string, unknown> }) ?? {})
+      .filter((node) => node.type === 'block' && node.fields?.blockType === 'splash')
+      .filter((node) => node.fields?.layout === 'countdown')
+      .map((node) => node.fields as Record<string, unknown>)
+      // A splash with no populated background image renders nothing at all, so
+      // its class is not on the page to be a gap. The converter's own guard.
+      .filter((fields) => populatedImage((fields.images as unknown[] | undefined)?.[0]) !== null)
+  )
 }
 
 /** Reports each countdown block whose chosen class can no longer be counted down to. */
@@ -65,14 +54,11 @@ export function reportLiveSessionGaps(
   content: unknown,
   options: { slug: string; locale?: Locale },
 ): void {
-  const blocks: Record<string, unknown>[] = []
-
-  collectCountdownBlocks(content, blocks)
-
-  const gaps = blocks
+  const gaps = countdownBlocks(content)
     .map((fields) => readSessionClass(fields.event))
-    .filter((source) => source.kind === 'gap' && source.reason !== 'absent')
-    .map((source) => GAP_REASONS[(source as { reason: Exclude<SessionGap, 'absent'> }).reason])
+    .flatMap((source) =>
+      source.kind === 'gap' && source.reason !== 'absent' ? [GAP_REASONS[source.reason]] : [],
+    )
 
   if (gaps.length === 0) return
 
@@ -80,16 +66,13 @@ export function reportLiveSessionGaps(
     `[liveSession] ${gaps.length} countdown block(s) on "${options.slug}" name a class that is ${gaps.join(', ')}`,
   )
 
-  const signature = `${options.slug}:${gaps.join(',')}`
-
-  if (reportedSessionGaps.has(signature)) return
-
-  if (reportedSessionGaps.size >= MAX_REPORTED_SESSION_GAPS) reportedSessionGaps.clear()
-
-  reportedSessionGaps.add(signature)
-  Sentry.captureMessage('A countdown splash names a class it cannot count down to', {
-    level: 'warning',
-    tags: { source: 'liveSession' },
-    extra: { slug: options.slug, gaps, locale: options.locale ?? null },
+  reportOnce('liveSession', `${options.slug}:${gaps.join(',')}`, () => {
+    Sentry.captureMessage('A countdown splash names a class it cannot count down to', {
+      level: 'warning',
+      tags: { source: 'liveSession' },
+      // The locale of the render that first saw this gap in this isolate, not
+      // the only one affected.
+      extra: { slug: options.slug, gaps, locale: options.locale ?? null },
+    })
   })
 }

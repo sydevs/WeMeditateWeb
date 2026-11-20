@@ -121,7 +121,7 @@ export const Default: Story = () => {
             surface="dark"
             title="Join Free Zoom Meditations!"
           >
-            <Countdown initialRemainingMs={3600000} targetDate={tomorrow} />
+            <Countdown remainingMs={3600000} />
           </Splash>
         </div>
       </StorySection>

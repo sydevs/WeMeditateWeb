@@ -19,7 +19,6 @@ import type { Meditation, Page, SessionEvent } from '../server/sahajcloud-types'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 import { documentHref, type RelationValue } from './document-routes'
 import type { TranslationKey } from './i18n'
-import { readSessionClass } from './live-session'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from './cloudflare-images'
 
@@ -127,50 +126,47 @@ export interface ClassDirectoryBlockFields {
 /** A polymorphic `opensAt` entry, the shape {@link ShowcaseItem} already models. */
 export interface ClassDirectoryTarget {
   relationTo: 'regions' | 'events'
-  value: Ref<DirectoryRegion | SessionEvent>
-}
-
-/** The one column a `regions` relationship is populated with: its atlas slug. */
-export interface DirectoryRegion {
-  id: number
-  slug?: string | null
+  /** A region populated to its atlas slug, a class, or a bare id when either is unpublished. */
+  value: Ref<{ id: number; slug?: string | null } | SessionEvent>
 }
 
 /**
- * Whether this block is the first on the page to draw the class directory.
- *
  * ⚠ **A second `<sahaj-atlas>` on a page shows nothing** (SahajAtlasWeb's
  * `docs/embedding.md`), and two blocks can ask for one: a `class-directory`,
- * and a `countdown` splash falling back to the directory because its class is
- * missing. So the question is asked of the page, not of the block, and the
- * answer is decided here from the sibling list — in the converter, so it holds
- * in the live preview too, where `+data` resolution never runs.
+ * and a `countdown` splash whose class is missing, which falls back to the
+ * directory. So precedence is decided from the sibling list rather than per
+ * block — in the converter, so it holds in the live preview too, where
+ * `+data` resolution never runs.
+ *
+ * The sibling list **is** the page: `pageBlocks` is attached to one rich-text
+ * field and no page block carries a rich-text field of its own, so every block
+ * is a child of the root.
+ *
+ * A `class-directory` block always wins, wherever it sits, so a countdown's
+ * fallback asks {@link hasDirectoryBlock} and never has to re-derive another
+ * block's render decision.
  */
-export function isFirstDirectoryBlock(parent: unknown, childIndex: number): boolean {
-  const siblings = isPopulated<{ children?: unknown[] }>(parent) ? (parent.children ?? []) : []
-
-  for (let index = 0; index < siblings.length && index < childIndex; index += 1) {
-    if (drawsDirectory(siblings[index])) return false
-  }
-
-  return true
+export function hasDirectoryBlock(parent: unknown): boolean {
+  return blockSiblings(parent).some(isDirectoryBlock)
 }
 
-/** True for a block that puts a `<sahaj-atlas>` element on the page. */
-function drawsDirectory(node: unknown): boolean {
-  if (!isPopulated<{ type?: string; fields?: Record<string, unknown> }>(node)) return false
-  if (node.type !== 'block') return false
+/** Whether this is the first `class-directory` block on the page. The others render nothing. */
+export function isFirstDirectoryBlock(parent: unknown, childIndex: number): boolean {
+  return !blockSiblings(parent).slice(0, childIndex).some(isDirectoryBlock)
+}
 
-  const fields = node.fields
+function blockSiblings(parent: unknown): unknown[] {
+  return parent !== null && typeof parent === 'object' && 'children' in parent
+    ? ((parent as { children?: unknown[] }).children ?? [])
+    : []
+}
 
-  if (!isPopulated<Record<string, unknown>>(fields)) return false
-  if (fields.blockType === 'class-directory') return true
+function isDirectoryBlock(node: unknown): boolean {
+  if (node === null || typeof node !== 'object') return false
 
-  return (
-    fields.blockType === 'splash' &&
-    fields.layout === 'countdown' &&
-    readSessionClass(fields.event).kind === 'gap'
-  )
+  const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
+
+  return candidate.type === 'block' && candidate.fields?.blockType === 'class-directory'
 }
 
 /** `layout` — LayoutBlock item. */
@@ -353,8 +349,7 @@ export interface LeadSplash {
  */
 export function getLeadSplash(content: Page['content']): LeadSplash | null {
   const first = content?.root?.children?.[0] as
-    | { type?: string; fields?: SplashBlockFields & { blockType?: string } }
-    | undefined
+    { type?: string; fields?: SplashBlockFields & { blockType?: string } } | undefined
 
   if (first?.type !== 'block' || first.fields?.blockType !== 'splash') {
     return null

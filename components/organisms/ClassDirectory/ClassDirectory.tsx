@@ -1,4 +1,5 @@
 import { useLocale } from '../../../hooks/usePageContext'
+import { useT } from '../../../hooks/useT'
 import { atlasEmbedSrc } from '../../../lib/atlas-embed'
 
 export interface ClassDirectoryProps {
@@ -31,11 +32,15 @@ export interface ClassDirectoryProps {
  *   `?locale=` and outranks this. That is the point: a visitor's switch travels
  *   in a link they copy, while the page around it stays in its own language.
  */
+/** `pt-BR` opens `pt`: the widget matches `langs` by exact code. */
+const primarySubtag = (locale: string) => locale.split('-', 1)[0] as string
+
 export function ClassDirectory({
   atlasRoute,
   showMap = true,
   onlineOnly = false,
 }: ClassDirectoryProps) {
+  const t = useT()
   const locale = useLocale()
   const embedKey = import.meta.env.PUBLIC__SAHAJ_ATLAS_KEY
 
@@ -48,8 +53,15 @@ export function ClassDirectory({
           A map-less embed has no viewport to fill, so it takes a fixed box
           above the widget's own 360x420 floor, below which it degrades to a
           card that opens the full interface. */}
+      {/* ⚠ **The element is empty until the widget adopts it.** `/map` renders
+          its own server-side content inside one; there is none to render here,
+          so a visitor without JavaScript, or one the loader cannot reach, gets
+          an empty box. `components/AGENTS.md` carries that hole in its table.
+          The label is the one thing that can be given now: it names the region
+          for a screen reader rather than leaving it unannounced. */}
       <sahaj-atlas
-        className={showMap ? 'block h-[80vh] overflow-y-auto' : 'block h-[560px] overflow-y-auto'}
+        aria-label={t('map.a11y.classes_heading')}
+        className={`block overflow-y-auto ${showMap ? 'h-[80vh]' : 'h-[560px]'}`}
       />
 
       {/* `type="module"` is required: the loader is an ES module. Without a
@@ -60,7 +72,7 @@ export function ClassDirectory({
             key: embedKey,
             atlasRoute,
             map: showMap,
-            langs: locale.split('-')[0] ?? locale,
+            langs: primarySubtag(locale),
             format: onlineOnly ? 'online' : undefined,
           })}
           type="module"

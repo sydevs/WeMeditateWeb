@@ -10,12 +10,14 @@ const ONLINE = {
   schedule: { firstDate_tz: 'Europe/London', upcomingDates: ['2099-10-20T18:00:00.000Z'] },
 }
 
+const IMAGE = { url: 'https://imagedelivery.net/acct/fixture/public', width: 1600, height: 900 }
+
 const content = (...events: unknown[]) => ({
   root: {
     type: 'root',
     children: events.map((event) => ({
       type: 'block',
-      fields: { blockType: 'splash', layout: 'countdown', event },
+      fields: { blockType: 'splash', layout: 'countdown', images: [IMAGE], event },
     })),
   },
 })
@@ -54,6 +56,24 @@ describe('reportLiveSessionGaps', () => {
     expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })
 
+  it('reports nothing for a countdown splash that renders nothing', () => {
+    // No background image, so the converter returns `null` before the class is
+    // ever read — there is no block on the page for its class to be a gap of.
+    reportLiveSessionGaps(
+      {
+        root: {
+          type: 'root',
+          children: [
+            { type: 'block', fields: { blockType: 'splash', layout: 'countdown', event: 1506 } },
+          ],
+        },
+      },
+      { slug: 'imageless' },
+    )
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+
   it('reports nothing for a page with no countdown block at all', () => {
     reportLiveSessionGaps(
       { root: { type: 'root', children: [{ type: 'paragraph' }] } },
@@ -61,6 +81,23 @@ describe('reportLiveSessionGaps', () => {
         slug: 'about',
       },
     )
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('reads the root children, and no deeper', () => {
+    // Every page block is a child of the root upstream, so a deep walk would
+    // recurse through a whole depth-3 document on the TTFB path for nothing.
+    const nested = {
+      root: {
+        type: 'root',
+        children: [
+          { type: 'block', fields: { blockType: 'layout', items: content(1506).root.children } },
+        ],
+      },
+    }
+
+    reportLiveSessionGaps(nested, { slug: 'nested' })
 
     expect(Sentry.captureMessage).not.toHaveBeenCalled()
   })

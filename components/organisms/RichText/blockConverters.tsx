@@ -16,13 +16,12 @@ import {
   ContentCarousel,
   HeroQuote,
   LayoutBlock,
+  LiveSession,
   TableOfContents,
   type Track,
 } from '../../molecules'
-import type { ReactNode } from 'react'
+import { atlasRouteFor } from '../../../lib/atlas-route'
 import { readSessionClass } from '../../../lib/live-session'
-import { isPopulated } from '../../../lib/payload-relationships'
-import { LiveSession } from '../../molecules'
 import { ClassDirectory } from '../ClassDirectory'
 import { ContentIndex } from '../ContentIndex'
 import { ContentOverlay } from '../ContentOverlay'
@@ -42,9 +41,9 @@ import {
   type ContentIndexBlockFields,
   type ImageGalleryBlockFields,
   type LayoutBlockFields,
+  hasDirectoryBlock,
   isFirstDirectoryBlock,
   type ClassDirectoryBlockFields,
-  type ClassDirectoryTarget,
   type QuoteBlockFields,
   type ShowcaseBlockFields,
   type SplashBlockFields,
@@ -52,46 +51,6 @@ import {
   type TableOfContentsBlockFields,
   type TextBoxBlockFields,
 } from '../../../lib/content-blocks'
-
-/**
- * The `atlas=` route a `class-directory` block opens at.
- *
- * An atlas route is resolved by its terminal segment alone — a region slug is
- * globally unique and an event id needs no ancestry (`lib/atlas-route.ts`), so
- * one segment is the whole route. An unpublished or removed target arrives as a
- * bare id, and answers `null`: the directory then opens at its usual starting
- * point rather than at an error.
- */
-function directoryRoute(target: ClassDirectoryTarget | null | undefined): string | null {
-  if (!target) return null
-
-  const value = target.value
-
-  if (target.relationTo === 'regions') {
-    const region = isPopulated<{ slug?: string | null }>(value) ? value.slug : null
-
-    return region ? `/${region}` : null
-  }
-
-  const event = isPopulated<{ id?: number }>(value) ? value.id : null
-
-  return typeof event === 'number' ? `/${event}` : null
-}
-
-/**
- * What a `countdown` splash puts in the hero's content slot: the live-session
- * panel, or — where the block names no usable class — that language's online
- * classes, which is what the goal degrades to rather than an empty hero.
- */
-function countdownSlot(fields: SplashBlockFields, parent: unknown, childIndex: number): ReactNode {
-  const source = readSessionClass(fields.event)
-
-  if (source.kind === 'schedule') return <LiveSession schedule={source.schedule} />
-
-  return isFirstDirectoryBlock(parent, childIndex) ? (
-    <ClassDirectory onlineOnly showMap={false} />
-  ) : null
-}
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -376,6 +335,16 @@ export const blockConverters: BlockConverters = {
     // the LCP candidate. `getLeadSplash` answers the same question from
     // `page.content`, but nothing threads its answer into a converter.
     const isLead = childIndex === 0 && parent?.type === 'root'
+    const session = readSessionClass(fields.event)
+    // Where the block names no usable class the page falls back to that
+    // language's online classes — unless the page already carries a directory
+    // block of its own, since it may only draw one.
+    const countdown =
+      session.kind === 'schedule' ? (
+        <LiveSession schedule={session.schedule} />
+      ) : hasDirectoryBlock(parent) ? null : (
+        <ClassDirectory onlineOnly showMap={false} />
+      )
 
     return (
       <Splash
@@ -390,7 +359,7 @@ export const blockConverters: BlockConverters = {
         surface={splashSurface(fields.textColor)}
         title={fields.title ?? undefined}
       >
-        {fields.layout === 'countdown' && countdownSlot(fields, parent, childIndex)}
+        {fields.layout === 'countdown' && countdown}
       </Splash>
     )
   },
@@ -406,7 +375,7 @@ export const blockConverters: BlockConverters = {
     return (
       <div className={FULL_BLEED_BLOCK}>
         <ClassDirectory
-          atlasRoute={directoryRoute(fields.opensAt)}
+          atlasRoute={atlasRouteFor(fields.opensAt)}
           onlineOnly={fields.onlineOnly === true}
           showMap={fields.showMap !== false}
         />

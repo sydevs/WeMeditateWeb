@@ -27,6 +27,7 @@
 
 import { createPayloadClient } from './payload-client'
 import { readStatus, withRetry } from './error-utils'
+import { reportOnce } from './report-once'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
@@ -216,16 +217,15 @@ const EMBEDDED_FORM_SELECT = {
  * ⚠ **`schedule` is `true`, never a sub-path.** `schedule.upcomingDates` is a
  * virtual field computed from the stored recurrence columns, and it declares
  * none of them as inputs — so narrowing to the sub-path strips what its hook
- * reads and every class comes back with no dates at all. `title` is read for
- * the Sentry warning and never rendered: a class's title is one non-localized
- * value its manager typed, and the page keeps its own heading.
+ * reads and every class comes back with no dates at all.
+ *
+ * A page read is serialized into the HTML, so each column here is shipped to
+ * every visitor. The class's `title` is not among them: the page keeps its own
+ * heading, and the gap warning names the page rather than the class.
  */
 const SESSION_EVENT_SELECT = {
-  title: true,
   onlineUrl: true,
   eventType: true,
-  registrationMode: true,
-  languages: true,
   inactive: true,
   schedule: true,
 } satisfies EventsSelect<true> & SessionEventSelect
@@ -676,30 +676,15 @@ export function partitionPublishedPages(pages: (number | NavPage)[] | null | und
 }
 
 /**
- * The config data gaps this isolate has already reported to Sentry.
- *
  * ⚠ The warning below is the one in this repo that fires on healthy traffic.
  * `withSentry` made it a real event, and `getWebConfig` runs once per render,
  * so a *standing* gap — an editor leaving a referenced page unpublished, which
  * is precisely what the warning is for — would bill one event per page view
  * until someone publishes it. The gap must stay visible (server/AGENTS.md), so
- * what is bounded is volume, not level: one event per distinct gap per isolate.
- * A gap that changes is a new signature and reports immediately, and
- * `console.warn` still fires on every request, so the per-request record is
- * unchanged.
- *
- * A Workers isolate is reused across requests and dropped without notice,
- * which is the bound wanted here: often enough that a gap cannot go
- * unreported, rare enough to cost nothing.
+ * what is bounded is volume, not level: `reportOnce` sends one event per
+ * distinct gap per isolate, and `console.warn` still fires on every request.
  */
-const reportedConfigGaps = new Set<string>()
-
-/**
- * Bounds that memo. One isolate serves every locale, and a gap differs per
- * locale, so the set must not grow unbounded. Past the cap it is emptied
- * rather than pruned: re-reporting a live gap is the harmless direction.
- */
-const MAX_REPORTED_CONFIG_GAPS = 64
+const CONFIG_GAP_SOURCE = 'getWebConfig'
 
 /**
  * Gets the WebConfig (site configuration).
@@ -755,20 +740,15 @@ export async function getWebConfig(options: { locale?: Locale } = {}): Promise<W
         `[getWebConfig] ${unresolved.length} unpublished/unresolved page reference(s): ${unresolved.join(', ')}`,
       )
 
-      const signature = unresolved.join(',')
-
-      if (!reportedConfigGaps.has(signature)) {
-        if (reportedConfigGaps.size >= MAX_REPORTED_CONFIG_GAPS) reportedConfigGaps.clear()
-
-        reportedConfigGaps.add(signature)
+      reportOnce(CONFIG_GAP_SOURCE, unresolved.join(','), () => {
         Sentry.captureMessage('WebConfig references unpublished or unresolved pages', {
           level: 'warning',
-          tags: { source: 'getWebConfig' },
+          tags: { source: CONFIG_GAP_SOURCE },
           // The locale of the render that first saw this gap in this isolate,
           // not the only one affected.
           extra: { unresolved, locale: options.locale ?? null },
         })
-      }
+      })
     }
 
     // An unconfigured global offers English only. Never return an empty

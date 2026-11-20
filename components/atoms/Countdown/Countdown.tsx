@@ -1,101 +1,60 @@
-import { ComponentProps, useState, useEffect } from 'react'
-import { countdownFigures, countdownTickMs, type CountdownFigures } from '../../../lib/live-session'
+import { ComponentProps, Fragment } from 'react'
 import { useT } from '../../../hooks/useT'
 
 export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /** Target date/time to count down to (ISO string or Date) */
-  targetDate: string | Date
   /**
-   * The time left when the server rendered, in milliseconds.
+   * The time left, in milliseconds.
    *
-   * ⚠ The atom never reads the clock during render. Seeding state from
-   * `Date.now()` made the server and the first client render disagree, and
-   * React discards the server's markup on a mismatch. The first client value is
-   * written in the effect instead, which is also the first moment a tick is
-   * due.
+   * ⚠ **The atom reads no clock, and holds no timer.** It used to seed state
+   * from a live `Date.now()` during render, so the server and the first client
+   * render disagreed and React threw the server's markup away. Whoever decides
+   * what the panel shows owns the clock and redraws this — `LiveSession` does,
+   * on the cadence `sessionTickMs` allows.
    */
-  initialRemainingMs: number
+  remainingMs: number
   /**
    * One finished sentence giving the next session's day, time and how far away
    * it is, read by a screen reader in place of the digits.
    *
    * Finished, never assembled here: only the caller knows the key and the
-   * language it is written in. It changes at most once a minute, because its
-   * smallest unit is minutes — which is what keeps the live region quiet while
-   * the digits tick.
+   * language it is written in. Its smallest unit is minutes, which is what
+   * keeps the live region quiet while the digits tick.
    */
   announcement?: string
-  /** Optional callback when countdown reaches zero */
-  onComplete?: () => void
+  /**
+   * Whether to draw the seconds cell.
+   *
+   * ⚠ **A cell nobody redraws reads as a broken widget.** Outside the final
+   * hour the panel redraws once a minute, so a seconds figure would sit frozen
+   * and be wrong by up to 59 of every 60 seconds. Whoever owns the clock knows
+   * the cadence, so it says.
+   * @default true
+   */
+  showSeconds?: boolean
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
 }
 
-function remainingMsAt(targetDate: string | Date, now: number): number {
-  const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
-
-  return Math.max(0, target.getTime() - now)
+const SIZE_CLASSES = {
+  sm: { numbers: 'text-4xl md:text-5xl', labels: 'text-sm' },
+  md: { numbers: 'text-5xl md:text-6xl', labels: 'text-base' },
+  lg: { numbers: 'text-6xl md:text-8xl', labels: 'text-lg' },
 }
 
-/**
- * The time left, redrawn on the cadence `countdownTickMs` allows: whole
- * minutes until the final hour, then seconds, and never faster than a minute
- * for a visitor who asked for less motion.
- */
-function useRemainingMs(
-  targetDate: string | Date,
-  initialRemainingMs: number,
-  onComplete?: () => void,
-): number {
-  const [remaining, setRemaining] = useState(initialRemainingMs)
+const MINUTE = 60_000
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
 
-  useEffect(() => {
-    const motion =
-      typeof window.matchMedia === 'function'
-        ? window.matchMedia('(prefers-reduced-motion: reduce)')
-        : null
-    let timer: ReturnType<typeof setTimeout> | undefined
-    let completed = false
+/** Days, hours, minutes and seconds left. Never negative, and `hours` stays 0–23. */
+function figuresOf(remainingMs: number) {
+  const left = Math.max(0, remainingMs)
 
-    // A self-rescheduling timeout rather than an interval: the cadence depends
-    // on the time left, so the next delay is only known after a tick.
-    const tick = () => {
-      const next = remainingMsAt(targetDate, Date.now())
-
-      setRemaining(next)
-
-      if (next <= 0) {
-        if (!completed) {
-          completed = true
-          onComplete?.()
-        }
-
-        return
-      }
-
-      timer = setTimeout(tick, countdownTickMs(next, motion?.matches === true))
-    }
-
-    // The first client value has to be written here: reading the clock during
-    // render is what made the server and the browser disagree. The extra render
-    // after mount is the price of a markup match, and it happens once.
-    // eslint-disable-next-line @eslint-react/set-state-in-effect
-    tick()
-
-    const restart = () => {
-      if (timer) clearTimeout(timer)
-      tick()
-    }
-
-    motion?.addEventListener('change', restart)
-
-    return () => {
-      if (timer) clearTimeout(timer)
-      motion?.removeEventListener('change', restart)
-    }
-  }, [targetDate, initialRemainingMs, onComplete])
-
-  return remaining
+  return {
+    days: Math.floor(left / DAY),
+    hours: Math.floor((left % DAY) / HOUR),
+    minutes: Math.floor((left % HOUR) / MINUTE),
+    seconds: Math.floor((left % MINUTE) / 1000),
+  }
 }
 
 /**
@@ -107,46 +66,31 @@ function useRemainingMs(
  *
  * @example
  * <Countdown
- *   targetDate={new Date(Date.now() + 3600000)}
- *   initialRemainingMs={3600000}
+ *   remainingMs={3_600_000}
  *   announcement="The next session is Tuesday at 7:00 pm, in 1 hour."
  * />
  */
 export function Countdown({
-  targetDate,
-  initialRemainingMs,
+  remainingMs,
   announcement,
-  onComplete,
+  showSeconds = true,
   size = 'lg',
   className = '',
   ...props
 }: CountdownProps) {
   const t = useT()
-  const figures = countdownFigures(useRemainingMs(targetDate, initialRemainingMs, onComplete))
+  const figures = figuresOf(remainingMs)
+  const { numbers, labels } = SIZE_CLASSES[size]
 
-  // Size variants
-  const sizeClasses = {
-    sm: {
-      numbers: 'text-4xl md:text-5xl',
-      labels: 'text-sm',
-    },
-    md: {
-      numbers: 'text-5xl md:text-6xl',
-      labels: 'text-base',
-    },
-    lg: {
-      numbers: 'text-6xl md:text-8xl',
-      labels: 'text-lg',
-    },
-  }
-
-  const { numbers, labels } = sizeClasses[size]
-
-  const cells: { key: keyof CountdownFigures; label: string }[] = [
-    ...(figures.days >= 1 ? [{ key: 'days' as const, label: t('blocks.general.days') }] : []),
-    { key: 'hours', label: t('blocks.general.hours') },
-    { key: 'minutes', label: t('blocks.general.minutes') },
-    { key: 'seconds', label: t('blocks.general.seconds') },
+  const cells: [number, string][] = [
+    ...(figures.days >= 1
+      ? ([[figures.days, t('blocks.general.days')]] as [number, string][])
+      : []),
+    [figures.hours, t('blocks.general.hours')],
+    [figures.minutes, t('blocks.general.minutes')],
+    ...(showSeconds
+      ? ([[figures.seconds, t('blocks.general.seconds')]] as [number, string][])
+      : []),
   ]
 
   return (
@@ -158,16 +102,16 @@ export function Countdown({
         aria-hidden="true"
         className={`flex items-start justify-center gap-1 font-number ${numbers} font-light tracking-wide leading-none`}
       >
-        {cells.map((cell, index) => (
-          <div className="contents" key={cell.key}>
+        {cells.map(([value, label], index) => (
+          <Fragment key={label}>
             {index > 0 && <span className="mt-0">:</span>}
             <div className="inline-flex flex-col items-center">
-              <span className="tabular-nums">{String(figures[cell.key]).padStart(2, '0')}</span>
+              <span className="tabular-nums">{String(value).padStart(2, '0')}</span>
               <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-                {cell.label}
+                {label}
               </span>
             </div>
-          </div>
+          </Fragment>
         ))}
       </div>
 

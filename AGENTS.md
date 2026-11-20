@@ -120,11 +120,12 @@ These rules apply whether or not the matching rule file or skill is loaded.
 
   **One exception, and it is about what renders, not about safety.** A call site gates a value it
   also passes to `Link` when a refused URL must render **nothing** — `Splash`'s call to action,
-  `AtlasContent`'s website link and `ErrorFallback`'s status page all do, because the atom renders
-  the words inert and words inviting a click that goes nowhere are worse than an absent element.
+  `AtlasContent`'s website link, `ErrorFallback`'s status page and `LiveSession`'s join action all
+  do, because the atom renders the words inert and words inviting a click that goes nowhere are
+  worse than an absent element.
   `isSafeHttpUrl` is the gate where the URL must additionally be absolute: a status page in
-  `target="_blank"` (`ErrorFallback`), and anything the atlas publishes, whose canonical
-  `sitePathFromUrl` parses.
+  `target="_blank"` (`ErrorFallback`), an online class's own room link (`LiveSession`), and
+  anything the atlas publishes, whose canonical `sitePathFromUrl` parses.
 
   An **absolute URL on our own origin** is ours to spell, and `isSitePath` rejects it, so
   `localeHref` passes it through untouched. `sitePathFromUrl` is that case: it hands back the path
