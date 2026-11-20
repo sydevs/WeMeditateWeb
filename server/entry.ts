@@ -4,6 +4,7 @@ import { Hono } from 'hono'
 import { contextStorage } from 'hono/context-storage'
 import type { SahajCloudEnv } from './sahajcloud-context'
 import { registerApiRoutes } from './api-routes'
+import { registerLegacyRedirects } from './legacy-redirects'
 import { registerOEmbedRoutes } from './oembed-routes'
 import { registerSitemapRoutes } from './sitemap-routes'
 import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
@@ -127,6 +128,10 @@ function startServer() {
     c.header('X-Robots-Tag', 'noindex')
     c.header('Referrer-Policy', 'no-referrer')
   })
+
+  // An old wemeditate.com address, consulted on the 404 this site would
+  // otherwise answer. Registered before the routes, for the reason above.
+  registerLegacyRedirects(app)
 
   // Same-origin JSON endpoints (client-loaded related content). Registered
   // before Vike's handler so they take precedence over the page catch-all.
