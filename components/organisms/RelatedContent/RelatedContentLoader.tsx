@@ -10,7 +10,7 @@ import { useT } from '../../../hooks/useT'
 import type { TranslationKey } from '../../../lib/i18n'
 
 /**
- * Which same-origin JSON route to load (see server/api-routes.ts):
+ * Which same-origin JSON route to load (see server/routes/api/):
  * `related-meditations` for a lecture anchor, `related-lectures` for a
  * meditation anchor.
  */

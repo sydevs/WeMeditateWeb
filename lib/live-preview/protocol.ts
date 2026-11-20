@@ -45,7 +45,8 @@ export const LIVE_PREVIEW_TOKEN_HEADER = 'x-sahajcloud-preview-secret'
  * read is a server-only secret, and SahajCloud answers
  * `Access-Control-Allow-Origin: *` with no `Allow-Credentials`, which is the
  * pairing browsers refuse. So the request comes here instead, and
- * `server/api-routes.ts` re-verifies the token before spending the key.
+ * `server/routes/api/live-preview/populate.ts` re-verifies the token before
+ * spending the key.
  */
 export const LIVE_PREVIEW_POPULATE_PATH = '/api/live-preview/populate'
 
