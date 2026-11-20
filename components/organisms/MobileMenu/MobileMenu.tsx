@@ -37,7 +37,7 @@ export interface MobileMenuProps {
   /** Languages to offer, each linking to the current page in that language. */
   languages?: LanguageOption[]
   /** Social profiles, as the footer lists them. */
-  socialLinks?: SocialLink[]
+  socialLinks?: readonly SocialLink[]
   /** Extra classes for the trigger. */
   className?: string
 }
@@ -232,7 +232,7 @@ function MenuFoot({
   onNavigate,
 }: {
   languages: LanguageOption[]
-  socialLinks: SocialLink[]
+  socialLinks: readonly SocialLink[]
   onNavigate: () => void
 }) {
   const locale = useLocale()

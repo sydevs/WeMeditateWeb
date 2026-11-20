@@ -7,6 +7,7 @@
  * the right altitude for "did the server load the page?".
  */
 import { expect } from 'vitest'
+import { JSDOM } from 'jsdom'
 import { DEFAULT_LOCALE, type Locale } from '../../../server/sahajcloud-types'
 import { ErrorType } from '../../../server/error-utils'
 import { errorTitleKey } from '../../../lib/error-keys'
@@ -104,9 +105,7 @@ export function expectRenders(page: PageResult, path: string): void {
   expect(page.status, `${path} should return 200, got ${page.status}`).toBe(200)
   expect(page.contentType, `${path} should be HTML`).toContain('text/html')
 
-  const title = page.html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim()
-
-  expect(title, `${path} should render a non-empty <title>`).toBeTruthy()
+  expect(titleOf(page.html), `${path} should render a non-empty <title>`).toBeTruthy()
 
   const rendered = renderedHtml(page.html)
 
@@ -175,6 +174,7 @@ export function internalLinks(html: string): string[] {
 export interface SahajCloudSamples {
   pageSlug: string | null
   meditationId: string | null
+  lectureId: string | null
   /**
    * The locales the site offers, from `wm-web-config.availableLocales`,
    * normalised the way `getWebConfig` normalises it.
@@ -221,6 +221,8 @@ const PAGE_SELECT = {
   meta: { title: true, description: true, image: true },
 }
 const MEDITATION_SELECT = { title: true, thumbnail: true, _status: true }
+// `lectures` carries no `_status`, so a lecture read filters on nothing.
+const LECTURE_SELECT = { title: true, type: true, thumbnail: true }
 const IMAGE_POPULATE = {
   images: { url: true, filename: true, alt: true, width: true, height: true },
 }
@@ -238,6 +240,63 @@ export async function nonEnglishLocale(): Promise<Locale | null> {
   const offered = (await discoverFromSahajCloud())?.availableLocales ?? []
 
   return (offered.find((code) => code !== DEFAULT_LOCALE) as Locale | undefined) ?? null
+}
+
+/**
+ * The page parsed as a browser would, so an assertion reads what the markup
+ * claims rather than how a generator happened to spell it.
+ *
+ * ⚠ A pattern over the raw string read Unhead's graph as no graph at all once
+ * its `<script>` carried a `data-hid` attribute, and every assertion over it
+ * passed vacuously. One page is parsed once, however many helpers read it.
+ */
+let parsed: { html: string; document: Document } | null = null
+
+function documentOf(html: string): Document {
+  if (parsed?.html !== html) {
+    parsed = { html, document: new JSDOM(html).window.document }
+  }
+
+  return parsed.document
+}
+
+/** The page's `<title>` text, trimmed, or the empty string. */
+export function titleOf(html: string): string {
+  return documentOf(html).title.trim()
+}
+
+/** Every `content` value for one meta key, on `property` or `name`, in document order. */
+export function metaContent(html: string, key: string): string[] {
+  return [...documentOf(html).querySelectorAll('meta')]
+    .filter((meta) => meta.getAttribute('property') === key || meta.getAttribute('name') === key)
+    .map((meta) => meta.getAttribute('content') ?? '')
+}
+
+/** Every `<link rel="…">` on the page, as its attributes, in document order. */
+export function linkAttrs(html: string, rel: string): Record<string, string>[] {
+  return [...documentOf(html).querySelectorAll(`link[rel="${rel}"]`)].map((link) =>
+    Object.fromEntries([...link.attributes].map((attr) => [attr.name, attr.value])),
+  )
+}
+
+/** One node of a page's `@graph`, read structurally rather than by schema. */
+export type JsonLdNode = Record<string, unknown> & { '@type': string }
+
+/** Every JSON-LD block on the page, parsed. Throws on one that does not parse. */
+export function jsonLdBlocks(html: string): { '@graph'?: JsonLdNode[] }[] {
+  return [...documentOf(html).querySelectorAll('script[type="application/ld+json"]')].map(
+    (script) => JSON.parse(script.textContent ?? ''),
+  )
+}
+
+/** Every node the page's JSON-LD names, across all its blocks. */
+export function jsonLdGraph(html: string): JsonLdNode[] {
+  return jsonLdBlocks(html).flatMap((graph) => graph['@graph'] ?? [])
+}
+
+/** Every `@type` the page's JSON-LD names, across all its blocks. */
+export function jsonLdTypes(html: string): string[] {
+  return jsonLdGraph(html).map((node) => node['@type'])
 }
 
 /** The opening `<html>` tag, which carries `lang` and `dir`. */
@@ -279,6 +338,7 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
       return (await res.json()) as Record<string, unknown>
     } catch (err) {
       const message = (err as Error).message
+
       console.warn(`[discoverFromSahajCloud] GET /api/${path.split('?')[0]} → ${message}`)
 
       return null
@@ -329,8 +389,15 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
     select: MEDITATION_SELECT,
     populate: IMAGE_POPULATE,
   })
+  const lectureQuery = toQueryString({
+    limit: 1,
+    depth: 2,
+    select: LECTURE_SELECT,
+    populate: IMAGE_POPULATE,
+  })
   const page = await firstDoc(`pages?${pageQuery}`)
   const meditation = await firstDoc(`meditations?${meditationQuery}`)
+  const lecture = await firstDoc(`lectures?${lectureQuery}`)
   const config = await getJson('globals/wm-web-config?depth=0&select[availableLocales]=true')
   const locales = config?.availableLocales
   const offered = Array.isArray(locales) ? locales.filter((l) => typeof l === 'string') : []
@@ -338,6 +405,7 @@ export async function discoverFromSahajCloud(): Promise<SahajCloudSamples | null
   return {
     pageSlug: typeof page?.slug === 'string' ? page.slug : null,
     meditationId: meditation?.id != null ? String(meditation.id) : null,
+    lectureId: lecture?.id != null ? String(lecture.id) : null,
     // Same normalisation as `getWebConfig`: an unconfigured global offers
     // the default locale, and that is the locale set the Worker serves.
     availableLocales: offered.length > 0 ? offered : [DEFAULT_LOCALE],

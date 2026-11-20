@@ -13,6 +13,7 @@ import type { NavItem, SocialLink } from '../components/organisms'
 import type { LanguageOption } from '../components/molecules/LanguageDropdown'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 import { localeEndonym } from '../lib/locale-names'
+import { SOCIAL_PROFILES } from '../lib/site-identity'
 import { useT } from '../hooks/useT'
 
 export interface SiteNav {
@@ -22,15 +23,8 @@ export interface SiteNav {
   actionLinkText: string | undefined
   /** The locales the site offers, each linking to the current page in that language. */
   languages: LanguageOption[]
-  socialLinks: SocialLink[]
+  socialLinks: readonly SocialLink[]
 }
-
-// TODO: Configure social links from settings when available
-const socialLinks: SocialLink[] = [
-  { platform: 'facebook', href: 'https://facebook.com/wemeditate' },
-  { platform: 'instagram', href: 'https://instagram.com/wemeditate' },
-  { platform: 'youtube', href: 'https://youtube.com/wemeditate' },
-]
 
 /**
  * Build the nav items and header action link.
@@ -87,6 +81,6 @@ export function useSiteNav(settings: WebConfig, activeSlug?: string): SiteNav {
     actionLinkHref: classPages[0] ? '/' + classPages[0].slug : '/',
     actionLinkText: classPages[0]?.title,
     languages,
-    socialLinks,
+    socialLinks: SOCIAL_PROFILES,
   }
 }

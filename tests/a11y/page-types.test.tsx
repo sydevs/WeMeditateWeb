@@ -154,7 +154,7 @@ const TARGETS = [
     name: 'map',
     chrome: true,
     render: () => {
-      routeData.current = { settings: webConfig, seo: atlasSeo, atlasRoute: null }
+      routeData.current = { settings: webConfig, atlas: atlasSeo, atlasRoute: null }
 
       return (
         <LayoutMap>
