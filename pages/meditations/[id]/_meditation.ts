@@ -6,11 +6,6 @@ import { idSchema } from '../../../server/validation'
 import { loadLivePreview, previewArgs } from '../../../server/live-preview'
 
 export interface MeditationData {
-  /**
-   * Keyframes arrive cut down to what the player reads
-   * (`MEDITATION_FRAME_SELECT`): this is serialised into the page, and a
-   * chakra keyframe otherwise brings a whole page document with it.
-   */
   meditation: Meditation
   /**
    * Background-music tracks layered under the guided voice in the player. Empty

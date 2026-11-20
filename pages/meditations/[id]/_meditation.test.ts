@@ -1,8 +1,5 @@
 /**
  * The loader both meditation routes share.
- *
- * The keyframes a meditation arrives with, and the narrowing applied to them,
- * belong to `getDocumentById` — see `server/sahajcloud-client.test.ts`.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'

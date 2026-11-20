@@ -35,7 +35,6 @@ import type {
   Config,
   PagesSelect,
   MeditationsSelect,
-  FramesSelect,
   LecturesSelect,
   AlbumsSelect,
   AppCardsSelect,
@@ -56,7 +55,6 @@ import type {
   PageStatus,
   WebConfig,
   WebTranslations,
-  Meditation,
   MeditationSong,
   RelatedMeditationCard,
   RelatedLectureCard,
@@ -279,63 +277,6 @@ const MEDITATION_SELECT = {
 } satisfies MeditationsSelect<true>
 
 /**
- * A keyframe's read shape, in the one place a collection's read shape lives.
- * Each key is a field `MeditationTemplate` reads.
- *
- * ⚠ **No query sends this, because no query narrows `frames`.** It is a JSON
- * field SahajCloud fills in its own afterRead hook, whose `frames` read takes
- * no `select`, `populate` or `depth` from ours, so a chakra keyframe carries
- * its node's whole `page` document whatever a query asks for (verified against
- * production at depths 0-3, and with `populate` entries for `frames`,
- * `subtle-system-nodes` and `pages`). `getDocumentById` applies it to the
- * answer instead — see `COLLECTION_BY_ID_CONFIG`.
- *
- * Three keys are outside `FramesSelect` and named in the type for that reason:
- * `id` and `timestamp` come from the meditation's own JSON rather than the
- * Frame document, and `downloadUrl` is a field the template reads for a
- * video's fallback that no frame carries today.
- *
- * shortcut: the Worker still downloads every keyframe whole; drop this list once the
- * `frames` afterRead hook in sydevs/SahajCloud `src/collections/Meditations/Meditations.ts`
- * passes `select` or `depth` to its read.
- */
-const MEDITATION_FRAME_SELECT = {
-  id: true,
-  timestamp: true,
-  url: true,
-  mimeType: true,
-  duration: true,
-  downloadUrl: true,
-} satisfies Partial<Record<keyof FramesSelect<true> | 'id' | 'timestamp' | 'downloadUrl', true>>
-
-/**
- * A meditation with each keyframe cut down to `MEDITATION_FRAME_SELECT`.
- *
- * Still the collection's own shape, so it can seed live preview's
- * `initialData`: a streamed document arrives whole from the populate proxy and
- * renders the same.
- */
-function narrowMeditationFrames(meditation: Meditation): Meditation {
-  if (!Array.isArray(meditation.frames)) return meditation
-
-  const kept = Object.keys(MEDITATION_FRAME_SELECT)
-
-  return {
-    ...meditation,
-    frames: meditation.frames.map((frame: unknown) => {
-      // A JSON field: nothing upstream guarantees an entry is an object.
-      if (!frame || typeof frame !== 'object') return frame
-
-      return Object.fromEntries(
-        kept
-          .filter((key) => Object.hasOwn(frame, key))
-          .map((key) => [key, (frame as Record<string, unknown>)[key]]),
-      )
-    }) as Meditation['frames'],
-  }
-}
-
-/**
  * Fields for a Lecture. `fullLecture` is selected so a clip can reach its
  * parent's `metadata`, the playback source. See LECTURE_POPULATE.
  */
@@ -366,13 +307,6 @@ const LECTURE_POPULATE = {
  * Configuration for collections that support findById queries.
  * Maps PayloadCMS collection slugs to the select/populate shapes required
  * by the backend query-validation hook.
- *
- * `narrow` is the same read shape for a field the query cannot reach, applied
- * by `getDocumentById` to the answer. A collection needs one only where
- * SahajCloud assembles a field after it has validated the query — today just
- * a meditation's `frames` (see `MEDITATION_FRAME_SELECT`). `documentReadArgs`
- * does not carry it: live preview's populate proxy answers an editor's own
- * browser, and the panel streams the whole document back anyway.
  */
 const COLLECTION_BY_ID_CONFIG = {
   pages: {
@@ -382,7 +316,6 @@ const COLLECTION_BY_ID_CONFIG = {
   meditations: {
     select: MEDITATION_SELECT,
     populate: IMAGE_POPULATE,
-    narrow: narrowMeditationFrames,
   },
   lectures: {
     select: LECTURE_SELECT,
@@ -630,10 +563,6 @@ export async function getDocumentById<C extends FindByIdCollection>(
       const status = (result as { _status?: string })._status
 
       if (!isPreview && status === 'draft') return null
-
-      // TypeScript cannot correlate the union-typed config to the generic
-      // collection `C`, as with select/populate above.
-      if ('narrow' in config) return config.narrow(result as never) as Config['collections'][C]
 
       return result
     },
