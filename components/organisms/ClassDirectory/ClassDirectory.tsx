@@ -11,6 +11,9 @@ export interface ClassDirectoryProps {
   onlineOnly?: boolean
 }
 
+/** `pt-BR` opens `pt`: the widget matches `langs` by exact code. */
+const primarySubtag = (locale: string) => locale.split('-', 1)[0] as string
+
 /**
  * The Sahaj Atlas class directory, placed on an ordinary content page.
  *
@@ -32,9 +35,6 @@ export interface ClassDirectoryProps {
  *   `?locale=` and outranks this. That is the point: a visitor's switch travels
  *   in a link they copy, while the page around it stays in its own language.
  */
-/** `pt-BR` opens `pt`: the widget matches `langs` by exact code. */
-const primarySubtag = (locale: string) => locale.split('-', 1)[0] as string
-
 export function ClassDirectory({
   atlasRoute,
   showMap = true,
