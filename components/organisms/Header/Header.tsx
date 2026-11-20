@@ -5,6 +5,7 @@ import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
 import { MobileMenu, type MobileMenuProps } from '../MobileMenu'
 import type { HeaderDropdownProps } from '../HeaderDropdown'
+import { barRow, trailingIconInset } from './bar'
 import { useT } from '../../../hooks/useT'
 
 /**
@@ -188,7 +189,7 @@ export function Header({
               A grid at `lg:`, so the links centre on the page whatever the two
               sides hold. */}
         <div
-          className={`flex min-h-14 items-center gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr] ${
+          className={`${barRow} gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr] ${
             isSticky ? 'max-w-7xl mx-auto px-6' : ''
           }`}
         >
@@ -265,10 +266,7 @@ export function Header({
             <MobileMenu
               actionLinkHref={actionLinkHref}
               actionLinkText={actionLinkText}
-              // `-mr-2.5` puts the drawn icon, not its 40px box, on the
-              // gutter. The panel's close control repeats it, so × lands
-              // where ☰ was.
-              className="lg:hidden -mr-2.5"
+              className={`lg:hidden ${trailingIconInset}`}
               languages={languages}
               logoHref={logoHref}
               navItems={navItems}

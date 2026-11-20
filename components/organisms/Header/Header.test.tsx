@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Header } from './Header'
+import { trailingIconInset } from './bar'
 import { anchorFor, classesWith, classFor, classOf, openTag } from '../../../tests/_helpers/markup'
 
 const navItems = [{ label: 'Meditate Now', href: '/meditate' }]
@@ -171,7 +172,7 @@ describe('Header', () => {
 
       expect(trigger).toContain('aria-label="Menu"')
       expect(trigger).toContain('lg:hidden')
-      expect(trigger).toContain('-mr-2.5')
+      expect(trigger).toContain(trailingIconInset)
       expect(trigger).not.toContain('invisible')
     })
 
