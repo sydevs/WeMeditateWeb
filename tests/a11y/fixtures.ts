@@ -129,13 +129,22 @@ export const meditation = {
   frames: null,
 } as unknown as Meditation
 
+/**
+ * The raw lecture both lecture routes carry, as a SahajCloud read returns one.
+ *
+ * **Pre-mortem.** Checked against `LECTURE_SELECT` in
+ * `server/sahajcloud-client.ts` and `parseLectureMetadata` in
+ * `lib/lecture-shape.ts`.
+ */
 export const lecture = {
   id: 42,
+  type: 'full',
   title: 'Attention And Awareness',
-  hlsUrl: 'https://example.invalid/hls/42.m3u8',
-  durationSeconds: 900,
-  subtitles: null,
   thumbnail: IMAGE,
+  metadata: {
+    hlsUrl: 'https://example.invalid/hls/42.m3u8',
+    duration: 900,
+  },
 } as unknown as Lecture
 
 /**

@@ -1,26 +1,42 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { MediaPlayer, MediaProvider, Poster, Track, isHLSProvider } from '@vidstack/react'
-import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/default'
-import '@vidstack/react/player/styles/default/theme.css'
-import '@vidstack/react/player/styles/default/poster.css'
-import '@vidstack/react/player/styles/default/layouts/video.css'
-import { cuesToVtt, type VideoSubtitleCue } from './vtt'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCreateTextTrack, type TextCueInit } from '@videojs/react'
+import { I18nProvider } from '@videojs/react/i18n'
+import { HlsJsVideo } from '@videojs/react/media/hlsjs-video'
+import { VideoPlayer as VideoJsPlayer, VideoSkin, usePlayer } from '@videojs/react/video'
+import '@videojs/react/video/skin.css'
+import './skin-overrides.css'
+import { useLocale } from '../../../hooks/usePageContext'
+import { holdInWindow, replayFrom, resolveClipWindow, type ClipWindow } from './clip'
+import { ClipTimeline } from './clip-window'
+import { toTextCues, type VideoSubtitleCue } from './subtitles'
 import { posterURL } from './poster'
 
 /**
- * Player accent, scoped to this instance, with no global CSS. Vidstack
- * derives its accent `--media-brand` from `--video-brand`
- * (`--media-brand: var(--video-brand, #f5f5f5)`), and it redeclares that on
- * the default layout's own element. So setting `--media-brand` here gets
- * overridden by the `#f5f5f5` fallback. Setting `--video-brand`, the
- * layout-level theming variable, instead tints the scrubber fill, the large
- * play button, and other active states with the brand teal token
- * (`--color-teal-500` = #61aaa0). This keeps the player in step with the
- * design system, instead of duplicating the hex value.
+ * Player theming, scoped to this instance, with no global CSS.
+ *
+ * `--media-accent-color` is one of the eight custom properties a packaged Video.js skin treats
+ * as public, and every active state derives from it. Sourcing it from the brand token keeps the
+ * player in step with the design system instead of duplicating the hex value.
+ *
+ * `--media-control-size` is the skin's own, and it ships at 36px — under the 44×44 this project
+ * requires of every interactive element (docs/rules/design-system.md). Raising the token grows
+ * every control at once, which is what the skin's buttons size themselves from; the `44px` is
+ * the floor itself and not a design value, so it is written here rather than taken from a
+ * spacing token.
+ *
+ * `--media-slider-height` takes that same floor, for the time and volume sliders. Their root is
+ * the drag surface, and the skin ships it at 32px; the drawn track is a 4px `::before` centred
+ * in that box. So raising it grows the hit area and nothing a viewer sees — measured at a 390px
+ * viewport, the track stays 4px and the control bar stays the 48px the 44px buttons already
+ * hold it at.
  */
-const PLAYER_STYLE = { '--video-brand': 'var(--color-teal-500)' }
+const PLAYER_STYLE = {
+  '--media-accent-color': 'var(--color-teal-500)',
+  '--media-control-size': '44px',
+  '--media-slider-height': '44px',
+} as CSSProperties
 
 export interface VideoPlayerProps {
   /** HLS manifest URL (.m3u8). */
@@ -29,8 +45,8 @@ export interface VideoPlayerProps {
   poster?: string
   /**
    * The `sizes` the server-rendered poster declares, where this player is not
-   * inside the layout its default assumes. Vidstack's own poster takes one
-   * URL, so the mounted player keeps a single width whatever this says.
+   * inside the layout its default assumes. The mounted player's own poster takes one
+   * URL, so it keeps a single width whatever this says.
    * @default the bounded `max-w-4xl` case
    */
   posterSizes?: string
@@ -38,20 +54,24 @@ export interface VideoPlayerProps {
   startTime?: number | null
   /** Seconds at which to pause playback (end of a playback window). */
   stopTime?: number | null
-  /** Inline subtitle cues from the Video collection (rendered as an inline VTT track). */
+  /** Inline subtitle cues from the Video collection. */
   subtitles?: VideoSubtitleCue[]
   /** BCP-47 language tag for the inline-cue subtitle track. @default 'en' */
   subtitleLang?: string
   /**
-   * Per-locale external WebVTT subtitle tracks (Lecture shape). The player
-   * fetches each `.vtt` URL and re-serves it as a same-origin blob
-   * `<Track>`, as an alternative to the inline-cue `subtitles` adapter above.
+   * Per-locale external WebVTT subtitle tracks (Lecture shape), as an
+   * alternative to the inline-cue `subtitles` adapter above.
    */
   subtitleTracks?: { locale: string; url: string }[]
   /** Which `subtitleTracks` locale to mark as the default, active track. */
   defaultSubtitleLang?: string
-  /** Accessible label for the video (not shown visually). */
+  /** The video's title. The skin draws it across the top of the player, and names it. */
   title?: string
+  /**
+   * Which language the player's own controls speak. Defaults to the page's locale, which is
+   * what every in-app caller wants; the embed route and the live preview pass their own.
+   */
+  locale?: string
   /**
    * Begin loading the stream as soon as the player is visible, instead of
    * waiting for the viewer to press play. Use it for primary content, for
@@ -63,22 +83,68 @@ export interface VideoPlayerProps {
   className?: string
 }
 
+/** One subtitle track: inline cues from the Video collection, or a `.vtt` file to read them from. */
+interface SubtitleTrackInit {
+  language: string
+  cues?: TextCueInit[]
+  src?: string
+}
+
 /**
- * Shared HLS video player, built on Vidstack's `<MediaPlayer>` and its default layout.
+ * Adds one subtitle track to the player for as long as this is mounted.
  *
- * Vidstack supplies the themeable, touch-friendly control bar — larger
- * targets, a captions menu, fullscreen — over an internal `<video>`. HLS
- * plays natively where supported (Safari or iOS), and otherwise through this
- * project's bundled hls.js, which Vidstack loads lazily through
- * `provider.library`, so it stays out of the SSR/Workers bundle and the
- * initial client chunk. Subtitles come from either inline cues (Video
- * collection) or per-locale external `.vtt` URLs (Lectures).
- *
- * A `[startTime, stopTime]` window, a clip, passes to Vidstack's
- * `clipStartTime` and `clipEndTime` props. These relinearize the timeline to
- * `0:00` through the window length, seek to the start on load, and pause at
- * the stop.
+ * An app track takes its cues as data, or a `src` the player fetches and parses itself. Neither
+ * puts a `<track>` on the media, so a cross-origin file forces no `crossorigin` — which would
+ * break native HLS playback in Safari — and a host that serves `.vtt` as `text/plain` is read
+ * all the same.
  */
+function SubtitleTrack({ language, cues, src }: SubtitleTrackInit) {
+  useCreateTextTrack({ kind: 'subtitles', label: language.toUpperCase(), language, cues, src })
+
+  return null
+}
+
+/**
+ * Turns the page's locale into the one subtitle track that shows, in place of the browser's.
+ *
+ * Video.js restores the last track a viewer chose, then one matching the *browser's* language,
+ * then the first track — so a Russian browser would read English subtitles on a Russian page.
+ * This applies the page's preference once and then leaves the viewer's own choices alone. With
+ * no matching track it turns subtitles off.
+ *
+ * It waits for `expected`, the languages of the tracks this player added, rather than for the
+ * list to be non-empty: `textTrackList` also carries whatever the HLS manifest declares and
+ * tracks of other kinds, so a manifest's own track would otherwise spend the one shot.
+ */
+function SubtitlePreference({ lang, expected }: { lang?: string; expected: string[] }) {
+  const tracks = usePlayer((state) => state.textTrackList)
+  const selectSubtitlesTrack = usePlayer((state) => state.selectSubtitlesTrack)
+  const appliedRef = useRef(false)
+  const expectedKey = expected.join(' ')
+
+  useEffect(() => {
+    if (appliedRef.current) {
+      return
+    }
+    const subtitles = tracks.filter(
+      (track) => track.kind === 'subtitles' || track.kind === 'captions',
+    )
+    const waiting = expectedKey
+      ? expectedKey.split(' ').some((locale) => !subtitles.some((t) => t.language === locale))
+      : subtitles.length === 0
+
+    if (waiting) {
+      return
+    }
+    appliedRef.current = true
+    const match = lang ? subtitles.find((track) => track.language === lang) : undefined
+
+    void selectSubtitlesTrack(match?.id ?? null)
+  }, [tracks, lang, expectedKey, selectSubtitlesTrack])
+
+  return null
+}
+
 export function VideoPlayer({
   hlsUrl,
   poster,
@@ -89,145 +155,115 @@ export function VideoPlayer({
   subtitleTracks,
   defaultSubtitleLang,
   title,
+  locale,
   autoLoad = false,
   className,
 }: VideoPlayerProps) {
-  // Inline cues (Video collection) → a single inline WebVTT track. Vidstack
-  // parses the VTT string directly, so this needs no blob URL or fetch.
-  const inlineVtt = useMemo(
-    () => (subtitles && subtitles.length ? cuesToVtt(subtitles) : null),
-    [subtitles],
+  const pageLocale = useLocale()
+  const clip = useMemo<ClipWindow | null>(
+    () => resolveClipWindow(startTime, stopTime),
+    [startTime, stopTime],
   )
 
-  // Fetch the external per-locale .vtt files and re-serve them as same-origin
-  // `text/vtt` blobs. Linking the URLs directly is brittle in two ways. Some
-  // hosts serve .vtt as `text/plain`. And a cross-origin track forces
-  // `crossorigin` on the media, which can break native HLS playback in
-  // Safari. Blobs are same-origin, so this needs no crossOrigin, and the
-  // video plays everywhere.
-  const [trackBlobs, setTrackBlobs] = useState<{ locale: string; url: string }[]>([])
+  // Both subtitle shapes reach the player as app text tracks: the Video collection's inline cues
+  // as data, a Lecture's per-locale files as URLs the player reads.
+  //
+  // Keyed on content rather than array identity. The live preview re-resolves these props on
+  // every render, and a fresh `cues` array makes the player drop and re-add the track, which
+  // would turn the viewer's subtitles off mid-playback.
+  const tracksKey = JSON.stringify([subtitles ?? null, subtitleLang, subtitleTracks ?? null])
+  const tracks = useMemo<SubtitleTrackInit[]>(
+    () =>
+      subtitles?.length
+        ? [{ language: subtitleLang, cues: toTextCues(subtitles) }]
+        : (subtitleTracks ?? []).map((track) => ({ language: track.locale, src: track.url })),
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- `tracksKey` encodes every cue and every track URL, so a re-resolved prop differs only in array identity
+    [tracksKey],
+  )
 
-  // Stable key, so a fresh `subtitleTracks` array identity, for example one
-  // re-resolved on every live-preview render, does not trigger a redundant refetch.
-  const tracksKey = (subtitleTracks ?? []).map((t) => `${t.locale} ${t.url}`).join('')
+  // `load="visible"` is gone (videojs/video.js#3043) and media loads as soon as it attaches, so
+  // `preload="none"` holds every player at the poster and this observer is what lets an
+  // `autoLoad` player start buffering when it scrolls into view. Widening `preload` is enough:
+  // the hls.js media reads it and starts the load.
+  const frameRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const tracks = subtitleTracks ?? []
+    const element = frameRef.current
 
-    if (tracks.length === 0) {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect -- a no-op on mount, since `trackBlobs` starts empty; it clears blobs only when the tracks go away
-      setTrackBlobs([])
-
+    if (!autoLoad || !element || typeof IntersectionObserver === 'undefined') {
       return
     }
-
-    let cancelled = false
-    const created: string[] = []
-
-    void Promise.all(
-      tracks.map(async (track) => {
-        try {
-          const res = await fetch(track.url)
-
-          if (!res.ok) {
-            return null
-          }
-          const url = URL.createObjectURL(new Blob([await res.text()], { type: 'text/vtt' }))
-
-          created.push(url)
-
-          return { locale: track.locale, url }
-        } catch {
-          return null
-        }
-      }),
-    ).then((results) => {
-      if (cancelled) {
-        return
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setVisible(true)
+        observer.disconnect()
       }
-      setTrackBlobs(results.filter((r) => r !== null))
     })
 
-    return () => {
-      cancelled = true
-      created.forEach((url) => URL.revokeObjectURL(url))
-    }
-    // Keyed on the track URLs only (`tracksKey`), not on `defaultSubtitleLang`.
-    // The active track is chosen at render time, so switching locale never
-    // refetches or revokes a blob URL that a mounted <Track> still points to.
-    // eslint-disable-next-line @eslint-react/exhaustive-deps -- `tracksKey` encodes every track's locale and url, so a stale `subtitleTracks` differs only in array identity
-  }, [tracksKey])
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [autoLoad])
 
   if (!hlsUrl) {
     return null
   }
 
-  // A clip is a valid `[startTime, stopTime]` window. Vidstack relinearizes the
-  // timeline to `0:00` → the window length, seeks to the start on load, and
-  // pauses at the stop. `clipEndTime` of 0 means "play to the end".
-  const clipStartTime = typeof startTime === 'number' && startTime > 0 ? startTime : 0
-  const clipEndTime = typeof stopTime === 'number' && stopTime > clipStartTime ? stopTime : 0
+  // The window is ours to enforce, on the media element itself: `clip.ts` decides, this applies.
+  const holdWindow = (media: HTMLVideoElement) => {
+    const correction = holdInWindow(clip, media.currentTime)
+
+    if (correction?.kind === 'seek') {
+      media.currentTime = correction.time
+    } else if (correction?.kind === 'pause') {
+      media.pause()
+    }
+  }
 
   return (
-    <div className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}>
-      <MediaPlayer
-        playsInline
-        aspectRatio="16/9"
-        className="w-full"
-        clipEndTime={clipEndTime}
-        clipStartTime={clipStartTime}
-        // When `autoLoad` is set, content loads as soon as it is visible.
-        // Otherwise hls.js and the stream wait until the viewer presses
-        // play, though the poster still loads eagerly. This keeps the
-        // initial load light, and it stops every instance on a page from
-        // spinning up hls.js at once.
-        load={autoLoad ? 'visible' : 'play'}
-        poster={posterURL(poster)}
-        src={{ src: hlsUrl, type: 'application/x-mpegurl' }}
-        style={PLAYER_STYLE}
-        title={title}
-        // Use this project's bundled hls.js instead of Vidstack's default
-        // CDN copy. The dynamic import keeps hls.js in a client-only chunk,
-        // out of the Worker.
-        onProviderChange={(provider) => {
-          if (isHLSProvider(provider)) {
-            provider.library = () => import('hls.js')
-          }
-        }}
-      >
-        <MediaProvider>
-          {inlineVtt ? (
-            <Track
-              default
-              content={inlineVtt}
-              kind="subtitles"
-              label={subtitleLang.toUpperCase()}
-              lang={subtitleLang}
-              type="vtt"
-            />
-          ) : null}
-          {/* When defaultSubtitleLang matches none of the tracks, none is the
-              default and subtitles stay off. That is better than forcing a
-              non-locale language on the viewer. */}
-          {trackBlobs.map((track) => (
-            <Track
-              key={track.locale}
-              default={track.locale === defaultSubtitleLang}
-              kind="subtitles"
-              label={track.locale.toUpperCase()}
-              lang={track.locale}
-              src={track.url}
-              type="vtt"
-            />
-          ))}
-        </MediaProvider>
+    <div
+      ref={frameRef}
+      className={`relative w-full overflow-hidden rounded-lg bg-black ${className ?? ''}`}
+    >
+      <I18nProvider locale={locale ?? pageLocale}>
+        <VideoJsPlayer poster={posterURL(poster)} title={title}>
+          {/* Video.js 10 ships no default box, and `index.tsx` matches its SSR poster to this
+              one so hydration does not jump. */}
+          <VideoSkin
+            className="aspect-video w-full"
+            data-wm-clip={clip ? '' : undefined}
+            style={PLAYER_STYLE}
+          >
+            <HlsJsVideo
+              playsInline
+              preload={autoLoad && visible ? 'auto' : 'none'}
+              src={hlsUrl}
+              onLoadedMetadata={(event) => {
+                if (clip && clip.start > 0) {
+                  event.currentTarget.currentTime = clip.start
+                }
+              }}
+              onPlay={(event) => {
+                const from = replayFrom(clip, event.currentTarget.currentTime)
 
-        {/* The default layout does not render a poster from the `poster`
-            prop. So this adds the Poster element, and its stylesheet, explicitly. */}
-        {poster ? <Poster alt={title ?? ''} className="vds-poster" /> : null}
-
-        <DefaultVideoLayout icons={defaultLayoutIcons} />
-      </MediaPlayer>
+                if (from !== null) {
+                  event.currentTarget.currentTime = from
+                }
+              }}
+              onTimeUpdate={(event) => holdWindow(event.currentTarget)}
+            />
+            {tracks.map((track) => (
+              <SubtitleTrack key={track.language} {...track} />
+            ))}
+            <SubtitlePreference
+              expected={tracks.map((track) => track.language)}
+              lang={subtitles?.length ? subtitleLang : defaultSubtitleLang}
+            />
+            {clip ? <ClipTimeline window={clip} /> : null}
+          </VideoSkin>
+        </VideoJsPlayer>
+      </I18nProvider>
     </div>
   )
 }

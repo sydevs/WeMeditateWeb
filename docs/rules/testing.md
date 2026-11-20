@@ -15,9 +15,10 @@ A file that needs a DOM — a click, an effect, a state change after mount — o
 
 **Commands:**
 ```bash
-pnpm test         # Watch mode
-pnpm test:run     # Single run (use this in scripts and CI)
-pnpm test:ui      # Vitest UI
+pnpm test           # Watch mode
+pnpm test:run       # Single run (use this in scripts and CI)
+pnpm test:coverage  # Single run with V8 coverage in coverage/ (local only, not a gate)
+pnpm test:ui        # Vitest UI
 ```
 
 **File conventions:**
