@@ -25,6 +25,29 @@ describe('<ContentTextBox> subtitle', () => {
   })
 })
 
+describe('<ContentTextBox> paragraphs', () => {
+  it('renders single-paragraph text as the one <p> it always has', () => {
+    const html = renderToStaticMarkup(<ContentTextBox {...BASE} />)
+
+    expect(html).toContain(
+      '<p class="text-lg font-light text-gray-700">Meditation is even stronger when shared.</p>',
+    )
+    expect(html.match(/<p/g)?.length).toBe(1)
+  })
+
+  it('renders each paragraph of a multi-paragraph description as its own <p>', () => {
+    const html = renderToStaticMarkup(
+      <ContentTextBox {...BASE} description={'First paragraph.\n\nSecond paragraph.'} />,
+    )
+
+    expect(html).toContain(
+      '<p class="text-lg font-light text-gray-700">First paragraph.</p>' +
+        '<p class="text-lg font-light text-gray-700">Second paragraph.</p>',
+    )
+    expect(html.match(/<p/g)?.length).toBe(2)
+  })
+})
+
 describe('<ContentTextBox> alignment', () => {
   it('defaults to the left layout (image left of the box)', () => {
     const html = renderToStaticMarkup(<ContentTextBox {...BASE} />)

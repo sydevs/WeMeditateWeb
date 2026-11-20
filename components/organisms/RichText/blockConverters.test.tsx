@@ -91,6 +91,33 @@ describe('textbox block converter — routing', () => {
   })
 })
 
+describe('textbox block converter — paragraph breaks', () => {
+  // One treatment for every style an editor can pick (#286).
+  const STYLES = [
+    ['the white box', { imagePosition: 'left' }],
+    ['the ornate box', { imagePosition: 'left', wisdomStyle: true }],
+    ['the overlay', { imagePosition: 'overlay' }],
+  ] as const
+
+  it.each(STYLES)('%s renders each paragraph of the text as its own <p>', (_, style) => {
+    for (const text of [
+      'First paragraph.\n\nSecond paragraph.',
+      'First paragraph.\nSecond paragraph.',
+    ]) {
+      const html = renderTextbox({ ...style, title: 'Hi', text })
+
+      expect(html).toContain('First paragraph.</p>')
+      expect(html).toContain('>Second paragraph.</p>')
+    }
+  })
+
+  it.each(STYLES)('%s renders single-paragraph text in one <p>', (_, style) => {
+    const html = renderTextbox({ ...style, title: 'Hi', text: 'Only one paragraph here.' })
+
+    expect(html).toContain('>Only one paragraph here.</p>')
+  })
+})
+
 // Every block defined for `pages.content` upstream. Adding a block in SahajCloud
 // without a converter here should fail this test rather than silently fall
 // through to RichText's `unknown` fallback at runtime.

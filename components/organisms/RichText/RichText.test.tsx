@@ -492,6 +492,22 @@ describe('<RichText>', () => {
     expect(html).toContain('Explore below')
   })
 
+  it('anchors a non-Latin heading, and the table of contents links to the same id', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          { type: 'heading', tag: 'h2', children: [text('Τα οφέλη του διαλογισμού')], version: 1 },
+          block('table-of-contents', {
+            headings: [{ slug: 'stale', text: 'Τα οφέλη του διαλογισμού', level: 2 }],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html).toContain('<h2 id="τα-οφέλη-του-διαλογισμού"')
+    expect(html).toContain('href="#τα-οφέλη-του-διαλογισμού"')
+  })
+
   it('renders a showcase block, resolving relationships and dropping unroutable refs', () => {
     const html = renderToStaticMarkup(
       <RichText

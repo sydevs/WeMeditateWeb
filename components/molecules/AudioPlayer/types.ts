@@ -67,6 +67,8 @@ export interface PlaylistAudioPlayerControls {
   setVolume: (volume: number) => void
   /** Toggle mute on/off */
   toggleMute: () => void
+  /** Unmute (idempotent — a no-op when already unmuted) */
+  unmute: () => void
   /** Toggle shuffle mode on/off */
   toggleShuffle: () => void
   /** Play the track at this index in the tracks array, from a stopped player too */

@@ -154,6 +154,37 @@ export interface ContentIndexBlockFields {
   resolvedTracks?: Track[] | null
 }
 
+/**
+ * Every `content-index` block's `fields` object in a lexical tree, in
+ * document order.
+ *
+ * ⚠ **The objects come back by reference**, which is what lets
+ * `server/content-index.ts` fill each block's resolved list in place before
+ * SSR. The head reads the same lists (`lib/content-seo.ts`).
+ */
+export function contentIndexBlocks(content: unknown): ContentIndexBlockFields[] {
+  const found: ContentIndexBlockFields[] = []
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(walk)
+
+      return
+    }
+    if (node && typeof node === 'object') {
+      const candidate = node as { type?: unknown; fields?: { blockType?: unknown } }
+
+      if (candidate.type === 'block' && candidate.fields?.blockType === 'content-index') {
+        found.push(candidate.fields as ContentIndexBlockFields)
+      }
+      Object.values(node).forEach(walk)
+    }
+  }
+
+  walk(content)
+
+  return found
+}
+
 // --- Shared card shape + helpers ---
 
 /** A grid or card item shape, structurally compatible with `ContentGridItem`.

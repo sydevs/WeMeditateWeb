@@ -6,6 +6,8 @@ import { getPageBySlug, getPageLocaleStatus } from '../../server/sahajcloud-clie
 import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
 import { advertisedLocales } from '../../lib/hreflang'
+import { pageSeo, seoRoute } from '../../lib/content-seo'
+import type { SeoDocument } from '../../lib/head'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { reportLiveSessionGaps } from '../../server/live-session'
@@ -19,11 +21,16 @@ export interface PageData {
   locale: Locale
   slug: string
   /**
-   * The locales this page advertises in its `hreflang` cluster: published
-   * in SahajCloud and offered by the site. Empty means "no translations", and
-   * the page then emits its canonical alone.
+   * Everything the `<head>` publishes for this URL. Built here, where the
+   * document is in hand, and rendered by `lib/seo-head-html.ts`.
+   *
+   * shortcut: the whole document, graph descriptors included, rides `data`
+   * to the browser, which reads only its title and description — 1.5 KB on a
+   * plain page, 5.7 KB on a listing with two content indexes. Move the
+   * render-only half onto `pageContext` once a page's payload is measured as
+   * a problem.
    */
-  alternateLocales: Locale[]
+  seo: SeoDocument
 }
 
 export async function data(pageContext: PageContextServer): Promise<PageData> {
@@ -94,11 +101,20 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     pageTagLabels: pageTagLabels(t),
   })
 
+  const resolved = { ...page, content }
+
   return {
-    page: { ...page, content },
+    page: resolved,
     locale,
     slug,
     settings,
-    alternateLocales: advertisedLocales(status, settings.availableLocales),
+    seo: pageSeo({
+      page: resolved,
+      settings,
+      // Published in SahajCloud and offered by the site. Empty means "no
+      // translations", and the page then advertises its canonical alone.
+      locales: advertisedLocales(status, settings.availableLocales),
+      route: seoRoute(pageContext, t),
+    }),
   }
 }

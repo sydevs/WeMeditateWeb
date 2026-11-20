@@ -23,11 +23,10 @@ const primarySubtag = (locale: string) => locale.split('-', 1)[0] as string
  *
  * Three things it deliberately does not do:
  *
- * - ⚠ **It writes nothing to the `<head>`.** `ContentHead` builds the canonical
+ * - ⚠ **It writes nothing to the `<head>`.** `seoRoute` builds the canonical
  *   from `urlPathname` alone, so a `?atlas=` the widget adds as a visitor
- *   browses is never indexed apart. Never wire `useAtlasHead` or `getAtlasSeo`
- *   in: that pair is for a host owning its route, and emits the atlas's own
- *   canonical at `/map` for every route.
+ *   browses is never indexed apart. Never wire `atlasSeo` in: it is for a host
+ *   owning its route, and emits the atlas's own canonical at `/map`.
  * - **It sets no language of its own.** The directory follows the page it sits
  *   on. The widget matches `langs` by exact code, so this sends the locale's
  *   primary subtag — `pt-BR` opens `pt`.
