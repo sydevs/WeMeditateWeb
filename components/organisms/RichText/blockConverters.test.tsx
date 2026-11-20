@@ -6,7 +6,6 @@ import { blockConverters } from './blockConverters'
 import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import type { Track } from '../../molecules'
 import { anchorFor, classFor, classOf } from '../../../tests/_helpers/markup'
-import { enT } from '../../../lib/i18n'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.
@@ -63,11 +62,11 @@ describe('textbox block converter — routing', () => {
     expect(html).toContain('Collective meditation')
   })
 
-  it('wisdomStyle (side layout) → OrnateTextBox (ornate ground + sidetext)', () => {
+  it('wisdomStyle (side layout) → OrnateTextBox (ornate ground, no sidetext)', () => {
     const html = renderTextbox({ imagePosition: 'left', wisdomStyle: true, title: 'Wisdom' })
 
     expect(html).toContain('#6b5340') // warm ornate gradient ground
-    expect(html).toContain(enT('blocks.general.wisdom_sidetext')) // decorative sidetext
+    expect(html).not.toContain('[writing-mode:vertical-rl]') // the block carries no label
     expect(html).not.toContain('lg:bg-white') // not the plain ContentTextBox
   })
 

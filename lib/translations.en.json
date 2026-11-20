@@ -42,8 +42,7 @@
       "hours": "Hours",
       "learn_more": "Learn More →",
       "minutes": "Minutes",
-      "seconds": "Seconds",
-      "wisdom_sidetext": "Ancient Wisdom"
+      "seconds": "Seconds"
     },
     "live_session": {
       "a11y_next_session": "The next session is %{weekday} at %{time}, %{relative}.",
@@ -60,12 +59,12 @@
       "breadcrumb": "Breadcrumb",
       "close": "Close",
       "dismiss": "Dismiss",
-    "footer_navigation": "Footer menu",
+      "footer_navigation": "Footer menu",
+      "menu": "Menu",
       "next": "Next",
-      "opens_in_new_tab": "%{label} (opens in new tab)",
       "opens_in_new_tab_suffix": "(opens in new tab)",
       "previous": "Previous",
-    "primary_navigation": "Main menu",
+      "primary_navigation": "Main menu",
       "show_more_items_one": "Show %{count} more item",
       "show_more_items_other": "Show %{count} more items"
     },
@@ -74,7 +73,7 @@
       "show_more": "Show More",
       "site_description": "Discover free guided meditations, music, and articles to learn and deepen your meditation practice.",
       "site_title": "We Meditate",
-    "skip_to_main": "Skip to main content"
+      "skip_to_main": "Skip to main content"
     }
   },
   "discover": {
@@ -131,7 +130,7 @@
   "lecture": {
     "a11y": {
       "related_meditations_loading": "Loading related meditations",
-      "untitled_heading": "Untitled talk"
+      "untitled_heading": "Untitled Lecture"
     },
     "general": {
       "missing_video": "This lecture is missing a playable video source.",
