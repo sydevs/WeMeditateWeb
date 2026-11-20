@@ -22,6 +22,7 @@ import {
   discoverFromSahajCloud,
   nonEnglishLocale,
   htmlTag,
+  linkAttrs,
   renderedHtml,
   NOT_FOUND_MARKER,
 } from '../_helpers/preview'
@@ -135,9 +136,10 @@ describe('web preview pages', () => {
 
     // The canonical is what makes the hreflang cluster count: Google
     // discards a cluster whose members are not self-canonical.
-    expect(page.html, 'a content page should declare its own canonical').toContain(
-      `<link href="${origin}/${slug}" rel="canonical"/>`,
-    )
+    expect(
+      linkAttrs(page.html, 'canonical').map((link) => link.href),
+      'a content page should declare its own canonical, once',
+    ).toEqual([`${origin}/${slug}`])
   })
 
   it('a content page advertises only locales it is published in', async (ctx) => {
@@ -148,15 +150,17 @@ describe('web preview pages', () => {
 
     const page = await fetchPage(`/${slug}`)
     const origin = new URL(page.finalUrl).origin
-    const advertised = [...page.html.matchAll(/rel="alternate" hreflang="([^"]+)"/g)].map(
-      (match) => match[1],
-    )
+    // `rel="alternate"` also carries the oEmbed discovery link, which names no
+    // locale. The cluster is the subset that does.
+    const cluster = linkAttrs(page.html, 'alternate').filter((link) => link.hreflang)
+    const advertised = cluster.map((link) => link.hreflang)
 
     // English is served bare, and x-default points at that same URL.
     expect(advertised, 'the cluster should name the bare English URL').toContain('en')
-    expect(page.html).toContain(
-      `<link rel="alternate" hreflang="x-default" href="${origin}/${slug}"/>`,
-    )
+    expect(
+      cluster.find((link) => link.hreflang === 'x-default')?.href,
+      'x-default should name the bare English URL',
+    ).toBe(`${origin}/${slug}`)
     // The site's locale set is a filter on the cluster, never the cluster
     // itself: a locale this page is not published in must not appear.
     const offered = new Set([...(discovered?.availableLocales ?? []), 'x-default'])

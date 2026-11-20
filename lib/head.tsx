@@ -1,224 +1,65 @@
 /**
- * SEO `<head>` helpers for content pages.
+ * SEO `<head>` types, for every route that publishes a URL.
  *
- * Uses vike-react's `useConfig` to set `title` / `description` / `image` from a
- * page's SahajCloud `meta`. Vike turns these into the corresponding tags:
- *   title       → <title>, <meta property="og:title">
- *   description → <meta name="description">, <meta property="og:description">
- *   image       → <meta property="og:image">, <meta name="twitter:card">
+ * - `title` and `description` are vike-react settings (`lib/head-settings.ts`),
+ *   which vike re-applies on a client-side navigation.
+ * - Everything else is raw head HTML generated once per request on the server
+ *   by Unhead (`lib/seo-head-html.ts`), because `useConfig` emits no `<link>`
+ *   and no `<script>`.
  *
- * See https://vike.dev/useConfig and https://vike.dev/title
+ * Both read one {@link SeoDocument}, built in the route's `+data.ts`. A route
+ * that builds none — an `embed` route, the error page — publishes no URL claim.
  *
- * `useConfig` emits `title` / `description` / `image` and nothing else, so
- * the canonical and the `hreflang` cluster go through `Head` instead — the
- * mechanism `lib/atlas-head.tsx` already uses for `/map`. There is one
- * head mechanism here, not two.
+ * See https://vike.dev/head-tags
  */
 
-import type { PageContext } from 'vike/types'
-import { useConfig } from 'vike-react/useConfig'
-import { getImageURL, getVariantName } from './cloudflare-images'
-import { populatedImageUrl } from './payload-relationships'
-import { useT } from '../hooks/useT'
-import { useOptionalPageContext } from '../hooks/usePageContext'
-import { buildAlternates, type Alternate } from './hreflang'
-import { localeUrl, normalizeContentPath } from './urls'
-import type { Locale } from '../server/sahajcloud-types'
+import type { Link, Meta, UseSeoMetaInput } from 'unhead/types'
+import type { Alternate } from './hreflang'
+import type { SeoSchema } from './seo-schema'
 
-/** Minimal shape of a page's `meta` field (a subset of the SahajCloud Page meta). */
-export interface PageMetaLike {
-  title?: string | null
-  description?: string | null
-  /** Image relationship: a populated upload doc, a bare id, or null. */
-  image?: number | { url?: string | null } | null
-}
-
-/**
- * Resolves a `meta.image` relationship to a single absolute og:image URL.
- *
- * og:image needs one large landscape render, so this function resolves a
- * Cloudflare Images URL to a `video` (16:9) variant, replacing the `/public`
- * one SahajCloud returns. Returns null when the image is missing or
- * unpopulated (a bare id), so the tag is simply omitted.
- */
-export function resolveOgImageUrl(image: PageMetaLike['image']): string | null {
-  const url = populatedImageUrl(image)
-
-  if (!url) {
-    return null
-  }
-
-  return getImageURL(url, getVariantName('video', 'large'))
-}
-
-/**
- * Sets the page's SEO head tags from SahajCloud meta, during render.
- *
- * This is a hook, so call it unconditionally from a component.
- *
- * Each tag falls through three levels: the page's own SahajCloud `meta`, then the
- * site defaults from SahajCloud (`common.general.site_title` /
- * `site_description`, in the page's locale), then the English literals in
- * `pages/+config.ts`. Before the middle level existed, a French page with
- * no meta of its own advertised itself in English to search engines and
- * social previews.
- */
-export function usePageHead(options: {
-  meta?: PageMetaLike | null
-  fallbackTitle?: string | null
-}): void {
-  const config = useConfig()
-  const t = useT()
-  const { meta, fallbackTitle } = options
-
-  const title = meta?.title || fallbackTitle || t('common.general.site_title') || undefined
-  const description = meta?.description || t('common.general.site_description') || undefined
-  const image = resolveOgImageUrl(meta?.image) || undefined
-
-  config({
-    ...(title ? { title } : {}),
-    ...(description ? { description } : {}),
-    ...(image ? { image } : {}),
-  })
-}
-
-/**
- * One `<link rel="alternate" hreflang>` per row of a cluster.
- *
- * The single owner of how an alternate is spelled, used by the content
- * pages here and by `/map` in `lib/atlas-head.tsx`. The two clusters are
- * built very differently — content alternates are path prefixes, atlas
- * alternates are `?locale=` query variants — but they are rendered
- * identically, and a spelling that drifted between them would annotate
- * half the site one way and half the other.
- *
- * Rendered as a component, instead of assembled as strings, so React does
- * the ordinary attribute escaping on every value.
- */
-export function HreflangLinks({ alternates }: { alternates: readonly Alternate[] }) {
-  return (
-    <>
-      {alternates.map((alternate) => (
-        // The lowercase spelling is spread in deliberately. React emits the
-        // `hrefLang` prop as authored, and while an HTML parser lowercases
-        // attribute names anyway, these tags exist for other crawlers to
-        // read, and some of them pattern-match instead of parsing.
-        <link
-          key={alternate.hreflang}
-          rel="alternate"
-          {...{ hreflang: alternate.hreflang }}
-          href={alternate.href}
-        />
-      ))}
-    </>
-  )
-}
-
-/**
- * The `<link>` tags a content URL contributes: its own canonical, then its
- * cluster.
- *
- * The canonical is always emitted. An `hreflang` cluster whose members are
- * not self-canonical is one Google discards, so the two ship together.
- */
-export function ContentHeadTags({
-  canonical,
-  alternates,
-}: {
-  canonical: string
+/** The `<head>` tags a URL contributes beyond vike-react's own settings. */
+export interface SeoHead {
+  /** The URL's self-referential canonical, or null where it publishes none. */
+  canonical: string | null
   alternates: readonly Alternate[]
-}) {
-  return (
-    <>
-      <link href={canonical} rel="canonical" />
-      <HreflangLinks alternates={alternates} />
-    </>
-  )
+  /** Open Graph and Twitter in Unhead's flat spelling (`ogImage`, `twitterCard`, …). */
+  seoMeta: UseSeoMetaInput
+  /** Rows already keyed by `property`, as `/map`'s upstream answer arrives. */
+  meta?: Meta[]
+  /** `<link>` tags beyond the canonical and the cluster: the oEmbed discovery link. */
+  links?: Link[]
+  /** The `@graph` as plain data (`lib/seo-schema.ts`). */
+  schema?: SeoSchema
+  /** A pre-serialized `application/ld+json` body, for `/map` alone. */
+  jsonLd?: string
+}
+
+/** A whole head: the two vike-react settings, plus the tags around them. */
+export interface SeoDocument extends SeoHead {
+  /** The composed `<title>`, which vike-react also emits as `og:title`. */
+  title: string
+  description: string | null
 }
 
 /**
- * The URL a content route publishes — its origin, its path in
- * `normalizeContentPath`'s spelling, and the canonical the two make — or
- * `null` where it publishes none.
+ * Whether a pre-serialized JSON-LD string is safe to emit verbatim.
  *
- * `ContentHead` emits that canonical and the page's share row shares it, so
- * a shared link names the URL search engines are pointed at.
+ * SahajCloud's `jsonLdEscape()` neutralizes `</script>` and `<!--` with JSON
+ * escapes, so the string is emitted whole: HTML-escaping it would corrupt the
+ * JSON, and a `JSON.parse` round trip would drop the escaping.
+ *
+ * ⚠ The sink is a `<script>` block carrying SahajCloud-authored text, so this
+ * fails closed — dropping the block — rather than repairing the string.
  */
-export function publishedContentUrl(
-  pageContext: PageContext | null,
-): { origin: string; path: string; canonical: string } | null {
-  if (!pageContext) {
-    return null
-  }
-
-  // ⚠ The browser's `pageContext` parses a path-only URL, so its origin is
-  // null there. The window's own stands in: without it the share row exists
-  // on the server only, and React discards the server markup to re-render.
-  const origin =
-    pageContext.urlParsed?.origin ?? (typeof window === 'undefined' ? null : window.location.origin)
-
-  if (!origin) {
-    return null
-  }
-
-  // ⚠ A live preview is not a URL to point a crawler at — the repo convention
-  // that kept `ContentHead` out of the templates in the first place, because
-  // they are shared with the `embed` routes and with preview.
-  //
-  // Preview used to be its own route, which declared no `Head` at all. Now it
-  // is the real route with a token on it, so the suppression has to happen
-  // here instead. Without it, previewing a DRAFT page emits a canonical and a
-  // full hreflang cluster pointing at a URL that 404s publicly — and under
-  // `draft: true` the alternates would advertise unpublished locales too.
-  //
-  // `X-Robots-Tag: noindex` also rides the response, but a canonical is a
-  // claim about another URL and is worth not making at all.
-  if (pageContext.livePreview?.active) {
-    return null
-  }
-
-  const path = normalizeContentPath(pageContext.urlPathname)
-
-  return { origin, path, canonical: localeUrl(origin, pageContext.locale, path) }
+export function isSafeJsonLd(jsonLd: string | undefined): jsonLd is string {
+  return !!jsonLd && !/<\/script|<!--/i.test(jsonLd)
 }
 
 /**
- * The canonical and `hreflang` cluster for whichever content route is
- * rendering. Declared as `Head: ContentHead` in a route's `+config.ts`,
- * beside its `Layout: LayoutChrome`.
- *
- * That is the level this belongs at. "This route is an indexable content
- * URL" is route identity, exactly like "this route wears the site chrome",
- * and a new content route opts in with one declarative line instead of
- * remembering a hook call. It is also why this is not set from a template:
- * `PageTemplate`, `MeditationTemplate` and `LectureTemplate` are shared
- * with the `embed` routes and the live preview, and none of those is a URL
- * to point a crawler at.
- *
- * `alternateLocales` comes off the route's data (`pages/[slug]/+data.ts`).
- * A route that publishes none — a meditation or a lecture, neither of which
- * carries per-locale publish state upstream — advertises nothing and gets
- * its canonical alone.
- *
- * Renders nothing at all where {@link publishedContentUrl} answers `null`:
- * outside a Vike app, where the origin is unknown and a guessed canonical is
- * worse than none, and under an open live preview.
+ * `noindex`, for the two `embed` routes: an iframe target a crawler finds
+ * would otherwise rank a bare player against its own page. `robots.txt`
+ * cannot say this, because the iframe must stay fetchable.
  */
-export function ContentHead() {
-  const pageContext = useOptionalPageContext()
-  const url = publishedContentUrl(pageContext)
-
-  if (!url) {
-    return null
-  }
-
-  const { origin, path, canonical } = url
-  const { alternateLocales } = (pageContext?.data ?? {}) as { alternateLocales?: readonly Locale[] }
-
-  return (
-    <ContentHeadTags
-      alternates={buildAlternates({ origin, path, locales: alternateLocales ?? [] })}
-      canonical={canonical}
-    />
-  )
+export function NoIndexHead() {
+  return <meta content="noindex" name="robots" />
 }

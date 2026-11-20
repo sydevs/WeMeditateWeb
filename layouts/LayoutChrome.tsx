@@ -10,6 +10,7 @@ import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
 import { localeEndonym } from '../lib/locale-names'
+import { SOCIAL_PROFILES } from '../lib/site-identity'
 import { useT } from '../hooks/useT'
 
 interface RouteData {
@@ -118,13 +119,6 @@ function Chrome({
     })
   }
 
-  // TODO: Configure social links from settings when available
-  const socialLinks = [
-    { platform: 'facebook' as const, href: 'https://facebook.com/wemeditate' },
-    { platform: 'instagram' as const, href: 'https://instagram.com/wemeditate' },
-    { platform: 'youtube' as const, href: 'https://youtube.com/wemeditate' },
-  ]
-
   // The locales SahajCloud says this site offers, each linking to the current
   // page in that language rather than to its home page. `Link` spells each
   // href through `lib/urls.ts`, and so does the hreflang cluster, so the
@@ -192,7 +186,7 @@ function Chrome({
         languages={languages}
         locale={locale}
         sections={footerSections}
-        socialLinks={socialLinks}
+        socialLinks={SOCIAL_PROFILES}
       />
     </div>
   )

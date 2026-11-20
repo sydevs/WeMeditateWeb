@@ -1,21 +1,24 @@
 /**
  * What a content page renders after its own content: the discover section on
- * the home page, and the share row everywhere else — sharing the very URL
- * `ContentHead` names as canonical, and never under a live preview.
+ * the home page, and the share row everywhere else — sharing the very URL the
+ * route's own `seo` document publishes as canonical, and never under a live
+ * preview.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { LivePreviewState } from '../../lib/live-preview/protocol'
-import type { Page, WebConfig } from '../../server/sahajcloud-types'
-import { EN_TRANSLATIONS } from '../../lib/i18n'
-import { anchorFor, openTag } from '../../tests/_helpers/markup'
+import type { Locale, Page, WebConfig } from '../../server/sahajcloud-types'
+import { EN_TRANSLATIONS, enT } from '../../lib/i18n'
+import { pageSeo, seoRoute } from '../../lib/content-seo'
+import { renderSeoHead } from '../../lib/seo-head-html'
+import { anchorFor } from '../../tests/_helpers/markup'
 
 const routeData: { current: unknown } = { current: {} }
 const context: {
   current: {
-    locale: string
+    locale: Locale
     urlPathname: string
     livePreview?: LivePreviewState
     urlParsed?: { origin: string | null }
@@ -36,7 +39,6 @@ vi.mock('vike-react/ClientOnly', () => ({
 }))
 
 const { Page } = await import('./+Page')
-const { ContentHead } = await import('../../lib/head')
 
 const content = {
   root: {
@@ -97,9 +99,30 @@ const settings = {
 } as unknown as WebConfig
 
 const FACEBOOK = 'https://www.facebook.com/sharer/sharer.php?u='
+const ORIGIN = 'https://wemeditate.com'
+
+/**
+ * The route's data, built by the very builder `+data.ts` calls, so the row
+ * and the head cannot be compared against two different documents.
+ */
+function routeSeo(document: Page, pageContext: (typeof context)['current']) {
+  return pageSeo({
+    page: document,
+    settings,
+    locales: [],
+    route: seoRoute(
+      {
+        urlParsed: pageContext.urlParsed ?? { origin: ORIGIN },
+        urlPathname: pageContext.urlPathname,
+        locale: pageContext.locale,
+      },
+      enT,
+    ),
+  })
+}
 
 function render(document: Page, pageContext: (typeof context)['current']) {
-  routeData.current = { page: document, settings }
+  routeData.current = { page: document, settings, seo: routeSeo(document, pageContext) }
   context.current = pageContext
 
   return renderToStaticMarkup(<Page />)
@@ -107,10 +130,6 @@ function render(document: Page, pageContext: (typeof context)['current']) {
 
 beforeEach(() => {
   context.current = { locale: 'en', urlPathname: '/' }
-})
-
-afterEach(() => {
-  vi.unstubAllGlobals()
 })
 
 describe('the end of a content page', () => {
@@ -123,12 +142,14 @@ describe('the end of a content page', () => {
     expect(html).not.toContain(FACEBOOK)
   })
 
-  it('shares any other page at the canonical ContentHead emits, under its title', () => {
-    const at = { locale: 'fr', urlPathname: '/about-meditation' }
+  it('shares any other page at the canonical its head publishes, under its title', () => {
+    const at: (typeof context)['current'] = { locale: 'fr', urlPathname: '/about-meditation' }
     const html = render(ARTICLE, at)
-    const canonical = 'https://wemeditate.com/fr/about-meditation'
+    const canonical = `${ORIGIN}/fr/about-meditation`
 
-    expect(openTag(renderToStaticMarkup(<ContentHead />), 'link')).toContain(`href="${canonical}"`)
+    expect(renderSeoHead(routeSeo(ARTICLE, at), ORIGIN)).toContain(
+      `<link rel="canonical" href="${canonical}">`,
+    )
     expect(anchorFor(html, `${FACEBOOK}${encodeURIComponent(canonical)}`)).not.toBe('')
     expect(html).toContain(`text=${encodeURIComponent('About Meditation')}%20`)
     expect(html).not.toContain(EN_TRANSLATIONS.discover.general.title)
@@ -136,24 +157,32 @@ describe('the end of a content page', () => {
 
   it('renders the same row in the browser, whose pageContext parses a path-only URL', () => {
     // What the server rendered is what hydration must reproduce, or React
-    // discards the server markup.
-    vi.stubGlobal('window', { location: { origin: 'https://wemeditate.com' } })
-    const html = render(ARTICLE, {
+    // discards the server markup. The URL survives because it rides `data`:
+    // the browser's own `urlParsed` carries no origin to rebuild it from.
+    routeData.current = {
+      page: ARTICLE,
+      settings,
+      seo: routeSeo(ARTICLE, { locale: 'en', urlPathname: '/about-meditation' }),
+    }
+    context.current = {
       locale: 'en',
       urlPathname: '/about-meditation',
       urlParsed: { origin: null },
-    })
+    }
 
     expect(
       anchorFor(
-        html,
-        `${FACEBOOK}${encodeURIComponent('https://wemeditate.com/about-meditation')}`,
+        renderToStaticMarkup(<Page />),
+        `${FACEBOOK}${encodeURIComponent(`${ORIGIN}/about-meditation`)}`,
       ),
     ).not.toBe('')
   })
 
   it('offers no share row under an open live preview', () => {
-    const preview = { locale: 'en', urlPathname: '/about-meditation' }
+    const preview: (typeof context)['current'] = {
+      locale: 'en',
+      urlPathname: '/about-meditation',
+    }
     const html = render(ARTICLE, {
       ...preview,
       livePreview: { active: true, scope: 'wm-web-config' },

@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { AudioPlayer } from './AudioPlayer'
 import type { Track, PlaylistAudioPlayerControls, PlaylistAudioPlayerState } from './types'
 import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
@@ -37,6 +39,7 @@ const controls: PlaylistAudioPlayerControls = {
   seek: noop,
   setVolume: noop,
   toggleMute: noop,
+  unmute: noop,
   toggleShuffle: noop,
   selectTrack: noop,
 }
@@ -49,5 +52,26 @@ describe('<AudioPlayer> now-playing thumbnail sizes', () => {
     expect(html).toContain('w-12 h-12')
     expect(html).toContain('sizes="48px"')
     expect(html).not.toContain('/public')
+  })
+})
+
+describe('<AudioPlayer> volume slider', () => {
+  // Howler's `volume()` leaves its mute in place, and the slider reads 0 while
+  // muted, so a slider that only set the volume snapped back to 0 on every drag.
+  it('unmutes when it moves while muted', () => {
+    const setVolume = vi.fn()
+    const unmute = vi.fn()
+
+    render(
+      <AudioPlayer
+        controls={{ ...controls, setVolume, unmute }}
+        state={{ ...state, isMuted: true, volume: 0.6 }}
+      />,
+    )
+
+    fireEvent.change(screen.getByRole('slider', { name: 'Volume' }), { target: { value: '0.3' } })
+
+    expect(setVolume).toHaveBeenCalledExactlyOnceWith(0.3)
+    expect(unmute).toHaveBeenCalledOnce()
   })
 })

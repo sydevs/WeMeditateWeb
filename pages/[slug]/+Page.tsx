@@ -9,14 +9,18 @@ import { PageTemplate } from '../../components/templates'
 import { useOptionalPageContext } from '../../hooks/usePageContext'
 import { getLeadSplash } from '../../lib/content-blocks'
 import { isFeaturedNavPage } from '../../lib/featured-nav'
-import { publishedContentUrl } from '../../lib/head'
 import { LivePreviewDocument } from '../../lib/live-preview/document'
 
 export function Page() {
-  const { page: initialPage, settings } = useData<PageData>()
-  // The canonical `ContentHead` emits, so a share names the indexed URL. It is
-  // `null` under an open live preview, which takes the share row with it.
-  const shareUrl = publishedContentUrl(useOptionalPageContext())?.canonical
+  const { page: initialPage, settings, seo } = useData<PageData>()
+  // The canonical `+data.ts` built for the head, so a share cannot name a
+  // different URL. It rides `data` to the browser, where `urlParsed` carries
+  // no origin to rebuild one from.
+  //
+  // ⚠ That document is built under an open live preview too, where
+  // `seoHeadHtml` publishes no head at all. A draft's URL 404s publicly, so it
+  // is not one to hand a sharer either.
+  const shareUrl = useOptionalPageContext()?.livePreview?.active ? null : seo.canonical
 
   // Off-preview this renders `initialPage` and mounts nothing at all; under an
   // open session it renders the admin's unsaved edits. See

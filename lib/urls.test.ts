@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  absoluteHref,
   isSafeHttpUrl,
   isSafeLinkHref,
   isSafeNavigationUrl,
@@ -158,7 +159,7 @@ const NOT_SITE_PATHS = [
 
 describe('localeHref', () => {
   it('drops a trailing slash, so a link agrees with the page canonical', () => {
-    // `/about/` and `/about` are one page, and ContentHead emits `/fr/about`.
+    // `/about/` and `/about` are one page, and the cluster emits `/fr/about`.
     expect(localeHref('fr', '/about/')).toBe('/fr/about')
     expect(localeHref('en', '/about/')).toBe('/about')
     expect(localeHref('pt-BR', '/about/')).toBe('/pt-BR/about')
@@ -373,5 +374,21 @@ describe('isSafeLinkHref', () => {
   it('refuses a bare relative href, which no route here serves', () => {
     expect(isSafeLinkHref('about')).toBe(false)
     expect(isSafeLinkHref('?q=1')).toBe(false)
+  })
+})
+
+describe('absoluteHref', () => {
+  it('names a page of ours in full, locale prefix included', () => {
+    expect(absoluteHref(ORIGIN, 'en', '/meditations/5')).toBe(`${ORIGIN}/meditations/5`)
+    expect(absoluteHref(ORIGIN, 'fr', '/meditations/5')).toBe(`${ORIGIN}/fr/meditations/5`)
+  })
+
+  it('spells the home page the way the canonical does', () => {
+    expect(absoluteHref(ORIGIN, 'en', '/')).toBe(`${ORIGIN}/`)
+    expect(absoluteHref(ORIGIN, 'fr', '/')).toBe(`${ORIGIN}/fr`)
+  })
+
+  it('leaves an off-site URL alone, as localeHref does', () => {
+    expect(absoluteHref(ORIGIN, 'fr', 'https://example.com/x')).toBe('https://example.com/x')
   })
 })

@@ -30,6 +30,7 @@ import { readStatus, withRetry } from './error-utils'
 import { sahajCloudFetchOptional } from './sahajcloud-fetch'
 import { resolveLecture } from '../lib/lecture-shape'
 import * as Sentry from '@sentry/cloudflare'
+import { degrade, warnOnce } from './error-utils'
 import type {
   Config,
   PagesSelect,
@@ -103,15 +104,20 @@ const IMAGE_POPULATE = {
 }
 
 /** Fields rendered for a full Page (PageTemplate): body, author byline,
- * featured video, SEO meta, plus slug/draft status. */
+ * featured video, SEO meta, plus slug/draft status. `tags` is read by the
+ * head, not the body: an author or a tag is what makes a page an article
+ * rather than a standing page (lib/content-seo.ts). */
 const PAGE_SELECT = {
   title: true,
   content: true,
   slug: true,
   createdAt: true,
+  // `dateModified` on an article, beside `datePublished` from `createdAt`.
+  updatedAt: true,
   _status: true,
   author: true,
   featuredVideo: true,
+  tags: true,
   meta: { title: true, description: true, image: true },
 } satisfies PagesSelect<true>
 
@@ -129,6 +135,8 @@ const PAGE_STATUS_SELECT = { _status: true } satisfies PagesSelect<true>
 const AUTHOR_POPULATE = {
   name: true,
   title: true,
+  // The `Person` node an article's byline publishes.
+  description: true,
   slug: true,
   countryCode: true,
   yearsMeditating: true,
@@ -611,9 +619,10 @@ export async function getLecture(
     console.warn(
       `[getLecture] clip ${resolved.id} has no resolvable HLS source (unpopulated or unsynced parent lecture)`,
     )
-    Sentry.captureMessage('Lecture clip has an unresolved parent (no HLS source)', {
-      level: 'warning',
-      tags: { source: 'getLecture' },
+    // The gap stands until an editor fixes the parent, and this runs per
+    // render. The locale is the first render's in this isolate, not the only one.
+    warnOnce(String(resolved.id), 'Lecture clip has an unresolved parent (no HLS source)', {
+      source: 'getLecture',
       extra: { lectureId: resolved.id, locale: options.locale ?? null },
     })
   }
@@ -831,8 +840,8 @@ export async function getWebTranslations(options: {
  * The endpoint returns songs in a random order on every request. Callers
  * pick a track on the client, so a list held at the edge is fine. The
  * function returns an empty list when a meditation has no eligible songs
- * (HTTP 200, `{ docs: [] }`) and for an unknown ID (HTTP 404), so the player
- * simply renders voice-only.
+ * (HTTP 200, `{ docs: [] }`), for an unknown ID (HTTP 404), and for any
+ * failure that survives retries, so the player simply renders voice-only.
  *
  * @param options.id - The meditation document ID
  * @param options.locale - The locale to retrieve songs in
@@ -843,42 +852,35 @@ export async function getMeditationSongs(
     id: string
   },
 ): Promise<MeditationSong[]> {
-  try {
-    return await withRetryUnlessPreview(async () => {
-      // A 404 — an unknown meditation ID, or no songs route — means no music,
-      // and arrives as `null`. Every other non-OK throws, so the retry runs.
-      const body = await sahajCloudFetchOptional<{
-        docs?: Array<{ id: number; title?: string | null; url?: string | null }>
-      }>(
-        `/api/meditations/${encodeURIComponent(options.id)}/songs` +
-          `?locale=${encodeURIComponent(options.locale)}`,
-        `getMeditationSongs(${options.id})`,
-      )
-      const docs = Array.isArray(body?.docs) ? body.docs : []
-
-      // Keep only playable tracks. The player needs a real URL. The
-      // endpoint omits duration, artwork, and credit, so title and url are
-      // all this function returns.
-      return docs
-        .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
-        .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
-    })
-  } catch (error) {
-    // Background music is supplementary. A failure to load it, even after
-    // the retries, must never break the meditation page. Degrade to
-    // voice-only and report the gap to Sentry.
-    console.warn(
-      `[getMeditationSongs] degrading to voice-only for meditation ${options.id}:`,
-      error,
+  const read = async () => {
+    // A 404 — an unknown meditation ID, or no songs route — means no music,
+    // and arrives as `null`. Every other non-OK throws, so the retry runs.
+    const body = await sahajCloudFetchOptional<{
+      docs?: Array<{ id: number; title?: string | null; url?: string | null }>
+    }>(
+      `/api/meditations/${encodeURIComponent(options.id)}/songs` +
+        `?locale=${encodeURIComponent(options.locale)}`,
+      `getMeditationSongs(${options.id})`,
     )
-    Sentry.captureMessage('getMeditationSongs failed; rendering meditation voice-only', {
-      level: 'warning',
-      tags: { source: 'getMeditationSongs' },
-      extra: { meditationId: options.id, locale: options.locale ?? null },
-    })
+    const docs = Array.isArray(body?.docs) ? body.docs : []
 
-    return []
+    // Keep only playable tracks. The player needs a real URL. The
+    // endpoint omits duration, artwork, and credit, so title and url are
+    // all this function returns.
+    return docs
+      .filter((doc) => typeof doc.url === 'string' && doc.url.length > 0)
+      .map((doc) => ({ id: doc.id, title: doc.title ?? '', url: doc.url as string }))
   }
+
+  // Background music is supplementary: a failure, even after the retries,
+  // renders the meditation voice-only.
+  return degrade(() => withRetry(read, { reportFailure: false }), {
+    source: 'getMeditationSongs',
+    message: 'getMeditationSongs failed; rendering meditation voice-only',
+    key: options.id,
+    fallback: [],
+    extra: { meditationId: options.id, locale: options.locale },
+  })
 }
 
 /** Extracts audience document IDs (populated object or bare ID) as strings.
@@ -891,6 +893,33 @@ export function audienceIdList(audiences: (number | Audience)[] | null | undefin
   return audiences
     .map((a) => (typeof a === 'number' ? String(a) : a?.id != null ? String(a.id) : null))
     .filter((id): id is string => id !== null)
+}
+
+/** A shaped `related-*` doc carrying the fields every card renders. */
+type RelatedDoc = Record<string, unknown> & { id: number; title: string; thumbnailUrl: string }
+
+function isRenderableCard(doc: Record<string, unknown>): doc is RelatedDoc {
+  return (
+    typeof doc.id === 'number' &&
+    typeof doc.title === 'string' &&
+    doc.title.length > 0 &&
+    typeof doc.thumbnailUrl === 'string' &&
+    doc.thumbnailUrl.length > 0
+  )
+}
+
+/**
+ * The cards a shaped `related-*` endpoint answers.
+ *
+ * The endpoint already shapes cards. Still guard the rendered fields, so a
+ * partial doc can never produce a blank card or a broken thumbnail.
+ */
+async function readRelatedCards(path: string, label: string): Promise<RelatedDoc[]> {
+  // A 404 — an unknown anchor ID, or no related route — means no related
+  // content, and arrives as `null`.
+  const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(path, label)
+
+  return (Array.isArray(body?.docs) ? body.docs : []).filter(isRenderableCard)
 }
 
 /**
@@ -908,8 +937,10 @@ export function audienceIdList(audiences: (number | Audience)[] | null | undefin
  * so the internal `label` never leaks. Meditation titles are not localized,
  * so the endpoint returns an empty list for a non-English locale. The
  * caller then renders no related section — this is graceful, not an error.
- * The function also returns `[]` for an unknown lecture ID (404), and for
- * any failure that survives retries.
+ * The function also returns `[]` for an unknown lecture ID (404).
+ *
+ * `null` is a failure that survived the retries, never an empty answer: the
+ * route caches an answer and must not cache that.
  *
  * @param options.id - The lecture document ID (the anchor)
  * @param options.locale - The locale to retrieve meditation cards in
@@ -920,53 +951,33 @@ export async function getRelatedMeditations(
     id: string
     limit?: number
   },
-): Promise<RelatedMeditationCard[]> {
+): Promise<RelatedMeditationCard[] | null> {
   const limit = options.limit ?? 8
 
-  try {
-    return await withRetryUnlessPreview(async () => {
-      // A 404 — an unknown lecture ID, or no related route — means no related
-      // content, and arrives as `null`.
-      const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
-        `/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
-          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`,
-        `getRelatedMeditations(${options.id})`,
-      )
-      const docs = Array.isArray(body?.docs) ? body.docs : []
+  const read = async () => {
+    const docs = await readRelatedCards(
+      `/api/lectures/${encodeURIComponent(options.id)}/related-meditations` +
+        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}`,
+      `getRelatedMeditations(${options.id})`,
+    )
 
-      // The endpoint already shapes cards. Still guard the rendered
-      // fields, so a partial doc can never produce a blank card or a
-      // broken thumbnail.
-      return docs
-        .filter(
-          (doc): doc is Record<string, unknown> =>
-            typeof doc.id === 'number' &&
-            typeof doc.title === 'string' &&
-            doc.title.length > 0 &&
-            typeof doc.thumbnailUrl === 'string' &&
-            doc.thumbnailUrl.length > 0,
-        )
-        .map((doc) => ({
-          id: doc.id as number,
-          title: doc.title as string,
-          durationMinutes: typeof doc.durationMinutes === 'number' ? doc.durationMinutes : 0,
-          thumbnailUrl: doc.thumbnailUrl as string,
-          narratorName: typeof doc.narratorName === 'string' ? doc.narratorName : '',
-        }))
-    })
-  } catch (error) {
-    // Related content is supplementary. A failure to load it must never
-    // break the lecture page. Degrade to no related section, and report the
-    // failure to Sentry.
-    console.warn(`[getRelatedMeditations] degrading to none for lecture ${options.id}:`, error)
-    Sentry.captureMessage('getRelatedMeditations failed; rendering lecture without related', {
-      level: 'warning',
-      tags: { source: 'getRelatedMeditations' },
-      extra: { lectureId: options.id, locale: options.locale ?? null },
-    })
-
-    return []
+    return docs.map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      durationMinutes: typeof doc.durationMinutes === 'number' ? doc.durationMinutes : 0,
+      thumbnailUrl: doc.thumbnailUrl,
+      narratorName: typeof doc.narratorName === 'string' ? doc.narratorName : '',
+    }))
   }
+
+  // Related content is supplementary: a failure must never break the page.
+  return degrade(() => withRetry(read, { reportFailure: false }), {
+    source: 'getRelatedMeditations',
+    message: 'getRelatedMeditations failed; rendering lecture without related',
+    key: options.id,
+    fallback: null,
+    extra: { lectureId: options.id, locale: options.locale },
+  })
 }
 
 /**
@@ -980,8 +991,8 @@ export async function getRelatedMeditations(
  * The endpoint returns the full lecture player projection, ranked by node
  * overlap with an audience-and-recency fallback. This function returns only
  * the card subset: ID, title, thumbnail, and playable duration. It returns
- * `[]` for an unknown meditation ID (404), and for any failure that
- * survives retries.
+ * `[]` for an unknown meditation ID (404), and `null` for a failure that
+ * survives retries, as {@link getRelatedMeditations} does.
  *
  * @param options.id - The meditation document ID (the anchor)
  * @param options.locale - The locale to retrieve lecture cards in
@@ -994,7 +1005,7 @@ export async function getRelatedLectures(
     audiences: WebConfig['audiences']
     limit?: number
   },
-): Promise<RelatedLectureCard[]> {
+): Promise<RelatedLectureCard[] | null> {
   const audiences = audienceIdList(options.audiences)
 
   // Audience-gated. With none configured, the site cannot call the endpoint
@@ -1006,40 +1017,27 @@ export async function getRelatedLectures(
   }
   const limit = options.limit ?? 8
 
-  try {
-    return await withRetryUnlessPreview(async () => {
-      const body = await sahajCloudFetchOptional<{ docs?: Array<Record<string, unknown>> }>(
-        `/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
-          `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
-          `&audiences=${audiences.join(',')}`,
-        `getRelatedLectures(${options.id})`,
-      )
-      const docs = Array.isArray(body?.docs) ? body.docs : []
+  const read = async () => {
+    const docs = await readRelatedCards(
+      `/api/meditations/${encodeURIComponent(options.id)}/related-lectures` +
+        `?locale=${encodeURIComponent(options.locale)}&limit=${limit}` +
+        `&audiences=${audiences.join(',')}`,
+      `getRelatedLectures(${options.id})`,
+    )
 
-      return docs
-        .filter(
-          (doc): doc is Record<string, unknown> =>
-            typeof doc.id === 'number' &&
-            typeof doc.title === 'string' &&
-            doc.title.length > 0 &&
-            typeof doc.thumbnailUrl === 'string' &&
-            doc.thumbnailUrl.length > 0,
-        )
-        .map((doc) => ({
-          id: doc.id as number,
-          title: doc.title as string,
-          durationSeconds: typeof doc.duration === 'number' ? doc.duration : 0,
-          thumbnailUrl: doc.thumbnailUrl as string,
-        }))
-    })
-  } catch (error) {
-    console.warn(`[getRelatedLectures] degrading to none for meditation ${options.id}:`, error)
-    Sentry.captureMessage('getRelatedLectures failed; rendering meditation without related', {
-      level: 'warning',
-      tags: { source: 'getRelatedLectures' },
-      extra: { meditationId: options.id, locale: options.locale ?? null },
-    })
-
-    return []
+    return docs.map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      durationSeconds: typeof doc.duration === 'number' ? doc.duration : 0,
+      thumbnailUrl: doc.thumbnailUrl,
+    }))
   }
+
+  return degrade(() => withRetry(read, { reportFailure: false }), {
+    source: 'getRelatedLectures',
+    message: 'getRelatedLectures failed; rendering meditation without related',
+    key: options.id,
+    fallback: null,
+    extra: { meditationId: options.id, locale: options.locale },
+  })
 }

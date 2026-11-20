@@ -6,7 +6,7 @@
  * detecting error pages fails before CI reaches a deployed preview.
  */
 import { describe, it, expect } from 'vitest'
-import { ERROR_MARKERS, renderedHtml } from './preview'
+import { ERROR_MARKERS, jsonLdTypes, linkAttrs, metaContent, renderedHtml } from './preview'
 
 /** A healthy page: real content, plus the translations payload Vike embeds. */
 const payloadPage = `<!DOCTYPE html><html><head><title>Home Page</title></head><body>
@@ -47,5 +47,49 @@ describe('ERROR_MARKERS', () => {
       expect(marker.length, 'a marker must be real copy').toBeGreaterThan(0)
       expect(marker, 'a marker must not be an unresolved key path').not.toMatch(/^errors\./)
     }
+  })
+})
+
+describe('linkAttrs', () => {
+  // The two spellings this repo has served: the React head wrote `href`
+  // first and closed the tag, Unhead writes `rel` first and leaves it bare.
+  const head = `<head>
+<link href="https://x.test/a" rel="canonical"/>
+<link rel="alternate" hreflang="x-default" href="https://x.test/a">
+<link rel="alternate" type="application/json+oembed" href="https://x.test/oembed">
+<link rel="stylesheet" href="/a.css">
+</head>`
+
+  it('reads a tag whichever order its attributes come in', () => {
+    expect(linkAttrs(head, 'canonical').map((link) => link.href)).toEqual(['https://x.test/a'])
+  })
+
+  it('keeps every attribute, so a cluster member is identifiable', () => {
+    const cluster = linkAttrs(head, 'alternate').filter((link) => link.hreflang)
+
+    expect(cluster).toEqual([{ rel: 'alternate', hreflang: 'x-default', href: 'https://x.test/a' }])
+  })
+
+  it('answers nothing for a rel the page does not carry', () => {
+    // `not.toContain` passes on an empty list, so a spec asserting an absence
+    // needs this to be the real answer rather than a parse failure.
+    expect(linkAttrs(head, 'preconnect')).toEqual([])
+  })
+})
+
+describe('the head readers', () => {
+  const head = `<head>
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="player">
+<script type="application/ld+json" data-hid="schema-org-graph">{"@graph":[{"@type":"WebPage"}]}</script>
+</head>`
+
+  it('reads a meta on property or name alike', () => {
+    expect(metaContent(head, 'og:type')).toEqual(['article'])
+    expect(metaContent(head, 'twitter:card')).toEqual(['player'])
+  })
+
+  it('reads a JSON-LD block whatever attributes its opening tag carries', () => {
+    expect(jsonLdTypes(head)).toEqual(['WebPage'])
   })
 })
