@@ -34,6 +34,25 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # A PR that changes a copied contract must leave it exactly as its sync command writes
+      # it: the generated SahajCloud types (`contractSync` in sydevs/claude-workflow's
+      # loop-config.json), and the English mirror of production's translations. A PR that
+      # leaves them alone passes, however far SahajCloud has moved: the contract sync fixes
+      # drift on main, never every open PR (#269 hand-typed a key here that nothing caught).
+      # why: sydevs/claude-workflow/docs/why.md#a-contract-check-checks-what-a-pr-changes
+      - name: Contract check (SahajCloud types)
+        uses: sydevs/claude-workflow/.github/actions/contract-check@main
+      # A fork gets no secrets. The merge queue, which has them, still checks its change.
+      - name: Contract check (English mirror)
+        if: github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: sydevs/claude-workflow/.github/actions/contract-check@main
+        with:
+          paths: lib/translations.en.json
+          command: pnpm sync:translations
+        env:
+          PUBLIC__SAHAJCLOUD_URL: https://cloud.sydevelopers.com
+          SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:run # unit tests only. vitest.config.ts excludes smoke specs.
