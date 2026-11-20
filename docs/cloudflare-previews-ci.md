@@ -104,6 +104,9 @@ carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/Sah
   tests the derived branch host, which serves the branch's previous Ladle build, without the
   change, so the lane is green without having tested it. On a branch with no earlier Ladle build
   that host never answers, and the lane goes red after the 5-minute reachability wait.
+
+  ⚠ #282 added `server/sitemap` to the ladle `watch` but not to the list above. Confirm the
+  triggers include `server/sitemap*`, or a push touching only that file hits the same gap.
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so
