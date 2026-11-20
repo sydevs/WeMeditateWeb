@@ -180,6 +180,19 @@ describe('web preview share metadata', () => {
     expect(refused.status).toBe(404)
   })
 
+  it('oembed refuses a media path under a prefix that is not a language', async () => {
+    // `/oembed` is a Hono route, so nothing stripped the locale before the
+    // document matcher saw the path — it does that itself, and only for a code
+    // SahajCloud defines. The page routes already refuse `/zz/` (#315); this
+    // keeps the endpoint from being the one address that does not.
+    const origin = new URL((await fetchPage('/')).finalUrl).origin
+    const refused = await fetch(
+      `${origin}/oembed?url=${encodeURIComponent(`${origin}/zz/lectures/163`)}`,
+    )
+
+    expect(refused.status).toBe(404)
+  })
+
   it('serves a manifest in the language of the URL, from a route and not public/', async () => {
     const origin = new URL((await fetchPage('/')).finalUrl).origin
     const response = await fetch(`${origin}/fr/manifest.webmanifest`)

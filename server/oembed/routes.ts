@@ -18,12 +18,7 @@ import { getDocumentById, getLecture, getWebTranslations } from '../sahajcloud-c
 import { documentEmbedHref } from '../../lib/document-routes'
 import { resolveLecture } from '../../lib/lecture-shape'
 import { absoluteHref } from '../../lib/urls'
-import {
-  buildOEmbedResponse,
-  positiveInteger,
-  resolveOEmbedTarget,
-  type OEmbedTarget,
-} from '.'
+import { buildOEmbedResponse, positiveInteger, resolveOEmbedTarget, type OEmbedTarget } from '.'
 import { getT } from '../../lib/i18n'
 
 /** oEmbed answers are as stable as the documents behind them. */
