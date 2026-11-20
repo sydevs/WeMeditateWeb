@@ -87,18 +87,14 @@ that line every field silently renders full width.
 
 ## Validation
 
-Native HTML5 attributes (`required`, `type="email"`, `type="number"`) validate on the client. The
-API can return field-level errors, shown next to the matching field:
+The form is `noValidate`, so the browser checks nothing. react-hook-form checks every authored
+`required` field, a checkbox and a select included, before anything is posted, and shows
+`forms.general.field_required` beside it. A select with no authored default starts on its
+placeholder, whose value is empty, so an untouched required one is stopped there.
 
-```typescript
-{
-  success: false,
-  error: {
-    message: 'Please correct the errors below',
-    errors: [{ field: 'email', message: 'Email already registered' }],
-  }
-}
-```
+Past that, every refusal reads the same: `/api/submissions` answers `{ ok: false, code }`, and the
+form shows the one `forms.general.submit_error` message and re-challenges the captcha, whatever
+the code. `SubmissionResult` in `lib/submissions.ts` says why it does not branch on it.
 
 ## Confirmation and redirect
 

@@ -78,21 +78,15 @@ describe('matchDocumentRoute', () => {
       })
     })
 
-    it('matches a locale-prefixed path', () => {
-      expect(matchDocumentRoute('meditations', '/es/meditations/123')).toEqual({
-        routeParams: { id: '123' },
-      })
-    })
-
-    it('matches a compound locale prefix, region included', () => {
-      // `pt-BR` and `en-AU` carry an upper-case region, exactly as SahajCloud
-      // stores them. A lower-cased region is not a locale prefix.
-      expect(matchDocumentRoute('meditations', '/pt-BR/meditations/123')).toEqual({
-        routeParams: { id: '123' },
-      })
-      expect(matchDocumentRoute('meditations', '/en-AU/meditations/123')).toEqual({
-        routeParams: { id: '123' },
-      })
+    // `+onBeforeRoute` strips a real locale before any route runs, so a
+    // prefix that reaches the matcher is not one. Matching it would serve the
+    // same page at a second address.
+    it.each([
+      ['an unknown code', '/zz/meditations/123'],
+      ['a locale-shaped code', '/es/meditations/123'],
+      ['a compound code', '/pt-BR/meditations/123'],
+    ])('does not match a path under %s', (_label, pathname) => {
+      expect(matchDocumentRoute('meditations', pathname)).toBe(false)
     })
 
     it('tolerates a trailing slash', () => {
@@ -123,10 +117,9 @@ describe('matchDocumentRoute', () => {
       })
     })
 
-    it('matches a locale-prefixed embed path', () => {
-      expect(matchDocumentRoute('lectures', '/de/lectures/456/embed', { embed: true })).toEqual({
-        routeParams: { id: '456' },
-      })
+    it('does not match an embed path under a prefix', () => {
+      expect(matchDocumentRoute('lectures', '/zz/lectures/456/embed', { embed: true })).toBe(false)
+      expect(matchDocumentRoute('lectures', '/de/lectures/456/embed', { embed: true })).toBe(false)
     })
 
     it('does NOT match the full route (requires the /embed suffix)', () => {
