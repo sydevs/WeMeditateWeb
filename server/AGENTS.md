@@ -31,9 +31,9 @@ does a repeated one. `lib/submissions.ts` owns that body; nothing else composes 
 Two things about `form` and the visitor's IP that only show in production:
 
 - **`form` is a number.** SahajCloud resolves a quoted id to no form. It is accepted and then
-  leaves the intake unable to load the form,
-  which empties the authored-field allow-list — so every field the editor named is refused as
-  unknown, while the base keys still pass. `submissionSchema` refuses a string at the edge so this
+  leaves the intake unable to load the form, which empties the authored-field allow-list — so
+  every field the editor named is refused as unknown, while the base context set that
+  `lib/submissions.ts` names still passes. `submissionSchema` refuses a string at the edge so this
   cannot ship again.
 - ⚠ **The proxy names the visitor, because SahajCloud cannot see them.** SahajCloud reads
   `cf-connecting-ip` off its own request for Turnstile's `remoteip`, and a proxied submission
