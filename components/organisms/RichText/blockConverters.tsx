@@ -32,6 +32,7 @@ import {
   showcaseItems,
   splashSurface,
   subtleSystemItems,
+  textBoxDecoration,
   textColorToSurface,
   type ContentIndexBlockFields,
 } from '../../../lib/content-blocks'
@@ -118,7 +119,9 @@ export const blockConverters: BlockConverters = {
   //   imagePosition 'overlay'      → ContentOverlay (text over the image)
   //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
   //   otherwise (left or right)    → ContentTextBox (side box overlapping image)
-  textbox: ({ node }) => {
+  // Its ornament follows from its place among the page's text boxes: see
+  // textBoxDecoration in lib/content-blocks.ts.
+  textbox: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as TextBoxBlock
     const img = populatedImage(fields.image)
 
@@ -130,6 +133,7 @@ export const blockConverters: BlockConverters = {
     const subtitle = fields.subtitle ?? undefined
     const title = fields.title ?? ''
     const description = fields.text ?? ''
+    const decoration = textBoxDecoration({ childIndex, fields, parent })
 
     // Overlay: text sits over the image. The SahajCloud `textColor` describes the
     // *text* (dark or light), while `surface` describes the *background* the
@@ -141,6 +145,7 @@ export const blockConverters: BlockConverters = {
           className={FULL_BLEED_BLOCK}
           ctaHref={ctaHref}
           ctaText={ctaText}
+          decoration={decoration}
           imageAlt={img.alt}
           imageSrc={img.url}
           subtitle={subtitle}
@@ -180,7 +185,12 @@ export const blockConverters: BlockConverters = {
       // owns the spacing and centering.
       <div className={FULL_BLEED_BLOCK}>
         <Container maxWidth="xl">
-          <ContentTextBox {...sideProps} align={fields.imagePosition} className="" />
+          <ContentTextBox
+            {...sideProps}
+            align={fields.imagePosition}
+            className=""
+            decoration={decoration}
+          />
         </Container>
       </div>
     )

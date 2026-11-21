@@ -16,6 +16,9 @@ export type { LotusDotsSvgProps } from './LotusDotsSvg'
 export { TriangleDecorationSvg } from './TriangleDecorationSvg'
 export type { TriangleDecorationSvgProps } from './TriangleDecorationSvg'
 
+export { CircleDecorationSvg } from './CircleDecorationSvg'
+export type { CircleDecorationSvgProps } from './CircleDecorationSvg'
+
 export { AnimatedLogoSvg } from './AnimatedLogoSvg'
 export type { AnimatedLogoSvgProps } from './AnimatedLogoSvg'
 

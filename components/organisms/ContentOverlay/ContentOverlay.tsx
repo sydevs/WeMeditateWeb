@@ -1,6 +1,7 @@
 import { ComponentProps } from 'react'
-import { Button, Container, Image } from '../../atoms'
+import { Button, Container, Image, TextBoxOrnament } from '../../atoms'
 import { surface, type Surface } from '../../atoms/surface'
+import type { TextBoxDecoration } from '../../../lib/content-blocks'
 import { toParagraphs } from '../../../lib/paragraphs'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
@@ -52,6 +53,17 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
    * - `box`: Content in bordered box with backdrop blur
    */
   variant?: 'default' | 'highContrast' | 'box'
+
+  /**
+   * An ornament drawn from `lg` up. The triangle hangs off the image's lower
+   * corner away from the text, and the block's bottom margin grows to hold
+   * it. Omitted, none is drawn.
+   *
+   * This takes the rule's whole vocabulary so no caller has to map between
+   * the two, but an overlay draws only the triangle. `textBoxDecoration`
+   * gives it nothing else, and lib/content-blocks.test.ts holds that.
+   */
+  decoration?: TextBoxDecoration
 }
 
 // Both breakpoint branches stay in the DOM, and a hidden <img> is still
@@ -75,6 +87,7 @@ export function ContentOverlay({
   surface: surfaceValue = 'light',
   align = 'left',
   variant = 'default',
+  decoration,
   className = '',
   ...props
 }: ContentOverlayProps) {
@@ -167,7 +180,7 @@ export function ContentOverlay({
   )
 
   return (
-    <div className={className} {...props}>
+    <div className={decoration ? `relative lg:mb-32 ${className}` : className} {...props}>
       {/* Mobile: Stacked layout - no variant or surface styling */}
       <div className="flex flex-col gap-6 md:hidden">
         <Image
@@ -232,6 +245,13 @@ export function ContentOverlay({
           </div>
         </div>
       </div>
+
+      {/* A third of it hangs below the image, into the `lg:mb-32` above, so it
+          never reaches the next block. It takes the corner away from the
+          text; a centred text leaves it the left one. */}
+      {decoration === 'triangle' && (
+        <TextBoxOrnament decoration="triangle" side={align === 'left' ? 'right' : 'left'} />
+      )}
     </div>
   )
 }

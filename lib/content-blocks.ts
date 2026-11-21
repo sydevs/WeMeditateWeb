@@ -21,6 +21,7 @@ import type {
   SongTag,
   SplashBlock,
   SubtleSystemBlock,
+  TextBoxBlock,
   UserChoice,
 } from '../server/payload-types'
 import type { Meditation, Page } from '../server/sahajcloud-types'
@@ -241,6 +242,91 @@ export function leadSplashFromRouteData(
   data: { page?: Pick<Page, 'content'> | null } | null | undefined,
 ): { surface: 'light' | 'dark' } | null {
   return getLeadSplash(data?.page?.content)
+}
+
+/**
+ * Which ornament a `textbox` block draws, chosen from where it sits on a page.
+ *
+ * wemeditate.com hung a line-art triangle, a colour wash or a leaf circle off
+ * its text boxes. SahajCloud gives editors no field for them, so the site
+ * places them itself, from what an editor can see — the order of the page's
+ * text boxes and each one's layout. Never at random, and never from the
+ * imported legacy blob (`importData`), which no editor can change.
+ *
+ * Read the page's text boxes in order, counting only those that render:
+ *
+ * 1. An "Ancient Wisdom" box (`wisdomStyle` on a side layout) carries its
+ *    own floral graphic and takes nothing more.
+ * 2. The first text box opens the page: a side box draws the circle behind
+ *    its image's inner lower corner, and an overlay draws nothing.
+ * 3. After that, a side box decorates its image's outer side, as the old site
+ *    did: a triangle hanging off the lower corner when the image is on the
+ *    left, a wash down the edge when it is on the right. An overlay hangs a
+ *    triangle off the lower corner away from its text.
+ * 4. A box whose pick matches the ornament the previous text box drew draws
+ *    nothing, so no two neighbours repeat an ornament.
+ *
+ * `TextBoxOrnament` places and sizes each one, and hides it below `lg`.
+ */
+export type TextBoxDecoration = 'circle' | 'gradient' | 'triangle'
+
+/** `ornate` is the wisdom box's built-in graphic: it counts as a neighbour. */
+type Ornament = TextBoxDecoration | 'ornate' | undefined
+
+function ornamentFor(fields: TextBoxBlock, first: boolean): Ornament {
+  if (fields.imagePosition === 'overlay') {
+    return first ? undefined : 'triangle'
+  }
+  if (fields.wisdomStyle) {
+    return 'ornate'
+  }
+  if (first) {
+    return 'circle'
+  }
+
+  return fields.imagePosition === 'left' ? 'triangle' : 'gradient'
+}
+
+/** The fields of a `textbox` block node that renders, or `null`. */
+function renderedTextBox(node: unknown): TextBoxBlock | null {
+  const candidate = node as { type?: string; fields?: TextBoxBlock } | undefined
+  const fields = candidate?.type === 'block' ? candidate.fields : undefined
+
+  return fields?.blockType === 'textbox' && populatedImage(fields.image) ? fields : null
+}
+
+/**
+ * The ornament the `textbox` block at `childIndex` draws. `childIndex` indexes
+ * the `parent`'s own children, which is how the converter is handed the pair.
+ * Without earlier siblings to read, the box is the page's first.
+ */
+export function textBoxDecoration({
+  childIndex,
+  fields,
+  parent,
+}: {
+  childIndex: number
+  fields: TextBoxBlock
+  parent: unknown
+}): TextBoxDecoration | undefined {
+  const earlier = (parent as { children?: unknown[] } | undefined)?.children ?? []
+  let previous: Ornament
+  let index = 0
+
+  for (const sibling of earlier.slice(0, childIndex)) {
+    const earlierFields = renderedTextBox(sibling)
+
+    if (earlierFields) {
+      const pick = ornamentFor(earlierFields, index === 0)
+
+      previous = pick === previous ? undefined : pick
+      index += 1
+    }
+  }
+  const pick = ornamentFor(fields, index === 0)
+  const drawn = pick === previous ? undefined : pick
+
+  return drawn === 'ornate' ? undefined : drawn
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */

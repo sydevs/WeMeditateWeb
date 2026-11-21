@@ -10,11 +10,13 @@ import {
   showcaseItems,
   splashSurface,
   subtleSystemItems,
+  textBoxDecoration,
   textColorToSurface,
   type ContentIndexBlockFields,
   type ShowcaseItem,
+  type TextBoxDecoration,
 } from './content-blocks'
-import type { ContentIndexBlock } from '../server/payload-types'
+import type { ContentIndexBlock, TextBoxBlock } from '../server/payload-types'
 import type { Page } from '../server/sahajcloud-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
@@ -507,5 +509,108 @@ describe('leadSplashFromRouteData', () => {
   it('returns null without a lead splash or data', () => {
     expect(leadSplashFromRouteData(undefined)).toBeNull()
     expect(leadSplashFromRouteData({})).toBeNull()
+  })
+})
+
+describe('textBoxDecoration', () => {
+  const IMAGE = { id: 1, url: 'https://imagedelivery.net/acct/img-id/public', alt: '' }
+
+  const box = (fields: Record<string, unknown>) => ({
+    type: 'block',
+    version: 2,
+    fields: { blockType: 'textbox', image: IMAGE, ...fields },
+  })
+  const side = (imagePosition: 'left' | 'right', wisdomStyle = false) =>
+    box({ imagePosition, wisdomStyle })
+  const overlay = () => box({ imagePosition: 'overlay', textPosition: 'left' })
+  const paragraph = { type: 'paragraph', version: 1, children: [] }
+
+  /** What each `textbox` child of a page draws, in page order. */
+  const page = (children: unknown[]): (TextBoxDecoration | undefined)[] => {
+    const parent = { type: 'root', children }
+
+    return children.flatMap((child, childIndex) => {
+      const fields = (child as { fields?: TextBoxBlock }).fields
+
+      return fields?.blockType === 'textbox'
+        ? [textBoxDecoration({ childIndex, fields, parent })]
+        : []
+    })
+  }
+
+  // The live home page's five text boxes, in order.
+  it('opens a page with the circle, then decorates by layout', () => {
+    expect(page([side('left'), overlay(), side('right'), overlay(), side('left')])).toEqual([
+      'circle',
+      'triangle',
+      'gradient',
+      'triangle',
+      undefined,
+    ])
+  })
+
+  // The live /shri-mataji: an overlay first, then six side boxes alternating sides.
+  it('leaves an opening overlay plain and alternates triangle and wash', () => {
+    expect(
+      page([
+        overlay(),
+        side('left'),
+        side('right'),
+        side('left'),
+        side('right'),
+        side('left'),
+        side('right'),
+      ]),
+    ).toEqual([undefined, 'triangle', 'gradient', 'triangle', 'gradient', 'triangle', 'gradient'])
+  })
+
+  it('never gives two neighbouring boxes the same ornament', () => {
+    expect(page([side('right'), side('left'), side('left'), side('left')])).toEqual([
+      'circle',
+      'triangle',
+      undefined,
+      'triangle',
+    ])
+  })
+
+  // The chakra pages: an overlay, then the ornate box with its own graphic.
+  it('adds nothing to an "Ancient Wisdom" box, which still counts as the opener', () => {
+    expect(page([overlay(), side('right', true)])).toEqual([undefined, undefined])
+    expect(page([side('left', true), side('right')])).toEqual([undefined, 'gradient'])
+  })
+
+  it('counts only the text boxes among the parent’s children', () => {
+    expect(page([paragraph, side('left'), paragraph, side('right')])).toEqual([
+      'circle',
+      'gradient',
+    ])
+  })
+
+  // An unpublished image leaves a bare id, and the converter renders nothing for it.
+  it('skips an earlier text box that does not render', () => {
+    expect(page([box({ image: 7, imagePosition: 'left' }), side('left')])).toEqual([
+      'circle',
+      'circle',
+    ])
+  })
+
+  it('takes a box with no earlier sibling as the page’s first', () => {
+    const fields = side('right').fields as unknown as TextBoxBlock
+
+    expect(textBoxDecoration({ childIndex: 0, fields, parent: undefined })).toBe('circle')
+  })
+
+  // ContentOverlay draws the triangle and nothing else, so the rule owes it
+  // no other ornament. Each page here ends with the overlay under test.
+  it('never gives an overlay the circle or the wash', () => {
+    const overlayDrew = [
+      page([overlay()]),
+      page([side('left'), overlay()]),
+      page([side('right', true), overlay()]),
+      page([overlay(), overlay()]),
+      page([side('left'), side('right'), overlay()]),
+    ].map((drawn) => drawn.at(-1))
+
+    expect(overlayDrew).toEqual([undefined, 'triangle', 'triangle', 'triangle', 'triangle'])
   })
 })

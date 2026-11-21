@@ -11,7 +11,7 @@ functional piece — it cannot divide into smaller pieces without losing its mea
 | Interactive | Button, Dropdown, Tooltip |
 | Form inputs | Input, Textarea, Checkbox, Radio, Select |
 | Media | Image, Icon, Avatar |
-| Brand and graphics | Logo, LanguageFlag, SocialIcon, and the SVG icons in `graphics/svgs/` |
+| Brand and graphics | Logo, LanguageFlag, SocialIcon, TextBoxOrnament, and the SVG icons in `graphics/svgs/` |
 | Feedback | Spinner, SplashLoader, Placeholder, Badge |
 | Layout | Container, Spacer, Box, LeafDivider, Breadcrumbs |
 | Navigation | SkipLink |

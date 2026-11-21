@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react'
-import { Button, Image } from '../../atoms'
+import { Button, Image, TextBoxOrnament } from '../../atoms'
+import type { TextBoxDecoration } from '../../../lib/content-blocks'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 import { toParagraphs } from '../../../lib/paragraphs'
 
@@ -54,6 +55,15 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
    * @default 'left'
    */
   align?: 'left' | 'right'
+
+  /**
+   * An ornament drawn from `lg` up, always behind the box and never over its
+   * text. Omitted, none is drawn.
+   * - circle: a leaf ring behind the image's inner lower corner
+   * - triangle: hangs off the image's outer lower corner
+   * - gradient: a teal wash running below the image's outer half
+   */
+  decoration?: TextBoxDecoration
 }
 
 /**
@@ -91,11 +101,15 @@ export function ContentTextBox({
   imageHeight,
   imageAspectRatio,
   align = 'left',
+  decoration,
   className = '',
   ...props
 }: ContentTextBoxProps) {
   const wrapperClasses = align === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row'
   const contentContainerClasses = align === 'right' ? 'lg:-mr-32 lg:ml-2' : 'lg:-ml-32 lg:mr-2'
+  // `align` is the image's outer side, which the triangle and the wash take.
+  // The circle sits behind the image's inner lower corner instead.
+  const ornamentSide = decoration === 'circle' ? (align === 'right' ? 'left' : 'right') : align
 
   return (
     <div
@@ -114,18 +128,29 @@ export function ContentTextBox({
           Mobile: fill the column width, capped to a 1:1 aspect (height ≤ width, via
           the captured page width `--page-width` minus the page gutters) and
           `object-cover` so portrait images crop to ≤ square rather than running
-          tall. Desktop (lg): the original contained, container-height behavior. */}
-      <Image
-        alt={imageAlt}
-        aspectRatio={imageAspectRatio}
-        className="w-full max-h-[calc(var(--page-width)-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
-        forceAspectRatio={false}
-        height={imageHeight}
-        objectFit="cover"
-        sizes="(max-width: 1024px) 100vw, 600px"
-        src={imageSrc}
-        width={imageWidth}
-      />
+          tall. Desktop (lg): the original contained, container-height behavior.
+          From lg the wrapper spans the root's height, centring the image as
+          the root did, so an ornament takes the image's sides but the root's
+          bottom: the image can overflow a root capped at 700px. `isolate`
+          keeps the ornaments drawn behind the image above the page. */}
+      <div className="relative isolate lg:grid lg:items-center lg:self-stretch">
+        <Image
+          alt={imageAlt}
+          aspectRatio={imageAspectRatio}
+          className="w-full max-h-[calc(var(--page-width)-5rem)] lg:h-full lg:max-h-[85vh] lg:object-contain"
+          forceAspectRatio={false}
+          height={imageHeight}
+          objectFit="cover"
+          sizes="(max-width: 1024px) 100vw, 600px"
+          src={imageSrc}
+          width={imageWidth}
+        />
+
+        {/* Each ornament reaches at most 7rem below the root, inside its
+            `lg:my-32`, so it never reaches the next block's text. The wash
+            fades out below the image; above that the image hides it. */}
+        {decoration && <TextBoxOrnament decoration={decoration} side={ornamentSide} />}
+      </div>
 
       {/* Content - natural stack on mobile, positioned and centered on desktop */}
       <div className={`lg:z-10 ${contentContainerClasses}`}>
