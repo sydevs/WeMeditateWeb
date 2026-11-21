@@ -3,21 +3,18 @@ import type { MeditationPageData } from './+data'
 import { Heading } from '../../../../components/atoms'
 import { MeditationTemplate } from '../../../../components/templates'
 import { useT } from '../../../../hooks/useT'
-import { usePageHead } from '../../../../lib/head'
 
 /**
  * Full meditation page (/meditations/:id) — rendered with site chrome. Shows the
  * Embed button so visitors can grab the iframe snippet.
  *
- * The `<title>` and the `<h1>` are set here rather than in
- * `MeditationTemplate`, which the embed route and the live preview also render:
- * the embed sets its own title and owes no page heading.
+ * The `<h1>` is set here rather than in `MeditationTemplate`, which the embed
+ * route and the live preview also render: the embed owes no page heading. The
+ * head is the route's `+data.ts`, for the same reason.
  */
 export function Page() {
   const { meditation, musicTracks } = useData<MeditationPageData>()
   const t = useT()
-
-  usePageHead({ meta: null, fallbackTitle: meditation.title })
 
   return (
     <>

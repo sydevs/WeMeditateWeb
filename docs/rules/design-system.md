@@ -68,9 +68,9 @@ either changes the code or carries an `eslint-disable-next-line` stating why the
 there. Put that reason at the site, not in a `files` block — a block states one reason over every
 site in the file, including the next one, whose reason will differ.
 
-**A ref that stops being *wired* is reported by nothing that stops you.** `forwardRef`'s absence
-was a type error; today a destructured-but-unused `ref` is one `no-unused-vars` warning among
-twenty, and a `ref` left out of the destructure still reaches the element through `{...props}`.
+**A ref that stops being *wired* is not always reported.** `forwardRef`'s absence was a type
+error; today `no-unused-vars` fails `pnpm lint` only for a `ref` destructured and never used, and a
+`ref` left out of the destructure still reaches the element through `{...props}`.
 `tests/guards/form-atom-refs.test.tsx` makes it a failing test for the five atoms instead, reading
 the wiring from the source because a ref never attaches under `renderToStaticMarkup`. It counts
 **every** element of the atom's tag: `Input` renders a second `<input>` for its icon branch.

@@ -125,7 +125,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASE: ${{ github.event.action == 'synchronize' && github.event.before || github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
-          WATCH: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
+          WATCH: '^(components|hooks|lib|layouts|assets|public|types|\.ladle|\.storybook)/|^server/(sahajcloud-types|error-utils|sitemap)|^(package\.json|pnpm-lock\.yaml|tsconfig\.json|\.node-version)$'
           IGNORE: '\.(test\.tsx?|spec\.ts|md)$'
         run: |
           if ! diff=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '"\(.total_commits) \(.files | length)", .files[].filename'); then

@@ -34,6 +34,30 @@ describe('<ContentOverlay> subtitle', () => {
   })
 })
 
+describe('<ContentOverlay> paragraphs', () => {
+  // Both breakpoint branches render the body, so each paragraph appears twice.
+  it('renders single-paragraph text as the one <p> it always has', () => {
+    const html = renderToStaticMarkup(<ContentOverlay {...BASE} />)
+
+    expect(html.split('<p class="">Meditation is even stronger when shared.</p>')).toHaveLength(3)
+    expect(html.match(/<p/g)?.length).toBe(2)
+  })
+
+  it('splits a text string at its line breaks, as it renders an array', () => {
+    const fromString = renderToStaticMarkup(
+      <ContentOverlay {...BASE} text={'First paragraph.\n\nSecond paragraph.'} />,
+    )
+    const fromArray = renderToStaticMarkup(
+      <ContentOverlay {...BASE} text={['First paragraph.', 'Second paragraph.']} />,
+    )
+
+    expect(
+      fromString.split('<p class="mb-4">First paragraph.</p><p class="">Second paragraph.</p>'),
+    ).toHaveLength(3)
+    expect(fromString).toBe(fromArray)
+  })
+})
+
 describe('<ContentOverlay> image loading', () => {
   it('renders both breakpoints lazily, so neither hoists a preload link', () => {
     const html = renderToStaticMarkup(<ContentOverlay {...BASE} />)

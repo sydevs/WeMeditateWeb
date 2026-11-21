@@ -1,15 +1,15 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Countdown } from "./Countdown";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { Countdown } from './Countdown'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /** Countdown component showcasing various timing durations and sizes. */
 export const Default: Story = () => {
   // Helper function to create countdown targets
-  const createTarget = (seconds: number) => new Date(Date.now() + seconds * 1000);
+  const createTarget = (seconds: number) => new Date(Date.now() + seconds * 1000)
 
   return (
     <StoryWrapper>
@@ -18,19 +18,19 @@ export const Default: Story = () => {
           {/* Small */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">Small</p>
-            <Countdown targetDate={createTarget(3600)} size="sm" />
+            <Countdown size="sm" targetDate={createTarget(3600)} />
           </div>
 
           {/* Medium */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">Medium</p>
-            <Countdown targetDate={createTarget(3600)} size="md" />
+            <Countdown size="md" targetDate={createTarget(3600)} />
           </div>
 
           {/* Large */}
           <div>
             <p className="text-gray-900 text-sm mb-4 text-center">Large (default)</p>
-            <Countdown targetDate={createTarget(3600)} size="lg" />
+            <Countdown size="lg" targetDate={createTarget(3600)} />
           </div>
         </div>
       </StorySection>
@@ -76,10 +76,10 @@ export const Default: Story = () => {
       </StorySection>
 
       <StorySection
-        title="Dark Theme"
-        surface="dark"
         background="neutral"
         description="White text for dark backgrounds"
+        surface="dark"
+        title="Dark Theme"
       >
         <div className="text-center">
           <Countdown targetDate={createTarget(3600)} />
@@ -88,7 +88,7 @@ export const Default: Story = () => {
 
       <div />
     </StoryWrapper>
-  );
-};
+  )
+}
 
-Default.storyName = "Countdown"
+Default.storyName = 'Countdown'

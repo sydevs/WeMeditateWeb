@@ -41,7 +41,10 @@ function eventWithCredentials(): ErrorEvent {
         authorization: 'clients API-Key apikey789',
         'user-agent': 'Mozilla/5.0',
       },
-      data: { senderEmail: 'visitor@example.com', submissionData: [{ field: 'name', value: 'Ada' }] },
+      data: {
+        senderEmail: 'visitor@example.com',
+        submissionData: [{ field: 'name', value: 'Ada' }],
+      },
     },
   } as ErrorEvent
 }

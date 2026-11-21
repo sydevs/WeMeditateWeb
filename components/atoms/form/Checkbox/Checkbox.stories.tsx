@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Checkbox } from "./Checkbox";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Checkbox } from './Checkbox'
 import {
   StoryWrapper,
   StorySection,
@@ -9,12 +9,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../../ladle';
+  StoryGridCell,
+} from '../../../ladle'
 
 export default {
-  title: "Atoms / Form"
-} satisfies StoryDefault;
+  title: 'Atoms / Form',
+} satisfies StoryDefault
 
 /** Checkbox component showcasing all variants and states. */
 export const Default: Story = () => (
@@ -35,7 +35,7 @@ export const Default: Story = () => (
               <Checkbox aria-label="Primary unchecked" />
             </StoryGridCell>
             <StoryGridCell>
-              <Checkbox color="secondary" aria-label="Secondary unchecked" />
+              <Checkbox aria-label="Secondary unchecked" color="secondary" />
             </StoryGridCell>
           </StoryGridRow>
 
@@ -45,7 +45,7 @@ export const Default: Story = () => (
               <Checkbox defaultChecked aria-label="Primary checked" />
             </StoryGridCell>
             <StoryGridCell>
-              <Checkbox color="secondary" defaultChecked aria-label="Secondary checked" />
+              <Checkbox defaultChecked aria-label="Secondary checked" color="secondary" />
             </StoryGridCell>
           </StoryGridRow>
 
@@ -55,29 +55,34 @@ export const Default: Story = () => (
               <Checkbox disabled aria-label="Primary disabled unchecked" />
             </StoryGridCell>
             <StoryGridCell>
-              <Checkbox color="secondary" disabled aria-label="Secondary disabled unchecked" />
+              <Checkbox disabled aria-label="Secondary disabled unchecked" color="secondary" />
             </StoryGridCell>
           </StoryGridRow>
 
           <StoryGridRow>
             <StoryGridCell isLabel>Disabled Checked</StoryGridCell>
             <StoryGridCell>
-              <Checkbox disabled defaultChecked aria-label="Primary disabled checked" />
+              <Checkbox defaultChecked disabled aria-label="Primary disabled checked" />
             </StoryGridCell>
             <StoryGridCell>
-              <Checkbox color="secondary" disabled defaultChecked aria-label="Secondary disabled checked" />
+              <Checkbox
+                defaultChecked
+                disabled
+                aria-label="Secondary disabled checked"
+                color="secondary"
+              />
             </StoryGridCell>
           </StoryGridRow>
         </StoryGridBody>
       </StoryGrid>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div>
         <p className="text-sm font-medium mb-2 text-gray-900">Select your interests:</p>
         <div className="flex flex-col gap-2">
-          <Checkbox label="Meditation Techniques" defaultChecked />
-          <Checkbox label="Guided Meditations" defaultChecked />
+          <Checkbox defaultChecked label="Meditation Techniques" />
+          <Checkbox defaultChecked label="Guided Meditations" />
           <Checkbox label="Meditation Music" />
           <Checkbox label="Articles & Philosophy" />
           <Checkbox label="Events & Workshops" />
@@ -87,5 +92,5 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
-Default.storyName = "Checkbox"
+)
+Default.storyName = 'Checkbox'

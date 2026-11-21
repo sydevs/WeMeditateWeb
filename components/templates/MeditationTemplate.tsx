@@ -196,7 +196,6 @@ export function MeditationTemplate({
           musicTracks={musicTracks}
           seekTo={seekTo}
           timeDisplay={timeDisplay}
-          upsell={upsell}
           track={{
             url: meditation.url,
             title: meditation.title || t('meditation.general.untitled'),
@@ -208,6 +207,7 @@ export function MeditationTemplate({
                 ? meditation.durationMinutes * 60
                 : 0,
           }}
+          upsell={upsell}
           onPlaybackTimeUpdate={onPlaybackTimeUpdate}
         />
       </div>
@@ -215,10 +215,7 @@ export function MeditationTemplate({
       {/* Related lectures (SahajCloud cross-type mirror), loaded client-side so
           the slow ranking endpoint never blocks SSR. Off on the embed route. */}
       {showRelated ? (
-        <RelatedContentLoader
-          anchorId={meditation.id}
-          kind="related-lectures"
-        />
+        <RelatedContentLoader anchorId={meditation.id} kind="related-lectures" />
       ) : null}
     </>
   )
