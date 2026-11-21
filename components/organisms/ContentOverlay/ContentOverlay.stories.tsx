@@ -19,11 +19,11 @@ export const Default: Story = () => (
             ctaText="Get Inspired"
             imageAlt="Meditation practice"
             imageSrc="https://picsum.photos/seed/evening-sky/1600/900"
+            surface="dark"
             text={[
               'The benefits of meditation go far beyond what you experience during the sessions.',
               'It has the power to improve every aspect of your life, from your personal growth to your work and family life, and can even spark immense creativity...',
             ]}
-            surface="dark"
             title="Beyond the Practice"
           />
         </StorySection>
@@ -36,11 +36,11 @@ export const Default: Story = () => (
             ctaText="Start Your Journey"
             imageAlt="Inner peace"
             imageSrc="https://picsum.photos/id/122/1600/900"
+            surface="dark"
             text={[
               'Discover the transformative power of daily meditation practice.',
               'Join thousands of practitioners worldwide who have found clarity, peace, and purpose through meditation.',
             ]}
-            surface="dark"
             title="Find Your Inner Peace"
           />
         </StorySection>
@@ -53,11 +53,11 @@ export const Default: Story = () => (
             ctaText="Learn More"
             imageAlt="Life transformation"
             imageSrc="https://picsum.photos/id/83/1600/900"
+            surface="dark"
             text={[
               'Experience the profound benefits of meditation in every aspect of your life.',
               'From enhanced creativity to better relationships, meditation unlocks your full potential.',
             ]}
-            surface="dark"
             title="Transform Your Life"
           />
         </StorySection>
@@ -78,8 +78,8 @@ export const Default: Story = () => (
             imageAlt="Meditation at dusk"
             imageSrc="https://picsum.photos/seed/subtitle-overlay-dark/1600/900"
             subtitle="Collective meditation"
-            text="The experience of meditation is even stronger when it is shared with others."
             surface="dark"
+            text="The experience of meditation is even stronger when it is shared with others."
             title="Get Connected"
           />
         </StorySection>
@@ -93,8 +93,8 @@ export const Default: Story = () => (
             imageAlt="Bright morning meditation"
             imageSrc="https://picsum.photos/seed/subtitle-overlay-light/1600/900"
             subtitle="Find your center"
-            text="A few minutes of meditation each day can transform your relationship with stress."
             surface="light"
+            text="A few minutes of meditation each day can transform your relationship with stress."
             title="Inner Stillness"
           />
         </StorySection>
@@ -111,11 +111,11 @@ export const Default: Story = () => (
             ctaText="Explore Techniques"
             imageAlt="Unlock potential"
             imageSrc="https://picsum.photos/id/293/1600/900"
+            surface="light"
             text={[
               'Meditation is the key to unlocking creativity, focus, and inner strength.',
               "Through regular practice, you'll discover abilities you never knew you had.",
             ]}
-            surface="light"
             title="Unlock Your Potential"
           />
         </StorySection>
@@ -128,11 +128,11 @@ export const Default: Story = () => (
             ctaText="Begin Today"
             imageAlt="Mental clarity"
             imageSrc="https://picsum.photos/id/14/1600/900"
+            surface="light"
             text={[
               "Clear your mind and find answers to life's biggest questions.",
               'Meditation provides the mental space needed for breakthrough insights and deep understanding.',
             ]}
-            surface="light"
             title="Discover True Clarity"
           />
         </StorySection>
@@ -145,11 +145,11 @@ export const Default: Story = () => (
             ctaText="Join Now"
             imageAlt="Meditation community"
             imageSrc="https://picsum.photos/id/131/1600/900"
+            surface="light"
             text={[
               'Connect with meditators around the world on a shared journey of self-discovery.',
               'Share experiences, learn from others, and grow together in a supportive environment.',
             ]}
-            surface="light"
             title="Join Our Community"
           />
         </StorySection>
@@ -166,11 +166,11 @@ export const Default: Story = () => (
             ctaText="Learn More"
             imageAlt="High contrast dark theme"
             imageSrc="https://picsum.photos/seed/dark-pattern/1600/900"
+            surface="dark"
             text={[
               'The high contrast variant adds halo shadows around text and darkens the background image for improved readability.',
               'Perfect for images with complex patterns or when maximum text clarity is needed.',
             ]}
-            surface="dark"
             title="Enhanced Readability"
             variant="highContrast"
           />
@@ -184,11 +184,11 @@ export const Default: Story = () => (
             ctaText="Get Started"
             imageAlt="High contrast light theme"
             imageSrc="https://picsum.photos/id/13/1600/900"
+            surface="light"
             text={[
               'In light theme, the high contrast mode applies white halo shadows and screen blend mode.',
               'This ensures your content remains legible even over busy or bright background images.',
             ]}
-            surface="light"
             title="Crystal Clear Content"
             variant="highContrast"
           />
@@ -206,11 +206,11 @@ export const Default: Story = () => (
             ctaText="Explore Features"
             imageAlt="Box variant dark theme"
             imageSrc="https://picsum.photos/1600/900?random=1"
+            surface="dark"
             text={[
               'The box variant wraps content in a bordered container with backdrop blur for a card-like appearance.',
               'Ideal for creating distinct, elevated content areas over complex background images.',
             ]}
-            surface="dark"
             title="Contained & Focused"
             variant="box"
           />
@@ -224,11 +224,11 @@ export const Default: Story = () => (
             ctaText="View Details"
             imageAlt="Box variant light theme"
             imageSrc="https://picsum.photos/1600/900?random=2"
+            surface="light"
             text={[
               'In light theme, the box variant creates a subtle frosted glass effect that complements bright images.',
               'Perfect for premium content showcases and feature announcements.',
             ]}
-            surface="light"
             title="Elegant Presentation"
             variant="box"
           />

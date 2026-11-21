@@ -30,7 +30,6 @@ export interface IconProps extends Omit<ComponentProps<'span'>, 'children'> {
    */
   color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
 
-
   /** Accessible label for the icon (important for screen readers when icon has semantic meaning) */
   'aria-label'?: string
 }
@@ -80,9 +79,9 @@ export function Icon({
   // without it; no other engine has to.
   return (
     <span
-      className={`${baseStyles} ${sizeStyles[size]} ${colorStyles[color]} ${className}`}
       aria-hidden={ariaLabel ? undefined : 'true'}
       aria-label={ariaLabel}
+      className={`${baseStyles} ${sizeStyles[size]} ${colorStyles[color]} ${className}`}
       role={ariaLabel ? 'img' : undefined}
       {...props}
     >

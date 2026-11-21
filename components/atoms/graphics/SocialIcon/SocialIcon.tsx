@@ -148,9 +148,7 @@ export function SocialIcon({
   return (
     <Link
       {...props}
-      href={href}
       external
-      variant="unstyled"
       aria-label={name}
       // `touch-target` grows the box to the 44×44 floor
       // (`docs/rules/design-system.md`); the svg keeps its drawn size. Growing
@@ -158,6 +156,8 @@ export function SocialIcon({
       // apart, and overlapping overlays hand the shared strip to the later
       // sibling. Both call rows tightened their gap to pay for the room.
       className={`inline-flex touch-target items-center justify-center ${className}`}
+      href={href}
+      variant="unstyled"
     >
       <svg
         aria-hidden="true"

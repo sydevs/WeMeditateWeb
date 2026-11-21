@@ -87,6 +87,7 @@ export async function fetchWithErrorDetails(
   })
 
   // Log every API request, for debugging.
+  // eslint-disable-next-line no-console -- the request log AGENTS.md's debugging section reads
   console.log(`[PayloadCMS] ${init?.method || 'GET'} ${input} → ${response.status}`)
 
   // If not OK, log the actual error details before the SDK swallows them.
