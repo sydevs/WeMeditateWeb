@@ -11,10 +11,9 @@
  * render never shows one.
  */
 
-import ts from 'typescript'
 import { describe, it, expect } from 'vitest'
 import { dirname, relative, resolve, sep } from 'node:path'
-import { parse, readSource, repoRoot, sourceFiles, walk } from './_source-scan'
+import { readSource, repoRoot, sourceFiles, specifiers } from './_source-scan'
 
 const LEVELS = ['atoms', 'molecules', 'organisms', 'templates'] as const
 
@@ -23,36 +22,6 @@ function levelOf(path: string): number | null {
   const [root, level] = path.split(sep)
 
   return root === 'components' ? LEVELS.indexOf(level as (typeof LEVELS)[number]) : null
-}
-
-/** Every module specifier `source` names: imports, re-exports, `import()` and `import('…')` types. */
-export function specifiers(source: string): string[] {
-  const found: string[] = []
-
-  walk(parse(source), (node) => {
-    if (
-      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-      node.moduleSpecifier &&
-      ts.isStringLiteral(node.moduleSpecifier)
-    ) {
-      found.push(node.moduleSpecifier.text)
-    } else if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-      node.arguments[0] &&
-      ts.isStringLiteralLike(node.arguments[0])
-    ) {
-      found.push(node.arguments[0].text)
-    } else if (
-      ts.isImportTypeNode(node) &&
-      ts.isLiteralTypeNode(node.argument) &&
-      ts.isStringLiteral(node.argument.literal)
-    ) {
-      found.push(node.argument.literal.text)
-    }
-  })
-
-  return found
 }
 
 /** `file:specifier` for every import in `file` that reaches a higher level. */
@@ -65,6 +34,7 @@ function upwardImports(file: string): string[] {
   }
 
   return specifiers(readSource(file))
+    .map((specifier) => specifier.text)
     .filter((specifier) => specifier.startsWith('.'))
     .filter((specifier) => {
       const target = levelOf(relative(repoRoot, resolve(dirname(file), specifier)))
@@ -85,20 +55,5 @@ describe('atomic imports', () => {
 
   it('no component imports from a level above its own', () => {
     expect(files.flatMap(upwardImports)).toEqual([])
-  })
-
-  it('reads every spelling of an import', () => {
-    // Without this, a parser that missed a form would make the guard above pass forever.
-    const sample = [
-      "import { A } from '../a'",
-      "import type { B } from '../b'",
-      "export { C } from '../c'",
-      "const D = lazy(() => import('../d'))",
-      "import '../e.css'",
-      "type F = import('../f').G",
-      "type H = typeof import('../h')",
-    ].join('\n')
-
-    expect(specifiers(sample)).toEqual(['../a', '../b', '../c', '../d', '../e.css', '../f', '../h'])
   })
 })

@@ -109,3 +109,49 @@ export function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
   visit(node)
   node.forEachChild((child) => walk(child, visit))
 }
+
+/** A module specifier a source file names. */
+export interface ModuleSpecifier {
+  /** The specifier as written. */
+  text: string
+  /**
+   * Erased before the bundler sees it, so it reaches no bundle: `import type`,
+   * `export type`, or an `import('…')` type.
+   */
+  typeOnly: boolean
+}
+
+/** Every module specifier `source` names: imports, re-exports, `import()` and `import('…')` types. */
+export function specifiers(source: string): ModuleSpecifier[] {
+  const found: ModuleSpecifier[] = []
+
+  walk(parse(source), (node) => {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      found.push({
+        text: node.moduleSpecifier.text,
+        typeOnly: ts.isImportDeclaration(node)
+          ? Boolean(node.importClause?.isTypeOnly)
+          : node.isTypeOnly,
+      })
+    } else if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments[0] &&
+      ts.isStringLiteralLike(node.arguments[0])
+    ) {
+      found.push({ text: node.arguments[0].text, typeOnly: false })
+    } else if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteral(node.argument.literal)
+    ) {
+      found.push({ text: node.argument.literal.text, typeOnly: true })
+    }
+  })
+
+  return found
+}
