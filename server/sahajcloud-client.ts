@@ -217,16 +217,6 @@ const EMBEDDED_FORM_SELECT = {
 } satisfies FormsSelect<true> & EmbeddedFormSelect
 
 /**
- * {@link IMAGE_POPULATE} plus the `credit` a page's figures print: an uploaded
- * image and an image-gallery tile. Only here, because no other read renders
- * one, and the config's images are serialised into every page's HTML.
- */
-const PAGE_IMAGE_POPULATE = {
-  ...IMAGE_POPULATE.images,
-  credit: true,
-} satisfies ImagesSelect<true>
-
-/**
  * Populate map for a full Page read (depth 3). The backend rejects a
  * depth > 1 read without `populate`. Each entry both enables a relationship
  * to populate and restricts it to the fields the frontend renders. Beyond
@@ -235,7 +225,9 @@ const PAGE_IMAGE_POPULATE = {
  * resolve titles, slugs, and thumbnails instead of degrading.
  */
 const PAGE_POPULATE = {
-  images: PAGE_IMAGE_POPULATE,
+  // `credit` only here: no other read renders one, and the config's images
+  // are serialised into every page's HTML.
+  images: { ...IMAGE_POPULATE.images, credit: true } satisfies ImagesSelect<true>,
   authors: AUTHOR_POPULATE,
   videos: VIDEO_POPULATE,
   pages: EMBEDDED_PAGE_SELECT,
