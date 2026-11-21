@@ -19,6 +19,7 @@ import { TechniqueCard } from '../TechniqueCard'
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
+import { slugify } from '../../../lib/slugify'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 import {
   cardHeadingLevel,
@@ -26,7 +27,6 @@ import {
   getNodeText,
   pageCard,
   relationshipLabel,
-  slugify,
   uploadFigureClass,
 } from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
