@@ -17,9 +17,9 @@
  */
 
 import { render } from 'vike/abort'
-import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import { warnOnce } from './error-utils'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
@@ -33,33 +33,8 @@ export interface SiteContext {
   t: TFunction
 }
 
-/** Why a read rendered the English snapshot instead of the locale's strings. */
-type Degrade = 'empty' | 'failed'
-
 const translationsCache = new WeakMap<object, Promise<WebTranslations>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
-
-/**
- * What this isolate has already sent to Sentry. A degrade recurs on every
- * render until someone fixes it upstream, so each reports once per isolate
- * (server/AGENTS.md). The domain is finite — the locales times two reasons —
- * so it needs no cap.
- */
-const reportedDegrades = new Set<string>()
-
-function reportDegrade(locale: Locale, reason: Degrade): void {
-  const signature = `${locale}:${reason}`
-
-  if (reportedDegrades.has(signature)) return
-
-  reportedDegrades.add(signature)
-  Sentry.captureMessage(
-    reason === 'empty'
-      ? 'Translations global is empty; rendering the English snapshot'
-      : 'Translations read failed; rendering the English snapshot',
-    { level: 'warning', tags: { source: 'loadTranslations' }, extra: { locale } },
-  )
-}
 
 /** True when the global carries no strings at all, at any depth. */
 function isEmpty(translations: WebTranslations): boolean {
@@ -88,8 +63,9 @@ function isEmpty(translations: WebTranslations): boolean {
  * thirteen from this repo's English mirror, which trails the live English.
  * A locale is published with every group present, even blank.
  *
- * Either degrade logs on every request, and reaches Sentry once per locale
- * and reason per isolate, from whichever render discovers it.
+ * Either degrade logs on every request, and reaches Sentry through
+ * `warnOnce` — once per locale and reason per isolate, from whichever render
+ * discovers it.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const locale = pageContext.locale
@@ -108,13 +84,19 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
         console.warn(
           `[loadTranslations] "${locale}" returned no strings; using the English snapshot`,
         )
-        reportDegrade(locale, 'empty')
+        warnOnce(locale, 'Translations global is empty; rendering the English snapshot', {
+          source: 'loadTranslations',
+          extra: { locale },
+        })
 
         return EN_TRANSLATIONS
       })
       .catch((error: unknown) => {
         console.warn(`[loadTranslations] read failed for "${locale}":`, error)
-        reportDegrade(locale, 'failed')
+        warnOnce(locale, 'Translations read failed; rendering the English snapshot', {
+          source: 'loadTranslations',
+          extra: { locale },
+        })
 
         return EN_TRANSLATIONS
       }),

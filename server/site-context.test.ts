@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as Sentry from '@sentry/cloudflare'
+import * as Sentry from '@sentry/react'
 import type { PageContextServer } from 'vike/types'
 import { abortForkViews, hookViews } from '../tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import { forgetReportedWarnings } from './error-utils'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
 import { EN_TRANSLATIONS } from '../lib/i18n'
 
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+// `warnOnce` reports through `@sentry/react` (see error-utils.ts).
+vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 vi.mock('./sahajcloud-client', () => ({
   getWebTranslations: vi.fn(),
   getWebConfig: vi.fn(),
@@ -103,17 +105,13 @@ describe('loadSiteContext', () => {
   })
 })
 
-/**
- * The degrade warnings run on every render, so each is bounded per isolate.
- *
- * The isolate's memo outlives a test, so each case below degrades a locale no
- * other case uses: a reused one would already be reported.
- */
+/** The degrade warnings run on every render, so each is bounded per isolate. */
 describe('translations degrade reporting', () => {
   const offering = (...locales: Locale[]) =>
     vi.mocked(getWebConfig).mockResolvedValue({ availableLocales: locales } as WebConfig)
 
   beforeEach(() => {
+    forgetReportedWarnings()
     vi.mocked(Sentry.captureMessage).mockClear()
     vi.restoreAllMocks()
     vi.spyOn(console, 'warn').mockImplementation(() => {})
