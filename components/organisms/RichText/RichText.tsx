@@ -15,11 +15,20 @@ import { Blockquote, Container, Image, Link } from '../../atoms'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
+import { TechniqueCard } from '../TechniqueCard'
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
 import { nearestAspectRatio } from '../../../lib/cloudflare-images'
+import { slugify } from '../../../lib/slugify'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
-import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
+import {
+  cardPlacement,
+  getNodeText,
+  headingTag,
+  pageCard,
+  relationshipLabel,
+  uploadFigureClass,
+} from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
@@ -100,24 +109,24 @@ const CONVERTERS: JSXConverters = {
 
   // Headings get a slugified anchor id so a table of contents can link to them.
   heading: ({ node, nodesToJSX }) => {
-    const Tag =
-      typeof node.tag === 'string' && /^h[2-6]$/.test(node.tag)
-        ? (node.tag as 'h2' | 'h3' | 'h4' | 'h5' | 'h6')
-        : 'h2'
+    const Tag = headingTag(node)
     const id = slugify(getNodeText(node.children))
 
     return <Tag id={id || undefined}>{nodesToJSX({ nodes: node.children })}</Tag>
   },
 
   // Lexical blockquotes (distinct from the `quote` custom block, which
-  // renders as HeroQuote) render through the Blockquote atom. The atom
-  // floats to match the node's alignment, and it takes only plain text, so
-  // inline formatting inside a blockquote is flattened. This is rare in practice.
-  quote: ({ node }) => {
+  // renders as HeroQuote) render through the Blockquote atom, which floats
+  // to match the node's alignment. One with no text renders nothing: the atom
+  // would otherwise float an empty gradient box beside the copy.
+  quote: ({ node, nodesToJSX }) => {
+    if (!getNodeText(node.children).trim()) {
+      return null
+    }
     const format = (node as { format?: string }).format
     const align = format === 'left' || format === 'start' ? 'left' : 'right'
 
-    return <Blockquote align={align} text={getNodeText(node.children)} />
+    return <Blockquote align={align}>{nodesToJSX({ nodes: node.children })}</Blockquote>
   },
 
   // Render links through the locale-aware Link atom. An internal link
@@ -130,7 +139,13 @@ const CONVERTERS: JSXConverters = {
     if (fields?.linkType === 'internal' && fields.doc) {
       const href = documentHref(fields.doc.relationTo ?? '', fields.doc.value as RelationValue)
 
-      return href ? <Link href={href}>{children}</Link> : <>{children}</>
+      return href ? (
+        <Link external={Boolean(fields.newTab)} href={href}>
+          {children}
+        </Link>
+      ) : (
+        <>{children}</>
+      )
     }
     const url = fields?.url
 
@@ -158,14 +173,43 @@ const CONVERTERS: JSXConverters = {
   },
 
   // A relationship node links to the referenced document through the mapper,
-  // with one exception: a `forms` reference is the form itself, embedded by
-  // the editor to be filled in, so it renders rather than linking. Every
-  // other collection with no public route degrades to its plain label.
-  relationship: ({ node }) => {
+  // with two exceptions. A `forms` reference is the form itself, embedded by
+  // the editor to be filled in, so it renders rather than linking. A page
+  // with an image and a description draws a TechniqueCard, the legacy
+  // /techniques list: numbered within its run of consecutive cards (a lone
+  // card carries no number), alternating sides from the left. Every other
+  // collection with no public route degrades to its plain label.
+  relationship: ({ node, parent, childIndex }) => {
     if (node.relationTo === 'forms') {
       return isPopulated<EmbeddedForm>(node.value) ? (
         <FormBuilder className={BLOCK_SPACING} form={node.value} />
       ) : null
+    }
+    const card = pageCard(node)
+
+    if (card) {
+      const siblings = (parent as { children?: unknown[] }).children ?? [node]
+      const { position, numbered, headingLevel } = cardPlacement(siblings, childIndex)
+      const { width, height } = card.image
+
+      return (
+        <TechniqueCard
+          align={position % 2 === 1 ? 'left' : 'right'}
+          // The number hangs 7rem above the image from `md`, so the top
+          // margin clears it.
+          className="clear-both my-16 md:mt-40"
+          description={card.description}
+          headingLevel={headingLevel}
+          href={card.href}
+          imageAlt={card.image.alt}
+          // Without both dimensions `nearestAspectRatio` answers 16:9, which
+          // would crop a portrait watercolour wide. The card's own default fits.
+          imageAspectRatio={width && height ? nearestAspectRatio(width, height) : undefined}
+          imageSrc={card.image.url}
+          number={numbered ? String(position).padStart(2, '0') : undefined}
+          title={card.title}
+        />
+      )
     }
     const label = relationshipLabel(node.value)
 

@@ -140,6 +140,12 @@ const pageRef = (id: number, slug: string, title: string, description = '') => (
   meta: { image: imageRef(slug, title), description },
 })
 
+/** A page the editor tagged `technique`, which an embed draws as a card. */
+const techniqueRef = (id: number, slug: string, title: string, description: string) => ({
+  ...pageRef(id, slug, title, description),
+  tags: ['technique'],
+})
+
 const meditationRef = (id: number, title: string, durationMinutes: number) => ({
   id,
   title,
@@ -269,6 +275,19 @@ const pageContent = editorState(
       'Stillness is where creativity and solutions are found. When the surface of the mind settles, what was murky becomes clear, and answers that striving could never force arrive on their own — quietly, unhurried, and complete — as though they had been waiting all along for us to stop and listen.',
       'left',
     ),
+    // A blockquote keeps its inline formatting, links and line breaks.
+    {
+      ...quote(''),
+      children: [
+        text('Meditation is '),
+        text('effortless attention', FORMAT.bold),
+        text('.'),
+        { type: 'linebreak', version: 1 },
+        text('Read more on the '),
+        internalLink('about page', 'about'),
+        text('.'),
+      ],
+    },
     uploadImage(FIGURE_IMAGE, 'A misty forest', 'A left-aligned figure', 'left'),
     paragraph([text(FILLER[1])]),
     uploadImage(FIGURE_IMAGE, 'A meadow at dawn', 'A right-aligned figure', 'right'),
@@ -441,6 +460,28 @@ const pageContent = editorState(
         { id: 'tl3', title: 'Step 3', text: 'Repeat three times in total.' },
       ],
     }),
+
+    // Consecutive page relationships with an image and a description → numbered
+    // TechniqueCards (the /techniques page). The bare relationship further up has
+    // neither, so it stays an inline link.
+    heading('h3', 'Cleansing techniques'),
+    relationshipNode(
+      'pages',
+      techniqueRef(
+        69,
+        'footsoaking',
+        'Footsoaking',
+        'Good for:\nBetter sleep, cooling the right channel',
+      ),
+    ),
+    relationshipNode(
+      'pages',
+      techniqueRef(67, 'candle-treatment', 'Candle treatment', 'Good for:\nRemoving heaviness'),
+    ),
+    relationshipNode(
+      'pages',
+      techniqueRef(71, 'ice-pack', 'Ice Pack', 'Good for:\nCalming mental or physical activity'),
+    ),
 
     // Showcase — populated relationships
     block('showcase', {

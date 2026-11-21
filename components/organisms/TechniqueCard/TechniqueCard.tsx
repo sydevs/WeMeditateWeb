@@ -1,14 +1,25 @@
 import { ComponentProps } from 'react'
 import { Button, Heading, Image } from '../../atoms'
+import { useT } from '../../../hooks/useT'
+import type { AspectRatio } from '../../../lib/cloudflare-images'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
-  /** Card number displayed above the content, for example "01", "02", "03" */
-  number: string
+  /**
+   * Card number displayed above the content, for example "01", "02", "03".
+   * Omit it for a card that stands alone, where a sequence number means nothing.
+   */
+  number?: string
 
   /** Main heading of the technique */
   title: string
 
-  /** Description text explaining the technique */
+  /**
+   * The heading's place in the page outline. It draws the same size at every level.
+   * @default 'h3'
+   */
+  headingLevel?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+
+  /** Description text explaining the technique. A line break in it renders as one. */
   description: string
 
   /** URL for the technique image */
@@ -17,11 +28,14 @@ export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'>
   /** Alt text for the image */
   imageAlt: string
 
-  /** Link destination for "Learn more" button */
-  href: string
+  /**
+   * The box the image is cropped to.
+   * @default 'square'
+   */
+  imageAspectRatio?: AspectRatio
 
-  /** Button text */
-  buttonText: string
+  /** Link destination for the "Learn more" button */
+  href: string
 
   /**
    * Layout alignment. Determines the image position.
@@ -39,15 +53,18 @@ export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'>
 export function TechniqueCard({
   number,
   title,
+  headingLevel = 'h3',
   description,
   imageSrc,
   imageAlt,
+  imageAspectRatio = 'square',
   href,
-  buttonText = 'Learn more',
   align = 'left',
   className = '',
   ...props
 }: TechniqueCardProps) {
+  const t = useT()
+
   return (
     <div
       className={`
@@ -72,18 +89,20 @@ export function TechniqueCard({
           `}
         >
           {/* Number Badge - centered within gradient */}
-          <div className="text-4xl font-light text-gray-400">{number}</div>
+          {number && <div className="text-4xl font-light text-gray-400">{number}</div>}
         </div>
 
         {/* Mobile Number Badge - shown on mobile only */}
-        <div aria-hidden="true" className="mb-4 text-4xl font-light text-gray-400 md:hidden">
-          {number}
-        </div>
+        {number && (
+          <div aria-hidden="true" className="mb-4 text-4xl font-light text-gray-400 md:hidden">
+            {number}
+          </div>
+        )}
 
         {/* Image */}
         <Image
           alt={imageAlt}
-          aspectRatio="square"
+          aspectRatio={imageAspectRatio}
           className="h-full w-full object-cover"
           // One length per step of the wrapper above: `w-full max-w-md`,
           // then `md:w-84`, then `lg:w-96`.
@@ -99,15 +118,24 @@ export function TechniqueCard({
           md:px-10 lg:px-12
         `}
       >
-        <Heading className="mb-4 text-gray-700" level="h3" styleAs="h5">
+        <Heading className="mb-4 text-gray-700" level={headingLevel} styleAs="h5">
           {title}
         </Heading>
 
-        <p className="mb-10 text-gray-700 text-lg md:text-base">{description}</p>
+        <p className="mb-10 whitespace-pre-line text-gray-700 text-lg md:text-base">
+          {description}
+        </p>
 
         <div>
-          <Button className="min-w-[140px]" href={href} size="md" variant="outline">
-            {buttonText}
+          <Button
+            // Cards in a list share one visible label, so each names its own page.
+            aria-label={t('blocks.a11y.learn_more_about', { title })}
+            className="min-w-[140px]"
+            href={href}
+            size="md"
+            variant="outline"
+          >
+            {t('blocks.general.learn_more')}
           </Button>
         </div>
       </div>

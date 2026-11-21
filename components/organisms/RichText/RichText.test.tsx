@@ -3,6 +3,11 @@ import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { getLeadSplash } from '../../../lib/content-blocks'
 import type { Page } from '../../../server/sahajcloud-types'
+import { anchorFor, classOf, openTag } from '../../../tests/_helpers/markup'
+import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { EN_TRANSLATIONS, getT } from '../../../lib/i18n'
+
+const t = getT(EN_TRANSLATIONS, 'en')
 
 // RichText mounts the lightbox provider, whose barrel is client-only, and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
@@ -155,6 +160,28 @@ describe('<RichText>', () => {
     expect(html).toContain('rel="noopener noreferrer"')
   })
 
+  it('opens an internal link in a new tab when the editor asked for one', () => {
+    const internal = (slug: string, newTab: boolean) => ({
+      type: 'link',
+      fields: {
+        linkType: 'internal',
+        newTab,
+        doc: { relationTo: 'pages', value: { id: 1, slug } },
+      },
+      children: [text(slug)],
+      version: 1,
+    })
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([paragraph([internal('about', true), internal('faq', false)])])}
+      />,
+    )
+
+    expect(anchorFor(html, '/about')).toContain('target="_blank"')
+    expect(anchorFor(html, '/faq')).not.toBe('')
+    expect(anchorFor(html, '/faq')).not.toContain('target=')
+  })
+
   it('degrades an internal link to an unroutable collection to plain text (no dead link)', () => {
     const html = renderToStaticMarkup(
       <RichText
@@ -213,6 +240,139 @@ describe('<RichText>', () => {
 
     expect(html).toContain('An App Card')
     expect(html).not.toContain('<a')
+  })
+
+  describe('a page relationship with an image and a description', () => {
+    /** A `pages` relationship, populated the way EMBEDDED_PAGE_SELECT reads it. */
+    const technique = (id: number, slug: string, title: string) => ({
+      type: 'relationship',
+      relationTo: 'pages',
+      value: {
+        id,
+        slug,
+        title,
+        tags: ['technique'],
+        meta: {
+          description: `Good for:\n${title} things`,
+          image: { id, url: CF_PUBLIC_URL, alt: `${title} artwork`, width: 840, height: 660 },
+        },
+      },
+      format: '',
+      version: 2,
+    })
+    const FIVE = [
+      technique(97, 'kundalini-bandhan', 'Kundalini/Bandhan'),
+      technique(69, 'footsoaking', 'Footsoaking'),
+      technique(67, 'candle-treatment', 'Candle treatment'),
+      technique(71, 'ice-pack', 'Ice Pack'),
+      technique(70, 'hand-massage', 'Hand massage with oil'),
+    ]
+    /** The class list of each card's outer element, in document order. */
+    const cards = (html: string) =>
+      [...html.matchAll(/<div class="([^"]*\brelative flex flex-col\b[^"]*)"/g)].map(([, c]) => c)
+
+    it('renders a numbered card per page, alternating sides from the left (/techniques)', () => {
+      const html = renderToStaticMarkup(
+        <RichText
+          content={editorState([paragraph([text('Enhance your meditations.')]), ...FIVE])}
+        />,
+      )
+
+      const sides = cards(html).map((c) => c.split(/\s+/).includes('md:flex-row-reverse'))
+
+      expect(sides).toEqual([false, true, false, true, false])
+      for (const n of ['01', '02', '03', '04', '05']) {
+        expect(html).toContain(`>${n}</div>`)
+      }
+      expect(anchorFor(html, '/footsoaking')).toContain(
+        `aria-label="${t('blocks.a11y.learn_more_about', { title: 'Footsoaking' })}"`,
+      )
+      expect(html).toContain('>Good for:\nFootsoaking things</p>')
+      expect(html).toContain('alt="Footsoaking artwork"')
+    })
+
+    it('crops the image to the ratio nearest its own, not to a square', () => {
+      const html = renderToStaticMarkup(<RichText content={editorState([FIVE[0]])} />)
+
+      expect(html).toContain('aspect-[4/3]')
+      expect(html).not.toContain('aspect-square')
+    })
+
+    it("falls back to the card's own crop when the image has no dimensions", () => {
+      const sized = FIVE[0].value.meta.image
+      const unsized = {
+        ...FIVE[0],
+        value: {
+          ...FIVE[0].value,
+          meta: { ...FIVE[0].value.meta, image: { id: sized.id, url: sized.url, alt: sized.alt } },
+        },
+      }
+      const html = renderToStaticMarkup(<RichText content={editorState([unsized])} />)
+
+      expect(html).toContain('aspect-square')
+      expect(html).not.toContain('aspect-video')
+    })
+
+    it('heads each card one level below the heading before it, h2 under none', () => {
+      const under = (nodes: unknown[]) =>
+        renderToStaticMarkup(<RichText content={editorState(nodes)} />)
+      const h3 = { type: 'heading', tag: 'h3', children: [text('Cleansing')], version: 1 }
+
+      expect(openTag(under([FIVE[0]]), 'h2')).toContain('<h2')
+      expect(under([h3, FIVE[0]])).toContain('<h4 class')
+      expect(under([h3, FIVE[0]])).not.toContain('<h3 class')
+    })
+
+    it('numbers each run of consecutive cards on its own, and a lone card not at all', () => {
+      const html = renderToStaticMarkup(
+        <RichText
+          content={editorState([FIVE[0], FIVE[1], paragraph([text('Between')]), FIVE[2]])}
+        />,
+      )
+
+      expect(cards(html)).toHaveLength(3)
+      expect(html.match(/>01<\/div>/g)?.length).toBe(2) // the desktop and mobile badge
+      expect(html.match(/>02<\/div>/g)?.length).toBe(2)
+      expect(html).not.toContain('>03</div>')
+    })
+
+    it('keeps counting across a blank paragraph left between two cards', () => {
+      const html = renderToStaticMarkup(
+        <RichText content={editorState([FIVE[0], paragraph([]), FIVE[1]])} />,
+      )
+      const sides = cards(html).map((c) => c.split(/\s+/).includes('md:flex-row-reverse'))
+
+      expect(sides).toEqual([false, true])
+      expect(html).toContain('>02</div>')
+    })
+
+    it('keeps the link for a page the editor did not tag a technique', () => {
+      const untagged = { ...FIVE[0], value: { ...FIVE[0].value, tags: ['wisdom'] } }
+      const html = renderToStaticMarkup(<RichText content={editorState([untagged])} />)
+
+      expect(cards(html)).toHaveLength(0)
+      expect(classOf(html, 'Kundalini/Bandhan')).toContain('text-primary')
+    })
+
+    it('keeps the link for a page with no description or no image', () => {
+      const bare = (meta: Record<string, unknown>) => ({
+        ...FIVE[0],
+        value: { ...FIVE[0].value, meta },
+      })
+      const html = renderToStaticMarkup(
+        <RichText
+          content={editorState([
+            bare({ image: FIVE[0].value.meta.image, description: '  ' }),
+            paragraph([text('Between')]),
+            bare({ description: 'Good for: sleep', image: 462 }),
+          ])}
+        />,
+      )
+
+      expect(cards(html)).toHaveLength(0)
+      expect(classOf(html, 'Kundalini/Bandhan')).toContain('text-primary')
+      expect(html.match(/href="\/kundalini-bandhan"/g)?.length).toBe(2)
+    })
   })
 
   it('renders an embedded form, rather than linking to it', () => {
@@ -694,6 +854,52 @@ describe('<RichText>', () => {
     expect(html).toContain('A wise saying')
     // The Blockquote atom floats and uses a teal gradient backdrop.
     expect(html).toContain('float-right')
+  })
+
+  it('keeps the bold, links and line breaks inside a lexical blockquote', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'quote',
+            children: [
+              text('A '),
+              text('wise', 1),
+              text(' saying'),
+              { type: 'linebreak', version: 1 },
+              {
+                type: 'link',
+                fields: { linkType: 'custom', url: 'https://example.com', newTab: false },
+                children: [text('its source')],
+                version: 1,
+              },
+            ],
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+    expect(html).toContain('<strong>wise</strong>')
+    expect(html).toContain(' saying<br/>')
+    expect(anchorFor(html, 'https://example.com')).not.toBe('')
+    expect(html).toContain('its source</a>')
+  })
+
+  it('renders nothing for a lexical blockquote with no text (live on /terms-conditions)', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          paragraph([text('Before')]),
+          { type: 'quote', children: [], version: 1 },
+          { type: 'quote', children: [{ type: 'linebreak', version: 1 }], version: 1 },
+        ])}
+      />,
+    )
+
+    expect(html).toContain('Before')
+    expect(html).not.toContain('<blockquote')
+    expect(html).not.toContain('float-right')
   })
 
   it('flags unknown custom block nodes with a dev alert while still rendering surrounding content', () => {
