@@ -49,7 +49,7 @@ import {
   LIVE_PREVIEW_TOKEN_HEADER,
 } from '../../../../../lib/live-preview/protocol'
 import { reportProxyFailure } from '../../_proxy-failure'
-import { parseLocale } from '../../_shared'
+import { parseLocale } from '../../../../sahajcloud-types'
 
 /** Turns Payload's POST body into the GET SahajCloud actually answers. */
 const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'

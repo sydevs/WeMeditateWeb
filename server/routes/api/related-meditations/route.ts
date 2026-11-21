@@ -16,8 +16,9 @@ import type { Hono } from 'hono'
 import type { SahajCloudEnv } from '../../../sahajcloud-context'
 import { getRelatedMeditations } from '../../../sahajcloud-client'
 import { idSchema } from '../../../validation'
+import { parseLocale } from '../../../sahajcloud-types'
 import { relatedMeditationsToCards } from '../../../../lib/related-content'
-import { parseLocale, relatedAnswer } from '../_shared'
+import { relatedAnswer } from '../_related'
 
 export function registerRelatedMeditations(app: Hono<SahajCloudEnv>): void {
   app.get('/api/related-meditations/:lectureId', async (c) => {
