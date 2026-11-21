@@ -29,8 +29,10 @@ describe('Dropdown', () => {
     // role to fall back to now: whatever the trigger renders is the control.
     const trigger = openTag(html, 'button')
 
-    expect(trigger).toContain('aria-haspopup="menu"')
+    // The default panel is a disclosure: the trigger says it is collapsed,
+    // and promises no popup role the panel would not keep.
     expect(trigger).toContain('aria-expanded="false"')
+    expect(trigger).not.toContain('aria-haspopup')
     expect(html).not.toContain('role="button"')
     expect(html).not.toContain('tabindex="0"')
     expect(html).toContain('Open')

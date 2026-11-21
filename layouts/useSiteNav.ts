@@ -30,7 +30,7 @@ export interface SiteNav {
  * Build the nav items and header action link.
  *
  * This is a hook because the knowledge mega-menu shows two featured-article
- * thumbnails, picked at random once per mount (compute-once-and-reuse). The
+ * thumbnails, picked at random once per set of source lists. The
  * panel stays closed during SSR, so the picks never enter the server HTML.
  * This is what makes the randomness hydration-safe.
  *
@@ -45,7 +45,20 @@ export function useSiteNav(settings: WebConfig, activeSlug?: string): SiteNav {
   const { urlPathname } = usePageContext()
   const t = useT()
 
-  const [articlePicks] = useState(() => pickFeaturedArticles(featuredArticles, knowledgePages))
+  // Vike keeps the layout mounted across a client-side navigation and hands it
+  // fresh `settings` each time, so the picks follow what the lists hold, not
+  // their identity: a locale switch retitles every page and re-rolls them.
+  const sourceKey = JSON.stringify([featuredArticles, knowledgePages])
+  const [picks, setPicks] = useState(() => ({
+    sourceKey,
+    pages: pickFeaturedArticles(featuredArticles, knowledgePages),
+  }))
+
+  if (picks.sourceKey !== sourceKey) {
+    setPicks({ sourceKey, pages: pickFeaturedArticles(featuredArticles, knowledgePages) })
+  }
+
+  const articlePicks = picks.pages
 
   const navItems: NavItem[] = featuredPages.map((page) => ({
     label: page.title,
