@@ -6,7 +6,6 @@
  */
 
 import type { Alternate } from '@/lib/seo/hreflang'
-import { isCanonicalOrigin } from '@/lib/seo/canonical-origin'
 
 /** One `<url>` entry. */
 export interface SitemapUrl {
