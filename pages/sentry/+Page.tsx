@@ -1,46 +1,56 @@
-import * as Sentry from "@sentry/react";
-import { useEffect, useState } from "react";
+import * as Sentry from '@sentry/react'
+import { useEffect, useState } from 'react'
 
 export default function ReactSentryErrorPage() {
   const [sentryClientStatus, setSentryClientStatus] = useState({
     client_not_loaded: false,
     enabled: true,
     dsn_missing: false,
-  });
+  })
+
   useEffect(() => {
-    const options = Sentry?.getClient()?.getOptions();
+    const options = Sentry?.getClient()?.getOptions()
+
     // eslint-disable-next-line @eslint-react/set-state-in-effect -- the Sentry client exists only in the browser, so this page can report it no earlier
     setSentryClientStatus({
       client_not_loaded: !options,
       dsn_missing: (options?.dsn?.length ?? 0) < 2,
       enabled: options?.enabled ?? true,
-    });
+    })
     // eslint-disable-next-line no-console -- this page exists to report the resolved Sentry config
-    console.log("Sentry DSN: ", options?.dsn);
-  }, []);
+    console.log('Sentry DSN: ', options?.dsn)
+  }, [])
 
   return (
     <>
       <h1>Sentry Test Page</h1>
-      {(sentryClientStatus.client_not_loaded || sentryClientStatus.dsn_missing || !sentryClientStatus.enabled) && (
-        <p style={{ color: "red" }}>
+      {(sentryClientStatus.client_not_loaded ||
+        sentryClientStatus.dsn_missing ||
+        !sentryClientStatus.enabled) && (
+        <p style={{ color: 'red' }}>
           <b>Sentry Config Error:</b>
-          {sentryClientStatus.client_not_loaded ? "Client not loaded!" : ""}{" "}
-          {!sentryClientStatus.client_not_loaded && sentryClientStatus.dsn_missing ? "DSN is missing! " : ""}
-          {!sentryClientStatus.client_not_loaded && !sentryClientStatus.enabled ? "Client is not enabled! " : ""} Vite
-          Mode: {import.meta.env.PROD ? "PROD" : "DEV"}
+          {sentryClientStatus.client_not_loaded ? 'Client not loaded!' : ''}{' '}
+          {!sentryClientStatus.client_not_loaded && sentryClientStatus.dsn_missing
+            ? 'DSN is missing! '
+            : ''}
+          {!sentryClientStatus.client_not_loaded && !sentryClientStatus.enabled
+            ? 'Client is not enabled! '
+            : ''}{' '}
+          Vite Mode: {import.meta.env.PROD ? 'PROD' : 'DEV'}
         </p>
       )}
       <div>
         <button
           type="button"
           onClick={() => {
-            throw new Error(`This is a React SENTRY Browser Test! [${import.meta.env.DEV ? "DEV Mode" : "PROD Mode"}]`);
+            throw new Error(
+              `This is a React SENTRY Browser Test! [${import.meta.env.DEV ? 'DEV Mode' : 'PROD Mode'}]`,
+            )
           }}
         >
           Throw Javascript Error
         </button>
       </div>
     </>
-  );
+  )
 }

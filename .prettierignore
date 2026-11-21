@@ -1,0 +1,34 @@
+# Prettier reads .gitignore too, so build output and node_modules need no line here.
+#
+# Everything below has a writer other than a person, and that writer's next run would undo a
+# reformat here and show every reformatted line in its diff.
+
+# `pnpm types:cms`.
+server/payload-types.ts
+
+# `pnpm sync:translations`.
+lib/translations.en.json
+
+pnpm-lock.yaml
+
+# `pnpm redirects:generate` and its snapshot commands (#276), named before they reach main so that
+# PR needs no edit here. Its `build.test.ts` compares the map with the generator's output.
+lib/legacy-redirects/map.generated.json
+data/legacy-redirects/
+
+# Copies from sydevs/claude-workflow. `audit-contracts` checks the rule's canonical block against
+# claude-workflow's docs/code-comments.md; the workflow is that repo's own file, kept alike in
+# every sydevs repo.
+docs/rules/code-comments.md
+.github/workflows/workflow-state.yml
+
+# Claude Code's Protected Paths guard holds every write here for approval (AGENTS.md), so a
+# repo-wide `prettier --write` would stall an unattended run, or route around the guard. `.npmrc`
+# is the third tracked protected path and needs no line: Prettier infers no parser for it.
+.claude/
+.mcp.json
+
+# Markdown is written by people, but Prettier rewrites a fenced tsx sample as a statement
+# (`;<Icon … />`, a JSX attribute as `className = '…'`) and pads every table. Nothing checks
+# Markdown formatting: ESLint's prettier rule covers only the files ESLint lints.
+*.md

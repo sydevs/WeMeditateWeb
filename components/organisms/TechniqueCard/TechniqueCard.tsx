@@ -79,6 +79,7 @@ export function TechniqueCard({
       <div className="relative w-full max-w-md shrink-0 md:w-84 lg:w-96">
         {/* Gradient overlay - positioned above image */}
         <div
+          aria-hidden="true"
           className={`
             absolute bottom-full hidden h-28 w-56
             from-transparent to-teal-200/30
@@ -86,7 +87,6 @@ export function TechniqueCard({
             px-4
             ${align === 'right' ? '-right-4 bg-linear-to-l md:justify-end' : '-left-4 bg-linear-to-r md:justify-start'}
           `}
-          aria-hidden="true"
         >
           {/* Number Badge - centered within gradient */}
           {number && <div className="text-4xl font-light text-gray-400">{number}</div>}
@@ -101,13 +101,13 @@ export function TechniqueCard({
 
         {/* Image */}
         <Image
-          src={imageSrc}
           alt={imageAlt}
           aspectRatio={imageAspectRatio}
           className="h-full w-full object-cover"
           // One length per step of the wrapper above: `w-full max-w-md`,
           // then `md:w-84`, then `lg:w-96`.
           sizes="(min-width: 1024px) 384px, (min-width: 768px) 336px, (min-width: 448px) 448px, 100vw"
+          src={imageSrc}
         />
       </div>
 
@@ -130,10 +130,10 @@ export function TechniqueCard({
           <Button
             // Cards in a list share one visible label, so each names its own page.
             aria-label={t('blocks.a11y.learn_more_about', { title })}
-            variant="outline"
-            size="md"
-            href={href}
             className="min-w-[140px]"
+            href={href}
+            size="md"
+            variant="outline"
           >
             {t('blocks.general.learn_more')}
           </Button>

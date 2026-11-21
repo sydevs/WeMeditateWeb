@@ -15,7 +15,7 @@
  */
 
 import type { ReactNode } from 'react'
-import type { Locale, WebTranslations } from '../server/sahajcloud-types'
+import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/sahajcloud-types'
 import snapshot from './translations.en.json'
 
 /**
@@ -43,9 +43,11 @@ const PLURAL_RULES = new Map<string, Intl.PluralRules>()
 
 function pluralRules(locale: string): Intl.PluralRules {
   const existing = PLURAL_RULES.get(locale)
+
   if (existing) return existing
 
   const rules = new Intl.PluralRules(locale)
+
   PLURAL_RULES.set(locale, rules)
 
   return rules
@@ -91,6 +93,7 @@ export function pluralize(
   // category SahajCloud does not store simply misses and falls through.
   for (const suffix of [category as PluralSuffix, 'other' as const, ...PLURAL_SUFFIXES]) {
     const form = forms[suffix]
+
     if (typeof form === 'string' && form.length > 0) return form
   }
 
@@ -183,10 +186,12 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
 
         for (const suffix of PLURAL_SUFFIXES) {
           const form = group[`${base}_${suffix}`]
+
           if (typeof form === 'string') forms[suffix] = form
         }
 
         const picked = pluralize(forms, params.count, locale)
+
         if (picked) return interpolate(picked, params)
       }
     }
@@ -206,9 +211,7 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
       // literal text between them. A name with no node stays as written, so
       // a missing node is visible rather than a silent gap.
       .split(RICH_PLACEHOLDER)
-      .map((part, index) =>
-        index % 2 === 0 ? part : part in nodes ? nodes[part] : `%{${part}}`,
-      )
+      .map((part, index) => (index % 2 === 0 ? part : part in nodes ? nodes[part] : `%{${part}}`))
       .filter((part) => part !== '')
 
   return t
@@ -237,6 +240,7 @@ export function getT(translations: WebTranslations, locale: Locale): TFunction {
   if (existing) return existing
 
   const t = createT(translations, locale)
+
   byLocale.set(locale, t)
 
   return t
@@ -244,3 +248,21 @@ export function getT(translations: WebTranslations, locale: Locale): TFunction {
 
 /** The accessor bound to the committed English snapshot. */
 export const enT = getT(EN_TRANSLATIONS, 'en')
+
+/**
+ * The accessor for a `pageContext` held directly, rather than through a hook.
+ *
+ * `lib/head-settings.ts` composes the `<title>` and the description from a
+ * plain vike setting, where no hook may be called. It lives here, beside
+ * `getT`, so the locale and translations fallbacks are written once and
+ * `hooks/` holds only hooks.
+ */
+export function pageContextT(
+  pageContext: { locale?: Locale; translations?: unknown } | null | undefined,
+): TFunction {
+  const locale: Locale = pageContext?.locale ?? DEFAULT_LOCALE
+  const translations: WebTranslations =
+    (pageContext?.translations as WebTranslations | undefined) ?? EN_TRANSLATIONS
+
+  return getT(translations, locale)
+}

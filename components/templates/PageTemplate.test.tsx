@@ -5,12 +5,6 @@ import type { Page } from '../../server/sahajcloud-types'
 import { classOf } from '../../tests/_helpers/markup'
 import { PageTemplate } from './PageTemplate'
 
-// PageTemplate calls usePageHead → vike-react's useConfig, which needs vike's
-// page context (absent in a bare node render). Stub it to a no-op setter.
-vi.mock('vike-react/useConfig', () => ({
-  useConfig: () => () => {},
-}))
-
 // VideoPlayer is wrapped in vike-react's ClientOnly; render its fallback (what
 // it renders server-side) so a page with a featured video still produces markup.
 vi.mock('vike-react/ClientOnly', () => ({
@@ -62,7 +56,9 @@ describe('<PageTemplate> hideTitle', () => {
       <PageTemplate page={makePage({ content: splash() } as unknown as Partial<Page>)} />,
     )
     const titled = renderToStaticMarkup(
-      <PageTemplate page={makePage({ content: splash('Discover it') } as unknown as Partial<Page>)} />,
+      <PageTemplate
+        page={makePage({ content: splash('Discover it') } as unknown as Partial<Page>)}
+      />,
     )
 
     // The untitled one gets the stand-in; the titled one leaves the `<h1>` to

@@ -67,23 +67,23 @@ export const Default: Story = () => (
     <StorySection title="Alignment Options">
       <div className="flex flex-col gap-8">
         <StorySection title="Left Aligned (Default)" variant="subsection">
-          <LanguageDropdown currentLanguage="en" languages={sampleLanguages} align="left" />
+          <LanguageDropdown align="left" currentLanguage="en" languages={sampleLanguages} />
         </StorySection>
 
         <StorySection title="Right Aligned" variant="subsection">
           <div className="flex justify-end">
-            <LanguageDropdown currentLanguage="en" languages={sampleLanguages} align="right" />
+            <LanguageDropdown align="right" currentLanguage="en" languages={sampleLanguages} />
           </div>
         </StorySection>
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-12">
         <div>
           <h3 className="text-sm font-semibold mb-4 text-gray-700">Footer Language Selector</h3>
           <div className="flex justify-end bg-gray-50 p-6 rounded-lg">
-            <LanguageDropdown currentLanguage="en" languages={allLanguages} align="right" />
+            <LanguageDropdown align="right" currentLanguage="en" languages={allLanguages} />
           </div>
         </div>
 
@@ -91,10 +91,10 @@ export const Default: Story = () => (
           <h3 className="text-sm font-semibold mb-4 text-gray-700">Header Language Selector</h3>
           <div className="bg-teal-600 p-6 rounded-lg">
             <LanguageDropdown
-              currentLanguage="es"
-              languages={sampleLanguages}
               align="right"
               className="text-white [&_button]:text-white [&_button:hover]:text-gray-100"
+              currentLanguage="es"
+              languages={sampleLanguages}
             />
           </div>
         </div>

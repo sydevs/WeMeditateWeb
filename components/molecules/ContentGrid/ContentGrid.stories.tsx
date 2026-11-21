@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { ContentGrid } from "./ContentGrid";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { ContentGrid } from './ContentGrid'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Molecules"
-} satisfies StoryDefault;
+  title: 'Molecules',
+} satisfies StoryDefault
 
 // One column of each story grid, in the Ladle story frame. A `breakpointCols`
 // change moves these with it — which is the reason the length belongs to the
@@ -20,138 +20,132 @@ export const Default: Story = () => {
   const mixedContent = [
     {
       id: 1,
-      title: "Morning Meditation",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/meditation1/400/400",
-      thumbnailAlt: "Morning meditation",
-      description: "Start your day with clarity and peace through this guided morning practice.",
+      title: 'Morning Meditation',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/meditation1/400/400',
+      thumbnailAlt: 'Morning meditation',
+      description: 'Start your day with clarity and peace through this guided morning practice.',
       playButton: true,
       durationMinutes: 10,
-      aspectRatio: "square" as const,
+      aspectRatio: 'square' as const,
     },
     {
       id: 2,
-      title: "Inner Peace",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/featured1/682/384",
-      thumbnailAlt: "Inner peace meditation",
+      title: 'Inner Peace',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/featured1/682/384',
+      thumbnailAlt: 'Inner peace meditation',
       playButton: true,
-      aspectRatio: "video" as const,
+      aspectRatio: 'video' as const,
     },
     {
       id: 3,
-      title: "What is Meditation?",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/article1/640/360",
-      thumbnailAlt: "What is meditation article",
-      description: "Discover the fundamentals of meditation and its transformative power.",
-      aspectRatio: "video" as const,
+      title: 'What is Meditation?',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/article1/640/360',
+      thumbnailAlt: 'What is meditation article',
+      description: 'Discover the fundamentals of meditation and its transformative power.',
+      aspectRatio: 'video' as const,
     },
     {
       id: 4,
-      title: "Chakra Balancing",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/meditation2/400/400",
-      thumbnailAlt: "Chakra meditation",
+      title: 'Chakra Balancing',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/meditation2/400/400',
+      thumbnailAlt: 'Chakra meditation',
       playButton: true,
       durationMinutes: 25,
-      aspectRatio: "square" as const,
-      badge: "Advanced",
+      aspectRatio: 'square' as const,
+      badge: 'Advanced',
     },
     {
       id: 5,
-      title: "Evening Reflection",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/meditation3/400/300",
-      thumbnailAlt: "Evening meditation",
-      description: "Wind down with this calming evening practice for better sleep.",
+      title: 'Evening Reflection',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/meditation3/400/300',
+      thumbnailAlt: 'Evening meditation',
+      description: 'Wind down with this calming evening practice for better sleep.',
       playButton: true,
       durationMinutes: 15,
-      aspectRatio: "4-3" as const,
+      aspectRatio: '4-3' as const,
     },
     {
       id: 6,
-      title: "Mindfulness Guide",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/article2/640/360",
-      thumbnailAlt: "Mindfulness guide",
-      description: "Learn practical techniques for bringing mindfulness into daily life.",
-      aspectRatio: "video" as const,
+      title: 'Mindfulness Guide',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/article2/640/360',
+      thumbnailAlt: 'Mindfulness guide',
+      description: 'Learn practical techniques for bringing mindfulness into daily life.',
+      aspectRatio: 'video' as const,
     },
     {
       id: 7,
-      title: "Deep Relaxation",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/meditation4/400/400",
-      thumbnailAlt: "Relaxation meditation",
+      title: 'Deep Relaxation',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/meditation4/400/400',
+      thumbnailAlt: 'Relaxation meditation',
       playButton: true,
       durationMinutes: 30,
-      aspectRatio: "square" as const,
-      badge: "Beginner",
+      aspectRatio: 'square' as const,
+      badge: 'Beginner',
     },
     {
       id: 8,
-      title: "Walking Meditation",
-      href: "#",
-      thumbnailSrc: "https://picsum.photos/seed/meditation5/400/267",
-      thumbnailAlt: "Walking meditation",
-      description: "Combine gentle movement with meditation techniques.",
+      title: 'Walking Meditation',
+      href: '#',
+      thumbnailSrc: 'https://picsum.photos/seed/meditation5/400/267',
+      thumbnailAlt: 'Walking meditation',
+      description: 'Combine gentle movement with meditation techniques.',
       playButton: true,
       durationMinutes: 12,
-      aspectRatio: "3-2" as const,
+      aspectRatio: '3-2' as const,
     },
-  ];
+  ]
 
   return (
     <StoryWrapper>
       <StorySection
-        title="Default Grid"
         description="3 columns on desktop, 2 on tablet, 1 on mobile with mixed content types and aspect ratios"
+        title="Default Grid"
       >
         <ContentGrid items={mixedContent} sizes={THREE_COLUMN} />
       </StorySection>
 
       <StorySection
-        title="Hero Variant"
         description="Larger cards with bold titles and increased spacing"
+        title="Hero Variant"
       >
-        <ContentGrid items={mixedContent} cardVariant="hero" sizes={THREE_COLUMN} />
+        <ContentGrid cardVariant="hero" items={mixedContent} sizes={THREE_COLUMN} />
       </StorySection>
 
-      <StorySection
-        title="4 Column Layout"
-        description="More columns for wider viewports"
-      >
+      <StorySection description="More columns for wider viewports" title="4 Column Layout">
         <ContentGrid
-          items={mixedContent}
           breakpointCols={{
-            default: 4,   // Desktop: 4 columns
-            1280: 3,      // Large tablets: 3 columns
-            768: 2,       // Tablets: 2 columns
-            640: 1,       // Mobile: 1 column
+            default: 4, // Desktop: 4 columns
+            1280: 3, // Large tablets: 3 columns
+            768: 2, // Tablets: 2 columns
+            640: 1, // Mobile: 1 column
           }}
+          items={mixedContent}
           sizes={FOUR_COLUMN}
         />
       </StorySection>
 
-      <StorySection
-        title="2 Column Layout"
-        description="Narrower layout for sidebar contexts"
-      >
+      <StorySection description="Narrower layout for sidebar contexts" title="2 Column Layout">
         <ContentGrid
-          items={mixedContent.slice(0, 6)}
           breakpointCols={{
-            default: 2,   // Desktop: 2 columns
-            768: 2,       // Tablets: 2 columns
-            640: 1,       // Mobile: 1 column
+            default: 2, // Desktop: 2 columns
+            768: 2, // Tablets: 2 columns
+            640: 1, // Mobile: 1 column
           }}
+          items={mixedContent.slice(0, 6)}
           sizes={TWO_COLUMN}
         />
       </StorySection>
 
       <div />
     </StoryWrapper>
-  );
-};
+  )
+}
 
-Default.storyName = "Content Grid"
+Default.storyName = 'Content Grid'

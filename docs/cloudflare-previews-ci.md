@@ -11,10 +11,11 @@ alwaysApply: false
 
 CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.yml):
 
-- **`gate`** — runs `pnpm lint`, `pnpm typecheck`, and `pnpm test:run` (unit tests only —
-  `vitest.config.ts` excludes the smoke specs), then writes the accessibility results to the job
-  summary, then `pnpm ladle:build` and `pnpm check:wrangler`. **The accessibility gate is one of
-  those unit specs** — [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
+- **`gate`** — runs `pnpm lint` (ESLint, then `prettier --check .`), `pnpm typecheck`, and
+  `pnpm test:run` (unit tests only — `vitest.config.ts` excludes the smoke specs), then writes the
+  accessibility results to the job summary, then `pnpm ladle:build` and `pnpm check:wrangler`.
+  **The accessibility gate is one of those unit specs** —
+  [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
   `axe-core` over every page type and fails on any finding, so it blocks a change the way any
   spec does. It is here rather than in `smoke` because `Smoke (web)` skips silently when no
   preview is discoverable, and a check that can skip cannot stop a change. `scripts/a11y-summary.mjs`
@@ -165,6 +166,12 @@ They ship from `.ladle/static/` rather than `public/`, which the app's build cop
 `Disallow: /` there would answer on wemeditate.com. The app builds its own per-host refusal in
 [server/sitemap.ts](../server/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
 named as hosts that must never be indexed.
+
+**The app does carry a `<meta robots>`, and that is not a contradiction.** Every content route
+reads the same `isCanonicalOrigin` and says `noindex` off the real site
+([lib/content-seo.ts](../lib/content-seo.ts)), because a crawler can reach a preview URL without
+ever fetching `robots.txt` — from a pasted link, or a referrer log. The playground has no such
+per-page head to put one in, which is what the line above is about.
 
 ⚠ Ladle copies Vite's `publicDir` for free and Storybook does not. A move to Storybook
 (sydevs/SahajCloud#902) has to carry both the `public/` copy (`staticDirs`) and this plugin, or

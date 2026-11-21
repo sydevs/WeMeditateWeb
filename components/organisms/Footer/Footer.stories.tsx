@@ -53,13 +53,13 @@ const languages = [
 /** Footer is an organism: the complete website footer, based on the wemeditate.com design. */
 export const Default: Story = () => (
   <Footer
+    copyrightText="© WeMeditate, 2025"
+    currentLanguage="en"
     heroLinks={heroLinks}
+    languages={languages}
+    locale="en"
     sections={[learnMoreSection, comeMeditateSection]}
     socialLinks={socialLinks}
-    currentLanguage="en"
-    languages={languages}
-    copyrightText="© WeMeditate, 2025"
-    locale="en"
   />
 )
 

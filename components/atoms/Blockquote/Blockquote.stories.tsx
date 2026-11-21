@@ -102,15 +102,13 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <article className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          Understanding the Subtle System
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Understanding the Subtle System</h1>
         <p className="text-gray-700 mb-6">
-          The subtle system is the intricate network of energy channels and centers within us.
-          At the base of this system lies the Kundalini, a dormant spiritual energy that,
-          when awakened, rises through the chakras to unite us with our higher consciousness.
+          The subtle system is the intricate network of energy channels and centers within us. At
+          the base of this system lies the Kundalini, a dormant spiritual energy that, when
+          awakened, rises through the chakras to unite us with our higher consciousness.
         </p>
         <Blockquote align="right" className="my-6 ml-6" credit="Shri Mataji Nirmala Devi">
           This Kundalini is the spiritual mother of every individual.
@@ -120,28 +118,28 @@ export const Default: Story = () => (
           When activated, it brings about a transformation that affects every aspect of our being.
         </p>
         <p className="text-gray-700 mt-6">
-          Many people believe that meditation requires silencing the mind completely, but this
-          is a misconception. Instead, meditation is about discovering the stillness that exists
-          beneath the noise of our thoughts. This subtle distinction is important for anyone
-          beginning their meditation practice.
+          Many people believe that meditation requires silencing the mind completely, but this is a
+          misconception. Instead, meditation is about discovering the stillness that exists beneath
+          the noise of our thoughts. This subtle distinction is important for anyone beginning their
+          meditation practice.
         </p>
         <p className="text-gray-700 mt-6">
-          Many people believe that meditation requires silencing the mind completely, but this
-          is a misconception. Instead, meditation is about discovering the stillness that exists
-          beneath the noise of our thoughts. This subtle distinction is important for anyone
-          beginning their meditation practice.
+          Many people believe that meditation requires silencing the mind completely, but this is a
+          misconception. Instead, meditation is about discovering the stillness that exists beneath
+          the noise of our thoughts. This subtle distinction is important for anyone beginning their
+          meditation practice.
         </p>
         <Blockquote align="left" className="my-6 mr-6" credit="Deepak Chopra">
           Meditation is not a way of making your mind quiet. It is a way of entering into the quiet
           that is already there.
         </Blockquote>
         <p className="text-gray-700 mt-4">
-          As we continue our practice, we learn to access this inner quietude more easily,
-          finding that it becomes a refuge we can return to whenever we need clarity or peace.
+          As we continue our practice, we learn to access this inner quietude more easily, finding
+          that it becomes a refuge we can return to whenever we need clarity or peace.
         </p>
         <p className="text-gray-700 mt-4">
-          As we continue our practice, we learn to access this inner quietude more easily,
-          finding that it becomes a refuge we can return to whenever we need clarity or peace.
+          As we continue our practice, we learn to access this inner quietude more easily, finding
+          that it becomes a refuge we can return to whenever we need clarity or peace.
         </p>
       </article>
     </StorySection>

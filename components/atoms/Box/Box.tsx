@@ -93,14 +93,15 @@ export function Box({
       }[color]
     : ''
 
-  const borderStyles = border && color
-    ? {
-        white: 'border border-gray-300',
-        gray: 'border border-gray-400',
-        primary: 'border border-teal-400',
-        secondary: 'border border-coral-400',
-      }[color]
-    : ''
+  const borderStyles =
+    border && color
+      ? {
+          white: 'border border-gray-300',
+          gray: 'border border-gray-400',
+          primary: 'border border-teal-400',
+          secondary: 'border border-coral-400',
+        }[color]
+      : ''
 
   const roundedStyles = rounded ? 'rounded-lg' : ''
 
