@@ -160,10 +160,15 @@ const VIDEO_POPULATE = {
 // populated, including its own `content`, which would inflate the response.
 // ----------------------------------------------------------------------------
 
-/** Narrow page fields for pages embedded in another page's content. */
+/**
+ * Narrow page fields for pages embedded in another page's content. `tags` is
+ * what tells a technique embed from a see-also link, so the rich-text
+ * converter can draw one as a card and the other as a link.
+ */
 const EMBEDDED_PAGE_SELECT = {
   title: true,
   slug: true,
+  tags: true,
   meta: { image: true, description: true },
 } satisfies PagesSelect<true>
 

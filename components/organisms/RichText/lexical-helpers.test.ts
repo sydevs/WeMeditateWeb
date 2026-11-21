@@ -12,9 +12,17 @@ const IMAGE = {
 const pageNode = (meta: Record<string, unknown> | null, value: Record<string, unknown> = {}) => ({
   type: 'relationship',
   relationTo: 'pages',
-  value: { id: 69, slug: 'footsoaking', title: 'Footsoaking', meta, ...value },
+  value: {
+    id: 69,
+    slug: 'footsoaking',
+    title: 'Footsoaking',
+    tags: ['technique'],
+    meta,
+    ...value,
+  },
 })
-const card = pageNode({ description: 'Good for:\nBetter sleep', image: IMAGE })
+const FULL_META = { description: 'Good for:\nBetter sleep', image: IMAGE }
+const card = pageNode(FULL_META)
 const para = { type: 'paragraph', children: [] }
 
 describe('pageCard', () => {
@@ -36,6 +44,8 @@ describe('pageCard', () => {
     ['an image with no url', pageNode({ description: 'Good for: sleep', image: { id: 1 } })],
     ['no slug to link to', pageNode({ description: 'x', image: IMAGE }, { slug: '' })],
     ['no title', pageNode({ description: 'x', image: IMAGE }, { title: '' })],
+    ['no tags at all', pageNode(FULL_META, { tags: null })],
+    ['a page tagged something else', pageNode(FULL_META, { tags: ['wisdom', 'lifestyle'] })],
   ])('answers null for %s', (_, node) => {
     expect(pageCard(node)).toBeNull()
   })

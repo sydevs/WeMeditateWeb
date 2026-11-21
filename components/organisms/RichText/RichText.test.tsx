@@ -251,6 +251,7 @@ describe('<RichText>', () => {
         id,
         slug,
         title,
+        tags: ['technique'],
         meta: {
           description: `Good for:\n${title} things`,
           image: { id, url: CF_PUBLIC_URL, alt: `${title} artwork`, width: 840, height: 660 },
@@ -328,6 +329,14 @@ describe('<RichText>', () => {
 
       expect(sides).toEqual([false, true])
       expect(html).toContain('>02</div>')
+    })
+
+    it('keeps the link for a page the editor did not tag a technique', () => {
+      const untagged = { ...FIVE[0], value: { ...FIVE[0].value, tags: ['wisdom'] } }
+      const html = renderToStaticMarkup(<RichText content={editorState([untagged])} />)
+
+      expect(cards(html)).toHaveLength(0)
+      expect(classOf(html, 'Kundalini/Bandhan')).toContain('text-primary')
     })
 
     it('keeps the link for a page with no description or no image', () => {

@@ -67,9 +67,11 @@ interface PageCard {
  * The card a `relationship` node to a page draws, or null when it draws a
  * link instead.
  *
- * A card needs the page's title, `meta.description` and `meta.image` — what
- * the legacy /techniques list showed for each treatment. A page missing any
- * of them, or one that came back as a bare id, stays the inline link.
+ * A card is a page the editor tagged `technique`, with the title,
+ * `meta.description` and `meta.image` the legacy /techniques list showed for
+ * each treatment. Every other page embed — a see-also link that happens to
+ * carry a meta image — stays the inline link, so filling a field in
+ * SahajCloud never turns one into a card the editor cannot ask back.
  */
 export function pageCard(node: unknown): PageCard | null {
   if (
@@ -80,7 +82,7 @@ export function pageCard(node: unknown): PageCard | null {
   }
   const page = node.value
 
-  if (!isPopulated<Partial<Page>>(page)) {
+  if (!isPopulated<Partial<Page>>(page) || !page.tags?.includes('technique')) {
     return null
   }
   const title = typeof page.title === 'string' ? page.title.trim() : ''

@@ -140,6 +140,12 @@ const pageRef = (id: number, slug: string, title: string, description = '') => (
   meta: { image: imageRef(slug, title), description },
 })
 
+/** A page the editor tagged `technique`, which an embed draws as a card. */
+const techniqueRef = (id: number, slug: string, title: string, description: string) => ({
+  ...pageRef(id, slug, title, description),
+  tags: ['technique'],
+})
+
 const meditationRef = (id: number, title: string, durationMinutes: number) => ({
   id,
   title,
@@ -461,7 +467,7 @@ const pageContent = editorState(
     heading('h3', 'Cleansing techniques'),
     relationshipNode(
       'pages',
-      pageRef(
+      techniqueRef(
         69,
         'footsoaking',
         'Footsoaking',
@@ -470,11 +476,11 @@ const pageContent = editorState(
     ),
     relationshipNode(
       'pages',
-      pageRef(67, 'candle-treatment', 'Candle treatment', 'Good for:\nRemoving heaviness'),
+      techniqueRef(67, 'candle-treatment', 'Candle treatment', 'Good for:\nRemoving heaviness'),
     ),
     relationshipNode(
       'pages',
-      pageRef(71, 'ice-pack', 'Ice Pack', 'Good for:\nCalming mental or physical activity'),
+      techniqueRef(71, 'ice-pack', 'Ice Pack', 'Good for:\nCalming mental or physical activity'),
     ),
 
     // Showcase — populated relationships
