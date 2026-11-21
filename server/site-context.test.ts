@@ -150,9 +150,9 @@ describe('translations degrade reporting', () => {
     expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
   })
 
-  it('says nothing to Sentry about a locale the site does not offer', async () => {
+  it('reports a locale the site does not offer, once across the 404 and its error page', async () => {
     // A crawler walking `/nl/…` reads an empty global on every request, and
-    // each one 404s, error page included.
+    // each one 404s. The read still degraded, so the gap is still real.
     offering('en')
     vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
 
@@ -161,23 +161,15 @@ describe('translations degrade reporting', () => {
     await expect(loadSiteContext(request.inData)).rejects.toThrow()
     await loadTranslations((await abortForkViews(request.target)).inOnBeforeRender)
 
-    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
     expect(console.warn).toHaveBeenCalled()
   })
 
-  it('reports from a render that reads no config, once the locale is known to be offered', async () => {
-    // An embed: `+onBeforeRender` is the only reader.
-    offering('en')
-    await loadSiteContext((await hookViews({ locale: 'en' })).inData)
+  it('reports from a render that reads no config at all', async () => {
+    // An embed: `+onBeforeRender` is the only reader, so nothing here knows
+    // which locales the site offers. A degrade is reported where it is found.
     vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
-    await loadTranslations((await hookViews({ locale: 'ru' })).inOnBeforeRender)
 
-    expect(Sentry.captureMessage).not.toHaveBeenCalled()
-
-    offering('en', 'ru')
-    vi.mocked(getWebTranslations).mockResolvedValue(TRANSLATIONS)
-    await loadSiteContext((await hookViews({ locale: 'ru' })).inData)
-    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
     await loadTranslations((await hookViews({ locale: 'ru' })).inOnBeforeRender)
 
     expect(Sentry.captureMessage).toHaveBeenCalledWith(

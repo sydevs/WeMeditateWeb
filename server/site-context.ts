@@ -36,12 +36,7 @@ export interface SiteContext {
 /** Why a read rendered the English snapshot instead of the locale's strings. */
 type Degrade = 'empty' | 'failed'
 
-interface TranslationsRead {
-  translations: WebTranslations
-  degraded?: Degrade
-}
-
-const translationsCache = new WeakMap<object, Promise<TranslationsRead>>()
+const translationsCache = new WeakMap<object, Promise<WebTranslations>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
 
 /**
@@ -51,16 +46,6 @@ const contextCache = new WeakMap<object, Promise<SiteContext>>()
  * so it needs no cap.
  */
 const reportedDegrades = new Set<string>()
-
-/**
- * The locales the site offered at this isolate's last config read.
- *
- * An embed or an error page renders without reading the config, so this is
- * how it tells a locale the site offers from one it does not. Empty until
- * the first chromed render, and nothing is reported from those renders until
- * then.
- */
-let lastOfferedLocales: readonly Locale[] = []
 
 function reportDegrade(locale: Locale, reason: Degrade): void {
   const signature = `${locale}:${reason}`
@@ -104,21 +89,9 @@ function isEmpty(translations: WebTranslations): boolean {
  * A locale is published with every group present, even blank.
  *
  * Either degrade logs on every request, and reaches Sentry once per locale
- * and reason per isolate — and only for a locale the site offers: a chromed
- * request in any other locale 404s, and an embed in one renders the snapshot
- * by design.
+ * and reason per isolate, from whichever render discovers it.
  */
-export async function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
-  const { translations, degraded } = await readTranslations(pageContext)
-
-  if (degraded && lastOfferedLocales.includes(pageContext.locale)) {
-    reportDegrade(pageContext.locale, degraded)
-  }
-
-  return translations
-}
-
-function readTranslations(pageContext: PageContextServer): Promise<TranslationsRead> {
+export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const locale = pageContext.locale
 
   return perRequest(translationsCache, pageContext, () =>
@@ -129,19 +102,21 @@ function readTranslations(pageContext: PageContextServer): Promise<TranslationsR
         // ordinary visitor sees, not a second document's unsaved edits.
         getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
       )
-      .then((translations): TranslationsRead => {
-        if (!isEmpty(translations)) return { translations }
+      .then((translations) => {
+        if (!isEmpty(translations)) return translations
 
         console.warn(
           `[loadTranslations] "${locale}" returned no strings; using the English snapshot`,
         )
+        reportDegrade(locale, 'empty')
 
-        return { translations: EN_TRANSLATIONS, degraded: 'empty' }
+        return EN_TRANSLATIONS
       })
-      .catch((error: unknown): TranslationsRead => {
+      .catch((error: unknown) => {
         console.warn(`[loadTranslations] read failed for "${locale}":`, error)
+        reportDegrade(locale, 'failed')
 
-        return { translations: EN_TRANSLATIONS, degraded: 'failed' }
+        return EN_TRANSLATIONS
       }),
   )
 }
@@ -165,13 +140,10 @@ async function load(pageContext: PageContextServer): Promise<SiteContext> {
 
   const preview = await loadLivePreview(pageContext)
 
-  const [settings, { translations, degraded }] = await Promise.all([
+  const [settings, translations] = await Promise.all([
     getWebConfig({ locale }),
-    readTranslations(pageContext),
+    loadTranslations(pageContext),
   ])
-
-  lastOfferedLocales = settings.availableLocales
-  const offered = settings.availableLocales.includes(locale)
 
   // A locale prefix the site does not offer is not a page. 404 rather than
   // rendering English under a French URL.
@@ -181,11 +153,9 @@ async function load(pageContext: PageContextServer): Promise<SiteContext> {
   // before rendering a single string — the one case they most need to see.
   // The gate exists to stop the PUBLIC meeting a half-translated site; an
   // authenticated preview is precisely who it should not apply to.
-  if (!preview.active && !offered) {
+  if (!preview.active && !settings.availableLocales.includes(locale)) {
     throw render(404, `Locale "${locale}" is not available.`)
   }
-
-  if (degraded && offered) reportDegrade(locale, degraded)
 
   // `getT`, not `createT`: `useT()` builds the component tree's accessor the
   // same way, so both sides of a render share one closure pair per request.
