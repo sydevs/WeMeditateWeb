@@ -1,7 +1,7 @@
 /**
  * The iframe a consumer embeds, and the geometry everything advertising it
  * agrees on: the paste-ready snippet (`EmbedButton`), `twitter:player` and
- * `og:video` (`lib/content-seo.ts`), and `/oembed` (`server/oembed.ts`).
+ * `og:video` (`lib/content-seo.ts`), and `/oembed` (`server/routes/oembed/oembed.ts`).
  *
  * `lib/document-routes.ts` owns which URL the iframe points at.
  */

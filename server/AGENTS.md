@@ -5,7 +5,7 @@ The SahajCloud (PayloadCMS) API validates every API-client read. Follow these ru
 ## The one write: a public submission, proxied same-origin
 
 Every contact and subscribe form posts to `POST /api/submissions`
-([server/api-routes.ts](api-routes.ts)), which forwards one
+([server/routes/api/submissions/route.ts](routes/api/submissions/route.ts)), which forwards one
 `POST /api/user-submissions` create to SahajCloud. Four things hold, and all four are load-bearing:
 
 - **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
@@ -185,3 +185,12 @@ A read that several hooks ask for goes through `perRequest` in
 `pageContext` objects over one request, so a `WeakMap` keyed on the argument is written by the
 first and missed by the second — which read `wm-web-translations` twice per chromed render until
 #108. `perRequest` owns the key, so a new memo cannot get that wrong.
+
+## A route is one folder at its own path
+
+`server/routes/` is the list of routes this Worker serves: each one is a folder named for its
+path, holding `route.ts`, its test, and anything only that route reads. A file whose name starts
+with `_` holds what the routes below it share and registers none, and each `index.ts` registers
+every route below it.
+[tests/guards/route-files.test.ts](../tests/guards/route-files.test.ts) holds the convention.
+`sitemap-routes.ts` is the one route still outside the tree (#293).

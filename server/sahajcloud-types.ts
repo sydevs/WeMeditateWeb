@@ -164,6 +164,11 @@ export function isLocale(value: string): value is Locale {
 /** The locale every other one falls back to. Always offered. */
 export const DEFAULT_LOCALE: Locale = 'en'
 
+/** Accepts only a locale SahajCloud defines. Anything else reads as {@link DEFAULT_LOCALE}. */
+export function parseLocale(raw: string | undefined): Locale {
+  return raw && isLocale(raw) ? raw : DEFAULT_LOCALE
+}
+
 /** Locales that read right-to-left. Drives `<html dir>`. */
 const RTL_LOCALES: ReadonlySet<string> = new Set(['fa'])
 

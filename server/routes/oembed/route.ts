@@ -5,12 +5,13 @@
  */
 
 import type { Hono } from 'hono'
-import type { SahajCloudEnv } from './sahajcloud-context'
-import { getDocumentById, getLecture, getWebTranslations } from './sahajcloud-client'
-import { resolveLecture } from '../lib/lecture-shape'
-import { populatedImageUrl } from '../lib/payload-relationships'
-import { absoluteHref } from '../lib/urls'
-import { getT } from '../lib/i18n'
+import type { SahajCloudEnv } from '../../sahajcloud-context'
+import { getDocumentById, getLecture, getWebTranslations } from '../../sahajcloud-client'
+import { resolveLecture } from '../../../lib/lecture-shape'
+import { populatedImageUrl } from '../../../lib/payload-relationships'
+import { absoluteHref } from '../../../lib/urls'
+import { getT } from '../../../lib/i18n'
+import { JSON_CACHE_CONTROL } from '../../cache-headers'
 import {
   buildOEmbedResponse,
   positiveInteger,
@@ -18,7 +19,6 @@ import {
   type OEmbedTarget,
 } from './oembed'
 
-const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=1800'
 const NOT_FOUND = { error: 'That URL is not a player on this site.' }
 
 /** The title and poster a player advertises, or null where the read found nothing. */
@@ -44,7 +44,7 @@ async function readMedia(
   )
 }
 
-export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
+export function registerOEmbed(app: Hono<SahajCloudEnv>): void {
   app.get('/oembed', async (c) => {
     const { origin } = new URL(c.req.url)
     const url = c.req.query('url')
@@ -64,7 +64,7 @@ export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
       return c.json(NOT_FOUND, 404)
     }
 
-    c.header('Cache-Control', CACHE_CONTROL)
+    c.header('Cache-Control', JSON_CACHE_CONTROL)
 
     return c.json(
       buildOEmbedResponse({
