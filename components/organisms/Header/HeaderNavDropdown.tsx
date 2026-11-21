@@ -11,6 +11,7 @@ import {
   safePolygon,
   FloatingPortal,
 } from '@floating-ui/react'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Button } from '../../atoms'
 import { HeaderDropdown, type HeaderDropdownProps } from '../HeaderDropdown'
 
@@ -19,8 +20,6 @@ export interface HeaderNavDropdownProps {
   label: string
   /** Mega-menu panel content, rendered in a portal when open. */
   dropdown: HeaderDropdownProps
-  /** Extra classes for the trigger wrapper. */
-  className?: string
 }
 
 /**
@@ -43,10 +42,11 @@ export interface HeaderNavDropdownProps {
  *
  * The trigger is a real `<Button>` carrying `aria-haspopup` and
  * `aria-expanded`, so it is keyboard-focusable and opens on Enter or Space.
- * The positioning and interaction props live on the wrapping element
- * instead, because Button does not forward a ref.
+ * It is also the positioning anchor: React 19 passes `ref` through `props`,
+ * and the button branch of `ButtonProps` types it, so the atom needs no
+ * wrapper to carry one.
  */
-export function HeaderNavDropdown({ label, dropdown, className = '' }: HeaderNavDropdownProps) {
+export function HeaderNavDropdown({ label, dropdown }: HeaderNavDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const { refs, floatingStyles, context } = useFloating({
@@ -72,19 +72,18 @@ export function HeaderNavDropdown({ label, dropdown, className = '' }: HeaderNav
 
   return (
     <>
-      {/*
-       * The span is the positioning anchor, because Button does not forward
-       * a ref. The interaction props and ARIA attributes — aria-haspopup,
-       * aria-expanded, and aria-controls from useRole, plus the hover,
-       * click, and keyboard handlers — go on the focusable Button instead,
-       * so the popup contract lives on the element a keyboard or
-       * assistive-tech user lands on.
-       */}
-      <span ref={refs.setReference} className={`flex ${className}`}>
-        <Button className="w-full" size="sm" variant="ghost" {...getReferenceProps()}>
-          {label}
-        </Button>
-      </span>
+      {/* The chevron says this opens a panel rather than a page: the item has
+          no href of its own. */}
+      <Button
+        ref={refs.setReference}
+        icon={ChevronDownIcon}
+        iconPosition="trailing"
+        size="sm"
+        variant="ghost"
+        {...getReferenceProps()}
+      >
+        {label}
+      </Button>
 
       {isOpen && (
         <FloatingPortal>
