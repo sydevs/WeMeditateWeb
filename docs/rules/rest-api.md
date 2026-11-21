@@ -90,11 +90,13 @@ reaches all three — the query, the type, and the snapshot — so the three can
 way: `lib/i18n/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships
 to the browser, and a group outside the select would be bytes no `useT()` call could address.
 
-## Translations are SahajCloud-owned
+## Visible translations are SahajCloud-owned
 
-Every UI string comes from `wm-web-translations`, through `useT()`. See the "Translations are
-SahajCloud-owned" section of [AGENTS.md](../../AGENTS.md) for the rule and
-[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) for the snapshot.
+Every string a visitor sees comes from `wm-web-translations`, through `useT()`; a string only a
+screen reader speaks comes from `lib/i18n/a11y/`, mounted at `<tab>.a11y` by `loadTranslations`.
+See the "Never write a user-visible literal" rule in [AGENTS.md](../../AGENTS.md) and
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) for the snapshot, which drops
+any `a11y` group SahajCloud still serves.
 
 Run `pnpm sync:translations` after the SahajCloud English copy changes, and commit the diff. It
 needs both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin,

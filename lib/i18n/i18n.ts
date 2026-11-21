@@ -1,13 +1,14 @@
 /**
  * The translation accessor.
  *
- * Every UI string the site renders comes from the SahajCloud `wm-web-translations`
- * global, threaded through `pageContext.translations`. This module turns
- * that object into `t('tab.sub.key', params)`.
+ * Every UI string a visitor sees comes from the SahajCloud `wm-web-translations`
+ * global; every string only a screen reader speaks comes from `lib/i18n/a11y/`,
+ * mounted at `<tab>.a11y`. Both arrive together in `pageContext.translations`,
+ * and this module turns that object into `t('tab.sub.key', params)`.
  *
  * English is not special here. It is the SahajCloud `en` locale, mirrored into
  * `lib/i18n/translations.en.json` by `pnpm sync:translations` for tests, Ladle,
- * and the SahajCloud-unreachable last resort.
+ * and the SahajCloud-unreachable last resort, plus the English screen-reader file.
  *
  * `interpolate` and `pluralize` mirror SahajCloud's
  * `src/lib/translations/emailStrings.ts:91-125`, so a string renders the
@@ -17,14 +18,19 @@
 import type { ReactNode } from 'react'
 import { type Locale } from '@/types/sahajcloud'
 import { DEFAULT_LOCALE } from './locales'
-import { type WebTranslations } from './web-translations'
+import { type SahajCloudWebTranslations, type WebTranslations } from './web-translations'
+import { EN_A11Y, withA11y } from './a11y/a11y'
 import snapshot from './translations.en.json'
 
 /**
- * The committed English snapshot, used when the SahajCloud read fails and as the
- * fixture for tests and Ladle. Generated — see `scripts/sync-translations.mjs`.
+ * The committed English snapshot with the English screen-reader strings, used when
+ * the SahajCloud read fails and as the fixture for tests and Ladle. The snapshot is
+ * generated — see `scripts/sync-translations.mjs`.
  */
-export const EN_TRANSLATIONS = snapshot as unknown as WebTranslations
+export const EN_TRANSLATIONS = withA11y<SahajCloudWebTranslations, WebTranslations>(
+  snapshot as unknown as SahajCloudWebTranslations,
+  EN_A11Y,
+)
 
 /** CLDR plural categories, in the order SahajCloud stores them. */
 const PLURAL_SUFFIXES = ['one', 'few', 'many', 'other'] as const
@@ -144,6 +150,12 @@ function readPath(source: unknown, path: readonly string[]): unknown {
 // --- createT ---
 
 /**
+ * What an accessor reads. A bare SahajCloud read (`/oembed` takes one) carries
+ * no screen-reader strings, so an `a11y` key read from it resolves to its path.
+ */
+export type TranslationSource = WebTranslations | SahajCloudWebTranslations
+
+/**
  * Splits a template into alternating text and placeholder-name parts, for
  * `t.rich`. A capturing group makes `String.split` keep the names, so the
  * odd indices are the placeholders.
@@ -167,7 +179,7 @@ export interface TFunction {
  * page instead of rendering as a blank. In development it also warns once
  * per lookup.
  */
-export function createT(translations: WebTranslations, locale: Locale): TFunction {
+export function createT(translations: TranslationSource, locale: Locale): TFunction {
   const lookup = (key: TranslationKey, params?: TranslationParams): string => {
     const path = String(key).split('.')
     const direct = readPath(translations, path)
@@ -228,9 +240,9 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
  * stable for a request, so the whole tree shares one accessor. The outer
  * map is weak, so a request's entry goes when its translations do.
  */
-const ACCESSORS = new WeakMap<WebTranslations, Map<Locale, TFunction>>()
+const ACCESSORS = new WeakMap<TranslationSource, Map<Locale, TFunction>>()
 
-export function getT(translations: WebTranslations, locale: Locale): TFunction {
+export function getT(translations: TranslationSource, locale: Locale): TFunction {
   let byLocale = ACCESSORS.get(translations)
 
   if (!byLocale) {

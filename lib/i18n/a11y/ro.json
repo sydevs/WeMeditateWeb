@@ -1,0 +1,86 @@
+{
+  "common": {
+    "dismiss": "Respinge",
+    "close": "Închide",
+    "previous": "Anterior",
+    "next": "Următorul",
+    "show_more_items_one": "Afișează încă %{count} element",
+    "show_more_items_few": "Afișează încă %{count} elemente",
+    "show_more_items_other": "Afișează încă %{count} de elemente",
+    "breadcrumb": "Traseu de navigare",
+    "primary_navigation": "Meniu principal",
+    "footer_navigation": "Meniu din subsol",
+    "opens_in_new_tab_suffix": "(se deschide într-o filă nouă)",
+    "menu": "Meniu"
+  },
+  "errors": {
+    "error_icon": "Eroare"
+  },
+  "article": {
+    "filter_label": "Filtrează conținutul după etichetă"
+  },
+  "meditation": {
+    "mute_voice": "Dezactivează sunetul vocii",
+    "unmute_voice": "Activează sunetul vocii",
+    "mute_music": "Dezactivează sunetul muzicii",
+    "unmute_music": "Activează sunetul muzicii",
+    "voice_volume": "Volumul vocii",
+    "music_volume": "Volumul muzicii",
+    "audio_settings": "Setări audio",
+    "shuffle_music": "Piesă muzicală aleatorie",
+    "related_lectures_loading": "Se încarcă conferințele similare",
+    "finder_region": "Alege cum te simți"
+  },
+  "lecture": {
+    "related_meditations_loading": "Se încarcă meditațiile similare",
+    "untitled_heading": "Conferință fără titlu"
+  },
+  "map": {
+    "classes_heading": "Cursuri de meditație",
+    "when": "Când",
+    "where": "Unde",
+    "languages": "Limbi"
+  },
+  "forms": {
+    "submitting": "Se trimite formularul, te rugăm să aștepți...",
+    "required_marker": "obligatoriu"
+  },
+  "media": {
+    "play": "Redare",
+    "pause": "Pauză",
+    "previous_track": "Piesa anterioară",
+    "next_track": "Piesa următoare",
+    "toggle_shuffle": "Activează/dezactivează amestecarea",
+    "mute": "Dezactivează sunetul",
+    "unmute": "Activează sunetul",
+    "volume": "Volum",
+    "play_item": "Redare: %{title}",
+    "view_image": "Vezi imaginea",
+    "view_image_alt": "Vezi imaginea: %{alt}",
+    "embed_code": "Cod de încorporare",
+    "zoom_in": "Mărește",
+    "zoom_out": "Micșorează",
+    "progress": "Poziția de redare"
+  },
+  "location": {
+    "search_label": "Caută o locație",
+    "selected_label": "Locație selectată",
+    "change_label": "Schimbă locația"
+  },
+  "blocks": {
+    "enter_fullscreen": "Intră în ecran complet",
+    "exit_fullscreen": "Ieși din ecranul complet",
+    "learn_more_about": "Află mai multe despre %{title}",
+    "previous_slide": "Diapozitivul anterior",
+    "next_slide": "Diapozitivul următor",
+    "previous_column": "Anterior: %{title}",
+    "next_column": "Următorul: %{title}",
+    "go_to_column": "Mergi la coloana %{number}: %{title}",
+    "quote": "Citat",
+    "table_of_contents": "Cuprins",
+    "share_region": "Opțiuni de distribuire pe rețelele sociale",
+    "share_group": "Distribuie pe rețelele sociale",
+    "share_on": "Distribuie pe %{platform}",
+    "next_session": "Următoarea sesiune: %{weekday}, ora %{time}, %{relative}."
+  }
+}
