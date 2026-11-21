@@ -17,6 +17,7 @@
 
 import type { ReactNode } from 'react'
 import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '../server/sahajcloud-types'
+import { warnOnce } from '../server/error-utils'
 import snapshot from './translations.en.json'
 
 /**
@@ -159,29 +160,6 @@ export interface TFunction {
   rich: (key: TranslationKey, nodes: Record<string, ReactNode>) => ReactNode[]
 }
 
-/** A key the locale's own strings could not answer. */
-export interface MissingTranslation {
-  key: string
-  locale: Locale
-  /** True when the English mirror filled the gap; false when nothing could. */
-  inMirror: boolean
-}
-
-let reportMissing: ((gap: MissingTranslation) => void) | undefined
-
-/**
- * Installs what `createT` calls on every miss.
- *
- * `lib/` ships to the browser, so it cannot import a Sentry SDK: the server
- * installs a reporter that can (`server/site-context.ts`), and the browser
- * installs none.
- */
-export function setMissingTranslationReporter(
-  reporter: ((gap: MissingTranslation) => void) | undefined,
-): void {
-  reportMissing = reporter
-}
-
 /** Resolves a key, plural family included, from one translations object. */
 function resolve(
   source: WebTranslations,
@@ -226,12 +204,13 @@ function resolve(
  * A key the locale lacks renders the English mirror's value: a visitor must
  * never read a key path. A key the mirror lacks too renders as nothing in
  * production, and as its key path in development, where a gap should be
- * loud. Every miss reaches the installed reporter and, in development, the
- * console.
+ * loud. Every miss reaches Sentry once per key per isolate, and the console
+ * in development.
  */
 export function createT(translations: WebTranslations, locale: Locale): TFunction {
   const lookup = (key: TranslationKey, params?: TranslationParams): string => {
-    const path = String(key).split('.')
+    const name = String(key)
+    const path = name.split('.')
     const own = resolve(translations, path, params, locale)
 
     if (own !== undefined) return own
@@ -241,7 +220,18 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
     const mirrored =
       translations === EN_TRANSLATIONS ? undefined : resolve(EN_TRANSLATIONS, path, params, 'en')
 
-    reportMissing?.({ key: String(key), locale, inMirror: mirrored !== undefined })
+    // Server only. `warnOnce`'s memo bounds this to one event per key per
+    // isolate; in the browser there is no isolate to bound it, so the same
+    // standing gap would bill one event per page view.
+    if (import.meta.env?.SSR) {
+      warnOnce(name, 'Translation key missing from SahajCloud', {
+        source: 'i18n',
+        tags: { fallback: mirrored !== undefined ? 'mirror' : 'none' },
+        // The locale of the render that first missed it in this isolate, not
+        // the only one affected.
+        extra: { key: name, locale },
+      })
+    }
 
     if (import.meta.env?.DEV) {
       console.warn(`[i18n] missing translation "${key}" for locale "${locale}"`)
@@ -249,7 +239,7 @@ export function createT(translations: WebTranslations, locale: Locale): TFunctio
 
     if (mirrored !== undefined) return mirrored
 
-    return import.meta.env?.DEV ? String(key) : ''
+    return import.meta.env?.DEV ? name : ''
   }
 
   const t = lookup as TFunction

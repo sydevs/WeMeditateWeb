@@ -6,16 +6,13 @@
  * renders — not just that English still works.
  */
 
-import { afterEach, describe, it, expect, vi } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
+import * as Sentry from '@sentry/react'
 import type { WebTranslations } from '../server/sahajcloud-types'
-import {
-  createT,
-  EN_TRANSLATIONS,
-  interpolate,
-  pluralize,
-  setMissingTranslationReporter,
-  type TranslationKey,
-} from './i18n'
+import { forgetReportedWarnings } from '../server/error-utils'
+import { createT, EN_TRANSLATIONS, interpolate, pluralize, type TranslationKey } from './i18n'
+
+vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
 /** A partial translations object, shaped like a SahajCloud read. */
 const fixture = (groups: Record<string, unknown>) => groups as unknown as WebTranslations
@@ -128,10 +125,16 @@ describe('createT', () => {
   })
 
   describe('a key the locale lacks', () => {
+    // `warnOnce`'s memo lives as long as the isolate, so each case starts from
+    // a fresh one rather than inheriting the keys its neighbours missed.
+    beforeEach(() => {
+      forgetReportedWarnings()
+      vi.mocked(Sentry.captureMessage).mockClear()
+    })
+
     afterEach(() => {
       vi.unstubAllEnvs()
       vi.restoreAllMocks()
-      setMissingTranslationReporter(undefined)
     })
 
     it('renders the English mirror, never the key path', () => {
@@ -178,29 +181,57 @@ describe('createT', () => {
       expect(t.rich(missing, {})).toEqual(['common.general.no_such_key'])
     })
 
-    it('tells the installed reporter, saying whether the mirror filled it', () => {
+    it('tells Sentry whether the mirror filled it', () => {
       vi.stubEnv('DEV', false)
-      const report = vi.fn()
-
-      setMissingTranslationReporter(report)
       const t = createT(fixture({}), 'fr')
 
       t('blocks.general.minutes')
       t('common.general.no_such_key' as TranslationKey)
 
-      expect(report.mock.calls).toEqual([
-        [{ key: 'blocks.general.minutes', locale: 'fr', inMirror: true }],
-        [{ key: 'common.general.no_such_key', locale: 'fr', inMirror: false }],
+      expect(vi.mocked(Sentry.captureMessage).mock.calls).toEqual([
+        [
+          'Translation key missing from SahajCloud',
+          {
+            level: 'warning',
+            tags: { source: 'i18n', fallback: 'mirror' },
+            extra: { key: 'blocks.general.minutes', locale: 'fr' },
+          },
+        ],
+        [
+          'Translation key missing from SahajCloud',
+          {
+            level: 'warning',
+            tags: { source: 'i18n', fallback: 'none' },
+            extra: { key: 'common.general.no_such_key', locale: 'fr' },
+          },
+        ],
       ])
     })
 
-    it('does not report a key the locale has', () => {
-      const report = vi.fn()
+    it('reaches Sentry once per key per isolate, from every render that misses it', () => {
+      vi.stubEnv('DEV', false)
+      const live = fixture({ blocks: { general: { learn_more: 'Mehr' } } })
 
-      setMissingTranslationReporter(report)
+      createT(live, 'de')('blocks.general.minutes')
+      createT(live, 'de')('blocks.general.minutes')
+      createT(fixture({ ...live }), 'fr')('blocks.general.minutes')
+
+      expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    })
+
+    it('says nothing from the browser, where no isolate bounds the volume', () => {
+      vi.stubEnv('DEV', false)
+      vi.stubEnv('SSR', false)
+
+      createT(fixture({}), 'fr')('blocks.general.minutes')
+
+      expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    })
+
+    it('does not report a key the locale has', () => {
       createT(EN_TRANSLATIONS, 'en')('common.general.loading')
 
-      expect(report).not.toHaveBeenCalled()
+      expect(Sentry.captureMessage).not.toHaveBeenCalled()
     })
   })
 

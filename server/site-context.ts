@@ -23,7 +23,7 @@ import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
-import { EN_TRANSLATIONS, getT, setMissingTranslationReporter, type TFunction } from '../lib/i18n'
+import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
 
 export interface SiteContext {
   settings: WebConfig
@@ -45,12 +45,11 @@ const translationsCache = new WeakMap<object, Promise<TranslationsRead>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
 
 /**
- * What this isolate has already sent to Sentry. Both gaps recur on every
- * render until someone fixes them upstream, so each reports once per isolate
- * (server/AGENTS.md). Each set is bounded by a finite domain — the keys the
- * code asks for, the locales times two reasons — so neither needs a cap.
+ * What this isolate has already sent to Sentry. A degrade recurs on every
+ * render until someone fixes it upstream, so each reports once per isolate
+ * (server/AGENTS.md). The domain is finite — the locales times two reasons —
+ * so it needs no cap.
  */
-const reportedMissingKeys = new Set<string>()
 const reportedDegrades = new Set<string>()
 
 /**
@@ -62,21 +61,6 @@ const reportedDegrades = new Set<string>()
  * then.
  */
 let lastOfferedLocales: readonly Locale[] = []
-
-// Installed on import: every route's `+onBeforeRender` imports this module,
-// so it is in place before the first lookup.
-setMissingTranslationReporter(({ key, locale, inMirror }) => {
-  if (reportedMissingKeys.has(key)) return
-
-  reportedMissingKeys.add(key)
-  Sentry.captureMessage('Translation key missing from SahajCloud', {
-    level: 'warning',
-    tags: { source: 'i18n', fallback: inMirror ? 'mirror' : 'none' },
-    // The locale of the render that first missed it in this isolate, not the
-    // only one affected.
-    extra: { key, locale },
-  })
-})
 
 function reportDegrade(locale: Locale, reason: Degrade): void {
   const signature = `${locale}:${reason}`

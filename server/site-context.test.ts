@@ -6,7 +6,7 @@ import { abortForkViews, hookViews } from '../tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
-import { createT, EN_TRANSLATIONS } from '../lib/i18n'
+import { EN_TRANSLATIONS } from '../lib/i18n'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('./sahajcloud-client', () => ({
@@ -183,27 +183,6 @@ describe('translations degrade reporting', () => {
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       'Translations read failed; rendering the English snapshot',
       expect.objectContaining({ extra: { locale: 'ru' } }),
-    )
-  })
-})
-
-describe('a translation key SahajCloud lacks', () => {
-  it('reaches Sentry once per key per isolate, from every render that misses it', () => {
-    // Importing this module is what installs the reporter: `lib/` cannot.
-    vi.mocked(Sentry.captureMessage).mockClear()
-    const live = { blocks: { general: { learn_more: 'Mehr' } } } as unknown as WebTranslations
-
-    createT(live, 'de')('blocks.general.minutes')
-    createT(live, 'de')('blocks.general.minutes')
-    createT({ ...live }, 'fr')('blocks.general.minutes')
-
-    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
-    expect(Sentry.captureMessage).toHaveBeenCalledWith(
-      'Translation key missing from SahajCloud',
-      expect.objectContaining({
-        tags: { source: 'i18n', fallback: 'mirror' },
-        extra: { key: 'blocks.general.minutes', locale: 'de' },
-      }),
     )
   })
 })
