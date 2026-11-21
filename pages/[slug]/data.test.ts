@@ -18,18 +18,18 @@ const settings = {
   knowledgePages: [],
 }
 
-vi.mock('../../server/sahajcloud-client', () => ({
+vi.mock('@/server/sahajcloud', () => ({
   getPageBySlug: (...args: unknown[]) => getPageBySlug(...args),
   getPageLocaleStatus: (...args: unknown[]) => getPageLocaleStatus(...args),
 }))
-vi.mock('../../server/site-context', () => ({
+vi.mock('@/server/site-context', () => ({
   loadSiteContext: async () => ({ settings, t: () => '' }),
 }))
-vi.mock('../../server/live-preview', () => ({
+vi.mock('@/server/live-preview', () => ({
   loadLivePreview: async () => ({ enabled: false }),
   previewArgs: () => ({}),
 }))
-vi.mock('../../server/content-index', () => ({
+vi.mock('@/server/content-index', () => ({
   resolveContentIndexBlocks: async (content: unknown) => content,
 }))
 

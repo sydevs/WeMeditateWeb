@@ -1,10 +1,10 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { FormField } from './FormField'
-import { Input } from '../../atoms/form/Input/Input'
-import { Select } from '../../atoms/form/Select/Select'
-import { Textarea } from '../../atoms/form/Textarea/Textarea'
-import { Checkbox } from '../../atoms/form/Checkbox/Checkbox'
-import { Radio } from '../../atoms/form/Radio/Radio'
+import { Input } from '@/components/atoms/form/Input/Input'
+import { Select } from '@/components/atoms/form/Select/Select'
+import { Textarea } from '@/components/atoms/form/Textarea/Textarea'
+import { Checkbox } from '@/components/atoms/form/Checkbox/Checkbox'
+import { Radio } from '@/components/atoms/form/Radio/Radio'
 import {
   StoryWrapper,
   StorySection,
@@ -15,7 +15,7 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-} from '../../ladle'
+} from '@/components/ladle'
 
 export default {
   title: 'Molecules',

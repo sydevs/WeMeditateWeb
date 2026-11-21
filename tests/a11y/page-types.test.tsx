@@ -24,8 +24,8 @@ import { writeFileSync } from 'node:fs'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
-import { EN_TRANSLATIONS } from '../../lib/i18n'
-import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { MAIN_CONTENT_ID } from '@/lib/a11y/route-announcer'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
 
 /** Route data, swapped per target before the render. */
@@ -45,14 +45,14 @@ vi.mock('vike-react/ClientOnly', () => ({
   ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
 }))
 
-const { default: LayoutChrome } = await import('../../layouts/LayoutChrome')
-const { default: LayoutMap } = await import('../../layouts/LayoutMap')
-const { Page: HomeOrArticlePage } = await import('../../pages/[slug]/+Page')
-const { Page: MeditationPage } = await import('../../pages/meditations/[id]/(full)/+Page')
-const { Page: LecturePage } = await import('../../pages/lectures/[id]/(full)/+Page')
-const { Page: MapPage } = await import('../../pages/map/+Page')
-const { Page: MeditationEmbedPage } = await import('../../pages/meditations/[id]/embed/+Page')
-const { Page: LectureEmbedPage } = await import('../../pages/lectures/[id]/embed/+Page')
+const { default: LayoutChrome } = await import('@/layouts/LayoutChrome')
+const { default: LayoutMap } = await import('@/layouts/LayoutMap')
+const { Page: HomeOrArticlePage } = await import('@/pages/[slug]/+Page')
+const { Page: MeditationPage } = await import('@/pages/meditations/[id]/(full)/+Page')
+const { Page: LecturePage } = await import('@/pages/lectures/[id]/(full)/+Page')
+const { Page: MapPage } = await import('@/pages/map/+Page')
+const { Page: MeditationEmbedPage } = await import('@/pages/meditations/[id]/embed/+Page')
+const { Page: LectureEmbedPage } = await import('@/pages/lectures/[id]/embed/+Page')
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 

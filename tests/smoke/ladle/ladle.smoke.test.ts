@@ -11,7 +11,7 @@
  * CI sets PREVIEW_URL to the Ladle preview URL (see the smoke-ladle job).
  */
 import { describe, it, expect } from 'vitest'
-import { fetchPage } from '../_helpers/preview'
+import { fetchPage } from '@/tests/smoke/_helpers/preview'
 
 interface LadleMeta {
   about?: { homepage?: string; version?: number }

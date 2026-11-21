@@ -1,7 +1,7 @@
-import { Link } from '../../../atoms'
-import { slugify } from '../../../../lib/slugify'
-import type { TableOfContentsHeadings } from '../../../../server/payload-types'
-import { useT } from '../../../../hooks/useT'
+import { Link } from '@/components/atoms'
+import { slugify } from '@/lib/urls/slugify'
+import type { TableOfContentsHeadings } from '@/types/payload/payload-types'
+import { useT } from '@/hooks/useT'
 
 export interface TableOfContentsProps {
   /** Optional heading shown above the list (for example "In this article"). */

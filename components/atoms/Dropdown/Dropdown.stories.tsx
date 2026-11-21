@@ -1,8 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Dropdown, DropdownItem } from './Dropdown'
-import { Button } from '../Button'
-import { Icon } from '../Icon'
-import { StorySection, StoryWrapper } from '../../ladle'
+import { Button } from '@/components/atoms/Button'
+import { Icon } from '@/components/atoms/Icon'
+import { StorySection, StoryWrapper } from '@/components/ladle'
 import {
   GlobeAltIcon,
   ChevronDownIcon,

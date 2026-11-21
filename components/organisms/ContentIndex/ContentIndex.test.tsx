@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentIndex, deriveFacets, filterByFacets } from './ContentIndex'
-import type { ResolvedCardItem } from '../../../lib/content-blocks'
+import type { ResolvedCardItem } from '@/lib/content/blocks'
 
 const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
 

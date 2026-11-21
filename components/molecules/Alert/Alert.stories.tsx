@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Alert } from './Alert'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Molecules',

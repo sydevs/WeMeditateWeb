@@ -8,8 +8,8 @@
  */
 
 import { usePageContext } from 'vike-react/usePageContext'
-import { ErrorFallback } from '../../components/molecules'
-import { ErrorType } from '../../server/error-utils'
+import { ErrorFallback } from '@/components/molecules'
+import { ErrorType } from '@/lib/errors/error-type'
 
 export default function Page() {
   const { is404 } = usePageContext()

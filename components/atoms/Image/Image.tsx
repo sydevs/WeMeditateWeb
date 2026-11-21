@@ -1,6 +1,6 @@
 import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react'
-import { Placeholder } from '../Placeholder'
-import { Icon } from '../Icon'
+import { Placeholder } from '@/components/atoms/Placeholder'
+import { Icon } from '@/components/atoms/Icon'
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
 import {
   type AspectRatio,
@@ -8,9 +8,9 @@ import {
   getImageSrcSet,
   getImageURL,
   getVariantName,
-} from '../../../lib/cloudflare-images'
-import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
-import { useT } from '../../../hooks/useT'
+} from '@/lib/media/cloudflare-images'
+import { useLightbox, type LightboxSlide } from '@/components/molecules/Lightbox/LightboxProvider'
+import { useT } from '@/hooks/useT'
 
 export interface ImageProps extends ComponentProps<'img'> {
   /** Image source URL */

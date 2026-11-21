@@ -3,8 +3,12 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { AudioPlayer } from './AudioPlayer'
-import type { Track, PlaylistAudioPlayerControls, PlaylistAudioPlayerState } from './types'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import type {
+  Track,
+  PlaylistAudioPlayerControls,
+  PlaylistAudioPlayerState,
+} from '@/lib/media/audio'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 const track: Track = {
   url: 'https://example.com/song.mp3',

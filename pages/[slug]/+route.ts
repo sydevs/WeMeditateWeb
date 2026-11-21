@@ -1,4 +1,4 @@
-import { MAP_PREFIX } from '../../lib/atlas-route'
+import { MAP_PREFIX } from '@/lib/atlas/route'
 
 /**
  * First path segments that a route function elsewhere owns. This matcher

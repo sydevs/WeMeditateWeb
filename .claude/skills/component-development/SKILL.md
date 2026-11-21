@@ -10,8 +10,8 @@ Follow this checklist when creating new components from scratch:
 ## 1. Planning Phase
 
 **IMPORTANT**: Before starting, read:
-- [ ] @DESIGN_SYSTEM.md for component architecture and design patterns
-- [ ] @STORYBOOK.md for story structure and conventions
+- [ ] @docs/DESIGN_SYSTEM.md for component architecture and design patterns
+- [ ] @docs/STORYBOOK.md for story structure and conventions
 
 Then proceed with planning:
 - [ ] Examine design (URL, images, or description)
@@ -50,7 +50,7 @@ Then proceed with planning:
 - [ ] Create story file: `components/[level]/ComponentName/ComponentName.stories.tsx`
   - Import from '@ladle/react' and component
   - Import story utilities from '../../ladle'
-  - Follow @STORYBOOK.md section patterns
+  - Follow @docs/STORYBOOK.md section patterns
   - For **atoms**: Use grids for multi-dimensional variations
   - For **molecules**: Use sections with Minimal/Maximal subsections
   - Add Examples section with realistic usage
@@ -76,8 +76,8 @@ Then proceed with planning:
 
 ## 5. Completion Checklist
 
-- [ ] Component follows @DESIGN_SYSTEM.md guidelines
-- [ ] Story follows @STORYBOOK.md patterns
+- [ ] Component follows @docs/DESIGN_SYSTEM.md guidelines
+- [ ] Story follows @docs/STORYBOOK.md patterns
 - [ ] All exports updated (component and parent index)
 - [ ] No TypeScript errors
 - [ ] Tested in Ladle

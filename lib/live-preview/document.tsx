@@ -222,7 +222,7 @@ function SubscribedDocument<T extends PreviewDocument>({
   )
 
   // No `depth`: the server decides it, from the same read shape that rendered
-  // this page (`documentReadArgs` in `server/sahajcloud-client.ts`).
+  // this page (`documentReadArgs` in `server/sahajcloud/documents.ts`).
   const { data } = useLivePreview<T>({ initialData, requestHandler, serverURL })
 
   useEffect(() => {
