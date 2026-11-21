@@ -26,7 +26,6 @@ import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
 import { OrnateTextBox } from '../OrnateTextBox'
 import { Splash } from '../Splash'
 import { SubtleSystem } from '../SubtleSystem'
-import { ImageCredit } from './ImageCredit'
 import {
   galleryImages,
   populatedImage,
@@ -48,6 +47,7 @@ import type {
   TableOfContentsBlock,
   TextBoxBlock,
 } from '../../../server/payload-types'
+import { IMAGE_CREDIT_CLASS } from './lexical-helpers'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -265,7 +265,7 @@ export const blockConverters: BlockConverters = {
             />
             {img.credit ? (
               <figcaption className="mt-1">
-                <ImageCredit>{img.credit}</ImageCredit>
+                <small className={IMAGE_CREDIT_CLASS}>{img.credit}</small>
               </figcaption>
             ) : null}
           </figure>

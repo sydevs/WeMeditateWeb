@@ -13,14 +13,19 @@ import {
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Blockquote, Container, Image, Link } from '../../atoms'
 import { populatedImage } from '../../../lib/content-blocks'
-import { ImageCredit } from './ImageCredit'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
-import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
+import {
+  getNodeText,
+  IMAGE_CREDIT_CLASS,
+  relationshipLabel,
+  slugify,
+  uploadFigureClass,
+} from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
@@ -206,7 +211,11 @@ const CONVERTERS: JSXConverters = {
         />
         {caption || credit ? (
           <figcaption className="mt-2 text-sm text-gray-700">
-            {credit ? <ImageCredit className={caption ? 'mb-1' : ''}>{credit}</ImageCredit> : null}
+            {credit ? (
+              <small className={caption ? `${IMAGE_CREDIT_CLASS} mb-1` : IMAGE_CREDIT_CLASS}>
+                {credit}
+              </small>
+            ) : null}
             {caption}
           </figcaption>
         ) : null}
