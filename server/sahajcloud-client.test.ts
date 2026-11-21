@@ -146,7 +146,7 @@ describe('getWebConfig featuredArticles', () => {
     const { pages } = findGlobal.mock.calls[0][0].populate
 
     expect(Object.keys(pages).sort()).toEqual(['meta', 'slug', 'title'])
-    expect(Object.keys(pages.meta).sort()).toEqual(['image', 'title'])
+    expect(Object.keys(pages.meta).sort()).toEqual(['description', 'image', 'title'])
   })
 })
 

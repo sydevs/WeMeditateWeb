@@ -1,5 +1,6 @@
 /**
- * Proves every visible string reaches the markup from SahajCloud.
+ * Proves every visible string reaches the markup from SahajCloud: the heading
+ * and its subtitle from `discover.general`, each action from its page.
  *
  * `discover.general` holds the same English the component used to hardcode,
  * so an English render cannot tell a wired-up string from the old literal.
@@ -10,26 +11,39 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { WebTranslations } from '../../../server/sahajcloud-types'
+import type { NavPage, WebTranslations } from '../../../server/sahajcloud-types'
 import { EN_TRANSLATIONS } from '../../../lib/i18n'
+import { anchorFor } from '../../../tests/_helpers/markup'
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
-// when `WebTranslations` gains a required branch.
+// when `WebTranslations` gains a required branch. Only the two keys the
+// component reads are named: the rest are derived, so a key removed upstream
+// cannot leave a stale property here. The English spread satisfies the group's
+// required keys; the derived one replaces every value.
 const FRENCH: WebTranslations = {
   ...EN_TRANSLATIONS,
   discover: {
     general: {
+      ...EN_TRANSLATIONS.discover.general,
+      ...Object.fromEntries(
+        Object.keys(EN_TRANSLATIONS.discover.general).map((key) => [key, `fr-${key}`]),
+      ),
       title: 'Découvrez-le par vous-même !',
       subtitle: 'Ne nous croyez pas sur parole. Méditez et voyez ce que vous ressentez !',
-      meditate_now: 'Méditer maintenant',
-      meditate_now_subtitle: 'Méditations guidées en vidéo',
-      live_guidance: 'Guidance en direct',
-      live_guidance_subtitle: 'Méditations en ligne gratuites',
-      classes_near_me: 'Cours près de moi',
-      classes_near_me_subtitle: 'Cours gratuits en personne',
     },
   },
 }
+
+/** `classPages` as a French config read returns it. */
+const PAGES: NavPage[] = [
+  {
+    id: 14,
+    slug: 'live-meditations',
+    title: 'Méditations en direct',
+    meta: { description: 'Méditez en ligne avec un instructeur' },
+  },
+  { id: 11, slug: 'classes-near-me', title: 'Cours près de chez vous' },
+]
 
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'fr', translations: FRENCH, urlPathname: '/index' }),
@@ -54,12 +68,11 @@ function text(html: string): string {
 const { DiscoverMeditation } = await import('./DiscoverMeditation')
 
 describe('DiscoverMeditation in a non-English locale', () => {
-  it('renders every SahajCloud string, and no English literal', () => {
-    const rendered = text(renderToStaticMarkup(<DiscoverMeditation />))
+  it('renders the heading strings from SahajCloud, and no English literal', () => {
+    const rendered = text(renderToStaticMarkup(<DiscoverMeditation pages={PAGES} />))
 
-    for (const french of Object.values(FRENCH.discover.general)) {
-      expect(rendered).toContain(french)
-    }
+    expect(rendered).toContain(FRENCH.discover.general.title)
+    expect(rendered).toContain(FRENCH.discover.general.subtitle)
     // The snapshot, not a copy of it: a reworded key upstream would otherwise
     // leave this asserting against English the component no longer holds.
     for (const english of Object.values(EN_TRANSLATIONS.discover.general)) {
@@ -67,15 +80,25 @@ describe('DiscoverMeditation in a non-English locale', () => {
     }
   })
 
-  it('still lets a caller override the heading and subtitle', () => {
-    const rendered = text(
-      renderToStaticMarkup(
-        <DiscoverMeditation subtitle="Essayez par vous-même" title="Un autre titre" />,
-      ),
+  it('names each action by its page, in the locale, under a localized href', () => {
+    const html = renderToStaticMarkup(<DiscoverMeditation pages={PAGES} />)
+    const rendered = text(html)
+
+    expect(anchorFor(html, '/fr/live-meditations')).not.toBe('')
+    expect(anchorFor(html, '/fr/classes-near-me')).not.toBe('')
+    expect(rendered).toContain('Méditations en direct')
+    expect(rendered).toContain('Méditez en ligne avec un instructeur')
+    expect(rendered).toContain('Cours près de chez vous')
+  })
+
+  it('reads no per-action key, which the pages replaced', () => {
+    const rendered = text(renderToStaticMarkup(<DiscoverMeditation pages={PAGES} />))
+    const perAction = Object.entries(FRENCH.discover.general).filter(
+      ([key]) => key !== 'title' && key !== 'subtitle',
     )
 
-    expect(rendered).toContain('Un autre titre')
-    expect(rendered).toContain('Essayez par vous-même')
-    expect(rendered).not.toContain('Découvrez-le par vous-même !')
+    for (const [, french] of perAction) {
+      expect(rendered).not.toContain(french)
+    }
   })
 })

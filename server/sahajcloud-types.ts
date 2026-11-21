@@ -57,10 +57,10 @@ export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../
 
 /**
  * A page as the site config populates it: a nav link's label and target, plus
- * the `meta` an article card draws from.
+ * the `meta` an article card and a `DiscoverMeditation` action draw from.
  *
- * Not `Page`. `WEB_CONFIG_POPULATE` gives these relationships four fields, so
- * asserting the full document would let `page.content` or `meta.description`
+ * Not `Page`. `WEB_CONFIG_POPULATE` gives these relationships five fields, so
+ * asserting the full document would let `page.content` or `page.author`
  * typecheck here and arrive `undefined` at runtime — the same bug the
  * `homePage` narrowing closed, open five fields over. `NAV_PAGE_SELECT` in
  * [sahajcloud-client.ts](sahajcloud-client.ts) is checked against
@@ -68,7 +68,7 @@ export type { ResolvedLecture, LectureMetadata, LectureSubtitleTrack } from '../
  * in the other.
  */
 export type NavPage = Pick<Page, 'id' | 'title' | 'slug'> & {
-  meta?: Pick<NonNullable<Page['meta']>, 'title' | 'image'>
+  meta?: Pick<NonNullable<Page['meta']>, 'title' | 'image' | 'description'>
 }
 
 /**
