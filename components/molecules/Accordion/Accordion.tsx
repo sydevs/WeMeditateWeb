@@ -77,19 +77,23 @@ export function Accordion({
 }: AccordionProps) {
   const [openItems, setOpenItems] = useState<Set<string>>(() => new Set(defaultOpenItems))
 
-  // The callback stays out of a state updater: React may run an updater
-  // twice, and the caller would hear one click as two toggles.
+  // `prev` is what makes two toggles batched into one task both land. The
+  // callback stays outside the updater: React may run one twice, and the
+  // caller would hear a single click as two toggles.
   const toggleItem = (itemId: string) => {
     const isOpening = !openItems.has(itemId)
-    const next = new Set(isOpening && !allowMultiple ? [] : openItems)
 
-    if (isOpening) {
-      next.add(itemId)
-    } else {
-      next.delete(itemId)
-    }
+    setOpenItems((prev) => {
+      const next = new Set(isOpening && !allowMultiple ? [] : prev)
 
-    setOpenItems(next)
+      if (isOpening) {
+        next.add(itemId)
+      } else {
+        next.delete(itemId)
+      }
+
+      return next
+    })
     onToggle?.(itemId, isOpening)
   }
 

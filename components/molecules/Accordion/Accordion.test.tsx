@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { StrictMode } from 'react'
+import { StrictMode, act } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { axeViolations } from '../../../tests/_helpers/axe'
@@ -100,6 +100,23 @@ describe('Accordion', () => {
 
     expect(header('How much does it cost?').getAttribute('aria-expanded')).toBe('false')
     expect(header('What do I bring?').getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('keeps both opens when two toggles land in one batch', () => {
+    render(<Accordion allowMultiple items={items} />)
+
+    const cost = header('How much does it cost?')
+    const bring = header('What do I bring?')
+
+    // Two clicks in one task share a render, so an open set built from that
+    // closure rather than from `prev` dropped the first.
+    act(() => {
+      cost.click()
+      bring.click()
+    })
+
+    expect(cost.getAttribute('aria-expanded')).toBe('true')
+    expect(bring.getAttribute('aria-expanded')).toBe('true')
   })
 
   it('reports each toggle once, even where React runs an updater twice', () => {
