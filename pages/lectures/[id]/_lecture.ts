@@ -1,7 +1,7 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
 import type { Lecture, Locale } from '@/types/sahajcloud'
-import { getLecture } from '@/server/sahajcloud/client'
+import { getLecture } from '@/server/sahajcloud'
 import { idSchema } from '@/server/validation'
 import { loadLivePreview, previewArgs } from '@/server/live-preview'
 

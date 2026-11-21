@@ -19,7 +19,7 @@
 import { render } from 'vike/abort'
 import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
-import { getWebConfig, getWebTranslations } from './sahajcloud/client'
+import { getWebConfig, getWebTranslations } from './sahajcloud'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig } from '@/types/sahajcloud'

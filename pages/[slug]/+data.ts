@@ -2,7 +2,7 @@
 
 import type { PageContextServer } from 'vike/types'
 import type { Locale, Page, WebConfig } from '@/types/sahajcloud'
-import { getPageBySlug, getPageLocaleStatus } from '@/server/sahajcloud/client'
+import { getPageBySlug, getPageLocaleStatus } from '@/server/sahajcloud'
 import { loadLivePreview, previewArgs } from '@/server/live-preview'
 import { loadSiteContext } from '@/server/site-context'
 import { advertisedLocales } from '@/lib/seo/hreflang'

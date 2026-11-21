@@ -6,7 +6,7 @@ import type { Context, Hono } from 'hono'
 import { getT } from '@/lib/i18n/i18n'
 import { localeFromPath } from '@/lib/urls/urls'
 import { ROOT_FILE_CACHE_CONTROL } from '@/server/cache-headers'
-import { getWebTranslations } from '@/server/sahajcloud/client'
+import { getWebTranslations } from '@/server/sahajcloud'
 import type { SahajCloudEnv } from '@/server/sahajcloud/context'
 import { buildWebManifest } from './manifest'
 

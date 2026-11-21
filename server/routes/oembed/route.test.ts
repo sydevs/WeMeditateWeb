@@ -15,7 +15,7 @@ const { getLecture, getDocumentById } = vi.hoisted(() => ({
   getDocumentById: vi.fn(),
 }))
 
-vi.mock('@/server/sahajcloud/client', () => ({
+vi.mock('@/server/sahajcloud', () => ({
   getLecture,
   getDocumentById,
   getWebTranslations: vi.fn(async () => EN_TRANSLATIONS),

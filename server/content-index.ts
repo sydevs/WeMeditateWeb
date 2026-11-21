@@ -28,7 +28,7 @@ import {
   type ResolvedCardItem,
   type PageTagLabels,
 } from '@/lib/content/blocks'
-import { audienceIdList } from './sahajcloud/client'
+import { audienceIdList } from './sahajcloud'
 // Type-only import (erased at build): the songs index resolves to MusicLibrary tracks.
 import type { Track } from '@/lib/media/audio'
 

@@ -6,7 +6,7 @@
 
 import type { Hono } from 'hono'
 import type { SahajCloudEnv } from '@/server/sahajcloud/context'
-import { getDocumentById, getLecture, getWebTranslations } from '@/server/sahajcloud/client'
+import { getDocumentById, getLecture, getWebTranslations } from '@/server/sahajcloud'
 import { resolveLecture } from '@/lib/content/lecture-shape'
 import { populatedImageUrl } from '@/lib/content/payload-relationships'
 import { absoluteHref } from '@/lib/urls/urls'

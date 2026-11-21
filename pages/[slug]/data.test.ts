@@ -18,7 +18,7 @@ const settings = {
   knowledgePages: [],
 }
 
-vi.mock('@/server/sahajcloud/client', () => ({
+vi.mock('@/server/sahajcloud', () => ({
   getPageBySlug: (...args: unknown[]) => getPageBySlug(...args),
   getPageLocaleStatus: (...args: unknown[]) => getPageLocaleStatus(...args),
 }))

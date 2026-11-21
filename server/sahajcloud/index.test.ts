@@ -9,7 +9,7 @@ import {
   partitionPublishedPages,
   getRelatedMeditations,
   getRelatedLectures,
-} from './client'
+} from '.'
 import { createPayloadClient } from './payload-client'
 import * as Sentry from '@sentry/cloudflare'
 import { forgetReportedWarnings } from '@/server/error-utils'

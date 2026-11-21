@@ -9,7 +9,7 @@
 
 import type { Hono } from 'hono'
 import type { SahajCloudEnv } from '@/server/sahajcloud/context'
-import { getRelatedLectures, getWebConfig } from '@/server/sahajcloud/client'
+import { getRelatedLectures, getWebConfig } from '@/server/sahajcloud'
 import { idSchema } from '@/server/validation'
 import { parseLocale } from '@/lib/i18n/locales'
 import { relatedLecturesToCards } from '@/lib/content/related-content'

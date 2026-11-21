@@ -11,8 +11,8 @@ const getDocumentById = vi.fn()
 const getMeditationSongs = vi.fn()
 const loadLivePreview = vi.fn()
 
-vi.mock('@/server/sahajcloud/client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/server/sahajcloud/client')>()),
+vi.mock('@/server/sahajcloud', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/server/sahajcloud')>()),
   getDocumentById: (...args: unknown[]) => getDocumentById(...args),
   getMeditationSongs: (...args: unknown[]) => getMeditationSongs(...args),
 }))

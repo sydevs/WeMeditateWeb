@@ -40,7 +40,7 @@
 
 import type { Hono } from 'hono'
 import type { SahajCloudEnv } from '@/server/sahajcloud/context'
-import { documentReadArgs, isDocumentCollection } from '@/server/sahajcloud/client'
+import { documentReadArgs, isDocumentCollection } from '@/server/sahajcloud'
 import { verifyLivePreviewToken } from '@/server/live-preview'
 import { createPayloadClient } from '@/server/sahajcloud/payload-client'
 import { idSchema } from '@/server/validation'
