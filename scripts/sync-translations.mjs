@@ -57,13 +57,20 @@ function sortDeep(value) {
   )
 }
 
-/** Drops blank strings and empty groups, so a blank SahajCloud key falls through to its path. */
+/**
+ * Drops blank strings and empty groups, so a blank SahajCloud key falls through to its path.
+ *
+ * Also drops every `a11y` group. The screen-reader strings are this repo's own
+ * (`lib/i18n/a11y/`), and a copy SahajCloud still serves must not reach the snapshot.
+ */
 function prune(value) {
   if (value === null || typeof value !== 'object') return value
 
   const entries = []
 
   for (const [key, raw] of Object.entries(value)) {
+    if (key === 'a11y') continue
+
     if (typeof raw === 'string') {
       if (raw.trim().length > 0) entries.push([key, raw])
       continue

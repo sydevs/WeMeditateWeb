@@ -4,7 +4,10 @@
 
 import { createPayloadClient } from './payload-client'
 import type { Locale } from '@/types/sahajcloud'
-import { WEB_TRANSLATIONS_SELECT, type WebTranslations } from '@/lib/i18n/web-translations'
+import {
+  WEB_TRANSLATIONS_SELECT,
+  type SahajCloudWebTranslations,
+} from '@/lib/i18n/web-translations'
 import { withRetryUnlessPreview } from './query'
 
 /**
@@ -20,6 +23,9 @@ import { withRetryUnlessPreview } from './query'
  * Errors propagate; `loadSiteContext` degrades to the committed English
  * snapshot rather than failing the page.
  *
+ * The result holds no screen-reader strings: `loadTranslations` mounts those
+ * from `lib/i18n/a11y/`, over any `a11y` group SahajCloud still serves.
+ *
  * @param options.locale - The locale to retrieve strings in
  * @param options.preview - If true, fetch with preview credentials
  */
@@ -27,7 +33,7 @@ export async function getWebTranslations(options: {
   locale: Locale
   preview?: boolean
   previewToken?: string
-}): Promise<WebTranslations> {
+}): Promise<SahajCloudWebTranslations> {
   const isPreview = options.preview === true
 
   return withRetryUnlessPreview(
@@ -50,7 +56,7 @@ export async function getWebTranslations(options: {
         select: WEB_TRANSLATIONS_SELECT,
       })
 
-      return translations as WebTranslations
+      return translations as SahajCloudWebTranslations
     },
     { preview: isPreview },
   )
