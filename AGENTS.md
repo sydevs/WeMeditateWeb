@@ -59,7 +59,10 @@ public. Tokens like `PUBLIC__MAPBOX_ACCESS_TOKEN` stay secret. Restrict them by 
 
 ## Cloudflare Workers Deployment
 
-The Worker holds no bindings and no persistent state.
+The Worker holds no bindings and no persistent state. Its one route is
+`wemeditate.com`, a Workers Custom Domain in [wrangler.toml](wrangler.toml), so a merge to `main`
+deploys straight to the apex: Workers Builds does the deploy, and CI runs no production build of
+the app.
 
 A second, assets-only Worker is configured here for the Ladle playground
 (`design.wemeditate.com`), in [wrangler.design.jsonc](wrangler.design.jsonc) — a filename
@@ -106,6 +109,11 @@ These rules apply whether or not the matching rule file or skill is loaded.
   the locales its own document is published in, and [lib/hreflang.ts](lib/hreflang.ts) owns that
   derivation wherever a URL is published. The site's `availableLocales` is a filter on that set,
   never the set itself.
+  On the `[slug]` route a locale the document is **not** published in is still not a dead
+  URL: `pages/[slug]/+data.ts` 302s it to the English page, which is why the language
+  dropdown offers every `availableLocales` entry rather than the filtered set. No other route
+  has that fallback, and none needs one — `/meditations/:id` and `/lectures/:id` are
+  id-addressed, so their 404s do not depend on the locale.
 - **A site-wide document is a route, because `public/` is shipped by both builds** (see below):
   [server/sitemap-routes.ts](server/sitemap-routes.ts).
 - **One geometry for the embedded player.** [lib/embed-player.ts](lib/embed-player.ts) owns the

@@ -22,7 +22,7 @@ import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
 import { useAudioPlayer } from '../../../hooks/audio'
 import type { Track } from '../../molecules/AudioPlayer/types'
-import type { MeditationSong } from '../../../server/sahajcloud-types'
+import { DEFAULT_LOCALE, type MeditationSong } from '../../../server/sahajcloud-types'
 import founderImage from '../../../assets/smnd.webp'
 import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
 import { useT } from '../../../hooks/useT'
@@ -45,14 +45,7 @@ const PROGRESS_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RADIUS
 // Default background-music level. It stays clearly under the guided voice (~1.0).
 const DEFAULT_MUSIC_VOLUME = 0.4
 
-// The public site an embedded player sends a visitor back to: today the legacy
-// Rails app on its own origin, which localizes its own slugs (`/fr/méditations`),
-// so `lib/urls.ts` cannot spell these and both links stay on the English entry
-// points. The bare domain is the web arm's link text — a brand name, not copy.
-// shortcut: absolute and unlocalized while this domain is somebody else's. Once
-// this app serves wemeditate.com, `Link` stops passing these through as external
-// and both become unprefixed self-links in every locale — route them through
-// `localeHref` then.
+// The web arm's link text — a brand name, not copy.
 const WEMEDITATE_DOMAIN = 'wemeditate.com'
 
 // Placeholder image for when no frames are available (teal gradient)
@@ -876,7 +869,20 @@ export function MeditationPlayer({
           </div>
         </div>
 
-        {/* Upsell Message */}
+        {/* Upsell Message. Both links are site paths, which `Link` spells
+            through `localeHref`, and both stay `external`: that is what opens
+            a new tab, and only the embed renders this line — inside an iframe
+            on someone else's page, where a same-tab link would draw the whole
+            site into the frame.
+
+            `DEFAULT_LOCALE`, not the visitor's: the embed route fetches no
+            settings, so it renders under any `KNOWN_LOCALES` code, including
+            one outside `availableLocales` — and `server/site-context.ts` 404s
+            such a prefix before the page is read. English is the one locale
+            the site always offers, so these two hrefs cannot go dead. The
+            cost is a translated embed pointing at the English page.
+            shortcut: `/app` 404s until SahajCloud publishes a page slugged
+            `app`; the slug is settled (#280), so the page is what is missing. */}
         {upsell && (
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-700">
@@ -886,7 +892,8 @@ export function MeditationPlayer({
                       <Link
                         key="upsell"
                         external
-                        href={`https://${WEMEDITATE_DOMAIN}/meditations`}
+                        href="/meditate-now"
+                        locale={DEFAULT_LOCALE}
                         variant="primary"
                       >
                         {WEMEDITATE_DOMAIN}
@@ -898,7 +905,8 @@ export function MeditationPlayer({
                       <Link
                         key="upsell"
                         external
-                        href={`https://${WEMEDITATE_DOMAIN}/app`}
+                        href="/app"
+                        locale={DEFAULT_LOCALE}
                         variant="primary"
                       >
                         {t('meditation.general.upsell_app_link')}

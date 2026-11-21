@@ -70,7 +70,7 @@ export function DiscoverMeditation({
         {/* Action Items */}
         <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-center justify-center mt-12 lg:mt-24">
           <ActionItem
-            href="/meditations"
+            href="/meditate-now"
             icon={PlayCircleIcon}
             locale={locale}
             subtitle={t('discover.general.meditate_now_subtitle')}
@@ -78,7 +78,7 @@ export function DiscoverMeditation({
           />
 
           <ActionItem
-            href="/live"
+            href="/live-meditations"
             icon={ComputerDesktopIcon}
             locale={locale}
             subtitle={t('discover.general.live_guidance_subtitle')}
@@ -86,7 +86,7 @@ export function DiscoverMeditation({
           />
 
           <ActionItem
-            href="/classes"
+            href="/classes-near-me"
             icon={MapPinIcon}
             locale={locale}
             subtitle={t('discover.general.classes_near_me_subtitle')}

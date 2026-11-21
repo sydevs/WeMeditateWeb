@@ -2,6 +2,7 @@
 
 import type { PageContextServer } from 'vike/types'
 import type { Locale, Page, WebConfig } from '../../server/sahajcloud-types'
+import { DEFAULT_LOCALE } from '../../server/sahajcloud-types'
 import { getPageBySlug, getPageLocaleStatus } from '../../server/sahajcloud-client'
 import { loadLivePreview, previewArgs } from '../../server/live-preview'
 import { loadSiteContext } from '../../server/site-context'
@@ -11,7 +12,7 @@ import type { SeoDocument } from '../../lib/head'
 import { pageTagLabels } from '../../lib/page-tag-labels'
 import { resolveContentIndexBlocks } from '../../server/content-index'
 import { slugSchema } from '../../server/validation'
-import { localePath } from '../../lib/urls'
+import { localeHref, localePath } from '../../lib/urls'
 import { redirect, render } from 'vike/abort'
 
 export interface PageData {
@@ -85,6 +86,30 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
   }
 
   if (!page) {
+    // 302, not 301: a later publish has to change where this URL lands.
+    //
+    // `advertisedLocales`, not `status[DEFAULT_LOCALE]`: a locale this site
+    // does not offer has no URL to point at, and the `{}` of a failed read
+    // advertises nothing, so the 404 stands.
+    //
+    // Not under preview, for the reason `server/site-context.ts`'s locale gate
+    // is not either: `getPageLocaleStatus` reports published status only, and
+    // moving an editor to the English URL would end their preview session.
+    //
+    // The search string rides along, as the legacy layer's own 301 carries it
+    // (#276). A cutover's inbound links are campaign links, and the two hops
+    // chain: without this, `/it/articles/x?utm=y` keeps the tag over the 301
+    // and drops it here. `localeHref` reattaches it after normalizing.
+    if (
+      !preview.active &&
+      locale !== DEFAULT_LOCALE &&
+      advertisedLocales(status, settings.availableLocales).includes(DEFAULT_LOCALE)
+    ) {
+      const search = pageContext.urlParsed.searchOriginal ?? ''
+
+      throw redirect(localeHref(DEFAULT_LOCALE, `/${slug}${search}`), 302)
+    }
+
     // Page not found. This is a valid 404 state, not an error.
     throw render(404, 'Page not found.')
   }
