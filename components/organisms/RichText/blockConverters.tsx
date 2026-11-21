@@ -145,7 +145,7 @@ export const blockConverters: BlockConverters = {
           className={FULL_BLEED_BLOCK}
           ctaHref={ctaHref}
           ctaText={ctaText}
-          decoration={decoration === 'triangle' ? decoration : undefined}
+          decoration={decoration}
           imageAlt={img.alt}
           imageSrc={img.url}
           subtitle={subtitle}
