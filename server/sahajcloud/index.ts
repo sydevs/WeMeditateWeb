@@ -3,6 +3,7 @@
  * inside: the files are how the reads are kept, not an API.
  */
 
+export { getAtlasSeo, getAtlasSitemapUrls } from './atlas'
 export { getPageBySlug, getPageLocaleStatus } from './pages'
 export { isDocumentCollection, documentReadArgs, getDocumentById } from './documents'
 export { getLecture } from './lectures'

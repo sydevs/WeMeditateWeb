@@ -2,7 +2,7 @@ import type { PageContextServer } from 'vike/types'
 import type { WebConfig } from '@/types/sahajcloud'
 import type { AtlasSeoResponse } from '@/types/atlas'
 import { loadSiteContext } from '@/server/site-context'
-import { getAtlasSeo } from '@/server/sahajcloud/atlas'
+import { getAtlasSeo } from '@/server/sahajcloud'
 import { atlasSeo } from '@/lib/atlas/seo'
 import type { SeoDocument } from '@/lib/seo/head'
 
