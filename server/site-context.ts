@@ -17,9 +17,9 @@
  */
 
 import { render } from 'vike/abort'
-import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
 import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import { warnOnce } from './error-utils'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
@@ -51,20 +51,21 @@ function isEmpty(translations: WebTranslations): boolean {
 /**
  * Loads the locale's UI strings, once per request.
  *
- * Degrades to the committed English snapshot in two cases, both of which
- * would otherwise render every string as its own key path:
+ * Degrades to the committed English snapshot in two cases:
  *
  * - the read fails, and
  * - the read succeeds but the global is empty, which is what an unseeded
- *   SahajCloud returns. A global with nothing in it is not usable at all.
+ *   SahajCloud returns, and what a locale nobody has translated reads as.
  *
  * ⚠ A partly published locale passes both tests. SahajCloud's English fill
  * reaches only inside a group the document already carries (SahajCloud
  * #705), so a locale holding one group of fourteen renders the other
- * thirteen as key paths. A locale is published with every group present,
- * even blank.
+ * thirteen from this repo's English mirror, which trails the live English.
+ * A locale is published with every group present, even blank.
  *
- * Both paths log a Sentry warning, so the gap stays visible.
+ * Either degrade logs on every request, and reaches Sentry through
+ * `warnOnce` — once per locale and reason per isolate, from whichever render
+ * discovers it.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const locale = pageContext.locale
@@ -83,9 +84,8 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
         console.warn(
           `[loadTranslations] "${locale}" returned no strings; using the English snapshot`,
         )
-        Sentry.captureMessage('Translations global is empty; rendering the English snapshot', {
-          level: 'warning',
-          tags: { source: 'loadTranslations' },
+        warnOnce(locale, 'Translations global is empty; rendering the English snapshot', {
+          source: 'loadTranslations',
           extra: { locale },
         })
 
@@ -93,9 +93,8 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
       })
       .catch((error: unknown) => {
         console.warn(`[loadTranslations] read failed for "${locale}":`, error)
-        Sentry.captureMessage('Translations read failed; rendering the English snapshot', {
-          level: 'warning',
-          tags: { source: 'loadTranslations' },
+        warnOnce(locale, 'Translations read failed; rendering the English snapshot', {
+          source: 'loadTranslations',
           extra: { locale },
         })
 

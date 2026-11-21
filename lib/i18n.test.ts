@@ -6,9 +6,13 @@
  * renders — not just that English still works.
  */
 
-import { describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
+import * as Sentry from '@sentry/react'
 import type { WebTranslations } from '../server/sahajcloud-types'
-import { createT, EN_TRANSLATIONS, interpolate, pluralize } from './i18n'
+import { forgetReportedWarnings } from '../server/error-utils'
+import { createT, EN_TRANSLATIONS, interpolate, pluralize, type TranslationKey } from './i18n'
+
+vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
 
 /** A partial translations object, shaped like a SahajCloud read. */
 const fixture = (groups: Record<string, unknown>) => groups as unknown as WebTranslations
@@ -120,17 +124,115 @@ describe('createT', () => {
     expect(t('map.general.classes_shown', { shown: 2, count: 7 })).toBe('2 из 7 классов подряд')
   })
 
-  it('falls back to the key path when a key is missing', () => {
-    // A gap must be visible on the page, not render as a blank element.
-    const t = createT(fixture({ common: { general: {}, a11y: {} } }), 'en')
+  describe('a key the locale lacks', () => {
+    // `warnOnce`'s memo lives as long as the isolate, so each case starts from
+    // a fresh one rather than inheriting the keys its neighbours missed.
+    beforeEach(() => {
+      forgetReportedWarnings()
+      vi.mocked(Sentry.captureMessage).mockClear()
+    })
 
-    expect(t('common.general.loading')).toBe('common.general.loading')
-  })
+    afterEach(() => {
+      vi.unstubAllEnvs()
+      vi.restoreAllMocks()
+    })
 
-  it('falls back to the key path when a key is present but blank', () => {
-    const t = createT(fixture({ common: { general: { loading: '' }, a11y: {} } }), 'en')
+    it('renders the English mirror, never the key path', () => {
+      // A half-translated group is what SahajCloud returns: the group is
+      // there, one of its keys is not.
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({ blocks: { general: { learn_more: 'En savoir plus' } } }), 'fr')
 
-    expect(t('common.general.loading')).toBe('common.general.loading')
+      expect(t('blocks.general.minutes')).toBe(EN_TRANSLATIONS.blocks.general.minutes)
+      expect(t('blocks.general.learn_more')).toBe('En savoir plus')
+    })
+
+    it('renders the mirror for a key present but blank', () => {
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({ common: { general: { loading: '' }, a11y: {} } }), 'fr')
+
+      expect(t('common.general.loading')).toBe(EN_TRANSLATIONS.common.general.loading)
+    })
+
+    it("takes the mirror's plural form by English rules", () => {
+      // Russian files 21 under `one`; English must not ("Show 21 more item").
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({ common: { general: {}, a11y: {} } }), 'ru')
+
+      expect(t('common.a11y.show_more_items', { count: 21 })).toBe('Show 21 more items')
+    })
+
+    it('renders nothing in production when the mirror lacks it too', () => {
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({}), 'fr')
+      const missing = 'common.general.no_such_key' as TranslationKey
+
+      expect(t(missing)).toBe('')
+      expect(t.rich(missing, { name: 'NODE' })).toEqual([])
+    })
+
+    it('renders the key path in development, where a gap should be loud', () => {
+      vi.stubEnv('DEV', true)
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const t = createT(fixture({}), 'fr')
+      const missing = 'common.general.no_such_key' as TranslationKey
+
+      expect(t(missing)).toBe('common.general.no_such_key')
+      expect(t.rich(missing, {})).toEqual(['common.general.no_such_key'])
+    })
+
+    it('tells Sentry whether the mirror filled it', () => {
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({}), 'fr')
+
+      t('blocks.general.minutes')
+      t('common.general.no_such_key' as TranslationKey)
+
+      expect(vi.mocked(Sentry.captureMessage).mock.calls).toEqual([
+        [
+          'Translation key missing from SahajCloud',
+          {
+            level: 'warning',
+            tags: { source: 'i18n', fallback: 'mirror' },
+            extra: { key: 'blocks.general.minutes', locale: 'fr' },
+          },
+        ],
+        [
+          'Translation key missing from SahajCloud',
+          {
+            level: 'warning',
+            tags: { source: 'i18n', fallback: 'none' },
+            extra: { key: 'common.general.no_such_key', locale: 'fr' },
+          },
+        ],
+      ])
+    })
+
+    it('reaches Sentry once per key per isolate, from every render that misses it', () => {
+      vi.stubEnv('DEV', false)
+      const live = fixture({ blocks: { general: { learn_more: 'Mehr' } } })
+
+      createT(live, 'de')('blocks.general.minutes')
+      createT(live, 'de')('blocks.general.minutes')
+      createT(fixture({ ...live }), 'fr')('blocks.general.minutes')
+
+      expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    })
+
+    it('says nothing from the browser, where no isolate bounds the volume', () => {
+      vi.stubEnv('DEV', false)
+      vi.stubEnv('SSR', false)
+
+      createT(fixture({}), 'fr')('blocks.general.minutes')
+
+      expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    })
+
+    it('does not report a key the locale has', () => {
+      createT(EN_TRANSLATIONS, 'en')('common.general.loading')
+
+      expect(Sentry.captureMessage).not.toHaveBeenCalled()
+    })
   })
 
   describe('rich', () => {
