@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 
-import type { SahajCloudEnv } from '../../sahajcloud-context'
-import { registerApiRoutes } from '.'
+import type { SahajCloudEnv } from '../../server/sahajcloud-context'
+import { registerApiRoutes } from '../../server/routes/api'
 
 /**
  * The folder is the route list: each route lives in the `route.ts` of the
@@ -14,18 +14,27 @@ import { registerApiRoutes } from '.'
 
 type RouteModule = Record<string, unknown>
 
-const files = Object.keys(import.meta.glob('./**/*.ts'))
+/** What the globs below resolve against. Stripped off each key, so a reported path reads as the folder does. */
+const API_DIR = '../../server/routes/api/'
 
-const routeFiles = Object.entries(import.meta.glob<RouteModule>('./**/route.ts'))
+function inApiDir(file: string): string {
+  return file.slice(API_DIR.length)
+}
 
-/** `/api/live-preview/populate` → `./live-preview/populate/route.ts`; a `:param` adds nothing. */
+const files = Object.keys(import.meta.glob('../../server/routes/api/**/*.ts')).map(inApiDir)
+
+const routeFiles: [string, () => Promise<RouteModule>][] = Object.entries(
+  import.meta.glob<RouteModule>('../../server/routes/api/**/route.ts'),
+).map(([file, load]) => [inApiDir(file), load])
+
+/** `/api/live-preview/populate` → `live-preview/populate/route.ts`; a `:param` adds nothing. */
 function fileFor(path: string): string {
   const segments = path
     .replace(/^\/api\//, '')
     .split('/')
     .filter((segment) => !segment.startsWith(':'))
 
-  return `./${segments.join('/')}/route.ts`
+  return `${segments.join('/')}/route.ts`
 }
 
 /** Method and path of every handler `register` adds, middleware left out. */
@@ -71,9 +80,9 @@ describe('server/routes/api', () => {
     const routeFolders = routeFiles.map(([file]) => file.replace(/route\.ts$/, ''))
 
     for (const file of files) {
-      if (file === './index.ts' || file === './index.test.ts') continue
+      if (file === 'index.ts') continue
 
-      if (file.split('/').at(-1)!.startsWith('_') && file.split('/').length === 2) continue
+      if (file.startsWith('_') && !file.includes('/')) continue
 
       expect(
         routeFolders.some((folder) => file.startsWith(folder)),

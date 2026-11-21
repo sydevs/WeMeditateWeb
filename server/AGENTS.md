@@ -193,5 +193,6 @@ path — `POST /api/live-preview/populate` is `live-preview/populate/`, and a `:
 no folder — holding `route.ts`, its `route.test.ts`, and anything only that route reads (the
 submission body's `schema.ts`). `route.ts` exports one `register…(app)`, and
 [routes/api/index.ts](routes/api/index.ts) calls them all. A top-level file whose name starts with
-`_` holds what several routes share and registers none. `routes/api/index.test.ts` fails a route
+`_` holds what several routes share and registers none.
+[tests/guards/api-route-files.test.ts](../tests/guards/api-route-files.test.ts) fails a route
 outside its folder, a file in no route's folder, and a route `index.ts` does not register.

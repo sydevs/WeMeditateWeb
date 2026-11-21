@@ -1,6 +1,7 @@
 /**
  * What more than one `/api/*` route reads. A file here whose name starts with
- * `_` registers no route; every other file is one (`index.test.ts` holds that).
+ * `_` registers no route; every other file is one
+ * (`tests/guards/api-route-files.test.ts` holds that).
  */
 
 import type { Locale } from '../../sahajcloud-types'

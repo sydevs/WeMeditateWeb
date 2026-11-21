@@ -3,7 +3,8 @@
  * `/api/live-preview/populate` is `live-preview/populate/route.ts`, and a
  * `:param` segment adds no folder. A route's test and anything only it reads
  * sit beside it; a top-level `_` file is shared by several routes.
- * `index.test.ts` holds the tree and this list to each other.
+ * `tests/guards/api-route-files.test.ts` holds the tree and this list to each
+ * other.
  *
  * These routes run inside the `contextStorage()` middleware (registered
  * first in entry.ts), so `getSahajCloudContext()` resolves the API key
