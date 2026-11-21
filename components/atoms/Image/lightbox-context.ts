@@ -1,4 +1,4 @@
-import { createContext, use } from 'react'
+import { createContext } from 'react'
 
 /**
  * The contract between the `Image` atom, which registers slides, and the
@@ -34,12 +34,3 @@ interface LightboxContextValue {
 }
 
 export const LightboxContext = createContext<LightboxContextValue | null>(null)
-
-/**
- * Access the ambient lightbox controller, or `null` when no
- * `LightboxProvider` is mounted — letting the `Image` atom degrade to
- * plain, non-interactive rendering.
- */
-export function useLightbox(): LightboxContextValue | null {
-  return use(LightboxContext)
-}
