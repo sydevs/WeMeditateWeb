@@ -1,10 +1,10 @@
 /** Ladle story utilities for consistent story structure and layout. */
 
-export { StoryWrapper } from './StoryWrapper';
-export type { StoryWrapperProps } from './StoryWrapper';
+export { StoryWrapper } from './StoryWrapper'
+export type { StoryWrapperProps } from './StoryWrapper'
 
-export { StorySection } from './StorySection';
-export type { StorySectionProps } from './StorySection';
+export { StorySection } from './StorySection'
+export type { StorySectionProps } from './StorySection'
 
 export {
   StoryGrid,
@@ -13,8 +13,8 @@ export {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from './StoryGrid';
+  StoryGridCell,
+} from './StoryGrid'
 export type {
   StoryGridProps,
   StoryGridHeaderProps,
@@ -22,5 +22,5 @@ export type {
   StoryGridHeaderCellProps,
   StoryGridBodyProps,
   StoryGridRowProps,
-  StoryGridCellProps
-} from './StoryGrid';
+  StoryGridCellProps,
+} from './StoryGrid'

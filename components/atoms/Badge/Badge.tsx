@@ -65,7 +65,8 @@ export function Badge({
   children,
   ...props
 }: BadgeProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium font-sans whitespace-nowrap'
+  const baseStyles =
+    'inline-flex items-center justify-center font-medium font-sans whitespace-nowrap'
 
   const colorStyles = {
     primary: 'bg-teal-100 text-teal-800',
@@ -73,15 +74,17 @@ export function Badge({
     neutral: 'bg-gray-100 text-gray-800',
   }
 
-  const hoverStyles = props.href ? {
-    primary: 'hover:bg-teal-200 transition-colors',
-    secondary: 'hover:bg-coral-200 transition-colors',
-    neutral: 'hover:bg-gray-200 transition-colors',
-  } : {
-    primary: '',
-    secondary: '',
-    neutral: '',
-  }
+  const hoverStyles = props.href
+    ? {
+        primary: 'hover:bg-teal-200 transition-colors',
+        secondary: 'hover:bg-coral-200 transition-colors',
+        neutral: 'hover:bg-gray-200 transition-colors',
+      }
+    : {
+        primary: '',
+        secondary: '',
+        neutral: '',
+      }
 
   const shapeStyles = {
     square: '',

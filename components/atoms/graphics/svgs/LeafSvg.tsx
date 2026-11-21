@@ -9,10 +9,10 @@ export interface LeafSvgProps extends ComponentProps<'svg'> {}
 export function LeafSvg({ className = 'w-[29px] h-8', ...props }: LeafSvgProps) {
   return (
     <svg
+      aria-hidden="true"
+      className={className}
       viewBox="0 0 28.94 31.84"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
       {...props}
     >
       <path

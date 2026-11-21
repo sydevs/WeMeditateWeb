@@ -14,6 +14,7 @@ export default {
 export const Default: Story = () => {
   // Mock error for demonstration
   const mockError = new Error('Cannot read property "data" of undefined')
+  // eslint-disable-next-line no-console -- shows the story's viewer that the reset fired
   const mockResetError = () => console.log('Error boundary reset')
 
   return (

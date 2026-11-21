@@ -24,6 +24,7 @@ function stubDocument(
     getElementById: (id) => {
       if (id === ROUTE_ANNOUNCER_ID) return withAnnouncer ? announcer : null
       if (id === MAIN_CONTENT_ID) return withMain ? main : null
+
       return null
     },
   }
@@ -67,10 +68,14 @@ describe('announceRouteChange', () => {
     // the failure mode if one ever drifts is a silent null, never a
     // crash that takes the navigation down with it.
     const noAnnouncer = stubDocument('X', { withAnnouncer: false })
-    expect(() => announceRouteChange(noAnnouncer.doc, { isBackwardNavigation: false })).not.toThrow()
+
+    expect(() =>
+      announceRouteChange(noAnnouncer.doc, { isBackwardNavigation: false }),
+    ).not.toThrow()
     expect(noAnnouncer.main.focus).toHaveBeenCalledOnce()
 
     const noMain = stubDocument('X', { withMain: false })
+
     expect(() => announceRouteChange(noMain.doc, { isBackwardNavigation: false })).not.toThrow()
     expect(noMain.announcer.textContent).toBe('X')
   })
