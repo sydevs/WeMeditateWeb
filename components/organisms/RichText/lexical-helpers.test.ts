@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cardHeadingLevel, cardRun, headingTag, pageCard } from './lexical-helpers'
+import { cardPlacement, headingTag, pageCard } from './lexical-helpers'
 
 const IMAGE = {
   id: 1,
@@ -41,27 +41,69 @@ describe('pageCard', () => {
   })
 })
 
-describe('cardRun', () => {
+describe('cardPlacement', () => {
+  const heading = (tag: string) => ({ type: 'heading', tag, children: [] })
+  const words = { type: 'paragraph', children: [{ type: 'text', text: 'Between' }] }
+  const breakOnly = { type: 'paragraph', children: [{ type: 'linebreak' }] }
+
   it('places a card within the cards on either side of it', () => {
     const siblings = [para, card, card, card, para]
 
-    expect(cardRun(siblings, 1)).toEqual({ position: 1, length: 3 })
-    expect(cardRun(siblings, 3)).toEqual({ position: 3, length: 3 })
+    expect(cardPlacement(siblings, 1)).toMatchObject({ position: 1, numbered: true })
+    expect(cardPlacement(siblings, 3)).toMatchObject({ position: 3, numbered: true })
   })
 
   it('starts a new run after anything that is not a card', () => {
-    const words = { type: 'paragraph', children: [{ type: 'text', text: 'Between' }] }
     const siblings = [card, card, words, card]
 
-    expect(cardRun(siblings, 1)).toEqual({ position: 2, length: 2 })
-    expect(cardRun(siblings, 3)).toEqual({ position: 1, length: 1 })
+    expect(cardPlacement(siblings, 1)).toMatchObject({ position: 2, numbered: true })
+    expect(cardPlacement(siblings, 3)).toMatchObject({ position: 1, numbered: false })
+  })
+
+  it('leaves a lone card unnumbered', () => {
+    expect(cardPlacement([para, card, para], 1)).toMatchObject({ position: 1, numbered: false })
   })
 
   it('runs on across a blank paragraph between two cards', () => {
-    const breakOnly = { type: 'paragraph', children: [{ type: 'linebreak' }] }
+    expect(cardPlacement([card, para, card], 2)).toMatchObject({ position: 2, numbered: true })
+    expect(cardPlacement([card, breakOnly, card, para], 0)).toMatchObject({
+      position: 1,
+      numbered: true,
+    })
+  })
 
-    expect(cardRun([card, para, card], 2)).toEqual({ position: 2, length: 2 })
-    expect(cardRun([card, breakOnly, card, para], 0)).toEqual({ position: 1, length: 2 })
+  it('is h2 with no heading before the card', () => {
+    expect(cardPlacement([para, card], 1).headingLevel).toBe('h2')
+  })
+
+  it('is one below the nearest heading before the card', () => {
+    expect(cardPlacement([heading('h3'), heading('h2'), para, card], 3).headingLevel).toBe('h3')
+    expect(cardPlacement([heading('h2'), heading('h3'), card], 2).headingLevel).toBe('h4')
+  })
+
+  it('ignores a heading after the card, and reads an h1 node as the h2 it renders as', () => {
+    expect(cardPlacement([card, heading('h2')], 0).headingLevel).toBe('h2')
+    expect(cardPlacement([heading('h1'), card], 1).headingLevel).toBe('h3')
+  })
+
+  it('stops at h6', () => {
+    expect(cardPlacement([heading('h6'), card], 1).headingLevel).toBe('h6')
+  })
+
+  it('finds the heading past the sibling that ended the run', () => {
+    expect(cardPlacement([heading('h3'), words, card], 2)).toMatchObject({
+      position: 1,
+      numbered: false,
+      headingLevel: 'h4',
+    })
+  })
+
+  it('reads a heading inside the cards as both the run end and the level', () => {
+    expect(cardPlacement([card, heading('h4'), card], 2)).toMatchObject({
+      position: 1,
+      numbered: false,
+      headingLevel: 'h5',
+    })
   })
 })
 
@@ -78,27 +120,5 @@ describe('headingTag', () => {
     expect(headingTag({ type: 'heading' })).toBe('h2')
     expect(headingTag({ type: 'heading', tag: 3 })).toBe('h2')
     expect(headingTag(null)).toBe('h2')
-  })
-})
-
-describe('cardHeadingLevel', () => {
-  const heading = (tag: string) => ({ type: 'heading', tag, children: [] })
-
-  it('is h2 with no heading before the card', () => {
-    expect(cardHeadingLevel([para, card], 1)).toBe('h2')
-  })
-
-  it('is one below the nearest heading before the card', () => {
-    expect(cardHeadingLevel([heading('h3'), heading('h2'), para, card], 3)).toBe('h3')
-    expect(cardHeadingLevel([heading('h2'), heading('h3'), card], 2)).toBe('h4')
-  })
-
-  it('ignores a heading after the card, and reads an h1 node as the h2 it renders as', () => {
-    expect(cardHeadingLevel([card, heading('h2')], 0)).toBe('h2')
-    expect(cardHeadingLevel([heading('h1'), card], 1)).toBe('h3')
-  })
-
-  it('stops at h6', () => {
-    expect(cardHeadingLevel([heading('h6'), card], 1)).toBe('h6')
   })
 })

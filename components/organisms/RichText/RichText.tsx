@@ -22,8 +22,7 @@ import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import { slugify } from '../../../lib/slugify'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
 import {
-  cardHeadingLevel,
-  cardRun,
+  cardPlacement,
   getNodeText,
   headingTag,
   pageCard,
@@ -190,7 +189,7 @@ const CONVERTERS: JSXConverters = {
 
     if (card) {
       const siblings = (parent as { children?: unknown[] }).children ?? [node]
-      const { position, length } = cardRun(siblings, childIndex)
+      const { position, numbered, headingLevel } = cardPlacement(siblings, childIndex)
 
       return (
         <TechniqueCard
@@ -199,12 +198,12 @@ const CONVERTERS: JSXConverters = {
           // margin clears it.
           className="clear-both my-16 md:mt-40"
           description={card.description}
-          headingLevel={cardHeadingLevel(siblings, childIndex)}
+          headingLevel={headingLevel}
           href={card.href}
           imageAlt={card.image.alt}
           imageAspectRatio={nearestAspectRatio(card.image.width, card.image.height)}
           imageSrc={card.image.url}
-          number={length > 1 ? String(position).padStart(2, '0') : undefined}
+          number={numbered ? String(position).padStart(2, '0') : undefined}
           title={card.title}
         />
       )

@@ -108,49 +108,6 @@ export function pageCard(node: unknown): PageCard | null {
   }
 }
 
-interface CardRun {
-  position: number
-  length: number
-}
-
-/** A paragraph with no text, which Lexical routinely leaves beside a decorator node. */
-function isBlankParagraph(node: unknown): boolean {
-  return (
-    isPopulated<{ type?: unknown; children?: unknown }>(node) &&
-    node.type === 'paragraph' &&
-    !getNodeText(node.children).trim()
-  )
-}
-
-/**
- * Where the card at `index` sits among the cards on either side of it: its
- * 1-based `position` and the run's `length`. Any other sibling ends the run,
- * so a list separated by a paragraph numbers from one again — except a blank
- * paragraph, which draws no visible break between two cards.
- */
-export function cardRun(siblings: readonly unknown[], index: number): CardRun {
-  let position = 1
-  let length = 1
-
-  for (let i = index - 1; i >= 0; i--) {
-    if (pageCard(siblings[i])) {
-      position++
-      length++
-    } else if (!isBlankParagraph(siblings[i])) {
-      break
-    }
-  }
-  for (let i = index + 1; i < siblings.length; i++) {
-    if (pageCard(siblings[i])) {
-      length++
-    } else if (!isBlankParagraph(siblings[i])) {
-      break
-    }
-  }
-
-  return { position, length }
-}
-
 export type SubheadingLevel = 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 
 /**
@@ -164,24 +121,65 @@ export function headingTag(node: unknown): SubheadingLevel {
   return typeof tag === 'string' && /^h[2-6]$/.test(tag) ? (tag as SubheadingLevel) : 'h2'
 }
 
+/** Everything a card reads off the siblings around it. */
+interface CardPlacement {
+  /** 1-based place in its run of consecutive cards, which decides the side it draws on. */
+  position: number
+  /** Whether the run holds more than this card, so a sequence number means something. */
+  numbered: boolean
+  /** One level below the nearest heading before the card, `h2` under none. */
+  headingLevel: SubheadingLevel
+}
+
+/** A paragraph with no text, which Lexical routinely leaves beside a decorator node. */
+function isBlankParagraph(node: unknown): boolean {
+  return (
+    isPopulated<{ type?: unknown; children?: unknown }>(node) &&
+    node.type === 'paragraph' &&
+    !getNodeText(node.children).trim()
+  )
+}
+
 /**
- * The heading level for a card at `index`: one below the nearest heading
- * before it, `h2` when none does, so a card never skips a level under the
- * page's `h1`.
+ * Where the card at `index` sits among its siblings.
+ *
+ * Any sibling but a card ends the run, so a list broken by a paragraph numbers
+ * from one again and alternates from the left again — except a blank
+ * paragraph, which draws no visible break between two cards. The heading walk
+ * continues past the end of the run, because the heading a card sits under is
+ * not often the sibling next to it.
  */
-export function cardHeadingLevel(siblings: readonly unknown[], index: number): SubheadingLevel {
+export function cardPlacement(siblings: readonly unknown[], index: number): CardPlacement {
+  let position = 1
+  let numbered = false
+  let headingLevel: SubheadingLevel = 'h2'
+  let inRun = true
+
   for (let i = index - 1; i >= 0; i--) {
     const node = siblings[i]
 
-    if (!isPopulated<{ type?: unknown }>(node) || node.type !== 'heading') {
+    if (inRun && pageCard(node)) {
+      position++
+      numbered = true
       continue
     }
-    const level = Number(headingTag(node).slice(1))
-
-    return `h${Math.min(level + 1, 6)}` as SubheadingLevel
+    if (isPopulated<{ type?: unknown }>(node) && node.type === 'heading') {
+      headingLevel = `h${Math.min(Number(headingTag(node).slice(1)) + 1, 6)}` as SubheadingLevel
+      break
+    }
+    if (!isBlankParagraph(node)) {
+      inRun = false
+    }
+  }
+  for (let i = index + 1; !numbered && i < siblings.length; i++) {
+    if (pageCard(siblings[i])) {
+      numbered = true
+    } else if (!isBlankParagraph(siblings[i])) {
+      break
+    }
   }
 
-  return 'h2'
+  return { position, numbered, headingLevel }
 }
 
 /**
