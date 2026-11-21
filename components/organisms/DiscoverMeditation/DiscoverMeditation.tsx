@@ -18,12 +18,6 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
    */
   pages: readonly NavPage[]
 
-  /** Overrides `discover.general.title`. */
-  title?: string
-
-  /** Overrides `discover.general.subtitle`. */
-  subtitle?: string
-
   /** Current locale for link prefixing */
   locale?: Locale
 }
@@ -37,8 +31,6 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
  */
 export function DiscoverMeditation({
   pages,
-  title,
-  subtitle,
   locale,
   className = '',
   ...props
@@ -87,10 +79,10 @@ export function DiscoverMeditation({
             subtitle is normal-size text on the photo, where gray-700 measured 3.8:1. */}
         <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-normal mb-8">
-            {title ?? t('discover.general.title')}
+            {t('discover.general.title')}
           </h2>
           <p className="text-xl md:text-2xl font-light max-w-lg mx-auto">
-            {subtitle ?? t('discover.general.subtitle')}
+            {t('discover.general.subtitle')}
           </p>
         </div>
 

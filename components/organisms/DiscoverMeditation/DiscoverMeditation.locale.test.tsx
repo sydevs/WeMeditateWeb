@@ -101,20 +101,4 @@ describe('DiscoverMeditation in a non-English locale', () => {
       expect(rendered).not.toContain(french)
     }
   })
-
-  it('still lets a caller override the heading and subtitle', () => {
-    const rendered = text(
-      renderToStaticMarkup(
-        <DiscoverMeditation
-          pages={PAGES}
-          subtitle="Essayez par vous-même"
-          title="Un autre titre"
-        />,
-      ),
-    )
-
-    expect(rendered).toContain('Un autre titre')
-    expect(rendered).toContain('Essayez par vous-même')
-    expect(rendered).not.toContain('Découvrez-le par vous-même !')
-  })
 })
