@@ -9,7 +9,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import type { Plugin } from 'vite'
-import { crawlerRefusal, readRefusalFile, REFUSAL_FILES } from '../../.ladle/crawler-refusal'
+import { crawlerRefusal, readRefusalFile, REFUSAL_FILES } from '@/.ladle/crawler-refusal'
 
 /** `_headers` without its comments — the only notion of a line this file uses. */
 function contentLines(file: string): string[] {

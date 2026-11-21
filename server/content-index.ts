@@ -16,9 +16,9 @@
  */
 
 import * as Sentry from '@sentry/cloudflare'
-import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud-fetch'
-import type { Audience } from './payload-types'
-import type { Locale } from './sahajcloud-types'
+import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud/fetch'
+import type { Audience } from '@/types/payload/payload-types'
+import type { Locale } from '@/types/sahajcloud'
 import {
   contentIndexBlocks,
   contentIndexCard,
@@ -27,10 +27,10 @@ import {
   type ContentIndexBlockFields,
   type ResolvedCardItem,
   type PageTagLabels,
-} from '../lib/content-blocks'
-import { audienceIdList } from './sahajcloud-client'
+} from '@/lib/content/blocks'
+import { audienceIdList } from './sahajcloud/client'
 // Type-only import (erased at build): the songs index resolves to MusicLibrary tracks.
-import type { Track } from '../components/molecules/AudioPlayer/types'
+import type { Track } from '@/lib/media/audio'
 
 /**
  * Per-type query fragments, appended to the SahajCloud-computed endpoint:
@@ -91,7 +91,7 @@ interface ResolveOptions {
   audiences?: (number | Audience)[]
   /**
    * Visible labels for the page-tag facets, from SahajCloud
-   * (`article.general.tag_*`). `lib/content-blocks.ts` stays free of the
+   * (`article.general.tag_*`). `lib/content/blocks.ts` stays free of the
    * translations layer: it takes the resolved map, not the accessor.
    */
   pageTagLabels?: PageTagLabels

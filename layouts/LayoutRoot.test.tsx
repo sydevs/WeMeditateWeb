@@ -15,12 +15,12 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 
-import { ROUTE_ANNOUNCER_ID } from '../lib/route-announcer'
+import { ROUTE_ANNOUNCER_ID } from '@/lib/a11y/route-announcer'
 
 vi.mock('@sentry/react', () => ({
   ErrorBoundary: ({ children }: { children: ReactNode }) => children,
 }))
-vi.mock('../components/molecules', () => ({ ErrorFallback: () => null }))
+vi.mock('@/components/molecules', () => ({ ErrorFallback: () => null }))
 
 const { default: LayoutRoot } = await import('./LayoutRoot')
 

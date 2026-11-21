@@ -8,10 +8,10 @@
  */
 import { expect } from 'vitest'
 import { JSDOM } from 'jsdom'
-import { DEFAULT_LOCALE, type Locale } from '../../../server/sahajcloud-types'
-import { ErrorType } from '../../../server/error-utils'
-import { errorTitleKey } from '../../../lib/error-keys'
-import { enT } from '../../../lib/i18n'
+import { DEFAULT_LOCALE, type Locale } from '@/types/sahajcloud'
+import { ErrorType } from '@/server/error-utils'
+import { errorTitleKey } from '@/lib/errors/error-keys'
+import { enT } from '@/lib/i18n/i18n'
 
 /** Resolved base URL of the preview (or fallback) to smoke-test against. */
 export function getBaseUrl(): string {

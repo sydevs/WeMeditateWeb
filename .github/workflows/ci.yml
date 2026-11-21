@@ -48,7 +48,7 @@ jobs:
         if: github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository
         uses: sydevs/claude-workflow/.github/actions/contract-check@main
         with:
-          paths: lib/translations.en.json
+          paths: lib/i18n/translations.en.json
           command: pnpm sync:translations
         env:
           PUBLIC__SAHAJCLOUD_URL: https://cloud.sydevelopers.com

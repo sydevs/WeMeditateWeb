@@ -33,7 +33,7 @@ export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
  * it and its CORS allowlist names it, and neither cares what the value means.
  *
  * Two senders spell it, which is why it is here rather than in either of them:
- * `server/payload-client.ts` attaches it to every SahajCloud read, and the browser
+ * `server/sahajcloud/payload-client.ts` attaches it to every SahajCloud read, and the browser
  * attaches it to {@link LIVE_PREVIEW_POPULATE_PATH}.
  */
 export const LIVE_PREVIEW_TOKEN_HEADER = 'x-sahajcloud-preview-secret'

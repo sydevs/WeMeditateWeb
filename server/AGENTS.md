@@ -1,4 +1,4 @@
-# SahajCloud API-client reads (`server/sahajcloud-client.ts`)
+# SahajCloud API-client reads (`server/sahajcloud/client.ts`)
 
 The SahajCloud (PayloadCMS) API validates every API-client read. Follow these rules.
 
@@ -26,14 +26,14 @@ Every contact and subscribe form posts to `POST /api/submissions`
 
 `submissionData` is the flat `[{ field, value }]` remainder, and SahajCloud accepts only the keys
 it allows for the submission's type and form. An invented key comes back as a 400 naming it, and so
-does a repeated one. `lib/submissions.ts` owns that body; nothing else composes one.
+does a repeated one. `lib/forms/submissions.ts` owns that body; nothing else composes one.
 
 Two things about `form` and the visitor's IP that only show in production:
 
 - **`form` is a number.** SahajCloud resolves a quoted id to no form. It is accepted and then
   leaves the intake unable to load the form, which empties the authored-field allow-list — so
   every field the editor named is refused as unknown, while the base context set that
-  `lib/submissions.ts` names still passes. `submissionSchema` refuses a string at the edge so this
+  `lib/forms/submissions.ts` names still passes. `submissionSchema` refuses a string at the edge so this
   cannot ship again.
 - ⚠ **The proxy names the visitor, because SahajCloud cannot see them.** SahajCloud reads
   `cf-connecting-ip` off its own request for Turnstile's `remoteip`, and a proxied submission
@@ -57,18 +57,18 @@ Two things about `form` and the visitor's IP that only show in production:
   content and dead links.
 - **`locale`** is required for localized content. `title` is localized, and without a locale it
   may not resolve. **`slug` is not localized upstream**, which is why one path serves every locale
-  and carries the whole `hreflang` cluster (`lib/hreflang.ts`), and why the sitemap's
+  and carries the whole `hreflang` cluster (`lib/seo/hreflang.ts`), and why the sitemap's
   `locale: 'all'` read gets a plain string back. Pass `locale` from the caller
   (`pageContext.locale`). See `getWebConfig({ locale })` and its callers under
   `pages/**/+data.ts`.
 - Type the `select`/`populate` constants against the generated `*Select` interfaces
   (`PagesSelect`, `WmWebConfigSelect`, …), so a schema change becomes a compile error, not a
   runtime 400. See `PAGE_SELECT`, `WEB_CONFIG_SELECT`, and `WEB_CONFIG_POPULATE` in
-  `server/sahajcloud-client.ts`.
+  `server/sahajcloud/client.ts`.
 - ⚠ **Return the shape the `select` asked for, never the generated document.** A read narrowed
   to four fields that hands back a `Page` lets every consumer typecheck `page.content` and read
   `undefined` at runtime. Pair the narrow type with a select type derived from it, so neither can
-  drift — the pairs in [sahajcloud-types.ts](sahajcloud-types.ts) are the pattern.
+  drift — the pairs in [sahajcloud-types.ts](../types/sahajcloud.ts) are the pattern.
 
 ## Treat a bare id as unpublished — degrade, do not break
 
@@ -76,7 +76,7 @@ A published page populates into an object. The API returns an unpublished or tra
 bare numeric id instead. Rendering that id as a link produces a dead `/undefined`.
 
 - Filter relationship arrays down to populated objects with a non-empty slug, before you build
-  any links. See `partitionPublishedPages` in `server/sahajcloud-client.ts`.
+  any links. See `partitionPublishedPages` in `server/sahajcloud/client.ts`.
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
   dropped. This keeps the SahajCloud data gap visible. Do not hide it silently, and do not throw
   a 500.
@@ -88,7 +88,7 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
   memo, and one source's churn must never re-arm another's. Lower the volume, never the level: a
   warning nobody can afford to leave on gets turned off, and then the gap is invisible again.
 - ⚠ **What Sentry may collect is declared in
-  [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
+  [../lib/sentry/data-collection.ts](../lib/sentry/data-collection.ts); what reaches an event
   anyway is scrubbed in `entry.ts`, not where it is captured.** `scrubCredentials` there is the
   backstop, run from `beforeSend` **and** `beforeSendTransaction` — a transaction is not an error
   event, and `SENTRY_TRACES_SAMPLE_RATE` in the Worker env can enable tracing with no code change.
@@ -102,7 +102,7 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 `GET /api/atlas/seo`, `GET /api/atlas/sitemap`, the `related-*` endpoints, and a content-index
 block's computed endpoint belong to no collection, so the Payload SDK cannot express them. Every
-one reads through `sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which sends
+one reads through `sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud/fetch.ts)), which sends
 the API key, logs the request the debugging workflow reads, and dumps SahajCloud's error body on a
 non-OK response. Hand it a path, never a URL — it refuses anything that is not site-relative, so a
 computed endpoint cannot move the request off the SahajCloud origin — and type the body yourself.
@@ -124,8 +124,8 @@ Three rules still apply:
 - **Degrade on failure, through `degrade`** ([error-utils.ts](error-utils.ts)): render without
   the data, and report the failure once per key per isolate. Key it on a small set (an id, an
   origin), never on the visitor's URL: `getAtlasSeo` passes no key, so a site-wide 403 is one
-  event, not one per crawled route. See `getAtlasSeo` in `server/atlas-client.ts`.
-  ⚠ Nothing in this repo caches a read. [CACHING.md](./CACHING.md) says what does.
+  event, not one per crawled route. See `getAtlasSeo` in `server/sahajcloud/atlas.ts`.
+  ⚠ Nothing in this repo caches a read. [CACHING.md](CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
   `fetchContentIndexDocs` is the one read still missing it (#128).
 - **Never branch on a status. Pick the reader that matches the read.** This is the rule for
@@ -146,7 +146,7 @@ Three rules still apply:
   [local-environment](../docs/local-environment.md).
 
 A read whose *response type* is hand-mirrored from SahajCloud (for example
-`server/atlas-types.ts`, mirroring its `responseTypes.ts`) is not covered by `pnpm types:cms`,
+`types/atlas.ts`, mirroring its `responseTypes.ts`) is not covered by `pnpm types:cms`,
 which generates only the collection, global and block schema. Render these fields defensively:
 a missing field should degrade, not throw.
 
@@ -159,8 +159,8 @@ maps.
 
 Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
 `pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
-`?locale=all&select[_status]=true` answers that in a single query. `lib/hreflang.ts` turns the map
-into a locale list, and `getPageLocaleStatus` in `server/sahajcloud-client.ts` is the only
+`?locale=all&select[_status]=true` answers that in a single query. `lib/seo/hreflang.ts` turns the map
+into a locale list, and `getPageLocaleStatus` in `server/sahajcloud/client.ts` is the only
 single-document read that sends `all`.
 
 Three things follow, all load-bearing:

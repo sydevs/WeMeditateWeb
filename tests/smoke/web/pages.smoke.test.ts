@@ -25,8 +25,8 @@ import {
   linkAttrs,
   renderedHtml,
   NOT_FOUND_MARKER,
-} from '../_helpers/preview'
-import { localeDirection } from '../../../server/sahajcloud-types'
+} from '@/tests/smoke/_helpers/preview'
+import { localeDirection } from '@/types/sahajcloud'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {

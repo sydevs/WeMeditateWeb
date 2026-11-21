@@ -4,7 +4,7 @@
  */
 
 import * as Sentry from '@sentry/cloudflare'
-import { readStatus } from '../../error-utils'
+import { readStatus } from '@/server/error-utils'
 
 /**
  * The status SahajCloud answered with, and the refusal code it named.

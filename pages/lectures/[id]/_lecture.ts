@@ -1,9 +1,9 @@
 import type { PageContextServer } from 'vike/types'
 import { render } from 'vike/abort'
-import type { Lecture, Locale } from '../../../server/sahajcloud-types'
-import { getLecture } from '../../../server/sahajcloud-client'
-import { idSchema } from '../../../server/validation'
-import { loadLivePreview, previewArgs } from '../../../server/live-preview'
+import type { Lecture, Locale } from '@/types/sahajcloud'
+import { getLecture } from '@/server/sahajcloud/client'
+import { idSchema } from '@/server/validation'
+import { loadLivePreview, previewArgs } from '@/server/live-preview'
 
 export interface LectureData {
   /**

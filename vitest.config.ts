@@ -1,6 +1,11 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  // `@/` is the repo root, as in vite.config.ts.
+  resolve: {
+    alias: [{ find: /^@\//, replacement: fileURLToPath(new URL('./', import.meta.url)) }],
+  },
   test: {
     globals: true,
     environment: 'node',

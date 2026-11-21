@@ -1,8 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Splash } from './Splash'
-import { Header } from '../Header'
-import { Countdown, Button, Input } from '../../atoms'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { Header } from '@/components/organisms/Header'
+import { Countdown, Button, Input } from '@/components/atoms'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Organisms',

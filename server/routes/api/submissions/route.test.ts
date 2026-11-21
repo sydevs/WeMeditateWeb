@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../../../../lib/submissions'
-import type { SahajCloudEnv } from '../../../sahajcloud-context'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '@/lib/forms/submissions'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
 import { SUBMISSION_BODY_LIMIT, submissionSchema } from './schema'
-import { sdkError, submitRequest } from '../_testing'
+import { sdkError, submitRequest } from '@/server/routes/api/_testing'
 
 /**
  * ⚠ `/api/submissions` attaches `SAHAJCLOUD_API_KEY` on our side, so what it
@@ -17,14 +17,14 @@ import { sdkError, submitRequest } from '../_testing'
 
 const { request } = vi.hoisted(() => ({ request: vi.fn() }))
 
-vi.mock('../../../sahajcloud-context', () => ({
+vi.mock('@/server/sahajcloud/context', () => ({
   getSahajCloudContext: () => ({
     apiKey: 'test-key',
     baseURL: 'https://sahajcloud.test',
   }),
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
-vi.mock('../../../payload-client', () => ({ createPayloadClient: () => ({ request }) }))
+vi.mock('@/server/sahajcloud/payload-client', () => ({ createPayloadClient: () => ({ request }) }))
 
 const { registerSubmissions } = await import('./route')
 
@@ -62,7 +62,7 @@ describe('POST /api/submissions — the forward', () => {
   it('refuses a quoted form id, which the intake cannot resolve', async () => {
     // SahajCloud reads the relationship with `relationId()`, which answers
     // `null` for a string — so a quoted id would be accepted and then silently
-    // refuse every authored field. See `SubmissionBody` in lib/submissions.ts.
+    // refuse every authored field. See `SubmissionBody` in lib/forms/submissions.ts.
     const response = await submit({
       body: { form: '12', type: 'contact', submissionData: [] },
       token: 'turnstile-token',

@@ -37,7 +37,7 @@ description: When a code comment earns its place, and which comments must never 
 
 ## Carve-outs for this repo
 
-- **Sync pointers to SahajCloud's API shape are load-bearing.** `server/sahajcloud-client.ts`
+- **Sync pointers to SahajCloud's API shape are load-bearing.** `server/sahajcloud/client.ts`
   explains that a read without `select` returns `url: null` on an upload, and that the SahajCloud
   query-validation hook 400s without it. Delete that and the file's whole structure becomes
   inexplicable.

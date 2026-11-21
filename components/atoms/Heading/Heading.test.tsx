@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { openTag } from '../../../tests/_helpers/markup'
+import { openTag } from '@/tests/_helpers/markup'
 import { Heading } from './Heading'
 
 describe('Heading', () => {

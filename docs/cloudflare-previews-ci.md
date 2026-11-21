@@ -80,7 +80,7 @@ carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/Sah
 
   ⚠ On 2026-11-19 both Cloudflare triggers still included `server/cms-types*`, the name that file
   lost in #131, in place of `server/sahajcloud-types*`. They are edited in the Cloudflare
-  dashboard, not in this repo. Until they are, a push touching only `server/sahajcloud-types.ts`
+  dashboard, not in this repo. Until they are, a push touching only `types/sahajcloud.ts`
   passes `WATCH` but gets no Ladle build. `Smoke (ladle)` then waits out its 12-minute window and
   tests the derived branch host, which serves the branch's previous Ladle build, without the
   change, so the lane is green without having tested it. On a branch with no earlier Ladle build
@@ -164,12 +164,12 @@ equivalent.
 
 They ship from `.ladle/static/` rather than `public/`, which the app's build copies too: a
 `Disallow: /` there would answer on wemeditate.com. The app builds its own per-host refusal in
-[server/sitemap.ts](../server/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
+[server/routes/sitemap.xml/sitemap.ts](../server/routes/sitemap.xml/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
 named as hosts that must never be indexed.
 
 **The app does carry a `<meta robots>`, and that is not a contradiction.** Every content route
 reads the same `isCanonicalOrigin` and says `noindex` off the real site
-([lib/content-seo.ts](../lib/content-seo.ts)), because a crawler can reach a preview URL without
+([lib/seo/content-seo.ts](../lib/seo/content-seo.ts)), because a crawler can reach a preview URL without
 ever fetching `robots.txt` — from a pasted link, or a referrer log. The playground has no such
 per-page head to put one in, which is what the line above is about.
 
@@ -210,5 +210,5 @@ Each fact below matches the deployed Worker's real behavior.
 - `/index` is the router's own spelling of the home page, never a URL. A request for it
   redirects (301) to `/`, and `/<locale>/index` to `/<locale>`.
 - An unknown path returns 404 and renders the ErrorFallback title "Content Not Found" — not "Page
-  Not Found". The spec reads that title from `lib/translations.en.json` rather than duplicating it,
+  Not Found". The spec reads that title from `lib/i18n/translations.en.json` rather than duplicating it,
   so rewording it in SahajCloud cannot leave the markers matching nothing.

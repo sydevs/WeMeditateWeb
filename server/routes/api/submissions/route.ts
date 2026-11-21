@@ -27,16 +27,16 @@
 
 import type { Context, Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
-import type { SahajCloudEnv } from '../../../sahajcloud-context'
-import { createPayloadClient } from '../../../payload-client'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
+import { createPayloadClient } from '@/server/sahajcloud/payload-client'
 import { SUBMISSION_BODY_LIMIT, submissionSchema } from './schema'
 import {
   CLIENT_IP_HEADER,
   SUBMISSION_PATH,
   TURNSTILE_TOKEN_HEADER,
   type SubmissionResult,
-} from '../../../../lib/submissions'
-import { reportProxyFailure, upstreamRefusal } from '../_proxy-failure'
+} from '@/lib/forms/submissions'
+import { reportProxyFailure, upstreamRefusal } from '@/server/routes/api/_proxy-failure'
 
 /**
  * A refused submission, as one code and one status the browser may see.

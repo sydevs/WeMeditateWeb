@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 
-import type { SahajCloudEnv } from '../../server/sahajcloud-context'
-import { registerApiRoutes } from '../../server/routes/api'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
+import { registerApiRoutes } from '@/server/routes/api'
 
 /**
  * The folder is the route list: each route lives in the `route.ts` of the

@@ -235,7 +235,7 @@ describe('<Link> scheme gate', () => {
   })
 
   // These two rendered an href before this gate existed, so the component
-  // pins them even though `lib/urls.test.ts` owns the allowlist itself.
+  // pins them even though `lib/urls/urls.test.ts` owns the allowlist itself.
   it('renders no href for a protocol-relative URL or an unset one', () => {
     for (const href of ['//cdn.example.com/x', '']) {
       expect(renderToStaticMarkup(<Link href={href}>x</Link>), href).not.toContain('href')
@@ -256,7 +256,7 @@ describe('<Link> scheme gate', () => {
 
 describe('<Link> new-tab announcement', () => {
   // The string comes from SahajCloud. These render with no `pageContext`, so
-  // `useT` falls back to `lib/translations.en.json`, the committed mirror.
+  // `useT` falls back to `lib/i18n/translations.en.json`, the committed mirror.
   it('names the new tab in screen-reader-only text after the link words', () => {
     const html = renderToStaticMarkup(
       <Link external href="https://example.com">

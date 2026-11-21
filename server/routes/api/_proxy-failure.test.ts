@@ -2,21 +2,21 @@ import * as Sentry from '@sentry/cloudflare'
 import { Hono } from 'hono'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { SahajCloudEnv } from '../../sahajcloud-context'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
 import { NOW, populateRequest, previewTokenMinter, sdkError, submitRequest } from './_testing'
 
 /** What reaches Sentry from both proxies, driven through their routes. */
 
 const { request } = vi.hoisted(() => ({ request: vi.fn() }))
 
-vi.mock('../../sahajcloud-context', () => ({
+vi.mock('@/server/sahajcloud/context', () => ({
   getSahajCloudContext: () => ({
     apiKey: 'test-key',
     baseURL: 'https://sahajcloud.test',
   }),
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
-vi.mock('../../payload-client', () => ({ createPayloadClient: () => ({ request }) }))
+vi.mock('@/server/sahajcloud/payload-client', () => ({ createPayloadClient: () => ({ request }) }))
 
 const { registerLivePreviewPopulate } = await import('./live-preview/populate/route')
 const { registerSubmissions } = await import('./submissions/route')

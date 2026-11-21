@@ -1,4 +1,4 @@
-import { matchMapRoute } from '../../lib/atlas-route'
+import { matchMapRoute } from '@/lib/atlas/route'
 
 /**
  * `/map`, `/map/:region-path`, and `/map/:region-path/:eventId` — every

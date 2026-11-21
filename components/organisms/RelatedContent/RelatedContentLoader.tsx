@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
-import type { ResolvedCardItem } from '../../../lib/content-blocks'
-import type { Locale } from '../../../server/sahajcloud-types'
-import { Spinner } from '../../atoms/Spinner/Spinner'
+import type { ResolvedCardItem } from '@/lib/content/blocks'
+import type { Locale } from '@/types/sahajcloud'
+import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { RelatedContent } from './RelatedContent'
-import { useT } from '../../../hooks/useT'
-import type { TranslationKey } from '../../../lib/i18n'
+import { useT } from '@/hooks/useT'
+import type { TranslationKey } from '@/lib/i18n/i18n'
 
 /**
  * Which same-origin JSON route to load (see server/routes/api/):

@@ -2,13 +2,13 @@ import { apply, serve } from '@photonjs/hono'
 import { withSentry, type Event } from '@sentry/cloudflare'
 import { Hono } from 'hono'
 import { contextStorage } from 'hono/context-storage'
-import type { SahajCloudEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud/context'
 import { registerApiRoutes } from './routes/api'
-import { registerOEmbedRoutes } from './oembed-routes'
-import { registerSitemapRoutes } from './sitemap-routes'
-import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
-import { stripLivePreviewToken } from '../lib/live-preview/token-url'
-import { sentryDataCollection } from '../lib/sentry-data-collection'
+import { registerOEmbedRoutes } from './routes/oembed/route'
+import { registerSitemapRoutes } from './routes/sitemap.xml/route'
+import { LIVE_PREVIEW_PARAM } from '@/lib/live-preview/protocol'
+import { stripLivePreviewToken } from '@/lib/live-preview/token-url'
+import { sentryDataCollection } from '@/lib/sentry/data-collection'
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
 
@@ -48,7 +48,7 @@ function scrubCredentials<E extends Event>(event: E): E {
   request.url &&= stripLivePreviewToken(request.url)
   delete request.query_string
 
-  // ⚠ A backstop. `httpBodies: []` (lib/sentry-data-collection.ts) is what
+  // ⚠ A backstop. `httpBodies: []` (lib/sentry/data-collection.ts) is what
   // keeps the inbound body off the event: `httpServerIntegration` ships with no
   // `maxRequestBodySize`, so that option alone decides whether the body is
   // buffered, and an empty list means it never is. This line is what holds if

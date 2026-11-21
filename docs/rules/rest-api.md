@@ -1,19 +1,19 @@
 ---
 paths:
-  - "server/sahajcloud-client.ts"
-  - "server/sahajcloud-types.ts"
-  - "server/payload-client.ts"
-  - "server/atlas-client.ts"
+  - "server/sahajcloud/client.ts"
+  - "types/sahajcloud.ts"
+  - "server/sahajcloud/payload-client.ts"
+  - "server/sahajcloud/atlas.ts"
 ---
 
 # Working with the REST API
 
 ## Add a new query function
 
-1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts).
-2. Add app-specific types to [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts) if
+1. Define or import TypeScript types from [types/payload/payload-types.ts](../../types/payload/payload-types.ts).
+2. Add app-specific types to [types/sahajcloud.ts](../../types/sahajcloud.ts) if
    needed.
-3. Add the query function to [server/sahajcloud-client.ts](../../server/sahajcloud-client.ts):
+3. Add the query function to [server/sahajcloud/client.ts](../../server/sahajcloud/client.ts):
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
      return withRetryUnlessPreview(
@@ -78,7 +78,7 @@ A global still needs a typed `select`, like a collection read. `findGlobal` take
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
-`WEB_TRANSLATIONS_SELECT` lives in [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts),
+`WEB_TRANSLATIONS_SELECT` lives in [types/sahajcloud.ts](../../types/sahajcloud.ts),
 beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
 and typed. Listing the groups anywhere else lets the query and the type disagree.
 
@@ -86,7 +86,7 @@ and typed. Listing the groups anywhere else lets the query and the type disagree
 which is the whole reason `tsx` is a devDependency. The client gate 400s a global read carrying no
 `select`, and takes bracketed keys only, so the script names each group from it. Adding a group
 reaches all three — the query, the type, and the snapshot — so the three cannot drift. Keep it that
-way: `lib/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships to the
+way: `lib/i18n/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships to the
 browser, and a group outside the select would be bytes no `useT()` call could address.
 
 ## Translations are SahajCloud-owned
@@ -112,7 +112,7 @@ It downloads the latest `payload-types.ts` from SahajCloud.
 
 Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
 factory adds this header for you, and
-[server/sahajcloud-fetch.ts](../../server/sahajcloud-fetch.ts) adds it to every read of a custom
+[server/sahajcloud/fetch.ts](../../server/sahajcloud/fetch.ts) adds it to every read of a custom
 root endpoint. Nothing else composes that header.
 
 ## A public write is a proxy, not a query function

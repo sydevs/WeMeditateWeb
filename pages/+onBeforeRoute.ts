@@ -1,8 +1,8 @@
 import { redirect } from 'vike/abort'
 import { modifyUrl } from 'vike/modifyUrl'
 import { PageContext } from 'vike/types'
-import { DEFAULT_LOCALE } from '../server/sahajcloud-types'
-import { localeFromPath, localePath, normalizeContentPath } from '../lib/urls'
+import { DEFAULT_LOCALE } from '@/types/sahajcloud'
+import { localeFromPath, localePath, normalizeContentPath } from '@/lib/urls/urls'
 
 export function onBeforeRoute(pageContext: PageContext) {
   const { href, pathname } = pageContext.urlParsed

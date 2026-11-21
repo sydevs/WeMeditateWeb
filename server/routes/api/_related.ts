@@ -1,6 +1,6 @@
 /** The answer the two `related-*` routes share. */
 
-import { JSON_CACHE_CONTROL } from '../../cache-headers'
+import { JSON_CACHE_CONTROL } from '@/server/cache-headers'
 
 /**
  * A related section's answer. `null` is a read that failed: it answers an

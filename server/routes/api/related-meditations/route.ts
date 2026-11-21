@@ -13,12 +13,12 @@
  */
 
 import type { Hono } from 'hono'
-import type { SahajCloudEnv } from '../../../sahajcloud-context'
-import { getRelatedMeditations } from '../../../sahajcloud-client'
-import { idSchema } from '../../../validation'
-import { parseLocale } from '../../../sahajcloud-types'
-import { relatedMeditationsToCards } from '../../../../lib/related-content'
-import { relatedAnswer } from '../_related'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
+import { getRelatedMeditations } from '@/server/sahajcloud/client'
+import { idSchema } from '@/server/validation'
+import { parseLocale } from '@/types/sahajcloud'
+import { relatedMeditationsToCards } from '@/lib/content/related-content'
+import { relatedAnswer } from '@/server/routes/api/_related'
 
 export function registerRelatedMeditations(app: Hono<SahajCloudEnv>): void {
   app.get('/api/related-meditations/:lectureId', async (c) => {

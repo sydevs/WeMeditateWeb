@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import type { Locale } from '../../../../server/sahajcloud-types'
-import { localeEndonym } from '../../../../lib/locale-names'
+import type { Locale } from '@/types/sahajcloud'
+import { localeEndonym } from '@/lib/i18n/locale-names'
 
 export interface LanguageFlagProps extends ComponentProps<'span'> {
   /** Locale code, exactly as SahajCloud stores it (`en`, `pt-BR`, `en-AU`). */

@@ -8,12 +8,9 @@ import type { Hono } from 'hono'
 import { SignJWT } from 'jose'
 import type { Mock } from 'vitest'
 
-import {
-  LIVE_PREVIEW_POPULATE_PATH,
-  LIVE_PREVIEW_TOKEN_HEADER,
-} from '../../../lib/live-preview/protocol'
-import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../../../lib/submissions'
-import type { SahajCloudEnv } from '../../sahajcloud-context'
+import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '@/lib/live-preview/protocol'
+import { SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '@/lib/forms/submissions'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
 
 type App = Hono<SahajCloudEnv>
 

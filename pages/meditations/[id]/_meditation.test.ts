@@ -4,25 +4,25 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { PageContextServer } from 'vike/types'
-import type { Meditation } from '../../../server/sahajcloud-types'
-import type { LivePreviewSession } from '../../../server/live-preview'
+import type { Meditation } from '@/types/sahajcloud'
+import type { LivePreviewSession } from '@/server/live-preview'
 
 const getDocumentById = vi.fn()
 const getMeditationSongs = vi.fn()
 const loadLivePreview = vi.fn()
 
-vi.mock('../../../server/sahajcloud-client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../server/sahajcloud-client')>()),
+vi.mock('@/server/sahajcloud/client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/server/sahajcloud/client')>()),
   getDocumentById: (...args: unknown[]) => getDocumentById(...args),
   getMeditationSongs: (...args: unknown[]) => getMeditationSongs(...args),
 }))
-vi.mock('../../../server/live-preview', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../server/live-preview')>()),
+vi.mock('@/server/live-preview', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/server/live-preview')>()),
   loadLivePreview: (...args: unknown[]) => loadLivePreview(...args),
 }))
 
 const { loadMeditation } = await import('./_meditation')
-const { LIVE_PREVIEW_OFF } = await import('../../../server/live-preview')
+const { LIVE_PREVIEW_OFF } = await import('@/server/live-preview')
 
 const MEDITATION = {
   id: 17,

@@ -12,7 +12,7 @@
  */
 
 import type { Hono } from 'hono'
-import type { SahajCloudEnv } from '../../sahajcloud-context'
+import type { SahajCloudEnv } from '@/server/sahajcloud/context'
 import { registerLivePreviewPopulate } from './live-preview/populate/route'
 import { registerRelatedLectures } from './related-lectures/route'
 import { registerRelatedMeditations } from './related-meditations/route'

@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Mirrors the SahajCloud `wm-web-translations` English locale into
- * `lib/translations.en.json`.
+ * `lib/i18n/translations.en.json`.
  *
  * That snapshot is the English the site falls back to when the SahajCloud read
  * fails, and the fixture every test and Ladle story renders with. It is
@@ -23,7 +23,7 @@ import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-import { WEB_TRANSLATIONS_SELECT } from '../server/sahajcloud-types.ts'
+import { WEB_TRANSLATIONS_SELECT } from '../types/sahajcloud.ts'
 
 const GLOBAL_SLUG = 'wm-web-translations'
 
@@ -143,7 +143,7 @@ async function main() {
 
   await writeFile(target, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
 
-  console.log(`Wrote ${keyCount} strings to lib/translations.en.json`)
+  console.log(`Wrote ${keyCount} strings to lib/i18n/translations.en.json`)
 }
 
 main().catch((error) => {
