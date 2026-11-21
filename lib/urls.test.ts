@@ -245,8 +245,11 @@ describe('classMapSearchHref', () => {
     expect([...search.keys()]).toEqual(['center', 'q'])
   })
 
-  it('passes the navigation gate it is assigned through', () => {
-    expect(isSafeNavigationUrl(classMapSearchHref('fr', london))).toBe(true)
+  // Why `MapSearch` assigns it with no gate of its own: every value this can
+  // produce is a path on this site, so a gate here could only ever pass.
+  it('is always a site path, in every locale', () => {
+    expect(isSitePath(classMapSearchHref('en', london))).toBe(true)
+    expect(isSitePath(classMapSearchHref('fr', london))).toBe(true)
   })
 })
 

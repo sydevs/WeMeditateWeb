@@ -4,7 +4,7 @@ import { LocationSearch, type SelectedLocation } from '../LocationSearch'
 import { useLocale } from '../../../hooks/usePageContext'
 import { useT } from '../../../hooks/useT'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
-import { classMapSearchHref, isSafeNavigationUrl } from '../../../lib/urls'
+import { classMapSearchHref } from '../../../lib/urls'
 
 export interface MapSearchProps {
   /**
@@ -35,11 +35,7 @@ export function MapSearch({ label, className = '' }: MapSearchProps) {
   // A full load, not a client navigation: the atlas widget reads its route
   // from the URL it boots on.
   const openMap = (place: SelectedLocation) => {
-    const href = classMapSearchHref(locale, place)
-
-    if (isSafeNavigationUrl(href)) {
-      window.location.assign(href)
-    }
+    window.location.assign(classMapSearchHref(locale, place))
   }
 
   const fallback = (
