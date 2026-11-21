@@ -5,13 +5,13 @@
  */
 
 import type { Hono } from 'hono'
-import type { SahajCloudEnv } from './sahajcloud-context'
-import { getDocumentById, getLecture, getWebTranslations } from './sahajcloud-client'
-import { resolveLecture } from '../lib/lecture-shape'
-import { populatedImageUrl } from '../lib/payload-relationships'
-import { absoluteHref } from '../lib/urls'
-import { getT } from '../lib/i18n'
-import { JSON_CACHE_CONTROL } from './cache-headers'
+import type { SahajCloudEnv } from '../../sahajcloud-context'
+import { getDocumentById, getLecture, getWebTranslations } from '../../sahajcloud-client'
+import { resolveLecture } from '../../../lib/lecture-shape'
+import { populatedImageUrl } from '../../../lib/payload-relationships'
+import { absoluteHref } from '../../../lib/urls'
+import { getT } from '../../../lib/i18n'
+import { JSON_CACHE_CONTROL } from '../../cache-headers'
 import {
   buildOEmbedResponse,
   positiveInteger,
@@ -44,7 +44,7 @@ async function readMedia(
   )
 }
 
-export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
+export function registerOEmbed(app: Hono<SahajCloudEnv>): void {
   app.get('/oembed', async (c) => {
     const { origin } = new URL(c.req.url)
     const url = c.req.query('url')

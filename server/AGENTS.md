@@ -186,10 +186,11 @@ A read that several hooks ask for goes through `perRequest` in
 first and missed by the second — which read `wm-web-translations` twice per chromed render until
 #108. `perRequest` owns the key, so a new memo cannot get that wrong.
 
-## An `/api/*` route is one folder at its own path
+## A route is one folder at its own path
 
-`server/routes/api/` is the list of same-origin JSON routes: each one is a folder named for its
-path, holding `route.ts`, its test, and anything only that route reads. A top-level file whose
-name starts with `_` holds what several routes share and registers none.
-[tests/guards/api-route-files.test.ts](../tests/guards/api-route-files.test.ts) holds the
-convention.
+`server/routes/` is the list of routes this Worker serves: each one is a folder named for its
+path, holding `route.ts`, its test, and anything only that route reads. A file whose name starts
+with `_` holds what the routes below it share and registers none, and each `index.ts` registers
+every route below it.
+[tests/guards/route-files.test.ts](../tests/guards/route-files.test.ts) holds the convention.
+`sitemap-routes.ts` is the one route still outside the tree (#293).

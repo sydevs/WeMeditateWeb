@@ -1,7 +1,7 @@
 /**
  * Pure builders for `/oembed`, which turns one of our media URLs into an
  * embedded player: the oEmbed 1.0 `video` type (https://oembed.com). The
- * route is `oembed-routes.ts`; this module reads nothing.
+ * route is `route.ts`; this module reads nothing.
  */
 
 import {
@@ -9,10 +9,10 @@ import {
   EMBEDDABLE_COLLECTIONS,
   matchDocumentRoute,
   type EmbeddableCollection,
-} from '../lib/document-routes'
-import { PLAYER_HEIGHT, PLAYER_WIDTH, playerIframe } from '../lib/embed-player'
-import { localeFromPath } from '../lib/urls'
-import type { Locale } from './sahajcloud-types'
+} from '../../../lib/document-routes'
+import { PLAYER_HEIGHT, PLAYER_WIDTH, playerIframe } from '../../../lib/embed-player'
+import { localeFromPath } from '../../../lib/urls'
+import type { Locale } from '../../sahajcloud-types'
 
 /** A media URL on our own origin, resolved to the document and player behind it. */
 export interface OEmbedTarget {

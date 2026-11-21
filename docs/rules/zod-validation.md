@@ -1,7 +1,7 @@
 ---
 paths:
   - "server/validation.ts"
-  - "server/routes/api/**/schema.ts"
+  - "server/routes/**/schema.ts"
   - "server/sahajcloud-context.ts"
   - "pages/**/+data.ts"
   - "components/organisms/FormBuilder/**"
