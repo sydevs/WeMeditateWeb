@@ -5,7 +5,7 @@
  * by following links. The `/map` routes (#62) exist to be indexable, so
  * they need a sitemap to be worth adding.
  *
- * Registered beside `registerApiRoutes`, and, like it, inside the
+ * Registered beside `registerRoutes`, and, like it, inside the
  * `contextStorage()` middleware, so `getSahajCloudContext()` resolves the API
  * key normally. Both routes are declared before Vike's handler, so they
  * win over the page catch-all.
