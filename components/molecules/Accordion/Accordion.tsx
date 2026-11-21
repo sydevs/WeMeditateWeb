@@ -98,7 +98,7 @@ export function Accordion({
   }
 
   return (
-    <div className={`mx-auto max-w-full sm:max-w-3xl ${className}`}>
+    <div className={className}>
       {items.map((item, index) => {
         const isOpen = openItems.has(item.id)
         const isLastItem = index === items.length - 1
