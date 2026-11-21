@@ -1,9 +1,9 @@
-import { ComponentProps, HTMLAttributes } from 'react'
+import { HTMLAttributes } from 'react'
 import { Link } from '../../Link'
 import { LogoSvg } from '../svgs'
 import { useT } from '../../../../hooks/useT'
 
-export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'> {
+export interface LogoProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
   /** Logo variant */
   variant?: 'icon' | 'square' | 'circle' | 'text' | 'inline'
   /** Size of the logo */
@@ -108,54 +108,19 @@ export function Logo({
 
   // Combine all styles
   const allStyles = `${baseStyles} ${variantStyles} ${className}`
-  const { anchor, shared } = splitAnchorProps(props)
 
   // Render as link or div depending on href prop
   if (href) {
     return (
-      <Link className={allStyles} href={href} variant="unstyled" {...shared} {...anchor}>
+      <Link className={allStyles} href={href} variant="unstyled" {...props}>
         {content}
       </Link>
     )
   }
 
   return (
-    <div className={allStyles} {...shared}>
+    <div className={allStyles} {...props}>
       {content}
     </div>
   )
-}
-
-/**
- * What only an `<a>` understands, so the unlinked mark's `<div>` never receives it.
- * `ref` is typed for an anchor, so the unlinked mark takes no ref on purpose.
- */
-type AnchorOnlyProps = Pick<
-  ComponentProps<'a'>,
-  'download' | 'hrefLang' | 'media' | 'ping' | 'ref' | 'referrerPolicy' | 'rel' | 'target' | 'type'
->
-
-/**
- * `shared` is typed for any element, which is what lets the `<div>` take it:
- * an anchor's own event-handler and ref types do not fit one.
- */
-function splitAnchorProps({
-  download,
-  hrefLang,
-  media,
-  ping,
-  ref,
-  referrerPolicy,
-  rel,
-  target,
-  type,
-  ...shared
-}: AnchorOnlyProps & HTMLAttributes<HTMLElement>): {
-  anchor: AnchorOnlyProps
-  shared: HTMLAttributes<HTMLElement>
-} {
-  return {
-    anchor: { download, hrefLang, media, ping, ref, referrerPolicy, rel, target, type },
-    shared,
-  }
 }
