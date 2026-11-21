@@ -16,4 +16,7 @@ export type { LanguageFlagProps } from './LanguageFlag'
 export { SocialIcon } from './SocialIcon'
 export type { SocialIconProps } from './SocialIcon'
 
+export { TextBoxOrnament } from './TextBoxOrnament'
+export type { TextBoxOrnamentProps } from './TextBoxOrnament'
+
 export * from './svgs'

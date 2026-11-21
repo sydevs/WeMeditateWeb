@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, CircleDecorationSvg, Image, TriangleDecorationSvg } from '../../atoms'
+import { Button, Image, TextBoxOrnament } from '../../atoms'
 import type { TextBoxDecoration } from '../../../lib/content-blocks'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 import { toParagraphs } from '../../../lib/paragraphs'
@@ -107,6 +107,9 @@ export function ContentTextBox({
 }: ContentTextBoxProps) {
   const wrapperClasses = align === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row'
   const contentContainerClasses = align === 'right' ? 'lg:-mr-32 lg:ml-2' : 'lg:-ml-32 lg:mr-2'
+  // `align` is the image's outer side, which the triangle and the wash take.
+  // The circle sits behind the image's inner lower corner instead.
+  const ornamentSide = decoration === 'circle' ? (align === 'right' ? 'left' : 'right') : align
 
   return (
     <div
@@ -146,24 +149,7 @@ export function ContentTextBox({
         {/* Each ornament reaches at most 7rem below the root, inside its
             `lg:my-32`, so it never reaches the next block's text. The wash
             fades out below the image; above that the image hides it. */}
-        {decoration === 'triangle' && (
-          <TriangleDecorationSvg
-            aria-hidden="true"
-            className={`pointer-events-none absolute bottom-0 hidden h-auto w-60 translate-y-1/3 lg:block 2xl:w-72 ${align === 'right' ? 'right-6' : 'left-6'}`}
-          />
-        )}
-        {decoration === 'gradient' && (
-          <div
-            aria-hidden="true"
-            className={`pointer-events-none absolute -bottom-28 -z-10 hidden h-56 from-teal-100 to-transparent mask-b-from-50% lg:block ${align === 'right' ? 'right-0 left-[40%] bg-linear-to-r' : 'right-[40%] left-0 bg-linear-to-l'}`}
-          />
-        )}
-        {decoration === 'circle' && (
-          <CircleDecorationSvg
-            aria-hidden="true"
-            className={`pointer-events-none absolute -bottom-24 -z-10 hidden h-auto w-80 text-line-subtle lg:block ${align === 'right' ? '-left-24' : '-right-24'}`}
-          />
-        )}
+        {decoration && <TextBoxOrnament decoration={decoration} side={ornamentSide} />}
       </div>
 
       {/* Content - natural stack on mobile, positioned and centered on desktop */}

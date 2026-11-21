@@ -33,10 +33,10 @@ describe('<ContentOverlay> decoration', () => {
     )
 
     expect(classes(textLeft, TRIANGLE)).toEqual(
-      expect.arrayContaining(['absolute', 'bottom-0', 'translate-y-1/3', 'right-10']),
+      expect.arrayContaining(['absolute', 'bottom-0', 'translate-y-1/3', 'right-6']),
     )
-    expect(classes(textRight, TRIANGLE)).toContain('left-10')
-    expect(classes(textCentre, TRIANGLE)).toContain('left-10')
+    expect(classes(textRight, TRIANGLE)).toContain('left-6')
+    expect(classes(textCentre, TRIANGLE)).toContain('left-6')
   })
 
   it('grows the block’s bottom margin to hold the part that hangs below', () => {

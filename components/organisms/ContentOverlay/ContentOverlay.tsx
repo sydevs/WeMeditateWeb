@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, Container, Image, TriangleDecorationSvg } from '../../atoms'
+import { Button, Container, Image, TextBoxOrnament } from '../../atoms'
 import { surface, type Surface } from '../../atoms/surface'
 import { toParagraphs } from '../../../lib/paragraphs'
 
@@ -245,10 +245,7 @@ export function ContentOverlay({
           never reaches the next block. It takes the corner away from the
           text; a centred text leaves it the left one. */}
       {decoration === 'triangle' && (
-        <TriangleDecorationSvg
-          aria-hidden="true"
-          className={`pointer-events-none absolute bottom-0 hidden h-auto w-60 translate-y-1/3 lg:block 2xl:w-72 ${align === 'left' ? 'right-10' : 'left-10'}`}
-        />
+        <TextBoxOrnament decoration="triangle" side={align === 'left' ? 'right' : 'left'} />
       )}
     </div>
   )
