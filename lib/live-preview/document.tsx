@@ -75,8 +75,7 @@ export function endpointSlug(endpoint: string): string | null {
  *
  * - **the document filter.** `endpoint` is the only identifying value a
  *   handler is given, and its first segment is the message's own slug. A
- *   message about another collection is refused here — this is what replaces
- *   the hand-written message filter that used to live in `./messages.ts`.
+ *   message about another collection is refused here, and nowhere else.
  * - **error handling.** `mergeData` has no try/catch and no status check: a
  *   rejection kills the callback silently, and a non-2xx JSON error body is
  *   returned as if it were the document, so `{errors:[…]}` renders as a page.

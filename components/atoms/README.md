@@ -13,7 +13,7 @@ functional piece — it cannot divide into smaller pieces without losing its mea
 | Media | Image, Icon, Avatar |
 | Brand and graphics | Logo, LanguageFlag, SocialIcon, and the SVG icons in `graphics/svgs/` |
 | Feedback | Spinner, SplashLoader, Placeholder, Badge |
-| Layout | Container, Spacer, Box, LeafDivider, Breadcrumbs |
+| Layout | Container, LeafDivider, Breadcrumbs |
 | Navigation | SkipLink |
 | Specialty | Countdown |
 

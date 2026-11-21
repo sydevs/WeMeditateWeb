@@ -7,7 +7,7 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import 'yet-another-react-lightbox/plugins/captions.css'
 import 'yet-another-react-lightbox/plugins/thumbnails.css'
-import type { LightboxSlide } from './LightboxProvider'
+import type { LightboxSlide } from '../../atoms/Image/lightbox-context'
 import { useT } from '../../../hooks/useT'
 
 export interface LightboxImplProps {

@@ -10,8 +10,8 @@ export type { VideoSubtitleCue } from './VideoPlayer'
 
 export { Lightbox } from './Lightbox'
 export type { LightboxImplProps } from './Lightbox'
-export { LightboxProvider, useLightbox } from './Lightbox/LightboxProvider'
-export type { LightboxSlide, LightboxProviderProps } from './Lightbox/LightboxProvider'
+export { LightboxProvider } from './Lightbox/LightboxProvider'
+export type { LightboxProviderProps } from './Lightbox/LightboxProvider'
 
 export { Column } from './Column'
 export type { ColumnProps } from './Column'

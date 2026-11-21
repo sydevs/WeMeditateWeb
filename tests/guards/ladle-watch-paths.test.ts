@@ -7,9 +7,8 @@
  */
 import { existsSync, globSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
-import ts from 'typescript'
 import { describe, it, expect } from 'vitest'
-import { parse, readSource, repoRoot, walk } from './_source-scan'
+import { readSource, repoRoot, specifiers } from './_source-scan'
 
 const workflow = readFileSync(join(repoRoot, '.github/workflows/ci.yml'), 'utf8')
 const WATCH = new RegExp(workflow.match(/^\s*WATCH: '(.+)'$/m)?.[1] ?? '$^')
@@ -26,24 +25,12 @@ function resolveModule(from: string, specifier: string): string | null {
 
 /** Modules a file imports for a value. An `import type` is erased and reaches no bundle. */
 function valueImports(file: string): string[] {
-  const out: string[] = []
+  const from = join(repoRoot, file)
 
-  walk(parse(readSource(join(repoRoot, file))), (node) => {
-    const typeOnly =
-      (ts.isImportDeclaration(node) && node.importClause?.isTypeOnly) ||
-      (ts.isExportDeclaration(node) && node.isTypeOnly)
-    const specifier =
-      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-      node.moduleSpecifier &&
-      ts.isStringLiteral(node.moduleSpecifier)
-        ? node.moduleSpecifier.text
-        : null
-    const target = specifier && !typeOnly ? resolveModule(join(repoRoot, file), specifier) : null
-
-    if (target) out.push(target)
-  })
-
-  return out
+  return specifiers(readSource(from))
+    .filter((specifier) => !specifier.typeOnly)
+    .map((specifier) => resolveModule(from, specifier.text))
+    .filter((target): target is string => target !== null)
 }
 
 /** Every `server/` module reachable from the trees Ladle builds, following server-to-server imports. */

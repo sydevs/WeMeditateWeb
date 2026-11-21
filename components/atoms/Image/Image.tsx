@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentProps, use, useEffect, useMemo, useRef, useState } from 'react'
 import { Placeholder } from '../Placeholder'
 import { Icon } from '../Icon'
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
@@ -9,7 +9,7 @@ import {
   getImageURL,
   getVariantName,
 } from '../../../lib/cloudflare-images'
-import { useLightbox, type LightboxSlide } from '../../molecules/Lightbox/LightboxProvider'
+import { LightboxContext, type LightboxSlide } from './lightbox-context'
 import { useT } from '../../../hooks/useT'
 
 export interface ImageProps extends ComponentProps<'img'> {
@@ -204,7 +204,9 @@ export function Image({
   const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
-  const lightbox = useLightbox()
+  // `null` when no `LightboxProvider` is mounted, which is what lets the atom
+  // degrade to a plain, non-interactive image.
+  const lightbox = use(LightboxContext)
 
   const slide = useMemo(
     () => (lightbox && lightboxGroup ? buildLightboxSlide(src, alt, aspectRatio) : null),

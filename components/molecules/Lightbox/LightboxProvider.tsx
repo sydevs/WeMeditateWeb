@@ -1,46 +1,9 @@
-import { createContext, use, useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { LightboxContext, type LightboxSlide } from '../../atoms/Image/lightbox-context'
 import { Lightbox } from './index'
-
-/**
- * A single lightbox slide.
- *
- * This is structurally a subset of the library's `SlideImage`, plus the
- * Captions plugin's `description`. It is defined here, in a library-free
- * module, so the provider and the `Image` atom can build and collect
- * slides without ever importing the browser-only lightbox package. Only
- * the lazy {@link Lightbox} implementation does.
- */
-export interface LightboxSlide {
-  /** Full-resolution image URL (largest Cloudflare variant for SahajCloud images). */
-  src: string
-  /** Accessible alt text, mirrored into the caption. */
-  alt?: string
-  /** Caption text shown by the Captions plugin. */
-  description?: string
-}
 
 /** Slides registered for one group, keyed by their document-order index. */
 type GroupSlides = Record<number, LightboxSlide>
-
-interface LightboxContextValue {
-  /** Register (or replace) a slide in a group at its document-order index. */
-  register: (group: string, index: number, slide: LightboxSlide) => void
-  /** Remove a slide when its `Image` unmounts. */
-  unregister: (group: string, index: number) => void
-  /** Open the lightbox for `group` on the slide at `index`. */
-  openAt: (group: string, index: number) => void
-}
-
-const LightboxContext = createContext<LightboxContextValue | null>(null)
-
-/**
- * Access the ambient lightbox controller, or `null` when no
- * {@link LightboxProvider} is mounted — letting the `Image` atom degrade to
- * plain, non-interactive rendering.
- */
-export function useLightbox(): LightboxContextValue | null {
-  return use(LightboxContext)
-}
 
 export interface LightboxProviderProps {
   children: ReactNode
