@@ -298,6 +298,21 @@ describe('<RichText>', () => {
       expect(html).not.toContain('aspect-square')
     })
 
+    it("falls back to the card's own crop when the image has no dimensions", () => {
+      const sized = FIVE[0].value.meta.image
+      const unsized = {
+        ...FIVE[0],
+        value: {
+          ...FIVE[0].value,
+          meta: { ...FIVE[0].value.meta, image: { id: sized.id, url: sized.url, alt: sized.alt } },
+        },
+      }
+      const html = renderToStaticMarkup(<RichText content={editorState([unsized])} />)
+
+      expect(html).toContain('aspect-square')
+      expect(html).not.toContain('aspect-video')
+    })
+
     it('heads each card one level below the heading before it, h2 under none', () => {
       const under = (nodes: unknown[]) =>
         renderToStaticMarkup(<RichText content={editorState(nodes)} />)

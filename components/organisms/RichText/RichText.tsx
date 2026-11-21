@@ -190,6 +190,7 @@ const CONVERTERS: JSXConverters = {
     if (card) {
       const siblings = (parent as { children?: unknown[] }).children ?? [node]
       const { position, numbered, headingLevel } = cardPlacement(siblings, childIndex)
+      const { width, height } = card.image
 
       return (
         <TechniqueCard
@@ -201,7 +202,9 @@ const CONVERTERS: JSXConverters = {
           headingLevel={headingLevel}
           href={card.href}
           imageAlt={card.image.alt}
-          imageAspectRatio={nearestAspectRatio(card.image.width, card.image.height)}
+          // Without both dimensions `nearestAspectRatio` answers 16:9, which
+          // would crop a portrait watercolour wide. The card's own default fits.
+          imageAspectRatio={width && height ? nearestAspectRatio(width, height) : undefined}
           imageSrc={card.image.url}
           number={numbered ? String(position).padStart(2, '0') : undefined}
           title={card.title}
