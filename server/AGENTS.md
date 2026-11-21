@@ -188,11 +188,8 @@ first and missed by the second — which read `wm-web-translations` twice per ch
 
 ## An `/api/*` route is one folder at its own path
 
-`server/routes/api/` is the list of same-origin JSON routes. Each one is a folder named for its
-path — `POST /api/live-preview/populate` is `live-preview/populate/`, and a `:param` segment adds
-no folder — holding `route.ts`, its `route.test.ts`, and anything only that route reads (the
-submission body's `schema.ts`). `route.ts` exports one `register…(app)`, and
-[routes/api/index.ts](routes/api/index.ts) calls them all. A top-level file whose name starts with
-`_` holds what several routes share and registers none.
-[tests/guards/api-route-files.test.ts](../tests/guards/api-route-files.test.ts) fails a route
-outside its folder, a file in no route's folder, and a route `index.ts` does not register.
+`server/routes/api/` is the list of same-origin JSON routes: each one is a folder named for its
+path, holding `route.ts`, its test, and anything only that route reads. A top-level file whose
+name starts with `_` holds what several routes share and registers none.
+[tests/guards/api-route-files.test.ts](../tests/guards/api-route-files.test.ts) holds the
+convention.
