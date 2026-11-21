@@ -139,7 +139,7 @@ async function main() {
     process.exit(1)
   }
 
-  const target = join(repoRoot, 'lib', 'translations.en.json')
+  const target = join(repoRoot, 'lib', 'i18n', 'translations.en.json')
 
   await writeFile(target, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
 
