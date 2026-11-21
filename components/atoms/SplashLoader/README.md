@@ -40,8 +40,6 @@ import { SplashLoader } from '..'
 - **Blend mode**: `mix-blend-multiply` combines the image and color into a darkened, tinted
   effect. It works best with a light-to-medium image, paired with a dark color variant (teal-900,
   coral-900, gray-900). The root isolates the blend, so the tint never reaches what lies behind.
-- **The image is an `<img>`, not a CSS background.** Laid over a hero, it repeats the hero's URL,
-  and React folds the two into one preload — see DESIGN_SYSTEM.md, Performance.
 - **Loading state**: when `isLoading` becomes `false`, the component fades out, then unmounts
   after 500ms. You do not need to remove it from the DOM yourself.
 
@@ -57,11 +55,8 @@ import { SplashLoader } from '..'
 
 The animated logo draws in the surface's `text-fg`: white over the dark colors, gray over `warm`.
 
-A loader laid over content that is already there — `Splash`'s `loader` — is decoration: pass
-`aria-hidden="true"`, and keep it from stranding anyone. `Splash` lets clicks through
-(`pointer-events-none`), hides it the moment focus enters the splash, skips it under
-`prefers-reduced-motion`, ends it from an inline script as soon as its image settles (before
-hydration), and sets `autoExit`.
+A loader laid over content that is already on the page is decoration, and owes a visitor a way
+out of it — see `Splash`'s `loader` for the worked one.
 
 ## Related components
 
