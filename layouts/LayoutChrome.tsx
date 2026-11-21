@@ -9,8 +9,6 @@ import { SkipLink } from '../components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
 import { activeFeaturedSlug } from '../lib/featured-nav'
 import { MAIN_CONTENT_ID } from '../lib/route-announcer'
-import { localeEndonym } from '../lib/locale-names'
-import { SOCIAL_PROFILES } from '../lib/site-identity'
 import { useT } from '../hooks/useT'
 
 interface RouteData {
@@ -58,7 +56,7 @@ function Chrome({
   settings: WebConfig
   children: React.ReactNode
 }) {
-  const { locale, urlPathname } = usePageContext()
+  const { locale } = usePageContext()
   const t = useT()
 
   // When the page leads with a Splash, overlay the header on it: transparent,
@@ -85,7 +83,7 @@ function Chrome({
   // `activeFeaturedSlug`, so they cannot disagree. `data.page` is absent on
   // non-[slug] routes, so `activeSlug` is undefined there, and nothing
   // highlights.
-  const { navItems, actionLinkHref, actionLinkText } = useSiteNav(
+  const { navItems, actionLinkHref, actionLinkText, languages, socialLinks } = useSiteNav(
     settings,
     activeFeaturedSlug(data.page?.slug, settings),
   )
@@ -119,17 +117,6 @@ function Chrome({
     })
   }
 
-  // The locales SahajCloud says this site offers, each linking to the current
-  // page in that language rather than to its home page. `Link` spells each
-  // href through `lib/urls.ts`, and so does the hreflang cluster, so the
-  // dropdown and the `<head>` cannot disagree about where a locale switch
-  // leads.
-  const languages = (settings.availableLocales ?? []).map((code) => ({
-    code,
-    label: localeEndonym(code),
-    href: urlPathname,
-  }))
-
   // The page band reaches the header as classes, not as a wrapper. `Header`'s
   // nav is `position: sticky`, so a wrapper would be its containing block and
   // the nav would stop pinning one header-height down the page (#204).
@@ -138,8 +125,10 @@ function Chrome({
       actionLinkHref={actionLinkHref}
       actionLinkText={actionLinkText}
       bandClassName={`max-w-7xl mx-auto px-6 w-full ${surface(leadSplash?.surface)}`}
+      languages={languages}
       logoHref="/"
       navItems={navItems}
+      socialLinks={socialLinks}
     />
   )
 
@@ -186,7 +175,7 @@ function Chrome({
         languages={languages}
         locale={locale}
         sections={footerSections}
-        socialLinks={SOCIAL_PROFILES}
+        socialLinks={socialLinks}
       />
     </div>
   )

@@ -1,9 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Author } from './Author'
-import {
-  StoryWrapper,
-  StorySection,
-} from '../../ladle'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
   title: 'Molecules',
@@ -18,35 +15,31 @@ export const Default: Story = () => (
     <StorySection title="Mini Variant">
       <div className="flex flex-col gap-8">
         <StorySection title="Minimal" variant="subsection">
-          <Author
-            variant="mini"
-            name="Sarah Johnson"
-            imageUrl={authorImage}
-          />
+          <Author imageUrl={authorImage} name="Sarah Johnson" variant="mini" />
         </StorySection>
 
         <StorySection title="Maximal" variant="subsection">
           <Author
-            variant="mini"
-            name="Gabriel Kolanen"
             countryCode="FI"
+            href="#author"
             imageUrl={authorImage}
             meditationYears={5}
+            name="Gabriel Kolanen"
             readingTime={8}
-            href="#author"
+            variant="mini"
           />
         </StorySection>
 
         <StorySection title="Maximal (Right Aligned)" variant="subsection">
           <Author
-            variant="mini"
-            name="Gabriel Kolanen"
+            align="right"
             countryCode="FI"
+            href="#author"
             imageUrl={authorImage}
             meditationYears={5}
+            name="Gabriel Kolanen"
             readingTime={8}
-            href="#author"
-            align="right"
+            variant="mini"
           />
         </StorySection>
       </div>
@@ -56,70 +49,72 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-8">
         <StorySection title="Minimal" variant="subsection">
           <Author
-            variant="hero"
-            name="Emma Wilson"
             countryCode="UK"
             imageUrl={authorImage}
             meditationYears={3}
+            name="Emma Wilson"
+            variant="hero"
           />
         </StorySection>
 
         <StorySection title="Maximal" variant="subsection">
           <Author
-            variant="hero"
-            name="Gabriel Kolanen"
             countryCode="FI"
-            imageUrl={authorImage}
-            title="Graduate of English Literature and History"
-            meditationYears={5}
             description={
               <>
                 <p className="mb-4">
-                  A student of boisterous books as much as bubbling brooks, Gabriel Kolanen is a recent graduate
-                  of English Literature and History in Scotland. While spending one half of his time digging through
-                  dusty tomes in the depths of the library, the other half was spent traversing the terrific terrain
-                  of the North.
+                  A student of boisterous books as much as bubbling brooks, Gabriel Kolanen is a
+                  recent graduate of English Literature and History in Scotland. While spending one
+                  half of his time digging through dusty tomes in the depths of the library, the
+                  other half was spent traversing the terrific terrain of the North.
                 </p>
                 <p>
-                  For him, the firsthand experience is where the potential for learning is at its best, be it winding
-                  along a meandering river on a bright noon day, crossing the crest of a mountain knee-deep in snow,
-                  or finding solace and silence in meditation.
+                  For him, the firsthand experience is where the potential for learning is at its
+                  best, be it winding along a meandering river on a bright noon day, crossing the
+                  crest of a mountain knee-deep in snow, or finding solace and silence in
+                  meditation.
                 </p>
               </>
             }
+            imageUrl={authorImage}
+            meditationYears={5}
+            name="Gabriel Kolanen"
+            title="Graduate of English Literature and History"
+            variant="hero"
           />
         </StorySection>
 
         <StorySection title="Maximal (Right Aligned)" variant="subsection">
           <Author
-            variant="hero"
-            name="Gabriel Kolanen"
-            countryCode="FI"
-            imageUrl={authorImage}
-            title="Graduate of English Literature and History"
-            meditationYears={5}
             align="right"
+            countryCode="FI"
             description={
               <>
                 <p className="mb-4">
-                  A student of boisterous books as much as bubbling brooks, Gabriel Kolanen is a recent graduate
-                  of English Literature and History in Scotland. While spending one half of his time digging through
-                  dusty tomes in the depths of the library, the other half was spent traversing the terrific terrain
-                  of the North.
+                  A student of boisterous books as much as bubbling brooks, Gabriel Kolanen is a
+                  recent graduate of English Literature and History in Scotland. While spending one
+                  half of his time digging through dusty tomes in the depths of the library, the
+                  other half was spent traversing the terrific terrain of the North.
                 </p>
                 <p>
-                  For him, the firsthand experience is where the potential for learning is at its best, be it winding
-                  along a meandering river on a bright noon day, crossing the crest of a mountain knee-deep in snow,
-                  or finding solace and silence in meditation.
+                  For him, the firsthand experience is where the potential for learning is at its
+                  best, be it winding along a meandering river on a bright noon day, crossing the
+                  crest of a mountain knee-deep in snow, or finding solace and silence in
+                  meditation.
                 </p>
               </>
             }
+            imageUrl={authorImage}
+            meditationYears={5}
+            name="Gabriel Kolanen"
+            title="Graduate of English Literature and History"
+            variant="hero"
           />
         </StorySection>
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       {/* Article with Mini Byline */}
       <div>
         <h3 className="text-base font-semibold text-gray-900 mb-4">Article Header</h3>
@@ -130,20 +125,20 @@ export const Default: Story = () => (
           <div className="clear-both after:content-[''] after:table after:clear-both">
             <div className="float-right ml-3">
               <Author
-                variant="mini"
-                name="Gabriel Kolanen"
+                align="right"
                 countryCode="FI"
+                href="#author"
                 imageUrl={authorImage}
                 meditationYears={5}
+                name="Gabriel Kolanen"
                 readingTime={8}
-                href="#author"
-                align="right"
+                variant="mini"
               />
             </div>
             <p className="text-gray-700">
-              In today's fast-paced world, finding moments of stillness can seem impossible.
-              Yet, through the practice of meditation, we can discover a sanctuary of peace
-              within ourselves, accessible at any moment...
+              In today's fast-paced world, finding moments of stillness can seem impossible. Yet,
+              through the practice of meditation, we can discover a sanctuary of peace within
+              ourselves, accessible at any moment...
             </p>
           </div>
         </article>
@@ -154,27 +149,28 @@ export const Default: Story = () => (
         <h3 className="text-base font-semibold text-gray-900 mb-4">Article Footer</h3>
         <div>
           <Author
-            variant="hero"
-            name="Gabriel Kolanen"
             countryCode="FI"
-            imageUrl={authorImage}
-            title="Graduate of English Literature and History"
-            meditationYears={5}
             description={
               <>
                 <p className="mb-4">
-                  A student of boisterous books as much as bubbling brooks, Gabriel Kolanen is a recent graduate
-                  of English Literature and History in Scotland. While spending one half of his time digging through
-                  dusty tomes in the depths of the library, the other half was spent traversing the terrific terrain
-                  of the North.
+                  A student of boisterous books as much as bubbling brooks, Gabriel Kolanen is a
+                  recent graduate of English Literature and History in Scotland. While spending one
+                  half of his time digging through dusty tomes in the depths of the library, the
+                  other half was spent traversing the terrific terrain of the North.
                 </p>
                 <p>
-                  For him, the firsthand experience is where the potential for learning is at its best, be it winding
-                  along a meandering river on a bright noon day, crossing the crest of a mountain knee-deep in snow,
-                  or finding solace and silence in meditation.
+                  For him, the firsthand experience is where the potential for learning is at its
+                  best, be it winding along a meandering river on a bright noon day, crossing the
+                  crest of a mountain knee-deep in snow, or finding solace and silence in
+                  meditation.
                 </p>
               </>
             }
+            imageUrl={authorImage}
+            meditationYears={5}
+            name="Gabriel Kolanen"
+            title="Graduate of English Literature and History"
+            variant="hero"
           />
         </div>
       </div>

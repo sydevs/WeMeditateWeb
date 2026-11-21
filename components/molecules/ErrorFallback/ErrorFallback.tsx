@@ -86,8 +86,8 @@ export function ErrorFallback({
             link: (
               <Link
                 key="status-page"
-                className="text-teal-600 hover:text-teal-700 underline"
                 external
+                className="text-teal-600 hover:text-teal-700 underline"
                 href={statusPageUrl}
                 variant="unstyled"
               >

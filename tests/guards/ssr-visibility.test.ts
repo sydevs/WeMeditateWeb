@@ -126,6 +126,7 @@ function bindingFor(name: string, target: ts.BindingName, owner: ts.Node): ts.No
     if (ts.isOmittedExpression(element)) continue
 
     const hit = bindingFor(name, element.name, element)
+
     if (hit) return hit
   }
 
@@ -143,6 +144,7 @@ function findBinding(name: string, from: ts.Node): ts.Node | null {
     if (ts.isFunctionLike(node)) {
       for (const parameter of node.parameters) {
         const hit = bindingFor(name, parameter.name, parameter)
+
         if (hit) return hit
       }
     }
@@ -154,6 +156,7 @@ function findBinding(name: string, from: ts.Node): ts.Node | null {
 
       for (const declaration of statement.declarationList.declarations) {
         const hit = bindingFor(name, declaration.name, declaration)
+
         if (hit) return hit
       }
     }
@@ -165,12 +168,15 @@ function findBinding(name: string, from: ts.Node): ts.Node | null {
 /** The `useState` argument a `[flag, setFlag]` element destructures. */
 function stateArgument(element: ts.BindingElement): ts.Expression | null {
   const pattern = element.parent
+
   if (!ts.isArrayBindingPattern(pattern) || pattern.elements.indexOf(element) !== 0) return null
 
   const declaration = pattern.parent
+
   if (!ts.isVariableDeclaration(declaration)) return null
 
   const initializer = declaration.initializer
+
   if (!initializer || !ts.isCallExpression(initializer)) return null
   if (!ts.isIdentifier(initializer.expression) || initializer.expression.text !== 'useState') {
     return null
@@ -227,6 +233,7 @@ function initialTruth(initial: ts.Expression, at: ts.Node, seen: ReadonlySet<str
   }
 
   const literal = literalTruth(expression)
+
   if (literal !== null) return literal
 
   if (ts.isIdentifier(expression)) return flagTruth(expression.text, at, seen)
@@ -237,6 +244,7 @@ function initialTruth(initial: ts.Expression, at: ts.Node, seen: ReadonlySet<str
     ts.isElementAccessExpression(expression)
   ) {
     const root = rootIdentifier(expression)
+
     if (!root) return 'unknown'
 
     return flagTruth(root.text, at, seen) === 'unknown' ? 'unknown' : 'either'
@@ -250,9 +258,11 @@ function flagTruth(flag: string, at: ts.Node, seen: ReadonlySet<string>): Truth 
   if (seen.has(flag)) return 'unknown'
 
   const binding = findBinding(flag, at)
+
   if (!binding) return 'unknown'
 
   const initial = initialExpression(binding)
+
   if (!initial) return 'unknown'
 
   return initialTruth(initial, binding, new Set(seen).add(flag))
@@ -281,6 +291,7 @@ function firstRenderTruth(condition: ts.Expression): Truth {
   }
 
   const literal = literalTruth(expression)
+
   if (literal !== null) return literal
 
   if (ts.isIdentifier(expression)) return flagTruth(expression.text, expression, new Set())
@@ -319,12 +330,15 @@ function scanTernaries(file: ts.SourceFile): Finding[] {
 
     const consequent = armText(node.whenTrue)
     const alternate = armText(node.whenFalse)
+
     if (consequent === null || alternate === null) return
 
     const hidden = { consequent: HIDDEN.test(consequent), alternate: HIDDEN.test(alternate) }
+
     if (!hidden.consequent && !hidden.alternate) return
 
     const truth = firstRenderTruth(node.condition)
+
     if (truth === 'unknown') return
     if (!reachableArms(truth).some((which) => hidden[which])) return
 
@@ -344,6 +358,7 @@ function staticHiddenPosition(file: ts.SourceFile, template: ts.TemplateExpressi
   for (const part of parts) {
     const start = part.getStart(file)
     const index = file.text.slice(start, part.getEnd()).search(HIDDEN)
+
     if (index >= 0) return start + index
   }
 
@@ -361,19 +376,23 @@ function scanStaticOverride(file: ts.SourceFile): Finding[] {
     if (!ts.isTemplateExpression(node)) return
 
     const hiddenAt = staticHiddenPosition(file, node)
+
     if (hiddenAt === null) return
 
     for (const span of node.templateSpans) {
       const ternary = unwrap(span.expression)
+
       if (!ts.isConditionalExpression(ternary)) continue
 
       const override = {
         consequent: IMPORTANT_VISIBLE.test(armText(ternary.whenTrue) ?? ''),
         alternate: IMPORTANT_VISIBLE.test(armText(ternary.whenFalse) ?? ''),
       }
+
       if (!override.consequent && !override.alternate) continue
 
       const truth = firstRenderTruth(ternary.condition)
+
       if (truth === 'unknown') continue
 
       // The static class stays in the markup unless the override wins every
@@ -394,6 +413,7 @@ function scanStaticOverride(file: ts.SourceFile): Finding[] {
 /** Every site in `source` both conditions catch. */
 export function scan(source: string): Finding[] {
   const file = parse(source)
+
   if (!wiresLoadEvent(file)) return []
 
   return [...scanTernaries(file), ...scanStaticOverride(file)].sort((a, b) => a.line - b.line)

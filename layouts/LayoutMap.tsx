@@ -44,7 +44,7 @@ export default function LayoutMap({ children }: { children: React.ReactNode }) {
  * settings guard above returns before any hook would run.
  */
 function MapChrome({ settings, children }: { settings: WebConfig; children: React.ReactNode }) {
-  const { navItems, actionLinkHref, actionLinkText } = useSiteNav(settings)
+  const { navItems, actionLinkHref, actionLinkText, languages, socialLinks } = useSiteNav(settings)
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -54,8 +54,10 @@ function MapChrome({ settings, children }: { settings: WebConfig; children: Reac
         condensed
         actionLinkHref={actionLinkHref}
         actionLinkText={actionLinkText}
+        languages={languages}
         logoHref="/"
         navItems={navItems}
+        socialLinks={socialLinks}
       />
 
       {/* `tabIndex={-1}` makes this element focusable by script, without

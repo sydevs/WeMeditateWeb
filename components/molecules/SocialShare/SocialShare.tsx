@@ -89,27 +89,27 @@ export function SocialShare({
 
   return (
     <div
+      aria-label={t('blocks.a11y.share_region')}
       className={`flex items-center gap-3 ${className}`}
       role="region"
-      aria-label={t('blocks.a11y.share_region')}
       {...props}
     >
-      {label && (
-        <span className="text-base sm:text-lg font-normal mr-1">
-          {label}
-        </span>
-      )}
+      {label && <span className="text-base sm:text-lg font-normal mr-1">{label}</span>}
       {/* No gap: each icon's own box is already 44×44 (`touch-target`), so
           abutting boxes cannot share a hit strip and the row stays compact. */}
-      <div className="flex flex-wrap items-center" role="group" aria-label={t('blocks.a11y.share_group')}>
+      <div
+        aria-label={t('blocks.a11y.share_group')}
+        className="flex flex-wrap items-center"
+        role="group"
+      >
         {platforms.map((platform) => (
           <SocialIcon
             key={platform}
-            platform={platform}
-            href={shareUrls[platform]}
-            size={size}
-            color={color}
             aria-label={t('blocks.a11y.share_on', { platform: socialPlatformLabel(platform) })}
+            color={color}
+            href={shareUrls[platform]}
+            platform={platform}
+            size={size}
           />
         ))}
       </div>

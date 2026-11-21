@@ -10,5 +10,6 @@ export type Surface = 'light' | 'dark'
  */
 export function surface(value?: Surface): string {
   if (!value) return ''
+
   return value === 'dark' ? 'surface-dark' : 'surface-light'
 }
