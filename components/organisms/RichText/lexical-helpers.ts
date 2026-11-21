@@ -5,6 +5,7 @@
 
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
+import type { Image, Page } from '../../../server/sahajcloud-types'
 
 /** One Lexical node, as far as text extraction cares. */
 interface TextualNode {
@@ -55,26 +56,11 @@ export function relationshipLabel(value: unknown): string | null {
 }
 
 /** What a card for an embedded page draws, read off its relationship node. */
-export interface PageCard {
+interface PageCard {
   title: string
   description: string
   href: string
   image: { url: string; alt: string; width?: number | null; height?: number | null }
-}
-
-interface EmbeddedPage {
-  title?: unknown
-  meta?: {
-    description?: unknown
-    image?: unknown
-  } | null
-}
-
-interface EmbeddedImage {
-  url?: unknown
-  alt?: unknown
-  width?: number | null
-  height?: number | null
 }
 
 /**
@@ -94,7 +80,7 @@ export function pageCard(node: unknown): PageCard | null {
   }
   const page = node.value
 
-  if (!isPopulated<EmbeddedPage>(page)) {
+  if (!isPopulated<Partial<Page>>(page)) {
     return null
   }
   const title = typeof page.title === 'string' ? page.title.trim() : ''
@@ -102,7 +88,7 @@ export function pageCard(node: unknown): PageCard | null {
   const image = page.meta?.image
   const href = documentHref('pages', page as RelationValue)
 
-  if (!title || !description || !href || !isPopulated<EmbeddedImage>(image)) {
+  if (!title || !description || !href || !isPopulated<Partial<Image>>(image)) {
     return null
   }
   if (typeof image.url !== 'string' || !image.url) {
