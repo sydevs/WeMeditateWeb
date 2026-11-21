@@ -17,15 +17,13 @@ const APP_FILES = ['**/*.{js,jsx,ts,tsx}']
  * guards, and must be updated alongside: this file is plain JS loaded before
  * any transpile, so it cannot import that one.
  */
-const ALIAS_FILES = [
-  '{components,hooks,layouts,lib,pages,server,tests,types}/**/*.{ts,tsx}',
-  '.ladle/components.tsx',
-]
+const COMPONENT_FILES = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
+
+const ALIAS_FILES = ['{components,hooks,layouts,lib,pages,server,tests,types}/**/*.{ts,tsx}']
 const UP_A_FOLDER = {
   group: ['../*'],
   message: 'Import from outside this folder through `@/` (the repo root).',
 }
-const COMPONENT_FILES = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
 
 // `name`, `value` and `id` also take strings, but those are identifiers rather
 // than copy, so they stay out. `alt` is handled on its own, below.
