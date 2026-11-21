@@ -110,13 +110,11 @@ describe('screen-reader strings', () => {
       "<button aria-label={muted ? 'Unmute voice' : 'Mute voice'} />",
     ].join('\n')
 
-    expect(scan(sample).map((f) => f.text).sort()).toEqual([
-      'Close',
-      'Dismiss',
-      'Loading',
-      'Mute voice',
-      'Unmute voice',
-    ])
+    expect(
+      scan(sample)
+        .map((f) => f.text)
+        .sort(),
+    ).toEqual(['Close', 'Dismiss', 'Loading', 'Mute voice', 'Unmute voice'])
   })
 
   it('passes a resolved call and a label with no words', () => {

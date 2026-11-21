@@ -84,7 +84,6 @@ export function Splash({
   className = '',
   ...props
 }: SplashProps) {
-
   const resolvedBackgroundImage = getImageURL(
     backgroundImage,
     getVariantName(imageAspectRatio, imageSize),
@@ -113,18 +112,14 @@ export function Splash({
         <div className="max-w-4xl mx-auto text-center">
           {/* Title */}
           {title && (
-            <h1
-              className="font-sans text-2xl md:text-4xl font-light leading-tight mb-6 text-fg"
-            >
+            <h1 className="font-sans text-2xl md:text-4xl font-light leading-tight mb-6 text-fg">
               {title}
             </h1>
           )}
 
           {/* Subtitle */}
           {subtitle && (
-            <p
-              className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} text-fg`}
-            >
+            <p className={`text-lg md:text-xl font-light ${children ? 'mb-8' : 'mb-12'} text-fg`}>
               {subtitle}
             </p>
           )}

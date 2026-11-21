@@ -62,8 +62,8 @@ export function ClassDirectory({
           passing a11y gate is no evidence either. */}
       <sahaj-atlas
         aria-label={t('map.a11y.classes_heading')}
-        role="region"
         className={`block overflow-y-auto ${showMap ? 'h-[80vh]' : 'h-[560px]'}`}
+        role="region"
       />
 
       {/* `type="module"` is required: the loader is an ES module. Without a

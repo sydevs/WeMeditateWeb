@@ -52,10 +52,7 @@ export function Heading({
   }
 
   return (
-    <Component
-      className={`${baseStyles} ${levelStyles[visualLevel]} ${className}`}
-      {...props}
-    >
+    <Component className={`${baseStyles} ${levelStyles[visualLevel]} ${className}`} {...props}>
       {children}
     </Component>
   )

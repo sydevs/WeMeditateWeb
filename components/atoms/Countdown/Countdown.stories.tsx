@@ -98,10 +98,10 @@ export const Default: Story = () => {
       </StorySection>
 
       <StorySection
-        title="Dark Theme"
-        surface="dark"
         background="neutral"
         description="White text for dark backgrounds"
+        surface="dark"
+        title="Dark Theme"
       >
         <div className="text-center">
           <Countdown {...target(3600)} />

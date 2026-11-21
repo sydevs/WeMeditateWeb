@@ -1,4 +1,4 @@
-import { redirect } from 'vike/abort';
+import { redirect } from 'vike/abort'
 import { modifyUrl } from 'vike/modifyUrl'
 import { PageContext } from 'vike/types'
 import { DEFAULT_LOCALE } from '../server/sahajcloud-types'

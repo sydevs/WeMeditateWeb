@@ -28,8 +28,8 @@ const schedule = (minutes: number, overrides: Partial<SessionSchedule> = {}): Se
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection
-      title="States"
       description="A story runs in the browser, so every panel here is already past its first render — the one the server produces, which shows the class's own clock and nothing ticking."
+      title="States"
     >
       <div className="flex flex-col gap-12 rounded-lg bg-gray-100 p-8">
         <StorySection title="Days away" variant="subsection">
@@ -54,7 +54,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Dark Theme" surface="dark" background="neutral">
+    <StorySection background="neutral" surface="dark" title="Dark Theme">
       <LiveSession schedule={schedule(40)} />
     </StorySection>
   </StoryWrapper>

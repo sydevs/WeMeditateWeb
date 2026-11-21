@@ -1,9 +1,9 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { DiscoverMeditation } from "./DiscoverMeditation";
+import type { Story, StoryDefault } from '@ladle/react'
+import { DiscoverMeditation } from './DiscoverMeditation'
 
 export default {
-  title: "Organisms"
-} satisfies StoryDefault;
+  title: 'Organisms',
+} satisfies StoryDefault
 
 /**
  * DiscoverMeditation is a component: a full-height call-to-action section
@@ -15,6 +15,6 @@ export const Default: Story = () => (
     <DiscoverMeditation />
     <div className="h-32" />
   </>
-);
+)
 
-Default.storyName = "Discover Meditation"
+Default.storyName = 'Discover Meditation'

@@ -71,7 +71,7 @@ export function LiveSession({ schedule }: LiveSessionProps) {
             would throw the whole subtree's markup away over it. The browser
             replaces this line with the visitor's own clock a tick later
             anyway. */}
-        <p className="text-lg md:text-xl" suppressHydrationWarning>
+        <p suppressHydrationWarning className="text-lg md:text-xl">
           {t('blocks.live_session.schedule_line', own)}
         </p>
         {joinButton}

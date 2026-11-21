@@ -17,8 +17,8 @@ export default {
 export const Default: Story = () => (
   <StoryWrapper>
     <StorySection
-      title="Variants"
       description="The box the widget adopts. Its height is explicit rather than a min-height: the widget's own height resolves against this parent, and an auto one leaves it zero."
+      title="Variants"
     >
       <div className="flex flex-col gap-12">
         <StorySection title="With the map" variant="subsection">

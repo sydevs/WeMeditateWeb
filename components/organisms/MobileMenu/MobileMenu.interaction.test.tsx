@@ -127,6 +127,7 @@ describe('MobileMenu · opening and closing', () => {
     // jsdom has no matchMedia, so this stands one in with a `change` to drive.
     let notify = () => {}
     let matches = false
+
     window.matchMedia = ((query: string) => ({
       get matches() {
         return matches

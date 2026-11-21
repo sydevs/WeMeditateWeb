@@ -20,7 +20,7 @@
   // 200-with-the-Ladle-shell that this address answers an unknown path with today.
   "assets": {
     "directory": "build",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
   },
 
   // Not the default — wrangler's own schema says `false`. Switching previews off is refused by
@@ -33,5 +33,5 @@
   // deploys through Workers Builds, which does not run that Action. Measured on
   // sydevs/SahajAtlasWeb#279: `wrangler deploy --dry-run` is silent either way, so do not go
   // looking for a local failure the block prevents, and do not drop it on finding none.
-  "previews": {}
+  "previews": {},
 }

@@ -43,7 +43,7 @@ describe('atlasEmbedSrc', () => {
 
   // `/map`'s URL is the one every later caller must leave alone: it is what the
   // client record's canonical embed is registered against.
-  it('leaves /map\'s own URL byte for byte', () => {
+  it("leaves /map's own URL byte for byte", () => {
     expect(atlasEmbedSrc({ key: 'pk_test', atlasRoute: '/nl/amsterdam', routing: 'path' })).toBe(
       'https://sahajatlas.com/auto.js?key=pk_test&routing=path&atlas=%2Fnl%2Famsterdam',
     )
@@ -57,8 +57,9 @@ describe('atlasEmbedSrc', () => {
     })
 
     it('names the route an `opensAt` region or class resolves to', () => {
-      expect(new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/london' })).searchParams.get('atlas'))
-        .toBe('/london')
+      expect(
+        new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/london' })).searchParams.get('atlas'),
+      ).toBe('/london')
       expect(
         new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/london' })).searchParams.get('routing'),
       ).toBeNull()
@@ -74,7 +75,9 @@ describe('atlasEmbedSrc', () => {
 
       expect(directory.searchParams.get('langs')).toBe('pt')
       expect(directory.searchParams.get('format')).toBe('online')
-      expect(new URL(atlasEmbedSrc({ key: 'k', langs: 'pt' })).searchParams.get('format')).toBeNull()
+      expect(
+        new URL(atlasEmbedSrc({ key: 'k', langs: 'pt' })).searchParams.get('format'),
+      ).toBeNull()
     })
   })
 })

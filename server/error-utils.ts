@@ -45,6 +45,7 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
   maxDelayMs: 10000,
   shouldRetry: (error: unknown) => {
     const errorType = detectErrorType(error)
+
     return errorType === ErrorType.NETWORK || errorType === ErrorType.SERVER
   },
   reportFailure: true,
@@ -65,8 +66,10 @@ export function readStatus(error: unknown): number | undefined {
   if (typeof error !== 'object' || error === null) return undefined
   const e = error as HttpErrorLike
   const responseStatus = e.response?.status
+
   if (typeof responseStatus === 'number') return responseStatus
   if (typeof e.status === 'number') return e.status
+
   return undefined
 }
 
@@ -87,9 +90,11 @@ const NETWORK_CODE_PATTERNS = [
 
 // English phrases matched at word boundaries to avoid false positives like
 // "network policy violation" or "timeout: operation completed successfully".
-const NETWORK_PHRASE_PATTERN = /\b(fetch failed|network error|connection refused|connection reset|dns|request timeout|request timed out|socket hang up)\b/i
+const NETWORK_PHRASE_PATTERN =
+  /\b(fetch failed|network error|connection refused|connection reset|dns|request timeout|request timed out|socket hang up)\b/i
 
-const SERVER_PHRASE_PATTERN = /\b(internal server error|bad gateway|service unavailable|gateway timeout|50[0-9])\b/i
+const SERVER_PHRASE_PATTERN =
+  /\b(internal server error|bad gateway|service unavailable|gateway timeout|50[0-9])\b/i
 
 /** Classifies an error as NETWORK, SERVER, CLIENT, or UNKNOWN. */
 export function detectErrorType(error: unknown): ErrorType {
@@ -97,6 +102,7 @@ export function detectErrorType(error: unknown): ErrorType {
 
   // HTTP status codes take precedence. They are unambiguous.
   const status = readStatus(error)
+
   if (status !== undefined) {
     if (status >= 500) return ErrorType.SERVER
     if (status >= 400) return ErrorType.CLIENT
@@ -105,7 +111,7 @@ export function detectErrorType(error: unknown): ErrorType {
   const errorMessage = error instanceof Error ? error.message : String(error)
   const lower = errorMessage.toLowerCase()
 
-  if (NETWORK_CODE_PATTERNS.some(code => lower.includes(code))) {
+  if (NETWORK_CODE_PATTERNS.some((code) => lower.includes(code))) {
     return ErrorType.NETWORK
   }
   if (NETWORK_PHRASE_PATTERN.test(errorMessage)) {
@@ -119,7 +125,7 @@ export function detectErrorType(error: unknown): ErrorType {
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -130,6 +136,7 @@ function sleep(ms: number): Promise<void> {
 function calculateBackoffDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
   const exponentialDelay = baseDelayMs * Math.pow(2, attempt)
   const cappedDelay = Math.min(exponentialDelay, maxDelayMs)
+
   return Math.floor(Math.random() * cappedDelay)
 }
 
@@ -149,10 +156,7 @@ function calculateBackoffDelay(attempt: number, baseDelayMs: number, maxDelayMs:
  * )
  * ```
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  config: RetryConfig = {}
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, config: RetryConfig = {}): Promise<T> {
   const finalConfig = { ...DEFAULT_RETRY_CONFIG, ...config }
 
   if (finalConfig.maxAttempts < 1) {
@@ -164,6 +168,7 @@ export async function withRetry<T>(
       const result = await fn()
 
       if (attempt > 0) {
+        // eslint-disable-next-line no-console -- a recovery, not a failure: each failed attempt warned
         console.log(`Request succeeded after ${attempt} ${attempt === 1 ? 'retry' : 'retries'}`)
         Sentry.captureMessage(`Request succeeded after ${attempt} retries`, {
           level: 'info',
@@ -177,11 +182,15 @@ export async function withRetry<T>(
       const errorType = detectErrorType(error)
 
       if (!isLastAttempt && finalConfig.shouldRetry(error)) {
-        const delay = calculateBackoffDelay(attempt, finalConfig.baseDelayMs, finalConfig.maxDelayMs)
+        const delay = calculateBackoffDelay(
+          attempt,
+          finalConfig.baseDelayMs,
+          finalConfig.maxDelayMs,
+        )
 
-        console.log(
+        console.warn(
           `Request failed (attempt ${attempt + 1}/${finalConfig.maxAttempts}), ` +
-          `error type: ${errorType}, retrying in ${delay}ms...`
+            `error type: ${errorType}, retrying in ${delay}ms...`,
         )
 
         // A breadcrumb, not an event: the outcome event carries it, and an
@@ -199,7 +208,7 @@ export async function withRetry<T>(
 
       console.error(
         `Request failed permanently after ${attempt + 1} ${attempt === 0 ? 'attempt' : 'attempts'}, ` +
-        `error type: ${errorType}`
+          `error type: ${errorType}`,
       )
 
       if (finalConfig.reportFailure) {
