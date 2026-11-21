@@ -32,10 +32,10 @@ import {
   showcaseItems,
   splashSurface,
   subtleSystemItems,
+  textBoxDecoration,
   textColorToSurface,
   type ContentIndexBlockFields,
 } from '../../../lib/content-blocks'
-import { textBoxDecorationAt } from '../../../lib/textbox-decorations'
 import type {
   ButtonBlock,
   ImageGalleryBlock,
@@ -120,8 +120,8 @@ export const blockConverters: BlockConverters = {
   //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
   //   otherwise (left or right)    → ContentTextBox (side box overlapping image)
   // Its ornament follows from its place among the page's text boxes: see
-  // lib/textbox-decorations.ts.
-  textbox: ({ node, parent }) => {
+  // textBoxDecoration in lib/content-blocks.ts.
+  textbox: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as TextBoxBlock
     const img = populatedImage(fields.image)
 
@@ -133,7 +133,7 @@ export const blockConverters: BlockConverters = {
     const subtitle = fields.subtitle ?? undefined
     const title = fields.title ?? ''
     const description = fields.text ?? ''
-    const decoration = textBoxDecorationAt(parent, node)
+    const decoration = textBoxDecoration({ childIndex, fields, parent })
 
     // Overlay: text sits over the image. The SahajCloud `textColor` describes the
     // *text* (dark or light), while `surface` describes the *background* the

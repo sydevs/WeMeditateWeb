@@ -4,6 +4,7 @@ import type { ReactElement } from 'react'
 import { blockConverters } from './blockConverters'
 
 type TextboxConverter = (args: {
+  childIndex: number
   node: { fields: Record<string, unknown> }
   parent?: { children: unknown[] }
 }) => ReactElement | null
@@ -46,16 +47,23 @@ describe('textbox block converter — decorations', () => {
     ]
     const parent = { type: 'root', children: nodes }
     const drawn = nodes
-      .filter((node) => node !== paragraph)
-      .map((node) =>
-        ornament(renderToStaticMarkup(textbox({ node: node as ReturnType<typeof block>, parent }))),
+      .map((node, childIndex) => ({ childIndex, node }))
+      .filter(({ node }) => node !== paragraph)
+      .map(({ childIndex, node }) =>
+        ornament(
+          renderToStaticMarkup(
+            textbox({ childIndex, node: node as ReturnType<typeof block>, parent }),
+          ),
+        ),
       )
 
     expect(drawn).toEqual(['circle', 'triangle', 'gradient', 'none', 'triangle'])
   })
 
   it('takes a box rendered on its own as the page’s first', () => {
-    const html = renderToStaticMarkup(textbox({ node: block({ imagePosition: 'left' }) }))
+    const html = renderToStaticMarkup(
+      textbox({ childIndex: 0, node: block({ imagePosition: 'left' }) }),
+    )
 
     expect(html).toContain('Box')
     expect(ornament(html)).toBe('circle')

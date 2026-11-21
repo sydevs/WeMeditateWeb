@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
 import { Button, CircleDecorationSvg, Image, TriangleDecorationSvg } from '../../atoms'
-import type { TextBoxDecoration } from '../../../lib/textbox-decorations'
+import type { TextBoxDecoration } from '../../../lib/content-blocks'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
 import { toParagraphs } from '../../../lib/paragraphs'
 
