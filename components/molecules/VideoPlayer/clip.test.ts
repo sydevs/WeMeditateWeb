@@ -136,7 +136,6 @@ describe('secondsToIsoDuration', () => {
 })
 
 describe('percentSeek', () => {
-
   // The percent hotkeys seek by a share of the window, not of the media: `5` is halfway through it.
   it.each([
     ['0', 100],
@@ -163,7 +162,14 @@ describe('bufferedPercent', () => {
     ['buffered to the middle', [[0, 150]] as [number, number][], 50],
     ['buffered to the end', [[0, 200]] as [number, number][], 100],
     ['buffered past the end', [[0, 900]] as [number, number][], 100],
-    ['several ranges, the last one counting', [[0, 110], [140, 175]] as [number, number][], 75],
+    [
+      'several ranges, the last one counting',
+      [
+        [0, 110],
+        [140, 175],
+      ] as [number, number][],
+      75,
+    ],
   ])('reports %s as %i%%', (_label, buffered, expected) => {
     expect(bufferedPercent(window, 100, buffered)).toBe(expected)
   })

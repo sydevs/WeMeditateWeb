@@ -1,11 +1,27 @@
 import { describe, it, expect } from 'vitest'
 import type { Page, WebConfig } from '../server/sahajcloud-types'
-import { activeFeaturedSlug, isFeaturedNavPage } from './featured-nav'
+import { activeFeaturedSlug, isFeaturedNavPage, isKnowledgePage } from './featured-nav'
 
 /** Minimal featured-page list keyed by slug. Only `slug` is read. */
 function settings(slugs: string[]): Pick<WebConfig, 'featuredPages'> {
   return { featuredPages: slugs.map((slug) => ({ slug }) as Page) }
 }
+
+/** The same, for the knowledge menu. */
+function knowledge(slugs: string[]): Pick<WebConfig, 'knowledgePages'> {
+  return { knowledgePages: slugs.map((slug) => ({ slug }) as Page) }
+}
+
+describe('isKnowledgePage', () => {
+  it('is true for a page the knowledge menu lists', () => {
+    expect(isKnowledgePage({ slug: 'kundalini' }, knowledge(['kundalini', 'chakras']))).toBe(true)
+  })
+
+  it('is false for a page it does not list, and for an empty menu', () => {
+    expect(isKnowledgePage({ slug: 'about' }, knowledge(['kundalini']))).toBe(false)
+    expect(isKnowledgePage({ slug: 'kundalini' }, knowledge([]))).toBe(false)
+  })
+})
 
 describe('activeFeaturedSlug', () => {
   it('returns the slug when the current page is a featured nav page', () => {

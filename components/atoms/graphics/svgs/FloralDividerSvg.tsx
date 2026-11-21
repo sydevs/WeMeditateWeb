@@ -10,14 +10,14 @@ export interface FloralDividerSvgProps extends ComponentProps<'svg'> {}
 export function FloralDividerSvg({ className = 'w-52 h-auto', ...props }: FloralDividerSvgProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 204 53"
+      aria-hidden="true"
       className={className}
       fill="none"
-      aria-hidden="true"
+      viewBox="0 0 204 53"
+      xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <g stroke="currentColor" strokeWidth="0.75" fill="none" transform="translate(0 1)">
+      <g fill="none" stroke="currentColor" strokeWidth="0.75" transform="translate(0 1)">
         <circle cx="102.03" cy="49.1" r="1.66" />
         <path d="m93.62 29.53 8.41 14.12 8.41-14.12zm8.42-16.49h-.11c-2.3853837-.0252528-4.6792895-.9214765-6.45-2.52-1.6777393-1.66383698-2.6240788-3.92713574-2.63-6.29v-.37h.34c2.1465873.01076909 4.2327356.7119954 5.95 2" />
         <path d="m104.85 5.86c1.730962-1.29822128 3.836298-2 6-2h.34v.33c-.004368 2.36611027-.950742 4.6330898-2.63 6.3-1.771203 1.5977258-4.064795 2.4938267-6.45 2.52h-.45" />

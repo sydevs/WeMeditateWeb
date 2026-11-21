@@ -6,7 +6,7 @@ Cloudflare Workers.
 ## Quick start
 
 ### Prerequisites
-- Node.js `22.17.0` (see `.node-version`)
+- Node.js `24.22.1` (see `.node-version`)
 - pnpm (`npm install -g pnpm`)
 
 ### Setup
@@ -29,9 +29,10 @@ Open `http://localhost:5173`.
 | `pnpm preview` | Preview the production build locally. |
 | `pnpm prod` | Build and run the production server locally with Wrangler. |
 | `pnpm deploy` | Build and deploy to Cloudflare. |
-| `pnpm lint` | Run ESLint across the codebase. |
+| `pnpm lint` | Run ESLint across the codebase, then `prettier --check .`. Any warning fails it. |
 | `pnpm test` | Run tests in watch mode. |
 | `pnpm test:run` | Run tests once (CI style). |
+| `pnpm test:coverage` | Run tests once with V8 coverage, written to `coverage/` (local only, no thresholds). |
 | `pnpm test:ui` | Open the Vitest UI runner. |
 | `pnpm ladle` | Run the component library locally. |
 | `pnpm ladle:build` | Build the component library for static hosting. |

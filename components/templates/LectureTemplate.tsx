@@ -20,6 +20,8 @@ import { Badge, PageTitle } from '../atoms'
 import { RelatedContentLoader } from '../organisms/RelatedContent'
 import { useT } from '../../hooks/useT'
 import type { TFunction } from '../../lib/i18n'
+import { lecturePlaybackSeconds } from '../../lib/lecture-shape'
+import { documentEmbedHref } from '../../lib/document-routes'
 
 export interface LecturePlayerProps {
   /** Normalized lecture view model (full or clip). */
@@ -102,13 +104,7 @@ export function LectureTemplate({
   showRelated = false,
 }: LectureTemplateProps) {
   const t = useT()
-  // A clip shows its playable window length. A full lecture shows the whole
-  // source duration.
-  const windowSeconds =
-    lecture.startTime != null && lecture.stopTime != null && lecture.stopTime > lecture.startTime
-      ? lecture.stopTime - lecture.startTime
-      : null
-  const displaySeconds = windowSeconds ?? lecture.duration ?? 0
+  const displaySeconds = lecturePlaybackSeconds(lecture) ?? 0
 
   // A lecture with no resolvable HLS source cannot render a player. This
   // can happen for a clip whose parent metadata has not synced yet.
@@ -139,7 +135,7 @@ export function LectureTemplate({
         {showEmbedButton ? (
           <EmbedButton
             className="ml-auto"
-            embedPath={`/lectures/${lecture.id}/embed`}
+            embedPath={documentEmbedHref('lectures', lecture.id) ?? ''}
             locale={locale}
             title={lecture.title ?? undefined}
           />

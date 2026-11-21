@@ -27,6 +27,7 @@ export function localeEndonym(locale: Locale): string {
   // each flag calls it again. An endonym is a constant for its locale, and
   // `Intl.DisplayNames` is expensive to construct, so cache the result.
   const cached = ENDONYMS.get(locale)
+
   if (cached) return cached
 
   let name: string | undefined

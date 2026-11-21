@@ -73,13 +73,11 @@ export function FooterLinkList({ title, links, variant = 'default', locale }: Fo
           <Link
             // eslint-disable-next-line @eslint-react/no-array-index-key -- a row of this list holds no state, so reusing one across an editor's reorder costs a prop diff and nothing else
             key={index}
+            className={`hover:text-teal-600 ${isHero ? 'font-normal' : 'font-light'}`}
             href={link.href}
             locale={locale}
-            variant="neutral"
             size={isHero ? 'lg' : 'sm'}
-            className={`hover:text-teal-600 ${
-              isHero ? 'font-normal' : 'font-light'
-            }`}
+            variant="neutral"
           >
             {link.text}
           </Link>

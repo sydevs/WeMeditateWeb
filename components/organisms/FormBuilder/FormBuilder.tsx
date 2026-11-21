@@ -98,6 +98,8 @@ function renderField(
   // rather than read from a hook.
   t: TFunction,
   fieldError?: string,
+  // Only where no `FormField` wraps the control: that one links its own.
+  errorId?: string,
 ) {
   if (field.blockType === 'message') {
     return (
@@ -112,11 +114,15 @@ function renderField(
   const options = 'options' in field ? field.options : null
   const placeholder = 'placeholder' in field ? field.placeholder : null
   const defaultValue = 'defaultValue' in field ? field.defaultValue : null
+  const rules = {
+    required: field.required ? t('forms.general.field_required', { field: label }) : false,
+  }
 
   if (field.blockType === 'checkbox') {
     return (
       <Checkbox
-        {...register(field.name)}
+        {...register(field.name, rules)}
+        aria-describedby={errorId}
         aria-invalid={!!fieldError}
         defaultChecked={defaultValue === true}
         hasError={!!fieldError}
@@ -133,9 +139,8 @@ function renderField(
     variant,
     state: (fieldError ? 'error' : 'default') as 'default' | 'error',
     'aria-invalid': !!fieldError,
-    ...register(field.name, {
-      required: field.required ? t('forms.general.field_required', { field: label }) : false,
-    }),
+    'aria-describedby': errorId,
+    ...register(field.name, rules),
   }
 
   switch (field.blockType) {
@@ -150,6 +155,10 @@ function renderField(
         <Select
           {...commonProps}
           fullWidth
+          // Unset, the browser selects the first enabled option, so an
+          // untouched select submits it and `required` can never fail. The
+          // placeholder's own value is the one to start on.
+          defaultValue={commonProps.defaultValue ?? ''}
           placeholder={
             variant === 'minimal' ? label : placeholder || t('forms.general.select_placeholder')
           }
@@ -343,11 +352,13 @@ export function FormBuilder({
             // Checkbox carries its own label, and the minimal variant uses
             // placeholders, so neither wants the FormField wrapper.
             if (field.blockType === 'checkbox' || variant === 'minimal') {
+              const errorId = fieldError ? `${field.name}-error` : undefined
+
               return (
                 <div key={key} className={span}>
-                  {renderField(field, register, variant, t, fieldError)}
+                  {renderField(field, register, variant, t, fieldError, errorId)}
                   {fieldError && (
-                    <p className="mt-1 text-sm text-error" role="alert">
+                    <p className="mt-1 text-sm text-error" id={errorId} role="alert">
                       {fieldError}
                     </p>
                   )}
@@ -376,12 +387,10 @@ export function FormBuilder({
             <Turnstile
               key={attempt}
               options={{ execution: 'render', theme: 'light', language: locale }}
-              onSuccess={setToken}
               // A failed, expired or unreachable challenge all leave the form
               // without a token. SahajCloud refuses that submission, which is the
               // same outcome as an unsolved challenge — nothing to recover.
               siteKey={siteKey}
-              onExpire={() => setToken(null)}
               // ⚠ `execution: 'render'` is what survives a client-side
               // navigation. Cloudflare's automatic scan runs once per document
               // load, and Vike swaps the page under `<main>` without reloading,
@@ -392,6 +401,8 @@ export function FormBuilder({
               // visitor reading the Spanish site in an English browser would
               // get an English challenge mid-form. Pass the page locale.
               onError={() => setToken(null)}
+              onExpire={() => setToken(null)}
+              onSuccess={setToken}
             />
           </div>
         )}

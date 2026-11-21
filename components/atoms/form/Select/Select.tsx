@@ -60,12 +60,9 @@ export function Select({
   }
 
   const stateStyles = {
-    default:
-      'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
-    error:
-      'text-error border-error hover:border-error-dark focus:border-error',
-    success:
-      'text-gray-900 border-success hover:border-success focus:border-success',
+    default: 'text-gray-900 border-gray-300 hover:border-gray-400 focus:border-teal-500',
+    error: 'text-error border-error hover:border-error-dark focus:border-error',
+    success: 'text-gray-900 border-success hover:border-success focus:border-success',
   }
 
   const wrapperWidthStyles = fullWidth ? 'w-full' : 'inline-block'
@@ -78,32 +75,29 @@ export function Select({
     <div className={`relative ${wrapperWidthStyles}`}>
       <select
         ref={ref}
-        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
         aria-invalid={state === 'error'}
+        className={`${baseStyles} ${variantStyles[variant]} ${stateStyles[state]} ${selectWidthStyles} ${className}`}
         {...props}
       >
         {placeholder && (
-          <option value="" disabled>
+          <option disabled value="">
             {placeholder}
           </option>
         )}
         {children}
       </select>
       {/* Dropdown arrow icon */}
-      <div className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-700`}>
+      <div
+        className={`pointer-events-none absolute inset-y-0 ${chevronRightPosition} flex items-center text-gray-700`}
+      >
         <svg
+          aria-hidden="true"
           className="h-4 w-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
+          <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
         </svg>
       </div>
     </div>

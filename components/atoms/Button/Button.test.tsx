@@ -181,7 +181,7 @@ describe('Button icon and label', () => {
   // `CarouselNavButton` owes: it says nothing about which way the button goes.
   it('keeps an explicit aria-label on the text form, not the icon-only form alone', () => {
     const html = renderToStaticMarkup(
-      <Button aria-label="Previous: Intro" icon={ChevronRightIcon} truncate>
+      <Button truncate aria-label="Previous: Intro" icon={ChevronRightIcon}>
         Intro
       </Button>,
     )
