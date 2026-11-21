@@ -29,9 +29,9 @@ import type { TextBoxBlock } from '../server/payload-types'
 export type TextBoxDecoration = 'circle' | 'gradient' | 'triangle'
 
 /** `ornate` is the wisdom box's built-in graphic: it counts as a neighbour. */
-type Pick = TextBoxDecoration | 'ornate' | undefined
+type Ornament = TextBoxDecoration | 'ornate' | undefined
 
-function pickFor(box: TextBoxBlock, first: boolean): Pick {
+function ornamentFor(box: TextBoxBlock, first: boolean): Ornament {
   if (box.imagePosition === 'overlay') {
     return first ? undefined : 'triangle'
   }
@@ -49,10 +49,10 @@ function pickFor(box: TextBoxBlock, first: boolean): Pick {
 export function textBoxDecorations(
   boxes: readonly TextBoxBlock[],
 ): (TextBoxDecoration | undefined)[] {
-  let previous: Pick
+  let previous: Ornament
 
   return boxes.map((box, index) => {
-    const pick = pickFor(box, index === 0)
+    const pick = ornamentFor(box, index === 0)
     const drawn = pick === previous ? undefined : pick
 
     previous = drawn
