@@ -161,27 +161,18 @@ describe('the end of a content page', () => {
     expect(html).not.toContain(EN_TRANSLATIONS.discover.general.title)
   })
 
-  it('renders the same row in the browser, whose pageContext parses a path-only URL', () => {
-    // What the server rendered is what hydration must reproduce, or React
-    // discards the server markup. The URL survives because it rides `data`:
-    // the browser's own `urlParsed` carries no origin to rebuild it from.
-    routeData.current = {
-      page: ARTICLE,
-      settings,
-      seo: routeSeo(ARTICLE, { locale: 'en', urlPathname: '/about-meditation' }),
-    }
-    context.current = {
-      locale: 'en',
-      urlPathname: '/about-meditation',
-      urlParsed: { origin: null },
-    }
+  it('renders the same markup in the browser, whose pageContext carries no origin', () => {
+    // Hydration must reproduce the server's markup or React discards it, so
+    // the row may not read anything the two renders disagree about. `seo` is
+    // built once on the server and rides `data`; the browser's own `urlParsed`
+    // carries no origin.
+    const at: (typeof context)['current'] = { locale: 'en', urlPathname: '/about-meditation' }
+    const server = render(ARTICLE, at)
 
-    expect(
-      anchorFor(
-        renderToStaticMarkup(<Page />),
-        `${FACEBOOK}${encodeURIComponent(`${ORIGIN}/about-meditation`)}`,
-      ),
-    ).not.toBe('')
+    context.current = { ...at, urlParsed: { origin: null } }
+
+    expect(server).toContain(FACEBOOK)
+    expect(renderToStaticMarkup(<Page />)).toBe(server)
   })
 
   it('offers no share row under an open live preview', () => {

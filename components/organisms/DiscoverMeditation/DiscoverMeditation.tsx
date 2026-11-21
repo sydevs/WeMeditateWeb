@@ -78,9 +78,7 @@ export function DiscoverMeditation({
         {/* Header Section: the section's gray-900, not gray-700. Under `md` the
             subtitle is normal-size text on the photo, where gray-700 measured 3.8:1. */}
         <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-normal mb-8">
-            {t('discover.general.title')}
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-normal mb-8">{t('discover.general.title')}</h2>
           <p className="text-xl md:text-2xl font-light max-w-lg mx-auto">
             {t('discover.general.subtitle')}
           </p>
