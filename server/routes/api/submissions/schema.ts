@@ -56,4 +56,3 @@ export const SUBMISSION_BODY_LIMIT =
     (SUBMISSION_BOUNDS.entries * (SUBMISSION_BOUNDS.field + SUBMISSION_BOUNDS.value) +
       SUBMISSION_BOUNDS.email) +
   4096
-
