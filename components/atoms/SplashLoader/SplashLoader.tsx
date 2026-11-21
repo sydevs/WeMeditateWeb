@@ -167,9 +167,7 @@ export function SplashLoader({
       )}
 
       {/* Color overlay with multiply blend mode */}
-      <div
-        className={`absolute inset-0 mix-blend-multiply ${colorClasses[color]}`}
-      />
+      <div className={`absolute inset-0 mix-blend-multiply ${colorClasses[color]}`} />
 
       {/* Centered animated logo and text */}
       <div className={`relative z-10 flex flex-col items-center ${sizeClasses[size].gap}`}>

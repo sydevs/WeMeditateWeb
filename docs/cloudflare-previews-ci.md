@@ -11,10 +11,11 @@ alwaysApply: false
 
 CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.yml):
 
-- **`gate`** — runs `pnpm lint`, `pnpm typecheck`, and `pnpm test:run` (unit tests only —
-  `vitest.config.ts` excludes the smoke specs), then writes the accessibility results to the job
-  summary, then `pnpm ladle:build` and `pnpm check:wrangler`. **The accessibility gate is one of
-  those unit specs** — [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
+- **`gate`** — runs `pnpm lint` (ESLint, then `prettier --check .`), `pnpm typecheck`, and
+  `pnpm test:run` (unit tests only — `vitest.config.ts` excludes the smoke specs), then writes the
+  accessibility results to the job summary, then `pnpm ladle:build` and `pnpm check:wrangler`.
+  **The accessibility gate is one of those unit specs** —
+  [tests/a11y/page-types.test.tsx](../tests/a11y/page-types.test.tsx) runs
   `axe-core` over every page type and fails on any finding, so it blocks a change the way any
   spec does. It is here rather than in `smoke` because `Smoke (web)` skips silently when no
   preview is discoverable, and a check that can skip cannot stop a change. `scripts/a11y-summary.mjs`

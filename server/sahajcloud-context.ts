@@ -82,7 +82,10 @@ export function getSahajCloudContext(): SahajCloudContext {
   const result = sahajCloudContextSchema.safeParse({ apiKey, baseURL })
 
   if (!result.success) {
-    const errorMessage = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
+    const errorMessage = result.error.issues
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join('; ')
+
     throw new Error(`SahajCloud context validation failed: ${errorMessage}`)
   }
 

@@ -116,8 +116,7 @@ export function SubtleSystem({
   const isNested = useCallback((current: string | null, target: string) => {
     if (!current) return false
     const nestedGroup = NESTED_CHAKRAS[target as keyof typeof NESTED_CHAKRAS] as
-      | readonly string[]
-      | undefined
+      readonly string[] | undefined
 
     return nestedGroup?.includes(current) ?? false
   }, [])
@@ -206,8 +205,7 @@ export function SubtleSystem({
     // catch block swallows it, so the button silently does nothing in those
     // browsers.
     const el = containerRef.current as
-      | (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> })
-      | null
+      (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> }) | null
 
     if (!el) return
     const doc = document as Document & { webkitExitFullscreen?: () => Promise<void> }

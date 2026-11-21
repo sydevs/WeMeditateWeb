@@ -32,14 +32,14 @@ export default function HeadDefault() {
 
   return (
     <>
-      <link rel="preconnect" href="https://assets.sydevelopers.com" crossOrigin="anonymous" />
-      <link rel="preconnect" href="https://cloud.sydevelopers.com" />
-      <link rel="icon" href={logoUrl} />
+      <link crossOrigin="anonymous" href="https://assets.sydevelopers.com" rel="preconnect" />
+      <link href="https://cloud.sydevelopers.com" rel="preconnect" />
+      <link href={logoUrl} rel="icon" />
       {/* The home-screen icon and the manifest. The manifest is a route, not
           a file in `public/`, because both builds ship `public/` and the
           Ladle playground is not this app. */}
-      <link rel="apple-touch-icon" href={APP_ICON} />
-      <link rel="manifest" href={localeHref(locale, '/manifest.webmanifest')} />
+      <link href={APP_ICON} rel="apple-touch-icon" />
+      <link href={localeHref(locale, '/manifest.webmanifest')} rel="manifest" />
       <meta content={THEME_COLOR} name="theme-color" />
 
       {/* Vike's client routing swaps the page with no document load, and a

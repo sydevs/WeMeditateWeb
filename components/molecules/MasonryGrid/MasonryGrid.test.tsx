@@ -12,7 +12,7 @@ describe('MasonryGrid', () => {
   // The accessible name must contain the visible label (WCAG 2.1 2.5.3), so
   // a count the label does not show cannot be the name (#201).
   it('names the show-more button with the text it draws', () => {
-    const html = renderToStaticMarkup(<MasonryGrid items={items} initialItemCount={3} />)
+    const html = renderToStaticMarkup(<MasonryGrid initialItemCount={3} items={items} />)
     const at = html.indexOf('Show More')
 
     expect(at).toBeGreaterThan(-1)
@@ -20,7 +20,7 @@ describe('MasonryGrid', () => {
   })
 
   it('shows the first page only, and a way to the rest', () => {
-    const html = renderToStaticMarkup(<MasonryGrid items={items} initialItemCount={3} />)
+    const html = renderToStaticMarkup(<MasonryGrid initialItemCount={3} items={items} />)
 
     expect(html).toContain('Heading 3')
     expect(html).not.toContain('Heading 4')

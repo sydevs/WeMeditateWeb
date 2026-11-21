@@ -1,9 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Accordion, AccordionItemData } from './Accordion'
-import {
-  StoryWrapper,
-  StorySection,
-} from '../../ladle'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
   title: 'Molecules',
@@ -41,15 +38,17 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection title="First Item Open">
-      <Accordion items={faqItems} defaultOpenItems={['1']} />
+      <Accordion defaultOpenItems={['1']} items={faqItems} />
     </StorySection>
 
     <StorySection title="Allow Multiple Open">
-      <Accordion items={faqItems} allowMultiple defaultOpenItems={['1', '2']} />
+      <Accordion allowMultiple defaultOpenItems={['1', '2']} items={faqItems} />
     </StorySection>
 
-    <StorySection title="Rich HTML Content" inContext={true}>
+    <StorySection inContext={true} title="Rich HTML Content">
       <Accordion
+        allowMultiple
+        defaultOpenItems={['1']}
         items={[
           {
             id: '1',
@@ -64,8 +63,8 @@ export const Default: Story = () => (
                   <li>Better sleep quality</li>
                 </ul>
                 <p>
-                  <strong>Scientific research</strong> has shown that meditation can lead to
-                  lasting positive changes in brain structure and function.
+                  <strong>Scientific research</strong> has shown that meditation can lead to lasting
+                  positive changes in brain structure and function.
                 </p>
               </div>
             ),
@@ -84,7 +83,7 @@ export const Default: Story = () => (
                 </ol>
                 <p className="mb-2">
                   For guided sessions, visit our{' '}
-                  <a href="#" className="text-teal-600 underline hover:text-teal-700">
+                  <a className="text-teal-600 underline hover:text-teal-700" href="#">
                     meditation library
                   </a>
                   .
@@ -121,8 +120,6 @@ export const Default: Story = () => (
             ),
           },
         ]}
-        allowMultiple
-        defaultOpenItems={['1']}
       />
     </StorySection>
 

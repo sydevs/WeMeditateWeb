@@ -29,7 +29,7 @@ const source = await readFile(TYPES_PATH, 'utf8')
 if (!AUGMENTATION_RE.test(source)) {
   console.warn(
     "[strip-payload-augmentation] No `declare module 'payload'` block found — " +
-      'upstream format may have changed. Leaving payload-types.ts untouched.'
+      'upstream format may have changed. Leaving payload-types.ts untouched.',
   )
   process.exit(0)
 }
