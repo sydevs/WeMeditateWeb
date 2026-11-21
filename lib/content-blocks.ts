@@ -142,6 +142,12 @@ export interface PopulatedImage {
   height?: number
   /** Nearest configured Cloudflare aspect ratio for the intrinsic dimensions. */
   aspectRatio: AspectRatio
+  /**
+   * The image's attribution, trimmed, present only when a read selected it
+   * and an editor typed one. SahajCloud stores an unset credit as `""` on
+   * most images, and a typed one can carry trailing space.
+   */
+  credit?: string
 }
 
 /** Resolves an upload or relationship ref to image fields, or `null` if unpopulated. */
@@ -156,6 +162,7 @@ export function populatedImage(ref: unknown): PopulatedImage | null {
     width: ref.width ?? undefined,
     height: ref.height ?? undefined,
     aspectRatio: nearestAspectRatio(ref.width, ref.height),
+    credit: typeof ref.credit === 'string' ? ref.credit.trim() || undefined : undefined,
   }
 }
 

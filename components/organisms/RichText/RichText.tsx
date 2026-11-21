@@ -12,26 +12,24 @@ import {
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { Blockquote, Container, Image, Link } from '../../atoms'
+import { populatedImage } from '../../../lib/content-blocks'
 import { Alert } from '../../molecules/Alert'
 import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
 import { FormBuilder } from '../FormBuilder'
 import { documentHref, type RelationValue } from '../../../lib/document-routes'
 import { isPopulated } from '../../../lib/payload-relationships'
-import { nearestAspectRatio } from '../../../lib/cloudflare-images'
 import type { EmbeddedForm } from '../../../server/sahajcloud-types'
-import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
+import {
+  getNodeText,
+  IMAGE_CREDIT_CLASS,
+  relationshipLabel,
+  slugify,
+  uploadFigureClass,
+} from './lexical-helpers'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */
 type LexicalEditorState = ComponentProps<typeof LexicalRichText>['data']
-
-/** Populated upload/image document fields the upload converter reads. */
-interface PopulatedImage {
-  url?: string | null
-  alt?: string | null
-  width?: number | null
-  height?: number | null
-}
 
 /** Sizes hint: article body images are at most the article column width. */
 const ARTICLE_IMAGE_SIZES = '(max-width: 768px) 100vw, 768px'
@@ -178,21 +176,20 @@ const CONVERTERS: JSXConverters = {
   },
 
   // Upload images render through the Cloudflare-aware Image atom, inside a
-  // <figure>. This honors the SahajCloud caption and alignment fields.
+  // <figure>. This honors the SahajCloud caption and alignment fields, and
+  // prints the image's credit above the caption, where the legacy site put it.
+  // Known dimensions draw the image whole, at its own ratio (see the
+  // `image-gallery` converter).
   upload: ({ node }) => {
-    const value = node.value
+    const image = populatedImage(node.value)
 
-    if (!isPopulated(value)) {
-      return null
-    }
-    const image = value as PopulatedImage
-
-    if (!image.url) {
+    if (!image) {
       return null
     }
     const fields = node.fields as
       { caption?: unknown; align?: string | null; alt?: string | null } | undefined
     const caption = renderCaption(fields?.caption)
+    const credit = image.credit
     // `wide` images break out to the full content width. They get no
     // rounding, because they meet the edges, and a full-width `sizes` hint,
     // so the browser fetches a large variant.
@@ -201,16 +198,27 @@ const CONVERTERS: JSXConverters = {
     return (
       <figure className={uploadFigureClass(fields?.align)}>
         <Image
-          alt={fields?.alt ?? image.alt ?? ''}
-          aspectRatio={nearestAspectRatio(image.width, image.height)}
-          height={image.height ?? undefined}
+          alt={fields?.alt ?? image.alt}
+          aspectRatio={image.aspectRatio}
+          className="w-full"
+          forceAspectRatio={!(image.width && image.height)}
+          height={image.height}
           lightboxGroup={`upload-${image.url}`}
           rounded={isWide ? 'none' : 'rounded'}
           sizes={isWide ? '100vw' : ARTICLE_IMAGE_SIZES}
           src={image.url}
-          width={image.width ?? undefined}
+          width={image.width}
         />
-        {caption ? <figcaption className="mt-2 text-sm text-gray-700">{caption}</figcaption> : null}
+        {caption || credit ? (
+          <figcaption className="mt-2 text-sm text-gray-700">
+            {credit ? (
+              <small className={caption ? `${IMAGE_CREDIT_CLASS} mb-1` : IMAGE_CREDIT_CLASS}>
+                {credit}
+              </small>
+            ) : null}
+            {caption}
+          </figcaption>
+        ) : null}
       </figure>
     )
   },

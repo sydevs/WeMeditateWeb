@@ -59,6 +59,15 @@ export function relationshipLabel(value: unknown): string | null {
 }
 
 /**
+ * Tailwind classes for an image's attribution, the slot the legacy site's
+ * `.cb-image-media__credit` filled — shared by an uploaded figure and a
+ * gallery tile so the two print it alike. The legacy grey is our `gray-400`,
+ * which measures 1.7:1 on white and fails AA, so this takes the muted
+ * foreground token instead. Render it in a `<small>`.
+ */
+export const IMAGE_CREDIT_CLASS = 'block text-sm tracking-wide text-fg-muted'
+
+/**
  * Tailwind classes for an upload `<figure>`, given its SahajCloud alignment. An
  * aligned image takes 40% of the column width: left or right floats so
  * text wraps, and center is a centered block. `wide` breaks out of the

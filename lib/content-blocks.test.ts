@@ -54,6 +54,14 @@ describe('populatedImage', () => {
     expect(populatedImage(cfImage({ url: '' }))).toBeNull()
     expect(populatedImage(null)).toBeNull()
   })
+
+  it('carries a credit trimmed, and none for the "" SahajCloud stores when unset', () => {
+    expect(populatedImage(cfImage({ credit: 'Ma Lin, 13th century ' }))?.credit).toBe(
+      'Ma Lin, 13th century',
+    )
+    expect(populatedImage(cfImage({ credit: '' }))?.credit).toBeUndefined()
+    expect(populatedImage(cfImage({ credit: null }))?.credit).toBeUndefined()
+  })
 })
 
 describe('galleryImages', () => {

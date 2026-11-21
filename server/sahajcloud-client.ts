@@ -60,6 +60,7 @@ import type {
   RelatedLectureCard,
 } from './sahajcloud-types'
 import { DEFAULT_LOCALE, isLocale, WEB_TRANSLATIONS_SELECT } from './sahajcloud-types'
+import { reportDroppedImages } from './dropped-images'
 
 // --- Common Options Interfaces ---
 
@@ -224,7 +225,9 @@ const EMBEDDED_FORM_SELECT = {
  * resolve titles, slugs, and thumbnails instead of degrading.
  */
 const PAGE_POPULATE = {
-  images: IMAGE_POPULATE.images,
+  // `credit` only here: no other read renders one, and the config's images
+  // are serialised into every page's HTML.
+  images: { ...IMAGE_POPULATE.images, credit: true } satisfies ImagesSelect<true>,
   authors: AUTHOR_POPULATE,
   videos: VIDEO_POPULATE,
   pages: EMBEDDED_PAGE_SELECT,
@@ -431,6 +434,12 @@ export async function getPageBySlug(
       // preview it is exactly what we asked for.
       if (!isPreview && page._status === 'draft') {
         return null
+      }
+
+      // Not under preview: an editor mid-edit is looking at the page already,
+      // and a draft's gap is not yet anyone else's.
+      if (!isPreview) {
+        reportDroppedImages(page, options.locale)
       }
 
       return page
