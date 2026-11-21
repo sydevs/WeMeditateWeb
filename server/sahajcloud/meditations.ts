@@ -12,7 +12,7 @@ import type { LocalizedQueryOptions } from './query'
  * Gets the background-music tracks eligible for a meditation, from the
  * custom nested route `GET /api/meditations/:id/songs`.
  *
- * Unlike the standard collection reads above, this endpoint does the
+ * Unlike the standard collection reads in ./pages and ./documents, this endpoint does the
  * songTag and `includeForMeditations` selection on the server. It returns a
  * fixed minimal projection (`{ id, title, url, tags }`). It does not accept
  * `select`, and it ignores `populate`, `depth`, and `limit` (it does honor

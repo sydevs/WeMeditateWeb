@@ -125,11 +125,12 @@ export async function getDocumentById<C extends FindByIdCollection>(
           id: options.id,
           locale: options.locale,
           // Depth 3 to resolve relationships embedded in `content` blocks (see
-          // getPageBySlug). The per-collection selects in PAGE_POPULATE bound this.
+          // `getPageBySlug` in ./pages). The per-collection selects in
+          // PAGE_POPULATE bound this.
           depth: DOCUMENT_READ_DEPTH,
           draft: isPreview,
-          // select/populate are validated per-collection at their definitions above
-          // (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
+          // select/populate are validated per-collection where they are defined
+          // in ./selects (PAGE_SELECT / MEDITATION_SELECT via `satisfies`). TypeScript cannot
           // correlate the union-typed config to the generic collection `C`. The
           // input is cast here. The response is re-typed to the concrete doc below.
           select: config.select as never,
