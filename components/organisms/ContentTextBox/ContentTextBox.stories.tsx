@@ -63,6 +63,25 @@ export const Default: Story = () => (
       />
     </StorySection>
 
+    <StorySection
+      description="Each line break in the description starts a new paragraph, as in every other text box style."
+      title="Paragraphs"
+    >
+      <ContentTextBox
+        align="right"
+        ctaHref="#"
+        ctaText="Classes near me"
+        description={
+          'The experience of meditation is even stronger when it is shared! Discover the beauty of collective meditations, led by experienced practitioners in hundreds of cities around the world.\n\nEvery class is completely free, and you are welcome to come along whether you have meditated before or not.'
+        }
+        imageAlt="Group meditation class with instructor"
+        imageHeight={1200}
+        imageSrc="https://picsum.photos/seed/paragraphs-example/900/1200"
+        imageWidth={900}
+        title="Get Connected"
+      />
+    </StorySection>
+
     <StorySection title="Image Aspect Ratios">
       <div className="flex flex-col gap-16">
         <StorySection title="Square (1:1)" variant="subsection">

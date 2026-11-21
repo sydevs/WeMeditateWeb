@@ -2,6 +2,7 @@ import { ComponentProps } from 'react'
 import { Button, CircleDecorationSvg, Image, TriangleDecorationSvg } from '../../atoms'
 import type { TextBoxDecoration } from '../../../lib/textbox-decorations'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
+import { toParagraphs } from '../../../lib/paragraphs'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Main heading. */
@@ -13,7 +14,7 @@ export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'
    */
   subtitle?: string
 
-  /** Description text content */
+  /** Description text. Each line break starts a new paragraph. */
   description: string
 
   /** Call-to-action button text. When omitted, no CTA button is rendered. */
@@ -175,8 +176,13 @@ export function ContentTextBox({
             {subtitle && <p className="text-base font-light text-gray-700">{subtitle}</p>}
           </div>
 
-          {/* Description */}
-          <p className="text-lg font-light text-gray-700">{description}</p>
+          {/* Description: the column's gap-6 spaces its paragraphs */}
+          {toParagraphs(description).map((paragraph, index) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- paragraphs of one body of copy: position is identity, and nothing reorders them
+            <p key={index} className="text-lg font-light text-gray-700">
+              {paragraph}
+            </p>
+          ))}
 
           {/* CTA Button (optional — needs both text and a destination) */}
           {ctaText && ctaHref && (

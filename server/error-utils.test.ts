@@ -34,7 +34,9 @@ describe('detectErrorType', () => {
     })
 
     it('should detect ECONNREFUSED errors', () => {
-      expect(detectErrorType(new Error('connect ECONNREFUSED 127.0.0.1:3000'))).toBe(ErrorType.NETWORK)
+      expect(detectErrorType(new Error('connect ECONNREFUSED 127.0.0.1:3000'))).toBe(
+        ErrorType.NETWORK,
+      )
     })
 
     it('should detect ETIMEDOUT errors', () => {
@@ -42,7 +44,9 @@ describe('detectErrorType', () => {
     })
 
     it('should detect DNS errors', () => {
-      expect(detectErrorType(new Error('getaddrinfo ENOTFOUND api.example.com'))).toBe(ErrorType.NETWORK)
+      expect(detectErrorType(new Error('getaddrinfo ENOTFOUND api.example.com'))).toBe(
+        ErrorType.NETWORK,
+      )
     })
 
     it('should detect request timeout phrase', () => {
@@ -66,25 +70,35 @@ describe('detectErrorType', () => {
     })
 
     it('should NOT classify "timeout period" as NETWORK', () => {
-      expect(detectErrorType(new Error('The timeout period for this operation has elapsed'))).toBe(ErrorType.UNKNOWN)
+      expect(detectErrorType(new Error('The timeout period for this operation has elapsed'))).toBe(
+        ErrorType.UNKNOWN,
+      )
     })
   })
 
   describe('Server Errors', () => {
     it('should detect 500 status code', () => {
-      expect(detectErrorType({ response: { status: 500 }, message: 'Server Error' })).toBe(ErrorType.SERVER)
+      expect(detectErrorType({ response: { status: 500 }, message: 'Server Error' })).toBe(
+        ErrorType.SERVER,
+      )
     })
 
     it('should detect 502 Bad Gateway', () => {
-      expect(detectErrorType({ response: { status: 502 }, message: 'Bad Gateway' })).toBe(ErrorType.SERVER)
+      expect(detectErrorType({ response: { status: 502 }, message: 'Bad Gateway' })).toBe(
+        ErrorType.SERVER,
+      )
     })
 
     it('should detect 503 Service Unavailable', () => {
-      expect(detectErrorType({ response: { status: 503 }, message: 'Service Unavailable' })).toBe(ErrorType.SERVER)
+      expect(detectErrorType({ response: { status: 503 }, message: 'Service Unavailable' })).toBe(
+        ErrorType.SERVER,
+      )
     })
 
     it('should detect 504 Gateway Timeout', () => {
-      expect(detectErrorType({ response: { status: 504 }, message: 'Gateway Timeout' })).toBe(ErrorType.SERVER)
+      expect(detectErrorType({ response: { status: 504 }, message: 'Gateway Timeout' })).toBe(
+        ErrorType.SERVER,
+      )
     })
 
     it('should detect internal server error in message', () => {
@@ -98,19 +112,27 @@ describe('detectErrorType', () => {
 
   describe('Client Errors', () => {
     it('should detect 400 Bad Request', () => {
-      expect(detectErrorType({ response: { status: 400 }, message: 'Bad Request' })).toBe(ErrorType.CLIENT)
+      expect(detectErrorType({ response: { status: 400 }, message: 'Bad Request' })).toBe(
+        ErrorType.CLIENT,
+      )
     })
 
     it('should detect 401 Unauthorized', () => {
-      expect(detectErrorType({ response: { status: 401 }, message: 'Unauthorized' })).toBe(ErrorType.CLIENT)
+      expect(detectErrorType({ response: { status: 401 }, message: 'Unauthorized' })).toBe(
+        ErrorType.CLIENT,
+      )
     })
 
     it('should detect 403 Forbidden', () => {
-      expect(detectErrorType({ response: { status: 403 }, message: 'Forbidden' })).toBe(ErrorType.CLIENT)
+      expect(detectErrorType({ response: { status: 403 }, message: 'Forbidden' })).toBe(
+        ErrorType.CLIENT,
+      )
     })
 
     it('should detect 404 Not Found', () => {
-      expect(detectErrorType({ response: { status: 404 }, message: 'Not Found' })).toBe(ErrorType.CLIENT)
+      expect(detectErrorType({ response: { status: 404 }, message: 'Not Found' })).toBe(
+        ErrorType.CLIENT,
+      )
     })
 
     it('should detect status property directly on error object', () => {
@@ -167,6 +189,7 @@ describe('withRetry', () => {
       .mockResolvedValue('success')
 
     const promise = withRetry(mockFn, { maxAttempts: 3, baseDelayMs: 100 })
+
     await vi.runAllTimersAsync()
     const result = await promise
 
@@ -182,6 +205,7 @@ describe('withRetry', () => {
       .mockResolvedValue('success')
 
     const promise = withRetry(mockFn, { maxAttempts: 3, baseDelayMs: 100 })
+
     await vi.runAllTimersAsync()
     const result = await promise
 
@@ -202,7 +226,9 @@ describe('withRetry', () => {
   it('should NOT retry on client errors', async () => {
     const mockFn = vi.fn().mockRejectedValue({ response: { status: 404 } })
 
-    await expect(withRetry(mockFn, { maxAttempts: 3 })).rejects.toEqual({ response: { status: 404 } })
+    await expect(withRetry(mockFn, { maxAttempts: 3 })).rejects.toEqual({
+      response: { status: 404 },
+    })
     expect(mockFn).toHaveBeenCalledTimes(1)
   })
 
@@ -251,6 +277,7 @@ describe('withRetry', () => {
     expect(mockFn).toHaveBeenCalledTimes(4)
 
     const result = await promise
+
     expect(result).toBe('success')
     randomSpy.mockRestore()
   })
@@ -270,6 +297,7 @@ describe('withRetry', () => {
     expect(mockFn).toHaveBeenCalledTimes(2)
 
     const result = await promise
+
     expect(result).toBe('success')
     randomSpy.mockRestore()
   })
@@ -279,11 +307,13 @@ describe('withRetry', () => {
     const customShouldRetry = vi.fn().mockReturnValue(false)
 
     await expect(
-      withRetry(mockFn, { maxAttempts: 3, shouldRetry: customShouldRetry })
+      withRetry(mockFn, { maxAttempts: 3, shouldRetry: customShouldRetry }),
     ).rejects.toThrow('custom error')
 
     expect(mockFn).toHaveBeenCalledTimes(1)
-    expect(customShouldRetry).toHaveBeenCalledWith(expect.objectContaining({ message: 'custom error' }))
+    expect(customShouldRetry).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'custom error' }),
+    )
   })
 
   it('should handle promises that resolve immediately', async () => {

@@ -72,10 +72,12 @@ export function scan(source: string): number[] {
 
     // The whole attribute, so a class list built from a ternary is read in full.
     const classes = className?.getText(file) ?? ''
+
     if (!FADED.every((pattern) => pattern.test(classes))) return
     if (RESTORED.every((pattern) => pattern.test(classes))) return
 
     const names = new Set(attrs.map((attr) => attr.name.getText(file)))
+
     if (WITHDRAWN.every((name) => names.has(name))) return
 
     lines.push(lineAt(source, node.getStart(file)))

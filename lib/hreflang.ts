@@ -1,7 +1,7 @@
 /**
  * The one derivation of a content URL's `hreflang` cluster.
  *
- * Both the page `<head>` (`lib/head.tsx`) and `/sitemap.xml`
+ * Both the page `<head>` (`lib/content-seo.ts`) and `/sitemap.xml`
  * (`server/sitemap-routes.ts`) annotate the same URLs, so they must agree
  * on which locales a document advertises and on how each alternate URL is
  * spelled. Two implementations would be free to disagree, and a cluster

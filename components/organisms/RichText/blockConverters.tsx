@@ -149,8 +149,8 @@ export const blockConverters: BlockConverters = {
           imageAlt={img.alt}
           imageSrc={img.url}
           subtitle={subtitle}
-          text={description}
           surface={textColorToSurface(fields.textColor, 'light')}
+          text={description}
           title={title}
         />
       )

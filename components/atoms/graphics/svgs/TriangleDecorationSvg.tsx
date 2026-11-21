@@ -6,12 +6,15 @@ export interface TriangleDecorationSvgProps extends ComponentProps<'svg'> {}
  * Triangle decoration SVG with built-in coral (#e08e79) and teal (#c5e0dc) colors.
  * Colors are fixed and cannot be changed through currentColor.
  */
-export function TriangleDecorationSvg({ className = 'w-80 h-auto', ...props }: TriangleDecorationSvgProps) {
+export function TriangleDecorationSvg({
+  className = 'w-80 h-auto',
+  ...props
+}: TriangleDecorationSvgProps) {
   return (
     <svg
+      className={className}
       viewBox="0 0 354.48 314.26"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
       {...props}
     >
       <path
