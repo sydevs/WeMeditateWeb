@@ -18,7 +18,7 @@ const SHARE_VARIANT = `${CF_BASE}/width=1024`
  * Fixtures mirror what a real read returns.
  *
  * - An image relationship arrives populated to the fields `IMAGE_POPULATE`
- *   names (`server/sahajcloud/client.ts`), spelled `…/<id>/public` as
+ *   names (`server/sahajcloud/`), spelled `…/<id>/public` as
  *   SahajCloud sends it.
  * - `knowledgePages` arrives as `NavPage[]`, which `NAV_PAGE_SELECT` narrows
  *   to `title`, `slug` and `meta` (`types/sahajcloud.ts`).

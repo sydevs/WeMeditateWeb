@@ -8,7 +8,7 @@
  *
  * That is the whole change here, so a fixture in the resolved shape would
  * pass against the bug. `LECTURE_SELECT` and `LECTURE_POPULATE`
- * (`server/sahajcloud/client.ts`) are what the server render and the populate
+ * (`server/sahajcloud/`) are what the server render and the populate
  * round trip both ask for, so a clip's `fullLecture` arrives as a populated
  * document carrying the parent's `metadata`. The clip below is that shape.
  */

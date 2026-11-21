@@ -27,7 +27,7 @@ export function upstreamRefusal(error: unknown): { code?: string; status?: numbe
  * the intake refusing a key our form sends, or a read shape SahajCloud stopped
  * accepting. One event per distinct code per isolate keeps that visible
  * without billing one per visitor who typed a disposable address — the bound
- * `reportedConfigGaps` in sahajcloud-client.ts states. Past the cap the set is
+ * `reportedConfigGaps` in server/sahajcloud/web-config.ts states. Past the cap the set is
  * emptied rather than pruned: re-reporting is the harmless direction.
  */
 const reportedRefusals = new Set<string>()

@@ -214,7 +214,7 @@ function toQueryString(params: Record<string, unknown>, prefix = ''): string {
 
 // SahajCloud enforces select and populate on collection reads, through a
 // query-validation hook (PR #23), so a bare query returns 400. This
-// mirrors the shapes sahajcloud-client.ts uses.
+// mirrors the shapes server/sahajcloud/selects.ts uses.
 const PAGE_SELECT = {
   title: true,
   slug: true,

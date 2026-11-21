@@ -48,7 +48,7 @@ export const idSchema = z.coerce
 
 /**
  * Schema for validating API keys.
- * Used by both sahajcloud-context.ts and payload-client.ts for consistent validation.
+ * Used by both server/sahajcloud/context.ts and payload-client.ts for consistent validation.
  */
 export const apiKeySchema = z
   .string()

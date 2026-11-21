@@ -75,16 +75,13 @@ Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and eve
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
-  `types/*`, `server/sahajcloud-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
-  `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
+  `types/*`, `server/cms-types*`, `.ladle/*`, `.storybook/*`, `package.json`, `pnpm-lock.yaml`,
+  `tsconfig.json`, `.node-version`
 
-  ⚠ On 2026-11-19 both Cloudflare triggers still included `server/cms-types*`, the name that file
-  lost in #131, in place of `server/sahajcloud-types*`. They are edited in the Cloudflare
-  dashboard, not in this repo. Until they are, a push touching only `types/sahajcloud.ts`
-  passes `WATCH` but gets no Ladle build. `Smoke (ladle)` then waits out its 12-minute window and
-  tests the derived branch host, which serves the branch's previous Ladle build, without the
-  change, so the lane is green without having tested it. On a branch with no earlier Ladle build
-  that host never answers, and the lane goes red after the 5-minute reachability wait.
+  The Ladle build bundles nothing from `server/` (ESLint refuses the import, and
+  `tests/guards/ladle-watch-paths.test.ts` checks the bundle), so `WATCH` names no `server/` path.
+  The triggers' `server/cms-types*` matches no file and can be dropped; they are edited in the
+  Cloudflare dashboard, not in this repo, and a stale entry there costs nothing.
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so

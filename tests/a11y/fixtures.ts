@@ -135,7 +135,7 @@ export const meditation = {
  * The raw lecture both lecture routes carry, as a SahajCloud read returns one.
  *
  * **Pre-mortem.** Checked against `LECTURE_SELECT` in
- * `server/sahajcloud/client.ts` and `parseLectureMetadata` in
+ * `server/sahajcloud/` and `parseLectureMetadata` in
  * `lib/content/lecture-shape.ts`.
  */
 export const lecture = {

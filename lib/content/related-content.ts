@@ -5,7 +5,7 @@
  *
  * The endpoints already shape and filter their docs on the server
  * (dropping any card with no public title, duration, or thumbnail), and
- * the sahajcloud-client fetchers guard the rendered fields again. So these
+ * the server/sahajcloud/related.ts fetchers guard the rendered fields again. So these
  * mappers only translate shape, with no further filtering.
  *
  * Both card types use `aspectRatio: 'video'`. Meditation thumbnails are

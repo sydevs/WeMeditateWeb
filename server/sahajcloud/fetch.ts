@@ -11,8 +11,8 @@
  * the same way here. A caller keeps only its own retry wrapper and its own
  * degrade value, because those genuinely differ per read.
  *
- * It sits outside `payload-client.ts` because `sahajcloud-client.test.ts` and
- * `atlas-client.test.ts` replace that module wholesale, so anything exported
+ * It sits outside `payload-client.ts` because `index.test.ts` and
+ * `atlas.test.ts` replace that module wholesale, so anything exported
  * from it is `undefined` in both suites.
  */
 

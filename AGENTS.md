@@ -224,8 +224,10 @@ editable. **Do not move a rule body back into `.claude/`.**
 location defines its scope, so it needs no frontmatter. Codex and Cursor read it, as well as
 Claude Code.
 
-- [server/AGENTS.md](server/AGENTS.md) covers `server/**`: SahajCloud reads and the submission
-  proxy.
+- [server/AGENTS.md](server/AGENTS.md) covers `server/**`: the route folders, the server-only
+  boundary, the submission proxy and Sentry.
+- [server/sahajcloud/AGENTS.md](server/sahajcloud/AGENTS.md) covers `server/sahajcloud/**`: the
+  rules every SahajCloud read follows.
 - [components/AGENTS.md](components/AGENTS.md) covers `components/**`: browser-only libraries.
 - [pages/AGENTS.md](pages/AGENTS.md) covers `pages/**`: the `[slug]` matcher's exclusions.
 

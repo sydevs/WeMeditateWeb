@@ -53,7 +53,7 @@ function scrubCredentials<E extends Event>(event: E): E {
   // the option is ever widened, because on `POST /api/submissions` the body is
   // the visitor's name, email address and message, and nothing needs it to
   // debug these paths — the upstream error body is already in the request log
-  // (sahajcloud-fetch.ts).
+  // (server/sahajcloud/fetch.ts).
   delete request.data
 
   const { headers } = request
