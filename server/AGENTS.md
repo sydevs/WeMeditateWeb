@@ -11,30 +11,29 @@ Every contact and subscribe form posts to `POST /api/submissions`
 - **The browser cannot make that call.** The create is authenticated with `SAHAJCLOUD_API_KEY`,
   and SahajCloud answers a wildcard CORS origin with no credentials.
 - **A captcha token is required on every public write**, as the `x-turnstile-token` header, not
-  as document data. It is the only *browser* header the proxy forwards: `Origin` and `Referer` must
-  not cross over, because a server-to-server call is deliberately exempt from the client's
-  `allowedDomains` allowlist, which the API key stands in for. The proxy adds one header of its
-  own, the visitor's address — see below.
-- **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape
-  (`captcha_failed`, `disposable_email`, `urls_not_allowed`, `submission_data_invalid`, …). The
-  code is forwarded to the browser and the message never is: it is SahajCloud's English, written for
-  a log, while the visitor's copy is SahajCloud-owned and rendered from a translation key.
+  as document data. A request without one is answered by the proxy itself, with the 403
+  `captcha_failed` SahajCloud would send. It is the only *browser* header the proxy forwards:
+  `Origin` and `Referer` must not cross over, because a server-to-server call is deliberately
+  exempt from the client's `allowedDomains` allowlist, which the API key stands in for. The proxy
+  adds one header of its own, the visitor's address — see below.
+- **The refusal envelope is `errors[].data.code`** — Payload's own `APIError` shape; the codes are
+  SahajCloud's. The code is forwarded to the browser and the message never is: it is SahajCloud's
+  English, written for a log, while the visitor's copy is SahajCloud-owned and rendered from a
+  translation key.
 - **`select` is not required here.** SahajCloud's query-validation hook gates reads only, so a
   create needs neither `select` nor `populate`. Nothing of the created row is echoed back either
   — an API client holds create and no read on `user-submissions`.
 
-`submissionData` is the flat `[{ field, value }]` remainder, and the collection accepts only the
-keys it allows per type: the base context set (`name`, `locale`, `path`, `hostUrl`, `userAgent`,
-`error`), the type's own, and whatever the form's author declared. An invented key comes back as a
-400 naming it, and so does a repeated one. `lib/submissions.ts` owns that body; nothing else
-composes one.
+`submissionData` is the flat `[{ field, value }]` remainder, and SahajCloud accepts only the keys
+it allows for the submission's type and form. An invented key comes back as a 400 naming it, and so
+does a repeated one. `lib/submissions.ts` owns that body; nothing else composes one.
 
 Two things about `form` and the visitor's IP that only show in production:
 
-- **`form` is a number.** SahajCloud resolves the relationship with `relationId()`, which answers
-  `null` for a string. A quoted id is accepted and then leaves the intake unable to load the form,
-  which empties the authored-field allow-list — so every field the editor named is refused as
-  unknown, while the base keys still pass. `submissionSchema` refuses a string at the edge so this
+- **`form` is a number.** SahajCloud resolves a quoted id to no form. It is accepted and then
+  leaves the intake unable to load the form, which empties the authored-field allow-list — so
+  every field the editor named is refused as unknown, while the base context set that
+  `lib/submissions.ts` names still passes. `submissionSchema` refuses a string at the edge so this
   cannot ship again.
 - ⚠ **The proxy names the visitor, because SahajCloud cannot see them.** SahajCloud reads
   `cf-connecting-ip` off its own request for Turnstile's `remoteip`, and a proxied submission
@@ -69,8 +68,7 @@ Two things about `form` and the visitor's IP that only show in production:
 - ⚠ **Return the shape the `select` asked for, never the generated document.** A read narrowed
   to four fields that hands back a `Page` lets every consumer typecheck `page.content` and read
   `undefined` at runtime. Pair the narrow type with a select type derived from it, so neither can
-  drift: `NavPage`/`NavPageSelect` for the config's nav pages, `EmbeddedForm`/`EmbeddedFormSelect`
-  for a form, both in [sahajcloud-types.ts](sahajcloud-types.ts).
+  drift — the pairs in [sahajcloud-types.ts](sahajcloud-types.ts) are the pattern.
 
 ## Treat a bare id as unpublished — degrade, do not break
 
@@ -82,24 +80,20 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 - When you drop a reference, log a Sentry warning (`level: 'warning'`) that lists what you
   dropped. This keeps the SahajCloud data gap visible. Do not hide it silently, and do not throw
   a 500.
-- ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render
-  and nothing here caches them, and a gap this warning catches stands until an editor fixes the
-  data — so a bare `captureMessage` bills the Sentry quota per page view. `getWebConfig` sends one
-  event per distinct gap per isolate (`reportedConfigGaps`) and keeps `console.warn` on every
-  request; `warnOnce` in [error-utils.ts](error-utils.ts) is the same bound for any other
-  warning, with one memo per source, so one source's churn cannot re-arm another's. Lower the
-  volume, never the level: a warning nobody can afford to leave on gets turned off, and then the
-  gap is invisible again.
+- ⚠ **A warning on a read is on the hot path, so bound its volume.** These reads run per render and
+  nothing here caches them, and a gap this warning catches stands until an editor fixes the data —
+  so a bare `captureMessage` bills the Sentry quota per page view. Send one event per distinct gap
+  per isolate, and keep `console.warn` on every request. `warnOnce` in
+  [error-utils.ts](error-utils.ts) is that bound for a new warning; `getWebConfig` holds its own
+  memo, and one source's churn must never re-arm another's. Lower the volume, never the level: a
+  warning nobody can afford to leave on gets turned off, and then the gap is invisible again.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
-  anyway is scrubbed in `entry.ts`, not where it is captured.** That module pins the v10 baseline
-  for both inits: `httpBodies: []` is what keeps the inbound POST body off the event, and the
-  `PII_KEY_SNIPPETS` deny-list reaches request headers, response headers and the URL query string
-  alike. `scrubCredentials` in `entry.ts` is the backstop for all three, run from `beforeSend`
-  **and** `beforeSendTransaction` — a transaction is not an error event, and
-  `SENTRY_TRACES_SAMPLE_RATE` in the Worker env can enable tracing with no code change. A new
-  inbound credential header is covered by `CREDENTIAL_HEADER_SNIPPETS` matching its name — check
-  that it does.
+  anyway is scrubbed in `entry.ts`, not where it is captured.** `scrubCredentials` there is the
+  backstop, run from `beforeSend` **and** `beforeSendTransaction` — a transaction is not an error
+  event, and `SENTRY_TRACES_SAMPLE_RATE` in the Worker env can enable tracing with no code change.
+  A new inbound credential header is covered only if `CREDENTIAL_HEADER_SNIPPETS` matches its name
+  — check that it does.
 - Import Sentry from `@sentry/cloudflare`. `withSentry` in [entry.ts](entry.ts) initialises it
   per request from the `SENTRY_DSN` secret; `error-utils.ts` says why it alone imports
   `@sentry/react`.
@@ -108,16 +102,16 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
 
 `GET /api/atlas/seo`, `GET /api/atlas/sitemap`, the `related-*` endpoints, and a content-index
 block's computed endpoint belong to no collection, so the Payload SDK cannot express them. Every
-one reads through `sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which resolves
-the base URL, sends the `Authorization: clients API-Key` header, logs the request, dumps the
-SahajCloud error body on a non-OK response, and returns the parsed body. Hand it a path, never a
-URL — it refuses anything that is not site-relative, so a computed endpoint cannot move the request
-off the SahajCloud origin — and type the body yourself. `select` and `populate` do not apply here.
+one reads through `sahajCloudFetch` ([sahajcloud-fetch.ts](sahajcloud-fetch.ts)), which sends
+the API key, logs the request the debugging workflow reads, and dumps SahajCloud's error body on a
+non-OK response. Hand it a path, never a URL — it refuses anything that is not site-relative, so a
+computed endpoint cannot move the request off the SahajCloud origin — and type the body yourself.
+`select` and `populate` do not apply here.
 
 ⚠ **Never call `fetch` for SahajCloud directly.** `fetchWithErrorDetails` under both the SDK and
-`sahajCloudFetch` is what bounds every call; a raw `fetch` has no limit at all. A read gets 15 s,
-because a visitor waits on it. A write — the submission proxy, the live-preview populate call —
-gets 30 s, because an abandoned write may already have landed upstream and the visitor resubmits.
+`sahajCloudFetch` is what bounds every call; a raw `fetch` has no limit at all. A write gets a
+longer bound than a read (`sahajcloud-fetch.ts` holds both): a visitor waits on a read, while an
+abandoned write may already have landed upstream and the visitor resubmits.
 
 ⚠ **`GET /api/atlas/sitemap` is scoped to the calling key's client.** It answers with the atlas
 URLs that client owns, resolved by SahajCloud's nearest-ancestor ownership walk, so
@@ -141,12 +135,11 @@ Three rules still apply:
   `SahajCloudResponseError` on every non-OK response. `sahajCloudFetchOptional` is the same read
   where a 404 is an answer — an unknown id, a stale inbound link, no songs route — and resolves to
   `null` instead, so that case never spends the retry ladder, never reaches Sentry, and is logged
-  without a body dump. Four of the six reads take the optional form; `fetchContentIndexDocs` and
-  `getAtlasSitemapUrls` take `sahajCloudFetch`, because a 404 from either endpoint is a data
-  gap, not an answer. The status rides on the error because `detectErrorType` reads it
-  structurally and otherwise falls back to matching `50[0-9]` in the message — a plain `Error`
-  classifies a Cloudflare-origin 520, 522 or 524 as UNKNOWN, and `withRetry` then refuses the one
-  shape a Railway restart behind the edge produces.
+  without a body dump. A read where a 404 is a data gap, not an answer, takes `sahajCloudFetch`.
+  The status rides on the error because `detectErrorType` reads it structurally, and its message
+  fallback recognises only 50x phrasing: a plain `Error` therefore classifies a Cloudflare-origin
+  52x as UNKNOWN, and `withRetry` then refuses the one shape a Railway restart behind the edge
+  produces.
 - **Role gating is real.** The atlas endpoints need the `sahaj-atlas-client` role. Production has
   this role. The local client does not, so these endpoints return 403 locally, even with a valid
   key. Treat a refusal as "render without this data," never as a 500. See
@@ -154,8 +147,8 @@ Three rules still apply:
 
 A read whose *response type* is hand-mirrored from SahajCloud (for example
 `server/atlas-types.ts`, mirroring its `responseTypes.ts`) is not covered by `pnpm types:cms`,
-which generates collection types only. Render these fields defensively: a missing field should
-degrade, not throw.
+which generates only the collection, global and block schema. Render these fields defensively:
+a missing field should degrade, not throw.
 
 ## `locale=all` returns a per-locale map, not a value
 
@@ -174,10 +167,9 @@ Three things follow, all load-bearing:
 
 - **It is a second read, beside the content read, not a replacement for it.** It sends no locale,
   so every locale of a page issues the same URL and shares one edge entry.
-- **It returns `{}`, never `null`, and never retries.** It passes `maxAttempts: 1` to `withRetry`,
-  a single attempt. `advertisedLocales` walks the map either way; and the page content is already
-  in hand when this read fails, so the default 3-attempt backoff would stall TTFB to decorate a
-  `<head>`.
+- **It returns `{}`, never `null`, and never retries.** `advertisedLocales` walks the map either
+  way, and the page content is already in hand when this read fails, so the default retry backoff
+  would stall TTFB to decorate a `<head>`.
 - **Only `pages` (and `app-cards`) carry the map.** `meditations` returns `_status` as a plain
   string and `lectures` omits it. Neither makes a per-locale claim, and
   `advertisedLocales` returns an empty list for both rather than guessing.

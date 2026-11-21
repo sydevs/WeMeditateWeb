@@ -165,3 +165,20 @@ export function resolveLecture(lecture: Lecture): ResolvedLecture {
     subtitles: mergeSubtitles(sourceMeta?.subtitles, lecture.subtitles),
   }
 }
+
+/**
+ * How long this lecture plays for, in seconds, or null when nothing says.
+ *
+ * A clip plays its own window; a full lecture plays its whole source. Both
+ * the duration badge the template draws and the `VideoObject` duration the
+ * head publishes answer the same question, so they ask it once.
+ */
+export function lecturePlaybackSeconds(lecture: ResolvedLecture): number | null {
+  const { startTime, stopTime } = lecture
+
+  if (startTime != null && stopTime != null && stopTime > startTime) {
+    return stopTime - startTime
+  }
+
+  return lecture.duration
+}

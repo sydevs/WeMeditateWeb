@@ -278,6 +278,21 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
 }
 
 /**
+ * The absolute URL for an href a component or an editor wrote — {@link localeUrl}
+ * for a caller that cannot promise {@link localePath}'s already-normalized input.
+ *
+ * The embed snippet, a content-index card's `ItemList` entry and anything else
+ * that has to name a page of ours in full read the answer here rather than
+ * gluing an origin onto {@link localeHref} themselves.
+ *
+ * ⚠ Only a path of ours takes the origin. An off-site URL already names its
+ * own, and prefixing it would produce `https://ourshttps://theirs`.
+ */
+export function absoluteHref(origin: string, locale: Locale, href: string): string {
+  return isSitePath(href) ? `${origin}${localeHref(locale, href)}` : localeHref(locale, href)
+}
+
+/**
  * The href to render for whatever a component or an editor wrote — the one
  * entry point for a caller that cannot promise `localePath`'s
  * already-normalized input.

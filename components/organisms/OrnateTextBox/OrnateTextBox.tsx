@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
 import { Button, Container, Image } from '../../atoms'
 import type { AspectRatio } from '../../../lib/cloudflare-images'
+import { toParagraphs } from '../../../lib/paragraphs'
 import ornateBackground from '../../../assets/ornate.svg'
-import { useT } from '../../../hooks/useT'
 
 export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Main heading. */
@@ -11,10 +11,7 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
   /** Secondary line rendered directly below the title. */
   subtitle?: string
 
-  /**
-   * Description text. Blank-line or newline separated runs render as
-   * separate paragraphs.
-   */
+  /** Description text. Each line break starts a new paragraph. */
   description: string
 
   /** Call-to-action button text. When omitted, no CTA button is rendered. */
@@ -46,8 +43,12 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
 
   /**
    * Decorative vertical label along the outer edge (desktop only). Purely
-   * ornamental. Omitted, it reads `blocks.general.wisdom_sidetext`, so the
-   * label is translated rather than English everywhere.
+   * ornamental, and absent it draws nothing.
+   *
+   * It used to default to `blocks.general.wisdom_sidetext`. That key is
+   * declared in SahajCloud's schema but holds no English yet
+   * (sydevs/SahajCloud#1218), so every wisdom-style block painted the key
+   * path down its own edge. Restore the default once the key answers.
    */
   sidetext?: string
 
@@ -60,14 +61,6 @@ export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'>
    * @default 'left'
    */
   align?: 'left' | 'right'
-}
-
-/** Split a textarea string into paragraph runs on blank lines or newlines. */
-function toParagraphs(text: string): string[] {
-  return text
-    .split(/\n+/)
-    .map((p) => p.trim())
-    .filter(Boolean)
 }
 
 /**
@@ -108,9 +101,7 @@ export function OrnateTextBox({
   className = '',
   ...props
 }: OrnateTextBoxProps) {
-  const t = useT()
   const paragraphs = toParagraphs(description)
-  const sideLabel = sidetext ?? t('blocks.general.wisdom_sidetext')
 
   // Tailwind v4 emits an arbitrary value only for a candidate it finds
   // verbatim in a scanned file, so each gradient is written out whole rather
@@ -182,12 +173,12 @@ export function OrnateTextBox({
       />
 
       {/* Decorative vertical sidetext label (desktop only, single line) */}
-      {sideLabel && (
+      {sidetext && (
         <span
           aria-hidden="true"
           className="absolute top-1/2 right-12 z-10 hidden -translate-y-1/2 rotate-180 select-none whitespace-nowrap text-2xl font-light uppercase tracking-[0.12em] text-white/75 [writing-mode:vertical-rl] lg:block"
         >
-          {sideLabel}
+          {sidetext}
         </span>
       )}
 
