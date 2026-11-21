@@ -115,7 +115,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="Drawn from lg up, behind the box and never over its text. On a page, RichText decides which text boxes carry one (lib/textbox-decorations.ts): the first side box opens with the circle, then an image on the left takes the triangle and an image on the right the wash, and no two neighbours repeat one."
+      description="Drawn from lg up, behind the box and never over its text. On a page, RichText decides which text boxes carry one: the first side box opens with the circle, then an image on the left takes the triangle and an image on the right the wash, and no two neighbours repeat one."
       title="Decorations"
     >
       <div className="flex flex-col gap-16">

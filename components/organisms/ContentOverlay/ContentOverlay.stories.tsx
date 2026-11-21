@@ -237,7 +237,7 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      description="Drawn from lg up. On a page, RichText decides which text boxes carry one (lib/textbox-decorations.ts): the triangle takes the lower corner away from the text and hangs a third below the image, and the block's bottom margin grows to hold it."
+      description="Drawn from lg up. On a page, RichText decides which text boxes carry one: the triangle takes the lower corner away from the text and hangs a third below the image, and the block's bottom margin grows to hold it."
       title="Decoration"
     >
       <div className="flex flex-col gap-8">
