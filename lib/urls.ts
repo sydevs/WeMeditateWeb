@@ -13,6 +13,7 @@
  * already holds.
  */
 
+import type { SelectedLocation } from '../components/molecules/LocationSearch'
 import type { Locale } from '../server/sahajcloud-types'
 import { DEFAULT_LOCALE, isLocale } from '../server/sahajcloud-types'
 import { MAP_PREFIX } from './atlas-route'
@@ -227,12 +228,6 @@ export function sitePathFromUrl(url: string, origin: string | null | undefined):
   }
 }
 
-/** A place a visitor picked in a place search. */
-export interface MapPlace {
-  name: string
-  coordinates: { lat: number; lng: number }
-}
-
 /**
  * Where picking a place in a Splash block's map search lands: the class map,
  * searching around that place.
@@ -244,7 +239,7 @@ export interface MapPlace {
  *
  * shortcut: query routing only, which `/map`'s path routing ignores once the client record names a canonical embed; spell the path form once SahajAtlasWeb documents one that pre-fills.
  */
-export function classMapSearchHref(locale: Locale, place: MapPlace): string {
+export function classMapSearchHref(locale: Locale, place: SelectedLocation): string {
   const { lat, lng } = place.coordinates
   const route = `/search?center=${lng},${lat}&q=${encodeURIComponent(place.name)}`
 
