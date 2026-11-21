@@ -1,4 +1,4 @@
-import React, { Suspense, type ReactNode } from 'react'
+import React, { type ReactNode } from 'react'
 import { ClientOnly } from 'vike-react/ClientOnly'
 import type { LocationSearchProps } from './LocationSearch'
 
@@ -21,11 +21,7 @@ export function LocationSearch({
 }) {
   return (
     <ClientOnly fallback={fallback}>
-      {/* A boundary of its own, so the fallback stays while the chunk loads
-          instead of a boundary further up taking over. */}
-      <Suspense fallback={fallback}>
-        <LocationSearchLazy {...props} />
-      </Suspense>
+      <LocationSearchLazy {...props} />
     </ClientOnly>
   )
 }
