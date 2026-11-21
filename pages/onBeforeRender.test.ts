@@ -8,7 +8,7 @@ import type { PageContextServer } from 'vike/types'
 import { onBeforeRender } from './+onBeforeRender'
 import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 import type { LivePreviewSession } from '@/server/live-preview'
-import type { WebTranslations } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 
 const reads = vi.hoisted(() => ({ loadTranslations: vi.fn(), loadLivePreview: vi.fn() }))
 

@@ -5,7 +5,7 @@ import {
   SahajCloudResponseError,
   fetchWithErrorDetails,
 } from './fetch'
-import { detectErrorType, ErrorType } from '@/server/error-utils'
+import { detectErrorType, ErrorType } from '@/lib/errors/error-type'
 
 vi.mock('./context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),

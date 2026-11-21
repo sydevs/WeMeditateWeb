@@ -8,8 +8,9 @@
  */
 import { expect } from 'vitest'
 import { JSDOM } from 'jsdom'
-import { DEFAULT_LOCALE, type Locale } from '@/types/sahajcloud'
-import { ErrorType } from '@/server/error-utils'
+import { type Locale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
+import { ErrorType } from '@/lib/errors/error-type'
 import { errorTitleKey } from '@/lib/errors/error-keys'
 import { enT } from '@/lib/i18n/i18n'
 

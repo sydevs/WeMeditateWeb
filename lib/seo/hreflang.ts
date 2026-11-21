@@ -18,7 +18,7 @@
  */
 
 import type { Locale } from '@/types/sahajcloud'
-import { DEFAULT_LOCALE } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
 import { localeUrl, normalizeContentPath } from '@/lib/urls/urls'
 
 /** One `rel="alternate"` row: a language code and the URL it points at. */

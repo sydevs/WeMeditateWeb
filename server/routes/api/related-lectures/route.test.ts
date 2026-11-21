@@ -18,10 +18,7 @@ const { captureMessage, findGlobal } = vi.hoisted(() => ({
 vi.mock('@/server/sahajcloud/context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Both SDKs re-export `@sentry/core`'s one `captureMessage`; `degrade` reports
-// through `@sentry/react` (see error-utils.ts).
 vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
-vi.mock('@sentry/react', () => ({ captureMessage }))
 vi.mock('@/server/sahajcloud/payload-client', () => ({
   createPayloadClient: () => ({ findGlobal }),
 }))

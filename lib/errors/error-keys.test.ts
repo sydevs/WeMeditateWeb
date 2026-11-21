@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { ErrorType } from '@/server/error-utils'
+import { ErrorType } from './error-type'
 import { errorMessageKey, errorTitleKey } from './error-keys'
 import { createT, EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 

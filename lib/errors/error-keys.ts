@@ -11,7 +11,7 @@
  * body now always describe the same thing.
  */
 
-import { ErrorType } from '@/server/error-utils'
+import { ErrorType } from './error-type'
 import type { TranslationKey } from '@/lib/i18n/i18n'
 
 /**

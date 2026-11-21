@@ -4,7 +4,8 @@ import type { PageContextServer } from 'vike/types'
 import { hookViews } from '@/tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud/client'
-import type { WebConfig, WebTranslations } from '@/types/sahajcloud'
+import type { WebConfig } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))

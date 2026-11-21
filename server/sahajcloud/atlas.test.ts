@@ -1,18 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getAtlasSeo, getAtlasSitemapUrls } from './atlas'
 import * as Sentry from '@sentry/cloudflare'
-import { detectErrorType, ErrorType, forgetReportedWarnings } from '@/server/error-utils'
+import { forgetReportedWarnings } from '@/server/error-utils'
+import { detectErrorType, ErrorType } from '@/lib/errors/error-type'
 
 vi.mock('./context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Both SDKs re-export `@sentry/core`'s one `captureMessage`, so one spy stands
-// for both: `degrade` and `warnOnce` report through `@sentry/react` (see
-// error-utils.ts).
 const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
-vi.mock('@sentry/react', () => ({ captureMessage }))
 
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the call visible to the tests that assert one, and

@@ -3,7 +3,7 @@
 //# BATI.has("mantine")
 import logoUrl from '@/assets/logo.svg'
 import { useLocale, useOptionalPageContext, useOrigin } from '@/hooks/usePageContext'
-import { isCanonicalOrigin } from '@/server/routes/sitemap.xml/sitemap'
+import { isCanonicalOrigin } from '@/lib/seo/canonical-origin'
 import { APP_ICON, THEME_COLOR } from '@/lib/seo/site-identity'
 import { localeHref } from '@/lib/urls/urls'
 

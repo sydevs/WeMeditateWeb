@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { WebTranslations } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 
 const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
 

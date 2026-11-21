@@ -1,7 +1,7 @@
 import { redirect } from 'vike/abort'
 import { modifyUrl } from 'vike/modifyUrl'
 import { PageContext } from 'vike/types'
-import { DEFAULT_LOCALE } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
 import { localeFromPath, localePath, normalizeContentPath } from '@/lib/urls/urls'
 
 export function onBeforeRoute(pageContext: PageContext) {

@@ -21,14 +21,14 @@ vi.mock('@/server/sahajcloud/client', () => ({
   getWebTranslations: vi.fn(async () => EN_TRANSLATIONS),
 }))
 
-const { registerOEmbedRoutes } = await import('./route')
+const { registerOEmbed } = await import('./route')
 
 const ORIGIN = 'https://wemeditate.com'
 
 function app() {
   const hono = new Hono<SahajCloudEnv>()
 
-  registerOEmbedRoutes(hono)
+  registerOEmbed(hono)
 
   return hono
 }

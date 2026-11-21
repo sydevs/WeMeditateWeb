@@ -3,7 +3,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { PayloadSDKError } from '@payloadcms/sdk'
 import { createPayloadClient } from './payload-client'
-import { detectErrorType, ErrorType } from '@/server/error-utils'
+import { detectErrorType, ErrorType } from '@/lib/errors/error-type'
 
 // createPayloadClient reads its defaults from the request context, which does
 // not exist under Vitest. Shape checked against server/sahajcloud/context.ts.

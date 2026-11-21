@@ -15,7 +15,9 @@
  */
 
 import type { ReactNode } from 'react'
-import { DEFAULT_LOCALE, type Locale, type WebTranslations } from '@/types/sahajcloud'
+import { type Locale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from './locales'
+import { type WebTranslations } from './web-translations'
 import snapshot from './translations.en.json'
 
 /**

@@ -44,7 +44,7 @@ async function readMedia(
   )
 }
 
-export function registerOEmbedRoutes(app: Hono<SahajCloudEnv>): void {
+export function registerOEmbed(app: Hono<SahajCloudEnv>): void {
   app.get('/oembed', async (c) => {
     const { origin } = new URL(c.req.url)
     const url = c.req.query('url')

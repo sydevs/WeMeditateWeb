@@ -14,13 +14,9 @@ vi.stubGlobal('fetch', fetchMock)
 vi.mock('@/server/sahajcloud/context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Both SDKs re-export `@sentry/core`'s one `captureMessage`, so one spy stands
-// for both: `degrade` and `warnOnce` report through `@sentry/react` (see
-// error-utils.ts).
 const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
-vi.mock('@sentry/react', () => ({ captureMessage }))
 vi.mock('@/server/sahajcloud/payload-client', () => ({
   createPayloadClient: () => ({ find, findGlobal }),
 }))
@@ -42,14 +38,14 @@ vi.mock('@/server/error-utils', async (importOriginal) => {
   }
 })
 
-const { registerSitemapRoutes } = await import('./route')
+const { registerSitemap } = await import('./route')
 const { SITEMAP_URL_CAP } = await import('@/server/sahajcloud/atlas')
 const { forgetReportedWarnings } = await import('@/server/error-utils')
 
 function app() {
   const instance = new Hono<SahajCloudEnv>()
 
-  registerSitemapRoutes(instance)
+  registerSitemap(instance)
 
   return instance
 }
@@ -122,38 +118,6 @@ beforeEach(() => {
   stubCollections({})
   stubConfig()
   stubAtlas([])
-})
-
-describe('/robots.txt', () => {
-  it('serves plain text that allows the real site and names the sitemap', async () => {
-    const response = await get('/robots.txt')
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get('Content-Type')).toContain('text/plain')
-    await expect(response.text()).resolves.toContain('Sitemap: https://wemeditate.com/sitemap.xml')
-  })
-
-  it('refuses crawlers on a preview deployment', async () => {
-    const response = await get('/robots.txt', 'https://wemeditate-web-pr-62.workers.dev')
-
-    await expect(response.text()).resolves.toContain('Disallow: /')
-  })
-})
-
-describe('/manifest.webmanifest', () => {
-  it('serves the type the spec names, not the one `c.json` would set', async () => {
-    const response = await get('/manifest.webmanifest')
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get('Content-Type')).toContain('application/manifest+json')
-  })
-
-  it('answers in the language of the URL it was asked on', async () => {
-    const manifest = await (await get('/fr/manifest.webmanifest')).json()
-
-    expect(manifest).toMatchObject({ lang: 'fr', display: 'browser' })
-    expect(manifest.name, 'the name comes from the translations').not.toMatch(/^common\./)
-  })
 })
 
 describe('/sitemap.xml', () => {

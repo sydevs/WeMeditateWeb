@@ -30,7 +30,7 @@ import {
   type UseSchemaOrgInput,
 } from '@unhead/schema-org'
 import type { PageContextServer } from 'vike/types'
-import { isCanonicalOrigin } from '@/server/routes/sitemap.xml/sitemap'
+import { isCanonicalOrigin } from './canonical-origin'
 import { seoDocument } from './head-settings'
 import { isoDuration } from './structured-data'
 import { isSafeJsonLd, type SeoHead } from './head'

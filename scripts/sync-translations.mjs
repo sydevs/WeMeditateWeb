@@ -23,7 +23,7 @@ import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-import { WEB_TRANSLATIONS_SELECT } from '../types/sahajcloud.ts'
+import { WEB_TRANSLATIONS_SELECT } from '../lib/i18n/web-translations.ts'
 
 const GLOBAL_SLUG = 'wm-web-translations'
 

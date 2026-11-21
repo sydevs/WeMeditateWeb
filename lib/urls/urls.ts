@@ -14,7 +14,7 @@
  */
 
 import type { Locale } from '@/types/sahajcloud'
-import { DEFAULT_LOCALE, isLocale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE, isLocale } from '@/lib/i18n/locales'
 
 /** What a path's leading segment says about the locale. */
 export interface PathLocale {

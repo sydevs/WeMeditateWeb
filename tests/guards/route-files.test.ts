@@ -2,10 +2,10 @@ import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 
 import type { SahajCloudEnv } from '@/server/sahajcloud/context'
-import { registerApiRoutes } from '@/server/routes/api'
+import { registerRoutes } from '@/server/routes'
 
 /**
- * The folder is the route list: each route lives in the `route.ts` of the
+ * server/routes/ is the route list: each route lives in the `route.ts` of the
  * folder its path names, every `route.ts` registers one, every other file
  * belongs to a route's folder or is a shared `_` file, and `index.ts`
  * registers them all. A route added anywhere else, a stray file, or a route
@@ -15,22 +15,22 @@ import { registerApiRoutes } from '@/server/routes/api'
 type RouteModule = Record<string, unknown>
 
 /** What the globs below resolve against. Stripped off each key, so a reported path reads as the folder does. */
-const API_DIR = '../../server/routes/api/'
+const ROUTES_DIR = '../../server/routes/'
 
-function inApiDir(file: string): string {
-  return file.slice(API_DIR.length)
+function inRoutesDir(file: string): string {
+  return file.slice(ROUTES_DIR.length)
 }
 
-const files = Object.keys(import.meta.glob('../../server/routes/api/**/*.ts')).map(inApiDir)
+const files = Object.keys(import.meta.glob('../../server/routes/**/*.ts')).map(inRoutesDir)
 
 const routeFiles: [string, () => Promise<RouteModule>][] = Object.entries(
-  import.meta.glob<RouteModule>('../../server/routes/api/**/route.ts'),
-).map(([file, load]) => [inApiDir(file), load])
+  import.meta.glob<RouteModule>('../../server/routes/**/route.ts'),
+).map(([file, load]) => [inRoutesDir(file), load])
 
-/** `/api/live-preview/populate` → `live-preview/populate/route.ts`; a `:param` adds nothing. */
+/** `/api/live-preview/populate` → `api/live-preview/populate/route.ts`; a `:param` adds nothing. */
 function fileFor(path: string): string {
   const segments = path
-    .replace(/^\/api\//, '')
+    .replace(/^\//, '')
     .split('/')
     .filter((segment) => !segment.startsWith(':'))
 
@@ -58,7 +58,7 @@ async function registerOf(load: () => Promise<RouteModule>) {
   return exported[0][1] as (app: Hono<SahajCloudEnv>) => void
 }
 
-describe('server/routes/api', () => {
+describe('server/routes', () => {
   it('has a route file to check', () => {
     expect(routeFiles.length).toBeGreaterThan(0)
   })
@@ -71,7 +71,6 @@ describe('server/routes/api', () => {
     for (const route of routes) {
       const path = route.split(' ')[1]
 
-      expect(path.startsWith('/api/'), route).toBe(true)
       expect(fileFor(path), route).toBe(file)
     }
   })
@@ -82,7 +81,7 @@ describe('server/routes/api', () => {
     for (const file of files) {
       if (file === 'index.ts') continue
 
-      if (file.startsWith('_') && !file.includes('/')) continue
+      if (file.split('/').at(-1)!.startsWith('_')) continue
 
       expect(
         routeFolders.some((folder) => file.startsWith(folder)),
@@ -98,6 +97,6 @@ describe('server/routes/api', () => {
       expected.push(...routesOf(await registerOf(load)))
     }
 
-    expect(routesOf(registerApiRoutes).sort()).toEqual(expected.sort())
+    expect(routesOf(registerRoutes).sort()).toEqual(expected.sort())
   })
 })

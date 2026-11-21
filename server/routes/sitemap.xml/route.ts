@@ -1,32 +1,27 @@
 /**
- * `/robots.txt` and `/sitemap.xml`.
+ * `GET /sitemap.xml`.
  *
- * This app shipped with neither, so nothing on it was discoverable except
+ * This app shipped with no sitemap, so nothing on it was discoverable except
  * by following links. The `/map` routes (#62) exist to be indexable, so
  * they need a sitemap to be worth adding.
  *
- * Registered beside `registerApiRoutes`, and, like it, inside the
- * `contextStorage()` middleware, so `getSahajCloudContext()` resolves the API
- * key normally. Both routes are declared before Vike's handler, so they
- * win over the page catch-all.
- *
  * Every read here degrades to empty, instead of failing the response. A
- * partial sitemap is still useful, and some crawlers read a 500 on
- * `/robots.txt` as "crawl nothing".
+ * partial sitemap is still useful.
  */
 
-import type { Context, Hono } from 'hono'
+import type { Hono } from 'hono'
+import { ROOT_FILE_CACHE_CONTROL } from '@/server/cache-headers'
 import type { SahajCloudEnv } from '@/server/sahajcloud/context'
 import { createPayloadClient } from '@/server/sahajcloud/payload-client'
 import { degrade, warnOnce, withRetry } from '@/server/error-utils'
 import { getAtlasSitemapUrls } from '@/server/sahajcloud/atlas'
-import { getWebConfig, getWebTranslations } from '@/server/sahajcloud/client'
-import { buildRobotsTxt, buildSitemapXml, isCanonicalOrigin, type SitemapUrl } from './sitemap'
-import { buildWebManifest } from '@/server/routes/manifest.webmanifest/manifest'
-import { getT } from '@/lib/i18n/i18n'
+import { getWebConfig } from '@/server/sahajcloud/client'
+import { buildSitemapXml, type SitemapUrl } from './sitemap'
+import { isCanonicalOrigin } from '@/lib/seo/canonical-origin'
 import { localeFromPath } from '@/lib/urls/urls'
 import { buildAlternates, advertisedLocales } from '@/lib/seo/hreflang'
-import { DEFAULT_LOCALE, type Locale } from '@/types/sahajcloud'
+import { type Locale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from '@/types/payload/payload-types'
 
 /** Documents per content read. Each page of a walk is one subrequest. */
@@ -58,9 +53,6 @@ const PAGE_SITEMAP_SELECT = {
 } satisfies PagesSelect<true>
 const MEDITATION_SITEMAP_SELECT = { updatedAt: true } satisfies MeditationsSelect<true>
 const LECTURE_SITEMAP_SELECT = { updatedAt: true } satisfies LecturesSelect<true>
-
-/** Cache the rendered documents at our own edge, for an hour. */
-const SITEMAP_CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400'
 
 /** `updatedAt` as a `<lastmod>` value, or null when the row has none. */
 function lastmodOf(doc: { updatedAt?: string | null }): string | null {
@@ -216,36 +208,7 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
   }, degradation)
 }
 
-/** `/manifest.webmanifest`, and its locale-prefixed spelling. */
-const manifestHandler = async (c: Context<SahajCloudEnv>) => {
-  const { origin, pathname } = new URL(c.req.url)
-  const { locale } = localeFromPath(pathname)
-  const t = getT(await getWebTranslations({ locale }), locale)
-
-  c.header('Content-Type', 'application/manifest+json; charset=utf-8')
-  c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
-
-  // ⚠ `c.json()` replaces the Content-Type with `application/json`, whatever
-  // was set before it. The spec's own type is what a browser installs a
-  // manifest by, so the body is serialized here, as `/robots.txt` does.
-  return c.body(JSON.stringify(buildWebManifest({ origin, locale, t })))
-}
-
-export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
-  // Two paths, one handler: the link in the head is locale-prefixed, so the
-  // manifest is in the language of the page that named it, and the bare path
-  // still answers for anything that guesses it.
-  app.get('/:locale{[a-z]{2}(?:-[A-Z]{2})?}/manifest.webmanifest', manifestHandler)
-  app.get('/manifest.webmanifest', manifestHandler)
-  app.get('/robots.txt', (c) => {
-    const origin = new URL(c.req.url).origin
-
-    c.header('Content-Type', 'text/plain; charset=utf-8')
-    c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
-
-    return c.body(buildRobotsTxt(origin))
-  })
-
+export function registerSitemap(app: Hono<SahajCloudEnv>): void {
   app.get('/sitemap.xml', async (c) => {
     const origin = new URL(c.req.url).origin
 
@@ -263,7 +226,7 @@ export function registerSitemapRoutes(app: Hono<SahajCloudEnv>): void {
     ])
 
     c.header('Content-Type', 'application/xml; charset=utf-8')
-    c.header('Cache-Control', SITEMAP_CACHE_CONTROL)
+    c.header('Cache-Control', ROOT_FILE_CACHE_CONTROL)
 
     return c.body(buildSitemapXml([...content, ...atlas]))
   })

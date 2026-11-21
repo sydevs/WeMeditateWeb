@@ -15,10 +15,7 @@ const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
 vi.mock('@/server/sahajcloud/context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-// Both SDKs re-export `@sentry/core`'s one `captureMessage`; `degrade` reports
-// through `@sentry/react` (see error-utils.ts).
 vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
-vi.mock('@sentry/react', () => ({ captureMessage }))
 // One attempt, so no test waits on real backoff. error-utils.test.ts covers
 // what withRetry itself does.
 vi.mock('@/server/error-utils', async (importOriginal) => ({

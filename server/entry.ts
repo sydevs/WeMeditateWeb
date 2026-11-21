@@ -3,9 +3,7 @@ import { withSentry, type Event } from '@sentry/cloudflare'
 import { Hono } from 'hono'
 import { contextStorage } from 'hono/context-storage'
 import type { SahajCloudEnv } from './sahajcloud/context'
-import { registerApiRoutes } from './routes/api'
-import { registerOEmbedRoutes } from './routes/oembed/route'
-import { registerSitemapRoutes } from './routes/sitemap.xml/route'
+import { registerRoutes } from './routes'
 import { LIVE_PREVIEW_PARAM } from '@/lib/live-preview/protocol'
 import { stripLivePreviewToken } from '@/lib/live-preview/token-url'
 import { sentryDataCollection } from '@/lib/sentry/data-collection'
@@ -104,9 +102,9 @@ function startServer() {
   //
   // ⚠ **Registered before the routes.** Hono runs handlers in registration
   // order and a route handler returns without calling `next()`, so middleware
-  // added after `registerApiRoutes` would never run for those paths at all.
+  // added after `registerRoutes` would never run for those paths at all.
   //
-  // ⚠ **After `next()`, not before.** `registerApiRoutes` sets its own
+  // ⚠ **After `next()`, not before.** `registerRoutes`' JSON routes set their own
   // `Cache-Control: public, max-age=300` inside the handler, so a header
   // written on the way in is overwritten on the way out.
   //
@@ -128,15 +126,8 @@ function startServer() {
     c.header('Referrer-Policy', 'no-referrer')
   })
 
-  // Same-origin JSON endpoints (client-loaded related content). Registered
-  // before Vike's handler so they take precedence over the page catch-all.
-  registerApiRoutes(app)
-
-  // robots.txt / sitemap.xml, likewise before the page catch-all.
-  registerSitemapRoutes(app)
-
-  // /oembed, which a consumer calls to embed one of our players.
-  registerOEmbedRoutes(app)
+  // Every route under server/routes/, before Vike's page catch-all.
+  registerRoutes(app)
 
   apply(app, [])
 

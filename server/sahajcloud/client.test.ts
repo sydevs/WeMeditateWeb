@@ -12,7 +12,8 @@ import {
 } from './client'
 import { createPayloadClient } from './payload-client'
 import * as Sentry from '@sentry/cloudflare'
-import { detectErrorType, ErrorType, forgetReportedWarnings } from '@/server/error-utils'
+import { forgetReportedWarnings } from '@/server/error-utils'
+import { detectErrorType, ErrorType } from '@/lib/errors/error-type'
 import type { Locale, Page, PageStatus } from '@/types/sahajcloud'
 
 // Stub the SDK factory to capture the query.
@@ -24,13 +25,10 @@ vi.mock('./context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 // Silence the Sentry warnings, and keep their calls countable: each is
-// rate-limited per isolate. Both SDKs re-export `@sentry/core`'s one
-// `captureMessage`, so one spy stands for both: `degrade` and `warnOnce`
-// report through `@sentry/react` (see error-utils.ts).
+// rate-limited per isolate.
 const { captureMessage } = vi.hoisted(() => ({ captureMessage: vi.fn() }))
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage }))
-vi.mock('@sentry/react', () => ({ captureMessage }))
 // The stub runs the read once, so no test waits on real backoff.
 // `retrySpy` keeps the config visible to the tests that assert one, and
 // `retried.error` the error the ladder was handed, which is what decides

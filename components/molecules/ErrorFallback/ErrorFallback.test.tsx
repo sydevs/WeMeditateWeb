@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { anchorFor } from '@/tests/_helpers/markup'
-import { ErrorType } from '@/server/error-utils'
+import { ErrorType } from '@/lib/errors/error-type'
 import { ErrorFallback } from './ErrorFallback'
 
 const STATUS_URL = 'https://status.example.com'

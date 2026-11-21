@@ -26,7 +26,7 @@ import {
   renderedHtml,
   NOT_FOUND_MARKER,
 } from '@/tests/smoke/_helpers/preview'
-import { localeDirection } from '@/types/sahajcloud'
+import { localeDirection } from '@/lib/i18n/locales'
 
 describe('web preview pages', () => {
   it('homepage renders with real content and working navigation', async () => {

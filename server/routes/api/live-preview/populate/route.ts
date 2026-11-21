@@ -46,7 +46,7 @@ import { createPayloadClient } from '@/server/sahajcloud/payload-client'
 import { idSchema } from '@/server/validation'
 import { LIVE_PREVIEW_POPULATE_PATH, LIVE_PREVIEW_TOKEN_HEADER } from '@/lib/live-preview/protocol'
 import { reportProxyFailure } from '@/server/routes/api/_proxy-failure'
-import { parseLocale } from '@/types/sahajcloud'
+import { parseLocale } from '@/lib/i18n/locales'
 
 /** Turns Payload's POST body into the GET SahajCloud actually answers. */
 const HTTP_METHOD_OVERRIDE_HEADER = 'X-Payload-HTTP-Method-Override'

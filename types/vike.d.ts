@@ -3,7 +3,8 @@
  * Adds the custom properties set by the hooks under `pages/`.
  */
 
-import type { Locale, WebTranslations } from './sahajcloud'
+import type { Locale } from './sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 import type { LivePreviewState } from '@/lib/live-preview/protocol'
 
 declare global {

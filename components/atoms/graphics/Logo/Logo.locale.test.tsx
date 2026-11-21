@@ -10,7 +10,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { WebTranslations } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
