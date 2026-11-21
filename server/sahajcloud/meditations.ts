@@ -2,9 +2,8 @@
  * Reads a meditation's background music.
  */
 
-import { withRetry } from '@/server/error-utils'
+import { degrade, withRetry } from '@/server/error-utils'
 import { sahajCloudFetchOptional } from './fetch'
-import { degrade } from '@/server/error-utils'
 import type { MeditationSong } from '@/types/sahajcloud'
 import type { LocalizedQueryOptions } from './query'
 

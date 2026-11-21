@@ -4,8 +4,7 @@
 
 import { createPayloadClient } from './payload-client'
 import type { Locale } from '@/types/sahajcloud'
-import type { WebTranslations } from '@/lib/i18n/web-translations'
-import { WEB_TRANSLATIONS_SELECT } from '@/lib/i18n/web-translations'
+import { WEB_TRANSLATIONS_SELECT, type WebTranslations } from '@/lib/i18n/web-translations'
 import { withRetryUnlessPreview } from './query'
 
 /**

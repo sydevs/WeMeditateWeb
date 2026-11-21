@@ -2,9 +2,8 @@
  * Reads the related-content cards SahajCloud ranks for a lecture or a meditation.
  */
 
-import { withRetry } from '@/server/error-utils'
+import { degrade, withRetry } from '@/server/error-utils'
 import { sahajCloudFetchOptional } from './fetch'
-import { degrade } from '@/server/error-utils'
 import type { Audience } from '@/types/payload/payload-types'
 import type { WebConfig, RelatedMeditationCard, RelatedLectureCard } from '@/types/sahajcloud'
 import type { LocalizedQueryOptions } from './query'
