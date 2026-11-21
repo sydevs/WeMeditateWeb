@@ -111,7 +111,12 @@ const TARGETS = [
     name: 'home',
     chrome: true,
     render: () => {
-      routeData.current = { settings: webConfig, page: homePage, seo: seoFor(homePage, '/') }
+      routeData.current = {
+        settings: webConfig,
+        page: homePage,
+        slug: 'index',
+        seo: seoFor(homePage, '/'),
+      }
 
       return (
         <LayoutChrome>
@@ -127,6 +132,7 @@ const TARGETS = [
       routeData.current = {
         settings: webConfig,
         page: articlePage,
+        slug: articlePage.slug,
         seo: seoFor(articlePage, `/${articlePage.slug}`),
       }
 

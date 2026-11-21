@@ -122,7 +122,13 @@ function routeSeo(document: Page, pageContext: (typeof context)['current']) {
 }
 
 function render(document: Page, pageContext: (typeof context)['current']) {
-  routeData.current = { page: document, settings, seo: routeSeo(document, pageContext) }
+  routeData.current = {
+    page: document,
+    settings,
+    // The route param, as `+data.ts` returns it: `/` arrives as `index`.
+    slug: pageContext.urlPathname.split('/').pop(),
+    seo: routeSeo(document, pageContext),
+  }
   context.current = pageContext
 
   return renderToStaticMarkup(<Page />)

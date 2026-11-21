@@ -12,7 +12,11 @@ import { LivePreviewDocument } from '../../lib/live-preview/document'
 import { useLivePreviewState } from '../../lib/live-preview/session'
 
 export function Page() {
-  const { page: initialPage, settings, seo } = useData<PageData>()
+  const { page: initialPage, settings, seo, slug } = useData<PageData>()
+  // `/` routes as `index`, and it is the only URL that serves the configured
+  // home page: any other spelling of that page's own slug 302s there
+  // (`+data.ts`).
+  const isHome = slug === 'index'
   // The canonical `+data.ts` built for the head, so a share cannot name a
   // different URL. It rides `data` to the browser, where `urlParsed` carries
   // no origin to rebuild one from.
@@ -32,9 +36,6 @@ export function Page() {
         // full-bleed hero sit flush at the top, under the overlaid header (see
         // LayoutChrome).
         const leadSplash = getLeadSplash(page.content)
-        // `/` serves the configured home page, and only `/` does: its own slug
-        // redirects there (`+data.ts`).
-        const isHome = page.slug === settings.homePage?.slug
 
         return (
           <>
