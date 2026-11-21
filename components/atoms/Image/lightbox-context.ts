@@ -24,7 +24,7 @@ export interface LightboxSlide {
   description?: string
 }
 
-export interface LightboxContextValue {
+interface LightboxContextValue {
   /** Register (or replace) a slide in a group at its document-order index. */
   register: (group: string, index: number, slide: LightboxSlide) => void
   /** Remove a slide when its `Image` unmounts. */
