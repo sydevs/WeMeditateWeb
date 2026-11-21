@@ -66,9 +66,14 @@ describe('<MapSearch> without JavaScript', () => {
     ).not.toBe('')
   })
 
-  it('offers nothing it has no words for, a blank field included', () => {
-    expect(renderToStaticMarkup(<MapSearch />)).not.toContain('<a')
-    expect(renderToStaticMarkup(<MapSearch label="   " />)).not.toContain('<a')
+  it('falls back to the shared wording when the editor left the field blank', () => {
+    for (const html of [
+      renderToStaticMarkup(<MapSearch />),
+      renderToStaticMarkup(<MapSearch label="   " />),
+    ]) {
+      expect(anchorFor(html, '/map')).not.toBe('')
+      expect(html).toContain('Classes Near Me')
+    }
   })
 
   // Measured in Ladle: 96px before and after the search replaces the fallback

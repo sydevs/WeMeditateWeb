@@ -2,6 +2,7 @@ import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Button } from '../../atoms/Button'
 import { LocationSearch, type SelectedLocation } from '../LocationSearch'
 import { useLocale } from '../../../hooks/usePageContext'
+import { useT } from '../../../hooks/useT'
 import { MAP_PREFIX } from '../../../lib/atlas-route'
 import { classMapSearchHref, isSafeNavigationUrl } from '../../../lib/urls'
 
@@ -9,8 +10,8 @@ export interface MapSearchProps {
   /**
    * The editor's wording: the search's visible label, and the link to the
    * class map that a visitor without JavaScript gets in its place. Without it
-   * the field is named for screen readers only, and that visitor gets
-   * nothing, because no translation names the map link.
+   * the field is named for screen readers only, and the link falls back to
+   * `discover.general.classes_near_me`.
    */
   label?: string
   /** Additional CSS classes */
@@ -26,6 +27,7 @@ export interface MapSearchProps {
  */
 export function MapSearch({ label, className = '' }: MapSearchProps) {
   const locale = useLocale()
+  const t = useT()
   // An emptied SahajCloud field arrives as '', which would render an empty
   // label and drop the field's screen-reader name.
   const wording = label?.trim() || undefined
@@ -40,11 +42,11 @@ export function MapSearch({ label, className = '' }: MapSearchProps) {
     }
   }
 
-  const fallback = wording ? (
+  const fallback = (
     <Button fullWidth href={MAP_PREFIX} icon={MapPinIcon} variant="neutral">
-      {wording}
+      {wording ?? t('discover.general.classes_near_me')}
     </Button>
-  ) : null
+  )
 
   // The label rather than the placeholder carries the wording: the
   // placeholder's grey is held under 4.5:1 on the strength of a visible label
