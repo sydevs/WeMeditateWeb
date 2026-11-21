@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { SkipLink } from "./SkipLink";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { SkipLink } from './SkipLink'
+import { StoryWrapper, StorySection } from '../../ladle'
 
 export default {
-  title: "Atoms"
-} satisfies StoryDefault;
+  title: 'Atoms',
+} satisfies StoryDefault
 
 /**
  * The first tab stop on every page, jumping past the menus to the content.
@@ -22,7 +22,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Dark Theme" surface="dark" background="neutral">
+    <StorySection background="neutral" surface="dark" title="Dark Theme">
       <div className="flex flex-col gap-2">
         <p className="text-sm text-fg-muted">
           The revealed link paints its own white card, so it reads the same on either surface.
@@ -31,7 +31,7 @@ export const Default: Story = () => (
       </div>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <StorySection title="First Child Of A Page" variant="subsection">
         <div className="border border-gray-200 bg-white">
           <SkipLink />
@@ -45,6 +45,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "SkipLink"
+Default.storyName = 'SkipLink'

@@ -150,7 +150,13 @@ describe('theme utilities', () => {
   it('flags a dead token in any namespace', () => {
     expect(
       utilitiesIn('text-error-light bg-accent-soft rounded-pill shadow-brand text-grey-700'),
-    ).toEqual(['text-error-light', 'bg-accent-soft', 'rounded-pill', 'shadow-brand', 'text-grey-700'])
+    ).toEqual([
+      'text-error-light',
+      'bg-accent-soft',
+      'rounded-pill',
+      'shadow-brand',
+      'text-grey-700',
+    ])
   })
 
   it('accepts a declared token through a variant, an opacity and an important', () => {

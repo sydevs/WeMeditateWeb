@@ -3,7 +3,7 @@ import { ClientOnly } from 'vike-react/ClientOnly'
 import type { LocationSearchProps } from './LocationSearch'
 
 const LocationSearchLazy = React.lazy(() =>
-  import('./LocationSearch').then((mod) => ({ default: mod.LocationSearch }))
+  import('./LocationSearch').then((mod) => ({ default: mod.LocationSearch })),
 )
 
 // Client-only wrapper to avoid SSR issues with @mapbox/search-js-react.

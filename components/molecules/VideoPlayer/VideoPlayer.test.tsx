@@ -70,10 +70,7 @@ describe('the packaged skin hooks the clip window depends on', () => {
   // so an upgrade that renames one would leave the controls unstyled, or stacked on top of
   // upstream's, with nothing else failing. `skin-overrides.css` and `clip-window.tsx` are the two
   // readers (#279).
-  const stylesheet = readFileSync(
-    require.resolve('@videojs/react/video/skin.css'),
-    'utf8',
-  )
+  const stylesheet = readFileSync(require.resolve('@videojs/react/video/skin.css'), 'utf8')
 
   it.each([
     'video-time-slider-group',

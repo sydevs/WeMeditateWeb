@@ -3,11 +3,9 @@ import { Accordion, type AccordionItemData } from '../../Accordion'
 import { ColumnCarousel } from '../../ColumnCarousel'
 import type { ColumnProps } from '../../Column'
 import { Heading, Image, Link } from '../../../atoms'
-import {
-  populatedImage,
-  type LayoutBlockFields,
-  type LayoutItem,
-} from '../../../../lib/content-blocks'
+import { populatedImage, type LayoutItem } from '../../../../lib/content-blocks'
+// Aliased: this file's own component takes the unprefixed name.
+import type { LayoutBlock as LayoutBlockSchema } from '../../../../server/payload-types'
 
 /**
  * The level an item's own title takes. A section with a heading of its own
@@ -18,7 +16,7 @@ type ItemHeadingLevel = 'h2' | 'h3'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */
-  style: LayoutBlockFields['style']
+  style: LayoutBlockSchema['style']
   /** Optional section heading shown above the items. */
   title?: string
   /** Tabs only: lay tabs out as side-by-side columns on desktop. */
@@ -94,13 +92,7 @@ function LayoutCard({
  * reuse the Accordion and ColumnCarousel molecules. `grid`, `list`, and
  * `textList` render with the LayoutCard subcomponent and simple lists.
  */
-export function LayoutBlock({
-  style,
-  title,
-  useColumnsOnDesktop,
-  items,
-  className = '',
-}: LayoutBlockProps) {
+export function LayoutBlock({ style, title, items, className = '' }: LayoutBlockProps) {
   const withTitle = items.filter((it) => it.title?.trim())
 
   if (items.length === 0) {

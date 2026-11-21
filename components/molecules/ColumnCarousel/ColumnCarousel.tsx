@@ -1,8 +1,8 @@
-import { useCallback, useState, useEffect } from 'react'
-import useEmblaCarousel from 'embla-carousel-react'
+import { useEffect } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Button } from '../../atoms/Button'
 import { Column, ColumnProps } from '../Column'
+import { useCarousel } from '../../../hooks/useCarousel'
 import { useT } from '../../../hooks/useT'
 
 export interface ColumnCarouselProps {
@@ -90,45 +90,9 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
   // Initialize to center column
   const centerIndex = Math.floor(columns.length / 2)
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: 'center',
-    slidesToScroll: 1,
-    containScroll: 'trimSnaps',
+  const { emblaRef, selectedIndex, scrollPrev, scrollNext, scrollTo } = useCarousel({
     startIndex: centerIndex,
   })
-
-  const [selectedIndex, setSelectedIndex] = useState(centerIndex)
-
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev()
-  }, [emblaApi])
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setSelectedIndex(emblaApi.selectedScrollSnap())
-  }, [emblaApi])
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      if (emblaApi) emblaApi.scrollTo(index)
-    },
-    [emblaApi],
-  )
-
-  useEffect(() => {
-    if (!emblaApi) return
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- the embla API exists only after mount, and it reports the `startIndex` the state already holds
-    onSelect()
-    emblaApi.on('select', onSelect)
-
-    return () => {
-      emblaApi.off('select', onSelect)
-    }
-  }, [emblaApi, onSelect])
 
   // Warn if columns were truncated (only log once when count changes)
   useEffect(() => {
@@ -166,17 +130,17 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
           {/* Navigation controls above carousel */}
           <div className="flex items-center">
             <CarouselNavButton
-              direction="prev"
               column={prevColumn}
-              onClick={scrollPrev}
+              direction="prev"
               disabled={!hasPrev}
+              onClick={scrollPrev}
             />
 
             <CarouselNavButton
-              direction="next"
               column={nextColumn}
-              onClick={scrollNext}
+              direction="next"
               disabled={!hasNext}
+              onClick={scrollNext}
             />
           </div>
 
@@ -190,19 +154,17 @@ export function ColumnCarousel({ columns: rawColumns, className = '' }: ColumnCa
               <button
                 // eslint-disable-next-line @eslint-react/no-array-index-key -- a dot indicator over a fixed `columns` array: the position is the identity
                 key={index}
-                onClick={() => scrollTo(index)}
                 aria-label={t('blocks.a11y.go_to_column', {
                   number: index + 1,
                   title: columns[index].title,
                 })}
                 aria-pressed={index === selectedIndex}
                 className="group flex w-11 h-11 items-center justify-center focus-ring"
+                onClick={() => scrollTo(index)}
               >
                 <span
                   className={`w-2 h-2 rounded-full transition-colors ${
-                    index === selectedIndex
-                      ? 'bg-teal-600'
-                      : 'bg-gray-300 group-hover:bg-gray-400'
+                    index === selectedIndex ? 'bg-teal-600' : 'bg-gray-300 group-hover:bg-gray-400'
                   }`}
                 />
               </button>

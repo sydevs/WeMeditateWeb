@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, expectTypeOf } from 'vitest'
 import {
   contentIndexCard,
   contentIndexTrack,
@@ -11,8 +11,10 @@ import {
   splashSurface,
   subtleSystemItems,
   textColorToSurface,
+  type ContentIndexBlockFields,
   type ShowcaseItem,
 } from './content-blocks'
+import type { ContentIndexBlock } from '../server/payload-types'
 import type { Page } from '../server/sahajcloud-types'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
@@ -131,11 +133,21 @@ describe('showcaseItems', () => {
 
 describe('subtleSystemItems', () => {
   it('maps SahajCloud field names to SVG node ids, dropping unpublished refs', () => {
+    // The schema requires all twelve; an unpublished page arrives as a bare id.
     const items = subtleSystemItems({
+      blockType: 'subtle-system',
       left: page(61, 'left-channel', 'Left Channel', 'The left side') as never,
+      right: 62,
+      center: 63,
       mooladhara: page(52, 'mooladhara-chakra', 'Mooladhara') as never,
+      kundalini: 99,
+      swadhistan: 53,
+      nabhi: 54,
       void: page(55, 'void-chakra', 'Void') as never,
-      kundalini: 99, // bare id → dropped
+      anahat: 56,
+      vishuddhi: 57,
+      agnya: 58,
+      sahasrara: 59,
     })
 
     expect(items.map((i) => i.id)).toEqual(['channel_left', 'chakra_1', 'chakra_3b'])
@@ -146,6 +158,15 @@ describe('subtleSystemItems', () => {
       description: 'The left side',
       linkHref: '/left-channel',
     })
+  })
+})
+
+describe('ContentIndexBlockFields', () => {
+  it('restates exactly the stored fields the SahajCloud schema defines', () => {
+    // `tsc` is the guard. This interface alone is hand-written, so a field or
+    // content-index type `pnpm types:cms` adds would otherwise reach no reader.
+    type Stored = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'>
+    expectTypeOf<Omit<ContentIndexBlockFields, `resolved${string}`>>().toEqualTypeOf<Stored>()
   })
 })
 
@@ -203,15 +224,22 @@ describe('contentIndexCard', () => {
 
   it('falls back to the enum value when a page-tag label is missing', () => {
     // A SahajCloud gap must show the identifier, not an empty pill.
-    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages')
+    const card = contentIndexCard(
+      { id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] },
+      'pages',
+    )
 
     expect(card?.tags).toEqual([{ id: 'wisdom', label: 'wisdom' }])
   })
 
   it('labels page-tag facets from SahajCloud, in the page locale', () => {
-    const card = contentIndexCard({ id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] }, 'pages', {
-      wisdom: 'Sagesse',
-    })
+    const card = contentIndexCard(
+      { id: 2, slug: 'guide', title: 'Guide', tags: ['wisdom'] },
+      'pages',
+      {
+        wisdom: 'Sagesse',
+      },
+    )
 
     expect(card?.tags).toEqual([{ id: 'wisdom', label: 'Sagesse' }])
   })

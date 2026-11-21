@@ -83,28 +83,28 @@ export function Countdown({
   const sizeClasses = {
     sm: {
       numbers: 'text-4xl md:text-5xl',
-      labels: 'text-sm'
+      labels: 'text-sm',
     },
     md: {
       numbers: 'text-5xl md:text-6xl',
-      labels: 'text-base'
+      labels: 'text-base',
     },
     lg: {
       numbers: 'text-6xl md:text-8xl',
-      labels: 'text-lg'
-    }
+      labels: 'text-lg',
+    },
   }
 
   const { numbers, labels } = sizeClasses[size]
 
   return (
     <div className={`text-center text-fg ${className}`} {...props}>
-      <div className={`flex items-start justify-center gap-1 font-number ${numbers} font-light tracking-wide leading-none`}>
+      <div
+        className={`flex items-start justify-center gap-1 font-number ${numbers} font-light tracking-wide leading-none`}
+      >
         {/* Hours */}
         <div className="inline-flex flex-col items-center">
-          <span className="tabular-nums">
-            {String(timeRemaining.hours).padStart(2, '0')}
-          </span>
+          <span className="tabular-nums">{String(timeRemaining.hours).padStart(2, '0')}</span>
           <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
             {t('blocks.general.hours')}
           </span>
@@ -115,9 +115,7 @@ export function Countdown({
 
         {/* Minutes */}
         <div className="inline-flex flex-col items-center">
-          <span className="tabular-nums">
-            {String(timeRemaining.minutes).padStart(2, '0')}
-          </span>
+          <span className="tabular-nums">{String(timeRemaining.minutes).padStart(2, '0')}</span>
           <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
             {t('blocks.general.minutes')}
           </span>
@@ -128,9 +126,7 @@ export function Countdown({
 
         {/* Seconds */}
         <div className="inline-flex flex-col items-center">
-          <span className="tabular-nums">
-            {String(timeRemaining.seconds).padStart(2, '0')}
-          </span>
+          <span className="tabular-nums">{String(timeRemaining.seconds).padStart(2, '0')}</span>
           <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
             {t('blocks.general.seconds')}
           </span>

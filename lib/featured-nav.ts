@@ -1,9 +1,9 @@
 /**
- * Shared rule for the featured top-level nav pages: the pages the header
- * renders as plain nav links (settings.featuredPages).
+ * Shared rules for where a page sits in the site nav.
  *
- * One primitive, `activeFeaturedSlug`, drives two current-page behaviors,
- * so they cannot drift apart:
+ * One primitive per nav group, so every consumer of "is this page in that
+ * section" reads the same answer. `activeFeaturedSlug` drives two current-page
+ * behaviors, so they cannot drift apart:
  *  - The header highlights the featured nav link for the active slug (LayoutChrome).
  *  - That page suppresses its own PageTitle banner (pages/[slug]/+Page.tsx),
  *    since the highlighted nav link already names it.
@@ -35,4 +35,17 @@ export function isFeaturedNavPage(
   settings: Pick<WebConfig, 'featuredPages'>,
 ): boolean {
   return activeFeaturedSlug(page.slug, settings) !== undefined
+}
+
+/**
+ * True when `page` is one of the pages the knowledge menu lists.
+ *
+ * The header draws that menu and the page's `BreadcrumbList` claims a trail
+ * through it (`lib/content-seo.ts`), so the two read one rule.
+ */
+export function isKnowledgePage(
+  page: Pick<Page, 'slug'>,
+  settings: Pick<WebConfig, 'knowledgePages'>,
+): boolean {
+  return settings.knowledgePages.some((knowledge) => knowledge.slug === page.slug)
 }

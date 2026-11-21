@@ -59,15 +59,25 @@ export function getImageURL(baseUrl: string, variant: string): string {
   return base ? `${base}/${variant}` : baseUrl
 }
 
+/**
+ * The pixel width one size tier of an aspect ratio renders at.
+ *
+ * ⚠ **A flexible variant constrains the width alone**, so this is the only
+ * dimension of a render that is knowable from its name. The height follows
+ * the source's own ratio.
+ */
+export function getVariantWidth(aspectRatio: AspectRatio, size: ImageSize = 'medium'): number {
+  const widths = SIZE_WIDTH_MAP[aspectRatio] as Partial<Record<ImageSize, number>>
+
+  // Prefer an exact match, then medium, then the smallest defined width for this
+  // ratio, so the answer stays deterministic regardless of object-key insertion
+  // order.
+  return widths[size] ?? widths.medium ?? Math.min(...(Object.values(widths) as number[]))
+}
+
 /** The flexible-variant segment for one size tier of an aspect ratio. */
 export function getVariantName(aspectRatio: AspectRatio, size: ImageSize = 'medium'): string {
-  const widths = SIZE_WIDTH_MAP[aspectRatio] as Partial<Record<ImageSize, number>>
-  // Prefer an exact match, then medium, then the smallest defined width for this
-  // ratio, so the name stays deterministic regardless of object-key insertion
-  // order.
-  const width = widths[size] ?? widths.medium ?? Math.min(...(Object.values(widths) as number[]))
-
-  return `width=${width}`
+  return `width=${getVariantWidth(aspectRatio, size)}`
 }
 
 export function getImageSrcSet(baseUrl: string, aspectRatio: AspectRatio): string {

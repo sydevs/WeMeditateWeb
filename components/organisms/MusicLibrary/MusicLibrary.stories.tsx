@@ -1,11 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { MusicLibrary } from './MusicLibrary'
 import { Track, MusicFilter } from '../../molecules'
-import {
-  MusicalNoteIcon,
-  MicrophoneIcon,
-  SpeakerWaveIcon,
-} from '@heroicons/react/24/outline'
+import { MusicalNoteIcon, MicrophoneIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline'
 
 export default {
   title: 'Organisms',
@@ -157,10 +153,7 @@ const musicFilters: MusicFilter[] = [
  */
 export const Default: Story = () => (
   <>
-    <MusicLibrary
-      tracks={sampleTracks}
-      filters={musicFilters}
-    />
+    <MusicLibrary filters={musicFilters} tracks={sampleTracks} />
   </>
 )
 
