@@ -7,9 +7,9 @@
  * editor who could fix it (server/AGENTS.md).
  */
 
-import * as Sentry from '@sentry/cloudflare'
 import { populatedImage } from '../lib/content-blocks'
 import { isPopulated } from '../lib/payload-relationships'
+import { warnOnce } from './error-utils'
 
 /** One image reference the renderers drop. */
 export interface DroppedImage {
@@ -80,17 +80,6 @@ export function droppedImages(content: unknown): DroppedImage[] {
 }
 
 /**
- * The gaps this isolate has already sent. A gap stands until an editor fixes
- * it and the read runs per render, so an event per render would bill the
- * Sentry quota per page view; an isolate is reused across requests and
- * dropped without notice, which re-reports a live gap often enough.
- */
-const reportedGaps = new Set<string>()
-
-/** Past this the memo is emptied rather than pruned: re-reporting is the harmless direction. */
-const MAX_REPORTED_GAPS = 64
-
-/**
  * Logs every image a page drops, on every render, and sends a Sentry warning
  * once per distinct gap (page, locale and dropped refs) per isolate.
  */
@@ -109,17 +98,9 @@ export function reportDroppedImages(
 
   // Keyed per locale: a page's content is localized, so each locale's dangling
   // reference is its own fix, and a deleted image reads as `missing` in all.
-  const signature = `${page.slug}|${locale}|${refs}`
-
-  if (reportedGaps.has(signature)) {
-    return
-  }
-  if (reportedGaps.size >= MAX_REPORTED_GAPS) reportedGaps.clear()
-
-  reportedGaps.add(signature)
-  Sentry.captureMessage('Page content references unpublished or unresolved images', {
-    level: 'warning',
-    tags: { source: 'getPageBySlug' },
-    extra: { slug: page.slug, dropped, locale },
-  })
+  warnOnce(
+    `${page.slug}|${locale}|${refs}`,
+    'Page content references unpublished or unresolved images',
+    { source: 'getPageBySlug', extra: { slug: page.slug, dropped, locale } },
+  )
 }
