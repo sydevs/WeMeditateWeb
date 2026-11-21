@@ -17,6 +17,14 @@ const APP_FILES = ['**/*.{js,jsx,ts,tsx}']
  * guards, and must be updated alongside: this file is plain JS loaded before
  * any transpile, so it cannot import that one.
  */
+const ALIAS_FILES = [
+  '{components,hooks,layouts,lib,pages,server,tests,types}/**/*.{ts,tsx}',
+  '.ladle/components.tsx',
+]
+const UP_A_FOLDER = {
+  group: ['../*'],
+  message: 'Import from outside this folder through `@/` (the repo root).',
+}
 const COMPONENT_FILES = ['components/**/*.tsx', 'layouts/**/*.tsx', 'pages/**/*.tsx']
 
 // `name`, `value` and `id` also take strings, but those are identifiers rather
@@ -347,6 +355,48 @@ export default defineConfig([
     files: ['tests/**', '**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'no-console': 'warn',
+    },
+  },
+  // An import leaves its folder through `@/` (the repo root, see tsconfig.json),
+  // so a file moves without its imports changing. Scripts and configs run
+  // under plain Node, which knows no alias, so they keep relative paths.
+  {
+    files: ALIAS_FILES,
+    rules: { 'no-restricted-imports': ['error', { patterns: [UP_A_FOLDER] }] },
+  },
+  // ⚠ What a browser can load reads nothing from server/, types included: the
+  // shared parts live in lib/ and types/. Only the hooks Vike runs on the
+  // server, and the data loaders they call, may reach into it.
+  {
+    files: [
+      'components/**',
+      'hooks/**',
+      'layouts/**',
+      'lib/**',
+      'types/**',
+      'pages/**',
+      '.ladle/**',
+    ],
+    ignores: [
+      'pages/**/+data.ts',
+      'pages/**/+onBeforeRender.ts',
+      'pages/**/_*.ts',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            UP_A_FOLDER,
+            {
+              group: ['@/server', '@/server/*'],
+              message: 'server/ is server-only. Move what both sides need to lib/ or types/.',
+            },
+          ],
+        },
+      ],
     },
   },
 ])
