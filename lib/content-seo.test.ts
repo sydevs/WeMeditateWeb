@@ -4,7 +4,14 @@ import { renderSeoHead } from './seo-head-html'
 import type { SeoDocument } from './head'
 import type { SeoNode } from './seo-schema'
 import type { Image, Meditation, Page, ResolvedLecture } from '../server/sahajcloud-types'
-import { lectureSeo, meditationSeo, pageSeo, resolveSeoImage, type SeoRoute } from './content-seo'
+import {
+  lectureSeo,
+  meditationSeo,
+  pageSeo,
+  resolveSeoImage,
+  seoRoute,
+  type SeoRoute,
+} from './content-seo'
 import { enT } from './i18n'
 import type { Track } from '../components/molecules/AudioPlayer/types'
 
@@ -655,5 +662,40 @@ describe('lectureSeo', () => {
     expect(graph(seoFor()).find((node) => node['@type'] === 'VideoObject')).not.toHaveProperty(
       'uploadDate',
     )
+  })
+})
+
+/**
+ * The class-directory block changes the page's address as a visitor browses
+ * it: the widget writes `?atlas=` and `?locale=` through `pushState`. None of
+ * that may reach the `<head>`, or a search engine would see more than one
+ * page per address.
+ *
+ * It holds because `seoRoute` takes the path from `urlPathname`, which carries
+ * no query string, and reads nothing else off the URL — and that is exactly
+ * why it is pinned here rather than left to a reader to notice.
+ */
+describe('seoRoute, under a class-directory block', () => {
+  /** A real `pageContext` carries the widget's query, on `urlParsed`. */
+  type Browsed = Parameters<typeof seoRoute>[0] & {
+    urlParsed: { origin: string | null; search: Record<string, string> }
+  }
+
+  const headFor = (search: Record<string, string>) => {
+    const context: Browsed = {
+      urlParsed: { origin: ORIGIN, search },
+      urlPathname: '/live',
+      locale: 'en',
+    }
+
+    return seoFor({ route: seoRoute(context, enT), locales: ['en', 'ru'] })
+  }
+
+  it('publishes the same canonical and cluster with and without the widget parameters', () => {
+    const bare = headFor({})
+
+    expect(bare.canonical).toBe(`${ORIGIN}/live`)
+    expect(bare.alternates.map((alternate) => alternate.hreflang)).toContain('ru')
+    expect(headFor({ atlas: '/gb/london', locale: 'ru' })).toEqual(bare)
   })
 })

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { atlasEmbedSrc } from './atlas-embed'
 
 describe('atlasEmbedSrc', () => {
-  const src = atlasEmbedSrc({ key: 'pk_test', atlasRoute: '/nl/amsterdam' })
+  const src = atlasEmbedSrc({ key: 'pk_test', atlasRoute: '/nl/amsterdam', routing: 'path' })
   const url = new URL(src)
 
   it('loads the published loader, not the widget bundle', () => {
@@ -34,8 +34,50 @@ describe('atlasEmbedSrc', () => {
   })
 
   it('opens at the atlas root for /map itself', () => {
-    expect(new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/' })).searchParams.get('atlas')).toBe(
-      '/',
+    expect(
+      new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/', routing: 'path' })).searchParams.get(
+        'atlas',
+      ),
+    ).toBe('/')
+  })
+
+  // `/map`'s URL is the one every later caller must leave alone: it is what the
+  // client record's canonical embed is registered against.
+  it("leaves /map's own URL byte for byte", () => {
+    expect(atlasEmbedSrc({ key: 'pk_test', atlasRoute: '/nl/amsterdam', routing: 'path' })).toBe(
+      'https://sahajatlas.com/auto.js?key=pk_test&routing=path&atlas=%2Fnl%2Famsterdam',
     )
+  })
+
+  describe('a class-directory block on a content page', () => {
+    it('sends neither routing nor atlas when it opens at nothing', () => {
+      // `query` is the widget's own default, so saying it would only add a
+      // byte; a block with no `opensAt` names no route to default to.
+      expect(atlasEmbedSrc({ key: 'k' })).toBe('https://sahajatlas.com/auto.js?key=k')
+    })
+
+    it('names the route an `opensAt` region or class resolves to', () => {
+      expect(
+        new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/london' })).searchParams.get('atlas'),
+      ).toBe('/london')
+      expect(
+        new URL(atlasEmbedSrc({ key: 'k', atlasRoute: '/london' })).searchParams.get('routing'),
+      ).toBeNull()
+    })
+
+    it('emits map=false only when the map is off', () => {
+      expect(new URL(atlasEmbedSrc({ key: 'k', map: true })).searchParams.get('map')).toBeNull()
+      expect(new URL(atlasEmbedSrc({ key: 'k', map: false })).searchParams.get('map')).toBe('false')
+    })
+
+    it('carries one language code, and `format` only when asked', () => {
+      const directory = new URL(atlasEmbedSrc({ key: 'k', langs: 'pt', format: 'online' }))
+
+      expect(directory.searchParams.get('langs')).toBe('pt')
+      expect(directory.searchParams.get('format')).toBe('online')
+      expect(
+        new URL(atlasEmbedSrc({ key: 'k', langs: 'pt' })).searchParams.get('format'),
+      ).toBeNull()
+    })
   })
 })

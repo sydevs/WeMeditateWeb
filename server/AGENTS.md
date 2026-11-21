@@ -84,9 +84,11 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
   nothing here caches them, and a gap this warning catches stands until an editor fixes the data —
   so a bare `captureMessage` bills the Sentry quota per page view. Send one event per distinct gap
   per isolate, and keep `console.warn` on every request. `warnOnce` in
-  [error-utils.ts](error-utils.ts) is that bound for a new warning; `getWebConfig` holds its own
-  memo, and one source's churn must never re-arm another's. Lower the volume, never the level: a
-  warning nobody can afford to leave on gets turned off, and then the gap is invisible again.
+  [error-utils.ts](error-utils.ts) holds that bound, keyed per source so one source's churn cannot
+  re-arm another's. Every reporter goes through it, and a second memo beside it is what splits one
+  rule over two homes. A report Sentry sends at another level widens `warnOnce` rather than
+  bypassing it. Lower the volume, never the level: a warning nobody can afford to leave on gets
+  turned off, and then the gap is invisible again.
 - ⚠ **What Sentry may collect is declared in
   [../lib/sentry-data-collection.ts](../lib/sentry-data-collection.ts); what reaches an event
   anyway is scrubbed in `entry.ts`, not where it is captured.** `scrubCredentials` there is the

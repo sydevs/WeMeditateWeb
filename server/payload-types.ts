@@ -5611,16 +5611,13 @@ export interface WmWebTranslation {
     general?: WmWebTranslationsMediaGeneralStrings;
     a11y?: WmWebTranslationsMediaA11YStrings;
   };
-  video?: {
-    general?: WmWebTranslationsVideoGeneralStrings;
-    a11y?: WmWebTranslationsVideoA11YStrings;
-  };
   location?: {
     general?: WmWebTranslationsLocationGeneralStrings;
     a11y?: WmWebTranslationsLocationA11YStrings;
   };
   blocks?: {
     general?: WmWebTranslationsBlocksGeneralStrings;
+    live_session?: WmWebTranslationsBlocksLiveSessionStrings;
     a11y?: WmWebTranslationsBlocksA11YStrings;
   };
   _status?: ('draft' | 'published') | null;
@@ -6209,174 +6206,6 @@ export interface WmWebTranslationsMediaA11YStrings {
    */
   zoom_out?: string;
 }
-export interface WmWebTranslationsVideoGeneralStrings {
-  /**
-   * Tooltip on the video player's play button while the video is paused. It also names that button for screen readers.
-   */
-  play?: string;
-  /**
-   * Tooltip on the same button while the video is playing.
-   */
-  pause?: string;
-  /**
-   * Tooltip on the video player's sound button while the video can be heard. It also names that button for screen readers.
-   */
-  mute?: string;
-  /**
-   * Tooltip on the same button while the video is silenced.
-   */
-  unmute?: string;
-  /**
-   * Tooltip on the video player's settings button, which opens the gear menu.
-   */
-  settings?: string;
-  /**
-   * Tooltip on the video player's subtitles button while subtitles are showing.
-   */
-  closed_captions_on?: string;
-  /**
-   * Tooltip on the same button while subtitles are hidden.
-   */
-  closed_captions_off?: string;
-  /**
-   * Tooltip on the video player's button that jumps forward a few seconds.
-   */
-  seek_forward?: string;
-  /**
-   * Tooltip on the video player's button that jumps back a few seconds.
-   */
-  seek_backward?: string;
-  /**
-   * Tooltip on the video player's button that pops the video out into a small floating window.
-   */
-  enter_pip?: string;
-  /**
-   * Tooltip on the same button while the video already plays in that floating window.
-   */
-  exit_pip?: string;
-  /**
-   * Tooltip on the video player's button that makes the video fill the screen.
-   */
-  enter_fullscreen?: string;
-  /**
-   * Tooltip on the same button while the video already fills the screen.
-   */
-  exit_fullscreen?: string;
-  /**
-   * Video settings menu: the row that lists the subtitle tracks this video offers.
-   */
-  captions?: string;
-  /**
-   * Video settings menu: the row that lists the picture qualities this video offers.
-   */
-  quality?: string;
-  /**
-   * Video settings menu: the row that sets how fast the video plays.
-   */
-  speed?: string;
-  /**
-   * Video settings menu: the row holding the sound options.
-   */
-  audio?: string;
-  /**
-   * Video settings menu: the row that lists the audio tracks this video offers.
-   */
-  track?: string;
-  /**
-   * Video settings menu: the slider that raises the volume past its normal maximum.
-   */
-  boost?: string;
-  /**
-   * Video settings menu: the row holding the screen-reader and keyboard options.
-   */
-  accessibility?: string;
-  /**
-   * Video settings menu: the switch that lets a screen reader announce playback changes.
-   */
-  announcements?: string;
-  /**
-   * Video settings menu: the switch that flashes an icon when a keyboard shortcut fires.
-   */
-  keyboard_animations?: string;
-  /**
-   * Video settings menu: the quality option that lets the player choose for itself.
-   */
-  auto?: string;
-  /**
-   * Video settings menu: the audio track the video ships with.
-   */
-  default?: string;
-  /**
-   * Video settings menu: the speed option that plays the video as recorded.
-   */
-  normal?: string;
-  /**
-   * Video settings menu: the subtitle option that shows no subtitles.
-   */
-  off?: string;
-  /**
-   * Video settings menu: the row that opens the subtitle appearance options.
-   */
-  caption_styles?: string;
-  /**
-   * Sample sentence in the subtitle appearance options, so the viewer sees each choice applied.
-   */
-  captions_look_like_this?: string;
-  /**
-   * Subtitle appearance options: the heading above the lettering choices.
-   */
-  font?: string;
-  /**
-   * Subtitle appearance options: the typeface the subtitles use.
-   */
-  family?: string;
-  /**
-   * Subtitle appearance options: how large the subtitle lettering is.
-   */
-  size?: string;
-  /**
-   * Subtitle appearance options: the heading above the subtitle lettering's own colour and opacity.
-   */
-  text?: string;
-  /**
-   * Subtitle appearance options: the heading above the band drawn behind the lettering.
-   */
-  text_background?: string;
-  /**
-   * Subtitle appearance options: the heading above the panel drawn behind the whole subtitle area.
-   */
-  display_background?: string;
-  /**
-   * Subtitle appearance options: the colour of the part its heading names. It appears under three headings.
-   */
-  color?: string;
-  /**
-   * Subtitle appearance options: how see-through the part its heading names is. It appears under three headings.
-   */
-  opacity?: string;
-  /**
-   * Subtitle appearance options: the shadow drawn behind the subtitle lettering.
-   */
-  shadow?: string;
-  /**
-   * Button that puts every subtitle appearance option back to its starting value.
-   */
-  reset?: string;
-}
-export interface WmWebTranslationsVideoA11YStrings {
-  /**
-   * Not shown on screen; read by screen readers. Names the video player's fullscreen button.
-   */
-  fullscreen?: string;
-  /**
-   * Not shown on screen; read by screen readers. Names the video player's button that pops the video into a small floating window.
-   */
-  pip?: string;
-  /**
-   * Not shown on screen; read by screen readers. Names the video player's progress bar, which scrubs through the video.
-   */
-  seek?: string;
-}
 export interface WmWebTranslationsLocationGeneralStrings {
   /**
    * Shown in the empty search box, before the visitor types a place.
@@ -6482,6 +6311,10 @@ export interface WmWebTranslationsBlocksGeneralStrings {
    * Label under the seconds figure of a countdown.
    */
   seconds?: string;
+  /**
+   * Label under the days figure of a countdown.
+   */
+  days?: string;
   // shortcut: typed by hand, because sydevs/SahajCloud#1218 declares the key
   // and has not merged. Every contract sync re-derives this file and drops
   // this entry, so re-type it until that PR lands (sydevs/WeMeditateWeb#269).
@@ -6490,7 +6323,37 @@ export interface WmWebTranslationsBlocksGeneralStrings {
    */
   wisdom_sidetext?: string;
 }
+export interface WmWebTranslationsBlocksLiveSessionStrings {
+  /**
+   * Heading above the next online class's day and time.
+   */
+  next_session?: string;
+  /**
+   * Label above the countdown figures.
+   */
+  starts_in?: string;
+  /**
+   * Button that opens the joining link while the class is under way.
+   */
+  join_now?: string;
+  /**
+   * Shown in place of the countdown while the class is under way.
+   */
+  live_now?: string;
+  /**
+   * Shown when the class has no future dates left.
+   */
+  no_upcoming?: string;
+  /**
+   * The class's own schedule, shown before the visitor's clock is known — e.g. "Tuesdays, 7:00 pm London time". `%{weekday}` = the day, `%{time}` = the start time, `%{zone}` = the class's own time zone, named by the browser.
+   */
+  schedule_line?: string;
+}
 export interface WmWebTranslationsBlocksA11YStrings {
+  /**
+   * Not shown on screen; read by screen readers. The one sentence giving the next class's day, time and how far away it is. `%{weekday}` = the day, `%{time}` = the start time, `%{relative}` = how far away, e.g. "in 2 days".
+   */
+  next_session?: string;
   /**
    * Not shown on screen; read by screen readers. Names the button that opens the subtle-system diagram full screen.
    */
@@ -10722,12 +10585,6 @@ export interface WmWebTranslationsSelect<T extends boolean = true> {
         general?: T;
         a11y?: T;
       };
-  video?:
-    | T
-    | {
-        general?: T;
-        a11y?: T;
-      };
   location?:
     | T
     | {
@@ -10738,6 +10595,7 @@ export interface WmWebTranslationsSelect<T extends boolean = true> {
     | T
     | {
         general?: T;
+        live_session?: T;
         a11y?: T;
       };
   _status?: T;
@@ -11461,6 +11319,10 @@ export interface SplashBlock {
    */
   layout: 'default' | 'countdown' | 'app' | 'map-search';
   /**
+   * The online class this splash counts down to.
+   */
+  event?: (number | null) | Event;
+  /**
    * Text colour for the splash. Light text suits a dark hero; dark text suits a light hero. The overlaid site-header theme follows this setting.
    */
   textColor?: ('dark' | 'light') | null;
@@ -11481,6 +11343,35 @@ export interface SplashBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'splash';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ClassDirectoryBlock".
+ */
+export interface ClassDirectoryBlock {
+  /**
+   * Where the directory opens. Leave blank for its usual starting point.
+   */
+  opensAt?:
+    | ({
+        relationTo: 'regions';
+        value: number | Region;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null);
+  /**
+   * Draw the map. Turn it off for a plain list of classes.
+   */
+  showMap?: boolean | null;
+  /**
+   * Open filtered to online classes. A visitor can still widen it from the directory’s own filters.
+   */
+  onlineOnly?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'class-directory';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

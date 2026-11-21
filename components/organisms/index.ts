@@ -54,3 +54,6 @@ export type { ContentIndexProps } from './ContentIndex'
 
 export { RelatedContent, RelatedContentLoader } from './RelatedContent'
 export type { RelatedContentProps, RelatedContentLoaderProps } from './RelatedContent'
+
+export { ClassDirectory } from './ClassDirectory'
+export type { ClassDirectoryProps } from './ClassDirectory'

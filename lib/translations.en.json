@@ -26,6 +26,7 @@
       "go_to_column": "Go to column %{number}: %{title}",
       "learn_more_about": "Learn more about %{title}",
       "next_column": "Next: %{title}",
+      "next_session": "The next session is %{weekday} at %{time}, %{relative}.",
       "next_slide": "Next slide",
       "previous_column": "Previous: %{title}",
       "previous_slide": "Previous slide",
@@ -38,10 +39,19 @@
     "general": {
       "chakras": "Chakras",
       "channels": "Channels",
+      "days": "Days",
       "hours": "Hours",
       "learn_more": "Learn More →",
       "minutes": "Minutes",
       "seconds": "Seconds"
+    },
+    "live_session": {
+      "join_now": "Join now",
+      "live_now": "Happening now",
+      "next_session": "Next session",
+      "no_upcoming": "No upcoming session",
+      "schedule_line": "%{weekday}, %{time} %{zone}",
+      "starts_in": "Starts in"
     }
   },
   "common": {

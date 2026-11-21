@@ -26,7 +26,15 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
 import { EN_TRANSLATIONS } from '../../lib/i18n'
 import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
-import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
+import {
+  articlePage,
+  atlasSeo,
+  homePage,
+  lecture,
+  livePage,
+  meditation,
+  webConfig,
+} from './fixtures'
 
 /** Route data, swapped per target before the render. */
 const routeData: { current: unknown } = { current: {} }
@@ -98,6 +106,19 @@ const TARGETS = [
     chrome: true,
     render: () => {
       routeData.current = { settings: webConfig, page: homePage }
+
+      return (
+        <LayoutChrome>
+          <HomeOrArticlePage />
+        </LayoutChrome>
+      )
+    },
+  },
+  {
+    name: 'live',
+    chrome: true,
+    render: () => {
+      routeData.current = { settings: webConfig, page: livePage }
 
       return (
         <LayoutChrome>

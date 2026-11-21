@@ -74,10 +74,11 @@ export function localeFromPath(pathname: string): PathLocale {
  * ⚠ **A gate on a URL this site did not author itself**, and the strictest of
  * the three: it admits nothing but http(s), so a configured `javascript:` or
  * `data:` value cannot run in our origin. Reach for it where the URL must be
- * absolute — an `href` takes {@link isSafeLinkHref} instead. Three callers
+ * absolute — an `href` takes {@link isSafeLinkHref} instead. Four callers
  * need it today: the status-page link (`ErrorFallback`), an authored form's
  * redirect (`FormBuilder`, through {@link isSafeNavigationUrl}), which reaches
- * `window.location.href` on a successful submission, and everything the atlas
+ * `window.location.href` on a successful submission, the joining link of the
+ * class a `countdown` splash names (`LiveSession`), and everything the atlas
  * sends — a region's canonical and a class's own room or website link
  * (`pages/map/_components/AtlasContent.tsx`).
  *
