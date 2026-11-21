@@ -25,6 +25,7 @@ import {
   cardHeadingLevel,
   cardRun,
   getNodeText,
+  headingTag,
   pageCard,
   relationshipLabel,
   uploadFigureClass,
@@ -109,10 +110,7 @@ const CONVERTERS: JSXConverters = {
 
   // Headings get a slugified anchor id so a table of contents can link to them.
   heading: ({ node, nodesToJSX }) => {
-    const Tag =
-      typeof node.tag === 'string' && /^h[2-6]$/.test(node.tag)
-        ? (node.tag as 'h2' | 'h3' | 'h4' | 'h5' | 'h6')
-        : 'h2'
+    const Tag = headingTag(node)
     const id = slugify(getNodeText(node.children))
 
     return <Tag id={id || undefined}>{nodesToJSX({ nodes: node.children })}</Tag>

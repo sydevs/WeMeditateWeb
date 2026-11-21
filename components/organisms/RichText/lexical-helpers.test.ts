@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cardHeadingLevel, cardRun, pageCard } from './lexical-helpers'
+import { cardHeadingLevel, cardRun, headingTag, pageCard } from './lexical-helpers'
 
 const IMAGE = {
   id: 1,
@@ -62,6 +62,22 @@ describe('cardRun', () => {
 
     expect(cardRun([card, para, card], 2)).toEqual({ position: 2, length: 2 })
     expect(cardRun([card, breakOnly, card, para], 0)).toEqual({ position: 1, length: 2 })
+  })
+})
+
+describe('headingTag', () => {
+  it('keeps a tag inside h2-h6', () => {
+    expect(headingTag({ type: 'heading', tag: 'h4' })).toBe('h4')
+  })
+
+  it.each([['h1'], ['h7'], ['div'], ['']])('draws an h2 for %s', (tag) => {
+    expect(headingTag({ type: 'heading', tag })).toBe('h2')
+  })
+
+  it('draws an h2 for a node with no usable tag', () => {
+    expect(headingTag({ type: 'heading' })).toBe('h2')
+    expect(headingTag({ type: 'heading', tag: 3 })).toBe('h2')
+    expect(headingTag(null)).toBe('h2')
   })
 })
 

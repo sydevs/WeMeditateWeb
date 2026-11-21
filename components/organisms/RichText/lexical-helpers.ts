@@ -151,21 +151,32 @@ export function cardRun(siblings: readonly unknown[], index: number): CardRun {
   return { position, length }
 }
 
-type SubheadingLevel = 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+export type SubheadingLevel = 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+
+/**
+ * The tag a `heading` node renders as. Anything outside h2-h6 — an `h1`, or a
+ * node carrying no tag — draws an `h2`, so a heading in the body never
+ * competes with the page title.
+ */
+export function headingTag(node: unknown): SubheadingLevel {
+  const tag = isPopulated<{ tag?: unknown }>(node) ? node.tag : undefined
+
+  return typeof tag === 'string' && /^h[2-6]$/.test(tag) ? (tag as SubheadingLevel) : 'h2'
+}
 
 /**
  * The heading level for a card at `index`: one below the nearest heading
  * before it, `h2` when none does, so a card never skips a level under the
- * page's `h1`. An `h1` node counts as the `h2` the heading converter draws.
+ * page's `h1`.
  */
 export function cardHeadingLevel(siblings: readonly unknown[], index: number): SubheadingLevel {
   for (let i = index - 1; i >= 0; i--) {
     const node = siblings[i]
 
-    if (!isPopulated<{ type?: unknown; tag?: unknown }>(node) || node.type !== 'heading') {
+    if (!isPopulated<{ type?: unknown }>(node) || node.type !== 'heading') {
       continue
     }
-    const level = typeof node.tag === 'string' ? Number(/^h([2-6])$/.exec(node.tag)?.[1] ?? 2) : 2
+    const level = Number(headingTag(node).slice(1))
 
     return `h${Math.min(level + 1, 6)}` as SubheadingLevel
   }
