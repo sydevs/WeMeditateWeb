@@ -5,9 +5,8 @@ import { anchorFor, classFor } from '../../../tests/_helpers/markup'
 
 interface StubProps {
   fallback?: ReactNode
-  label?: string
+  label?: ReactNode
   placeholder?: string
-  labelClassName?: string
   onLocationSelect: (place: { name: string; coordinates: { lat: number; lng: number } }) => void
 }
 
@@ -92,8 +91,10 @@ describe('<MapSearch> with JavaScript', () => {
   it('labels the search, visibly, in the editor’s words', () => {
     renderToStaticMarkup(<MapSearch label="Find a class near you" />)
 
-    expect(state.search?.label).toBe('Find a class near you')
-    expect(state.search?.labelClassName?.split(' ')).toContain('text-fg')
+    const label = renderToStaticMarkup(<>{state.search?.label}</>)
+
+    expect(label).toContain('Find a class near you')
+    expect(classFor(label, 'text-fg').split(' ')).toContain('text-fg')
     // Its own placeholder stays: the wording is the label, not a grey hint.
     expect(state.search?.placeholder).toBeUndefined()
   })
@@ -101,7 +102,7 @@ describe('<MapSearch> with JavaScript', () => {
   it('leaves a blank field to the search’s own screen-reader name', () => {
     renderToStaticMarkup(<MapSearch label="   " />)
 
-    expect(state.search?.label).toBeUndefined()
+    expect(state.search?.label).toBeFalsy()
   })
 
   it('opens the class map searching around the chosen place', () => {

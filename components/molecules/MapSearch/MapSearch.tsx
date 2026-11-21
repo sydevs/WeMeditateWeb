@@ -55,8 +55,13 @@ export function MapSearch({ label, className = '' }: MapSearchProps) {
     >
       <LocationSearch
         fallback={fallback}
-        label={wording}
-        labelClassName="mb-4 text-center text-lg md:text-xl font-light text-fg"
+        label={
+          wording && (
+            <span className="mb-4 block text-center text-lg font-light text-fg md:text-xl">
+              {wording}
+            </span>
+          )
+        }
         onLocationSelect={openMap}
       />
     </div>
