@@ -5,6 +5,7 @@
 
 import * as Sentry from '@sentry/cloudflare'
 import { readStatus } from '@/lib/errors/error-type'
+import { warnOnce } from '@/server/error-utils'
 
 /**
  * The status SahajCloud answered with, and the refusal code it named.
@@ -19,20 +20,6 @@ export function upstreamRefusal(error: unknown): { code?: string; status?: numbe
 
   return { code: typeof raw === 'string' ? raw : undefined, status: readStatus(error) }
 }
-
-/**
- * The 400s this isolate has already reported, as `<proxy>:<code>`.
- *
- * A 400 is the caller's by status, but it is also how a contract drift shows:
- * the intake refusing a key our form sends, or a read shape SahajCloud stopped
- * accepting. One event per distinct code per isolate keeps that visible
- * without billing one per visitor who typed a disposable address — the bound
- * `reportedConfigGaps` in server/sahajcloud/web-config.ts states. Past the cap the set is
- * emptied rather than pruned: re-reporting is the harmless direction.
- */
-const reportedRefusals = new Set<string>()
-
-const MAX_REPORTED_REFUSALS = 64
 
 /**
  * Reports a failed SahajCloud call from one of the two proxies.
@@ -61,23 +48,22 @@ export function reportProxyFailure(
 
   if (status === 403 && proxy === 'submissions' && code) return
 
-  if (status === 400) {
-    const signature = `${proxy}:${code ?? ''}`
-
-    if (reportedRefusals.has(signature)) return
-
-    if (reportedRefusals.size >= MAX_REPORTED_REFUSALS) reportedRefusals.clear()
-
-    reportedRefusals.add(signature)
+  const message = `The ${proxy} proxy failed`
+  const extra = {
+    status: status ?? null,
+    code: code ?? null,
+    error: error instanceof Error ? error.name : typeof error,
   }
 
-  Sentry.captureMessage(`The ${proxy} proxy failed`, {
-    level: status === 400 ? 'warning' : 'error',
-    tags: { source: proxy },
-    extra: {
-      status: status ?? null,
-      code: code ?? null,
-      error: error instanceof Error ? error.name : typeof error,
-    },
-  })
+  // A 400 is the caller's by status, but it is also how a contract drift shows:
+  // the intake refusing a key our form sends, or a read shape SahajCloud
+  // stopped accepting. Once per code keeps that visible without billing one
+  // event per visitor who typed a disposable address.
+  if (status === 400) {
+    warnOnce(code ?? '', message, { source: proxy, extra })
+
+    return
+  }
+
+  Sentry.captureMessage(message, { level: 'error', tags: { source: proxy }, extra })
 }
