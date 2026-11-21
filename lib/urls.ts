@@ -13,8 +13,10 @@
  * already holds.
  */
 
+import type { SelectedLocation } from '../components/molecules/LocationSearch'
 import type { Locale } from '../server/sahajcloud-types'
 import { DEFAULT_LOCALE, isLocale } from '../server/sahajcloud-types'
+import { MAP_PREFIX } from './atlas-route'
 
 /** What a path's leading segment says about the locale. */
 export interface PathLocale {
@@ -224,6 +226,24 @@ export function sitePathFromUrl(url: string, origin: string | null | undefined):
   } catch {
     return null
   }
+}
+
+/**
+ * Where picking a place in a Splash block's map search lands: the class map,
+ * searching around that place.
+ *
+ * The search rides in `?atlas=`, the widget's query routing: `center` is
+ * `<lng>,<lat>` and drives the results, and `q` is only the label its search
+ * box shows. `q` is encoded once more inside the route, so a name carrying `&`
+ * or `#` stays one value.
+ *
+ * shortcut: query routing only, which `/map`'s path routing ignores once the client record names a canonical embed; spell the path form once SahajAtlasWeb documents one that pre-fills.
+ */
+export function classMapSearchHref(locale: Locale, place: SelectedLocation): string {
+  const { lat, lng } = place.coordinates
+  const route = `/search?center=${lng},${lat}&q=${encodeURIComponent(place.name)}`
+
+  return localeHref(locale, `${MAP_PREFIX}?atlas=${encodeURIComponent(route)}`)
 }
 
 /**

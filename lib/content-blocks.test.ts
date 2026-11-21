@@ -9,6 +9,7 @@ import {
   populatedImage,
   showcaseItems,
   splashSurface,
+  splashTitle,
   subtleSystemItems,
   textColorToSurface,
   type ContentIndexBlockFields,
@@ -448,6 +449,18 @@ describe('splashSurface', () => {
   })
 })
 
+describe('splashTitle', () => {
+  it('draws a non-blank title, trimmed', () => {
+    expect(splashTitle({ layout: 'default', title: '  Discover it ' })).toBe('Discover it')
+    expect(splashTitle({ layout: 'default', title: '   ' })).toBeUndefined()
+    expect(splashTitle({ layout: 'default', title: null })).toBeUndefined()
+  })
+
+  it('draws none under map-search, where SahajCloud hides the field', () => {
+    expect(splashTitle({ layout: 'map-search', title: 'Discover it' })).toBeUndefined()
+  })
+})
+
 describe('getLeadSplash', () => {
   const splashBlock = (textColor?: 'dark' | 'light', title?: string) => ({
     type: 'block',
@@ -476,6 +489,15 @@ describe('getLeadSplash', () => {
     expect(getLeadSplash(leadContent(splashBlock(undefined, 'Discover it')))?.hasTitle).toBe(true)
     expect(getLeadSplash(leadContent(splashBlock(undefined, '   ')))?.hasTitle).toBe(false)
     expect(getLeadSplash(leadContent(splashBlock(undefined, '')))?.hasTitle).toBe(false)
+  })
+
+  it('counts no title on a map-search splash, which SahajCloud hides but keeps', () => {
+    const mapSearch = {
+      type: 'block',
+      fields: { blockType: 'splash', layout: 'map-search', title: 'Typed before the switch' },
+    }
+
+    expect(getLeadSplash(leadContent(mapSearch))?.hasTitle).toBe(false)
   })
 
   it('returns null when the first block is not a splash', () => {

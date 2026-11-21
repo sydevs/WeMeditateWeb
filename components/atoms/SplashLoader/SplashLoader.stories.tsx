@@ -63,6 +63,13 @@ export const Default: Story = () => (
         </div>
 
         <div>
+          <p className="text-sm font-medium mb-2 text-gray-700">Warm (for a light image)</p>
+          <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
+            <SplashLoader color="warm" />
+          </div>
+        </div>
+
+        <div>
           <p className="text-sm font-medium mb-2 text-gray-700">None (Transparent)</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-linear-to-br from-teal-100 to-coral-100">
             <SplashLoader color="none" />
@@ -104,6 +111,16 @@ export const Default: Story = () => (
         </div>
 
         <div>
+          <p className="text-sm font-medium mb-2 text-gray-700">Warm + Image</p>
+          <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
+            <SplashLoader
+              backgroundImage="https://picsum.photos/seed/splash5/800/600"
+              color="warm"
+            />
+          </div>
+        </div>
+
+        <div>
           <p className="text-sm font-medium mb-2 text-gray-700">None + Image</p>
           <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden">
             <SplashLoader
@@ -112,6 +129,15 @@ export const Default: Story = () => (
             />
           </div>
         </div>
+      </div>
+    </StorySection>
+
+    <StorySection
+      description="`autoExit` fades the loader out in CSS three seconds after it paints, whatever `isLoading` says — the exit a server-rendered loader needs for a visitor without JavaScript. Reload the story to replay it."
+      title="Auto Exit"
+    >
+      <div className="relative h-64 border border-gray-200 rounded-lg overflow-hidden bg-linear-to-br from-teal-100 to-coral-100">
+        <SplashLoader autoExit color="secondary" />
       </div>
     </StorySection>
 
