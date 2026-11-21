@@ -6,10 +6,10 @@ import { Container } from '../../components/atoms'
 import { SocialShare } from '../../components/molecules'
 import { DiscoverMeditation } from '../../components/organisms'
 import { PageTemplate } from '../../components/templates'
-import { useOptionalPageContext } from '../../hooks/usePageContext'
 import { getLeadSplash } from '../../lib/content-blocks'
 import { isFeaturedNavPage } from '../../lib/featured-nav'
 import { LivePreviewDocument } from '../../lib/live-preview/document'
+import { useLivePreviewState } from '../../lib/live-preview/session'
 
 export function Page() {
   const { page: initialPage, settings, seo } = useData<PageData>()
@@ -20,7 +20,7 @@ export function Page() {
   // ⚠ That document is built under an open live preview too, where
   // `seoHeadHtml` publishes no head at all. A draft's URL 404s publicly, so it
   // is not one to hand a sharer either.
-  const shareUrl = useOptionalPageContext()?.livePreview?.active ? null : seo.canonical
+  const shareUrl = useLivePreviewState().active ? null : seo.canonical
 
   // Off-preview this renders `initialPage` and mounts nothing at all; under an
   // open session it renders the admin's unsaved edits. See
