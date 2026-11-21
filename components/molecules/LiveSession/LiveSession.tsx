@@ -100,7 +100,7 @@ export function LiveSession({ schedule }: LiveSessionProps) {
       <p className="text-lg md:text-xl">{t('blocks.live_session.schedule_line', local)}</p>
       <p className="text-sm uppercase tracking-wide">{t('blocks.live_session.starts_in')}</p>
       <Countdown
-        announcement={t('blocks.live_session.a11y_next_session', {
+        announcement={t('blocks.a11y.next_session', {
           weekday: local.weekday,
           time: local.time,
           relative: relativeToStart(session.start, now, locale),

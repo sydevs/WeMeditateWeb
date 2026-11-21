@@ -26,6 +26,7 @@
       "go_to_column": "Go to column %{number}: %{title}",
       "learn_more_about": "Learn more about %{title}",
       "next_column": "Next: %{title}",
+      "next_session": "The next session is %{weekday} at %{time}, %{relative}.",
       "next_slide": "Next slide",
       "previous_column": "Previous: %{title}",
       "previous_slide": "Previous slide",
@@ -45,7 +46,6 @@
       "seconds": "Seconds"
     },
     "live_session": {
-      "a11y_next_session": "The next session is %{weekday} at %{time}, %{relative}.",
       "join_now": "Join now",
       "live_now": "Happening now",
       "next_session": "Next session",
