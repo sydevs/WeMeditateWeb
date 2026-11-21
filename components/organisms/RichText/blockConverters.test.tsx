@@ -355,11 +355,12 @@ describe('splash block converter — map-search', () => {
     expect(anchorFor(html, '/stale')).toBe('')
   })
 
-  it('offers no link it has no words for', () => {
+  it('still sends one to the class map when the editor left the field blank', () => {
     const html = mapSearch({ actionText: '  ' })
 
     expect(html).toContain(`src="${IMG.url}"`)
-    expect(anchorFor(html, '/map')).toBe('')
+    expect(anchorFor(html, '/map')).not.toBe('')
+    expect(html).toContain('Classes Near Me')
   })
 
   it('leaves the default layout’s hero as it was', () => {
