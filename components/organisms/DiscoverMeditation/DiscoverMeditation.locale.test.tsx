@@ -16,19 +16,20 @@ import { EN_TRANSLATIONS } from '../../../lib/i18n'
 import { anchorFor } from '../../../tests/_helpers/markup'
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
-// when `WebTranslations` gains a required branch.
+// when `WebTranslations` gains a required branch. Only the two keys the
+// component reads are named: the rest are derived, so a key removed upstream
+// cannot leave a stale property here. The English spread satisfies the group's
+// required keys; the derived one replaces every value.
 const FRENCH: WebTranslations = {
   ...EN_TRANSLATIONS,
   discover: {
     general: {
+      ...EN_TRANSLATIONS.discover.general,
+      ...Object.fromEntries(
+        Object.keys(EN_TRANSLATIONS.discover.general).map((key) => [key, `fr-${key}`]),
+      ),
       title: 'Découvrez-le par vous-même !',
       subtitle: 'Ne nous croyez pas sur parole. Méditez et voyez ce que vous ressentez !',
-      meditate_now: 'Méditer maintenant',
-      meditate_now_subtitle: 'Méditations guidées en vidéo',
-      live_guidance: 'Guidance en direct',
-      live_guidance_subtitle: 'Méditations en ligne gratuites',
-      classes_near_me: 'Cours près de moi',
-      classes_near_me_subtitle: 'Cours gratuits en personne',
     },
   },
 }
@@ -90,13 +91,12 @@ describe('DiscoverMeditation in a non-English locale', () => {
     expect(rendered).toContain('Cours près de chez vous')
   })
 
-  it('reads none of the six per-action keys, which the pages replaced', () => {
+  it('reads no per-action key, which the pages replaced', () => {
     const rendered = text(renderToStaticMarkup(<DiscoverMeditation pages={PAGES} />))
     const perAction = Object.entries(FRENCH.discover.general).filter(
       ([key]) => key !== 'title' && key !== 'subtitle',
     )
 
-    expect(perAction).toHaveLength(6)
     for (const [, french] of perAction) {
       expect(rendered).not.toContain(french)
     }
