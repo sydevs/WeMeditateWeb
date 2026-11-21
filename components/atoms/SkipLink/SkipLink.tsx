@@ -23,9 +23,9 @@ export function SkipLink() {
 
   return (
     <Link
+      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-60 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-fg focus:shadow-lg"
       href={`#${MAIN_CONTENT_ID}`}
       variant="unstyled"
-      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-60 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-fg focus:shadow-lg"
       // Vike's client router intercepts the click and scrolls to the hash
       // without moving focus, so the browser's own fragment behaviour never
       // runs and the keyboard would stay on this link. Moving focus is the

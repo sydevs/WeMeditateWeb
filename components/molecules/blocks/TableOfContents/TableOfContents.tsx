@@ -1,13 +1,13 @@
 import { Link } from '../../../atoms'
 import { slugify } from '../../../../lib/slugify'
-import type { TocHeading } from '../../../../lib/content-blocks'
+import type { TableOfContentsHeadings } from '../../../../server/payload-types'
 import { useT } from '../../../../hooks/useT'
 
 export interface TableOfContentsProps {
   /** Optional heading shown above the list (for example "In this article"). */
   title?: string
   /** Enabled headings, in document order, as stored by the SahajCloud block. */
-  headings: TocHeading[]
+  headings: TableOfContentsHeadings
   /** Additional CSS classes. */
   className?: string
 }

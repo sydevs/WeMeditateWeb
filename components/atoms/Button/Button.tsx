@@ -293,6 +293,7 @@ export function Button({
 
   // Render as button
   const { disabled, type = 'button', ...buttonProps } = props
+
   return (
     <button
       aria-busy={isLoading}

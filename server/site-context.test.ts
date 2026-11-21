@@ -193,16 +193,16 @@ describe('a translation key SahajCloud lacks', () => {
     vi.mocked(Sentry.captureMessage).mockClear()
     const live = { blocks: { general: { learn_more: 'Mehr' } } } as unknown as WebTranslations
 
-    createT(live, 'de')('blocks.general.wisdom_sidetext')
-    createT(live, 'de')('blocks.general.wisdom_sidetext')
-    createT({ ...live }, 'fr')('blocks.general.wisdom_sidetext')
+    createT(live, 'de')('blocks.general.minutes')
+    createT(live, 'de')('blocks.general.minutes')
+    createT({ ...live }, 'fr')('blocks.general.minutes')
 
     expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       'Translation key missing from SahajCloud',
       expect.objectContaining({
         tags: { source: 'i18n', fallback: 'mirror' },
-        extra: { key: 'blocks.general.wisdom_sidetext', locale: 'de' },
+        extra: { key: 'blocks.general.minutes', locale: 'de' },
       }),
     )
   })

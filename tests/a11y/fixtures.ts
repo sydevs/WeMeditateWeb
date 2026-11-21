@@ -9,10 +9,12 @@
  *
  * **Pre-mortem.** These assume a `WebConfig` whose `featuredPages`,
  * `knowledgePages`, `classPages`, `infoPages` and `featuredArticles` are
- * arrays of pages carrying `title` and `slug`, and that `useSiteNav` reads
- * only those five. Checked against `layouts/useSiteNav.ts` and
- * `layouts/headerDropdown.ts`, which are the only readers; `server/sahajcloud-types.ts`
- * types each as a page relationship. The content fixtures assume the
+ * arrays of pages carrying `title` and `slug`, and that the chrome reads only
+ * those five plus `availableLocales`, a list of locale codes the language
+ * control offers. Checked against `layouts/useSiteNav.ts`,
+ * `layouts/headerDropdown.ts` and `layouts/LayoutChrome.tsx`, which are the
+ * only readers; `server/sahajcloud-types.ts` types each page field as a page
+ * relationship. The content fixtures assume the
  * serialized-Lexical shape `components/organisms/RichText/blockConverters.tsx`
  * reads — a root whose `block` children carry `fields.blockType` — checked
  * against the `splash` and `layout` converters there.
@@ -129,13 +131,22 @@ export const meditation = {
   frames: null,
 } as unknown as Meditation
 
+/**
+ * The raw lecture both lecture routes carry, as a SahajCloud read returns one.
+ *
+ * **Pre-mortem.** Checked against `LECTURE_SELECT` in
+ * `server/sahajcloud-client.ts` and `parseLectureMetadata` in
+ * `lib/lecture-shape.ts`.
+ */
 export const lecture = {
   id: 42,
+  type: 'full',
   title: 'Attention And Awareness',
-  hlsUrl: 'https://example.invalid/hls/42.m3u8',
-  durationSeconds: 900,
-  subtitles: null,
   thumbnail: IMAGE,
+  metadata: {
+    hlsUrl: 'https://example.invalid/hls/42.m3u8',
+    duration: 900,
+  },
 } as unknown as Lecture
 
 /**

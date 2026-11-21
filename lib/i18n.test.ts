@@ -135,12 +135,12 @@ describe('createT', () => {
     })
 
     it('renders the English mirror, never the key path', () => {
-      // What SahajCloud returns while sydevs/SahajCloud#1218 is open: the
-      // group is there, the key is not.
+      // A half-translated group is what SahajCloud returns: the group is
+      // there, one of its keys is not.
       vi.stubEnv('DEV', false)
       const t = createT(fixture({ blocks: { general: { learn_more: 'En savoir plus' } } }), 'fr')
 
-      expect(t('blocks.general.wisdom_sidetext')).toBe('Ancient Wisdom')
+      expect(t('blocks.general.minutes')).toBe(EN_TRANSLATIONS.blocks.general.minutes)
       expect(t('blocks.general.learn_more')).toBe('En savoir plus')
     })
 
@@ -185,11 +185,11 @@ describe('createT', () => {
       setMissingTranslationReporter(report)
       const t = createT(fixture({}), 'fr')
 
-      t('blocks.general.wisdom_sidetext')
+      t('blocks.general.minutes')
       t('common.general.no_such_key' as TranslationKey)
 
       expect(report.mock.calls).toEqual([
-        [{ key: 'blocks.general.wisdom_sidetext', locale: 'fr', inMirror: true }],
+        [{ key: 'blocks.general.minutes', locale: 'fr', inMirror: true }],
         [{ key: 'common.general.no_such_key', locale: 'fr', inMirror: false }],
       ])
     })

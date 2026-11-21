@@ -4,7 +4,7 @@
  * the `blocks` key, keyed by each block's `blockType` slug.
  *
  * Each converter reads the loosely-typed `node.fields`, casts it to the
- * matching interface from `lib/content-blocks`, and renders an existing
+ * matching generated `*Block` interface, and renders an existing
  * component. A block that cannot render meaningfully — a missing required
  * field, an empty relationship — returns `null` and degrades silently.
  */
@@ -33,17 +33,20 @@ import {
   splashSurface,
   subtleSystemItems,
   textColorToSurface,
-  type ButtonBlockFields,
   type ContentIndexBlockFields,
-  type ImageGalleryBlockFields,
-  type LayoutBlockFields,
-  type QuoteBlockFields,
-  type ShowcaseBlockFields,
-  type SplashBlockFields,
-  type SubtleSystemBlockFields,
-  type TableOfContentsBlockFields,
-  type TextBoxBlockFields,
 } from '../../../lib/content-blocks'
+import type {
+  ButtonBlock,
+  ImageGalleryBlock,
+  // The molecule of the same name renders this block, so the schema takes the alias.
+  LayoutBlock as LayoutBlockSchema,
+  QuoteBlock,
+  ShowcaseBlock,
+  SplashBlock,
+  SubtleSystemBlock,
+  TableOfContentsBlock,
+  TextBoxBlock,
+} from '../../../server/payload-types'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -116,7 +119,7 @@ export const blockConverters: BlockConverters = {
   //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
   //   otherwise (left or right)    → ContentTextBox (side box overlapping image)
   textbox: ({ node }) => {
-    const fields = node.fields as unknown as TextBoxBlockFields
+    const fields = node.fields as unknown as TextBoxBlock
     const img = populatedImage(fields.image)
 
     if (!img) {
@@ -141,8 +144,8 @@ export const blockConverters: BlockConverters = {
           imageAlt={img.alt}
           imageSrc={img.url}
           subtitle={subtitle}
-          text={description}
           surface={textColorToSurface(fields.textColor, 'light')}
+          text={description}
           title={title}
         />
       )
@@ -185,7 +188,7 @@ export const blockConverters: BlockConverters = {
 
   // quote → HeroQuote (supports title, text, credit, and caption).
   quote: ({ node }) => {
-    const fields = node.fields as unknown as QuoteBlockFields
+    const fields = node.fields as unknown as QuoteBlock
 
     if (!fields.text) {
       return null
@@ -204,7 +207,7 @@ export const blockConverters: BlockConverters = {
 
   // button → centered CTA Button.
   button: ({ node }) => {
-    const fields = node.fields as unknown as ButtonBlockFields
+    const fields = node.fields as unknown as ButtonBlock
 
     if (!fields.text || !fields.url) {
       return null
@@ -224,7 +227,7 @@ export const blockConverters: BlockConverters = {
   // overlay's previous and next navigation and thumbnail strip stay scoped
   // to that gallery.
   'image-gallery': ({ node }) => {
-    const fields = node.fields as unknown as ImageGalleryBlockFields
+    const fields = node.fields as unknown as ImageGalleryBlock
     const images = galleryImages(fields.items)
 
     if (images.length === 0) {
@@ -255,7 +258,7 @@ export const blockConverters: BlockConverters = {
 
   // layout → grid, tabs, accordion, list, or textList.
   layout: ({ node }) => {
-    const fields = node.fields as unknown as LayoutBlockFields
+    const fields = node.fields as unknown as LayoutBlockSchema
 
     return (
       <LayoutBlock
@@ -270,7 +273,7 @@ export const blockConverters: BlockConverters = {
 
   // table-of-contents → anchor links to the page's headings.
   'table-of-contents': ({ node }) => {
-    const fields = node.fields as unknown as TableOfContentsBlockFields
+    const fields = node.fields as unknown as TableOfContentsBlock
 
     if (!fields.headings || fields.headings.length === 0) {
       return null
@@ -283,7 +286,7 @@ export const blockConverters: BlockConverters = {
   // showcaseItems drops unroutable or thumbnail-less references, so no card
   // is broken or empty. `id` is stringified for the article-card HTML id.
   showcase: ({ node }) => {
-    const fields = node.fields as unknown as ShowcaseBlockFields
+    const fields = node.fields as unknown as ShowcaseBlock
     const items = showcaseItems(fields.items)
 
     if (items.length === 0) {
@@ -301,7 +304,7 @@ export const blockConverters: BlockConverters = {
   // subtle-system → interactive chart. The 12 page relationships map to SVG
   // node ids. This drops any unpublished or unroutable page.
   'subtle-system': ({ node }) => {
-    const fields = node.fields as unknown as SubtleSystemBlockFields
+    const fields = node.fields as unknown as SubtleSystemBlock
     const items = subtleSystemItems(fields)
 
     if (items.length === 0) {
@@ -316,7 +319,7 @@ export const blockConverters: BlockConverters = {
   // target) to render their interactive extras. So every layout renders the
   // shared hero with the available title, subtitle, and CTA over the first image.
   splash: ({ childIndex, node, parent }) => {
-    const fields = node.fields as unknown as SplashBlockFields
+    const fields = node.fields as unknown as SplashBlock
     const bg = populatedImage(fields.images?.[0])
 
     if (!bg) {

@@ -12,7 +12,7 @@
  * video playback are client-side, and out of scope for fetch smoke (see
  * issue comments on #26).
  */
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   fetchPage,
   expectRenders,
@@ -56,5 +56,21 @@ describe('preview meditations', () => {
 
     expectRenders(embed, `/meditations/${id}/embed`)
     expectNoChrome(embed, `/meditations/${id}/embed`)
+  })
+
+  it('serves neither page under a prefix that is not a locale', async (ctx) => {
+    const id = await discoverMeditationId()
+
+    ctx.skip(
+      !id,
+      'no discoverable meditation; set the SAHAJCLOUD_API_KEY secret for deterministic discovery',
+    )
+
+    // "zz" is no SahajCloud locale, so `+onBeforeRoute` leaves it on the path
+    // and no route may take what is under it: a 200 here is a second address
+    // of the page above.
+    for (const path of [`/zz/meditations/${id}`, `/zz/meditations/${id}/embed`]) {
+      expect((await fetchPage(path)).status, `${path} should 404`).toBe(404)
+    }
   })
 })

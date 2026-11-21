@@ -85,7 +85,7 @@ export function LanguageFlag({
       className={`inline-flex items-center gap-1.5 ${sizeStyles[size]} ${className}`}
       {...props}
     >
-      <span role="img" aria-label={label}>
+      <span aria-label={label} role="img">
         {flag}
       </span>
       {showLabel && <span className="font-sans text-sm">{label}</span>}

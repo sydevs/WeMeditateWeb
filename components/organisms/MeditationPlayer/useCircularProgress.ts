@@ -46,6 +46,7 @@ export function useCircularProgress({
 
   // Store onSeek callback in ref to avoid stale closures in event listeners
   const onSeekRef = useRef(onSeek)
+
   useEffect(() => {
     onSeekRef.current = onSeek
   }, [onSeek])
@@ -66,6 +67,7 @@ export function useCircularProgress({
       const angle = Math.atan2(clientY - centerY, clientX - centerX)
       // Convert to degrees and normalize to 0-360 (0° at top)
       let degrees = (angle * 180) / Math.PI + 90
+
       if (degrees < 0) degrees += 360
 
       const previousDegrees = previousAngleRef.current
@@ -88,7 +90,7 @@ export function useCircularProgress({
       // Calculate seek time from angle
       return (degrees / 360) * duration
     },
-    [duration]
+    [duration],
   )
 
   // Manage window event listeners for drag
@@ -97,6 +99,7 @@ export function useCircularProgress({
 
     const handleMove = (clientX: number, clientY: number) => {
       const time = getSeekTimeFromCoords(clientX, clientY)
+
       if (time !== null) {
         setSeekPosition(Math.max(0, Math.min(duration, time)))
       }
@@ -110,17 +113,26 @@ export function useCircularProgress({
       }
     }
     const onUp = () => setIsDragging(false)
+    // The browser or the system took the touch back, so nothing was released
+    // and nothing is seeked. Left listening, the drag would swallow the next
+    // touch scroll anywhere on the page.
+    const onTouchCancel = () => {
+      setSeekPosition(null)
+      setIsDragging(false)
+    }
 
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onUp)
     window.addEventListener('touchmove', onTouchMove, { passive: false })
     window.addEventListener('touchend', onUp)
+    window.addEventListener('touchcancel', onTouchCancel)
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onUp)
       window.removeEventListener('touchmove', onTouchMove)
       window.removeEventListener('touchend', onUp)
+      window.removeEventListener('touchcancel', onTouchCancel)
     }
   }, [isDragging, duration, getSeekTimeFromCoords])
 

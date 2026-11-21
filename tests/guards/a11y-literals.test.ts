@@ -42,8 +42,15 @@ const QUOTED = /(?:'([^']*)'|"([^"]*)"|`([^`$]*)`)/g
  * A resolved lookup — `t('a.b.c')`, `t.rich('a.b.c')`, `errorTitleKey(…)`.
  * The quoted key inside one is an identifier, not prose, so it is removed
  * before the expression is searched for literals.
+ *
+ * `translate(…)` is the same thing for the video player's own control labels,
+ * which come from Video.js's locale packs rather than from SahajCloud. The two
+ * names are kept apart on purpose: `tests/guards/translation-keys.test.ts`
+ * checks every `t()` key against the English snapshot, where a player key
+ * would not be found.
  */
-const RESOLVED_CALL = /\bt(?:\.rich)?\(\s*(['"])[^'"]*\1(?:\s*,(?:[^()]|\([^()]*\))*)?\)/g
+const RESOLVED_CALL =
+  /\b(?:t(?:\.rich)?|translate)\(\s*(['"])[^'"]*\1(?:\s*,(?:[^()]|\([^()]*\))*)?\)/g
 
 /** An `sr-only` element whose child text is a literal, not an expression. */
 const SR_ONLY_LITERAL = /className="[^"]*\bsr-only\b[^"]*"[^>]*>\s*([A-Za-z][^<{]*)</g
@@ -103,13 +110,11 @@ describe('screen-reader strings', () => {
       "<button aria-label={muted ? 'Unmute voice' : 'Mute voice'} />",
     ].join('\n')
 
-    expect(scan(sample).map((f) => f.text).sort()).toEqual([
-      'Close',
-      'Dismiss',
-      'Loading',
-      'Mute voice',
-      'Unmute voice',
-    ])
+    expect(
+      scan(sample)
+        .map((f) => f.text)
+        .sort(),
+    ).toEqual(['Close', 'Dismiss', 'Loading', 'Mute voice', 'Unmute voice'])
   })
 
   it('passes a resolved call and a label with no words', () => {

@@ -107,7 +107,7 @@ describe('getImageSrcSet', () => {
     )
   })
 
-  it('leaves every other ratio\'s widths unchanged by the square thumbnail tier', () => {
+  it("leaves every other ratio's widths unchanged by the square thumbnail tier", () => {
     expect(getImageSrcSet(BASE_URL, '4-3')).toBe(
       `${BASE_URL}width=800 800w, ${BASE_URL}width=1024 1024w, ${BASE_URL}width=1536 1536w`,
     )

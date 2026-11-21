@@ -15,6 +15,7 @@ const t = createT(EN_TRANSLATIONS, 'en')
 describe('errorMessageKey', () => {
   it('returns the network message', () => {
     const message = t(errorMessageKey(ErrorType.NETWORK))
+
     expect(message).toContain('Unable to connect')
     expect(message).toContain('internet connection')
   })
@@ -25,12 +26,14 @@ describe('errorMessageKey', () => {
 
   it('returns the not-found message', () => {
     const message = t(errorMessageKey(ErrorType.CLIENT))
+
     expect(message).toContain('not available')
     expect(message).toContain('moved or deleted')
   })
 
   it('returns the generic message for an unknown error', () => {
     const message = t(errorMessageKey(ErrorType.UNKNOWN))
+
     expect(message).toContain('Something went wrong')
     expect(message).toContain('try again')
   })
@@ -38,6 +41,7 @@ describe('errorMessageKey', () => {
   it('never embeds HTML (messages are plain text)', () => {
     for (const type of Object.values(ErrorType)) {
       const message = t(errorMessageKey(type))
+
       expect(message).not.toContain('<')
       expect(message).not.toContain('href=')
     }
@@ -55,6 +59,7 @@ describe('errorTitleKey', () => {
 
   it('gives every category its own title', () => {
     const titles = Object.values(ErrorType).map((type) => t(errorTitleKey(type)))
+
     expect(new Set(titles).size).toBe(titles.length)
   })
 })

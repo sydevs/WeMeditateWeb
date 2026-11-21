@@ -69,12 +69,7 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-prac
  * would make them decorative. `the structural contract` below asserts both
  * directly instead, which is stronger: it counts the elements.
  */
-const UNDECIDABLE = [
-  'color-contrast',
-  'target-size',
-  'page-has-heading-one',
-  'landmark-one-main',
-]
+const UNDECIDABLE = ['color-contrast', 'target-size', 'page-has-heading-one', 'landmark-one-main']
 
 /**
  * The two further rules an embed cannot satisfy, because it has no chrome: it
@@ -154,7 +149,7 @@ const TARGETS = [
     name: 'map',
     chrome: true,
     render: () => {
-      routeData.current = { settings: webConfig, seo: atlasSeo, atlasRoute: null }
+      routeData.current = { settings: webConfig, atlas: atlasSeo, atlasRoute: null }
 
       return (
         <LayoutMap>
@@ -311,9 +306,7 @@ describe('accessibility · page types', () => {
       // menus to skip and no `<main>` to point at.
       const first = document.querySelector(FOCUSABLE)
 
-      expect(first?.getAttribute('href') ?? null).toBe(
-        target.chrome ? `#${MAIN_CONTENT_ID}` : null,
-      )
+      expect(first?.getAttribute('href') ?? null).toBe(target.chrome ? `#${MAIN_CONTENT_ID}` : null)
       expect(count(`a[href="#${MAIN_CONTENT_ID}"]`)).toBe(target.chrome ? 1 : 0)
     },
   )
