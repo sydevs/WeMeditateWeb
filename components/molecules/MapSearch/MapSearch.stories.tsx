@@ -9,9 +9,7 @@ export default {
 /**
  * MapSearch is the Splash block's `map-search` layout: a place search that
  * opens the class map around the place a visitor picks. Its `label` is the
- * block's action text. The search needs `PUBLIC__MAPBOX_ACCESS_TOKEN`; without
- * it the field renders disabled. A visitor without JavaScript gets a link to
- * the map in the label's words instead.
+ * block's action text.
  */
 export const Default: Story = () => (
   <StoryWrapper>
