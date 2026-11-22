@@ -44,11 +44,5 @@ export function Spacer({
   const spacingValue = sizeMap[size]
   const spacingClass = direction === 'vertical' ? `h-${spacingValue}` : `w-${spacingValue}`
 
-  return (
-    <div
-      className={`${spacingClass} ${className}`}
-      aria-hidden="true"
-      {...props}
-    />
-  )
+  return <div aria-hidden="true" className={`${spacingClass} ${className}`} {...props} />
 }

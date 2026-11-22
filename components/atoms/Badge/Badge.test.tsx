@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import { anchorFor } from '@/tests/_helpers/markup'
 import { Badge } from './Badge'
 
 describe('<Badge> as a link', () => {

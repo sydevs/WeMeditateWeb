@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { anchorFor, openTag } from '../../../tests/_helpers/markup'
-import { Button } from '../Button'
+import { anchorFor, openTag } from '@/tests/_helpers/markup'
+import { Button } from '@/components/atoms/Button'
 import { Dropdown, DropdownItem } from './Dropdown'
 
 /**

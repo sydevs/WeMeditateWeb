@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
-import { StorySection, StoryWrapper } from '../../ladle'
+import { StorySection, StoryWrapper } from '@/components/ladle'
 
 export default {
   title: 'Organisms',
@@ -49,10 +49,7 @@ export const Default: Story = () => (
       {/* Mimic the Header nav row so the panel has room to drop below it. */}
       <nav className="border-t border-b border-gray-200">
         <div className="flex items-stretch justify-center gap-2 max-w-3xl mx-auto px-6">
-          <HeaderNavDropdown
-            dropdown={sampleDropdown}
-            label="About Meditation"
-          />
+          <HeaderNavDropdown dropdown={sampleDropdown} label="About Meditation" />
         </div>
       </nav>
       {/* Spacer so the open panel is visible within the section. */}
@@ -67,10 +64,7 @@ export const Default: Story = () => (
     >
       <nav className="border-t border-b border-white/40">
         <div className="flex items-stretch justify-center gap-2 max-w-3xl mx-auto px-6">
-          <HeaderNavDropdown
-            dropdown={sampleDropdown}
-            label="About Meditation"
-          />
+          <HeaderNavDropdown dropdown={sampleDropdown} label="About Meditation" />
         </div>
       </nav>
       <div className="h-96" />

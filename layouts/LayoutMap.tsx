@@ -1,9 +1,9 @@
-import { Header } from '../components/organisms/Header'
+import { Header } from '@/components/organisms/Header'
 import { useData } from 'vike-react/useData'
-import type { WebConfig } from '../server/sahajcloud-types'
-import { SkipLink } from '../components/atoms/SkipLink'
+import type { WebConfig } from '@/types/sahajcloud'
+import { SkipLink } from '@/components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
-import { MAIN_CONTENT_ID } from '../lib/route-announcer'
+import { MAIN_CONTENT_ID } from '@/lib/a11y/route-announcer'
 
 /**
  * LayoutMap — chrome for the atlas at `/map`.
@@ -44,7 +44,7 @@ export default function LayoutMap({ children }: { children: React.ReactNode }) {
  * settings guard above returns before any hook would run.
  */
 function MapChrome({ settings, children }: { settings: WebConfig; children: React.ReactNode }) {
-  const { navItems, actionLinkHref, actionLinkText } = useSiteNav(settings)
+  const { navItems, actionLinkHref, actionLinkText, languages, socialLinks } = useSiteNav(settings)
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -54,12 +54,14 @@ function MapChrome({ settings, children }: { settings: WebConfig; children: Reac
         condensed
         actionLinkHref={actionLinkHref}
         actionLinkText={actionLinkText}
+        languages={languages}
         logoHref="/"
         navItems={navItems}
+        socialLinks={socialLinks}
       />
 
       {/* `tabIndex={-1}` makes this element focusable by script, without
-          adding it to the tab order. See `lib/route-announcer.ts`. */}
+          adding it to the tab order. See `lib/a11y/route-announcer.ts`. */}
       <main className="min-h-0 flex-1" id={MAIN_CONTENT_ID} tabIndex={-1}>
         {children}
       </main>

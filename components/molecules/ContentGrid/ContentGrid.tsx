@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
 import Masonry from 'react-masonry-css'
-import { ContentCard, ContentCardProps } from '../ContentCard/ContentCard'
+import { ContentCard, ContentCardProps } from '@/components/molecules/ContentCard/ContentCard'
 
 export interface ContentGridItem extends Omit<ContentCardProps, 'className' | 'id' | 'sizes'> {
   /** Unique identifier for the item */

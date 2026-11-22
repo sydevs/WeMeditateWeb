@@ -9,7 +9,7 @@
  * The other `pageContext` readers live in `hooks/usePageContext.ts`.
  */
 
-import { pageContextT, type TFunction } from '../lib/i18n'
+import { pageContextT, type TFunction } from '@/lib/i18n/i18n'
 import { useOptionalPageContext } from './usePageContext'
 
 export function useT(): TFunction {

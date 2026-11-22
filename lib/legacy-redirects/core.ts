@@ -3,9 +3,9 @@
  * over the map it just built; `lookup.ts` binds them to the committed one.
  */
 
-import type { Locale } from '../../server/sahajcloud-types'
-import { DEFAULT_LOCALE } from '../../server/sahajcloud-types'
-import { isSitePath, localePath } from '../urls'
+import type { Locale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
+import { isSitePath, localePath } from '@/lib/urls/urls'
 
 /** What a record kind's old URL looks like, and so which table holds its slugs. */
 export type ExactType =

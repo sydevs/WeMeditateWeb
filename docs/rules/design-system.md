@@ -8,25 +8,25 @@ paths:
 # Design System
 
 This project uses the Atomic Design methodology. Before you create or classify a component, read
-[DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). It holds the token values, the atomic hierarchy, the
+[DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md). It holds the token values, the atomic hierarchy, the
 mobile-first breakpoints, the WCAG 2.1 AA accessibility rules, and the motion convention. Read
-[STORYBOOK.md](../../STORYBOOK.md) before you write a component story.
+[STORYBOOK.md](../STORYBOOK.md) before you write a component story.
 
 **Quick reference**:
 - Every UI component lives under `components/`, in `atoms/`, `molecules/`, `organisms/`, or
   `templates/`. See [components/atoms/README.md](../../components/atoms/README.md) for the atom
   index.
 - Use the design tokens consistently. Do not add a one-off custom value.
-- Implement every component mobile-first — see [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for
+- Implement every component mobile-first — see [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md) for
   the breakpoint table. Give every interactive element a touch target of at least 44×44px.
 - Meet WCAG 2.1 AA.
 - Gate a JavaScript-driven animation on `prefers-reduced-motion` — see the Motion section in
-  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
+  [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md).
 - Keep every component's first render visible — see the Performance section in
-  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
+  [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md). `tests/guards/ssr-visibility.test.ts` guards it.
 - Spell `loading` on every hand-rolled `<img>` under `components/`, `layouts/` or `pages/` —
   omitting it preloads the image. See the Performance section in
-  [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) for the hero rule and the `<picture>` carve-out, and
+  [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md) for the hero rule and the `<picture>` carve-out, and
   the `priority` prop's own docs in
   [components/atoms/Image/Image.tsx](../../components/atoms/Image/Image.tsx) for why dropping
   `loading="lazy"` is what preloads. `pnpm lint` rejects it through `local/img-loading`
@@ -68,9 +68,9 @@ either changes the code or carries an `eslint-disable-next-line` stating why the
 there. Put that reason at the site, not in a `files` block — a block states one reason over every
 site in the file, including the next one, whose reason will differ.
 
-**A ref that stops being *wired* is reported by nothing that stops you.** `forwardRef`'s absence
-was a type error; today a destructured-but-unused `ref` is one `no-unused-vars` warning among
-twenty, and a `ref` left out of the destructure still reaches the element through `{...props}`.
+**A ref that stops being *wired* is not always reported.** `forwardRef`'s absence was a type
+error; today `no-unused-vars` fails `pnpm lint` only for a `ref` destructured and never used, and a
+`ref` left out of the destructure still reaches the element through `{...props}`.
 `tests/guards/form-atom-refs.test.tsx` makes it a failing test for the five atoms instead, reading
 the wiring from the source because a ref never attaches under `renderToStaticMarkup`. It counts
 **every** element of the atom's tag: `Input` renders a second `<input>` for its icon branch.
@@ -143,7 +143,7 @@ already closes it centrally.
 | --- | --- |
 | One polite live region, rendered once and kept across navigations | `layouts/LayoutRoot.tsx` — in the root layout. So a bare embed route gets it too |
 | `id` and `tabIndex={-1}` on `<main>`, the focus target | `layouts/LayoutChrome.tsx`, `layouts/LayoutMap.tsx` |
-| The announce-and-focus logic | `lib/route-announcer.ts`, called from `pages/+onPageTransitionEnd.ts` |
+| The announce-and-focus logic | `lib/a11y/route-announcer.ts`, called from `pages/+onPageTransitionEnd.ts` |
 
 Three things not to undo:
 
@@ -248,7 +248,7 @@ name and anything inside the anchor goes unread.
 **`Link` is also the scheme gate for every href the site did not author**, and the reason no call
 site repeats one. It renders no `href` at all for anything outside http, https, `mailto:`, `tel:`,
 a site path and a bare `#anchor` — so a `javascript:` or `data:` value configured upstream cannot
-run in our origin. `isSafeLinkHref` in [lib/urls.ts](../../lib/urls.ts) owns the allowlist.
+run in our origin. `isSafeLinkHref` in [lib/urls/urls.ts](../../lib/urls/urls.ts) owns the allowlist.
 
 **No component opens its own `<a>`**, so no call site repeats the gate.
 [tests/guards/bare-anchors.test.ts](../../tests/guards/bare-anchors.test.ts) enforces that, and
@@ -298,7 +298,7 @@ source order, which is why three callers used to open their own element and so o
 A component never takes a `theme` prop. Anything that should change on a dark background — text,
 link and icon colours, outline and ghost buttons, the focus ring — uses a **surface token**:
 `text-fg`, `text-fg-muted`, `text-primary`, `text-secondary`, `border-line`, `bg-tint`,
-`focus-ring` and the rest of the table in [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md#surfaces). Each
+`focus-ring` and the rest of the table in [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md#surfaces). Each
 resolves against the nearest `surface-light` / `surface-dark` ancestor, and `:root` is light.
 
 ```tsx
@@ -315,7 +315,7 @@ const variantStyles = {
   `teal-300`, which clears 4.5:1 on `teal-900` (5.71) and on nothing lighter (#179).
 - **A surface the component cannot know comes in as a `surface` prop.** `Splash` and
   `ContentOverlay` paint an image, and only SahajCloud's `textColor` says whether it is dark.
-  `lib/content-blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
+  `lib/content/blocks.ts` inverts that field into a `Surface` once (`textColorToSurface`), and
   `LayoutChrome` puts the lead splash's surface in the band it hands the header, which cannot be
   a wrapper: a wrapper is the sticky nav's containing block, and the nav stops pinning (#204).
 - **Never set a surface on an interactive element.** Its focus ring sits outside it, on the

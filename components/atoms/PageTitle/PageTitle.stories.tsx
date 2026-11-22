@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { PageTitle } from './PageTitle'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Atoms',
@@ -21,8 +21,8 @@ export const Default: Story = () => (
         <div>
           <p className="text-sm font-medium mb-3 text-gray-700">With Subtitle</p>
           <PageTitle
-            title="Music for Meditation"
             subtitle="Calming tracks to enhance your practice"
+            title="Music for Meditation"
           />
         </div>
       </div>
@@ -32,19 +32,23 @@ export const Default: Story = () => (
       <div className="flex flex-col gap-8">
         <div>
           <p className="text-sm font-medium mb-3 text-gray-700">Left Aligned</p>
-          <PageTitle title="Music for Meditation" subtitle="Calming tracks to enhance your practice" align="left" />
+          <PageTitle
+            align="left"
+            subtitle="Calming tracks to enhance your practice"
+            title="Music for Meditation"
+          />
         </div>
         <div>
           <p className="text-sm font-medium mb-3 text-gray-700">Center Aligned (Default)</p>
           <PageTitle
-            title="Meditate Now"
-            subtitle="Find your inner peace through guided meditation"
             align="center"
+            subtitle="Find your inner peace through guided meditation"
+            title="Meditate Now"
           />
         </div>
         <div>
           <p className="text-sm font-medium mb-3 text-gray-700">Right Aligned</p>
-          <PageTitle title="Contact" subtitle="Get in touch with us" align="right" />
+          <PageTitle align="right" subtitle="Get in touch with us" title="Contact" />
         </div>
       </div>
     </StorySection>

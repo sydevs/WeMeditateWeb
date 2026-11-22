@@ -20,7 +20,7 @@ import {
   expectNoChrome,
   internalLinks,
   discoverFromSahajCloud,
-} from '../_helpers/preview'
+} from '@/tests/smoke/_helpers/preview'
 
 async function discoverMeditationId(): Promise<string | null> {
   const samples = await discoverFromSahajCloud()

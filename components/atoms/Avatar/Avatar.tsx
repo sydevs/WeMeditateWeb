@@ -1,5 +1,5 @@
 import { ComponentProps, useState } from 'react'
-import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
+import { getImageURL, getVariantName } from '@/lib/media/cloudflare-images'
 
 /** An avatar box is 24–96px, so 200px covers the largest of them at 2x. */
 const AVATAR_VARIANT = getVariantName('square', 'xsmall')

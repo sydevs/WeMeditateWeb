@@ -9,7 +9,7 @@
  */
 
 import type { PageContext } from 'vike/types'
-import { localeDirection } from '../server/sahajcloud-types'
+import { localeDirection } from '@/lib/i18n/locales'
 
 export default (pageContext: PageContext) => ({
   dir: localeDirection(pageContext.locale),

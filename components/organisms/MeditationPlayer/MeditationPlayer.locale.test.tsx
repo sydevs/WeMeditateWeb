@@ -10,9 +10,9 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { WebTranslations } from '../../../server/sahajcloud-types'
-import { EN_TRANSLATIONS } from '../../../lib/i18n'
-import type { Track } from '../../molecules/AudioPlayer/types'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import type { Track } from '@/lib/media/audio'
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
 // when `WebTranslations` gains a required branch.

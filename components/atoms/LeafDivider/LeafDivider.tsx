@@ -1,5 +1,5 @@
 import React from 'react'
-import { LeafSvg } from '../graphics/svgs'
+import { LeafSvg } from '@/components/atoms/graphics/svgs'
 
 export interface LeafDividerProps {
   /** Whether to show the divider line */
@@ -27,11 +27,9 @@ export const LeafDivider: React.FC<LeafDividerProps> = ({
   // Leaf height is 32px (h-8), so we need that much margin
   return (
     <div
-      className={`relative w-full text-center ${
-        direction === 'up' ? 'pt-8' : 'pb-8'
-      } ${className}`}
-      role="separator"
       aria-hidden="true"
+      className={`relative w-full text-center ${direction === 'up' ? 'pt-8' : 'pb-8'} ${className}`}
+      role="separator"
     >
       {/* The line at the base of the leaf */}
       {showLine && (
@@ -45,9 +43,7 @@ export const LeafDivider: React.FC<LeafDividerProps> = ({
       {/* Leaf icon centered and positioned at the line */}
       <div
         className={`absolute left-1/2 -translate-x-1/2 bg-white px-2 text-gray-700 ${
-          direction === 'up'
-            ? 'bottom-0'
-            : 'top-0 rotate-180'
+          direction === 'up' ? 'bottom-0' : 'top-0 rotate-180'
         }`}
       >
         <LeafSvg />

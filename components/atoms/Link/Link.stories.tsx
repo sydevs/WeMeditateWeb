@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Link } from './Link'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Atoms',
@@ -117,12 +117,12 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="External Links"
       description="An external link opens a new tab, and says so to a screen reader"
+      title="External Links"
     >
       <div className="flex flex-col gap-3">
         <div>
-          <Link href="https://example.com" external>
+          <Link external href="https://example.com">
             External link
           </Link>
           <span className="text-xs text-gray-700 ml-2">
@@ -131,7 +131,7 @@ export const Default: Story = () => (
           </span>
         </div>
         <div>
-          <Link href="https://github.com" external variant="primary" aria-label="Our GitHub">
+          <Link external aria-label="Our GitHub" href="https://github.com" variant="primary">
             External primary link, labelled
           </Link>
           <span className="text-xs text-gray-700 ml-2">
@@ -148,8 +148,8 @@ export const Default: Story = () => (
     </StorySection>
 
     <StorySection
-      title="Refused Schemes"
       description="Link is the scheme gate for every href the site did not author"
+      title="Refused Schemes"
     >
       <div className="flex flex-col gap-3">
         <div>

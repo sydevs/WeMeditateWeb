@@ -12,10 +12,10 @@
  */
 
 import type { Context, Hono } from 'hono'
-import type { SahajCloudEnv } from './sahajcloud-context'
-import { lookupLegacyRedirect } from '../lib/legacy-redirects/lookup'
-import { localeFromPath } from '../lib/urls'
-import { DEFAULT_LOCALE } from './sahajcloud-types'
+import type { SahajCloudEnv } from './sahajcloud/context'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
+import { lookupLegacyRedirect } from '@/lib/legacy-redirects/lookup'
+import { localeFromPath } from '@/lib/urls/urls'
 
 /**
  * `pages/+onBeforeRoute.ts` spells every other redirect on this site over the

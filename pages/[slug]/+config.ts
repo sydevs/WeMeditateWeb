@@ -1,5 +1,5 @@
 import type { Config } from 'vike/types'
-import LayoutChrome from '../../layouts/LayoutChrome.js'
+import LayoutChrome from '@/layouts/LayoutChrome.js'
 
 /**
  * Content pages (/:slug, including the homepage /index) render with the full

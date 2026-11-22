@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import { AnimatedLogoSvg } from '../graphics/svgs'
-import { useT } from '../../../hooks/useT'
+import { AnimatedLogoSvg } from '@/components/atoms/graphics/svgs'
+import { useT } from '@/hooks/useT'
 
 export interface SpinnerProps extends ComponentProps<'div'> {
   /**
@@ -22,7 +22,6 @@ export interface SpinnerProps extends ComponentProps<'div'> {
    * @default 'primary'
    */
   color?: 'primary' | 'secondary' | 'neutral' | 'currentColor'
-
 
   /**
    * Accessible label for the loading state
@@ -93,10 +92,10 @@ export function Spinner({
   if (variant === 'logo') {
     return (
       <div
-        role="status"
-        aria-live="polite"
         aria-label={resolvedLabel}
+        aria-live="polite"
         className={`inline-block ${className}`}
+        role="status"
         {...props}
       >
         <AnimatedLogoSvg className={`${logoSizeStyles[size]} ${logoColorStyles[color]}`} />
@@ -107,10 +106,10 @@ export function Spinner({
 
   return (
     <div
-      role="status"
-      aria-live="polite"
       aria-label={resolvedLabel}
+      aria-live="polite"
       className={`inline-block ${className}`}
+      role="status"
       {...props}
     >
       <div

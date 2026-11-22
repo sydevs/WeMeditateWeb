@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Image } from './Image'
-import { StorySection, StoryWrapper } from '../../ladle'
+import { StorySection, StoryWrapper } from '@/components/ladle'
 
 // Every <Image> declares the box its grid draws. The three-column grids are
 // `max-w-4xl` with a 16px gap, so a cell caps at (896 - 32) / 3 = 288px; the

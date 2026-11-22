@@ -1,8 +1,8 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FormBuilder } from './FormBuilder'
-import type { EmbeddedForm } from '../../../server/sahajcloud-types'
-import { openTag } from '../../../tests/_helpers/markup'
+import type { EmbeddedForm } from '@/types/sahajcloud'
+import { openTag } from '@/tests/_helpers/markup'
 
 /**
  * `useEffect` does not run under `renderToStaticMarkup`, so the captcha here
@@ -87,7 +87,7 @@ describe('FormBuilder', () => {
     expect(renderToStaticMarkup(<FormBuilder form={form} />)).not.toContain('disabled=""')
 
     const withCaptcha = renderToStaticMarkup(
-      <FormBuilder form={form} siteKey="1x00000000000000000000AA" />
+      <FormBuilder form={form} siteKey="1x00000000000000000000AA" />,
     )
 
     expect(withCaptcha).not.toContain('disabled=""')

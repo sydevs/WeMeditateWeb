@@ -8,7 +8,7 @@ import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 
 import { registerLegacyRedirects } from './legacy-redirects'
-import type { SahajCloudEnv } from './sahajcloud-context'
+import type { SahajCloudEnv } from './sahajcloud/context'
 
 /** The app with a catch-all that answers the way Vike's does. */
 function appServing(...served: string[]): Hono<SahajCloudEnv> {

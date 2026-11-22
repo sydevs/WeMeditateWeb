@@ -1,6 +1,6 @@
 import React from 'react'
-import { LeafDivider } from '../../../atoms/LeafDivider/LeafDivider'
-import { useT } from '../../../../hooks/useT'
+import { LeafDivider } from '@/components/atoms/LeafDivider/LeafDivider'
+import { useT } from '@/hooks/useT'
 
 export interface HeroQuoteProps {
   /** The main quote text (required) */

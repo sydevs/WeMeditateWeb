@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
-import { Avatar } from '../../atoms/Avatar/Avatar'
-import { Link } from '../../atoms/Link'
-import { useT } from '../../../hooks/useT'
+import { Avatar } from '@/components/atoms/Avatar/Avatar'
+import { Link } from '@/components/atoms/Link'
+import { useT } from '@/hooks/useT'
 
 export interface AuthorProps {
   /** Display variant */
@@ -91,13 +91,7 @@ export function Author({
 
   // Common elements
   const avatarSize = isMini ? 'xl' : '2xl'
-  const avatarElement = (
-    <Avatar
-      src={imageUrl}
-      alt={name}
-      size={avatarSize}
-    />
-  )
+  const avatarElement = <Avatar alt={name} size={avatarSize} src={imageUrl} />
 
   const nameWithCountry = countryCode
     ? t('article.general.name_with_country', { name, country: countryCode })
@@ -137,15 +131,9 @@ export function Author({
               its own locale uses, and `written_by` the sentence around it. */}
           {t.rich('article.general.written_by', { name: emphasisedName })}
         </div>
-        {meditationText && (
-          <div className="text-sm font-light leading-tight">
-            {meditationText}
-          </div>
-        )}
+        {meditationText && <div className="text-sm font-light leading-tight">{meditationText}</div>}
         {readingTimeText && (
-          <div className="text-sm font-light mt-1.5 leading-tight">
-            {readingTimeText}
-          </div>
+          <div className="text-sm font-light mt-1.5 leading-tight">{readingTimeText}</div>
         )}
       </div>
     )
@@ -162,20 +150,14 @@ export function Author({
           {t('article.general.about_the_author')}
         </h2>
         <div className={`flex flex-col ${orderClasses} gap-8`}>
-          <div className={`flex flex-col items-center ${metaAlign} text-center w-full md:w-48 shrink-0`}>
+          <div
+            className={`flex flex-col items-center ${metaAlign} text-center w-full md:w-48 shrink-0`}
+          >
             <div className="mb-8">{avatarElement}</div>
-            <div className="text-sm sm:text-base font-light leading-relaxed">
-              {nameWithCountry}
-            </div>
-            {title && (
-              <div className="text-sm font-light leading-relaxed">
-                {title}
-              </div>
-            )}
+            <div className="text-sm sm:text-base font-light leading-relaxed">{nameWithCountry}</div>
+            {title && <div className="text-sm font-light leading-relaxed">{title}</div>}
             {meditationText && (
-              <div className="text-sm font-light leading-relaxed">
-                {meditationText}
-              </div>
+              <div className="text-sm font-light leading-relaxed">{meditationText}</div>
             )}
           </div>
           {description && (

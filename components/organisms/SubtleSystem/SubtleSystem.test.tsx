@@ -11,8 +11,8 @@ import type { ReactNode } from 'react'
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { openTag } from '../../../tests/_helpers/markup'
-import { readSource, repoRoot, sourceFiles } from '../../../tests/guards/_source-scan'
+import { openTag } from '@/tests/_helpers/markup'
+import { readSource, repoRoot, sourceFiles } from '@/tests/guards/_source-scan'
 
 // What the server renders: vike strips `ClientOnly`'s children from that build.
 vi.mock('vike-react/ClientOnly', () => ({

@@ -47,13 +47,7 @@ describe('ColumnCarousel slide dots', () => {
       ([, number, title]) => `${number}:${title}`,
     )
 
-    expect(labels).toEqual([
-      '1:Column 1',
-      '2:Column 2',
-      '3:Column 3',
-      '4:Column 4',
-      '5:Column 5',
-    ])
+    expect(labels).toEqual(['1:Column 1', '2:Column 2', '3:Column 3', '4:Column 4', '5:Column 5'])
   })
 
   it('presses exactly the dot whose slide is showing', () => {
@@ -89,6 +83,7 @@ describe('ColumnCarousel breakpoints', () => {
   const wrapper = (count: number) => {
     const html = renderToStaticMarkup(<ColumnCarousel columns={columns(count)} />)
     const at = html.indexOf('aria-label="Previous')
+
     return html.slice(0, at).slice(html.slice(0, at).indexOf('<div', 5))
   }
 
@@ -107,6 +102,7 @@ describe('CarouselNavButton', () => {
   // Each nav button, open tag to close, so a child's position can be read.
   const navButton = (markup: string, label: string) => {
     const at = markup.indexOf(`aria-label="${label}`)
+
     return markup.slice(markup.lastIndexOf('<button', at), markup.indexOf('</button>', at))
   }
 

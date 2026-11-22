@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Logo } from './Logo'
-import { StoryWrapper, StorySection } from '../../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Atoms / Graphics',
@@ -18,6 +18,10 @@ export const Default: Story = () => (
         <div className="flex flex-col items-center gap-2">
           <Logo variant="text" />
           <span className="text-xs text-gray-700">Text</span>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Logo variant="inline" />
+          <span className="text-xs text-gray-700">Inline</span>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Logo variant="square" />
@@ -47,6 +51,15 @@ export const Default: Story = () => (
             <Logo size="md" variant="text" />
             <Logo size="lg" variant="text" />
             <Logo size="xl" variant="text" />
+          </div>
+        </StorySection>
+
+        <StorySection title="Inline" variant="subsection">
+          <div className="flex items-end gap-4">
+            <Logo size="sm" variant="inline" />
+            <Logo size="md" variant="inline" />
+            <Logo size="lg" variant="inline" />
+            <Logo size="xl" variant="inline" />
           </div>
         </StorySection>
 
