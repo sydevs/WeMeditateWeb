@@ -18,7 +18,7 @@
 import type { ReactNode } from 'react'
 import { type Locale } from '@/types/sahajcloud'
 import { DEFAULT_LOCALE } from './locales'
-import { type SahajCloudWebTranslations, type WebTranslations } from './web-translations'
+import { type WebTranslations } from './web-translations'
 import { EN_A11Y, withA11y } from './a11y/a11y'
 import snapshot from './translations.en.json'
 
@@ -147,12 +147,6 @@ function readPath(source: unknown, path: readonly string[]): unknown {
 // --- createT ---
 
 /**
- * What an accessor reads. A bare SahajCloud read (`/oembed` takes one) carries
- * no screen-reader strings, so an `a11y` key read from it resolves to its path.
- */
-export type TranslationSource = WebTranslations | SahajCloudWebTranslations
-
-/**
  * Splits a template into alternating text and placeholder-name parts, for
  * `t.rich`. A capturing group makes `String.split` keep the names, so the
  * odd indices are the placeholders.
@@ -176,7 +170,7 @@ export interface TFunction {
  * page instead of rendering as a blank. In development it also warns once
  * per lookup.
  */
-export function createT(translations: TranslationSource, locale: Locale): TFunction {
+export function createT(translations: WebTranslations, locale: Locale): TFunction {
   const lookup = (key: TranslationKey, params?: TranslationParams): string => {
     const path = String(key).split('.')
     const direct = readPath(translations, path)
@@ -237,9 +231,9 @@ export function createT(translations: TranslationSource, locale: Locale): TFunct
  * stable for a request, so the whole tree shares one accessor. The outer
  * map is weak, so a request's entry goes when its translations do.
  */
-const ACCESSORS = new WeakMap<TranslationSource, Map<Locale, TFunction>>()
+const ACCESSORS = new WeakMap<WebTranslations, Map<Locale, TFunction>>()
 
-export function getT(translations: TranslationSource, locale: Locale): TFunction {
+export function getT(translations: WebTranslations, locale: Locale): TFunction {
   let byLocale = ACCESSORS.get(translations)
 
   if (!byLocale) {
