@@ -83,7 +83,7 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
         // ordinary visitor sees, not a second document's unsaved edits.
         getWebTranslations({ locale, ...previewArgs(preview, 'wm-web-translations') }),
       )
-      .then((translations): SahajCloudWebTranslations | WebTranslations => {
+      .then((translations) => {
         if (!isEmpty(translations)) return translations
 
         console.warn(
@@ -107,12 +107,7 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
 
         return EN_TRANSLATIONS
       })
-      .then((translations) =>
-        withA11y<SahajCloudWebTranslations | WebTranslations, WebTranslations>(
-          translations,
-          a11yStringsFor(locale),
-        ),
-      ),
+      .then((translations) => withA11y<WebTranslations>(translations, a11yStringsFor(locale))),
   )
 }
 

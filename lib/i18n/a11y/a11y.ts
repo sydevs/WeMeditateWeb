@@ -47,7 +47,7 @@ export function overEnglish(file: A11yFile): A11yStrings {
  * Mounts one locale's strings at `<tab>.a11y` on a translations object. A tab
  * the base lacks gains just its `a11y` group.
  */
-export function withA11y<Base extends object, Result>(base: Base, strings: A11yStrings): Result {
+export function withA11y<Result>(base: object, strings: A11yStrings): Result {
   const result: Record<string, unknown> = { ...(base as Record<string, unknown>) }
 
   for (const [tab, group] of Object.entries(strings)) {

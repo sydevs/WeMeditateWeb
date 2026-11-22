@@ -27,10 +27,7 @@ import snapshot from './translations.en.json'
  * the SahajCloud read fails and as the fixture for tests and Ladle. The snapshot is
  * generated — see `scripts/sync-translations.mjs`.
  */
-export const EN_TRANSLATIONS = withA11y<SahajCloudWebTranslations, WebTranslations>(
-  snapshot as unknown as SahajCloudWebTranslations,
-  EN_A11Y,
-)
+export const EN_TRANSLATIONS = withA11y<WebTranslations>(snapshot, EN_A11Y)
 
 /** CLDR plural categories, in the order SahajCloud stores them. */
 const PLURAL_SUFFIXES = ['one', 'few', 'many', 'other'] as const

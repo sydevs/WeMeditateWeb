@@ -139,7 +139,7 @@ describe('overEnglish', () => {
 
 describe('withA11y', () => {
   it("mounts a tab's a11y group beside its other groups", () => {
-    const result = withA11y<object, Record<string, Record<string, unknown>>>(
+    const result = withA11y<Record<string, Record<string, unknown>>>(
       { media: { general: { playlist: 'Playlist' } } },
       EN_A11Y,
     )
@@ -149,7 +149,7 @@ describe('withA11y', () => {
   })
 
   it('gives a tab the base lacks its a11y group alone', () => {
-    const result = withA11y<object, Record<string, Record<string, unknown>>>({}, EN_A11Y)
+    const result = withA11y<Record<string, Record<string, unknown>>>({}, EN_A11Y)
 
     expect(result.errors).toEqual({ a11y: EN_A11Y.errors })
   })
