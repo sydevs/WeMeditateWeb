@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Elvetés",
+    "close": "Bezárás",
+    "previous": "Előző",
+    "next": "Következő",
+    "show_more_items_one": "%{count} további elem megjelenítése",
+    "show_more_items_other": "%{count} további elem megjelenítése",
+    "breadcrumb": "Navigációs útvonal",
+    "primary_navigation": "Főmenü",
+    "footer_navigation": "Lábléc menü",
+    "opens_in_new_tab_suffix": "(új lapon nyílik meg)",
+    "menu": "Menü"
+  },
+  "errors": {
+    "error_icon": "Hiba"
+  },
+  "article": {
+    "filter_label": "Tartalom szűrése címke szerint"
+  },
+  "meditation": {
+    "mute_voice": "Beszéd némítása",
+    "unmute_voice": "Beszéd némításának feloldása",
+    "mute_music": "Zene némítása",
+    "unmute_music": "Zene némításának feloldása",
+    "voice_volume": "Beszéd hangereje",
+    "music_volume": "Zene hangereje",
+    "audio_settings": "Hangbeállítások",
+    "shuffle_music": "Zeneszám véletlenszerű cseréje",
+    "related_lectures_loading": "Kapcsolódó előadások betöltése",
+    "finder_region": "Válaszd ki, hogyan érzed magad"
+  },
+  "lecture": {
+    "related_meditations_loading": "Kapcsolódó meditációk betöltése",
+    "untitled_heading": "Cím nélküli előadás"
+  },
+  "map": {
+    "classes_heading": "Meditációs órák",
+    "when": "Mikor",
+    "where": "Hol",
+    "languages": "Nyelvek"
+  },
+  "forms": {
+    "submitting": "Űrlap küldése, kérjük, várj...",
+    "required_marker": "kötelező"
+  },
+  "media": {
+    "play": "Lejátszás",
+    "pause": "Szünet",
+    "previous_track": "Előző szám",
+    "next_track": "Következő szám",
+    "toggle_shuffle": "Véletlen sorrend be- és kikapcsolása",
+    "mute": "Némítás",
+    "unmute": "Némítás feloldása",
+    "volume": "Hangerő",
+    "play_item": "Lejátszás: %{title}",
+    "view_image": "Kép megtekintése",
+    "view_image_alt": "Kép megtekintése: %{alt}",
+    "embed_code": "Beágyazási kód",
+    "zoom_in": "Nagyítás",
+    "zoom_out": "Kicsinyítés",
+    "progress": "Lejátszási pozíció"
+  },
+  "location": {
+    "search_label": "Hely keresése",
+    "selected_label": "Kiválasztott hely",
+    "change_label": "Hely módosítása"
+  },
+  "blocks": {
+    "enter_fullscreen": "Teljes képernyő",
+    "exit_fullscreen": "Kilépés a teljes képernyőből",
+    "learn_more_about": "További információ: %{title}",
+    "previous_slide": "Előző dia",
+    "next_slide": "Következő dia",
+    "previous_column": "Előző: %{title}",
+    "next_column": "Következő: %{title}",
+    "go_to_column": "Ugrás az oszlopra (%{number}): %{title}",
+    "quote": "Idézet",
+    "table_of_contents": "Tartalomjegyzék",
+    "share_region": "Közösségimédia-megosztási lehetőségek",
+    "share_group": "Megosztás a közösségi médiában",
+    "share_on": "Megosztás: %{platform}",
+    "next_session": "Következő alkalom: %{weekday}, %{time}, %{relative}."
+  }
+}
