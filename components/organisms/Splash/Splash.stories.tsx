@@ -1,10 +1,10 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { useState } from 'react'
 import { Splash } from './Splash'
-import { Header } from '../Header'
-import { Countdown, Button, Input } from '../../atoms'
-import { MapSearch } from '../../molecules'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { Header } from '@/components/organisms/Header'
+import { Countdown, Button, Input } from '@/components/atoms'
+import { MapSearch } from '@/components/molecules'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Organisms',

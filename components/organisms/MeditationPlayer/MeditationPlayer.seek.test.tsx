@@ -9,14 +9,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MeditationPlayer } from './MeditationPlayer'
-import type { AudioPlayerControls, AudioPlayerState } from '../../../hooks/audio'
-import type { Track } from '../../molecules/AudioPlayer/types'
+import type { AudioPlayerControls, AudioPlayerState } from '@/hooks/audio'
+import type { Track } from '@/lib/media/audio'
 
 // Howler never plays under jsdom, so the core hook is replaced by a recorder
 // reporting a fixed position in a ten-minute track.
 const player = vi.hoisted(() => ({ seek: vi.fn(), currentTime: 100 }))
 
-vi.mock('../../../hooks/audio/useAudioPlayer', () => ({
+vi.mock('@/hooks/audio/useAudioPlayer', () => ({
   useAudioPlayer: () => [
     {
       isPlaying: false,

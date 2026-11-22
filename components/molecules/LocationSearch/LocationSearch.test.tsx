@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { enT } from '../../../lib/i18n'
+import { enT } from '@/lib/i18n/i18n'
 
 // The Mapbox hooks need a browser and a token; the field's name is settled
 // before either is called.

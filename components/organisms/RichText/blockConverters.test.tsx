@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement, ReactNode } from 'react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
-import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
-import type { Track } from '../../molecules'
-import { anchorFor, classFor, classesWith } from '../../../tests/_helpers/markup'
+import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
+import type { Track } from '@/components/molecules'
+import { anchorFor, classFor, classesWith } from '@/tests/_helpers/markup'
 
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
 // Its fallback is what the server sends, which is what these assert.

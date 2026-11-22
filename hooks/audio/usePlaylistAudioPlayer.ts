@@ -4,7 +4,7 @@ import type {
   Track,
   PlaylistAudioPlayerState,
   PlaylistAudioPlayerControls,
-} from '../../components/molecules/AudioPlayer/types'
+} from '@/lib/media/audio'
 
 export interface UsePlaylistAudioPlayerOptions {
   /** Array of tracks to manage */

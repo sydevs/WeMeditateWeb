@@ -1,8 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { useState } from 'react'
 import { SplashLoader } from './SplashLoader'
-import { StoryWrapper, StorySection } from '../../ladle'
-import { Button } from '../Button'
+import { StoryWrapper, StorySection } from '@/components/ladle'
+import { Button } from '@/components/atoms/Button'
 
 export default {
   title: 'Atoms',

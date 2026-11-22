@@ -1,10 +1,10 @@
 import { MapPinIcon } from '@heroicons/react/24/outline'
-import { Button } from '../../atoms/Button'
-import { LocationSearch, type SelectedLocation } from '../LocationSearch'
-import { useLocale } from '../../../hooks/usePageContext'
-import { useT } from '../../../hooks/useT'
-import { MAP_PREFIX } from '../../../lib/atlas-route'
-import { classMapSearchHref } from '../../../lib/urls'
+import { Button } from '@/components/atoms/Button'
+import { LocationSearch, type SelectedLocation } from '@/components/molecules/LocationSearch'
+import { useLocale } from '@/hooks/usePageContext'
+import { useT } from '@/hooks/useT'
+import { MAP_PREFIX } from '@/lib/atlas/route'
+import { classMapSearchHref } from '@/lib/urls/urls'
 
 export interface MapSearchProps {
   /**

@@ -2,8 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { FormBuilder } from './FormBuilder'
-import { enT } from '../../../lib/i18n'
-import type { EmbeddedForm } from '../../../server/sahajcloud-types'
+import { enT } from '@/lib/i18n/i18n'
+import type { EmbeddedForm } from '@/types/sahajcloud'
 
 /**
  * What a visitor's submit does: which answers reach `/api/submissions`, which

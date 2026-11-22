@@ -4,7 +4,7 @@ import { SocialIcon } from './SocialIcon'
 
 /**
  * These render bare, with no Vike app around them, so `useT` falls back to
- * `lib/translations.en.json` — the committed mirror of the SahajCloud English
+ * `lib/i18n/translations.en.json` — the committed mirror of the SahajCloud English
  * locale, which is also what Ladle renders with.
  */
 describe('<SocialIcon> new-tab announcement', () => {

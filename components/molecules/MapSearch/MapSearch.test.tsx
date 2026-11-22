@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import { anchorFor, classFor } from '../../../tests/_helpers/markup'
+import { anchorFor, classFor } from '@/tests/_helpers/markup'
 
 interface StubProps {
   fallback?: ReactNode
@@ -21,7 +21,7 @@ vi.mock('vike-react/usePageContext', () => ({
 
 // The Mapbox search is browser-only; the stub renders what the server sends
 // in its place and keeps the props, so a test can pick a place through them.
-vi.mock('../LocationSearch', () => ({
+vi.mock('@/components/molecules/LocationSearch', () => ({
   LocationSearch: (props: StubProps) => {
     state.search = props
 

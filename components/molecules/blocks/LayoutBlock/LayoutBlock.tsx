@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import { Accordion, type AccordionItemData } from '../../Accordion'
-import { ColumnCarousel } from '../../ColumnCarousel'
-import type { ColumnProps } from '../../Column'
-import { Heading, Image, Link } from '../../../atoms'
-import { populatedImage, type LayoutItem } from '../../../../lib/content-blocks'
+import { Accordion, type AccordionItemData } from '@/components/molecules/Accordion'
+import { ColumnCarousel } from '@/components/molecules/ColumnCarousel'
+import type { ColumnProps } from '@/components/molecules/Column'
+import { Heading, Image, Link } from '@/components/atoms'
+import { populatedImage, type LayoutItem } from '@/lib/content/blocks'
 // Aliased: this file's own component takes the unprefixed name.
-import type { LayoutBlock as LayoutBlockSchema } from '../../../../server/payload-types'
+import type { LayoutBlock as LayoutBlockSchema } from '@/types/payload/payload-types'
 
 /**
  * The level an item's own title takes. A section with a heading of its own

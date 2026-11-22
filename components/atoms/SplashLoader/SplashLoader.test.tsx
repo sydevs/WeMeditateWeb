@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { SplashLoader } from './SplashLoader'
-import { classFor, classOf, openTag } from '../../../tests/_helpers/markup'
+import { classFor, classOf, openTag } from '@/tests/_helpers/markup'
 
 const CF_PUBLIC_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/public'
 

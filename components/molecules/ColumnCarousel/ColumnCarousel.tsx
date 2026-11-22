@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { Button } from '../../atoms/Button'
-import { Column, ColumnProps } from '../Column'
-import { useCarousel } from '../../../hooks/useCarousel'
-import { useT } from '../../../hooks/useT'
+import { Button } from '@/components/atoms/Button'
+import { Column, ColumnProps } from '@/components/molecules/Column'
+import { useCarousel } from '@/hooks/useCarousel'
+import { useT } from '@/hooks/useT'
 
 export interface ColumnCarouselProps {
   /** Array of column data to display (maximum 5 columns) */

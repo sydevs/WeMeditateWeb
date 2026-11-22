@@ -1,5 +1,5 @@
 import type { Config } from 'vike/types'
-import LayoutMap from '../../layouts/LayoutMap.js'
+import LayoutMap from '@/layouts/LayoutMap.js'
 
 /**
  * The atlas uses its own chrome, not LayoutChrome: condensed header, no

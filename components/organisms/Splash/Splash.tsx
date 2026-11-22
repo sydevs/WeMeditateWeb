@@ -1,15 +1,15 @@
 import { ComponentProps, ReactNode, useEffect, useId, useRef, useState } from 'react'
-import { LeafSvg } from '../../atoms/graphics/svgs'
-import { Link } from '../../atoms/Link'
-import { SplashLoader } from '../../atoms/SplashLoader'
-import { surface, type Surface } from '../../atoms/surface'
-import { isSafeLinkHref } from '../../../lib/urls'
+import { LeafSvg } from '@/components/atoms/graphics/svgs'
+import { Link } from '@/components/atoms/Link'
+import { SplashLoader } from '@/components/atoms/SplashLoader'
+import { surface, type Surface } from '@/components/atoms/surface'
+import { isSafeLinkHref } from '@/lib/urls/urls'
 import {
   type AspectRatio,
   type ImageSize,
   getImageURL,
   getVariantName,
-} from '../../../lib/cloudflare-images'
+} from '@/lib/media/cloudflare-images'
 
 /**
  * Ends the loader the moment the hero settles, without waiting for React: the
