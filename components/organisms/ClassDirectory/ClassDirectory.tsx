@@ -1,6 +1,6 @@
-import { useLocale } from '../../../hooks/usePageContext'
-import { useT } from '../../../hooks/useT'
-import { atlasEmbedSrc } from '../../../lib/atlas-embed'
+import { useLocale } from '@/hooks/usePageContext'
+import { useT } from '@/hooks/useT'
+import { atlasEmbedSrc } from '@/lib/atlas/embed'
 
 export interface ClassDirectoryProps {
   /** Where the directory opens, e.g. `/gb/london` or `/1506`. */

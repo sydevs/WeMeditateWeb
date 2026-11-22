@@ -10,7 +10,7 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-} from '../../../ladle'
+} from '@/components/ladle'
 import { HeartIcon } from '@heroicons/react/24/outline'
 
 export default {

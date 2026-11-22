@@ -1,3 +1,7 @@
 export { AudioPlayer } from './AudioPlayer'
 export type { AudioPlayerProps, AudioControl } from './AudioPlayer'
-export type { Track, PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from './types'
+export type {
+  Track,
+  PlaylistAudioPlayerState,
+  PlaylistAudioPlayerControls,
+} from '@/lib/media/audio'

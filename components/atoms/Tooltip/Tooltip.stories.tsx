@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Tooltip } from './Tooltip'
-import { Button } from '../Button'
-import { StorySection, StoryWrapper } from '../../ladle'
+import { Button } from '@/components/atoms/Button'
+import { StorySection, StoryWrapper } from '@/components/ladle'
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/solid'
 
 export default {

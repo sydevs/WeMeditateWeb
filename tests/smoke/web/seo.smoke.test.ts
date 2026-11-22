@@ -5,7 +5,7 @@
  * The unit guard proves a built document reaches the markup. Only the
  * preview proves the route built one from real SahajCloud content, through
  * the real data hooks — a page, a meditation and a lecture each reach
- * `lib/content-seo.ts` by a different path.
+ * `lib/seo/content-seo.ts` by a different path.
  *
  * ⚠ `og:url` on the indexable host cannot be checked here: a preview serves
  * its own `workers.dev` origin, and the canonical is the request origin by
@@ -20,7 +20,7 @@ import {
   metaContent,
   titleOf,
   type PageResult,
-} from '../_helpers/preview'
+} from '@/tests/smoke/_helpers/preview'
 
 /** A URL without its trailing slash, so `https://host/` and `https://host` compare equal. */
 const bare = (url: string) => url.replace(/\/$/, '')

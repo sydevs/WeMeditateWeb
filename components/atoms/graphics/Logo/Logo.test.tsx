@@ -5,7 +5,7 @@ import { Logo } from './Logo'
 describe('Logo', () => {
   describe('the text variant', () => {
     it('draws the wordmark from the translated site title', () => {
-      // `common.general.site_title` is "We Meditate" in lib/translations.en.json,
+      // `common.general.site_title` is "We Meditate" in lib/i18n/translations.en.json,
       // which is what `useT()` falls back to outside a Vike app. The mark's own
       // typography lower-cases everything after the initial capital, so the
       // casing is derived rather than restated per locale.

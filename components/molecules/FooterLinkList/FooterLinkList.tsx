@@ -1,6 +1,6 @@
-import { Heading, Link } from '../../atoms'
-import { useT } from '../../../hooks/useT'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { Heading, Link } from '@/components/atoms'
+import { useT } from '@/hooks/useT'
+import type { Locale } from '@/types/sahajcloud'
 
 /** A single link item */
 export interface FooterLink {

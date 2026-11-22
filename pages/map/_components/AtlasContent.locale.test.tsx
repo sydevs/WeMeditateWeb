@@ -12,8 +12,8 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { AtlasSeoResponse } from '../../../server/atlas-types'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import type { AtlasSeoResponse } from '@/types/atlas'
+import { anchorFor } from '@/tests/_helpers/markup'
 
 const ORIGIN = 'https://wemeditate.com'
 

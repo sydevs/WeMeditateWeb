@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { LiveSession } from './LiveSession'
-import { StoryWrapper, StorySection } from '../../ladle'
-import type { SessionSchedule } from '../../../lib/live-session'
+import { StoryWrapper, StorySection } from '@/components/ladle'
+import type { SessionSchedule } from '@/lib/content/live-session'
 
 export default {
   title: 'Molecules',

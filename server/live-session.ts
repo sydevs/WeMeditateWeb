@@ -1,7 +1,7 @@
 /**
  * Reports a `countdown` splash whose class the page cannot count down to.
  *
- * What renders is decided by `lib/live-session.ts`, in the converter, so it
+ * What renders is decided by `lib/content/live-session.ts`, in the converter, so it
  * holds in SSR, in a client-side navigation and in the live preview alike.
  * Reporting is server-only and lives here, because a gap is a SahajCloud data
  * problem an editor has to fix, not something the browser can do anything
@@ -13,10 +13,10 @@
  * unreadable is reported.
  */
 
-import { populatedImage } from '../lib/content-blocks'
-import { readSessionClass, type SessionGap } from '../lib/live-session'
+import { populatedImage } from '@/lib/content/blocks'
+import { readSessionClass, type SessionGap } from '@/lib/content/live-session'
 import { warnOnce } from './error-utils'
-import type { Locale } from './sahajcloud-types'
+import type { Locale } from '@/types/sahajcloud'
 
 /** What a gap is called in the warning. `absent` never reaches it. */
 const GAP_REASONS: Record<Exclude<SessionGap, 'absent'>, string> = {

@@ -13,15 +13,15 @@
  * those five plus `availableLocales`, a list of locale codes the language
  * control offers. Checked against `layouts/useSiteNav.ts`,
  * `layouts/headerDropdown.ts` and `layouts/LayoutChrome.tsx`, which are the
- * only readers; `server/sahajcloud-types.ts` types each page field as a page
+ * only readers; `types/sahajcloud.ts` types each page field as a page
  * relationship. The content fixtures assume the
  * serialized-Lexical shape `components/organisms/RichText/blockConverters.tsx`
  * reads — a root whose `block` children carry `fields.blockType` — checked
  * against the `splash` and `layout` converters there.
  */
 
-import type { AtlasSeoResponse } from '../../server/atlas-types'
-import type { Lecture, Meditation, Page, WebConfig } from '../../server/sahajcloud-types'
+import type { AtlasSeoResponse } from '@/types/atlas'
+import type { Lecture, Meditation, Page, WebConfig } from '@/types/sahajcloud'
 
 const IMAGE = {
   url: 'https://imagedelivery.net/acct/fixture-image/public',
@@ -102,7 +102,7 @@ export const homePage = {
  * **Pre-mortem.** The class assumes the shape `SESSION_EVENT_SELECT` returns —
  * `eventType`, `onlineUrl` and the whole `schedule` group, whose
  * `upcomingDates` the producer computes — checked against
- * `server/sahajcloud-client.ts` and `server/payload-types.ts`. The instants
+ * `server/sahajcloud/client.ts` and `types/payload/payload-types.ts`. The instants
  * are far enough ahead that the panel never renders its live state while the
  * suite runs, which is what keeps this fixture from depending on the clock.
  */
@@ -178,8 +178,8 @@ export const meditation = {
  * The raw lecture both lecture routes carry, as a SahajCloud read returns one.
  *
  * **Pre-mortem.** Checked against `LECTURE_SELECT` in
- * `server/sahajcloud-client.ts` and `parseLectureMetadata` in
- * `lib/lecture-shape.ts`.
+ * `server/sahajcloud/` and `parseLectureMetadata` in
+ * `lib/content/lecture-shape.ts`.
  */
 export const lecture = {
   id: 42,
@@ -197,7 +197,7 @@ export const lecture = {
  *
  * **Pre-mortem.** `AtlasContent` dispatches on `type`, not on a `kind` field,
  * and the `root` variant carries `id: null` and a `content.paragraphs` list.
- * Checked against the `AtlasSeoResponse` union in `server/atlas-types.ts` and
+ * Checked against the `AtlasSeoResponse` union in `types/atlas.ts` and
  * the switch in `pages/map/_components/AtlasContent.tsx` — an unrecognised
  * discriminator renders nothing at all, which is how this fixture first served
  * a `/map` with no heading.

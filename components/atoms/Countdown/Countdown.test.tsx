@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Countdown } from './Countdown'
-import { classesWith, classOf, openTag } from '../../../tests/_helpers/markup'
+import { classesWith, classOf, openTag } from '@/tests/_helpers/markup'
 
 const DAY = 86_400_000
 const HOUR = 3_600_000

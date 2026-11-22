@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
-import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
-import type { Track } from '../../molecules'
-import { anchorFor, classFor, classOf } from '../../../tests/_helpers/markup'
+import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
+import type { Track } from '@/components/molecules'
+import { anchorFor, classFor, classOf } from '@/tests/_helpers/markup'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.

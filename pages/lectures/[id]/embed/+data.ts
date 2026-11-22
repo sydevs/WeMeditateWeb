@@ -1,5 +1,5 @@
 import type { PageContextServer } from 'vike/types'
-import { loadLecture, type LectureData } from '../_lecture'
+import { loadLecture, type LectureData } from '@/pages/lectures/[id]/_lecture'
 
 export type LectureEmbedPageData = LectureData
 

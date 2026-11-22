@@ -5,7 +5,7 @@ import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { render } from '@testing-library/react'
 import { LiveSession } from './LiveSession'
-import type { SessionSchedule } from '../../../lib/live-session'
+import type { SessionSchedule } from '@/lib/content/live-session'
 
 const T0 = Date.parse('2026-10-20T12:00:00.000Z')
 const MINUTE = 60_000

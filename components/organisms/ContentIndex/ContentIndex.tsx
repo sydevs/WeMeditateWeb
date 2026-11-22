@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Button } from '../../atoms'
-import { ContentGrid } from '../../molecules'
-import type { ResolvedCardItem } from '../../../lib/content-blocks'
-import { useT } from '../../../hooks/useT'
-import { useFadeOnChange } from '../../../hooks/useFadeOnChange'
+import { Button } from '@/components/atoms'
+import { ContentGrid } from '@/components/molecules'
+import type { ResolvedCardItem } from '@/lib/content/blocks'
+import { useT } from '@/hooks/useT'
+import { useFadeOnChange } from '@/hooks/useFadeOnChange'
 
 export interface ContentIndexProps {
   /** Server-resolved cards. Each item's `tags` drive the filter pills. */

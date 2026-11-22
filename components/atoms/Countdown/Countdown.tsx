@@ -1,5 +1,5 @@
 import { ComponentProps, Fragment } from 'react'
-import { useT } from '../../../hooks/useT'
+import { useT } from '@/hooks/useT'
 
 export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**

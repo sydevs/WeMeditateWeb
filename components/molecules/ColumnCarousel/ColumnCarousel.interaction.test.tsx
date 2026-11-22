@@ -7,10 +7,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { ColumnCarousel } from './ColumnCarousel'
-import { carousels, type FakeEmbla } from '../../../tests/_helpers/embla'
+import { carousels, type FakeEmbla } from '@/tests/_helpers/embla'
 
 vi.mock('embla-carousel-react', async () => ({
-  default: (await import('../../../tests/_helpers/embla')).useFakeEmblaCarousel,
+  default: (await import('@/tests/_helpers/embla')).useFakeEmblaCarousel,
 }))
 
 const columns = (count: number) =>

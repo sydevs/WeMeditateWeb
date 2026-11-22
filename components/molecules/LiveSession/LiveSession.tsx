@@ -1,15 +1,15 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Button, Countdown } from '../../atoms'
-import { useLocale } from '../../../hooks/usePageContext'
-import { useT } from '../../../hooks/useT'
+import { Button, Countdown } from '@/components/atoms'
+import { useLocale } from '@/hooks/usePageContext'
+import { useT } from '@/hooks/useT'
 import {
   relativeToStart,
   sessionAt,
   sessionLineParts,
   sessionTickMs,
   type SessionSchedule,
-} from '../../../lib/live-session'
-import { isSafeHttpUrl } from '../../../lib/urls'
+} from '@/lib/content/live-session'
+import { isSafeHttpUrl } from '@/lib/urls/urls'
 
 export interface LiveSessionProps {
   /** The class's future starts, its own zone, and its joining link. */

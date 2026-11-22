@@ -11,7 +11,7 @@
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
-import { Button, Container, Image } from '../../atoms'
+import { Button, Container, Image } from '@/components/atoms'
 import {
   ContentCarousel,
   HeroQuote,
@@ -19,17 +19,17 @@ import {
   LiveSession,
   TableOfContents,
   type Track,
-} from '../../molecules'
-import { atlasRouteFor } from '../../../lib/atlas-route'
-import { readSessionClass } from '../../../lib/live-session'
-import { ClassDirectory } from '../ClassDirectory'
-import { ContentIndex } from '../ContentIndex'
-import { ContentOverlay } from '../ContentOverlay'
-import { ContentTextBox } from '../ContentTextBox'
-import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
-import { OrnateTextBox } from '../OrnateTextBox'
-import { Splash } from '../Splash'
-import { SubtleSystem } from '../SubtleSystem'
+} from '@/components/molecules'
+import { atlasRouteFor } from '@/lib/atlas/route'
+import { readSessionClass } from '@/lib/content/live-session'
+import { ClassDirectory } from '@/components/organisms/ClassDirectory'
+import { ContentIndex } from '@/components/organisms/ContentIndex'
+import { ContentOverlay } from '@/components/organisms/ContentOverlay'
+import { ContentTextBox } from '@/components/organisms/ContentTextBox'
+import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
+import { OrnateTextBox } from '@/components/organisms/OrnateTextBox'
+import { Splash } from '@/components/organisms/Splash'
+import { SubtleSystem } from '@/components/organisms/SubtleSystem'
 import {
   galleryImages,
   populatedImage,
@@ -41,7 +41,7 @@ import {
   hasDirectoryBlock,
   isFirstDirectoryBlock,
   isFirstFallbackSplash,
-} from '../../../lib/content-blocks'
+} from '@/lib/content/blocks'
 import type {
   ButtonBlock,
   ClassDirectoryBlock,
@@ -54,7 +54,7 @@ import type {
   SubtleSystemBlock,
   TableOfContentsBlock,
   TextBoxBlock,
-} from '../../../server/payload-types'
+} from '@/types/payload/payload-types'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
