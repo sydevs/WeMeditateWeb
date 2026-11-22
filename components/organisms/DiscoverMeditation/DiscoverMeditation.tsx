@@ -92,11 +92,7 @@ function ActionItem({ page, href }: ActionItemProps) {
   const description = page.meta?.description?.trim()
 
   return (
-    <Link
-      className="flex flex-col items-center gap-3 group"
-      href={href}
-      variant="neutral"
-    >
+    <Link className="flex flex-col items-center gap-3 group" href={href} variant="neutral">
       {/* The same leaf on every action. A page's `meta.image` is its share
           picture, which an editor does not pick as a glyph for this row;
           #330 gives the row a glyph of its own. */}
