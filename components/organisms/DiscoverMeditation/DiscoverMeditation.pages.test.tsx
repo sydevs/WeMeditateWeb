@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { NavPage } from '@/types/sahajcloud'
-import { anchorFor, classOf, classesWith, openTag } from '@/tests/_helpers/markup'
+import { classOf, classesWith, openTag } from '@/tests/_helpers/markup'
 import { DiscoverMeditation } from './DiscoverMeditation'
 
 const page = (id: number, slug: string, title: string, meta?: NavPage['meta']): NavPage => ({
@@ -42,14 +42,6 @@ describe('DiscoverMeditation actions', () => {
     for (const { title } of CLASS_PAGES) {
       expect(html).toContain(`>${title}</span>`)
     }
-  })
-
-  it('offers at most five, the most SahajCloud lets an editor pick', () => {
-    const six = Array.from({ length: 6 }, (_, i) => page(i + 1, `page-${i + 1}`, `Page ${i + 1}`))
-    const html = render(six)
-
-    expect(anchorFor(html, '/page-5')).not.toBe('')
-    expect(anchorFor(html, '/page-6')).toBe('')
   })
 
   it('skips a page that resolves to no link, and renders nothing when none does', () => {

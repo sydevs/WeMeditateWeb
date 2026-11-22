@@ -5,9 +5,6 @@ import type { Locale, NavPage } from '@/types/sahajcloud'
 import { useT } from '@/hooks/useT'
 import { documentHref } from '@/lib/urls/document-routes'
 
-/** Upstream's `maxRows` on `classPages`, restated so a looser schema cannot widen the row. */
-const MAX_ACTIONS = 5
-
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /**
    * The pages to offer, in the order an editor set: `wm-web-config.classPages`.
@@ -36,7 +33,7 @@ export function DiscoverMeditation({
 }: DiscoverMeditationProps) {
   const t = useT()
 
-  const actions = pages.slice(0, MAX_ACTIONS).flatMap((page) => {
+  const actions = pages.flatMap((page) => {
     const href = documentHref('pages', page)
 
     return href ? [{ page, href }] : []
