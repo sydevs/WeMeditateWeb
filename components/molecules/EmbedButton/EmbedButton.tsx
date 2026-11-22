@@ -1,11 +1,11 @@
 import { CheckIcon, ClipboardIcon, CodeBracketIcon } from '@heroicons/react/24/outline'
-import { Button, Dropdown } from '../../atoms'
-import { useClipboard } from '../../../hooks/useClipboard'
-import { useT } from '../../../hooks/useT'
-import { useLocale } from '../../../hooks/usePageContext'
-import { absoluteHref } from '../../../lib/urls'
-import { playerIframe } from '../../../lib/embed-player'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { Button, Dropdown } from '@/components/atoms'
+import { useClipboard } from '@/hooks/useClipboard'
+import { useT } from '@/hooks/useT'
+import { useLocale } from '@/hooks/usePageContext'
+import { absoluteHref } from '@/lib/urls/urls'
+import { playerIframe } from '@/lib/media/embed-player'
+import type { Locale } from '@/types/sahajcloud'
 
 /**
  * Build the ready-to-paste `<iframe>` snippet for an embed path.

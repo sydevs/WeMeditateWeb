@@ -9,10 +9,10 @@ import {
   loadTailwindStylesheet,
   repoRoot,
   themeStylesheet,
-} from '../tests/guards/_source-scan'
-import { OrnateTextBox } from '../components/organisms/OrnateTextBox/OrnateTextBox'
-import { contrast } from '../tests/_helpers/contrast'
-import { classFor } from '../tests/_helpers/markup'
+} from '@/tests/guards/_source-scan'
+import { OrnateTextBox } from '@/components/organisms/OrnateTextBox/OrnateTextBox'
+import { contrast } from '@/tests/_helpers/contrast'
+import { classFor } from '@/tests/_helpers/markup'
 
 /** Compiles the real stylesheet for the given class candidates. */
 async function build(candidates: string[]): Promise<string> {

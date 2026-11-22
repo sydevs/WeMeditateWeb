@@ -24,9 +24,9 @@ import { writeFileSync } from 'node:fs'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result } from 'axe-core'
-import { EN_TRANSLATIONS } from '../../lib/i18n'
-import { MAIN_CONTENT_ID } from '../../lib/route-announcer'
-import { AXE_TAGS, axeOptions } from '../_helpers/axe'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { MAIN_CONTENT_ID } from '@/lib/a11y/route-announcer'
+import { AXE_TAGS, axeOptions } from '@/tests/_helpers/axe'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
 
 /** Route data, swapped per target before the render. */
@@ -46,14 +46,14 @@ vi.mock('vike-react/ClientOnly', () => ({
   ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
 }))
 
-const { default: LayoutChrome } = await import('../../layouts/LayoutChrome')
-const { default: LayoutMap } = await import('../../layouts/LayoutMap')
-const { Page: HomeOrArticlePage } = await import('../../pages/[slug]/+Page')
-const { Page: MeditationPage } = await import('../../pages/meditations/[id]/(full)/+Page')
-const { Page: LecturePage } = await import('../../pages/lectures/[id]/(full)/+Page')
-const { Page: MapPage } = await import('../../pages/map/+Page')
-const { Page: MeditationEmbedPage } = await import('../../pages/meditations/[id]/embed/+Page')
-const { Page: LectureEmbedPage } = await import('../../pages/lectures/[id]/embed/+Page')
+const { default: LayoutChrome } = await import('@/layouts/LayoutChrome')
+const { default: LayoutMap } = await import('@/layouts/LayoutMap')
+const { Page: HomeOrArticlePage } = await import('@/pages/[slug]/+Page')
+const { Page: MeditationPage } = await import('@/pages/meditations/[id]/(full)/+Page')
+const { Page: LecturePage } = await import('@/pages/lectures/[id]/(full)/+Page')
+const { Page: MapPage } = await import('@/pages/map/+Page')
+const { Page: MeditationEmbedPage } = await import('@/pages/meditations/[id]/embed/+Page')
+const { Page: LectureEmbedPage } = await import('@/pages/lectures/[id]/embed/+Page')
 
 /**
  * Rules jsdom cannot decide, disabled by name so they are visibly out of scope

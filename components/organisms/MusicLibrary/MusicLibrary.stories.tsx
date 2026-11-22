@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { MusicLibrary } from './MusicLibrary'
-import { Track, MusicFilter } from '../../molecules'
+import { Track, MusicFilter } from '@/components/molecules'
 import { MusicalNoteIcon, MicrophoneIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline'
 
 export default {

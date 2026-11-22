@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import { AnimatedLogoSvg } from '../graphics/svgs'
-import { useT } from '../../../hooks/useT'
+import { AnimatedLogoSvg } from '@/components/atoms/graphics/svgs'
+import { useT } from '@/hooks/useT'
 
 export interface SpinnerProps extends ComponentProps<'div'> {
   /**

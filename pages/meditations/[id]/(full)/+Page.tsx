@@ -1,8 +1,8 @@
 import { useData } from 'vike-react/useData'
 import type { MeditationPageData } from './+data'
-import { Heading } from '../../../../components/atoms'
-import { MeditationTemplate } from '../../../../components/templates'
-import { useT } from '../../../../hooks/useT'
+import { Heading } from '@/components/atoms'
+import { MeditationTemplate } from '@/components/templates'
+import { useT } from '@/hooks/useT'
 
 /**
  * Full meditation page (/meditations/:id) — rendered with site chrome. Shows the

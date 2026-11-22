@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, Heading, Image } from '../../atoms'
+import { Button, Heading, Image } from '@/components/atoms'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Card number displayed above the content, for example "01", "02", "03" */

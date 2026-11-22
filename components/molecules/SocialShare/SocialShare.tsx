@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import { SocialIcon, socialPlatformLabel } from '../../atoms/graphics/SocialIcon'
-import { useT } from '../../../hooks/useT'
+import { SocialIcon, socialPlatformLabel } from '@/components/atoms/graphics/SocialIcon'
+import { useT } from '@/hooks/useT'
 
 export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** The URL to share (current page URL) */

@@ -6,9 +6,9 @@
 
 import { describe, it, expect } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { EN_TRANSLATIONS } from '../../../lib/i18n'
-import { axeViolations } from '../../../tests/_helpers/axe'
-import { openPanel } from '../../../tests/_helpers/popover'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { axeViolations } from '@/tests/_helpers/axe'
+import { openPanel } from '@/tests/_helpers/popover'
 import { EmbedButton } from './EmbedButton'
 
 const { media } = EN_TRANSLATIONS

@@ -17,14 +17,14 @@ import {
   FloatingFocusManager,
   FloatingOverlay,
 } from '@floating-ui/react'
-import { Button, Icon, Link, Logo } from '../../atoms'
-import { SocialIcon } from '../../atoms/graphics/SocialIcon'
-import type { NavItem } from '../Header'
-import { barRow, trailingIconInset } from '../Header/bar'
-import type { SocialLink } from '../Footer'
-import type { LanguageOption } from '../../molecules/LanguageDropdown'
-import { useLocale } from '../../../hooks/usePageContext'
-import { useT } from '../../../hooks/useT'
+import { Button, Icon, Link, Logo } from '@/components/atoms'
+import { SocialIcon } from '@/components/atoms/graphics/SocialIcon'
+import type { NavItem } from '@/components/organisms/Header'
+import { barRow, trailingIconInset } from '@/components/organisms/Header/bar'
+import type { SocialLink } from '@/components/organisms/Footer'
+import type { LanguageOption } from '@/components/molecules/LanguageDropdown'
+import { useLocale } from '@/hooks/usePageContext'
+import { useT } from '@/hooks/useT'
 
 export interface MobileMenuProps {
   /** The same items the `lg:` link row renders, so the two reach the same places. */

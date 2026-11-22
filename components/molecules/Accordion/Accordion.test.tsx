@@ -2,7 +2,7 @@
 import { StrictMode, act } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { axeViolations } from '../../../tests/_helpers/axe'
+import { axeViolations } from '@/tests/_helpers/axe'
 import { Accordion, type AccordionItemData } from './Accordion'
 
 const items: AccordionItemData[] = [

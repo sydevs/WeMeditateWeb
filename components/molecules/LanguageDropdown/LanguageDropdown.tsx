@@ -1,9 +1,9 @@
-import { Dropdown, DropdownItem } from '../../atoms/Dropdown'
-import type { Locale } from '../../../server/sahajcloud-types'
-import { useT } from '../../../hooks/useT'
-import { LanguageFlag } from '../../atoms/graphics/LanguageFlag'
+import { Dropdown, DropdownItem } from '@/components/atoms/Dropdown'
+import type { Locale } from '@/types/sahajcloud'
+import { useT } from '@/hooks/useT'
+import { LanguageFlag } from '@/components/atoms/graphics/LanguageFlag'
 import { GlobeAltIcon, CheckIcon } from '@heroicons/react/24/outline'
-import { Icon } from '../../atoms/Icon'
+import { Icon } from '@/components/atoms/Icon'
 
 /** A single language option */
 export interface LanguageOption {

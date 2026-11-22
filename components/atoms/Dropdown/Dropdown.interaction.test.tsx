@@ -6,8 +6,8 @@
 
 import { describe, it, expect } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { axeViolations } from '../../../tests/_helpers/axe'
-import { openPanel } from '../../../tests/_helpers/popover'
+import { axeViolations } from '@/tests/_helpers/axe'
+import { openPanel } from '@/tests/_helpers/popover'
 import { Dropdown, DropdownItem } from './Dropdown'
 
 describe('Dropdown, open', () => {

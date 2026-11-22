@@ -7,7 +7,7 @@
 
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import type { WebConfig } from '../server/sahajcloud-types'
+import type { WebConfig } from '@/types/sahajcloud'
 import { useSiteNav } from './useSiteNav'
 
 // A request's page context, for whatever in the hook reads one.

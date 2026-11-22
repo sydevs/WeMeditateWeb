@@ -4,10 +4,10 @@
 # reformat here and show every reformatted line in its diff.
 
 # `pnpm types:cms`.
-server/payload-types.ts
+types/payload/payload-types.ts
 
 # `pnpm sync:translations`.
-lib/translations.en.json
+lib/i18n/translations.en.json
 
 pnpm-lock.yaml
 

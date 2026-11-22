@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Provide SahajCloud config without a request context, and silence Sentry
 // warnings on the degrade paths.
-vi.mock('./sahajcloud-context', () => ({
+vi.mock('./sahajcloud/context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
@@ -12,7 +12,7 @@ import {
   resolveContentIndexTracks,
   resolveContentIndexBlocks,
 } from './content-index'
-import type { ContentIndexBlockFields } from '../lib/content-blocks'
+import type { ContentIndexBlockFields } from '@/lib/content/blocks'
 
 const jsonResponse = (docs: unknown[]) =>
   ({ ok: true, status: 200, json: async () => ({ docs }) }) as never

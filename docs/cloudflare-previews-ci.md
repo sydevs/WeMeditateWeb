@@ -75,16 +75,14 @@ Both of the `wemeditate-design` Worker's **Builds triggers** — `main`, and eve
 carry these path rules, set through the Cloudflare API on 2026-11-02 (sydevs/SahajAtlasWeb#266).
 
 - **Include:** `components/*`, `hooks/*`, `lib/*`, `layouts/*`, `assets/*`, `public/*`,
-  `types/*`, `server/sahajcloud-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
+  `types/*`, `server/cms-types*`, `server/error-utils*`, `.ladle/*`, `.storybook/*`,
   `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `.node-version`
 
-  ⚠ On 2026-11-19 both Cloudflare triggers still included `server/cms-types*`, the name that file
-  lost in #131, in place of `server/sahajcloud-types*`. They are edited in the Cloudflare
-  dashboard, not in this repo. Until they are, a push touching only `server/sahajcloud-types.ts`
-  passes `WATCH` but gets no Ladle build. `Smoke (ladle)` then waits out its 12-minute window and
-  tests the derived branch host, which serves the branch's previous Ladle build, without the
-  change, so the lane is green without having tested it. On a branch with no earlier Ladle build
-  that host never answers, and the lane goes red after the 5-minute reachability wait.
+  The Ladle build bundles nothing from `server/` (ESLint refuses the import, and
+  `tests/guards/ladle-watch-paths.test.ts` checks the bundle), so `WATCH` names no `server/` path.
+  The triggers' two `server/` entries can be dropped: `server/cms-types*` matches no file, and
+  `server/error-utils*` only builds a preview no lane reads. They are edited in the Cloudflare
+  dashboard, not in this repo, and a stale entry there costs one unread build at most.
 - **Exclude:** `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.md`
 - **Preview branches:** every branch except `main`. ⚠ The API refuses `gh-readonly-queue/*` with
   `12002 Invalid request body` — a branch rule takes only a literal name or a lone `*` — so
@@ -164,12 +162,12 @@ equivalent.
 
 They ship from `.ladle/static/` rather than `public/`, which the app's build copies too: a
 `Disallow: /` there would answer on wemeditate.com. The app builds its own per-host refusal in
-[server/sitemap.ts](../server/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
+[server/routes/sitemap.xml/sitemap.ts](../server/routes/sitemap.xml/sitemap.ts), where `*.pages.dev` and `*.workers.dev` are already
 named as hosts that must never be indexed.
 
 **The app does carry a `<meta robots>`, and that is not a contradiction.** Every content route
 reads the same `isCanonicalOrigin` and says `noindex` off the real site
-([lib/content-seo.ts](../lib/content-seo.ts)), because a crawler can reach a preview URL without
+([lib/seo/content-seo.ts](../lib/seo/content-seo.ts)), because a crawler can reach a preview URL without
 ever fetching `robots.txt` — from a pasted link, or a referrer log. The playground has no such
 per-page head to put one in, which is what the line above is about.
 
@@ -210,5 +208,5 @@ Each fact below matches the deployed Worker's real behavior.
 - `/index` is the router's own spelling of the home page, never a URL. A request for it
   redirects (301) to `/`, and `/<locale>/index` to `/<locale>`.
 - An unknown path returns 404 and renders the ErrorFallback title "Content Not Found" — not "Page
-  Not Found". The spec reads that title from `lib/translations.en.json` rather than duplicating it,
+  Not Found". The spec reads that title from `lib/i18n/translations.en.json` rather than duplicating it,
   so rewording it in SahajCloud cannot leave the markers matching nothing.
