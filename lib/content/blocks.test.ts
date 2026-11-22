@@ -162,8 +162,12 @@ describe('ContentIndexBlockFields', () => {
     // the generated union until it merges, so the one pending member is added
     // here instead of into the copied contract. Compare against `Stored`
     // itself once `pnpm types:cms` carries it.
-    type StoredPending = { [K in keyof Stored]: K extends 'type' ? Stored['type'] | 'moods' : Stored[K] }
-    expectTypeOf<Omit<ContentIndexBlockFields, `resolved${string}`>>().toEqualTypeOf<StoredPending>()
+    type StoredPending = {
+      [K in keyof Stored]: K extends 'type' ? Stored['type'] | 'moods' : Stored[K]
+    }
+    expectTypeOf<
+      Omit<ContentIndexBlockFields, `resolved${string}`>
+    >().toEqualTypeOf<StoredPending>()
   })
 })
 

@@ -28,6 +28,7 @@ export function Page() {
       </Heading>
 
       <ContentGrid
+        headingLevel="h2"
         items={moods.map((mood) => ({
           id: moodCardKey(mood),
           title: moodCardLabel(t, mood),
@@ -38,7 +39,6 @@ export function Page() {
           playButton: true,
           durationMinutes: mood.durationMinutes,
         }))}
-        headingLevel="h2"
         sizes={CARD_SIZES}
       />
     </Container>

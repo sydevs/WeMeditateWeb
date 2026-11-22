@@ -7,7 +7,14 @@ vi.mock('./sahajcloud/context', () => ({
   // No request in this lane, so the finder's slot falls back to evening.
   tryGetContext: () => undefined,
 }))
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({
+  captureMessage: vi.fn(),
+  // `withRetry` breadcrumbs each retried attempt and captures the last
+  // failure. A mock without them throws inside its own catch, which reads
+  // as a read that never retried.
+  addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
+}))
 
 import * as Sentry from '@sentry/cloudflare'
 import {

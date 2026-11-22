@@ -5,9 +5,15 @@ vi.mock('./sahajcloud/context', () => ({
   tryGetContext: () => undefined,
 }))
 // Every warning this module sends goes through `warnOnce`.
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({
+  captureMessage: vi.fn(),
+  // `withRetry` breadcrumbs each retried attempt and captures the last
+  // failure. A mock without them throws inside its own catch, which reads
+  // as a read that never retried.
+  addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
+}))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
-
 
 /** A featured mood, as the user-choices read returns one. */
 const mood = (id: number, timings: string[], slots: Record<string, number>) => ({
@@ -106,6 +112,7 @@ describe('featuredMoodCards · the reads', () => {
     await featuredMoodCards({ locale: 'fr', slot: 'morning' })
 
     const moodsUrl = String(fetchSpy.mock.calls[0][0])
+
     expect(moodsUrl).toContain('where[isFeatured][equals]=true')
     expect(moodsUrl).toContain('where[type][equals]=mood')
     expect(moodsUrl).toContain('locale=fr')
@@ -119,6 +126,7 @@ describe('featuredMoodCards · the reads', () => {
     await featuredMoodCards({ locale: 'fr', slot: 'morning' })
 
     const meditationsUrl = String(fetchSpy.mock.calls[1][0])
+
     expect(meditationsUrl).toContain('locale=en')
     // Nothing below can tell a draft apart without it.
     expect(meditationsUrl).toContain('select[_status]=true')

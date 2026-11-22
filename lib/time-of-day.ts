@@ -56,6 +56,7 @@ const HOUR_FORMATS = new Map<string, Intl.DateTimeFormat>()
 
 function hourFormat(timezone: string): Intl.DateTimeFormat {
   const existing = HOUR_FORMATS.get(timezone)
+
   if (existing) return existing
 
   const format = new Intl.DateTimeFormat('en-US', {
