@@ -83,7 +83,7 @@ describe('loadTranslations', () => {
 
     const translations = await loadTranslations((await hookViews({ locale: 'fr' })).inData)
 
-    expect(translations.common.a11y).toBe(a11yStringsFor('fr').common)
+    expect(translations.common.a11y).toEqual(a11yStringsFor('fr').common)
     expect((translations.common as { general: { loading: string } }).general.loading).toBe(
       'Chargement',
     )
@@ -94,7 +94,7 @@ describe('loadTranslations', () => {
 
     const translations = await loadTranslations((await hookViews({ locale: 'de' })).inData)
 
-    expect(translations.media.a11y).toBe(a11yStringsFor('de').media)
+    expect(translations.media.a11y).toEqual(a11yStringsFor('de').media)
     expect(translations.common.general).toBe(EN_TRANSLATIONS.common.general)
   })
 })

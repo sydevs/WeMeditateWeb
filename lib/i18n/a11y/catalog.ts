@@ -51,18 +51,9 @@ export const A11Y_FILES: Partial<Record<Locale, A11yFile>> = {
   uk,
 }
 
-const RESOLVED = new Map<Locale, A11yStrings>()
-
 /** One locale's screen-reader strings, complete: any key its file lacks reads English. */
 export function a11yStringsFor(locale: Locale): A11yStrings {
-  const cached = RESOLVED.get(locale)
-
-  if (cached) return cached
-
   const file = A11Y_FILES[locale]
-  const strings = file ? overEnglish(file) : EN_A11Y
 
-  RESOLVED.set(locale, strings)
-
-  return strings
+  return file ? overEnglish(file) : EN_A11Y
 }
