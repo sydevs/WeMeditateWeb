@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
-import { Button, Container, Image, TextBoxOrnament } from '../../atoms'
-import { surface, type Surface } from '../../atoms/surface'
-import type { TextBoxDecoration } from '../../../lib/content-blocks'
-import { toParagraphs } from '../../../lib/paragraphs'
+import { Button, Container, Image, TextBoxOrnament } from '@/components/atoms'
+import { surface, type Surface } from '@/components/atoms/surface'
+import type { TextBoxDecoration } from '@/lib/content/blocks'
+import { toParagraphs } from '@/lib/content/paragraphs'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Main heading text */
@@ -61,7 +61,7 @@ export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'childr
    *
    * This takes the rule's whole vocabulary so no caller has to map between
    * the two, but an overlay draws only the triangle. `textBoxDecoration`
-   * gives it nothing else, and lib/content-blocks.test.ts holds that.
+   * gives it nothing else, and lib/content/blocks.test.ts holds that.
    */
   decoration?: TextBoxDecoration
 }

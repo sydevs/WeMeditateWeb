@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { PageContextServer } from 'vike/types'
-import { abortForkViews, hookViews } from '../tests/_helpers/page-context'
+import { abortForkViews, hookViews } from '@/tests/_helpers/page-context'
 import { memoKey, perRequest } from './request-memo'
 
 /**

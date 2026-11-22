@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { crawlerRefusal } from './crawler-refusal'
 
@@ -12,6 +13,8 @@ export default defineConfig({
     // causes "Invalid hook call" and null-dispatcher errors in the Meditation
     // and Audio player stories.
     dedupe: ['react', 'react-dom'],
+    // `@/` is the repo root, as in the app's vite.config.ts.
+    alias: [{ find: /^@\//, replacement: fileURLToPath(new URL('../', import.meta.url)) }],
   },
   optimizeDeps: {
     // Pre-bundle the audio player and its dependency against the deduped

@@ -21,11 +21,11 @@ describe('ESLint', () => {
   const eslint = new ESLint({ cwd: root })
 
   it('leaves a worktree under .claude/ to its own branch', async () => {
-    expect(await eslint.isPathIgnored('.claude/worktrees/some-branch/lib/urls.ts')).toBe(true)
+    expect(await eslint.isPathIgnored('.claude/worktrees/some-branch/lib/urls/urls.ts')).toBe(true)
   })
 
   it('still lints the app and its tooling', async () => {
-    expect(await eslint.isPathIgnored('lib/urls.ts')).toBe(false)
+    expect(await eslint.isPathIgnored('lib/urls/urls.ts')).toBe(false)
     expect(await eslint.isPathIgnored('scripts/a11y-summary.mjs')).toBe(false)
   })
 })
@@ -35,8 +35,8 @@ describe('Prettier', () => {
     (await getFileInfo(`${root}${path}`, { ignorePath: `${root}.prettierignore` })).ignored
 
   it.each([
-    'server/payload-types.ts',
-    'lib/translations.en.json',
+    'types/payload/payload-types.ts',
+    'lib/i18n/translations.en.json',
     'pnpm-lock.yaml',
     '.mcp.json',
     'AGENTS.md',
@@ -46,7 +46,7 @@ describe('Prettier', () => {
   })
 
   it('formats the app', async () => {
-    expect(await ignored('lib/urls.ts')).toBe(false)
+    expect(await ignored('lib/urls/urls.ts')).toBe(false)
   })
 })
 

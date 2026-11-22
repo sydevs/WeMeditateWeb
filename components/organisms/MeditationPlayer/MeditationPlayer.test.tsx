@@ -1,12 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MeditationPlayer } from './MeditationPlayer'
-import type { Track } from '../../molecules/AudioPlayer/types'
-import {
-  CF_BASE,
-  CF_PUBLIC_URL,
-  PASSTHROUGH_SOURCES,
-} from '../../../tests/_helpers/cloudflare-images'
+import type { Track } from '@/lib/media/audio'
+import { CF_BASE, CF_PUBLIC_URL, PASSTHROUGH_SOURCES } from '@/tests/_helpers/cloudflare-images'
 
 const track: Track = {
   url: 'https://example.com/voice.mp3',

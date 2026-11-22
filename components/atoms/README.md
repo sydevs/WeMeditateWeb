@@ -18,10 +18,10 @@ functional piece — it cannot divide into smaller pieces without losing its mea
 | Specialty | Countdown |
 
 Typography patterns (sizing, weight, color) live in
-[Typography.stories.tsx](./Typography.stories.tsx) as documentation, with no component wrapper.
+[Typography.stories.tsx](Typography.stories.tsx) as documentation, with no component wrapper.
 Use Tailwind utility classes directly for text styling instead.
 
-[surface.ts](./surface.ts) is not a component. It maps a `Surface` value to its `surface-*` class,
+[surface.ts](surface.ts) is not a component. It maps a `Surface` value to its `surface-*` class,
 for the few components that paint one. Atoms never take one. See the `Surfaces` section of
 [docs/rules/design-system.md](../../docs/rules/design-system.md).
 
@@ -64,17 +64,17 @@ anything that should change on a dark background with a surface token (`text-fg`
 support keyboard navigation and screen readers.
 
 For token values, the full component architecture, and worked examples, see
-[DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
+[DESIGN_SYSTEM.md](../../docs/DESIGN_SYSTEM.md).
 
 ## Related documentation
 
-- [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) — tokens, architecture, and implementation guidelines
+- [DESIGN_SYSTEM.md](../../docs/DESIGN_SYSTEM.md) — tokens, architecture, and implementation guidelines
 - [docs/rules/design-system.md](../../docs/rules/design-system.md) — the `components/**` rule Claude Code loads automatically
 - [AGENTS.md](../../AGENTS.md) — repo-wide conventions and a map of the rules, skills, and reference docs
 
 ## Add a new atom
 
-1. Follow the component template in [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md).
+1. Follow the component template in [DESIGN_SYSTEM.md](../../docs/DESIGN_SYSTEM.md).
 2. Create the component directory, with `Component.tsx` and `index.ts`.
 3. Add a JSDoc comment with a usage example.
 4. Export the component from `atoms/index.ts`.

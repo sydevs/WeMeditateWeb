@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { ContentIndex } from './ContentIndex'
-import type { ResolvedCardItem } from '../../../lib/content-blocks'
-import { StoryWrapper, StorySection } from '../../ladle'
+import type { ResolvedCardItem } from '@/lib/content/blocks'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
 

@@ -23,11 +23,11 @@ import { createRef } from 'react'
 import { join } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { parse, readSource, repoRoot, walk } from './_source-scan'
-import { Checkbox } from '../../components/atoms/form/Checkbox/Checkbox'
-import { Input } from '../../components/atoms/form/Input/Input'
-import { Radio } from '../../components/atoms/form/Radio/Radio'
-import { Select } from '../../components/atoms/form/Select/Select'
-import { Textarea } from '../../components/atoms/form/Textarea/Textarea'
+import { Checkbox } from '@/components/atoms/form/Checkbox/Checkbox'
+import { Input } from '@/components/atoms/form/Input/Input'
+import { Radio } from '@/components/atoms/form/Radio/Radio'
+import { Select } from '@/components/atoms/form/Select/Select'
+import { Textarea } from '@/components/atoms/form/Textarea/Textarea'
 
 /** Each atom, the tag it must wire its ref to, and the file that says so. */
 const ATOMS = [

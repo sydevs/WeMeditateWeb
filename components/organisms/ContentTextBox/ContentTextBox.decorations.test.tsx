@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentTextBox } from './ContentTextBox'
-import { classFor, classOf, openTag } from '../../../tests/_helpers/markup'
+import { classFor, classOf, openTag } from '@/tests/_helpers/markup'
 
 const BASE = {
   title: 'Get Connected',

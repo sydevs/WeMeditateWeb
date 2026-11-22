@@ -11,21 +11,21 @@
 
 import type { JSXConverters } from '@payloadcms/richtext-lexical/react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
-import { Button, Container, Image } from '../../atoms'
+import { Button, Container, Image } from '@/components/atoms'
 import {
   ContentCarousel,
   HeroQuote,
   LayoutBlock,
   TableOfContents,
   type Track,
-} from '../../molecules'
-import { ContentIndex } from '../ContentIndex'
-import { ContentOverlay } from '../ContentOverlay'
-import { ContentTextBox } from '../ContentTextBox'
-import { MusicLibrary, type MusicFilter } from '../MusicLibrary'
-import { OrnateTextBox } from '../OrnateTextBox'
-import { Splash } from '../Splash'
-import { SubtleSystem } from '../SubtleSystem'
+} from '@/components/molecules'
+import { ContentIndex } from '@/components/organisms/ContentIndex'
+import { ContentOverlay } from '@/components/organisms/ContentOverlay'
+import { ContentTextBox } from '@/components/organisms/ContentTextBox'
+import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
+import { OrnateTextBox } from '@/components/organisms/OrnateTextBox'
+import { Splash } from '@/components/organisms/Splash'
+import { SubtleSystem } from '@/components/organisms/SubtleSystem'
 import {
   galleryImages,
   populatedImage,
@@ -35,7 +35,7 @@ import {
   textBoxDecoration,
   textColorToSurface,
   type ContentIndexBlockFields,
-} from '../../../lib/content-blocks'
+} from '@/lib/content/blocks'
 import type {
   ButtonBlock,
   ImageGalleryBlock,
@@ -47,7 +47,7 @@ import type {
   SubtleSystemBlock,
   TableOfContentsBlock,
   TextBoxBlock,
-} from '../../../server/payload-types'
+} from '@/types/payload/payload-types'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -120,7 +120,7 @@ export const blockConverters: BlockConverters = {
   //   wisdomStyle (non-overlay)    → OrnateTextBox  ("Ancient Wisdom" treatment)
   //   otherwise (left or right)    → ContentTextBox (side box overlapping image)
   // Its ornament follows from its place among the page's text boxes: see
-  // textBoxDecoration in lib/content-blocks.ts.
+  // textBoxDecoration in lib/content/blocks.ts.
   textbox: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as TextBoxBlock
     const img = populatedImage(fields.image)

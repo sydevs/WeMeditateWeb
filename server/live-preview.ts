@@ -9,7 +9,7 @@ import {
   readLivePreviewScope,
   type LivePreviewScope,
   type LivePreviewState,
-} from '../lib/live-preview/protocol'
+} from '@/lib/live-preview/protocol'
 
 /**
  * Live preview: reading and verifying the credential on a preview URL.
@@ -86,7 +86,7 @@ export function toClientState(session: LivePreviewSession): LivePreviewState {
  * translator checking their strings would see them on someone's unsaved draft.
  *
  * The token goes only where `preview` is true. `createPayloadClient` already
- * drops it otherwise (`server/payload-client.ts`), so this changes nothing at
+ * drops it otherwise (`server/sahajcloud/payload-client.ts`), so this changes nothing at
  * the wire; it means a reader does not have to go and check that it does.
  *
  * @param scope - what this read is fetching. The default, `null`, is the

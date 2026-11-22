@@ -13,11 +13,11 @@
  */
 
 import { ExclamationCircleIcon, WifiIcon, ServerIcon } from '@heroicons/react/24/outline'
-import { Icon, Heading, Button, Link } from '../../atoms'
-import { detectErrorType, ErrorType } from '../../../server/error-utils'
-import { isSafeHttpUrl } from '../../../lib/urls'
-import { errorMessageKey, errorTitleKey } from '../../../lib/error-keys'
-import { useT } from '../../../hooks/useT'
+import { Icon, Heading, Button, Link } from '@/components/atoms'
+import { detectErrorType, ErrorType } from '@/lib/errors/error-type'
+import { isSafeHttpUrl } from '@/lib/urls/urls'
+import { errorMessageKey, errorTitleKey } from '@/lib/errors/error-keys'
+import { useT } from '@/hooks/useT'
 
 export interface ErrorFallbackProps {
   /** The Error object that was thrown */

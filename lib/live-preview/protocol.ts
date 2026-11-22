@@ -33,7 +33,7 @@ export const LIVE_PREVIEW_SCOPE_PARAM = 'scope'
  * it and its CORS allowlist names it, and neither cares what the value means.
  *
  * Two senders spell it, which is why it is here rather than in either of them:
- * `server/payload-client.ts` attaches it to every SahajCloud read, and the browser
+ * `server/sahajcloud/payload-client.ts` attaches it to every SahajCloud read, and the browser
  * attaches it to {@link LIVE_PREVIEW_POPULATE_PATH}.
  */
 export const LIVE_PREVIEW_TOKEN_HEADER = 'x-sahajcloud-preview-secret'
@@ -45,7 +45,8 @@ export const LIVE_PREVIEW_TOKEN_HEADER = 'x-sahajcloud-preview-secret'
  * read is a server-only secret, and SahajCloud answers
  * `Access-Control-Allow-Origin: *` with no `Allow-Credentials`, which is the
  * pairing browsers refuse. So the request comes here instead, and
- * `server/api-routes.ts` re-verifies the token before spending the key.
+ * `server/routes/api/live-preview/populate/route.ts` re-verifies the token before
+ * spending the key.
  */
 export const LIVE_PREVIEW_POPULATE_PATH = '/api/live-preview/populate'
 

@@ -7,7 +7,7 @@ import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 import { TriangleDecorationSvg } from './TriangleDecorationSvg'
 import { CircleDecorationSvg } from './CircleDecorationSvg'
 import { AnimatedLogoSvg } from './AnimatedLogoSvg'
-import { StoryWrapper, StorySection } from '../../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Atoms / Graphics',

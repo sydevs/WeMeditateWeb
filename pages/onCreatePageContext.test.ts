@@ -1,5 +1,5 @@
 /**
- * The error page's locale fallback. `lib/urls.test.ts` owns the derivation
+ * The error page's locale fallback. `lib/urls/urls.test.ts` owns the derivation
  * itself; this covers what the hook adds to it.
  *
  * No `+` prefix on the filename: Vike loads every `+`-prefixed file under
@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from 'vitest'
 import type { PageContextServer } from 'vike/types'
-import type { Locale } from '../server/sahajcloud-types'
+import type { Locale } from '@/types/sahajcloud'
 import { onCreatePageContext } from './+onCreatePageContext.server'
 
 function localeOf(urlOriginal: string, routed?: Locale): Locale {

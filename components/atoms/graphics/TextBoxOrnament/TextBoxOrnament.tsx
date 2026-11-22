@@ -1,6 +1,5 @@
-import { CircleDecorationSvg } from '../svgs/CircleDecorationSvg'
-import { TriangleDecorationSvg } from '../svgs/TriangleDecorationSvg'
-import type { TextBoxDecoration } from '../../../../lib/content-blocks'
+import { CircleDecorationSvg, TriangleDecorationSvg } from '@/components/atoms/graphics/svgs'
+import type { TextBoxDecoration } from '@/lib/content/blocks'
 
 export interface TextBoxOrnamentProps {
   /** Which of the three ornaments to draw. */
@@ -28,7 +27,7 @@ const BASE = 'pointer-events-none absolute hidden lg:block'
 /**
  * One ornament of the three wemeditate.com hung off its text boxes, drawn
  * from `lg` up and out of the a11y tree. `textBoxDecoration` in
- * lib/content-blocks.ts picks which.
+ * lib/content/blocks.ts picks which.
  *
  * Both text-box organisms draw it from here. Their class lists were identical
  * but for the offset while `align` meant the opposite side in each, so the two

@@ -1,5 +1,5 @@
 /**
- * Every colour token `DESIGN_SYSTEM.md` names, and every hex it gives, must
+ * Every colour token `docs/DESIGN_SYSTEM.md` names, and every hex it gives, must
  * match `layouts/tailwind.css`.
  *
  * The doc restates the `@theme` block, so the two can drift apart silently —
@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { repoRoot, themeStylesheet as stylesheet } from './_source-scan'
 
-const doc = readFileSync(join(repoRoot, 'DESIGN_SYSTEM.md'), 'utf8')
+const doc = readFileSync(join(repoRoot, 'docs/DESIGN_SYSTEM.md'), 'utf8')
 
 /** `--color-teal-500: #61aaa0;` inside the `@theme` block. */
 const DECLARED = new Map<string, string>(
@@ -69,7 +69,7 @@ function statedHexes(): Map<string, string> {
 
 const STATED = statedHexes()
 
-describe('DESIGN_SYSTEM.md colour tokens', () => {
+describe('docs/DESIGN_SYSTEM.md colour tokens', () => {
   it('finds the tables to check (the guard is not silently empty)', () => {
     expect(DECLARED.size).toBeGreaterThan(30)
     expect(MENTIONED.size).toBeGreaterThan(10)

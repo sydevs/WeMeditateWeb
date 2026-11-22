@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
-import { Button, Image, TextBoxOrnament } from '../../atoms'
-import type { TextBoxDecoration } from '../../../lib/content-blocks'
-import type { AspectRatio } from '../../../lib/cloudflare-images'
-import { toParagraphs } from '../../../lib/paragraphs'
+import { Button, Image, TextBoxOrnament } from '@/components/atoms'
+import type { AspectRatio } from '@/lib/media/cloudflare-images'
+import type { TextBoxDecoration } from '@/lib/content/blocks'
+import { toParagraphs } from '@/lib/content/paragraphs'
 
 export interface ContentTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Main heading. */

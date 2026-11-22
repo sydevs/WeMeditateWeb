@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import HeadDefault from './+Head'
-import type { LivePreviewState } from '../lib/live-preview/protocol'
+import type { LivePreviewState } from '@/lib/live-preview/protocol'
 
 /**
  * The other half of keeping the token out of third-party hands.
@@ -26,7 +26,7 @@ const context = vi.hoisted(() => ({
   locale: 'en' as string,
 }))
 
-vi.mock('../hooks/usePageContext', () => ({
+vi.mock('@/hooks/usePageContext', () => ({
   useOptionalPageContext: () => ({ livePreview: context.livePreview }),
   useOrigin: () => context.origin,
   useLocale: () => context.locale,

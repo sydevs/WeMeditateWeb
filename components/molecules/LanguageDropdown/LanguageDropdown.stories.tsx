@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { LanguageDropdown } from './LanguageDropdown'
-import { StorySection, StoryWrapper } from '../../ladle'
+import { StorySection, StoryWrapper } from '@/components/ladle'
 
 export default {
   title: 'Molecules',

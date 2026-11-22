@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentOverlay } from './ContentOverlay'
-import { classOf, openTag } from '../../../tests/_helpers/markup'
+import { classOf, openTag } from '@/tests/_helpers/markup'
 
 const BASE = {
   title: 'Making History',

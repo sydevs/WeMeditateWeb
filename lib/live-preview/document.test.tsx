@@ -11,7 +11,7 @@ const { livePreview, subscribed } = vi.hoisted(() => ({
 }))
 
 // The real `useDocumentPreviewActive` runs; only its source of truth is stubbed.
-vi.mock('../../hooks/usePageContext', () => ({
+vi.mock('@/hooks/usePageContext', () => ({
   useOptionalPageContext: () => ({ livePreview: livePreview.state }),
 }))
 
