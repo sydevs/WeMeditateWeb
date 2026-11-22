@@ -6,8 +6,8 @@
 
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { NavPage } from '../../../server/sahajcloud-types'
-import { anchorFor, classOf, classesWith, openTag } from '../../../tests/_helpers/markup'
+import type { NavPage } from '@/types/sahajcloud'
+import { anchorFor, classOf, classesWith, openTag } from '@/tests/_helpers/markup'
 import { DiscoverMeditation } from './DiscoverMeditation'
 
 const page = (id: number, slug: string, title: string, meta?: NavPage['meta']): NavPage => ({

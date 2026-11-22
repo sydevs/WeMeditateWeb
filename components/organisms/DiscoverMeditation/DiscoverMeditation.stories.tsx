@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { DiscoverMeditation } from './DiscoverMeditation'
-import { StorySection, StoryWrapper } from '../../ladle'
-import type { NavPage } from '../../../server/sahajcloud-types'
+import { StorySection, StoryWrapper } from '@/components/ladle'
+import type { NavPage } from '@/types/sahajcloud'
 
 export default {
   title: 'Organisms',

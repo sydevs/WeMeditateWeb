@@ -8,12 +8,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import type { LivePreviewState } from '../../lib/live-preview/protocol'
-import type { Locale, Page, WebConfig } from '../../server/sahajcloud-types'
-import { EN_TRANSLATIONS, enT } from '../../lib/i18n'
-import { pageSeo, seoRoute } from '../../lib/content-seo'
-import { renderSeoHead } from '../../lib/seo-head-html'
-import { anchorFor } from '../../tests/_helpers/markup'
+import type { LivePreviewState } from '@/lib/live-preview/protocol'
+import type { Locale, Page, WebConfig } from '@/types/sahajcloud'
+import { EN_TRANSLATIONS, enT } from '@/lib/i18n/i18n'
+import { pageSeo, seoRoute } from '@/lib/seo/content-seo'
+import { renderSeoHead } from '@/lib/seo/head-html'
+import { anchorFor } from '@/tests/_helpers/markup'
 
 const routeData: { current: unknown } = { current: {} }
 const context: {
