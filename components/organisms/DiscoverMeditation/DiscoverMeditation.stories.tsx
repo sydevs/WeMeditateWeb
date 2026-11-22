@@ -14,35 +14,21 @@ const CONFIGURED: NavPage[] = [
   { id: 10, slug: 'meditate-now', title: 'Meditate Now' },
 ]
 
-const image = (seed: string) =>
-  ({ id: 1, url: `https://picsum.photos/seed/${seed}/200/200`, alt: '' }) as NonNullable<
-    NavPage['meta']
-  >['image']
-
-/** The same pages once an editor fills in each one's SEO description and image. */
+/** The same pages once an editor fills in each one's SEO description. */
 const DESCRIBED: NavPage[] = [
   {
     ...CONFIGURED[0],
-    meta: {
-      description: 'Find a free in-person class near you, led by volunteers',
-      image: image('discover-classes'),
-    },
+    meta: { description: 'Find a free in-person class near you, led by volunteers' },
   },
-  {
-    ...CONFIGURED[1],
-    meta: {
-      description: 'Join a free guided meditation online, live',
-      image: image('discover-live'),
-    },
-  },
-  { ...CONFIGURED[2], meta: { description: 'Start a guided meditation right now' } },
+  { ...CONFIGURED[1], meta: { description: 'Join a free guided meditation online, live' } },
+  { ...CONFIGURED[2] },
 ]
 
 /**
  * DiscoverMeditation closes the home page: a full-height call to action with
  * one action per page an editor picked in `wm-web-config.classPages`, in their
- * order. Each action is the page's title, under its `meta.image` (a leaf where
- * it has none) and over its `meta.description` (nothing where it has none).
+ * order. Each action is the page's title, under a leaf and over its
+ * `meta.description` (nothing where it has none).
  */
 export const Default: Story = () => (
   <StoryWrapper>
@@ -50,7 +36,7 @@ export const Default: Story = () => (
       <StorySection title="Pages with no meta, as configured today" variant="subsection">
         <DiscoverMeditation className="full-bleed" pages={CONFIGURED} />
       </StorySection>
-      <StorySection title="Pages with a description, and an image on two" variant="subsection">
+      <StorySection title="Pages with a description on two of the three" variant="subsection">
         <DiscoverMeditation className="full-bleed" pages={DESCRIBED} />
       </StorySection>
     </StorySection>

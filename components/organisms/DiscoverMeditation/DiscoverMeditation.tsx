@@ -1,10 +1,9 @@
 import { ComponentProps } from 'react'
-import { Image, Link } from '@/components/atoms'
+import { Link } from '@/components/atoms'
 import { LeafSvg } from '@/components/atoms/graphics/svgs'
 import type { Locale, NavPage } from '@/types/sahajcloud'
 import { useT } from '@/hooks/useT'
 import { documentHref } from '@/lib/urls/document-routes'
-import { populatedImageUrl } from '@/lib/content/payload-relationships'
 
 /** Upstream's `maxRows` on `classPages`, restated so a looser schema cannot widen the row. */
 const MAX_ACTIONS = 5
@@ -12,9 +11,9 @@ const MAX_ACTIONS = 5
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /**
    * The pages to offer, in the order an editor set: `wm-web-config.classPages`.
-   * Each becomes one action, named by the page's own title. Its `meta.description`
-   * is the line under that title and its `meta.image` the picture above it; a
-   * page with neither still gets its action, with a leaf in place of the picture.
+   * Each becomes one action, named by the page's own title, with its
+   * `meta.description` as the line under that title; a page with none still
+   * gets its action.
    */
   pages: readonly NavPage[]
 
@@ -101,9 +100,8 @@ interface ActionItemProps {
   locale?: Locale
 }
 
-/** One configured page: its picture, its title, and its description. */
+/** One configured page: a leaf, its title, and its description. */
 function ActionItem({ page, href, locale }: ActionItemProps) {
-  const image = populatedImageUrl(page.meta?.image)
   const description = page.meta?.description?.trim()
 
   return (
@@ -113,20 +111,11 @@ function ActionItem({ page, href, locale }: ActionItemProps) {
       locale={locale}
       variant="neutral"
     >
+      {/* The same leaf on every action. A page's `meta.image` is its share
+          picture, which an editor does not pick as a glyph for this row;
+          #330 gives the row a glyph of its own. */}
       <div className="w-16 h-16 group-hover:scale-105 transition-transform">
-        {image ? (
-          // Decorative: the title under it already names the link.
-          <Image
-            alt=""
-            aspectRatio="square"
-            rounded="circle"
-            size="xsmall"
-            sizes="64px"
-            src={image}
-          />
-        ) : (
-          <LeafSvg className="w-full h-full" />
-        )}
+        <LeafSvg className="w-full h-full" />
       </div>
       {/* 85% white: a phone stacks the last action over the photo's dark rock,
           where 40% measured 3.1:1 and this measures 5.5:1. */}

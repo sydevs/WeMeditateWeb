@@ -74,8 +74,8 @@ describe('DiscoverMeditation actions', () => {
     ).toHaveLength(0)
   })
 
-  it('pictures a page by its meta image, decoratively, and by a leaf where it has none', () => {
-    const pictured = page(10, 'meditate-now', 'Meditate Now', {
+  it('pictures every action with the same leaf, a page with a meta image included', () => {
+    const pictured = page(12, 'wemeditate-app', 'WeMeditate App', {
       image: {
         id: 1,
         url: 'https://imagedelivery.net/acct/fixture/public',
@@ -83,17 +83,12 @@ describe('DiscoverMeditation actions', () => {
       } as NonNullable<NavPage['meta']>['image'],
     })
 
-    const withImage = render([pictured])
-    const img = openTag(withImage, 'img')
+    const html = render([...CLASS_PAGES, pictured])
 
-    expect(img).toContain('imagedelivery.net/acct/fixture/')
-    expect(img).toContain('alt=""')
-    expect(openTag(withImage, 'svg')).toBe('')
-
-    const withoutImage = render([page(10, 'meditate-now', 'Meditate Now')])
-
-    expect(openTag(withoutImage, 'img')).toBe('')
-    expect(openTag(withoutImage, 'svg')).toContain('aria-hidden="true"')
+    expect(classesWith(html, 'w-16')).toHaveLength(4)
+    expect(openTag(html, 'svg')).toContain('aria-hidden="true"')
+    expect(openTag(html, 'img')).toBe('')
+    expect(html).not.toContain('imagedelivery.net')
   })
 
   // jsdom computes no colour, and the text-contrast guard reads a gray step
