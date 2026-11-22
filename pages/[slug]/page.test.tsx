@@ -1,8 +1,8 @@
 /**
  * What a content page renders after its own content: the discover section on
- * the home page, and the share row everywhere else — sharing the very URL the
- * route's own `seo` document publishes as canonical, and never under a live
- * preview.
+ * the three sets `wm-web-config` names a seeker's way in, and the share row
+ * everywhere but home — sharing the very URL the route's own `seo` document
+ * publishes as canonical, and never under a live preview.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -84,17 +84,23 @@ const page = (slug: string, title: string) =>
 /** Upstream leaves the home page's slug blank; `/` serves it. */
 const HOME = page('', 'We Meditate')
 const ARTICLE = page('about-meditation', 'About Meditation')
+/** Live, `meditate-now` sits in both `featuredPages` and `classPages`. */
+const FEATURED = page('meditate-now', 'Meditate Now')
+const KNOWLEDGE = page('chakras-channels', 'Chakras and Channels')
+/** In none of the three sets, so it ends with the share row alone. */
+const PLAIN = page('press', 'Press')
 
 const settings = {
   homePage: { slug: '' },
   availableLocales: ['en', 'fr'],
-  featuredPages: [],
+  featuredPages: [{ id: 10, slug: 'meditate-now', title: 'Meditate Now' }],
   featuredArticles: [],
-  knowledgePages: [],
+  knowledgePages: [{ id: 98, slug: 'chakras-channels', title: 'Chakras and Channels' }],
   infoPages: [],
   classPages: [
     { id: 11, slug: 'classes-near-me', title: 'Classes Near Me' },
     { id: 14, slug: 'live-meditations', title: 'Live Meditations' },
+    { id: 10, slug: 'meditate-now', title: 'Meditate Now' },
   ],
 } as unknown as WebConfig
 
@@ -146,6 +152,33 @@ describe('the end of a content page', () => {
     expect(anchorFor(html, '/classes-near-me')).not.toBe('')
     expect(anchorFor(html, '/live-meditations')).not.toBe('')
     expect(html).not.toContain(FACEBOOK)
+  })
+
+  it('closes a featured page and a knowledge page with the same actions', () => {
+    for (const [document, at] of [
+      [FEATURED, '/meditate-now'],
+      [KNOWLEDGE, '/chakras-channels'],
+    ] as const) {
+      const html = render(document, { locale: 'en', urlPathname: at })
+
+      expect(html).toContain(EN_TRANSLATIONS.discover.general.title)
+      expect(anchorFor(html, '/classes-near-me')).not.toBe('')
+      expect(anchorFor(html, '/live-meditations')).not.toBe('')
+      // Both still share: the row is suppressed on home alone.
+      expect(html).toContain(FACEBOOK)
+    }
+  })
+
+  it('leaves a page out of its own actions, and ends a page in no set with the row alone', () => {
+    const featured = render(FEATURED, { locale: 'en', urlPathname: '/meditate-now' })
+
+    expect(featured).toContain(EN_TRANSLATIONS.discover.general.title)
+    expect(anchorFor(featured, '/meditate-now')).toBe('')
+
+    const plain = render(PLAIN, { locale: 'en', urlPathname: '/press' })
+
+    expect(plain).not.toContain(EN_TRANSLATIONS.discover.general.title)
+    expect(plain).toContain(FACEBOOK)
   })
 
   it('shares any other page at the canonical its head publishes, under its title', () => {

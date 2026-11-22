@@ -7,7 +7,7 @@ import { SocialShare } from '@/components/molecules'
 import { DiscoverMeditation } from '@/components/organisms'
 import { PageTemplate } from '@/components/templates'
 import { getLeadSplash } from '@/lib/content/blocks'
-import { isFeaturedNavPage } from '@/lib/content/featured-nav'
+import { isFeaturedNavPage, isKnowledgePage } from '@/lib/content/featured-nav'
 import { LivePreviewDocument } from '@/lib/live-preview/document'
 import { useLivePreviewState } from '@/lib/live-preview/session'
 
@@ -36,6 +36,13 @@ export function Page() {
         // full-bleed hero sit flush at the top, under the overlaid header (see
         // LayoutChrome).
         const leadSplash = getLeadSplash(page.content)
+        const isFeatured = isFeaturedNavPage(page, settings)
+        // The three sets `wm-web-config` names as a seeker's way in: the home
+        // page, the featured nav pages, and the knowledge menu's pages.
+        const endsWithDiscover = isHome || isFeatured || isKnowledgePage(page, settings)
+        // A class page can also be featured — `meditate-now` is both today — and
+        // an action leading back to the page it closes is a dead end.
+        const discoverPages = settings.classPages.filter((action) => action.slug !== page.slug)
 
         return (
           <>
@@ -44,7 +51,7 @@ export function Page() {
             <div className={`min-h-screen ${leadSplash ? 'pb-12' : 'py-12'}`}>
               {/* On featured nav pages the highlighted nav link already names the
                   page, so suppress the redundant PageTitle banner. */}
-              <PageTemplate hideTitle={isFeaturedNavPage(page, settings)} page={page} />
+              <PageTemplate hideTitle={isFeatured} page={page} />
 
               {shareUrl && !isHome ? (
                 <Container className="mt-12" maxWidth="md">
@@ -55,8 +62,8 @@ export function Page() {
 
             {/* After the padded column, whose bottom padding would otherwise
                 open a second gap between the section and the footer. */}
-            {isHome ? (
-              <DiscoverMeditation className="full-bleed" pages={settings.classPages} />
+            {endsWithDiscover ? (
+              <DiscoverMeditation className="full-bleed" pages={discoverPages} />
             ) : null}
           </>
         )
