@@ -6351,10 +6351,6 @@ export interface WmWebTranslationsBlocksLiveSessionStrings {
 }
 export interface WmWebTranslationsBlocksA11YStrings {
   /**
-   * Not shown on screen; read by screen readers. The one sentence giving the next class's day, time and how far away it is. `%{weekday}` = the day, `%{time}` = the start time, `%{relative}` = how far away, e.g. "in 2 days".
-   */
-  next_session?: string;
-  /**
    * Not shown on screen; read by screen readers. Names the button that opens the subtle-system diagram full screen.
    */
   enter_fullscreen?: string;

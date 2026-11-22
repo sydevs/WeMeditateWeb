@@ -1,0 +1,87 @@
+{
+  "common": {
+    "dismiss": "Скрыть",
+    "close": "Закрыть",
+    "previous": "Предыдущий",
+    "next": "Следующий",
+    "show_more_items_one": "Показать ещё %{count} элемент",
+    "show_more_items_few": "Показать ещё %{count} элемента",
+    "show_more_items_many": "Показать ещё %{count} элементов",
+    "show_more_items_other": "Показать ещё %{count} элемента",
+    "breadcrumb": "Навигационная цепочка",
+    "primary_navigation": "Главное меню",
+    "footer_navigation": "Нижнее меню",
+    "opens_in_new_tab_suffix": "(откроется в новой вкладке)",
+    "menu": "Меню"
+  },
+  "errors": {
+    "error_icon": "Ошибка"
+  },
+  "article": {
+    "filter_label": "Фильтр по тегам"
+  },
+  "meditation": {
+    "mute_voice": "Выключить голос",
+    "unmute_voice": "Включить голос",
+    "mute_music": "Выключить музыку",
+    "unmute_music": "Включить музыку",
+    "voice_volume": "Громкость голоса",
+    "music_volume": "Громкость музыки",
+    "audio_settings": "Настройки звука",
+    "shuffle_music": "Случайный музыкальный трек",
+    "related_lectures_loading": "Загрузка похожих лекций",
+    "finder_region": "Выберите, как вы себя чувствуете"
+  },
+  "lecture": {
+    "related_meditations_loading": "Загрузка похожих медитаций",
+    "untitled_heading": "Лекция без названия"
+  },
+  "map": {
+    "classes_heading": "Занятия по медитации",
+    "when": "Когда",
+    "where": "Где",
+    "languages": "Языки"
+  },
+  "forms": {
+    "submitting": "Отправка формы, подождите...",
+    "required_marker": "обязательно"
+  },
+  "media": {
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "previous_track": "Предыдущий трек",
+    "next_track": "Следующий трек",
+    "toggle_shuffle": "Случайный порядок",
+    "mute": "Выключить звук",
+    "unmute": "Включить звук",
+    "volume": "Громкость",
+    "play_item": "Воспроизвести: %{title}",
+    "view_image": "Открыть изображение",
+    "view_image_alt": "Открыть изображение: %{alt}",
+    "embed_code": "Код для вставки",
+    "zoom_in": "Увеличить",
+    "zoom_out": "Уменьшить",
+    "progress": "Позиция воспроизведения"
+  },
+  "location": {
+    "search_label": "Поиск места",
+    "selected_label": "Выбранное место",
+    "change_label": "Изменить место"
+  },
+  "blocks": {
+    "enter_fullscreen": "Включить полноэкранный режим",
+    "exit_fullscreen": "Выйти из полноэкранного режима",
+    "learn_more_about": "Подробнее: %{title}",
+    "previous_slide": "Предыдущий слайд",
+    "next_slide": "Следующий слайд",
+    "previous_column": "Назад: %{title}",
+    "next_column": "Далее: %{title}",
+    "go_to_column": "Перейти к столбцу %{number}: %{title}",
+    "quote": "Цитата",
+    "table_of_contents": "Содержание",
+    "share_region": "Способы поделиться в социальных сетях",
+    "share_group": "Поделиться в социальных сетях",
+    "share_on": "Поделиться: %{platform}",
+    "next_session": "Следующее занятие: %{weekday}, %{time}, %{relative}."
+  }
+}

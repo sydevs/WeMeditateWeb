@@ -5,8 +5,9 @@ import { hookViews } from '@/tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud'
 import type { WebConfig } from '@/types/sahajcloud'
-import type { WebTranslations } from '@/lib/i18n/web-translations'
+import type { SahajCloudWebTranslations } from '@/lib/i18n/web-translations'
 import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('./sahajcloud', () => ({
@@ -21,7 +22,7 @@ vi.mock('./sahajcloud', () => ({
  * render (#108). `hookViews` builds the pair with vike's own wrapper.
  */
 
-const TRANSLATIONS = { common: { close: 'Close' } } as unknown as WebTranslations
+const TRANSLATIONS = { common: { close: 'Close' } } as unknown as SahajCloudWebTranslations
 const CONFIG = { availableLocales: ['en'] } as unknown as WebConfig
 
 beforeEach(() => {
@@ -60,15 +61,41 @@ describe('loadTranslations', () => {
 
   it('degrades to the English snapshot when the global is empty', async () => {
     // What an unseeded SahajCloud returns. Rendering it would print every key path.
-    vi.mocked(getWebTranslations).mockResolvedValue({} as WebTranslations)
+    vi.mocked(getWebTranslations).mockResolvedValue({} as SahajCloudWebTranslations)
 
-    expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toBe(EN_TRANSLATIONS)
+    expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toStrictEqual(
+      EN_TRANSLATIONS,
+    )
   })
 
   it('degrades to the English snapshot when the read fails', async () => {
     vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
 
-    expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toBe(EN_TRANSLATIONS)
+    expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toStrictEqual(
+      EN_TRANSLATIONS,
+    )
+  })
+
+  it("mounts the locale's screen-reader strings beside SahajCloud's", async () => {
+    vi.mocked(getWebTranslations).mockResolvedValue({
+      common: { general: { loading: 'Chargement' } },
+    } as unknown as SahajCloudWebTranslations)
+
+    const translations = await loadTranslations((await hookViews({ locale: 'fr' })).inData)
+
+    expect(translations.common.a11y).toEqual(a11yStringsFor('fr').common)
+    expect((translations.common as { general: { loading: string } }).general.loading).toBe(
+      'Chargement',
+    )
+  })
+
+  it("keeps the visitor's screen-reader language when it falls back to English", async () => {
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
+
+    const translations = await loadTranslations((await hookViews({ locale: 'de' })).inData)
+
+    expect(translations.media.a11y).toEqual(a11yStringsFor('de').media)
+    expect(translations.common.general).toBe(EN_TRANSLATIONS.common.general)
   })
 })
 
