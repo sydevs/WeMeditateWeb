@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, ReactNode } from 'react'
-import { useT } from '../../../hooks/useT'
+import { useT } from '@/hooks/useT'
 
 export interface FormFieldProps {
   /**

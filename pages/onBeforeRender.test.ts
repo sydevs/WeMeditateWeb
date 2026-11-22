@@ -6,18 +6,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { PageContextServer } from 'vike/types'
 import { onBeforeRender } from './+onBeforeRender'
-import { EN_TRANSLATIONS } from '../lib/i18n'
-import type { LivePreviewSession } from '../server/live-preview'
-import type { WebTranslations } from '../server/sahajcloud-types'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import type { LivePreviewSession } from '@/server/live-preview'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 
 const reads = vi.hoisted(() => ({ loadTranslations: vi.fn(), loadLivePreview: vi.fn() }))
 
-vi.mock('../server/site-context', () => ({ loadTranslations: reads.loadTranslations }))
+vi.mock('@/server/site-context', () => ({ loadTranslations: reads.loadTranslations }))
 
 // The real `toClientState` and `LIVE_PREVIEW_OFF`: stripping the token is
 // what this hook is trusted with.
-vi.mock('../server/live-preview', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../server/live-preview')>()),
+vi.mock('@/server/live-preview', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/server/live-preview')>()),
   loadLivePreview: reads.loadLivePreview,
 }))
 

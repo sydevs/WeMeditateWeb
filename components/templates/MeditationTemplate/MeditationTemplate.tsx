@@ -1,0 +1,222 @@
+/**
+ * MeditationTemplate renders meditation content.
+ *
+ * Both regular meditation pages and preview pages use this template, to
+ * keep meditation rendering consistent. Following Atomic Design, templates
+ * represent page layout structures.
+ *
+ * This template wraps the MeditationPlayer organism and handles:
+ * - Frame JSON parsing with error handling
+ * - A fallback to the thumbnail when frames are unavailable
+ * - Validation of required fields (the audio URL)
+ *
+ * @example
+ * <MeditationTemplate meditation={meditationData} />
+ */
+
+import type { Meditation, MeditationSong } from '@/types/sahajcloud'
+import {
+  MeditationPlayer,
+  type MeditationFrame,
+  type MeditationPlayerProps,
+} from '@/components/organisms/MeditationPlayer'
+import { RelatedContentLoader } from '@/components/organisms/RelatedContent'
+import { EmbedButton } from '@/components/molecules'
+import { populatedImageUrl } from '@/lib/content/payload-relationships'
+import { useT } from '@/hooks/useT'
+
+export interface MeditationTemplateProps {
+  /** Meditation data from SahajCloud (PayloadCMS) */
+  meditation: Meditation
+  /**
+   * Background-music tracks for this meditation (from the `/songs` endpoint),
+   * layered under the guided voice inside the player. Empty/omitted ⇒ voice-only.
+   * @default []
+   */
+  musicTracks?: MeditationSong[]
+  /**
+   * Optional callback fired every 100ms during playback with current time in seconds
+   * Also fired on play, pause, and seek events
+   */
+  onPlaybackTimeUpdate?: (currentTime: number) => void
+  /**
+   * How to display time in the player: 'countdown' shows remaining time, 'elapsed' shows current position
+   * @default 'countdown'
+   */
+  timeDisplay?: 'countdown' | 'elapsed'
+  /**
+   * External seek command. When provided, the player will seek to the specified timestamp.
+   * Uses { timestamp, id } format so each command is unique, allowing repeated seeks to the same position.
+   */
+  seekTo?: { timestamp: number; id: number } | null
+  /**
+   * Whether to show the Embed button (copy an iframe snippet for this meditation).
+   * Disable on the embed route itself to avoid offering embed-in-embed.
+   * @default true
+   */
+  showEmbedButton?: boolean
+  /**
+   * Whether to render the "Related lectures" section below the player (loaded
+   * client-side by RelatedContentLoader). Off on the minimal embed route so it
+   * stays player-only.
+   * @default false
+   */
+  showRelated?: boolean
+  /**
+   * Which upsell line the player closes with, or nothing when omitted. The
+   * copy sends an embedded player's viewer to the full site or to the app, so
+   * only the embed route sets it — on a page of our own the destination is the
+   * page the reader is already on.
+   */
+  upsell?: MeditationPlayerProps['upsell']
+}
+
+export function MeditationTemplate({
+  meditation,
+  musicTracks = [],
+  onPlaybackTimeUpdate,
+  timeDisplay,
+  seekTo,
+  showEmbedButton = true,
+  showRelated = false,
+  upsell,
+}: MeditationTemplateProps) {
+  const t = useT()
+  // Get SahajCloud base URL for building full frame URLs
+  const sahajCloudBaseUrl = import.meta.env.PUBLIC__SAHAJCLOUD_URL || ''
+  const resolveMediaUrl = (url: string): string => {
+    if (!url) {
+      return url
+    }
+
+    // Keep fully-qualified/data/blob URLs as-is.
+    if (/^(?:[a-z]+:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+      return url
+    }
+
+    if (!sahajCloudBaseUrl) {
+      return url
+    }
+
+    try {
+      return new URL(url, sahajCloudBaseUrl).toString()
+    } catch {
+      return url
+    }
+  }
+
+  // Parse and transform frames from SahajCloud format to MeditationPlayer format
+  let frames: MeditationFrame[] = []
+
+  if (meditation.frames) {
+    try {
+      const rawFrames =
+        typeof meditation.frames === 'string'
+          ? JSON.parse(meditation.frames)
+          : Array.isArray(meditation.frames)
+            ? meditation.frames
+            : []
+
+      // Transform SahajCloud frames to MeditationPlayer format
+      frames = rawFrames
+        .filter((frame: { url?: string | null }) => frame.url)
+        .map(
+          (frame: {
+            timestamp?: number
+            url: string
+            downloadUrl?: string | null
+            mimeType?: string | null
+            duration?: number | null
+          }) => {
+            const cleanUrl = frame.url.split('?')[0]
+            const isHls = cleanUrl.endsWith('.m3u8') || frame.mimeType?.includes('mpegurl')
+            const isVideo = frame.mimeType?.startsWith('video/') || isHls
+
+            return {
+              timestamp: frame.timestamp ?? 0,
+              media: {
+                type: isVideo ? 'video' : 'image',
+                src: resolveMediaUrl(frame.url),
+                fallbackSrc: frame.downloadUrl ? resolveMediaUrl(frame.downloadUrl) : undefined,
+                duration: typeof frame.duration === 'number' ? frame.duration : undefined,
+              },
+            }
+          },
+        )
+    } catch (error) {
+      console.error('Failed to parse meditation frames:', error)
+    }
+  }
+
+  // Fallback: use thumbnail as single frame if no frames available
+  if (frames.length === 0) {
+    const thumbnailUrl = populatedImageUrl(meditation.thumbnail)
+
+    if (thumbnailUrl) {
+      frames = [
+        {
+          timestamp: 0,
+          media: {
+            type: 'image',
+            src: thumbnailUrl,
+          },
+        },
+      ]
+    }
+  }
+
+  // Validate required fields
+  if (!meditation.url) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-red-900 mb-2">{t('errors.general.heading')}</h2>
+          <p className="text-red-700">{t('meditation.general.missing_audio')}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="max-w-6xl mx-auto h-full">
+        {showEmbedButton ? (
+          <div className="mb-2 flex justify-end">
+            {/* No locale prop: EmbedButton self-resolves it from page context (like Link). */}
+            <EmbedButton
+              embedPath={`/meditations/${meditation.id}/embed`}
+              title={meditation.title ?? undefined}
+            />
+          </div>
+        ) : null}
+
+        {/* Meditation Player */}
+        <MeditationPlayer
+          frames={frames}
+          musicTracks={musicTracks}
+          seekTo={seekTo}
+          timeDisplay={timeDisplay}
+          track={{
+            url: meditation.url,
+            title: meditation.title || t('meditation.general.untitled'),
+            credit: '',
+            creditURL: '',
+            thumbnailURL: populatedImageUrl(meditation.thumbnail) || '',
+            duration:
+              typeof meditation.durationMinutes === 'number' && meditation.durationMinutes > 0
+                ? meditation.durationMinutes * 60
+                : 0,
+          }}
+          upsell={upsell}
+          onPlaybackTimeUpdate={onPlaybackTimeUpdate}
+        />
+      </div>
+
+      {/* Related lectures (SahajCloud cross-type mirror), loaded client-side so
+          the slow ranking endpoint never blocks SSR. Off on the embed route. */}
+      {showRelated ? (
+        <RelatedContentLoader anchorId={meditation.id} kind="related-lectures" />
+      ) : null}
+    </>
+  )
+}

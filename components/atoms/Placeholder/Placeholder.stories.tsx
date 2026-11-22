@@ -1,8 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Placeholder } from './Placeholder'
-import { Icon } from '../Icon'
+import { Icon } from '@/components/atoms/Icon'
 import { ExclamationCircleIcon, PhotoIcon } from '@heroicons/react/24/outline'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Atoms',

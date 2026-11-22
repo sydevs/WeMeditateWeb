@@ -21,7 +21,7 @@
  * This was briefly `components/organisms/LivePreview`, which rendered `null`.
  * It is behaviour, not UI: nothing to look at, no markup, no props, no story,
  * nothing atomic design has a shelf for. `LayoutRoot` calls it directly, the
- * way `lib/route-announcer.ts` is called from `pages/+onPageTransitionEnd.ts`.
+ * way `lib/a11y/route-announcer.ts` is called from `pages/+onPageTransitionEnd.ts`.
  */
 
 import { useEffect } from 'react'

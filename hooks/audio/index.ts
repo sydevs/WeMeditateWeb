@@ -9,4 +9,4 @@ export type {
   Track,
   PlaylistAudioPlayerState,
   PlaylistAudioPlayerControls,
-} from '../../components/molecules/AudioPlayer/types'
+} from '@/lib/media/audio'

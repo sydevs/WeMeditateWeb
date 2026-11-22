@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PageContextServer } from 'vike/types'
-import { hookViews } from '../tests/_helpers/page-context'
+import { hookViews } from '@/tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
-import { getWebConfig, getWebTranslations } from './sahajcloud-client'
-import type { WebConfig, WebTranslations } from './sahajcloud-types'
-import { EN_TRANSLATIONS } from '../lib/i18n'
+import { getWebConfig, getWebTranslations } from './sahajcloud'
+import type { WebConfig } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
-vi.mock('./sahajcloud-client', () => ({
+vi.mock('./sahajcloud', () => ({
   getWebTranslations: vi.fn(),
   getWebConfig: vi.fn(),
 }))

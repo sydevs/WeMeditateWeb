@@ -1,10 +1,10 @@
 import { ComponentProps } from 'react'
-import { Image, Link } from '../../atoms'
-import { LeafSvg } from '../../atoms/graphics/svgs'
-import type { Locale, NavPage } from '../../../server/sahajcloud-types'
-import { useT } from '../../../hooks/useT'
-import { documentHref } from '../../../lib/document-routes'
-import { populatedImageUrl } from '../../../lib/payload-relationships'
+import { Image, Link } from '@/components/atoms'
+import { LeafSvg } from '@/components/atoms/graphics/svgs'
+import type { Locale, NavPage } from '@/types/sahajcloud'
+import { useT } from '@/hooks/useT'
+import { documentHref } from '@/lib/urls/document-routes'
+import { populatedImageUrl } from '@/lib/content/payload-relationships'
 
 /** Upstream's `maxRows` on `classPages`, restated so a looser schema cannot widen the row. */
 const MAX_ACTIONS = 5

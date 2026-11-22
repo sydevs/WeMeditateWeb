@@ -1,6 +1,6 @@
-import { Link } from '../Link'
-import { useT } from '../../../hooks/useT'
-import { MAIN_CONTENT_ID } from '../../../lib/route-announcer'
+import { Link } from '@/components/atoms/Link'
+import { useT } from '@/hooks/useT'
+import { MAIN_CONTENT_ID } from '@/lib/a11y/route-announcer'
 
 /**
  * The link a keyboard reaches first on every page, jumping past the menus to

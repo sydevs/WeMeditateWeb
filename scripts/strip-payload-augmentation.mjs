@@ -1,5 +1,5 @@
 /**
- * Processes the downloaded server/payload-types.ts (see the `types:cms`
+ * Processes the downloaded types/payload/payload-types.ts (see the `types:cms`
  * script). Strips the trailing `declare module 'payload'` augmentation.
  *
  * SahajCloud emits this block so its Payload backend can wire the generated
@@ -18,7 +18,7 @@
 
 import { readFile, writeFile } from 'node:fs/promises'
 
-const TYPES_PATH = new URL('../server/payload-types.ts', import.meta.url)
+const TYPES_PATH = new URL('../types/payload/payload-types.ts', import.meta.url)
 
 // Matches the augmentation block, plus any whitespace before it, through the
 // end of the file. The block always comes last, so this is safe to remove.

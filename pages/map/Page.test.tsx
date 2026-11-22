@@ -7,8 +7,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { MapPageData } from './+data'
-import type { AtlasSeoResponse } from '../../server/atlas-types'
-import { atlasSeo } from '../../lib/atlas-seo'
+import type { AtlasSeoResponse } from '@/types/atlas'
+import { atlasSeo } from '@/lib/atlas/seo'
 
 const pageData: { current: MapPageData } = { current: null as unknown as MapPageData }
 

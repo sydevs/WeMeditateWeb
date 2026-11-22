@@ -18,7 +18,7 @@ vi.mock('vike-react/ClientOnly', () => ({
 
 import { VideoPlayer } from './index'
 import { BOUNDED_POSTER_SIZES, posterSrcSet, posterURL } from './poster'
-import { CF_BASE, CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { CF_BASE, CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 describe('<VideoPlayer> server-side fallback', () => {
   it('renders the poster as the fallback frame (LCP image, no player JS)', () => {

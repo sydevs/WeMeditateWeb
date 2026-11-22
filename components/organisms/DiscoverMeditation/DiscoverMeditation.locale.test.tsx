@@ -11,9 +11,10 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { NavPage, WebTranslations } from '../../../server/sahajcloud-types'
-import { EN_TRANSLATIONS } from '../../../lib/i18n'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import type { NavPage } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { anchorFor } from '@/tests/_helpers/markup'
 
 // Spread rather than hand-built, so the fixture needs no cast and stays valid
 // when `WebTranslations` gains a required branch. Only the two keys the

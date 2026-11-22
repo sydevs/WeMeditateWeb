@@ -5,9 +5,9 @@ import type {
   SearchBoxFeatureSuggestion,
   SearchBoxRetrieveResponse,
 } from '@mapbox/search-js-core'
-import { Input, Dropdown, Spinner } from '../../atoms'
+import { Input, Dropdown, Spinner } from '@/components/atoms'
 import { NearbyOption } from './NearbyOption'
-import { useT } from '../../../hooks/useT'
+import { useT } from '@/hooks/useT'
 
 /** Selected location data */
 export interface SelectedLocation {

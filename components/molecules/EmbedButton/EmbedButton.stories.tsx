@@ -2,7 +2,7 @@ import type { Story, StoryDefault } from '@ladle/react'
 // Import the implementation directly (not the ClientOnly barrel) so the popover
 // renders synchronously in Ladle without a Suspense round-trip.
 import { EmbedButton } from './EmbedButton'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Molecules',

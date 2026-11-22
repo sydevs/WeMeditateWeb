@@ -14,7 +14,7 @@ is a lightweight, Vite-powered alternative to Storybook.
 - Run the component library: `pnpm ladle` (opens at [http://localhost:61000/](http://localhost:61000/))
 - Build the static library: `pnpm ladle:build`
 
-**Before you write a story**: read [STORYBOOK.md](../../STORYBOOK.md) first. It documents the
+**Before you write a story**: read [STORYBOOK.md](../STORYBOOK.md) first. It documents the
 story utility components and the required structure.
 
 Common mistakes when a story skips STORYBOOK.md:
@@ -37,7 +37,7 @@ Key requirements:
   Sizes → Widths → Padding → Examples.
 - Use a horizontal subsection layout (`flex flex-wrap gap-8`) for a side-by-side comparison.
 
-See [STORYBOOK.md](../../STORYBOOK.md) for the full reference: the utility component API, section
+See [STORYBOOK.md](../STORYBOOK.md) for the full reference: the utility component API, section
 naming conventions, Component Story Format examples, grid layouts, and Ladle configuration.
 
 **Gold standard examples**:

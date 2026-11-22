@@ -2,14 +2,14 @@
 
 import { useData } from 'vike-react/useData'
 import { PageData } from './+data'
-import { Container } from '../../components/atoms'
-import { SocialShare } from '../../components/molecules'
-import { DiscoverMeditation } from '../../components/organisms'
-import { PageTemplate } from '../../components/templates'
-import { getLeadSplash } from '../../lib/content-blocks'
-import { isFeaturedNavPage } from '../../lib/featured-nav'
-import { LivePreviewDocument } from '../../lib/live-preview/document'
-import { useLivePreviewState } from '../../lib/live-preview/session'
+import { Container } from '@/components/atoms'
+import { SocialShare } from '@/components/molecules'
+import { DiscoverMeditation } from '@/components/organisms'
+import { PageTemplate } from '@/components/templates'
+import { getLeadSplash } from '@/lib/content/blocks'
+import { isFeaturedNavPage } from '@/lib/content/featured-nav'
+import { LivePreviewDocument } from '@/lib/live-preview/document'
+import { useLivePreviewState } from '@/lib/live-preview/session'
 
 export function Page() {
   const { page: initialPage, settings, seo, slug } = useData<PageData>()
