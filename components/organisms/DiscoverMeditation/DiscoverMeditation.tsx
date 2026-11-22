@@ -63,8 +63,7 @@ export function DiscoverMeditation({ pages, className = '', ...props }: Discover
 
       {/* Main Content */}
       <div className="relative z-10 p-6">
-        {/* Header Section: the section's gray-900, not gray-700. Under `md` the
-            subtitle is normal-size text on the photo, where gray-700 measured 3.8:1. */}
+        {/* Normal-size text on the photo below `md`, where gray-700 measured 3.8:1. */}
         <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-normal mb-8">{t('discover.general.title')}</h2>
           <p className="text-xl md:text-2xl font-light max-w-lg mx-auto">
@@ -104,8 +103,8 @@ function ActionItem({ page, href }: ActionItemProps) {
       <div className="w-16 h-16 group-hover:scale-105 transition-transform">
         <LeafSvg className="w-full h-full" />
       </div>
-      {/* 85% white: a phone stacks the last action over the photo's dark rock,
-          where 40% measured 3.1:1 and this measures 5.5:1. */}
+      {/* A phone stacks the last action over the photo's dark rock, where this
+          opacity holds the title at 5.5:1. */}
       <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-white/85 backdrop-blur-xs transition-colors duration-200 group-hover:bg-white/95">
         <span className="text-lg font-medium text-gray-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
           {page.title}
