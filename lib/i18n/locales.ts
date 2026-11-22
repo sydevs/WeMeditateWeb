@@ -35,6 +35,9 @@ export const KNOWN_LOCALES: Record<Locale, true> = {
   nl: true,
 }
 
+/** Every known locale code, as an array. */
+export const LOCALES = Object.keys(KNOWN_LOCALES) as Locale[]
+
 /** Narrows an arbitrary string to a known locale code. */
 export function isLocale(value: string): value is Locale {
   return Object.prototype.hasOwnProperty.call(KNOWN_LOCALES, value)
