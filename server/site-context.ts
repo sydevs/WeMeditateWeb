@@ -23,8 +23,10 @@ import { getWebConfig, getWebTranslations } from './sahajcloud'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig } from '@/types/sahajcloud'
-import type { WebTranslations } from '@/lib/i18n/web-translations'
+import type { SahajCloudWebTranslations, WebTranslations } from '@/lib/i18n/web-translations'
 import { EN_TRANSLATIONS, getT, type TFunction } from '@/lib/i18n/i18n'
+import { withA11y } from '@/lib/i18n/a11y/a11y'
+import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
 
 export interface SiteContext {
   settings: WebConfig
@@ -38,7 +40,7 @@ const translationsCache = new WeakMap<object, Promise<WebTranslations>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
 
 /** True when the global carries no strings at all, at any depth. */
-function isEmpty(translations: WebTranslations): boolean {
+function isEmpty(translations: SahajCloudWebTranslations): boolean {
   const hasString = (node: unknown): boolean => {
     if (typeof node === 'string') return node.trim().length > 0
     if (node === null || typeof node !== 'object') return false
@@ -66,6 +68,9 @@ function isEmpty(translations: WebTranslations): boolean {
  * even blank.
  *
  * Both paths log a Sentry warning, so the gap stays visible.
+ *
+ * Whichever strings result, the locale's screen-reader strings are mounted on
+ * them last, so even the English fallback speaks the visitor's language there.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const locale = pageContext.locale
@@ -101,7 +106,8 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
         })
 
         return EN_TRANSLATIONS
-      }),
+      })
+      .then((translations) => withA11y<WebTranslations>(translations, a11yStringsFor(locale))),
   )
 }
 

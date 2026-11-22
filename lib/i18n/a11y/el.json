@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Απόρριψη",
+    "close": "Κλείσιμο",
+    "previous": "Προηγούμενο",
+    "next": "Επόμενο",
+    "show_more_items_one": "Εμφάνιση %{count} ακόμη στοιχείου",
+    "show_more_items_other": "Εμφάνιση %{count} ακόμη στοιχείων",
+    "breadcrumb": "Διαδρομή πλοήγησης",
+    "primary_navigation": "Κύριο μενού",
+    "footer_navigation": "Μενού υποσέλιδου",
+    "opens_in_new_tab_suffix": "(ανοίγει σε νέα καρτέλα)",
+    "menu": "Μενού"
+  },
+  "errors": {
+    "error_icon": "Σφάλμα"
+  },
+  "article": {
+    "filter_label": "Φιλτράρισμα περιεχομένου κατά ετικέτα"
+  },
+  "meditation": {
+    "mute_voice": "Σίγαση φωνής",
+    "unmute_voice": "Επαναφορά ήχου φωνής",
+    "mute_music": "Σίγαση μουσικής",
+    "unmute_music": "Επαναφορά ήχου μουσικής",
+    "voice_volume": "Ένταση φωνής",
+    "music_volume": "Ένταση μουσικής",
+    "audio_settings": "Ρυθμίσεις ήχου",
+    "shuffle_music": "Τυχαίο μουσικό κομμάτι",
+    "related_lectures_loading": "Φόρτωση σχετικών ομιλιών",
+    "finder_region": "Επιλέξτε πώς νιώθετε"
+  },
+  "lecture": {
+    "related_meditations_loading": "Φόρτωση σχετικών διαλογισμών",
+    "untitled_heading": "Ομιλία χωρίς τίτλο"
+  },
+  "map": {
+    "classes_heading": "Μαθήματα διαλογισμού",
+    "when": "Πότε",
+    "where": "Πού",
+    "languages": "Γλώσσες"
+  },
+  "forms": {
+    "submitting": "Υποβολή φόρμας, παρακαλώ περιμένετε...",
+    "required_marker": "υποχρεωτικό"
+  },
+  "media": {
+    "play": "Αναπαραγωγή",
+    "pause": "Παύση",
+    "previous_track": "Προηγούμενο κομμάτι",
+    "next_track": "Επόμενο κομμάτι",
+    "toggle_shuffle": "Εναλλαγή τυχαίας σειράς",
+    "mute": "Σίγαση",
+    "unmute": "Επαναφορά ήχου",
+    "volume": "Ένταση",
+    "play_item": "Αναπαραγωγή: %{title}",
+    "view_image": "Προβολή εικόνας",
+    "view_image_alt": "Προβολή εικόνας: %{alt}",
+    "embed_code": "Κώδικας ενσωμάτωσης",
+    "zoom_in": "Μεγέθυνση",
+    "zoom_out": "Σμίκρυνση",
+    "progress": "Θέση αναπαραγωγής"
+  },
+  "location": {
+    "search_label": "Αναζήτηση τοποθεσίας",
+    "selected_label": "Επιλεγμένη τοποθεσία",
+    "change_label": "Αλλαγή τοποθεσίας"
+  },
+  "blocks": {
+    "enter_fullscreen": "Εμφάνιση σε πλήρη οθόνη",
+    "exit_fullscreen": "Έξοδος από πλήρη οθόνη",
+    "learn_more_about": "Μάθετε περισσότερα: %{title}",
+    "previous_slide": "Προηγούμενη διαφάνεια",
+    "next_slide": "Επόμενη διαφάνεια",
+    "previous_column": "Προηγούμενο: %{title}",
+    "next_column": "Επόμενο: %{title}",
+    "go_to_column": "Μετάβαση στη στήλη %{number}: %{title}",
+    "quote": "Παράθεμα",
+    "table_of_contents": "Πίνακας περιεχομένων",
+    "share_region": "Επιλογές κοινοποίησης στα μέσα κοινωνικής δικτύωσης",
+    "share_group": "Κοινοποίηση στα μέσα κοινωνικής δικτύωσης",
+    "share_on": "Κοινοποίηση: %{platform}",
+    "next_session": "Επόμενη συνεδρία: %{weekday}, %{time}, %{relative}."
+  }
+}

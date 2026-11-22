@@ -4,6 +4,7 @@
  */
 
 import type { WmWebTranslation, WmWebTranslationsSelect } from '@/types/payload/payload-types'
+import type { A11yStrings } from './a11y/a11y'
 
 /**
  * Keys SahajCloud declares but has not merged, declared here rather than typed
@@ -27,9 +28,6 @@ declare module '@/types/payload/payload-types' {
     mood_meditation_label_few?: string
     mood_meditation_label_many?: string
     mood_meditation_label_other?: string
-  }
-  interface WmWebTranslationsMeditationA11YStrings {
-    finder_region?: string
   }
 }
 
@@ -74,6 +72,16 @@ export const WEB_TRANSLATIONS_SELECT = {
   blocks: true,
 } satisfies WmWebTranslationsSelect<true>
 
-export type WebTranslations = RequiredGroups<
+/** What the `wm-web-translations` read returns. */
+export type SahajCloudWebTranslations = RequiredGroups<
   Pick<WmWebTranslation, keyof typeof WEB_TRANSLATIONS_SELECT>
 >
+
+/**
+ * Every string the site renders: SahajCloud's tabs, each with its `a11y` group
+ * mounted from `lib/i18n/a11y/` (`withA11y`).
+ */
+export type WebTranslations = {
+  [Tab in keyof SahajCloudWebTranslations]: SahajCloudWebTranslations[Tab] &
+    (Tab extends keyof A11yStrings ? { a11y: A11yStrings[Tab] } : unknown)
+}

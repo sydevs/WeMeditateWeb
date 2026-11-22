@@ -21,9 +21,6 @@ type TranslationGroups = Record<string, Record<string, unknown>>
 
 const PENDING_EN: TranslationGroups = {
   meditation: {
-    a11y: {
-      finder_region: 'Choose how you feel',
-    },
     general: {
       all_meditations: 'All meditations',
       finder_question: 'How are you feeling?',
