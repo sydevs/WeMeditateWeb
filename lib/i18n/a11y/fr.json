@@ -1,0 +1,86 @@
+{
+  "common": {
+    "dismiss": "Ignorer",
+    "close": "Fermer",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "show_more_items_one": "Afficher %{count} élément de plus",
+    "show_more_items_many": "Afficher %{count} d’éléments de plus",
+    "show_more_items_other": "Afficher %{count} éléments de plus",
+    "breadcrumb": "Fil d’Ariane",
+    "primary_navigation": "Menu principal",
+    "footer_navigation": "Menu du pied de page",
+    "opens_in_new_tab_suffix": "(s’ouvre dans un nouvel onglet)",
+    "menu": "Menu"
+  },
+  "errors": {
+    "error_icon": "Erreur"
+  },
+  "article": {
+    "filter_label": "Filtrer le contenu par thème"
+  },
+  "meditation": {
+    "mute_voice": "Couper la voix",
+    "unmute_voice": "Réactiver la voix",
+    "mute_music": "Couper la musique",
+    "unmute_music": "Réactiver la musique",
+    "voice_volume": "Volume de la voix",
+    "music_volume": "Volume de la musique",
+    "audio_settings": "Réglages audio",
+    "shuffle_music": "Changer de morceau de musique au hasard",
+    "related_lectures_loading": "Chargement des conférences associées",
+    "finder_region": "Choisissez comment vous vous sentez"
+  },
+  "lecture": {
+    "related_meditations_loading": "Chargement des méditations associées",
+    "untitled_heading": "Conférence sans titre"
+  },
+  "map": {
+    "classes_heading": "Cours de méditation",
+    "when": "Quand",
+    "where": "Où",
+    "languages": "Langues"
+  },
+  "forms": {
+    "submitting": "Envoi du formulaire, veuillez patienter…",
+    "required_marker": "obligatoire"
+  },
+  "media": {
+    "play": "Lecture",
+    "pause": "Pause",
+    "previous_track": "Piste précédente",
+    "next_track": "Piste suivante",
+    "toggle_shuffle": "Activer ou désactiver la lecture aléatoire",
+    "mute": "Couper le son",
+    "unmute": "Réactiver le son",
+    "volume": "Volume",
+    "play_item": "Lire %{title}",
+    "view_image": "Voir l’image",
+    "view_image_alt": "Voir l’image : %{alt}",
+    "embed_code": "Code d’intégration",
+    "zoom_in": "Zoom avant",
+    "zoom_out": "Zoom arrière",
+    "progress": "Position de lecture"
+  },
+  "location": {
+    "search_label": "Rechercher un lieu",
+    "selected_label": "Lieu sélectionné",
+    "change_label": "Changer de lieu"
+  },
+  "blocks": {
+    "enter_fullscreen": "Passer en plein écran",
+    "exit_fullscreen": "Quitter le plein écran",
+    "learn_more_about": "En savoir plus sur %{title}",
+    "previous_slide": "Diapositive précédente",
+    "next_slide": "Diapositive suivante",
+    "previous_column": "Précédent : %{title}",
+    "next_column": "Suivant : %{title}",
+    "go_to_column": "Aller à la colonne %{number} : %{title}",
+    "quote": "Citation",
+    "table_of_contents": "Table des matières",
+    "share_region": "Options de partage sur les réseaux sociaux",
+    "share_group": "Partager sur les réseaux sociaux",
+    "share_on": "Partager sur %{platform}",
+    "next_session": "La prochaine séance a lieu %{weekday} à %{time}, %{relative}."
+  }
+}

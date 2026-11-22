@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Скриване",
+    "close": "Затваряне",
+    "previous": "Предишен",
+    "next": "Следващ",
+    "show_more_items_one": "Показване на още %{count} елемент",
+    "show_more_items_other": "Показване на още %{count} елемента",
+    "breadcrumb": "Навигационна пътека",
+    "primary_navigation": "Главно меню",
+    "footer_navigation": "Меню в долната част",
+    "opens_in_new_tab_suffix": "(отваря се в нов раздел)",
+    "menu": "Меню"
+  },
+  "errors": {
+    "error_icon": "Грешка"
+  },
+  "article": {
+    "filter_label": "Филтриране на съдържанието по етикет"
+  },
+  "meditation": {
+    "mute_voice": "Заглушаване на гласа",
+    "unmute_voice": "Включване на гласа",
+    "mute_music": "Заглушаване на музиката",
+    "unmute_music": "Включване на музиката",
+    "voice_volume": "Сила на звука на гласа",
+    "music_volume": "Сила на звука на музиката",
+    "audio_settings": "Настройки на звука",
+    "shuffle_music": "Случайна музикална пътека",
+    "related_lectures_loading": "Зареждане на свързани лекции",
+    "finder_region": "Изберете как се чувствате"
+  },
+  "lecture": {
+    "related_meditations_loading": "Зареждане на свързани медитации",
+    "untitled_heading": "Лекция без заглавие"
+  },
+  "map": {
+    "classes_heading": "Занимания по медитация",
+    "when": "Кога",
+    "where": "Къде",
+    "languages": "Езици"
+  },
+  "forms": {
+    "submitting": "Изпращане на формуляра, моля изчакайте...",
+    "required_marker": "задължително"
+  },
+  "media": {
+    "play": "Възпроизвеждане",
+    "pause": "Пауза",
+    "previous_track": "Предишна песен",
+    "next_track": "Следваща песен",
+    "toggle_shuffle": "Случаен ред",
+    "mute": "Заглушаване",
+    "unmute": "Включване на звука",
+    "volume": "Сила на звука",
+    "play_item": "Възпроизвеждане: %{title}",
+    "view_image": "Преглед на изображението",
+    "view_image_alt": "Преглед на изображението: %{alt}",
+    "embed_code": "Код за вграждане",
+    "zoom_in": "Увеличаване",
+    "zoom_out": "Намаляване",
+    "progress": "Позиция на възпроизвеждане"
+  },
+  "location": {
+    "search_label": "Търсене на местоположение",
+    "selected_label": "Избрано местоположение",
+    "change_label": "Промяна на местоположението"
+  },
+  "blocks": {
+    "enter_fullscreen": "Влизане в цял екран",
+    "exit_fullscreen": "Изход от цял екран",
+    "learn_more_about": "Научете повече: %{title}",
+    "previous_slide": "Предишен слайд",
+    "next_slide": "Следващ слайд",
+    "previous_column": "Предишна: %{title}",
+    "next_column": "Следваща: %{title}",
+    "go_to_column": "Към колона %{number}: %{title}",
+    "quote": "Цитат",
+    "table_of_contents": "Съдържание",
+    "share_region": "Опции за споделяне в социалните мрежи",
+    "share_group": "Споделяне в социалните мрежи",
+    "share_on": "Споделяне: %{platform}",
+    "next_session": "Следващото занимание: %{weekday}, %{time}, %{relative}."
+  }
+}

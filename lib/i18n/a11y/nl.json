@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Negeren",
+    "close": "Sluiten",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "show_more_items_one": "Toon nog %{count} item",
+    "show_more_items_other": "Toon nog %{count} items",
+    "breadcrumb": "Kruimelpad",
+    "primary_navigation": "Hoofdmenu",
+    "footer_navigation": "Voettekstmenu",
+    "opens_in_new_tab_suffix": "(opent in nieuw tabblad)",
+    "menu": "Menu"
+  },
+  "errors": {
+    "error_icon": "Fout"
+  },
+  "article": {
+    "filter_label": "Inhoud filteren op tag"
+  },
+  "meditation": {
+    "mute_voice": "Stem dempen",
+    "unmute_voice": "Stem niet meer dempen",
+    "mute_music": "Muziek dempen",
+    "unmute_music": "Muziek niet meer dempen",
+    "voice_volume": "Stemvolume",
+    "music_volume": "Muziekvolume",
+    "audio_settings": "Audio-instellingen",
+    "shuffle_music": "Willekeurig muzieknummer",
+    "related_lectures_loading": "Gerelateerde lezingen worden geladen",
+    "finder_region": "Kies hoe je je voelt"
+  },
+  "lecture": {
+    "related_meditations_loading": "Gerelateerde meditaties worden geladen",
+    "untitled_heading": "Lezing zonder titel"
+  },
+  "map": {
+    "classes_heading": "Meditatielessen",
+    "when": "Wanneer",
+    "where": "Waar",
+    "languages": "Talen"
+  },
+  "forms": {
+    "submitting": "Formulier wordt verzonden, even geduld...",
+    "required_marker": "verplicht"
+  },
+  "media": {
+    "play": "Afspelen",
+    "pause": "Pauzeren",
+    "previous_track": "Vorig nummer",
+    "next_track": "Volgend nummer",
+    "toggle_shuffle": "Willekeurige volgorde aan/uit",
+    "mute": "Dempen",
+    "unmute": "Niet meer dempen",
+    "volume": "Volume",
+    "play_item": "Afspelen: %{title}",
+    "view_image": "Afbeelding bekijken",
+    "view_image_alt": "Afbeelding bekijken: %{alt}",
+    "embed_code": "Insluitcode",
+    "zoom_in": "Inzoomen",
+    "zoom_out": "Uitzoomen",
+    "progress": "Afspeelpositie"
+  },
+  "location": {
+    "search_label": "Locatie zoeken",
+    "selected_label": "Geselecteerde locatie",
+    "change_label": "Locatie wijzigen"
+  },
+  "blocks": {
+    "enter_fullscreen": "Volledig scherm openen",
+    "exit_fullscreen": "Volledig scherm sluiten",
+    "learn_more_about": "Meer over %{title}",
+    "previous_slide": "Vorige dia",
+    "next_slide": "Volgende dia",
+    "previous_column": "Vorige: %{title}",
+    "next_column": "Volgende: %{title}",
+    "go_to_column": "Ga naar kolom %{number}: %{title}",
+    "quote": "Citaat",
+    "table_of_contents": "Inhoudsopgave",
+    "share_region": "Opties voor delen op sociale media",
+    "share_group": "Delen op sociale media",
+    "share_on": "Delen op %{platform}",
+    "next_session": "De volgende sessie is %{weekday} om %{time}, %{relative}."
+  }
+}
