@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Blockquote } from './Blockquote'
-import { Link } from '../Link'
+import { Link } from '@/components/atoms/Link'
 import {
   StoryWrapper,
   StorySection,
