@@ -190,7 +190,7 @@ export const NAV_PAGE_SELECT: NavPageSelect = {
 /**
  * Populates the global's page relationships at depth 2, with only what the
  * chrome renders: title and slug for a link, `meta.image` for a header card,
- * and `meta.description` for the line under a home-page discover action. The
+ * and `meta.description` for the line under a discover action. The
  * config is serialised into every page's HTML, so nothing more belongs here.
  * Required because the backend rejects a depth > 1 read without `populate`.
  *
