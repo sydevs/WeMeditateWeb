@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import type { LectureEmbedPageData } from './+data'
-import { CF_BASE } from '../../../../tests/_helpers/cloudflare-images'
+import { CF_BASE } from '@/tests/_helpers/cloudflare-images'
 
 const pageData: { current: LectureEmbedPageData } = {
   current: null as unknown as LectureEmbedPageData,

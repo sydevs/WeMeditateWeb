@@ -8,7 +8,7 @@ import 'yet-another-react-lightbox/styles.css'
 import 'yet-another-react-lightbox/plugins/captions.css'
 import 'yet-another-react-lightbox/plugins/thumbnails.css'
 import type { LightboxSlide } from './LightboxProvider'
-import { useT } from '../../../hooks/useT'
+import { useT } from '@/hooks/useT'
 
 export interface LightboxImplProps {
   /** Slides to display, in navigation order. */

@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { useForm, type UseFormRegister } from 'react-hook-form'
-import { Input } from '../../atoms/form/Input'
-import { Textarea } from '../../atoms/form/Textarea'
-import { Select } from '../../atoms/form/Select'
-import { Checkbox } from '../../atoms/form/Checkbox'
-import { Button } from '../../atoms/Button'
-import { FormField } from '../../molecules/FormField'
-import { RichText } from '../RichText/RichText'
-import { useT } from '../../../hooks/useT'
-import { useLocale, useOptionalPageContext } from '../../../hooks/usePageContext'
-import { submissionBody, SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '../../../lib/submissions'
-import { isSafeNavigationUrl, normalizeContentPath } from '../../../lib/urls'
-import type { TFunction } from '../../../lib/i18n'
-import type { EmbeddedForm } from '../../../server/sahajcloud-types'
+import { Input } from '@/components/atoms/form/Input'
+import { Textarea } from '@/components/atoms/form/Textarea'
+import { Select } from '@/components/atoms/form/Select'
+import { Checkbox } from '@/components/atoms/form/Checkbox'
+import { Button } from '@/components/atoms/Button'
+import { FormField } from '@/components/molecules/FormField'
+import { RichText } from '@/components/organisms/RichText/RichText'
+import { useT } from '@/hooks/useT'
+import { useLocale, useOptionalPageContext } from '@/hooks/usePageContext'
+import { submissionBody, SUBMISSION_PATH, TURNSTILE_TOKEN_HEADER } from '@/lib/forms/submissions'
+import { isSafeNavigationUrl, normalizeContentPath } from '@/lib/urls/urls'
+import type { TFunction } from '@/lib/i18n/i18n'
+import type { EmbeddedForm } from '@/types/sahajcloud'
 
 /** One entry of the plugin's authored field list. */
 type AuthoredField = NonNullable<EmbeddedForm['fields']>[number]
@@ -190,7 +190,7 @@ function renderField(
  * never declared, but this site has one SahajCloud-owned string for a failed send
  * (`forms.general.submit_error`) and a translation cannot be invented here —
  * the keys come from the SahajCloud schema. Re-challenging regardless is deliberate
- * too: see `SubmissionResult` in `lib/submissions.ts`.
+ * too: see `SubmissionResult` in `lib/forms/submissions.ts`.
  *
  * ⚠ **This server-renders, and its libraries are in the Worker on purpose.**
  * `RichText` renders on every page, so `react-hook-form` and
@@ -387,12 +387,10 @@ export function FormBuilder({
             <Turnstile
               key={attempt}
               options={{ execution: 'render', theme: 'light', language: locale }}
-              onSuccess={setToken}
               // A failed, expired or unreachable challenge all leave the form
               // without a token. SahajCloud refuses that submission, which is the
               // same outcome as an unsolved challenge — nothing to recover.
               siteKey={siteKey}
-              onExpire={() => setToken(null)}
               // ⚠ `execution: 'render'` is what survives a client-side
               // navigation. Cloudflare's automatic scan runs once per document
               // load, and Vike swaps the page under `<main>` without reloading,
@@ -403,6 +401,8 @@ export function FormBuilder({
               // visitor reading the Spanish site in an English browser would
               // get an English challenge mid-form. Pass the page locale.
               onError={() => setToken(null)}
+              onExpire={() => setToken(null)}
+              onSuccess={setToken}
             />
           </div>
         )}

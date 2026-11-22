@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TechniqueCard } from './TechniqueCard'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 const props = {
   number: '01',

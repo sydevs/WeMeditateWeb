@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { getLeadSplash } from '../../../lib/content-blocks'
-import type { Page } from '../../../server/sahajcloud-types'
+import { getLeadSplash } from '@/lib/content/blocks'
+import type { Page } from '@/types/sahajcloud'
 
 // RichText mounts the lightbox provider, whose barrel is client-only, and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.

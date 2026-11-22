@@ -1,5 +1,5 @@
 /**
- * Every colour token `DESIGN_SYSTEM.md` names, and every hex it gives, must
+ * Every colour token `docs/DESIGN_SYSTEM.md` names, and every hex it gives, must
  * match `layouts/tailwind.css`.
  *
  * The doc restates the `@theme` block, so the two can drift apart silently —
@@ -16,14 +16,13 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { repoRoot, themeStylesheet as stylesheet } from './_source-scan'
 
-const doc = readFileSync(join(repoRoot, 'DESIGN_SYSTEM.md'), 'utf8')
+const doc = readFileSync(join(repoRoot, 'docs/DESIGN_SYSTEM.md'), 'utf8')
 
 /** `--color-teal-500: #61aaa0;` inside the `@theme` block. */
 const DECLARED = new Map<string, string>(
-  [...stylesheet.matchAll(/(--color-[a-z0-9-]+):\s*(#[0-9a-f]{3,8})\s*;/gi)].map(([, token, hex]) => [
-    token,
-    hex.toLowerCase(),
-  ]),
+  [...stylesheet.matchAll(/(--color-[a-z0-9-]+):\s*(#[0-9a-f]{3,8})\s*;/gi)].map(
+    ([, token, hex]) => [token, hex.toLowerCase()],
+  ),
 )
 
 /** Every `--color-*` the doc mentions, in prose or in a table. */
@@ -40,6 +39,7 @@ function statedHexes(): Map<string, string> {
   const stated = new Map<string, string>()
 
   const pivot = doc.match(/^\|\s*Step\s*\|([^\n]*)\|[^\n]*\n\|[-\s|]+\|\n((?:\|[^\n]*\n)+)/m)
+
   if (pivot) {
     const scales = pivot[1]
       .split('|')
@@ -52,6 +52,7 @@ function statedHexes(): Map<string, string> {
 
       scales.forEach((scale, index) => {
         const hex = cells[index + 2]
+
         if (/^#[0-9a-f]{3,8}$/i.test(hex)) stated.set(`--color-${scale}-${step}`, hex.toLowerCase())
       })
     }
@@ -68,7 +69,7 @@ function statedHexes(): Map<string, string> {
 
 const STATED = statedHexes()
 
-describe('DESIGN_SYSTEM.md colour tokens', () => {
+describe('docs/DESIGN_SYSTEM.md colour tokens', () => {
   it('finds the tables to check (the guard is not silently empty)', () => {
     expect(DECLARED.size).toBeGreaterThan(30)
     expect(MENTIONED.size).toBeGreaterThan(10)

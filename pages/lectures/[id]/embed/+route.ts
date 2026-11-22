@@ -1,4 +1,4 @@
-import { matchDocumentRoute } from '../../../../lib/document-routes'
+import { matchDocumentRoute } from '@/lib/urls/document-routes'
 
 /**
  * /lectures/:id/embed — the bare iframe player. A real /:locale prefix is

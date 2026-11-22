@@ -1,4 +1,4 @@
-import { matchDocumentRoute } from '../../../../lib/document-routes'
+import { matchDocumentRoute } from '@/lib/urls/document-routes'
 
 /**
  * /meditations/:id — the full page with site chrome. A real /:locale

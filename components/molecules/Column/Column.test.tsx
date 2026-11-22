@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Column } from './Column'
-import {
-  CF_BASE,
-  CF_PUBLIC_URL,
-  PASSTHROUGH_SOURCES,
-} from '../../../tests/_helpers/cloudflare-images'
+import { CF_BASE, CF_PUBLIC_URL, PASSTHROUGH_SOURCES } from '@/tests/_helpers/cloudflare-images'
 
 const render = (imageUrl: string) =>
   renderToStaticMarkup(

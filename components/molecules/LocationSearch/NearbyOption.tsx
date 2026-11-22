@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
-import { Spinner } from '../../atoms'
-import { useT } from '../../../hooks/useT'
+import { Spinner } from '@/components/atoms'
+import { useT } from '@/hooks/useT'
 
 /** Geolocation state */
 type GeolocationState = 'idle' | 'loading' | 'error'
@@ -9,10 +9,7 @@ type GeolocationState = 'idle' | 'loading' | 'error'
 /** Props for NearbyOption subcomponent */
 interface NearbyOptionProps {
   /** Callback fired when location is successfully retrieved */
-  onLocationSelect: (location: {
-    name: string
-    coordinates: { lat: number; lng: number }
-  }) => void
+  onLocationSelect: (location: { name: string; coordinates: { lat: number; lng: number } }) => void
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
 }
@@ -38,6 +35,7 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
     if (!navigator.geolocation) {
       setGeolocationState('error')
       setErrorMessage(t('location.general.geolocation_unsupported'))
+
       return
     }
 
@@ -73,22 +71,22 @@ export function NearbyOption({ onLocationSelect, size = 'md' }: NearbyOptionProp
           default:
             setErrorMessage(t('location.general.location_failed'))
         }
-      }
+      },
     )
   }
 
   return (
     <button
-      onClick={handleNearbyClick}
-      disabled={geolocationState === 'loading'}
       className={`w-full touch-target text-left flex items-center gap-2 font-medium text-gray-700 hover:bg-gray-100 transition-colors ${sizeStyles[size]} ${
         geolocationState === 'error' ? 'bg-error/10' : ''
       }`}
+      disabled={geolocationState === 'loading'}
       type="button"
+      onClick={handleNearbyClick}
     >
       {geolocationState === 'loading' ? (
         <>
-          <Spinner size="xs" color="currentColor" />
+          <Spinner color="currentColor" size="xs" />
           <span>{t('location.general.getting_location')}</span>
         </>
       ) : (

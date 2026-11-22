@@ -18,11 +18,11 @@ const settings = {
   knowledgePages: [],
 }
 
-vi.mock('../../server/sahajcloud-client', () => ({
+vi.mock('@/server/sahajcloud', () => ({
   getPageBySlug: (...args: unknown[]) => getPageBySlug(...args),
   getPageLocaleStatus: (...args: unknown[]) => getPageLocaleStatus(...args),
 }))
-vi.mock('../../server/site-context', () => ({
+vi.mock('@/server/site-context', () => ({
   loadSiteContext: async () => ({ settings, t: () => '' }),
 }))
 // `LivePreviewSession` is `{ active, scope, token }` (server/live-preview.ts),
@@ -30,11 +30,11 @@ vi.mock('../../server/site-context', () => ({
 // used to carry, which nothing reads.
 const preview = { active: false, scope: null, token: null }
 
-vi.mock('../../server/live-preview', () => ({
+vi.mock('@/server/live-preview', () => ({
   loadLivePreview: async () => preview,
   previewArgs: () => ({}),
 }))
-vi.mock('../../server/content-index', () => ({
+vi.mock('@/server/content-index', () => ({
   resolveContentIndexBlocks: async (content: unknown) => content,
 }))
 

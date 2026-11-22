@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Button, Heading, Image } from '../../atoms'
+import { Button, Heading, Image } from '@/components/atoms'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Card number displayed above the content, for example "01", "02", "03" */
@@ -62,6 +62,7 @@ export function TechniqueCard({
       <div className="relative w-full max-w-md shrink-0 md:w-84 lg:w-96">
         {/* Gradient overlay - positioned above image */}
         <div
+          aria-hidden="true"
           className={`
             absolute bottom-full hidden h-28 w-56
             from-transparent to-teal-200/30
@@ -69,28 +70,25 @@ export function TechniqueCard({
             px-4
             ${align === 'right' ? '-right-4 bg-linear-to-l md:justify-end' : '-left-4 bg-linear-to-r md:justify-start'}
           `}
-          aria-hidden="true"
         >
           {/* Number Badge - centered within gradient */}
-          <div className="text-4xl font-light text-gray-400">
-            {number}
-          </div>
+          <div className="text-4xl font-light text-gray-400">{number}</div>
         </div>
 
         {/* Mobile Number Badge - shown on mobile only */}
-        <div className="mb-4 text-4xl font-light text-gray-400 md:hidden" aria-hidden="true">
+        <div aria-hidden="true" className="mb-4 text-4xl font-light text-gray-400 md:hidden">
           {number}
         </div>
 
         {/* Image */}
         <Image
-          src={imageSrc}
           alt={imageAlt}
           aspectRatio="square"
           className="h-full w-full object-cover"
           // One length per step of the wrapper above: `w-full max-w-md`,
           // then `md:w-84`, then `lg:w-96`.
           sizes="(min-width: 1024px) 384px, (min-width: 768px) 336px, (min-width: 448px) 448px, 100vw"
+          src={imageSrc}
         />
       </div>
 
@@ -101,21 +99,14 @@ export function TechniqueCard({
           md:px-10 lg:px-12
         `}
       >
-        <Heading level="h3" styleAs="h5" className="mb-4 text-gray-700">
+        <Heading className="mb-4 text-gray-700" level="h3" styleAs="h5">
           {title}
         </Heading>
 
-        <p className="mb-10 text-gray-700 text-lg md:text-base">
-          {description}
-        </p>
+        <p className="mb-10 text-gray-700 text-lg md:text-base">{description}</p>
 
         <div>
-          <Button
-            variant="outline"
-            size="md"
-            href={href}
-            className="min-w-[140px]"
-          >
+          <Button className="min-w-[140px]" href={href} size="md" variant="outline">
             {buttonText}
           </Button>
         </div>

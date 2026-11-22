@@ -17,9 +17,9 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { LIVE_PREVIEW_OFF, loadLivePreview, toClientState } from '../server/live-preview'
-import { loadTranslations } from '../server/site-context'
-import { EN_TRANSLATIONS } from '../lib/i18n'
+import { LIVE_PREVIEW_OFF, loadLivePreview, toClientState } from '@/server/live-preview'
+import { loadTranslations } from '@/server/site-context'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   try {

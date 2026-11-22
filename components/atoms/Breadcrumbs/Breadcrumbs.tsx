@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import { Link } from '../Link'
-import { useT } from '../../../hooks/useT'
+import { Link } from '@/components/atoms/Link'
+import { useT } from '@/hooks/useT'
 
 export interface BreadcrumbItem {
   /** Label to display for the breadcrumb */
@@ -18,11 +18,7 @@ export interface BreadcrumbsProps extends Omit<ComponentProps<'nav'>, 'children'
  * Breadcrumbs navigation component for showing hierarchical page location.
  * Automatically styles the last item (current page) differently.
  */
-export function Breadcrumbs({
-  items,
-  className = '',
-  ...props
-}: BreadcrumbsProps) {
+export function Breadcrumbs({ items, className = '', ...props }: BreadcrumbsProps) {
   const t = useT()
 
   if (!items || items.length === 0) {
@@ -43,12 +39,7 @@ export function Breadcrumbs({
             // eslint-disable-next-line @eslint-react/no-array-index-key -- a trail: a rung is its depth, and the only way the list changes is a new navigation
             <li key={index} className="flex items-center gap-2">
               {item.href && !isLast ? (
-                <Link
-                  href={item.href}
-                  variant="primary"
-                  size="inherit"
-                  className="no-underline"
-                >
+                <Link className="no-underline" href={item.href} size="inherit" variant="primary">
                   {item.label}
                 </Link>
               ) : (
@@ -56,7 +47,7 @@ export function Breadcrumbs({
               )}
 
               {!isLast && (
-                <span className="text-line font-bold" aria-hidden="true">
+                <span aria-hidden="true" className="text-line font-bold">
                   ›
                 </span>
               )}

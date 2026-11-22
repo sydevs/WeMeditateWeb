@@ -1,11 +1,11 @@
 import { ComponentProps, useEffect, useState } from 'react'
-import { AnimatedLogoSvg } from '../graphics/svgs/AnimatedLogoSvg'
+import { AnimatedLogoSvg } from '@/components/atoms/graphics/svgs/AnimatedLogoSvg'
 import {
   type AspectRatio,
   type ImageSize,
   getImageURL,
   getVariantName,
-} from '../../../lib/cloudflare-images'
+} from '@/lib/media/cloudflare-images'
 
 export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> {
   /**
@@ -143,9 +143,7 @@ export function SplashLoader({
       {...props}
     >
       {/* Color overlay with multiply blend mode */}
-      <div
-        className={`absolute inset-0 mix-blend-multiply ${colorClasses[color]}`}
-      />
+      <div className={`absolute inset-0 mix-blend-multiply ${colorClasses[color]}`} />
 
       {/* Centered animated logo and text */}
       <div className={`relative z-10 flex flex-col items-center ${sizeClasses[size].gap}`}>

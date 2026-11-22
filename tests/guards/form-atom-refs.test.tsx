@@ -4,8 +4,8 @@
  * `FormBuilder` and `react-hook-form` register a field by its ref, so an atom
  * that drops one takes its field out of the form without failing a render.
  * `forwardRef` used to carry that contract in the type; React 19 passes `ref`
- * as an ordinary prop, and what is left reports a break only as one
- * `no-unused-vars` warning among twenty — in a run that exits 0.
+ * as an ordinary prop, and what is left reports a break only when the ref is
+ * destructured and never used, as `no-unused-vars`.
  *
  * The branch that needs it most is the one no caller exercises: `Input`
  * renders a second `<input>` when it draws an icon, so a ref wired to the
@@ -23,11 +23,11 @@ import { createRef } from 'react'
 import { join } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { parse, readSource, repoRoot, walk } from './_source-scan'
-import { Checkbox } from '../../components/atoms/form/Checkbox/Checkbox'
-import { Input } from '../../components/atoms/form/Input/Input'
-import { Radio } from '../../components/atoms/form/Radio/Radio'
-import { Select } from '../../components/atoms/form/Select/Select'
-import { Textarea } from '../../components/atoms/form/Textarea/Textarea'
+import { Checkbox } from '@/components/atoms/form/Checkbox/Checkbox'
+import { Input } from '@/components/atoms/form/Input/Input'
+import { Radio } from '@/components/atoms/form/Radio/Radio'
+import { Select } from '@/components/atoms/form/Select/Select'
+import { Textarea } from '@/components/atoms/form/Textarea/Textarea'
 
 /** Each atom, the tag it must wire its ref to, and the file that says so. */
 const ATOMS = [

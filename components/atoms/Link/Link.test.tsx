@@ -235,7 +235,7 @@ describe('<Link> scheme gate', () => {
   })
 
   // These two rendered an href before this gate existed, so the component
-  // pins them even though `lib/urls.test.ts` owns the allowlist itself.
+  // pins them even though `lib/urls/urls.test.ts` owns the allowlist itself.
   it('renders no href for a protocol-relative URL or an unset one', () => {
     for (const href of ['//cdn.example.com/x', '']) {
       expect(renderToStaticMarkup(<Link href={href}>x</Link>), href).not.toContain('href')
@@ -244,7 +244,7 @@ describe('<Link> scheme gate', () => {
 
   it('opens no tab for a href it refused', () => {
     const html = renderToStaticMarkup(
-      <Link href="javascript:alert(1)" external>
+      <Link external href="javascript:alert(1)">
         x
       </Link>,
     )
@@ -256,10 +256,10 @@ describe('<Link> scheme gate', () => {
 
 describe('<Link> new-tab announcement', () => {
   // The string comes from SahajCloud. These render with no `pageContext`, so
-  // `useT` falls back to `lib/translations.en.json`, the committed mirror.
+  // `useT` falls back to `lib/i18n/translations.en.json`, the committed mirror.
   it('names the new tab in screen-reader-only text after the link words', () => {
     const html = renderToStaticMarkup(
-      <Link href="https://example.com" external>
+      <Link external href="https://example.com">
         Our partner
       </Link>,
     )
@@ -282,7 +282,7 @@ describe('<Link> new-tab announcement', () => {
     // inside the anchor is never read. `SocialShare` lost the announcement
     // exactly this way.
     const html = renderToStaticMarkup(
-      <Link href="https://example.com" external aria-label="Our partner">
+      <Link external aria-label="Our partner" href="https://example.com">
         <span>icon</span>
       </Link>,
     )

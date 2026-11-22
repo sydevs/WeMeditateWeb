@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TableOfContents } from './TableOfContents'
-import { anchorFor } from '../../../../tests/_helpers/markup'
+import { anchorFor } from '@/tests/_helpers/markup'
 
 describe('<TableOfContents>', () => {
   it('renders nothing when there are no headings', () => {

@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { ErrorFallback } from './ErrorFallback'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 import * as Sentry from '@sentry/react'
 
 export default {
@@ -14,6 +14,7 @@ export default {
 export const Default: Story = () => {
   // Mock error for demonstration
   const mockError = new Error('Cannot read property "data" of undefined')
+  // eslint-disable-next-line no-console -- shows the story's viewer that the reset fired
   const mockResetError = () => console.log('Error boundary reset')
 
   return (

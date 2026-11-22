@@ -1,5 +1,5 @@
 import type { Config } from 'vike/types'
-import LayoutChrome from '../../../../layouts/LayoutChrome.js'
+import LayoutChrome from '@/layouts/LayoutChrome.js'
 
 /**
  * The full lecture page opts into the site chrome (Header/Footer/nav). The

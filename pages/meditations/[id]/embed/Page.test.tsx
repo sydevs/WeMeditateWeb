@@ -11,9 +11,9 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { anchorFor } from '../../../../tests/_helpers/markup'
+import { anchorFor } from '@/tests/_helpers/markup'
 import type { ReactNode } from 'react'
-import type { Meditation } from '../../../../server/sahajcloud-types'
+import type { Meditation } from '@/types/sahajcloud'
 
 const meditation = {
   id: 7,
@@ -30,7 +30,7 @@ vi.mock('vike-react/useData', () => ({
 
 // The two postMessage channels are the preview transport, not this route's
 // rendering. Stub them so the render needs no `window` and no live session.
-vi.mock('../../../../lib/live-preview/document', () => ({
+vi.mock('@/lib/live-preview/document', () => ({
   LivePreviewDocument: ({
     initialData,
     children,
@@ -39,10 +39,10 @@ vi.mock('../../../../lib/live-preview/document', () => ({
     children: (meditation: Meditation) => ReactNode
   }) => children(initialData),
 }))
-vi.mock('../../../../lib/live-preview/frame-editor', () => ({
+vi.mock('@/lib/live-preview/frame-editor', () => ({
   useFrameEditorChannel: () => ({ seekTo: null, onPlaybackTimeUpdate: undefined }),
 }))
-vi.mock('../../../../lib/live-preview/session', () => ({
+vi.mock('@/lib/live-preview/session', () => ({
   sahajCloudOrigin: () => null,
   useDocumentPreviewActive: () => false,
 }))

@@ -4,7 +4,7 @@ import type {
   Track,
   PlaylistAudioPlayerState,
   PlaylistAudioPlayerControls,
-} from '../../components/molecules/AudioPlayer/types'
+} from '@/lib/media/audio'
 
 export interface UsePlaylistAudioPlayerOptions {
   /** Array of tracks to manage */
@@ -75,6 +75,7 @@ export function usePlaylistAudioPlayer({
     // Fisher-Yates shuffle algorithm
     for (let i = order.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
+
       ;[order[i], order[j]] = [order[j], order[i]]
     }
 

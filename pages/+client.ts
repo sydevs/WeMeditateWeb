@@ -17,8 +17,8 @@
  * on a URL with no token, so calling it here and again from Sentry is free.
  */
 
-import { scrubTokenFromLocation } from '../lib/live-preview/token-url'
-import { sentryBrowserConfig } from '../sentry.browser.config'
+import { scrubTokenFromLocation } from '@/lib/live-preview/token-url'
+import { sentryBrowserConfig } from '@/lib/sentry/browser-config'
 
 scrubTokenFromLocation()
 sentryBrowserConfig()

@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import type { Locale } from '../../../../server/sahajcloud-types'
-import { localeEndonym } from '../../../../lib/locale-names'
+import type { Locale } from '@/types/sahajcloud'
+import { localeEndonym } from '@/lib/i18n/locale-names'
 
 export interface LanguageFlagProps extends ComponentProps<'span'> {
   /** Locale code, exactly as SahajCloud stores it (`en`, `pt-BR`, `en-AU`). */
@@ -85,7 +85,7 @@ export function LanguageFlag({
       className={`inline-flex items-center gap-1.5 ${sizeStyles[size]} ${className}`}
       {...props}
     >
-      <span role="img" aria-label={label}>
+      <span aria-label={label} role="img">
         {flag}
       </span>
       {showLabel && <span className="font-sans text-sm">{label}</span>}

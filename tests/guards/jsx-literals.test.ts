@@ -23,9 +23,15 @@ const eslint = new ESLint({ cwd: repoRoot })
 const FIRST_LINE = 4
 
 const wrap = (lines: string[]) =>
-  ['export function Sample() {', '  return (', '    <div>', ...lines, '    </div>', '  )', '}'].join(
-    '\n',
-  )
+  [
+    'export function Sample() {',
+    '  return (',
+    '    <div>',
+    ...lines,
+    '    </div>',
+    '  )',
+    '}',
+  ].join('\n')
 
 /** The lines ESLint reports literal copy on, for `lines` at `filePath`. */
 async function reportedLines(lines: string[], filePath = 'components/organisms/Sample.tsx') {
@@ -71,15 +77,7 @@ describe('the visible-copy lint rule', () => {
       '      <img alt="A seated meditator" />',
     ]
 
-    expect(await reportedLines(samples)).toEqual([
-      at(0),
-      at(1),
-      at(2),
-      at(3),
-      at(3),
-      at(4),
-      at(5),
-    ])
+    expect(await reportedLines(samples)).toEqual([at(0), at(1), at(2), at(3), at(3), at(4), at(5)])
   })
 
   it('passes a resolved lookup, a separator, an empty alt and a style block', async () => {

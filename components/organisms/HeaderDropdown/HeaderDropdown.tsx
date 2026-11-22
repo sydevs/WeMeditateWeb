@@ -1,7 +1,7 @@
 import { ComponentProps, useState, useEffect } from 'react'
-import { Link, Image } from '../../atoms'
-import { LotusDotsSvg, LogoSvg } from '../../atoms/graphics/svgs'
-import { useT } from '../../../hooks/useT'
+import { Link, Image } from '@/components/atoms'
+import { LotusDotsSvg, LogoSvg } from '@/components/atoms/graphics/svgs'
+import { useT } from '@/hooks/useT'
 
 export interface HeaderDropdownLink {
   label: string

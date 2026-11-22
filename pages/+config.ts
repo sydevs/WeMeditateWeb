@@ -1,7 +1,7 @@
 import type { Config } from 'vike/types'
 import vikePhoton from 'vike-photon/config'
 import vikeReact from 'vike-react/config'
-import Layout from '../layouts/LayoutRoot.js'
+import Layout from '@/layouts/LayoutRoot.js'
 // ⚠ The import attribute is load-bearing. Vike reads an import of a plain
 // `.ts` file in a `+config.ts` as config code and executes it while it
 // resolves the config, where there is no request and no app — evaluating the
@@ -11,8 +11,8 @@ import Layout from '../layouts/LayoutRoot.js'
 import {
   contentDescription,
   contentTitle,
-} from '../lib/head-settings.js' with { type: 'vike:pointer' }
-import { seoHeadHtml } from '../lib/seo-head-html.js' with { type: 'vike:pointer' }
+} from '@/lib/seo/head-settings.js' with { type: 'vike:pointer' }
+import { seoHeadHtml } from '@/lib/seo/head-html.js' with { type: 'vike:pointer' }
 
 // Default config. Pages can override it.
 // https://vike.dev/config
@@ -27,7 +27,7 @@ export default {
   Layout,
 
   // The whole site's <title> and description, in one declaration. Each reads
-  // the SEO document the route's +data.ts built (lib/content-seo.ts), and
+  // the SEO document the route's +data.ts built (lib/seo/content-seo.ts), and
   // falls back to the site's own name and description, in the locale of the
   // URL, for a route that publishes none — an embed route, or the error page.
   // `og:image` is not a setting here: it rides the route's own Open Graph
@@ -38,7 +38,7 @@ export default {
 
   // The rest of the head — the canonical, the `hreflang` cluster, Open Graph,
   // Twitter and the `@graph` — generated from the document the route's
-  // +data.ts built (lib/seo-head-html.ts).
+  // +data.ts built (lib/seo/head-html.ts).
   // ⚠ Declared here and nowhere else. `headHtmlEnd` is global as well as
   // cumulative, so a second declaration on one route adds a second copy of
   // the whole head to every page of the site, not only to that route's.

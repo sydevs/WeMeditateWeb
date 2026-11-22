@@ -1,18 +1,18 @@
 /** Data fetching for pages in default locale (English). */
 
 import type { PageContextServer } from 'vike/types'
-import type { Locale, Page, WebConfig } from '../../server/sahajcloud-types'
-import { DEFAULT_LOCALE } from '../../server/sahajcloud-types'
-import { getPageBySlug, getPageLocaleStatus } from '../../server/sahajcloud-client'
-import { loadLivePreview, previewArgs } from '../../server/live-preview'
-import { loadSiteContext } from '../../server/site-context'
-import { advertisedLocales } from '../../lib/hreflang'
-import { pageSeo, seoRoute } from '../../lib/content-seo'
-import type { SeoDocument } from '../../lib/head'
-import { pageTagLabels } from '../../lib/page-tag-labels'
-import { resolveContentIndexBlocks } from '../../server/content-index'
-import { slugSchema } from '../../server/validation'
-import { localeHref, localePath } from '../../lib/urls'
+import type { Locale, Page, WebConfig } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
+import { getPageBySlug, getPageLocaleStatus } from '@/server/sahajcloud'
+import { loadLivePreview, previewArgs } from '@/server/live-preview'
+import { loadSiteContext } from '@/server/site-context'
+import { advertisedLocales } from '@/lib/seo/hreflang'
+import { pageSeo, seoRoute } from '@/lib/seo/content-seo'
+import type { SeoDocument } from '@/lib/seo/head'
+import { pageTagLabels } from '@/lib/content/page-tag-labels'
+import { resolveContentIndexBlocks } from '@/server/content-index'
+import { slugSchema } from '@/server/validation'
+import { localeHref, localePath } from '@/lib/urls/urls'
 import { redirect, render } from 'vike/abort'
 
 export interface PageData {
@@ -22,7 +22,7 @@ export interface PageData {
   slug: string
   /**
    * Everything the `<head>` publishes for this URL. Built here, where the
-   * document is in hand, and rendered by `lib/seo-head-html.ts`.
+   * document is in hand, and rendered by `lib/seo/head-html.ts`.
    *
    * shortcut: the whole document, graph descriptors included, rides `data`
    * to the browser, which reads only its title and description — 1.5 KB on a

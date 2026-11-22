@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { EN_TRANSLATIONS } from '../lib/i18n'
+import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
 
 const ctx: { settings: unknown; page: unknown } = { settings: undefined, page: undefined }
 
@@ -19,7 +19,7 @@ vi.mock('vike-react/useData', () => ({
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'en', urlPathname: '/index', translations: EN_TRANSLATIONS }),
 }))
-vi.mock('../components/organisms/Header', () => ({
+vi.mock('@/components/organisms/Header', () => ({
   // Stands in for Header's fragment: the banner, then the sticky nav. Both
   // carry what the layout hands them, because where the nav sits and what band
   // it is given are LayoutChrome's own contract (#204).
@@ -38,7 +38,7 @@ vi.mock('../components/organisms/Header', () => ({
     </>
   ),
 }))
-vi.mock('../components/organisms/Footer', () => ({
+vi.mock('@/components/organisms/Footer', () => ({
   Footer: ({ languages }: { languages: { code: string; href: string }[] }) => (
     <footer>{languages.map((l) => `${l.code}:${l.href}`).join(',')}</footer>
   ),
