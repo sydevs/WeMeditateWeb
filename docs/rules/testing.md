@@ -32,7 +32,7 @@ pnpm test:ui        # Vitest UI
   `tests/guards/`.
 - `vitest.config.ts` enables Vitest's globals. Import `describe`, `it`, and `expect` from
   `'vitest'` explicitly, to
-  match existing files such as [lib/cloudflare-images.test.ts](../../lib/cloudflare-images.test.ts)
+  match existing files such as [lib/media/cloudflare-images.test.ts](../../lib/media/cloudflare-images.test.ts)
   and [server/error-utils.test.ts](../../server/error-utils.test.ts).
 
 **Test a React component without jsdom:**

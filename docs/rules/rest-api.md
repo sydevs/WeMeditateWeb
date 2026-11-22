@@ -1,19 +1,20 @@
 ---
 paths:
-  - "server/sahajcloud-client.ts"
-  - "server/sahajcloud-types.ts"
-  - "server/payload-client.ts"
-  - "server/atlas-client.ts"
+  - "server/sahajcloud/**"
+  - "types/sahajcloud.ts"
+  - "lib/i18n/web-translations.ts"
 ---
 
 # Working with the REST API
 
 ## Add a new query function
 
-1. Define or import TypeScript types from [server/payload-types.ts](../../server/payload-types.ts).
-2. Add app-specific types to [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts) if
+1. Define or import TypeScript types from
+   [types/payload/payload-types.ts](../../types/payload/payload-types.ts).
+2. Add app-specific types to [types/sahajcloud.ts](../../types/sahajcloud.ts) if
    needed.
-3. Add the query function to [server/sahajcloud-client.ts](../../server/sahajcloud-client.ts):
+3. Add the query function to the file in [server/sahajcloud/](../../server/sahajcloud/) for its
+   kind of read (its select and populate go in `selects.ts`), and export it from `index.ts`:
    ```typescript
    export async function getNewContent(options: QueryOptions & { slug: string }) {
      return withRetryUnlessPreview(
@@ -25,7 +26,7 @@ paths:
            where: { slug: { equals: options.slug } },
            locale: options.locale,
            depth: 2,
-           // Without either one, SahajCloud answers 400. See server/AGENTS.md.
+           // Without either one, SahajCloud answers 400. See server/sahajcloud/AGENTS.md.
            select: CONTENT_SELECT,
            populate: CONTENT_POPULATE,
          })
@@ -43,7 +44,7 @@ paths:
    change to `CACHE_TTLS` upstream and nowhere else.
 
    `withRetryUnlessPreview` supplies the retry: three attempts for a public read, none for a
-   preview read, which must fail fast. A read outside `sahajcloud-client.ts` has no preview
+   preview read, which must fail fast. A read outside the content reads (the atlas, the sitemap) has no preview
    variant and calls `withRetry` directly — see `getAtlasSeo`. Never leave one unwrapped because
    it degrades quietly; that is the case that needs it most. Let SDK errors propagate into it.
    `@payloadcms/sdk` throws a `PayloadSDKError`
@@ -71,14 +72,14 @@ const { settings, translations } = await loadSiteContext(pageContext)
 `loadSiteContext` fetches both in parallel, memoizes the promise for the request through
 `perRequest` ([server/request-memo.ts](../../server/request-memo.ts)), and 404s a URL whose locale
 is not in `settings.availableLocales`. Adding a third global means adding
-it there, not adding a seventh call site. `server/api-routes.ts` is the exception — it has no
-`pageContext` — and calls `getWebConfig` directly.
+it there, not adding a seventh call site. `server/routes/api/related-lectures/` is the exception
+— it has no `pageContext` — and calls `getWebConfig` directly.
 
 A global still needs a typed `select`, like a collection read. `findGlobal` takes no `where`, and
 takes `populate` only when it has relationships to resolve (`WEB_TRANSLATIONS_SELECT` reads at
 `depth: 0`, because its groups are plain strings).
 
-`WEB_TRANSLATIONS_SELECT` lives in [server/sahajcloud-types.ts](../../server/sahajcloud-types.ts),
+`WEB_TRANSLATIONS_SELECT` lives in [lib/i18n/web-translations.ts](../../lib/i18n/web-translations.ts),
 beside the `WebTranslations` type that derives from it. Add a group there and it is both fetched
 and typed. Listing the groups anywhere else lets the query and the type disagree.
 
@@ -86,8 +87,8 @@ and typed. Listing the groups anywhere else lets the query and the type disagree
 which is the whole reason `tsx` is a devDependency. The client gate 400s a global read carrying no
 `select`, and takes bracketed keys only, so the script names each group from it. Adding a group
 reaches all three — the query, the type, and the snapshot — so the three cannot drift. Keep it that
-way: `lib/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships to the
-browser, and a group outside the select would be bytes no `useT()` call could address.
+way: `lib/i18n/i18n.ts` imports the snapshot as `useT()`'s fallback, so every string in it ships
+to the browser, and a group outside the select would be bytes no `useT()` call could address.
 
 ## Translations are SahajCloud-owned
 
@@ -112,12 +113,12 @@ It downloads the latest `payload-types.ts` from SahajCloud.
 
 Every REST API request needs an `Authorization: clients API-Key {apiKey}` header. The SDK client
 factory adds this header for you, and
-[server/sahajcloud-fetch.ts](../../server/sahajcloud-fetch.ts) adds it to every read of a custom
+[server/sahajcloud/fetch.ts](../../server/sahajcloud/fetch.ts) adds it to every read of a custom
 root endpoint. Nothing else composes that header.
 
 ## A public write is a proxy, not a query function
 
-Contact and subscribe submissions do not go through `sahajcloud-client.ts`. They post to the
+Contact and subscribe submissions do not go through `server/sahajcloud/`. They post to the
 same-origin `POST /api/submissions`, which forwards one create to SahajCloud's `user-submissions`
 collection — the captcha header, the refusal envelope, and why the browser cannot make the call
 itself all live in [server/AGENTS.md](../../server/AGENTS.md). Nothing here is cached: a

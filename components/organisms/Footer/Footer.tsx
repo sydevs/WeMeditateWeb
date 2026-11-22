@@ -1,8 +1,8 @@
-import { FooterLinkList, FooterLink } from '../../molecules/FooterLinkList'
-import { LanguageDropdown, LanguageOption } from '../../molecules/LanguageDropdown'
-import type { Locale } from '../../../server/sahajcloud-types'
-import { SocialIcon } from '../../atoms/graphics/SocialIcon'
-import { FloralDividerSvg } from '../../atoms/graphics/svgs'
+import { FooterLinkList, FooterLink } from '@/components/molecules/FooterLinkList'
+import { LanguageDropdown, LanguageOption } from '@/components/molecules/LanguageDropdown'
+import type { Locale } from '@/types/sahajcloud'
+import { SocialIcon } from '@/components/atoms/graphics/SocialIcon'
+import { FloralDividerSvg } from '@/components/atoms/graphics/svgs'
 
 /** A footer section with title and links */
 export interface FooterSection {

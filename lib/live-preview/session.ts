@@ -1,4 +1,4 @@
-import { useOptionalPageContext } from '../../hooks/usePageContext'
+import { useOptionalPageContext } from '@/hooks/usePageContext'
 import { LIVE_PREVIEW_INACTIVE, type LivePreviewState } from './protocol'
 
 /**

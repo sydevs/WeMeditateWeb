@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LightboxContext, type LightboxSlide } from '../../atoms/Image/lightbox-context'
+import { LightboxContext, type LightboxSlide } from '@/components/atoms/Image/lightbox-context'
 import { Lightbox } from './index'
 
 /** Slides registered for one group, keyed by their document-order index. */

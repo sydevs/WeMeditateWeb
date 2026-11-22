@@ -19,11 +19,12 @@
 import { render } from 'vike/abort'
 import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
-import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import { getWebConfig, getWebTranslations } from './sahajcloud'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
-import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
-import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
+import type { Locale, WebConfig } from '@/types/sahajcloud'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
+import { EN_TRANSLATIONS, getT, type TFunction } from '@/lib/i18n/i18n'
 
 export interface SiteContext {
   settings: WebConfig

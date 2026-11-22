@@ -11,7 +11,7 @@
     "command": "pnpm types:cms"
   },
   "securityReview": {
-    "triggerPattern": "^server/|^pages/preview/|^wrangler\\.|^vite\\.config\\.ts|^sentry\\.[a-z]+\\.config\\.ts|^scripts/|^\\.env|^\\.dev\\.vars",
+    "triggerPattern": "^server/|^pages/preview/|^wrangler\\.|^vite\\.config\\.ts|^lib/sentry/|^scripts/|^\\.env|^\\.dev\\.vars",
     "rationale": "Server-side rendering, preview routes, and the deploy/build configuration."
   },
   "worktreeSetup": [
@@ -27,8 +27,8 @@
   },
   "generatedFiles": [
     {
-      "pattern": "^server/payload-types\\.ts$",
-      "reason": "`pnpm types:cms` generates `server/payload-types.ts`. It curls the schema from SahajCloud main and strips the module augmentation. Do not hand-edit this file. To change CMS types, first change the upstream schema and merge it. File the change with /workflow:file-ticket, which plans the producer first. For app-specific types, use `server/cms-types.ts`."
+      "pattern": "^types/payload/payload-types\\.ts$",
+      "reason": "`pnpm types:cms` generates `types/payload/payload-types.ts`. It curls the schema from SahajCloud main and strips the module augmentation. Do not hand-edit this file. To change CMS types, first change the upstream schema and merge it. File the change with /workflow:file-ticket, which plans the producer first. For app-specific types, use `types/sahajcloud.ts`."
     },
     {
       "pattern": "^dist/",
@@ -43,6 +43,6 @@
     "package.json",
     "pnpm-lock.yaml",
     "**/*.md",
-    "server/payload-types.ts"
+    "types/payload/payload-types.ts"
   ]
 }

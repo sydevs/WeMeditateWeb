@@ -6,7 +6,7 @@
  * This pins which URLs answer for it.
  */
 import { describe, it, expect } from 'vitest'
-import { fetchPage } from '../_helpers/preview'
+import { fetchPage } from '@/tests/smoke/_helpers/preview'
 
 describe('preview map', () => {
   it('answers at /map and not under a prefix that is not a locale', async () => {

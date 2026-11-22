@@ -2,9 +2,9 @@ import './fonts.css'
 import './style.css'
 import './tailwind.css'
 import * as Sentry from '@sentry/react'
-import { ErrorFallback } from '../components/molecules'
-import { useLivePreviewLinkGuard } from '../lib/live-preview/navigation'
-import { ROUTE_ANNOUNCER_ID } from '../lib/route-announcer'
+import { ErrorFallback } from '@/components/molecules'
+import { useLivePreviewLinkGuard } from '@/lib/live-preview/navigation'
+import { ROUTE_ANNOUNCER_ID } from '@/lib/a11y/route-announcer'
 
 /**
  * LayoutRoot — the global layout for every route.
@@ -13,7 +13,7 @@ import { ROUTE_ANNOUNCER_ID } from '../lib/route-announcer'
  * routes:
  * - the global stylesheets (fonts, base styles, Tailwind)
  * - the Sentry error boundary
- * - the route announcer (see `lib/route-announcer.ts`) — placed here, not in
+ * - the route announcer (see `lib/a11y/route-announcer.ts`) — placed here, not in
  *   LayoutChrome, so an embed route, which opts into no chrome, still
  *   announces
  * - the live-preview link guard (see `lib/live-preview/navigation.ts`) —

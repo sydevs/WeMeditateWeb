@@ -1,0 +1,496 @@
+# Design System Implementation Guide
+
+This guide covers component architecture, design tokens, and accessibility standards for
+WeMeditate's React + Tailwind CSS component library. It uses the Atomic Design methodology.
+
+## Atomic Design hierarchy
+
+| Level | Definition | Directory |
+| --- | --- | --- |
+| Atom | The smallest UI element. It cannot divide into smaller pieces without losing its meaning. | `components/atoms/` |
+| Molecule | A small group of atoms that work as one functional unit. | `components/molecules/` |
+| Organism | A complex, distinct section built from molecules and atoms. | `components/organisms/` |
+| Template | A page layout that places organisms into a structure, without real content. | `components/templates/` |
+| Page | A template filled with real content. | `pages/`, using Vike's `+Page.tsx` files |
+
+**When in doubt**: start at the smallest classification, then promote it if it needs to combine
+with something else. Promoting an atom to a molecule is easier than demoting a molecule to an
+atom.
+
+## Design tokens
+
+### Colors
+
+Based on the wemeditate.com brand. [layouts/tailwind.css](../layouts/tailwind.css) declares every
+token in its `@theme` block, and Tailwind generates the matching utilities from there —
+`bg-teal-700`, `text-gray-800`, `border-error`. Name the scale step directly, except for a colour
+that must change on a dark background: that one is a surface token (see [Surfaces](#surfaces)).
+
+The three tables below copy that block, so
+[tests/guards/design-tokens.test.ts](../tests/guards/design-tokens.test.ts) holds them to it: a
+token renamed, added or re-valued in `@theme` fails the suite until these tables follow.
+
+Three scales carry the brand. Each declares ten steps — `--color-teal-50` through
+`--color-teal-900`, and the same for `coral` and `gray`:
+
+| Step | Teal | Coral | Gray |
+| --- | --- | --- | --- |
+| `50` | `#ebf4f3` | `#fef5f3` | `#f7fbfa` |
+| `100` | `#c5e0dc` | `#fce4df` | `#f6f6f6` |
+| `200` | `#a3cec9` | `#fad2c9` | `#ebebeb` |
+| `300` | `#83bcb4` | `#f8c0b3` | `#d7d7d6` |
+| `400` | `#72b3a9` | `#f4a796` | `#c6c6c6` |
+| `500` | `#61aaa0` | `#e08e79` | `#aaaaa9` |
+| `600` | `#427b73` | `#c54d2e` | `#9d9d9c` |
+| `700` | `#3d726b` | `#b44528` | `#717171` |
+| `800` | `#2e5652` | `#8b3420` | `#5e6063` |
+| `900` | `#1f3a38` | `#5f2318` | `#555555` |
+
+Six tokens stand outside the scales:
+
+| Token | Hex | Use |
+| --- | --- | --- |
+| `--color-accent` | `#ff856f` | Bright coral, for a strong CTA |
+| `--color-error` | `#c34040` | Error text, borders and fills |
+| `--color-error-dark` | `#8b0000` | Critical error |
+| `--color-success` | `#427b73` | Success states — the same value as `--color-teal-600` |
+| `--color-info` | `#61aaa0` | Info states — the same value as `--color-teal-500` |
+| `--color-bg-warm` | `#faf0e3` | Warm page background |
+
+Which step each role reaches for on a light surface. Every text and fill pairing here clears the
+4.5:1 the accessibility table below sets, measured against `white` — the only light background,
+since `--color-bg-warm` has no call site. `tests/guards/text-contrast.test.ts` holds it there:
+
+| Role | Token | On white |
+| --- | --- | --- |
+| Primary button | `--color-teal-600`, hover `--color-teal-700`, active `--color-teal-800` | 4.87:1 |
+| Secondary button | `--color-coral-600`, hover `--color-coral-700`, active `--color-coral-800` | 4.69:1 |
+| Link | `--color-teal-600`, hover `--color-teal-700` | 4.87:1 |
+| Heading | `--color-gray-900` | 7.46:1 |
+| Body text | `--color-gray-700`, for muted text as well | 4.88:1 |
+| Error text | `--color-error` | 5.09:1 |
+| Border | `--color-gray-200`, or `--color-gray-300` for a stronger rule | n/a |
+| Surface | Tailwind's own `white`, then `--color-gray-50` and `--color-gray-100` | n/a |
+
+`gray-700`, `teal-600` and `error` each sit at the lightest value of their own hue and
+saturation that clears 4.5:1, so the brand reads as close to its original as the bar allows
+(#179). `-600` (2.71:1) and `-500` (2.33:1) tune to the same place as `gray-700`, so one muted
+grey now carries body and secondary text alike, which differ by weight or size instead. Both
+still clear 3:1, so they serve a border, an icon or large text (18pt+) — never normal-size
+text.
+
+### Surfaces
+
+A colour that depends on the background is a surface token, not a scale step. `surface-light`
+(also `:root`) and `surface-dark` in [layouts/tailwind.css](../layouts/tailwind.css) each set every
+token; a component uses the class and gets whichever surface it sits on.
+
+| Class | Light | Dark | Used for |
+| --- | --- | --- | --- |
+| `text-fg` | `gray-900` | white | Headings, current breadcrumb, countdown, splash text |
+| `text-fg-muted` | `gray-700` | white | Body and nav text, neutral links and icons, outline and ghost buttons |
+| `text-primary`, `-strong` | `teal-600`, `teal-700` | `teal-300`, `teal-200` | Links, primary icons and spinners |
+| `text-secondary`, `-strong` | `coral-600`, `coral-700` | `coral-300`, `coral-200` | Secondary links, icons and spinners |
+| `border-line` | `gray-500` | white | Outline button border, breadcrumb separator |
+| `border-line-subtle` | `gray-200` | white | Header rules |
+| `bg-tint` | `gray-100` | white at 20% | Ghost button hover and active fill |
+| `bg-highlight`, `text-on-highlight` | `teal-100`, `gray-800` | white, `gray-800` | Outline button hover |
+| `focus-ring` | `teal-600` over white | white over `teal-900` | Every focus indicator |
+
+Each works with any colour utility (`border-primary`, `bg-fg/50`). Filled buttons (`primary`,
+`secondary`, `neutral`) are the same on every surface, so they name scale steps. The rules for
+setting a surface are in [docs/rules/design-system.md](rules/design-system.md).
+
+Every light text token above clears 4.5:1 on white, and `text-on-highlight` clears it on
+`bg-highlight` (4.53:1) — `layouts/tailwind.test.ts` asserts each one. The `focus-ring` row is the
+exception: a focus indicator is a UI component, at 3:1, which `teal-600` clears at 4.87:1.
+
+**The dark side is narrower than the light side, and no product component tests it.** `teal-300`
+and `coral-300` keep the brand colour recognizable, and clear 4.5:1 only against a `900` step —
+`teal-300` reaches 5.71:1 on `teal-900` but 3.82:1 on `teal-800` and 2.95:1 on `gray-800`.
+Measured against the two dark surfaces the product actually paints, both fall short: on
+`OrnateTextBox`'s gradient, read at its lightest stop `#8a6f56`, `teal-300` measures 2.19:1 and
+`coral-300` 2.94:1, and a `Splash` photograph cannot be measured at all. Neither component draws
+either token — both paint white text throughout — so the only evidence is the story wrappers, and
+those were moved onto `teal-900` rather than the steps changed (#179). Measure the pair against
+your own surface before you are the first component to draw one.
+
+### Typography
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--font-sans` (`font-sans`) | `'Raleway', sans-serif` | Default for all text |
+| `--font-number` (`font-number`) | `'Futura Book', sans-serif` | Countdowns, large numbers, special headings |
+| `font-extralight` | 200 | Raleway Extra Light |
+| `font-light` | 300 | Raleway Light — default body |
+| `font-normal` | 400 | Raleway Regular |
+| `font-medium` | 500 | Raleway Medium — headings |
+| `font-semibold` | 600 | Raleway Semi Bold |
+| `font-bold` | 700 | Raleway Bold — emphasis |
+
+Fonts load through `@font-face` rules in [layouts/fonts.css](../layouts/fonts.css). See
+[public/fonts/README.md](../public/fonts/README.md) for the file layout.
+
+### Everything else
+
+Use Tailwind's defaults for spacing, font-size scale, line height, border radius, shadows, and
+transitions. This keeps the project aligned with the Tailwind ecosystem, with no extra
+configuration to maintain. See the [Tailwind CSS documentation](https://tailwindcss.com/docs) for
+the full default scale.
+
+## Mobile-first and responsive design
+
+Design for the smallest screen first, then add Tailwind's responsive prefixes for larger ones.
+
+| Prefix | Width | Device |
+| --- | --- | --- |
+| (none) | 0px+ | Mobile |
+| `sm:` | 640px+ | Small tablets |
+| `md:` | 768px+ | Tablets, laptops |
+| `lg:` | 1024px+ | Laptops, desktops |
+| `xl:` / `2xl:` | 1280px+ / 1536px+ | Large desktops |
+
+Apply this to every molecule and organism. Apply it to an atom whenever it has layout
+implications (a container, a spacer, a complex button). Use judgment for a simple atom (plain
+text, an icon). Never skip it for a template or a page-level organism.
+
+Every interactive element needs a touch target of at least 44×44px on mobile — see
+[docs/rules/design-system.md](rules/design-system.md) for the two utilities that give it.
+
+See [docs/rules/design-system.md](rules/design-system.md) for the Icon, Button, Link, and
+Divider component conventions, and the route-announcer rule for client-side navigation.
+
+## Component architecture
+
+```
+components/
+├── atoms/           # Basic building blocks
+├── molecules/       # Simple component groups
+├── organisms/       # Complex component sections
+└── templates/       # Page layout structures
+```
+
+A component imports from its own level or a lower one, never a higher one: an atom's contract
+with a molecule lives with the atom, as the `Image` atom's lightbox context does.
+[tests/guards/atomic-imports.test.ts](tests/guards/atomic-imports.test.ts) holds the rule.
+
+| Level | Example components |
+| --- | --- |
+| Atoms | Button, Input, Label, Heading, Text, Link, Icon, Image, Divider, Checkbox, Radio, Select, Toggle. Also Spinner, SplashLoader, Badge, Tag, Container, Breadcrumbs, Countdown, LanguageFlag, SocialIcon, Logo, Avatar, PageTitle. |
+| Molecules | FormField, SearchBar, FormGroup, InputWithIcon, LocationSearch, NavItem, Dropdown, LanguageSelector, ContentCard, MediaCard, Stat, Quote, Alert, ContentGrid, MasonryGrid, AudioPlayer, VideoPlayer, Accordion, Tooltip |
+| Organisms | Header, Footer, Sidebar, MobileMenu, Hero, TechniqueCard, MeditationGrid, ArticleList, TestimonialCarousel, FeatureSection, CTASection, ContactForm, NewsletterSignup, SearchInterface, ArticleContent, AudioLibrary, VideoGallery, RelatedContent |
+| Templates | DefaultLayout, FullWidthLayout, ArticleLayout, GridLayout, SplitLayout |
+
+See a component's own README for its full API — for example
+[components/atoms/README.md](../components/atoms/README.md) for the atom index.
+
+**ContentGrid vs. MasonryGrid**: `ContentGrid` renders `ContentCard` items in a responsive
+masonry layout and always shows every item. `MasonryGrid` renders text content with a "Show
+More" control. Do not use them interchangeably.
+
+## File organization
+
+Each component lives in its own directory:
+
+```
+components/atoms/Button/
+├── Button.tsx           # Main component
+├── Button.types.ts      # TypeScript interfaces
+├── index.ts             # Public exports
+└── README.md            # Component documentation (optional)
+```
+
+### SVG components
+
+Extract a standalone SVG into `components/atoms/graphics/svgs/`.
+
+- Suffix the name with `Svg` (`LogoSvg`, `LeafSvg`, `TriangleDecorationSvg`).
+- Accept a `className` prop for sizing. Do not add custom size props (`xs`/`sm`/`md`/`lg`).
+- Extend `ComponentProps<'svg'>` for the full set of SVG attributes.
+- Use `currentColor` for every fill and stroke, so the graphic inherits the surrounding text
+  color.
+- Keep the original default `className` from the inline version you extracted it from.
+- Extract a new SVG component for a brand icon, an illustration, or a decorative element. Keep an
+  inline SVG only when it is specific to one component. For a standard UI icon, use the `Icon`
+  component (Heroicons) instead of a new SVG component.
+
+```tsx
+import { ComponentProps } from 'react'
+
+export interface LogoSvgProps extends ComponentProps<'svg'> {}
+
+export function LogoSvg({ className = 'w-5 h-5', ...props }: LogoSvgProps) {
+  return (
+    <svg viewBox="0 0 18 14" className={className} fill="none" {...props}>
+      <g fill="none" fillRule="evenodd" stroke="currentColor" strokeWidth=".75" />
+    </svg>
+  )
+}
+```
+
+### Naming conventions
+
+| What | Convention | Example |
+| --- | --- | --- |
+| Components | PascalCase | `Button`, `MediaCard` |
+| Files | Match the component name | `Button.tsx` |
+| Props | camelCase, descriptive | `isLoading`, `onSubmit` |
+| Boolean props | Prefix `is`, `has`, `should`, or `can` | `isOpen`, `hasError` |
+| Custom CSS classes | kebab-case (prefer Tailwind utilities) | `hero-gradient` |
+
+## Component design checklist
+
+Before you implement a component, answer each question:
+
+- [ ] What is this component's single responsibility?
+- [ ] Is this the right atomic level (atom, molecule, organism)?
+- [ ] Can it divide into smaller components?
+- [ ] Does something similar already exist?
+- [ ] What is the smallest prop set that keeps it flexible?
+- [ ] What states can it be in?
+- [ ] How will different contexts use it?
+
+## When to extract a component
+
+| Use direct Tailwind classes when | Extract a component when |
+| --- | --- |
+| The styling is simple (a div, a span, plain text) | It has complex interactive behavior (state, effects, event handlers) |
+| The styling is specific to one page or component | It repeats in 3 or more locations |
+| It is used in only 1–2 places | It composes several atoms (a molecule) |
+| It has no state, effects, or behavior | It needs many conditional styles or variants |
+| | It renders as different HTML elements (a polymorphic `Heading`) |
+
+If a wrapper only repeats Tailwind classes with no logic, use the classes directly instead. The
+project removed its `Text` component for this reason — it wrapped Tailwind classes with no added
+behavior, and callers now write `<div className="text-sm sm:text-base font-light">` directly.
+
+To remove an overengineered component:
+1. Find every import: `grep -r "from '.*ComponentName'"`.
+2. Replace each usage with direct HTML and Tailwind classes.
+3. Remove it from the barrel export, then remove the component files.
+
+## Extract a design from an existing page
+
+1. Identify the atomic level, and note where and how the design is used.
+2. Read the values from DevTools: layout and spacing (`padding`, `margin`, `display`), typography
+   (`fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`), color
+   (`color`, `background`, `borderColor`), and any `::before`/`::after` pseudo-elements.
+3. Map each value to the closest Tailwind token:
+
+   | CSS value | Tailwind token |
+   | --- | --- |
+   | `8px` / `16px` / `24px` / `32px` | `2` / `4` / `6` / `8` |
+   | `14px` / `16px` / `18px` / `32px` font size | `text-sm` / `text-base` / `text-lg` / `text-4xl` |
+   | `0.3` opacity | `/30` |
+   | An arbitrary opacity (`0.18`) | `/[0.18]` |
+4. Implement mobile-first, then add `sm:`/`md:`/`lg:` overrides, and test every breakpoint.
+5. Check the edge cases: long text, a missing optional field, and every viewport size.
+6. Compare the result to the original design, and check accessibility (contrast, semantic HTML,
+   ARIA).
+
+See [MCP_USAGE.md](MCP_USAGE.md) for the Playwright MCP workflow that extracts these values from a
+live page.
+
+## Size variants
+
+Use a three-tier scale: `sm`, `md` (default), `lg`. Small suits a compact element, like a card or
+a thumbnail. Medium suits most content areas. Large suits a hero section or a full-page element.
+Scale each size roughly 20–30% over the previous one, and scale gaps proportionally with the
+element.
+
+```tsx
+const sizeClasses = {
+  sm: { element: 'w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24', text: 'text-sm sm:text-base md:text-lg' },
+  md: { element: 'w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28', text: 'text-base sm:text-lg md:text-xl' },
+  lg: { element: 'w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40', text: 'text-lg sm:text-xl md:text-2xl' },
+}
+```
+
+Give a `size` prop this default: `size = 'md'`. Always implement all three tiers, document which
+one to use where, and test each at every breakpoint.
+
+## Width control
+
+`w-full` and a narrower `w-*` class have the same CSS specificity. Overriding `w-full` with
+`className="w-64"` does not work reliably — whichever rule comes last in the generated
+stylesheet wins, not whichever comes last in the JSX.
+
+Use `max-w-*` instead, since `max-width` composes with `width: 100%`:
+```tsx
+<Input className="max-w-xs" />   // caps it at 20rem
+```
+Or wrap the component in a sized container, when you also need centering (`mx-auto`) or a shared
+width across several inputs:
+```tsx
+<div className="max-w-md mx-auto"><Input /></div>
+```
+
+## Subcomponent extraction
+
+Extract a subcomponent into the same file when the pattern repeats 2–3 times within one parent
+and is specific to that parent's context. It should remove 30 or more duplicate lines. Define it
+above the parent's export, with its own prop interface even when that interface is not exported.
+
+Create a separate atom component instead when multiple different parents use the pattern,
+or you expect 3 or more use sites.
+
+## Rich text rendering
+
+PayloadCMS content arrives as a rich-text AST. Build one renderer per node type under
+`components/organisms/RichTextRenderer/nodes/` (`HeadingNode`, `ParagraphNode`, `ImageNode`,
+`QuoteNode`, and so on), and switch on `node.type` in the top-level renderer.
+
+## Locale-aware components
+
+Use the `Link` component from `components/atoms/Link` for internal navigation — it prefixes the
+locale automatically (`/meditation` becomes `/es/meditation` in Spanish). A custom component that
+needs the locale reads it from `usePageContext()` (`vike-react/usePageContext`).
+
+## State management
+
+Use `useState` for state local to one component. Fetch server state in a page's `+data.ts`, then
+read it with `useData()`. Use Vike's routing for URL state (filters, pagination). Reach for React
+Context only when composition does not work, since it is the exception here, not the default.
+
+## Performance
+
+- Serve images as WebP with a fallback (`<picture>` + `<source type="image/webp">`).
+- **A page's hero needs `loading="eager"` and `fetchPriority="high"`, never a CSS
+  `background-image`.** `<Image priority sizes="...">` sets both, and React hoists a
+  `<link rel="preload" as="image">` for any image that is not `loading="lazy"`, so the preload
+  needs no hand-written `<link>` — but not inside a `<picture>`, which trades the preload for the
+  WebP fallback above. Set it on one or two images per page; the prop's own docs say why marking
+  everything prioritizes nothing. A hero that must fill a sized parent hand-rolls its `<img>`
+  instead: the atom's container owns that layout and `className` reaches the image, and #145
+  deferred a fill mode. `<Splash priority>` is the worked example.
+- **A component's first-render state must produce visible markup.** Gating an element on
+  `opacity-0` until a `useState(true)` clears ships it invisible from the server, and out of LCP
+  contention. Enter a loading state only from a change after the first render (#145).
+- Lazy-load a heavy component with `React.lazy` and wrap it in `<Suspense>`.
+- Memoize an expensive computation with `useMemo`, and a callback passed to a memoized child with
+  `useCallback`.
+
+## Accessibility (WCAG 2.1 AA)
+
+| Area | Requirement |
+| --- | --- |
+| Keyboard | Every interactive element is reachable by keyboard, in the visual tab order, with the `focus-ring` utility (never a hand-written ring — see `docs/rules/design-system.md`). Escape closes a modal or dropdown. |
+| Semantic HTML | Use `<nav>`, `<main>`, `<article>`, `<button>` for actions, `<a>` for navigation, and `<h1>`–`<h6>` in order. |
+| ARIA | Add ARIA only where semantic HTML falls short — `aria-expanded`/`aria-haspopup` on a dropdown trigger, `aria-busy`/`aria-live` on a loading button. |
+| Color contrast | 4.5:1 for normal text, 3:1 for large text (18pt+) and for UI components. A logotype, and text that is pure decoration, owe neither — `aria-hidden` alone does not make informative text decorative. The one deviation is the form placeholder, held at `gray-500` so an empty field does not read as filled in; every field pairs with a visible label, so nothing rests on it (#199). Reach for a surface token or a role from the table above, and `tests/guards/text-contrast.test.ts` has already measured it. |
+| Alt text | A decorative image uses `alt=""` and `role="presentation"`. An informative image needs a real description. |
+| Forms | Pair every input with a `<label htmlFor>`, and set `aria-invalid` and `aria-describedby` on an errored field, pointing at an `id` with `role="alert"`. |
+
+## Motion
+
+Honouring reduced motion is a house convention here, not a conformance item: WCAG 2.1 puts
+animation from interactions at AAA (2.3.3), and 2.2.2 Pause, Stop, Hide starts above five seconds.
+
+- A JavaScript-driven animation that a visitor's own action triggers checks
+  `prefers-reduced-motion: reduce` and skips it — see
+  [hooks/useFadeOnChange.ts](../hooks/useFadeOnChange.ts).
+
+## Tailwind configuration
+
+[layouts/tailwind.css](../layouts/tailwind.css) holds the theme: the teal, coral and gray scales,
+the standalone semantic colors (accent, error, success, info), the warm background, the
+Raleway/Futura Book font families with weights 200–700, and two custom animations. Everything else
+uses Tailwind's defaults.
+
+There is no `tailwind.config.ts`, and adding one changes nothing without an `@config` directive
+pointing at it. Change [layouts/tailwind.css](../layouts/tailwind.css) and nothing else — see
+[docs/rules/tailwind.md](rules/tailwind.md) for what it scans and the guard that holds
+utilities to it.
+
+**v4 gradient syntax**: Tailwind v4 renamed the gradient-direction utilities for consistency with
+CSS. Use `bg-linear-to-*`, not the v3 `bg-gradient-to-*`:
+```tsx
+className="bg-linear-to-b from-white to-transparent"  // top to bottom
+```
+The same rename applies to every direction: `-t`, `-r`, `-l`, `-br`, `-bl`, `-tr`, `-tl`.
+
+## Cloudflare Images
+
+The `<Image>` atom detects an `imagedelivery.net/` URL and resolves it to a flexible variant,
+`width=<n>`, to request an optimized, format-negotiated image, plus a matching `srcset`. SahajCloud sends every image URL with a `/public` variant segment already on it, so the
+variant **replaces** that segment rather than being appended. A non-Cloudflare URL (a static
+asset, a story placeholder) stays unchanged.
+
+| Aspect ratio | Widths |
+| --- | --- |
+| `square` (1:1) | 200, 400, 800, 1200 |
+| `video` (16:9) | 640, 800, 1024, 1536 |
+| `4-3`, `3-2` | 800, 1024, 1536 |
+| `ultrawide` (21:9) | 1536, 2048 |
+
+**Size tiers**: `xsmall` \| `small` \| `medium` (default) \| `large` \| `xlarge`. When a tier is
+undefined for a ratio, the helper defaults to `medium`, then to that ratio's smallest width, so
+the width it picks is deterministic. `xsmall` exists only on `square`, for a thumbnail box —
+an avatar, a now-playing tile. Flexible variants need no dashboard entry per width, so the table
+above is the whole list.
+
+**An `aspectRatio` is what asks for a variant at all, and a `sizes` is what makes the srcset
+worth having.** Without the ratio the atom hands the URL through untouched, so the box gets the
+full-size original. Without a `sizes` the browser has nothing to resolve the srcset against and
+may fetch 800px into a 48px tile (#146).
+
+Each prop is held by what can hold it. **`sizes` is required by `ImageProps`**, so `tsc` faults
+a call site that declares no box — including one forwarding a `sizes` of its own that is
+`undefined`, the spelling a lint selector reads as compliant (#206). A component that renders an
+`<Image>` it does not size therefore takes a `sizes` of its own and passes it on: `ContentCard`,
+`ContentGrid` and `ContentIndex` each do, and the length is chosen where the container width is.
+**`aspectRatio` stays a lint rule**, `local/img-loading`'s neighbour `local/image-aspect-ratio`
+in [eslint-rules/index.js](../eslint-rules/index.js), because the prop is optional by design — an
+`<Image>` whose src is not Cloudflare's needs no ratio, so no type can demand it.
+[tests/guards/image-variants.test.ts](../tests/guards/image-variants.test.ts) proves the rule is
+still wired to the component tree, and pins the raw `<img>` population it cannot reach: a
+hand-rolled one reds that spec until someone says whether its `src` reaches `getImageURL`.
+
+`<Splash>` and `<SplashLoader>` expose `imageAspectRatio`/`imageSize` for the same treatment
+(default `ultrawide`/`xlarge`). The old slash notation maps as: `16/9` → `video`, `21/9` →
+`ultrawide`, `4/3` → `4-3`, `3/2` → `3-2`. See
+[lib/media/cloudflare-images.ts](../lib/media/cloudflare-images.ts) for the source.
+
+## Icons
+
+This project uses [Heroicons](https://heroicons.com/) — outline (24×24) and solid (24×24, 20×20),
+MIT licensed and tree-shakeable. Import from `@heroicons/react/24/outline` or `/solid`, and pass
+the icon component to the `Icon` wrapper:
+
+```tsx
+import { HeartIcon } from '@heroicons/react/24/outline'
+import { Icon } from './components/atoms'
+
+<Icon icon={HeartIcon} size="lg" color="primary" />
+```
+
+An icon with no `aria-label` is decorative: `Icon` marks it `aria-hidden`. Pass `aria-label` when
+the icon carries meaning on its own, and the wrapper becomes `role="img"` so the name reaches the
+accessibility tree — ARIA forbids naming the bare `<span>` a decorative icon renders as.
+
+## Component stories
+
+Every component needs a Ladle story for visual documentation and isolated development. See
+[STORYBOOK.md](STORYBOOK.md) for the story utility components, section order, and configuration.
+Run `pnpm ladle` to view every story at [http://localhost:61000/](http://localhost:61000/).
+
+## Manual testing checklist
+
+Before you mark a component complete, check it:
+
+- [ ] Renders correctly on mobile, tablet, and desktop.
+- [ ] Works with keyboard navigation, with a visible focus indicator.
+- [ ] Handles its loading and error states.
+- [ ] Works with both short and long content.
+- [ ] Works in every supported locale.
+- [ ] Passes the accessibility checks above.
+
+## Resources
+
+- [AGENTS.md](../AGENTS.md) — repo-wide conventions and the rule map
+- [docs/rules/design-system.md](rules/design-system.md) — the `components/**` rule that
+  points here, plus Icon/Button/Link/Divider conventions this guide does not cover
+- [server/CACHING.md](../server/CACHING.md) — the SahajCloud caching strategy
+- [Atomic Design Methodology](https://atomicdesign.bradfrost.com/chapter-2/) — Brad Frost's
+  original methodology
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)

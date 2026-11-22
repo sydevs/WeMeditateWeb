@@ -6,7 +6,7 @@ import { FloralDividerSvg } from './FloralDividerSvg'
 import { HeaderIllustrationSvg } from './HeaderIllustrationSvg'
 import { TriangleDecorationSvg } from './TriangleDecorationSvg'
 import { AnimatedLogoSvg } from './AnimatedLogoSvg'
-import { StoryWrapper, StorySection } from '../../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Atoms / Graphics',

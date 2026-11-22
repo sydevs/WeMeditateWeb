@@ -5,11 +5,11 @@
  * combine organisms, molecules, and atoms into complete page structures.
  */
 
-export { PageTemplate } from './PageTemplate'
-export type { PageTemplateProps } from './PageTemplate'
+export { PageTemplate } from './PageTemplate/PageTemplate'
+export type { PageTemplateProps } from './PageTemplate/PageTemplate'
 
-export { MeditationTemplate } from './MeditationTemplate'
-export type { MeditationTemplateProps } from './MeditationTemplate'
+export { MeditationTemplate } from './MeditationTemplate/MeditationTemplate'
+export type { MeditationTemplateProps } from './MeditationTemplate/MeditationTemplate'
 
-export { LectureTemplate, LecturePlayer } from './LectureTemplate'
-export type { LectureTemplateProps, LecturePlayerProps } from './LectureTemplate'
+export { LectureTemplate, LecturePlayer } from './LectureTemplate/LectureTemplate'
+export type { LectureTemplateProps, LecturePlayerProps } from './LectureTemplate/LectureTemplate'

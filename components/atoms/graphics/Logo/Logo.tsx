@@ -1,7 +1,7 @@
 import { HTMLAttributes } from 'react'
-import { Link } from '../../Link'
-import { LogoSvg } from '../svgs'
-import { useT } from '../../../../hooks/useT'
+import { Link } from '@/components/atoms/Link'
+import { LogoSvg } from '@/components/atoms/graphics/svgs'
+import { useT } from '@/hooks/useT'
 
 export interface LogoProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
   /** Logo variant */

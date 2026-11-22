@@ -1,8 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { FormBuilder } from './FormBuilder'
-import { submissionBody } from '../../../lib/submissions'
-import { StoryWrapper, StorySection } from '../../ladle'
-import type { EmbeddedForm } from '../../../server/sahajcloud-types'
+import { submissionBody } from '@/lib/forms/submissions'
+import { StoryWrapper, StorySection } from '@/components/ladle'
+import type { EmbeddedForm } from '@/types/sahajcloud'
 
 export default {
   title: 'Organisms',

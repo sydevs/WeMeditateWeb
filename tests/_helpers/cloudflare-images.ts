@@ -10,7 +10,7 @@
  * `CF_PUBLIC_URL` derives from `CF_BASE`, so the two cannot drift: a spec
  * asserting `${CF_BASE}/width=200` is asserting about the URL it passed in.
  *
- * `lib/cloudflare-images.test.ts` and `components/atoms/Image/Image.test.tsx`
+ * `lib/media/cloudflare-images.test.ts` and `components/atoms/Image/Image.test.tsx`
  * keep their own copies on purpose — a spec for the resolver must not take its
  * input from a helper the resolver's own callers share.
  */

@@ -10,7 +10,7 @@ import {
 } from './clip'
 
 describe('resolveClipWindow', () => {
-  // A full lecture carries neither bound (`lib/lecture-shape.ts`), and must get no seek and no
+  // A full lecture carries neither bound (`lib/content/lecture-shape.ts`), and must get no seek and no
   // injected pause: the player renders the library's own time controls for it.
   it.each([
     ['both null', null, null],

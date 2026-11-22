@@ -1,12 +1,12 @@
 import { ComponentProps, useState, useEffect, useRef } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
-import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '../../atoms'
-import { HeaderIllustrationSvg } from '../../atoms/graphics/svgs'
+import { Link, Breadcrumbs, BreadcrumbItem, Logo, Button, Icon } from '@/components/atoms'
+import { HeaderIllustrationSvg } from '@/components/atoms/graphics/svgs'
 import { HeaderNavDropdown } from './HeaderNavDropdown'
-import { MobileMenu, type MobileMenuProps } from '../MobileMenu'
-import type { HeaderDropdownProps } from '../HeaderDropdown'
+import { MobileMenu, type MobileMenuProps } from '@/components/organisms/MobileMenu'
+import type { HeaderDropdownProps } from '@/components/organisms/HeaderDropdown'
 import { barRow, trailingIconInset } from './bar'
-import { useT } from '../../../hooks/useT'
+import { useT } from '@/hooks/useT'
 
 /**
  * A single top-level nav entry. An item with a `dropdown` renders as a

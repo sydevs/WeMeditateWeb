@@ -5,7 +5,7 @@ import {
   CF_BASE,
   CF_PUBLIC_URL as THUMBNAIL,
   PASSTHROUGH_SOURCES,
-} from '../../../tests/_helpers/cloudflare-images'
+} from '@/tests/_helpers/cloudflare-images'
 
 /** Class attribute of the outer <article>, which gates the whole card. */
 function articleClass(html: string): string {

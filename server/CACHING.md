@@ -31,19 +31,19 @@ Two things follow for anyone adding a read:
 
 ## Retry, which is not caching
 
-`withRetry` ([error-utils.ts](./error-utils.ts)) is three attempts with exponential backoff and
+`withRetry` ([error-utils.ts](error-utils.ts)) is three attempts with exponential backoff and
 jitter, on network and 5xx errors only. `withCache` used to run it on every miss, so every read it
 wrapped keeps it now that the cache is gone.
 
-`withRetryUnlessPreview` in [sahajcloud-client.ts](./sahajcloud-client.ts) adds the one exception:
+`withRetryUnlessPreview` in [query.ts](sahajcloud/query.ts) adds the one exception:
 a **preview** read skips the retry, because an editor watching their own edit needs the error now,
 not after about 7s of backoff.
 
 ⚠ **A read that degrades silently needs the retry most, not least.** `getAtlasSeo` returns `null`
 and both sitemap halves return `[]` on failure, in a response that still answers 200. Without the
 retry, one upstream blip costs an atlas page its server-rendered half, or the sitemap a whole
-section, with nothing in the output to say so. [atlas-client.ts](./atlas-client.ts) and
-[sitemap-routes.ts](./sitemap-routes.ts) call `withRetry` directly for that reason, and their
+section, with nothing in the output to say so. [sahajcloud/atlas.ts](sahajcloud/atlas.ts) and
+[routes/sitemap.xml/route.ts](routes/sitemap.xml/route.ts) call `withRetry` directly for that reason, and their
 tests pin the call.
 
 `content-index.ts` needs no wrapper. `fetchContentIndexDocs` degrades to `[]` and reports to

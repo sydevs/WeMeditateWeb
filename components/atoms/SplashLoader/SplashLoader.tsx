@@ -1,11 +1,11 @@
 import { ComponentProps, useEffect, useState } from 'react'
-import { AnimatedLogoSvg } from '../graphics/svgs/AnimatedLogoSvg'
+import { AnimatedLogoSvg } from '@/components/atoms/graphics/svgs/AnimatedLogoSvg'
 import {
   type AspectRatio,
   type ImageSize,
   getImageURL,
   getVariantName,
-} from '../../../lib/cloudflare-images'
+} from '@/lib/media/cloudflare-images'
 
 export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> {
   /**

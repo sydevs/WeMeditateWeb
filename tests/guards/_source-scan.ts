@@ -10,10 +10,10 @@
  */
 
 import ts from 'typescript'
-import { globSync, readFileSync } from 'node:fs'
+import { existsSync, globSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -108,6 +108,22 @@ export function parse(source: string): ts.SourceFile {
 export function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
   visit(node)
   node.forEachChild((child) => walk(child, visit))
+}
+
+/**
+ * The repo-relative module a relative or `@/` specifier names, or null for a
+ * package. Both spellings reach the same file, so a guard that reads one must
+ * read the other: `eslint.config.js` forbids `../` outside a folder, which
+ * leaves `@/` carrying every cross-folder import.
+ */
+export function resolveModule(from: string, specifier: string): string | null {
+  if (!specifier.startsWith('.') && !specifier.startsWith('@/')) return null
+  const base = specifier.startsWith('@/')
+    ? join(repoRoot, specifier.slice(2))
+    : resolve(dirname(from), specifier)
+  const file = ['', '.ts', '.tsx', '/index.ts'].map((ext) => base + ext).find(existsSync)
+
+  return file ? relative(repoRoot, file) : null
 }
 
 /** A module specifier a source file names. */

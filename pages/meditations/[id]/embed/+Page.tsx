@@ -1,10 +1,10 @@
 import { useData } from 'vike-react/useData'
 
 import type { MeditationEmbedPageData } from './+data'
-import { MeditationTemplate } from '../../../../components/templates'
-import { LivePreviewDocument } from '../../../../lib/live-preview/document'
-import { useFrameEditorChannel } from '../../../../lib/live-preview/frame-editor'
-import { sahajCloudOrigin, useDocumentPreviewActive } from '../../../../lib/live-preview/session'
+import { MeditationTemplate } from '@/components/templates'
+import { LivePreviewDocument } from '@/lib/live-preview/document'
+import { useFrameEditorChannel } from '@/lib/live-preview/frame-editor'
+import { sahajCloudOrigin, useDocumentPreviewActive } from '@/lib/live-preview/session'
 
 /**
  * Meditation embed page (/meditations/:id/embed) — designed for iframe

@@ -8,7 +8,7 @@
  *
  * That is the whole change here, so a fixture in the resolved shape would
  * pass against the bug. `LECTURE_SELECT` and `LECTURE_POPULATE`
- * (`server/sahajcloud-client.ts`) are what the server render and the populate
+ * (`server/sahajcloud/`) are what the server render and the populate
  * round trip both ask for, so a clip's `fullLecture` arrives as a populated
  * document carrying the parent's `metadata`. The clip below is that shape.
  */
@@ -16,9 +16,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import type { Lecture } from '../../../../server/sahajcloud-types'
-import { enT } from '../../../../lib/i18n'
-import { openTag } from '../../../../tests/_helpers/markup'
+import type { Lecture } from '@/types/sahajcloud'
+import { enT } from '@/lib/i18n/i18n'
+import { openTag } from '@/tests/_helpers/markup'
 import type { LecturePageData } from './+data'
 
 const PARENT_METADATA: Record<string, unknown> = {
@@ -80,7 +80,7 @@ vi.mock('vike-react/ClientOnly', () => ({
 }))
 // The transport is Payload's and needs a session. Stand in for it, recording
 // what it was mounted with and replaying whatever the panel last sent.
-vi.mock('../../../../lib/live-preview/document', () => ({
+vi.mock('@/lib/live-preview/document', () => ({
   LivePreviewDocument: ({
     children,
     initialData,

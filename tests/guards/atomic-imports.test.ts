@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { dirname, relative, resolve, sep } from 'node:path'
-import { readSource, repoRoot, sourceFiles, specifiers } from './_source-scan'
+import { relative, sep } from 'node:path'
+import { readSource, repoRoot, resolveModule, sourceFiles, specifiers } from './_source-scan'
 
 const LEVELS = ['atoms', 'molecules', 'organisms', 'templates'] as const
 
@@ -35,11 +35,10 @@ function upwardImports(file: string): string[] {
 
   return specifiers(readSource(file))
     .map((specifier) => specifier.text)
-    .filter((specifier) => specifier.startsWith('.'))
     .filter((specifier) => {
-      const target = levelOf(relative(repoRoot, resolve(dirname(file), specifier)))
+      const target = resolveModule(file, specifier)
 
-      return target !== null && target > own
+      return target !== null && (levelOf(target) ?? -1) > own
     })
     .map((specifier) => `${path}: ${specifier}`)
 }

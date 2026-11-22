@@ -2,8 +2,8 @@ import { SignJWT } from 'jose'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PageContextServer } from 'vike/types'
-import { LIVE_PREVIEW_PARAM } from '../lib/live-preview/protocol'
-import { hookViews } from '../tests/_helpers/page-context'
+import { LIVE_PREVIEW_PARAM } from '@/lib/live-preview/protocol'
+import { hookViews } from '@/tests/_helpers/page-context'
 import { loadLivePreview, verifyLivePreviewToken } from './live-preview'
 
 /**

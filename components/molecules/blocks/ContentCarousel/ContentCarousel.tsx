@@ -1,10 +1,10 @@
 import { ComponentProps } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
-import { ContentCard, ContentCardProps } from '../../ContentCard/ContentCard'
-import { Button } from '../../../atoms/Button/Button'
-import { useCarousel } from '../../../../hooks/useCarousel'
-import { useT } from '../../../../hooks/useT'
-import { ASPECT_RATIO_VALUES, type AspectRatio } from '../../../../lib/cloudflare-images'
+import { ContentCard, ContentCardProps } from '@/components/molecules/ContentCard/ContentCard'
+import { Button } from '@/components/atoms/Button/Button'
+import { useCarousel } from '@/hooks/useCarousel'
+import { useT } from '@/hooks/useT'
+import { ASPECT_RATIO_VALUES, type AspectRatio } from '@/lib/media/cloudflare-images'
 
 /** Carousel size variant. */
 export type ContentCarouselSize = 'sm' | 'md' | 'lg'
