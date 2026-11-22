@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { Link } from '@/components/atoms'
 import { LeafSvg } from '@/components/atoms/graphics/svgs'
-import type { Locale, NavPage } from '@/types/sahajcloud'
+import type { NavPage } from '@/types/sahajcloud'
 import { useT } from '@/hooks/useT'
 import { documentHref } from '@/lib/urls/document-routes'
 
@@ -13,9 +13,6 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
    * gets its action.
    */
   pages: readonly NavPage[]
-
-  /** Current locale for link prefixing */
-  locale?: Locale
 }
 
 /**
@@ -25,12 +22,7 @@ export interface DiscoverMeditationProps extends ComponentProps<'section'> {
  * Renders nothing when no page resolves to a link: a call to action with no
  * action is a dead end.
  */
-export function DiscoverMeditation({
-  pages,
-  locale,
-  className = '',
-  ...props
-}: DiscoverMeditationProps) {
+export function DiscoverMeditation({ pages, className = '', ...props }: DiscoverMeditationProps) {
   const t = useT()
 
   const actions = pages.flatMap((page) => {
@@ -83,7 +75,7 @@ export function DiscoverMeditation({
         {/* Action Items */}
         <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-start justify-center mt-12 lg:mt-24">
           {actions.map(({ page, href }) => (
-            <ActionItem key={page.id} href={href} locale={locale} page={page} />
+            <ActionItem key={page.id} href={href} page={page} />
           ))}
         </div>
       </div>
@@ -94,18 +86,16 @@ export function DiscoverMeditation({
 interface ActionItemProps {
   page: NavPage
   href: string
-  locale?: Locale
 }
 
 /** One configured page: a leaf, its title, and its description. */
-function ActionItem({ page, href, locale }: ActionItemProps) {
+function ActionItem({ page, href }: ActionItemProps) {
   const description = page.meta?.description?.trim()
 
   return (
     <Link
       className="flex flex-col items-center gap-3 group"
       href={href}
-      locale={locale}
       variant="neutral"
     >
       {/* The same leaf on every action. A page's `meta.image` is its share
