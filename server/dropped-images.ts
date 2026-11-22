@@ -7,8 +7,8 @@
  * editor who could fix it (server/AGENTS.md).
  */
 
-import { populatedImage } from '../lib/content-blocks'
-import { isPopulated } from '../lib/payload-relationships'
+import { populatedImage } from '@/lib/content/blocks'
+import { isPopulated } from '@/lib/content/payload-relationships'
 import { warnOnce } from './error-utils'
 
 /** One image reference the renderers drop. */

@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseEnv } from 'node:util'
 import { describe, it, expect } from 'vitest'
-import { isSafeHttpUrl } from '../../lib/urls'
+import { isSafeHttpUrl } from '@/lib/urls/urls'
 import { repoRoot } from './_source-scan'
 
 const production = parseEnv(readFileSync(join(repoRoot, '.env.production'), 'utf8'))

@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
-import { useLocale } from '../../../hooks/usePageContext'
-import { useT } from '../../../hooks/useT'
-import { isSafeLinkHref, localeHref } from '../../../lib/urls'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { useLocale } from '@/hooks/usePageContext'
+import { useT } from '@/hooks/useT'
+import { isSafeLinkHref, localeHref } from '@/lib/urls/urls'
+import type { Locale } from '@/types/sahajcloud'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   /** Link destination (will be locale-prefixed automatically) */

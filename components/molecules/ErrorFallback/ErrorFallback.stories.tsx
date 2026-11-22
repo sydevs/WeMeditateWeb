@@ -1,6 +1,6 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { ErrorFallback } from './ErrorFallback'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 import * as Sentry from '@sentry/react'
 
 export default {

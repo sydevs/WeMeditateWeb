@@ -1,3 +1,3 @@
 export { MusicLibrary } from './MusicLibrary'
 export type { MusicLibraryProps } from './MusicLibrary'
-export type { MusicFilter } from '../../molecules'
+export type { MusicFilter } from '@/components/molecules'

@@ -11,14 +11,14 @@ import {
   defaultJSXConverters,
 } from '@payloadcms/richtext-lexical/react'
 import type { JSXConverter, JSXConverters } from '@payloadcms/richtext-lexical/react'
-import { Blockquote, Container, Image, Link } from '../../atoms'
-import { populatedImage } from '../../../lib/content-blocks'
-import { Alert } from '../../molecules/Alert'
-import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
-import { FormBuilder } from '../FormBuilder'
-import { documentHref, type RelationValue } from '../../../lib/document-routes'
-import { isPopulated } from '../../../lib/payload-relationships'
-import type { EmbeddedForm } from '../../../server/sahajcloud-types'
+import { Blockquote, Container, Image, Link } from '@/components/atoms'
+import { populatedImage } from '@/lib/content/blocks'
+import { Alert } from '@/components/molecules/Alert'
+import { LightboxProvider } from '@/components/molecules/Lightbox/LightboxProvider'
+import { FormBuilder } from '@/components/organisms/FormBuilder'
+import { documentHref, type RelationValue } from '@/lib/urls/document-routes'
+import { isPopulated } from '@/lib/content/payload-relationships'
+import type { EmbeddedForm } from '@/types/sahajcloud'
 import {
   getNodeText,
   IMAGE_CREDIT_CLASS,

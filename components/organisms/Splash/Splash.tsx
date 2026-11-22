@@ -1,14 +1,14 @@
 import { ComponentProps, ReactNode } from 'react'
-import { LeafSvg } from '../../atoms/graphics/svgs'
-import { Link } from '../../atoms/Link'
-import { surface, type Surface } from '../../atoms/surface'
-import { isSafeLinkHref } from '../../../lib/urls'
+import { LeafSvg } from '@/components/atoms/graphics/svgs'
+import { Link } from '@/components/atoms/Link'
+import { surface, type Surface } from '@/components/atoms/surface'
+import { isSafeLinkHref } from '@/lib/urls/urls'
 import {
   type AspectRatio,
   type ImageSize,
   getImageURL,
   getVariantName,
-} from '../../../lib/cloudflare-images'
+} from '@/lib/media/cloudflare-images'
 
 export interface SplashProps extends Omit<ComponentProps<'div'>, 'children'> {
   /**

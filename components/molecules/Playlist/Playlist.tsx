@@ -1,8 +1,8 @@
 import { ComponentProps, useId } from 'react'
-import { Link, Button } from '../../atoms'
-import type { Track } from '../AudioPlayer/types'
-import type { HeroIcon } from '../../atoms/Icon/Icon'
-import { formatDuration } from '../../../lib/duration'
+import { Link, Button } from '@/components/atoms'
+import type { Track } from '@/lib/media/audio'
+import type { HeroIcon } from '@/components/atoms/Icon/Icon'
+import { formatDuration } from '@/lib/media/duration'
 
 export interface MusicFilter {
   /** Filter identifier, for example 'strings', 'vocal', 'wind' */

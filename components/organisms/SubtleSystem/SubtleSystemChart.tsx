@@ -1,5 +1,5 @@
 import type { Ref } from 'react'
-import chartSvg from '../../../assets/chart.svg?raw'
+import chartSvg from '@/assets/chart.svg?raw'
 
 /**
  * The subtle-system drawing, inlined rather than an `<img>` so `SubtleSystem`

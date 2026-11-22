@@ -9,7 +9,7 @@ When creating components based on existing designs from live websites (e.g., usi
 
 ## Step 1: Analyze the Existing Design
 
-**Using the Playwright MCP** (preferred for live sites — see `MCP_USAGE.md`):
+**Using the Playwright MCP** (preferred for live sites — see `docs/MCP_USAGE.md`):
 1. `browser_navigate({ url })`
 2. `browser_snapshot` to find the target element and its `ref`
 3. `browser_evaluate` with that `ref` and a function that reads the element:
@@ -30,7 +30,7 @@ When creating components based on existing designs from live websites (e.g., usi
 
 ## Step 2: Translate Design to Tailwind Tokens
 
-**IMPORTANT**: Before implementing, read @DESIGN_SYSTEM.md for design tokens, Tailwind usage guidelines, and mobile-first requirements.
+**IMPORTANT**: Before implementing, read @docs/DESIGN_SYSTEM.md for design tokens, Tailwind usage guidelines, and mobile-first requirements.
 
 **Always use Tailwind's built-in tokens** - never create custom CSS or arbitrary values unless explicitly required:
 
@@ -89,7 +89,7 @@ Before implementing, ask the user about:
 2. **Write TypeScript interfaces**: Clear prop types with JSDoc comments
 3. **Implement with Tailwind only**: No custom CSS unless approved
 4. **Add accessibility**: ARIA attributes, semantic HTML, keyboard support
-5. **Create stories**: Follow @STORYBOOK.md guidelines
+5. **Create stories**: Follow @docs/STORYBOOK.md guidelines
 6. **Export from index**: Add to `components/{level}/index.ts`
 
 ## Step 6: Verification

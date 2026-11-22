@@ -1,7 +1,7 @@
 import { useData } from 'vike-react/useData'
 import type { LectureEmbedPageData } from './+data'
-import { LecturePlayer } from '../../../../components/templates'
-import { resolveLecture } from '../../../../lib/lecture-shape'
+import { LecturePlayer } from '@/components/templates'
+import { resolveLecture } from '@/lib/content/lecture-shape'
 
 /**
  * Lecture embed page (/lectures/:id/embed) — designed for iframe embedding.

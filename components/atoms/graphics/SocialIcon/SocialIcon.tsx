@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Link } from '../../Link'
+import { Link } from '@/components/atoms/Link'
 
 /** Every social platform the site links to. */
 export type SocialPlatform =

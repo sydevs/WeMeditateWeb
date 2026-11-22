@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { MapPinIcon } from '@heroicons/react/24/outline'
-import { Spinner } from '../../atoms'
-import { useT } from '../../../hooks/useT'
+import { Spinner } from '@/components/atoms'
+import { useT } from '@/hooks/useT'
 
 /** Geolocation state */
 type GeolocationState = 'idle' | 'loading' | 'error'

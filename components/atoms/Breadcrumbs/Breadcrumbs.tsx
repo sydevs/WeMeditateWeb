@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react'
-import { Link } from '../Link'
-import { useT } from '../../../hooks/useT'
+import { Link } from '@/components/atoms/Link'
+import { useT } from '@/hooks/useT'
 
 export interface BreadcrumbItem {
   /** Label to display for the breadcrumb */

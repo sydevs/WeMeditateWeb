@@ -2,10 +2,10 @@
 
 import { useData } from 'vike-react/useData'
 import { PageData } from './+data'
-import { PageTemplate } from '../../components/templates'
-import { getLeadSplash } from '../../lib/content-blocks'
-import { isFeaturedNavPage } from '../../lib/featured-nav'
-import { LivePreviewDocument } from '../../lib/live-preview/document'
+import { PageTemplate } from '@/components/templates'
+import { getLeadSplash } from '@/lib/content/blocks'
+import { isFeaturedNavPage } from '@/lib/content/featured-nav'
+import { LivePreviewDocument } from '@/lib/live-preview/document'
 
 export function Page() {
   const { page: initialPage, settings } = useData<PageData>()

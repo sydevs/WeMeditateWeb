@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
-import { Avatar } from '../../atoms/Avatar/Avatar'
-import { Link } from '../../atoms/Link'
-import { useT } from '../../../hooks/useT'
+import { Avatar } from '@/components/atoms/Avatar/Avatar'
+import { Link } from '@/components/atoms/Link'
+import { useT } from '@/hooks/useT'
 
 export interface AuthorProps {
   /** Display variant */

@@ -1,8 +1,8 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FormBuilder } from './FormBuilder'
-import type { EmbeddedForm } from '../../../server/sahajcloud-types'
-import { openTag } from '../../../tests/_helpers/markup'
+import type { EmbeddedForm } from '@/types/sahajcloud'
+import { openTag } from '@/tests/_helpers/markup'
 
 /**
  * `useEffect` does not run under `renderToStaticMarkup`, so the captcha here

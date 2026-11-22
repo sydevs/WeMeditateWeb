@@ -1,7 +1,7 @@
 import { useData } from 'vike-react/useData'
 import type { MapPageData } from './+data'
 import { AtlasContent } from './_components/AtlasContent'
-import { atlasEmbedSrc } from '../../lib/atlas-embed'
+import { atlasEmbedSrc } from '@/lib/atlas/embed'
 
 /**
  * An atlas page: `/map`, `/map/:region-path`, or `/map/:region-path/:eventId`.

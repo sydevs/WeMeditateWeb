@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import * as Sentry from '@sentry/react'
+import * as Sentry from '@sentry/cloudflare'
 import { droppedImages, reportDroppedImages } from './dropped-images'
 import { forgetReportedWarnings } from './error-utils'
 
-// `warnOnce` reports through `@sentry/react` (see error-utils.ts).
-vi.mock('@sentry/react', () => ({ captureMessage: vi.fn() }))
+// `warnOnce` reports through `@sentry/cloudflare` (see error-utils.ts).
+vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 
 const image = (id: number) => ({
   id,

@@ -3,12 +3,12 @@
  * tested directly and reused by the Lexical → React converters.
  */
 
-import { isPopulated } from '../../../lib/payload-relationships'
+import { isPopulated } from '@/lib/content/payload-relationships'
 
 // Re-exported so existing importers (`./lexical-helpers`) keep working; the
 // heading converter and the `table-of-contents` block share this one
 // implementation so anchors and heading ids never drift apart.
-export { slugify } from '../../../lib/slugify'
+export { slugify } from '@/lib/urls/slugify'
 
 /** One Lexical node, as far as text extraction cares. */
 interface TextualNode {

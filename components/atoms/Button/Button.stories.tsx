@@ -24,7 +24,7 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-} from '../../ladle'
+} from '@/components/ladle'
 
 export default {
   title: 'Atoms',

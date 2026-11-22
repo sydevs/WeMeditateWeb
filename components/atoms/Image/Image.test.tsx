@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Image, buildLightboxSlide } from './Image'
-import { LightboxProvider } from '../../molecules/Lightbox/LightboxProvider'
+import { LightboxProvider } from '@/components/molecules/Lightbox/LightboxProvider'
 
 const CF_URL = 'https://imagedelivery.net/dOm4imjweFFL1Pto29l-4Q/abc123/'
 const CF_PUBLIC_URL = `${CF_URL}public`

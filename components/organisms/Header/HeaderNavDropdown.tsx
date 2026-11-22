@@ -12,8 +12,8 @@ import {
   FloatingPortal,
 } from '@floating-ui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
-import { Button } from '../../atoms'
-import { HeaderDropdown, type HeaderDropdownProps } from '../HeaderDropdown'
+import { Button } from '@/components/atoms'
+import { HeaderDropdown, type HeaderDropdownProps } from '@/components/organisms/HeaderDropdown'
 
 export interface HeaderNavDropdownProps {
   /** The nav trigger label (the featured page title, for example "About Meditation"). */
