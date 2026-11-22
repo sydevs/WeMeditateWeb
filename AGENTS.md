@@ -40,7 +40,7 @@ quick experiment over reasoning from source code alone.
 # reads the `build/` that step writes. No credential, no network.
 pnpm check:wrangler
 
-# Re-sync lib/i18n/translations.en.json from the SahajCloud English locale (minus any a11y group).
+# Re-sync lib/i18n/translations.en.json from the SahajCloud English locale.
 # Needs PUBLIC__SAHAJCLOUD_URL and SAHAJCLOUD_API_KEY in the shell.
 pnpm sync:translations
 

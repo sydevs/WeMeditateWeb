@@ -76,16 +76,14 @@ describe('loadTranslations', () => {
     )
   })
 
-  it("mounts the locale's screen-reader strings over whatever SahajCloud still sends", async () => {
-    // SahajCloud serves its old `a11y` groups until it drops them; the repo's copy wins.
+  it("mounts the locale's screen-reader strings beside SahajCloud's", async () => {
     vi.mocked(getWebTranslations).mockResolvedValue({
-      common: { general: { loading: 'Chargement' }, a11y: { close: 'stale' } },
+      common: { general: { loading: 'Chargement' } },
     } as unknown as SahajCloudWebTranslations)
 
     const translations = await loadTranslations((await hookViews({ locale: 'fr' })).inData)
 
     expect(translations.common.a11y).toBe(a11yStringsFor('fr').common)
-    expect(translations.common.a11y.close).not.toBe('stale')
     expect((translations.common as { general: { loading: string } }).general.loading).toBe(
       'Chargement',
     )

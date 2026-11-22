@@ -95,8 +95,7 @@ to the browser, and a group outside the select would be bytes no `useT()` call c
 Every string a visitor sees comes from `wm-web-translations`, through `useT()`; a string only a
 screen reader speaks comes from `lib/i18n/a11y/`, mounted at `<tab>.a11y` by `loadTranslations`.
 See the "Never write a user-visible literal" rule in [AGENTS.md](../../AGENTS.md) and
-[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) for the snapshot, which drops
-any `a11y` group SahajCloud still serves.
+[scripts/sync-translations.mjs](../../scripts/sync-translations.mjs) for the snapshot.
 
 Run `pnpm sync:translations` after the SahajCloud English copy changes, and commit the diff. It
 needs both `PUBLIC__SAHAJCLOUD_URL` and `SAHAJCLOUD_API_KEY` in the shell, with no default origin,

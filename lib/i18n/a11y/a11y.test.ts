@@ -138,9 +138,9 @@ describe('overEnglish', () => {
 })
 
 describe('withA11y', () => {
-  it("replaces a tab's a11y group and keeps its other groups", () => {
+  it("mounts a tab's a11y group beside its other groups", () => {
     const result = withA11y<object, Record<string, Record<string, unknown>>>(
-      { media: { general: { playlist: 'Playlist' }, a11y: { play: 'stale' } } },
+      { media: { general: { playlist: 'Playlist' } } },
       EN_A11Y,
     )
 

@@ -23,8 +23,8 @@ import { withRetryUnlessPreview } from './query'
  * Errors propagate; `loadSiteContext` degrades to the committed English
  * snapshot rather than failing the page.
  *
- * The result holds no screen-reader strings: `loadTranslations` mounts those
- * from `lib/i18n/a11y/`, over any `a11y` group SahajCloud still serves.
+ * The result holds no screen-reader strings: SahajCloud declares none, and
+ * `loadTranslations` mounts them from `lib/i18n/a11y/`.
  *
  * @param options.locale - The locale to retrieve strings in
  * @param options.preview - If true, fetch with preview credentials

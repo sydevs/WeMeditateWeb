@@ -54,10 +54,9 @@ export type SahajCloudWebTranslations = RequiredGroups<
 
 /**
  * Every string the site renders: SahajCloud's tabs, each with its `a11y` group
- * mounted from `lib/i18n/a11y/` (`withA11y`). Any `a11y` group SahajCloud still
- * declares is dropped from the type, because the repo's copy replaces it.
+ * mounted from `lib/i18n/a11y/` (`withA11y`).
  */
 export type WebTranslations = {
-  [Tab in keyof SahajCloudWebTranslations]: Omit<SahajCloudWebTranslations[Tab], 'a11y'> &
+  [Tab in keyof SahajCloudWebTranslations]: SahajCloudWebTranslations[Tab] &
     (Tab extends keyof A11yStrings ? { a11y: A11yStrings[Tab] } : unknown)
 }

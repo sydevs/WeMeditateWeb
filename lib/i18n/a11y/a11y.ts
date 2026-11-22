@@ -44,11 +44,8 @@ export function overEnglish(file: A11yFile): A11yStrings {
 }
 
 /**
- * Mounts one locale's strings at `<tab>.a11y` on a translations object.
- *
- * Whatever `a11y` group the base carries is replaced, not merged: SahajCloud
- * serves its old copies until it drops them, and those must not win over the
- * files here. A tab the base lacks gains just its `a11y` group.
+ * Mounts one locale's strings at `<tab>.a11y` on a translations object. A tab
+ * the base lacks gains just its `a11y` group.
  */
 export function withA11y<Base extends object, Result>(base: Base, strings: A11yStrings): Result {
   const result: Record<string, unknown> = { ...(base as Record<string, unknown>) }
