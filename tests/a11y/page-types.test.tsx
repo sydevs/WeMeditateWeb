@@ -22,6 +22,7 @@
 import { describe, it, expect, vi, afterAll, beforeEach, afterEach } from 'vitest'
 import { writeFileSync } from 'node:fs'
 import type { ReactNode } from 'react'
+import type { Page } from '@/types/sahajcloud'
 import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result, type RunOptions } from 'axe-core'
 import { EN_TRANSLATIONS, enT } from '@/lib/i18n/i18n'
@@ -97,7 +98,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [ta
  * target draws its share row from the canonical in it, so a target without one
  * would leave axe walking a page missing the row.
  */
-const seoFor = (page: typeof articlePage, path: string) =>
+const seoFor = (page: Page, path: string) =>
   pageSeo({
     page,
     settings: webConfig,
