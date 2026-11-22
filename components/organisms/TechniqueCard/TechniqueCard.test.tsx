@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TechniqueCard } from './TechniqueCard'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
-import { anchorFor, classOf, openTag } from '../../../tests/_helpers/markup'
-import { EN_TRANSLATIONS, getT } from '../../../lib/i18n'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
+import { anchorFor, classOf, openTag } from '@/tests/_helpers/markup'
+import { EN_TRANSLATIONS, getT } from '@/lib/i18n/i18n'
 
 const t = getT(EN_TRANSLATIONS, 'en')
 

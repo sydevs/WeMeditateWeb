@@ -38,7 +38,7 @@ import {
   StoryGridRow,
   StoryGridCell,
   StoryWrapper,
-} from '../../ladle'
+} from '@/components/ladle'
 
 export default {
   title: 'Atoms / Graphics',

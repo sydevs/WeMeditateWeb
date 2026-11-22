@@ -3,9 +3,9 @@
  * tested directly and reused by the Lexical → React converters.
  */
 
-import { documentHref, type RelationValue } from '../../../lib/document-routes'
-import { isPopulated } from '../../../lib/payload-relationships'
-import type { Image, Page } from '../../../server/sahajcloud-types'
+import { documentHref, type RelationValue } from '@/lib/urls/document-routes'
+import { isPopulated } from '@/lib/content/payload-relationships'
+import type { Image, Page } from '@/types/sahajcloud'
 
 /** One Lexical node, as far as text extraction cares. */
 interface TextualNode {

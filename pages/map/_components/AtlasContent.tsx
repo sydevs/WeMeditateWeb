@@ -20,14 +20,14 @@ import type {
   AtlasSeoRegionContent,
   AtlasSeoResponse,
   AtlasSeoRootContent,
-} from '../../../server/atlas-types'
-import { MAP_PREFIX } from '../../../lib/atlas-route'
-import { useT } from '../../../hooks/useT'
-import { useLocale, useOrigin } from '../../../hooks/usePageContext'
-import { formatList } from '../../../lib/locale-names'
-import { isSafeHttpUrl, isSitePath, sitePathFromUrl } from '../../../lib/urls'
-import { Image } from '../../../components/atoms/Image'
-import { Link } from '../../../components/atoms/Link'
+} from '@/types/atlas'
+import { MAP_PREFIX } from '@/lib/atlas/route'
+import { useT } from '@/hooks/useT'
+import { useLocale, useOrigin } from '@/hooks/usePageContext'
+import { formatList } from '@/lib/i18n/locale-names'
+import { isSafeHttpUrl, isSitePath, sitePathFromUrl } from '@/lib/urls/urls'
+import { Image } from '@/components/atoms/Image'
+import { Link } from '@/components/atoms/Link'
 
 /**
  * A URL as SahajCloud sent it, or `null` where it is absent or not http(s).
@@ -205,7 +205,7 @@ function EventContent({
   const t = useT()
   const locale = useLocale()
   // Defensive reads throughout this component. `AtlasSeoResponse` is
-  // hand-mirrored from upstream (see server/atlas-types.ts). If a field
+  // hand-mirrored from upstream (see types/atlas.ts). If a field
   // silently stops arriving, this avoids a 500 on the page. It falls
   // back to the degraded render the rest of the feature is built for.
   const languages = content.languages ?? []

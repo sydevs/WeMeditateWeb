@@ -1,11 +1,11 @@
 import { useData } from 'vike-react/useData'
 import type { LecturePageData } from './+data'
-import { Heading } from '../../../../components/atoms'
-import { LectureTemplate } from '../../../../components/templates'
-import { useT } from '../../../../hooks/useT'
-import { resolveLecture } from '../../../../lib/lecture-shape'
-import { LivePreviewDocument } from '../../../../lib/live-preview/document'
-import type { Locale, ResolvedLecture } from '../../../../server/sahajcloud-types'
+import { Heading } from '@/components/atoms'
+import { LectureTemplate } from '@/components/templates'
+import { useT } from '@/hooks/useT'
+import { resolveLecture } from '@/lib/content/lecture-shape'
+import { LivePreviewDocument } from '@/lib/live-preview/document'
+import type { Locale, ResolvedLecture } from '@/types/sahajcloud'
 
 /**
  * Full lecture page (/lectures/:id) — rendered with site chrome. LectureTemplate

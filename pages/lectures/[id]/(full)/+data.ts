@@ -1,10 +1,10 @@
 import type { PageContextServer } from 'vike/types'
-import type { WebConfig } from '../../../../server/sahajcloud-types'
-import { loadSiteContext } from '../../../../server/site-context'
-import { loadLecture, type LectureData } from '../_lecture'
-import { lectureSeo, seoRoute } from '../../../../lib/content-seo'
-import { resolveLecture } from '../../../../lib/lecture-shape'
-import type { SeoDocument } from '../../../../lib/head'
+import type { WebConfig } from '@/types/sahajcloud'
+import { loadSiteContext } from '@/server/site-context'
+import { loadLecture, type LectureData } from '@/pages/lectures/[id]/_lecture'
+import { lectureSeo, seoRoute } from '@/lib/seo/content-seo'
+import { resolveLecture } from '@/lib/content/lecture-shape'
+import type { SeoDocument } from '@/lib/seo/head'
 
 export interface LecturePageData extends LectureData {
   settings: WebConfig

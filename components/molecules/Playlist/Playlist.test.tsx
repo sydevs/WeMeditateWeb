@@ -5,11 +5,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { render as renderInDom, screen, fireEvent } from '@testing-library/react'
 import axe from 'axe-core'
 import { Playlist, visibleTracks, type MusicFilter } from './Playlist'
-import type { Track } from '../AudioPlayer/types'
+import type { Track } from '@/lib/media/audio'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 
 // `tags[].id` is the SongTag slug, which is also the `MusicFilter.id` a pill
-// reports — verified against `contentIndexTrack` in lib/content-blocks.ts and
+// reports — verified against `contentIndexTrack` in lib/content/blocks.ts and
 // `songMusicFilters` in components/organisms/RichText/blockConverters.tsx.
 // The two facets interleave, so a filtered row's position in the rendered list
 // never matches its position here.

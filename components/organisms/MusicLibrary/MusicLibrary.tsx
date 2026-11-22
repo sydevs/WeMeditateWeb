@@ -1,8 +1,8 @@
 import { ComponentProps, useState } from 'react'
-import { AudioPlayer, Playlist, Track, MusicFilter } from '../../molecules'
-import { usePlaylistAudioPlayer } from '../../../hooks/audio'
-import { useT } from '../../../hooks/useT'
-import { Image, Link } from '../../atoms'
+import { AudioPlayer, Playlist, Track, MusicFilter } from '@/components/molecules'
+import { usePlaylistAudioPlayer } from '@/hooks/audio'
+import { useT } from '@/hooks/useT'
+import { Image, Link } from '@/components/atoms'
 
 export interface MusicLibraryProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Array of audio tracks */

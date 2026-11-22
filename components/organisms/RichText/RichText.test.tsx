@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { getLeadSplash } from '../../../lib/content-blocks'
-import type { Page } from '../../../server/sahajcloud-types'
-import { anchorFor, classOf, openTag } from '../../../tests/_helpers/markup'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
-import { EN_TRANSLATIONS, getT } from '../../../lib/i18n'
+import { getLeadSplash } from '@/lib/content/blocks'
+import type { Page } from '@/types/sahajcloud'
+import { anchorFor, classOf, openTag } from '@/tests/_helpers/markup'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
+import { EN_TRANSLATIONS, getT } from '@/lib/i18n/i18n'
 
 const t = getT(EN_TRANSLATIONS, 'en')
 

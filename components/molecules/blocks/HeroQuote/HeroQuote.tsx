@@ -1,7 +1,7 @@
 import React from 'react'
-import { LeafDivider } from '../../../atoms/LeafDivider/LeafDivider'
-import { useT } from '../../../../hooks/useT'
-import { toParagraphs } from '../../../../lib/paragraphs'
+import { LeafDivider } from '@/components/atoms/LeafDivider/LeafDivider'
+import { useT } from '@/hooks/useT'
+import { toParagraphs } from '@/lib/content/paragraphs'
 
 export interface HeroQuoteProps {
   /** The main quote text (required). Each line break starts a new paragraph. */

@@ -1,14 +1,14 @@
 import { ComponentProps } from 'react'
 import { PlayIcon } from '@heroicons/react/24/solid'
-import { Image } from '../../atoms/Image/Image'
-import { Link } from '../../atoms/Link'
-import { Button } from '../../atoms/Button/Button'
-import { Badge } from '../../atoms/Badge/Badge'
-import { useT } from '../../../hooks/useT'
-import { Placeholder } from '../../atoms/Placeholder/Placeholder'
-import { Logo } from '../../atoms/graphics/Logo/Logo'
-import type { AspectRatio } from '../../../lib/cloudflare-images'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { Image } from '@/components/atoms/Image/Image'
+import { Link } from '@/components/atoms/Link'
+import { Button } from '@/components/atoms/Button/Button'
+import { Badge } from '@/components/atoms/Badge/Badge'
+import { useT } from '@/hooks/useT'
+import { Placeholder } from '@/components/atoms/Placeholder/Placeholder'
+import { Logo } from '@/components/atoms/graphics/Logo/Logo'
+import type { AspectRatio } from '@/lib/media/cloudflare-images'
+import type { Locale } from '@/types/sahajcloud'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /** Card title. */

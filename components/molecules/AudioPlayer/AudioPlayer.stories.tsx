@@ -1,9 +1,9 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { useState } from 'react'
 import { AudioPlayer, Track, AudioControl } from './AudioPlayer'
-import { usePlaylistAudioPlayer } from '../../../hooks/audio'
-import { StoryWrapper, StorySection } from '../../ladle'
-import { Checkbox } from '../../atoms'
+import { usePlaylistAudioPlayer } from '@/hooks/audio'
+import { StoryWrapper, StorySection } from '@/components/ladle'
+import { Checkbox } from '@/components/atoms'
 
 export default {
   title: 'Molecules',

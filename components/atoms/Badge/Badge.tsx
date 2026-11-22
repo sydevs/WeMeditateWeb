@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Link, type LinkProps } from '../Link'
+import { Link, type LinkProps } from '@/components/atoms/Link'
 
 interface BadgeOwnProps {
   /**

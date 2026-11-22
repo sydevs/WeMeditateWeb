@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { HeaderDropdown } from './HeaderDropdown'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 describe('<HeaderDropdown> thumbnail sizes', () => {
   it('advertises the grid column it draws, pinned to 400px at the three-column step', () => {

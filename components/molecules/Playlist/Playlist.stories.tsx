@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Playlist, MusicFilter } from './Playlist'
-import type { Track } from '../AudioPlayer/types'
-import { StoryWrapper, StorySection } from '../../ladle'
+import type { Track } from '@/lib/media/audio'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 import { MusicalNoteIcon, MicrophoneIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 

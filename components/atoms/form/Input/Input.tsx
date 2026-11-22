@@ -5,7 +5,7 @@ import {
   PhoneIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline'
-import type { HeroIcon } from '../../Icon/Icon'
+import type { HeroIcon } from '@/components/atoms/Icon/Icon'
 
 /**
  * The icon each input type shows when the caller passes none. A table, not a

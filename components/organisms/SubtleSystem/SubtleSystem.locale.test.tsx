@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import { anchorFor } from '@/tests/_helpers/markup'
 
 vi.mock('vike-react/usePageContext', () => ({
   usePageContext: () => ({ locale: 'fr', urlPathname: '/fr/index' }),

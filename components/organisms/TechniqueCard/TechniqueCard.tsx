@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
-import { Button, Heading, Image } from '../../atoms'
-import { useT } from '../../../hooks/useT'
-import type { AspectRatio } from '../../../lib/cloudflare-images'
+import { Button, Heading, Image } from '@/components/atoms'
+import { useT } from '@/hooks/useT'
+import type { AspectRatio } from '@/lib/media/cloudflare-images'
 
 export interface TechniqueCardProps extends Omit<ComponentProps<'div'>, 'title'> {
   /**

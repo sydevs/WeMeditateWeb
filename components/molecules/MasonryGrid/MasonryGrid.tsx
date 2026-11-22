@@ -1,7 +1,7 @@
 import { ComponentProps, useState } from 'react'
 import Masonry from 'react-masonry-css'
-import { Button, Link } from '../../atoms'
-import { useT } from '../../../hooks/useT'
+import { Button, Link } from '@/components/atoms'
+import { useT } from '@/hooks/useT'
 
 export interface MasonryGridItem {
   /** Unique identifier for the item */
