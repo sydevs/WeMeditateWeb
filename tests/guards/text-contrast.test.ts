@@ -20,7 +20,7 @@
 
 import { describe, it, expect } from 'vitest'
 
-import { contrast, isColor } from '../_helpers/contrast'
+import { contrast, isColor } from '@/tests/_helpers/contrast'
 import { repoRoot, readSource, sourceFiles } from './_source-scan'
 
 const BUTTON = readSource(`${repoRoot}/components/atoms/Button/Button.tsx`)

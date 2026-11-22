@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ContentGrid, type ContentGridItem } from './ContentGrid'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 const GRID_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'
 

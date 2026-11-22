@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { usePlaylistAudioPlayer } from './usePlaylistAudioPlayer'
 import type { AudioPlayerControls, AudioPlayerState } from './useAudioPlayer'
-import type { Track } from '../../components/molecules/AudioPlayer/types'
+import type { Track } from '@/lib/media/audio'
 
 // Howler never plays under jsdom, so the core hook is replaced by a recorder.
 const player = vi.hoisted(() => ({

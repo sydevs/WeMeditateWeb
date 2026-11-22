@@ -7,7 +7,7 @@ import {
   GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 import { Input } from './Input'
-import type { HeroIcon } from '../../Icon/Icon'
+import type { HeroIcon } from '@/components/atoms/Icon/Icon'
 
 describe('Input', () => {
   // Compared against the icon named explicitly: a swapped table entry still

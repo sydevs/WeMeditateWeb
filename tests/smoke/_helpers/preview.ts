@@ -8,10 +8,11 @@
  */
 import { expect } from 'vitest'
 import { JSDOM } from 'jsdom'
-import { DEFAULT_LOCALE, type Locale } from '../../../server/sahajcloud-types'
-import { ErrorType } from '../../../server/error-utils'
-import { errorTitleKey } from '../../../lib/error-keys'
-import { enT } from '../../../lib/i18n'
+import { type Locale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
+import { ErrorType } from '@/lib/errors/error-type'
+import { errorTitleKey } from '@/lib/errors/error-keys'
+import { enT } from '@/lib/i18n/i18n'
 
 /** Resolved base URL of the preview (or fallback) to smoke-test against. */
 export function getBaseUrl(): string {
@@ -213,7 +214,7 @@ function toQueryString(params: Record<string, unknown>, prefix = ''): string {
 
 // SahajCloud enforces select and populate on collection reads, through a
 // query-validation hook (PR #23), so a bare query returns 400. This
-// mirrors the shapes sahajcloud-client.ts uses.
+// mirrors the shapes server/sahajcloud/selects.ts uses.
 const PAGE_SELECT = {
   title: true,
   slug: true,

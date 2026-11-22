@@ -12,7 +12,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 // The dropdown renders its panel behind a click, so the options are not in
 // the SSR markup. Reduce Dropdown to a passthrough to assert on the links.
-vi.mock('../../atoms/Dropdown', () => ({
+vi.mock('@/components/atoms/Dropdown', () => ({
   Dropdown: ({
     children,
     trigger,
@@ -31,7 +31,7 @@ vi.mock('vike-react/usePageContext', () => ({
 }))
 
 const { LanguageDropdown } = await import('./LanguageDropdown')
-const { EN_TRANSLATIONS } = await import('../../../lib/i18n')
+const { EN_TRANSLATIONS } = await import('@/lib/i18n/i18n')
 
 const languages = [
   { code: 'en' as const, label: 'English', href: '/about' },

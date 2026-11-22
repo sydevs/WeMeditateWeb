@@ -1,9 +1,9 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { MobileMenu } from './MobileMenu'
-import type { NavItem } from '../Header'
-import type { SocialLink } from '../Footer'
-import type { LanguageOption } from '../../molecules/LanguageDropdown'
-import { StoryWrapper, StorySection } from '../../ladle'
+import type { NavItem } from '@/components/organisms/Header'
+import type { SocialLink } from '@/components/organisms/Footer'
+import type { LanguageOption } from '@/components/molecules/LanguageDropdown'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Organisms',

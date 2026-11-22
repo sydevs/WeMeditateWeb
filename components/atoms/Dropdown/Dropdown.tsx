@@ -14,7 +14,7 @@ import {
   FloatingFocusManager,
   type Placement,
 } from '@floating-ui/react'
-import { Link, type LinkProps } from '../Link'
+import { Link, type LinkProps } from '@/components/atoms/Link'
 
 /**
  * What the trigger must spread onto the control it renders: the reference, the

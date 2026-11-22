@@ -1,17 +1,11 @@
 /** Tests for error handling utilities */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import * as Sentry from '@sentry/react'
-import {
-  degrade,
-  detectErrorType,
-  ErrorType,
-  forgetReportedWarnings,
-  warnOnce,
-  withRetry,
-} from './error-utils'
+import * as Sentry from '@sentry/cloudflare'
+import { degrade, forgetReportedWarnings, warnOnce, withRetry } from './error-utils'
+import { detectErrorType, ErrorType } from '@/lib/errors/error-type'
 
-vi.mock('@sentry/react', () => ({
+vi.mock('@sentry/cloudflare', () => ({
   addBreadcrumb: vi.fn(),
   captureException: vi.fn(),
   captureMessage: vi.fn(),

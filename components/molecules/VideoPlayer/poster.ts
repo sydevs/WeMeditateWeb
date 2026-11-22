@@ -1,4 +1,4 @@
-import { getImageSrcSet, getImageURL, getVariantName } from '../../../lib/cloudflare-images'
+import { getImageSrcSet, getImageURL, getVariantName } from '@/lib/media/cloudflare-images'
 
 /**
  * The mounted player's own poster takes one URL and no srcset, so this width

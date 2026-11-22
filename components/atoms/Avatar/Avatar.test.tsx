@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Avatar } from './Avatar'
-import {
-  CF_BASE,
-  CF_PUBLIC_URL,
-  PASSTHROUGH_SOURCES,
-} from '../../../tests/_helpers/cloudflare-images'
+import { CF_BASE, CF_PUBLIC_URL, PASSTHROUGH_SOURCES } from '@/tests/_helpers/cloudflare-images'
 
 describe('<Avatar> server render', () => {
   // The same zero-opacity gate that hid every <Image> hid every avatar too

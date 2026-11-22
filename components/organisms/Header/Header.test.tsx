@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Header } from './Header'
 import { trailingIconInset } from './bar'
-import { anchorFor, classesWith, classFor, classOf, openTag } from '../../../tests/_helpers/markup'
+import { anchorFor, classesWith, classFor, classOf, openTag } from '@/tests/_helpers/markup'
 
 const navItems = [{ label: 'Meditate Now', href: '/meditate' }]
 
