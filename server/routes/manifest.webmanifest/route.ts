@@ -4,6 +4,9 @@
 
 import type { Context, Hono } from 'hono'
 import { getT } from '@/lib/i18n/i18n'
+import { withA11y } from '@/lib/i18n/a11y/a11y'
+import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 import { localeFromPath } from '@/lib/urls/urls'
 import { ROOT_FILE_CACHE_CONTROL } from '@/server/cache-headers'
 import { getWebTranslations } from '@/server/sahajcloud'
@@ -13,7 +16,11 @@ import { buildWebManifest } from './manifest'
 const manifestHandler = async (c: Context<SahajCloudEnv>) => {
   const { origin, pathname } = new URL(c.req.url)
   const { locale } = localeFromPath(pathname)
-  const t = getT(await getWebTranslations({ locale }), locale)
+  const strings = withA11y<WebTranslations>(
+    await getWebTranslations({ locale }),
+    a11yStringsFor(locale),
+  )
+  const t = getT(strings, locale)
 
   c.header('Content-Type', 'application/manifest+json; charset=utf-8')
   c.header('Cache-Control', ROOT_FILE_CACHE_CONTROL)

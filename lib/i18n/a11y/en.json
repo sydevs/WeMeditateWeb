@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Dismiss",
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "show_more_items_one": "Show %{count} more item",
+    "show_more_items_other": "Show %{count} more items",
+    "breadcrumb": "Breadcrumb",
+    "primary_navigation": "Main menu",
+    "footer_navigation": "Footer menu",
+    "opens_in_new_tab_suffix": "(opens in new tab)",
+    "menu": "Menu"
+  },
+  "errors": {
+    "error_icon": "Error"
+  },
+  "article": {
+    "filter_label": "Filter content by tag"
+  },
+  "meditation": {
+    "mute_voice": "Mute voice",
+    "unmute_voice": "Unmute voice",
+    "mute_music": "Mute music",
+    "unmute_music": "Unmute music",
+    "voice_volume": "Voice volume",
+    "music_volume": "Music volume",
+    "audio_settings": "Audio settings",
+    "shuffle_music": "Shuffle music track",
+    "related_lectures_loading": "Loading related lectures",
+    "finder_region": "Choose how you feel"
+  },
+  "lecture": {
+    "related_meditations_loading": "Loading related meditations",
+    "untitled_heading": "Untitled Lecture"
+  },
+  "map": {
+    "classes_heading": "Meditation classes",
+    "when": "When",
+    "where": "Where",
+    "languages": "Languages"
+  },
+  "forms": {
+    "submitting": "Submitting form, please wait...",
+    "required_marker": "required"
+  },
+  "media": {
+    "play": "Play",
+    "pause": "Pause",
+    "previous_track": "Previous track",
+    "next_track": "Next track",
+    "toggle_shuffle": "Toggle shuffle",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "volume": "Volume",
+    "play_item": "Play %{title}",
+    "view_image": "View image",
+    "view_image_alt": "View image: %{alt}",
+    "embed_code": "Embed code",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "progress": "Playback position"
+  },
+  "location": {
+    "search_label": "Search for a location",
+    "selected_label": "Selected location",
+    "change_label": "Change location"
+  },
+  "blocks": {
+    "enter_fullscreen": "Enter fullscreen",
+    "exit_fullscreen": "Exit fullscreen",
+    "learn_more_about": "Learn more about %{title}",
+    "previous_slide": "Previous slide",
+    "next_slide": "Next slide",
+    "previous_column": "Previous: %{title}",
+    "next_column": "Next: %{title}",
+    "go_to_column": "Go to column %{number}: %{title}",
+    "quote": "Quote",
+    "table_of_contents": "Table of contents",
+    "share_region": "Social media sharing options",
+    "share_group": "Share on social media",
+    "share_on": "Share on %{platform}",
+    "next_session": "The next session is %{weekday} at %{time}, %{relative}."
+  }
+}
