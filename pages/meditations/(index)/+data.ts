@@ -1,10 +1,10 @@
 import type { PageContextServer } from 'vike/types'
-import type { MoodCard } from '../../../lib/content-blocks'
-import { meditationsIndexSeo, seoRoute } from '../../../lib/content-seo'
-import type { SeoDocument } from '../../../lib/head'
-import { featuredMoodCards } from '../../../server/moods'
-import { loadSiteContext } from '../../../server/site-context'
-import type { WebConfig } from '../../../server/sahajcloud-types'
+import type { MoodCard } from '@/lib/content/blocks'
+import { meditationsIndexSeo, seoRoute } from '@/lib/seo/content-seo'
+import type { SeoDocument } from '@/lib/seo/head'
+import { featuredMoodCards } from '@/server/moods'
+import { loadSiteContext } from '@/server/site-context'
+import type { WebConfig } from '@/types/sahajcloud'
 
 export interface MeditationsIndexData {
   moods: MoodCard[]

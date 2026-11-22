@@ -4,11 +4,11 @@
  */
 import { describe, it, expect } from 'vitest'
 import { relative } from 'node:path'
-import type { Meditation, Page, ResolvedLecture } from '../../server/sahajcloud-types'
-import { lectureSeo, meditationSeo, meditationsIndexSeo, pageSeo } from '../../lib/content-seo'
-import type { SeoDocument } from '../../lib/head'
-import { renderSeoHead } from '../../lib/seo-head-html'
-import { enT } from '../../lib/i18n'
+import type { Meditation, Page, ResolvedLecture } from '@/types/sahajcloud'
+import { lectureSeo, meditationSeo, meditationsIndexSeo, pageSeo } from '@/lib/seo/content-seo'
+import type { SeoDocument } from '@/lib/seo/head'
+import { renderSeoHead } from '@/lib/seo/head-html'
+import { enT } from '@/lib/i18n/i18n'
 import { readSource, repoRoot, sourceFiles, stripComments } from './_source-scan'
 
 const ORIGIN = 'https://wemeditate.com'

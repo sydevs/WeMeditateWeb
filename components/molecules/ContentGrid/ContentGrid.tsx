@@ -1,9 +1,15 @@
 import { ComponentProps } from 'react'
 import Masonry from 'react-masonry-css'
-import { ContentCard, ContentCardProps, ItemHeadingLevel } from '../ContentCard/ContentCard'
+import {
+  ContentCard,
+  ContentCardProps,
+  ItemHeadingLevel,
+} from '@/components/molecules/ContentCard/ContentCard'
 
-export interface ContentGridItem
-  extends Omit<ContentCardProps, 'className' | 'id' | 'sizes' | 'headingLevel'> {
+export interface ContentGridItem extends Omit<
+  ContentCardProps,
+  'className' | 'id' | 'sizes' | 'headingLevel'
+> {
   /** Unique identifier for the item */
   id: string | number
   /** `sizes` for this item's thumbnail. Overrides the grid's own. */

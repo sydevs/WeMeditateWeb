@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MoodFinder } from './MoodFinder'
-import type { MoodCard } from '../../../lib/content-blocks'
-import { enT } from '../../../lib/i18n'
-import { anchorFor, classOf, openTag } from '../../../tests/_helpers/markup'
+import type { MoodCard } from '@/lib/content/blocks'
+import { enT } from '@/lib/i18n/i18n'
+import { anchorFor, classOf, openTag } from '@/tests/_helpers/markup'
 
 const mood = (moodId: number, moodTitle: string, minutes: number): MoodCard => ({
   moodId,

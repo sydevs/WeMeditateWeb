@@ -17,7 +17,7 @@
  */
 
 import type { PageContextServer } from 'vike/types'
-import { localeFromPath } from '../lib/urls'
+import { localeFromPath } from '@/lib/urls/urls'
 
 export function onCreatePageContext(pageContext: PageContextServer) {
   // `+onBeforeRoute` stays the single writer wherever routing ran.

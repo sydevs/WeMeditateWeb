@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest'
 import route from './+route'
-import documentRoute from '../[id]/(full)/+route'
+import documentRoute from '@/pages/meditations/[id]/(full)/+route'
 
 const matches = (urlPathname: string) => route({ urlPathname })
 

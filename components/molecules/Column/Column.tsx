@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { Heading, Image, Link } from '../../atoms'
+import { Heading, Image, Link } from '@/components/atoms'
 
 export interface ColumnProps {
   /** Column title */

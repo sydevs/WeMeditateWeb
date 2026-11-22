@@ -4,14 +4,14 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { MusicLibrary } from './MusicLibrary'
-import type { MusicFilter, Track } from '../../molecules'
-import type { AudioPlayerControls, AudioPlayerState } from '../../../hooks/audio'
-import { CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import type { MusicFilter, Track } from '@/components/molecules'
+import type { AudioPlayerControls, AudioPlayerState } from '@/hooks/audio'
+import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 // Howler never plays under jsdom, so the core hook is replaced by a recorder.
 const player = vi.hoisted(() => ({ load: vi.fn() }))
 
-vi.mock('../../../hooks/audio/useAudioPlayer', () => ({
+vi.mock('@/hooks/audio/useAudioPlayer', () => ({
   useAudioPlayer: () => [
     {
       isPlaying: false,

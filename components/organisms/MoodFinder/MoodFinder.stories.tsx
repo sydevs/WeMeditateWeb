@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { MoodFinder } from './MoodFinder'
-import type { MoodCard } from '../../../lib/content-blocks'
-import { StoryWrapper, StorySection } from '../../ladle'
+import type { MoodCard } from '@/lib/content/blocks'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Organisms',

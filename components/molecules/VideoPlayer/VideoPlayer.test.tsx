@@ -18,7 +18,7 @@ vi.mock('vike-react/ClientOnly', () => ({
 
 import { VideoPlayer } from './index'
 import { BOUNDED_POSTER_SIZES, posterSrcSet, posterURL } from './poster'
-import { CF_BASE, CF_PUBLIC_URL } from '../../../tests/_helpers/cloudflare-images'
+import { CF_BASE, CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
 
 describe('<VideoPlayer> server-side fallback', () => {
   it('renders the poster as the fallback frame (LCP image, no player JS)', () => {
@@ -70,10 +70,7 @@ describe('the packaged skin hooks the clip window depends on', () => {
   // so an upgrade that renames one would leave the controls unstyled, or stacked on top of
   // upstream's, with nothing else failing. `skin-overrides.css` and `clip-window.tsx` are the two
   // readers (#279).
-  const stylesheet = readFileSync(
-    require.resolve('@videojs/react/video/skin.css'),
-    'utf8',
-  )
+  const stylesheet = readFileSync(require.resolve('@videojs/react/video/skin.css'), 'utf8')
 
   it.each([
     'video-time-slider-group',

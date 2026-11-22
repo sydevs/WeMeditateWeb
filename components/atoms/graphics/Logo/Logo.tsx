@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
-import { Link } from '../../Link'
-import { LogoSvg } from '../svgs'
-import { useT } from '../../../../hooks/useT'
+import { Link } from '@/components/atoms/Link'
+import { LogoSvg } from '@/components/atoms/graphics/svgs'
+import { useT } from '@/hooks/useT'
 
 export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'> {
   /** Logo variant */
@@ -101,6 +101,7 @@ export function Logo({
   } else if (variant === 'square' || variant === 'circle') {
     const shapeStyles = variant === 'circle' ? 'rounded-full' : ''
     const hoverStyles = href ? 'hover:bg-coral-600 transition-colors' : ''
+
     variantStyles = `items-center justify-center ${buttonSizes[size]} ${shapeStyles} bg-coral-500 text-white ${hoverStyles}`
     content = <LogoSvg className={iconSizes[size]} />
   }
@@ -111,13 +112,14 @@ export function Logo({
   // Render as link or div depending on href prop
   if (href) {
     return (
-      <Link href={href} variant="unstyled" className={allStyles} {...props}>
+      <Link className={allStyles} href={href} variant="unstyled" {...props}>
         {content}
       </Link>
     )
   }
 
   // When rendering as div, filter out anchor-specific props
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- named only to keep them off the div
   const { target, rel, referrerPolicy, download, ping, hrefLang, type, ...divProps } = props as any
 
   return (

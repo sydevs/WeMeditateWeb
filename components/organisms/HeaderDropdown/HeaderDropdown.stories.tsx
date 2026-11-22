@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { HeaderDropdown } from "./HeaderDropdown";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { HeaderDropdown } from './HeaderDropdown'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
-  title: "Organisms"
-} satisfies StoryDefault;
+  title: 'Organisms',
+} satisfies StoryDefault
 
 /**
  * Header dropdown mega nav with title, navigation links, and featured articles.
@@ -14,7 +14,20 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Default Dropdown">
       <HeaderDropdown
-        title="About Meditation"
+        featuredArticles={[
+          {
+            title: 'History of Meditation',
+            image: 'https://picsum.photos/seed/article1/400/400',
+            imageAlt: 'Abstract meditation artwork',
+            href: '#/articles/history',
+          },
+          {
+            title: 'Rabindranath Tagore: Between the finite and the infinite',
+            image: 'https://picsum.photos/seed/article2/400/400',
+            imageAlt: 'Portrait of Rabindranath Tagore',
+            href: '#/articles/tagore',
+          },
+        ]}
         links={[
           { label: 'History of Meditation', href: '#/about/history' },
           { label: 'Chakras & Channels', href: '#/about/chakras' },
@@ -22,83 +35,66 @@ export const Default: Story = () => (
           { label: 'Founder of Sahaja Yoga', href: '#/about/founder' },
           { label: 'About Sahaja Yoga', href: '#/about/sahaja-yoga' },
           { label: 'Improving Your Meditation', href: '#/about/improving' },
-          { label: 'Further Reading', href: '#/about/reading' }
+          { label: 'Further Reading', href: '#/about/reading' },
         ]}
-        featuredArticles={[
-          {
-            title: 'History of Meditation',
-            image: 'https://picsum.photos/seed/article1/400/400',
-            imageAlt: 'Abstract meditation artwork',
-            href: '#/articles/history'
-          },
-          {
-            title: 'Rabindranath Tagore: Between the finite and the infinite',
-            image: 'https://picsum.photos/seed/article2/400/400',
-            imageAlt: 'Portrait of Rabindranath Tagore',
-            href: '#/articles/tagore'
-          }
-        ]}
+        title="About Meditation"
       />
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="space-y-12">
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-4">
-            Techniques Dropdown
-          </p>
+          <p className="text-sm font-medium text-gray-700 mb-4">Techniques Dropdown</p>
           <HeaderDropdown
-            title="Techniques"
-            links={[
-              { label: 'Meditation for Beginners', href: '#/techniques/beginners' },
-              { label: 'How to Meditate', href: '#/techniques/how-to' },
-              { label: 'Guided Meditation', href: '#/techniques/guided' },
-              { label: 'Affirmations', href: '#/techniques/affirmations' },
-              { label: 'Chakra Meditation', href: '#/techniques/chakras' }
-            ]}
             featuredArticles={[
               {
                 title: 'Getting Started with Meditation',
                 image: 'https://picsum.photos/seed/technique1/400/400',
                 imageAlt: 'Person meditating peacefully',
-                href: '#/articles/getting-started'
+                href: '#/articles/getting-started',
               },
               {
                 title: 'Advanced Techniques for Inner Peace',
                 image: 'https://picsum.photos/seed/technique2/400/400',
                 imageAlt: 'Meditation in nature',
-                href: '#/articles/advanced-techniques'
-              }
+                href: '#/articles/advanced-techniques',
+              },
             ]}
+            links={[
+              { label: 'Meditation for Beginners', href: '#/techniques/beginners' },
+              { label: 'How to Meditate', href: '#/techniques/how-to' },
+              { label: 'Guided Meditation', href: '#/techniques/guided' },
+              { label: 'Affirmations', href: '#/techniques/affirmations' },
+              { label: 'Chakra Meditation', href: '#/techniques/chakras' },
+            ]}
+            title="Techniques"
           />
         </div>
 
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-4">
-            Music Dropdown
-          </p>
+          <p className="text-sm font-medium text-gray-700 mb-4">Music Dropdown</p>
           <HeaderDropdown
-            title="Music for Meditation"
-            links={[
-              { label: 'Meditation Music', href: '#/music/meditation' },
-              { label: 'Ragas', href: '#/music/ragas' },
-              { label: 'Mantras', href: '#/music/mantras' },
-              { label: 'Classical Music', href: '#/music/classical' }
-            ]}
             featuredArticles={[
               {
                 title: 'The Power of Ragas in Meditation',
                 image: 'https://picsum.photos/seed/music1/400/400',
                 imageAlt: 'Musical instruments',
-                href: '#/articles/ragas'
+                href: '#/articles/ragas',
               },
               {
                 title: 'Sacred Mantras for Deep Meditation',
                 image: 'https://picsum.photos/seed/music2/400/400',
                 imageAlt: 'Person chanting',
-                href: '#/articles/mantras'
-              }
+                href: '#/articles/mantras',
+              },
             ]}
+            links={[
+              { label: 'Meditation Music', href: '#/music/meditation' },
+              { label: 'Ragas', href: '#/music/ragas' },
+              { label: 'Mantras', href: '#/music/mantras' },
+              { label: 'Classical Music', href: '#/music/classical' },
+            ]}
+            title="Music for Meditation"
           />
         </div>
       </div>
@@ -106,6 +102,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Header Dropdown"
+Default.storyName = 'Header Dropdown'

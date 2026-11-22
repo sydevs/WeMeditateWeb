@@ -1,5 +1,5 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { Textarea } from "./Textarea";
+import type { Story, StoryDefault } from '@ladle/react'
+import { Textarea } from './Textarea'
 import {
   StorySection,
   StoryWrapper,
@@ -9,12 +9,12 @@ import {
   StoryGridHeaderCell,
   StoryGridBody,
   StoryGridRow,
-  StoryGridCell
-} from '../../../ladle';
+  StoryGridCell,
+} from '@/components/ladle'
 
 export default {
-  title: "Atoms / Form"
-} satisfies StoryDefault;
+  title: 'Atoms / Form',
+} satisfies StoryDefault
 
 /**
  * Textarea component showcasing all sizes, auto-resize, validation states, and usage in context.
@@ -28,17 +28,11 @@ export const Default: Story = () => (
         </StorySection>
 
         <StorySection title="With Auto-resize" variant="subsection">
-          <Textarea
-            placeholder="Start typing to see auto-resize..."
-            autoResize
-          />
+          <Textarea autoResize placeholder="Start typing to see auto-resize..." />
         </StorySection>
 
         <StorySection title="Custom Rows" variant="subsection">
-          <Textarea
-            placeholder="Tall textarea with 8 rows"
-            rows={8}
-          />
+          <Textarea placeholder="Tall textarea with 8 rows" rows={8} />
         </StorySection>
       </div>
     </StorySection>
@@ -67,30 +61,34 @@ export const Default: Story = () => (
             <StoryGridRow>
               <StoryGridCell isLabel>Success</StoryGridCell>
               <StoryGridCell>
-                <Textarea state="success" defaultValue="Great feedback, thank you!" />
+                <Textarea defaultValue="Great feedback, thank you!" state="success" />
               </StoryGridCell>
               <StoryGridCell>
-                <Textarea state="success" defaultValue="Great feedback, thank you!" variant="minimal" />
+                <Textarea
+                  defaultValue="Great feedback, thank you!"
+                  state="success"
+                  variant="minimal"
+                />
               </StoryGridCell>
             </StoryGridRow>
 
             <StoryGridRow>
               <StoryGridCell isLabel>Error</StoryGridCell>
               <StoryGridCell>
-                <Textarea state="error" defaultValue="Too short" />
+                <Textarea defaultValue="Too short" state="error" />
               </StoryGridCell>
               <StoryGridCell>
-                <Textarea state="error" defaultValue="Too short" variant="minimal" />
+                <Textarea defaultValue="Too short" state="error" variant="minimal" />
               </StoryGridCell>
             </StoryGridRow>
 
             <StoryGridRow>
               <StoryGridCell isLabel>Disabled</StoryGridCell>
               <StoryGridCell>
-                <Textarea placeholder="Disabled textarea" disabled />
+                <Textarea disabled placeholder="Disabled textarea" />
               </StoryGridCell>
               <StoryGridCell>
-                <Textarea placeholder="Disabled textarea" disabled variant="minimal" />
+                <Textarea disabled placeholder="Disabled textarea" variant="minimal" />
               </StoryGridCell>
             </StoryGridRow>
           </StoryGridBody>
@@ -98,5 +96,5 @@ export const Default: Story = () => (
       </div>
     </StorySection>
   </StoryWrapper>
-);
-Default.storyName = "Textarea"
+)
+Default.storyName = 'Textarea'

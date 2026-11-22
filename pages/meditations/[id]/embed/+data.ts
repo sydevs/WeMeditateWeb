@@ -1,5 +1,5 @@
 import type { PageContextServer } from 'vike/types'
-import { loadMeditation, type MeditationData } from '../_meditation'
+import { loadMeditation, type MeditationData } from '@/pages/meditations/[id]/_meditation'
 
 export type MeditationEmbedPageData = MeditationData
 

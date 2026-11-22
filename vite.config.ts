@@ -3,6 +3,7 @@ import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import vike from 'vike/plugin'
 import { defineConfig } from 'vite'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig(({ command }) => ({
   plugins: [
@@ -22,6 +23,10 @@ export default defineConfig(({ command }) => ({
       : []),
     tailwindcss(),
   ],
+  // `@/` is the repo root, as `paths` in tsconfig.json says. A regex, so `@sentry/…` never matches.
+  resolve: {
+    alias: [{ find: /^@\//, replacement: fileURLToPath(new URL('./', import.meta.url)) }],
+  },
   build: {
     target: 'es2022',
     sourcemap: true,

@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
-import { Heading, Image, Link } from '../../atoms'
-import type { MoodCard } from '../../../lib/content-blocks'
-import { MEDITATIONS_INDEX_PATH } from '../../../lib/document-routes'
-import { useT } from '../../../hooks/useT'
+import { Heading, Image, Link } from '@/components/atoms'
+import type { MoodCard } from '@/lib/content/blocks'
+import { MEDITATIONS_INDEX_PATH } from '@/lib/urls/document-routes'
+import { useT } from '@/hooks/useT'
 import { moodCardKey, moodCardLabel } from './moodCard'
 
 /** Drawn at 56px, and at 2× on a retina screen. */

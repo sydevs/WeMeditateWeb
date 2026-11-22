@@ -32,7 +32,7 @@ pnpm test:ui        # Vitest UI
   `tests/guards/`.
 - `vitest.config.ts` enables Vitest's globals. Import `describe`, `it`, and `expect` from
   `'vitest'` explicitly, to
-  match existing files such as [lib/cloudflare-images.test.ts](../../lib/cloudflare-images.test.ts)
+  match existing files such as [lib/media/cloudflare-images.test.ts](../../lib/media/cloudflare-images.test.ts)
   and [server/error-utils.test.ts](../../server/error-utils.test.ts).
 
 **Test a React component without jsdom:**
@@ -111,7 +111,7 @@ that loads it. Cleanup between tests is automatic, because Vitest's globals are 
 [MusicLibrary.test.tsx](../../components/organisms/MusicLibrary/MusicLibrary.test.tsx).
 
 **Module state outlives a test, so a memo makes assertions order-dependent.** A Vitest file is
-one module graph: `createWarnOnce` ([server/warn-once.ts](../../server/warn-once.ts)) reports each
+one module graph: `warnOnce` ([server/error-utils.ts](../../server/error-utils.ts)) reports each
 signature once, so the *second* test to trip a signature sees no warning — which reads as a missing
 capture, not as an ordering bug. Import the module under test inside `beforeEach`, after
 `vi.resetModules()`, and take the Sentry spy from that same fresh graph: resetting the registry

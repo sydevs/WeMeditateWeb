@@ -22,14 +22,14 @@ import {
   meditationDurationMinutes,
   populatedImage,
   type MoodCard,
-} from '../lib/content-blocks'
-import { documentHref } from '../lib/document-routes'
-import { timeOfDaySlot, type TimeOfDay } from '../lib/time-of-day'
+} from '@/lib/content/blocks'
+import { documentHref } from '@/lib/urls/document-routes'
+import { timeOfDaySlot, type TimeOfDay } from '@/lib/time-of-day'
 import { withRetry } from './error-utils'
-import { createWarnOnce } from './warn-once'
-import { sahajCloudFetch } from './sahajcloud-fetch'
-import { tryGetContext } from './sahajcloud-context'
-import type { Locale } from './sahajcloud-types'
+import { warnOnce } from '@/server/error-utils'
+import { sahajCloudFetch } from './sahajcloud/fetch'
+import { tryGetContext } from './sahajcloud/context'
+import type { Locale } from '@/types/sahajcloud'
 
 /** Every slot the site offers, in the order a day runs. */
 const ALL_SLOTS: TimeOfDay[] = ['morning', 'afternoon', 'evening']
@@ -65,7 +65,7 @@ const MEDITATION_QUERY = [
   'select[duration]=true',
   'select[thumbnail]=true',
   // A draft does come back from a `find` on this client contract — see the
-  // same check at `server/sahajcloud-client.ts`. Without this it renders as a
+  // same check at `server/sahajcloud/client.ts`. Without this it renders as a
   // live tile.
   'select[_status]=true',
   'populate[images][url]=true',
@@ -85,12 +85,6 @@ interface MoodDoc {
   afternoonMeditation?: unknown
   eveningMeditation?: unknown
 }
-
-/**
- * Every warning this module sends. Each is on the SSR hot path and nothing
- * caches these reads, so all of them are bounded, not only the data gaps.
- */
-const warnOnce = createWarnOnce('featuredMoodCards')
 
 /**
  * The visitor's own time of day, resolved from Cloudflare's `cf.timezone`.
@@ -113,9 +107,16 @@ export function visitorTimeOfDay(now: Date = new Date()): TimeOfDay {
   const slot = timeOfDaySlot(timezone, now)
 
   if (slot === null) {
-    warnOnce(`timezone:${timezone ?? 'absent'}`, 'mood finder could not read the visitor timezone', {
-      timezone: timezone ?? null,
-    })
+    warnOnce(
+      `timezone:${timezone ?? 'absent'}`,
+      'mood finder could not read the visitor timezone',
+      {
+        source: 'featuredMoodCards',
+        extra: {
+          timezone: timezone ?? null,
+        },
+      },
+    )
 
     return 'evening'
   }
@@ -192,9 +193,12 @@ async function moodCardsFromDocs(
 
   if (typeof totalDocs === 'number' && totalDocs > docs.length) {
     warnOnce(`paginated:${slot ?? 'all'}`, 'mood finder read fewer moods than the data holds', {
-      slot: slot ?? null,
-      returned: docs.length,
-      totalDocs,
+      source: 'featuredMoodCards',
+      extra: {
+        slot: slot ?? null,
+        returned: docs.length,
+        totalDocs,
+      },
     })
   }
 
@@ -221,8 +225,11 @@ async function moodCardsFromDocs(
     meditations = await readMeditations(ids)
   } catch (error) {
     warnOnce(`meditations-read:${slot ?? 'all'}`, 'mood finder could not read the meditations', {
-      slot: slot ?? null,
-      error: error instanceof Error ? error.message : String(error),
+      source: 'featuredMoodCards',
+      extra: {
+        slot: slot ?? null,
+        error: error instanceof Error ? error.message : String(error),
+      },
     })
 
     return []
@@ -248,12 +255,15 @@ async function moodCardsFromDocs(
     // scope.
     if (!meditation || !href || minutes === undefined) {
       warnOnce(`meditation:${moodId}:${each}`, 'a featured mood has no meditation for its slot', {
-        moodId,
-        moodTitle,
-        slot: each,
-        meditationId,
-        status: asText(found?._status) || null,
-        durationMinutes: minutes ?? null,
+        source: 'featuredMoodCards',
+        extra: {
+          moodId,
+          moodTitle,
+          slot: each,
+          meditationId,
+          status: asText(found?._status) || null,
+          durationMinutes: minutes ?? null,
+        },
       })
       continue
     }
@@ -299,8 +309,11 @@ export async function featuredMoodCards(options: {
     return await moodCardsFromDocs(json.docs ?? [], { slot, limit, totalDocs: json.totalDocs })
   } catch (error) {
     warnOnce(`moods-read:${slot ?? 'all'}`, 'featured moods read failed', {
-      slot: slot ?? null,
-      error: error instanceof Error ? error.message : String(error),
+      source: 'featuredMoodCards',
+      extra: {
+        slot: slot ?? null,
+        error: error instanceof Error ? error.message : String(error),
+      },
     })
 
     return []

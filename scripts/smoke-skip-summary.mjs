@@ -47,7 +47,10 @@ summarize([
   '| ---: | ---: | ---: | ---: | ---: |',
   `| ${passed} | ${failed} | ${skipped} | ${todo} | ${total} |`,
   ...(silent > 0 && silent < total
-    ? ['', `${silent} of ${total} specs asserted nothing (no discoverable content, or no SAHAJCLOUD_API_KEY).`]
+    ? [
+        '',
+        `${silent} of ${total} specs asserted nothing (no discoverable content, or no SAHAJCLOUD_API_KEY).`,
+      ]
     : []),
 ])
 

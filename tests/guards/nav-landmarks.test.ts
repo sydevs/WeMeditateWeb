@@ -70,7 +70,7 @@ describe('nav landmarks', () => {
       '<nav className="x">',
       '<nav\n  className="x"\n>',
       '<nav aria-label="Main">',
-      '<nav aria-label={t(\'common.a11y.primary_navigation\')}>',
+      "<nav aria-label={t('common.a11y.primary_navigation')}>",
       '<nav aria-labelledby="heading-id">',
       '<navigation />',
     ]

@@ -13,16 +13,16 @@
  * those five plus `availableLocales`, a list of locale codes the language
  * control offers. Checked against `layouts/useSiteNav.ts`,
  * `layouts/headerDropdown.ts` and `layouts/LayoutChrome.tsx`, which are the
- * only readers; `server/sahajcloud-types.ts` types each page field as a page
+ * only readers; `types/sahajcloud.ts` types each page field as a page
  * relationship. The content fixtures assume the
  * serialized-Lexical shape `components/organisms/RichText/blockConverters.tsx`
  * reads — a root whose `block` children carry `fields.blockType` — checked
  * against the `splash` and `layout` converters there.
  */
 
-import type { MoodCard } from '../../lib/content-blocks'
-import type { AtlasSeoResponse } from '../../server/atlas-types'
-import type { Lecture, Meditation, Page, WebConfig } from '../../server/sahajcloud-types'
+import type { MoodCard } from '@/lib/content/blocks'
+import type { AtlasSeoResponse } from '@/types/atlas'
+import type { Lecture, Meditation, Page, WebConfig } from '@/types/sahajcloud'
 
 const IMAGE = {
   url: 'https://imagedelivery.net/acct/fixture-image/public',
@@ -136,8 +136,8 @@ export const meditation = {
  * The raw lecture both lecture routes carry, as a SahajCloud read returns one.
  *
  * **Pre-mortem.** Checked against `LECTURE_SELECT` in
- * `server/sahajcloud-client.ts` and `parseLectureMetadata` in
- * `lib/lecture-shape.ts`.
+ * `server/sahajcloud/` and `parseLectureMetadata` in
+ * `lib/content/lecture-shape.ts`.
  */
 export const lecture = {
   id: 42,
@@ -156,7 +156,7 @@ export const lecture = {
  * **Pre-mortem.** This assumes a `MoodCard` carries a required
  * `durationMinutes` (the label names the meditation by its length), an
  * `iconUrl` that may be null, and a `thumbnail` in `populatedImage`'s shape.
- * Checked against the interface in `lib/content-blocks.ts` and what
+ * Checked against the interface in `lib/content/blocks.ts` and what
  * `server/moods.ts` pushes — and against the live production read of
  * `/api/user-choices?where[isFeatured][equals]=true`, where every mood carries
  * a `color` and an SVG, and every meditation runs 13–20 minutes.
@@ -183,7 +183,7 @@ export const moodCards: MoodCard[] = [
  *
  * **Pre-mortem.** `AtlasContent` dispatches on `type`, not on a `kind` field,
  * and the `root` variant carries `id: null` and a `content.paragraphs` list.
- * Checked against the `AtlasSeoResponse` union in `server/atlas-types.ts` and
+ * Checked against the `AtlasSeoResponse` union in `types/atlas.ts` and
  * the switch in `pages/map/_components/AtlasContent.tsx` — an unrecognised
  * discriminator renders nothing at all, which is how this fixture first served
  * a `/map` with no heading.

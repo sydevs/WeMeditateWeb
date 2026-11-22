@@ -1,9 +1,9 @@
 import { useData } from 'vike-react/useData'
 import type { MeditationsIndexData } from './+data'
-import { Container, Heading } from '../../../components/atoms'
-import { ContentGrid } from '../../../components/molecules'
-import { moodCardKey, moodCardLabel } from '../../../components/organisms/MoodFinder'
-import { useT } from '../../../hooks/useT'
+import { Container, Heading } from '@/components/atoms'
+import { ContentGrid } from '@/components/molecules'
+import { moodCardKey, moodCardLabel } from '@/components/organisms/MoodFinder'
+import { useT } from '@/hooks/useT'
 
 /** One column of the grid below, at each breakpoint it draws. */
 const CARD_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px'

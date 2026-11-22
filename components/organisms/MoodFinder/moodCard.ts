@@ -6,8 +6,8 @@
  * itself.
  */
 
-import type { MoodCard } from '../../../lib/content-blocks'
-import type { TFunction } from '../../../lib/i18n'
+import type { MoodCard } from '@/lib/content/blocks'
+import type { TFunction } from '@/lib/i18n/i18n'
 
 /**
  * The feeling a meditation is for and how long it runs, as one parameterised

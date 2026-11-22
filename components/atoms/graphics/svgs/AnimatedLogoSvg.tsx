@@ -15,11 +15,11 @@ export interface AnimatedLogoSvgProps extends ComponentProps<'svg'> {}
 export function AnimatedLogoSvg({ className = 'w-12 h-12', ...props }: AnimatedLogoSvgProps) {
   return (
     <svg
-      id="animated-logo"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 128 94.44"
-      className={className}
       aria-hidden="true"
+      className={className}
+      id="animated-logo"
+      viewBox="0 0 128 94.44"
+      xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
       <defs>

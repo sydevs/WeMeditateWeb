@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { TechniqueCard } from "./TechniqueCard";
-import { StoryWrapper, StorySection } from '../../ladle';
+import type { Story, StoryDefault } from '@ladle/react'
+import { TechniqueCard } from './TechniqueCard'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
-  title: "Organisms"
-} satisfies StoryDefault;
+  title: 'Organisms',
+} satisfies StoryDefault
 
 /**
  * TechniqueCard component showcasing meditation technique information with
@@ -14,34 +14,34 @@ export const Default: Story = () => (
   <StoryWrapper>
     <StorySection title="Left Aligned">
       <TechniqueCard
+        align="left"
+        buttonText="Learn more"
+        className="mt-32"
+        description="Simple and inexpensive, soaking your feet in saltwater is the daily habit you didn't know you needed. Imagine standing with your feet in the ocean, letting it soothe your stresses away and calm your mind. Luckily, foot-soaking can also be done in the comfort of your own home!"
+        href="/techniques/foot-soak"
+        imageAlt="Foot soaking relaxation technique"
+        imageSrc="https://picsum.photos/seed/technique1/400/400"
         number="01"
         title="Foot Soak"
-        description="Simple and inexpensive, soaking your feet in saltwater is the daily habit you didn't know you needed. Imagine standing with your feet in the ocean, letting it soothe your stresses away and calm your mind. Luckily, foot-soaking can also be done in the comfort of your own home!"
-        imageSrc="https://picsum.photos/seed/technique1/400/400"
-        imageAlt="Foot soaking relaxation technique"
-        href="/techniques/foot-soak"
-        buttonText="Learn more"
-        align="left"
-        className="mt-32"
       />
     </StorySection>
 
     <StorySection title="Right Aligned">
       <TechniqueCard
+        align="right"
+        buttonText="Learn more"
+        className="mt-32"
+        description="Feeling overworked and exhausted? The liver is like an overheated running engine, constantly working to provide fuel for the brain. Cool your thoughts down by meditating with an ice pack on your liver."
+        href="/techniques/ice-on-liver"
+        imageAlt="Ice on liver meditation technique"
+        imageSrc="https://picsum.photos/seed/technique2/400/400"
         number="02"
         title="Ice on Liver"
-        description="Feeling overworked and exhausted? The liver is like an overheated running engine, constantly working to provide fuel for the brain. Cool your thoughts down by meditating with an ice pack on your liver."
-        imageSrc="https://picsum.photos/seed/technique2/400/400"
-        imageAlt="Ice on liver meditation technique"
-        href="/techniques/ice-on-liver"
-        buttonText="Learn more"
-        align="right"
-        className="mt-32"
       />
     </StorySection>
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Technique Card"
+Default.storyName = 'Technique Card'

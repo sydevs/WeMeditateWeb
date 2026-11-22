@@ -48,7 +48,7 @@ export function timeOfDaySlot(timezone: string | undefined, now: Date): TimeOfDa
  * One formatter per zone.
  *
  * An `Intl` constructor is among the most expensive calls in a Worker isolate
- * (`lib/i18n.ts` says the same of `Intl.PluralRules`), and this runs on every
+ * (`lib/i18n/i18n.ts` says the same of `Intl.PluralRules`), and this runs on every
  * render that carries the finder. The map is keyed only after the constructor
  * accepted the zone, so its key space is the IANA list and cannot grow past it.
  */

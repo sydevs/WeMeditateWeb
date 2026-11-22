@@ -1,5 +1,5 @@
-import { MAP_PREFIX } from '../../lib/atlas-route'
-import { MEDITATIONS_SEGMENT } from '../../lib/document-routes'
+import { MAP_PREFIX } from '@/lib/atlas/route'
+import { MEDITATIONS_SEGMENT } from '@/lib/urls/document-routes'
 
 /**
  * First path segments that a route function elsewhere owns. This matcher

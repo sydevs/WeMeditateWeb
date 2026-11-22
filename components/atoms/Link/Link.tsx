@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
-import { useLocale } from '../../../hooks/usePageContext'
-import { useT } from '../../../hooks/useT'
-import { isSafeLinkHref, localeHref } from '../../../lib/urls'
-import type { Locale } from '../../../server/sahajcloud-types'
+import { useLocale } from '@/hooks/usePageContext'
+import { useT } from '@/hooks/useT'
+import { isSafeLinkHref, localeHref } from '@/lib/urls/urls'
+import type { Locale } from '@/types/sahajcloud'
 
 export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   /** Link destination (will be locale-prefixed automatically) */
@@ -21,7 +21,6 @@ export interface LinkProps extends Omit<ComponentProps<'a'>, 'href'> {
    * @default 'default'
    */
   variant?: 'default' | 'primary' | 'secondary' | 'neutral' | 'unstyled'
-
 
   /**
    * Size variant (affects font size)
@@ -93,7 +92,8 @@ export function Link({
   // atom to escape a `transition-property` it never asked for. A caller that
   // paints a colour hover brings the transition with it.
   const variantStyles = {
-    default: 'text-primary hover:text-primary-strong hover:underline transition-colors duration-200',
+    default:
+      'text-primary hover:text-primary-strong hover:underline transition-colors duration-200',
     primary: 'text-primary font-medium hover:text-primary-strong transition-colors duration-200',
     secondary:
       'text-secondary font-medium hover:text-secondary-strong transition-colors duration-200',
@@ -126,9 +126,9 @@ export function Link({
 
   return (
     <a
-      href={safe ? localeHref(locale ?? pageLocale, href) : undefined}
       aria-label={label}
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      href={safe ? localeHref(locale ?? pageLocale, href) : undefined}
       {...externalProps}
       {...props}
     >

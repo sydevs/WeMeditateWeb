@@ -1,12 +1,8 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { Playlist, MusicFilter } from './Playlist'
-import type { Track } from '../AudioPlayer/types'
-import { StoryWrapper, StorySection } from '../../ladle'
-import {
-  MusicalNoteIcon,
-  MicrophoneIcon,
-  SpeakerWaveIcon,
-} from '@heroicons/react/24/outline'
+import type { Track } from '@/lib/media/audio'
+import { StoryWrapper, StorySection } from '@/components/ladle'
+import { MusicalNoteIcon, MicrophoneIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
 export default {
@@ -136,13 +132,13 @@ export const Default: Story = () => {
       <StorySection title="Basic">
         <div className="max-w-md">
           <Playlist
-            title="Meditation Music"
-            tracks={sampleTracks}
             currentTrackIndex={currentTrack}
-            onTrackClick={setCurrentTrack}
             filters={musicFilters}
             selectedFilter={selectedFilter}
+            title="Meditation Music"
+            tracks={sampleTracks}
             onFilterChange={setSelectedFilter}
+            onTrackClick={setCurrentTrack}
           />
         </div>
       </StorySection>
@@ -150,9 +146,9 @@ export const Default: Story = () => {
       <StorySection title="Scrollable">
         <div className="max-w-md h-96">
           <Playlist
+            currentTrackIndex={scrollableCurrentTrack}
             title="Extended Collection"
             tracks={extendedTracks}
-            currentTrackIndex={scrollableCurrentTrack}
             onTrackClick={setScrollableCurrentTrack}
           />
         </div>
@@ -169,16 +165,16 @@ export const Default: Story = () => {
         </div>
       </StorySection>
 
-      <StorySection title="Music Library" inContext={true}>
+      <StorySection inContext={true} title="Music Library">
         <div className="bg-linear-to-br from-teal-50 to-blue-50 p-8">
           <div className="max-w-lg mx-auto">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               Guided Meditation Sessions
             </h2>
             <Playlist
+              currentTrackIndex={currentTrack}
               title="Featured Tracks"
               tracks={sampleTracks}
-              currentTrackIndex={currentTrack}
               onTrackClick={setCurrentTrack}
             />
           </div>

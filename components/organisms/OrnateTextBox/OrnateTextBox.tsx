@@ -1,8 +1,8 @@
 import { ComponentProps } from 'react'
-import { Button, Container, Image } from '../../atoms'
-import type { AspectRatio } from '../../../lib/cloudflare-images'
-import { toParagraphs } from '../../../lib/paragraphs'
-import ornateBackground from '../../../assets/ornate.svg'
+import { Button, Container, Image } from '@/components/atoms'
+import type { AspectRatio } from '@/lib/media/cloudflare-images'
+import { toParagraphs } from '@/lib/content/paragraphs'
+import ornateBackground from '@/assets/ornate.svg'
 
 export interface OrnateTextBoxProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Main heading. */
@@ -129,8 +129,7 @@ export function OrnateTextBox({
   // one thing this layout must not do. Each column pair is written out whole:
   // Tailwind v4 emits an arbitrary value only for a candidate it finds
   // verbatim in a scanned file (#262).
-  const gridColumns =
-    align === 'right' ? 'lg:grid-cols-[1fr_44%]' : 'lg:grid-cols-[44%_1fr]'
+  const gridColumns = align === 'right' ? 'lg:grid-cols-[1fr_44%]' : 'lg:grid-cols-[44%_1fr]'
   const imageColumn = align === 'right' ? 'lg:col-start-2' : 'lg:col-start-1'
   const textColumn = align === 'right' ? 'lg:col-start-1' : 'lg:col-start-2'
 

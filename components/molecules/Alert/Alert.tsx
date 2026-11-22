@@ -6,8 +6,8 @@ import {
   XCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import { Icon, type HeroIcon } from '../../atoms/Icon'
-import { useT } from '../../../hooks/useT'
+import { Icon, type HeroIcon } from '@/components/atoms/Icon'
+import { useT } from '@/hooks/useT'
 
 export type AlertVariant = 'info' | 'success' | 'warning' | 'error'
 

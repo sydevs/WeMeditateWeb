@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
-import type { ItemHeadingLevel } from '../../ContentCard/ContentCard'
-import { Accordion, type AccordionItemData } from '../../Accordion'
-import { ColumnCarousel } from '../../ColumnCarousel'
-import type { ColumnProps } from '../../Column'
-import { Heading, Image, Link } from '../../../atoms'
-import { populatedImage, type LayoutItem } from '../../../../lib/content-blocks'
+import type { ItemHeadingLevel } from '@/components/molecules/ContentCard/ContentCard'
+import { Accordion, type AccordionItemData } from '@/components/molecules/Accordion'
+import { ColumnCarousel } from '@/components/molecules/ColumnCarousel'
+import type { ColumnProps } from '@/components/molecules/Column'
+import { Heading, Image, Link } from '@/components/atoms'
+import { populatedImage, type LayoutItem } from '@/lib/content/blocks'
 // Aliased: this file's own component takes the unprefixed name.
-import type { LayoutBlock as LayoutBlockSchema } from '../../../../server/payload-types'
+import type { LayoutBlock as LayoutBlockSchema } from '@/types/payload/payload-types'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */
@@ -86,13 +86,7 @@ function LayoutCard({
  * reuse the Accordion and ColumnCarousel molecules. `grid`, `list`, and
  * `textList` render with the LayoutCard subcomponent and simple lists.
  */
-export function LayoutBlock({
-  style,
-  title,
-  useColumnsOnDesktop,
-  items,
-  className = '',
-}: LayoutBlockProps) {
+export function LayoutBlock({ style, title, items, className = '' }: LayoutBlockProps) {
   const withTitle = items.filter((it) => it.title?.trim())
 
   if (items.length === 0) {

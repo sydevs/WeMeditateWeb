@@ -1,4 +1,4 @@
-import { matchMeditationsIndexRoute } from '../../../lib/document-routes'
+import { matchMeditationsIndexRoute } from '@/lib/urls/document-routes'
 
 /**
  * /meditations — the list of the meditations the mood finder offers. The

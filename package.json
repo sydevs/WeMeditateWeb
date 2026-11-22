@@ -4,7 +4,7 @@
     "dev": "vike dev",
     "build": "vike build",
     "preview": "vike preview",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0 && prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -18,7 +18,7 @@
     "ladle:build": "SWC_NATIVE_BINDING_CACHE_SKIP_SECURITY_CHECK=${WORKERS_CI:+1} ladle build",
     "check:wrangler": "wrangler deploy --dry-run --config wrangler.design.jsonc",
     "env:setup": "cp .env.example .env.local && echo 'Created .env.local! Edit it with your actual values.'",
-    "types:cms": "curl -fsSL -o server/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs",
+    "types:cms": "curl -fsSL -o types/payload/payload-types.ts https://raw.githubusercontent.com/sydevs/SahajCloud/refs/heads/main/src/payload-types.ts && node scripts/strip-payload-augmentation.mjs",
     "sync:translations": "tsx scripts/sync-translations.mjs"
   },
   "dependencies": {

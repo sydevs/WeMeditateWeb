@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AtlasContent, atlasHref } from './AtlasContent'
-import type { AtlasSeoResponse } from '../../../server/atlas-types'
-import { anchorFor } from '../../../tests/_helpers/markup'
+import type { AtlasSeoResponse } from '@/types/atlas'
+import { anchorFor } from '@/tests/_helpers/markup'
 
 const breadcrumbs = [
   { name: 'United Kingdom', route: '/gb', url: 'https://wemeditate.com/map/gb' },

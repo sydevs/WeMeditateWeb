@@ -1,9 +1,9 @@
 import { ComponentProps } from 'react'
-import { Link } from '../../atoms'
+import { Link } from '@/components/atoms'
 import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
-import type { Locale } from '../../../server/sahajcloud-types'
-import { useT } from '../../../hooks/useT'
-import { MEDITATIONS_INDEX_PATH } from '../../../lib/document-routes'
+import type { Locale } from '@/types/sahajcloud'
+import { useT } from '@/hooks/useT'
+import { MEDITATIONS_INDEX_PATH } from '@/lib/urls/document-routes'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /** Overrides `discover.general.title`. */

@@ -1,10 +1,10 @@
-import type { Story, StoryDefault } from "@ladle/react";
-import { FormField } from "./FormField";
-import { Input } from "../../atoms/form/Input/Input";
-import { Select } from "../../atoms/form/Select/Select";
-import { Textarea } from "../../atoms/form/Textarea/Textarea";
-import { Checkbox } from "../../atoms/form/Checkbox/Checkbox";
-import { Radio } from "../../atoms/form/Radio/Radio";
+import type { Story, StoryDefault } from '@ladle/react'
+import { FormField } from './FormField'
+import { Input } from '@/components/atoms/form/Input/Input'
+import { Select } from '@/components/atoms/form/Select/Select'
+import { Textarea } from '@/components/atoms/form/Textarea/Textarea'
+import { Checkbox } from '@/components/atoms/form/Checkbox/Checkbox'
+import { Radio } from '@/components/atoms/form/Radio/Radio'
 import {
   StoryWrapper,
   StorySection,
@@ -15,11 +15,11 @@ import {
   StoryGridBody,
   StoryGridRow,
   StoryGridCell,
-} from '../../ladle';
+} from '@/components/ladle'
 
 export default {
-  title: "Molecules"
-} satisfies StoryDefault;
+  title: 'Molecules',
+} satisfies StoryDefault
 
 /** FormField molecule combining label, input, optional error message, and optional description. */
 export const Default: Story = () => (
@@ -27,31 +27,31 @@ export const Default: Story = () => (
     <StorySection title="Basic Examples">
       <div className="flex flex-col gap-6 max-w-md">
         <FormField id="basic-name" label="Full name">
-          <Input type="text" id="basic-name" placeholder="Enter your name" />
+          <Input id="basic-name" placeholder="Enter your name" type="text" />
         </FormField>
 
-        <FormField id="basic-email" label="Email address" required>
-          <Input type="email" id="basic-email" placeholder="you@example.com" />
+        <FormField required id="basic-email" label="Email address">
+          <Input id="basic-email" placeholder="you@example.com" type="email" />
         </FormField>
 
         <FormField
+          description="Please provide detailed information"
           id="basic-message"
           label="Message"
-          description="Please provide detailed information"
         >
-          <Textarea id="basic-message" rows={4} placeholder="Type your message here..." />
+          <Textarea id="basic-message" placeholder="Type your message here..." rows={4} />
         </FormField>
       </div>
     </StorySection>
 
     <StorySection title="Alignment">
       <div className="flex flex-col gap-6 max-w-md">
-        <FormField id="align-left" label="Left aligned (default)" align="left">
-          <Input type="text" id="align-left" placeholder="Left aligned" />
+        <FormField align="left" id="align-left" label="Left aligned (default)">
+          <Input id="align-left" placeholder="Left aligned" type="text" />
         </FormField>
 
-        <FormField id="align-center" label="Center aligned" align="center">
-          <Input type="text" id="align-center" placeholder="Center aligned" />
+        <FormField align="center" id="align-center" label="Center aligned">
+          <Input id="align-center" placeholder="Center aligned" type="text" />
         </FormField>
       </div>
     </StorySection>
@@ -71,28 +71,43 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Input</StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-input-default" label="Email address" required>
-                <Input type="email" id="state-input-default" placeholder="you@example.com" />
+              <FormField required id="state-input-default" label="Email address">
+                <Input id="state-input-default" placeholder="you@example.com" type="email" />
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
               <FormField
-                id="state-input-error"
-                label="Email address"
                 required
                 error="Please enter a valid email address"
+                id="state-input-error"
+                label="Email address"
               >
-                <Input type="email" id="state-input-error" state="error" defaultValue="invalid-email" />
+                <Input
+                  defaultValue="invalid-email"
+                  id="state-input-error"
+                  state="error"
+                  type="email"
+                />
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-input-success" label="Email address" required>
-                <Input type="email" id="state-input-success" state="success" defaultValue="john@example.com" />
+              <FormField required id="state-input-success" label="Email address">
+                <Input
+                  defaultValue="john@example.com"
+                  id="state-input-success"
+                  state="success"
+                  type="email"
+                />
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-input-disabled" label="Email address" disabled>
-                <Input type="email" id="state-input-disabled" disabled defaultValue="disabled@example.com" />
+              <FormField disabled id="state-input-disabled" label="Email address">
+                <Input
+                  disabled
+                  defaultValue="disabled@example.com"
+                  id="state-input-disabled"
+                  type="email"
+                />
               </FormField>
             </StoryGridCell>
           </StoryGridRow>
@@ -100,9 +115,11 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Select</StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-select-default" label="Country" required>
-                <Select id="state-select-default" defaultValue="">
-                  <option value="" disabled>Select a country</option>
+              <FormField required id="state-select-default" label="Country">
+                <Select defaultValue="" id="state-select-default">
+                  <option disabled value="">
+                    Select a country
+                  </option>
                   <option value="us">United States</option>
                   <option value="uk">United Kingdom</option>
                   <option value="ca">Canada</option>
@@ -111,13 +128,15 @@ export const Default: Story = () => (
             </StoryGridCell>
             <StoryGridCell>
               <FormField
-                id="state-select-error"
-                label="Country"
                 required
                 error="Please select a country"
+                id="state-select-error"
+                label="Country"
               >
-                <Select id="state-select-error" state="error" defaultValue="">
-                  <option value="" disabled>Select a country</option>
+                <Select defaultValue="" id="state-select-error" state="error">
+                  <option disabled value="">
+                    Select a country
+                  </option>
                   <option value="us">United States</option>
                   <option value="uk">United Kingdom</option>
                   <option value="ca">Canada</option>
@@ -125,9 +144,11 @@ export const Default: Story = () => (
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-select-success" label="Country" required>
-                <Select id="state-select-success" state="success" defaultValue="us">
-                  <option value="" disabled>Select a country</option>
+              <FormField required id="state-select-success" label="Country">
+                <Select defaultValue="us" id="state-select-success" state="success">
+                  <option disabled value="">
+                    Select a country
+                  </option>
                   <option value="us">United States</option>
                   <option value="uk">United Kingdom</option>
                   <option value="ca">Canada</option>
@@ -135,9 +156,11 @@ export const Default: Story = () => (
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-select-disabled" label="Country" disabled>
-                <Select id="state-select-disabled" disabled defaultValue="uk">
-                  <option value="" disabled>Select a country</option>
+              <FormField disabled id="state-select-disabled" label="Country">
+                <Select disabled defaultValue="uk" id="state-select-disabled">
+                  <option disabled value="">
+                    Select a country
+                  </option>
                   <option value="us">United States</option>
                   <option value="uk">United Kingdom</option>
                   <option value="ca">Canada</option>
@@ -149,28 +172,43 @@ export const Default: Story = () => (
           <StoryGridRow>
             <StoryGridCell isLabel>Textarea</StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-textarea-default" label="Message" required>
-                <Textarea id="state-textarea-default" rows={3} placeholder="Your message..." />
+              <FormField required id="state-textarea-default" label="Message">
+                <Textarea id="state-textarea-default" placeholder="Your message..." rows={3} />
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
               <FormField
-                id="state-textarea-error"
-                label="Message"
                 required
                 error="Message must be at least 10 characters"
+                id="state-textarea-error"
+                label="Message"
               >
-                <Textarea id="state-textarea-error" state="error" rows={3} defaultValue="Too short" />
+                <Textarea
+                  defaultValue="Too short"
+                  id="state-textarea-error"
+                  rows={3}
+                  state="error"
+                />
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-textarea-success" label="Message" required>
-                <Textarea id="state-textarea-success" state="success" rows={3} defaultValue="This is a valid message with enough characters." />
+              <FormField required id="state-textarea-success" label="Message">
+                <Textarea
+                  defaultValue="This is a valid message with enough characters."
+                  id="state-textarea-success"
+                  rows={3}
+                  state="success"
+                />
               </FormField>
             </StoryGridCell>
             <StoryGridCell>
-              <FormField id="state-textarea-disabled" label="Message" disabled>
-                <Textarea id="state-textarea-disabled" disabled rows={3} defaultValue="Comments are disabled" />
+              <FormField disabled id="state-textarea-disabled" label="Message">
+                <Textarea
+                  disabled
+                  defaultValue="Comments are disabled"
+                  id="state-textarea-disabled"
+                  rows={3}
+                />
               </FormField>
             </StoryGridCell>
           </StoryGridRow>
@@ -178,35 +216,27 @@ export const Default: Story = () => (
       </StoryGrid>
     </StorySection>
 
-    <StorySection title="Examples" inContext={true}>
+    <StorySection inContext={true} title="Examples">
       <div className="flex flex-col gap-8 max-w-2xl">
         {/* Input Example */}
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Text Input</h3>
           <div className="flex flex-col gap-4">
-            <FormField
-              id="example-name"
-              label="Full name"
-              required
-            >
-              <Input type="text" id="example-name" placeholder="John Doe" />
+            <FormField required id="example-name" label="Full name">
+              <Input id="example-name" placeholder="John Doe" type="text" />
             </FormField>
 
             <FormField
-              id="example-email"
-              label="Email address"
               required
               description="We'll never share your email with anyone else"
+              id="example-email"
+              label="Email address"
             >
-              <Input type="email" id="example-email" placeholder="john@example.com" />
+              <Input id="example-email" placeholder="john@example.com" type="email" />
             </FormField>
 
-            <FormField
-              id="example-phone"
-              label="Phone number"
-              description="Include country code"
-            >
-              <Input type="tel" id="example-phone" placeholder="+1 (555) 123-4567" />
+            <FormField description="Include country code" id="example-phone" label="Phone number">
+              <Input id="example-phone" placeholder="+1 (555) 123-4567" type="tel" />
             </FormField>
           </div>
         </div>
@@ -215,13 +245,11 @@ export const Default: Story = () => (
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Select Dropdown</h3>
           <div className="flex flex-col gap-4">
-            <FormField
-              id="example-country"
-              label="Country"
-              required
-            >
-              <Select id="example-country" defaultValue="">
-                <option value="" disabled>Select your country</option>
+            <FormField required id="example-country" label="Country">
+              <Select defaultValue="" id="example-country">
+                <option disabled value="">
+                  Select your country
+                </option>
                 <option value="us">United States</option>
                 <option value="uk">United Kingdom</option>
                 <option value="ca">Canada</option>
@@ -231,11 +259,11 @@ export const Default: Story = () => (
             </FormField>
 
             <FormField
+              description="Choose your preferred language for notifications"
               id="example-language"
               label="Preferred language"
-              description="Choose your preferred language for notifications"
             >
-              <Select id="example-language" defaultValue="en">
+              <Select defaultValue="en" id="example-language">
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
@@ -250,19 +278,15 @@ export const Default: Story = () => (
           <h3 className="text-base font-semibold text-gray-900 mb-4">Textarea</h3>
           <div className="flex flex-col gap-4">
             <FormField
+              description="Tell us a little about yourself (max 500 characters)"
               id="example-bio"
               label="Bio"
-              description="Tell us a little about yourself (max 500 characters)"
             >
-              <Textarea id="example-bio" rows={4} placeholder="I am a meditation practitioner..." />
+              <Textarea id="example-bio" placeholder="I am a meditation practitioner..." rows={4} />
             </FormField>
 
-            <FormField
-              id="example-message"
-              label="Message"
-              required
-            >
-              <Textarea id="example-message" rows={6} placeholder="Your message here..." />
+            <FormField required id="example-message" label="Message">
+              <Textarea id="example-message" placeholder="Your message here..." rows={6} />
             </FormField>
           </div>
         </div>
@@ -270,14 +294,10 @@ export const Default: Story = () => (
         {/* Checkbox Group Example */}
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Checkbox Group</h3>
-          <FormField
-            id="example-interests"
-            label="Interests"
-            description="Select all that apply"
-          >
+          <FormField description="Select all that apply" id="example-interests" label="Interests">
             <div className="flex flex-col gap-2">
-              <Checkbox id="interest-meditation" label="Guided Meditations" defaultChecked />
-              <Checkbox id="interest-music" label="Meditation Music" defaultChecked />
+              <Checkbox defaultChecked id="interest-meditation" label="Guided Meditations" />
+              <Checkbox defaultChecked id="interest-music" label="Meditation Music" />
               <Checkbox id="interest-articles" label="Articles & Resources" />
               <Checkbox id="interest-events" label="Events & Workshops" />
               <Checkbox id="interest-newsletter" label="Newsletter Updates" />
@@ -288,16 +308,33 @@ export const Default: Story = () => (
         {/* Radio Group Example */}
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Radio Group</h3>
-          <FormField
-            id="example-experience"
-            label="Meditation experience level"
-            required
-          >
+          <FormField required id="example-experience" label="Meditation experience level">
             <div className="flex flex-col gap-2">
-              <Radio name="experience" id="exp-beginner" value="beginner" label="Beginner - Just starting out" />
-              <Radio name="experience" id="exp-intermediate" value="intermediate" label="Intermediate - Regular practice" defaultChecked />
-              <Radio name="experience" id="exp-advanced" value="advanced" label="Advanced - Experienced practitioner" />
-              <Radio name="experience" id="exp-teacher" value="teacher" label="Teacher - Teaching meditation" />
+              <Radio
+                id="exp-beginner"
+                label="Beginner - Just starting out"
+                name="experience"
+                value="beginner"
+              />
+              <Radio
+                defaultChecked
+                id="exp-intermediate"
+                label="Intermediate - Regular practice"
+                name="experience"
+                value="intermediate"
+              />
+              <Radio
+                id="exp-advanced"
+                label="Advanced - Experienced practitioner"
+                name="experience"
+                value="advanced"
+              />
+              <Radio
+                id="exp-teacher"
+                label="Teacher - Teaching meditation"
+                name="experience"
+                value="teacher"
+              />
             </div>
           </FormField>
         </div>
@@ -305,26 +342,16 @@ export const Default: Story = () => (
         {/* Single Checkbox Example */}
         <div>
           <h3 className="text-base font-semibold text-gray-900 mb-4">Single Checkbox</h3>
-          <FormField
-            id="example-terms"
-            label="Agreement"
-            required
-          >
-            <Checkbox
-              id="accept-terms"
-              label="I agree to the terms and conditions"
-            />
+          <FormField required id="example-terms" label="Agreement">
+            <Checkbox id="accept-terms" label="I agree to the terms and conditions" />
           </FormField>
 
           <div className="mt-4">
-            <FormField
-              id="example-newsletter"
-              label="Newsletter subscription"
-            >
+            <FormField id="example-newsletter" label="Newsletter subscription">
               <Checkbox
+                defaultChecked
                 id="subscribe-newsletter"
                 label="Yes, I want to receive weekly meditation tips and updates"
-                defaultChecked
               />
             </FormField>
           </div>
@@ -334,6 +361,6 @@ export const Default: Story = () => (
 
     <div />
   </StoryWrapper>
-);
+)
 
-Default.storyName = "Form Field"
+Default.storyName = 'Form Field'

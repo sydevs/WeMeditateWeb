@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { OrnateTextBox } from './OrnateTextBox'
-import { classFor, classOf } from '../../../tests/_helpers/markup'
+import { classFor, classOf } from '@/tests/_helpers/markup'
 
 const BASE = {
   title: 'Sacred Teachings',
@@ -157,9 +157,7 @@ describe('<OrnateTextBox>', () => {
   // measures 2.47:1 against a 3:1 bar (#262) — so the grid is what lets one
   // order serve both the eye and the reader, at every width.
   it('renders title, subtitle, image then body in source order, with no reorder', () => {
-    const html = renderToStaticMarkup(
-      <OrnateTextBox {...BASE} subtitle="Timeless teachings" />,
-    )
+    const html = renderToStaticMarkup(<OrnateTextBox {...BASE} subtitle="Timeless teachings" />)
 
     // A missing marker indexes as -1, which satisfies `toBeLessThan` against
     // anything, so each one is pinned as present before it is ordered.

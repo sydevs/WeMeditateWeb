@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
  * Sentry is removed or disabled and nothing else is left to do it.
  */
 
-vi.mock('../sentry.browser.config', () => ({ sentryBrowserConfig: vi.fn() }))
+vi.mock('@/lib/sentry/browser-config', () => ({ sentryBrowserConfig: vi.fn() }))
 
 afterEach(() => {
   vi.unstubAllGlobals()

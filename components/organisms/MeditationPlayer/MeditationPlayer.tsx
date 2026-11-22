@@ -16,19 +16,19 @@ import {
   SpeakerXMarkIcon,
   ArrowPathRoundedSquareIcon,
 } from '@heroicons/react/24/solid'
-import { Avatar, Button, Dropdown, Link, Tooltip } from '../../atoms'
-import { SimpleLeafSvg } from '../../atoms/graphics/svgs/SimpleLeafSvg'
+import { Avatar, Button, Dropdown, Link, Tooltip } from '@/components/atoms'
+import { SimpleLeafSvg } from '@/components/atoms/graphics/svgs/SimpleLeafSvg'
 import { useCircularProgress } from './useCircularProgress'
 import { pickRandomIndex, pickNextRandomIndex } from './musicSelection'
-import { useAudioPlayer } from '../../../hooks/audio'
-import type { Track } from '../../molecules/AudioPlayer/types'
-import type { MeditationSong } from '../../../server/sahajcloud-types'
-import founderImage from '../../../assets/smnd.webp'
-import { getImageURL, getVariantName } from '../../../lib/cloudflare-images'
-import { useT } from '../../../hooks/useT'
-import { formatDuration } from '../../../lib/duration'
+import { useAudioPlayer } from '@/hooks/audio'
+import type { Track } from '@/lib/media/audio'
+import type { MeditationSong } from '@/types/sahajcloud'
+import founderImage from '@/assets/smnd.webp'
+import { getImageURL, getVariantName } from '@/lib/media/cloudflare-images'
+import { useT } from '@/hooks/useT'
+import { formatDuration } from '@/lib/media/duration'
 
-export type { Track } from '../../molecules/AudioPlayer/types'
+export type { Track } from '@/lib/media/audio'
 
 /**
  * The frame's own variant. Its box is 488px at the widest — `max-w-lg` less
@@ -47,7 +47,7 @@ const DEFAULT_MUSIC_VOLUME = 0.4
 
 // The public site an embedded player sends a visitor back to: today the legacy
 // Rails app on its own origin, which localizes its own slugs (`/fr/méditations`),
-// so `lib/urls.ts` cannot spell these and both links stay on the English entry
+// so `lib/urls/urls.ts` cannot spell these and both links stay on the English entry
 // points. The bare domain is the web arm's link text — a brand name, not copy.
 // shortcut: absolute and unlocalized while this domain is somebody else's. Once
 // this app serves wemeditate.com, `Link` stops passing these through as external
@@ -278,8 +278,8 @@ function AudioControls({
       <div className="flex w-64 flex-col gap-4 p-4 text-left">
         <VolumeRow
           label={t('meditation.general.voice')}
-          muteLabel={t('meditation.a11y.mute_voice')}
           muted={voiceMuted}
+          muteLabel={t('meditation.a11y.mute_voice')}
           unmuteLabel={t('meditation.a11y.unmute_voice')}
           volume={voiceVolume}
           volumeLabel={t('meditation.a11y.voice_volume')}
@@ -303,8 +303,8 @@ function AudioControls({
               ) : undefined
             }
             label={t('meditation.general.music')}
-            muteLabel={t('meditation.a11y.mute_music')}
             muted={musicMuted}
+            muteLabel={t('meditation.a11y.mute_music')}
             sublabel={musicTrackTitle}
             unmuteLabel={t('meditation.a11y.unmute_music')}
             volume={musicVolume}

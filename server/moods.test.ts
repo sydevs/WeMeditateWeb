@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 
-vi.mock('./sahajcloud-context', () => ({
+vi.mock('./sahajcloud/context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
   tryGetContext: () => undefined,
 }))
-// Every warning this module sends goes through `createWarnOnce`.
+// Every warning this module sends goes through `warnOnce`.
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
 vi.mock('@sentry/react', () => ({ captureMessage: vi.fn(), captureException: vi.fn() }))
 
@@ -81,7 +81,7 @@ const errorResponse = (status: number) => {
 /**
  * Both are re-imported per test, never imported at the top of the file.
  *
- * `createWarnOnce` holds its reported signatures in module state, so a test
+ * `warnOnce` holds its reported signatures in module state, so a test
  * that trips `meditation:2:morning` silences the next test asserting it — and
  * the suppression reads as a missing warning, not as an ordering bug. Resetting
  * the registry also rebuilds the Sentry mock, so the spy has to come from the

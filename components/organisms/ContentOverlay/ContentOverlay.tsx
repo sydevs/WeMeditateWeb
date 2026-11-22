@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
-import { Button, Container, Image } from '../../atoms'
-import { surface, type Surface } from '../../atoms/surface'
-import { toParagraphs } from '../../../lib/paragraphs'
+import { Button, Container, Image } from '@/components/atoms'
+import { surface, type Surface } from '@/components/atoms/surface'
+import { toParagraphs } from '@/lib/content/paragraphs'
 
 export interface ContentOverlayProps extends Omit<ComponentProps<'div'>, 'children'> {
   /** Main heading text */
@@ -158,12 +158,7 @@ export function ContentOverlay({
 
       {ctaText && ctaHref && (
         <div className="mt-6">
-          <Button
-            className={buttonClassName}
-            href={ctaHref}
-            size="md"
-            variant={buttonVariant}
-          >
+          <Button className={buttonClassName} href={ctaHref} size="md" variant={buttonVariant}>
             {ctaText}
           </Button>
         </div>

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { act, render, screen, fireEvent } from '@testing-library/react'
 import { MobileMenu } from './MobileMenu'
-import type { NavItem } from '../Header'
+import type { NavItem } from '@/components/organisms/Header'
 
 const navItems: NavItem[] = [
   { label: 'Meditate Now', href: '/meditate' },
@@ -111,7 +111,7 @@ describe('MobileMenu · opening and closing', () => {
       ],
     })
 
-    // `footer.languages` in lib/translations.en.json.
+    // `footer.languages` in lib/i18n/translations.en.json.
     fireEvent.click(screen.getByRole('button', { name: 'Languages' }))
 
     const spanish = screen.getByRole('link', { name: 'Español' })
@@ -127,6 +127,7 @@ describe('MobileMenu · opening and closing', () => {
     // jsdom has no matchMedia, so this stands one in with a `change` to drive.
     let notify = () => {}
     let matches = false
+
     window.matchMedia = ((query: string) => ({
       get matches() {
         return matches

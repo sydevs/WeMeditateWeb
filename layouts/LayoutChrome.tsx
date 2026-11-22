@@ -1,15 +1,15 @@
-import { Header } from '../components/organisms/Header'
-import { Footer } from '../components/organisms/Footer'
+import { Header } from '@/components/organisms/Header'
+import { Footer } from '@/components/organisms/Footer'
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
-import type { WebConfig, Page } from '../server/sahajcloud-types'
-import { leadSplashFromRouteData } from '../lib/content-blocks'
-import { surface } from '../components/atoms/surface'
-import { SkipLink } from '../components/atoms/SkipLink'
+import type { WebConfig, Page } from '@/types/sahajcloud'
+import { leadSplashFromRouteData } from '@/lib/content/blocks'
+import { surface } from '@/components/atoms/surface'
+import { SkipLink } from '@/components/atoms/SkipLink'
 import { useSiteNav } from './useSiteNav'
-import { activeFeaturedSlug } from '../lib/featured-nav'
-import { MAIN_CONTENT_ID } from '../lib/route-announcer'
-import { useT } from '../hooks/useT'
+import { activeFeaturedSlug } from '@/lib/content/featured-nav'
+import { MAIN_CONTENT_ID } from '@/lib/a11y/route-announcer'
+import { useT } from '@/hooks/useT'
 
 interface RouteData {
   settings?: WebConfig
@@ -159,7 +159,7 @@ function Chrome({
       {/* `tabIndex={-1}` makes this element focusable by script, without
           adding it to the tab order. This is what lets the route announcer
           move focus here after a client-side navigation.
-          See `lib/route-announcer.ts`. */}
+          See `lib/a11y/route-announcer.ts`. */}
       <main className="flex-1 @container" id={MAIN_CONTENT_ID} tabIndex={-1}>
         <div
           className={`max-w-7xl mx-auto px-6 [--page-width:100cqi] ${leadSplash ? 'pb-8' : 'py-8'}`}

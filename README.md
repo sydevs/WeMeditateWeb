@@ -29,7 +29,7 @@ Open `http://localhost:5173`.
 | `pnpm preview` | Preview the production build locally. |
 | `pnpm prod` | Build and run the production server locally with Wrangler. |
 | `pnpm deploy` | Build and deploy to Cloudflare. |
-| `pnpm lint` | Run ESLint across the codebase. |
+| `pnpm lint` | Run ESLint across the codebase, then `prettier --check .`. Any warning fails it. |
 | `pnpm test` | Run tests in watch mode. |
 | `pnpm test:run` | Run tests once (CI style). |
 | `pnpm test:coverage` | Run tests once with V8 coverage, written to `coverage/` (local only, no thresholds). |
@@ -52,15 +52,15 @@ public/         # Static assets
 ```
 
 ## Working agreements
-- Follow the component rules in `DESIGN_SYSTEM.md`.
-- Use `STORYBOOK.md` for component library guidance.
+- Follow the component rules in `docs/DESIGN_SYSTEM.md`.
+- Use `docs/STORYBOOK.md` for component library guidance.
 
 ## Help and docs
 - `AGENTS.md` is the project guide (`CLAUDE.md` symlinks to it). It maps where everything else
   lives, including `docs/rules/` (path-scoped rules) and `.claude/skills/` (multi-step
   procedures).
-- `MCP_USAGE.md` documents MCP server usage.
-- `STORYBOOK.md` explains the component documentation flow.
+- `docs/MCP_USAGE.md` documents MCP server usage.
+- `docs/STORYBOOK.md` explains the component documentation flow.
 
 ## Common issues
 - If local config changes have no effect, delete `.env.local` and run `pnpm env:setup` again.

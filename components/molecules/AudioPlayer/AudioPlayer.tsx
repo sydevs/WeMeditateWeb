@@ -8,12 +8,12 @@ import {
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
-import { Button, Image, Link } from '../../atoms'
-import type { PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from './types'
-import { useT } from '../../../hooks/useT'
-import { formatDuration } from '../../../lib/duration'
+import { Button, Image, Link } from '@/components/atoms'
+import type { PlaylistAudioPlayerState, PlaylistAudioPlayerControls } from '@/lib/media/audio'
+import { useT } from '@/hooks/useT'
+import { formatDuration } from '@/lib/media/duration'
 
-export type { Track } from './types'
+export type { Track } from '@/lib/media/audio'
 
 export type AudioControl = 'skip' | 'shuffle' | 'volume' | 'progress' | 'trackInfo'
 
