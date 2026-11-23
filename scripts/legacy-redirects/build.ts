@@ -72,6 +72,37 @@ export interface NewSite {
 type MatchHow = 'slug' | 'history' | 'title' | 'other-locale slug' | 'curated'
 
 /**
+ * Slug moves decided upstream but not yet served, applied over the fetched
+ * snapshot so `pnpm redirects:fetch-new-site` cannot revert one. A snapshot
+ * carrying neither spelling means the page moved again, which throws.
+ *
+ * shortcut: the map leads the rename by a deploy, so drop an entry once
+ * `new-site.json` carries its `to`.
+ */
+const PENDING_SLUG_MOVES: readonly { id: number; from: string; to: string }[] = [
+  // sydevs/WeMeditateWeb#272: /meditate-now stops answering.
+  { id: 10, from: 'meditate-now', to: 'meditations' },
+]
+
+/** The new-site snapshot with every decided slug move applied. */
+export function withPendingSlugMoves(snapshot: NewSite): NewSite {
+  const moves = new Map(PENDING_SLUG_MOVES.map((move) => [move.id, move]))
+
+  return {
+    ...snapshot,
+    pages: snapshot.pages.map((page) => {
+      const move = moves.get(page.id)
+
+      if (!move) return page
+      if (page.slug !== move.from && page.slug !== move.to)
+        throw new Error(`pending slug move ${move.id}: snapshot has "${page.slug}"`)
+
+      return { ...page, slug: move.to }
+    }),
+  }
+}
+
+/**
  * Judgement matches the owner approved where no slug, history or title
  * agrees. Keyed `<record kind>:<old id>`, valued by the new page's slug; each
  * applies in every language the old record exists in.
@@ -147,7 +178,7 @@ const STATIC_ROLES: Record<number, string> = {
 const SECTION_PAGE_SLUG: Record<string, string> = {
   articles: 'inspiration',
   inspiration: 'inspiration',
-  meditations: 'meditate-now',
+  meditations: 'meditations',
   techniques: 'techniques',
   subtle_system: 'chakras-channels',
   streams: 'live-meditations',
@@ -187,8 +218,9 @@ function pushTo<K, V>(map: Map<K, V[]>, key: K, value: V): void {
 export function buildRedirectMap(
   inventory: Inventory,
   legacy: LegacyRoutes,
-  site: NewSite,
+  snapshot: NewSite,
 ): BuildResult {
+  const site = withPendingSlugMoves(snapshot)
   const pagesBySlug = new Map(site.pages.map((page) => [foldSegment(page.slug), page]))
   const pagesById = new Map(site.pages.map((page) => [page.id, page]))
   const pagesByTitle = new Map<string, number[]>()

@@ -7,7 +7,7 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 ## Summary
 
 - 1247 old addresses enumerated from the records (734 the old site answered or 301ed when exported, 513 it did not: archived, unpublished or scheduled records, languages it sent to its maintenance page, and the `/articles/category/<slug>` route, which has no controller action. All are kept so a link to them still lands somewhere).
-- 1241 of them redirect. 6 already are a live page on the new site, so the lookup returns `null` for them.
+- 1240 of them redirect. 7 already are a live page on the new site, so the lookup returns `null` for them.
 - The map holds 828 exact slugs and 49 pages. Fixed routes cost no entry of their own.
 
 ## By kind of address
@@ -22,8 +22,8 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 | subtle system | 0 | 18 | 91 | 65 | 0 | 0 | 0 | 0 | 174 |
 | live stream | 0 | 0 | 0 | 0 | 22 | 0 | 0 | 0 | 22 |
 | promo page (root path) | 2 | 1 | 0 | 0 | 23 | 0 | 0 | 0 | 26 |
-| fixed route | 3 | 0 | 0 | 0 | 0 | 334 | 20 | 42 | 399 |
-| **all** | 6 | 185 | 115 | 155 | 390 | 334 | 20 | 42 | 1247 |
+| fixed route | 4 | 0 | 0 | 0 | 0 | 333 | 20 | 42 | 399 |
+| **all** | 7 | 185 | 115 | 155 | 390 | 333 | 20 | 42 | 1247 |
 
 ## By old language
 
@@ -33,7 +33,7 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 | `cs` | 0 | 6 | 15 | 3 | 53 | 16 | 1 | 2 | 96 |
 | `de` | 0 | 0 | 15 | 0 | 6 | 16 | 1 | 2 | 40 |
 | `el` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
-| `en` | 6 | 39 | 0 | 0 | 71 | 14 | 0 | 2 | 132 |
+| `en` | 7 | 39 | 0 | 0 | 71 | 13 | 0 | 2 | 132 |
 | `en-au` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
 | `es` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
 | `fa` | 0 | 0 | 0 | 10 | 0 | 16 | 1 | 2 | 29 |
@@ -50,7 +50,7 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 | `sv` | 0 | 0 | 0 | 0 | 0 | 16 | 1 | 2 | 19 |
 | `tr` | 0 | 0 | 0 | 130 | 36 | 16 | 1 | 2 | 185 |
 | `uk` | 0 | 23 | 28 | 2 | 32 | 16 | 1 | 2 | 104 |
-| **all** | 6 | 185 | 115 | 155 | 390 | 334 | 20 | 42 | 1247 |
+| **all** | 7 | 185 | 115 | 155 | 390 | 333 | 20 | 42 | 1247 |
 
 ## Fixed routes
 
@@ -66,7 +66,7 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 | `articles` | `/inspiration` | static page 7, slug |
 | `techniques` | `/techniques` | no page matches; section page techniques |
 | `music` | `/music-for-meditation` | static page 9, slug |
-| `meditations` | `/meditate-now` | static page 10, slug |
+| `meditations` | `/meditations` | static page 10, title |
 | `classes` | `/classes-near-me` | static page 11, slug |
 | `streams` | `/live-meditations` | static page 16, slug |
 | `inspiration` | `/inspiration` | static page 7, slug |
@@ -82,7 +82,7 @@ Old-site inventory exported 2026-11-18; new-site snapshot fetched 2026-11-18 (66
 | subtle | 12 | 12 | 0 | 0 | 0 | 0 | 0 | 0 |
 | stream | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 13 |
 | promo | 23 | 1 | 1 | 0 | 0 | 0 | 0 | 21 |
-| static | 26 | 11 | 0 | 1 | 1 | 0 | 0 | 13 |
+| static | 26 | 10 | 0 | 2 | 1 | 0 | 0 | 13 |
 
 ### Matches that were not an exact slug
 

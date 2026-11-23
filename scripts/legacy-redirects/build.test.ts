@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { LAUNCH_LOCALES, lookupIn } from '../../lib/legacy-redirects/core'
-import { buildRedirectMap, type Inventory, type LegacyRoutes, type NewSite } from './build'
+import {
+  buildRedirectMap,
+  withPendingSlugMoves,
+  type Inventory,
+  type LegacyRoutes,
+  type NewSite,
+} from './build'
 import { stringifyMap } from './json'
 import { renderCoverage } from './report'
 
@@ -10,7 +16,9 @@ const read = (path: string): string =>
   readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')
 const inventory = JSON.parse(read('data/legacy-redirects/legacy-inventory.json')) as Inventory
 const legacy = JSON.parse(read('data/legacy-redirects/legacy-routes.json')) as LegacyRoutes
-const site = JSON.parse(read('data/legacy-redirects/new-site.json')) as NewSite
+const site = withPendingSlugMoves(
+  JSON.parse(read('data/legacy-redirects/new-site.json')) as NewSite,
+)
 const result = buildRedirectMap(inventory, legacy, site)
 
 describe('legacy redirect map', () => {
@@ -84,9 +92,28 @@ describe('legacy redirect map', () => {
     expect(target('/app')).toBe('/')
     expect(target('/classes')).toBe('/classes-near-me')
     expect(target('/live')).toBe('/live-meditations')
-    expect(target('/meditations')).toBe('/meditate-now')
     expect(target('/music')).toBe('/music-for-meditation')
     expect(target('/privacy')).toBe('/privacy-notice')
     expect(target('/contact')).toBe('/contact-us')
+  })
+
+  it('refuses a pending slug move the snapshot no longer agrees with', () => {
+    const moved = withPendingSlugMoves(site).pages.find((page) => page.id === 10)
+
+    expect(moved?.slug).toBe('meditations')
+    expect(() =>
+      withPendingSlugMoves({
+        ...site,
+        pages: site.pages.map((page) => (page.id === 10 ? { ...page, slug: 'renamed' } : page)),
+      }),
+    ).toThrow(/pending slug move 10/)
+  })
+
+  it('leaves an old address the new site now serves itself alone', () => {
+    expect(lookupIn(result.map, '/meditations')).toBeNull()
+    expect(result.urls.find((url) => url.path === '/meditations')).toMatchObject({
+      target: null,
+      class: 'live',
+    })
   })
 })

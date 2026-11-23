@@ -10,7 +10,7 @@ const MAP: LegacyRedirectMap = {
     '3': ['inspiration', ''],
     '4': ['what-is-meditation', 'fr ru'],
     '5': ['chakras-channels', 'fr'],
-    '6': ['meditate-now', ''],
+    '6': ['meditations', ''],
     '7': ['live-meditations', 'ru'],
     '8': ['techniques', 'fr'],
   },
@@ -102,7 +102,7 @@ describe('lookupIn', () => {
     expect(look('/fr/inspiration/histoires')).toBe('/inspiration')
     expect(look('/techniques/foot-soak')).toBe('/techniques')
     expect(look('/ru/live/sovremennik')).toBe('/ru/live-meditations')
-    expect(look('/meditations/video-only')).toBe('/meditate-now')
+    expect(look('/meditations/video-only')).toBe('/meditations')
   })
 
   it('sends a promo page with no page to the home page, and an event to the articles section', () => {
@@ -116,11 +116,11 @@ describe('lookupIn', () => {
   })
 
   it('translates the section word per language, and accepts the English word too', () => {
-    expect(look('/fr/méditations/tout')).toBe('/meditate-now')
-    expect(look('/fr/meditations/all')).toBe('/meditate-now')
+    expect(look('/fr/méditations/tout')).toBe('/meditations')
+    expect(look('/fr/meditations/all')).toBe('/meditations')
     expect(look('/fr/politique-de-confidentialite')).toBe('/fr/privacy-notice')
-    expect(look('/meditations/first-experience')).toBe('/meditate-now')
-    expect(look('/meditations/random')).toBe('/meditate-now')
+    expect(look('/meditations/first-experience')).toBe('/meditations')
+    expect(look('/meditations/random')).toBe('/meditations')
   })
 
   it('handles the fixed old routes', () => {
@@ -165,9 +165,9 @@ describe('lookupIn', () => {
       '/what-is-meditation',
     )
     // "é" written as "e" + U+0301
-    expect(look('/fr/méditations/tout')).toBe('/meditate-now')
-    expect(look('/fr/m%C3%A9ditations')).toBe('/meditate-now')
-    expect(look('/fr/me%CC%81ditations')).toBe('/meditate-now')
+    expect(look('/fr/méditations/tout')).toBe('/meditations')
+    expect(look('/fr/m%C3%A9ditations')).toBe('/meditations')
+    expect(look('/fr/me%CC%81ditations')).toBe('/meditations')
   })
 
   it('treats a word with spaces as dashed', () => {
@@ -217,12 +217,16 @@ describe('lookupIn', () => {
 })
 
 describe('lookupLegacyRedirect', () => {
-  it('maps the five internal links that 404 on the new site today', () => {
+  it('maps the four internal links that 404 on the new site today', () => {
     expect(lookupLegacyRedirect('/app')).toBe('/')
     expect(lookupLegacyRedirect('/classes')).toBe('/classes-near-me')
     expect(lookupLegacyRedirect('/live')).toBe('/live-meditations')
-    expect(lookupLegacyRedirect('/meditations')).toBe('/meditate-now')
     expect(lookupLegacyRedirect('/music')).toBe('/music-for-meditation')
+  })
+
+  it('leaves the meditations index alone, because the new site serves that address', () => {
+    expect(lookupLegacyRedirect('/meditations')).toBeNull()
+    expect(lookupLegacyRedirect('/en/meditations')).toBe('/meditations')
   })
 
   it('maps the renamed English addresses of the fixed pages', () => {
@@ -234,8 +238,8 @@ describe('lookupLegacyRedirect', () => {
   })
 
   it('maps the translated meditations index of another language to the English page', () => {
-    expect(lookupLegacyRedirect('/fr/m%C3%A9ditations')).toBe('/meditate-now')
-    expect(lookupLegacyRedirect('/pt-br/meditations/all')).toBe('/meditate-now')
+    expect(lookupLegacyRedirect('/fr/m%C3%A9ditations')).toBe('/meditations')
+    expect(lookupLegacyRedirect('/pt-br/meditations/all')).toBe('/meditations')
   })
 
   it('answers the old sitemaps', () => {

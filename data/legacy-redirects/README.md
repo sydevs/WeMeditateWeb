@@ -32,6 +32,11 @@ pnpm redirects:generate
 produce, so a stale map cannot merge. Publishing a page in another language changes `new-site.json` and so the
 map; re-fetch and regenerate then.
 
+A rename agreed upstream but not yet served goes in `PENDING_SLUG_MOVES` in
+`scripts/legacy-redirects/build.ts`, not into `new-site.json`, which is what production answers today. The
+override is applied over the snapshot, so a re-fetch cannot revert it; drop the entry once the fetched slug
+matches.
+
 ## How an old address finds its page
 
 1. The path is split, percent-decoded, NFC-normalised and lower-cased. The first segment is an old language
@@ -46,7 +51,7 @@ map; re-fetch and regenerate then.
    through its id to its English row. More than one page matching is reported, never guessed.
 5. The target is the page in the old address's language when the page is published there and the language is
    one of the ten launch languages; otherwise the English page. A record with no page lands on its nearest
-   section (articles and categories: `/inspiration`; meditations: `/meditate-now`; techniques:
+   section (articles and categories: `/inspiration`; meditations: `/meditations`; techniques:
    `/techniques`; subtle system: `/chakras-channels`; streams: `/live-meditations`; anything else: home),
    in the same way.
 
