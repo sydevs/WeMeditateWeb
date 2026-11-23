@@ -74,7 +74,7 @@ Three rules still apply:
   event, not one per crawled route. See `getAtlasSeo` in `server/sahajcloud/atlas.ts`.
   ⚠ Nothing in this repo caches a read. [CACHING.md](../CACHING.md) says what does.
   A read that degrades silently still needs `withRetry`, which the cache used to supply.
-  `fetchContentIndexDocs` is the one read still missing it (#128).
+  Every read here has one.
 - **Never branch on a status. Pick the reader that matches the read.** This is the rule for
   `sahajCloudFetch`'s callers. The SDK has no such pair, so `getDocumentById` reads the status
   itself — through `readStatus`, the one place a status is read off an error — to answer an
@@ -104,13 +104,15 @@ A read with `locale: 'all'` returns every **localized** field as
 document in one language must never use it — every consumer of `Page` would have to unpick the
 maps.
 
-Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
-`pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
+Use it only for a locale-agnostic fact, and there are two.
+
+**Which locales a page is published in.** `pages` opts into Payload's
+`versions.drafts.localizeStatus` upstream (SahajCloud#718), so
 `?locale=all&select[_status]=true` answers that in a single query. `lib/seo/hreflang.ts` turns the map
 into a locale list, and `getPageLocaleStatus` in [pages.ts](pages.ts) is the only
 single-document read that sends `all`.
 
-Three things follow, all load-bearing:
+Three things follow from that first use, all load-bearing:
 
 - **It is a second read, beside the content read, not a replacement for it.** It sends no locale,
   so every locale of a page issues the same URL and shares one edge entry.
@@ -124,3 +126,12 @@ Three things follow, all load-bearing:
 The API also enforces this: a read at a locale the page is not published in returns **zero docs**,
 not a fallback copy. So a page always renders in a locale it is published in, and its canonical is
 always self-referential.
+
+⚠ **Reaching a `meditations` row at all.** `filterMeditationsByLocale` filters every `find` on
+that collection, and every row is `locale: en`, so `?locale=fr&where[id][in]=…` answers
+`totalDocs: 0` — a *populated* read at the page's locale hands back a bare id in every slot and
+the region renders empty on a 200 page in every non-English locale. `locale=all` is exempt from
+that filter and is the only spelling that answers; `locale=en` answers too but drops a localized
+slot meditation. `readMeditations` in [../meditation-library.ts](../meditation-library.ts) is the
+reader. It selects only unlocalized fields, so nothing it reads comes back as a map.
+
