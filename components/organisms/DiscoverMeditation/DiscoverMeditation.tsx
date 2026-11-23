@@ -3,7 +3,6 @@ import { Link } from '@/components/atoms'
 import { PlayCircleIcon, ComputerDesktopIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import type { Locale } from '@/types/sahajcloud'
 import { useT } from '@/hooks/useT'
-import { MEDITATIONS_INDEX_PATH } from '@/lib/urls/document-routes'
 
 export interface DiscoverMeditationProps extends ComponentProps<'section'> {
   /** Overrides `discover.general.title`. */
@@ -71,7 +70,7 @@ export function DiscoverMeditation({
         {/* Action Items */}
         <div className="flex flex-wrap gap-8 sm:gap-12 lg:gap-16 xl:gap-24 items-center justify-center mt-12 lg:mt-24">
           <ActionItem
-            href={MEDITATIONS_INDEX_PATH}
+            href="/meditations"
             icon={PlayCircleIcon}
             locale={locale}
             subtitle={t('discover.general.meditate_now_subtitle')}

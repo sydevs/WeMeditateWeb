@@ -53,6 +53,9 @@ export { LanguageDropdown } from './LanguageDropdown'
 export type { FooterLinkListProps, FooterLink } from './FooterLinkList'
 export type { LanguageDropdownProps, LanguageOption } from './LanguageDropdown'
 
+export { FilterPills } from './FilterPills'
+export type { FilterPillsProps, Facet } from './FilterPills'
+
 export { ContentGrid } from './ContentGrid'
 export type { ContentGridProps, ContentGridItem } from './ContentGrid'
 export { MasonryGrid } from './MasonryGrid'

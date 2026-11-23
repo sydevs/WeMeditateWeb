@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import { relative } from 'node:path'
 import type { Meditation, Page, ResolvedLecture } from '@/types/sahajcloud'
-import { lectureSeo, meditationSeo, meditationsIndexSeo, pageSeo } from '@/lib/seo/content-seo'
+import { lectureSeo, meditationSeo, pageSeo } from '@/lib/seo/content-seo'
 import type { SeoDocument } from '@/lib/seo/head'
 import { renderSeoHead } from '@/lib/seo/head-html'
 import { enT } from '@/lib/i18n/i18n'
@@ -41,10 +41,6 @@ const DOCUMENTS: [string, SeoDocument][] = [
       meditation: { id: 105, title: 'Morning' } as Meditation,
       route: route('/meditations/105'),
     }),
-  ],
-  [
-    'the meditations list',
-    meditationsIndexSeo({ route: route('/meditations'), locales: ['en', 'fr'] }),
   ],
   [
     'a lecture',

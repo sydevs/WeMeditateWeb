@@ -18,7 +18,6 @@ import { getAtlasSitemapUrls, getWebConfig } from '@/server/sahajcloud'
 import { buildSitemapXml, type SitemapUrl } from './sitemap'
 import { isCanonicalOrigin } from '@/lib/seo/canonical-origin'
 import { buildAlternates, advertisedLocales } from '@/lib/seo/hreflang'
-import { MEDITATIONS_INDEX_PATH } from '@/lib/urls/document-routes'
 import { type Locale } from '@/types/sahajcloud'
 import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from '@/types/payload/payload-types'
@@ -195,14 +194,6 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
           lastmod: lastmodOf(doc),
           alternates: cluster(`/${doc.slug}`, doc._status),
         })),
-      // `/meditations` is a code route with no document behind it, reachable
-      // only from the finder — which is exactly what a sitemap is for. It
-      // renders in every language the site offers, so it advertises them all.
-      {
-        loc: `${origin}${MEDITATIONS_INDEX_PATH}`,
-        lastmod: null,
-        alternates: buildAlternates({ origin, path: MEDITATIONS_INDEX_PATH, locales: offered }),
-      },
       ...docs.meditations.map((doc) => ({
         loc: `${origin}/meditations/${doc.id}`,
         lastmod: lastmodOf(doc),

@@ -20,7 +20,6 @@
  * against the `splash` and `layout` converters there.
  */
 
-import type { MoodCard } from '@/lib/content/blocks'
 import type { AtlasSeoResponse } from '@/types/atlas'
 import type { Lecture, Meditation, Page, WebConfig } from '@/types/sahajcloud'
 
@@ -149,34 +148,6 @@ export const lecture = {
     duration: 900,
   },
 } as unknown as Lecture
-
-/**
- * The mood tiles `/meditations` and the finder render.
- *
- * **Pre-mortem.** This assumes a `MoodCard` carries a required
- * `durationMinutes` (the label names the meditation by its length), an
- * `iconUrl` that may be null, and a `thumbnail` in `populatedImage`'s shape.
- * Checked against the interface in `lib/content/blocks.ts` and what
- * `server/moods.ts` pushes — and against the live production read of
- * `/api/user-choices?where[isFeatured][equals]=true`, where every mood carries
- * a `color` and an SVG, and every meditation runs 13–20 minutes.
- *
- * Four of them, because the goal requires at least four moods at any hour.
- */
-export const moodCards: MoodCard[] = [
-  { moodId: 1, moodTitle: 'Excited for the day!', meditationId: 69, minutes: 15 },
-  { moodId: 21, moodTitle: 'Feel fine', meditationId: 101, minutes: 13 },
-  { moodId: 8, moodTitle: 'Need to focus', meditationId: 85, minutes: 20 },
-  { moodId: 5, moodTitle: 'Low on energy', meditationId: 102, minutes: 18 },
-].map(({ moodId, moodTitle, meditationId, minutes }) => ({
-  moodId,
-  moodTitle,
-  iconUrl: `https://assets.sydevelopers.com/mood-${moodId}.svg`,
-  color: '#FFD591',
-  href: `/meditations/${meditationId}`,
-  durationMinutes: minutes,
-  thumbnail: { ...IMAGE, aspectRatio: 'video' as const },
-}))
 
 /**
  * `/map`'s landing document — the body a crawler reads before the widget mounts.

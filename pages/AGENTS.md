@@ -5,8 +5,3 @@
   by its own route function (for example `/map`) needs an explicit exclusion in
   `RESERVED_SEGMENTS`. Without this exclusion, the path silently renders the Pages "not found"
   state instead of its real route.
-
-  **Each entry derives from the constant its own route matches**, never a string: `MAP_PREFIX`
-  for `/map`, `MEDITATIONS_SEGMENT` for `/meditations`. A list spelling a path itself cannot
-  follow it when it moves — and nor can an `href`, so every link to a code route reads the same
-  constant (`MEDITATIONS_INDEX_PATH`), the way `documentHref` serves the document routes.

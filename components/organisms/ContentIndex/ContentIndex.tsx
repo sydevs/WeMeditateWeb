@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Button } from '@/components/atoms'
-import { ContentGrid } from '@/components/molecules'
+import { ContentGrid, FilterPills, type Facet } from '@/components/molecules'
 import type { ResolvedCardItem } from '@/lib/content/blocks'
-import { useT } from '@/hooks/useT'
 import { useFadeOnChange } from '@/hooks/useFadeOnChange'
 
 export interface ContentIndexProps {
@@ -13,8 +11,7 @@ export interface ContentIndexProps {
   className?: string
 }
 
-/** A filter facet — the id is matched against an item's `tags`. */
-export type Facet = { id: string; label: string }
+export type { Facet }
 
 /** Unique facets across all items, in first-appearance order (first label wins). */
 export function deriveFacets(items: ResolvedCardItem[]): Facet[] {
@@ -46,64 +43,6 @@ export function filterByFacets(
   return items.filter((item) => (item.tags ?? []).some((tag) => selected.has(tag.id)))
 }
 
-interface FilterPillsProps {
-  facets: Facet[]
-  /** Selected facet ids. An empty set means "All". */
-  selected: Set<string>
-  onToggle: (id: string) => void
-  onClear: () => void
-}
-
-/** A toggle pill built on the Button atom (square, primary when active). */
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: string
-}) {
-  return (
-    <Button
-      aria-pressed={active}
-      shape="square"
-      size="sm"
-      variant={active ? 'primary' : 'ghost'}
-      onClick={onClick}
-    >
-      {children}
-    </Button>
-  )
-}
-
-/**
- * Filter pill row: an "All" pill, plus one toggle per facet. This is
- * multi-select, with OR semantics. "All" clears the selection. This stays
- * internal. Extract a reusable `FilterPills` molecule only when a second
- * consumer appears.
- */
-function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) {
-  const t = useT()
-
-  return (
-    <div
-      aria-label={t('article.a11y.filter_label')}
-      className="flex flex-wrap justify-center gap-2 mb-6"
-      role="group"
-    >
-      <Pill active={selected.size === 0} onClick={onClear}>
-        {t('article.general.filter_all')}
-      </Pill>
-      {facets.map((facet) => (
-        <Pill key={facet.id} active={selected.has(facet.id)} onClick={() => onToggle(facet.id)}>
-          {facet.label}
-        </Pill>
-      ))}
-    </div>
-  )
-}
-
 /**
  * ContentIndex is a filterable card grid for `pages` or `lectures`
  * content-index blocks. The server resolves the full list, which keeps it
@@ -113,6 +52,10 @@ function FilterPills({ facets, selected, onToggle, onClear }: FilterPillsProps) 
  *
  * SSR renders every card, with a pure `useState` and no `ClientOnly`.
  * Hydration then wires up the pill toggles.
+ *
+ * The pill row is the shared `FilterPills` molecule. This organism toggles each
+ * facet independently, so the selection grows — `MeditationLibrary` replaces it
+ * instead. The molecule renders either.
  */
 export function ContentIndex({ items, sizes, className = '' }: ContentIndexProps) {
   const facets = useMemo(() => deriveFacets(items), [items])

@@ -51,11 +51,6 @@ export const X_DEFAULT = 'x-default'
  * as a plain string (meditations) or omits it (lectures). There is no
  * per-document translation claim to make, so the answer is an empty list
  * and the caller emits a canonical with no cluster.
- *
- * ⚠ **A code route with no SahajCloud document at all does not come here.**
- * `/meditations` has no publish state to read and renders in every language
- * the site offers, so it advertises `settings.availableLocales` itself. That
- * is a different question, not a relaxed answer to this one.
  */
 export function advertisedLocales(status: unknown, offered: readonly Locale[]): Locale[] {
   if (!status || typeof status !== 'object' || Array.isArray(status)) {

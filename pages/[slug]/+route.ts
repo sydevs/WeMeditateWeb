@@ -1,5 +1,4 @@
 import { MAP_PREFIX } from '@/lib/atlas/route'
-import { MEDITATIONS_SEGMENT } from '@/lib/urls/document-routes'
 
 /**
  * First path segments that a route function elsewhere owns. This matcher
@@ -11,13 +10,10 @@ import { MEDITATIONS_SEGMENT } from '@/lib/urls/document-routes'
  * `pages/map/` does not win on its own, because `pages/map/+route.ts` is
  * also a route function. Vike's router sees both candidates.
  *
- * Each entry derives from the constant its own route matches, instead of a
- * hardcoded string, so this list cannot point at a path that moved.
+ * This list derives from `MAP_PREFIX`, instead of a hardcoded string. If
+ * the atlas prefix moves, this list cannot point at the old one.
  */
-const RESERVED_SEGMENTS: ReadonlySet<string> = new Set([
-  MAP_PREFIX.replace(/^\//, ''),
-  MEDITATIONS_SEGMENT,
-])
+const RESERVED_SEGMENTS: ReadonlySet<string> = new Set([MAP_PREFIX.replace(/^\//, '')])
 
 /**
  * Route matcher for pages in default locale (English).

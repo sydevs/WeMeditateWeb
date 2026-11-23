@@ -153,7 +153,6 @@ describe('onBeforeRoute with the route functions', () => {
   })
 
   it.each([
-    ['/fr/meditations', './meditations/(index)/+route.ts'],
     ['/fr/meditations/105', './meditations/[id]/(full)/+route.ts'],
     ['/fr/meditations/105/embed', './meditations/[id]/embed/+route.ts'],
     ['/pt-BR/lectures/162', './lectures/[id]/(full)/+route.ts'],

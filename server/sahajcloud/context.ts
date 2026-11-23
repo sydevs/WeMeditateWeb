@@ -48,7 +48,7 @@ const sahajCloudContextSchema = z.object({
  * This handles code that runs outside a request context, for example
  * local development without the Workers runtime.
  */
-export function tryGetContext(): Context<SahajCloudEnv> | undefined {
+function tryGetContext(): Context<SahajCloudEnv> | undefined {
   try {
     return getContext<SahajCloudEnv>()
   } catch {
