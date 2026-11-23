@@ -16,18 +16,23 @@ import type { A11yStrings } from './a11y/a11y'
  * keys reach `WebTranslations` — and `TranslationKey` with it — without the
  * copy diverging from its source.
  *
- * shortcut: declared by sydevs/SahajCloud#1225, so delete this block once
+ * shortcut: declared by sydevs/SahajCloud#1223, so delete this block once
  * `pnpm types:cms` and `pnpm sync:translations` carry these keys.
  */
 declare module '@/types/payload/payload-types' {
   interface WmWebTranslationsMeditationGeneralStrings {
     finder_question?: string
+    length_question?: string
     finder_unavailable?: string
     all_meditations?: string
     mood_meditation_label_one?: string
     mood_meditation_label_few?: string
     mood_meditation_label_many?: string
     mood_meditation_label_other?: string
+    length_meditation_label_one?: string
+    length_meditation_label_few?: string
+    length_meditation_label_many?: string
+    length_meditation_label_other?: string
   }
 }
 

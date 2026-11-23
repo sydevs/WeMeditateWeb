@@ -17,7 +17,12 @@ import type { SeoDocument } from './head'
 import type { TFunction } from '@/lib/i18n/i18n'
 import { buildAlternates } from './hreflang'
 import { isKnowledgePage } from '@/lib/content/featured-nav'
-import { contentIndexBlocks, type ResolvedCardItem } from '@/lib/content/blocks'
+import {
+  contentIndexBlocks,
+  type ResolvedCardItem,
+  type ResolvedMeditationLibrary,
+} from '@/lib/content/blocks'
+import { choiceIndex, meditationLabel } from '@/lib/content/meditation-label'
 import type { Track } from '@/lib/media/audio'
 import { getImageURL, getVariantName, getVariantWidth } from '@/lib/media/cloudflare-images'
 import { isPopulated, populatedImageUrl } from '@/lib/content/payload-relationships'
@@ -243,6 +248,32 @@ function listEntries(items: readonly ResolvedCardItem[], route: SeoRoute) {
 }
 
 /**
+ * The meditations a `meditations` block server-rendered, named the way the
+ * organism names them.
+ *
+ * A meditation listing carries no title — `Meditations.title` is a virtual
+ * English fallback the site never renders — so the head composes the same
+ * parameterised label through the same helper. Two spellings of one visible
+ * name is what that helper exists to prevent.
+ */
+function libraryEntries(library: ResolvedMeditationLibrary | null | undefined, route: SeoRoute) {
+  if (!library) {
+    return []
+  }
+  const byId = choiceIndex(library.choices)
+
+  return listEntries(
+    library.meditations.map((listing) => ({
+      id: listing.id,
+      title: meditationLabel(route.t, listing, byId),
+      href: listing.href,
+      thumbnailSrc: listing.thumbnail?.url ?? '',
+    })),
+    route,
+  )
+}
+
+/**
  * The recordings a music-library block server-rendered.
  *
  * A `duration` of `0` is SahajCloud's absence, not a recording of no length.
@@ -317,7 +348,10 @@ export function pageSeo(options: {
   }
 
   for (const block of contentIndexBlocks(page.content)) {
-    const entries = listEntries(block.resolvedItems ?? [], route)
+    const entries = [
+      ...listEntries(block.resolvedItems ?? [], route),
+      ...libraryEntries(block.resolvedLibrary, route),
+    ]
     const tracks = playlistTracks(block.resolvedTracks ?? [])
 
     if (entries.length > 0) {

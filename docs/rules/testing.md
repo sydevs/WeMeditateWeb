@@ -113,10 +113,18 @@ that loads it. Cleanup between tests is automatic, because Vitest's globals are 
 **Module state outlives a test, so a memo makes assertions order-dependent.** A Vitest file is
 one module graph: `warnOnce` ([server/error-utils.ts](../../server/error-utils.ts)) reports each
 signature once, so the *second* test to trip a signature sees no warning — which reads as a missing
-capture, not as an ordering bug. Import the module under test inside `beforeEach`, after
-`vi.resetModules()`, and take the Sentry spy from that same fresh graph: resetting the registry
-re-runs a `vi.mock` factory, so a spy captured at the top of the file is no longer the one the code
-calls. [server/moods.test.ts](../../server/moods.test.ts) is the worked example.
+capture, not as an ordering bug. Call `forgetReportedWarnings()` in `beforeEach`; it empties the
+registry, as a fresh isolate does, and leaves the module graph and every spy in place.
+[server/sahajcloud/atlas.test.ts](../../server/sahajcloud/atlas.test.ts) is the worked example.
+Reach for `vi.resetModules()` only for state nothing exposes a reset for — and then take the spy
+from the fresh graph too, since the reset re-runs the `vi.mock` factory.
+
+**Fake timers replace `Intl.DateTimeFormat`, not only `Date`.** It is in the default `toFake` set,
+so a spy on `Intl.DateTimeFormat.prototype` is silently bypassed and every zone reads as `UTC` —
+which still passes any case whose expected value happens to be UTC's, so the suite goes green while
+testing nothing. Pass `vi.useFakeTimers({ toFake: ['Date'] })` wherever a test pins both a clock and
+a zone. [useTimeOfDaySlot.test.ts](../../components/organisms/MeditationLibrary/useTimeOfDaySlot.test.ts)
+is the worked example.
 
 **What to test:**
 - Test pure utilities — logic, parsing, transforms. This is fast and high-value.

@@ -163,32 +163,64 @@ describe('content-index block converter — dispatch', () => {
     expect(html).toContain('What Is Meditation?')
   })
 
-  it('moods → MoodFinder, asking the question and linking each mood', () => {
+  it('meditations → MeditationLibrary, asking both questions and listing every meditation', () => {
     const html = renderToStaticMarkup(
       convertCI({
-        type: 'moods',
-        resolvedMoods: [
-          {
-            moodId: 1,
-            moodTitle: 'Excited for the day!',
-            iconUrl: 'https://assets.test/mood-1.svg',
-            color: '#FFD591',
-            href: '/meditations/69',
-            durationMinutes: 15,
-            thumbnail: null,
-          },
-        ],
+        type: 'meditations',
+        resolvedLibrary: {
+          choices: [
+            {
+              id: 1,
+              kind: 'mood',
+              title: 'Excited for the day!',
+              iconUrl: 'https://assets.test/choice-1.svg',
+              color: '#FFD591',
+              slots: { morning: 69, evening: 89 },
+            },
+            {
+              id: 25,
+              kind: 'duration',
+              title: '5 min',
+              iconUrl: null,
+              color: null,
+              slots: { morning: 69 },
+            },
+          ],
+          meditations: [
+            {
+              id: 69,
+              href: '/meditations/69',
+              durationMinutes: 15,
+              thumbnail: null,
+              choiceIds: [1, 25],
+            },
+            {
+              id: 89,
+              href: '/meditations/89',
+              durationMinutes: 13,
+              thumbnail: null,
+              choiceIds: [1],
+            },
+          ],
+        },
       }),
     )
 
     expect(html).toContain('How are you feeling?')
+    expect(html).toContain('How much time do you have?')
+    // Every (choice, slot) link is in the server's HTML: the browser narrows to
+    // the visitor's own slot after mount, so a crawler sees them all.
     expect(html).toContain('href="/meditations/69"')
-    // No facet pills: one card per mood makes them meaningless.
-    expect(html).not.toContain('Filter content by tag')
+    expect(html).toContain('href="/meditations/89"')
+    // The chip row is the shared molecule, single-select here.
+    expect(html).toContain('Filter content by tag')
+    expect(html).toContain('>5 min<')
   })
 
-  it('moods → the unavailable message, where every other type renders nothing', () => {
-    const html = renderToStaticMarkup(convertCI({ type: 'moods', resolvedMoods: [] }))
+  it('meditations → the unavailable message, where every other type renders nothing', () => {
+    const html = renderToStaticMarkup(
+      convertCI({ type: 'meditations', resolvedLibrary: { choices: [], meditations: [] } }),
+    )
 
     expect(html).toContain('load the meditations just now')
   })
@@ -204,28 +236,6 @@ describe('content-index block converter — dispatch', () => {
     expect(html).toContain('/lectures/7')
     expect(html).toContain('A Lecture')
     expect(html).not.toContain('Filter content by tag') // no facets → no pill row
-  })
-
-  it('meditations → ContentIndex with user-choice pills', () => {
-    const html = renderToStaticMarkup(
-      convertCI({
-        type: 'meditations',
-        resolvedItems: [
-          {
-            ...CARD,
-            id: 5,
-            title: 'Feel Calm',
-            href: '/meditations/5',
-            playButton: true,
-            tags: [{ id: '25', label: '5 min' }],
-          },
-        ],
-      }),
-    )
-
-    expect(html).toContain('Filter content by tag') // user-choices → filter pills
-    expect(html).toContain('>5 min<')
-    expect(html).toContain('/meditations/5')
   })
 
   it('songs → MusicLibrary with tracks + music-tag filters', () => {

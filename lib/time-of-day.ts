@@ -1,12 +1,20 @@
 /**
- * The visitor's own time of day, as the mood finder's categories name it.
+ * The visitor's own time of day, as the meditation library's choices name it.
  *
- * The upstream categories define a night slot and leave it empty on all 24
- * moods, so night folds into evening until an editor fills them.
+ * Pure: it is handed a zone and a clock. The zone is the browser's own
+ * (`Intl.DateTimeFormat().resolvedOptions().timeZone`, read after mount), never
+ * the server's — a Worker's clock is UTC, and resolving there would show a
+ * visitor in Sydney whatever hour UTC is in.
+ *
+ * The upstream choices define a night slot and leave it empty on every one of
+ * them, so night folds into evening until an editor fills them.
  */
 
-/** The three slots a featured mood's `timings` can name and the site offers. */
+/** The three slots a choice's `timings` can name and the site offers. */
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening'
+
+/** Every slot the site offers, in the order a day runs. */
+export const ALL_TIMES_OF_DAY: readonly TimeOfDay[] = ['morning', 'afternoon', 'evening']
 
 /**
  * The slot a wall-clock hour falls in: morning 5–11, afternoon 12–16,
@@ -22,11 +30,10 @@ export function slotForHour(hour: number): TimeOfDay {
 /**
  * The slot it is in `timezone`, or `null` when the zone cannot be used.
  *
- * `null` is deliberately not a guess. `undefined` would resolve against the
- * Worker's own clock, which is UTC, and silently show a visitor in Sydney the
- * moods of whoever happens to share UTC's hour. An unknown zone string throws
- * `RangeError` out of `Intl`, which must not reach `data()`; the caller
- * decides what an unusable zone renders.
+ * `null` is deliberately not a guess: `undefined` resolves against the host's
+ * own clock, and an unknown zone string throws `RangeError` out of `Intl`. The
+ * caller decides what an unusable zone shows — the library keeps every slot's
+ * tiles, which is what the server already rendered.
  */
 export function timeOfDaySlot(timezone: string | undefined, now: Date): TimeOfDay | null {
   if (typeof timezone !== 'string' || timezone.length === 0) {
@@ -47,10 +54,10 @@ export function timeOfDaySlot(timezone: string | undefined, now: Date): TimeOfDa
 /**
  * One formatter per zone.
  *
- * An `Intl` constructor is among the most expensive calls in a Worker isolate
- * (`lib/i18n/i18n.ts` says the same of `Intl.PluralRules`), and this runs on every
- * render that carries the finder. The map is keyed only after the constructor
- * accepted the zone, so its key space is the IANA list and cannot grow past it.
+ * An `Intl` constructor is among the most expensive calls in a JavaScript
+ * runtime (`lib/i18n/i18n.ts` says the same of `Intl.PluralRules`). The map is
+ * keyed only after the constructor accepted the zone, so its key space is the
+ * IANA list and cannot grow past it.
  */
 const HOUR_FORMATS = new Map<string, Intl.DateTimeFormat>()
 

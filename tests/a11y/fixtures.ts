@@ -96,6 +96,71 @@ export const homePage = {
 } as unknown as Page
 
 /** An article: a title banner, a byline, body copy and a titled `layout` section. */
+/**
+ * A `meditations` block's resolved library.
+ *
+ * **Pre-mortem.** This assumes a choice carries a `kind` of `mood` or
+ * `duration`, a nullable `iconUrl` and `color`, and `slots` keyed by time of
+ * day; and that a listing carries a required `durationMinutes`, because every
+ * card label names the meditation by its length. Checked against the
+ * interfaces in `lib/content/blocks.ts` and what `server/meditation-library.ts`
+ * builds.
+ *
+ * Two moods and one duration, with one meditation named by two choices, so the
+ * gate sees a chip row, both question rows and a deduped grid.
+ */
+export const MEDITATION_LIBRARY = {
+  choices: [
+    {
+      id: 1,
+      kind: 'mood' as const,
+      title: 'Excited for the day!',
+      iconUrl: 'https://assets.invalid/choice-1.svg',
+      color: '#FFD591',
+      slots: { morning: 69, evening: 89 },
+    },
+    {
+      id: 8,
+      kind: 'mood' as const,
+      title: 'Need to focus',
+      iconUrl: null,
+      color: '#F5B9A8',
+      slots: { afternoon: 85 },
+    },
+    {
+      id: 25,
+      kind: 'duration' as const,
+      title: '5 min',
+      iconUrl: 'https://assets.invalid/choice-25.svg',
+      color: '#A4D9D1',
+      slots: { morning: 69 },
+    },
+  ],
+  meditations: [
+    {
+      id: 69,
+      href: '/meditations/69',
+      durationMinutes: 15,
+      thumbnail: { ...IMAGE, aspectRatio: 'video' as const },
+      choiceIds: [1, 25],
+    },
+    {
+      id: 89,
+      href: '/meditations/89',
+      durationMinutes: 13,
+      thumbnail: { ...IMAGE, aspectRatio: 'video' as const },
+      choiceIds: [1],
+    },
+    {
+      id: 85,
+      href: '/meditations/85',
+      durationMinutes: 20,
+      thumbnail: { ...IMAGE, aspectRatio: 'video' as const },
+      choiceIds: [8],
+    },
+  ],
+}
+
 export const articlePage = {
   ...page('best-time-to-meditate', 'The Best Time To Meditate'),
   content: root([
@@ -110,6 +175,10 @@ export const articlePage = {
         { id: 'b', title: 'Silent', text: 'Follow the breath.' },
       ],
     }),
+    // The `meditations` block, so the axe gate covers `MeditationLibrary` on
+    // the route that really carries it. It has no route of its own: it is a
+    // block an editor adds to a page.
+    block('content-index', { type: 'meditations', limit: 20, resolvedLibrary: MEDITATION_LIBRARY }),
   ]),
   author: {
     id: 3,

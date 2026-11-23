@@ -12,7 +12,7 @@
  * The overlay lives beside the strings so removing it is one import and one
  * call in `lib/i18n/i18n.ts`.
  *
- * shortcut: declared by sydevs/SahajCloud#1225, so delete this module once
+ * shortcut: declared by sydevs/SahajCloud#1223, so delete this module once
  * `pnpm sync:translations` carries these keys.
  */
 
@@ -24,9 +24,12 @@ const PENDING_EN: TranslationGroups = {
     general: {
       all_meditations: 'All meditations',
       finder_question: 'How are you feeling?',
+      length_question: 'How much time do you have?',
       finder_unavailable: "We can't load the meditations just now. Please try again shortly.",
       mood_meditation_label_one: '%{mood} · %{count} min',
       mood_meditation_label_other: '%{mood} · %{count} min',
+      length_meditation_label_one: '%{count} min',
+      length_meditation_label_other: '%{count} min',
     },
   },
 }
