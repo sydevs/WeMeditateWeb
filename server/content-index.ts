@@ -158,9 +158,9 @@ async function fetchContentIndexDocs(
     // for the block, so a 404 is a data gap rather than an answer.
     //
     // `withRetry` classifies structurally off the error's own status, so a 5xx
-    // and a Cloudflare-origin 520/522/524 retry and a 4xx does not. The degrade
-    // below is reported once, outside the loop. The wrapper reports each
-    // retried attempt itself, as it does for every caller.
+    // and a Cloudflare-origin 520/522/524 retry and a 4xx does not. A retried
+    // attempt is a breadcrumb, so a failed read costs the wrapper's one
+    // `captureException` plus the degrade below, whatever the attempt count.
     const json = await withRetry(() =>
       sahajCloudFetch<{ docs?: Record<string, unknown>[]; totalDocs?: number }>(
         path,
