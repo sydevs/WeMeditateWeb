@@ -19,6 +19,19 @@ permissions:
   deployments: read # fallback: a Workers-Builds-style deployment environment_url
   statuses: read # fallback: a preview URL posted as a commit status
 
+# What the light lane covers. Both jobs read the regex from here rather than naming it twice,
+# because a copy in each would drift (#269 hand-typed a key here that nothing caught); the `env`
+# context is readable from a step's `with:`.
+#
+# It widens the change-scope action's default — `.claude/` and `.vscode/` — to every markdown
+# file and everything under `docs/`. The action leaves prose out because a repo's tests may read
+# it, and puts the risk on whoever widens: here only `docs/DESIGN_SYSTEM.md` is read, by
+# `tests/guards/design-tokens.test.ts`, which holds it to `layouts/tailwind.css`, so that one
+# file is narrowed back out. Extended regex, no lookahead, so it goes by last letter:
+# `[^M]\.md$` sends anything named `*M.md` down the full lane too, never less.
+env:
+  LIGHT_PATHS: '[^M]\.md$|^docs/[^D]|^\.claude/|^\.vscode/'
+
 jobs:
   gate:
     name: Lint, Typecheck & Unit
@@ -26,14 +39,48 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+
+      # A change touching only docs and agent files has no build, lint or test to run, so it
+      # takes the light lane: every step below is gated on `steps.change.outputs.full`, and the
+      # job reports green having done nothing but classify. The steps are gated, never the
+      # workflow: a `paths-ignore` on `on:` would leave this required check unreported and
+      # block the merge forever, while a step that is skipped lets the job itself report green.
+      # (why: sydevs/claude-workflow docs/why.md#a-docs-only-change-takes-the-light-lane)
+      - name: Classify the change
+        id: change
+        uses: sydevs/claude-workflow/.github/actions/change-scope@main
+        with:
+          light: ${{ env.LIGHT_PATHS }}
+
+      # A light run skips every step below, and the action leaves only a `::notice`, so without
+      # this the job is green with an empty summary — a skip that reads as a pass (#184).
+      - name: Light lane
+        if: ${{ steps.change.outputs.full != 'true' }}
+        run: |
+          {
+            echo "### Lint, Typecheck & Unit"
+            echo ""
+            echo "Every changed file is prose or agent config, so NO lint, typecheck, test or build ran. The step above lists them."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # The light lane runs no check at all, the formatter included: `.prettierignore` excludes
+      # `*.md` and `.claude/`, `docs/` holds only markdown, and `.vscode/` is untracked, so
+      # `prettier --check .` can only ever read files a light PR left alone — and it was the
+      # one reason install stayed here.
+      # shortcut: a tracked `.vscode/` file, or a non-markdown file under `docs/`, would reach
+      # this lane with no formatter; gate the formatter back on when one lands.
+      #
       # No `version:` input. The version comes from `packageManager` in
       # package.json. Naming it in both places makes action-setup fail.
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        uses: pnpm/action-setup@v6
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm install --frozen-lockfile
 
       # A PR that changes a copied contract must leave it exactly as its sync command writes
       # it: the generated SahajCloud types (`contractSync` in sydevs/claude-workflow's
@@ -42,10 +89,11 @@ jobs:
       # drift on main, never every open PR (#269 hand-typed a key here that nothing caught).
       # why: sydevs/claude-workflow/docs/why.md#a-contract-check-checks-what-a-pr-changes
       - name: Contract check (SahajCloud types)
+        if: ${{ steps.change.outputs.full == 'true' }}
         uses: sydevs/claude-workflow/.github/actions/contract-check@main
       # A fork gets no secrets. The merge queue, which has them, still checks its change.
       - name: Contract check (English mirror)
-        if: github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository
+        if: ${{ steps.change.outputs.full == 'true' && (github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: sydevs/claude-workflow/.github/actions/contract-check@main
         with:
           paths: lib/i18n/translations.en.json
@@ -53,18 +101,22 @@ jobs:
         env:
           PUBLIC__SAHAJCLOUD_URL: https://cloud.sydevelopers.com
           SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test:run # unit tests only. vitest.config.ts excludes smoke specs.
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm lint
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm typecheck
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm test:run # unit tests only. vitest.config.ts excludes smoke specs.
 
       # The axe gate blocks a change through `pnpm test:run` above, like any
       # other spec. This makes its result readable without opening the log, and
       # runs on a red step too — a reviewer reading "the gate failed" needs the
       # counts most then (#278).
       - name: Accessibility results
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.change.outputs.full == 'true' }}
         run: node scripts/a11y-summary.mjs
-      - run: pnpm ladle:build # fail the gate on a broken story, and write build/ for the step below
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm ladle:build # fail the gate on a broken story, and write build/ for the step below
 
       # Validates the design Worker's config against the pinned wrangler's own schema. Nothing
       # else in this repo reads `wrangler.design.jsonc` — Workers Builds holds the dashboard's
@@ -78,6 +130,7 @@ jobs:
       # neither, so this works on a forked PR, and metrics are off so a telemetry endpoint
       # cannot make the gate flaky.
       - name: Wrangler config (offline dry run)
+        if: ${{ steps.change.outputs.full == 'true' }}
         env:
           WRANGLER_SEND_METRICS: 'false'
         run: pnpm check:wrangler
@@ -114,13 +167,36 @@ jobs:
             # would redden the web leg for a preview it is not owed.
             require_preview: 'true'
     steps:
+      # The change scope, as in `gate`. It runs in this job rather than skipping the job: a
+      # matrix job skipped by a job-level `if` reports one SKIPPED check under its unexpanded
+      # name, `Smoke (${{ matrix.target }})`, which satisfies neither required `Smoke (web)`
+      # nor `Smoke (ladle)`. A docs-only change builds no preview in Cloudflare (the watch
+      # paths below, and the web Worker's own, match nothing), so without this a light PR
+      # would wait out discovery's timeout for a preview that never comes.
+      # (why: sydevs/claude-workflow docs/why.md#a-docs-only-change-takes-the-light-lane)
+      - uses: actions/checkout@v7
+      - name: Classify the change
+        id: change
+        uses: sydevs/claude-workflow/.github/actions/change-scope@main
+        with:
+          light: ${{ env.LIGHT_PATHS }}
+
+      - name: Light lane (${{ matrix.target }})
+        if: ${{ steps.change.outputs.full != 'true' }}
+        run: |
+          {
+            echo "### Smoke (${{ matrix.target }})"
+            echo ""
+            echo "Every changed file is prose or agent config, so Cloudflare built no preview and NO ${{ matrix.target }} smoke specs ran."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # wemeditate-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
       # trigger's path_includes/path_excludes, mirrored in WATCH/IGNORE below and in the table
       # in docs/cloudflare-previews-ci.md. With no build there is no preview, and discovery
       # would wait out its 12-minute timeout before reporting anyway.
       - name: Did Cloudflare build the ladle preview?
         id: scope
-        if: matrix.target == 'ladle' && github.event_name == 'pull_request'
+        if: matrix.target == 'ladle' && github.event_name == 'pull_request' && steps.change.outputs.full == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BASE: ${{ github.event.action == 'synchronize' && github.event.before || github.event.pull_request.base.sha }}
@@ -145,16 +221,14 @@ jobs:
 
       # Skip the whole setup with install: setup-node's post step fails the job
       # when it finds no pnpm store to cache.
-      - if: steps.scope.outputs.built != 'false'
-        uses: actions/checkout@v7
-      - if: steps.scope.outputs.built != 'false'
+      - if: ${{ steps.change.outputs.full == 'true' && steps.scope.outputs.built != 'false' }}
         uses: pnpm/action-setup@v6
-      - if: steps.scope.outputs.built != 'false'
+      - if: ${{ steps.change.outputs.full == 'true' && steps.scope.outputs.built != 'false' }}
         uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
-      - if: steps.scope.outputs.built != 'false'
+      - if: ${{ steps.change.outputs.full == 'true' && steps.scope.outputs.built != 'false' }}
         run: pnpm install --frozen-lockfile
 
       # Find this target's preview URL through the GitHub API. Cloudflare posts
@@ -165,7 +239,7 @@ jobs:
       # nothing turned up. The step below decides whether that is a failure.
       - name: Discover ${{ matrix.target }} preview URL
         id: preview
-        if: steps.scope.outputs.built != 'false'
+        if: ${{ steps.change.outputs.full == 'true' && steps.scope.outputs.built != 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -199,14 +273,16 @@ jobs:
       # because the merge queue publishes no preview at all, which the step below documents as
       # legitimately quiet — warning there would contradict it on every queue run.
       - name: Smoke results (${{ matrix.target }})
-        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.scope.outputs.built != 'false' }}
+        if: ${{ !cancelled() && steps.change.outputs.full == 'true' && github.event_name == 'pull_request' && steps.scope.outputs.built != 'false' }}
         run: node scripts/smoke-skip-summary.mjs smoke-report.json ${{ matrix.target }}
 
       # A skip must never look like a pass. Discovery exits 0 with an empty URL, and the Smoke
       # step above then does not run at all — so before this step a missing preview was a green
       # check that tested nothing (#184).
       #
-      # Three cases stay green, and each is quiet for a reason this step can see:
+      # Four cases stay green, and each is quiet for a reason this step can see:
+      #   - a light change — Cloudflare builds no preview for prose, so this step is skipped and
+      #     the light-lane step above already said so in the summary.
       #   - built == 'false' — Cloudflare built nothing, so this step is skipped and the scope
       #     step above already said so in the summary.
       #   - merge_group — the queue publishes no preview, and `built` is empty there because the
@@ -218,7 +294,7 @@ jobs:
       # Everything else is a same-repo PR that should have had a preview and did not. That is a
       # real failure: the Worker's build did not happen, or discovery read the wrong host.
       - name: Report a missing ${{ matrix.target }} preview
-        if: matrix.require_preview == 'true' && steps.scope.outputs.built != 'false' && steps.preview.outputs.preview_url == ''
+        if: matrix.require_preview == 'true' && steps.change.outputs.full == 'true' && steps.scope.outputs.built != 'false' && steps.preview.outputs.preview_url == ''
         env:
           TARGET: ${{ matrix.target }}
           PROJECT: ${{ matrix.project }}
