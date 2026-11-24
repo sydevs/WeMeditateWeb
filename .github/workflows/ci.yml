@@ -52,6 +52,17 @@ jobs:
         with:
           light: ${{ env.LIGHT_PATHS }}
 
+      # A light run skips every step below, and the action leaves only a `::notice`, so without
+      # this the job is green with an empty summary — a skip that reads as a pass (#184).
+      - name: Light lane
+        if: ${{ steps.change.outputs.full != 'true' }}
+        run: |
+          {
+            echo "### Lint, Typecheck & Unit"
+            echo ""
+            echo "Every changed file is prose or agent config, so NO lint, typecheck, test or build ran. The step above lists them."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # The light lane runs no check at all, the formatter included: `.prettierignore` excludes
       # `*.md` and `.claude/`, `docs/` holds only markdown, and `.vscode/` is untracked, so
       # `prettier --check .` can only ever read files a light PR left alone — and it was the
@@ -170,6 +181,15 @@ jobs:
         with:
           light: ${{ env.LIGHT_PATHS }}
 
+      - name: Light lane (${{ matrix.target }})
+        if: ${{ steps.change.outputs.full != 'true' }}
+        run: |
+          {
+            echo "### Smoke (${{ matrix.target }})"
+            echo ""
+            echo "Every changed file is prose or agent config, so Cloudflare built no preview and NO ${{ matrix.target }} smoke specs ran."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # wemeditate-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
       # trigger's path_includes/path_excludes, mirrored in WATCH/IGNORE below and in the table
       # in docs/cloudflare-previews-ci.md. With no build there is no preview, and discovery
@@ -260,7 +280,9 @@ jobs:
       # step above then does not run at all — so before this step a missing preview was a green
       # check that tested nothing (#184).
       #
-      # Three cases stay green, and each is quiet for a reason this step can see:
+      # Four cases stay green, and each is quiet for a reason this step can see:
+      #   - a light change — Cloudflare builds no preview for prose, so this step is skipped and
+      #     the light-lane step above already said so in the summary.
       #   - built == 'false' — Cloudflare built nothing, so this step is skipped and the scope
       #     step above already said so in the summary.
       #   - merge_group — the queue publishes no preview, and `built` is empty there because the
