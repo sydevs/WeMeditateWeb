@@ -8,7 +8,7 @@ import { getWebConfig, getWebTranslations } from './sahajcloud'
 import { forgetReportedWarnings } from './error-utils'
 import type { Locale, WebConfig } from '@/types/sahajcloud'
 import type { SahajCloudWebTranslations, WebTranslations } from '@/lib/i18n/web-translations'
-import { createT, EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { createT, EN_TRANSLATIONS, type TranslationKey } from '@/lib/i18n/i18n'
 import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
@@ -205,23 +205,50 @@ describe('translations degrade reporting', () => {
 })
 
 describe('a translation key SahajCloud lacks', () => {
-  it('reaches Sentry once per key per isolate, from every render that misses it', () => {
-    // Importing this module is what installs the reporter: `lib/` cannot.
+  // Importing this module is what installs the reporter: `lib/` cannot.
+  const partial = (locale: Locale) =>
+    createT({ blocks: { general: { learn_more: 'Mehr' } } } as unknown as WebTranslations, locale)
+
+  beforeEach(() => {
     forgetReportedWarnings()
     vi.mocked(Sentry.captureMessage).mockClear()
-    const live = { blocks: { general: { learn_more: 'Mehr' } } } as unknown as WebTranslations
+  })
 
-    createT(live, 'de')('blocks.general.minutes')
-    createT(live, 'de')('blocks.general.minutes')
-    createT({ ...live }, 'fr')('blocks.general.minutes')
+  it('says nothing when the mirror filled it for a locale other than English', () => {
+    // SahajCloud #705 fills only inside a group the locale carries, so most
+    // of the 19 locales render English for some keys by design.
+    partial('de')('blocks.general.minutes')
+    partial('fr')('blocks.general.minutes')
 
-    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('reports a key English itself lacks', () => {
+    partial('en')('blocks.general.minutes')
+
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       'Translation key missing from SahajCloud',
       expect.objectContaining({
         tags: { source: 'i18n', fallback: 'mirror' },
-        extra: { key: 'blocks.general.minutes', locale: 'de' },
+        extra: { key: 'blocks.general.minutes', locale: 'en' },
       }),
     )
+  })
+
+  it('reports a key no source holds, whatever the locale', () => {
+    partial('de')('blocks.general.no_such_key' as TranslationKey)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translation key missing from SahajCloud',
+      expect.objectContaining({ tags: { source: 'i18n', fallback: 'none' } }),
+    )
+  })
+
+  it('reaches Sentry once per key per isolate, from every render that misses it', () => {
+    partial('en')('blocks.general.minutes')
+    partial('en')('blocks.general.minutes')
+    partial('en')('blocks.general.minutes')
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
   })
 })

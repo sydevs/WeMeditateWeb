@@ -23,6 +23,7 @@ import { warnOnce } from './error-utils'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
 import type { Locale, WebConfig } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
 import type { SahajCloudWebTranslations, WebTranslations } from '@/lib/i18n/web-translations'
 import {
   EN_TRANSLATIONS,
@@ -48,7 +49,15 @@ const contextCache = new WeakMap<object, Promise<SiteContext>>()
 // so it is in place before the first lookup. `lib/i18n` cannot report for
 // itself — ESLint refuses it an `@/server/*` import, and `error-utils` reaches
 // Sentry through `@sentry/cloudflare`, which no browser bundle can take.
+//
+// Only a gap nobody can translate away is reported. A non-English locale
+// rendering English for one key is SahajCloud #705's designed outcome across
+// most of the 19 locales, so an event for it would bill the expected path.
+// What is left is a fault: English itself missing the key, or no source
+// holding it at all, which renders nothing.
 setMissingTranslationReporter(({ key, locale, inMirror }) => {
+  if (inMirror && locale !== DEFAULT_LOCALE) return
+
   warnOnce(key, 'Translation key missing from SahajCloud', {
     source: 'i18n',
     tags: { fallback: inMirror ? 'mirror' : 'none' },
