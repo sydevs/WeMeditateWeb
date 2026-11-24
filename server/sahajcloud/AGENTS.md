@@ -104,13 +104,24 @@ A read with `locale: 'all'` returns every **localized** field as
 document in one language must never use it — every consumer of `Page` would have to unpick the
 maps.
 
-Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
-`pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
+Use it only for a locale-agnostic fact. There are two.
+
+**Which locales a page is published in.** `pages` opts into Payload's
+`versions.drafts.localizeStatus` upstream (SahajCloud#718), so
 `?locale=all&select[_status]=true` answers that in a single query. `lib/seo/hreflang.ts` turns the map
 into a locale list, and `getPageLocaleStatus` in [pages.ts](pages.ts) is the only
 single-document read that sends `all`.
 
-Three things follow, all load-bearing:
+**The meditation a mood names for a time of day**
+([user-choices.ts](../user-choices.ts)). Here `all` is the only spelling that answers at all:
+`filterMeditationsByLocale` filters every `find` to `req.locale`, so a read at any single
+non-English locale comes back `totalDocs: 0` and the mood picker renders empty in nine of the ten
+launch languages — while `locale=en` answers and silently drops a localized slot, because a
+French mood may name a French meditation. The read takes `select[_status]`, which `meditations`
+returns as a plain string rather than a map (see below), so a draft meditation drops its slot
+instead of becoming a dead link.
+
+Three things follow from the page read, all load-bearing:
 
 - **It is a second read, beside the content read, not a replacement for it.** It sends no locale,
   so every locale of a page issues the same URL and shares one edge entry.

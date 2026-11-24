@@ -29,6 +29,20 @@ Two things follow for anyone adding a read:
 - **Nothing in this repo needs a TTL, a cache key, or a purge step.** Add the query function and
   stop. `docs/rules/rest-api.md` shows the shape.
 
+## A page's own HTML is not cached, and something now depends on that
+
+The rule above cuts both ways: Cloudflare bypasses what the app does not stamp, and nothing
+stamps a page render. `cache-headers.ts` is read by this Worker's **JSON** routes and its root
+files only, so an HTML response carries no `Cache-Control` and no colo keeps a copy.
+
+That is what makes a per-visitor render safe, and one read now takes it:
+`visitorTimeOfDay` ([content-index.ts](content-index.ts)) resolves the mood picker's time of day
+from `request.cf.timezone`, so two visitors in different zones are served different tiles at the
+same moment. ⚠ **Stamping a page response would cross-serve one visitor's time of day to the
+next.** Anything that adds HTML caching has to narrow that read first — the browser re-checks the
+slot after mount, so the floor is a visible swap on load rather than a wrong page, but it is still
+a wrong first paint.
+
 ## Retry, which is not caching
 
 `withRetry` ([error-utils.ts](error-utils.ts)) is three attempts with exponential backoff and
