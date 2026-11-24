@@ -16,9 +16,8 @@ import type { A11yStrings } from './a11y/a11y'
  * SahajCloud #705 fills a blank or missing key from English on every
  * API-client read, but only inside a group the document already carries.
  * Individual keys stay optional: a key added to the schema but not yet
- * translated anywhere is still absent. `createT` renders the English
- * mirror's value where the mirror has one, otherwise nothing in production
- * and the key path in development.
+ * translated anywhere is still absent, and `createT` decides what renders
+ * in its place.
  */
 type RequiredGroups<T> = {
   [K in keyof T]-?: NonNullable<T[K]> extends string
