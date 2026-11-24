@@ -11,14 +11,9 @@ alwaysApply: false
 
 CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.yml):
 
-- **A docs-only change takes a light lane.** Both jobs start with the `change-scope` action from
-  sydevs/claude-workflow. When every changed file is markdown, under `docs/`, `.claude/` or
-  `.vscode/` (`docs/DESIGN_SYSTEM.md` excepted: `tests/guards/design-tokens.test.ts` reads it),
-  `gate` keeps install and `prettier --check .` and skips the rest, and `smoke` skips its
-  discovery and specs, because Cloudflare builds no preview for such a change. Steps are gated,
-  never the workflow or a matrix job: a required check that never reports, or a skipped matrix
-  job under its unexpanded name, blocks the merge. A push, the merge queue's unreadable base, or
-  an empty diff runs the full lane. (why: sydevs/claude-workflow
+- **A change nothing builds or tests reads takes a light lane**, and reports green having run
+  no check. Both jobs classify the change with sydevs/claude-workflow's `change-scope` action;
+  `LIGHT_PATHS` in `ci.yml` is what decides, and says what it covers. (why: sydevs/claude-workflow
   [docs/why.md](https://github.com/sydevs/claude-workflow/blob/main/docs/why.md#a-docs-only-change-takes-the-light-lane))
 - **`gate`** — runs `pnpm lint` (ESLint, then `prettier --check .`), `pnpm typecheck`, and
   `pnpm test:run` (unit tests only — `vitest.config.ts` excludes the smoke specs), then writes the
