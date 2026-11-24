@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  cssUrl,
   absoluteHref,
   isSafeHttpUrl,
   isSafeLinkHref,
@@ -390,5 +391,42 @@ describe('absoluteHref', () => {
 
   it('leaves an off-site URL alone, as localeHref does', () => {
     expect(absoluteHref(ORIGIN, 'fr', 'https://example.com/x')).toBe('https://example.com/x')
+  })
+})
+
+describe('cssUrl', () => {
+  it('passes an ordinary asset URL through', () => {
+    expect(cssUrl('https://assets.sydevelopers.com/feeling-good.svg')).toBe(
+      'https://assets.sydevelopers.com/feeling-good.svg',
+    )
+  })
+
+  it('percent-encodes the quote that would close the CSS string', () => {
+    // SahajCloud leaves an upload's extension unsanitised, so this really can
+    // reach an upload's `url`. Unencoded it would end `url("…")` and open a
+    // declaration after it, inside our own origin.
+    const hostile =
+      'https://assets.sydevelopers.com/icon.svg");position:fixed;inset:0;background:red;--x:url("'
+
+    const safe = cssUrl(hostile)
+
+    expect(safe).not.toBeNull()
+    expect(safe).not.toContain('"')
+    expect(safe).toContain('%22')
+  })
+
+  it('drops tabs and newlines, which also terminate a CSS string', () => {
+    expect(cssUrl('https://assets.test/a\n.svg')).toBe('https://assets.test/a.svg')
+  })
+
+  it('refuses a scheme that is not http(s)', () => {
+    expect(cssUrl('javascript:alert(1)')).toBeNull()
+    expect(cssUrl('data:image/svg+xml,<svg/>')).toBeNull()
+  })
+
+  it('refuses what does not parse, including an unset SahajCloud field', () => {
+    expect(cssUrl('')).toBeNull()
+    expect(cssUrl('//assets.test/a.svg')).toBeNull()
+    expect(cssUrl('not a url')).toBeNull()
   })
 })

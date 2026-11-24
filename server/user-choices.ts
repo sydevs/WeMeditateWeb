@@ -14,6 +14,7 @@
 import { ALL_TIMES_OF_DAY, type TimeOfDay } from '@/lib/time-of-day'
 import type { ResolvedMood } from '@/lib/content/blocks'
 import { documentHref } from '@/lib/urls/document-routes'
+import { cssUrl } from '@/lib/urls/urls'
 import { warnOnce, withRetry } from './error-utils'
 import { sahajCloudFetch } from './sahajcloud/fetch'
 
@@ -126,7 +127,9 @@ export async function moodsFromChoices(
         id: String(doc.id ?? ''),
         title: asText(doc.title),
         color: HEX_COLOR.test(color) ? color : null,
-        iconUrl: asText(doc.url) || null,
+        // The tile draws this inside a CSS `url("…")`, which `cssUrl` is the
+        // gate for. A refused one drops the icon, not the tile.
+        iconUrl: cssUrl(asText(doc.url)),
         slots: {},
       },
       refs,

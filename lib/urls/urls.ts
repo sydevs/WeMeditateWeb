@@ -95,6 +95,37 @@ export function isSafeHttpUrl(url: string): boolean {
 }
 
 /**
+ * The URL to put inside a CSS `url("…")`, or `null` for one that may not go there.
+ *
+ * ⚠ **Two jobs, and the second is the one a scheme gate does not do.**
+ * {@link isSafeHttpUrl} answers whether the scheme is ours to render; it says
+ * nothing about the characters, and a `"` in the value closes the CSS string
+ * and opens a declaration after it. React escapes a `style` value for HTML
+ * only — `["'&<>]` — and the HTML parser hands the quote back to the CSS
+ * parser as a quote, so escaping is not what stops this. Re-serialising
+ * through `new URL` is: the WHATWG parser percent-encodes `"` to `%22` and
+ * drops tabs and newlines, so the string cannot be terminated from inside it.
+ *
+ * SahajCloud leaves an upload's extension unsanitised — Payload's own
+ * `getFileTypeIdentity` takes it verbatim — so a `"` really can reach an
+ * upload's `url`, which is how an icon or a background would get here.
+ *
+ * It lives here because a scheme and a spelling are both how a URL is spelled,
+ * which this module owns. The caller still writes the quotes.
+ */
+export function cssUrl(url: string): string | null {
+  if (!isSafeHttpUrl(url)) {
+    return null
+  }
+
+  try {
+    return new URL(url).href
+  } catch {
+    return null
+  }
+}
+
+/**
  * True if the URL is safe to navigate the browser to: an http(s) URL, or a
  * root-relative path on this site.
  *

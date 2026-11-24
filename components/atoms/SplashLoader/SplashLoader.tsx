@@ -6,6 +6,7 @@ import {
   getImageURL,
   getVariantName,
 } from '@/lib/media/cloudflare-images'
+import { cssUrl } from '@/lib/urls/urls'
 
 export interface SplashLoaderProps extends Omit<ComponentProps<'div'>, 'color'> {
   /**
@@ -130,8 +131,11 @@ export function SplashLoader({
     ? getImageURL(backgroundImage, getVariantName(imageAspectRatio, imageSize))
     : undefined
 
-  const backgroundImageStyle = resolvedBackgroundImage
-    ? { backgroundImage: `url(${resolvedBackgroundImage})` }
+  // Quoted, and through the CSS gate: this is the same sink the mood picker's
+  // icon uses, and an unquoted `url()` is the easier of the two to break out of.
+  const safeBackgroundImage = resolvedBackgroundImage ? cssUrl(resolvedBackgroundImage) : null
+  const backgroundImageStyle = safeBackgroundImage
+    ? { backgroundImage: `url("${safeBackgroundImage}")` }
     : {}
 
   return (

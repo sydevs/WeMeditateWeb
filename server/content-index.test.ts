@@ -540,6 +540,30 @@ describe('resolveContentIndexBlocks (user-choices)', () => {
     }
   })
 
+  it('refuses an icon URL that could not go inside a CSS url()', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        jsonResponse([
+          // An upload's extension is unsanitised upstream, so a quote can reach
+          // `url`. It would close the CSS string the tile draws it in.
+          choice({
+            id: 1,
+            url: 'https://assets.test/i.svg");position:fixed;inset:0;background:red;--x:url("',
+            morningMeditation: 11,
+          }),
+          choice({ id: 2, url: 'javascript:alert(1)', morningMeditation: 11 }),
+        ]),
+      )
+      .mockResolvedValueOnce(jsonResponse([{ id: 11, _status: 'published' }]))
+
+    const fields = resolvedBlock(await resolveContentIndexBlocks(blockContent(), {}))
+
+    expect(fields.resolvedMoods?.[0].iconUrl).not.toContain('"')
+    // A refused scheme drops the icon, and keeps the tile.
+    expect(fields.resolvedMoods?.[1].iconUrl).toBeNull()
+    expect(fields.resolvedMoods).toHaveLength(2)
+  })
+
   it('keeps a non-hex colour out of the tile rather than painting with it', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(
