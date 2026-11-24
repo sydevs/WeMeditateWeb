@@ -22,9 +22,11 @@
 import { describe, it, expect, vi, afterAll, beforeEach, afterEach } from 'vitest'
 import { writeFileSync } from 'node:fs'
 import type { ReactNode } from 'react'
+import type { Page } from '@/types/sahajcloud'
 import { renderToStaticMarkup } from 'react-dom/server'
 import axe, { type Result } from 'axe-core'
-import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { EN_TRANSLATIONS, enT } from '@/lib/i18n/i18n'
+import { pageSeo } from '@/lib/seo/content-seo'
 import { MAIN_CONTENT_ID } from '@/lib/a11y/route-announcer'
 import { AXE_TAGS, axeOptions } from '@/tests/_helpers/axe'
 import { articlePage, atlasSeo, homePage, lecture, meditation, webConfig } from './fixtures'
@@ -83,13 +85,31 @@ const CHROME_ONLY = ['region', 'bypass']
  */
 const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]'
 
+/**
+ * The `seo` document the route's `+data.ts` hands a content page. The article
+ * target draws its share row from the canonical in it, so a target without one
+ * would leave axe walking a page missing the row.
+ */
+const seoFor = (page: Page, path: string) =>
+  pageSeo({
+    page,
+    settings: webConfig,
+    locales: [],
+    route: { origin: 'https://wemeditate.com', path, locale: 'en', t: enT },
+  })
+
 /** Every target, as the gate's own output names them. */
 const TARGETS = [
   {
     name: 'home',
     chrome: true,
     render: () => {
-      routeData.current = { settings: webConfig, page: homePage }
+      routeData.current = {
+        settings: webConfig,
+        page: homePage,
+        slug: 'index',
+        seo: seoFor(homePage, '/'),
+      }
 
       return (
         <LayoutChrome>
@@ -102,7 +122,12 @@ const TARGETS = [
     name: 'article',
     chrome: true,
     render: () => {
-      routeData.current = { settings: webConfig, page: articlePage }
+      routeData.current = {
+        settings: webConfig,
+        page: articlePage,
+        slug: articlePage.slug,
+        seo: seoFor(articlePage, `/${articlePage.slug}`),
+      }
 
       return (
         <LayoutChrome>

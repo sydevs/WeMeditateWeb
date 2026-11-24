@@ -15,6 +15,7 @@ import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdow
 import { localeEndonym } from '@/lib/i18n/locale-names'
 import { SOCIAL_PROFILES } from '@/lib/seo/site-identity'
 import { useT } from '@/hooks/useT'
+import { documentHref } from '@/lib/urls/document-routes'
 
 export interface SiteNav {
   navItems: NavItem[]
@@ -91,7 +92,7 @@ export function useSiteNav(settings: WebConfig, activeSlug?: string): SiteNav {
 
   return {
     navItems,
-    actionLinkHref: classPages[0] ? '/' + classPages[0].slug : '/',
+    actionLinkHref: (classPages[0] && documentHref('pages', classPages[0])) || '/',
     actionLinkText: classPages[0]?.title,
     languages,
     socialLinks: SOCIAL_PROFILES,
