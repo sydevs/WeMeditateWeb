@@ -10,11 +10,11 @@ import {
 } from 'react'
 import * as Sentry from '@sentry/react'
 import { ClientOnly } from 'vike-react/ClientOnly'
-import { Button } from '../../atoms/Button'
-import { Link } from '../../atoms/Link'
+import { Button } from '@/components/atoms/Button'
+import { Link } from '@/components/atoms/Link'
 import { ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline'
 import './SubtleSystem.css'
-import { useT } from '../../../hooks/useT'
+import { useT } from '@/hooks/useT'
 
 // Constants
 const NESTED_HOVER_DELAY = 100 // ms - delay for nested chakra hover

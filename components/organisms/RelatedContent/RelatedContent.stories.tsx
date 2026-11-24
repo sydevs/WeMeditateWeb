@@ -1,7 +1,7 @@
 import type { Story, StoryDefault } from '@ladle/react'
 import { RelatedContent } from './RelatedContent'
-import type { ResolvedCardItem } from '../../../lib/content-blocks'
-import { StoryWrapper, StorySection } from '../../ladle'
+import type { ResolvedCardItem } from '@/lib/content/blocks'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Organisms',

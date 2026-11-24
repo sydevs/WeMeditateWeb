@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { OrnateTextBox } from './OrnateTextBox'
-import { classFor, classOf } from '../../../tests/_helpers/markup'
+import { classFor, classOf } from '@/tests/_helpers/markup'
 
 const BASE = {
   title: 'Sacred Teachings',

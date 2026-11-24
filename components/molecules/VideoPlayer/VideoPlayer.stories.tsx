@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { Story, StoryDefault } from '@ladle/react'
 import { VideoPlayer } from './VideoPlayer'
-import { StoryWrapper, StorySection } from '../../ladle'
+import { StoryWrapper, StorySection } from '@/components/ladle'
 
 export default {
   title: 'Molecules',
@@ -20,7 +20,7 @@ const SUBTITLES = [
 ]
 
 /**
- * The ten launch locales, spelled as `server/sahajcloud-types.ts` spells them. Each has its own
+ * The ten launch locales, spelled as `types/sahajcloud.ts` spells them. Each has its own
  * pack in `@videojs/core`, and all ten key sets match English's.
  */
 const LAUNCH_LOCALES = ['en', 'ru', 'it', 'es', 'fr', 'de', 'pt-BR', 'cs', 'uk', 'bg']

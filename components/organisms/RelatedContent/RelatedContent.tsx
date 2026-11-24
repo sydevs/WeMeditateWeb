@@ -1,11 +1,11 @@
-import type { ResolvedCardItem } from '../../../lib/content-blocks'
-import { ContentCarousel } from '../../molecules/blocks/ContentCarousel/ContentCarousel'
+import type { ResolvedCardItem } from '@/lib/content/blocks'
+import { ContentCarousel } from '@/components/molecules/blocks/ContentCarousel/ContentCarousel'
 
 export interface RelatedContentProps {
   /** Section heading, for example "Related meditations" or "Related lectures". */
   title: string
   /**
-   * Server-resolved related cards (see lib/related-content.ts). An empty list
+   * Server-resolved related cards (see lib/content/related-content.ts). An empty list
    * renders nothing at all.
    */
   items: ResolvedCardItem[]

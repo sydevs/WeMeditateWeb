@@ -18,12 +18,20 @@
 
 import { render } from 'vike/abort'
 import type { PageContextServer } from 'vike/types'
-import { getWebConfig, getWebTranslations } from './sahajcloud-client'
+import { getWebConfig, getWebTranslations } from './sahajcloud'
 import { warnOnce } from './error-utils'
 import { loadLivePreview, previewArgs } from './live-preview'
 import { perRequest } from './request-memo'
-import type { Locale, WebConfig, WebTranslations } from './sahajcloud-types'
-import { EN_TRANSLATIONS, getT, type TFunction } from '../lib/i18n'
+import type { Locale, WebConfig } from '@/types/sahajcloud'
+import type { SahajCloudWebTranslations, WebTranslations } from '@/lib/i18n/web-translations'
+import {
+  EN_TRANSLATIONS,
+  getT,
+  setMissingTranslationReporter,
+  type TFunction,
+} from '@/lib/i18n/i18n'
+import { withA11y } from '@/lib/i18n/a11y/a11y'
+import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
 
 export interface SiteContext {
   settings: WebConfig
@@ -36,8 +44,22 @@ export interface SiteContext {
 const translationsCache = new WeakMap<object, Promise<WebTranslations>>()
 const contextCache = new WeakMap<object, Promise<SiteContext>>()
 
+// Installed on import: every route's `+onBeforeRender` imports this module,
+// so it is in place before the first lookup. `lib/i18n` cannot report for
+// itself — ESLint refuses it an `@/server/*` import, and `error-utils` reaches
+// Sentry through `@sentry/cloudflare`, which no browser bundle can take.
+setMissingTranslationReporter(({ key, locale, inMirror }) => {
+  warnOnce(key, 'Translation key missing from SahajCloud', {
+    source: 'i18n',
+    tags: { fallback: inMirror ? 'mirror' : 'none' },
+    // The locale of the render that first missed it in this isolate, not the
+    // only one affected.
+    extra: { key, locale },
+  })
+})
+
 /** True when the global carries no strings at all, at any depth. */
-function isEmpty(translations: WebTranslations): boolean {
+function isEmpty(translations: SahajCloudWebTranslations): boolean {
   const hasString = (node: unknown): boolean => {
     if (typeof node === 'string') return node.trim().length > 0
     if (node === null || typeof node !== 'object') return false
@@ -66,6 +88,9 @@ function isEmpty(translations: WebTranslations): boolean {
  * Either degrade logs on every request, and reaches Sentry through
  * `warnOnce` — once per locale and reason per isolate, from whichever render
  * discovers it.
+ *
+ * Whichever strings result, the locale's screen-reader strings are mounted on
+ * them last, so even the English fallback speaks the visitor's language there.
  */
 export function loadTranslations(pageContext: PageContextServer): Promise<WebTranslations> {
   const locale = pageContext.locale
@@ -99,7 +124,8 @@ export function loadTranslations(pageContext: PageContextServer): Promise<WebTra
         })
 
         return EN_TRANSLATIONS
-      }),
+      })
+      .then((translations) => withA11y<WebTranslations>(translations, a11yStringsFor(locale))),
   )
 }
 

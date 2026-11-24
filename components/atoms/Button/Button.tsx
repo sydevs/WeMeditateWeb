@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
-import { Icon, HeroIcon } from '../Icon/Icon'
-import { Spinner } from '../Spinner/Spinner'
-import { Link, type LinkProps } from '../Link'
+import { Icon, HeroIcon } from '@/components/atoms/Icon/Icon'
+import { Spinner } from '@/components/atoms/Spinner/Spinner'
+import { Link, type LinkProps } from '@/components/atoms/Link'
 
 interface ButtonOwnProps {
   /**

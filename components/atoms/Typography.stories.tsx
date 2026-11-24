@@ -1,5 +1,5 @@
 import type { Story, StoryDefault } from '@ladle/react'
-import { StorySection, StoryWrapper } from '../ladle'
+import { StorySection, StoryWrapper } from '@/components/ladle'
 
 export default {
   title: 'Atoms',

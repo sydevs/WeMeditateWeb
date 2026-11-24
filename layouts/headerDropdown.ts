@@ -3,13 +3,14 @@
  * SahajCloud pages. Kept framework-free so the mapping, image resolution, and random
  * selection can be unit-tested without rendering.
  */
-import type { NavPage } from '../server/sahajcloud-types'
-import { populatedImageUrl } from '../lib/payload-relationships'
-import type { HeaderDropdownArticle, HeaderDropdownLink } from '../components/organisms'
+import type { NavPage } from '@/types/sahajcloud'
+import { populatedImageUrl } from '@/lib/content/payload-relationships'
+import type { HeaderDropdownArticle, HeaderDropdownLink } from '@/components/organisms'
+import { documentHref } from '@/lib/urls/document-routes'
 
 /** A knowledge page → a left-column nav link (`/<slug>`). */
 export function pageToLink(page: NavPage): HeaderDropdownLink {
-  return { label: page.title, href: '/' + page.slug }
+  return { label: page.title, href: documentHref('pages', page) ?? '/' }
 }
 
 /**
@@ -22,7 +23,7 @@ export function pageToArticle(page: NavPage): HeaderDropdownArticle {
     title: page.title,
     image: populatedImageUrl(page.meta?.image) ?? '',
     imageAlt: page.meta?.title ?? page.title,
-    href: '/' + page.slug,
+    href: documentHref('pages', page) ?? '/',
   }
 }
 

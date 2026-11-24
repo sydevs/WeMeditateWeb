@@ -12,7 +12,8 @@
 
 import { usePageContext } from 'vike-react/usePageContext'
 import type { PageContext } from 'vike/types'
-import { DEFAULT_LOCALE, type Locale } from '../server/sahajcloud-types'
+import { type Locale } from '@/types/sahajcloud'
+import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
 
 /** `pageContext`, or `null` where there is none. */
 export function useOptionalPageContext(): PageContext | null {

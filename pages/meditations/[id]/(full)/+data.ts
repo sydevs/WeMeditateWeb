@@ -1,9 +1,9 @@
 import type { PageContextServer } from 'vike/types'
-import type { WebConfig } from '../../../../server/sahajcloud-types'
-import { loadSiteContext } from '../../../../server/site-context'
-import { loadMeditation, type MeditationData } from '../_meditation'
-import { meditationSeo, seoRoute } from '../../../../lib/content-seo'
-import type { SeoDocument } from '../../../../lib/head'
+import type { WebConfig } from '@/types/sahajcloud'
+import { loadSiteContext } from '@/server/site-context'
+import { loadMeditation, type MeditationData } from '@/pages/meditations/[id]/_meditation'
+import { meditationSeo, seoRoute } from '@/lib/seo/content-seo'
+import type { SeoDocument } from '@/lib/seo/head'
 
 export interface MeditationPageData extends MeditationData {
   settings: WebConfig

@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Անտեսել",
+    "close": "Փակել",
+    "previous": "Նախորդ",
+    "next": "Հաջորդ",
+    "show_more_items_one": "Ցուցադրել ևս %{count} տարր",
+    "show_more_items_other": "Ցուցադրել ևս %{count} տարր",
+    "breadcrumb": "Նավիգացիայի ուղի",
+    "primary_navigation": "Հիմնական ընտրացանկ",
+    "footer_navigation": "Ստորին ընտրացանկ",
+    "opens_in_new_tab_suffix": "(բացվում է նոր ներդիրում)",
+    "menu": "Ընտրացանկ"
+  },
+  "errors": {
+    "error_icon": "Սխալ"
+  },
+  "article": {
+    "filter_label": "Զտել բովանդակությունը ըստ պիտակի"
+  },
+  "meditation": {
+    "mute_voice": "Անջատել ձայնային ուղեցույցը",
+    "unmute_voice": "Միացնել ձայնային ուղեցույցը",
+    "mute_music": "Անջատել երաժշտությունը",
+    "unmute_music": "Միացնել երաժշտությունը",
+    "voice_volume": "Ձայնային ուղեցույցի ձայնի ուժգնություն",
+    "music_volume": "Երաժշտության ձայնի ուժգնություն",
+    "audio_settings": "Ձայնի կարգավորումներ",
+    "shuffle_music": "Խառնել երաժշտությունը",
+    "related_lectures_loading": "Բեռնվում են առնչվող դասախոսությունները",
+    "finder_region": "Ընտրեք ձեր ինքնազգացողությունը"
+  },
+  "lecture": {
+    "related_meditations_loading": "Բեռնվում են առնչվող մեդիտացիաները",
+    "untitled_heading": "Անանուն դասախոսություն"
+  },
+  "map": {
+    "classes_heading": "Մեդիտացիայի պարապմունքներ",
+    "when": "Երբ",
+    "where": "Որտեղ",
+    "languages": "Լեզուներ"
+  },
+  "forms": {
+    "submitting": "Ձևն ուղարկվում է, խնդրում ենք սպասել...",
+    "required_marker": "պարտադիր"
+  },
+  "media": {
+    "play": "Նվագարկել",
+    "pause": "Դադար",
+    "previous_track": "Նախորդ կատարում",
+    "next_track": "Հաջորդ կատարում",
+    "toggle_shuffle": "Փոխել խառնումը",
+    "mute": "Անջատել ձայնը",
+    "unmute": "Միացնել ձայնը",
+    "volume": "Ձայնի ուժգնություն",
+    "play_item": "Նվագարկել՝ %{title}",
+    "view_image": "Դիտել պատկերը",
+    "view_image_alt": "Դիտել պատկերը՝ %{alt}",
+    "embed_code": "Ներդրման կոդ",
+    "zoom_in": "Խոշորացնել",
+    "zoom_out": "Փոքրացնել",
+    "progress": "Նվագարկման դիրք"
+  },
+  "location": {
+    "search_label": "Որոնել վայր",
+    "selected_label": "Ընտրված վայր",
+    "change_label": "Փոխել վայրը"
+  },
+  "blocks": {
+    "enter_fullscreen": "Անցնել լիաէկրան ռեժիմի",
+    "exit_fullscreen": "Դուրս գալ լիաէկրան ռեժիմից",
+    "learn_more_about": "Իմանալ ավելին՝ %{title}",
+    "previous_slide": "Նախորդ սլայդ",
+    "next_slide": "Հաջորդ սլայդ",
+    "previous_column": "Նախորդ՝ %{title}",
+    "next_column": "Հաջորդ՝ %{title}",
+    "go_to_column": "Անցնել սյունակ %{number}՝ %{title}",
+    "quote": "Մեջբերում",
+    "table_of_contents": "Բովանդակություն",
+    "share_region": "Սոցիալական ցանցերով կիսվելու տարբերակներ",
+    "share_group": "Կիսվել սոցիալական ցանցերում",
+    "share_on": "Կիսվել՝ %{platform}",
+    "next_session": "Հաջորդ պարապմունքը՝ %{weekday}, ժամը %{time}, %{relative}։"
+  }
+}
