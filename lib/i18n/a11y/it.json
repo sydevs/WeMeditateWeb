@@ -1,0 +1,86 @@
+{
+  "common": {
+    "dismiss": "Ignora",
+    "close": "Chiudi",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "show_more_items_one": "Mostra %{count} elemento in più",
+    "show_more_items_many": "Mostra %{count} di elementi in più",
+    "show_more_items_other": "Mostra %{count} elementi in più",
+    "breadcrumb": "Breadcrumb",
+    "primary_navigation": "Menu principale",
+    "footer_navigation": "Menu del piè di pagina",
+    "opens_in_new_tab_suffix": "(si apre in una nuova scheda)",
+    "menu": "Menu"
+  },
+  "errors": {
+    "error_icon": "Errore"
+  },
+  "article": {
+    "filter_label": "Filtra i contenuti per tag"
+  },
+  "meditation": {
+    "mute_voice": "Disattiva la voce",
+    "unmute_voice": "Riattiva la voce",
+    "mute_music": "Disattiva la musica",
+    "unmute_music": "Riattiva la musica",
+    "voice_volume": "Volume della voce",
+    "music_volume": "Volume della musica",
+    "audio_settings": "Impostazioni audio",
+    "shuffle_music": "Cambia brano musicale in modo casuale",
+    "related_lectures_loading": "Caricamento delle conferenze correlate",
+    "finder_region": "Scegli come ti senti"
+  },
+  "lecture": {
+    "related_meditations_loading": "Caricamento delle meditazioni correlate",
+    "untitled_heading": "Conferenza senza titolo"
+  },
+  "map": {
+    "classes_heading": "Corsi di meditazione",
+    "when": "Quando",
+    "where": "Dove",
+    "languages": "Lingue"
+  },
+  "forms": {
+    "submitting": "Invio del modulo in corso, attendi…",
+    "required_marker": "obbligatorio"
+  },
+  "media": {
+    "play": "Riproduci",
+    "pause": "Pausa",
+    "previous_track": "Brano precedente",
+    "next_track": "Brano successivo",
+    "toggle_shuffle": "Attiva o disattiva riproduzione casuale",
+    "mute": "Disattiva audio",
+    "unmute": "Attiva audio",
+    "volume": "Volume",
+    "play_item": "Riproduci %{title}",
+    "view_image": "Visualizza immagine",
+    "view_image_alt": "Visualizza immagine: %{alt}",
+    "embed_code": "Codice di incorporamento",
+    "zoom_in": "Ingrandisci",
+    "zoom_out": "Riduci",
+    "progress": "Posizione di riproduzione"
+  },
+  "location": {
+    "search_label": "Cerca un luogo",
+    "selected_label": "Luogo selezionato",
+    "change_label": "Cambia luogo"
+  },
+  "blocks": {
+    "enter_fullscreen": "Attiva schermo intero",
+    "exit_fullscreen": "Esci da schermo intero",
+    "learn_more_about": "Scopri di più su %{title}",
+    "previous_slide": "Diapositiva precedente",
+    "next_slide": "Diapositiva successiva",
+    "previous_column": "Precedente: %{title}",
+    "next_column": "Successivo: %{title}",
+    "go_to_column": "Vai alla colonna %{number}: %{title}",
+    "quote": "Citazione",
+    "table_of_contents": "Indice dei contenuti",
+    "share_region": "Opzioni di condivisione sui social media",
+    "share_group": "Condividi sui social media",
+    "share_on": "Condividi su %{platform}",
+    "next_session": "La prossima sessione è %{weekday} alle %{time}, %{relative}."
+  }
+}

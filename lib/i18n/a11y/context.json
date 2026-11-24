@@ -1,0 +1,84 @@
+{
+  "common": {
+    "dismiss": "Names the button that closes a notification banner.",
+    "close": "Names the button that closes the full-screen image viewer.",
+    "previous": "Names the button that moves back one item in a carousel or image viewer.",
+    "next": "Names the button that moves forward one item in a carousel or image viewer.",
+    "show_more_items": "Describes the \"Show More\" button. `%{count}` = how many further items it reveals, and selects the plural form.",
+    "breadcrumb": "Names the trail of parent links above a page title.",
+    "primary_navigation": "Names the site's main menu, so it can be told apart from the other menus on the page.",
+    "footer_navigation": "Names the footer's untitled list of links. A footer column that shows its own heading is named by that heading instead.",
+    "opens_in_new_tab_suffix": "Warns that a link opens a new browser tab, and is read directly after the link's own words. Takes no placeholder, because the link's text is arbitrary. Keep the brackets if the language uses them.",
+    "menu": "Names the button in the top bar that opens the site menu on a phone. The same name is read whether the menu is open or closed."
+  },
+  "errors": {
+    "error_icon": "Names the warning icon above an error message."
+  },
+  "article": {
+    "filter_label": "Names the row of tag filter chips above an article index."
+  },
+  "meditation": {
+    "mute_voice": "Names the button that silences the spoken guidance.",
+    "unmute_voice": "Names the same button once the guidance is silenced.",
+    "mute_music": "Names the button that silences the background music.",
+    "unmute_music": "Names the same button once the music is silenced.",
+    "voice_volume": "Names the slider controlling the spoken guidance.",
+    "music_volume": "Names the slider controlling the background music.",
+    "audio_settings": "Names the panel holding the volume sliders.",
+    "shuffle_music": "Names the button that picks a different background track at random.",
+    "related_lectures_loading": "Announced while the suggested talks are still loading.",
+    "finder_region": "Names the region of the page holding the mood picker."
+  },
+  "lecture": {
+    "related_meditations_loading": "Announced while the suggested meditations are still loading.",
+    "untitled_heading": "Stands in as the page heading for a talk that carries no title of its own."
+  },
+  "map": {
+    "classes_heading": "Names the list of classes on a region page.",
+    "when": "Introduces a class's day and time.",
+    "where": "Introduces a class's address.",
+    "languages": "Introduces the languages a class is taught in."
+  },
+  "forms": {
+    "submitting": "Announced while a form is being sent.",
+    "required_marker": "Replaces the asterisk marking a mandatory field. One word."
+  },
+  "media": {
+    "play": "Names the button that starts playback.",
+    "pause": "Names the same button during playback.",
+    "previous_track": "Names the button that goes back to the previous track.",
+    "next_track": "Names the button that skips to the next track.",
+    "toggle_shuffle": "Names the button that turns random order on or off.",
+    "mute": "Names the button that silences the player.",
+    "unmute": "Names the same button once the player is silenced.",
+    "volume": "Names the player's volume slider.",
+    "play_item": "Names the play button on a card. `%{title}` = that item's own title.",
+    "view_image": "Names the button that opens an image full screen, when the image has no caption.",
+    "view_image_alt": "The same button when the image has a caption. `%{alt}` = that caption, which the editor writes.",
+    "embed_code": "Names the box holding the embed code.",
+    "zoom_in": "Names the button that enlarges an image in the full-screen viewer.",
+    "zoom_out": "Names the button that shrinks an image in the full-screen viewer.",
+    "progress": "Names the audio player's progress slider, which moves playback within the track."
+  },
+  "location": {
+    "search_label": "Names the place-search input.",
+    "selected_label": "Names the box showing the place already chosen.",
+    "change_label": "Names the button that changes the chosen place."
+  },
+  "blocks": {
+    "enter_fullscreen": "Names the button that opens the subtle-system diagram full screen.",
+    "exit_fullscreen": "Names the same button while the diagram fills the screen.",
+    "learn_more_about": "Names the \"Learn More\" link. `%{title}` = the chakra or channel it leads to.",
+    "previous_slide": "Names the button that goes back one slide in a carousel.",
+    "next_slide": "Names the button that advances one slide in a carousel.",
+    "previous_column": "Names the button that scrolls to the previous column. `%{title}` = that column's heading.",
+    "next_column": "Names the button that scrolls to the next column. `%{title}` = that column's heading.",
+    "go_to_column": "Names a dot that jumps to one column. `%{number}` = its position, `%{title}` = its heading.",
+    "quote": "Names a pull-quote block that carries no heading.",
+    "table_of_contents": "Names the in-page contents list when it carries no heading.",
+    "share_region": "Names the whole sharing area at the end of a page.",
+    "share_group": "Names the row of sharing buttons inside that area.",
+    "share_on": "Names one sharing button. `%{platform}` = the network's own name, untranslated.",
+    "next_session": "Read in place of the live-class countdown's digits: the one sentence giving the next class's day, time and how far away it is. `%{weekday}` = the day, `%{time}` = the start time, `%{relative}` = how far away, e.g. \"in 2 days\"."
+  }
+}

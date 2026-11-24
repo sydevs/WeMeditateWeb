@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Schließen",
+    "close": "Schließen",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "show_more_items_one": "%{count} weiteres Element anzeigen",
+    "show_more_items_other": "%{count} weitere Elemente anzeigen",
+    "breadcrumb": "Brotkrümelnavigation",
+    "primary_navigation": "Hauptmenü",
+    "footer_navigation": "Fußzeilenmenü",
+    "opens_in_new_tab_suffix": "(öffnet in neuem Tab)",
+    "menu": "Menü"
+  },
+  "errors": {
+    "error_icon": "Fehler"
+  },
+  "article": {
+    "filter_label": "Inhalte nach Tag filtern"
+  },
+  "meditation": {
+    "mute_voice": "Stimme stummschalten",
+    "unmute_voice": "Stimme aktivieren",
+    "mute_music": "Musik stummschalten",
+    "unmute_music": "Musik aktivieren",
+    "voice_volume": "Lautstärke der Stimme",
+    "music_volume": "Lautstärke der Musik",
+    "audio_settings": "Audioeinstellungen",
+    "shuffle_music": "Musiktitel zufällig wechseln",
+    "related_lectures_loading": "Ähnliche Vorträge werden geladen",
+    "finder_region": "Wähle, wie du dich fühlst"
+  },
+  "lecture": {
+    "related_meditations_loading": "Ähnliche Meditationen werden geladen",
+    "untitled_heading": "Vortrag ohne Titel"
+  },
+  "map": {
+    "classes_heading": "Meditationskurse",
+    "when": "Wann",
+    "where": "Wo",
+    "languages": "Sprachen"
+  },
+  "forms": {
+    "submitting": "Formular wird gesendet, bitte warten …",
+    "required_marker": "erforderlich"
+  },
+  "media": {
+    "play": "Wiedergabe",
+    "pause": "Pause",
+    "previous_track": "Vorheriger Titel",
+    "next_track": "Nächster Titel",
+    "toggle_shuffle": "Zufallswiedergabe umschalten",
+    "mute": "Stummschalten",
+    "unmute": "Ton einschalten",
+    "volume": "Lautstärke",
+    "play_item": "%{title} abspielen",
+    "view_image": "Bild ansehen",
+    "view_image_alt": "Bild ansehen: %{alt}",
+    "embed_code": "Einbettungscode",
+    "zoom_in": "Vergrößern",
+    "zoom_out": "Verkleinern",
+    "progress": "Wiedergabeposition"
+  },
+  "location": {
+    "search_label": "Nach einem Ort suchen",
+    "selected_label": "Ausgewählter Ort",
+    "change_label": "Ort ändern"
+  },
+  "blocks": {
+    "enter_fullscreen": "Vollbild aktivieren",
+    "exit_fullscreen": "Vollbild beenden",
+    "learn_more_about": "Mehr über %{title}",
+    "previous_slide": "Vorherige Folie",
+    "next_slide": "Nächste Folie",
+    "previous_column": "Zurück: %{title}",
+    "next_column": "Weiter: %{title}",
+    "go_to_column": "Zu Spalte %{number} wechseln: %{title}",
+    "quote": "Zitat",
+    "table_of_contents": "Inhaltsverzeichnis",
+    "share_region": "Optionen zum Teilen in sozialen Medien",
+    "share_group": "In sozialen Medien teilen",
+    "share_on": "Auf %{platform} teilen",
+    "next_session": "Die nächste Sitzung ist am %{weekday} um %{time} Uhr, %{relative}."
+  }
+}

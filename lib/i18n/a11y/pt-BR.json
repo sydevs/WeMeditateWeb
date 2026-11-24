@@ -1,0 +1,86 @@
+{
+  "common": {
+    "dismiss": "Dispensar",
+    "close": "Fechar",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "show_more_items_one": "Mostrar mais %{count} item",
+    "show_more_items_many": "Mostrar mais %{count} de itens",
+    "show_more_items_other": "Mostrar mais %{count} itens",
+    "breadcrumb": "Trilha de navegação",
+    "primary_navigation": "Menu principal",
+    "footer_navigation": "Menu do rodapé",
+    "opens_in_new_tab_suffix": "(abre em uma nova guia)",
+    "menu": "Menu"
+  },
+  "errors": {
+    "error_icon": "Erro"
+  },
+  "article": {
+    "filter_label": "Filtrar conteúdo por tag"
+  },
+  "meditation": {
+    "mute_voice": "Silenciar voz",
+    "unmute_voice": "Ativar som da voz",
+    "mute_music": "Silenciar música",
+    "unmute_music": "Ativar som da música",
+    "voice_volume": "Volume da voz",
+    "music_volume": "Volume da música",
+    "audio_settings": "Configurações de áudio",
+    "shuffle_music": "Trocar faixa de música aleatoriamente",
+    "related_lectures_loading": "Carregando palestras relacionadas",
+    "finder_region": "Escolha como você está se sentindo"
+  },
+  "lecture": {
+    "related_meditations_loading": "Carregando meditações relacionadas",
+    "untitled_heading": "Palestra sem título"
+  },
+  "map": {
+    "classes_heading": "Aulas de meditação",
+    "when": "Quando",
+    "where": "Onde",
+    "languages": "Idiomas"
+  },
+  "forms": {
+    "submitting": "Enviando o formulário, aguarde…",
+    "required_marker": "obrigatório"
+  },
+  "media": {
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "previous_track": "Faixa anterior",
+    "next_track": "Próxima faixa",
+    "toggle_shuffle": "Ativar ou desativar reprodução aleatória",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "volume": "Volume",
+    "play_item": "Reproduzir %{title}",
+    "view_image": "Ver imagem",
+    "view_image_alt": "Ver imagem: %{alt}",
+    "embed_code": "Código de incorporação",
+    "zoom_in": "Aumentar zoom",
+    "zoom_out": "Diminuir zoom",
+    "progress": "Posição da reprodução"
+  },
+  "location": {
+    "search_label": "Pesquisar um local",
+    "selected_label": "Local selecionado",
+    "change_label": "Alterar local"
+  },
+  "blocks": {
+    "enter_fullscreen": "Entrar em tela cheia",
+    "exit_fullscreen": "Sair da tela cheia",
+    "learn_more_about": "Saiba mais sobre %{title}",
+    "previous_slide": "Slide anterior",
+    "next_slide": "Próximo slide",
+    "previous_column": "Anterior: %{title}",
+    "next_column": "Próximo: %{title}",
+    "go_to_column": "Ir para a coluna %{number}: %{title}",
+    "quote": "Citação",
+    "table_of_contents": "Índice",
+    "share_region": "Opções de compartilhamento em redes sociais",
+    "share_group": "Compartilhar nas redes sociais",
+    "share_on": "Compartilhar no %{platform}",
+    "next_session": "A próxima sessão é %{weekday} às %{time}, %{relative}."
+  }
+}
