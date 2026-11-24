@@ -19,6 +19,19 @@ permissions:
   deployments: read # fallback: a Workers-Builds-style deployment environment_url
   statuses: read # fallback: a preview URL posted as a commit status
 
+# What the light lane covers. Both jobs read the regex from here rather than naming it twice,
+# because a copy in each would drift (#269 hand-typed a key here that nothing caught); the `env`
+# context is readable from a step's `with:`.
+#
+# It widens the change-scope action's default — `.claude/` and `.vscode/` — to every markdown
+# file and everything under `docs/`. The action leaves prose out because a repo's tests may read
+# it, and puts the risk on whoever widens: here only `docs/DESIGN_SYSTEM.md` is read, by
+# `tests/guards/design-tokens.test.ts`, which holds it to `layouts/tailwind.css`, so that one
+# file is narrowed back out. Extended regex, no lookahead, so it goes by last letter:
+# `[^M]\.md$` sends anything named `*M.md` down the full lane too, never less.
+env:
+  LIGHT_PATHS: '[^M]\.md$|^docs/[^D]|^\.claude/|^\.vscode/'
+
 jobs:
   gate:
     name: Lint, Typecheck & Unit
@@ -33,18 +46,11 @@ jobs:
       # workflow: a `paths-ignore` on `on:` would leave this required check unreported and
       # block the merge forever, while a step that is skipped lets the job itself report green.
       # (why: sydevs/claude-workflow docs/why.md#a-docs-only-change-takes-the-light-lane)
-      #
-      # `light` widens the action's default — `.claude/` and `.vscode/` — to every markdown
-      # file and everything under `docs/`. The action leaves prose out because a repo's tests
-      # may read it, and puts the risk on whoever widens: here only `docs/DESIGN_SYSTEM.md` is
-      # read, by `tests/guards/design-tokens.test.ts`, which holds it to `layouts/tailwind.css`,
-      # so that one file is narrowed back out. Extended regex, no lookahead, so it goes by last
-      # letter: `[^M]\.md$` sends anything named `*M.md` down the full lane too, never less.
       - name: Classify the change
         id: change
         uses: sydevs/claude-workflow/.github/actions/change-scope@main
         with:
-          light: '[^M]\.md$|^docs/[^D]|^\.claude/|^\.vscode/'
+          light: ${{ env.LIGHT_PATHS }}
 
       # The light lane runs no check at all, the formatter included: `.prettierignore` excludes
       # `*.md` and `.claude/`, `docs/` holds only markdown, and `.vscode/` is untracked, so
@@ -157,13 +163,12 @@ jobs:
       # paths below, and the web Worker's own, match nothing), so without this a light PR
       # would wait out discovery's timeout for a preview that never comes.
       # (why: sydevs/claude-workflow docs/why.md#a-docs-only-change-takes-the-light-lane)
-      # `light` repeats the one in `gate`; keep them equal.
       - uses: actions/checkout@v7
       - name: Classify the change
         id: change
         uses: sydevs/claude-workflow/.github/actions/change-scope@main
         with:
-          light: '[^M]\.md$|^docs/[^D]|^\.claude/|^\.vscode/'
+          light: ${{ env.LIGHT_PATHS }}
 
       # wemeditate-design rebuilds only when a push touches a path Ladle reads — the Workers Builds
       # trigger's path_includes/path_excludes, mirrored in WATCH/IGNORE below and in the table
