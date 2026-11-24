@@ -14,6 +14,7 @@
 
 import type {
   Album,
+  ContentIndexBlock,
   Image,
   ImageGalleryBlock,
   LayoutBlock,
@@ -28,6 +29,7 @@ import type { Meditation, Page } from '@/types/sahajcloud'
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '@/lib/media/audio'
 import { documentHref, type RelationValue } from '@/lib/urls/document-routes'
+import type { TimeOfDay } from '@/lib/time-of-day'
 import type { TranslationKey } from '@/lib/i18n/i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from '@/lib/media/cloudflare-images'
@@ -68,12 +70,24 @@ export type PageTagLabels = Partial<Record<PageTag, string>>
  * resolved items' own `tags` instead. */
 // shortcut: hand-written until #293 lands; then extend ContentIndexBlock instead.
 export interface ContentIndexBlockFields {
-  type: 'meditations' | 'pages' | 'songs' | 'lectures'
+  /**
+   * Taken from the generated block rather than restated, so a type added
+   * upstream reaches `QUERY_BY_TYPE` as a compile error instead of as a
+   * runtime `undefined`.
+   */
+  type: ContentIndexBlock['type']
   limit: number
   /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
   pageFilters?: PageTag[] | null
   /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
   userChoiceFilters?: (number | UserChoice)[] | null
+  /**
+   * Which kinds of choice the user-choices index lists, and whether only the
+   * featured ones. Both are read upstream, where they build the block's
+   * `apiEndpoint`; the site renders featured moods and reports the rest.
+   */
+  userChoiceTypeFilters?: ContentIndexBlock['userChoiceTypeFilters']
+  userChoiceFeatured?: ContentIndexBlock['userChoiceFeatured']
   /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
   songFilters?: (number | SongTag)[] | null
   /** Virtual field computed by SahajCloud (path, filters, and limit). */
@@ -82,6 +96,36 @@ export interface ContentIndexBlockFields {
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
   resolvedTracks?: Track[] | null
+  /** Mood tiles for the user-choices type (attached in +data). */
+  resolvedMoods?: ResolvedMood[] | null
+  /**
+   * The slot resolved from the visitor's Cloudflare zone, or `null` where there
+   * was none to read. The browser confirms it after mount.
+   *
+   * The `resolved` prefix is load-bearing: `blocks.test.ts` holds every other
+   * field of this interface to the stored SahajCloud schema.
+   */
+  resolvedSlot?: TimeOfDay | null
+}
+
+/**
+ * One featured mood the picker can offer, with the meditation it opens for each
+ * time of day.
+ *
+ * Every slot here has a published meditation: a slot whose meditation is a
+ * draft or gone is dropped during the resolve, so no tile links nowhere. A mood
+ * left with no slot at all is dropped with it.
+ */
+export interface ResolvedMood {
+  id: string
+  /** The choice's own localized title. The tile adds no wording. */
+  title: string
+  /** The editor's hex colour, or `null` where it is unset or not a hex value. */
+  color: string | null
+  /** The choice's SVG, drawn as a mask so it takes `color`. */
+  iconUrl: string | null
+  /** The meditation href for each slot this mood has a published meditation in. */
+  slots: Partial<Record<TimeOfDay, string>>
 }
 
 /**

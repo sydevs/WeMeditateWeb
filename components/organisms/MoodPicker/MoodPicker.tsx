@@ -1,0 +1,111 @@
+import type { CSSProperties } from 'react'
+import { Link } from '@/components/atoms'
+import type { ResolvedMood } from '@/lib/content/blocks'
+import { ALL_TIMES_OF_DAY, type TimeOfDay } from '@/lib/time-of-day'
+import { useTimeOfDaySlot } from './useTimeOfDaySlot'
+
+export interface MoodPickerProps {
+  /** The featured moods resolved in `+data`, each with its per-slot meditation. */
+  moods: ResolvedMood[]
+  /**
+   * The slot the server resolved from the visitor's Cloudflare zone. `null`
+   * where it had none, which shows every mood until the browser narrows them.
+   */
+  serverSlot?: TimeOfDay | null
+  className?: string
+}
+
+/** One tile: a mood and the meditation this slot opens for it. */
+interface MoodTile {
+  mood: ResolvedMood
+  href: string
+}
+
+/**
+ * The tiles to draw for a slot.
+ *
+ * A mood with no meditation in the slot gets none — upstream fills exactly one
+ * slot on each featured mood, so a visitor sees a different set morning,
+ * afternoon and evening. With no slot to narrow by, every mood is offered at
+ * its own earliest filled slot, which is what the server sends when it could
+ * not read the visitor's zone.
+ */
+export function moodsForSlot(moods: ResolvedMood[], slot: TimeOfDay | null): MoodTile[] {
+  const tiles: MoodTile[] = []
+
+  for (const mood of moods) {
+    const href =
+      slot === null
+        ? ALL_TIMES_OF_DAY.map((each) => mood.slots[each]).find(Boolean)
+        : mood.slots[slot]
+
+    if (href !== undefined) tiles.push({ mood, href })
+  }
+
+  return tiles
+}
+
+/** The icon, drawn as a mask so the mood's own colour fills it. */
+function maskStyle(iconUrl: string): CSSProperties {
+  return {
+    maskImage: `url("${iconUrl}")`,
+    WebkitMaskImage: `url("${iconUrl}")`,
+    maskPosition: 'center',
+    WebkitMaskPosition: 'center',
+    maskRepeat: 'no-repeat',
+    WebkitMaskRepeat: 'no-repeat',
+    maskSize: 'contain',
+    WebkitMaskSize: 'contain',
+  }
+}
+
+/**
+ * The app's mood screen, on the web: one round tile per featured mood that has
+ * a meditation for the visitor's time of day, each a link straight to it.
+ *
+ * ⚠ **The icons are SahajCloud SVGs drawn in `currentColor`, so a plain `<img>`
+ * renders them black.** Each is a CSS mask filled with the mood's own colour
+ * instead, which is why `assets.sydevelopers.com` has to answer a cross-origin
+ * request for them; until it does, the circles draw empty.
+ *
+ * It adds no wording of its own: the heading is the page's own lexical content
+ * and each tile shows the mood's own title, already in the page's language.
+ */
+export function MoodPicker({ moods, serverSlot = null, className = '' }: MoodPickerProps) {
+  // `null` until the browser answers, so the first render matches the server's
+  // (see `useTimeOfDaySlot`). It then confirms or corrects the slot.
+  const browserSlot = useTimeOfDaySlot()
+  const tiles = moodsForSlot(moods, browserSlot ?? serverSlot)
+
+  if (tiles.length === 0) {
+    return null
+  }
+
+  return (
+    <ul className={`grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 ${className}`}>
+      {tiles.map(({ mood, href }) => (
+        <li key={mood.id} className="contents">
+          <Link
+            className="group focus-ring flex w-42 max-w-full flex-col items-center gap-2 rounded-lg py-2"
+            href={href}
+            style={{ '--mood-color': mood.color ?? 'var(--color-teal-600)' } as CSSProperties}
+            variant="unstyled"
+          >
+            <span className="flex size-20 items-center justify-center">
+              <span className="bg-tint flex size-16 items-center justify-center rounded-full transition-colors group-hover:bg-[var(--mood-color)] group-focus-visible:bg-[var(--mood-color)]">
+                {mood.iconUrl === null ? null : (
+                  <span
+                    aria-hidden="true"
+                    className="size-8 bg-[var(--mood-color)] transition-colors group-hover:bg-white group-focus-visible:bg-white"
+                    style={maskStyle(mood.iconUrl)}
+                  />
+                )}
+              </span>
+            </span>
+            <span className="text-fg text-center text-sm">{mood.title}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
