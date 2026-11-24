@@ -113,13 +113,16 @@ into a locale list, and `getPageLocaleStatus` in [pages.ts](pages.ts) is the onl
 single-document read that sends `all`.
 
 **The meditation a mood names for a time of day**
-([user-choices.ts](../user-choices.ts)). Here `all` is the only spelling that answers at all:
+(`getPublishedMeditationIds`, [meditations.ts](meditations.ts)). Here `all` is the only spelling
+that answers at all:
 `filterMeditationsByLocale` filters every `find` to `req.locale`, so a read at any single
 non-English locale comes back `totalDocs: 0` and the mood picker renders empty in nine of the ten
 launch languages — while `locale=en` answers and silently drops a localized slot, because a
-French mood may name a French meditation. The read takes `select[_status]`, which `meditations`
-returns as a plain string rather than a map (see below), so a draft meditation drops its slot
-instead of becoming a dead link.
+French mood may name a French meditation. A slot whose meditation is absent from the answer
+drops, so no tile links nowhere — and an unpublished one is already absent, because the access
+config filters a client read to published documents. The read still takes `select[_status]`, as a
+second line of defence rather than as the thing that prevents the dead link; `meditations`
+returns it as a plain string rather than a map (see below).
 
 Three things follow from the page read, all load-bearing:
 
