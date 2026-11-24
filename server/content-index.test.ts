@@ -22,6 +22,8 @@ vi.mock('hono/context-storage', () => ({
   },
 }))
 
+import * as Sentry from '@sentry/cloudflare'
+
 import {
   resolveContentIndexItems,
   resolveContentIndexTracks,
@@ -450,13 +452,16 @@ describe('resolveContentIndexBlocks (user-choices)', () => {
 
     await resolveContentIndexBlocks(blockContent(), { locale: 'fr' })
 
-    const meditationsUrl = fetchSpy.mock.calls[1][0] as string
+    // The SDK spells the query, so this asserts the clauses rather than their
+    // order or their encoding.
+    const meditationsUrl = decodeURIComponent(fetchSpy.mock.calls[1][0] as string)
 
+    expect(meditationsUrl).toContain('/api/meditations')
     // `filterMeditationsByLocale` answers `totalDocs: 0` at any single
     // non-English locale, and `locale=en` would drop a localized slot.
-    expect(meditationsUrl).toContain('/api/meditations?locale=all')
+    expect(meditationsUrl).toContain('locale=all')
     expect(meditationsUrl).not.toContain('locale=fr')
-    expect(meditationsUrl).toContain('where[id][in]=11')
+    expect(meditationsUrl).toContain('where[id][in][0]=11')
     expect(meditationsUrl).toContain('select[_status]=true')
   })
 
@@ -574,6 +579,44 @@ describe('resolveContentIndexBlocks (user-choices)', () => {
     const fields = resolvedBlock(await resolveContentIndexBlocks(blockContent(), {}))
 
     expect(fields.resolvedMoods?.[0].color).toBeNull()
+  })
+
+  it('reports a featured mood that names no meditation at any hour', async () => {
+    // The editor mistake that empties the whole picker, so it must not be the
+    // one that reports nothing: `timings` left unfilled means no slot at all.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      jsonResponse([choice({ id: 7, title: 'Unfilled' })]),
+    )
+
+    const fields = resolvedBlock(await resolveContentIndexBlocks(blockContent(), {}))
+
+    expect(fields.resolvedMoods).toEqual([])
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'a featured mood names no meditation for any time of day',
+      expect.objectContaining({
+        level: 'warning',
+        extra: expect.objectContaining({ choiceId: '7', choiceTitle: 'Unfilled' }),
+      }),
+    )
+  })
+
+  it('reports an icon URL the tile cannot draw, and keeps the tile', async () => {
+    // A delivery host left unset makes every upload `url` relative, which the
+    // CSS gate refuses — so every circle would be empty with nothing to say why.
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        jsonResponse([choice({ id: 8, url: '/relative/icon.svg', morningMeditation: 11 })]),
+      )
+      .mockResolvedValueOnce(jsonResponse([{ id: 11, _status: 'published' }]))
+
+    const fields = resolvedBlock(await resolveContentIndexBlocks(blockContent(), {}))
+
+    expect(fields.resolvedMoods).toHaveLength(1)
+    expect(fields.resolvedMoods?.[0].iconUrl).toBeNull()
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'a mood icon is not a URL the tile can draw',
+      expect.objectContaining({ level: 'warning' }),
+    )
   })
 
   it('renders no tiles when the meditation read fails', async () => {

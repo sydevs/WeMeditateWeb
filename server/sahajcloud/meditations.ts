@@ -4,6 +4,8 @@
 
 import { degrade, withRetry } from '@/server/error-utils'
 import { sahajCloudFetchOptional } from './fetch'
+import { createPayloadClient } from './payload-client'
+import { MEDITATION_STATUS_SELECT } from './selects'
 import type { MeditationSong } from '@/types/sahajcloud'
 import type { LocalizedQueryOptions } from './query'
 
@@ -62,5 +64,52 @@ export async function getMeditationSongs(
     key: options.id,
     fallback: [],
     extra: { meditationId: options.id, locale: options.locale },
+  })
+}
+
+/**
+ * Which of `ids` name a published meditation, in one read rather than one
+ * `findByID` each: on the mood picker's SSR path that is up to fourteen
+ * requests saved.
+ *
+ * ⚠ **`locale: 'all'`, never a single locale.** `filterMeditationsByLocale`
+ * filters every `find` to `req.locale`, so a read at any single non-English
+ * locale answers `totalDocs: 0` — and `locale: 'en'` answers while dropping a
+ * localized slot, because a French mood may name a French meditation. See
+ * AGENTS.md.
+ *
+ * It answers `null` for a failure, which the caller must tell from "nothing
+ * published": an empty map would drop every mood's tile and warn once per
+ * mood, where `null` drops the picker as a whole, once.
+ */
+export async function getPublishedMeditationIds(
+  ids: (number | string)[],
+): Promise<Set<string> | null> {
+  if (ids.length === 0) return new Set()
+
+  const read = async () => {
+    const client = createPayloadClient()
+
+    const result = await client.find({
+      collection: 'meditations',
+      where: { id: { in: ids } },
+      locale: 'all',
+      limit: ids.length,
+      depth: 0,
+      select: MEDITATION_STATUS_SELECT,
+    })
+
+    const docs = (result?.docs ?? []) as { id?: number | string; _status?: unknown }[]
+
+    // A client read is already filtered to published documents by the access
+    // config, so this is the second line of defence rather than the thing that
+    // prevents a dead link — do not read it as the first.
+    return new Set(docs.filter((doc) => doc._status !== 'draft').map((doc) => String(doc.id)))
+  }
+
+  return degrade(() => withRetry(read, { reportFailure: false }), {
+    source: 'getPublishedMeditationIds',
+    message: 'a mood picker could not read the meditations its moods name',
+    fallback: null,
   })
 }

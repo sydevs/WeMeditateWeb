@@ -84,13 +84,14 @@ export function MoodPicker({ moods, serverSlot = null, className = '' }: MoodPic
   return (
     <ul className={`grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 ${className}`}>
       {tiles.map(({ mood, href }) => (
-        <li key={mood.id} className="contents">
+        <li key={mood.id} className="flex justify-center">
           <Link
             className="group focus-ring flex w-42 max-w-full flex-col items-center gap-2 rounded-lg py-2"
             href={href}
             style={{ '--mood-color': mood.color ?? 'var(--color-teal-600)' } as CSSProperties}
             variant="unstyled"
           >
+            {/* 80px around a 64px circle, as the app's own tile has it. */}
             <span className="flex size-20 items-center justify-center">
               <span className="bg-tint flex size-16 items-center justify-center rounded-full transition-colors group-hover:bg-[var(--mood-color)] group-focus-visible:bg-[var(--mood-color)]">
                 {mood.iconUrl === null ? null : (

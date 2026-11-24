@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ResolvedMood } from '@/lib/content/blocks'
-import { anchorFor, classFor, classOf } from '@/tests/_helpers/markup'
+import { anchorFor, classesWith, classFor, classOf } from '@/tests/_helpers/markup'
 import { MoodPicker, moodsForSlot } from './MoodPicker'
 
 const mood = (overrides: Partial<ResolvedMood> = {}): ResolvedMood => ({
@@ -71,9 +71,6 @@ describe('MoodPicker', () => {
   })
 
   it('renders nothing at all when no mood fits the slot', () => {
-    expect(renderToStaticMarkup(<MoodPicker moods={MOODS} serverSlot="morning" />)).toContain(
-      'Calm',
-    )
     // Only morning is filled on this one, so an evening visitor gets no picker.
     expect(renderToStaticMarkup(<MoodPicker moods={[mood()]} serverSlot="evening" />)).toBe('')
   })
@@ -142,13 +139,12 @@ describe('MoodPicker', () => {
   it('gives each tile a focus ring and a label the surface colours', () => {
     const html = renderToStaticMarkup(<MoodPicker moods={[mood()]} serverSlot="morning" />)
 
-    const tile = classFor(html, 'focus-ring').split(' ')
-
-    expect(tile).toContain('focus-ring')
-    // The anchor is the group, so the circle's hover and focus states key off
-    // the one element a pointer and a keyboard both reach.
-    expect(tile).toContain('group')
-    // An editor's colour never backs text.
-    expect(classFor(html, 'text-fg').split(' ')).toContain('text-fg')
+    // One focus ring, on the anchor — which is also the group, so the circle's
+    // hover and focus states key off the one element a pointer and a keyboard
+    // both reach.
+    expect(classesWith(html, 'focus-ring')).toHaveLength(1)
+    expect(classFor(html, 'focus-ring').split(' ')).toContain('group')
+    // One label, and an editor's colour never backs text.
+    expect(classesWith(html, 'text-fg')).toHaveLength(1)
   })
 })

@@ -371,21 +371,16 @@ export const blockConverters: BlockConverters = {
       )
     }
 
+    // The grid is the page's own width, not the wider content container: a row
+    // of three tiles reads as part of the article, under the editor's heading,
+    // rather than as a full-bleed section. `MoodPicker` renders nothing for an
+    // empty list, so this branch needs no guard of its own.
     if (fields.type === 'user-choices') {
-      const moods = fields.resolvedMoods ?? []
-
-      if (moods.length === 0) {
-        return null
-      }
-
-      // The grid is the page's own width, not the wider content container: a
-      // row of three tiles reads as part of the article, under the editor's
-      // heading, rather than as a full-bleed section.
       return (
         <MoodPicker
           className={BLOCK_SPACING}
-          moods={moods}
-          serverSlot={fields.resolvedSlot ?? null}
+          moods={fields.resolvedMoods ?? []}
+          serverSlot={fields.resolvedSlot}
         />
       )
     }

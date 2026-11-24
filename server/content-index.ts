@@ -19,7 +19,7 @@ import * as Sentry from '@sentry/cloudflare'
 import { getContext } from 'hono/context-storage'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud/fetch'
 import type { SahajCloudEnv } from './sahajcloud/context'
-import { moodsFromChoices } from './user-choices'
+import { moodsFromChoices, SLOT_FIELDS } from './user-choices'
 import { timeOfDaySlot, type TimeOfDay } from '@/lib/time-of-day'
 import type { Audience } from '@/types/payload/payload-types'
 import type { Locale } from '@/types/sahajcloud'
@@ -30,6 +30,7 @@ import {
   meditationCardsFromUserChoices,
   type ContentIndexBlockFields,
   type ResolvedCardItem,
+  type ResolvedMood,
   type PageTagLabels,
 } from '@/lib/content/blocks'
 import { audienceIdList } from './sahajcloud'
@@ -78,8 +79,18 @@ const QUERY_BY_TYPE: Record<
   // `server/user-choices.ts` then reads in one request at `locale=all` — the
   // page's locale would answer nothing (see that file).
   'user-choices': {
-    select:
-      'select[title]=true&select[type]=true&select[isFeatured]=true&select[url]=true&select[filename]=true&select[color]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true',
+    // The slot fields come from `SLOT_FIELDS`, not a second list: one left out
+    // here comes back undefined, which reads as "no meditation for this slot"
+    // and silently drops the tile.
+    select: [
+      'select[title]=true',
+      'select[type]=true',
+      'select[isFeatured]=true',
+      'select[url]=true',
+      'select[filename]=true',
+      'select[color]=true',
+      ...Object.values(SLOT_FIELDS).map((field) => `select[${field}]=true`),
+    ].join('&'),
     depth: 0,
   },
   songs: {
@@ -234,6 +245,14 @@ export function visitorTimeOfDay(now: Date = new Date()): TimeOfDay | null {
   }
 }
 
+/** Gets a `user-choices` block's featured moods, each with its per-slot meditation. */
+export async function resolveContentIndexMoods(
+  fields: ContentIndexBlockFields,
+  options: ResolveOptions = {},
+): Promise<ResolvedMood[]> {
+  return moodsFromChoices(await fetchContentIndexDocs(fields, options))
+}
+
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
 export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
@@ -272,9 +291,7 @@ export async function resolveContentIndexBlocks<T>(
       if (fields.type === 'songs') {
         fields.resolvedTracks = await resolveContentIndexTracks(fields, options)
       } else if (fields.type === 'user-choices') {
-        const { moods } = await moodsFromChoices(await fetchContentIndexDocs(fields, options))
-
-        fields.resolvedMoods = moods
+        fields.resolvedMoods = await resolveContentIndexMoods(fields, options)
         fields.resolvedSlot = visitorTimeOfDay()
       } else {
         fields.resolvedItems = await resolveContentIndexItems(fields, options)

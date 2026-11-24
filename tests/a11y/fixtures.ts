@@ -117,6 +117,8 @@ export const articlePage = {
     // **Pre-mortem.** Checked against `ResolvedMood` and the `user-choices`
     // branch of `components/organisms/RichText/blockConverters.tsx`: a block
     // whose moods are empty renders nothing, which would walk no tiles.
+    // `limit` and the two filters are the stored block's own shape, which no
+    // renderer reads — the converter takes `resolvedMoods` and `resolvedSlot`.
     block('content-index', {
       type: 'user-choices',
       limit: 20,

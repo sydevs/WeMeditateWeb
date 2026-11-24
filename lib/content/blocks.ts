@@ -288,7 +288,7 @@ export function leadSplashFromRouteData(
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */
-function asText(value: unknown): string {
+export function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
