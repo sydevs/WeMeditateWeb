@@ -55,6 +55,10 @@ const contextCache = new WeakMap<object, Promise<SiteContext>>()
 // most of the 19 locales, so an event for it would bill the expected path.
 // What is left is a fault: English itself missing the key, or no source
 // holding it at all, which renders nothing.
+//
+// shortcut: the oembed and manifest routes build an accessor without importing
+// this module, so a miss there reports nothing; move the install once either
+// renders more than a name.
 setMissingTranslationReporter(({ key, locale, inMirror }) => {
   if (inMirror && locale !== DEFAULT_LOCALE) return
 
