@@ -110,6 +110,11 @@ export function isSafeHttpUrl(url: string): boolean {
  * `getFileTypeIdentity` takes it verbatim — so a `"` really can reach an
  * upload's `url`, which is how an icon or a background would get here.
  *
+ * ⚠ **It takes an absolute URL**, as {@link isSafeHttpUrl} does, and answers
+ * `null` for a site path — a CSS `url()` accepts one, but percent-encoding a
+ * path that may already be encoded is how `%20` becomes `%2520`, so a caller
+ * that needs one owes its own escaping rather than a looser gate here.
+ *
  * It lives here because a scheme and a spelling are both how a URL is spelled,
  * which this module owns. The caller still writes the quotes.
  */
