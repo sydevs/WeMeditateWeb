@@ -28,10 +28,10 @@ jobs:
       - uses: actions/checkout@v7
 
       # A change touching only docs and agent files has no build, lint or test to run, so it
-      # takes the light lane: install and the formatter stay, everything else below is gated on
-      # `steps.change.outputs.full`. The steps are gated, never the workflow: a `paths-ignore`
-      # on `on:` would leave this required check unreported and block the merge forever, while
-      # a step that is skipped lets the job itself report green.
+      # takes the light lane: every step below is gated on `steps.change.outputs.full`, and the
+      # job reports green having done nothing but classify. The steps are gated, never the
+      # workflow: a `paths-ignore` on `on:` would leave this required check unreported and
+      # block the merge forever, while a step that is skipped lets the job itself report green.
       # (why: sydevs/claude-workflow docs/why.md#a-docs-only-change-takes-the-light-lane)
       #
       # `light` is the action's default minus `docs/DESIGN_SYSTEM.md`, which
@@ -45,14 +45,24 @@ jobs:
         with:
           light: '[^M]\.md$|^docs/[^D]|^\.claude/|^\.vscode/'
 
+      # The light lane runs no check at all, the formatter included: `.prettierignore` excludes
+      # `*.md` and `.claude/`, `docs/` holds only markdown, and `.vscode/` is untracked, so
+      # `prettier --check .` can only ever read files a light PR left alone — and it was the
+      # one reason install stayed here.
+      # shortcut: a tracked `.vscode/` file, or a non-markdown file under `docs/`, would reach
+      # this lane with no formatter; gate the formatter back on when one lands.
+      #
       # No `version:` input. The version comes from `packageManager` in
       # package.json. Naming it in both places makes action-setup fail.
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        uses: pnpm/action-setup@v6
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm install --frozen-lockfile
 
       # A PR that changes a copied contract must leave it exactly as its sync command writes
       # it: the generated SahajCloud types (`contractSync` in sydevs/claude-workflow's
@@ -73,13 +83,8 @@ jobs:
         env:
           PUBLIC__SAHAJCLOUD_URL: https://cloud.sydevelopers.com
           SAHAJCLOUD_API_KEY: ${{ secrets.SAHAJCLOUD_API_KEY }}
-      - run: pnpm lint
-        if: ${{ steps.change.outputs.full == 'true' }}
-      # The light lane's only check. `pnpm lint` ends in this same command, so a docs-only
-      # change is still held to the formatter (.prettierignore decides what it covers).
-      - name: Check formatting (light lane)
-        if: ${{ steps.change.outputs.full != 'true' }}
-        run: pnpm exec prettier --check .
+      - if: ${{ steps.change.outputs.full == 'true' }}
+        run: pnpm lint
       - if: ${{ steps.change.outputs.full == 'true' }}
         run: pnpm typecheck
       - if: ${{ steps.change.outputs.full == 'true' }}
