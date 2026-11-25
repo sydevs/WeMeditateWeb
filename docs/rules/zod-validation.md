@@ -14,7 +14,8 @@ The project uses Zod 4 for runtime schema validation at critical data boundaries
 ## Where validation schemas live
 
 **Route parameters** ([server/validation.ts](../../server/validation.ts)):
-- `slugSchema` — a page slug (lowercase alphanumeric with hyphens)
+- `slugSchema` — a page slug (a lowercased letter in any script, a mark or a digit, in runs
+  joined by single hyphens — what `lib/urls/slugify.ts` emits)
 - `idSchema` — a numeric id. It coerces the value to a number, validates it, then returns a string
 - `collectionSchema` — a preview collection type (pages, meditations)
 

@@ -20,6 +20,7 @@ import { isCanonicalOrigin } from '@/lib/seo/canonical-origin'
 import { buildAlternates, advertisedLocales } from '@/lib/seo/hreflang'
 import { type Locale } from '@/types/sahajcloud'
 import { DEFAULT_LOCALE } from '@/lib/i18n/locales'
+import { localeUrl } from '@/lib/urls/urls'
 import type { PagesSelect, MeditationsSelect, LecturesSelect } from '@/types/payload/payload-types'
 
 /** Documents per content read. Each page of a walk is one subrequest. */
@@ -152,13 +153,18 @@ async function readContentDocs() {
  * translation claim to make.
  */
 async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
+  // How a URL of ours is spelled is `lib/urls/urls.ts`'s answer, never a
+  // consumer's: a native-letter slug reaches `<loc>` percent-encoded because
+  // this is `localeUrl`, and the sitemap builder encodes nothing.
+  const url = (path: string) => localeUrl(origin, DEFAULT_LOCALE, path)
+
   // A sitemap that lists less than everything still helps. One that 500s
   // does not — and the home page is listable without reading anything.
   const degradation = {
     source: 'getContentSitemapUrls',
     message: 'getContentSitemapUrls failed; sitemap lists only the home page',
     key: origin,
-    fallback: [{ loc: `${origin}/` }],
+    fallback: [{ loc: url('/') }],
   }
 
   return degrade(async () => {
@@ -176,7 +182,7 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
 
     return [
       {
-        loc: `${origin}/`,
+        loc: url('/'),
         lastmod: home ? lastmodOf(home) : null,
         alternates: cluster('/', home?._status),
       },
@@ -190,16 +196,16 @@ async function getContentSitemapUrls(origin: string): Promise<SitemapUrl[]> {
         .filter((doc) => typeof doc.slug === 'string' && doc.slug.length > 0)
         .filter((doc) => doc !== home)
         .map((doc) => ({
-          loc: `${origin}/${doc.slug}`,
+          loc: url(`/${doc.slug}`),
           lastmod: lastmodOf(doc),
           alternates: cluster(`/${doc.slug}`, doc._status),
         })),
       ...docs.meditations.map((doc) => ({
-        loc: `${origin}/meditations/${doc.id}`,
+        loc: url(`/meditations/${doc.id}`),
         lastmod: lastmodOf(doc),
       })),
       ...docs.lectures.map((doc) => ({
-        loc: `${origin}/lectures/${doc.id}`,
+        loc: url(`/lectures/${doc.id}`),
         lastmod: lastmodOf(doc),
       })),
     ]

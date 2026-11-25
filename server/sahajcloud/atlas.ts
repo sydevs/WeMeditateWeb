@@ -30,6 +30,7 @@ import type { Locale } from '@/types/sahajcloud'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from '@/types/atlas'
 import type { SitemapUrl } from '@/server/routes/sitemap.xml/sitemap'
 import { parseAtlasRoute } from '@/lib/atlas/route'
+import { encodeUrl } from '@/lib/urls/urls'
 
 /**
  * Gets the SEO document for one atlas route, or `null` when there is
@@ -51,7 +52,8 @@ import { parseAtlasRoute } from '@/lib/atlas/route'
  * Only the last case is reported to Sentry. The first is normal routing.
  * The second is an ordinary stale link.
  *
- * @param options.route - The atlas route, e.g. `/nl/amsterdam` or `/gb/london/1204`
+ * @param options.route - The atlas route as `matchMapRoute` spelled it: decoded,
+ *   NFC, never percent-encoded, e.g. `/nl/amsterdam` or `/gb/london/1204`
  * @param options.locale - Locale for the answer's rendering
  */
 export async function getAtlasSeo(options: {
@@ -70,7 +72,8 @@ export async function getAtlasSeo(options: {
   // SahajCloud keys on the whole URL, so asking for `/` keeps a crawler
   // grinding through `/map/search` and `/map/calendar` to one cache entry
   // rather than one per spelling. Only the root is collapsed; a view route
-  // under a region still asks for the spelling it was given.
+  // under a region asks for the spelling `matchMapRoute` handed over, which
+  // is decoded already, so the encode below is the only one.
   const upstreamRoute = target.kind === 'root' ? '/' : options.route
 
   const read = async () => {
@@ -189,9 +192,13 @@ export async function getAtlasSitemapUrls(origin: string): Promise<SitemapUrl[]>
       })
     }
 
+    // Upstream composes `webUrl` as `base + encodeURI(webPath)`, so these
+    // arrive encoded. `encodeUrl` is the one spelling a `<loc>` of ours may
+    // carry, and it leaves an already-encoded URL alone — so a hand-mirrored
+    // field that ever arrives raw cannot reach the sitemap that way.
     return owned
       .slice(0, SITEMAP_URL_CAP)
-      .map((row) => ({ loc: row.loc, lastmod: row.lastmod ?? null }))
+      .map((row) => ({ loc: encodeUrl(row.loc), lastmod: row.lastmod ?? null }))
   }
 
   return degrade(() => withRetry(read, { reportFailure: false }), {

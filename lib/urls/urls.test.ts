@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   cssUrl,
   absoluteHref,
+  encodeUrl,
   isSafeHttpUrl,
   isSafeLinkHref,
   isSafeNavigationUrl,
@@ -428,5 +429,27 @@ describe('cssUrl', () => {
     expect(cssUrl('')).toBeNull()
     expect(cssUrl('//assets.test/a.svg')).toBeNull()
     expect(cssUrl('not a url')).toBeNull()
+  })
+})
+
+describe('encodeUrl', () => {
+  it.each([
+    ['https://wemeditate.com/bg/софия', 'https://wemeditate.com/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F'],
+    ['https://wemeditate.com/de/universität', 'https://wemeditate.com/de/universit%C3%A4t'],
+    ['https://wemeditate.com/a?x=1&y=2#top', 'https://wemeditate.com/a?x=1&y=2#top'],
+    ['https://wemeditate.com/a b', 'https://wemeditate.com/a%20b'],
+    ['https://wemeditate.com/%D1%81', 'https://wemeditate.com/%D1%81'],
+  ])('%s', (url, expected) => {
+    expect(encodeUrl(url)).toBe(expected)
+    expect(encodeUrl(expected)).toBe(expected)
+  })
+
+  it('encodes the URL a locale builder emits for a native-letter path', () => {
+    expect(localeUrl(ORIGIN, 'bg', '/map/bg/софия')).toBe(
+      `${ORIGIN}/bg/map/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F`,
+    )
+    expect(absoluteHref(ORIGIN, 'en', '/map/de/universität-trier')).toBe(
+      `${ORIGIN}/map/de/universit%C3%A4t-trier`,
+    )
   })
 })
