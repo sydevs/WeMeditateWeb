@@ -96,6 +96,32 @@ describe('getAtlasSeo', () => {
     })
   })
 
+  // The route arrives as `matchMapRoute` spelled it — decoded, NFC — and
+  // SahajCloud's webPath is raw, so this read encodes it exactly once.
+  // `lib/atlas/route.test.ts` owns which spellings reduce to that one.
+  it.each([
+    ['a Cyrillic region', '/bg/софия', '%2Fbg%2F%D1%81%D0%BE%D1%84%D0%B8%D1%8F'],
+    [
+      'a Latin-diacritic event',
+      '/de/trier/universität-trier/1998',
+      '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier%2F1998',
+    ],
+    // A segment spelling a literal escape is a slug containing a `%`, not an
+    // encoded character. Decoding here as well as at the boundary turned
+    // `%25D1%2581` into `с` and asked upstream for a different region.
+    ['a segment spelling a literal escape', '/bg/%25D1%2581', '%2Fbg%2F%2525D1%252581'],
+  ])('encodes %s once, never twice', async (_label, route, encoded) => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      fetchResponse(200, regionAnswer) as unknown as Response,
+    )
+
+    await getAtlasSeo({ route, locale: 'en' })
+
+    expect(vi.mocked(globalThis.fetch).mock.calls[0][0]).toBe(
+      `https://sahajcloud.test/api/atlas/seo?route=${encoded}&locale=en`,
+    )
+  })
+
   it('passes the locale through, since the answer is rendered for it', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       fetchResponse(200, regionAnswer) as unknown as Response,

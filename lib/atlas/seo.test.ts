@@ -141,3 +141,39 @@ describe('atlasSeo', () => {
     expect(render(root)).toContain(`<link rel="canonical" href="${ORIGIN}/map">`)
   })
 })
+
+describe('atlasSeo with a native-letter region', () => {
+  const ENCODED = `${ORIGIN}/map/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F`
+  const RAW = `${ORIGIN}/map/bg/софия`
+
+  it.each([
+    ['percent-encoded (webUrl)', ENCODED],
+    ['raw (webPath spelling)', RAW],
+  ])(
+    'emits an encoded canonical and hreflang cluster from a Cyrillic URL that arrives %s',
+    (_l, url) => {
+      const html = render(
+        regionSeo({
+          canonical: url,
+          alternates: [
+            { hreflang: 'bg', href: `${url}?locale=bg` },
+            { hreflang: 'x-default', href: url },
+          ],
+        }),
+      )
+
+      expect(html).toContain(`href="${ENCODED}"`)
+      expect(html).toContain(`href="${ENCODED}?locale=bg"`)
+      expect(html).not.toContain('софия')
+      expect(html).not.toContain('%25')
+    },
+  )
+
+  it('encodes a Latin-diacritic canonical once', () => {
+    const encoded = `${ORIGIN}/map/de/trier/universit%C3%A4t-trier/1998`
+    const doc = atlasSeo(regionSeo({ canonical: `${ORIGIN}/map/de/trier/universität-trier/1998` }))
+
+    expect(doc.canonical).toBe(encoded)
+    expect(atlasSeo(regionSeo({ canonical: encoded })).canonical).toBe(encoded)
+  })
+})

@@ -93,8 +93,8 @@ describe('<RichText>', () => {
     )
 
     expect(html).toContain('<h2 id="hello-world"')
-    // Latin diacritics are folded when building the anchor id.
-    expect(html).toContain('<h3 id="cafe-societe"')
+    // Native letters stay: a diacritic is not folded away.
+    expect(html).toContain('<h3 id="café-société"')
   })
 
   it('downgrades an h1 heading to h2 to avoid colliding with the page title', () => {
