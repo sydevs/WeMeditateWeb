@@ -29,7 +29,7 @@ import { degrade, warnOnce, withRetry } from '@/server/error-utils'
 import type { Locale } from '@/types/sahajcloud'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from '@/types/atlas'
 import type { SitemapUrl } from '@/server/routes/sitemap.xml/sitemap'
-import { parseAtlasRoute } from '@/lib/atlas/route'
+import { canonicalAtlasRoute, parseAtlasRoute } from '@/lib/atlas/route'
 
 /**
  * Gets the SEO document for one atlas route, or `null` when there is
@@ -70,8 +70,9 @@ export async function getAtlasSeo(options: {
   // SahajCloud keys on the whole URL, so asking for `/` keeps a crawler
   // grinding through `/map/search` and `/map/calendar` to one cache entry
   // rather than one per spelling. Only the root is collapsed; a view route
-  // under a region still asks for the spelling it was given.
-  const upstreamRoute = target.kind === 'root' ? '/' : options.route
+  // under a region still asks for its own spelling, decoded once so the
+  // encode below is the only one.
+  const upstreamRoute = target.kind === 'root' ? '/' : canonicalAtlasRoute(options.route)
 
   const read = async () => {
     // A 404 means the route named nothing upstream: a stale inbound link, or

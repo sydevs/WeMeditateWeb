@@ -115,3 +115,30 @@ describe('buildSitemapXml', () => {
     })
   })
 })
+
+describe('buildSitemapXml with native-letter slugs', () => {
+  const ENCODED = 'https://wemeditate.com/map/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F'
+
+  it('percent-encodes a Cyrillic loc, and collapses the raw and encoded spellings', () => {
+    const xml = buildSitemapXml([{ loc: 'https://wemeditate.com/map/bg/софия' }, { loc: ENCODED }])
+
+    expect(xml.match(/<loc>/g)).toHaveLength(1)
+    expect(xml).toContain(`<loc>${ENCODED}</loc>`)
+    expect(xml).not.toContain('софия')
+  })
+
+  it('percent-encodes a Latin-diacritic loc and its alternates', () => {
+    const xml = buildSitemapXml([
+      {
+        loc: 'https://wemeditate.com/map/de/trier/universität-trier/1998',
+        alternates: [{ hreflang: 'de', href: 'https://wemeditate.com/de/map/universität-trier' }],
+      },
+    ])
+
+    expect(xml).toContain(
+      '<loc>https://wemeditate.com/map/de/trier/universit%C3%A4t-trier/1998</loc>',
+    )
+    expect(xml).toContain('href="https://wemeditate.com/de/map/universit%C3%A4t-trier"')
+    expect(xml).not.toContain('ä')
+  })
+})

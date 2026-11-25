@@ -6,6 +6,7 @@
  */
 
 import type { Alternate } from '@/lib/seo/hreflang'
+import { encodeUrl } from '@/lib/urls/urls'
 
 /** One `<url>` entry. */
 export interface SitemapUrl {
@@ -62,20 +63,24 @@ export function buildSitemapXml(urls: SitemapUrl[]): string {
   const entries: string[] = []
 
   for (const url of urls) {
-    if (!url.loc || seen.has(url.loc)) {
+    // Percent-encoded before the dedupe, so a raw and an encoded spelling of
+    // one URL collapse into one entry.
+    const loc = url.loc && encodeUrl(url.loc)
+
+    if (!loc || seen.has(loc)) {
       continue
     }
-    seen.add(url.loc)
+    seen.add(loc)
 
     const lastmod = url.lastmod ? `<lastmod>${xmlEscape(url.lastmod)}</lastmod>` : ''
     const alternates = (url.alternates ?? [])
       .map(
         (alternate) =>
-          `<xhtml:link rel="alternate" hreflang="${xmlEscape(alternate.hreflang)}" href="${xmlEscape(alternate.href)}"/>`,
+          `<xhtml:link rel="alternate" hreflang="${xmlEscape(alternate.hreflang)}" href="${xmlEscape(encodeUrl(alternate.href))}"/>`,
       )
       .join('')
 
-    entries.push(`<url><loc>${xmlEscape(url.loc)}</loc>${lastmod}${alternates}</url>`)
+    entries.push(`<url><loc>${xmlEscape(loc)}</loc>${lastmod}${alternates}</url>`)
   }
 
   return [

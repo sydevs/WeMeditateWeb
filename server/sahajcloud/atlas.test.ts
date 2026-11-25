@@ -96,6 +96,42 @@ describe('getAtlasSeo', () => {
     })
   })
 
+  // Vike hands the route over decoded and SahajCloud's webPath is raw, so the
+  // route is encoded exactly once on its way upstream, whichever spelling came in.
+  it.each([
+    ['a Cyrillic region, raw', '/bg/софия', '%2Fbg%2F%D1%81%D0%BE%D1%84%D0%B8%D1%8F'],
+    [
+      'a Cyrillic region, encoded',
+      '/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F',
+      '%2Fbg%2F%D1%81%D0%BE%D1%84%D0%B8%D1%8F',
+    ],
+    [
+      'a Latin-diacritic event, raw',
+      '/de/trier/universität-trier/1998',
+      '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier%2F1998',
+    ],
+    [
+      'a Latin-diacritic event, encoded',
+      '/de/trier/universit%C3%A4t-trier/1998',
+      '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier%2F1998',
+    ],
+    [
+      'a decomposed (NFD) umlaut',
+      '/de/trier/universita\u0308t-trier',
+      '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier',
+    ],
+  ])('encodes %s once, never twice', async (_label, route, encoded) => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      fetchResponse(200, regionAnswer) as unknown as Response,
+    )
+
+    await getAtlasSeo({ route, locale: 'en' })
+
+    expect(vi.mocked(globalThis.fetch).mock.calls[0][0]).toBe(
+      `https://sahajcloud.test/api/atlas/seo?route=${encoded}&locale=en`,
+    )
+  })
+
   it('passes the locale through, since the answer is rendered for it', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       fetchResponse(200, regionAnswer) as unknown as Response,

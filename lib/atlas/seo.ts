@@ -15,6 +15,7 @@
 
 import type { AtlasSeoResponse } from '@/types/atlas'
 import type { SeoDocument } from '@/lib/seo/head'
+import { encodeUrl } from '@/lib/urls/urls'
 
 /** vike-react emits these from the `title` and `description` settings. */
 const OG_EMITTED_BY_CONFIG: ReadonlySet<string> = new Set(['og:title', 'og:description'])
@@ -24,10 +25,16 @@ export function atlasSeo(seo: AtlasSeoResponse): SeoDocument {
   return {
     title: seo.title,
     description: seo.description,
-    canonical: seo.canonical,
+    // Upstream's `webUrl` is already percent-encoded. The encoding is
+    // idempotent, so this only guarantees a raw Unicode slug (`webPath`'s
+    // spelling) never reaches the HTML.
+    canonical: seo.canonical ? encodeUrl(seo.canonical) : seo.canonical,
     // The atlas cluster varies `?locale=`, not a path prefix, so it must never
     // be merged with a content page's.
-    alternates: seo.alternates,
+    alternates: seo.alternates.map((alternate) => ({
+      ...alternate,
+      href: encodeUrl(alternate.href),
+    })),
     meta: Object.entries(seo.openGraph)
       .filter(([property]) => !OG_EMITTED_BY_CONFIG.has(property))
       .map(([property, content]) => ({ property, content })),
