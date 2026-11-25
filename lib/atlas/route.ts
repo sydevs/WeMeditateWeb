@@ -92,12 +92,12 @@ function safeDecode(segment: string): string {
 /**
  * One spelling of an atlas route: raw Unicode, NFC, never percent-encoded.
  *
- * Vike hands `/map/bg/%D1%81...` over decoded, SahajCloud's `webPath` is raw,
- * and a caller may still hold the encoded form. Decoding each segment here,
- * once, means the two consumers of the route (the `?route=` read upstream,
- * which encodes it exactly once, and the widget's `atlas=` parameter) can
- * never double-encode or disagree. A decoded `/` stays encoded, so a segment
- * cannot split in two.
+ * Vike hands `/map/bg/%D1%81...` over decoded (`decodePathname`, segment by
+ * segment), SahajCloud's `webPath` is raw, and a caller may still hold the
+ * encoded form. Decoding each segment here, once, means the two consumers of
+ * the route (the `?route=` read upstream, which encodes it exactly once, and
+ * the widget's `atlas=` parameter) can never double-encode or disagree. A
+ * decoded `/` stays encoded, so a segment cannot split in two.
  *
  * ⚠ **Call this at the boundary only** — {@link matchMapRoute} is the one that
  * runs it. A second pass is not a no-op: a segment spelling a literal escape
