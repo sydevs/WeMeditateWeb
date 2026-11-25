@@ -1,8 +1,7 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from '@/components/atoms'
 import type { ResolvedMood } from '@/lib/content/blocks'
-import { ALL_TIMES_OF_DAY, type TimeOfDay } from '@/lib/time-of-day'
-import { useTimeOfDaySlot } from './useTimeOfDaySlot'
+import { ALL_TIMES_OF_DAY, timeOfDaySlot, type TimeOfDay } from '@/lib/time-of-day'
 
 export interface MoodPickerProps {
   /** The featured moods resolved in `+data`, each with its per-slot meditation. */
@@ -43,6 +42,35 @@ export function moodsForSlot(moods: ResolvedMood[], slot: TimeOfDay | null): Moo
   }
 
   return tiles
+}
+
+/**
+ * The visitor's own time of day, or `null` until the browser has told us.
+ *
+ * ⚠ **`null` on the first render is load-bearing, not a loading state.** The
+ * server resolved a slot from Cloudflare's view of the visitor's zone, and that
+ * is what the HTML carries — so this must answer `null` on the render that
+ * hydrates it, or the two disagree on the markup. It then confirms the server's
+ * guess, and the picker swaps only where the two differ.
+ *
+ * It stays `null` when `Intl` cannot answer, which leaves the server's slot
+ * standing rather than replacing it with a guess.
+ */
+function useTimeOfDaySlot(): TimeOfDay | null {
+  const [slot, setSlot] = useState<TimeOfDay | null>(null)
+
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- the zone exists only in the browser, so running this any earlier would make the server and the client render different markup
+      setSlot(
+        timeOfDaySlot(Intl.DateTimeFormat().resolvedOptions().timeZone || undefined, new Date()),
+      )
+    } catch {
+      // `Intl` will not name a zone, so the server's slot stands.
+    }
+  }, [])
+
+  return slot
 }
 
 /** The icon, drawn as a mask so the mood's own colour fills it. */
