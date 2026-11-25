@@ -22,6 +22,7 @@ describe('slugify — the shared cross-repo vectors', () => {
     ['Hello World!', 'hello-world'],
     ['', ''],
     ['?! 🧘', ''],
+    ['\u2764\ufe0f 1\ufe0f\u20e3', '1'],
   ])('%j → %j', (text, slug) => {
     expect(slugify(text)).toBe(slug)
   })

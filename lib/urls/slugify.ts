@@ -10,7 +10,7 @@ export function slugify(value: string): string {
   return String(value ?? '')
     .normalize('NFC')
     .toLowerCase()
-    .replace(/['’ʼ`՛՜՞]/g, '') // apostrophes + Armenian in-word marks are dropped, not split on
+    .replace(/['\u2019\u02bc`\u055b\u055c\u055e\ufe00-\ufe0f\u20e3]/g, '') // apostrophes, Armenian in-word marks and emoji variation/keycap marks are dropped, not split on
     .replace(/[^\p{L}\p{M}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '')
 }
