@@ -94,7 +94,8 @@ function maskStyle(iconUrl: string): CSSProperties {
  * ⚠ **The icons are SahajCloud SVGs drawn in `currentColor`, so a plain `<img>`
  * renders them black.** Each is a CSS mask filled with the mood's own colour
  * instead, which is why `assets.sydevelopers.com` has to answer a cross-origin
- * request for them; until it does, the circles draw empty.
+ * request for them. A host that stops sending `Access-Control-Allow-Origin`
+ * draws every circle empty, with nothing in the markup to show why.
  *
  * It adds no wording of its own: the heading is the page's own lexical content
  * and each tile shows the mood's own title, already in the page's language.
