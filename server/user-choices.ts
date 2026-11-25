@@ -9,6 +9,7 @@
  */
 
 import { asText, type ResolvedMood } from '@/lib/content/blocks'
+import type { UserChoice } from '@/types/payload/payload-types'
 import { ALL_TIMES_OF_DAY, type TimeOfDay } from '@/lib/time-of-day'
 import { documentHref, refId, type RelationValue } from '@/lib/urls/document-routes'
 import { cssUrl } from '@/lib/urls/urls'
@@ -17,12 +18,18 @@ import { getPublishedMeditationIds } from './sahajcloud'
 
 const WARN_SOURCE = 'resolveUserChoices'
 
-/** The choice field holding each slot's meditation. */
-export const SLOT_FIELDS: Record<TimeOfDay, string> = {
+/**
+ * The choice field holding each slot's meditation.
+ *
+ * `keyof UserChoice` is what fails the build on an upstream rename: a field
+ * name that no longer exists reads as "no meditation for this slot" and drops
+ * the tile with nothing to show why.
+ */
+export const SLOT_FIELDS = {
   morning: 'morningMeditation',
   afternoon: 'afternoonMeditation',
   evening: 'eveningMeditation',
-}
+} as const satisfies Record<TimeOfDay, keyof UserChoice>
 
 /**
  * A colour the tile may paint. An editor's field is free text upstream, and a
