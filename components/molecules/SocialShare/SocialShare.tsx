@@ -28,10 +28,12 @@ export interface SocialShareProps extends Omit<ComponentProps<'div'>, 'children'
   color?: 'gray' | 'primary' | 'secondary' | 'brand'
 
   /**
-   * Social platforms to display
+   * Social platforms to display, in this order
    * @default ['facebook', 'pinterest', 'linkedin', 'bluesky']
    */
-  platforms?: Array<'facebook' | 'pinterest' | 'whatsapp' | 'telegram' | 'linkedin' | 'bluesky'>
+  platforms?: ReadonlyArray<
+    'facebook' | 'pinterest' | 'whatsapp' | 'telegram' | 'linkedin' | 'bluesky'
+  >
 }
 
 /**
@@ -100,7 +102,7 @@ export function SocialShare({
         className="flex flex-wrap items-center"
         role="group"
       >
-        {platforms.sort().map((platform) => (
+        {platforms.map((platform) => (
           <SocialIcon
             key={platform}
             aria-label={t('blocks.a11y.share_on', { platform: socialPlatformLabel(platform) })}

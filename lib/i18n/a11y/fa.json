@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "رد کردن",
+    "close": "بستن",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "show_more_items_one": "نمایش %{count} مورد دیگر",
+    "show_more_items_other": "نمایش %{count} مورد دیگر",
+    "breadcrumb": "مسیر صفحه",
+    "primary_navigation": "منوی اصلی",
+    "footer_navigation": "منوی پایین صفحه",
+    "opens_in_new_tab_suffix": "(در زبانه جدید باز می‌شود)",
+    "menu": "منو"
+  },
+  "errors": {
+    "error_icon": "خطا"
+  },
+  "article": {
+    "filter_label": "فیلتر محتوا بر اساس برچسب"
+  },
+  "meditation": {
+    "mute_voice": "قطع صدای راهنما",
+    "unmute_voice": "وصل صدای راهنما",
+    "mute_music": "قطع موسیقی",
+    "unmute_music": "وصل موسیقی",
+    "voice_volume": "بلندی صدای راهنما",
+    "music_volume": "بلندی موسیقی",
+    "audio_settings": "تنظیمات صدا",
+    "shuffle_music": "تغییر تصادفی آهنگ موسیقی",
+    "related_lectures_loading": "در حال بارگذاری سخنرانی‌های مرتبط",
+    "finder_region": "حال خود را انتخاب کنید"
+  },
+  "lecture": {
+    "related_meditations_loading": "در حال بارگذاری مدیتیشن‌های مرتبط",
+    "untitled_heading": "سخنرانی بدون عنوان"
+  },
+  "map": {
+    "classes_heading": "کلاس‌های مدیتیشن",
+    "when": "زمان",
+    "where": "مکان",
+    "languages": "زبان‌ها"
+  },
+  "forms": {
+    "submitting": "در حال ارسال فرم، لطفاً صبر کنید...",
+    "required_marker": "الزامی"
+  },
+  "media": {
+    "play": "پخش",
+    "pause": "توقف",
+    "previous_track": "آهنگ قبلی",
+    "next_track": "آهنگ بعدی",
+    "toggle_shuffle": "تغییر حالت پخش تصادفی",
+    "mute": "قطع صدا",
+    "unmute": "وصل صدا",
+    "volume": "بلندی صدا",
+    "play_item": "پخش %{title}",
+    "view_image": "مشاهده تصویر",
+    "view_image_alt": "مشاهده تصویر: %{alt}",
+    "embed_code": "کد جاسازی",
+    "zoom_in": "بزرگ‌نمایی",
+    "zoom_out": "کوچک‌نمایی",
+    "progress": "موقعیت پخش"
+  },
+  "location": {
+    "search_label": "جستجوی مکان",
+    "selected_label": "مکان انتخاب‌شده",
+    "change_label": "تغییر مکان"
+  },
+  "blocks": {
+    "enter_fullscreen": "ورود به حالت تمام‌صفحه",
+    "exit_fullscreen": "خروج از حالت تمام‌صفحه",
+    "learn_more_about": "اطلاعات بیشتر درباره %{title}",
+    "previous_slide": "اسلاید قبلی",
+    "next_slide": "اسلاید بعدی",
+    "previous_column": "قبلی: %{title}",
+    "next_column": "بعدی: %{title}",
+    "go_to_column": "رفتن به ستون %{number}: %{title}",
+    "quote": "نقل‌قول",
+    "table_of_contents": "فهرست مطالب",
+    "share_region": "گزینه‌های اشتراک‌گذاری در شبکه‌های اجتماعی",
+    "share_group": "اشتراک‌گذاری در شبکه‌های اجتماعی",
+    "share_on": "اشتراک‌گذاری در %{platform}",
+    "next_session": "جلسه بعدی %{weekday} ساعت %{time} است، %{relative}."
+  }
+}

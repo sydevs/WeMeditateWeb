@@ -11,6 +11,10 @@ alwaysApply: false
 
 CI runs on every PR through [.github/workflows/ci.yml](../.github/workflows/ci.yml):
 
+- **A change nothing builds or tests reads takes a light lane**, and reports green having run
+  no check. Both jobs classify the change with sydevs/claude-workflow's `change-scope` action;
+  `LIGHT_PATHS` in `ci.yml` is what decides, and says what it covers. (why: sydevs/claude-workflow
+  [docs/why.md](https://github.com/sydevs/claude-workflow/blob/main/docs/why.md#a-docs-only-change-takes-the-light-lane))
 - **`gate`** — runs `pnpm lint` (ESLint, then `prettier --check .`), `pnpm typecheck`, and
   `pnpm test:run` (unit tests only — `vitest.config.ts` excludes the smoke specs), then writes the
   accessibility results to the job summary, then `pnpm ladle:build` and `pnpm check:wrangler`.

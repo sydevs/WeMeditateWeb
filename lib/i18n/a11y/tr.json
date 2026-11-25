@@ -1,0 +1,85 @@
+{
+  "common": {
+    "dismiss": "Yoksay",
+    "close": "Kapat",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "show_more_items_one": "%{count} öğe daha göster",
+    "show_more_items_other": "%{count} öğe daha göster",
+    "breadcrumb": "Gezinti yolu",
+    "primary_navigation": "Ana menü",
+    "footer_navigation": "Alt bilgi menüsü",
+    "opens_in_new_tab_suffix": "(yeni sekmede açılır)",
+    "menu": "Menü"
+  },
+  "errors": {
+    "error_icon": "Hata"
+  },
+  "article": {
+    "filter_label": "İçeriği etikete göre filtrele"
+  },
+  "meditation": {
+    "mute_voice": "Konuşmayı sessize al",
+    "unmute_voice": "Konuşmanın sesini aç",
+    "mute_music": "Müziği sessize al",
+    "unmute_music": "Müziğin sesini aç",
+    "voice_volume": "Konuşma ses düzeyi",
+    "music_volume": "Müzik ses düzeyi",
+    "audio_settings": "Ses ayarları",
+    "shuffle_music": "Müzik parçasını karıştır",
+    "related_lectures_loading": "İlgili konuşmalar yükleniyor",
+    "finder_region": "Nasıl hissettiğini seç"
+  },
+  "lecture": {
+    "related_meditations_loading": "İlgili meditasyonlar yükleniyor",
+    "untitled_heading": "Başlıksız konuşma"
+  },
+  "map": {
+    "classes_heading": "Meditasyon dersleri",
+    "when": "Ne zaman",
+    "where": "Nerede",
+    "languages": "Diller"
+  },
+  "forms": {
+    "submitting": "Form gönderiliyor, lütfen bekleyin...",
+    "required_marker": "zorunlu"
+  },
+  "media": {
+    "play": "Oynat",
+    "pause": "Duraklat",
+    "previous_track": "Önceki parça",
+    "next_track": "Sonraki parça",
+    "toggle_shuffle": "Karıştırmayı aç/kapat",
+    "mute": "Sessize al",
+    "unmute": "Sesi aç",
+    "volume": "Ses düzeyi",
+    "play_item": "Oynat: %{title}",
+    "view_image": "Görseli görüntüle",
+    "view_image_alt": "Görseli görüntüle: %{alt}",
+    "embed_code": "Yerleştirme kodu",
+    "zoom_in": "Yakınlaştır",
+    "zoom_out": "Uzaklaştır",
+    "progress": "Oynatma konumu"
+  },
+  "location": {
+    "search_label": "Konum ara",
+    "selected_label": "Seçilen konum",
+    "change_label": "Konumu değiştir"
+  },
+  "blocks": {
+    "enter_fullscreen": "Tam ekrana geç",
+    "exit_fullscreen": "Tam ekrandan çık",
+    "learn_more_about": "Daha fazla bilgi: %{title}",
+    "previous_slide": "Önceki slayt",
+    "next_slide": "Sonraki slayt",
+    "previous_column": "Önceki: %{title}",
+    "next_column": "Sonraki: %{title}",
+    "go_to_column": "Sütuna git, %{number}: %{title}",
+    "quote": "Alıntı",
+    "table_of_contents": "İçindekiler",
+    "share_region": "Sosyal medya paylaşım seçenekleri",
+    "share_group": "Sosyal medyada paylaş",
+    "share_on": "Paylaş: %{platform}",
+    "next_session": "Sonraki seans: %{weekday}, %{time}, %{relative}."
+  }
+}

@@ -90,6 +90,34 @@ function safeDecode(segment: string): string {
 }
 
 /**
+ * One spelling of an atlas route: raw Unicode, NFC, never percent-encoded.
+ *
+ * Vike hands `/map/bg/%D1%81...` over decoded (`decodePathname`, segment by
+ * segment), SahajCloud's `webPath` is raw, and a caller may still hold the
+ * encoded form. Decoding each segment here, once, means the two consumers of
+ * the route (the `?route=` read upstream, which encodes it exactly once, and
+ * the widget's `atlas=` parameter) can never double-encode or disagree. A
+ * decoded `/` stays encoded, so a segment cannot split in two.
+ *
+ * ⚠ **Call this at the boundary only** — {@link matchMapRoute} is the one that
+ * runs it. A second pass is not a no-op: a segment spelling a literal escape
+ * (`/bg/%25D1%2581`) decodes to `%D1%81` on the first pass and to `с` on the
+ * next, so the route a visitor asked for silently becomes another one.
+ */
+export function canonicalAtlasRoute(route: string): string {
+  const segments = route
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => {
+      const decoded = safeDecode(segment)
+
+      return (decoded.includes('/') ? segment : decoded).normalize('NFC')
+    })
+
+  return segments.length === 0 ? '/' : `/${segments.join('/')}`
+}
+
+/**
  * What a route names — a region, an event, or the atlas root — or `null` when
  * the string is not a route at all.
  *
@@ -175,5 +203,5 @@ export function matchMapRoute(
   // `/map`, `/map/` and `/map` with a trailing slash all mean the atlas root.
   const rest = (match[1] ?? '').replace(/\/+$/, '')
 
-  return { routeParams: { atlasRoute: rest === '' ? '/' : rest } }
+  return { routeParams: { atlasRoute: canonicalAtlasRoute(rest) } }
 }

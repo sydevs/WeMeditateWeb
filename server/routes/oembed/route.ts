@@ -11,6 +11,9 @@ import { resolveLecture } from '@/lib/content/lecture-shape'
 import { populatedImageUrl } from '@/lib/content/payload-relationships'
 import { absoluteHref } from '@/lib/urls/urls'
 import { getT } from '@/lib/i18n/i18n'
+import { withA11y } from '@/lib/i18n/a11y/a11y'
+import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
+import type { WebTranslations } from '@/lib/i18n/web-translations'
 import { JSON_CACHE_CONTROL } from '@/server/cache-headers'
 import {
   buildOEmbedResponse,
@@ -66,10 +69,15 @@ export function registerOEmbed(app: Hono<SahajCloudEnv>): void {
 
     c.header('Cache-Control', JSON_CACHE_CONTROL)
 
+    const t = getT(
+      withA11y<WebTranslations>(translations, a11yStringsFor(target.locale)),
+      target.locale,
+    )
+
     return c.json(
       buildOEmbedResponse({
         playerUrl: absoluteHref(origin, target.locale, target.embedPath),
-        siteName: getT(translations, target.locale)('common.general.site_title'),
+        siteName: t('common.general.site_title'),
         siteUrl: origin,
         title: media.title,
         thumbnailUrl: media.thumbnailUrl,

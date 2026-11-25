@@ -23,9 +23,9 @@ import {
   getNodeText,
   IMAGE_CREDIT_CLASS,
   relationshipLabel,
-  slugify,
   uploadFigureClass,
 } from './lexical-helpers'
+import { slugify } from '@/lib/urls/slugify'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */

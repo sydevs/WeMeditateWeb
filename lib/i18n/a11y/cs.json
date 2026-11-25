@@ -1,0 +1,87 @@
+{
+  "common": {
+    "dismiss": "Skrýt",
+    "close": "Zavřít",
+    "previous": "Předchozí",
+    "next": "Další",
+    "show_more_items_one": "Zobrazit další %{count} položku",
+    "show_more_items_few": "Zobrazit další %{count} položky",
+    "show_more_items_many": "Zobrazit dalších %{count} položky",
+    "show_more_items_other": "Zobrazit dalších %{count} položek",
+    "breadcrumb": "Drobečková navigace",
+    "primary_navigation": "Hlavní nabídka",
+    "footer_navigation": "Nabídka v patičce",
+    "opens_in_new_tab_suffix": "(otevře se na nové kartě)",
+    "menu": "Nabídka"
+  },
+  "errors": {
+    "error_icon": "Chyba"
+  },
+  "article": {
+    "filter_label": "Filtrovat obsah podle štítku"
+  },
+  "meditation": {
+    "mute_voice": "Ztlumit hlas",
+    "unmute_voice": "Zrušit ztlumení hlasu",
+    "mute_music": "Ztlumit hudbu",
+    "unmute_music": "Zrušit ztlumení hudby",
+    "voice_volume": "Hlasitost hlasu",
+    "music_volume": "Hlasitost hudby",
+    "audio_settings": "Nastavení zvuku",
+    "shuffle_music": "Náhodná hudební stopa",
+    "related_lectures_loading": "Načítání souvisejících přednášek",
+    "finder_region": "Vyberte, jak se cítíte"
+  },
+  "lecture": {
+    "related_meditations_loading": "Načítání souvisejících meditací",
+    "untitled_heading": "Přednáška bez názvu"
+  },
+  "map": {
+    "classes_heading": "Lekce meditace",
+    "when": "Kdy",
+    "where": "Kde",
+    "languages": "Jazyky"
+  },
+  "forms": {
+    "submitting": "Odesílání formuláře, čekejte prosím...",
+    "required_marker": "povinné"
+  },
+  "media": {
+    "play": "Přehrát",
+    "pause": "Pozastavit",
+    "previous_track": "Předchozí skladba",
+    "next_track": "Další skladba",
+    "toggle_shuffle": "Přepnout náhodné pořadí",
+    "mute": "Ztlumit",
+    "unmute": "Zrušit ztlumení",
+    "volume": "Hlasitost",
+    "play_item": "Přehrát: %{title}",
+    "view_image": "Zobrazit obrázek",
+    "view_image_alt": "Zobrazit obrázek: %{alt}",
+    "embed_code": "Kód pro vložení",
+    "zoom_in": "Přiblížit",
+    "zoom_out": "Oddálit",
+    "progress": "Pozice přehrávání"
+  },
+  "location": {
+    "search_label": "Hledat místo",
+    "selected_label": "Vybrané místo",
+    "change_label": "Změnit místo"
+  },
+  "blocks": {
+    "enter_fullscreen": "Zobrazit na celou obrazovku",
+    "exit_fullscreen": "Ukončit zobrazení na celou obrazovku",
+    "learn_more_about": "Zjistit více: %{title}",
+    "previous_slide": "Předchozí snímek",
+    "next_slide": "Další snímek",
+    "previous_column": "Předchozí: %{title}",
+    "next_column": "Další: %{title}",
+    "go_to_column": "Přejít na sloupec %{number}: %{title}",
+    "quote": "Citát",
+    "table_of_contents": "Obsah",
+    "share_region": "Možnosti sdílení na sociálních sítích",
+    "share_group": "Sdílet na sociálních sítích",
+    "share_on": "Sdílet: %{platform}",
+    "next_session": "Další lekce: %{weekday}, %{time}, %{relative}."
+  }
+}

@@ -10,7 +10,12 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { parseAtlasRoute, matchMapRoute, MAX_ATLAS_ROUTE_LENGTH } from './route'
+import {
+  canonicalAtlasRoute,
+  parseAtlasRoute,
+  matchMapRoute,
+  MAX_ATLAS_ROUTE_LENGTH,
+} from './route'
 
 describe('parseAtlasRoute', () => {
   describe('region routes', () => {
@@ -176,5 +181,50 @@ describe('matchMapRoute', () => {
     ['the atlas under a locale-shaped code', '/fr/map'],
   ])('does not match %s', (_label, pathname) => {
     expect(matchMapRoute(pathname)).toBe(false)
+  })
+})
+
+describe('native-letter region slugs', () => {
+  it.each([
+    [
+      'Cyrillic, encoded as Vike or a crawler may send it',
+      '/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F',
+      '/bg/софия',
+    ],
+    ['Cyrillic, raw', '/bg/софия', '/bg/софия'],
+    [
+      'Latin diacritic, encoded',
+      '/de/trier/universit%C3%A4t-trier/1998',
+      '/de/trier/universität-trier/1998',
+    ],
+    [
+      'Latin diacritic, raw',
+      '/de/trier/universität-trier/1998',
+      '/de/trier/universität-trier/1998',
+    ],
+    ['a decomposed umlaut composes', '/de/universita\u0308t-trier', '/de/universität-trier'],
+    ['a malformed escape stays as written', '/de/100%', '/de/100%'],
+    ['an encoded slash stays encoded', '/de/a%2Fb', '/de/a%2Fb'],
+    ['the root', '/', '/'],
+  ])('canonicalAtlasRoute: %s', (_label, route, expected) => {
+    expect(canonicalAtlasRoute(route)).toBe(expected)
+    expect(canonicalAtlasRoute(expected)).toBe(expected)
+  })
+
+  it.each([
+    ['/map/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F', '/bg/софия'],
+    ['/map/bg/софия', '/bg/софия'],
+    ['/map/de/trier/universit%C3%A4t-trier/1998', '/de/trier/universität-trier/1998'],
+    ['/map/de/trier/universität-trier/1998', '/de/trier/universität-trier/1998'],
+  ])('matchMapRoute hands %s over as the one decoded route %s', (pathname, atlasRoute) => {
+    expect(matchMapRoute(pathname)).toEqual({ routeParams: { atlasRoute } })
+  })
+
+  it('names the region by its decoded terminal segment', () => {
+    expect(parseAtlasRoute('/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F')).toEqual({
+      kind: 'region',
+      slug: 'софия',
+    })
+    expect(parseAtlasRoute('/bg/софия')).toEqual({ kind: 'region', slug: 'софия' })
   })
 })
