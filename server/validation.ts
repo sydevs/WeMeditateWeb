@@ -18,15 +18,24 @@ import { z } from 'zod'
 
 /**
  * Schema for validating page/content slugs.
- * Lowercase letters, numbers, hyphens only. No leading/trailing/consecutive hyphens.
+ *
+ * The class is `slugPattern` in SahajCloud's `atlas-url-contract.json`, and
+ * what `lib/urls/slugify.ts` emits: a lowercased letter in any script, a mark
+ * or a digit, in runs joined by single hyphens. Vike hands `urlPathname` over
+ * decoded (`decodePathname`, segment by segment), so the letters arrive
+ * native rather than escaped.
+ *
+ * ⚠ What this refuses 404s. SahajCloud#1269 keeps native letters in every
+ * `slugField`, so narrowing the class back to ASCII leaves `/über-uns` with
+ * no page at all.
  */
 export const slugSchema = z
   .string()
   .min(1, 'Slug cannot be empty')
   .max(100, 'Slug too long (max 100 characters)')
   .regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    'Slug must be lowercase alphanumeric with hyphens (no consecutive hyphens, no leading/trailing hyphens)',
+    /^[\p{Ll}\p{Lm}\p{Lo}\p{M}\p{N}]+(?:-[\p{Ll}\p{Lm}\p{Lo}\p{M}\p{N}]+)*$/u,
+    'Slug must be lowercase letters, marks, or digits joined by single hyphens (none leading, trailing, or consecutive)',
   )
 
 /**
