@@ -182,6 +182,10 @@ export function normalizeContentPath(pathname: string | null | undefined): strin
  * `<loc>` must be encoded. Idempotent, so an already-encoded URL passes
  * through and is never encoded twice (`%D1` is ASCII). Reserved characters
  * (`?`, `#`, `&`, `/`) are left as written, so it is safe on a whole URL.
+ *
+ * A replace, not `new URL(url).href`: that throws on a malformed URL and
+ * resolves `..`, and `lib/atlas/seo.ts` hands this an upstream canonical it
+ * must pass through rather than recompute or refuse.
  */
 export function encodeUrl(url: string): string {
   return url.replace(/[^\x21-\x7e]/gu, encodeURIComponent)
