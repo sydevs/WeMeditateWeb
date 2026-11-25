@@ -63,35 +63,21 @@ export const PAGE_TAGS = Object.keys(PAGE_TAG_KEYS) as PageTag[]
 /** Visible label per page tag, resolved from SahajCloud by the caller. */
 export type PageTagLabels = Partial<Record<PageTag, string>>
 
-/** `content-index` — ContentIndexBlock. `resolvedItems` and
- * `resolvedTracks` are attached by the server-side pre-resolve pass in
- * `+data`. The editor never stores them. The `*Filters` fields mirror the
- * SahajCloud schema, but rendering does not use them: facets come from the
- * resolved items' own `tags` instead. */
-// shortcut: hand-written until #293 lands; then extend ContentIndexBlock instead.
-export interface ContentIndexBlockFields {
-  /**
-   * Taken from the generated block rather than restated, so a type added
-   * upstream reaches `QUERY_BY_TYPE` as a compile error instead of as a
-   * runtime `undefined`.
-   */
-  type: ContentIndexBlock['type']
-  limit: number
-  /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
-  pageFilters?: PageTag[] | null
-  /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
-  userChoiceFilters?: (number | UserChoice)[] | null
-  /**
-   * Which kinds of choice the user-choices index lists, and whether only the
-   * featured ones. Both are read upstream, where they build the block's
-   * `apiEndpoint`; the site renders featured moods and reports the rest.
-   */
-  userChoiceTypeFilters?: ContentIndexBlock['userChoiceTypeFilters']
-  userChoiceFeatured?: ContentIndexBlock['userChoiceFeatured']
-  /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
-  songFilters?: (number | SongTag)[] | null
-  /** Virtual field computed by SahajCloud (path, filters, and limit). */
-  apiEndpoint?: string | null
+/**
+ * `content-index` — every stored field of the generated block, plus what the
+ * server-side pre-resolve pass in `+data` attaches. The editor stores none of
+ * the `resolved*` fields, and the block envelope (`id`, `blockName`,
+ * `blockType`) belongs to the lexical node rather than to the fields object.
+ *
+ * Extending the generated block is what keeps a field or a `type` added
+ * upstream from reaching `QUERY_BY_TYPE` as a runtime `undefined`. The
+ * `*Filters` fields mirror the SahajCloud schema, but rendering does not use
+ * them: facets come from the resolved items' own `tags` instead.
+ */
+export interface ContentIndexBlockFields extends Omit<
+  ContentIndexBlock,
+  'id' | 'blockName' | 'blockType'
+> {
   /** Cards for pages, lectures, and meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
@@ -101,9 +87,6 @@ export interface ContentIndexBlockFields {
   /**
    * The slot resolved from the visitor's Cloudflare zone, or `null` where there
    * was none to read. The browser confirms it after mount.
-   *
-   * The `resolved` prefix is load-bearing: `blocks.test.ts` holds every other
-   * field of this interface to the stored SahajCloud schema.
    */
   resolvedSlot?: TimeOfDay | null
 }
