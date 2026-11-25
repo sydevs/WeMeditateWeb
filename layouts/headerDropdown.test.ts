@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { pageToArticle, pageToLink, pickFeaturedArticles } from './headerDropdown'
 import type { NavPage } from '@/types/sahajcloud'
 
-// A config page arrives as a `NavPage`: the four fields `NAV_PAGE_SELECT` asks
+// A config page arrives as a `NavPage`: the five fields `NAV_PAGE_SELECT` asks
 // for. A fixture shaped as a full `Page` would promise fields no read returns.
 const page = (over: Partial<NavPage>): NavPage => ({ id: 1, slug: 's', title: 'T', ...over })
 

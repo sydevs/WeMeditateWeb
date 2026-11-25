@@ -189,14 +189,20 @@ export const WEB_CONFIG_SELECT = {
 export const NAV_PAGE_SELECT: NavPageSelect = {
   title: true,
   slug: true,
-  meta: { title: true, image: true },
+  meta: { title: true, image: true, description: true },
 } satisfies PagesSelect<true>
 
 /**
- * Populates the global's page relationships at depth 2, with only what the nav
- * renders: title and slug for a link, `meta` for a header card's image. The
+ * Populates the global's page relationships at depth 2, with only what the
+ * chrome renders: title and slug for a link, `meta.image` for a header card,
+ * and `meta.description` for the line under a discover action. The
  * config is serialised into every page's HTML, so nothing more belongs here.
  * Required because the backend rejects a depth > 1 read without `populate`.
+ *
+ * shortcut: `populate` is per collection, so every config page carries its
+ * description, not only the `classPages` that render one — ~20 B each while
+ * they are unset, ~160 B once written. Strip it from the other lists in
+ * `getWebConfig` if the payload is ever measured as a problem.
  */
 export const WEB_CONFIG_POPULATE = {
   images: IMAGE_POPULATE.images,

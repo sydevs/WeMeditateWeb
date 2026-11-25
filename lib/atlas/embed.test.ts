@@ -39,3 +39,18 @@ describe('atlasEmbedSrc', () => {
     )
   })
 })
+
+describe('atlasEmbedSrc with a native-letter route', () => {
+  it.each([
+    ['/bg/софия', '/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F'],
+    ['/de/trier/universität-trier/1998', '/de/trier/universit%C3%A4t-trier/1998'],
+  ])('carries %s as one decoded value, encoded once in the query', (route, encodedPath) => {
+    const src = atlasEmbedSrc({ key: 'pk_test', atlasRoute: route })
+
+    expect(new URL(src).searchParams.get('atlas')).toBe(route)
+    // The slashes encode too, so the raw query shows the percent-encoded path once.
+    expect(src).toContain(`atlas=${encodeURIComponent(route)}`)
+    expect(src).not.toContain('%25')
+    expect(decodeURIComponent(encodeURIComponent(encodedPath))).toBe(encodedPath)
+  })
+})

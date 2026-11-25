@@ -1,0 +1,87 @@
+{
+  "common": {
+    "dismiss": "Приховати",
+    "close": "Закрити",
+    "previous": "Попередній",
+    "next": "Наступний",
+    "show_more_items_one": "Показати ще %{count} елемент",
+    "show_more_items_few": "Показати ще %{count} елементи",
+    "show_more_items_many": "Показати ще %{count} елементів",
+    "show_more_items_other": "Показати ще %{count} елемента",
+    "breadcrumb": "Навігаційний ланцюжок",
+    "primary_navigation": "Головне меню",
+    "footer_navigation": "Нижнє меню",
+    "opens_in_new_tab_suffix": "(відкриється в новій вкладці)",
+    "menu": "Меню"
+  },
+  "errors": {
+    "error_icon": "Помилка"
+  },
+  "article": {
+    "filter_label": "Фільтр за тегами"
+  },
+  "meditation": {
+    "mute_voice": "Вимкнути голос",
+    "unmute_voice": "Увімкнути голос",
+    "mute_music": "Вимкнути музику",
+    "unmute_music": "Увімкнути музику",
+    "voice_volume": "Гучність голосу",
+    "music_volume": "Гучність музики",
+    "audio_settings": "Налаштування звуку",
+    "shuffle_music": "Випадкова музична доріжка",
+    "related_lectures_loading": "Завантаження схожих лекцій",
+    "finder_region": "Оберіть, як ви почуваєтеся"
+  },
+  "lecture": {
+    "related_meditations_loading": "Завантаження схожих медитацій",
+    "untitled_heading": "Лекція без назви"
+  },
+  "map": {
+    "classes_heading": "Заняття з медитації",
+    "when": "Коли",
+    "where": "Де",
+    "languages": "Мови"
+  },
+  "forms": {
+    "submitting": "Надсилання форми, зачекайте...",
+    "required_marker": "обов’язково"
+  },
+  "media": {
+    "play": "Відтворити",
+    "pause": "Пауза",
+    "previous_track": "Попередній трек",
+    "next_track": "Наступний трек",
+    "toggle_shuffle": "Випадковий порядок",
+    "mute": "Вимкнути звук",
+    "unmute": "Увімкнути звук",
+    "volume": "Гучність",
+    "play_item": "Відтворити: %{title}",
+    "view_image": "Відкрити зображення",
+    "view_image_alt": "Відкрити зображення: %{alt}",
+    "embed_code": "Код для вставки",
+    "zoom_in": "Збільшити",
+    "zoom_out": "Зменшити",
+    "progress": "Позиція відтворення"
+  },
+  "location": {
+    "search_label": "Пошук місця",
+    "selected_label": "Вибране місце",
+    "change_label": "Змінити місце"
+  },
+  "blocks": {
+    "enter_fullscreen": "Увімкнути повноекранний режим",
+    "exit_fullscreen": "Вийти з повноекранного режиму",
+    "learn_more_about": "Докладніше: %{title}",
+    "previous_slide": "Попередній слайд",
+    "next_slide": "Наступний слайд",
+    "previous_column": "Назад: %{title}",
+    "next_column": "Далі: %{title}",
+    "go_to_column": "Перейти до стовпця %{number}: %{title}",
+    "quote": "Цитата",
+    "table_of_contents": "Зміст",
+    "share_region": "Способи поділитися в соціальних мережах",
+    "share_group": "Поділитися в соціальних мережах",
+    "share_on": "Поділитися: %{platform}",
+    "next_session": "Наступне заняття: %{weekday}, %{time}, %{relative}."
+  }
+}

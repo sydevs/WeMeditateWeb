@@ -332,6 +332,35 @@ describe('/sitemap.xml', () => {
     })
   })
 
+  describe('native-letter slugs', () => {
+    it('encodes a page slug and its alternates, which a <loc> may not carry raw', async () => {
+      stubConfig({ availableLocales: ['en', 'de'] })
+      stubCollections({
+        pages: [{ id: 1, slug: 'über-uns', _status: { en: 'published', de: 'published' } }],
+      })
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain('<loc>https://wemeditate.com/%C3%BCber-uns</loc>')
+      expect(xml).toContain('href="https://wemeditate.com/de/%C3%BCber-uns"')
+      expect(xml).not.toContain('über')
+    })
+
+    it('encodes an atlas URL that arrived raw', async () => {
+      // `loc` is hand-mirrored from upstream's `webUrl`, which encodes it
+      // already. This read is the boundary that holds the spelling, because
+      // nothing downstream respells a URL.
+      stubAtlas([{ loc: 'https://wemeditate.com/map/bg/софия' }])
+
+      const xml = await (await get('/sitemap.xml')).text()
+
+      expect(xml).toContain(
+        '<loc>https://wemeditate.com/map/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F</loc>',
+      )
+      expect(xml).not.toContain('софия')
+    })
+  })
+
   describe('degradation', () => {
     it('still serves the atlas half when the content reads fail', async () => {
       find.mockRejectedValue(new Error('SahajCloud unavailable'))
