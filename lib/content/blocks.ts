@@ -68,12 +68,16 @@ export type PageTagLabels = Partial<Record<PageTag, string>>
  * resolved items' own `tags` instead. */
 // shortcut: hand-written until #293 lands; then extend ContentIndexBlock instead.
 export interface ContentIndexBlockFields {
-  type: 'meditations' | 'pages' | 'songs' | 'lectures'
+  type: 'meditations' | 'pages' | 'songs' | 'lectures' | 'user-choices'
   limit: number
   /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
   pageFilters?: PageTag[] | null
   /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
   userChoiceFilters?: (number | UserChoice)[] | null
+  /** Which kinds of user choice a `user-choices` index lists (SahajCloud schema mirror). */
+  userChoiceTypeFilters?: ('mood' | 'goal' | 'duration')[] | null
+  /** Whether a `user-choices` index lists featured choices, the rest, or all (schema mirror). */
+  userChoiceFeatured?: ('featured' | 'not-featured' | 'all') | null
   /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
   songFilters?: (number | SongTag)[] | null
   /** Virtual field computed by SahajCloud (path, filters, and limit). */

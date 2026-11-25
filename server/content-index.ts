@@ -41,7 +41,7 @@ import type { Track } from '@/lib/media/audio'
  *   artwork).
  */
 const QUERY_BY_TYPE: Record<
-  ContentIndexBlockFields['type'],
+  Exclude<ContentIndexBlockFields['type'], 'user-choices'>,
   { select: string; populate?: string; depth: number }
 > = {
   pages: {
@@ -124,6 +124,12 @@ async function fetchContentIndexDocs(
   const { type, limit, apiEndpoint } = fields
 
   if (!apiEndpoint) {
+    return []
+  }
+  // A user choice has no web route (`lib/urls/document-routes.ts`), so every card
+  // resolved from one would drop. Degrade before spending the read.
+  // shortcut: empty `user-choices` index until a user choice has a public route.
+  if (type === 'user-choices') {
     return []
   }
   // Lectures resolve through the /for-audience feed, keyed on the site's
