@@ -19,6 +19,16 @@ describe('the [slug] page matcher', () => {
     expect(match(pathname)).toEqual({ routeParams: { slug } })
   })
 
+  // SahajCloud keeps a slug's native letters, and Vike hands `urlPathname`
+  // over decoded (`decodePathname`, segment by segment), so the matcher sees
+  // `/über-uns` and never an escape to undo.
+  it.each([
+    ['/über-uns', 'über-uns'],
+    ['/софия', 'софия'],
+  ])('matches the native-letter path %s as the page slug %s', (pathname, slug) => {
+    expect(match(pathname)).toEqual({ routeParams: { slug } })
+  })
+
   it.each([
     ['the homepage', '/'],
     ['a locale-prefixed path', '/de/about'],

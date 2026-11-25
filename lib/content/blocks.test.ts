@@ -1,4 +1,4 @@
-import { describe, it, expect, expectTypeOf } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   contentIndexCard,
   contentIndexTrack,
@@ -13,10 +13,8 @@ import {
   splashSurface,
   subtleSystemItems,
   textColorToSurface,
-  type ContentIndexBlockFields,
   type ShowcaseItem,
 } from './blocks'
-import type { ContentIndexBlock } from '@/types/payload/payload-types'
 import type { Page } from '@/types/sahajcloud'
 
 /** Build a `pages.content` shape whose first child is `firstBlock` (or none). */
@@ -152,15 +150,6 @@ describe('subtleSystemItems', () => {
       description: 'The left side',
       linkHref: '/left-channel',
     })
-  })
-})
-
-describe('ContentIndexBlockFields', () => {
-  it('restates exactly the stored fields the SahajCloud schema defines', () => {
-    // `tsc` is the guard. This interface alone is hand-written, so a field or
-    // content-index type `pnpm types:cms` adds would otherwise reach no reader.
-    type Stored = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'>
-    expectTypeOf<Omit<ContentIndexBlockFields, `resolved${string}`>>().toEqualTypeOf<Stored>()
   })
 })
 

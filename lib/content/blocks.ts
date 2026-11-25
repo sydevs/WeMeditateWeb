@@ -14,6 +14,7 @@
 
 import type {
   Album,
+  ContentIndexBlock,
   Image,
   ImageGalleryBlock,
   LayoutBlock,
@@ -99,23 +100,11 @@ export interface ResolvedMeditationLibrary {
   meditations: MeditationListing[]
 }
 
-/** `content-index` — ContentIndexBlock. `resolvedItems`, `resolvedTracks`
- * and `resolvedLibrary` are attached by the server-side pre-resolve pass in
- * `+data`. The editor never stores them. The `*Filters` fields mirror the
- * SahajCloud schema, but rendering does not use them: facets come from the
- * resolved items' own `tags` instead. */
-// shortcut: hand-written until #293 lands; then extend ContentIndexBlock instead.
-export interface ContentIndexBlockFields {
-  type: 'meditations' | 'pages' | 'songs' | 'lectures'
-  limit: number
-  /** Configured page-tag filters (SahajCloud schema mirror). Facets come from items. */
-  pageFilters?: PageTag[] | null
-  /** Configured user-choice filters (SahajCloud schema mirror). Facets come from items. */
-  userChoiceFilters?: (number | UserChoice)[] | null
-  /** Configured song-tag filters (SahajCloud schema mirror). Facets come from tracks. */
-  songFilters?: (number | SongTag)[] | null
-  /** Virtual field computed by SahajCloud (path, filters, and limit). */
-  apiEndpoint?: string | null
+/** `content-index` — the stored `ContentIndexBlock` fields, plus the three lists the
+ * server-side pre-resolve pass in `+data` attaches. The editor never stores those.
+ * The `*Filters` fields mirror the SahajCloud schema, but rendering does not use
+ * them: facets come from the resolved items' own `tags` instead. */
+export type ContentIndexBlockFields = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'> & {
   /** Cards for pages and lectures (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */

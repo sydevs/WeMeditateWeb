@@ -19,7 +19,8 @@ import { documentHref, type RelationValue } from '@/lib/urls/document-routes'
 import { isPopulated } from '@/lib/content/payload-relationships'
 import { nearestAspectRatio } from '@/lib/media/cloudflare-images'
 import type { EmbeddedForm } from '@/types/sahajcloud'
-import { getNodeText, relationshipLabel, slugify, uploadFigureClass } from './lexical-helpers'
+import { getNodeText, relationshipLabel, uploadFigureClass } from './lexical-helpers'
+import { slugify } from '@/lib/urls/slugify'
 import { BLOCK_SPACING, blockConverters, type BlockConverters } from './blockConverters'
 
 /** The serialized-editor-state shape the underlying converter expects. */

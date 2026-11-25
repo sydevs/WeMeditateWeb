@@ -42,8 +42,15 @@ import type { Track } from '@/lib/media/audio'
  * - `depth` reaches those relations (songs need depth 2, for album to
  *   artwork).
  */
-const QUERY_BY_TYPE: Partial<
-  Record<ContentIndexBlockFields['type'], { select: string; populate?: string; depth: number }>
+interface ContentIndexQuery {
+  select: string
+  populate?: string
+  depth: number
+}
+
+const QUERY_BY_TYPE: Record<
+  Exclude<ContentIndexBlockFields['type'], 'user-choices'>,
+  ContentIndexQuery
 > = {
   pages: {
     select: 'select[title]=true&select[slug]=true&select[meta]=true&select[tags]=true',
@@ -127,6 +134,12 @@ async function fetchContentIndexDocs(
   if (!apiEndpoint) {
     return { docs: [] }
   }
+  // A user choice has no web route (`lib/urls/document-routes.ts`), so every card
+  // resolved from one would drop. Degrade before spending the read.
+  // shortcut: empty `user-choices` index until a user choice has a public route.
+  if (type === 'user-choices') {
+    return { docs: [] }
+  }
   // Lectures resolve through the /for-audience feed, keyed on the site's
   // fixed audiences. With none configured, the block degrades to empty.
   // This is not an error.
@@ -135,11 +148,14 @@ async function fetchContentIndexDocs(
   if (type === 'lectures' && audiences.length === 0) {
     return { docs: [] }
   }
-  // ⚠ A type this build does not know about must degrade, not throw. The lookup
-  // sits above the `try`, and `pages/[slug]/+data.ts` awaits this with no catch,
-  // so a block type SahajCloud offers before the site ships support for it would
-  // 500 the whole page rather than render one empty region.
-  const query = QUERY_BY_TYPE[type]
+  // ⚠ A type this build does not know about must degrade, not throw. A block's
+  // fields are cast out of a lexical tree, so `type` is whatever SahajCloud sent.
+  // The lookup sits above the `try`, and `pages/[slug]/+data.ts` awaits this with
+  // no catch, so a block type SahajCloud offers before the site ships support for
+  // it would 500 the whole page rather than render one empty region. Hence the
+  // widened annotation: the map is keyed exhaustively so a newly generated type
+  // fails the build, which says nothing about what one deploy behind receives.
+  const query: ContentIndexQuery | undefined = QUERY_BY_TYPE[type]
 
   if (!query) {
     return { docs: [] }

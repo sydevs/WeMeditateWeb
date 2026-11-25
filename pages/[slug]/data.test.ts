@@ -81,6 +81,18 @@ describe('Pages data', () => {
     expect(await redirectOf('about')).toBeNull()
   })
 
+  it('reads a native-letter slug rather than 404ing it', async () => {
+    // SahajCloud#1269 keeps native letters in every `slugField`, so this is
+    // what a German page's URL now carries. The slug gate used to refuse it,
+    // and `render(404)` meant the page did not exist at any address.
+    getPageBySlug.mockResolvedValue({ id: 8, slug: 'über-uns', content: [] })
+
+    expect(await redirectOf('über-uns')).toBeNull()
+    expect(getPageBySlug).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'über-uns', locale: 'en' }),
+    )
+  })
+
   it('redirects the home document away from its own slug', async () => {
     // `homePage` already answers at `/`. Serving it at `/welcome` too would
     // put one document at two URLs, which is #114's shape at a second URL.

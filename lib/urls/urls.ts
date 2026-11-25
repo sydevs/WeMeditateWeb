@@ -174,6 +174,24 @@ export function normalizeContentPath(pathname: string | null | undefined): strin
 }
 
 /**
+ * Percent-encodes what a URL may not carry raw: every character outside
+ * printable ASCII (`/bg/софия` becomes `/bg/%D1%81...`), and nothing else.
+ *
+ * Vike hands a route its pathname decoded, and SahajCloud's `webPath` is raw
+ * Unicode, while `webUrl`, a canonical, an `hreflang` href and a sitemap
+ * `<loc>` must be encoded. Idempotent, so an already-encoded URL passes
+ * through and is never encoded twice (`%D1` is ASCII). Reserved characters
+ * (`?`, `#`, `&`, `/`) are left as written, so it is safe on a whole URL.
+ *
+ * A replace, not `new URL(url).href`: that throws on a malformed URL and
+ * resolves `..`, and `lib/atlas/seo.ts` hands this an upstream canonical it
+ * must pass through rather than recompute or refuse.
+ */
+export function encodeUrl(url: string): string {
+  return url.replace(/[^\x21-\x7e]/gu, encodeURIComponent)
+}
+
+/**
  * Whether an href is a path on this site, and so ours to locale-prefix.
  *
  * A protocol-relative `//cdn.example.com` is another origin despite the
@@ -247,9 +265,15 @@ export function localePath(locale: Locale, path: string): string {
   return path === '/' ? `/${locale}` : `/${locale}${path}`
 }
 
-/** The absolute URL a locale serves an already-normalized path at. */
+/**
+ * The absolute URL a locale serves an already-normalized path at, percent-encoded.
+ *
+ * `path` arrives decoded (Vike's `urlPathname`, a CMS slug), and a URL that
+ * leaves the site in HTML or XML must not be: this is where the canonical, the
+ * `hreflang` cluster and the sitemap get their encoding. See {@link encodeUrl}.
+ */
 export function localeUrl(origin: string, locale: Locale, path: string): string {
-  return `${origin}${localePath(locale, path)}`
+  return encodeUrl(`${origin}${localePath(locale, path)}`)
 }
 
 /**
@@ -264,7 +288,9 @@ export function localeUrl(origin: string, locale: Locale, path: string): string 
  * own, and prefixing it would produce `https://ourshttps://theirs`.
  */
 export function absoluteHref(origin: string, locale: Locale, href: string): string {
-  return isSitePath(href) ? `${origin}${localeHref(locale, href)}` : localeHref(locale, href)
+  return isSitePath(href)
+    ? encodeUrl(`${origin}${localeHref(locale, href)}`)
+    : localeHref(locale, href)
 }
 
 /**
