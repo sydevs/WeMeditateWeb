@@ -205,12 +205,9 @@ export const WEB_CONFIG_POPULATE = {
 }
 
 /**
- * Whether a meditation is published, for a read by id.
- *
- * Read with `locale: 'all'`, which is the only spelling that answers for this
- * collection — `filterMeditationsByLocale` filters every `find` to the
- * request's locale (see AGENTS.md). Unlike `pages`, `meditations` makes no
- * per-locale publish claim, so `_status` comes back as a plain string.
+ * Whether a meditation is published, for a read by id at `locale: 'all'` — the
+ * only spelling that answers for this collection (see AGENTS.md). `meditations`
+ * makes no per-locale publish claim, so `_status` is a plain string here.
  */
 export const MEDITATION_STATUS_SELECT = { _status: true } satisfies MeditationsSelect<true>
 
