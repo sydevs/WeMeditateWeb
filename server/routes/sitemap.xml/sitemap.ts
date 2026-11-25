@@ -6,10 +6,14 @@
  */
 
 import type { Alternate } from '@/lib/seo/hreflang'
-import { encodeUrl } from '@/lib/urls/urls'
 
 /** One `<url>` entry. */
 export interface SitemapUrl {
+  /**
+   * The absolute URL, percent-encoded by whoever built it — `localeUrl` for a
+   * content row, upstream's own `webUrl` for an atlas one. Nothing here
+   * respells a URL, so a raw native-letter `<loc>` is a producer's bug.
+   */
   loc: string
   /** ISO 8601 timestamp, omitted when the source has none. */
   lastmod?: string | null
@@ -49,7 +53,8 @@ export function xmlEscape(value: string): string {
  * and 50 MB.
  *
  * This function collapses duplicates, because the same URL arriving from
- * two sources is a validation warning, not a harmless repeat.
+ * two sources is a validation warning, not a harmless repeat. Both halves
+ * arrive in one spelling, so two rows for one document compare equal.
  *
  * ⚠ The `xhtml` namespace is declared on `<urlset>` unconditionally, not
  * only when an entry carries alternates. An `xhtml:link` child under an
@@ -63,9 +68,7 @@ export function buildSitemapXml(urls: SitemapUrl[]): string {
   const entries: string[] = []
 
   for (const url of urls) {
-    // Percent-encoded before the dedupe, so a raw and an encoded spelling of
-    // one URL collapse into one entry.
-    const loc = url.loc && encodeUrl(url.loc)
+    const loc = url.loc
 
     if (!loc || seen.has(loc)) {
       continue
@@ -76,7 +79,7 @@ export function buildSitemapXml(urls: SitemapUrl[]): string {
     const alternates = (url.alternates ?? [])
       .map(
         (alternate) =>
-          `<xhtml:link rel="alternate" hreflang="${xmlEscape(alternate.hreflang)}" href="${xmlEscape(encodeUrl(alternate.href))}"/>`,
+          `<xhtml:link rel="alternate" hreflang="${xmlEscape(alternate.hreflang)}" href="${xmlEscape(alternate.href)}"/>`,
       )
       .join('')
 
