@@ -101,7 +101,10 @@ export function isSafeHttpUrl(url: string): boolean {
  * the value closes the CSS string and opens a declaration after it, and React
  * escapes a `style` value for HTML only — the HTML parser hands the quote back
  * to the CSS parser as a quote, so escaping is not what stops this.
- * Re-serialising through `new URL` is.
+ * Re-serialising through `new URL` is, for every component but the authority:
+ * `"` is not a forbidden domain code point, so `https://h");…` round-trips
+ * intact. Hence the second check, on the serialised string rather than the
+ * input — no legitimate host or path carries a quote once encoded.
  *
  * SahajCloud leaves an upload's extension unsanitised — Payload's own
  * `getFileTypeIdentity` takes it verbatim — so a `"` really can reach an
@@ -118,7 +121,9 @@ export function cssUrl(url: string): string | null {
   }
 
   try {
-    return new URL(url).href
+    const href = new URL(url).href
+
+    return href.includes('"') ? null : href
   } catch {
     return null
   }

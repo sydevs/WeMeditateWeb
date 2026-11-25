@@ -416,6 +416,16 @@ describe('cssUrl', () => {
     expect(safe).toContain('%22')
   })
 
+  it('refuses a quote in the authority, which `new URL` does not encode', () => {
+    // `"` is not a forbidden domain code point, so the WHATWG parser keeps it:
+    // the host supplies the quote, the port the `:` and the path the rest of a
+    // declaration. Only the delivery host could put one here, so this is the
+    // gate matching its own claim rather than a reachable sink.
+    expect(
+      cssUrl('https://h");z-index:0/**/;background-image:url(http://evil.test/x.png);a:b/*'),
+    ).toBeNull()
+  })
+
   it('drops tabs and newlines, which also terminate a CSS string', () => {
     expect(cssUrl('https://assets.test/a\n.svg')).toBe('https://assets.test/a.svg')
   })
