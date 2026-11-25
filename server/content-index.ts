@@ -30,7 +30,6 @@ import {
   meditationCardsFromUserChoices,
   type ContentIndexBlockFields,
   type ResolvedCardItem,
-  type ResolvedMood,
   type PageTagLabels,
 } from '@/lib/content/blocks'
 import { audienceIdList } from './sahajcloud'
@@ -245,14 +244,6 @@ export function visitorTimeOfDay(now: Date = new Date()): TimeOfDay | null {
   }
 }
 
-/** Gets a `user-choices` block's featured moods, each with its per-slot meditation. */
-export async function resolveContentIndexMoods(
-  fields: ContentIndexBlockFields,
-  options: ResolveOptions = {},
-): Promise<ResolvedMood[]> {
-  return moodsFromChoices(await fetchContentIndexDocs(fields, options))
-}
-
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
 export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
@@ -291,7 +282,7 @@ export async function resolveContentIndexBlocks<T>(
       if (fields.type === 'songs') {
         fields.resolvedTracks = await resolveContentIndexTracks(fields, options)
       } else if (fields.type === 'user-choices') {
-        fields.resolvedMoods = await resolveContentIndexMoods(fields, options)
+        fields.resolvedMoods = await moodsFromChoices(await fetchContentIndexDocs(fields, options))
         fields.resolvedSlot = visitorTimeOfDay()
       } else {
         fields.resolvedItems = await resolveContentIndexItems(fields, options)
