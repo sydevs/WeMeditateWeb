@@ -97,7 +97,12 @@ function safeDecode(segment: string): string {
  * once, means the two consumers of the route (the `?route=` read upstream,
  * which encodes it exactly once, and the widget's `atlas=` parameter) can
  * never double-encode or disagree. A decoded `/` stays encoded, so a segment
- * cannot split in two. Idempotent.
+ * cannot split in two.
+ *
+ * ⚠ **Call this at the boundary only** — {@link matchMapRoute} is the one that
+ * runs it. A second pass is not a no-op: a segment spelling a literal escape
+ * (`/bg/%25D1%2581`) decodes to `%D1%81` on the first pass and to `с` on the
+ * next, so the route a visitor asked for silently becomes another one.
  */
 export function canonicalAtlasRoute(route: string): string {
   const segments = route

@@ -96,30 +96,20 @@ describe('getAtlasSeo', () => {
     })
   })
 
-  // Vike hands the route over decoded and SahajCloud's webPath is raw, so the
-  // route is encoded exactly once on its way upstream, whichever spelling came in.
+  // The route arrives as `matchMapRoute` spelled it — decoded, NFC — and
+  // SahajCloud's webPath is raw, so this read encodes it exactly once.
+  // `lib/atlas/route.test.ts` owns which spellings reduce to that one.
   it.each([
-    ['a Cyrillic region, raw', '/bg/софия', '%2Fbg%2F%D1%81%D0%BE%D1%84%D0%B8%D1%8F'],
+    ['a Cyrillic region', '/bg/софия', '%2Fbg%2F%D1%81%D0%BE%D1%84%D0%B8%D1%8F'],
     [
-      'a Cyrillic region, encoded',
-      '/bg/%D1%81%D0%BE%D1%84%D0%B8%D1%8F',
-      '%2Fbg%2F%D1%81%D0%BE%D1%84%D0%B8%D1%8F',
-    ],
-    [
-      'a Latin-diacritic event, raw',
+      'a Latin-diacritic event',
       '/de/trier/universität-trier/1998',
       '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier%2F1998',
     ],
-    [
-      'a Latin-diacritic event, encoded',
-      '/de/trier/universit%C3%A4t-trier/1998',
-      '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier%2F1998',
-    ],
-    [
-      'a decomposed (NFD) umlaut',
-      '/de/trier/universita\u0308t-trier',
-      '%2Fde%2Ftrier%2Funiversit%C3%A4t-trier',
-    ],
+    // A segment spelling a literal escape is a slug containing a `%`, not an
+    // encoded character. Decoding here as well as at the boundary turned
+    // `%25D1%2581` into `с` and asked upstream for a different region.
+    ['a segment spelling a literal escape', '/bg/%25D1%2581', '%2Fbg%2F%2525D1%252581'],
   ])('encodes %s once, never twice', async (_label, route, encoded) => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       fetchResponse(200, regionAnswer) as unknown as Response,

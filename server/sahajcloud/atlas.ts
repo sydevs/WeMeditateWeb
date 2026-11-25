@@ -29,7 +29,7 @@ import { degrade, warnOnce, withRetry } from '@/server/error-utils'
 import type { Locale } from '@/types/sahajcloud'
 import type { AtlasSeoResponse, AtlasSitemapResponse } from '@/types/atlas'
 import type { SitemapUrl } from '@/server/routes/sitemap.xml/sitemap'
-import { canonicalAtlasRoute, parseAtlasRoute } from '@/lib/atlas/route'
+import { parseAtlasRoute } from '@/lib/atlas/route'
 
 /**
  * Gets the SEO document for one atlas route, or `null` when there is
@@ -51,7 +51,8 @@ import { canonicalAtlasRoute, parseAtlasRoute } from '@/lib/atlas/route'
  * Only the last case is reported to Sentry. The first is normal routing.
  * The second is an ordinary stale link.
  *
- * @param options.route - The atlas route, e.g. `/nl/amsterdam` or `/gb/london/1204`
+ * @param options.route - The atlas route as `matchMapRoute` spelled it: decoded,
+ *   NFC, never percent-encoded, e.g. `/nl/amsterdam` or `/gb/london/1204`
  * @param options.locale - Locale for the answer's rendering
  */
 export async function getAtlasSeo(options: {
@@ -70,9 +71,9 @@ export async function getAtlasSeo(options: {
   // SahajCloud keys on the whole URL, so asking for `/` keeps a crawler
   // grinding through `/map/search` and `/map/calendar` to one cache entry
   // rather than one per spelling. Only the root is collapsed; a view route
-  // under a region still asks for its own spelling, decoded once so the
-  // encode below is the only one.
-  const upstreamRoute = target.kind === 'root' ? '/' : canonicalAtlasRoute(options.route)
+  // under a region asks for the spelling `matchMapRoute` handed over, which
+  // is decoded already, so the encode below is the only one.
+  const upstreamRoute = target.kind === 'root' ? '/' : options.route
 
   const read = async () => {
     // A 404 means the route named nothing upstream: a stale inbound link, or
