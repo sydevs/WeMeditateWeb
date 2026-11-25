@@ -75,23 +75,23 @@ export function TechniqueCard({
       `}
       {...props}
     >
-      {/* Image with gradient overlay and number */}
-      <div className="relative w-full max-w-md shrink-0 md:w-84 lg:w-96">
-        {/* Gradient overlay - positioned above image */}
-        <div
-          aria-hidden="true"
-          className={`
-            absolute bottom-full hidden h-28 w-56
-            from-transparent to-teal-200/30
-            md:flex md:items-center
-            px-4
-            ${align === 'right' ? '-right-4 bg-linear-to-l md:justify-end' : '-left-4 bg-linear-to-r md:justify-start'}
-          `}
-        >
-          {/* Number Badge - centered within gradient */}
-          {number && <div className="text-4xl font-light text-gray-400">{number}</div>}
-        </div>
+      {/* Number tab - above the card, on the edge the image is not on */}
+      <div
+        aria-hidden="true"
+        className={`
+          absolute bottom-full hidden h-28 w-56
+          from-transparent to-teal-200/30
+          md:flex md:items-center
+          px-4
+          ${align === 'right' ? '-left-4 bg-linear-to-r md:justify-start' : '-right-4 bg-linear-to-l md:justify-end'}
+        `}
+      >
+        {/* Number Badge - at the outer edge, where the gradient fades out */}
+        {number && <div className="text-4xl font-light text-gray-400">{number}</div>}
+      </div>
 
+      {/* Image */}
+      <div className="w-full max-w-md shrink-0 md:w-84 lg:w-96">
         {/* Mobile Number Badge - shown on mobile only */}
         {number && (
           <div aria-hidden="true" className="mb-4 text-4xl font-light text-gray-400 md:hidden">
@@ -99,7 +99,6 @@ export function TechniqueCard({
           </div>
         )}
 
-        {/* Image */}
         <Image
           alt={imageAlt}
           aspectRatio={imageAspectRatio}

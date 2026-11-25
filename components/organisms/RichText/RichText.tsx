@@ -195,7 +195,7 @@ const CONVERTERS: JSXConverters = {
       return (
         <TechniqueCard
           align={position % 2 === 1 ? 'left' : 'right'}
-          // The number hangs 7rem above the image from `md`, so the top
+          // The number tab hangs 7rem above the card from `md`, so the top
           // margin clears it.
           className="clear-both my-16 md:mt-40"
           description={card.description}

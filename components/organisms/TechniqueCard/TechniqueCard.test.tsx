@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TechniqueCard } from './TechniqueCard'
 import { CF_PUBLIC_URL } from '@/tests/_helpers/cloudflare-images'
-import { anchorFor, classOf, openTag } from '@/tests/_helpers/markup'
+import { anchorFor, classFor, classOf, openTag } from '@/tests/_helpers/markup'
 import { EN_TRANSLATIONS, getT } from '@/lib/i18n/i18n'
 
 const t = getT(EN_TRANSLATIONS, 'en')
@@ -54,6 +54,25 @@ describe('<TechniqueCard> number', () => {
 
     expect(html).toContain('Sit comfortably')
     expect(html).not.toContain('text-4xl')
+  })
+})
+
+describe('<TechniqueCard> number tab', () => {
+  it('hangs the tab on the edge the image is not on', () => {
+    const left = renderToStaticMarkup(<TechniqueCard {...props} align="left" />)
+    const right = renderToStaticMarkup(<TechniqueCard {...props} align="right" />)
+
+    expect(classFor(left, 'bottom-full').split(' ')).toContain('-right-4')
+    expect(classFor(left, 'bottom-full').split(' ')).toContain('bg-linear-to-l')
+    expect(classFor(right, 'bottom-full').split(' ')).toContain('-left-4')
+    expect(classFor(right, 'bottom-full').split(' ')).toContain('bg-linear-to-r')
+  })
+
+  it('positions the tab against the card, not against the image column', () => {
+    const html = renderToStaticMarkup(<TechniqueCard {...props} />)
+
+    expect(classFor(html, 'md:w-84')).toContain('max-w-md')
+    expect(classFor(html, 'md:w-84').split(' ')).not.toContain('relative')
   })
 })
 
