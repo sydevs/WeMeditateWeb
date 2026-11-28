@@ -112,9 +112,11 @@ export function LayoutBlock({ style, title, items, className = '' }: LayoutBlock
     }))
 
     return (
-      <section className={className}>
+      // An FAQ reads in a narrower column than the block styles beside it, and
+      // the heading shares it.
+      <section className={`mx-auto sm:max-w-3xl ${className}`}>
         {heading}
-        <Accordion items={accordionItems} />
+        <Accordion headingLevel={itemHeadingLevel} items={accordionItems} />
       </section>
     )
   }

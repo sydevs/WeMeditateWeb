@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, cloneElement, isValidElement, useState } from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -44,9 +44,10 @@ export interface TooltipProps {
  * `role="tooltip"` and `aria-describedby` for assistive tech. It dismisses
  * on mouse-leave, blur, or Escape.
  *
- * The trigger is wrapped in an inline element rather than cloned, so it
- * works with any child, including components that do not forward a ref.
- * Hover and focus still resolve to the child through event bubbling.
+ * An inline wrapper takes the ref and the hover and focus handlers, so any
+ * child works; hover and focus reach it from the child by bubbling. The
+ * child itself carries `aria-describedby`, because a description belongs on
+ * the control a screen reader announces, not on a `<span>` around it.
  *
  * @example
  * <Tooltip label="Change background music track">
@@ -76,11 +77,26 @@ export function Tooltip({
   const role = useRole(context, { role: 'tooltip' })
 
   const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus, dismiss, role])
+  const { 'aria-describedby': describedBy, ...referenceProps } = getReferenceProps()
+
+  // shortcut: only a single element child is described, as in `FormField`.
+  // Upgrade when a caller wraps a fragment or several controls.
+  const trigger =
+    typeof describedBy === 'string' && isValidElement<{ 'aria-describedby'?: string }>(children)
+      ? // The control is the caller's element, so nothing but `cloneElement`
+        // can put an attribute on it.
+        // eslint-disable-next-line @eslint-react/no-clone-element
+        cloneElement(children, {
+          'aria-describedby': [children.props['aria-describedby'], describedBy]
+            .filter(Boolean)
+            .join(' '),
+        })
+      : children
 
   return (
     <>
-      <span ref={refs.setReference} {...getReferenceProps()} className={`inline-flex ${className}`}>
-        {children}
+      <span ref={refs.setReference} {...referenceProps} className={`inline-flex ${className}`}>
+        {trigger}
       </span>
 
       {isOpen && (

@@ -95,11 +95,24 @@ export const homePage = {
   meta: null,
 } as unknown as Page
 
-/** An article: a title banner, a byline, body copy and a titled `layout` section. */
+/**
+ * An article: a title banner, a byline, body copy, a titled `layout` section,
+ * and two `layout` accordions. The first carries no heading of its own and
+ * opens before any `h2`, so its items owe the outline its next level; the
+ * second sits under its own title. Two on one page is also the shape
+ * `landmark-unique` fired on.
+ */
 export const articlePage = {
   ...page('best-time-to-meditate', 'The Best Time To Meditate'),
   content: root([
     paragraph('Morning and evening both work. What matters is that you return.'),
+    block('layout', {
+      style: 'accordion',
+      items: [
+        { id: 'first', title: 'Is the morning better?', text: 'For most people, yes.' },
+        { id: 'missed', title: 'What if I miss a day?', text: 'Sit the next one.' },
+      ],
+    }),
     heading('h2', 'Why the morning helps'),
     paragraph('Attention is quietest before the day asks anything of it.'),
     block('layout', {
@@ -108,6 +121,14 @@ export const articlePage = {
       items: [
         { id: 'a', title: 'Guided', text: 'Follow a voice.' },
         { id: 'b', title: 'Silent', text: 'Follow the breath.' },
+      ],
+    }),
+    block('layout', {
+      style: 'accordion',
+      title: 'Questions people ask',
+      items: [
+        { id: 'long', title: 'How long should I sit?', text: 'Ten minutes is a good start.' },
+        { id: 'where', title: 'Where should I sit?', text: 'Anywhere quiet.' },
       ],
     }),
   ]),
