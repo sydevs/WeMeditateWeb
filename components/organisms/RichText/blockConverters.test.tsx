@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
 import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
 import type { Track } from '@/components/molecules'
-import { classFor } from '@/tests/_helpers/markup'
+import { anchorFor, classFor, classOf } from '@/tests/_helpers/markup'
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.
@@ -131,6 +131,7 @@ const KNOWN_BLOCK_TYPES = [
   'subtle-system',
   'splash',
   'content-index',
+  'class-directory',
 ] as const
 
 // The content-index converter reads `node.fields`; narrow to the callable shape.
@@ -243,7 +244,7 @@ describe('content-index block converter — dispatch', () => {
 type SplashConverter = (args: {
   childIndex: number
   node: { fields: Record<string, unknown> }
-  parent?: { type: string }
+  parent?: { type: string; children?: unknown[] }
 }) => ReactElement | null
 
 const splash = blockConverters.splash as unknown as SplashConverter
@@ -305,5 +306,214 @@ describe('block coverage', () => {
 
   it('defines no converters beyond the known block types (spot stale keys)', () => {
     expect(Object.keys(blockConverters).sort()).toEqual([...KNOWN_BLOCK_TYPES].sort())
+  })
+})
+
+// --- the countdown layout and the class directory ---
+
+// Without a key the page is still a complete document; it just does not
+// upgrade, and the loader URL this block configures is not in the markup.
+beforeAll(() => {
+  vi.stubEnv('PUBLIC__SAHAJ_ATLAS_KEY', 'pk_test')
+})
+
+afterAll(() => {
+  vi.unstubAllEnvs()
+})
+
+/** A class as the page read populates it: online, running, with ten instants. */
+const ONLINE_CLASS = {
+  id: 1506,
+  eventType: 'online',
+  onlineUrl: 'https://example.invalid/room',
+  schedule: {
+    firstDate_tz: 'Europe/London',
+    endTime: '20:30',
+    // Far enough ahead that the panel is never live while the suite runs.
+    upcomingDates: ['2099-10-20T18:00:00.000Z', '2099-10-27T19:00:00.000Z'],
+  },
+}
+
+function countdownNode(event?: unknown) {
+  return {
+    type: 'block',
+    fields: { blockType: 'splash', layout: 'countdown', images: [IMG], title: 'Live', event },
+  }
+}
+
+function renderCountdown(
+  event: unknown,
+  parent: Record<string, unknown> = { type: 'root' },
+  childIndex = 0,
+) {
+  return renderToStaticMarkup(
+    splash({
+      childIndex,
+      node: countdownNode(event),
+      parent: parent as { type: string },
+    }),
+  )
+}
+
+describe('splash block converter — the countdown layout', () => {
+  it('renders the class schedule in its own zone, with its joining link', () => {
+    // No JavaScript has run, so this is what a visitor without it keeps: the
+    // session's day and time with its place named, and a way in.
+    const html = renderCountdown(ONLINE_CLASS)
+
+    expect(html).toContain('Tuesday')
+    expect(html).toContain('British Summer Time')
+    expect(anchorFor(html, 'https://example.invalid/room')).toContain('target="_blank"')
+  })
+
+  it('renders no join button where the link is absent or refused', () => {
+    for (const onlineUrl of [null, 'javascript:alert(1)']) {
+      const html = renderCountdown({ ...ONLINE_CLASS, onlineUrl })
+
+      expect(html).toContain('Tuesday')
+      expect(html).not.toContain('Join now')
+    }
+  })
+
+  it('says so in words when the class has no future dates left', () => {
+    const html = renderCountdown({
+      ...ONLINE_CLASS,
+      schedule: { ...ONLINE_CLASS.schedule, upcomingDates: [] },
+    })
+
+    expect(html).toContain('No upcoming session')
+    expect(html).not.toContain('sahaj-atlas')
+  })
+
+  it('falls back on the first gapped countdown only: the page may draw one widget', () => {
+    // Both splashes fall back, and a second `<sahaj-atlas>` shows nothing.
+    const page = [countdownNode(), countdownNode()]
+
+    expect(renderCountdown(undefined, { type: 'root', children: page }, 0)).toContain(
+      '<sahaj-atlas',
+    )
+    expect(renderCountdown(undefined, { type: 'root', children: page }, 1)).not.toContain(
+      '<sahaj-atlas',
+    )
+  })
+
+  it('is not blocked by an earlier countdown that draws no widget of its own', () => {
+    // An earlier splash with a live class, and one with no background image,
+    // each render no widget — so neither stands in this one's way.
+    const page = [
+      countdownNode(ONLINE_CLASS),
+      { type: 'block', fields: { blockType: 'splash', layout: 'countdown' } },
+      countdownNode(),
+    ]
+
+    expect(renderCountdown(undefined, { type: 'root', children: page }, 2)).toContain(
+      '<sahaj-atlas',
+    )
+  })
+
+  it.each([
+    ['no class picked', undefined],
+    ['a bare id — unpublished or removed', 1506],
+    ['a class that stopped being online', { ...ONLINE_CLASS, eventType: 'offline' }],
+    ['a dormant class', { ...ONLINE_CLASS, inactive: true }],
+  ])('falls back to the online classes in the page language for %s', (_label, event) => {
+    const html = renderCountdown(event)
+
+    expect(html).toContain('<sahaj-atlas')
+    expect(html).toContain('format=online')
+    expect(html).toContain('langs=en')
+  })
+})
+
+type DirectoryConverter = (args: {
+  childIndex: number
+  node: { fields: Record<string, unknown> }
+  parent?: { type: string; children?: unknown[] }
+}) => ReactElement | null
+
+const directory = blockConverters['class-directory'] as unknown as DirectoryConverter
+
+function directoryNode(fields: Record<string, unknown> = {}) {
+  return { type: 'block', fields: { blockType: 'class-directory', ...fields } }
+}
+
+function renderDirectory(fields: Record<string, unknown>, childIndex = 0, children?: unknown[]) {
+  return renderToStaticMarkup(
+    directory({
+      childIndex,
+      node: directoryNode(fields),
+      parent: { type: 'root', children: children ?? [directoryNode(fields)] },
+    }),
+  )
+}
+
+describe('class-directory block converter', () => {
+  it('mounts the widget in the language of the page it sits on', () => {
+    const html = renderDirectory({})
+
+    expect(html).toContain('<sahaj-atlas')
+    expect(html).toContain('langs=en')
+    // `query` is the widget's default, and a page with no `opensAt` names no
+    // route — so a content page sends neither.
+    expect(html).not.toContain('routing=')
+    expect(html).not.toContain('atlas=')
+  })
+
+  it('opens at a published region by its slug, and at a class by its id', () => {
+    expect(
+      renderDirectory({ opensAt: { relationTo: 'regions', value: { id: 9, slug: 'london' } } }),
+    ).toContain('atlas=%2Flondon')
+    expect(renderDirectory({ opensAt: { relationTo: 'events', value: { id: 1506 } } })).toContain(
+      'atlas=%2F1506',
+    )
+  })
+
+  it('opens at its usual starting point when the target is a bare id', () => {
+    // An unpublished or removed target arrives unpopulated. The directory
+    // still renders — never an error, never an empty box.
+    const html = renderDirectory({ opensAt: { relationTo: 'regions', value: 9 } })
+
+    expect(html).toContain('<sahaj-atlas')
+    expect(html).not.toContain('atlas=')
+  })
+
+  it('gives a map-less directory an explicit pixel height, never a min-height', () => {
+    // A `min-height` box has a non-zero rect, so containment engages — and the
+    // widget's own `height: 100%` then resolves against an `auto` parent as
+    // zero. Above its 360x420 floor, below which it degrades to a card.
+    const list = classOf(renderDirectory({ showMap: false }), '<sahaj-atlas').split(' ')
+
+    expect(list).toContain('h-[560px]')
+    expect(list.some((entry) => entry.startsWith('min-h-'))).toBe(false)
+    expect(renderDirectory({ showMap: false })).toContain('map=false')
+    expect(renderDirectory({ showMap: true })).not.toContain('map=')
+  })
+
+  it('renders nothing for a second directory on the same page', () => {
+    // A second `<sahaj-atlas>` shows nothing, so the later block stands down.
+    const siblings = [directoryNode(), directoryNode()]
+
+    expect(renderDirectory({}, 0, siblings)).toContain('<sahaj-atlas')
+    expect(
+      directory({
+        childIndex: 1,
+        node: directoryNode(),
+        parent: { type: 'root', children: siblings },
+      }),
+    ).toBeNull()
+  })
+
+  it('wins over a countdown splash that would otherwise fall back to it', () => {
+    // Only one `<sahaj-atlas>` may draw, and a block an editor placed on
+    // purpose beats a fallback — wherever on the page the two sit.
+    const page = [
+      { type: 'block', fields: { blockType: 'splash', layout: 'countdown' } },
+      directoryNode(),
+    ]
+
+    expect(renderDirectory({}, 1, page)).toContain('<sahaj-atlas')
+    expect(renderCountdown(undefined, { type: 'root', children: page })).not.toContain(
+      '<sahaj-atlas',
+    )
   })
 })

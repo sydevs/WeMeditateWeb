@@ -20,10 +20,19 @@
     "general": {
       "chakras": "Chakras",
       "channels": "Channels",
+      "days": "Days",
       "hours": "Hours",
       "learn_more": "Learn More →",
       "minutes": "Minutes",
       "seconds": "Seconds"
+    },
+    "live_session": {
+      "join_now": "Join now",
+      "live_now": "Happening now",
+      "next_session": "Next session",
+      "no_upcoming": "No upcoming session",
+      "schedule_line": "%{weekday}, %{time} %{zone}",
+      "starts_in": "Starts in"
     }
   },
   "common": {

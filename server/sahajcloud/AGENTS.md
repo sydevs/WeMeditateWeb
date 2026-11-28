@@ -41,7 +41,8 @@ bare numeric id instead. Rendering that id as a link produces a dead `/undefined
   so a bare `captureMessage` bills the Sentry quota per page view. Send one event per distinct gap
   per isolate, and keep `console.warn` on every request. `warnOnce` in
   [error-utils.ts](../error-utils.ts) is that bound, and every warning here goes through it: it
-  memoises per `source`, so one reader's churn re-arms no other's. Lower the volume, never the
+  memoises per `source`, so one reader's churn re-arms no other's. A report Sentry sends at
+  another level widens `warnOnce` rather than bypassing it. Lower the volume, never the
   level: a warning nobody can afford to leave on gets turned off, and then the gap is invisible
   again.
 

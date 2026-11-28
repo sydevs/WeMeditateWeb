@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { isSafeJsonLd, NoIndexHead } from './head'
@@ -31,5 +32,30 @@ describe('seoDocument', () => {
 describe('NoIndexHead', () => {
   it('refuses the embed routes, which robots.txt must keep fetchable', () => {
     expect(renderToStaticMarkup(<NoIndexHead />)).toBe('<meta content="noindex" name="robots"/>')
+  })
+})
+
+/**
+ * Neither block the `class-directory` feature added may reach for the head.
+ *
+ * `atlasSeo` is for a host that owns its route: it publishes the atlas's own
+ * canonical at `/map`, which is wrong for a page that merely carries the
+ * widget. `useConfig` is vike-react's own head setting, and a content route
+ * publishes through `+data.ts` instead (`lib/seo/content-seo.ts`).
+ */
+describe('the class-directory blocks', () => {
+  it('import no head helper', async () => {
+    const blocks = [
+      '../../components/organisms/ClassDirectory/ClassDirectory.tsx',
+      '../../components/molecules/LiveSession/LiveSession.tsx',
+    ]
+
+    for (const block of blocks) {
+      const source = await readFile(new URL(block, import.meta.url), 'utf8')
+      const imports = source.match(/^import .*$/gm)?.join('\n') ?? ''
+
+      expect(imports.length).toBeGreaterThan(0)
+      expect(imports).not.toMatch(/atlas\/seo|useConfig/)
+    }
   })
 })

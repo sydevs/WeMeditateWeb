@@ -21,6 +21,8 @@
  * {@link getAtlasSeo} does the read.
  */
 
+import { refId, refSlug, type RelationValue } from '@/lib/urls/document-routes'
+
 /**
  * Words that never name a region, dropped wherever they appear.
  *
@@ -162,6 +164,35 @@ export function parseAtlasRoute(route: string): AtlasRouteTarget | null {
   }
 
   return { kind: 'region', slug: terminal }
+}
+
+/**
+ * The `atlas=` route a `class-directory` block opens at.
+ *
+ * One segment is the whole route: a route is resolved by its terminal segment
+ * alone, as {@link AtlasRouteTarget} says — a region slug is globally unique
+ * and a class id needs no ancestry. An unpublished or removed target arrives
+ * as a bare id and answers `null`, so the directory opens at its usual
+ * starting point rather than at an error.
+ */
+export function atlasRouteFor(
+  target: { relationTo: 'regions' | 'events'; value: RelationValue } | null | undefined,
+): string | null {
+  if (!target) return null
+
+  if (target.relationTo === 'regions') {
+    const slug = refSlug(target.value)
+
+    return slug ? `/${slug}` : null
+  }
+
+  // A bare id IS the class's id, and it is also what an unpublished one looks
+  // like — so a populated object is the whole test.
+  if (typeof target.value !== 'object' || target.value === null) return null
+
+  const id = refId(target.value)
+
+  return id ? `/${id}` : null
 }
 
 /**

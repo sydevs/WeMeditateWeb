@@ -1,137 +1,128 @@
-import { ComponentProps, useState, useEffect } from 'react'
+import { ComponentProps, Fragment } from 'react'
 import { useT } from '@/hooks/useT'
 
 export interface CountdownProps extends Omit<ComponentProps<'div'>, 'children'> {
-  /** Target date/time to count down to (ISO string or Date) */
-  targetDate: string | Date
-  /** Optional callback when countdown reaches zero */
-  onComplete?: () => void
+  /**
+   * The time left, in milliseconds.
+   *
+   * ⚠ **The atom reads no clock, and holds no timer.** It used to seed state
+   * from a live `Date.now()` during render, so the server and the first client
+   * render disagreed and React threw the server's markup away. Whoever decides
+   * what the panel shows owns the clock and redraws this — `LiveSession` does,
+   * on the cadence `sessionTickMs` allows.
+   */
+  remainingMs: number
+  /**
+   * One finished sentence giving the next session's day, time and how far away
+   * it is, read by a screen reader in place of the digits.
+   *
+   * Finished, never assembled here: only the caller knows the key and the
+   * language it is written in. Its smallest unit is minutes, which is what
+   * keeps the live region quiet while the digits tick.
+   */
+  announcement?: string
+  /**
+   * Whether to draw the seconds cell.
+   *
+   * ⚠ **A cell nobody redraws reads as a broken widget.** Outside the final
+   * hour the panel redraws once a minute, so a seconds figure would sit frozen
+   * and be wrong by up to 59 of every 60 seconds. Whoever owns the clock knows
+   * the cadence, so it says.
+   * @default true
+   */
+  showSeconds?: boolean
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
 }
 
-interface TimeRemaining {
-  hours: number
-  minutes: number
-  seconds: number
-  isExpired: boolean
+const SIZE_CLASSES = {
+  sm: { numbers: 'text-4xl md:text-5xl', labels: 'text-sm' },
+  md: { numbers: 'text-5xl md:text-6xl', labels: 'text-base' },
+  lg: { numbers: 'text-6xl md:text-8xl', labels: 'text-lg' },
 }
 
-function timeRemainingUntil(targetDate: string | Date): TimeRemaining {
-  const target = typeof targetDate === 'string' ? new Date(targetDate) : targetDate
-  const now = new Date()
-  const difference = target.getTime() - now.getTime()
+const MINUTE = 60_000
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
 
-  if (difference <= 0) {
-    return { hours: 0, minutes: 0, seconds: 0, isExpired: true }
+/** Days, hours, minutes and seconds left. Never negative, and `hours` stays 0–23. */
+function figuresOf(remainingMs: number) {
+  const left = Math.max(0, remainingMs)
+
+  return {
+    days: Math.floor(left / DAY),
+    hours: Math.floor((left % DAY) / HOUR),
+    minutes: Math.floor((left % HOUR) / MINUTE),
+    seconds: Math.floor((left % MINUTE) / 1000),
   }
-
-  const hours = Math.floor(difference / (1000 * 60 * 60))
-  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-  const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-  return { hours, minutes, seconds, isExpired: false }
-}
-
-/** Calculate time remaining until target date */
-function useCountdown(targetDate: string | Date, onComplete?: () => void): TimeRemaining {
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>(() =>
-    timeRemainingUntil(targetDate),
-  )
-  const [hasCompleted, setHasCompleted] = useState(false)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newTime = timeRemainingUntil(targetDate)
-
-      setTimeRemaining(newTime)
-
-      // Trigger onComplete callback only once when countdown expires
-      if (newTime.isExpired && !hasCompleted && onComplete) {
-        setHasCompleted(true)
-        onComplete()
-      }
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [targetDate, onComplete, hasCompleted])
-
-  return timeRemaining
 }
 
 /**
- * Countdown timer atom displaying hours, minutes, and seconds.
+ * Countdown timer atom displaying days, hours, minutes, and seconds.
  * Uses Futura Book font for a clean, modern appearance.
+ *
+ * The days cell appears only once a session is a day or more away, so the
+ * hours cell never has to carry a three-digit count.
  *
  * @example
  * <Countdown
- *   targetDate={new Date(Date.now() + 3600000)}
- *   onComplete={() => console.log('Countdown finished!')}
+ *   remainingMs={3_600_000}
+ *   announcement="The next session is Tuesday at 7:00 pm, in 1 hour."
  * />
  */
 export function Countdown({
-  targetDate,
-  onComplete,
+  remainingMs,
+  announcement,
+  showSeconds = true,
   size = 'lg',
   className = '',
   ...props
 }: CountdownProps) {
   const t = useT()
-  const timeRemaining = useCountdown(targetDate, onComplete)
+  const figures = figuresOf(remainingMs)
+  const { numbers, labels } = SIZE_CLASSES[size]
 
-  // Size variants
-  const sizeClasses = {
-    sm: {
-      numbers: 'text-4xl md:text-5xl',
-      labels: 'text-sm',
-    },
-    md: {
-      numbers: 'text-5xl md:text-6xl',
-      labels: 'text-base',
-    },
-    lg: {
-      numbers: 'text-6xl md:text-8xl',
-      labels: 'text-lg',
-    },
-  }
-
-  const { numbers, labels } = sizeClasses[size]
+  const cells: [number, string][] = [
+    ...(figures.days >= 1
+      ? ([[figures.days, t('blocks.general.days')]] as [number, string][])
+      : []),
+    [figures.hours, t('blocks.general.hours')],
+    [figures.minutes, t('blocks.general.minutes')],
+    ...(showSeconds
+      ? ([[figures.seconds, t('blocks.general.seconds')]] as [number, string][])
+      : []),
+  ]
 
   return (
     <div className={`text-center text-fg ${className}`} {...props}>
+      {/* The digits are decoration for assistive tech: the sentence below says
+          the same thing once, and a reader re-reading six changing numbers
+          every second says nothing anyone can follow. */}
       <div
+        aria-hidden="true"
         className={`flex items-start justify-center gap-1 font-number ${numbers} font-light tracking-wide leading-none`}
       >
-        {/* Hours */}
-        <div className="inline-flex flex-col items-center">
-          <span className="tabular-nums">{String(timeRemaining.hours).padStart(2, '0')}</span>
-          <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-            {t('blocks.general.hours')}
-          </span>
-        </div>
-
-        {/* Separator */}
-        <span className="mt-0">:</span>
-
-        {/* Minutes */}
-        <div className="inline-flex flex-col items-center">
-          <span className="tabular-nums">{String(timeRemaining.minutes).padStart(2, '0')}</span>
-          <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-            {t('blocks.general.minutes')}
-          </span>
-        </div>
-
-        {/* Separator */}
-        <span className="mt-0">:</span>
-
-        {/* Seconds */}
-        <div className="inline-flex flex-col items-center">
-          <span className="tabular-nums">{String(timeRemaining.seconds).padStart(2, '0')}</span>
-          <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
-            {t('blocks.general.seconds')}
-          </span>
-        </div>
+        {cells.map(([value, label], index) => (
+          <Fragment key={label}>
+            {index > 0 && <span className="mt-0">:</span>}
+            <div className="inline-flex flex-col items-center">
+              <span className="tabular-nums">{String(value).padStart(2, '0')}</span>
+              <span className={`${labels} uppercase tracking-wide mt-0 font-number font-light`}>
+                {label}
+              </span>
+            </div>
+          </Fragment>
+        ))}
       </div>
+
+      {/* One polite region, carrying a sentence whose smallest unit is minutes.
+          This is a component's own status, not a route change — the route
+          announcer in `LayoutRoot` is a separate region (docs/rules/design-system.md). */}
+      {announcement && (
+        <p aria-live="polite" className="sr-only">
+          {announcement}
+        </p>
+      )}
     </div>
   )
 }

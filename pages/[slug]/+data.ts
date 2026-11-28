@@ -10,6 +10,7 @@ import { pageSeo, seoRoute } from '@/lib/seo/content-seo'
 import type { SeoDocument } from '@/lib/seo/head'
 import { pageTagLabels } from '@/lib/content/page-tag-labels'
 import { resolveContentIndexBlocks } from '@/server/content-index'
+import { reportLiveSessionGaps } from '@/server/live-session'
 import { slugSchema } from '@/server/validation'
 import { localePath } from '@/lib/urls/urls'
 import { redirect, render } from 'vike/abort'
@@ -88,6 +89,11 @@ export async function data(pageContext: PageContextServer): Promise<PageData> {
     // Page not found. This is a valid 404 state, not an error.
     throw render(404, 'Page not found.')
   }
+  // A `countdown` splash whose class has gone unreadable still renders — the
+  // directory takes its place — so the data gap is only visible if it is
+  // reported. Rendering decides nothing here.
+  reportLiveSessionGaps(page.content, { slug: pageSlug, locale })
+
   // Resolve any content-index blocks' live lists for SSR.
   const content = await resolveContentIndexBlocks(page.content, {
     locale,

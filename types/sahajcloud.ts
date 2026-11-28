@@ -8,6 +8,7 @@
 
 import type {
   Config,
+  Event,
   Form,
   Page,
   Meditation,
@@ -21,6 +22,31 @@ import type {
 } from './payload/payload-types'
 
 export type { Page, Meditation, Song, Image, Author, Video, SongTag, Lecture }
+
+/**
+ * The online class a `splash` `countdown` block counts down to, as the page
+ * read populates it.
+ *
+ * Not `Event`. The read gives this relationship four columns, so asserting the
+ * whole document would let a consumer read `address` or `images` and find
+ * `undefined` — the trap `NavPage` and `EmbeddedForm` below close for their own
+ * reads. `SESSION_EVENT_SELECT` in
+ * [sahajcloud-client.ts](sahajcloud-client.ts) is checked against
+ * {@link SessionEventSelect}, so dropping a key from either is a compile error
+ * in the other.
+ *
+ * Four, and no more: a page read is serialized into the HTML, so every column
+ * selected here is shipped to every visitor of a page carrying the block.
+ *
+ * ⚠ **`schedule` is selected whole, never a sub-path.** `schedule.upcomingDates`
+ * is a virtual field whose `afterRead` reads the stored recurrence columns and
+ * declares none of them as inputs, so a narrowed sub-path select strips what it
+ * reads and the schedule comes back without a single date.
+ */
+export type SessionEvent = Pick<Event, 'id' | 'onlineUrl' | 'eventType' | 'inactive' | 'schedule'>
+
+/** The `select` shape that returns exactly a {@link SessionEvent}. `id` always comes back. */
+export type SessionEventSelect = { [K in Exclude<keyof SessionEvent, 'id'>]: true }
 
 /**
  * A form as an embedded relationship returns it: the fields `FormBuilder` renders

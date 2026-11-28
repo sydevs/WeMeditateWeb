@@ -5631,6 +5631,7 @@ export interface WmWebTranslation {
   };
   blocks?: {
     general?: WmWebTranslationsBlocksGeneralStrings;
+    live_session?: WmWebTranslationsBlocksLiveSessionStrings;
   };
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
@@ -6110,9 +6111,39 @@ export interface WmWebTranslationsBlocksGeneralStrings {
    */
   seconds?: string;
   /**
+   * Label under the days figure of a countdown.
+   */
+  days?: string;
+  /**
    * Ornamental words set on their side along the outer edge of an “Ancient Wisdom” text box. Decorative, so an evocative short phrase beats a literal translation — and it stands vertically in one line, which is what the limit is for.
    */
   wisdom_sidetext?: string;
+}
+export interface WmWebTranslationsBlocksLiveSessionStrings {
+  /**
+   * Heading above the next online class's day and time.
+   */
+  next_session?: string;
+  /**
+   * Label above the countdown figures.
+   */
+  starts_in?: string;
+  /**
+   * Button that opens the joining link while the class is under way.
+   */
+  join_now?: string;
+  /**
+   * Shown in place of the countdown while the class is under way.
+   */
+  live_now?: string;
+  /**
+   * Shown when the class has no future dates left.
+   */
+  no_upcoming?: string;
+  /**
+   * The class's own schedule, shown before the visitor's clock is known — e.g. "Tuesdays, 7:00 pm London time". `%{weekday}` = the day, `%{time}` = the start time, `%{zone}` = the class's own time zone, named by the browser.
+   */
+  schedule_line?: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -10519,6 +10550,7 @@ export interface WmWebTranslationsSelect<T extends boolean = true> {
     | T
     | {
         general?: T;
+        live_session?: T;
       };
   _status?: T;
   updatedAt?: T;
@@ -11249,6 +11281,10 @@ export interface SplashBlock {
    */
   layout: 'default' | 'countdown' | 'app' | 'map-search';
   /**
+   * The online class this splash counts down to.
+   */
+  event?: (number | null) | Event;
+  /**
    * Text colour for the splash. Light text suits a dark hero; dark text suits a light hero. The overlaid site-header theme follows this setting.
    */
   textColor?: ('dark' | 'light') | null;
@@ -11269,6 +11305,35 @@ export interface SplashBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'splash';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ClassDirectoryBlock".
+ */
+export interface ClassDirectoryBlock {
+  /**
+   * Where the directory opens. Leave blank for its usual starting point.
+   */
+  opensAt?:
+    | ({
+        relationTo: 'regions';
+        value: number | Region;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null);
+  /**
+   * Draw the map. Turn it off for a plain list of classes.
+   */
+  showMap?: boolean | null;
+  /**
+   * Open filtered to online classes. A visitor can still widen it from the directory’s own filters.
+   */
+  onlineOnly?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'class-directory';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

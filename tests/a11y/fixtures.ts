@@ -95,6 +95,49 @@ export const homePage = {
   meta: null,
 } as unknown as Page
 
+/**
+ * A live-meditation page: a `countdown` splash pointing at an online class,
+ * and the class directory placed below it.
+ *
+ * **Pre-mortem.** The class assumes the shape `SESSION_EVENT_SELECT` returns —
+ * `eventType`, `onlineUrl` and the whole `schedule` group, whose
+ * `upcomingDates` the producer computes — checked against
+ * `server/sahajcloud/client.ts` and `types/payload/payload-types.ts`. The instants
+ * are far enough ahead that the panel never renders its live state while the
+ * suite runs, which is what keeps this fixture from depending on the clock.
+ */
+export const livePage = {
+  ...page('live', 'Live Meditation'),
+  content: root([
+    block('splash', {
+      layout: 'countdown',
+      images: [IMAGE],
+      title: 'Meditate with us live',
+      subtitle: 'Every Tuesday and Thursday',
+      textColor: 'light',
+      event: {
+        id: 1506,
+        eventType: 'online',
+        onlineUrl: 'https://example.invalid/room',
+        schedule: {
+          firstDate_tz: 'Europe/London',
+          endTime: '20:30',
+          upcomingDates: ['2099-10-20T18:00:00.000Z', '2099-10-27T19:00:00.000Z'],
+        },
+      },
+    }),
+    heading('h2', 'Find a class near you'),
+    block('class-directory', {
+      opensAt: { relationTo: 'regions', value: { id: 9, slug: 'london' } },
+      showMap: false,
+      onlineOnly: true,
+    }),
+  ]),
+  author: null,
+  featuredVideo: null,
+  meta: null,
+} as unknown as Page
+
 /** An article: a title banner, a byline, body copy and a titled `layout` section. */
 export const articlePage = {
   ...page('best-time-to-meditate', 'The Best Time To Meditate'),

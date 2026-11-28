@@ -4,13 +4,15 @@ import type {
   LecturesSelect,
   AlbumsSelect,
   AppCardsSelect,
+  EventsSelect,
   FormsSelect,
   ImagesSelect,
   AuthorsSelect,
+  RegionsSelect,
   VideosSelect,
   WmWebConfigSelect,
 } from '@/types/payload/payload-types'
-import type { EmbeddedFormSelect, NavPageSelect } from '@/types/sahajcloud'
+import type { EmbeddedFormSelect, NavPageSelect, SessionEventSelect } from '@/types/sahajcloud'
 
 // ============================================================================
 // Field selection (required by the SahajCloud API query-validation hook)
@@ -142,6 +144,30 @@ const EMBEDDED_FORM_SELECT = {
 } satisfies FormsSelect<true> & EmbeddedFormSelect
 
 /**
+ * The columns a `splash` `countdown` block's class comes back with.
+ *
+ * ⚠ **`schedule` is `true`, never a sub-path.** `schedule.upcomingDates` is a
+ * virtual field computed from the stored recurrence columns, and it declares
+ * none of them as inputs — so narrowing to the sub-path strips what its hook
+ * reads and every class comes back with no dates at all.
+ *
+ * A page read is serialized into the HTML, so each column here is shipped to
+ * every visitor. The class's `title` is not among them: the page keeps its own
+ * heading, and the gap warning names the page rather than the class.
+ */
+const SESSION_EVENT_SELECT = {
+  onlineUrl: true,
+  eventType: true,
+  inactive: true,
+  schedule: true,
+} satisfies EventsSelect<true> & SessionEventSelect
+
+/** A `class-directory` block's `opensAt` region: the slug its atlas route is spelled from. */
+const REGION_ROUTE_SELECT = {
+  slug: true,
+} satisfies RegionsSelect<true>
+
+/**
  * Populate map for a full Page read (depth 3). The backend rejects a
  * depth > 1 read without `populate`. Each entry both enables a relationship
  * to populate and restricts it to the fields the frontend renders. Beyond
@@ -159,6 +185,8 @@ export const PAGE_POPULATE = {
   albums: EMBEDDED_ALBUM_SELECT,
   'app-cards': EMBEDDED_APP_CARD_SELECT,
   forms: EMBEDDED_FORM_SELECT,
+  events: SESSION_EVENT_SELECT,
+  regions: REGION_ROUTE_SELECT,
 }
 
 /** Global config fields: the `pages` relationships the layout needs, `homePage`

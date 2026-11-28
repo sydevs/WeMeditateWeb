@@ -16,9 +16,13 @@ import {
   ContentCarousel,
   HeroQuote,
   LayoutBlock,
+  LiveSession,
   TableOfContents,
   type Track,
 } from '@/components/molecules'
+import { atlasRouteFor } from '@/lib/atlas/route'
+import { readSessionClass } from '@/lib/content/live-session'
+import { ClassDirectory } from '@/components/organisms/ClassDirectory'
 import { ContentIndex } from '@/components/organisms/ContentIndex'
 import { ContentOverlay } from '@/components/organisms/ContentOverlay'
 import { ContentTextBox } from '@/components/organisms/ContentTextBox'
@@ -34,9 +38,13 @@ import {
   subtleSystemItems,
   textColorToSurface,
   type ContentIndexBlockFields,
+  hasDirectoryBlock,
+  isFirstDirectoryBlock,
+  isFirstFallbackSplash,
 } from '@/lib/content/blocks'
 import type {
   ButtonBlock,
+  ClassDirectoryBlock,
   ImageGalleryBlock,
   // The molecule of the same name renders this block, so the schema takes the alias.
   LayoutBlock as LayoutBlockSchema,
@@ -314,10 +322,11 @@ export const blockConverters: BlockConverters = {
     return <SubtleSystem className={FULL_BLEED_BLOCK} items={items} />
   },
 
-  // splash → full-bleed Splash. The block's countdown, app, and map-search
-  // layouts lack the extra data (a target date, store links, a search
-  // target) to render their interactive extras. So every layout renders the
-  // shared hero with the available title, subtitle, and CTA over the first image.
+  // splash → full-bleed Splash. The `app` and `map-search` layouts still lack
+  // the extra data (store links, a search target) to render their interactive
+  // extras, so they render the shared hero with the available title, subtitle,
+  // and CTA over the first image. `countdown` now carries a class, and fills
+  // the hero's content slot with the live-session panel.
   splash: ({ childIndex, node, parent }) => {
     const fields = node.fields as unknown as SplashBlock
     const bg = populatedImage(fields.images?.[0])
@@ -330,6 +339,17 @@ export const blockConverters: BlockConverters = {
     // the LCP candidate. `getLeadSplash` answers the same question from
     // `page.content`, but nothing threads its answer into a converter.
     const isLead = childIndex === 0 && parent?.type === 'root'
+    const session = readSessionClass(fields.event)
+    // Where the block names no usable class the page falls back to that
+    // language's online classes — unless another block already draws the
+    // widget, since the page may only draw one.
+    const mayFallBack = !hasDirectoryBlock(parent) && isFirstFallbackSplash(parent, childIndex)
+    const countdown =
+      session.kind === 'schedule' ? (
+        <LiveSession schedule={session.schedule} />
+      ) : mayFallBack ? (
+        <ClassDirectory onlineOnly showMap={false} />
+      ) : null
 
     return (
       <Splash
@@ -343,7 +363,28 @@ export const blockConverters: BlockConverters = {
         subtitle={fields.subtitle ?? undefined}
         surface={splashSurface(fields.textColor)}
         title={fields.title ?? undefined}
-      />
+      >
+        {fields.layout === 'countdown' && countdown}
+      </Splash>
+    )
+  },
+
+  // class-directory → the Sahaj Atlas widget, in the page's own language.
+  'class-directory': ({ childIndex, node, parent }) => {
+    const fields = node.fields as unknown as ClassDirectoryBlock
+
+    if (!isFirstDirectoryBlock(parent, childIndex)) {
+      return null
+    }
+
+    return (
+      <div className={FULL_BLEED_BLOCK}>
+        <ClassDirectory
+          atlasRoute={atlasRouteFor(fields.opensAt)}
+          onlineOnly={fields.onlineOnly === true}
+          showMap={fields.showMap !== false}
+        />
+      </div>
     )
   },
 
