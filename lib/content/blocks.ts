@@ -29,6 +29,7 @@ import type { Meditation, Page } from '@/types/sahajcloud'
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '@/lib/media/audio'
 import { documentHref, type RelationValue } from '@/lib/urls/document-routes'
+import type { TimeOfDay } from '@/lib/time-of-day'
 import type { TranslationKey } from '@/lib/i18n/i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from '@/lib/media/cloudflare-images'
@@ -62,15 +63,52 @@ export const PAGE_TAGS = Object.keys(PAGE_TAG_KEYS) as PageTag[]
 /** Visible label per page tag, resolved from SahajCloud by the caller. */
 export type PageTagLabels = Partial<Record<PageTag, string>>
 
-/** `content-index` — the stored `ContentIndexBlock` fields, plus the two lists the
- * server-side pre-resolve pass in `+data` attaches. The editor never stores those.
- * The `*Filters` fields mirror the SahajCloud schema, but rendering does not use
- * them: facets come from the resolved items' own `tags` instead. */
-export type ContentIndexBlockFields = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'> & {
+/**
+ * `content-index` — every stored field of the generated block, plus what the
+ * server-side pre-resolve pass in `+data` attaches. The editor stores none of
+ * the `resolved*` fields, and the block envelope (`id`, `blockName`,
+ * `blockType`) belongs to the lexical node rather than to the fields object.
+ *
+ * Extending the generated block is what keeps a field or a `type` added
+ * upstream from reaching `QUERY_BY_TYPE` as a runtime `undefined`. The
+ * `*Filters` fields mirror the SahajCloud schema, but rendering does not use
+ * them: facets come from the resolved items' own `tags` instead.
+ */
+export interface ContentIndexBlockFields extends Omit<
+  ContentIndexBlock,
+  'id' | 'blockName' | 'blockType'
+> {
   /** Cards for pages, lectures, and meditations (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
   resolvedTracks?: Track[] | null
+  /** Mood tiles for the user-choices type (attached in +data). */
+  resolvedMoods?: ResolvedMood[] | null
+  /**
+   * The slot resolved from the visitor's Cloudflare zone, or `null` where there
+   * was none to read. The browser confirms it after mount.
+   */
+  resolvedSlot?: TimeOfDay | null
+}
+
+/**
+ * One featured mood the picker can offer, with the meditation it opens for each
+ * time of day.
+ *
+ * Every slot here has a published meditation: a slot whose meditation is a
+ * draft or gone is dropped during the resolve, so no tile links nowhere. A mood
+ * left with no slot at all is dropped with it.
+ */
+export interface ResolvedMood {
+  id: string
+  /** The choice's own localized title. The tile adds no wording. */
+  title: string
+  /** The editor's hex colour, or `null` where it is unset or not a hex value. */
+  color: string | null
+  /** The choice's SVG, drawn as a mask so it takes `color`. */
+  iconUrl: string | null
+  /** The meditation href for each slot this mood has a published meditation in. */
+  slots: Partial<Record<TimeOfDay, string>>
 }
 
 /**
@@ -233,7 +271,7 @@ export function leadSplashFromRouteData(
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */
-function asText(value: unknown): string {
+export function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 

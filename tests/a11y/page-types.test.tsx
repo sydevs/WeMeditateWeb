@@ -312,6 +312,23 @@ describe('accessibility · page types', () => {
     expect(document.querySelectorAll('[aria-haspopup="menu"]')).toHaveLength(1)
   })
 
+  it('keeps the mood picker on the path the gate walks', () => {
+    // The article fixture is the only target carrying a resolved
+    // `content-index` block, and the picker renders nothing at all when its
+    // moods are empty — so a fixture that drifted would leave every rule here
+    // passing over a page with no tiles in it.
+    const article = TARGETS.find((target) => target.name === 'article')
+
+    if (!article) throw new Error('the article target is gone')
+
+    mountDocument(renderToStaticMarkup(article.render()))
+
+    const tiles = document.querySelectorAll('a[href^="/meditations/"]')
+
+    expect(tiles).toHaveLength(2)
+    expect(tiles[0].textContent).toBe('Ready for the day')
+  })
+
   it.each(TARGETS.map((target) => [target.name, target] as const))(
     '%s renders the structural contract axe cannot decide here',
     (_name, target) => {

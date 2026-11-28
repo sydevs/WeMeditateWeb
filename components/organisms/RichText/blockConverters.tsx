@@ -22,6 +22,7 @@ import {
 import { ContentIndex } from '@/components/organisms/ContentIndex'
 import { ContentOverlay } from '@/components/organisms/ContentOverlay'
 import { ContentTextBox } from '@/components/organisms/ContentTextBox'
+import { MoodPicker } from '@/components/organisms/MoodPicker'
 import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
 import { OrnateTextBox } from '@/components/organisms/OrnateTextBox'
 import { Splash } from '@/components/organisms/Splash'
@@ -367,6 +368,20 @@ export const blockConverters: BlockConverters = {
         <div className={FULL_BLEED_BLOCK}>
           <MusicLibrary filters={songMusicFilters(tracks)} tracks={tracks} />
         </div>
+      )
+    }
+
+    // The grid is the page's own width, not the wider content container: a row
+    // of three tiles reads as part of the article, under the editor's heading,
+    // rather than as a full-bleed section. `MoodPicker` renders nothing for an
+    // empty list, so this branch needs no guard of its own.
+    if (fields.type === 'user-choices') {
+      return (
+        <MoodPicker
+          className={BLOCK_SPACING}
+          moods={fields.resolvedMoods ?? []}
+          serverSlot={fields.resolvedSlot}
+        />
       )
     }
 

@@ -124,8 +124,9 @@ These rules apply whether or not the matching rule file or skill is loaded.
   a content-index card's `ItemList` entry both need one, and it leaves an off-site URL alone.
   A **scheme** is part of that spelling: any URL the site did not author itself passes one of the
   `isSafe*` gates there before it reaches an `href` or `window.location` — they are what stops a
-  configured `javascript:` value running in our origin. The destination picks the gate; each one's
-  header says which.
+  configured `javascript:` value running in our origin. A CSS `url()` takes `cssUrl` instead,
+  which also re-serialises, because a `"` closes the CSS string where no scheme check would see
+  it. The destination picks the gate; each one's header says which.
   **The `Link` atom applies the `href` gate itself**, so an href reaching an anchor through `Link`,
   or through an atom that delegates to it, is already gated and the call site adds nothing.
   `tests/guards/bare-anchors.test.ts` keeps that true: no component may open an `<a>` outside the

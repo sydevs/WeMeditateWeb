@@ -110,6 +110,38 @@ export const articlePage = {
         { id: 'b', title: 'Silent', text: 'Follow the breath.' },
       ],
     }),
+    // The mood picker, so the gate walks a resolved content-index block rather
+    // than a page that happens to carry none. `resolvedMoods` and
+    // `resolvedSlot` are what `server/content-index.ts` attaches in `+data`.
+    //
+    // **Pre-mortem.** Checked against `ResolvedMood` and the `user-choices`
+    // branch of `components/organisms/RichText/blockConverters.tsx`: a block
+    // whose moods are empty renders nothing, which would walk no tiles.
+    // `limit` and the two filters are the stored block's own shape, which no
+    // renderer reads — the converter takes `resolvedMoods` and `resolvedSlot`.
+    block('content-index', {
+      type: 'user-choices',
+      limit: 20,
+      userChoiceTypeFilters: ['mood'],
+      userChoiceFeatured: 'featured',
+      resolvedSlot: 'morning',
+      resolvedMoods: [
+        {
+          id: '1',
+          title: 'Ready for the day',
+          color: '#e0a23c',
+          iconUrl: 'https://assets.invalid/ready.svg',
+          slots: { morning: '/meditations/11' },
+        },
+        {
+          id: '2',
+          title: 'Low on energy, need a boost',
+          color: null,
+          iconUrl: null,
+          slots: { morning: '/meditations/12' },
+        },
+      ],
+    }),
   ]),
   author: {
     id: 3,

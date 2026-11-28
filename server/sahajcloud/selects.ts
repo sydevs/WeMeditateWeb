@@ -204,6 +204,13 @@ export const WEB_CONFIG_POPULATE = {
   pages: NAV_PAGE_SELECT,
 }
 
+/**
+ * Whether a meditation is published, for a read by id at `locale: 'all'` — the
+ * only spelling that answers for this collection (see AGENTS.md). `meditations`
+ * makes no per-locale publish claim, so `_status` is a plain string here.
+ */
+export const MEDITATION_STATUS_SELECT = { _status: true } satisfies MeditationsSelect<true>
+
 /** Fields rendered for a Meditation (MeditationTemplate) plus draft status. */
 export const MEDITATION_SELECT = {
   url: true,

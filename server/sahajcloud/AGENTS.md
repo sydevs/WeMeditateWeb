@@ -104,13 +104,18 @@ A read with `locale: 'all'` returns every **localized** field as
 document in one language must never use it — every consumer of `Page` would have to unpick the
 maps.
 
-Use it only for a locale-agnostic fact. Today there is one: which locales a page is published in.
-`pages` opts into Payload's `versions.drafts.localizeStatus` upstream (SahajCloud#718), so
+Use it only for a locale-agnostic fact. There are two.
+
+**Which locales a page is published in.** `pages` opts into Payload's
+`versions.drafts.localizeStatus` upstream (SahajCloud#718), so
 `?locale=all&select[_status]=true` answers that in a single query. `lib/seo/hreflang.ts` turns the map
 into a locale list, and `getPageLocaleStatus` in [pages.ts](pages.ts) is the only
 single-document read that sends `all`.
 
-Three things follow, all load-bearing:
+**The meditation a mood names for a time of day** (`getPublishedMeditationIds`,
+[meditations.ts](meditations.ts)), where `all` is the only spelling that answers.
+
+Three things follow from the page read, all load-bearing:
 
 - **It is a second read, beside the content read, not a replacement for it.** It sends no locale,
   so every locale of a page issues the same URL and shares one edge entry.

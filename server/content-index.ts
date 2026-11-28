@@ -16,7 +16,11 @@
  */
 
 import * as Sentry from '@sentry/cloudflare'
+import { getContext } from 'hono/context-storage'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud/fetch'
+import type { SahajCloudEnv } from './sahajcloud/context'
+import { moodsFromChoices, SLOT_FIELDS } from './user-choices'
+import { timeOfDaySlot, type TimeOfDay } from '@/lib/time-of-day'
 import type { Audience } from '@/types/payload/payload-types'
 import type { Locale } from '@/types/sahajcloud'
 import {
@@ -41,7 +45,7 @@ import type { Track } from '@/lib/media/audio'
  *   artwork).
  */
 const QUERY_BY_TYPE: Record<
-  Exclude<ContentIndexBlockFields['type'], 'user-choices'>,
+  ContentIndexBlockFields['type'],
   { select: string; populate?: string; depth: number }
 > = {
   pages: {
@@ -66,6 +70,27 @@ const QUERY_BY_TYPE: Record<
     select: 'select[title]=true&select[thumbnail]=true&select[userChoices]=true',
     populate: 'populate[user-choices][title]=true',
     depth: 1,
+  },
+  // A mood tile is the choice's own title, its icon and its colour, over a link
+  // to the meditation for the visitor's time of day. `url` is the icon, and an
+  // upload's `url` is a virtual field derived from `filename`, so selecting
+  // `url` alone returns null. `depth: 0` leaves each slot as a bare id, which
+  // `server/user-choices.ts` then reads in one request at `locale=all` — the
+  // page's locale would answer nothing (see that file).
+  'user-choices': {
+    // The slot fields come from `SLOT_FIELDS`, not a second list: one left out
+    // here comes back undefined, which reads as "no meditation for this slot"
+    // and silently drops the tile.
+    select: [
+      'select[title]=true',
+      'select[type]=true',
+      'select[isFeatured]=true',
+      'select[url]=true',
+      'select[filename]=true',
+      'select[color]=true',
+      ...Object.values(SLOT_FIELDS).map((field) => `select[${field}]=true`),
+    ].join('&'),
+    depth: 0,
   },
   songs: {
     // A Song is an upload. `url` and `thumbnailURL` are virtual fields the
@@ -124,12 +149,6 @@ async function fetchContentIndexDocs(
   const { type, limit, apiEndpoint } = fields
 
   if (!apiEndpoint) {
-    return []
-  }
-  // A user choice has no web route (`lib/urls/document-routes.ts`), so every card
-  // resolved from one would drop. Degrade before spending the read.
-  // shortcut: empty `user-choices` index until a user choice has a public route.
-  if (type === 'user-choices') {
     return []
   }
   // Lectures resolve through the /for-audience feed, keyed on the site's
@@ -193,6 +212,38 @@ export async function resolveContentIndexItems(
     .filter((card): card is ResolvedCardItem => card !== null)
 }
 
+/**
+ * The slot it is where the visitor is, from the zone Cloudflare resolved for
+ * their request, or `null` where there is none to read.
+ *
+ * ⚠ **The only `cf.timezone` read in the app.** The alternative — resolving on
+ * the browser alone — leaves the first paint showing whatever hour the Worker's
+ * UTC clock is in, and then moving. This renders the right moods for nearly
+ * every visitor straight away, and `useTimeOfDaySlot` corrects the rest after
+ * mount.
+ *
+ * Page HTML is not edge-cached (`server/CACHING.md`), so a per-visitor render
+ * is safe. Revisit this if HTML caching is ever added: a cached page would
+ * serve one visitor's time of day to the next.
+ */
+export function visitorTimeOfDay(now: Date = new Date()): TimeOfDay | null {
+  try {
+    // `cf` is the Workers runtime's own property on the request, which the DOM
+    // `Request` type does not declare.
+    const request = getContext<SahajCloudEnv>().req.raw as Request & {
+      cf?: { timezone?: unknown }
+    }
+    const zone = request.cf?.timezone
+
+    return timeOfDaySlot(typeof zone === 'string' ? zone : undefined, now)
+  } catch {
+    // No request context at all: a unit render, Ladle, or `pnpm dev` outside
+    // the Workers runtime. The picker then shows every mood and narrows after
+    // mount, which is what an unusable zone gets too.
+    return null
+  }
+}
+
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
 export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
@@ -230,6 +281,9 @@ export async function resolveContentIndexBlocks<T>(
       // other type feeds a card grid.
       if (fields.type === 'songs') {
         fields.resolvedTracks = await resolveContentIndexTracks(fields, options)
+      } else if (fields.type === 'user-choices') {
+        fields.resolvedMoods = await moodsFromChoices(await fetchContentIndexDocs(fields, options))
+        fields.resolvedSlot = visitorTimeOfDay()
       } else {
         fields.resolvedItems = await resolveContentIndexItems(fields, options)
       }

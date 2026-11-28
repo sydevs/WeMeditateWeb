@@ -29,6 +29,12 @@ Two things follow for anyone adding a read:
 - **Nothing in this repo needs a TTL, a cache key, or a purge step.** Add the query function and
   stop. `docs/rules/rest-api.md` shows the shape.
 
+## A page's own HTML is not cached, and something now depends on that
+
+`visitorTimeOfDay` ([content-index.ts](content-index.ts)) resolves the mood picker's slot per
+visitor from `request.cf.timezone`. ⚠ **Stamping a page response would cross-serve one visitor's
+time of day to the next**, so anything that adds HTML caching has to narrow that read first.
+
 ## Retry, which is not caching
 
 `withRetry` ([error-utils.ts](error-utils.ts)) is three attempts with exponential backoff and
