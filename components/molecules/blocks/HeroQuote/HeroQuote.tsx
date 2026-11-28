@@ -1,9 +1,10 @@
 import React from 'react'
 import { LeafDivider } from '@/components/atoms/LeafDivider/LeafDivider'
 import { useT } from '@/hooks/useT'
+import { toParagraphs } from '@/lib/content/paragraphs'
 
 export interface HeroQuoteProps {
-  /** The main quote text (required) */
+  /** The main quote text (required). Each line break starts a new paragraph. */
   text: string
   /** Optional title displayed above the quote */
   title?: string
@@ -85,7 +86,13 @@ export const HeroQuote: React.FC<HeroQuoteProps> = ({
 
       {/* Main quote text */}
       <div className={`${textSize} ${lineHeight} mb-4`}>
-        <p>{text}</p>
+        {toParagraphs(text).map((paragraph, index) => (
+          // A verse's lines sit 12px apart, the gap the legacy site drew for each break.
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- lines of one quote: position is identity, and nothing reorders them
+          <p key={index} className={index > 0 ? 'mt-3' : undefined}>
+            {paragraph}
+          </p>
+        ))}
       </div>
 
       {/* Optional credit */}

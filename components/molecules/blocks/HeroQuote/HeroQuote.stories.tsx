@@ -39,6 +39,19 @@ export const Default: Story = () => (
       <HeroQuote credit="Buddha" text="Meditation brings wisdom." />
     </StorySection>
 
+    {/* Each line break in the textarea starts a new paragraph, as in a text box. */}
+    <StorySection title="Line Breaks">
+      <HeroQuote
+        text={[
+          'I’m consumed with delight',
+          'Feeling that glorious shade penetrate,',
+          'Into my body & soul’s inner sight,',
+          'Such peace! It fills my very soul,',
+          'Woke up this morning feeling one & whole',
+        ].join('\r\n')}
+      />
+    </StorySection>
+
     <StorySection title="Left Aligned">
       <HeroQuote
         align="left"
