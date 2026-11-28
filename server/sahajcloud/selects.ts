@@ -150,7 +150,9 @@ const EMBEDDED_FORM_SELECT = {
  * resolve titles, slugs, and thumbnails instead of degrading.
  */
 export const PAGE_POPULATE = {
-  images: IMAGE_POPULATE.images,
+  // `credit` only here: no other read renders one, and the config's images
+  // are serialised into every page's HTML.
+  images: { ...IMAGE_POPULATE.images, credit: true } satisfies ImagesSelect<true>,
   authors: AUTHOR_POPULATE,
   videos: VIDEO_POPULATE,
   pages: EMBEDDED_PAGE_SELECT,

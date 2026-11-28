@@ -47,6 +47,7 @@ import type {
   TableOfContentsBlock,
   TextBoxBlock,
 } from '@/types/payload/payload-types'
+import { IMAGE_CREDIT_CLASS } from './lexical-helpers'
 
 /** The block-converter map shape expected by `@payloadcms/richtext-lexical`. */
 export type BlockConverters = NonNullable<JSXConverters['blocks']>
@@ -226,6 +227,11 @@ export const blockConverters: BlockConverters = {
   // gallery is its own lightbox group, keyed by the block id, so the
   // overlay's previous and next navigation and thumbnail strip stay scoped
   // to that gallery.
+  //
+  // A tile with known dimensions keeps the image's own ratio, as the legacy
+  // gallery did: snapped to the nearest configured ratio, a portrait became a
+  // square and lost up to half its height. Its width and height reserve the
+  // box. The ratio still picks the srcset ladder.
   'image-gallery': ({ node }) => {
     const fields = node.fields as unknown as ImageGalleryBlock
     const images = galleryImages(fields.items)
@@ -239,18 +245,30 @@ export const blockConverters: BlockConverters = {
     return (
       <div className={`${BLOCK_SPACING} columns-2 gap-3 lg:columns-3 *:mb-3`}>
         {images.map((img, index) => (
-          <Image
+          <figure
             // eslint-disable-next-line @eslint-react/no-array-index-key -- the url leads the key; the index only separates one image used twice in a gallery
             key={`${img.url}-${index}`}
-            alt={img.alt}
-            aspectRatio={img.aspectRatio}
-            className="w-full"
-            lightboxGroup={group}
-            lightboxIndex={index}
-            rounded="rounded"
-            sizes="(max-width: 1024px) 50vw, 33vw"
-            src={img.url}
-          />
+            className="break-inside-avoid"
+          >
+            <Image
+              alt={img.alt}
+              aspectRatio={img.aspectRatio}
+              className="w-full"
+              forceAspectRatio={!(img.width && img.height)}
+              height={img.height}
+              lightboxGroup={group}
+              lightboxIndex={index}
+              rounded="rounded"
+              sizes="(max-width: 1024px) 50vw, 33vw"
+              src={img.url}
+              width={img.width}
+            />
+            {img.credit ? (
+              <figcaption className="mt-1">
+                <small className={IMAGE_CREDIT_CLASS}>{img.credit}</small>
+              </figcaption>
+            ) : null}
+          </figure>
         ))}
       </div>
     )

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { getLeadSplash } from '@/lib/content/blocks'
 import type { Page } from '@/types/sahajcloud'
+import { classesWith, classOf, openTag } from '@/tests/_helpers/markup'
 
 // RichText mounts the lightbox provider, whose barrel is client-only, and
 // vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
@@ -279,8 +280,7 @@ describe('<RichText>', () => {
 
     expect(html).toContain('<figure')
     expect(html).toContain('mx-auto')
-    // 1600×900 ≈ 16:9 → snaps to the `video` box, and its width ladder (only `video` has 640).
-    expect(html).toContain('aspect-video')
+    // 1600×900 ≈ 16:9 → the `video` width ladder (only `video` has 640).
     expect(html).toContain('imagedelivery.net/acct/img123/width=640 640w')
     expect(html).toContain('alt="A sunrise"')
     expect(html).toContain('<figcaption')
@@ -298,6 +298,62 @@ describe('<RichText>', () => {
 
     expect(html).not.toContain('<figure')
     expect(html).not.toContain('<img')
+  })
+
+  /** One `images` upload node, centered unless `fields` says otherwise. */
+  const upload = (value: Record<string, unknown>, fields: Record<string, unknown> = {}) =>
+    renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          {
+            type: 'upload',
+            relationTo: 'images',
+            value: img(value),
+            fields: { align: 'center', ...fields },
+            version: 1,
+          },
+        ])}
+      />,
+    )
+
+  it('prints an uploaded image’s credit in its figcaption, above the caption', () => {
+    const html = upload({ credit: 'Yoshitoshi, 1887' }, { caption: 'Bodhidharma in meditation' })
+    const figcaption = html.slice(html.indexOf('<figcaption'), html.indexOf('</figcaption>'))
+
+    expect(figcaption).toContain('<small')
+    expect(figcaption).toContain('Yoshitoshi, 1887')
+    expect(figcaption.indexOf('Yoshitoshi, 1887')).toBeLessThan(
+      figcaption.indexOf('Bodhidharma in meditation'),
+    )
+  })
+
+  it('gives a credit with no caption a figcaption of its own, and a blank credit none', () => {
+    // SahajCloud stores an unset credit as "", and a typed one can end in a space.
+    const credited = upload({ credit: 'Prasad Beaven ' }, { align: 'left' })
+    const blank = upload({ credit: '' })
+
+    expect(credited).toContain('<figcaption')
+    expect(credited).toContain('>Prasad Beaven</small>')
+    expect(blank).toContain('<figure')
+    expect(blank).not.toContain('<figcaption')
+  })
+
+  it('draws an upload with known dimensions whole, at its own ratio', () => {
+    // The 800×1652 scroll on /history-of-meditation: snapped to `square`, it
+    // lost half its height.
+    const html = upload({ width: 800, height: 1652 })
+    const tag = openTag(html, 'img')
+
+    expect(tag).toContain('width="800"')
+    expect(tag).toContain('height="1652"')
+    expect(classOf(html, '<img').split(' ')).not.toContain('absolute')
+    expect(classOf(html, '<button').split(' ')).not.toContain('aspect-square')
+  })
+
+  it('keeps the snapped box for an upload with no dimensions, so nothing shifts on load', () => {
+    const html = upload({ width: null, height: null })
+
+    expect(classOf(html, '<button').split(' ')).toContain('aspect-video')
   })
 
   it('renders a textbox block via ContentTextBox (title, text, CTA, image)', () => {
@@ -405,6 +461,53 @@ describe('<RichText>', () => {
     expect(html).toContain('aria-label="View image: Two"')
     expect(html).toContain('aria-haspopup="dialog"')
     expect(html).toContain('columns-2')
+  })
+
+  it('draws each gallery tile at its image’s own ratio', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [
+              img({ id: 1, alt: 'Portrait', width: 600, height: 800 }),
+              img({ id: 2, alt: 'Landscape' }),
+            ],
+          }),
+        ])}
+      />,
+    )
+    const portrait = openTag(html, 'img alt="Portrait"')
+
+    expect(portrait).toContain('width="600"')
+    expect(portrait).toContain('height="800"')
+    // Snapped, the 3:4 portrait drew as a square and the 3:2 landscape as 3:2.
+    expect(classesWith(html, 'aspect-square')).toEqual([])
+    expect(classesWith(html, 'aspect-[3/2]')).toEqual([])
+  })
+
+  it('prints a gallery image’s credit under its tile, and nothing under an uncredited one', () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={editorState([
+          block('image-gallery', {
+            items: [
+              img({ id: 1, alt: 'One', credit: 'Katya Denisova' }),
+              img({ id: 2, alt: 'Two', credit: '' }),
+              img({ id: 3, alt: 'Three' }),
+            ],
+          }),
+        ])}
+      />,
+    )
+
+    expect(html.split('<figure').length - 1).toBe(3)
+    expect(html.split('<figcaption').length - 1).toBe(1)
+    expect(html).toContain('>Katya Denisova</small>')
+
+    const credit = classOf(html, 'Katya Denisova')
+
+    expect(credit.split(' ')).toContain('text-fg-muted')
+    expect(credit).toBe(credit.trim())
   })
 
   it('wraps the standalone upload image in a lightbox trigger inside its figure', () => {

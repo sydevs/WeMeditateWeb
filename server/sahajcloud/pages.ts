@@ -9,6 +9,7 @@ import type { Locale, Page, PageStatus } from '@/types/sahajcloud'
 import { DOCUMENT_READ_DEPTH } from './documents'
 import { LocalizedQueryOptions, withRetryUnlessPreview } from './query'
 import { PAGE_POPULATE, PAGE_SELECT, PAGE_STATUS_SELECT } from './selects'
+import { reportDroppedImages } from '@/server/dropped-images'
 
 /**
  * Retrieves a specific page by slug and locale.
@@ -66,6 +67,12 @@ export async function getPageBySlug(
       // preview it is exactly what we asked for.
       if (!isPreview && page._status === 'draft') {
         return null
+      }
+
+      // Not under preview: an editor mid-edit is looking at the page already,
+      // and a draft's gap is not yet anyone else's.
+      if (!isPreview) {
+        reportDroppedImages(page, options.locale)
       }
 
       return page
