@@ -5,7 +5,9 @@ import {
   galleryImages,
   getLeadSplash,
   leadSplashFromRouteData,
-  meditationCardsFromUserChoices,
+  claimedSlots,
+  choiceMeditationIds,
+  meditationChoice,
   populatedImage,
   showcaseItems,
   splashSurface,
@@ -332,86 +334,55 @@ describe('contentIndexTrack', () => {
   })
 })
 
-describe('meditationCardsFromUserChoices', () => {
-  const med = (over: Record<string, unknown> = {}) => ({
-    id: 105,
-    label: 'Morning med-5 min',
-    duration: 297, // seconds → 5 min
-    thumbnail: cfImage({ alt: '' }), // meditation thumbnails carry no alt
+describe('meditationChoice', () => {
+  const choice = (over: Record<string, unknown> = {}) => ({
+    id: 25,
+    type: 'duration',
+    title: '5 min',
+    url: 'https://assets/choice-25.svg',
+    color: '#FFD591',
+    timings: ['morning', 'evening'],
+    morningMeditation: 105,
     ...over,
   })
 
-  it('flattens a category into meditation cards tagged by the user-choice', () => {
-    const cards = meditationCardsFromUserChoices([
-      {
-        id: 25,
-        title: '5 min',
-        morningMeditation: med(),
-        afternoonMeditation: 999, // bare id → skipped
-        eveningMeditation: null,
-      },
-    ])
-
-    expect(cards).toEqual([
-      {
-        id: 105,
-        title: 'Morning med-5 min',
-        href: '/meditations/105',
-        thumbnailSrc: 'https://imagedelivery.net/acct/img/',
-        thumbnailAlt: 'Morning med-5 min',
-        aspectRatio: expect.any(String),
-        playButton: true,
-        durationMinutes: 5, // derived from duration (297s)
-        tags: [{ id: '25', label: '5 min' }],
-      },
-    ])
+  it('maps a choice, reading each slot off its own field', () => {
+    expect(meditationChoice(choice({ eveningMeditation: 44 }))).toEqual({
+      id: 25,
+      kind: 'duration',
+      title: '5 min',
+      iconUrl: 'https://assets/choice-25.svg',
+      color: '#FFD591',
+      slots: { morning: 105, evening: 44 },
+    })
   })
 
-  it('omits a sub-minute / zero duration rather than showing a "0 min" badge', () => {
-    const [subMinute] = meditationCardsFromUserChoices([
-      { id: 25, title: '5 min', morningMeditation: med({ duration: 20 }) }, // 20s → 0 min
-    ])
-    const [explicitZero] = meditationCardsFromUserChoices([
-      { id: 26, title: '5-10 min', morningMeditation: med({ durationMinutes: 0, duration: 0 }) },
-    ])
+  it('omits a slot the choice claims but has not filled', () => {
+    // `timings` names evening; `eveningMeditation` is absent. The slot is left
+    // out rather than rendered as a tile linking nowhere — the caller reports it.
+    const mapped = meditationChoice(choice())
 
-    expect(subMinute.durationMinutes).toBeUndefined()
-    expect(explicitZero.durationMinutes).toBeUndefined()
+    expect(mapped?.slots).toEqual({ morning: 105 })
+    expect(claimedSlots(choice())).toEqual(['morning', 'evening'])
   })
 
-  it('prefers an explicit durationMinutes and the meditation title over its label', () => {
-    const [card] = meditationCardsFromUserChoices([
-      {
-        id: 26,
-        title: '5-10 min',
-        morningMeditation: med({ title: 'Feel Harmony', durationMinutes: 10, duration: 600 }),
-      },
-    ])
-
-    expect(card).toMatchObject({ title: 'Feel Harmony', durationMinutes: 10 })
+  it('drops a goal choice, and one with no id or title', () => {
+    expect(meditationChoice(choice({ type: 'goal' }))).toBeNull()
+    expect(meditationChoice(choice({ title: '' }))).toBeNull()
+    expect(meditationChoice(choice({ id: undefined }))).toBeNull()
   })
 
-  it('dedupes a meditation shared across categories, merging both facets', () => {
-    const cards = meditationCardsFromUserChoices([
-      { id: 25, title: '5 min', morningMeditation: med({ id: 44 }) },
-      { id: 26, title: '5-10 min', eveningMeditation: med({ id: 44 }) },
-    ])
+  it('leaves an absent icon and colour null rather than empty strings', () => {
+    const mapped = meditationChoice(choice({ url: null, color: undefined }))
 
-    expect(cards).toHaveLength(1)
-    expect(cards[0].id).toBe(44)
-    expect(cards[0].tags).toEqual([
-      { id: '25', label: '5 min' },
-      { id: '26', label: '5-10 min' },
-    ])
+    expect(mapped).toMatchObject({ iconUrl: null, color: null })
   })
 
-  it('skips categories without an id/title and slots that are bare ids', () => {
-    expect(
-      meditationCardsFromUserChoices([
-        { title: '', morningMeditation: med() }, // no title
-        { id: 27, title: '10-15 min', morningMeditation: 500 }, // bare-id slot
-      ]),
-    ).toEqual([])
+  it('dedupes the meditation ids across choices and slots', () => {
+    const a = meditationChoice(choice({ id: 25, eveningMeditation: 44 }))
+    const b = meditationChoice(choice({ id: 26, morningMeditation: 44 }))
+
+    expect(choiceMeditationIds([a!, b!])).toEqual([105, 44])
   })
 })
 

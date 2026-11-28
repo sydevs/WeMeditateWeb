@@ -21,13 +21,14 @@ import { DEFAULT_LOCALE } from './locales'
 import { type WebTranslations } from './web-translations'
 import { EN_A11Y, withA11y } from './a11y/a11y'
 import snapshot from './translations.en.json'
+import { withPendingEnglish } from './translations.pending'
 
 /**
  * The committed English snapshot with the English screen-reader strings, used when
  * the SahajCloud read fails and as the fixture for tests and Ladle. The snapshot is
  * generated — see `scripts/sync-translations.mjs`.
  */
-export const EN_TRANSLATIONS = withA11y<WebTranslations>(snapshot, EN_A11Y)
+export const EN_TRANSLATIONS = withA11y<WebTranslations>(withPendingEnglish(snapshot), EN_A11Y)
 
 /** CLDR plural categories, in the order SahajCloud stores them. */
 const PLURAL_SUFFIXES = ['one', 'few', 'many', 'other'] as const

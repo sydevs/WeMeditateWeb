@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { ItemHeadingLevel } from '@/components/molecules/ContentCard/ContentCard'
 import { Accordion, type AccordionItemData } from '@/components/molecules/Accordion'
 import { ColumnCarousel } from '@/components/molecules/ColumnCarousel'
 import type { ColumnProps } from '@/components/molecules/Column'
@@ -6,13 +7,6 @@ import { Heading, Image, Link } from '@/components/atoms'
 import { populatedImage, type LayoutItem } from '@/lib/content/blocks'
 // Aliased: this file's own component takes the unprefixed name.
 import type { LayoutBlock as LayoutBlockSchema } from '@/types/payload/payload-types'
-
-/**
- * The level an item's own title takes. A section with a heading of its own
- * nests its items one level under it; a section with none has to start the
- * level itself, or the items read as orphans (axe `heading-order`).
- */
-type ItemHeadingLevel = 'h2' | 'h3'
 
 export interface LayoutBlockProps {
   /** Presentation style for the items. */

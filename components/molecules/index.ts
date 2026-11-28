@@ -18,7 +18,7 @@ export type { ColumnProps } from './Column'
 export { ColumnCarousel } from './ColumnCarousel'
 export type { ColumnCarouselProps } from './ColumnCarousel'
 export { ContentCard } from './ContentCard/ContentCard'
-export type { ContentCardProps } from './ContentCard/ContentCard'
+export type { ContentCardProps, ItemHeadingLevel } from './ContentCard/ContentCard'
 
 export { HeroQuote } from './blocks/HeroQuote/HeroQuote'
 export type { HeroQuoteProps } from './blocks/HeroQuote/HeroQuote'
@@ -52,6 +52,9 @@ export { FooterLinkList } from './FooterLinkList'
 export { LanguageDropdown } from './LanguageDropdown'
 export type { FooterLinkListProps, FooterLink } from './FooterLinkList'
 export type { LanguageDropdownProps, LanguageOption } from './LanguageDropdown'
+
+export { FilterPills } from './FilterPills'
+export type { FilterPillsProps, Facet } from './FilterPills'
 
 export { ContentGrid } from './ContentGrid'
 export type { ContentGridProps, ContentGridItem } from './ContentGrid'

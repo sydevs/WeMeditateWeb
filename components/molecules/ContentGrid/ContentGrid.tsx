@@ -1,8 +1,15 @@
 import { ComponentProps } from 'react'
 import Masonry from 'react-masonry-css'
-import { ContentCard, ContentCardProps } from '@/components/molecules/ContentCard/ContentCard'
+import {
+  ContentCard,
+  ContentCardProps,
+  ItemHeadingLevel,
+} from '@/components/molecules/ContentCard/ContentCard'
 
-export interface ContentGridItem extends Omit<ContentCardProps, 'className' | 'id' | 'sizes'> {
+export interface ContentGridItem extends Omit<
+  ContentCardProps,
+  'className' | 'id' | 'sizes' | 'headingLevel'
+> {
   /** Unique identifier for the item */
   id: string | number
   /** `sizes` for this item's thumbnail. Overrides the grid's own. */
@@ -24,6 +31,14 @@ export interface ContentGridProps extends Omit<ComponentProps<'div'>, 'children'
   cardVariant?: 'default' | 'hero'
   /** Custom breakpoints for responsive columns (defaults to 1 mobile, 2 tablet, 3 desktop) */
   breakpointCols?: number | { default: number; [key: number]: number }
+
+  /**
+   * The heading level every card title takes. A grid that is a page's whole
+   * content sits under its `<h1>` and wants `h2`; the default suits a grid
+   * under a section heading.
+   * @default 'h3'
+   */
+  headingLevel?: ItemHeadingLevel
 }
 
 /**
@@ -77,6 +92,7 @@ export function ContentGrid({
   items,
   sizes,
   cardVariant = 'default',
+  headingLevel,
   breakpointCols = {
     default: 3, // Desktop: 3 columns (1024px+)
     1023: 2, // Tablet: 2 columns (640px - 1023px)
@@ -117,7 +133,12 @@ export function ContentGrid({
               {/* `??`, not a pre-spread default: an item built by spreading a
                   wider shape can carry an explicit `sizes: undefined`, which
                   a spread would hand on as the card's own (#206). */}
-              <ContentCard {...cardProps} sizes={itemSizes ?? sizes} variant={cardVariant} />
+              <ContentCard
+                {...cardProps}
+                headingLevel={headingLevel}
+                sizes={itemSizes ?? sizes}
+                variant={cardVariant}
+              />
             </div>
           )
         })}

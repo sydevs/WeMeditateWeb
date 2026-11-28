@@ -7,6 +7,36 @@ import type { WmWebTranslation, WmWebTranslationsSelect } from '@/types/payload/
 import type { A11yStrings } from './a11y/a11y'
 
 /**
+ * Keys SahajCloud declares but has not merged, declared here rather than typed
+ * into `payload-types.ts`.
+ *
+ * That file is a copied contract: every `pnpm types:cms` re-derives it from
+ * SahajCloud `main` and drops an entry typed into it, and the contract check
+ * fails any PR that leaves one there. An augmentation survives both, so the
+ * keys reach `WebTranslations` — and `TranslationKey` with it — without the
+ * copy diverging from its source.
+ *
+ * shortcut: declared by sydevs/SahajCloud#1223, so delete this block once
+ * `pnpm types:cms` and `pnpm sync:translations` carry these keys.
+ */
+declare module '@/types/payload/payload-types' {
+  interface WmWebTranslationsMeditationGeneralStrings {
+    finder_question?: string
+    length_question?: string
+    finder_unavailable?: string
+    all_meditations?: string
+    mood_meditation_label_one?: string
+    mood_meditation_label_few?: string
+    mood_meditation_label_many?: string
+    mood_meditation_label_other?: string
+    length_meditation_label_one?: string
+    length_meditation_label_few?: string
+    length_meditation_label_many?: string
+    length_meditation_label_other?: string
+  }
+}
+
+/**
  * The SahajCloud UI strings, with every group required.
  *
  * The generated `WmWebTranslation` marks each group optional, because a

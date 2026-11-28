@@ -5,8 +5,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('./sahajcloud/context', () => ({
   getSahajCloudContext: () => ({ apiKey: 'test-key', baseURL: 'https://sahajcloud.test' }),
 }))
-vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
+vi.mock('@sentry/cloudflare', () => ({
+  captureMessage: vi.fn(),
+  // `withRetry` breadcrumbs each retried attempt and captures the last
+  // failure. A mock without them throws inside its own catch, which reads
+  // as a read that never retried.
+  addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
+}))
 
+import * as Sentry from '@sentry/cloudflare'
 import {
   resolveContentIndexItems,
   resolveContentIndexTracks,
@@ -77,48 +85,6 @@ describe('resolveContentIndexItems', () => {
     expect(lines).toHaveLength(1)
     expect(lines[0]).toContain('GET https://sahajcloud.test/api/pages?limit=10')
     expect(lines[0]).toMatch(/→ 200$/)
-  })
-
-  it('resolves a meditations block via user-choice categories (single depth, flattened + tagged)', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse([
-        {
-          id: 25,
-          title: '5 min',
-          morningMeditation: { id: 105, label: 'Feel Calm', duration: 300, thumbnail: null },
-        },
-      ]),
-    )
-
-    const items = await resolveContentIndexItems(
-      {
-        type: 'meditations',
-        limit: 100,
-        // SahajCloud bakes `depth=1` into the endpoint. The resolver must not
-        // append a second one (duplicate `depth` params 400 the backend).
-        apiEndpoint: '/api/user-choices?where[id][in]=25&depth=1&limit=100',
-      },
-      { locale: 'en' },
-    )
-
-    expect(items).toEqual([
-      expect.objectContaining({
-        id: 105,
-        title: 'Feel Calm',
-        href: '/meditations/105',
-        playButton: true,
-        durationMinutes: 5,
-        tags: [{ id: '25', label: '5 min' }],
-      }),
-    ])
-
-    const url = fetchSpy.mock.calls[0][0] as string
-
-    // Baked-in depth is stripped. Only the depth=2 above remains.
-    expect(url).toContain('https://sahajcloud.test/api/user-choices?where[id][in]=25&limit=100')
-    expect(url).toContain('depth=2')
-    expect(url).not.toContain('depth=1')
-    expect(url).toContain('populate[meditations][thumbnail]=true')
   })
 
   it('caps the result at the block limit', async () => {
@@ -304,5 +270,229 @@ describe('resolveContentIndexBlocks', () => {
     }
 
     expect(await resolveContentIndexBlocks(content, {})).toBe(content)
+  })
+})
+
+describe('fetchContentIndexDocs retry', () => {
+  it('retries a 500 before degrading to an empty list', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
+
+    const items = await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not retry a 400', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(400))
+
+    const items = await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports the degrade once, outside the retry loop', async () => {
+    // `vi.mock` keeps its call log across cases; this counts only this read.
+    vi.mocked(Sentry.captureMessage).mockClear()
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(500))
+
+    await resolveContentIndexItems({
+      type: 'pages',
+      limit: 10,
+      apiEndpoint: '/api/pages?limit=10',
+    })
+
+    // One message for the block that degraded. `withRetry` breadcrumbs each
+    // retried attempt rather than capturing one, so the count is the degrade.
+    expect(vi.mocked(Sentry.captureMessage)).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('a meditations block', () => {
+  const CHOICES = [
+    {
+      id: 16,
+      type: 'mood',
+      title: 'Had a great day',
+      color: '#DF8E79',
+      url: 'https://assets.test/16.svg',
+      timings: ['evening'],
+      eveningMeditation: 89,
+    },
+    {
+      id: 1,
+      type: 'mood',
+      title: 'Excited for the day!',
+      color: '#FFD591',
+      url: 'https://assets.test/1.svg',
+      timings: ['morning'],
+      morningMeditation: 69,
+    },
+    { id: 25, type: 'duration', title: '5 min', timings: ['morning'], morningMeditation: 69 },
+  ]
+
+  /** Choices on the block's own endpoint, meditations on the by-id read. */
+  const stubBothReads = (meditations: unknown[], choices: unknown[] = CHOICES) =>
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const docs = String(input).includes('/api/meditations') ? meditations : choices
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ docs, totalDocs: docs.length }),
+      } as never)
+    })
+
+  const block = (limit = 20) => ({
+    root: {
+      children: [
+        {
+          type: 'block',
+          fields: {
+            blockType: 'content-index',
+            id: 'ci-meds',
+            type: 'meditations',
+            limit,
+            apiEndpoint: `/api/user-choices?where[id][in]=16,1,25&depth=1&limit=${limit}`,
+          },
+        },
+      ],
+    },
+  })
+
+  const resolveBlock = async (limit = 20) => {
+    const content = block(limit)
+    const resolved = await resolveContentIndexBlocks(content, { locale: 'fr' })
+
+    return (resolved as typeof content).root.children[0].fields as ContentIndexBlockFields
+  }
+
+  it('attaches resolvedLibrary, and no resolvedItems', async () => {
+    stubBothReads([
+      { id: 89, durationMinutes: 15 },
+      { id: 69, durationMinutes: 13 },
+    ])
+
+    const fields = await resolveBlock()
+
+    expect(fields.resolvedItems).toBeUndefined()
+    expect(fields.resolvedLibrary?.choices).toHaveLength(3)
+    // 69 is named by a mood and a duration, so it is listed once carrying both.
+    expect(fields.resolvedLibrary?.meditations).toEqual([
+      expect.objectContaining({ id: 89, href: '/meditations/89', choiceIds: [16] }),
+      expect.objectContaining({ id: 69, href: '/meditations/69', choiceIds: [1, 25] }),
+    ])
+  })
+
+  it('reads the choices at the page locale and the meditations at locale=all', async () => {
+    // The whole point of the two reads: `?locale=fr` over meditations answers
+    // `totalDocs: 0`, and `locale=en` would drop a localized slot meditation.
+    const fetchSpy = stubBothReads([{ id: 89, durationMinutes: 15 }])
+
+    await resolveBlock()
+
+    const urls = fetchSpy.mock.calls.map((call) => String(call[0]))
+    const choicesUrl = urls.find((url) => url.includes('/api/user-choices')) ?? ''
+    const meditationsUrl = urls.find((url) => url.includes('/api/meditations')) ?? ''
+
+    expect(choicesUrl).toContain('locale=fr')
+    expect(choicesUrl).toContain('select[timings]=true')
+    // SahajCloud bakes `depth=1` into the endpoint. Ours must be the only one:
+    // a duplicate `depth` parses to an array and the backend 400s.
+    expect(choicesUrl).toContain('depth=0')
+    expect(choicesUrl).not.toContain('depth=1')
+
+    expect(meditationsUrl).toContain('locale=all')
+    expect(meditationsUrl).toContain('where[id][in]=89,69')
+    expect(meditationsUrl).toContain('select[_status]=true')
+    expect(meditationsUrl).not.toContain('locale=en')
+  })
+
+  it('reads the meditations once, however many choices name them', async () => {
+    const fetchSpy = stubBothReads([
+      { id: 89, durationMinutes: 15 },
+      { id: 69, durationMinutes: 13 },
+    ])
+
+    await resolveBlock()
+
+    expect(
+      fetchSpy.mock.calls.filter((c) => String(c[0]).includes('/api/meditations')),
+    ).toHaveLength(1)
+  })
+
+  it('drops a slot whose meditation is unpublished, missing, or has no length', async () => {
+    stubBothReads([
+      { id: 89, durationMinutes: 15, _status: 'draft' },
+      { id: 69, duration: 20 }, // 20s → under a minute, so no label to render
+    ])
+
+    const fields = await resolveBlock()
+
+    expect(fields.resolvedLibrary?.meditations).toEqual([])
+    // The tiles go with the cards: no choice is left linking nowhere.
+    expect(fields.resolvedLibrary?.choices.flatMap((c) => Object.values(c.slots))).toEqual([])
+  })
+
+  it('drops a goal choice rather than rendering a third question', async () => {
+    stubBothReads(
+      [{ id: 89, durationMinutes: 15 }],
+      [
+        ...CHOICES.slice(0, 1),
+        {
+          id: 40,
+          type: 'goal',
+          title: 'Sleep better',
+          timings: ['evening'],
+          eveningMeditation: 89,
+        },
+      ],
+    )
+
+    const fields = await resolveBlock()
+
+    expect(fields.resolvedLibrary?.choices.map((c) => c.id)).toEqual([16])
+  })
+
+  it('renders an empty library when the meditation read fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) =>
+      String(input).includes('/api/meditations')
+        ? Promise.resolve(errorResponse(500))
+        : Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({ docs: CHOICES, totalDocs: CHOICES.length }),
+          } as never),
+    )
+
+    const fields = await resolveBlock()
+
+    expect(fields.resolvedLibrary).toEqual({ choices: [], meditations: [] })
+  })
+})
+
+describe('an unknown block type', () => {
+  it('degrades to an empty list instead of throwing the page away', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    // A type SahajCloud offers before this build knows it: `pages/[slug]/+data.ts`
+    // awaits this with no catch, so a throw here would 500 the whole page.
+    const items = await resolveContentIndexItems({
+      type: 'albums' as ContentIndexBlockFields['type'],
+      limit: 10,
+      apiEndpoint: '/api/albums?limit=10',
+    })
+
+    expect(items).toEqual([])
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

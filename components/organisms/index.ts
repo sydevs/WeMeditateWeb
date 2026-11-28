@@ -52,5 +52,8 @@ export type { RichTextProps } from './RichText'
 export { ContentIndex } from './ContentIndex'
 export type { ContentIndexProps } from './ContentIndex'
 
+export { MeditationLibrary } from './MeditationLibrary'
+export type { MeditationLibraryProps } from './MeditationLibrary'
+
 export { RelatedContent, RelatedContentLoader } from './RelatedContent'
 export type { RelatedContentProps, RelatedContentLoaderProps } from './RelatedContent'

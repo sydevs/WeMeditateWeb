@@ -4,11 +4,19 @@ import { Image } from '@/components/atoms/Image/Image'
 import { Link } from '@/components/atoms/Link'
 import { Button } from '@/components/atoms/Button/Button'
 import { Badge } from '@/components/atoms/Badge/Badge'
+import { Heading } from '@/components/atoms/Heading/Heading'
 import { useT } from '@/hooks/useT'
 import { Placeholder } from '@/components/atoms/Placeholder/Placeholder'
 import { Logo } from '@/components/atoms/graphics/Logo/Logo'
 import type { AspectRatio } from '@/lib/media/cloudflare-images'
 import type { Locale } from '@/types/sahajcloud'
+
+/**
+ * The heading level a card title takes. `h3` suits a card under a section
+ * heading; a grid that is a page's whole content sits under its `<h1>` and
+ * takes `h2`, or the outline skips a level.
+ */
+export type ItemHeadingLevel = 'h2' | 'h3'
 
 export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title'> {
   /** Card title. */
@@ -75,6 +83,9 @@ export interface ContentCardProps extends Omit<ComponentProps<'article'>, 'title
 
   /** Custom class name for the card container. */
   className?: string
+
+  /** @default 'h3' */
+  headingLevel?: ItemHeadingLevel
 }
 
 /**
@@ -138,6 +149,7 @@ export function ContentCard({
   badgeUrl,
   locale,
   className = '',
+  headingLevel = 'h3',
   ...props
 }: ContentCardProps) {
   const t = useT()
@@ -224,8 +236,8 @@ export function ContentCard({
           image's natural width. `w-0 min-w-full` constrains the text to that
           width, so a wide title cannot stretch the card. */}
       <div className={`flex flex-col ${contentGap} ${imageHeight ? 'w-0 min-w-full' : ''}`}>
-        {/* Title style depends on the variant. */}
-        <h3 className={`${titleClasses} wrap-break-word`}>
+        {/* Title style depends on the variant; the level is the caller's. */}
+        <Heading className={`${titleClasses} wrap-break-word`} level={headingLevel} styleAs="none">
           <Link
             className={
               isHeroVariant
@@ -239,7 +251,7 @@ export function ContentCard({
           >
             {title}
           </Link>
-        </h3>
+        </Heading>
 
         {/* Optional description */}
         {description && (

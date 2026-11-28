@@ -17,15 +17,17 @@
 
 import * as Sentry from '@sentry/cloudflare'
 import { sahajCloudFetch, SahajCloudResponseError } from './sahajcloud/fetch'
+import { withRetry } from './error-utils'
+import { meditationLibraryFromChoices } from './meditation-library'
 import type { Audience } from '@/types/payload/payload-types'
 import type { Locale } from '@/types/sahajcloud'
 import {
   contentIndexBlocks,
   contentIndexCard,
   contentIndexTrack,
-  meditationCardsFromUserChoices,
   type ContentIndexBlockFields,
   type ResolvedCardItem,
+  type ResolvedMeditationLibrary,
   type PageTagLabels,
 } from '@/lib/content/blocks'
 import { audienceIdList } from './sahajcloud'
@@ -40,27 +42,29 @@ import type { Track } from '@/lib/media/audio'
  * - `depth` reaches those relations (songs need depth 2, for album to
  *   artwork).
  */
+interface ContentIndexQuery {
+  select: string
+  populate?: string
+  depth: number
+}
+
 const QUERY_BY_TYPE: Record<
   Exclude<ContentIndexBlockFields['type'], 'user-choices'>,
-  { select: string; populate?: string; depth: number }
+  ContentIndexQuery
 > = {
   pages: {
     select: 'select[title]=true&select[slug]=true&select[meta]=true&select[tags]=true',
     depth: 1,
   },
-  // A `meditations` block resolves to user-choice categories (a
-  // duration/mood picker), not meditation docs. Select each category's
-  // title (the filter-pill label) and its four time-of-day meditation
-  // slots. Then populate those meditations (title, label, thumbnail,
-  // duration) and their thumbnail images. `url` needs `filename` too: the
-  // upload virtual-field gotcha. depth 2 reaches category, then meditation,
-  // then image. See `meditationCardsFromUserChoices`.
+  // A `meditations` block resolves to the user choices an editor picked (moods
+  // and durations), not to meditation docs. `depth: 0` leaves every slot a bare
+  // id on purpose: `server/meditation-library.ts` reads those ids at
+  // `locale=all`, where a populated read at the page's locale answers with
+  // nothing. `url` needs `filename` too — the upload virtual-field gotcha.
   meditations: {
     select:
-      'select[title]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true&select[nightMeditation]=true',
-    populate:
-      'populate[meditations][title]=true&populate[meditations][label]=true&populate[meditations][thumbnail]=true&populate[meditations][duration]=true&populate[meditations][durationMinutes]=true&populate[images][url]=true&populate[images][filename]=true&populate[images][width]=true&populate[images][height]=true',
-    depth: 2,
+      'select[title]=true&select[type]=true&select[timings]=true&select[color]=true&select[url]=true&select[filename]=true&select[morningMeditation]=true&select[afternoonMeditation]=true&select[eveningMeditation]=true',
+    depth: 0,
   },
   lectures: {
     select: 'select[title]=true&select[thumbnail]=true&select[userChoices]=true',
@@ -113,24 +117,28 @@ function stripQueryParam(endpoint: string, key: string): string {
 
 /**
  * Gets the live list for a content-index block, and returns its raw docs,
- * capped at the block `limit`. Degrades to `[]`, with a Sentry warning, on
- * any non-200, fetch error, or (for lectures) missing audience context.
- * Shared by the card and track resolvers.
+ * capped at the block `limit`, with the `totalDocs` the read reported.
+ * Degrades to no docs, with a Sentry warning, on any non-200, fetch error, or
+ * (for lectures) missing audience context. Shared by every resolver.
+ *
+ * `totalDocs` is the whole collection the filter matched, before the cap: the
+ * meditations resolver reports a block showing fewer choices than the data
+ * holds rather than rendering a silently short row.
  */
 async function fetchContentIndexDocs(
   fields: ContentIndexBlockFields,
   options: ResolveOptions,
-): Promise<Record<string, unknown>[]> {
+): Promise<{ docs: Record<string, unknown>[]; totalDocs?: number }> {
   const { type, limit, apiEndpoint } = fields
 
   if (!apiEndpoint) {
-    return []
+    return { docs: [] }
   }
   // A user choice has no web route (`lib/urls/document-routes.ts`), so every card
   // resolved from one would drop. Degrade before spending the read.
   // shortcut: empty `user-choices` index until a user choice has a public route.
   if (type === 'user-choices') {
-    return []
+    return { docs: [] }
   }
   // Lectures resolve through the /for-audience feed, keyed on the site's
   // fixed audiences. With none configured, the block degrades to empty.
@@ -138,9 +146,21 @@ async function fetchContentIndexDocs(
   const audiences = type === 'lectures' ? audienceIdList(options.audiences) : []
 
   if (type === 'lectures' && audiences.length === 0) {
-    return []
+    return { docs: [] }
   }
-  const { select, populate, depth } = QUERY_BY_TYPE[type]
+  // ⚠ A type this build does not know about must degrade, not throw. A block's
+  // fields are cast out of a lexical tree, so `type` is whatever SahajCloud sent.
+  // The lookup sits above the `try`, and `pages/[slug]/+data.ts` awaits this with
+  // no catch, so a block type SahajCloud offers before the site ships support for
+  // it would 500 the whole page rather than render one empty region. Hence the
+  // widened annotation: the map is keyed exhaustively so a newly generated type
+  // fails the build, which says nothing about what one deploy behind receives.
+  const query: ContentIndexQuery | undefined = QUERY_BY_TYPE[type]
+
+  if (!query) {
+    return { docs: [] }
+  }
+  const { select, populate, depth } = query
   // Strip any depth SahajCloud baked into the endpoint so ours is the only one.
   const endpoint = stripQueryParam(apiEndpoint, 'depth')
   const separator = endpoint.includes('?') ? '&' : '?'
@@ -152,14 +172,21 @@ async function fetchContentIndexDocs(
   try {
     // `sahajCloudFetch`, not `sahajCloudFetchOptional`: this endpoint is one SahajCloud computed
     // for the block, so a 404 is a data gap rather than an answer.
-    const json = await sahajCloudFetch<{ docs?: Record<string, unknown>[] }>(
-      path,
-      `fetchContentIndexDocs(${type})`,
+    //
+    // `withRetry` classifies structurally off the error's own status, so a 5xx
+    // and a Cloudflare-origin 520/522/524 retry and a 4xx does not. A retried
+    // attempt is a breadcrumb, so a failed read costs the wrapper's one
+    // `captureException` plus the degrade below, whatever the attempt count.
+    const json = await withRetry(() =>
+      sahajCloudFetch<{ docs?: Record<string, unknown>[]; totalDocs?: number }>(
+        path,
+        `fetchContentIndexDocs(${type})`,
+      ),
     )
     const docs = json.docs ?? []
     const cap = typeof limit === 'number' ? limit : docs.length
 
-    return docs.slice(0, cap)
+    return { docs: docs.slice(0, cap), totalDocs: json.totalDocs }
   } catch (error) {
     Sentry.captureMessage('content-index fetch failed', {
       level: 'warning',
@@ -171,26 +198,38 @@ async function fetchContentIndexDocs(
       },
     })
 
-    return []
+    return { docs: [] }
   }
 }
 
-/** Gets and maps a content-index block's list to cards (pages, lectures, meditations). */
+/** Gets and maps a content-index block's list to cards (pages and lectures). */
 export async function resolveContentIndexItems(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<ResolvedCardItem[]> {
-  const docs = await fetchContentIndexDocs(fields, options)
-
-  // Meditations resolve to user-choice categories, then flatten into a
-  // deduped, facet-tagged grid. Pages and lectures map one card per doc.
-  if (fields.type === 'meditations') {
-    return meditationCardsFromUserChoices(docs)
-  }
+  const { docs } = await fetchContentIndexDocs(fields, options)
 
   return docs
     .map((doc) => contentIndexCard(doc, fields.type, options.pageTagLabels))
     .filter((card): card is ResolvedCardItem => card !== null)
+}
+
+/**
+ * The choices a `meditations` block offers and the meditations they name.
+ *
+ * Two reads, deliberately at different locales. The choices come from the
+ * block's own computed `apiEndpoint` at the page's locale, where `title` is
+ * localized; the meditations come by id at `locale=all`, the only spelling that
+ * answers in a non-English locale without dropping a localized slot
+ * (`server/meditation-library.ts`).
+ */
+async function resolveMeditationLibrary(
+  fields: ContentIndexBlockFields,
+  options: ResolveOptions,
+): Promise<ResolvedMeditationLibrary> {
+  const { docs, totalDocs } = await fetchContentIndexDocs(fields, options)
+
+  return meditationLibraryFromChoices(docs, { totalDocs })
 }
 
 /** Gets and maps a `songs` content-index block's list to playable tracks. */
@@ -198,7 +237,7 @@ export async function resolveContentIndexTracks(
   fields: ContentIndexBlockFields,
   options: ResolveOptions = {},
 ): Promise<Track[]> {
-  const docs = await fetchContentIndexDocs(fields, options)
+  const { docs } = await fetchContentIndexDocs(fields, options)
 
   return docs.map(contentIndexTrack).filter((track): track is Track => track !== null)
 }
@@ -230,6 +269,8 @@ export async function resolveContentIndexBlocks<T>(
       // other type feeds a card grid.
       if (fields.type === 'songs') {
         fields.resolvedTracks = await resolveContentIndexTracks(fields, options)
+      } else if (fields.type === 'meditations') {
+        fields.resolvedLibrary = await resolveMeditationLibrary(fields, options)
       } else {
         fields.resolvedItems = await resolveContentIndexItems(fields, options)
       }

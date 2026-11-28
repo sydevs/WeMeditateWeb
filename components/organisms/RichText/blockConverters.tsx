@@ -22,6 +22,7 @@ import {
 import { ContentIndex } from '@/components/organisms/ContentIndex'
 import { ContentOverlay } from '@/components/organisms/ContentOverlay'
 import { ContentTextBox } from '@/components/organisms/ContentTextBox'
+import { MeditationLibrary } from '@/components/organisms/MeditationLibrary'
 import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
 import { OrnateTextBox } from '@/components/organisms/OrnateTextBox'
 import { Splash } from '@/components/organisms/Splash'
@@ -349,10 +350,9 @@ export const blockConverters: BlockConverters = {
 
   // content-index → the live list resolved server-side in `+data` (see
   // server/content-index.ts), dispatched by content type:
-  //   songs                        → MusicLibrary (playback and its own tag filtering)
-  //   pages, lectures, meditations → ContentIndex (filterable card grid with pills)
-  // Meditations resolve to user-choice categories, flattened into meditation
-  // cards, with the categories as the filter pills. An empty list renders nothing.
+  //   songs            → MusicLibrary (playback and its own tag filtering)
+  //   meditations      → MeditationLibrary (two question rows, then the list)
+  //   pages, lectures  → ContentIndex (filterable card grid with pills)
   'content-index': ({ node }) => {
     const fields = node.fields as unknown as ContentIndexBlockFields
 
@@ -366,6 +366,22 @@ export const blockConverters: BlockConverters = {
       return (
         <div className={FULL_BLEED_BLOCK}>
           <MusicLibrary filters={songMusicFilters(tracks)} tracks={tracks} />
+        </div>
+      )
+    }
+
+    // ⚠ The meditations branch renders even on an empty library, unlike every
+    // other type: sydevs/WeMeditateWeb#272 requires the page to say it cannot
+    // load the meditations rather than leave a blank space where the two
+    // questions are.
+    if (fields.type === 'meditations') {
+      return (
+        <div className={FULL_BLEED_BLOCK}>
+          <Container maxWidth="xl">
+            <MeditationLibrary
+              library={fields.resolvedLibrary ?? { choices: [], meditations: [] }}
+            />
+          </Container>
         </div>
       )
     }

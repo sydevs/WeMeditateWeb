@@ -24,11 +24,12 @@ import type {
   SubtleSystemBlock,
   UserChoice,
 } from '@/types/payload/payload-types'
-import type { Meditation, Page } from '@/types/sahajcloud'
+import type { Page } from '@/types/sahajcloud'
 // Type-only import (erased at build): reuse the audio player's Track shape so the
 // songs content-index feeds MusicLibrary without a parallel type.
 import type { Track } from '@/lib/media/audio'
 import { documentHref, type RelationValue } from '@/lib/urls/document-routes'
+import { ALL_TIMES_OF_DAY, type TimeOfDay } from '@/lib/time-of-day'
 import type { TranslationKey } from '@/lib/i18n/i18n'
 import { isPopulated } from './payload-relationships'
 import { nearestAspectRatio, type AspectRatio } from '@/lib/media/cloudflare-images'
@@ -62,15 +63,55 @@ export const PAGE_TAGS = Object.keys(PAGE_TAG_KEYS) as PageTag[]
 /** Visible label per page tag, resolved from SahajCloud by the caller. */
 export type PageTagLabels = Partial<Record<PageTag, string>>
 
-/** `content-index` — the stored `ContentIndexBlock` fields, plus the two lists the
+/**
+ * One user choice a `meditations` block offers — a mood ("Need to focus") or a
+ * duration ("5-10 min").
+ *
+ * The label is not here: the organism composes it through `useT()`, so this
+ * module stays free of the translations layer.
+ */
+export interface MeditationChoice {
+  id: number
+  kind: 'mood' | 'duration'
+  title: string
+  /** The choice record is itself an SVG upload — there is no separate icon field. */
+  iconUrl: string | null
+  /** Editor-chosen accent. It carries no contrast contract, so it never backs text. */
+  color: string | null
+  /** The meditation this choice names per time of day, for the slots it names. */
+  slots: Partial<Record<TimeOfDay, number | string>>
+}
+
+/** One meditation a block's choices name, listed once however many name it. */
+export interface MeditationListing {
+  id: number | string
+  href: string
+  /** Required: every card label names the meditation by its length, so one
+   * without a length has nothing to render. */
+  durationMinutes: number
+  thumbnail: PopulatedImage | null
+  /** The choices naming this meditation, which drive the chip row. */
+  choiceIds: number[]
+}
+
+/** What a `meditations` block resolves to: the two question rows, and the list below them. */
+export interface ResolvedMeditationLibrary {
+  choices: MeditationChoice[]
+  meditations: MeditationListing[]
+}
+
+/** `content-index` — the stored `ContentIndexBlock` fields, plus the three lists the
  * server-side pre-resolve pass in `+data` attaches. The editor never stores those.
  * The `*Filters` fields mirror the SahajCloud schema, but rendering does not use
  * them: facets come from the resolved items' own `tags` instead. */
 export type ContentIndexBlockFields = Omit<ContentIndexBlock, 'id' | 'blockName' | 'blockType'> & {
-  /** Cards for pages, lectures, and meditations (attached in +data). */
+  /** Cards for pages and lectures (attached in +data). */
   resolvedItems?: ResolvedCardItem[] | null
   /** Playable tracks for the songs type (attached in +data). */
   resolvedTracks?: Track[] | null
+  /** The choices and the meditations they name, for the meditations type
+   * (attached in +data). A card has no slot for a choice's icon or accent. */
+  resolvedLibrary?: ResolvedMeditationLibrary | null
 }
 
 /**
@@ -233,7 +274,7 @@ export function leadSplashFromRouteData(
 }
 
 /** Coerces a possibly null or absent SahajCloud text field to a string. */
-function asText(value: unknown): string {
+export function asText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
@@ -414,7 +455,7 @@ function cardHref(
   id: string | number,
 ): string | null {
   if (type === 'meditations') {
-    return `/meditations/${id}`
+    return documentHref('meditations', { id })
   }
   if (type === 'pages' || type === 'lectures') {
     return documentHref(type, doc as RelationValue)
@@ -461,19 +502,11 @@ export function contentIndexCard(
   }
 }
 
-/** The four time-of-day meditation slots on a UserChoice category. */
-const USER_CHOICE_MEDITATION_SLOTS = [
-  'morningMeditation',
-  'afternoonMeditation',
-  'eveningMeditation',
-  'nightMeditation',
-] as const
-
 /** Card duration, in minutes, for a populated meditation: the explicit
  * `durationMinutes`, else derived from `duration` (seconds), else omitted.
  * A value below 1 (a sub-minute duration, or `0`) is omitted, since a
  * "0 min" badge is meaningless. */
-function meditationDurationMinutes(med: {
+export function meditationDurationMinutes(med: {
   durationMinutes?: number | null
   duration?: number | null
 }): number | undefined {
@@ -487,68 +520,64 @@ function meditationDurationMinutes(med: {
   return minutes !== undefined && minutes >= 1 ? minutes : undefined
 }
 
+/** The field a user choice names its meditation for one time of day in. */
+export function slotField(slot: TimeOfDay): string {
+  return `${slot}Meditation`
+}
+
 /**
- * Flattens a `meditations` content-index into a deduped grid of
- * meditation cards.
+ * One user choice from a `meditations` block's read, or `null` when it is not
+ * one the library can render.
  *
- * The block's endpoint resolves to user-choice categories (for example,
- * the "5 min" or "5-10 min" duration picker), each referencing up to four
- * meditations (morning, afternoon, evening, night). This function merges
- * every referenced meditation into a single card list, and tags each
- * card with the user choices that reference it. `ContentIndex` then
- * renders the meditations as a grid, with the user choices as filter
- * pills. A meditation shared across choices appears once, carrying all
- * its facets. Unpopulated slots and unidentifiable docs are skipped.
+ * ⚠ **A slot is present because its own field holds a reference**, not because
+ * `timings` names it. `timings` is the choice's claim, and the caller reports a
+ * slot claimed with nothing in it — that gap is the commonest one in the data,
+ * and pairing on `timings` alone would render a tile linking nowhere.
+ *
+ * A `goal` choice is dropped: the two question rows are moods and durations,
+ * and the caller warns rather than rendering a third row with no question.
  */
-export function meditationCardsFromUserChoices(
-  docs: Record<string, unknown>[],
-): ResolvedCardItem[] {
-  const byId = new Map<string | number, ResolvedCardItem>()
+export function meditationChoice(doc: Record<string, unknown>): MeditationChoice | null {
+  const id = doc.id
+  const title = asText(doc.title)
+  const kind = doc.type
 
-  for (const uc of docs) {
-    const ucId = uc.id
-    const title = asText(uc.title)
+  if (typeof id !== 'number' || title.length === 0) {
+    return null
+  }
+  if (kind !== 'mood' && kind !== 'duration') {
+    return null
+  }
+  const slots: Partial<Record<TimeOfDay, number | string>> = {}
 
-    if (ucId == null || title.length === 0) {
-      continue
-    }
-    const facet = { id: String(ucId), label: title }
+  for (const slot of ALL_TIMES_OF_DAY) {
+    const value = doc[slotField(slot)]
 
-    for (const slot of USER_CHOICE_MEDITATION_SLOTS) {
-      const med = uc[slot]
-
-      if (!isPopulated<Meditation>(med) || med.id == null) {
-        continue
-      }
-      const existing = byId.get(med.id)
-
-      if (existing) {
-        // Referenced by more than one choice. Add the facet, deduped.
-        if (!existing.tags?.some((t) => t.id === facet.id)) {
-          existing.tags = [...(existing.tags ?? []), facet]
-        }
-        continue
-      }
-      const img = populatedImage(med.thumbnail)
-      const medTitle = asText(med.title) || asText(med.label)
-
-      byId.set(med.id, {
-        id: med.id,
-        title: medTitle,
-        href: `/meditations/${med.id}`,
-        thumbnailSrc: img?.url ?? '',
-        // Meditation thumbnails are populated without `alt`. Fall back to
-        // the title (`||`, so an empty alt still falls through).
-        thumbnailAlt: img?.alt || medTitle,
-        aspectRatio: img?.aspectRatio,
-        playButton: true,
-        durationMinutes: meditationDurationMinutes(med),
-        tags: [facet],
-      })
+    if (typeof value === 'number' || typeof value === 'string') {
+      slots[slot] = value
     }
   }
 
-  return Array.from(byId.values())
+  return {
+    id,
+    kind,
+    title,
+    iconUrl: asText(doc.url) || null,
+    color: asText(doc.color) || null,
+    slots,
+  }
+}
+
+/** The times of day a choice claims through `timings`, whatever it has filled. */
+export function claimedSlots(doc: Record<string, unknown>): TimeOfDay[] {
+  const named = Array.isArray(doc.timings) ? doc.timings : []
+
+  return ALL_TIMES_OF_DAY.filter((slot) => named.includes(slot))
+}
+
+/** Every meditation id a choice names, deduped across its slots. */
+export function choiceMeditationIds(choices: MeditationChoice[]): (number | string)[] {
+  return [...new Set(choices.flatMap((choice) => Object.values(choice.slots)))]
 }
 
 /**
