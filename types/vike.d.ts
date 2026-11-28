@@ -17,7 +17,7 @@ declare global {
    * Inside `declare global` because the imports above make this file a
    * module, where a top-level interface merges into nothing.
    *
-   * @see env.ts for validation schemas
+   * @see .env.example for which side reads each variable and where production's value comes from
    */
   interface ImportMetaEnv {
     // ===== Client-side (browser) environment variables =====

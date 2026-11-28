@@ -7,47 +7,23 @@
  * runtime, and nothing noticed: a path that matches no file fails nothing. Since then everything
  * the browser reads moved out of `server/` (lint holds the line), and this holds the bundle to it.
  */
-import { existsSync, globSync, readFileSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
-import ts from 'typescript'
+import { globSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, it, expect } from 'vitest'
-import { parse, readSource, repoRoot, walk } from './_source-scan'
+import { readSource, repoRoot, resolveModule, specifiers } from './_source-scan'
 
 const workflow = readFileSync(join(repoRoot, '.github/workflows/ci.yml'), 'utf8')
 const WATCH = new RegExp(workflow.match(/^\s*WATCH: '(.+)'$/m)?.[1] ?? '$^')
 const IGNORE = new RegExp(workflow.match(/^\s*IGNORE: '(.+)'$/m)?.[1] ?? '$^')
 
-/** The repo-relative module a relative or `@/` specifier names, or null for a package. */
-function resolveModule(from: string, specifier: string): string | null {
-  if (!specifier.startsWith('.') && !specifier.startsWith('@/')) return null
-  const base = specifier.startsWith('@/')
-    ? join(repoRoot, specifier.slice(2))
-    : resolve(dirname(from), specifier)
-  const file = ['', '.ts', '.tsx', '/index.ts'].map((ext) => base + ext).find(existsSync)
-
-  return file ? relative(repoRoot, file) : null
-}
-
 /** Modules a file imports for a value. An `import type` is erased and reaches no bundle. */
 function valueImports(file: string): string[] {
-  const out: string[] = []
+  const from = join(repoRoot, file)
 
-  walk(parse(readSource(join(repoRoot, file))), (node) => {
-    const typeOnly =
-      (ts.isImportDeclaration(node) && node.importClause?.isTypeOnly) ||
-      (ts.isExportDeclaration(node) && node.isTypeOnly)
-    const specifier =
-      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-      node.moduleSpecifier &&
-      ts.isStringLiteral(node.moduleSpecifier)
-        ? node.moduleSpecifier.text
-        : null
-    const target = specifier && !typeOnly ? resolveModule(join(repoRoot, file), specifier) : null
-
-    if (target) out.push(target)
-  })
-
-  return out
+  return specifiers(readSource(from))
+    .filter((specifier) => !specifier.typeOnly)
+    .map((specifier) => resolveModule(from, specifier.text))
+    .filter((target): target is string => target !== null)
 }
 
 /** Every `server/` module reachable from the trees Ladle builds, following server-to-server imports. */

@@ -1,9 +1,9 @@
-import { ComponentProps } from 'react'
+import { HTMLAttributes } from 'react'
 import { Link } from '@/components/atoms/Link'
 import { LogoSvg } from '@/components/atoms/graphics/svgs'
 import { useT } from '@/hooks/useT'
 
-export interface LogoProps extends Omit<ComponentProps<'a'>, 'href' | 'children'> {
+export interface LogoProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
   /** Logo variant */
   variant?: 'icon' | 'square' | 'circle' | 'text' | 'inline'
   /** Size of the logo */
@@ -118,12 +118,8 @@ export function Logo({
     )
   }
 
-  // When rendering as div, filter out anchor-specific props
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- named only to keep them off the div
-  const { target, rel, referrerPolicy, download, ping, hrefLang, type, ...divProps } = props as any
-
   return (
-    <div className={allStyles} {...divProps}>
+    <div className={allStyles} {...props}>
       {content}
     </div>
   )

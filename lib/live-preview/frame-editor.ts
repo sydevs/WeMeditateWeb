@@ -15,7 +15,7 @@ import { useCallback, useEffect, useState } from 'react'
  * This is not Payload's live-preview protocol — no `payload-live-preview` type
  * tag, no document payload, nothing the SDK knows about. It is SahajCloud's
  * own channel, and it rides alongside the unsaved-edit stream in
- * `./messages.ts`.
+ * `./document.tsx`.
  *
  * It lives here rather than inline in the embed page because the origin rules
  * below are the whole security surface of the channel, and a page component is

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Story, StoryDefault } from '@ladle/react'
 import { Lightbox } from './Lightbox'
-import type { LightboxSlide } from './LightboxProvider'
+import type { LightboxSlide } from '@/components/atoms/Image/lightbox-context'
 import { Button } from '@/components/atoms'
 import { StoryWrapper, StorySection } from '@/components/ladle'
 

@@ -147,7 +147,7 @@ States → Widths → Padding → Examples
 | Form (Button, Checkbox, Input, Select) | Variants/Input Types → Sizes → Colors → States → Widths → Examples |
 | Media (Avatar, Image, Icon) | Sizes → Colors → Shapes → States → Examples |
 | Typography (Heading, Label) | Sizes → Weights → Colors → Examples |
-| Layout (Box, Container, Spacer) | Variants/Sizes → Padding → Shadows → Examples |
+| Layout (Container) | Sizes → Examples |
 | Molecule | One section per major variant, each with Minimal/Maximal subsections → Examples |
 
 Use the standard section names: Variants, Basic Examples, Input Types, Colors, Shapes, States
@@ -174,10 +174,10 @@ states, like `LoggedOut` vs. `LoggedIn`.
 | --- | --- |
 | [Button](../components/atoms/Button/Button.stories.tsx) | A two-axis grid (variant × shape), with subsections for sizes, states, and a 7-part Examples section |
 | [Checkbox](../components/atoms/form/Checkbox/Checkbox.stories.tsx), [Radio](../components/atoms/form/Radio/Radio.stories.tsx) | A clean color × state grid, minimal text |
-| [Box](../components/atoms/Box/Box.stories.tsx) | A color × decoration grid, plus separate Padding and Shadows sections |
+| [Badge](../components/atoms/Badge/Badge.stories.tsx) | A shape × color grid, plus separate Sizes and Examples sections |
 | [SocialIcon](../components/atoms/graphics/SocialIcon/SocialIcon.stories.tsx) | A generated 10×4 grid (platform × color) |
 | [Typography](../components/atoms/Typography.stories.tsx) | A documentation-only story with no component — shows when *not* to wrap Tailwind classes in a component |
-| [Spacer](../components/atoms/Spacer/Spacer.stories.tsx) | Heavy subsection use — 6 subsections across Sizes and Examples |
+| [Spinner](../components/atoms/Spinner/Spinner.stories.tsx) | Heavy subsection use — 7 subsections across Sizes and Examples |
 | [Author](../components/molecules/Author/Author.stories.tsx) | A molecule pattern: one section per variant (Mini, Hero), each with Minimal/Maximal subsections, no grid |
 
 ## Configuration
