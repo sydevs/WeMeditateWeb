@@ -17,8 +17,8 @@ import { withRetryUnlessPreview } from './query'
  * read (SahajCloud #705), so the site does no merge of its own. That fill
  * reaches only inside a group the locale's document already carries: a
  * locale missing a whole group gets it back missing, and `createT` renders
- * those keys as their own key paths. A locale with no published document at
- * all reads as `{}`, even with a fallback locale.
+ * those keys from the committed English mirror. A locale with no published
+ * document at all reads as `{}`, even with a fallback locale.
  *
  * Errors propagate; `loadSiteContext` degrades to the committed English
  * snapshot rather than failing the page.

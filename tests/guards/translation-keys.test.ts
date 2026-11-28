@@ -4,9 +4,8 @@
  * `TranslationKey` is derived from the generated SahajCloud types, so `tsc` already
  * rejects a key that is not in the schema. This guard checks the other half:
  * that the key is actually *populated* in the committed English snapshot.
- * A key declared upstream but never filled in resolves to its own key path
- * at runtime, which renders as `media.general.playlist` on the page — and
- * types cannot see that.
+ * A key declared upstream but never filled in, here or live, renders nothing
+ * a visitor can read, and types cannot see that.
  *
  * It reads the source rather than importing it, so it covers every call site
  * without rendering anything.
@@ -38,12 +37,14 @@ const CALL_PATTERN = /\bt(?:\.rich)?\(\s*(['"])([a-z0-9_]+(?:\.[a-z0-9_]+)+)\1/g
  *
  * This asks the runtime accessor rather than re-walking the snapshot, so
  * the guard cannot drift from what `createT` actually does — including its
- * plural-family fallback, which `count` exercises. `createT` returns the
- * key path itself when it finds nothing, which is the failure being
- * detected.
+ * plural-family fallback, which `count` exercises. Both answers `createT`
+ * gives an unresolved key count as unresolved here, because which one it
+ * gives depends on the build.
  */
 function resolves(key: string): boolean {
-  return enT(key as TranslationKey, { count: 1 }) !== key
+  const value = enT(key as TranslationKey, { count: 1 })
+
+  return value !== key && value !== ''
 }
 
 describe('translation keys', () => {

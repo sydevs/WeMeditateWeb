@@ -6,9 +6,16 @@
  * renders — not just that English still works.
  */
 
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import type { WebTranslations } from './web-translations'
-import { createT, EN_TRANSLATIONS, interpolate, pluralize } from './i18n'
+import {
+  createT,
+  EN_TRANSLATIONS,
+  interpolate,
+  pluralize,
+  setMissingTranslationReporter,
+  type TranslationKey,
+} from './i18n'
 
 /** A partial translations object, shaped like a SahajCloud read. */
 const fixture = (groups: Record<string, unknown>) => groups as unknown as WebTranslations
@@ -120,17 +127,81 @@ describe('createT', () => {
     expect(t('map.general.classes_shown', { shown: 2, count: 7 })).toBe('2 из 7 классов подряд')
   })
 
-  it('falls back to the key path when a key is missing', () => {
-    // A gap must be visible on the page, not render as a blank element.
-    const t = createT(fixture({ common: { general: {}, a11y: {} } }), 'en')
+  describe('a key the locale lacks', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs()
+      vi.restoreAllMocks()
+      setMissingTranslationReporter(undefined)
+    })
 
-    expect(t('common.general.loading')).toBe('common.general.loading')
-  })
+    it('renders the English mirror, never the key path', () => {
+      // A half-translated group is what SahajCloud returns: the group is
+      // there, one of its keys is not.
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({ blocks: { general: { learn_more: 'En savoir plus' } } }), 'fr')
 
-  it('falls back to the key path when a key is present but blank', () => {
-    const t = createT(fixture({ common: { general: { loading: '' }, a11y: {} } }), 'en')
+      expect(t('blocks.general.minutes')).toBe(EN_TRANSLATIONS.blocks.general.minutes)
+      expect(t('blocks.general.learn_more')).toBe('En savoir plus')
+    })
 
-    expect(t('common.general.loading')).toBe('common.general.loading')
+    it('renders the mirror for a key present but blank', () => {
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({ common: { general: { loading: '' }, a11y: {} } }), 'fr')
+
+      expect(t('common.general.loading')).toBe(EN_TRANSLATIONS.common.general.loading)
+    })
+
+    it("takes the mirror's plural form by English rules", () => {
+      // Russian files 21 under `one`; English must not ("Show 21 more item").
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({ common: { general: {}, a11y: {} } }), 'ru')
+
+      expect(t('common.a11y.show_more_items', { count: 21 })).toBe('Show 21 more items')
+    })
+
+    it('renders nothing in production when the mirror lacks it too', () => {
+      vi.stubEnv('DEV', false)
+      const t = createT(fixture({}), 'fr')
+      const missing = 'common.general.no_such_key' as TranslationKey
+
+      expect(t(missing)).toBe('')
+      expect(t.rich(missing, { name: 'NODE' })).toEqual([])
+    })
+
+    it('renders the key path in development, where a gap should be loud', () => {
+      vi.stubEnv('DEV', true)
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const t = createT(fixture({}), 'fr')
+      const missing = 'common.general.no_such_key' as TranslationKey
+
+      expect(t(missing)).toBe('common.general.no_such_key')
+      expect(t.rich(missing, {})).toEqual(['common.general.no_such_key'])
+    })
+
+    it('tells the installed reporter, saying whether the mirror filled it', () => {
+      vi.stubEnv('DEV', false)
+      const report = vi.fn()
+
+      setMissingTranslationReporter(report)
+      const t = createT(fixture({}), 'fr')
+
+      t('blocks.general.minutes')
+      t('common.general.no_such_key' as TranslationKey)
+
+      expect(report.mock.calls).toEqual([
+        [{ key: 'blocks.general.minutes', locale: 'fr', inMirror: true }],
+        [{ key: 'common.general.no_such_key', locale: 'fr', inMirror: false }],
+      ])
+    })
+
+    it('does not report a key the locale has', () => {
+      const report = vi.fn()
+
+      setMissingTranslationReporter(report)
+      createT(EN_TRANSLATIONS, 'en')('common.general.loading')
+
+      expect(report).not.toHaveBeenCalled()
+    })
   })
 
   describe('rich', () => {

@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import * as Sentry from '@sentry/cloudflare'
 import type { PageContextServer } from 'vike/types'
-import { hookViews } from '@/tests/_helpers/page-context'
+import { abortForkViews, hookViews } from '@/tests/_helpers/page-context'
 import { loadSiteContext, loadTranslations } from './site-context'
 import { getWebConfig, getWebTranslations } from './sahajcloud'
-import type { WebConfig } from '@/types/sahajcloud'
-import type { SahajCloudWebTranslations } from '@/lib/i18n/web-translations'
-import { EN_TRANSLATIONS } from '@/lib/i18n/i18n'
+import { forgetReportedWarnings } from './error-utils'
+import type { Locale, WebConfig } from '@/types/sahajcloud'
+import type { SahajCloudWebTranslations, WebTranslations } from '@/lib/i18n/web-translations'
+import { createT, EN_TRANSLATIONS, type TranslationKey } from '@/lib/i18n/i18n'
 import { a11yStringsFor } from '@/lib/i18n/a11y/catalog'
 
 vi.mock('@sentry/cloudflare', () => ({ captureMessage: vi.fn() }))
@@ -60,7 +62,7 @@ describe('loadTranslations', () => {
   })
 
   it('degrades to the English snapshot when the global is empty', async () => {
-    // What an unseeded SahajCloud returns. Rendering it would print every key path.
+    // What an unseeded SahajCloud returns. Rendering it would report every key as missing.
     vi.mocked(getWebTranslations).mockResolvedValue({} as SahajCloudWebTranslations)
 
     expect(await loadTranslations((await hookViews({ locale: 'en' })).inData)).toStrictEqual(
@@ -127,5 +129,126 @@ describe('loadSiteContext', () => {
     const { inData } = await hookViews({ locale: 'fr' })
 
     await expect(loadSiteContext(inData)).rejects.toThrow()
+  })
+})
+
+/** The degrade warnings run on every render, so each is bounded per isolate. */
+describe('translations degrade reporting', () => {
+  const offering = (...locales: Locale[]) =>
+    vi.mocked(getWebConfig).mockResolvedValue({ availableLocales: locales } as WebConfig)
+
+  beforeEach(() => {
+    forgetReportedWarnings()
+    vi.mocked(Sentry.captureMessage).mockClear()
+    vi.restoreAllMocks()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  it('sends one event per locale and reason, however many requests degrade', async () => {
+    offering('de')
+    vi.mocked(getWebTranslations).mockResolvedValue({} as SahajCloudWebTranslations)
+
+    for (let request = 0; request < 3; request++) {
+      const { inData, inOnBeforeRender } = await hookViews({ locale: 'de' })
+
+      await loadSiteContext(inData)
+      await loadTranslations(inOnBeforeRender)
+    }
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translations global is empty; rendering the English snapshot',
+      expect.objectContaining({ extra: { locale: 'de' } }),
+    )
+    // The request log keeps the full record.
+    expect(console.warn).toHaveBeenCalledTimes(3)
+  })
+
+  it('reports a second reason for the same locale', async () => {
+    offering('it')
+    vi.mocked(getWebTranslations).mockResolvedValue({} as SahajCloudWebTranslations)
+    await loadSiteContext((await hookViews({ locale: 'it' })).inData)
+
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
+    await loadSiteContext((await hookViews({ locale: 'it' })).inData)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports a locale the site does not offer, once across the 404 and its error page', async () => {
+    // A crawler walking `/nl/…` reads an empty global on every request, and
+    // each one 404s. The read still degraded, so the gap is still real.
+    offering('en')
+    vi.mocked(getWebTranslations).mockResolvedValue({} as SahajCloudWebTranslations)
+
+    const request = await hookViews({ locale: 'nl' })
+
+    await expect(loadSiteContext(request.inData)).rejects.toThrow()
+    await loadTranslations((await abortForkViews(request.target)).inOnBeforeRender)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  it('reports from a render that reads no config at all', async () => {
+    // An embed: `+onBeforeRender` is the only reader, so nothing here knows
+    // which locales the site offers. A degrade is reported where it is found.
+    vi.mocked(getWebTranslations).mockRejectedValue(new Error('SahajCloud down'))
+
+    await loadTranslations((await hookViews({ locale: 'ru' })).inOnBeforeRender)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translations read failed; rendering the English snapshot',
+      expect.objectContaining({ extra: { locale: 'ru' } }),
+    )
+  })
+})
+
+describe('a translation key SahajCloud lacks', () => {
+  // Importing this module is what installs the reporter: `lib/` cannot.
+  const partial = (locale: Locale) =>
+    createT({ blocks: { general: { learn_more: 'Mehr' } } } as unknown as WebTranslations, locale)
+
+  beforeEach(() => {
+    forgetReportedWarnings()
+    vi.mocked(Sentry.captureMessage).mockClear()
+  })
+
+  it('says nothing when the mirror filled it for a locale other than English', () => {
+    // SahajCloud #705 fills only inside a group the locale carries, so most
+    // of the 19 locales render English for some keys by design.
+    partial('de')('blocks.general.minutes')
+    partial('fr')('blocks.general.minutes')
+
+    expect(Sentry.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('reports a key English itself lacks', () => {
+    partial('en')('blocks.general.minutes')
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translation key missing from SahajCloud',
+      expect.objectContaining({
+        tags: { source: 'i18n', fallback: 'mirror' },
+        extra: { key: 'blocks.general.minutes', locale: 'en' },
+      }),
+    )
+  })
+
+  it('reports a key no source holds, whatever the locale', () => {
+    partial('de')('blocks.general.no_such_key' as TranslationKey)
+
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Translation key missing from SahajCloud',
+      expect.objectContaining({ tags: { source: 'i18n', fallback: 'none' } }),
+    )
+  })
+
+  it('reaches Sentry once per key per isolate, from every render that misses it', () => {
+    partial('en')('blocks.general.minutes')
+    partial('en')('blocks.general.minutes')
+    partial('en')('blocks.general.minutes')
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1)
   })
 })
