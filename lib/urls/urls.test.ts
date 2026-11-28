@@ -11,6 +11,7 @@ import {
   localeUrl,
   normalizeContentPath,
   localeHref,
+  classMapSearchHref,
   sitePathFromUrl,
 } from './urls'
 
@@ -209,6 +210,47 @@ describe('localeHref', () => {
     expect(localeHref('fr', '/index?x=1')).toBe('/fr?x=1')
     expect(localeHref('fr', '/?utm=1')).toBe('/fr?utm=1')
     expect(localeHref('en', '/index#top')).toBe('/#top')
+  })
+})
+
+describe('classMapSearchHref', () => {
+  const london = { name: 'London', coordinates: { lat: 51.5072, lng: -0.1276 } }
+
+  /** The atlas route the widget reads back out of `?atlas=`. */
+  const atlasRoute = (href: string) => new URL(href, ORIGIN).searchParams.get('atlas')
+
+  it('spells the query-routing search the widget pre-fills, longitude first', () => {
+    // The exact URL that opened the widget's search on "London" on the
+    // deployed preview.
+    expect(classMapSearchHref('en', london)).toBe(
+      '/map?atlas=%2Fsearch%3Fcenter%3D-0.1276%2C51.5072%26q%3DLondon',
+    )
+  })
+
+  it('serves the map in the visitor’s language', () => {
+    expect(classMapSearchHref('fr', london)).toMatch(/^\/fr\/map\?atlas=/)
+  })
+
+  it('keeps a place name carrying & or # one value inside the route', () => {
+    const route = atlasRoute(
+      classMapSearchHref('en', {
+        name: 'Paris & Île-de-France #1',
+        coordinates: { lat: 48.8566, lng: 2.3522 },
+      }),
+    )
+    const search = new URLSearchParams(route!.slice(route!.indexOf('?')))
+
+    expect(route!.startsWith('/search?')).toBe(true)
+    expect(search.get('center')).toBe('2.3522,48.8566')
+    expect(search.get('q')).toBe('Paris & Île-de-France #1')
+    expect([...search.keys()]).toEqual(['center', 'q'])
+  })
+
+  // Why `MapSearch` assigns it with no gate of its own: every value this can
+  // produce is a path on this site, so a gate here could only ever pass.
+  it('is always a site path, in every locale', () => {
+    expect(isSitePath(classMapSearchHref('en', london))).toBe(true)
+    expect(isSitePath(classMapSearchHref('fr', london))).toBe(true)
   })
 })
 

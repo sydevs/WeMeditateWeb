@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useId, useRef, type ReactNode } from 'react'
 import { useSearchBoxCore, useSearchSession } from '@mapbox/search-js-react'
 import type {
   SearchBoxSuggestion,
@@ -31,6 +31,13 @@ export interface LocationSearchProps {
    * @default 'Search for a location...'
    */
   placeholder?: string
+
+  /**
+   * A visible label above the field, which names it for everyone. Without
+   * one, the field is named for screen readers only. The caller styles it,
+   * since only the caller knows the surface it sits on.
+   */
+  label?: ReactNode
 
   /** Initial value for the input */
   defaultValue?: string
@@ -68,6 +75,7 @@ export function LocationSearch({
   onLocationSelect,
   accessToken = import.meta.env.PUBLIC__MAPBOX_ACCESS_TOKEN,
   placeholder,
+  label,
   defaultValue = '',
   className = '',
   proximity,
@@ -86,6 +94,7 @@ export function LocationSearch({
   const [error, setError] = useState<string>('')
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const inputId = useId()
 
   // Initialize Mapbox Search Box Core
   const searchBoxCore = useSearchBoxCore({
@@ -223,108 +232,122 @@ export function LocationSearch({
   // Show dropdown when ready and input is focused
   const shouldShowDropdown = isDropdownOpen && isReady
 
+  const labelEl = label ? (
+    <label className="block" htmlFor={inputId}>
+      {label}
+    </label>
+  ) : null
+
   // Render read-only mode if location is selected
   if (selectedLocation) {
     return (
-      <div className={`flex gap-2 ${className}`}>
-        <Input
-          disabled
-          readOnly
-          aria-label={t('location.a11y.selected_label')}
-          className="flex-1"
-          value={selectedLocation.name}
-        />
-        <button
-          aria-label={t('location.a11y.change_label')}
-          className="touch-target px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
-          type="button"
-          onClick={handleChange}
-        >
-          {t('location.general.change')}
-        </button>
-      </div>
+      <>
+        {labelEl}
+        <div className={`flex gap-2 ${className}`}>
+          <Input
+            disabled
+            readOnly
+            aria-label={t('location.a11y.selected_label')}
+            className="flex-1"
+            id={inputId}
+            value={selectedLocation.name}
+          />
+          <button
+            aria-label={t('location.a11y.change_label')}
+            className="touch-target px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors"
+            type="button"
+            onClick={handleChange}
+          >
+            {t('location.general.change')}
+          </button>
+        </div>
+      </>
     )
   }
 
   return (
-    <Dropdown
-      closeOnBlur={true}
-      fullWidth={true}
-      isOpen={shouldShowDropdown}
-      openOnFocus={true}
-      trigger={() => (
-        <Input
-          aria-autocomplete="list"
-          aria-controls="location-search-listbox"
-          aria-expanded={shouldShowDropdown}
-          aria-label={t('location.a11y.search_label')}
-          className={className}
-          disabled={!isReady}
-          placeholder={resolvedPlaceholder}
-          value={inputValue}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-        />
-      )}
-      onOpenChange={setIsDropdownOpen}
-    >
-      <div className="max-h-80 overflow-y-auto" id="location-search-listbox" role="listbox">
-        {/* Nearby Option - Always first */}
-        <NearbyOption size="lg" onLocationSelect={handleNearbySelect} />
-
-        {/* Divider */}
-        <div className="border-t border-gray-200" />
-
-        {/* Loading Coordinates State */}
-        {isLoadingCoordinates && (
-          <div className="px-5 py-4 text-center text-gray-700">
-            <Spinner className="mx-auto mb-2" color="currentColor" size="sm" />
-            <div className="text-sm">{t('location.general.getting_coordinates')}</div>
-          </div>
+    <>
+      {labelEl}
+      <Dropdown
+        closeOnBlur={true}
+        fullWidth={true}
+        isOpen={shouldShowDropdown}
+        openOnFocus={true}
+        trigger={() => (
+          <Input
+            aria-autocomplete="list"
+            aria-controls="location-search-listbox"
+            aria-expanded={shouldShowDropdown}
+            aria-label={label ? undefined : t('location.a11y.search_label')}
+            className={className}
+            disabled={!isReady}
+            id={inputId}
+            placeholder={resolvedPlaceholder}
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={handleInputFocus}
+          />
         )}
+        onOpenChange={setIsDropdownOpen}
+      >
+        <div className="max-h-80 overflow-y-auto" id="location-search-listbox" role="listbox">
+          {/* Nearby Option - Always first */}
+          <NearbyOption size="lg" onLocationSelect={handleNearbySelect} />
 
-        {/* API Error */}
-        {error && (
-          <div className="px-5 py-4 text-sm text-error bg-error/10" role="alert">
-            {error}
-          </div>
-        )}
+          {/* Divider */}
+          <div className="border-t border-gray-200" />
 
-        {/* Loading Suggestions */}
-        {isLoadingSuggestions ? (
-          <div className="px-5 py-4 text-center text-gray-700">
-            <Spinner className="mx-auto mb-2" color="currentColor" size="sm" />
-            <div className="text-sm">{t('location.general.searching')}</div>
-          </div>
-        ) : !inputValue ? (
-          <div className="px-5 py-4 text-sm text-gray-700 text-center">
-            {t('location.general.type_to_search')}
-          </div>
-        ) : suggestions.length === 0 && !error ? (
-          <div className="px-5 py-4 text-sm text-gray-700 text-center">
-            {t('location.general.no_results')}
-          </div>
-        ) : null}
+          {/* Loading Coordinates State */}
+          {isLoadingCoordinates && (
+            <div className="px-5 py-4 text-center text-gray-700">
+              <Spinner className="mx-auto mb-2" color="currentColor" size="sm" />
+              <div className="text-sm">{t('location.general.getting_coordinates')}</div>
+            </div>
+          )}
 
-        {/* Suggestions List */}
-        {!isLoadingCoordinates &&
-          !isLoadingSuggestions &&
-          suggestions.map((suggestion) => (
-            <button
-              key={suggestion.mapbox_id}
-              aria-selected={false}
-              className="w-full text-left px-5 py-3.5 hover:bg-gray-100 transition-colors"
-              role="option"
-              type="button"
-              onClick={() => handleSelect(suggestion)}
-            >
-              <div className="font-medium text-gray-900">{suggestion.name}</div>
-              {suggestion.place_formatted && (
-                <div className="text-sm text-gray-700 mt-0.5">{suggestion.place_formatted}</div>
-              )}
-            </button>
-          ))}
-      </div>
-    </Dropdown>
+          {/* API Error */}
+          {error && (
+            <div className="px-5 py-4 text-sm text-error bg-error/10" role="alert">
+              {error}
+            </div>
+          )}
+
+          {/* Loading Suggestions */}
+          {isLoadingSuggestions ? (
+            <div className="px-5 py-4 text-center text-gray-700">
+              <Spinner className="mx-auto mb-2" color="currentColor" size="sm" />
+              <div className="text-sm">{t('location.general.searching')}</div>
+            </div>
+          ) : !inputValue ? (
+            <div className="px-5 py-4 text-sm text-gray-700 text-center">
+              {t('location.general.type_to_search')}
+            </div>
+          ) : suggestions.length === 0 && !error ? (
+            <div className="px-5 py-4 text-sm text-gray-700 text-center">
+              {t('location.general.no_results')}
+            </div>
+          ) : null}
+
+          {/* Suggestions List */}
+          {!isLoadingCoordinates &&
+            !isLoadingSuggestions &&
+            suggestions.map((suggestion) => (
+              <button
+                key={suggestion.mapbox_id}
+                aria-selected={false}
+                className="w-full text-left px-5 py-3.5 hover:bg-gray-100 transition-colors"
+                role="option"
+                type="button"
+                onClick={() => handleSelect(suggestion)}
+              >
+                <div className="font-medium text-gray-900">{suggestion.name}</div>
+                {suggestion.place_formatted && (
+                  <div className="text-sm text-gray-700 mt-0.5">{suggestion.place_formatted}</div>
+                )}
+              </button>
+            ))}
+        </div>
+      </Dropdown>
+    </>
   )
 }

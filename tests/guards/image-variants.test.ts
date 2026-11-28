@@ -12,11 +12,11 @@
  *
  * The rule reads `<Image>` tags only, and four of the ten sites #146 fixed
  * are a hand-rolled `<img>`. Holding those to `getImageURL` would need
- * exemptions: of the six raw `<img>` the last test pins, only two name the
+ * exemptions: of the seven raw `<img>` the last test pins, only two name the
  * helper in the tag — the atom's own `<img>` is the pipeline, one paints a
- * bundled SVG, and two reach the helper a hop away. A measurement nothing
+ * bundled SVG, and three reach the helper a hop away. A measurement nothing
  * checks is the defect this guard exists to catch, so the population is
- * pinned: a seventh is a red test and a decision, not a silent over-fetch.
+ * pinned: an eighth is a red test and a decision, not a silent over-fetch.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -85,6 +85,7 @@ describe('every raw <img>', () => {
     expect(sites.sort()).toEqual([
       'components/atoms/Avatar/Avatar.tsx',
       'components/atoms/Image/Image.tsx',
+      'components/atoms/SplashLoader/SplashLoader.tsx',
       'components/molecules/VideoPlayer/index.tsx',
       'components/organisms/MeditationPlayer/MeditationPlayer.tsx',
       'components/organisms/OrnateTextBox/OrnateTextBox.tsx',

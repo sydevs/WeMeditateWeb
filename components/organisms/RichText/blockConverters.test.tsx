@@ -1,11 +1,17 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { ReactElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { blockConverters } from './blockConverters'
 import { MusicLibrary, type MusicFilter } from '@/components/organisms/MusicLibrary'
 import type { Track } from '@/components/molecules'
-import { classFor } from '@/tests/_helpers/markup'
+import { anchorFor, classFor, classesWith } from '@/tests/_helpers/markup'
+
+// vike-react's ClientOnly reads pageContext, which throws outside a Vike app.
+// Its fallback is what the server sends, which is what these assert.
+vi.mock('vike-react/ClientOnly', () => ({
+  ClientOnly: ({ fallback }: { fallback?: ReactNode }) => fallback ?? null,
+}))
 
 // The converter only reads `node.fields`; the other JSXConverter args are
 // unused, so narrow to the minimal callable shape this test exercises.
@@ -295,6 +301,74 @@ describe('splash block converter — LCP priority', () => {
 
     expect(html).toContain('loading="lazy"')
     expect(html).not.toContain('fetchPriority')
+  })
+})
+
+describe('splash block converter — loader', () => {
+  it('covers the lead splash with the loader', () => {
+    expect(classesWith(renderSplash(0), 'animate-splash-loader-exit')).toHaveLength(1)
+  })
+
+  it('leaves every other splash uncovered', () => {
+    expect(renderSplash(1)).toContain('Inner Peace')
+    expect(classesWith(renderSplash(1), 'animate-splash-loader-exit')).toEqual([])
+    expect(classesWith(renderSplash(0, 'block'), 'animate-splash-loader-exit')).toEqual([])
+  })
+})
+
+describe('splash block converter — map-search', () => {
+  /** A block switched to map-search keeps the fields SahajCloud now hides. */
+  const mapSearch = (fields: Record<string, unknown>) =>
+    renderToStaticMarkup(
+      splash({
+        childIndex: 0,
+        node: {
+          fields: {
+            blockType: 'splash',
+            layout: 'map-search',
+            images: [IMG],
+            title: 'Stale title',
+            subtitle: 'Stale subtitle',
+            actionURL: '/stale',
+            ...fields,
+          },
+        },
+        parent: { type: 'root' },
+      }),
+    )
+
+  it('sends a visitor without JavaScript to the class map, in the editor’s words', () => {
+    const html = mapSearch({ actionText: 'Find a class near you' })
+    const link = anchorFor(html, '/map')
+
+    expect(link).not.toBe('')
+    expect(html.slice(html.indexOf(link))).toContain('Find a class near you')
+  })
+
+  it('draws none of the fields SahajCloud hides for the layout', () => {
+    const html = mapSearch({ actionText: 'Find a class near you' })
+
+    expect(html).toContain('Find a class near you')
+    expect(html).not.toContain('Stale title')
+    expect(html).not.toContain('<h1')
+    expect(html).not.toContain('Stale subtitle')
+    expect(anchorFor(html, '/stale')).toBe('')
+  })
+
+  it('still sends one to the class map when the editor left the field blank', () => {
+    const html = mapSearch({ actionText: '  ' })
+
+    expect(html).toContain(`src="${IMG.url}"`)
+    expect(anchorFor(html, '/map')).not.toBe('')
+    expect(html).toContain('Classes Near Me')
+  })
+
+  it('leaves the default layout’s hero as it was', () => {
+    const html = mapSearch({ layout: 'default', actionText: 'Begin' })
+
+    expect(html).toContain('Stale title')
+    expect(anchorFor(html, '/stale')).not.toBe('')
+    expect(anchorFor(html, '/map')).toBe('')
   })
 })
 
