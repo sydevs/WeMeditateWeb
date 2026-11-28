@@ -39,6 +39,14 @@ describe('the [slug] page matcher', () => {
     expect(match(pathname)).toBe(false)
   })
 
+  // The one case the locale-shaped guard uniquely refuses: a single segment
+  // that looks like a locale and that `+onBeforeRoute` did not strip, because
+  // SahajCloud defines no such code. Without the guard it reads as the page
+  // slug `zz`.
+  it('does not read an unoffered locale code as a page slug', () => {
+    expect(match('/zz/')).toBe(false)
+  })
+
   // ⚠ Regression guard for the trap in #62. This matcher takes any single
   // segment. Before the exclusion, `/map` resolved to the Pages renderer
   // and rendered "page not found" for a route that exists. Nothing errors.

@@ -11,6 +11,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { anchorFor } from '@/tests/_helpers/markup'
 import type { ReactNode } from 'react'
 import type { Meditation } from '@/types/sahajcloud'
 
@@ -53,7 +54,9 @@ describe('the meditation embed route', () => {
     const html = renderToStaticMarkup(<Page />)
 
     expect(html).toContain('Find more meditations on')
-    expect(html).toContain('href="https://wemeditate.com/meditations"')
+    // A site path, because this app serves wemeditate.com. It still opens a
+    // new tab: the embed runs inside an iframe on someone else's page.
+    expect(anchorFor(html, '/meditate-now')).toContain('target="_blank"')
   })
 
   it('offers the app variant nowhere, so the embed never points at the store', () => {

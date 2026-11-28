@@ -28,7 +28,9 @@ export default function route(pageContext: { urlPathname: string }) {
     return false
   }
 
-  // Do not match locale-prefixed routes (handled by [locale]/[slug]).
+  // There is no `pages/[locale]/` directory: `+onBeforeRoute` strips a known
+  // locale into `urlLogical`. So what reaches this guard is a locale-shaped
+  // prefix nothing stripped — an unoffered or misspelt code.
   // A compound code carries an upper-case region (`/pt-BR/`, `/en-AU/`).
   if (urlPathname.match(/^\/[a-z]{2}(-[A-Z]{2})?\//)) {
     return false
